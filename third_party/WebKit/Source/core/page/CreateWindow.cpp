@@ -50,6 +50,7 @@ namespace blink {
 static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
+    ASSERT(request.resourceRequest().requestorOrigin() || openerFrame.document()->url().isEmpty());
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeAuxiliary);
 
     if (!request.frameName().isEmpty() && request.frameName() != "_blank" && policy == NavigationPolicyIgnore) {
@@ -139,6 +140,7 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
 
     FrameLoadRequest frameRequest(callingWindow.document(), completedURL, frameName);
     frameRequest.resourceRequest().setFrameType(WebURLRequest::FrameTypeAuxiliary);
+    frameRequest.resourceRequest().setRequestorOrigin(SecurityOrigin::create(activeFrame->document()->url()));
 
     // Normally, FrameLoader would take care of setting the referrer for a navigation that is
     // triggered from javascript. However, creating a window goes through sufficient processing
@@ -173,6 +175,8 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
 
 void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
 {
+    ASSERT(request.resourceRequest().requestorOrigin() || (openerFrame.document() && openerFrame.document()->url().isEmpty()));
+
     if (openerFrame.document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 

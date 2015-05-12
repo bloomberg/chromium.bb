@@ -34,6 +34,7 @@
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/OwnPtr.h"
 
@@ -99,6 +100,9 @@ public:
 
     const KURL& firstPartyForCookies() const;
     void setFirstPartyForCookies(const KURL& firstPartyForCookies);
+
+    PassRefPtr<SecurityOrigin> requestorOrigin() const;
+    void setRequestorOrigin(PassRefPtr<SecurityOrigin>);
 
     const AtomicString& httpMethod() const;
     void setHTTPMethod(const AtomicString&);
@@ -240,6 +244,7 @@ private:
     ResourceRequestCachePolicy m_cachePolicy;
     double m_timeoutInterval; // 0 is a magic value for platform default on platforms that have one.
     KURL m_firstPartyForCookies;
+    RefPtr<SecurityOrigin> m_requestorOrigin;
     AtomicString m_httpMethod;
     HTTPHeaderMap m_httpHeaderFields;
     RefPtr<FormData> m_httpBody;
@@ -289,6 +294,7 @@ public:
     ResourceRequestCachePolicy m_cachePolicy;
     double m_timeoutInterval;
     KURL m_firstPartyForCookies;
+    RefPtr<SecurityOrigin> m_requestorOrigin;
 
     String m_httpMethod;
     OwnPtr<CrossThreadHTTPHeaderMapData> m_httpHeaders;

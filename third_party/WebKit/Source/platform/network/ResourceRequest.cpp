@@ -40,6 +40,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setCachePolicy(data->m_cachePolicy);
     request->setTimeoutInterval(data->m_timeoutInterval);
     request->setFirstPartyForCookies(data->m_firstPartyForCookies);
+    request->setRequestorOrigin(data->m_requestorOrigin);
     request->setHTTPMethod(AtomicString(data->m_httpMethod));
     request->setPriority(data->m_priority, data->m_intraPriorityValue);
 
@@ -77,6 +78,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_cachePolicy = cachePolicy();
     data->m_timeoutInterval = timeoutInterval();
     data->m_firstPartyForCookies = firstPartyForCookies().copy();
+    data->m_requestorOrigin = requestorOrigin() ? requestorOrigin()->isolatedCopy() : nullptr;
     data->m_httpMethod = httpMethod().string().isolatedCopy();
     data->m_httpHeaders = httpHeaderFields().copyData();
     data->m_priority = priority();
@@ -165,6 +167,16 @@ const KURL& ResourceRequest::firstPartyForCookies() const
 void ResourceRequest::setFirstPartyForCookies(const KURL& firstPartyForCookies)
 {
     m_firstPartyForCookies = firstPartyForCookies;
+}
+
+PassRefPtr<SecurityOrigin> ResourceRequest::requestorOrigin() const
+{
+    return m_requestorOrigin;
+}
+
+void ResourceRequest::setRequestorOrigin(PassRefPtr<SecurityOrigin> requestorOrigin)
+{
+    m_requestorOrigin = requestorOrigin;
 }
 
 const AtomicString& ResourceRequest::httpMethod() const

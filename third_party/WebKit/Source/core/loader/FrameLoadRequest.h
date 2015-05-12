@@ -46,6 +46,8 @@ public:
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
+        if (originDocument)
+            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest)
@@ -56,6 +58,8 @@ public:
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
+        if (originDocument)
+            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName)
@@ -67,6 +71,8 @@ public:
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
+        if (originDocument)
+            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
@@ -78,6 +84,8 @@ public:
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(shouldCheckMainWorldContentSecurityPolicy)
     {
+        if (originDocument)
+            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const SubstituteData& substituteData)
@@ -89,6 +97,8 @@ public:
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
+        if (originDocument)
+            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
     }
 
     Document* originDocument() const { return m_originDocument.get(); }

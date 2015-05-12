@@ -21,6 +21,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     original.setCachePolicy(UseProtocolCachePolicy);
     original.setTimeoutInterval(10);
     original.setFirstPartyForCookies(KURL(ParsedURLString, "http://www.example.com/first_party.htm"));
+    original.setRequestorOrigin(SecurityOrigin::create(KURL(ParsedURLString, "http://www.example.com/first_party.htm")));
     original.setHTTPMethod(AtomicString("GET", AtomicString::ConstructFromLiteral));
     original.setHTTPHeaderField(AtomicString("Foo"), AtomicString("Bar"));
     original.setHTTPHeaderField(AtomicString("Piyo"), AtomicString("Fuga"));
@@ -46,6 +47,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_EQ(UseProtocolCachePolicy, original.cachePolicy());
     EXPECT_EQ(10, original.timeoutInterval());
     EXPECT_STREQ("http://www.example.com/first_party.htm", original.firstPartyForCookies().string().utf8().data());
+    EXPECT_STREQ("www.example.com", original.requestorOrigin()->host().utf8().data());
     EXPECT_STREQ("GET", original.httpMethod().utf8().data());
     EXPECT_STREQ("Bar", original.httpHeaderFields().get("Foo").utf8().data());
     EXPECT_STREQ("Fuga", original.httpHeaderFields().get("Piyo").utf8().data());
@@ -73,6 +75,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     EXPECT_EQ(UseProtocolCachePolicy, copy1->cachePolicy());
     EXPECT_EQ(10, copy1->timeoutInterval());
     EXPECT_STREQ("http://www.example.com/first_party.htm", copy1->firstPartyForCookies().string().utf8().data());
+    EXPECT_STREQ("www.example.com", copy1->requestorOrigin()->host().utf8().data());
     EXPECT_STREQ("GET", copy1->httpMethod().utf8().data());
     EXPECT_STREQ("Bar", copy1->httpHeaderFields().get("Foo").utf8().data());
     EXPECT_EQ(ResourceLoadPriorityLow, copy1->priority());

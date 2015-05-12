@@ -40,6 +40,7 @@ namespace blink {
 class ResourceRequest;
 class WebHTTPBody;
 class WebHTTPHeaderVisitor;
+class WebSecurityOrigin;
 class WebString;
 class WebURL;
 class WebURLRequestPrivate;
@@ -164,6 +165,11 @@ public:
     // Used to implement third-party cookie blocking.
     BLINK_PLATFORM_EXPORT WebURL firstPartyForCookies() const;
     BLINK_PLATFORM_EXPORT void setFirstPartyForCookies(const WebURL&);
+
+    // The origin of the execution context which originated the request. Used to
+    // implement First-Party-Only cookie restrictions.
+    BLINK_PLATFORM_EXPORT WebSecurityOrigin requestorOrigin() const;
+    BLINK_PLATFORM_EXPORT void setRequestorOrigin(const WebSecurityOrigin&);
 
     // Controls whether user name, password, and cookies may be sent with the
     // request. (If false, this overrides allowCookies.)

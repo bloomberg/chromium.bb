@@ -35,6 +35,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURL.h"
 
 namespace blink {
@@ -122,6 +123,16 @@ WebURL WebURLRequest::firstPartyForCookies() const
 void WebURLRequest::setFirstPartyForCookies(const WebURL& firstPartyForCookies)
 {
     m_private->m_resourceRequest->setFirstPartyForCookies(firstPartyForCookies);
+}
+
+WebSecurityOrigin WebURLRequest::requestorOrigin() const
+{
+    return m_private->m_resourceRequest->requestorOrigin();
+}
+
+void WebURLRequest::setRequestorOrigin(const WebSecurityOrigin& requestorOrigin)
+{
+    m_private->m_resourceRequest->setRequestorOrigin(requestorOrigin);
 }
 
 bool WebURLRequest::allowStoredCredentials() const
