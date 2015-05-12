@@ -4,8 +4,11 @@
 
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -24,16 +27,34 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 
+using base::UserMetricsAction;
 using content::BrowserThread;
 using content::PluginService;
 
 namespace {
+
+// This enum is recorded in a histogram so entries should not be re-ordered or
+// removed.
+enum PluginGroup {
+  GROUP_NAME_UNKNOWN,
+  GROUP_NAME_ADOBE_READER,
+  GROUP_NAME_JAVA,
+  GROUP_NAME_QUICKTIME,
+  GROUP_NAME_SHOCKWAVE,
+  GROUP_NAME_REALPLAYER,
+  GROUP_NAME_SILVERLIGHT,
+  GROUP_NAME_WINDOWS_MEDIA_PLAYER,
+  GROUP_NAME_GOOGLE_TALK,
+  GROUP_NAME_GOOGLE_EARTH,
+  GROUP_NAME_COUNT,
+};
 
 static const char kLearnMoreUrl[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=6213033";
@@ -81,6 +102,48 @@ NPAPIRemovalInfoBarDelegate::NPAPIRemovalInfoBarDelegate(
     const base::string16& plugin_name,
     int message_id)
     : plugin_name_(plugin_name), message_id_(message_id) {
+  content::RecordAction(UserMetricsAction("NPAPIRemovalInfobar.Shown"));
+
+  std::pair<PluginGroup, const char*> types[] = {
+      std::make_pair(GROUP_NAME_ADOBE_READER,
+                     PluginMetadata::kAdobeReaderGroupName),
+      std::make_pair(GROUP_NAME_JAVA,
+                     PluginMetadata::kJavaGroupName),
+      std::make_pair(GROUP_NAME_QUICKTIME,
+                     PluginMetadata::kQuickTimeGroupName),
+      std::make_pair(GROUP_NAME_SHOCKWAVE,
+                     PluginMetadata::kShockwaveGroupName),
+      std::make_pair(GROUP_NAME_REALPLAYER,
+                     PluginMetadata::kRealPlayerGroupName),
+      std::make_pair(GROUP_NAME_SILVERLIGHT,
+                     PluginMetadata::kSilverlightGroupName),
+      std::make_pair(GROUP_NAME_WINDOWS_MEDIA_PLAYER,
+                     PluginMetadata::kWindowsMediaPlayerGroupName),
+      std::make_pair(GROUP_NAME_GOOGLE_TALK,
+                     PluginMetadata::kGoogleTalkGroupName),
+      std::make_pair(GROUP_NAME_GOOGLE_EARTH,
+                     PluginMetadata::kGoogleEarthGroupName)};
+
+  PluginGroup group = GROUP_NAME_UNKNOWN;
+  std::string name = base::UTF16ToUTF8(plugin_name);
+
+  for (const auto& type : types) {
+    if (name == type.second) {
+      group = type.first;
+      break;
+    }
+  }
+
+  if (message_id == IDS_PLUGINS_NPAPI_REMOVED) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Plugin.NpapiRemovalInfobar.Removed.PluginGroup", group,
+        GROUP_NAME_COUNT);
+  } else {
+    DCHECK_EQ(IDS_PLUGINS_NPAPI_BEING_REMOVED_SOON, message_id);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Plugin.NpapiRemovalInfobar.RemovedSoon.PluginGroup", group,
+        GROUP_NAME_COUNT);
+  }
 }
 
 NPAPIRemovalInfoBarDelegate::~NPAPIRemovalInfoBarDelegate() {
@@ -109,6 +172,7 @@ bool NPAPIRemovalInfoBarDelegate::LinkClicked(
           GURL(kLearnMoreUrl), content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           ui::PAGE_TRANSITION_LINK, false));
+  content::RecordAction(UserMetricsAction("NPAPIRemovalInfobar.LearnMore"));
   return true;
 }
 

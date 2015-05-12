@@ -19,6 +19,8 @@ const char PluginMetadata::kRealPlayerGroupName[] = "RealPlayer";
 const char PluginMetadata::kSilverlightGroupName[] = "Silverlight";
 const char PluginMetadata::kWindowsMediaPlayerGroupName[] =
     "Windows Media Player";
+const char PluginMetadata::kGoogleTalkGroupName[] = "Google Talk";
+const char PluginMetadata::kGoogleEarthGroupName[] = "Google Earth";
 
 PluginMetadata::PluginMetadata(const std::string& identifier,
                                const base::string16& name,

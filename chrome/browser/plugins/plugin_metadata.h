@@ -34,6 +34,8 @@ class PluginMetadata {
   static const char kRealPlayerGroupName[];
   static const char kSilverlightGroupName[];
   static const char kWindowsMediaPlayerGroupName[];
+  static const char kGoogleTalkGroupName[];
+  static const char kGoogleEarthGroupName[];
 
   PluginMetadata(const std::string& identifier,
                  const base::string16& name,

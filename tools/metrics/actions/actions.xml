@@ -8210,6 +8210,18 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="NPAPIRemovalInfobar.LearnMore">
+  <owner>wfh@chromium.org</owner>
+  <description>
+    Recorded when the NPAPI removal infobar link is clicked.
+  </description>
+</action>
+
+<action name="NPAPIRemovalInfobar.Shown">
+  <owner>wfh@chromium.org</owner>
+  <description>Recorded when the NPAPI removal infobar is shown.</description>
+</action>
+
 <action name="NTPPromoClosed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
