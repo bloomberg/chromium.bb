@@ -23,16 +23,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-
-import java.net.URISyntaxException;
 
 /**
  * Java side of Android implementation of the website settings UI.
  */
 public class ConnectionInfoPopup implements OnClickListener {
+    private static final String TAG = "ConnectionInfoPopup";
+
     private static final String HELP_URL =
             "http://www.google.com/support/chrome/bin/answer.py?answer=95617";
     private static final int DESCRIPTION_TEXT_SIZE_SP = 12;
@@ -212,8 +213,9 @@ public class ConnectionInfoPopup implements OnClickListener {
                 i.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
                 i.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
                 mContext.startActivity(i);
-            } catch (URISyntaxException ex) {
+            } catch (Exception ex) {
                 // Do nothing intentionally.
+                Log.w(TAG, "Bad URI " + mLinkUrl, ex);
             }
         }
     }
