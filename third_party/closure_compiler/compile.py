@@ -18,35 +18,56 @@ import processor
 import error_filter
 
 
+_CURRENT_DIR = os.path.join(os.path.dirname(__file__))
+
+
 class Checker(object):
   """Runs the Closure compiler on given source files to typecheck them
   and produce minified output."""
 
+  _COMMON_JSCOMP_ERRORS = [
+    "accessControls",
+    "ambiguousFunctionDecl",
+    "checkStructDictInheritance",
+    "checkTypes",
+    "checkVars",
+    "constantProperty",
+    "deprecated",
+    "externsValidation",
+    "globalThis",
+    "invalidCasts",
+    "missingProperties",
+    "missingReturn",
+    "nonStandardJsDocs",
+    "suspiciousCode",
+    "undefinedNames",
+    "undefinedVars",
+    "unknownDefines",
+    "uselessCode",
+    "visibility",
+  ]
+
+  # Extra @jsDocAnnotations used when compiling polymer code.
+  _POLYMER_EXTRA_ANNOTATIONS = [
+    "attribute",
+    "status",
+    "element",
+    "homepage",
+    "submodule",
+    "group",
+  ]
+
   _COMMON_CLOSURE_ARGS = [
     "--accept_const_keyword",
-    "--jscomp_error=accessControls",
-    "--jscomp_error=ambiguousFunctionDecl",
-    "--jscomp_error=checkStructDictInheritance",
-    "--jscomp_error=checkTypes",
-    "--jscomp_error=checkVars",
-    "--jscomp_error=constantProperty",
-    "--jscomp_error=deprecated",
-    "--jscomp_error=externsValidation",
-    "--jscomp_error=globalThis",
-    "--jscomp_error=invalidCasts",
-    "--jscomp_error=missingProperties",
-    "--jscomp_error=missingReturn",
-    "--jscomp_error=nonStandardJsDocs",
-    "--jscomp_error=suspiciousCode",
-    "--jscomp_error=undefinedNames",
-    "--jscomp_error=undefinedVars",
-    "--jscomp_error=unknownDefines",
-    "--jscomp_error=uselessCode",
-    "--jscomp_error=visibility",
     "--language_in=ECMASCRIPT5_STRICT",
     "--summary_detail_level=3",
     "--compilation_level=SIMPLE_OPTIMIZATIONS",
     "--source_map_format=V3",
+    "--polymer_pass",
+  ] + [
+    "--jscomp_error=%s" % err for err in _COMMON_JSCOMP_ERRORS
+  ] + [
+    "--extra_annotation_name=%s" % a for a in _POLYMER_EXTRA_ANNOTATIONS
   ]
 
   # These are the extra flags used when compiling in strict mode.
@@ -81,8 +102,7 @@ class Checker(object):
       verbose: Whether this class should output diagnostic messages.
       strict: Whether the Closure Compiler should be invoked more strictly.
     """
-    current_dir = os.path.join(os.path.dirname(__file__))
-    self._runner_jar = os.path.join(current_dir, "runner", "runner.jar")
+    self._runner_jar = os.path.join(_CURRENT_DIR, "runner", "runner.jar")
     self._temp_files = []
     self._verbose = verbose
     self._strict = strict
@@ -340,7 +360,8 @@ class Checker(object):
     self._nuke_temp_files()
     return bool(cleaned_errors), stderr
 
-  def check_multiple(self, sources, out_file=None, output_wrapper=None):
+  def check_multiple(self, sources, out_file=None, output_wrapper=None,
+                     externs=None):
     """Closure compile a set of files and check for errors.
 
     Args:
@@ -348,13 +369,15 @@ class Checker(object):
       out_file: A file where the compiled output is written to.
       output_wrapper: Wraps output into this string at the place denoted by the
           marker token %output%.
+      externs: @extern files that inform the compiler about custom globals.
 
     Returns:
       (found_errors, stderr) A boolean indicating whether errors were found and
           the raw Closure Compiler stderr (as a string).
     """
     errors, stderr = self._run_js_check(sources, out_file=out_file,
-                                        output_wrapper=output_wrapper)
+                                        output_wrapper=output_wrapper,
+                                        externs=externs)
     self._nuke_temp_files()
     return bool(errors), stderr
 
@@ -389,7 +412,12 @@ if __name__ == "__main__":
   opts = parser.parse_args()
 
   depends = opts.depends or []
-  externs = opts.externs or set()
+  externs = set(opts.externs or [])
+
+  polymer_externs = os.path.join(os.path.dirname(_CURRENT_DIR), 'polymer',
+                                 'v0_8', 'components-chromium',
+                                 'polymer-externs', 'polymer.externs.js')
+  externs.add(polymer_externs)
 
   if opts.out_file:
     out_dir = os.path.dirname(opts.out_file)
@@ -410,7 +438,8 @@ if __name__ == "__main__":
     found_errors, stderr = checker.check_multiple(
         opts.sources,
         out_file=opts.out_file,
-        output_wrapper=opts.output_wrapper)
+        output_wrapper=opts.output_wrapper,
+        externs=externs)
     if found_errors:
       print stderr
       sys.exit(1)
