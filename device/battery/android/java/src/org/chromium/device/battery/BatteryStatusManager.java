@@ -63,8 +63,9 @@ class BatteryStatusManager {
         // BatteryManager.EXTRA_PRESENT appears to be unreliable on Galaxy Nexus,
         // Android 4.2.1, it always reports false. See http://crbug.com/384348.
         this(context, callback, Build.MODEL.equals("Galaxy Nexus"),
-             Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? new BatteryManager()
-                                                                   : null);
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                        ? (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE)
+                        : null);
     }
 
     /**
