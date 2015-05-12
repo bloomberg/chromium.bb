@@ -10,6 +10,7 @@ copy("copy_test_files") {
     "tests/test_case.html",
     "tests/test_case.html.mock-http-headers",
     "tests/test_page.css",
+    "tests/test_page.css.mock-http-headers",
   ]
   outputs = [
     "$root_out_dir/{{source_file_part}}",
