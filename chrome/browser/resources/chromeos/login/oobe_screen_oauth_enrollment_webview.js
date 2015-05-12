@@ -120,6 +120,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       $('oauth-enroll-cancel-button').addEventListener('click',
                                                        this.cancel.bind(this));
+      $('oauth-enroll-refresh-button').addEventListener('click',
+                                                        this.cancel.bind(this));
 
       $('oauth-enroll-back-button').addEventListener('click',
           (function(e) {

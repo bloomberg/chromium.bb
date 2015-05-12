@@ -79,13 +79,23 @@
   display: none;
 }
 
+#oauth-enroll-back-button,
+#oauth-enrollment.saml #oauth-enroll-back-button {
+  display: none;
+}
+
+.oauth-enroll-state-signin #oauth-enroll-back-button {
+  display: inline;
+}
+
 .oauth-enroll-state-signin.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-signin #oauth-enroll-back-button,
+.oauth-enroll-state-signin.mode-forced #oauth-enroll-refresh-button,
+.oauth-enroll-state-signin.mode-recovery #oauth-enroll-refresh-button,
 .oauth-enroll-state-working.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-working #oauth-enroll-back-button,
+.oauth-enroll-state-working.mode-forced #oauth-enroll-refresh-button,
+.oauth-enroll-stain-working.mode-recovery #oauth-enroll-refresh-button,
 .oauth-enroll-state-error.mode-manual #oauth-enroll-cancel-button,
 .oauth-enroll-state-error.mode-manual #oauth-enroll-done-button,
-.oauth-enroll-state-error #oauth-enroll-back-button,
 .oauth-enroll-state-success #oauth-enroll-done-button {
   display: inline;
 }
@@ -123,27 +133,34 @@
 }
 
 #oauth-enroll-cancel-button,
-#oauth-enroll-back-button {
+#oauth-enroll-back-button,
+#oauth-enroll-refresh-button {
   position: absolute;
   top: 10px;
+  z-index: 1;
 }
 
-#oauth-enroll-cancel-button {
+#oauth-enroll-cancel-button,
+#oauth-enroll-refresh-button {
   color: rgba(0, 0, 0, .54);
   right: 10px;
 }
 
-html[dir=rtl] #oauth-enroll-cancel-button {
+html[dir=rtl] #oauth-enroll-cancel-button,
+html[dir=rtl] #oauth-enroll-refresh-button {
   left: 10px;
   right: auto;
 }
 
-#oauth-enrollment.saml #oauth-enroll-cancel-button {
+#oauth-enrollment.saml #oauth-enroll-cancel-button,
+#oauth-enrollment.saml #oauth-enroll-refresh-button {
   color: rgba(0, 0, 0, .54);
 }
 
 .oauth-enroll-state-signin #oauth-enroll-cancel-button,
-.oauth-enroll-state-working #oauth-enroll-cancel-button {
+.oauth-enroll-state-working #oauth-enroll-cancel-button,
+.oauth-enroll-state-signin #oauth-enroll-refresh-button,
+.oauth-enroll-state-working #oauth-enroll-refresh-button {
   color: white;
 }
 
@@ -165,3 +182,4 @@ html[dir=rtl] #oauth-enroll-back-button {
 #oauth-enroll-attribute-prompt-message {
   color: black;
 }
+
