@@ -26,7 +26,7 @@ public:
         IntegrityParseNoValidResult
     };
 
-    static bool CheckSubresourceIntegrity(const Element&, const WTF::String& content, const KURL& resourceUrl, const WTF::String& mimeType, const Resource&);
+    static bool CheckSubresourceIntegrity(const Element&, const WTF::String& content, const KURL& resourceUrl, const Resource&);
 
 private:
     // FIXME: After the merge with the Chromium repo, this should be refactored
@@ -44,12 +44,10 @@ private:
     struct IntegrityMetadata {
         WTF::String digest;
         HashAlgorithm algorithm;
-        WTF::String type;
     };
 
     static AlgorithmParseResult parseAlgorithm(const UChar*& begin, const UChar* end, HashAlgorithm&);
     static bool parseDigest(const UChar*& begin, const UChar* end, String& digest);
-    static bool parseMimeType(const UChar*& begin, const UChar* end, String& type);
 
     static IntegrityParseResult parseIntegrityAttribute(const WTF::String& attribute, WTF::Vector<IntegrityMetadata>& metadataList, Document&);
 };

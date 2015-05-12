@@ -586,7 +586,6 @@ public:
         PrefixedOfflineAudioContext = 655,
         AddEventListenerNoArguments = 656,
         RemoveEventListenerNoArguments = 658,
-        SRIElementWithNonMatchingIntegrityType = 660,
         MixedContentInNonHTTPSFrameThatRestrictsMixedContent = 661,
         MixedContentInSecureFrameThatDoesNotRestrictMixedContent = 662,
         MixedContentWebSocket = 663,

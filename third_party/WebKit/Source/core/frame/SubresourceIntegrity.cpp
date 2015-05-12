@@ -35,9 +35,10 @@ static bool isIntegrityCharacter(UChar c)
     return isASCIIAlphanumeric(c) || c == '_' || c == '-' || c == '+' || c == '/' || c == '=';
 }
 
-static bool isTypeCharacter(UChar c)
+static bool isValueCharacter(UChar c)
 {
-    return isASCIIAlphanumeric(c) || c == '+' || c == '.' || c == '-';
+    // VCHAR per https://tools.ietf.org/html/rfc5234#appendix-B.1
+    return c >= 0x21 && c <= 0x7e;
 }
 
 static void logErrorToConsole(const String& message, Document& document)
@@ -64,7 +65,7 @@ static String digestToString(const DigestValue& digest)
     return base64URLEncode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
-bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const String& resourceType, const Resource& resource)
+bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const Resource& resource)
 {
     if (!RuntimeEnabledFeatures::subresourceIntegrityEnabled())
         return true;
@@ -102,11 +103,8 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
             convertedHashVector.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
 
             if (DigestsEqual(digest, convertedHashVector)) {
-                String& type = metadata.type;
-                if (!type.isEmpty() && !equalIgnoringCase(type, resourceType))
-                    UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityType);
-                else
-                    return true;
+                UseCounter::count(document, UseCounter::SRIElementWithMatchingIntegrityAttribute);
+                return true;
             }
         }
     }
@@ -117,7 +115,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         // need to be very careful not to expose this in exceptions or
         // JavaScript, otherwise it risks exposing information about the
         // resource cross-origin.
-        logErrorToConsole("Failed to find a valid digest with matching content-type in the 'integrity' attribute for resource '" + resourceUrl.elidedString() + "' with computed SHA-256 integrity '" + digestToString(digest) + "'. The resource has been blocked.", document);
+        logErrorToConsole("Failed to find a valid digest in the 'integrity' attribute for resource '" + resourceUrl.elidedString() + "' with computed SHA-256 integrity '" + digestToString(digest) + "'. The resource has been blocked.", document);
     } else {
         logErrorToConsole("There was an error computing an integrity value for resource '" + resourceUrl.elidedString() + "'. The resource has been blocked.", document);
     }
@@ -203,47 +201,6 @@ bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end,
     return true;
 }
 
-
-// Before:
-//
-// [algorithm]-[hash]     OR      [algorithm]-[hash]?[options]
-//                   ^                              ^         ^
-//        position/end                       position       end
-//
-// After (if successful: if the method returns false, we make no promises and the caller should exit early):
-//
-// [algorithm]-[hash]     OR      [algorithm]-[hash]?[options]
-//                   ^                                        ^
-//        position/end                             position/end
-bool SubresourceIntegrity::parseMimeType(const UChar*& position, const UChar* end, String& type)
-{
-    type = emptyString();
-
-    if (position == end)
-        return true;
-
-    if (!skipToken<UChar>(position, end, "?ct="))
-        return false;
-
-    const UChar* begin = position;
-    skipWhile<UChar, isASCIIAlpha>(position, end);
-    if (position == end)
-        return false;
-
-    if (!skipExactly<UChar>(position, end, '/'))
-        return false;
-
-    if (position == end)
-        return false;
-
-    skipWhile<UChar, isTypeCharacter>(position, end);
-    if (position != end)
-        return false;
-
-    type = String(begin, position - begin);
-    return true;
-}
-
 SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityAttribute(const WTF::String& attribute, WTF::Vector<IntegrityMetadata>& metadataList, Document& document)
 {
     Vector<UChar> characters;
@@ -257,12 +214,11 @@ SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityA
 
     // The integrity attribute takes the form:
     //    *WSP hash-with-options *( 1*WSP hash-with-options ) *WSP / *WSP
-    // To parse this, break on whitespace, parsing each algorithm/digest/mime
-    // type in order.
+    // To parse this, break on whitespace, parsing each algorithm/digest/option
+    // in order.
     while (position < end) {
         WTF::String digest;
         HashAlgorithm algorithm;
-        WTF::String type;
 
         skipWhile<UChar, isASCIISpace>(position, end);
         currentIntegrityEnd = position;
@@ -300,18 +256,20 @@ SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityA
             continue;
         }
 
-        if (!parseMimeType(position, currentIntegrityEnd, type)) {
-            logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The content type could not be parsed.", document);
-            error = true;
-            skipUntil<UChar, isASCIISpace>(position, end);
-            UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
-            continue;
+        // The spec defines a space in the syntax for options, separated by a
+        // '?' character followed by unbounded VCHARs, but no actual options
+        // have been defined yet. Thus, for forward compatibility, ignore any
+        // options specified.
+        if (skipExactly<UChar>(position, end, '?')) {
+            const UChar* begin = position;
+            skipWhile<UChar, isValueCharacter>(position, end);
+            if (begin != position)
+                logErrorToConsole("Ignoring unrecogized 'integrity' attribute option '" + String(begin, position - begin) + "'.", document);
         }
 
         IntegrityMetadata integrityMetadata = {
             digest,
-            algorithm,
-            type
+            algorithm
         };
         metadataList.append(integrityMetadata);
     }

@@ -1,6 +1,0 @@
-CONSOLE ERROR: Error parsing 'integrity' attribute ('sha256-_CPhHgLf4bYjXZA6KVnegM7ECdy7A3f35ntfHeYy9zI=?ct=applicationjavascript'). The content type could not be parsed.
-CONSOLE ERROR: Failed to find a valid digest with matching content-type in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/resources/setResultWithMIME.php?mime=application/javascript&value=true' with computed SHA-256 integrity '_CPhHgLf4bYjXZA6KVnegM7ECdy7A3f35ntfHeYy9zL8I-EeAt_htiNdkDopWd6AzsQJ3LsDd_fme18d5jL3Mg=='. The resource has been blocked.
-This is a testharness.js-based test.
-PASS Test that scripts with bad MIME types don't load. 
-Harness: the test ran to completion.
-
