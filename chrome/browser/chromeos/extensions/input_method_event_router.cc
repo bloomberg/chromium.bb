@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
@@ -26,8 +27,12 @@ ExtensionInputMethodEventRouter::~ExtensionInputMethodEventRouter() {
 }
 
 void ExtensionInputMethodEventRouter::InputMethodChanged(
-    input_method::InputMethodManager *manager,
+    input_method::InputMethodManager* manager,
+    Profile* profile,
     bool show_message) {
+  // This should probably be CHECK, as delivering event to a wrong
+  // profile means delivering it to a wrong extension instance.
+  DCHECK(profile->IsSameProfile(Profile::FromBrowserContext(context_)));
   extensions::EventRouter* router = extensions::EventRouter::Get(context_);
 
   if (!router->HasEventListener(

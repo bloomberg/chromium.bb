@@ -165,8 +165,11 @@ class ProfileImpl : public Profile {
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit();
 
+  // Switch locale (when possible) and proceed to OnLocaleReady().
+  void OnPrefsLoaded(CreateMode create_mode, bool success);
+
   // Does final prefs initialization and calls Init().
-  void OnPrefsLoaded(bool success);
+  void OnLocaleReady();
 
 #if defined(ENABLE_SESSION_SERVICE)
   void StopCreateSessionServiceTimer();

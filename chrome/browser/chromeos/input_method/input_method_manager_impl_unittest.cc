@@ -71,6 +71,7 @@ class TestObserver : public InputMethodManager::Observer,
   ~TestObserver() override {}
 
   void InputMethodChanged(InputMethodManager* manager,
+                          Profile* /* profile */,
                           bool show_message) override {
     ++input_method_changed_count_;
     last_show_message_ = show_message;

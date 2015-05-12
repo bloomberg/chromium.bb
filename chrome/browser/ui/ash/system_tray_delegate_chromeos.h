@@ -213,6 +213,7 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from InputMethodManager::Observer.
   void InputMethodChanged(input_method::InputMethodManager* manager,
+                          Profile* profile,
                           bool show_message) override;
 
   // Overridden from InputMethodMenuManager::Observer.

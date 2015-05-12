@@ -31274,7 +31274,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.OnLocaleReadyTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during ProfileImpl::OnLocaleReady. This
+    happens once after profile was loaded.
+  </summary>
+</histogram>
+
 <histogram name="Profile.OnPrefsLoadedTime" units="milliseconds">
+  <obsolete>
+    Deprecated 04/2015, and replaced by Profile.OnLocaleReadyTime.
+  </obsolete>
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during ProfileImpl::OnPrefsLoaded.

@@ -842,6 +842,7 @@ void AccessibilityManager::UpdateBrailleImeState() {
 // Overridden from InputMethodManager::Observer.
 void AccessibilityManager::InputMethodChanged(
     input_method::InputMethodManager* manager,
+    Profile* /* profile */,
     bool show_message) {
   // Sticky keys is implemented only in ash.
   // TODO(dpolukhin): support Athena, crbug.com/408733.

@@ -25,6 +25,7 @@ Accessibility::~Accessibility() {
 }
 
 void Accessibility::InputMethodChanged(InputMethodManager* imm,
+                                       Profile* profile,
                                        bool show_message) {
   DCHECK_EQ(imm, imm_);
   if (!show_message)
@@ -36,8 +37,7 @@ void Accessibility::InputMethodChanged(InputMethodManager* imm,
   const std::string medium_name = base::UTF16ToUTF8(
       imm_->GetInputMethodUtil()->GetInputMethodMediumName(descriptor));
 
-  AutomationManagerAura::GetInstance()->HandleAlert(
-      ProfileManager::GetActiveUserProfile(), medium_name);
+  AutomationManagerAura::GetInstance()->HandleAlert(profile, medium_name);
 }
 
 }  // namespace input_method

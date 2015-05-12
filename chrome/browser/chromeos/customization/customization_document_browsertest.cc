@@ -9,6 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -183,7 +184,8 @@ IN_PROC_BROWSER_TEST_F(CustomizationLocaleTest, CheckAvailableLocales) {
   for (size_t i = 0; i < languages_available.size(); ++i) {
     LanguageSwitchedWaiter waiter(base::Bind(&VerifyLanguageSwitched));
     locale_util::SwitchLanguage(languages_available[i], true, true,
-                                waiter.Callback());
+                                waiter.Callback(),
+                                ProfileManager::GetActiveUserProfile());
     waiter.Wait();
     {
       std::string resolved_locale;

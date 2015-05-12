@@ -105,7 +105,7 @@ void TermsOfServiceScreenHandler::Show() {
   locale_util::SwitchLanguage(locale,
                               true,   // enable_locale_keyboard_layouts
                               false,  // login_layouts_only
-                              callback);
+                              callback, ProfileManager::GetActiveUserProfile());
 }
 
 void TermsOfServiceScreenHandler::Hide() {

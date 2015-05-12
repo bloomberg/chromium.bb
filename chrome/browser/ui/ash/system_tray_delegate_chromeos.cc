@@ -1233,6 +1233,7 @@ void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
 // Overridden from InputMethodManager::Observer.
 void SystemTrayDelegateChromeOS::InputMethodChanged(
     input_method::InputMethodManager* manager,
+    Profile* /* profile */,
     bool show_message) {
   GetSystemTrayNotifier()->NotifyRefreshIME();
 }

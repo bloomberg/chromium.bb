@@ -1274,8 +1274,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       base::Bind(&OnLanguageSwitchedCallback, base::Passed(data.Pass())));
 
   // Load locale keyboards here. Hardware layout would be automatically enabled.
-  locale_util::SwitchLanguage(
-      locale, true, true /* login_layouts_only */, callback);
+  locale_util::SwitchLanguage(locale, true, true /* login_layouts_only */,
+                              callback, ProfileManager::GetActiveUserProfile());
 }
 
 }  // namespace chromeos

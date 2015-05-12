@@ -610,8 +610,9 @@ bool UserSessionManager::RespectLocalePreference(
   // So input methods should be enabled somewhere.
   const bool enable_layouts =
       user_manager::UserManager::Get()->IsLoggedInAsGuest();
-  locale_util::SwitchLanguage(
-      pref_locale, enable_layouts, false /* login_layouts_only */, callback);
+  locale_util::SwitchLanguage(pref_locale, enable_layouts,
+                              false /* login_layouts_only */, callback,
+                              profile);
 
   return true;
 }

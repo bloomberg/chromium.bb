@@ -207,6 +207,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // Change system input method.
   void ChangeInputMethodInternal(const InputMethodDescriptor& descriptor,
+                                 Profile* profile,
                                  bool show_message,
                                  bool notify_menu);
 

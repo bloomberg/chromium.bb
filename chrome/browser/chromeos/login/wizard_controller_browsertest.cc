@@ -48,6 +48,7 @@
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
@@ -147,7 +148,8 @@ void RunSwitchLanguageTest(const std::string& locale,
   SwitchLanguageTestData data;
   locale_util::SwitchLanguageCallback callback(
       base::Bind(&OnLocaleSwitched, base::Unretained(&data)));
-  locale_util::SwitchLanguage(locale, true, false, callback);
+  locale_util::SwitchLanguage(locale, true, false, callback,
+                              ProfileManager::GetActiveUserProfile());
 
   // Token writing moves control to BlockingPool and back.
   content::RunAllBlockingPoolTasksUntilIdle();

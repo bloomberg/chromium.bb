@@ -49,6 +49,7 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     // Called when the current input method is changed.  |show_message|
     // indicates whether the user should be notified of this change.
     virtual void InputMethodChanged(InputMethodManager* manager,
+                                    Profile* profile,
                                     bool show_message) = 0;
   };
 

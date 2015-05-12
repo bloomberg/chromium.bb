@@ -24,6 +24,7 @@ class ExtensionInputMethodEventRouter
 
   // Implements input_method::InputMethodManager::Observer:
   void InputMethodChanged(input_method::InputMethodManager* manager,
+                          Profile* profile,
                           bool show_message) override;
 
  private:

@@ -84,6 +84,7 @@ ModeIndicatorController::GetModeIndicatorObserverForTesting() {
 }
 
 void ModeIndicatorController::InputMethodChanged(InputMethodManager* manager,
+                                                 Profile* /* profile */,
                                                  bool show_message) {
   if (!show_message)
     return;

@@ -11,6 +11,8 @@
 
 #include "base/memory/scoped_ptr.h"
 
+class Profile;
+
 namespace base {
 
 template <typename T>
@@ -42,7 +44,8 @@ typedef base::Callback<void(const LanguageSwitchResult& result)>
     SwitchLanguageCallback;
 
 // This function updates input methods only if requested. In general, you want
-// |enable_locale_keyboard_layouts = true|.
+// |enable_locale_keyboard_layouts = true|. |profile| is needed because IME
+// extensions are per-user.
 // Note: in case of |enable_locale_keyboard_layouts = false|, the input method
 // currently in use may not be supported by the new locale. Using the new locale
 // with an unsupported input method may lead to undefined behavior. Use
@@ -51,7 +54,8 @@ typedef base::Callback<void(const LanguageSwitchResult& result)>
 void SwitchLanguage(const std::string& locale,
                     const bool enable_locale_keyboard_layouts,
                     const bool login_layouts_only,
-                    const SwitchLanguageCallback& callback);
+                    const SwitchLanguageCallback& callback,
+                    Profile* profile);
 
 }  // namespace locale_util
 }  // namespace chromeos

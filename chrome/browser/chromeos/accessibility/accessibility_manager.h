@@ -240,6 +240,7 @@ class AccessibilityManager
 
   // InputMethodManager::Observer
   void InputMethodChanged(input_method::InputMethodManager* manager,
+                          Profile* profile,
                           bool show_message) override;
 
   // Profile which has the current a11y context.

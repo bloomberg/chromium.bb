@@ -475,11 +475,11 @@ ProfileImpl::ProfileImpl(
     // (successfully or not).  Note that we can use base::Unretained
     // because the PrefService is owned by this class and lives on
     // the same thread.
-    prefs_->AddPrefInitObserver(base::Bind(&ProfileImpl::OnPrefsLoaded,
-                                           base::Unretained(this)));
+    prefs_->AddPrefInitObserver(base::Bind(
+        &ProfileImpl::OnPrefsLoaded, base::Unretained(this), create_mode));
   } else {
     // Prefs were loaded synchronously so we can continue directly.
-    OnPrefsLoaded(true);
+    OnPrefsLoaded(create_mode, true);
   }
 }
 
@@ -802,15 +802,9 @@ ExtensionSpecialStoragePolicy*
 #endif
 }
 
-void ProfileImpl::OnPrefsLoaded(bool success) {
-  TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded");
-  SCOPED_UMA_HISTOGRAM_TIMER("Profile.OnPrefsLoadedTime");
-  if (!success) {
-    if (delegate_)
-      delegate_->OnProfileCreated(this, false, false);
-    return;
-  }
-
+void ProfileImpl::OnLocaleReady() {
+  TRACE_EVENT0("browser", "ProfileImpl::OnLocaleReady");
+  SCOPED_UMA_HISTOGRAM_TIMER("Profile.OnLocaleReadyTime");
   // Migrate obsolete prefs.
   if (g_browser_process->local_state())
     chrome::MigrateObsoleteBrowserPrefs(this, g_browser_process->local_state());
@@ -859,6 +853,28 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
 
   ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
   DoFinalInit();
+}
+
+void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
+  TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded");
+  if (!success) {
+    if (delegate_)
+      delegate_->OnProfileCreated(this, false, false);
+    return;
+  }
+
+#if defined(OS_CHROMEOS)
+  if (create_mode == CREATE_MODE_SYNCHRONOUS) {
+    // Synchronous create mode implies that either it is restart after crash,
+    // or we are in tests. In both cases the first loaded locale is correct.
+    OnLocaleReady();
+  } else {
+    chromeos::UserSessionManager::GetInstance()->RespectLocalePreferenceWrapper(
+        this, base::Bind(&ProfileImpl::OnLocaleReady, base::Unretained(this)));
+  }
+#else
+  OnLocaleReady();
+#endif
 }
 
 bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {

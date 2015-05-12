@@ -191,6 +191,10 @@ class UserSessionManager
       const user_manager::User* user,
       const locale_util::SwitchLanguageCallback& callback) const;
 
+  // Switch to the locale that |profile| wishes to use and invoke |callback|.
+  void RespectLocalePreferenceWrapper(Profile* profile,
+                                      const base::Closure& callback);
+
   // Restarts Chrome if needed. This happens when user session has custom
   // flags/switches enabled. Another case when owner has setup custom flags,
   // they are applied on login screen as well but not to user session.
@@ -350,10 +354,6 @@ class UserSessionManager
   void DoBrowserLaunchInternal(Profile* profile,
                                LoginDisplayHost* login_host,
                                bool locale_pref_checked);
-
-  // Switch to the locale that |profile| wishes to use and invoke |callback|.
-  void RespectLocalePreferenceWrapper(Profile* profile,
-                                      const base::Closure& callback);
 
   static void RunCallbackOnLocaleLoaded(
       const base::Closure& callback,

@@ -47,6 +47,7 @@ class ModeIndicatorController
  private:
   // InputMethodManager::Observer implementation.
   void InputMethodChanged(InputMethodManager* manager,
+                          Profile* profile,
                           bool show_message) override;
 
   // Show the mode inidicator with the current ime's short name if all

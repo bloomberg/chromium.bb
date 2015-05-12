@@ -77,6 +77,7 @@ class NetworkScreen : public NetworkModel,
 
   // InputMethodManager::Observer implementation:
   void InputMethodChanged(input_method::InputMethodManager* manager,
+                          Profile* profile,
                           bool show_message) override;
 
   void SetApplicationLocale(const std::string& locale);

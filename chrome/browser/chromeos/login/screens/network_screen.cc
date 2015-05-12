@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -175,6 +176,7 @@ void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
 
 void NetworkScreen::InputMethodChanged(
     input_method::InputMethodManager* manager,
+    Profile* /* proflie */,
     bool /* show_message */) {
   GetContextEditor().SetString(
       kContextKeyInputMethod,
@@ -195,7 +197,8 @@ void NetworkScreen::SetApplicationLocale(const std::string& locale) {
       &NetworkScreen::OnLanguageChangedCallback, weak_factory_.GetWeakPtr(),
       base::Owned(new chromeos::InputEventsBlocker)));
   locale_util::SwitchLanguage(locale, true /* enableLocaleKeyboardLayouts */,
-                              true /* login_layouts_only */, callback);
+                              true /* login_layouts_only */, callback,
+                              ProfileManager::GetActiveUserProfile());
 }
 
 std::string NetworkScreen::GetApplicationLocale() {

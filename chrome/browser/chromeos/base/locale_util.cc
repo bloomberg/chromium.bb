@@ -8,6 +8,8 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -21,17 +23,20 @@ struct SwitchLanguageData {
   SwitchLanguageData(const std::string& locale,
                      const bool enable_locale_keyboard_layouts,
                      const bool login_layouts_only,
-                     const locale_util::SwitchLanguageCallback& callback)
+                     const locale_util::SwitchLanguageCallback& callback,
+                     Profile* profile)
       : callback(callback),
         result(locale, std::string(), false),
         enable_locale_keyboard_layouts(enable_locale_keyboard_layouts),
-        login_layouts_only(login_layouts_only) {}
+        login_layouts_only(login_layouts_only),
+        profile(profile) {}
 
   const locale_util::SwitchLanguageCallback callback;
 
   locale_util::LanguageSwitchResult result;
   const bool enable_locale_keyboard_layouts;
   const bool login_layouts_only;
+  Profile* profile;
 };
 
 // Runs on SequencedWorkerPool thread under PostTaskAndReply().
@@ -58,7 +63,7 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
       input_method::InputMethodManager* manager =
           input_method::InputMethodManager::Get();
       scoped_refptr<input_method::InputMethodManager::State> ime_state =
-          manager->GetActiveIMEState();
+          UserSessionManager::GetInstance()->GetDefaultIMEState(data->profile);
       if (data->login_layouts_only) {
         // Enable the hardware keyboard layouts and locale-specific layouts
         // suitable for use on the login screen. This will also switch to the
@@ -106,10 +111,12 @@ LanguageSwitchResult::LanguageSwitchResult(const std::string& requested_locale,
 void SwitchLanguage(const std::string& locale,
                     const bool enable_locale_keyboard_layouts,
                     const bool login_layouts_only,
-                    const SwitchLanguageCallback& callback) {
+                    const SwitchLanguageCallback& callback,
+                    Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  scoped_ptr<SwitchLanguageData> data(new SwitchLanguageData(
-      locale, enable_locale_keyboard_layouts, login_layouts_only, callback));
+  scoped_ptr<SwitchLanguageData> data(
+      new SwitchLanguageData(locale, enable_locale_keyboard_layouts,
+                             login_layouts_only, callback, profile));
   base::Closure reloader(
       base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
   content::BrowserThread::PostBlockingPoolTaskAndReply(
