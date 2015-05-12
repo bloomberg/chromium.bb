@@ -17,11 +17,11 @@ class EvictionOrderComparator {
                   const TilingSetEvictionQueue* b_queue) const {
     // Note that in this function, we have to return true if and only if
     // b is strictly lower priority than a.
-    const Tile* a_tile = a_queue->Top();
-    const Tile* b_tile = b_queue->Top();
+    const PrioritizedTile& a_tile = a_queue->Top();
+    const PrioritizedTile& b_tile = b_queue->Top();
 
-    const TilePriority& a_priority = a_tile->priority();
-    const TilePriority& b_priority = b_tile->priority();
+    const TilePriority& a_priority = a_tile.priority();
+    const TilePriority& b_priority = b_tile.priority();
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
     // If the priority bin differs, b is lower priority if it has the higher
@@ -48,8 +48,8 @@ class EvictionOrderComparator {
 
     // Otherwise if the occlusion differs, b is lower priority if it is
     // occluded.
-    bool a_is_occluded = a_tile->is_occluded();
-    bool b_is_occluded = b_tile->is_occluded();
+    bool a_is_occluded = a_tile.is_occluded();
+    bool b_is_occluded = b_tile.is_occluded();
     if (a_is_occluded != b_is_occluded)
       return b_is_occluded;
 
@@ -100,9 +100,9 @@ bool EvictionTilePriorityQueue::IsEmpty() const {
   return active_queues_.empty() && pending_queues_.empty();
 }
 
-Tile* EvictionTilePriorityQueue::Top() {
+const PrioritizedTile& EvictionTilePriorityQueue::Top() const {
   DCHECK(!IsEmpty());
-  ScopedPtrVector<TilingSetEvictionQueue>& next_queues = GetNextQueues();
+  const ScopedPtrVector<TilingSetEvictionQueue>& next_queues = GetNextQueues();
   return next_queues.front()->Top();
 }
 
@@ -123,6 +123,12 @@ void EvictionTilePriorityQueue::Pop() {
 
 ScopedPtrVector<TilingSetEvictionQueue>&
 EvictionTilePriorityQueue::GetNextQueues() {
+  return const_cast<ScopedPtrVector<TilingSetEvictionQueue>&>(
+      static_cast<const EvictionTilePriorityQueue*>(this)->GetNextQueues());
+}
+
+const ScopedPtrVector<TilingSetEvictionQueue>&
+EvictionTilePriorityQueue::GetNextQueues() const {
   DCHECK(!IsEmpty());
 
   // If we only have one queue with tiles, return it.
@@ -131,19 +137,19 @@ EvictionTilePriorityQueue::GetNextQueues() {
   if (pending_queues_.empty())
     return active_queues_;
 
-  const Tile* active_tile = active_queues_.front()->Top();
-  const Tile* pending_tile = pending_queues_.front()->Top();
+  const PrioritizedTile& active_tile = active_queues_.front()->Top();
+  const PrioritizedTile& pending_tile = pending_queues_.front()->Top();
 
-  const TilePriority& active_priority = active_tile->priority();
-  const TilePriority& pending_priority = pending_tile->priority();
+  const TilePriority& active_priority = active_tile.priority();
+  const TilePriority& pending_priority = pending_tile.priority();
 
   // If the bins are the same and activation differs, then return the tree of
   // the tile not required for activation.
   if (active_priority.priority_bin == pending_priority.priority_bin &&
-      active_tile->required_for_activation() !=
-          pending_tile->required_for_activation()) {
-    return active_tile->required_for_activation() ? pending_queues_
-                                                  : active_queues_;
+      active_tile.tile()->required_for_activation() !=
+          pending_tile.tile()->required_for_activation()) {
+    return active_tile.tile()->required_for_activation() ? pending_queues_
+                                                         : active_queues_;
   }
 
   // Return tile with a lower priority.

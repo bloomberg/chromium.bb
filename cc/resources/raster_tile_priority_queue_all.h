@@ -23,7 +23,7 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
   ~RasterTilePriorityQueueAll() override;
 
   bool IsEmpty() const override;
-  Tile* Top() override;
+  const PrioritizedTile& Top() const override;
   void Pop() override;
 
  private:
@@ -34,6 +34,7 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
              TreePriority tree_priority);
 
   ScopedPtrVector<TilingSetRasterQueueAll>& GetNextQueues();
+  const ScopedPtrVector<TilingSetRasterQueueAll>& GetNextQueues() const;
 
   ScopedPtrVector<TilingSetRasterQueueAll> active_queues_;
   ScopedPtrVector<TilingSetRasterQueueAll> pending_queues_;

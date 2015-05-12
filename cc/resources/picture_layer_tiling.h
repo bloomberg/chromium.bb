@@ -29,6 +29,7 @@ class TracedValue;
 namespace cc {
 
 class PictureLayerTiling;
+class PrioritizedTile;
 class RasterSource;
 
 class CC_EXPORT PictureLayerTilingClient {
@@ -113,10 +114,14 @@ class CC_EXPORT PictureLayerTiling {
       all_tiles.push_back(it->second);
     return all_tiles;
   }
-  void UpdateAllTilePrioritiesForTesting() {
-    for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-      UpdateTilePriority(it->second);
+
+  void UpdateAllRequiredStateForTesting() {
+    for (const auto& key_tile_pair : tiles_)
+      UpdateRequiredStatesOnTile(key_tile_pair.second);
   }
+  std::map<const Tile*, PrioritizedTile>
+  UpdateAndGetAllPrioritizedTilesForTesting();
+
   void SetAllTilesOccludedForTesting() {
     gfx::Rect viewport_in_layer_space =
         ScaleToEnclosingRect(current_visible_rect_, 1.0f / contents_scale_);
@@ -205,6 +210,7 @@ class CC_EXPORT PictureLayerTiling {
 
  protected:
   friend class CoverageIterator;
+  friend class PrioritizedTile;
   friend class TilingSetRasterQueueAll;
   friend class TilingSetRasterQueueRequired;
   friend class TilingSetEvictionQueue;
@@ -268,7 +274,8 @@ class CC_EXPORT PictureLayerTiling {
   bool IsTileOccludedOnCurrentTree(const Tile* tile) const;
   bool ShouldCreateTileAt(int i, int j) const;
   bool IsTileOccluded(const Tile* tile) const;
-  void UpdateTilePriority(Tile* tile) const;
+  void UpdateRequiredStatesOnTile(Tile* tile) const;
+  PrioritizedTile MakePrioritizedTile(Tile* tile) const;
   TilePriority ComputePriorityForTile(const Tile* tile) const;
   bool has_visible_rect_tiles() const { return has_visible_rect_tiles_; }
   bool has_skewport_rect_tiles() const { return has_skewport_rect_tiles_; }

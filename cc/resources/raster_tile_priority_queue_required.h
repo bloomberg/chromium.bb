@@ -12,7 +12,7 @@
 #include "cc/resources/tiling_set_raster_queue_required.h"
 
 namespace cc {
-class Tile;
+class PrioritizedTile;
 
 class RasterTilePriorityQueueRequired : public RasterTilePriorityQueue {
  public:
@@ -20,7 +20,7 @@ class RasterTilePriorityQueueRequired : public RasterTilePriorityQueue {
   ~RasterTilePriorityQueueRequired() override;
 
   bool IsEmpty() const override;
-  Tile* Top() override;
+  const PrioritizedTile& Top() const override;
   void Pop() override;
 
  private:

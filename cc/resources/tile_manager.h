@@ -198,16 +198,17 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   void DidFinishRunningTileTasks(TaskSet task_set) override;
   TaskSetCollection TasksThatShouldBeForcedToComplete() const override;
 
-  typedef std::vector<Tile*> TileVector;
+  typedef std::vector<PrioritizedTile> PrioritizedTileVector;
   typedef std::set<Tile*> TileSet;
 
   // Virtual for test
   virtual void ScheduleTasks(
-      const TileVector& tiles_that_need_to_be_rasterized);
+      const PrioritizedTileVector& tiles_that_need_to_be_rasterized);
 
-  void AssignGpuMemoryToTiles(RasterTilePriorityQueue* raster_priority_queue,
-                              size_t scheduled_raser_task_limit,
-                              TileVector* tiles_that_need_to_be_rasterized);
+  void AssignGpuMemoryToTiles(
+      RasterTilePriorityQueue* raster_priority_queue,
+      size_t scheduled_raser_task_limit,
+      PrioritizedTileVector* tiles_that_need_to_be_rasterized);
 
  private:
   class MemoryUsage {
@@ -245,7 +246,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<ImageDecodeTask> CreateImageDecodeTask(Tile* tile,
                                                        SkPixelRef* pixel_ref);
-  scoped_refptr<RasterTask> CreateRasterTask(Tile* tile);
+  scoped_refptr<RasterTask> CreateRasterTask(
+      const PrioritizedTile& prioritized_tile);
 
   scoped_ptr<EvictionTilePriorityQueue>
   FreeTileResourcesUntilUsageIsWithinLimit(

@@ -166,8 +166,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   size_t tile_count = 0;
   std::set<Tile*> all_tiles;
   while (!queue->IsEmpty()) {
-    EXPECT_TRUE(queue->Top());
-    all_tiles.insert(queue->Top());
+    EXPECT_TRUE(queue->Top().tile());
+    all_tiles.insert(queue->Top().tile());
     ++tile_count;
     queue->Pop();
   }
@@ -181,13 +181,13 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
                                       RasterTilePriorityQueue::Type::ALL);
   bool had_low_res = false;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile);
-    EXPECT_EQ(TilePriority::NOW, tile->priority().priority_bin);
-    if (tile->priority().resolution == LOW_RESOLUTION)
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile());
+    EXPECT_EQ(TilePriority::NOW, prioritized_tile.priority().priority_bin);
+    if (prioritized_tile.priority().resolution == LOW_RESOLUTION)
       had_low_res = true;
     else
-      smoothness_tiles.insert(tile);
+      smoothness_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(all_tiles, smoothness_tiles);
@@ -199,9 +199,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION);
   std::set<Tile*> required_for_activation_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile->required_for_activation());
-    required_for_activation_tiles.insert(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile()->required_for_activation());
+    required_for_activation_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(all_tiles, required_for_activation_tiles);
@@ -212,9 +212,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
   std::set<Tile*> required_for_draw_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile->required_for_draw());
-    required_for_draw_tiles.insert(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile()->required_for_draw());
+    required_for_draw_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(all_tiles, required_for_draw_tiles);
@@ -225,9 +225,6 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->Invalidate(invalidation);
   pending_layer_->LowResTiling()->Invalidate(invalidation);
-
-  active_layer_->ResetAllTilesPriorities();
-  pending_layer_->ResetAllTilesPriorities();
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
@@ -267,7 +264,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   for (size_t i = 0; i < active_low_res_tiles.size(); ++i)
     all_tiles.insert(active_low_res_tiles[i]);
 
-  Tile* last_tile = NULL;
+  PrioritizedTile last_tile;
   smoothness_tiles.clear();
   tile_count = 0;
   size_t correct_order_tiles = 0u;
@@ -277,39 +274,41 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   std::set<Tile*> expected_required_for_draw_tiles;
   std::set<Tile*> expected_required_for_activation_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile());
 
-    if (!last_tile)
-      last_tile = tile;
+    if (!last_tile.tile())
+      last_tile = prioritized_tile;
 
-    EXPECT_LE(last_tile->priority().priority_bin,
-              tile->priority().priority_bin);
+    EXPECT_LE(last_tile.priority().priority_bin,
+              prioritized_tile.priority().priority_bin);
     bool skip_updating_last_tile = false;
-    if (last_tile->priority().priority_bin == tile->priority().priority_bin) {
-      correct_order_tiles += last_tile->priority().distance_to_visible <=
-                             tile->priority().distance_to_visible;
-    } else if (tile->priority().priority_bin == TilePriority::NOW) {
+    if (last_tile.priority().priority_bin ==
+        prioritized_tile.priority().priority_bin) {
+      correct_order_tiles += last_tile.priority().distance_to_visible <=
+                             prioritized_tile.priority().distance_to_visible;
+    } else if (prioritized_tile.priority().priority_bin == TilePriority::NOW) {
       // Since we'd return pending tree now tiles before the eventually tiles on
       // the active tree, update the value.
       ++correct_order_tiles;
       skip_updating_last_tile = true;
     }
 
-    if (tile->priority().priority_bin == TilePriority::NOW &&
-        last_tile->priority().resolution != tile->priority().resolution) {
+    if (prioritized_tile.priority().priority_bin == TilePriority::NOW &&
+        last_tile.priority().resolution !=
+            prioritized_tile.priority().resolution) {
       // Low resolution should come first.
-      EXPECT_EQ(LOW_RESOLUTION, last_tile->priority().resolution);
+      EXPECT_EQ(LOW_RESOLUTION, last_tile.priority().resolution);
     }
 
     if (!skip_updating_last_tile)
-      last_tile = tile;
+      last_tile = prioritized_tile;
     ++tile_count;
-    smoothness_tiles.insert(tile);
-    if (tile->required_for_draw())
-      expected_required_for_draw_tiles.insert(tile);
-    if (tile->required_for_activation())
-      expected_required_for_activation_tiles.insert(tile);
+    smoothness_tiles.insert(prioritized_tile.tile());
+    if (prioritized_tile.tile()->required_for_draw())
+      expected_required_for_draw_tiles.insert(prioritized_tile.tile());
+    if (prioritized_tile.tile()->required_for_activation())
+      expected_required_for_activation_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
 
@@ -325,9 +324,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION);
   required_for_activation_tiles.clear();
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile->required_for_activation());
-    required_for_activation_tiles.insert(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile()->required_for_activation());
+    required_for_activation_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(expected_required_for_activation_tiles,
@@ -340,43 +339,46 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
   required_for_draw_tiles.clear();
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile->required_for_draw());
-    required_for_draw_tiles.insert(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile()->required_for_draw());
+    required_for_draw_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(expected_required_for_draw_tiles, required_for_draw_tiles);
   EXPECT_NE(all_tiles, required_for_draw_tiles);
 
   std::set<Tile*> new_content_tiles;
-  last_tile = NULL;
+  last_tile = PrioritizedTile();
   size_t increasing_distance_tiles = 0u;
   // Here we expect to get increasing PENDING_TREE priority_bin.
   queue = host_impl_.BuildRasterQueue(NEW_CONTENT_TAKES_PRIORITY,
                                       RasterTilePriorityQueue::Type::ALL);
   tile_count = 0;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile());
 
-    if (!last_tile)
-      last_tile = tile;
+    if (!last_tile.tile())
+      last_tile = prioritized_tile;
 
-    EXPECT_LE(last_tile->priority().priority_bin,
-              tile->priority().priority_bin);
-    if (last_tile->priority().priority_bin == tile->priority().priority_bin) {
-      increasing_distance_tiles += last_tile->priority().distance_to_visible <=
-                                   tile->priority().distance_to_visible;
+    EXPECT_LE(last_tile.priority().priority_bin,
+              prioritized_tile.priority().priority_bin);
+    if (last_tile.priority().priority_bin ==
+        prioritized_tile.priority().priority_bin) {
+      increasing_distance_tiles +=
+          last_tile.priority().distance_to_visible <=
+          prioritized_tile.priority().distance_to_visible;
     }
 
-    if (tile->priority().priority_bin == TilePriority::NOW &&
-        last_tile->priority().resolution != tile->priority().resolution) {
+    if (prioritized_tile.priority().priority_bin == TilePriority::NOW &&
+        last_tile.priority().resolution !=
+            prioritized_tile.priority().resolution) {
       // High resolution should come first.
-      EXPECT_EQ(HIGH_RESOLUTION, last_tile->priority().resolution);
+      EXPECT_EQ(HIGH_RESOLUTION, last_tile.priority().resolution);
     }
 
-    last_tile = tile;
-    new_content_tiles.insert(tile);
+    last_tile = prioritized_tile;
+    new_content_tiles.insert(prioritized_tile.tile());
     ++tile_count;
     queue->Pop();
   }
@@ -393,9 +395,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION);
   required_for_activation_tiles.clear();
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile->required_for_activation());
-    required_for_activation_tiles.insert(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile()->required_for_activation());
+    required_for_activation_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(expected_required_for_activation_tiles,
@@ -408,9 +410,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
   required_for_draw_tiles.clear();
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile->required_for_draw());
-    required_for_draw_tiles.insert(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile()->required_for_draw());
+    required_for_draw_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(expected_required_for_draw_tiles, required_for_draw_tiles);
@@ -457,7 +459,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       // Non ideal tilings with a high res pending twin have to be processed
       // because of possible activation tiles.
       if (tiling->contents_scale() == 1.f) {
-        tiling->UpdateAllTilePrioritiesForTesting();
+        tiling->UpdateAndGetAllPrioritizedTilesForTesting();
         const auto& all_tiles = tiling->AllTilesForTesting();
         for (auto* tile : all_tiles)
           EXPECT_TRUE(tile->required_for_activation());
@@ -473,8 +475,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
   size_t tile_count = 0;
   std::set<Tile*> all_actual_tiles;
   while (!queue->IsEmpty()) {
-    EXPECT_TRUE(queue->Top());
-    all_actual_tiles.insert(queue->Top());
+    EXPECT_TRUE(queue->Top().tile());
+    all_actual_tiles.insert(queue->Top().tile());
     ++tile_count;
     queue->Pop();
   }
@@ -559,11 +561,11 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   std::set<Tile*> actual_now_tiles;
   std::set<Tile*> actual_all_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
+    PrioritizedTile prioritized_tile = queue->Top();
     queue->Pop();
-    if (tile->priority().priority_bin == TilePriority::NOW)
-      actual_now_tiles.insert(tile);
-    actual_all_tiles.insert(tile);
+    if (prioritized_tile.priority().priority_bin == TilePriority::NOW)
+      actual_now_tiles.insert(prioritized_tile.tile());
+    actual_all_tiles.insert(prioritized_tile.tile());
   }
   EXPECT_EQ(expected_now_tiles, actual_now_tiles);
   EXPECT_EQ(expected_all_tiles, actual_all_tiles);
@@ -573,9 +575,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
   std::set<Tile*> actual_required_for_draw_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
+    PrioritizedTile prioritized_tile = queue->Top();
     queue->Pop();
-    actual_required_for_draw_tiles.insert(tile);
+    actual_required_for_draw_tiles.insert(prioritized_tile.tile());
   }
   EXPECT_EQ(expected_required_for_draw_tiles, actual_required_for_draw_tiles);
 
@@ -584,7 +586,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION);
   std::set<Tile*> actual_required_for_activation_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
+    Tile* tile = queue->Top().tile();
     queue->Pop();
     actual_required_for_activation_tiles.insert(tile);
   }
@@ -629,11 +631,11 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
   // draw.
   std::vector<Tile*> all_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    if (tile->priority().priority_bin >= TilePriority::EVENTUALLY)
+    PrioritizedTile prioritized_tile = queue->Top();
+    if (prioritized_tile.priority().priority_bin >= TilePriority::EVENTUALLY)
       break;
 
-    all_tiles.push_back(tile);
+    all_tiles.push_back(prioritized_tile.tile());
     queue->Pop();
   }
 
@@ -659,8 +661,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
       SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
   while (!raster_queue->IsEmpty()) {
     ++tile_count;
-    EXPECT_TRUE(raster_queue->Top());
-    all_tiles.insert(raster_queue->Top());
+    EXPECT_TRUE(raster_queue->Top().tile());
+    all_tiles.insert(raster_queue->Top().tile());
     raster_queue->Pop();
   }
 
@@ -677,11 +679,11 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   // Sanity check, all tiles should be visible.
   std::set<Tile*> smoothness_tiles;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    EXPECT_TRUE(tile);
-    EXPECT_EQ(TilePriority::NOW, tile->priority().priority_bin);
-    EXPECT_TRUE(tile->HasResource());
-    smoothness_tiles.insert(tile);
+    PrioritizedTile prioritized_tile = queue->Top();
+    EXPECT_TRUE(prioritized_tile.tile());
+    EXPECT_EQ(TilePriority::NOW, prioritized_tile.priority().priority_bin);
+    EXPECT_TRUE(prioritized_tile.tile()->HasResource());
+    smoothness_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
   EXPECT_EQ(all_tiles, smoothness_tiles);
@@ -697,9 +699,6 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   pending_layer_->HighResTiling()->CreateMissingTilesInLiveTilesRect();
   pending_layer_->LowResTiling()->Invalidate(invalidation);
   pending_layer_->LowResTiling()->CreateMissingTilesInLiveTilesRect();
-
-  active_layer_->ResetAllTilesPriorities();
-  pending_layer_->ResetAllTilesPriorities();
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
@@ -737,7 +736,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   tile_manager()->InitializeTilesWithResourcesForTesting(
       std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
 
-  Tile* last_tile = NULL;
+  PrioritizedTile last_tile;
   smoothness_tiles.clear();
   tile_count = 0;
   // Here we expect to get increasing combined priority_bin.
@@ -745,21 +744,22 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   int distance_increasing = 0;
   int distance_decreasing = 0;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
+    PrioritizedTile prioritized_tile = queue->Top();
+    Tile* tile = prioritized_tile.tile();
     EXPECT_TRUE(tile);
     EXPECT_TRUE(tile->HasResource());
 
-    if (!last_tile)
-      last_tile = tile;
+    if (!last_tile.tile())
+      last_tile = prioritized_tile;
 
-    const TilePriority& last_priority = last_tile->priority();
-    const TilePriority& priority = tile->priority();
+    const TilePriority& last_priority = last_tile.priority();
+    const TilePriority& priority = prioritized_tile.priority();
 
     EXPECT_GE(last_priority.priority_bin, priority.priority_bin);
     if (last_priority.priority_bin == priority.priority_bin) {
-      EXPECT_LE(last_tile->required_for_activation(),
+      EXPECT_LE(last_tile.tile()->required_for_activation(),
                 tile->required_for_activation());
-      if (last_tile->required_for_activation() ==
+      if (last_tile.tile()->required_for_activation() ==
           tile->required_for_activation()) {
         if (last_priority.distance_to_visible >= priority.distance_to_visible)
           ++distance_decreasing;
@@ -768,7 +768,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
       }
     }
 
-    last_tile = tile;
+    last_tile = prioritized_tile;
     ++tile_count;
     smoothness_tiles.insert(tile);
     queue->Pop();
@@ -781,26 +781,27 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   EXPECT_EQ(all_tiles, smoothness_tiles);
 
   std::set<Tile*> new_content_tiles;
-  last_tile = NULL;
+  last_tile = PrioritizedTile();
   // Again, we expect to get increasing combined priority_bin.
   queue = host_impl_.BuildEvictionQueue(NEW_CONTENT_TAKES_PRIORITY);
   distance_decreasing = 0;
   distance_increasing = 0;
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
+    PrioritizedTile prioritized_tile = queue->Top();
+    Tile* tile = prioritized_tile.tile();
     EXPECT_TRUE(tile);
 
-    if (!last_tile)
-      last_tile = tile;
+    if (!last_tile.tile())
+      last_tile = prioritized_tile;
 
-    const TilePriority& last_priority = last_tile->priority();
-    const TilePriority& priority = tile->priority();
+    const TilePriority& last_priority = last_tile.priority();
+    const TilePriority& priority = prioritized_tile.priority();
 
     EXPECT_GE(last_priority.priority_bin, priority.priority_bin);
     if (last_priority.priority_bin == priority.priority_bin) {
-      EXPECT_LE(last_tile->required_for_activation(),
+      EXPECT_LE(last_tile.tile()->required_for_activation(),
                 tile->required_for_activation());
-      if (last_tile->required_for_activation() ==
+      if (last_tile.tile()->required_for_activation() ==
           tile->required_for_activation()) {
         if (last_priority.distance_to_visible >= priority.distance_to_visible)
           ++distance_decreasing;
@@ -809,7 +810,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
       }
     }
 
-    last_tile = tile;
+    last_tile = prioritized_tile;
     new_content_tiles.insert(tile);
     queue->Pop();
   }
@@ -864,14 +865,12 @@ TEST_F(TileManagerTilePriorityQueueTest,
       SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
   while (!raster_queue->IsEmpty()) {
     ++tile_count;
-    EXPECT_TRUE(raster_queue->Top());
-    all_tiles.insert(raster_queue->Top());
+    EXPECT_TRUE(raster_queue->Top().tile());
+    all_tiles.insert(raster_queue->Top().tile());
     raster_queue->Pop();
   }
   EXPECT_EQ(tile_count, all_tiles.size());
   EXPECT_EQ(32u, tile_count);
-
-  pending_layer_->ResetAllTilesPriorities();
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(layer_bounds);
@@ -925,15 +924,15 @@ TEST_F(TileManagerTilePriorityQueueTest,
   // Verify occlusion is considered by EvictionTilePriorityQueue.
   TreePriority tree_priority = NEW_CONTENT_TAKES_PRIORITY;
   size_t occluded_count = 0u;
-  Tile* last_tile = NULL;
+  PrioritizedTile last_tile;
   scoped_ptr<EvictionTilePriorityQueue> queue(
       host_impl_.BuildEvictionQueue(tree_priority));
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    if (!last_tile)
-      last_tile = tile;
+    PrioritizedTile prioritized_tile = queue->Top();
+    if (!last_tile.tile())
+      last_tile = prioritized_tile;
 
-    bool tile_is_occluded = tile->is_occluded();
+    bool tile_is_occluded = prioritized_tile.is_occluded();
 
     // The only way we will encounter an occluded tile after an unoccluded
     // tile is if the priorty bin decreased, the tile is required for
@@ -941,19 +940,20 @@ TEST_F(TileManagerTilePriorityQueueTest,
     if (tile_is_occluded) {
       occluded_count++;
 
-      bool last_tile_is_occluded = last_tile->is_occluded();
+      bool last_tile_is_occluded = last_tile.is_occluded();
       if (!last_tile_is_occluded) {
         TilePriority::PriorityBin tile_priority_bin =
-            tile->priority().priority_bin;
+            prioritized_tile.priority().priority_bin;
         TilePriority::PriorityBin last_tile_priority_bin =
-            last_tile->priority().priority_bin;
+            last_tile.priority().priority_bin;
 
         EXPECT_TRUE((tile_priority_bin < last_tile_priority_bin) ||
-                    tile->required_for_activation() ||
-                    (tile->contents_scale() != last_tile->contents_scale()));
+                    prioritized_tile.tile()->required_for_activation() ||
+                    (prioritized_tile.tile()->contents_scale() !=
+                     last_tile.tile()->contents_scale()));
       }
     }
-    last_tile = tile;
+    last_tile = prioritized_tile;
     queue->Pop();
   }
   size_t expected_occluded_count =
@@ -1055,8 +1055,9 @@ TEST_F(TileManagerTilePriorityQueueTest,
   scoped_ptr<EvictionTilePriorityQueue> queue(
       host_impl_.BuildEvictionQueue(tree_priority));
   while (!queue->IsEmpty()) {
-    Tile* tile = queue->Top();
-    const TilePriority& pending_priority = tile->priority();
+    PrioritizedTile prioritized_tile = queue->Top();
+    Tile* tile = prioritized_tile.tile();
+    const TilePriority& pending_priority = prioritized_tile.priority();
     EXPECT_NE(std::numeric_limits<float>::infinity(),
               pending_priority.distance_to_visible);
     if (all_pending_child_tiles.find(tile) != all_pending_child_tiles.end())
@@ -1083,8 +1084,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
   size_t tile_count = 0;
   std::set<Tile*> all_tiles;
   while (!queue->IsEmpty()) {
-    EXPECT_TRUE(queue->Top());
-    all_tiles.insert(queue->Top());
+    EXPECT_TRUE(queue->Top().tile());
+    all_tiles.insert(queue->Top().tile());
     ++tile_count;
     queue->Pop();
   }
@@ -1107,8 +1108,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
   tile_count = 0;
   all_tiles.clear();
   while (!queue->IsEmpty()) {
-    EXPECT_TRUE(queue->Top());
-    all_tiles.insert(queue->Top());
+    EXPECT_TRUE(queue->Top().tile());
+    all_tiles.insert(queue->Top().tile());
     ++tile_count;
     queue->Pop();
   }
@@ -1128,8 +1129,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
   size_t tile_count = 0;
   std::set<Tile*> all_tiles;
   while (!raster_queue->IsEmpty()) {
-    EXPECT_TRUE(raster_queue->Top());
-    all_tiles.insert(raster_queue->Top());
+    EXPECT_TRUE(raster_queue->Top().tile());
+    all_tiles.insert(raster_queue->Top().tile());
     ++tile_count;
     raster_queue->Pop();
   }
@@ -1154,8 +1155,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
   tile_count = 0;
   all_tiles.clear();
   while (!queue->IsEmpty()) {
-    EXPECT_TRUE(queue->Top());
-    all_tiles.insert(queue->Top());
+    EXPECT_TRUE(queue->Top().tile());
+    all_tiles.insert(queue->Top().tile());
     ++tile_count;
     queue->Pop();
   }
@@ -1216,25 +1217,25 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
     EXPECT_FALSE(queue->IsEmpty());
     std::set<Tile*> unique_tiles;
-    unique_tiles.insert(queue->Top());
-    Tile* last_tile = queue->Top();
-    have_tiles[last_tile->priority().priority_bin] = true;
+    unique_tiles.insert(queue->Top().tile());
+    PrioritizedTile last_tile = queue->Top();
+    have_tiles[last_tile.priority().priority_bin] = true;
 
     // On the second iteration, mark everything as ready to draw (solid color).
     if (i == 1) {
-      TileDrawInfo& draw_info = last_tile->draw_info();
+      TileDrawInfo& draw_info = last_tile.tile()->draw_info();
       draw_info.SetSolidColorForTesting(SK_ColorRED);
     }
     queue->Pop();
     int eventually_bin_order_correct_count = 0;
     int eventually_bin_order_incorrect_count = 0;
     while (!queue->IsEmpty()) {
-      Tile* new_tile = queue->Top();
+      PrioritizedTile new_tile = queue->Top();
       queue->Pop();
-      unique_tiles.insert(new_tile);
+      unique_tiles.insert(new_tile.tile());
 
-      TilePriority last_priority = last_tile->priority();
-      TilePriority new_priority = new_tile->priority();
+      TilePriority last_priority = last_tile.priority();
+      TilePriority new_priority = new_tile.priority();
       EXPECT_LE(last_priority.priority_bin, new_priority.priority_bin);
       if (last_priority.priority_bin == new_priority.priority_bin) {
         if (last_priority.priority_bin == TilePriority::EVENTUALLY) {
@@ -1242,8 +1243,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
                                new_priority.distance_to_visible;
           eventually_bin_order_correct_count += order_correct;
           eventually_bin_order_incorrect_count += !order_correct;
-        } else if (!soon_rect.Intersects(new_tile->content_rect()) &&
-                   !soon_rect.Intersects(last_tile->content_rect())) {
+        } else if (!soon_rect.Intersects(new_tile.tile()->content_rect()) &&
+                   !soon_rect.Intersects(last_tile.tile()->content_rect())) {
           EXPECT_LE(last_priority.distance_to_visible,
                     new_priority.distance_to_visible);
           EXPECT_EQ(TilePriority::NOW, new_priority.priority_bin);
@@ -1258,7 +1259,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       // On the second iteration, mark everything as ready to draw (solid
       // color).
       if (i == 1) {
-        TileDrawInfo& draw_info = last_tile->draw_info();
+        TileDrawInfo& draw_info = last_tile.tile()->draw_info();
         draw_info.SetSolidColorForTesting(SK_ColorRED);
       }
     }
@@ -1309,19 +1310,19 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   // There are 3 bins in TilePriority.
   bool have_tiles[3] = {};
-  Tile* last_tile = NULL;
+  PrioritizedTile last_tile;
   int eventually_bin_order_correct_count = 0;
   int eventually_bin_order_incorrect_count = 0;
   scoped_ptr<TilingSetRasterQueueAll> queue(
       new TilingSetRasterQueueAll(tiling_set.get(), false));
   for (; !queue->IsEmpty(); queue->Pop()) {
-    if (!last_tile)
+    if (!last_tile.tile())
       last_tile = queue->Top();
 
-    Tile* new_tile = queue->Top();
+    const PrioritizedTile& new_tile = queue->Top();
 
-    TilePriority last_priority = last_tile->priority();
-    TilePriority new_priority = new_tile->priority();
+    TilePriority last_priority = last_tile.priority();
+    TilePriority new_priority = new_tile.priority();
 
     have_tiles[new_priority.priority_bin] = true;
 
@@ -1332,8 +1333,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
                              new_priority.distance_to_visible;
         eventually_bin_order_correct_count += order_correct;
         eventually_bin_order_incorrect_count += !order_correct;
-      } else if (!soon_rect.Intersects(new_tile->content_rect()) &&
-                 !soon_rect.Intersects(last_tile->content_rect())) {
+      } else if (!soon_rect.Intersects(new_tile.tile()->content_rect()) &&
+                 !soon_rect.Intersects(last_tile.tile()->content_rect())) {
         EXPECT_LE(last_priority.distance_to_visible,
                   new_priority.distance_to_visible);
       } else if (new_priority.distance_to_visible > 0.f) {
@@ -1360,7 +1361,7 @@ TEST_F(TileManagerTilePriorityQueueTest, SetIsLikelyToRequireADraw) {
   scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
       SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
   EXPECT_FALSE(queue->IsEmpty());
-  EXPECT_TRUE(queue->Top()->required_for_draw());
+  EXPECT_TRUE(queue->Top().tile()->required_for_draw());
 
   EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
   host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
@@ -1377,7 +1378,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
       SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
   EXPECT_FALSE(queue->IsEmpty());
-  EXPECT_TRUE(queue->Top()->required_for_draw());
+  EXPECT_TRUE(queue->Top().tile()->required_for_draw());
 
   ManagedMemoryPolicy policy = host_impl_.ActualManagedMemoryPolicy();
   policy.bytes_limit_when_visible = 0;
@@ -1398,8 +1399,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
   scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
       SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
   EXPECT_FALSE(queue->IsEmpty());
-  EXPECT_TRUE(queue->Top()->required_for_draw());
-  EXPECT_EQ(gfx::Size(256, 256), queue->Top()->desired_texture_size());
+  EXPECT_TRUE(queue->Top().tile()->required_for_draw());
+  EXPECT_EQ(gfx::Size(256, 256), queue->Top().tile()->desired_texture_size());
   EXPECT_EQ(RGBA_8888, host_impl_.resource_provider()->best_texture_format());
 
   ManagedMemoryPolicy policy = host_impl_.ActualManagedMemoryPolicy();

@@ -70,45 +70,40 @@ void TilingSetRasterQueueRequired::Pop() {
     ++iterator_;
 }
 
-Tile* TilingSetRasterQueueRequired::Top() {
+const PrioritizedTile& TilingSetRasterQueueRequired::Top() const {
   DCHECK(!IsEmpty());
   return *iterator_;
 }
 
-const Tile* TilingSetRasterQueueRequired::Top() const {
-  DCHECK(!IsEmpty());
-  return *iterator_;
-}
-
-bool TilingSetRasterQueueRequired::IsTileRequired(const Tile* tile) const {
+bool TilingSetRasterQueueRequired::IsTileRequired(
+    const PrioritizedTile& prioritized_tile) const {
   return (type_ == RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION &&
-          tile->required_for_activation()) ||
+          prioritized_tile.tile()->required_for_activation()) ||
          (type_ == RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW &&
-          tile->required_for_draw());
+          prioritized_tile.tile()->required_for_draw());
 }
 
 TilingSetRasterQueueRequired::TilingIterator::TilingIterator()
-    : tiling_(nullptr), current_tile_(nullptr) {
+    : tiling_(nullptr) {
 }
 
 TilingSetRasterQueueRequired::TilingIterator::TilingIterator(
     PictureLayerTiling* tiling,
     TilingData* tiling_data,
     const gfx::Rect& rect)
-    : tiling_(tiling), tiling_data_(tiling_data), current_tile_(nullptr) {
+    : tiling_(tiling), tiling_data_(tiling_data) {
   visible_iterator_ =
       TilingData::Iterator(tiling_data_, rect, false /* include_borders */);
   if (!visible_iterator_)
     return;
 
-  current_tile_ =
+  Tile* tile =
       tiling_->TileAt(visible_iterator_.index_x(), visible_iterator_.index_y());
-
   // If this is a valid tile, return it. Note that we have to use a tiling check
   // for occlusion, since the tile's internal state has not yet been updated.
-  if (current_tile_ && current_tile_->NeedsRaster() &&
-      !tiling_->IsTileOccluded(current_tile_)) {
-    tiling_->UpdateTilePriority(current_tile_);
+  if (tile && tile->NeedsRaster() && !tiling_->IsTileOccluded(tile)) {
+    tiling_->UpdateRequiredStatesOnTile(tile);
+    current_tile_ = tiling_->MakePrioritizedTile(tile);
     return;
   }
   ++(*this);
@@ -120,24 +115,25 @@ TilingSetRasterQueueRequired::TilingIterator::~TilingIterator() {
 TilingSetRasterQueueRequired::TilingIterator&
     TilingSetRasterQueueRequired::TilingIterator::
     operator++() {
+  Tile* tile = nullptr;
   while (true) {
     ++visible_iterator_;
     if (!visible_iterator_) {
-      current_tile_ = nullptr;
+      current_tile_ = PrioritizedTile();
       return *this;
     }
     std::pair<int, int> next_index = visible_iterator_.index();
-    current_tile_ = tiling_->TileAt(next_index.first, next_index.second);
+    tile = tiling_->TileAt(next_index.first, next_index.second);
     // If the tile doesn't exist or if it exists but doesn't need raster work,
     // we can move on to the next tile.
-    if (!current_tile_ || !current_tile_->NeedsRaster())
+    if (!tile || !tile->NeedsRaster())
       continue;
 
     // If the tile is occluded, we also can skip it. Note that we use the tiling
     // check for occlusion, since tile's internal state has not yet been updated
     // (by UpdateTilePriority). The tiling check does not rely on tile's
     // internal state (it is, in fact, used to determine the tile's state).
-    if (tiling_->IsTileOccluded(current_tile_))
+    if (tiling_->IsTileOccluded(tile))
       continue;
 
     // If we get here, that means we have a valid tile that needs raster and is
@@ -145,8 +141,8 @@ TilingSetRasterQueueRequired::TilingIterator&
     break;
   }
 
-  if (current_tile_)
-    tiling_->UpdateTilePriority(current_tile_);
+  tiling_->UpdateRequiredStatesOnTile(tile);
+  current_tile_ = tiling_->MakePrioritizedTile(tile);
   return *this;
 }
 

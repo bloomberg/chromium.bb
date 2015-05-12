@@ -10,9 +10,7 @@ namespace cc {
 
 TilingSetEvictionQueue::TilingSetEvictionQueue(
     PictureLayerTilingSet* tiling_set)
-    : tree_(tiling_set->tree()),
-      phase_(EVENTUALLY_RECT),
-      current_tile_(nullptr) {
+    : tree_(tiling_set->tree()), phase_(EVENTUALLY_RECT) {
   // Early out if the layer has no tilings.
   if (!tiling_set->num_tilings())
     return;
@@ -73,8 +71,8 @@ void TilingSetEvictionQueue::GenerateTilingOrder(
 }
 
 void TilingSetEvictionQueue::AdvancePhase() {
-  current_tile_ = nullptr;
-  while (!current_tile_ &&
+  current_tile_ = PrioritizedTile();
+  while (!current_tile_.tile() &&
          phase_ != VISIBLE_RECT_REQUIRED_FOR_ACTIVATION_UNOCCLUDED) {
     phase_ = static_cast<Phase>(phase_ + 1);
     switch (phase_) {
@@ -136,22 +134,17 @@ void TilingSetEvictionQueue::AdvancePhase() {
 }
 
 bool TilingSetEvictionQueue::IsEmpty() const {
-  return !current_tile_;
+  return !current_tile_.tile();
 }
 
-Tile* TilingSetEvictionQueue::Top() {
-  DCHECK(!IsEmpty());
-  return current_tile_;
-}
-
-const Tile* TilingSetEvictionQueue::Top() const {
+const PrioritizedTile& TilingSetEvictionQueue::Top() const {
   DCHECK(!IsEmpty());
   return current_tile_;
 }
 
 void TilingSetEvictionQueue::Pop() {
   DCHECK(!IsEmpty());
-  current_tile_ = nullptr;
+  current_tile_ = PrioritizedTile();
   switch (phase_) {
     case EVENTUALLY_RECT:
       ++eventually_iterator_;
@@ -183,24 +176,20 @@ void TilingSetEvictionQueue::Pop() {
         current_tile_ = *visible_iterator_;
       break;
   }
-  if (!current_tile_)
+  if (!current_tile_.tile())
     AdvancePhase();
 }
 
 // EvictionRectIterator
 TilingSetEvictionQueue::EvictionRectIterator::EvictionRectIterator()
-    : tile_(nullptr),
-      tilings_(nullptr),
-      tree_(ACTIVE_TREE),
-      tiling_index_(0) {
+    : tilings_(nullptr), tree_(ACTIVE_TREE), tiling_index_(0) {
 }
 
 TilingSetEvictionQueue::EvictionRectIterator::EvictionRectIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree,
     bool skip_pending_visible_rect)
-    : tile_(nullptr),
-      tilings_(tilings),
+    : tilings_(tilings),
       tree_(tree),
       skip_pending_visible_rect_(skip_pending_visible_rect),
       tiling_index_(0) {
@@ -213,7 +202,7 @@ bool TilingSetEvictionQueue::EvictionRectIterator::AdvanceToNextTile(
   while (!found_tile) {
     ++(*iterator);
     if (!(*iterator)) {
-      tile_ = nullptr;
+      prioritized_tile_ = PrioritizedTile();
       break;
     }
     found_tile = GetFirstTileAndCheckIfValid(iterator);
@@ -225,15 +214,17 @@ template <typename TilingIteratorType>
 bool TilingSetEvictionQueue::EvictionRectIterator::GetFirstTileAndCheckIfValid(
     TilingIteratorType* iterator) {
   PictureLayerTiling* tiling = (*tilings_)[tiling_index_];
-  tile_ = tiling->TileAt(iterator->index_x(), iterator->index_y());
+  Tile* tile = tiling->TileAt(iterator->index_x(), iterator->index_y());
+  prioritized_tile_ = PrioritizedTile();
   // If there's nothing to evict, return false.
-  if (!tile_ || !tile_->HasResource())
+  if (!tile || !tile->HasResource())
     return false;
   if (skip_pending_visible_rect_ &&
-      tiling->pending_visible_rect().Intersects(tile_->content_rect())) {
+      tiling->pending_visible_rect().Intersects(tile->content_rect())) {
     return false;
   }
-  (*tilings_)[tiling_index_]->UpdateTilePriority(tile_);
+  (*tilings_)[tiling_index_]->UpdateRequiredStatesOnTile(tile);
+  prioritized_tile_ = (*tilings_)[tiling_index_]->MakePrioritizedTile(tile);
   // In other cases, the tile we got is a viable candidate, return true.
   return true;
 }
@@ -422,7 +413,7 @@ TilingSetEvictionQueue::PendingVisibleTilingIterator::
     ++(*this);
     return;
   }
-  if (!TileMatchesRequiredFlags(tile_)) {
+  if (!TileMatchesRequiredFlags(prioritized_tile_)) {
     ++(*this);
     return;
   }
@@ -432,7 +423,7 @@ TilingSetEvictionQueue::PendingVisibleTilingIterator&
     TilingSetEvictionQueue::PendingVisibleTilingIterator::
     operator++() {
   bool found_tile = AdvanceToNextTile(&iterator_);
-  while (found_tile && !TileMatchesRequiredFlags(tile_))
+  while (found_tile && !TileMatchesRequiredFlags(prioritized_tile_))
     found_tile = AdvanceToNextTile(&iterator_);
 
   while (!found_tile && (tiling_index_ + 1) < tilings_->size()) {
@@ -446,16 +437,16 @@ TilingSetEvictionQueue::PendingVisibleTilingIterator&
     found_tile = GetFirstTileAndCheckIfValid(&iterator_);
     if (!found_tile)
       found_tile = AdvanceToNextTile(&iterator_);
-    while (found_tile && !TileMatchesRequiredFlags(tile_))
+    while (found_tile && !TileMatchesRequiredFlags(prioritized_tile_))
       found_tile = AdvanceToNextTile(&iterator_);
   }
   return *this;
 }
 
 bool TilingSetEvictionQueue::PendingVisibleTilingIterator::
-    TileMatchesRequiredFlags(const Tile* tile) const {
-  bool activation_flag_matches =
-      tile->required_for_activation() == return_required_for_activation_tiles_;
+    TileMatchesRequiredFlags(const PrioritizedTile& tile) const {
+  bool activation_flag_matches = tile.tile()->required_for_activation() ==
+                                 return_required_for_activation_tiles_;
   return activation_flag_matches;
 }
 
@@ -492,7 +483,7 @@ TilingSetEvictionQueue::VisibleTilingIterator::VisibleTilingIterator(
     ++(*this);
     return;
   }
-  if (!TileMatchesRequiredFlags(tile_)) {
+  if (!TileMatchesRequiredFlags(prioritized_tile_)) {
     ++(*this);
     return;
   }
@@ -502,7 +493,7 @@ TilingSetEvictionQueue::VisibleTilingIterator&
     TilingSetEvictionQueue::VisibleTilingIterator::
     operator++() {
   bool found_tile = AdvanceToNextTile(&iterator_);
-  while (found_tile && !TileMatchesRequiredFlags(tile_))
+  while (found_tile && !TileMatchesRequiredFlags(prioritized_tile_))
     found_tile = AdvanceToNextTile(&iterator_);
 
   while (!found_tile && (tiling_index_ + 1) < tilings_->size()) {
@@ -517,17 +508,17 @@ TilingSetEvictionQueue::VisibleTilingIterator&
     found_tile = GetFirstTileAndCheckIfValid(&iterator_);
     if (!found_tile)
       found_tile = AdvanceToNextTile(&iterator_);
-    while (found_tile && !TileMatchesRequiredFlags(tile_))
+    while (found_tile && !TileMatchesRequiredFlags(prioritized_tile_))
       found_tile = AdvanceToNextTile(&iterator_);
   }
   return *this;
 }
 
 bool TilingSetEvictionQueue::VisibleTilingIterator::TileMatchesRequiredFlags(
-    const Tile* tile) const {
-  bool activation_flag_matches =
-      tile->required_for_activation() == return_required_for_activation_tiles_;
-  bool occluded_flag_matches = tile->is_occluded() == return_occluded_tiles_;
+    const PrioritizedTile& tile) const {
+  bool activation_flag_matches = tile.tile()->required_for_activation() ==
+                                 return_required_for_activation_tiles_;
+  bool occluded_flag_matches = tile.is_occluded() == return_occluded_tiles_;
   return activation_flag_matches && occluded_flag_matches;
 }
 

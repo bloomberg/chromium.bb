@@ -125,11 +125,9 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void SetIsDrawnRenderSurfaceLayerListMember(bool is);
 
   void CreateAllTiles();
-  void SetAllTilesVisible();
   void SetAllTilesReady();
   void SetAllTilesReadyInTiling(PictureLayerTiling* tiling);
   void SetTileReady(Tile* tile);
-  void ResetAllTilesPriorities();
   PictureLayerTilingSet* GetTilings() { return tilings_.get(); }
 
   // Add the given tiling as a "used" tiling during AppendQuads. This ensures

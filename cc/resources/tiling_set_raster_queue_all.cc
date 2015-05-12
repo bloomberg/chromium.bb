@@ -118,17 +118,7 @@ void TilingSetRasterQueueAll::Pop() {
     AdvanceToNextStage();
 }
 
-Tile* TilingSetRasterQueueAll::Top() {
-  DCHECK(!IsEmpty());
-
-  IteratorType index = stages_[current_stage_].iterator_type;
-  DCHECK(!iterators_[index].done());
-  DCHECK(iterators_[index].type() == stages_[current_stage_].tile_type);
-
-  return *iterators_[index];
-}
-
-const Tile* TilingSetRasterQueueAll::Top() const {
+const PrioritizedTile& TilingSetRasterQueueAll::Top() const {
   DCHECK(!IsEmpty());
 
   IteratorType index = stages_[current_stage_].iterator_type;
@@ -153,39 +143,41 @@ void TilingSetRasterQueueAll::AdvanceToNextStage() {
 
 // OnePriorityRectIterator
 TilingSetRasterQueueAll::OnePriorityRectIterator::OnePriorityRectIterator()
-    : tile_(nullptr), tiling_(nullptr), tiling_data_(nullptr) {
+    : tiling_(nullptr), tiling_data_(nullptr) {
 }
 
 TilingSetRasterQueueAll::OnePriorityRectIterator::OnePriorityRectIterator(
     PictureLayerTiling* tiling,
     TilingData* tiling_data)
-    : tile_(nullptr), tiling_(tiling), tiling_data_(tiling_data) {
+    : tiling_(tiling), tiling_data_(tiling_data) {
 }
 
 template <typename TilingIteratorType>
 void TilingSetRasterQueueAll::OnePriorityRectIterator::AdvanceToNextTile(
     TilingIteratorType* iterator) {
-  tile_ = nullptr;
-  while (!tile_ || !TileNeedsRaster(tile_)) {
+  current_tile_ = PrioritizedTile();
+  Tile* tile = nullptr;
+  while (!tile || !TileNeedsRaster(tile)) {
     ++(*iterator);
     if (!(*iterator)) {
-      tile_ = nullptr;
       return;
     }
-    tile_ = tiling_->TileAt(iterator->index_x(), iterator->index_y());
+    tile = tiling_->TileAt(iterator->index_x(), iterator->index_y());
   }
-  tiling_->UpdateTilePriority(tile_);
+  tiling_->UpdateRequiredStatesOnTile(tile);
+  current_tile_ = tiling_->MakePrioritizedTile(tile);
 }
 
 template <typename TilingIteratorType>
 bool TilingSetRasterQueueAll::OnePriorityRectIterator::
     GetFirstTileAndCheckIfValid(TilingIteratorType* iterator) {
-  tile_ = tiling_->TileAt(iterator->index_x(), iterator->index_y());
-  if (!tile_ || !TileNeedsRaster(tile_)) {
-    tile_ = nullptr;
+  Tile* tile = tiling_->TileAt(iterator->index_x(), iterator->index_y());
+  if (!tile || !TileNeedsRaster(tile)) {
+    current_tile_ = PrioritizedTile();
     return false;
   }
-  tiling_->UpdateTilePriority(tile_);
+  tiling_->UpdateRequiredStatesOnTile(tile);
+  current_tile_ = tiling_->MakePrioritizedTile(tile);
   return true;
 }
 
@@ -250,7 +242,7 @@ TilingSetRasterQueueAll::SkewportTilingIterator::SkewportTilingIterator(
     ++(*this);
     return;
   }
-  if (tile_->content_rect().Intersects(pending_visible_rect_))
+  if (current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
     ++(*this);
 }
 
@@ -259,7 +251,7 @@ TilingSetRasterQueueAll::SkewportTilingIterator&
     operator++() {
   AdvanceToNextTile(&iterator_);
   while (!done()) {
-    if (!tile_->content_rect().Intersects(pending_visible_rect_))
+    if (!current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
       break;
     AdvanceToNextTile(&iterator_);
   }
@@ -283,7 +275,7 @@ TilingSetRasterQueueAll::SoonBorderTilingIterator::SoonBorderTilingIterator(
     ++(*this);
     return;
   }
-  if (tile_->content_rect().Intersects(pending_visible_rect_))
+  if (current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
     ++(*this);
 }
 
@@ -292,7 +284,7 @@ TilingSetRasterQueueAll::SoonBorderTilingIterator&
     operator++() {
   AdvanceToNextTile(&iterator_);
   while (!done()) {
-    if (!tile_->content_rect().Intersects(pending_visible_rect_))
+    if (!current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
       break;
     AdvanceToNextTile(&iterator_);
   }
@@ -316,7 +308,7 @@ TilingSetRasterQueueAll::EventuallyTilingIterator::EventuallyTilingIterator(
     ++(*this);
     return;
   }
-  if (tile_->content_rect().Intersects(pending_visible_rect_))
+  if (current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
     ++(*this);
 }
 
@@ -325,7 +317,7 @@ TilingSetRasterQueueAll::EventuallyTilingIterator&
     operator++() {
   AdvanceToNextTile(&iterator_);
   while (!done()) {
-    if (!tile_->content_rect().Intersects(pending_visible_rect_))
+    if (!current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
       break;
     AdvanceToNextTile(&iterator_);
   }
@@ -333,17 +325,13 @@ TilingSetRasterQueueAll::EventuallyTilingIterator&
 }
 
 // TilingIterator
-TilingSetRasterQueueAll::TilingIterator::TilingIterator()
-    : tiling_(NULL), current_tile_(NULL) {
+TilingSetRasterQueueAll::TilingIterator::TilingIterator() : tiling_(nullptr) {
 }
 
 TilingSetRasterQueueAll::TilingIterator::TilingIterator(
     PictureLayerTiling* tiling,
     TilingData* tiling_data)
-    : tiling_(tiling),
-      tiling_data_(tiling_data),
-      phase_(VISIBLE_RECT),
-      current_tile_(NULL) {
+    : tiling_(tiling), tiling_data_(tiling_data), phase_(VISIBLE_RECT) {
   visible_iterator_ = VisibleTilingIterator(tiling_, tiling_data_);
   if (visible_iterator_.done()) {
     AdvancePhase();
@@ -358,8 +346,8 @@ TilingSetRasterQueueAll::TilingIterator::~TilingIterator() {
 void TilingSetRasterQueueAll::TilingIterator::AdvancePhase() {
   DCHECK_LT(phase_, EVENTUALLY_RECT);
 
-  current_tile_ = nullptr;
-  while (!current_tile_ && phase_ < EVENTUALLY_RECT) {
+  current_tile_ = PrioritizedTile();
+  while (!current_tile_.tile() && phase_ < EVENTUALLY_RECT) {
     phase_ = static_cast<Phase>(phase_ + 1);
     switch (phase_) {
       case VISIBLE_RECT:
@@ -429,7 +417,7 @@ TilingSetRasterQueueAll::TilingIterator&
     case EVENTUALLY_RECT:
       ++eventually_iterator_;
       if (eventually_iterator_.done()) {
-        current_tile_ = nullptr;
+        current_tile_ = PrioritizedTile();
         return *this;
       }
       current_tile_ = *eventually_iterator_;

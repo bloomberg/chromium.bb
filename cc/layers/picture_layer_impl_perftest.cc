@@ -85,7 +85,7 @@ class PictureLayerImplPerfTest : public testing::Test {
           pending_layer_->picture_layer_tiling_set(), false));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
-        ASSERT_TRUE(queue->Top() != nullptr) << "count: " << count;
+        ASSERT_TRUE(queue->Top().tile()) << "count: " << count;
         queue->Pop();
       }
       timer_.NextLap();
@@ -129,7 +129,7 @@ class PictureLayerImplPerfTest : public testing::Test {
           pending_layer_->picture_layer_tiling_set()));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
-        ASSERT_TRUE(queue->Top() != nullptr) << "count: " << count;
+        ASSERT_TRUE(queue->Top().tile()) << "count: " << count;
         queue->Pop();
       }
       timer_.NextLap();

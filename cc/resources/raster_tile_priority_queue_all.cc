@@ -19,11 +19,8 @@ class RasterOrderComparator {
                   const TilingSetRasterQueueAll* b_queue) const {
     // Note that in this function, we have to return true if and only if
     // a is strictly lower priority than b.
-    const Tile* a_tile = a_queue->Top();
-    const Tile* b_tile = b_queue->Top();
-
-    const TilePriority& a_priority = a_tile->priority();
-    const TilePriority& b_priority = b_tile->priority();
+    const TilePriority& a_priority = a_queue->Top().priority();
+    const TilePriority& b_priority = b_queue->Top().priority();
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
     // If the bin is the same but the resolution is not, then the order will be
@@ -94,9 +91,9 @@ bool RasterTilePriorityQueueAll::IsEmpty() const {
   return active_queues_.empty() && pending_queues_.empty();
 }
 
-Tile* RasterTilePriorityQueueAll::Top() {
+const PrioritizedTile& RasterTilePriorityQueueAll::Top() const {
   DCHECK(!IsEmpty());
-  ScopedPtrVector<TilingSetRasterQueueAll>& next_queues = GetNextQueues();
+  const ScopedPtrVector<TilingSetRasterQueueAll>& next_queues = GetNextQueues();
   return next_queues.front()->Top();
 }
 
@@ -117,6 +114,12 @@ void RasterTilePriorityQueueAll::Pop() {
 
 ScopedPtrVector<TilingSetRasterQueueAll>&
 RasterTilePriorityQueueAll::GetNextQueues() {
+  return const_cast<ScopedPtrVector<TilingSetRasterQueueAll>&>(
+      static_cast<const RasterTilePriorityQueueAll*>(this)->GetNextQueues());
+}
+
+const ScopedPtrVector<TilingSetRasterQueueAll>&
+RasterTilePriorityQueueAll::GetNextQueues() const {
   DCHECK(!IsEmpty());
 
   // If we only have one queue with tiles, return it.
@@ -125,11 +128,11 @@ RasterTilePriorityQueueAll::GetNextQueues() {
   if (pending_queues_.empty())
     return active_queues_;
 
-  const Tile* active_tile = active_queues_.front()->Top();
-  const Tile* pending_tile = pending_queues_.front()->Top();
+  const PrioritizedTile& active_tile = active_queues_.front()->Top();
+  const PrioritizedTile& pending_tile = pending_queues_.front()->Top();
 
-  const TilePriority& active_priority = active_tile->priority();
-  const TilePriority& pending_priority = pending_tile->priority();
+  const TilePriority& active_priority = active_tile.priority();
+  const TilePriority& pending_priority = pending_tile.priority();
 
   switch (tree_priority_) {
     case SMOOTHNESS_TAKES_PRIORITY: {

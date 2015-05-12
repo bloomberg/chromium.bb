@@ -7,6 +7,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "cc/resources/tile.h"
+#include "cc/resources/tile_priority.h"
 
 namespace cc {
 namespace frame_viewer_instrumentation {

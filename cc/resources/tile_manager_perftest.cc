@@ -221,7 +221,7 @@ class TileManagerPerfTest : public testing::Test {
           priorities[priority_count], RasterTilePriorityQueue::Type::ALL));
       while (count--) {
         ASSERT_FALSE(queue->IsEmpty());
-        ASSERT_TRUE(queue->Top() != NULL);
+        ASSERT_TRUE(queue->Top().tile());
         queue->Pop();
       }
       priority_count = (priority_count + 1) % arraysize(priorities);
@@ -296,7 +296,7 @@ class TileManagerPerfTest : public testing::Test {
           host_impl_.BuildEvictionQueue(priorities[priority_count]));
       while (count--) {
         ASSERT_FALSE(queue->IsEmpty());
-        ASSERT_TRUE(queue->Top() != NULL);
+        ASSERT_TRUE(queue->Top().tile());
         queue->Pop();
       }
       priority_count = (priority_count + 1) % arraysize(priorities);

@@ -8,6 +8,7 @@
 #include "base/containers/stack_container.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture_layer_tiling_set.h"
+#include "cc/resources/prioritized_tile.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 
@@ -21,8 +22,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
                           bool prioritize_low_res);
   ~TilingSetRasterQueueAll();
 
-  Tile* Top();
-  const Tile* Top() const;
+  const PrioritizedTile& Top() const;
   void Pop();
   bool IsEmpty() const;
 
@@ -34,8 +34,8 @@ class CC_EXPORT TilingSetRasterQueueAll {
     OnePriorityRectIterator(PictureLayerTiling* tiling,
                             TilingData* tiling_data);
 
-    bool done() const { return !tile_; }
-    Tile* operator*() const { return tile_; }
+    bool done() const { return !current_tile_.tile(); }
+    const PrioritizedTile& operator*() const { return current_tile_; }
 
    protected:
     ~OnePriorityRectIterator() = default;
@@ -48,7 +48,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
     template <typename TilingIteratorType>
     bool GetFirstTileAndCheckIfValid(TilingIteratorType* iterator);
 
-    Tile* tile_;
+    PrioritizedTile current_tile_;
     PictureLayerTiling* tiling_;
     TilingData* tiling_data_;
   };
@@ -127,9 +127,8 @@ class CC_EXPORT TilingSetRasterQueueAll {
                             TilingData* tiling_data);
     ~TilingIterator();
 
-    bool done() const { return current_tile_ == nullptr; }
-    const Tile* operator*() const { return current_tile_; }
-    Tile* operator*() { return current_tile_; }
+    bool done() const { return !current_tile_.tile(); }
+    const PrioritizedTile& operator*() const { return current_tile_; }
     TilePriority::PriorityBin type() const {
       switch (phase_) {
         case VISIBLE_RECT:
@@ -168,7 +167,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
     Phase phase_;
 
-    Tile* current_tile_;
+    PrioritizedTile current_tile_;
     VisibleTilingIterator visible_iterator_;
     PendingVisibleTilingIterator pending_visible_iterator_;
     SkewportTilingIterator skewport_iterator_;

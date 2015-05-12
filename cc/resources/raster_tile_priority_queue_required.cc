@@ -70,7 +70,7 @@ bool RasterTilePriorityQueueRequired::IsEmpty() const {
   return tiling_set_queues_.empty();
 }
 
-Tile* RasterTilePriorityQueueRequired::Top() {
+const PrioritizedTile& RasterTilePriorityQueueRequired::Top() const {
   DCHECK(!IsEmpty());
   return tiling_set_queues_.back()->Top();
 }

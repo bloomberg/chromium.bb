@@ -12,7 +12,7 @@
 #include "cc/resources/tile_priority.h"
 
 namespace cc {
-class Tile;
+class PrioritizedTile;
 
 class CC_EXPORT RasterTilePriorityQueue {
  public:
@@ -27,7 +27,7 @@ class CC_EXPORT RasterTilePriorityQueue {
   virtual ~RasterTilePriorityQueue() {}
 
   virtual bool IsEmpty() const = 0;
-  virtual Tile* Top() = 0;
+  virtual const PrioritizedTile& Top() const = 0;
   virtual void Pop() = 0;
 
  protected:

@@ -147,34 +147,6 @@ void FakePictureLayerImpl::CreateAllTiles() {
     tilings_->tiling_at(i)->CreateAllTilesForTesting();
 }
 
-void FakePictureLayerImpl::SetAllTilesVisible() {
-  for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
-       ++tiling_idx) {
-    PictureLayerTiling* tiling = tilings_->tiling_at(tiling_idx);
-    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
-    for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
-      Tile* tile = tiles[tile_idx];
-      TilePriority priority;
-      priority.resolution = HIGH_RESOLUTION;
-      priority.priority_bin = TilePriority::NOW;
-      priority.distance_to_visible = 0.f;
-      tile->set_priority(priority);
-    }
-  }
-}
-
-void FakePictureLayerImpl::ResetAllTilesPriorities() {
-  for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
-       ++tiling_idx) {
-    PictureLayerTiling* tiling = tilings_->tiling_at(tiling_idx);
-    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
-    for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
-      Tile* tile = tiles[tile_idx];
-      tile->set_priority(TilePriority());
-    }
-  }
-}
-
 void FakePictureLayerImpl::SetAllTilesReady() {
   for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
        ++tiling_idx) {

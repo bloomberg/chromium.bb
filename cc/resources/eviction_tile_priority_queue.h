@@ -15,6 +15,7 @@
 #include "cc/resources/tiling_set_eviction_queue.h"
 
 namespace cc {
+class PrioritizedTile;
 
 class CC_EXPORT EvictionTilePriorityQueue {
  public:
@@ -26,11 +27,12 @@ class CC_EXPORT EvictionTilePriorityQueue {
              TreePriority tree_priority);
 
   bool IsEmpty() const;
-  Tile* Top();
+  const PrioritizedTile& Top() const;
   void Pop();
 
  private:
   ScopedPtrVector<TilingSetEvictionQueue>& GetNextQueues();
+  const ScopedPtrVector<TilingSetEvictionQueue>& GetNextQueues() const;
 
   ScopedPtrVector<TilingSetEvictionQueue> active_queues_;
   ScopedPtrVector<TilingSetEvictionQueue> pending_queues_;

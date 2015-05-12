@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
+#include "cc/resources/prioritized_tile.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -810,11 +811,28 @@ bool PictureLayerTiling::IsTileRequiredForDraw(const Tile* tile) const {
   return true;
 }
 
-void PictureLayerTiling::UpdateTilePriority(Tile* tile) const {
-  tile->set_priority(ComputePriorityForTile(tile));
-  tile->set_is_occluded(IsTileOccluded(tile));
+void PictureLayerTiling::UpdateRequiredStatesOnTile(Tile* tile) const {
+  DCHECK(tile);
   tile->set_required_for_activation(IsTileRequiredForActivation(tile));
   tile->set_required_for_draw(IsTileRequiredForDraw(tile));
+}
+
+PrioritizedTile PictureLayerTiling::MakePrioritizedTile(Tile* tile) const {
+  DCHECK(tile);
+  return PrioritizedTile(tile, ComputePriorityForTile(tile),
+                         IsTileOccluded(tile));
+}
+
+std::map<const Tile*, PrioritizedTile>
+PictureLayerTiling::UpdateAndGetAllPrioritizedTilesForTesting() {
+  std::map<const Tile*, PrioritizedTile> result;
+  for (const auto& key_tile_pair : tiles_) {
+    UpdateRequiredStatesOnTile(key_tile_pair.second);
+    PrioritizedTile prioritized_tile =
+        MakePrioritizedTile(key_tile_pair.second);
+    result.insert(std::make_pair(prioritized_tile.tile(), prioritized_tile));
+  }
+  return result;
 }
 
 void PictureLayerTiling::VerifyAllTilesHaveCurrentRasterSource() const {

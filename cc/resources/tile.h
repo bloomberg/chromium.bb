@@ -8,13 +8,13 @@
 #include "base/memory/ref_counted.h"
 #include "cc/resources/raster_source.h"
 #include "cc/resources/tile_draw_info.h"
-#include "cc/resources/tile_priority.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
 
 class TileManager;
+struct TilePriority;
 
 class CC_EXPORT Tile {
  public:
@@ -34,14 +34,6 @@ class CC_EXPORT Tile {
   RasterSource* raster_source() { return raster_source_.get(); }
 
   const RasterSource* raster_source() const { return raster_source_.get(); }
-
-  const TilePriority& priority() const { return priority_; }
-
-  void set_priority(const TilePriority& priority) { priority_ = priority; }
-
-  // TODO(vmpstr): Move this to the iterators.
-  void set_is_occluded(bool is_occluded) { is_occluded_ = is_occluded; }
-  bool is_occluded() const { return is_occluded_; }
 
   // TODO(vmpstr): Move this to the iterators.
   bool required_for_activation() const { return required_for_activation_; }
@@ -121,9 +113,7 @@ class CC_EXPORT Tile {
   gfx::Size desired_texture_size_;
   gfx::Rect content_rect_;
   float contents_scale_;
-  bool is_occluded_;
 
-  TilePriority priority_;
   TileDrawInfo draw_info_;
 
   int layer_id_;

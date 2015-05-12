@@ -9,6 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture_layer_tiling_set.h"
+#include "cc/resources/prioritized_tile.h"
 
 namespace cc {
 
@@ -67,8 +68,7 @@ class CC_EXPORT TilingSetEvictionQueue {
   explicit TilingSetEvictionQueue(PictureLayerTilingSet* tiling_set);
   ~TilingSetEvictionQueue();
 
-  Tile* Top();
-  const Tile* Top() const;
+  const PrioritizedTile& Top() const;
   void Pop();
   bool IsEmpty() const;
 
@@ -95,8 +95,8 @@ class CC_EXPORT TilingSetEvictionQueue {
                          WhichTree tree,
                          bool skip_pending_visible_rect);
 
-    bool done() const { return !tile_; }
-    Tile* operator*() const { return tile_; }
+    bool done() const { return !prioritized_tile_.tile(); }
+    const PrioritizedTile& operator*() const { return prioritized_tile_; }
 
    protected:
     ~EvictionRectIterator() = default;
@@ -106,7 +106,7 @@ class CC_EXPORT TilingSetEvictionQueue {
     template <typename TilingIteratorType>
     bool GetFirstTileAndCheckIfValid(TilingIteratorType* iterator);
 
-    Tile* tile_;
+    PrioritizedTile prioritized_tile_;
     std::vector<PictureLayerTiling*>* tilings_;
     WhichTree tree_;
     bool skip_pending_visible_rect_;
@@ -123,7 +123,7 @@ class CC_EXPORT TilingSetEvictionQueue {
     PendingVisibleTilingIterator& operator++();
 
    private:
-    bool TileMatchesRequiredFlags(const Tile* tile) const;
+    bool TileMatchesRequiredFlags(const PrioritizedTile& tile) const;
 
     TilingData::DifferenceIterator iterator_;
     bool return_required_for_activation_tiles_;
@@ -140,7 +140,7 @@ class CC_EXPORT TilingSetEvictionQueue {
     VisibleTilingIterator& operator++();
 
    private:
-    bool TileMatchesRequiredFlags(const Tile* tile) const;
+    bool TileMatchesRequiredFlags(const PrioritizedTile& tile) const;
 
     TilingData::Iterator iterator_;
     bool return_occluded_tiles_;
@@ -187,7 +187,7 @@ class CC_EXPORT TilingSetEvictionQueue {
 
   WhichTree tree_;
   Phase phase_;
-  Tile* current_tile_;
+  PrioritizedTile current_tile_;
   std::vector<PictureLayerTiling*> tilings_;
 
   EventuallyTilingIterator eventually_iterator_;

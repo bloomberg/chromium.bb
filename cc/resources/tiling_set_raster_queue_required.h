@@ -21,8 +21,7 @@ class CC_EXPORT TilingSetRasterQueueRequired {
                                RasterTilePriorityQueue::Type type);
   ~TilingSetRasterQueueRequired();
 
-  Tile* Top();
-  const Tile* Top() const;
+  const PrioritizedTile& Top() const;
   void Pop();
   bool IsEmpty() const;
 
@@ -38,20 +37,19 @@ class CC_EXPORT TilingSetRasterQueueRequired {
                             const gfx::Rect& rect);
     ~TilingIterator();
 
-    bool done() const { return current_tile_ == nullptr; }
-    const Tile* operator*() const { return current_tile_; }
-    Tile* operator*() { return current_tile_; }
+    bool done() const { return !current_tile_.tile(); }
+    const PrioritizedTile& operator*() const { return current_tile_; }
     TilingIterator& operator++();
 
    private:
     PictureLayerTiling* tiling_;
     TilingData* tiling_data_;
 
-    Tile* current_tile_;
+    PrioritizedTile current_tile_;
     TilingData::Iterator visible_iterator_;
   };
 
-  bool IsTileRequired(const Tile* tile) const;
+  bool IsTileRequired(const PrioritizedTile& prioritized_tile) const;
 
   TilingIterator iterator_;
   RasterTilePriorityQueue::Type type_;
