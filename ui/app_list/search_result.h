@@ -113,6 +113,11 @@ class APP_LIST_EXPORT SearchResult {
     display_type_ = display_type;
   }
 
+  int distance_from_origin() { return distance_from_origin_; }
+  void set_distance_from_origin(int distance) {
+    distance_from_origin_ = distance;
+  }
+
   const Actions& actions() const {
     return actions_;
   }
@@ -179,6 +184,10 @@ class APP_LIST_EXPORT SearchResult {
   std::string id_;
   double relevance_;
   DisplayType display_type_;
+
+  // The Manhattan distance from the origin of all search results to this
+  // result. This is logged for UMA.
+  int distance_from_origin_;
 
   Actions actions_;
   bool voice_result_;

@@ -126,6 +126,8 @@ class StartPageView::StartPageTilesContainer
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
   void OnContainerSelected(bool from_bottom,
                            bool directional_movement) override;
+  void NotifyFirstResultYIndex(int y_index) override;
+  int GetYSize() override;
 
  private:
   ContentsView* contents_view_;
@@ -218,6 +220,17 @@ void StartPageView::StartPageTilesContainer::UpdateSelectedIndex(
 void StartPageView::StartPageTilesContainer::OnContainerSelected(
     bool /*from_bottom*/,
     bool /*directional_movement*/) {
+  NOTREACHED();
+}
+
+void StartPageView::StartPageTilesContainer::NotifyFirstResultYIndex(
+    int /*y_index*/) {
+  NOTREACHED();
+}
+
+int StartPageView::StartPageTilesContainer::GetYSize() {
+  NOTREACHED();
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

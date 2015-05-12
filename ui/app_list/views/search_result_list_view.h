@@ -55,6 +55,8 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
   // Overridden from SearchResultContainerView:
   void OnContainerSelected(bool from_bottom,
                            bool directional_movement) override;
+  void NotifyFirstResultYIndex(int y_index) override;
+  int GetYSize() override;
 
  private:
   friend class test::SearchResultListViewTest;

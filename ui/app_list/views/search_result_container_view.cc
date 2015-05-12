@@ -61,6 +61,10 @@ void SearchResultContainerView::ScheduleUpdate() {
   }
 }
 
+bool SearchResultContainerView::UpdateScheduled() {
+  return update_factory_.HasWeakPtrs();
+}
+
 void SearchResultContainerView::ListItemsAdded(size_t start, size_t count) {
   ScheduleUpdate();
 }
@@ -79,10 +83,10 @@ void SearchResultContainerView::ListItemsChanged(size_t start, size_t count) {
 }
 
 void SearchResultContainerView::DoUpdate() {
+  update_factory_.InvalidateWeakPtrs();
   num_results_ = Update();
   Layout();
   PreferredSizeChanged();
-  update_factory_.InvalidateWeakPtrs();
 }
 
 }  // namespace app_list

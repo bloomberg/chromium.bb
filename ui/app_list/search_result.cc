@@ -32,6 +32,7 @@ SearchResult::Action::~Action() {}
 SearchResult::SearchResult()
     : relevance_(0),
       display_type_(DISPLAY_LIST),
+      distance_from_origin_(-1),
       voice_result_(false),
       is_installing_(false),
       percent_downloaded_(0) {

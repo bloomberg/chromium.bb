@@ -29,6 +29,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
                                     AppListViewDelegate* view_delegate);
   ~SearchResultTileItemView() override;
 
+  SearchResult* result() { return item_; }
   void SetSearchResult(SearchResult* item);
 
   // Overridden from TileItemView:

@@ -144,6 +144,15 @@ void SearchResultListView::OnContainerSelected(bool from_bottom,
   SetSelectedIndex(from_bottom ? num_results() - 1 : 0);
 }
 
+void SearchResultListView::NotifyFirstResultYIndex(int y_index) {
+  for (size_t i = 0; i < static_cast<size_t>(num_results()); ++i)
+    GetResultViewAt(i)->result()->set_distance_from_origin(i + y_index);
+}
+
+int SearchResultListView::GetYSize() {
+  return num_results();
+}
+
 int SearchResultListView::Update() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(

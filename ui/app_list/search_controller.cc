@@ -84,6 +84,11 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
 
   UMA_HISTOGRAM_COUNTS_100(kSearchQueryLength, search_box_->text().size());
 
+  if (result->distance_from_origin() >= 0) {
+    UMA_HISTOGRAM_COUNTS_100(kSearchResultDistanceFromOrigin,
+                             result->distance_from_origin());
+  }
+
   result->Open(event_flags);
 
   if (history_ && history_->IsReady()) {

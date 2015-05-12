@@ -533,6 +533,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListSearchResultDistanceFromOrigin" units="keystrokes">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The minimum number of arrow keys a user would need to press to navigate to
+    the opened search result. This is gathered per click of a search result.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListSearchResultOpenDisplayType"
     enum="AppListSearchResultDisplayType">
   <owner>calamity@chromium.org</owner>

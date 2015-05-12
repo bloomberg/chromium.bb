@@ -157,9 +157,17 @@ void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
                 return a->container_score() > b->container_score();
               });
 
+    int result_y_index = 0;
     for (size_t i = 0; i < result_container_views_.size(); ++i) {
-      result_container_views_[i]->ClearSelectedIndex();
-      ReorderChildView(result_container_views_[i]->parent(), i);
+      SearchResultContainerView* view = result_container_views_[i];
+      view->ClearSelectedIndex();
+      ReorderChildView(view->parent(), i);
+
+      // Only notify containers that have finished updating.
+      if (!view->UpdateScheduled())
+        view->NotifyFirstResultYIndex(result_y_index);
+
+      result_y_index += view->GetYSize();
     }
   }
 

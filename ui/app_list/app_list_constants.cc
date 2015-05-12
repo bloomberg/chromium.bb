@@ -132,6 +132,11 @@ const char kSearchResultOpenDisplayTypeHistogram[] =
 // opened.
 const char kSearchQueryLength[] = "Apps.AppListSearchQueryLength";
 
+// The UMA histogram that logs the Manhattan distance from the origin of the
+// search results to the selected result.
+const char kSearchResultDistanceFromOrigin[] =
+    "Apps.AppListSearchResultDistanceFromOrigin";
+
 #if defined(OS_LINUX)
 #if defined(GOOGLE_CHROME_BUILD)
 const char kAppListWMClass[] = "chrome_app_list";

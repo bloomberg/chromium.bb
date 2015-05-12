@@ -30,6 +30,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   // Overridden from SearchResultContainerView:
   void OnContainerSelected(bool from_bottom,
                            bool directional_movement) override;
+  void NotifyFirstResultYIndex(int y_index) override;
+  int GetYSize() override;
 
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
