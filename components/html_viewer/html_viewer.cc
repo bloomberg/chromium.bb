@@ -55,7 +55,7 @@ using mojo::URLResponsePtr;
 using resource_provider::ResourceLoader;
 
 namespace html_viewer {
-
+namespace {
 // Switches for html_viewer.
 
 // Enable MediaRenderer in media pipeline instead of using the internal
@@ -69,6 +69,17 @@ const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 const char kIsHeadless[] = "is-headless";
 
 size_t kDesiredMaxMemory = 20 * 1024 * 1024;
+
+// Paths resources are loaded from.
+const char kResourceIcudtl[] = "icudtl.dat";
+const char kResourceResourcesPak[] = "html_viewer_resources.pak";
+const char kResourceUIPak[] = "ui_test.pak";
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+const char kResourceNativesBlob[] = "natives_blob.bin";
+const char kResourceSnapshotBlob[] = "snapshot_blob.bin";
+#endif
+
+}  // namespace
 
 class HTMLViewer;
 
@@ -182,13 +193,13 @@ class HTMLViewer : public mojo::ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
-    // TODO(sky): make this typesafe and not leak.
     std::set<std::string> paths;
-    paths.insert("icudtl.dat");
-    paths.insert("ui_test.pak");
+    paths.insert(kResourceResourcesPak);
+    paths.insert(kResourceIcudtl);
+    paths.insert(kResourceUIPak);
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-    paths.insert("natives_blob.bin");
-    paths.insert("snapshot_blob.bin");
+    paths.insert(kResourceNativesBlob);
+    paths.insert(kResourceSnapshotBlob);
 #endif
     ResourceLoader resource_loader(app->shell(), paths);
     if (!resource_loader.BlockUntilLoaded()) {
@@ -197,8 +208,6 @@ class HTMLViewer : public mojo::ApplicationDelegate,
       mojo::ApplicationImpl::Terminate();
       return;
     }
-
-    ResourceLoader::ResourceMap resource_map(resource_loader.resource_map());
 
     ui_setup_.reset(new UISetup);
     base::DiscardableMemoryAllocator::SetInstance(
@@ -210,12 +219,15 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     // Note: this requires file system access.
     CHECK(gin::V8Initializer::LoadV8SnapshotFromFD(
-        resource_map["natives_blob.bin"], 0u, 0u,
-        resource_map["snapshot_blob.bin"], 0u, 0u));
+        resource_loader.ReleaseFile(kResourceNativesBlob).TakePlatformFile(),
+        0u, 0u,
+        resource_loader.ReleaseFile(kResourceSnapshotBlob).TakePlatformFile(),
+        0u, 0u));
 #endif
     blink::initialize(blink_platform_.get());
     base::i18n::InitializeICUWithFileDescriptor(
-        resource_map["icudtl.dat"], base::MemoryMappedFile::Region::kWholeFile);
+        resource_loader.ReleaseFile(kResourceIcudtl).TakePlatformFile(),
+        base::MemoryMappedFile::Region::kWholeFile);
 
     ui::RegisterPathProvider();
 
@@ -232,14 +244,11 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 
     is_headless_ = command_line->HasSwitch(kIsHeadless);
     if (!is_headless_) {
-      // TODO(sky): fix lifetime here.
-      MojoPlatformHandle platform_handle = resource_map["ui_test.pak"];
-      // TODO(sky): the first call should be for strings, not images.
       ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-          base::File(platform_handle).Pass(),
+          resource_loader.ReleaseFile(kResourceResourcesPak),
           base::MemoryMappedFile::Region::kWholeFile);
       ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-          base::File(platform_handle).Pass(), ui::SCALE_FACTOR_100P);
+          resource_loader.ReleaseFile(kResourceUIPak), ui::SCALE_FACTOR_100P);
     }
 
     compositor_thread_.Start();

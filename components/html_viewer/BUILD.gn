@@ -7,6 +7,7 @@ import("//mojo/mojo_application_package.gni")
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/mojo.gni")
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 # Repack this here.
@@ -45,6 +46,14 @@ action("generate_blink_resource_map") {
   ]
 }
 
+grit("html_viewer_resources_grit") {
+  source = "html_viewer_resources.grd"
+  outputs = [
+    "grit/html_viewer_resources.h",
+    "html_viewer_resources.pak",
+    "html_viewer_resources.rc",
+  ]
+}
 source_set("lib") {
   sources = [
     "$target_gen_dir/blink_resource_map.cc",
@@ -166,6 +175,7 @@ mojo_application_package("html_viewer") {
     "ui_setup_android.h",
   ]
   deps = [
+    ":html_viewer_resources_grit",
     ":lib",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
@@ -181,6 +191,7 @@ mojo_application_package("html_viewer") {
   resources = [
     "$root_out_dir/icudtl.dat",
     "$root_out_dir/ui_test.pak",
+    "$target_gen_dir/html_viewer_resources.pak",
   ]
 
   if (v8_use_external_startup_data) {

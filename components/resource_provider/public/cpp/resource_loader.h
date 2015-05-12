@@ -11,11 +11,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/platform_handle/platform_handle.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
+
+namespace base {
+class File;
+}
 
 namespace mojo {
 class Shell;
@@ -29,21 +34,23 @@ namespace resource_provider {
 // have been obtained.
 class ResourceLoader {
  public:
-  using ResourceMap = std::map<std::string, MojoPlatformHandle>;
-
   ResourceLoader(mojo::Shell* shell, const std::set<std::string>& paths);
   ~ResourceLoader();
 
   // Uses WaitForIncomingMessage() to block until the results are available, or
   // an error occurs. Returns true if the resources were obtained, false on
-  // error.
+  // error. This immediately returns if the resources have already been
+  // obtained.
   bool BlockUntilLoaded();
 
-  const ResourceMap& resource_map() const { return resource_map_; }
+  // Releases and returns the file wrapping the handle.
+  base::File ReleaseFile(const std::string& path);
 
   bool loaded() const { return loaded_; }
 
  private:
+  using ResourceMap = std::map<std::string, scoped_ptr<base::File>>;
+
   // Callback when resources have loaded.
   void OnGotResources(const std::vector<std::string>& paths,
                       mojo::Array<mojo::ScopedHandle> resources);
@@ -55,6 +62,7 @@ class ResourceLoader {
   ResourceMap resource_map_;
 
   bool loaded_;
+  bool did_block_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoader);
 };

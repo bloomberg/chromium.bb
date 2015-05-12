@@ -5,6 +5,7 @@
 #include "components/resource_provider/public/cpp/resource_loader.h"
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
@@ -14,7 +15,7 @@ namespace resource_provider {
 
 ResourceLoader::ResourceLoader(mojo::Shell* shell,
                                const std::set<std::string>& paths)
-    : loaded_(false) {
+    : loaded_(false), did_block_(false) {
   shell->ConnectToApplication("mojo:resource_provider",
                               GetProxy(&resource_provider_service_provider_),
                               nullptr);
@@ -31,9 +32,19 @@ ResourceLoader::~ResourceLoader() {
 }
 
 bool ResourceLoader::BlockUntilLoaded() {
-  CHECK(!loaded_);
+  if (did_block_)
+    return loaded_;
+
+  did_block_ = true;
   resource_provider_.WaitForIncomingMethodCall();
   return loaded_;
+}
+
+base::File ResourceLoader::ReleaseFile(const std::string& path) {
+  CHECK(resource_map_.count(path));
+  scoped_ptr<base::File> file_wrapper(resource_map_[path].Pass());
+  resource_map_.erase(path);
+  return file_wrapper->Pass();
 }
 
 void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
@@ -49,7 +60,7 @@ void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
     MojoPlatformHandle platform_handle;
     CHECK(MojoExtractPlatformHandle(resources[i].release().value(),
                                     &platform_handle) == MOJO_RESULT_OK);
-    resource_map_[paths[i]] = platform_handle;
+    resource_map_[paths[i]].reset(new base::File(platform_handle));
   }
   loaded_ = true;
 }

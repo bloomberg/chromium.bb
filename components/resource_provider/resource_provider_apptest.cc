@@ -58,14 +58,12 @@ class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
   ResourceContentsMap GetResources(const std::set<std::string>& paths) {
     ResourceLoader loader(application_impl()->shell(), paths);
     loader.BlockUntilLoaded();
-    const ResourceLoader::ResourceMap& resource_loader_results(
-        loader.resource_map());
 
     // Load the contents of each of the handles.
     ResourceContentsMap results;
-    for (auto& pair : resource_loader_results) {
-      base::File file(pair.second);
-      results[pair.first] = ReadFile(&file);
+    for (auto& path : paths) {
+      base::File file(loader.ReleaseFile(path));
+      results[path] = ReadFile(&file);
     }
     return results;
   }
