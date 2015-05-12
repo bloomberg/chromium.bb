@@ -239,9 +239,8 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
       };
       // We want a thin 1-pixel line for kBarTopColor.
       SkScalar scalar_height = SkIntToScalar(bar_height);
-      SkScalar highlight_width = SkScalarDiv(SK_Scalar1, scalar_height);
-      SkScalar border_width = SkScalarDiv(SkIntToScalar(kBorderWidth),
-                                          scalar_height);
+      SkScalar highlight_width = 1 / scalar_height;
+      SkScalar border_width = kBorderWidth / scalar_height;
       const SkScalar bar_points[] = {
         0,
         border_width,
@@ -284,9 +283,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
           kBarHighlightEnd,
         };
         const SkScalar highlight_points[] = {
-          0,
-          SK_Scalar1 - SkScalarDiv(SkIntToScalar(kBorderWidth), scalar_height),
-          SK_Scalar1,
+            0, SK_Scalar1 - kBorderWidth / scalar_height, SK_Scalar1,
         };
         SkPaint paint;
         paint.setStyle(SkPaint::kFill_Style);
