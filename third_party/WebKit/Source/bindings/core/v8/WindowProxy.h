@@ -112,11 +112,6 @@ private:
     RefPtr<DOMWrapperWorld> m_world;
     ScopedPersistent<v8::Object> m_global;
     ScopedPersistent<v8::Object> m_document;
-    // There is a suspicion that installDOMWindow() is called while running
-    // installDOMWindow, i.e. installDOMWindow is not running atomically.
-    // This flag is used for an attempt to detect such a case.
-    // TODO(yukishiino): Remove this experiment.
-    bool m_installingDOMWindow;
 };
 
 } // namespace blink
