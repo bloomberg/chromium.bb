@@ -33,6 +33,7 @@ class MessageLoop;
 }
 
 namespace content {
+class BackgroundSyncProvider;
 class FlingCurveConfiguration;
 class NotificationDispatcher;
 class PermissionDispatcher;
@@ -167,6 +168,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebPushProvider* pushProvider();
   virtual blink::WebNavigatorConnectProvider* navigatorConnectProvider();
   virtual blink::WebPermissionClient* permissionClient();
+  virtual blink::WebSyncProvider* backgroundSyncProvider();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
@@ -210,6 +212,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
   scoped_refptr<PushDispatcher> push_dispatcher_;
   scoped_ptr<PermissionDispatcher> permission_client_;
+  scoped_ptr<BackgroundSyncProvider> sync_provider_;
 };
 
 }  // namespace content

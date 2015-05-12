@@ -33,6 +33,8 @@
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
+#include "content/child/background_sync/background_sync_provider.h"
+#include "content/child/background_sync/background_sync_provider_thread_proxy.h"
 #include "content/child/bluetooth/web_bluetooth_impl.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
@@ -454,6 +456,8 @@ void BlinkPlatformImpl::InternalInit() {
         ChildThreadImpl::current()->notification_dispatcher();
     push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
     permission_client_.reset(new PermissionDispatcher(
+        ChildThreadImpl::current()->service_registry()));
+    sync_provider_.reset(new BackgroundSyncProvider(
         ChildThreadImpl::current()->service_registry()));
   }
 
@@ -1198,6 +1202,17 @@ blink::WebPermissionClient* BlinkPlatformImpl::permissionClient() {
 
   return PermissionDispatcherThreadProxy::GetThreadInstance(
       main_thread_task_runner_.get(), permission_client_.get());
+}
+
+blink::WebSyncProvider* BlinkPlatformImpl::backgroundSyncProvider() {
+  if (!sync_provider_.get())
+    return nullptr;
+
+  if (IsMainThread())
+    return sync_provider_.get();
+
+  return BackgroundSyncProviderThreadProxy::GetThreadInstance(
+      main_thread_task_runner_.get(), sync_provider_.get());
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {
