@@ -124,6 +124,7 @@ void PepperWebPluginImpl::destroy() {
   // Tell |container_| to clear references to this plugin's script objects.
   if (container_)
     container_->clearScriptObjects();
+  container_ = nullptr;
 
   if (instance_.get()) {
     ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
@@ -131,6 +132,7 @@ void PepperWebPluginImpl::destroy() {
     instance_->Delete();
     instance_ = NULL;
   }
+  throttler_.reset();
 
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
