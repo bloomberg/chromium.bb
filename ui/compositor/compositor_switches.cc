@@ -22,7 +22,7 @@ const char kUIEnableCompositorAnimationTimelines[] =
 
 const char kUIEnableImplSidePainting[] = "ui-enable-impl-side-painting";
 
-const char kUIEnableSlimmingPaint[] = "ui-enable-slimming-paint";
+const char kUIDisableSlimmingPaint[] = "ui-disable-slimming-paint";
 
 const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";
 
@@ -52,7 +52,7 @@ bool IsUIOneCopyEnabled() {
 bool IsUISlimmingPaintEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kUIEnableSlimmingPaint);
+  return !command_line.HasSwitch(switches::kUIDisableSlimmingPaint);
 }
 
 }  // namespace ui
