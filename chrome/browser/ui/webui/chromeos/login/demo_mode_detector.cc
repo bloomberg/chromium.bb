@@ -39,7 +39,13 @@ void DemoModeDetector::InitDetection() {
           switches::kDisableDemoMode))
     return;
 
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  const bool has_derelict_switch =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDerelictDetectionTimeout) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDerelictIdleTimeout);
+
+  if (base::SysInfo::IsRunningOnChromeOS() && !has_derelict_switch) {
     std::string track;
     // We're running on an actual device; if we cannot find our release track
     // value or if the track contains "testimage", don't start demo mode.
