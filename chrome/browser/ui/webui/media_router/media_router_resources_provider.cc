@@ -10,10 +10,6 @@
 namespace {
 
 void AddIcons(content::WebUIDataSource* html_source) {
-  html_source->AddResourcePath("elements/icon/close-gray.png",
-                              IDR_CLOSE_GRAY_ICON);
-  html_source->AddResourcePath("elements/icon/close-gray2x.png",
-                              IDR_CLOSE_GRAY_2X_ICON);
   html_source->AddResourcePath("elements/icon/drop-down-arrow.png",
                               IDR_DROP_DOWN_ARROW_ICON);
   html_source->AddResourcePath("elements/icon/drop-down-arrow2x.png",

@@ -3,33 +3,21 @@
  * found in the LICENSE file. */
 
 #cast-modes {
-  margin: 30px 0;
+  margin: 40px 0;
   position: absolute;
   z-index: 1;
 }
 
 :host-context(html[dir='ltr']) #cast-modes {
-  right: 35px;
+  right: 72px;
 }
 
 :host-context(html[dir='rtl']) #cast-modes {
-  left: 35px;
-}
-
-#close-button {
-  -webkit-margin-start: 15px;
-  align-self: flex-start;
-  background-image: -webkit-image-set(
-    url(../icon/close-gray.png) 1x,
-    url(../icon/close-gray2x.png) 2x);
-  background-repeat: no-repeat;
-  height: 20px;
-  width: 20px;
+  left: 72px;
 }
 
 #container-header {
-  display: flex;
-  justify-content: space-between;
+  background-color: rgb(214, 214, 214);
 }
 
 #drop-down-button {
@@ -49,10 +37,7 @@
   -webkit-padding-start: 20px;
   flex-grow: 1;
   font-size: 1.25em;
-  font-weight: normal;
   margin: 0;
-  padding-bottom: 10px;
-  padding-top: 10px;
 }
 
 .sink {

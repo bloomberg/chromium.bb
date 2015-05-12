@@ -2,7 +2,9 @@
 <link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
 <link rel="import" href="chrome://resources/polymer/core-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
+<link rel="import" href="chrome://resources/polymer/core-toolbar/core-toolbar.html">
 <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../cast_mode_picker/cast_mode_picker.html">
 <link rel="import" href="../drop_down_button/drop_down_button.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
@@ -14,7 +16,7 @@
       class="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}"
       on-click="{{hideCastMode}}">
   </div>
-  <div id="container-header"
+  <core-toolbar id="container-header"
       class="{{ {state: currentView_} | isSinkPickerHidden}}">
     <div id="router-header-text">{{headerText}}</div>
     <drop-down-button id="drop-down-button"
@@ -25,8 +27,9 @@
         castModeList="{{castModeList}}"
         selectedCastModeValue="{{selectedCastModeValue_}}">
     </cast-mode-picker>
-    <div id="close-button" on-click="{{closeButtonClicked}}"></div>
-  </div>
+    <paper-icon-button id="close-button" on-click="{{closeButtonClicked}}">
+    </paper-icon-button>
+  </core-toolbar>
   <issue-banner id="issue-banner" issue="{{issue}}"
       class="{{ {state: currentView_, issue: issue} | isIssueBannerHidden}}">
   </issue-banner>

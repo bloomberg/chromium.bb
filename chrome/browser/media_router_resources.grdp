@@ -26,8 +26,6 @@
   <include name="IDR_ROUTE_DETAILS_JS" file="resources\media_router\elements\route_details\route_details.js" type="BINDATA" />
 
   <!-- Icons -->
-  <include name="IDR_CLOSE_GRAY_ICON" file="resources\media_router\elements\icon\close-gray.png" type="BINDATA" />
-  <include name="IDR_CLOSE_GRAY_2X_ICON" file="resources\media_router\elements\icon\close-gray2x.png" type="BINDATA" />
   <include name="IDR_DROP_DOWN_ARROW_ICON" file="resources\media_router\elements\icon\drop-down-arrow.png" type="BINDATA" />
   <include name="IDR_DROP_DOWN_ARROW_2X_ICON" file="resources\media_router\elements\icon\drop-down-arrow2x.png" type="BINDATA" />
   <include name="IDR_DROP_DOWN_ARROW_HOVER_ICON" file="resources\media_router\elements\icon\drop-down-arrow-hover.png" type="BINDATA" />

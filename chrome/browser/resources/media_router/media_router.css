@@ -12,5 +12,4 @@ body {
   background-color: rgb(246, 246, 246);
   display: flex;
   flex-direction: column;
-  position: relative;
 }
