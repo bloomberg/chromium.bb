@@ -21,10 +21,10 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/var_array.h"
-#include "third_party/pdfium/fpdfsdk/include/fpdf_dataavail.h"
-#include "third_party/pdfium/fpdfsdk/include/fpdf_progressive.h"
-#include "third_party/pdfium/fpdfsdk/include/fpdfformfill.h"
-#include "third_party/pdfium/fpdfsdk/include/fpdfview.h"
+#include "third_party/pdfium/public/fpdf_dataavail.h"
+#include "third_party/pdfium/public/fpdf_formfill.h"
+#include "third_party/pdfium/public/fpdf_progressive.h"
+#include "third_party/pdfium/public/fpdfview.h"
 
 namespace pp {
 class KeyboardInputEvent;

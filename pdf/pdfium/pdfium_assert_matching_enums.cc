@@ -6,8 +6,8 @@
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
-#include "third_party/pdfium/fpdfsdk/include/fpdf_fwlevent.h"
-#include "third_party/pdfium/fpdfsdk/include/fpdf_sysfontinfo.h"
+#include "third_party/pdfium/public/fpdf_fwlevent.h"
+#include "third_party/pdfium/public/fpdf_sysfontinfo.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #define STATIC_ASSERT_MATCH(np_name, pdfium_name) \

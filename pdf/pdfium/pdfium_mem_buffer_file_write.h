@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/pdfium/fpdfsdk/include/fpdfsave.h"
+#include "third_party/pdfium/public/fpdf_save.h"
 
 namespace chrome_pdf {
 

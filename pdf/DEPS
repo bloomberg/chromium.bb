@@ -5,7 +5,8 @@ include_rules = [
   "+net",
   "+ppapi",
   "+printing/units.h",
-  "+third_party/pdfium/fpdfsdk/include",
+  "+third_party/pdfium/fpdfsdk/include/pdfwindow",
+  "+third_party/pdfium/public",
   "+ui/events/keycodes/keyboard_codes.h",
   "+v8/include/v8.h"
 ]
