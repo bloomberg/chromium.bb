@@ -156,13 +156,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
       // |-application:openFiles:|, since we already handle them directly.
       // @"NO" looks like a mistake, but the value really is supposed to be a
       // string.
-      @"NSTreatUnknownArgumentsAsOpen": @"NO",
-      // CoreAnimation has poor performance and CoreAnimation and
-      // non-CoreAnimation exhibit window flickering when layers are not hosted
-      // in the window server, which is the default when not not using the
-      // 10.9 SDK.
-      // TODO: Remove this when we build with the 10.9 SDK.
-      @"NSWindowHostsLayersInWindowServer": @(base::mac::IsOSMavericksOrLater())
+      @"NSTreatUnknownArgumentsAsOpen": @"NO"
   }];
 }
 

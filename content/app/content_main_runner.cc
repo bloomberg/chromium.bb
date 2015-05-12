@@ -85,6 +85,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "content/app/mac/mac_init.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/common/sandbox_init_mac.h"
 #endif  // !OS_IOS
@@ -552,6 +553,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // app quits. Each "main" needs to flush this pool right before it goes into
     // its main event loop to get rid of the cruft.
     autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
+    InitializeMac();
 #endif
 
     // On Android, the command line is initialized when library is loaded and

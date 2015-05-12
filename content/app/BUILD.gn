@@ -16,6 +16,8 @@ content_app_sources = [
   "android/library_loader_hooks.h",
   "content_main.cc",
   "content_main_runner.cc",
+  "mac/mac_init.mm",
+  "mac/mac_init.h",
   "mojo/mojo_init.cc",
   "mojo/mojo_init.h",
 ]
