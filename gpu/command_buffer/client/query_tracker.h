@@ -27,7 +27,7 @@ class GLES2Implementation;
 // Manages buckets of QuerySync instances in mapped memory.
 class GLES2_IMPL_EXPORT QuerySyncManager {
  public:
-  static const size_t kSyncsPerBucket = 4096;
+  static const size_t kSyncsPerBucket = 1024;
 
   struct Bucket {
     explicit Bucket(QuerySync* sync_mem)
