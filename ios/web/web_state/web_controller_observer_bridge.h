@@ -7,6 +7,7 @@
 
 #include <string>
 
+#import "base/ios/weak_nsobject.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
 @class CRWWebController;
@@ -52,8 +53,8 @@ class WebControllerObserverBridge : public WebStateObserver {
                              const GURL& url,
                              bool user_is_interacting);
 
-  id<CRWWebControllerObserver> web_controller_observer_;  // Weak.
-  CRWWebController* web_controller_;                      // Weak.
+  base::WeakNSProtocol<id<CRWWebControllerObserver>> web_controller_observer_;
+  base::WeakNSObject<CRWWebController> web_controller_;
   std::string script_command_callback_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerObserverBridge);
