@@ -93,10 +93,10 @@ class Frame {
   uint64 track_number() const { return track_number_; }
   void set_timestamp(uint64 timestamp) { timestamp_ = timestamp; }
   uint64 timestamp() const { return timestamp_; }
-  void set_discard_padding(uint64 discard_padding) {
+  void set_discard_padding(int64 discard_padding) {
     discard_padding_ = discard_padding;
   }
-  uint64 discard_padding() const { return discard_padding_; }
+  int64 discard_padding() const { return discard_padding_; }
 
  private:
   // Id of the Additional data.
