@@ -75,7 +75,14 @@ const int kDaysOfHistory = 90;
 const int64 kUpdateIntervalSecs = 15;
 // Intervals between requests to HistoryService.
 const int64 kMinUpdateIntervalMinutes = 1;
+#if !defined(OS_IOS)
 const int64 kMaxUpdateIntervalMinutes = 60;
+#else
+// On iOS, having the max at 60 results in the topsites database being
+// not updated often enough since the app isn't usually running for long
+// stretches of time.
+const int64 kMaxUpdateIntervalMinutes = 5;
+#endif  // !defined(OS_IOS)
 
 // Use 100 quality (highest quality) because we're very sensitive to
 // artifacts for these small sized, highly detailed images.

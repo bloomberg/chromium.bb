@@ -963,8 +963,20 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
 
 // Makes sure GetUpdateDelay is updated appropriately.
 TEST_F(TopSitesImplTest, GetUpdateDelay) {
+#if defined(OS_IOS)
+  const int64 kExpectedUpdateDelayInSecondEmpty = 30;
+  const int64 kExpectedUpdateDelayInSecond0Changed = 5;
+  const int64 kExpectedUpdateDelayInSecond3Changed = 5;
+  const int64 kExpectedUpdateDelayInSecond20Changed = 1;
+#else
+  const int64 kExpectedUpdateDelayInSecondEmpty = 30;
+  const int64 kExpectedUpdateDelayInSecond0Changed = 60;
+  const int64 kExpectedUpdateDelayInSecond3Changed = 52;
+  const int64 kExpectedUpdateDelayInSecond20Changed = 1;
+#endif
+
   SetLastNumUrlsChanged(0);
-  EXPECT_EQ(30, GetUpdateDelay().InSeconds());
+  EXPECT_EQ(kExpectedUpdateDelayInSecondEmpty, GetUpdateDelay().InSeconds());
 
   MostVisitedURLList url_list;
   url_list.resize(20);
@@ -976,13 +988,14 @@ TEST_F(TopSitesImplTest, GetUpdateDelay) {
   SetTopSites(url_list);
   EXPECT_EQ(20u, last_num_urls_changed());
   SetLastNumUrlsChanged(0);
-  EXPECT_EQ(60, GetUpdateDelay().InMinutes());
+  EXPECT_EQ(kExpectedUpdateDelayInSecond0Changed, GetUpdateDelay().InMinutes());
 
   SetLastNumUrlsChanged(3);
-  EXPECT_EQ(52, GetUpdateDelay().InMinutes());
+  EXPECT_EQ(kExpectedUpdateDelayInSecond3Changed, GetUpdateDelay().InMinutes());
 
   SetLastNumUrlsChanged(20);
-  EXPECT_EQ(1, GetUpdateDelay().InMinutes());
+  EXPECT_EQ(kExpectedUpdateDelayInSecond20Changed,
+            GetUpdateDelay().InMinutes());
 }
 
 // Verifies that callbacks are notified correctly if requested before top sites
