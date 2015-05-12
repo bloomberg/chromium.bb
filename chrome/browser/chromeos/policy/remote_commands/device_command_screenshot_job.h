@@ -53,7 +53,10 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
     FAILURE_SERVER = 4,
 
     // Failed due to a client-side error.
-    FAILURE_CLIENT = 5
+    FAILURE_CLIENT = 5,
+
+    // Failed due to an invalid upload url.
+    FAILURE_INVALID_URL = 6
   };
 
   // A delegate interface used by DeviceCommandScreenshotJob to retrieve its

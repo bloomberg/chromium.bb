@@ -142,14 +142,13 @@ bool DeviceCommandScreenshotJob::ParseCommandPayload(
   scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(command_payload));
   if (!root.get())
     return false;
-  base::DictionaryValue* payload;
+  base::DictionaryValue* payload = nullptr;
   if (!root->GetAsDictionary(&payload))
     return false;
   std::string upload_url;
   if (!payload->GetString(kUploadUrlFieldName, &upload_url))
     return false;
   upload_url_ = GURL(upload_url);
-  DCHECK(upload_url_.is_valid()) << upload_url_ << " is not a valid URL";
   return true;
 }
 
@@ -195,12 +194,23 @@ void DeviceCommandScreenshotJob::RunImpl(
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
+  // Immediately fail if the upload url is invalid.
+  if (!upload_url_.is_valid()) {
+    LOG(ERROR) << upload_url_ << " is not a valid URL.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(failed_callback_, base::Passed(make_scoped_ptr(
+                                         new Payload(FAILURE_INVALID_URL)))));
+    return;
+  }
+
   // Immediately fail if there are no attached screens.
   if (root_windows.size() == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(failed_callback_, base::Passed(make_scoped_ptr(new Payload(
                                          FAILURE_SCREENSHOT_ACQUISITION)))));
+    return;
   }
 
   // Post tasks to the sequenced worker pool for taking screenshots on each
