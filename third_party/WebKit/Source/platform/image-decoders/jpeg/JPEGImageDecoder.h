@@ -62,7 +62,7 @@ public:
 
     bool outputScanlines();
     unsigned desiredScaleNumerator() const;
-    void jpegComplete();
+    void complete();
 
     void setOrientation(ImageOrientation orientation) { m_orientation = orientation; }
     void setHasColorProfile(bool hasColorProfile) { m_hasColorProfile = hasColorProfile; }

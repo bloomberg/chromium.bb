@@ -675,7 +675,7 @@ boolean fill_input_buffer(j_decompress_ptr)
 void term_source(j_decompress_ptr jd)
 {
     decoder_source_mgr *src = (decoder_source_mgr *)jd->src;
-    src->decoder->decoder()->jpegComplete();
+    src->decoder->decoder()->complete();
 }
 
 JPEGImageDecoder::JPEGImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
@@ -939,7 +939,7 @@ bool JPEGImageDecoder::outputScanlines()
             return setFailed();
         buffer.setStatus(ImageFrame::FramePartial);
         // The buffer is transparent outside the decoded area while the image is
-        // loading. The completed image will be marked fully opaque in jpegComplete().
+        // loading. The image will be marked fully opaque in complete().
         buffer.setHasAlpha(true);
 
         // For JPEGs, the frame always fills the entire image.
@@ -974,7 +974,7 @@ bool JPEGImageDecoder::outputScanlines()
     return setFailed();
 }
 
-void JPEGImageDecoder::jpegComplete()
+void JPEGImageDecoder::complete()
 {
     if (m_frameBufferCache.isEmpty())
         return;
