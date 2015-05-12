@@ -105,7 +105,7 @@ void DocumentLoadTiming::addRedirect(const KURL& redirectingUrl, const KURL& red
 
     // Check if the redirected url is allowed to access the redirecting url's timing information.
     RefPtr<SecurityOrigin> redirectedSecurityOrigin = SecurityOrigin::create(redirectedUrl);
-    m_hasCrossOriginRedirect = !redirectedSecurityOrigin->canRequest(redirectingUrl);
+    m_hasCrossOriginRedirect |= !redirectedSecurityOrigin->canRequest(redirectingUrl);
 }
 
 void DocumentLoadTiming::markUnloadEventStart()
