@@ -4003,6 +4003,9 @@ String Document::lastModified() const
 
 const KURL& Document::firstPartyForCookies() const
 {
+    if (!RuntimeEnabledFeatures::firstPartyIncludesAncestorsEnabled())
+        return topDocument().url();
+
     // We're intentionally using the URL of each document rather than the document's SecurityOrigin.
     // Sandboxing a document into a unique origin shouldn't effect first-/third-party status for
     // cookies and site data.
