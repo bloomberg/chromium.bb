@@ -183,7 +183,10 @@ if (ozone_platform_gbm) {
       "//ui/events/ozone:events_ozone_layout",
     ]
 
-    public_configs = [ ":libgbm" ]
+    public_configs = [
+      ":libgbm",
+      "//third_party/khronos:khronos_headers",
+    ]
 
     if (use_mesa_platform_null) {
       defines += [ "USE_MESA_PLATFORM_NULL" ]
