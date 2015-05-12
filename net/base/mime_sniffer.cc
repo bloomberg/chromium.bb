@@ -162,10 +162,6 @@ static const MagicNumber kMagicNumbers[] = {
   MAGIC_NUMBER("audio/mpeg", "ID3")
   MAGIC_NUMBER("image/webp", "RIFF....WEBPVP8 ")
   MAGIC_NUMBER("video/webm", "\x1A\x45\xDF\xA3")
-  // TODO(abarth): we don't handle partial byte matches yet
-  // MAGIC_NUMBER("video/mpeg", "\x00\x00\x01\xB")
-  // MAGIC_NUMBER("audio/mpeg", "\xFF\xE")
-  // MAGIC_NUMBER("audio/mpeg", "\xFF\xF")
   MAGIC_NUMBER("application/zip", "PK\x03\x04")
   MAGIC_NUMBER("application/x-rar-compressed", "Rar!\x1A\x07\x00")
   MAGIC_NUMBER("application/x-msmetafile", "\xD7\xCD\xC6\x9A")
