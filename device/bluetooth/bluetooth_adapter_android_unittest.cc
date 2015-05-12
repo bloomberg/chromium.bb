@@ -10,16 +10,47 @@ namespace device {
 
 class BluetoothAdapterAndroidTest : public testing::Test {
  protected:
-  BluetoothAdapterAndroidTest() {
+  void InitWithPermission() {
     adapter_ = BluetoothAdapterAndroid::CreateAdapter().get();
+  }
+
+  void InitWithoutPermission() {
+    adapter_ =
+        BluetoothAdapterAndroid::CreateAdapterWithoutPermissionForTesting()
+            .get();
   }
 
   scoped_refptr<BluetoothAdapterAndroid> adapter_;
 };
 
 TEST_F(BluetoothAdapterAndroidTest, Construct) {
+  InitWithPermission();
+  ASSERT_TRUE(adapter_.get());
+  EXPECT_TRUE(adapter_->HasBluetoothPermission());
+  if (!adapter_->IsPresent()) {
+    LOG(WARNING) << "Bluetooth adapter not present; skipping unit test.";
+    return;
+  }
+  EXPECT_GT(adapter_->GetAddress().length(), 0u);
+  EXPECT_GT(adapter_->GetName().length(), 0u);
+  EXPECT_TRUE(adapter_->IsPresent());
+  // Don't know on test machines if adapter will be powered or not, but
+  // the call should be safe to make and consistent.
+  EXPECT_EQ(adapter_->IsPowered(), adapter_->IsPowered());
+  EXPECT_FALSE(adapter_->IsDiscoverable());
+  EXPECT_FALSE(adapter_->IsDiscovering());
+}
+
+TEST_F(BluetoothAdapterAndroidTest, ConstructNoPermision) {
+  InitWithoutPermission();
   ASSERT_TRUE(adapter_.get());
   EXPECT_FALSE(adapter_->HasBluetoothPermission());
+  EXPECT_EQ(adapter_->GetAddress().length(), 0u);
+  EXPECT_EQ(adapter_->GetName().length(), 0u);
+  EXPECT_FALSE(adapter_->IsPresent());
+  EXPECT_FALSE(adapter_->IsPowered());
+  EXPECT_FALSE(adapter_->IsDiscoverable());
+  EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
 }  // namespace device
