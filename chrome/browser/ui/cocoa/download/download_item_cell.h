@@ -64,6 +64,7 @@ enum DownloadItemMousePosition {
 @interface DownloadItemCell(TestingAPI)
 - (BOOL)isStatusTextVisible;
 - (CGFloat)statusTextAlpha;
+- (CGFloat)titleY;
 - (void)skipVisibilityAnimation;
 - (void)showSecondaryTitle;
 - (void)hideSecondaryTitle;

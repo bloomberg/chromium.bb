@@ -138,7 +138,7 @@ void DummyRTLMirror(gfx::Rect* bounds) {
 
 - (void)setInitialState {
   isStatusTextVisible_ = NO;
-  titleY_ = kPrimaryTextPosTop;
+  titleY_ = kPrimaryTextOnlyPosTop;
   statusAlpha_ = 0.0;
   indeterminateProgressAngle_ = DownloadShelf::kStartAngleDegrees;
 
@@ -725,6 +725,10 @@ void DummyRTLMirror(gfx::Rect* bounds) {
 
 - (CGFloat)statusTextAlpha {
   return statusAlpha_;
+}
+
+- (CGFloat)titleY {
+  return titleY_;
 }
 
 - (void)skipVisibilityAnimation {

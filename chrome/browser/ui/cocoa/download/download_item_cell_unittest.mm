@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/download/download_item_cell.h"
+
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/download/download_item_model.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-using ::testing::Return;
-
-
-
 using ::testing::_;
+using ::testing::Return;
 using ::testing::ReturnRefOfCopy;
-
 
 class DownloadItemCellTest : public CocoaTest {
  public:
@@ -42,16 +39,19 @@ class DownloadItemCellTest : public CocoaTest {
 TEST_F(DownloadItemCellTest, ToggleStatusText) {
   EXPECT_FALSE([cell_ isStatusTextVisible]);
   EXPECT_FLOAT_EQ(0.0, [cell_ statusTextAlpha]);
+  CGFloat titleYNoStatus = [cell_ titleY];
 
   [cell_ showSecondaryTitle];
   [cell_ skipVisibilityAnimation];
   EXPECT_TRUE([cell_ isStatusTextVisible]);
   EXPECT_FLOAT_EQ(1.0, [cell_ statusTextAlpha]);
+  EXPECT_LT([cell_ titleY], titleYNoStatus);
 
   [cell_ hideSecondaryTitle];
   [cell_ skipVisibilityAnimation];
   EXPECT_FALSE([cell_ isStatusTextVisible]);
   EXPECT_FLOAT_EQ(0.0, [cell_ statusTextAlpha]);
+  EXPECT_FLOAT_EQ(titleYNoStatus, [cell_ titleY]);
 }
 
 TEST_F(DownloadItemCellTest, IndeterminateProgress) {
