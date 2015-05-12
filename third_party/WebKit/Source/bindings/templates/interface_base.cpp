@@ -137,7 +137,8 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
        method_callback, origin_safe_method_getter, generate_constructor,
-       method_implemented_in_private_script, runtime_determined_length_method
+       method_implemented_in_private_script, runtime_determined_length_method,
+       runtime_determined_maxarg_method
        with context %}
 {% for method in methods %}
 {% if method.should_be_exposed_to_script %}
@@ -148,6 +149,9 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {% if method.overloads and method.overloads.visible %}
 {% if method.overloads.runtime_determined_lengths %}
 {{runtime_determined_length_method(method.overloads)}}
+{% endif %}
+{% if method.overloads.runtime_determined_maxargs %}
+{{runtime_determined_maxarg_method(method.overloads)}}
 {% endif %}
 {{overload_resolution_method(method.overloads, world_suffix)}}
 {% endif %}

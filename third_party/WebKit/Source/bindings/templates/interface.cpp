@@ -525,13 +525,13 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {# Invalid arity, throw error #}
         {# Report full list of valid arities if gaps and above minimum #}
         {% if constructor_overloads.valid_arities %}
-        if (info.Length() >= {{constructor_overloads.minarg}}) {
+        if (info.Length() >= {{constructor_overloads.length}}) {
             throwArityTypeError(exceptionState, "{{constructor_overloads.valid_arities}}", info.Length());
             return;
         }
         {% endif %}
         {# Otherwise just report "not enough arguments" #}
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{constructor_overloads.minarg}}, info.Length()));
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{constructor_overloads.length}}, info.Length()));
         exceptionState.throwIfNeeded();
         return;
     }

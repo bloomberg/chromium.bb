@@ -559,8 +559,9 @@ interface TestObject {
     [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(DOMString stringArg);
     [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(long longArg);
     [RuntimeEnabled=FeatureName1] void partiallyRuntimeEnabledOverloadedVoidMethod(DOMString stringArg);
-    [RuntimeEnabled=FeatureName2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterface);
+    [RuntimeEnabled=FeatureName2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
     void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
+    [RuntimeEnabled=FeatureName3] void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [TreatReturnedNullStringAs=Null] ByteString treatReturnedNullStringAsNullByteStringMethod();

@@ -352,6 +352,21 @@ static int {{overloads.name}}MethodLength()
 
 
 {##############################################################################}
+{% macro runtime_determined_maxarg_method(overloads) %}
+static int {{overloads.name}}MethodMaxArg()
+{
+    {% for length, runtime_enabled_functions in overloads.runtime_determined_maxargs %}
+    {% for runtime_enabled_function in runtime_enabled_functions %}
+    {% filter runtime_enabled(runtime_enabled_function) %}
+    return {{length}};
+    {% endfilter %}
+    {% endfor %}
+    {% endfor %}
+}
+{% endmacro %}
+
+
+{##############################################################################}
 {# FIXME: We should return a rejected Promise if an error occurs in this
 function when ALL methods in this overload return Promise. In order to do so,
 we must ensure either ALL or NO methods in this overload return Promise #}
@@ -401,7 +416,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         {# Invalid arity, throw error #}
         {# Report full list of valid arities if gaps and above minimum #}
         {% if overloads.valid_arities %}
-        if (info.Length() >= {{overloads.minarg}}) {
+        if (info.Length() >= {{overloads.length}}) {
             setArityTypeError(exceptionState, "{{overloads.valid_arities}}", info.Length());
             {{propagate_error_with_exception_state(overloads) | indent(12)}}
         }

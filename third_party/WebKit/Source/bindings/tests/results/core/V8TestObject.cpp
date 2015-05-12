@@ -11252,11 +11252,11 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod1Method(const v8::Functio
 static void partiallyRuntimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    TestInterfaceImplementation* testInterface;
+    TestInterfaceImplementation* testInterfaceArg;
     {
-        testInterface = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     }
-    impl->partiallyRuntimeEnabledOverloadedVoidMethod(testInterface);
+    impl->partiallyRuntimeEnabledOverloadedVoidMethod(testInterfaceArg);
 }
 
 static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -11276,6 +11276,25 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::Functio
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg, stringArg);
 }
 
+static void partiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int longArg;
+    V8StringResource<> stringArg;
+    TestInterfaceImplementation* testInterfaceArg;
+    {
+        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        stringArg = info[1];
+        if (!stringArg.prepare())
+            return;
+        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[2]);
+    }
+    impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg, stringArg, testInterfaceArg);
+}
+
 static int partiallyRuntimeEnabledOverloadedVoidMethodMethodLength()
 {
     if (RuntimeEnabledFeatures::featureName1Enabled()) {
@@ -11287,10 +11306,18 @@ static int partiallyRuntimeEnabledOverloadedVoidMethodMethodLength()
     return 2;
 }
 
+static int partiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg()
+{
+    if (RuntimeEnabledFeatures::featureName3Enabled()) {
+        return 3;
+    }
+    return 2;
+}
+
 static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-    switch (std::min(2, info.Length())) {
+    switch (std::min(TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg(), info.Length())) {
     case 1:
         if (RuntimeEnabledFeatures::featureName2Enabled()) {
             if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
@@ -11309,6 +11336,14 @@ static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::Function
         if (true) {
             partiallyRuntimeEnabledOverloadedVoidMethod3Method(info);
             return;
+        }
+        break;
+    case 3:
+        if (RuntimeEnabledFeatures::featureName3Enabled()) {
+            if (true) {
+                partiallyRuntimeEnabledOverloadedVoidMethod4Method(info);
+                return;
+            }
         }
         break;
     default:

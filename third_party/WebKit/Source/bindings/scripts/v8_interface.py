@@ -558,7 +558,7 @@ def interface_context(interface):
         # enabled overloads are actually enabled, so length may be incorrect.
         # E.g., [RuntimeEnabled=Foo] void f(); void f(long x);
         # should have length 1 if Foo is not enabled, but length 0 if it is.
-        method['length'] = (method['overloads']['minarg'] if 'overloads' in method else
+        method['length'] = (method['overloads']['length'] if 'overloads' in method else
                             method['number_of_required_arguments'])
 
     context.update({
@@ -662,33 +662,58 @@ def overloads_context(interface, overloads):
     lengths = [length for length, _ in effective_overloads_by_length]
     name = overloads[0].get('name', '<constructor>')
 
-    # Check if all overloads with the shortest acceptable arguments list are
-    # runtime enabled, in which case we need to have a runtime determined
-    # Function.length. The exception is if all overloads are controlled by the
-    # same runtime enabled feature, in which case there would be no function
-    # object at all if it is not enabled.
-    shortest_overloads = effective_overloads_by_length[0][1]
-    if (all(method.get('runtime_enabled_function')
-            for method, _, _ in shortest_overloads) and
-        not common_value(overloads, 'runtime_enabled_function')):
-        # Generate a list of (length, runtime_enabled_functions) tuples.
-        runtime_determined_lengths = []
-        for length, effective_overloads in effective_overloads_by_length:
-            runtime_enabled_functions = set(
-                method['runtime_enabled_function']
-                for method, _, _ in effective_overloads
-                if method.get('runtime_enabled_function'))
-            if not runtime_enabled_functions:
-                # This "length" is unconditionally enabled, so stop here.
-                runtime_determined_lengths.append((length, [None]))
-                break
-            runtime_determined_lengths.append(
-                (length, sorted(runtime_enabled_functions)))
-        length = ('%sV8Internal::%sMethodLength()'
-                  % (cpp_name_or_partial(interface), name))
-    else:
-        runtime_determined_lengths = None
-        length = lengths[0]
+    runtime_determined_lengths = None
+    function_length = lengths[0]
+    runtime_determined_maxargs = None
+    maxarg = lengths[-1]
+
+    # The special case handling below is not needed if all overloads are
+    # runtime enabled by the same feature.
+    if not common_value(overloads, 'runtime_enabled_function'):
+        # Check if all overloads with the shortest acceptable arguments list are
+        # runtime enabled, in which case we need to have a runtime determined
+        # Function.length.
+        shortest_overloads = effective_overloads_by_length[0][1]
+        if (all(method.get('runtime_enabled_function')
+                for method, _, _ in shortest_overloads)):
+            # Generate a list of (length, runtime_enabled_functions) tuples.
+            runtime_determined_lengths = []
+            for length, effective_overloads in effective_overloads_by_length:
+                runtime_enabled_functions = set(
+                    method['runtime_enabled_function']
+                    for method, _, _ in effective_overloads
+                    if method.get('runtime_enabled_function'))
+                if not runtime_enabled_functions:
+                    # This "length" is unconditionally enabled, so stop here.
+                    runtime_determined_lengths.append((length, [None]))
+                    break
+                runtime_determined_lengths.append(
+                    (length, sorted(runtime_enabled_functions)))
+            function_length = ('%sV8Internal::%sMethodLength()'
+                               % (cpp_name_or_partial(interface), name))
+
+        # Check if all overloads with the longest required arguments list are
+        # runtime enabled, in which case we need to have a runtime determined
+        # maximum distinguishing argument index.
+        longest_overloads = effective_overloads_by_length[-1][1]
+        if (not common_value(overloads, 'runtime_enabled_function') and
+            all(method.get('runtime_enabled_function')
+                for method, _, _ in longest_overloads)):
+            # Generate a list of (length, runtime_enabled_functions) tuples.
+            runtime_determined_maxargs = []
+            for length, effective_overloads in reversed(effective_overloads_by_length):
+                runtime_enabled_functions = set(
+                    method['runtime_enabled_function']
+                    for method, _, _ in effective_overloads
+                    if method.get('runtime_enabled_function'))
+                if not runtime_enabled_functions:
+                    # This "length" is unconditionally enabled, so stop here.
+                    runtime_determined_maxargs.append((length, [None]))
+                    break
+                runtime_determined_maxargs.append(
+                    (length, sorted(runtime_enabled_functions)))
+            maxarg = ('%sV8Internal::%sMethodMaxArg()'
+                      % (cpp_name_or_partial(interface), name))
 
     # Check and fail if overloads disagree on any of the extended attributes
     # that affect how the method should be registered.
@@ -728,15 +753,15 @@ def overloads_context(interface, overloads):
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         'exposed_test_all': common_value(overloads, 'exposed_test'),  # [Exposed]
         'has_custom_registration_all': common_value(overloads, 'has_custom_registration'),
-        'length': length,
+        'length': function_length,
         'length_tests_methods': length_tests_methods(effective_overloads_by_length),
         # 1. Let maxarg be the length of the longest type list of the
         # entries in S.
-        'maxarg': lengths[-1],
+        'maxarg': maxarg,
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
-        'minarg': lengths[0],
         'returns_promise_all': promise_overload_count > 0,
         'runtime_determined_lengths': runtime_determined_lengths,
+        'runtime_determined_maxargs': runtime_determined_maxargs,
         'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]
         'valid_arities': lengths
             # Only need to report valid arities if there is a gap in the
