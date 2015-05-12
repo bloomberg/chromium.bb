@@ -145,7 +145,7 @@ void PushMessagingServiceImpl::DecreasePushRegistrationCount(int subtract,
 }
 
 bool PushMessagingServiceImpl::CanHandle(const std::string& app_id) const {
-  return PushMessagingAppIdentifier::Get(profile_, app_id).IsValid();
+  return !PushMessagingAppIdentifier::Get(profile_, app_id).is_null();
 }
 
 void PushMessagingServiceImpl::ShutdownHandler() {
@@ -165,7 +165,7 @@ void PushMessagingServiceImpl::OnMessage(
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Get(profile_, app_id);
   // Drop message and unregister if app_id was unknown (maybe recently deleted).
-  if (!app_identifier.IsValid()) {
+  if (app_identifier.is_null()) {
     DeliverMessageCallback(app_id, GURL::EmptyGURL(), -1, message,
                            message_handled_closure,
                            content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID);
@@ -304,7 +304,6 @@ void PushMessagingServiceImpl::RegisterFromDocument(
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Generate(requesting_origin,
                                            service_worker_registration_id);
-  DCHECK(app_identifier.IsValid());
 
   if (push_registration_count_ + pending_push_registration_count_
       >= kMaxRegistrations) {
@@ -362,7 +361,6 @@ void PushMessagingServiceImpl::RegisterFromWorker(
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Generate(requesting_origin,
                                            service_worker_registration_id);
-  DCHECK(app_identifier.IsValid());
 
   if (profile_->GetPrefs()->GetInteger(
           prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
@@ -423,7 +421,7 @@ void PushMessagingServiceImpl::DidRegister(
   switch (result) {
     case gcm::GCMClient::SUCCESS:
       status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
-      app_identifier.PersistToDisk(profile_);
+      app_identifier.PersistToPrefs(profile_);
       IncreasePushRegistrationCount(1, false /* is_pending */);
       break;
     case gcm::GCMClient::INVALID_PARAMETER:
@@ -473,7 +471,7 @@ void PushMessagingServiceImpl::Unregister(
     const content::PushMessagingService::UnregisterCallback& callback) {
   PushMessagingAppIdentifier app_identifier = PushMessagingAppIdentifier::Get(
       profile_, requesting_origin, service_worker_registration_id);
-  if (!app_identifier.IsValid()) {
+  if (app_identifier.is_null()) {
     if (!callback.is_null()) {
       callback.Run(
           content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
@@ -494,9 +492,9 @@ void PushMessagingServiceImpl::Unregister(
   // retry unregistration if it fails due to network errors (crbug.com/465399).
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Get(profile_, app_id);
-  bool was_registered = app_identifier.IsValid();
+  bool was_registered = !app_identifier.is_null();
   if (was_registered)
-    app_identifier.DeleteFromDisk(profile_);
+    app_identifier.DeleteFromPrefs(profile_);
 
   const auto& unregister_callback =
       base::Bind(&PushMessagingServiceImpl::DidUnregister,

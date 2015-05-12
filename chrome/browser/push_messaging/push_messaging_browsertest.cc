@@ -248,7 +248,7 @@ PushMessagingBrowserTest::GetAppIdentifierForServiceWorkerRegistration(
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   PushMessagingAppIdentifier app_identifier = PushMessagingAppIdentifier::Get(
       GetBrowser()->profile(), origin, service_worker_registration_id);
-  EXPECT_TRUE(app_identifier.IsValid());
+  EXPECT_FALSE(app_identifier.is_null());
   return app_identifier;
 }
 
@@ -1038,7 +1038,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingAppIdentifier stored_app_identifier =
       PushMessagingAppIdentifier::Get(GetBrowser()->profile(),
                                       app_identifier.app_id());
-  EXPECT_TRUE(stored_app_identifier.IsValid());
+  EXPECT_FALSE(stored_app_identifier.is_null());
 
   // Simulate a user clearing site data (including Service Workers, crucially).
   BrowsingDataRemover* remover =
@@ -1065,7 +1065,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingAppIdentifier stored_app_identifier2 =
       PushMessagingAppIdentifier::Get(GetBrowser()->profile(),
                                       app_identifier.app_id());
-  EXPECT_FALSE(stored_app_identifier2.IsValid());
+  EXPECT_TRUE(stored_app_identifier2.is_null());
 }
 
 class PushMessagingIncognitoBrowserTest : public PushMessagingBrowserTest {

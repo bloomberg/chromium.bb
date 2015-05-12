@@ -9,7 +9,7 @@ class PushMessagingAppIdentifierTest : public testing::Test {
  protected:
   PushMessagingAppIdentifier GenerateId(
       const GURL& origin,
-      int64 service_worker_registration_id) {
+      int64_t service_worker_registration_id) {
     // To bypass DCHECK in PushMessagingAppIdentifier::Generate, we just use it
     // to generate app_id, and then use private constructor.
     std::string app_id = PushMessagingAppIdentifier::Generate(
@@ -20,13 +20,16 @@ class PushMessagingAppIdentifierTest : public testing::Test {
 };
 
 TEST_F(PushMessagingAppIdentifierTest, ConstructorValidity) {
-  EXPECT_TRUE(GenerateId(GURL("https://www.example.com/"), 1).IsValid());
-  EXPECT_TRUE(GenerateId(GURL("https://www.example.com"), 1).IsValid());
-  EXPECT_FALSE(GenerateId(GURL(""), 1).IsValid());
-  EXPECT_FALSE(GenerateId(GURL("foo"), 1).IsValid());
-  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/foo"), 1).IsValid());
-  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/#foo"), 1).IsValid());
-  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/"), -1).IsValid());
+  // The following two are valid:
+  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/"), 1).is_null());
+  EXPECT_FALSE(GenerateId(GURL("https://www.example.com"), 1).is_null());
+  // The following four are invalid and will DCHECK in Generate:
+  EXPECT_FALSE(GenerateId(GURL(""), 1).is_null());
+  EXPECT_FALSE(GenerateId(GURL("foo"), 1).is_null());
+  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/foo"), 1).is_null());
+  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/#foo"), 1).is_null());
+  // The following one is invalid and will DCHECK in Generate and be null:
+  EXPECT_TRUE(GenerateId(GURL("https://www.example.com/"), -1).is_null());
 }
 
 TEST_F(PushMessagingAppIdentifierTest, UniqueGuids) {

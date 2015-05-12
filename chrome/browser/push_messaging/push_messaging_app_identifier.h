@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_APP_IDENTIFIER_H_
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_APP_IDENTIFIER_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -20,9 +22,9 @@ class PrefRegistrySyncable;
 // The prefix used for all push messaging application ids.
 extern const char kPushMessagingAppIdentifierPrefix[];
 
-// Type used to identify a web app from a Push API perspective.
-// These can be persisted to disk, in a 1:1 mapping between app_id and
-// pair<origin, service_worker_registration_id>.
+// Type used to identify a Service Worker registration from a Push API
+// perspective. These can be persisted to prefs, in a 1:1 mapping between
+// app_id and pair<origin, service_worker_registration_id>.
 class PushMessagingAppIdentifier {
  public:
   // Register profile-specific prefs.
@@ -31,17 +33,17 @@ class PushMessagingAppIdentifier {
   // Generates a new app identifier with random app_id.
   static PushMessagingAppIdentifier Generate(
       const GURL& origin,
-      int64 service_worker_registration_id);
+      int64_t service_worker_registration_id);
 
-  // Looks up an app identifier by app_id. Will be invalid if not found.
+  // Looks up an app identifier by app_id. If not found, is_null() will be true.
   static PushMessagingAppIdentifier Get(Profile* profile,
                                         const std::string& app_id);
 
   // Looks up an app identifier by origin & service worker registration id.
-  // Will be invalid if not found.
+  // If not found, is_null() will be true.
   static PushMessagingAppIdentifier Get(Profile* profile,
                                         const GURL& origin,
-                                        int64 service_worker_registration_id);
+                                        int64_t service_worker_registration_id);
 
   // Returns all the PushMessagingAppIdentifiers currently registered for the
   // given |profile|.
@@ -49,17 +51,31 @@ class PushMessagingAppIdentifier {
 
   ~PushMessagingAppIdentifier();
 
-  // Persist this app identifier to disk.
-  void PersistToDisk(Profile* profile) const;
+  // Persist this app identifier to prefs.
+  void PersistToPrefs(Profile* profile) const;
 
-  // Delete this app identifier from disk.
-  void DeleteFromDisk(Profile* profile) const; // TODO: Does const make sense?
+  // Delete this app identifier from prefs.
+  void DeleteFromPrefs(Profile* profile) const;
 
-  bool IsValid() const;
+  // Returns true if this identifier does not represent an app (i.e. this was
+  // returned by a failed call to Get).
+  bool is_null() const { return service_worker_registration_id_ < 0; }
 
-  const std::string& app_id() const { return app_id_; }
-  const GURL& origin() const { return origin_; }
-  int64 service_worker_registration_id() const {
+  // String that should be passed to push services like GCM to identify a
+  // particular Service Worker (so we can route incoming messages). Example:
+  // wp:9CC55CCE-B8F9-4092-A364-3B0F73A3AB5F
+  const std::string& app_id() const {
+    DCHECK(!is_null());
+    return app_id_;
+  }
+
+  const GURL& origin() const {
+    DCHECK(!is_null());
+    return origin_;
+  }
+
+  int64_t service_worker_registration_id() const {
+    DCHECK(!is_null());
     return service_worker_registration_id_;
   }
 
@@ -71,11 +87,14 @@ class PushMessagingAppIdentifier {
   // Constructs a valid app identifier.
   PushMessagingAppIdentifier(const std::string& app_id,
                              const GURL& origin,
-                             int64 service_worker_registration_id);
+                             int64_t service_worker_registration_id);
+
+  // Validates that all the fields contain valid values.
+  void DCheckValid() const;
 
   std::string app_id_;
   GURL origin_;
-  int64 service_worker_registration_id_;
+  int64_t service_worker_registration_id_;
 };
 
 #endif  // CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_APP_IDENTIFIER_H_
