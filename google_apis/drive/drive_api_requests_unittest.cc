@@ -496,8 +496,8 @@ TEST_F(DriveApiRequestsTest, DriveApiDataRequest_Fields) {
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&error, &about_resource)));
-    request->set_fields(
-        "kind,quotaBytesTotal,quotaBytesUsed,largestChangeId,rootFolderId");
+    request->set_fields("kind,quotaBytesTotal,quotaBytesUsedAggregate,"
+                        "largestChangeId,rootFolderId");
     request_sender_->StartRequestWithRetry(request);
     run_loop.Run();
   }
@@ -505,7 +505,7 @@ TEST_F(DriveApiRequestsTest, DriveApiDataRequest_Fields) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/about?"
-            "fields=kind%2CquotaBytesTotal%2CquotaBytesUsed%2C"
+            "fields=kind%2CquotaBytesTotal%2CquotaBytesUsedAggregate%2C"
             "largestChangeId%2CrootFolderId",
             http_request_.relative_url);
 
@@ -515,7 +515,8 @@ TEST_F(DriveApiRequestsTest, DriveApiDataRequest_Fields) {
   ASSERT_TRUE(about_resource.get());
   EXPECT_EQ(expected->largest_change_id(), about_resource->largest_change_id());
   EXPECT_EQ(expected->quota_bytes_total(), about_resource->quota_bytes_total());
-  EXPECT_EQ(expected->quota_bytes_used(), about_resource->quota_bytes_used());
+  EXPECT_EQ(expected->quota_bytes_used_aggregate(),
+            about_resource->quota_bytes_used_aggregate());
   EXPECT_EQ(expected->root_folder_id(), about_resource->root_folder_id());
 }
 
@@ -666,7 +667,8 @@ TEST_F(DriveApiRequestsTest, AboutGetRequest_ValidJson) {
   ASSERT_TRUE(about_resource.get());
   EXPECT_EQ(expected->largest_change_id(), about_resource->largest_change_id());
   EXPECT_EQ(expected->quota_bytes_total(), about_resource->quota_bytes_total());
-  EXPECT_EQ(expected->quota_bytes_used(), about_resource->quota_bytes_used());
+  EXPECT_EQ(expected->quota_bytes_used_aggregate(),
+            about_resource->quota_bytes_used_aggregate());
   EXPECT_EQ(expected->root_folder_id(), about_resource->root_folder_id());
 }
 

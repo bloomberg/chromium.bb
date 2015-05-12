@@ -712,9 +712,8 @@ void FileSystem::OnGetAboutResource(
   }
   DCHECK(about_resource);
 
-  callback.Run(FILE_ERROR_OK,
-               about_resource->quota_bytes_total(),
-               about_resource->quota_bytes_used());
+  callback.Run(FILE_ERROR_OK, about_resource->quota_bytes_total(),
+               about_resource->quota_bytes_used_aggregate());
 }
 
 void FileSystem::GetShareUrl(const base::FilePath& file_path,

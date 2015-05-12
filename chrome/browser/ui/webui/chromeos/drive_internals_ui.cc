@@ -322,7 +322,7 @@ void DriveInternalsWebUIHandler::OnGetAboutResource(
   about_resource.SetDouble("account-quota-total",
                            parsed_about_resource->quota_bytes_total());
   about_resource.SetDouble("account-quota-used",
-                           parsed_about_resource->quota_bytes_used());
+                           parsed_about_resource->quota_bytes_used_aggregate());
   about_resource.SetDouble("account-largest-changestamp-remote",
                            parsed_about_resource->largest_change_id());
   about_resource.SetString("root-resource-id",

@@ -99,7 +99,7 @@ const char kLargestChangeId[] = "largestChangeId";
 // https://developers.google.com/drive/v2/reference/about
 const char kAboutKind[] = "drive#about";
 const char kQuotaBytesTotal[] = "quotaBytesTotal";
-const char kQuotaBytesUsed[] = "quotaBytesUsed";
+const char kQuotaBytesUsedAggregate[] = "quotaBytesUsedAggregate";
 const char kRootFolderId[] = "rootFolderId";
 
 // App Icon
@@ -209,7 +209,7 @@ bool IsResourceKindExpected(const base::Value& value,
 AboutResource::AboutResource()
     : largest_change_id_(0),
       quota_bytes_total_(0),
-      quota_bytes_used_(0) {}
+      quota_bytes_used_aggregate_(0) {}
 
 AboutResource::~AboutResource() {}
 
@@ -232,9 +232,10 @@ void AboutResource::RegisterJSONConverter(
   converter->RegisterCustomField<int64>(kQuotaBytesTotal,
                                         &AboutResource::quota_bytes_total_,
                                         &base::StringToInt64);
-  converter->RegisterCustomField<int64>(kQuotaBytesUsed,
-                                        &AboutResource::quota_bytes_used_,
-                                        &base::StringToInt64);
+  converter->RegisterCustomField<int64>(
+      kQuotaBytesUsedAggregate,
+      &AboutResource::quota_bytes_used_aggregate_,
+      &base::StringToInt64);
   converter->RegisterStringField(kRootFolderId,
                                  &AboutResource::root_folder_id_);
 }

@@ -48,7 +48,9 @@ class AboutResource {
   // Returns total number of quota bytes.
   int64 quota_bytes_total() const { return quota_bytes_total_; }
   // Returns the number of quota bytes used.
-  int64 quota_bytes_used() const { return quota_bytes_used_; }
+  int64 quota_bytes_used_aggregate() const {
+    return quota_bytes_used_aggregate_;
+  }
   // Returns root folder ID.
   const std::string& root_folder_id() const { return root_folder_id_; }
 
@@ -58,8 +60,8 @@ class AboutResource {
   void set_quota_bytes_total(int64 quota_bytes_total) {
     quota_bytes_total_ = quota_bytes_total;
   }
-  void set_quota_bytes_used(int64 quota_bytes_used) {
-    quota_bytes_used_ = quota_bytes_used;
+  void set_quota_bytes_used_aggregate(int64 quota_bytes_used_aggregate) {
+    quota_bytes_used_aggregate_ = quota_bytes_used_aggregate;
   }
   void set_root_folder_id(const std::string& root_folder_id) {
     root_folder_id_ = root_folder_id;
@@ -75,7 +77,7 @@ class AboutResource {
 
   int64 largest_change_id_;
   int64 quota_bytes_total_;
-  int64 quota_bytes_used_;
+  int64 quota_bytes_used_aggregate_;
   std::string root_folder_id_;
 
   // This class is copyable on purpose.

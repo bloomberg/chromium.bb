@@ -240,7 +240,7 @@ FakeDriveService::FakeDriveService()
       weak_ptr_factory_(this) {
   about_resource_->set_largest_change_id(654321);
   about_resource_->set_quota_bytes_total(9876543210);
-  about_resource_->set_quota_bytes_used(6789012345);
+  about_resource_->set_quota_bytes_used_aggregate(6789012345);
   about_resource_->set_root_folder_id(GetRootResourceId());
 }
 
@@ -326,7 +326,7 @@ bool FakeDriveService::HasApp(const std::string& app_id) const {
 void FakeDriveService::SetQuotaValue(int64 used, int64 total) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  about_resource_->set_quota_bytes_used(used);
+  about_resource_->set_quota_bytes_used_aggregate(used);
   about_resource_->set_quota_bytes_total(total);
 }
 

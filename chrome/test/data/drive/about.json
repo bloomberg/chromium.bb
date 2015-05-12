@@ -4,7 +4,7 @@
  "selfLink": "https://www.googleapis.com/drive/v2/about",
  "name": "Test User",
  "quotaBytesTotal": "5368709120",
- "quotaBytesUsed": "1073741824",
+ "quotaBytesUsedAggregate": "1073741824",
  "quotaBytesUsedInTrash": "0",
  "largestChangeId": "8177",
  "rootFolderId": "0AIv7G8yEYAWHUk9123",

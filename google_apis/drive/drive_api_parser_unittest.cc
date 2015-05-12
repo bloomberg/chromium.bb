@@ -25,7 +25,7 @@ TEST(DriveAPIParserTest, AboutResourceParser) {
 
   EXPECT_EQ("0AIv7G8yEYAWHUk9123", resource->root_folder_id());
   EXPECT_EQ(5368709120LL, resource->quota_bytes_total());
-  EXPECT_EQ(1073741824LL, resource->quota_bytes_used());
+  EXPECT_EQ(1073741824LL, resource->quota_bytes_used_aggregate());
   EXPECT_EQ(8177LL, resource->largest_change_id());
 }
 

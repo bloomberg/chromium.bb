@@ -91,7 +91,7 @@ const int kMaxNumFilesResourcePerRequestForSearch = 100;
 
 // For performance, we declare all fields we use.
 const char kAboutResourceFields[] =
-    "kind,quotaBytesTotal,quotaBytesUsed,largestChangeId,rootFolderId";
+    "kind,quotaBytesTotal,quotaBytesUsedAggregate,largestChangeId,rootFolderId";
 const char kFileResourceFields[] =
     "kind,id,title,createdDate,sharedWithMeDate,mimeType,"
     "md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
