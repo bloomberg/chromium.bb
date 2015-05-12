@@ -13,6 +13,9 @@
 
 namespace content {
 
+V4L2Device::V4L2Device(Type type) : type_(type) {
+}
+
 V4L2Device::~V4L2Device() {
 }
 
@@ -195,6 +198,100 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
             media::VideoFrame::AllocationSize(frame_format, coded_size));
 
   return coded_size;
+}
+
+void V4L2Device::GetSupportedResolution(uint32_t pixelformat,
+                                        gfx::Size* min_resolution,
+                                        gfx::Size* max_resolution) {
+  max_resolution->SetSize(0, 0);
+  min_resolution->SetSize(0, 0);
+  v4l2_frmsizeenum frame_size;
+  memset(&frame_size, 0, sizeof(frame_size));
+  frame_size.pixel_format = pixelformat;
+  for (; Ioctl(VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0; ++frame_size.index) {
+    if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
+      if (frame_size.discrete.width >=
+              base::checked_cast<uint32_t>(max_resolution->width()) &&
+          frame_size.discrete.height >=
+              base::checked_cast<uint32_t>(max_resolution->height())) {
+        max_resolution->SetSize(frame_size.discrete.width,
+                                frame_size.discrete.height);
+      }
+      if (min_resolution->IsEmpty() ||
+          (frame_size.discrete.width <=
+               base::checked_cast<uint32_t>(min_resolution->width()) &&
+           frame_size.discrete.height <=
+               base::checked_cast<uint32_t>(min_resolution->height()))) {
+        min_resolution->SetSize(frame_size.discrete.width,
+                                frame_size.discrete.height);
+      }
+    } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE ||
+               frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
+      max_resolution->SetSize(frame_size.stepwise.max_width,
+                              frame_size.stepwise.max_height);
+      min_resolution->SetSize(frame_size.stepwise.min_width,
+                              frame_size.stepwise.min_height);
+      break;
+    }
+  }
+  if (max_resolution->IsEmpty()) {
+    max_resolution->SetSize(1920, 1088);
+    LOG(ERROR) << "GetSupportedResolution failed to get maximum resolution for "
+               << "fourcc " << std::hex << pixelformat
+               << ", fall back to " << max_resolution->ToString();
+  }
+  if (min_resolution->IsEmpty()) {
+    min_resolution->SetSize(16, 16);
+    LOG(ERROR) << "GetSupportedResolution failed to get minimum resolution for "
+               << "fourcc " << std::hex << pixelformat
+               << ", fall back to " << min_resolution->ToString();
+  }
+}
+
+media::VideoDecodeAccelerator::SupportedProfiles
+V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
+                                       const uint32_t pixelformats[]) {
+  DCHECK_EQ(type_, kDecoder);
+  media::VideoDecodeAccelerator::SupportedProfiles profiles;
+  media::VideoDecodeAccelerator::SupportedProfile profile;
+  v4l2_fmtdesc fmtdesc;
+  memset(&fmtdesc, 0, sizeof(fmtdesc));
+  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+
+  for (; Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
+    if (std::find(pixelformats, pixelformats + num_formats,
+                  fmtdesc.pixelformat) == pixelformats + num_formats)
+      continue;
+    int min_profile, max_profile;
+    switch (fmtdesc.pixelformat) {
+      case V4L2_PIX_FMT_H264:
+      case V4L2_PIX_FMT_H264_SLICE:
+        min_profile = media::H264PROFILE_MIN;
+        max_profile = media::H264PROFILE_MAX;
+        break;
+      case V4L2_PIX_FMT_VP8:
+      case V4L2_PIX_FMT_VP8_FRAME:
+        min_profile = media::VP8PROFILE_MIN;
+        max_profile = media::VP8PROFILE_MAX;
+        break;
+      case V4L2_PIX_FMT_VP9:
+        min_profile = media::VP9PROFILE_MIN;
+        max_profile = media::VP9PROFILE_MAX;
+        break;
+      default:
+        NOTREACHED() << "Unhandled pixelformat " << std::hex
+                     << fmtdesc.pixelformat;
+        return profiles;
+    }
+    GetSupportedResolution(fmtdesc.pixelformat, &profile.min_resolution,
+                           &profile.max_resolution);
+    for (int media_profile = min_profile; media_profile <= max_profile;
+         ++media_profile) {
+      profile.profile = static_cast<media::VideoCodecProfile>(media_profile);
+      profiles.push_back(profile);
+    }
+  }
+  return profiles;
 }
 
 }  //  namespace content

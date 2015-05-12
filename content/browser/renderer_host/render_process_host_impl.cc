@@ -1291,7 +1291,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceDeviceScaleFactor,
     switches::kForceDisplayList2dCanvas,
     switches::kFullMemoryCrashReport,
-    switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
     switches::kIPCConnectionTimeout,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,

@@ -44,7 +44,6 @@ class GenericV4L2Device : public V4L2Device {
 
  private:
   ~GenericV4L2Device() override;
-  const Type type_;
 
   // The actual device fd.
   base::ScopedFD device_fd_;

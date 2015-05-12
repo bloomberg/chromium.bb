@@ -40,7 +40,7 @@ const char kImageProcessorDevice[] = "/dev/gsc0";
 }
 
 GenericV4L2Device::GenericV4L2Device(Type type)
-    : type_(type),
+    : V4L2Device(type),
       use_libv4l2_(false) {
 }
 

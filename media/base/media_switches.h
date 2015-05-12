@@ -18,9 +18,6 @@ MEDIA_EXPORT extern const char kDisableNewVideoRenderer[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 
-MEDIA_EXPORT extern const char
-    kIgnoreResolutionLimitsForAcceleratedVideoDecode[];
-
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const char kDisableInfobarForProtectedMediaIdentifier[];
 MEDIA_EXPORT extern const char kEnableMediaThreadForMediaPlayback[];

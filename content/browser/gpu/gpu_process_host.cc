@@ -91,7 +91,6 @@ static const char* const kSwitchNames[] = {
   switches::kGpuSandboxAllowSysVShm,
   switches::kGpuSandboxFailuresFatal,
   switches::kGpuSandboxStartEarly,
-  switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
   switches::kLoggingLevel,
   switches::kEnableLowEndDeviceMode,
   switches::kDisableLowEndDeviceMode,

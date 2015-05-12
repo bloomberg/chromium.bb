@@ -91,7 +91,7 @@ base::LazyInstance<TegraFunctionSymbolFinder> g_tegra_function_symbol_finder_ =
     LAZY_INSTANCE_INITIALIZER;
 
 TegraV4L2Device::TegraV4L2Device(Type type)
-    : type_(type),
+    : V4L2Device(type),
       device_fd_(-1) {
 }
 

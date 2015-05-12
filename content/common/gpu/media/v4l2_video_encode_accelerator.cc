@@ -289,14 +289,16 @@ media::VideoEncodeAccelerator::SupportedProfiles
 V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
   SupportedProfile profile;
-  profile.max_resolution.SetSize(1920, 1088);
   profile.max_framerate_numerator = 30;
   profile.max_framerate_denominator = 1;
 
+  gfx::Size min_resolution;
   v4l2_fmtdesc fmtdesc;
   memset(&fmtdesc, 0, sizeof(fmtdesc));
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   for (; device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
+    device_->GetSupportedResolution(fmtdesc.pixelformat,
+                                    &min_resolution, &profile.max_resolution);
     switch (fmtdesc.pixelformat) {
       case V4L2_PIX_FMT_H264:
         profile.profile = media::H264PROFILE_MAIN;

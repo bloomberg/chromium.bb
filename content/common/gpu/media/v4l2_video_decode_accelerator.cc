@@ -447,46 +447,14 @@ bool V4L2VideoDecodeAccelerator::CanDecodeOnIOThread() { return true; }
 // static
 media::VideoDecodeAccelerator::SupportedProfiles
 V4L2VideoDecodeAccelerator::GetSupportedProfiles() {
-  SupportedProfiles profiles;
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (!device)
-    return profiles;
+    return SupportedProfiles();
 
-  SupportedProfile profile;
-  profile.min_resolution.SetSize(16, 16);
-  // NOTE: additional autodetection logic may require updating input buffer size
-  // selection.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
-    profile.max_resolution.SetSize(4096, 2160);
-  else
-    profile.max_resolution.SetSize(1920, 1088);
-
-  v4l2_fmtdesc fmtdesc;
-  memset(&fmtdesc, 0, sizeof(fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  for (; device->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    switch (fmtdesc.pixelformat) {
-      case V4L2_PIX_FMT_H264:
-        for (uint32 media_profile = media::H264PROFILE_MIN;
-            media_profile <= media::H264PROFILE_MAX; ++media_profile) {
-          profile.profile =
-              static_cast<media::VideoCodecProfile>(media_profile);
-          profiles.push_back(profile);
-        }
-        break;
-      case V4L2_PIX_FMT_VP8:
-        profile.profile = media::VP8PROFILE_ANY;
-        profiles.push_back(profile);
-        break;
-      case V4L2_PIX_FMT_VP9:
-        profile.profile = media::VP9PROFILE_ANY;
-        profiles.push_back(profile);
-        break;
-    }
-  }
-
-  return profiles;
+  const uint32_t supported_formats[] = {
+      V4L2_PIX_FMT_H264, V4L2_PIX_FMT_VP8, V4L2_PIX_FMT_VP9};
+  return device->GetSupportedDecodeProfiles(arraysize(supported_formats),
+                                            supported_formats);
 }
 
 void V4L2VideoDecodeAccelerator::DecodeTask(
@@ -1799,8 +1767,10 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
   }
 
   size_t input_size;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
+  gfx::Size max_resolution, min_resolution;
+  device_->GetSupportedResolution(input_format_fourcc, &min_resolution,
+                                  &max_resolution);
+  if (max_resolution.width() > 1920 && max_resolution.height() > 1088)
     input_size = kInputBufferMaxSizeFor4k;
   else
     input_size = kInputBufferMaxSizeFor1080p;

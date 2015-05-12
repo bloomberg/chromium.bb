@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -106,9 +107,22 @@ class CONTENT_EXPORT V4L2Device
   // Returns the preferred V4L2 input format or 0 if don't care.
   virtual uint32 PreferredInputFormat() = 0;
 
+  // Get minimum and maximum resolution for fourcc |pixelformat| and store to
+  // |min_resolution| and |max_resolution|.
+  void GetSupportedResolution(uint32_t pixelformat, gfx::Size* min_resolution,
+                              gfx::Size* max_resolution);
+
+  // Return supported profiles for decoder, including only profiles for given
+  // fourcc |pixelformats|.
+  media::VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
+      const size_t num_formats, const uint32_t pixelformats[]);
+
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;
+  explicit V4L2Device(Type type);
   virtual ~V4L2Device();
+
+  const Type type_;
 };
 
 }  //  namespace content

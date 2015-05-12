@@ -15,11 +15,6 @@ const char kDisableNewVideoRenderer[] = "disable-new-video-renderer";
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
-// Bypass autodetection of the upper limit on resolution of streams that can
-// be hardware decoded.
-const char kIgnoreResolutionLimitsForAcceleratedVideoDecode[] =
-    "ignore-resolution-limits-for-accelerated-video-decode";
-
 #if defined(OS_ANDROID)
 // Disables the infobar popup for accessing protected media identifier.
 const char kDisableInfobarForProtectedMediaIdentifier[] =

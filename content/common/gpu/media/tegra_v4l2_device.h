@@ -46,7 +46,6 @@ class TegraV4L2Device : public V4L2Device {
 
  private:
   ~TegraV4L2Device() override;
-  const Type type_;
 
   // The actual device fd.
   int device_fd_;
