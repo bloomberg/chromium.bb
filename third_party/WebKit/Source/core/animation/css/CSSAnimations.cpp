@@ -606,7 +606,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
     ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
     AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
 
-    if (update->newAnimations().isEmpty() && update->suppressedAnimationAnimations().isEmpty()) {
+    if (update->newAnimations().isEmpty() && update->suppressedAnimations().isEmpty()) {
         ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, KeyframeEffect::DefaultPriority, timelineCurrentTime));
         update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
@@ -618,7 +618,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
     for (const auto& updatedAnimation : update->animationsWithUpdates())
         newEffects.append(updatedAnimation.effect.get()); // Animations with updates use a temporary InertEffect for the current frame.
 
-    ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newEffects, &update->suppressedAnimationAnimations(), KeyframeEffect::DefaultPriority, timelineCurrentTime));
+    ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newEffects, &update->suppressedAnimations(), KeyframeEffect::DefaultPriority, timelineCurrentTime));
     update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 

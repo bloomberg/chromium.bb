@@ -185,7 +185,7 @@ public:
 
     const WillBeHeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
-    const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>& suppressedAnimationAnimations() const { return m_suppressedAnimations; }
+    const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>& suppressedAnimations() const { return m_suppressedAnimations; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
     const WillBeHeapVector<UpdatedAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
     const WillBeHeapVector<UpdatedAnimationStyle>& animationsWithStyleUpdates() const { return m_animationsWithStyleUpdates; }
