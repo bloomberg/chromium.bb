@@ -8,15 +8,6 @@ By default 'stable' ebuilds point at and build from source at the
 last known good commit. Moving an ebuild to 'live' (via cros_workon start)
 is intended to support development. The current source tip is fetched,
 source modified and built using the unstable 'live' (9999) ebuild.
-
-commands:
-  start:     Moves an ebuild to live (intended to support development)
-  stop:      Moves an ebuild to stable (use last known good)
-  info:      Print package name, repo name, and source directory.
-  list:      List of live ebuilds (workon ebuilds if --all)
-  list-all:  List all of the live ebuilds for all setup boards
-  iterate:   For each ebuild, cd to the source dir and run a command"
-
 """
 
 from __future__ import print_function
@@ -55,25 +46,18 @@ def main(argv):
   shared.add_argument('packages', nargs='*',
                       help='The packages to run command against.')
 
-  commands = parser.add_subparsers(dest='command', title='commands')
-  commands.add_parser(
-      'start', parents=[shared,],
-      help='Moves an ebuild to live (intended to support development)')
-  commands.add_parser(
-      'stop', parents=[shared,],
-      help='Moves an ebuild to stable (use last known good)')
-  commands.add_parser(
-      'info', parents=[shared,],
-      help='Print package name, repo name, and source directory.')
-  commands.add_parser(
-      'list', parents=[shared,],
-      help='List of live ebuilds (workon ebuilds if --all)')
-  commands.add_parser(
-      'list-all', parents=[shared,],
-      help='List all of the live ebuilds for all setup boards')
-  commands.add_parser(
-      'iterate', parents=[shared,],
-      help='For each ebuild, cd to the source dir and run a command')
+  commands = [
+      ('start', 'Moves an ebuild to live (intended to support development)'),
+      ('stop', 'Moves an ebuild to stable (use last known good)'),
+      ('info', 'Print package name, repo name, and source directory.'),
+      ('list', 'List of live ebuilds (workon ebuilds if --all)'),
+      ('list-all', 'List all of the live ebuilds for all setup boards'),
+      ('iterate', 'For each ebuild, cd to the source dir and run a command'),
+  ]
+  command_parsers = parser.add_subparsers(dest='command', title='commands')
+  for command, description in commands:
+    command_parsers.add_parser(command, parents=(shared,), help=description,
+                               description=description)
 
   options = parser.parse_args(argv)
   options.Freeze()
