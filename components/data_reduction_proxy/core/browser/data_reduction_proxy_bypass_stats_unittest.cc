@@ -586,7 +586,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
                                const char* retry_response_body) {
     // Support HTTPS URLs.
     net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
-    if (url.SchemeIsSecure()) {
+    if (url.SchemeIsCryptographic()) {
       mock_socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
     }
 

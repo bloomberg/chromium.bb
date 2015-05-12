@@ -129,7 +129,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
     // Create a fake URLRequest and fill it with the appropriate response
     // headers and proxy server by executing it with fake socket data.
     net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
-    if (test_case.url.SchemeIsSecure())
+    if (test_case.url.SchemeIsCryptographic())
       mock_socket_factory.AddSSLSocketDataProvider(&ssl_socket_data_provider);
     MockRead mock_reads[] = {
         MockRead(test_case.response_headers),

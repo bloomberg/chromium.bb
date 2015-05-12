@@ -150,7 +150,7 @@ bool ShouldUseFixUrlServiceForError(const blink::WebURLError& error,
 
   // Don't use the correction service for HTTPS (for privacy reasons).
   GURL unreachable_url(error.unreachableURL);
-  if (GURL(unreachable_url).SchemeIsSecure())
+  if (GURL(unreachable_url).SchemeIsCryptographic())
     return false;
 
   std::string domain = error.domain.utf8();
