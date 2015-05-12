@@ -880,7 +880,8 @@ bool Validator::ValidateProxyLocation(base::DictionaryValue* result) {
 bool Validator::ValidateEAP(base::DictionaryValue* result) {
   using namespace ::onc::eap;
 
-  const char* const kValidInnerValues[] = {kAutomatic, kMD5, kMSCHAPv2, kPAP};
+  const char* const kValidInnerValues[] = {
+      kAutomatic, kGTC, kMD5, kMSCHAPv2, kPAP};
   const std::vector<const char*> valid_inner_values(
       toVector(kValidInnerValues));
   const char* const kValidOuterValues[] = {

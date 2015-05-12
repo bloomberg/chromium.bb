@@ -279,6 +279,7 @@ const char kEAP_FAST[] = "EAP-FAST";
 const char kEAP_SIM[] = "EAP-SIM";
 const char kEAP_TLS[] = "EAP-TLS";
 const char kEAP_TTLS[] = "EAP-TTLS";
+const char kGTC[] = "GTC";
 const char kIdentity[] = "Identity";
 const char kInner[] = "Inner";
 const char kLEAP[] = "LEAP";

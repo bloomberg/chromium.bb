@@ -311,6 +311,7 @@ const StringTranslationEntry kEAPOuterTable[] = {
 const StringTranslationEntry kEAP_PEAP_InnerTable[] = {
     {::onc::eap::kMD5, shill::kEapPhase2AuthPEAPMD5},
     {::onc::eap::kMSCHAPv2, shill::kEapPhase2AuthPEAPMSCHAPV2},
+    {::onc::eap::kGTC, shill::kEapPhase2AuthPEAPGTC},
     {NULL}};
 
 // Translation of the EAP.Inner field in case of EAP.Outer == TTLS
@@ -318,6 +319,7 @@ const StringTranslationEntry kEAP_TTLS_InnerTable[] = {
     {::onc::eap::kMD5, shill::kEapPhase2AuthTTLSMD5},
     {::onc::eap::kMSCHAPv2, shill::kEapPhase2AuthTTLSMSCHAPV2},
     {::onc::eap::kPAP, shill::kEapPhase2AuthTTLSPAP},
+    {::onc::eap::kGTC, shill::kEapPhase2AuthTTLSGTC},
     {NULL}};
 
 const StringTranslationEntry kActivationStateTable[] = {

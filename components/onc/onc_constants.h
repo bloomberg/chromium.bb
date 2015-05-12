@@ -297,6 +297,7 @@ ONC_EXPORT extern const char kEAP_FAST[];
 ONC_EXPORT extern const char kEAP_SIM[];
 ONC_EXPORT extern const char kEAP_TLS[];
 ONC_EXPORT extern const char kEAP_TTLS[];
+ONC_EXPORT extern const char kGTC[];
 ONC_EXPORT extern const char kIdentity[];
 ONC_EXPORT extern const char kInner[];
 ONC_EXPORT extern const char kLEAP[];
