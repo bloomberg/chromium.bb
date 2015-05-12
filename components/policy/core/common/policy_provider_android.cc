@@ -32,6 +32,7 @@ void PolicyProviderAndroid::SetShouldWaitForPolicy(
 
 void PolicyProviderAndroid::SetDelegate(
     PolicyProviderAndroidDelegate* delegate) {
+  DCHECK(!delegate || !delegate_);
   delegate_ = delegate;
 }
 
