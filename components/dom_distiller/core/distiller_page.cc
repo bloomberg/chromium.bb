@@ -88,6 +88,7 @@ void DistillerPage::DistillPage(
   // the callback to OnDistillationDone happens.
   ready_ = false;
   distiller_page_callback_ = callback;
+  distillation_start_ = base::TimeTicks::Now();
   DistillPageImpl(gurl, GetDistillerScriptWithOptions(options,
                                                       StringifyOutput(),
                                                       CreateNewContext()));
@@ -110,6 +111,11 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
     if (!found_content) {
       DVLOG(1) << "Unable to parse DomDistillerResult.";
     } else {
+      base::TimeDelta distillation_time =
+          base::TimeTicks::Now() - distillation_start_;
+      UMA_HISTOGRAM_TIMES("DomDistiller.Time.DistillPage", distillation_time);
+      VLOG(1) << "DomDistiller.Time.DistillPage = " << distillation_time;
+
       if (distiller_result->has_timing_info()) {
         const dom_distiller::proto::TimingInfo& timing =
             distiller_result->timing_info();
@@ -139,6 +145,8 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
           UMA_HISTOGRAM_TIMES(
               "DomDistiller.Time.DistillationTotal",
               base::TimeDelta::FromMillisecondsD(timing.total_time()));
+          VLOG(1) << "DomDistiller.Time.DistillationTotal = " <<
+              base::TimeDelta::FromMillisecondsD(timing.total_time());
         }
       }
       if (distiller_result->has_statistics_info()) {

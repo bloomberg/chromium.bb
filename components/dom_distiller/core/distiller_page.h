@@ -66,6 +66,7 @@ class DistillerPage {
  private:
   bool ready_;
   DistillerPageCallback distiller_page_callback_;
+  base::TimeTicks distillation_start_;
   DISALLOW_COPY_AND_ASSIGN(DistillerPage);
 };
 

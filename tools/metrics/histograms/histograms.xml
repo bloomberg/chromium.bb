@@ -6009,6 +6009,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Complete time spent in DomDistiller's processing of a page.</summary>
 </histogram>
 
+<histogram name="DomDistiller.Time.DistillPage" units="milliseconds">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Time spent in DistillPageImpl(), mostly ExecuteJavaScript(), including
+    compilation and execution.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.Time.DocumentConstruction" units="milliseconds">
   <owner>yfriedman@chromium.org</owner>
   <summary>
