@@ -2,13 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("device_event_log") {
+component("device_event_log") {
   sources = [
     "device_event_log.cc",
     "device_event_log.h",
     "device_event_log_impl.cc",
     "device_event_log_impl.h",
   ]
+
+  defines = [ "DEVICE_EVENT_LOG_IMPLEMENTATION" ]
 
   deps = [
     "//base",

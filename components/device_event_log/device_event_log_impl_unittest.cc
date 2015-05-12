@@ -5,6 +5,7 @@
 #include "components/device_event_log/device_event_log_impl.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -12,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device_event_log {
@@ -21,15 +23,29 @@ namespace {
 const size_t kDefaultMaxEvents = 100;
 LogLevel kDefaultLevel = LOG_LEVEL_EVENT;
 LogType kDefaultType = LOG_TYPE_NETWORK;
+const char kFileName[] = "file";
+
+// Calls GetAsString on the task thread and sets s_string_result. Make sure
+// that task_runner_->RunUntilIdle() is called before using s_string_result.
+std::string s_string_result;
+void CallGetAsString(DeviceEventLogImpl* impl,
+                     StringOrder order,
+                     const std::string& format,
+                     const std::string& types,
+                     LogLevel max_level,
+                     size_t max_events) {
+  s_string_result =
+      impl->GetAsString(order, format, types, max_level, max_events);
+}
 
 }  // namespace
 
 class DeviceEventLogTest : public testing::Test {
  public:
-  DeviceEventLogTest() {}
+  DeviceEventLogTest() : task_runner_(new base::TestSimpleTaskRunner()) {}
 
   void SetUp() override {
-    impl_.reset(new DeviceEventLogImpl(kDefaultMaxEvents));
+    impl_.reset(new DeviceEventLogImpl(task_runner_, kDefaultMaxEvents));
   }
 
   void TearDown() override { impl_.reset(); }
@@ -53,19 +69,32 @@ class DeviceEventLogTest : public testing::Test {
     return std::count(input.begin(), input.end(), '\n');
   }
 
+  std::string GetAsString(StringOrder order,
+                          const std::string& format,
+                          const std::string& types,
+                          LogLevel max_level,
+                          size_t max_events) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&CallGetAsString,
+                   impl_.get(), order, format, types, max_level, max_events));
+    task_runner_->RunUntilIdle();
+    return s_string_result;
+  }
+
   std::string GetLogString(StringOrder order,
                            const std::string& format,
                            LogLevel max_level,
                            size_t max_events) {
-    return impl_->GetAsString(order, format, "", max_level, max_events);
+    return GetAsString(order, format, "", max_level, max_events);
   }
 
   std::string GetOrderedString(StringOrder order, size_t max_events) {
-    return impl_->GetAsString(order, "file", "", kDefaultLevel, max_events);
+    return GetAsString(order, "file", "", kDefaultLevel, max_events);
   }
 
   std::string GetLogStringForType(const std::string& types) {
-    return impl_->GetAsString(OLDEST_FIRST, "type", types, kDefaultLevel, 0);
+    return GetAsString(OLDEST_FIRST, "type", types, kDefaultLevel, 0);
   }
 
   void AddNetworkEntry(const char* file,
@@ -73,18 +102,21 @@ class DeviceEventLogTest : public testing::Test {
                        LogLevel level,
                        const std::string& event) {
     impl_->AddEntry(file, line, kDefaultType, level, event);
+    task_runner_->RunUntilIdle();
   }
 
   void AddTestEvent(LogLevel level, const std::string& event) {
-    AddNetworkEntry("file", 0, level, event);
+    AddNetworkEntry(kFileName, 0, level, event);
   }
 
   void AddEventType(LogType type, const std::string& event) {
-    impl_->AddEntry("file", 0, type, kDefaultLevel, event);
+    impl_->AddEntry(kFileName, 0, type, kDefaultLevel, event);
+    task_runner_->RunUntilIdle();
   }
 
   size_t GetMaxEntries() const { return impl_->max_entries(); }
 
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<DeviceEventLogImpl> impl_;
 
  private:
@@ -96,10 +128,13 @@ TEST_F(DeviceEventLogTest, TestNetworkEvents) {
   EXPECT_EQ("No Log Entries.", output_none);
 
   LogLevel level = kDefaultLevel;
-  AddNetworkEntry("file1", 1, level, "event1");
-  AddNetworkEntry("file2", 2, level, "event2");
-  AddNetworkEntry("file3", 3, level, "event3");
-  AddNetworkEntry("file3", 3, level, "event3");
+  static const char kFile1[] = "file1";
+  static const char kFile2[] = "file2";
+  static const char kFile3[] = "file3";
+  AddNetworkEntry(kFile1, 1, level, "event1");
+  AddNetworkEntry(kFile2, 2, level, "event2");
+  AddNetworkEntry(kFile3, 3, level, "event3");
+  AddNetworkEntry(kFile3, 3, level, "event3");
 
   const std::string expected_output_oldest_first(
       "file1:1 event1\n"
@@ -223,7 +258,7 @@ TEST_F(DeviceEventLogTest, TestMaxEvents) {
 
 TEST_F(DeviceEventLogTest, TestMaxErrors) {
   const int kMaxTestEntries = 4;
-  impl_.reset(new DeviceEventLogImpl(kMaxTestEntries));
+  impl_.reset(new DeviceEventLogImpl(task_runner_, kMaxTestEntries));
   AddTestEvent(LOG_LEVEL_EVENT, "event1");
   AddTestEvent(LOG_LEVEL_ERROR, "error2");
   AddTestEvent(LOG_LEVEL_EVENT, "event3");
