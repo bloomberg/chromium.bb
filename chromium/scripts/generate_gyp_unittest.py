@@ -178,42 +178,43 @@ class SourceSetUnittest(unittest.TestCase):
     a = gg.SourceSet(set(['a', 'b']), set(['arm']),
                      set(['Chromium', 'ChromiumOS', 'Chrome', 'ChromeOS']),
                      set(['win'])).GenerateGypStanza()
+    print a
     string.index(a, '(1)')
 
   def testGenerateGnStanza(self):
     # ia32 should be x86.  Win should appear as an OS restriction.
     a = gg.SourceSet(set(['a', 'b']), set(['ia32']), set(['Chromium']),
                      set(['win'])).GenerateGnStanza()
-    string.index(a, 'cpu_arch == "x86"')
+    string.index(a, 'current_cpu == "x86"')
     string.index(a, 'is_win')
 
     # x64 should just be x64.  Linux should not appear as an OS restriction.
     a = gg.SourceSet(set(['a', 'b']), set(['x64']), set(['Chromium']),
                      set(['linux'])).GenerateGnStanza()
-    string.index(a, 'cpu_arch == "x64"')
+    string.index(a, 'current_cpu == "x64"')
     self.assertEqual(string.find(a, 'is_linux'), -1)
 
     # arm should just be arm.
     a = gg.SourceSet(set(['a', 'b']), set(['arm']), set(['Chromium']),
                      set(['linux'])).GenerateGnStanza()
-    string.index(a, 'cpu_arch == "arm"')
+    string.index(a, 'current_cpu == "arm"')
 
     # arm-neon should be arm and flip the arm_neon switch.
     a = gg.SourceSet(set(['a', 'b']), set(['arm-neon']), set(['Chromium']),
                      set(['linux'])).GenerateGnStanza()
-    string.index(a, 'cpu_arch == "arm" && arm_use_neon')
+    string.index(a, 'current_cpu == "arm" && arm_use_neon')
 
     # All architectures and all platforms case.
     a = gg.SourceSet(set(['a', 'b']), set(['arm', 'arm-neon', 'x64', 'ia32']),
                      set(['Chromium']),
                      set(['win', 'linux'])).GenerateGnStanza()
-    string.index(a, 'if (ffmpeg_branding == "Chromium")')
+    string.index(a, 'ffmpeg_branding == "Chromium"')
 
     # All targets case.
     a = gg.SourceSet(set(['a', 'b']), set(['arm']),
                      set(['Chromium', 'ChromiumOS', 'Chrome', 'ChromeOS']),
                      set(['win'])).GenerateGnStanza()
-    string.index(a, 'cpu_arch == "arm"')
+    string.index(a, 'current_cpu == "arm"')
     string.index(a, 'is_win')
 
 

@@ -74,6 +74,7 @@ import fnmatch
 import itertools
 import optparse
 import os
+import re
 import string
 import subprocess
 
@@ -592,16 +593,24 @@ def ParseOptions():
                     default=False,
                     help='Output a GN file instead of a gyp file.')
 
+  parser.add_option('-p',
+                    '--print_licenses',
+                    dest='print_licenses',
+                    default=False,
+                    action="store_true",
+                    help='Print all licenses to console.')
+
   options, args = parser.parse_args()
 
   if not options.source_dir:
     parser.error('No FFmpeg source directory specified')
-
-  if not os.path.exists(options.source_dir):
+  elif not os.path.exists(options.source_dir):
     parser.error('FFmpeg source directory does not exist')
 
   if not options.build_dir:
     parser.error('No build root directory specified')
+  elif not os.path.exists(options.build_dir):
+    parser.error('FFmpeg build directory does not exist')
 
   return options, args
 
@@ -628,41 +637,141 @@ def WriteGn(fd, build_dir, disjoint_sets):
     fd.write(s.GenerateGnStanza())
 
 
-def CheckLicenseForSource(source):
-  # Assumed to be /src/third_party/ffmpeg/chromium/scripts
-  script_path = os.path.dirname(os.path.realpath(__file__));
-  ffmpeg_root = os.path.abspath(
-      os.path.join(script_path, os.path.pardir, os.path.pardir))
+# Lists of files that are exempt from searching in GetIncludeSources.
+IGNORED_INCLUDE_FILES = [
+  # Chromium generated files
+  'config.h',
+  os.path.join('libavutil', 'avconfig.h'),
+  os.path.join('libavutil', 'ffversion.h'),
+
+  # Unused un-generated files (includes that get ifdef'ed out)
+  os.path.join('libavcodec', 'aacps_tables.h'),
+  os.path.join('libavcodec', 'aacsbr_tables.h'),
+  os.path.join('libavcodec', 'aac_tables.h'),
+  os.path.join('libavcodec', 'cabac_tables.h'),
+  os.path.join('libavcodec', 'cbrt_tables.h'),
+  os.path.join('libavcodec', 'mpegaudio_tables.h'),
+  os.path.join('libavcodec', 'pcm_tables.h'),
+  os.path.join('libavcodec', 'sinewin_tables.h'),
+]
+
+
+# Known licenses that are acceptable for static linking
+LICENSE_WHITELIST = [
+  'BSD (3 clause) LGPL (v2.1 or later)',
+  'ISC GENERATED FILE',
+  'LGPL (v2.1 or later)',
+  'LGPL (v2.1 or later) GENERATED FILE',
+  'MIT/X11 (BSD like)',
+  'Public domain LGPL (v2.1 or later)',
+]
+
+
+# Files permitted to report an UNKNOWN license.
+UNKNOWN_WHITELIST = [
+  # From of Independent JPEG group. No named license, but usage is allowed.
+  'jrevdct.c',
+  'jfdctfst.c',
+  'jfdctint_template.c',
+]
+
+
+def GetIncludedSources(file_path, source_dir, include_set):
+  """ Recurse over include tree, accumulating absolute paths to all included
+  files (including the seed file) in included_set.
+
+  Pass in the set returned from previous calls to avoid re-walking parts of the
+  tree. Given file_path may be relative (to options.src_dir) or absolute.
+
+  NOTE: This algorithm is greedy. It does not know which includes may be
+  excluded due to compile-time defines, so it considers any mentioned include.
+
+  NOTE: This algorithm makes hard assumptions about the include search paths.
+  Paths are checked in the order:
+  1. Directory of the file containing the #include directive
+  2. Directory specified by source_dir
+
+  NOTE: Files listed in IGNORED_INCLUDE_FILES will be ignored if not found. See reasons
+  at definition for IGNORED_INCLUDE_FILES.
+  """
+  # Use options.source_dir to correctly resolve relative file path. Use only
+  # absolute paths in the set to avoid same-name-errors.
+  if (not os.path.isabs(file_path)):
+    file_path = os.path.abspath(os.path.join(source_dir, file_path))
+
+  current_dir = os.path.dirname(file_path)
+
+  # Already processed this file, bail out.
+  if (file_path in include_set):
+    return include_set
+
+  include_set.add(file_path)
+
+  for line in open(file_path):
+    include_match = re.search('#include\s+"([^"]+)"', line)
+    if (include_match is not None):
+      include_file_path = include_match.group(1)
+      resolved_include_path = '';
+      # Check if file is in current directory
+      if (os.path.isfile(os.path.join(current_dir, include_file_path))):
+        resolved_include_path = os.path.join(current_dir, include_file_path);
+      # Else, check source_dir (should be FFmpeg root)
+      elif (os.path.isfile(os.path.join(source_dir, include_file_path))):
+        resolved_include_path = os.path.join(source_dir, include_file_path)
+      # Else, we couldn't find it :(
+      elif (include_file_path in IGNORED_INCLUDE_FILES):
+        continue
+      else:
+        exit('Failed to find file', include_file_path)
+
+      GetIncludedSources(resolved_include_path, source_dir, include_set)
+
+
+def CheckLicenseForSource(source, source_dir, print_licenses):
+  # Assumed to be two back from source_dir (e.g. third_party/ffmpeg/../..)
   source_root = os.path.abspath(
-      os.path.join(ffmpeg_root, os.path.pardir, os.path.pardir))
+    os.path.join(source_dir, os.path.pardir, os.path.pardir))
 
-  # Script should live at src/tools/checklicenses/checklicenses.py
-  checklicenses_path = os.path.abspath(os.path.join(
-      source_root, 'tools', 'checklicenses', 'checklicenses.py'));
-  if not os.path.exists(checklicenses_path):
-    print 'Could not find checklicenses.py'
-    return False
+  licensecheck_path = os.path.abspath(os.path.join(
+      source_root, 'third_party', 'devscripts', 'licensecheck.pl'));
+  if not os.path.exists(licensecheck_path):
+    exit('Could not find licensecheck.pl: ' + str(licensecheck_path))
 
-  check_process = subprocess.Popen([checklicenses_path,
-                                    '--ignore-suppressions',
+  check_process = subprocess.Popen([licensecheck_path,
+                                    '-l', '100',
                                     os.path.abspath(source)],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
   check_process.wait()
   stdout, stderr = check_process.communicate()
-  print stdout
-  print stderr
-  return check_process.returncode == 0
+
+  filename, license = stdout.split(':', 1)
+  basename = os.path.basename(filename)
+  license = license.replace('*No copyright*', '').strip()
+
+  if (license in LICENSE_WHITELIST or
+     (license == 'UNKNOWN' and basename in UNKNOWN_WHITELIST)):
+    if (print_licenses):
+      print filename, ':', license
+    return True
+  else:
+    print 'Unexpected license. {0}:..{1}..'.format(filename, license)
+    return False
 
 
-def CheckLicensesForStaticLinking(disjoint_sets):
+def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
+  # Build up set of all sources and includes.
+  sources_to_check = set()
   for source_set in disjoint_sets:
     for source in source_set.sources:
-      if not CheckLicenseForSource(source):
-        print 'ARG!', source
-      else:
-        print 'GOOD JORB:', source
-  return False
+      GetIncludedSources(source, source_dir, sources_to_check)
+
+  # Check licenses for all included sources
+  all_checks_passed = True
+  for source in sources_to_check:
+    if not CheckLicenseForSource(source, source_dir, print_licenses):
+      all_checks_passed = False
+  return all_checks_passed
 
 def main():
   options, args = ParseOptions()
@@ -673,6 +782,7 @@ def main():
   object_to_sources = GetObjectToSourceMapping(source_files)
 
   sets = []
+  skipped_dirs = []
 
   for arch in SUPPORTED_ARCHITECTURES:
     for target in SUPPORTED_TARGETS:
@@ -681,6 +791,7 @@ def main():
         name = ''.join(['build.', arch, '.', platform])
         build_dir = os.path.join(options.build_dir, name, target)
         if not os.path.exists(build_dir):
+          skipped_dirs.append(build_dir)
           continue
         print 'Processing build directory: %s' % name
 
@@ -690,15 +801,31 @@ def main():
         s = GetSourceFileSet(object_to_sources, object_files)
         sets.append(SourceSet(s, set([arch]), set([target]), set([platform])))
 
+  if (skipped_dirs):
+    print
+    print 'DIRECTORIES WERE SKIPPED (NOT FOUND):'
+    print skipped_dirs
+    print
+
   sets = CreatePairwiseDisjointSets(sets)
 
-  if (CheckLicensesForStaticLinking(sets)):
+  if len(sets) is 0:
+    exit('ERROR: failed to find any source sets. ' +
+         'Are build_dir ({0}) and/or source_dir ({1}) options correct?'.format(
+              options.build_dir, options.source_dir))
+
+
+  if (CheckLicensesForStaticLinking(sets, source_dir, options.print_licenses)):
+    print 'License checks passed.'
+
     # Open for writing.
     if options.output_gn:
       outfile = 'ffmpeg_generated.gni'
     else:
       outfile = 'ffmpeg_generated.gypi'
     output_name = os.path.join(options.source_dir, outfile)
+    print 'Output:', output_name
+
     with open(output_name, 'w') as fd:
       if options.output_gn:
         WriteGn(fd, options.build_dir, sets)
