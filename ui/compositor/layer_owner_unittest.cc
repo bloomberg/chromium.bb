@@ -8,13 +8,33 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 namespace {
+
+// An animation observer that confirms upon animation completion, that the
+// compositor is not null.
+class TestLayerAnimationObserver : public ImplicitAnimationObserver {
+ public:
+  TestLayerAnimationObserver(Layer* layer) : layer_(layer) {}
+  ~TestLayerAnimationObserver() override {}
+
+  // ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    EXPECT_NE(nullptr, layer_->GetCompositor());
+  }
+
+ private:
+  Layer* layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLayerAnimationObserver);
+};
 
 // Test fixture for LayerOwner tests that require a ui::Compositor.
 class LayerOwnerTestWithCompositor : public testing::Test {
@@ -104,6 +124,73 @@ TEST_F(LayerOwnerTestWithCompositor, RecreateRootLayerWithCompositor) {
   EXPECT_EQ(compositor(), owner.layer()->GetCompositor());
   EXPECT_EQ(owner.layer(), compositor()->root_layer());
   EXPECT_EQ(nullptr, layer_copy->GetCompositor());
+}
+
+// Tests that recreating the root layer, while one of its children is animating,
+// properly updates the compositor. So that compositor is not null for observers
+// of animations being cancelled.
+TEST_F(LayerOwnerTestWithCompositor, RecreateRootLayerDuringAnimation) {
+  LayerOwner owner;
+  Layer* layer = new Layer;
+  owner.SetLayer(layer);
+  compositor()->SetRootLayer(layer);
+
+  scoped_ptr<Layer> child(new Layer);
+  child->SetBounds(gfx::Rect(0, 0, 100, 100));
+  layer->Add(child.get());
+
+  // This observer checks that the compositor of |child| is not null upon
+  // animation completion.
+  scoped_ptr<TestLayerAnimationObserver> observer(
+      new TestLayerAnimationObserver(child.get()));
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> long_duration_animation(
+      new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  {
+    ui::ScopedLayerAnimationSettings animation(child->GetAnimator());
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.AddObserver(observer.get());
+    gfx::Transform transform;
+    transform.Scale(0.5f, 0.5f);
+    child->SetTransform(transform);
+  }
+
+  scoped_ptr<Layer> layer_copy = owner.RecreateLayer();
+}
+
+// Tests that recreating a non-root layer, while one of its children is
+// animating, properly updates the compositor. So that compositor is not null
+// for observers of animations being cancelled.
+TEST_F(LayerOwnerTestWithCompositor, RecreateNonRootLayerDuringAnimation) {
+  scoped_ptr<Layer> root_layer(new Layer);
+  compositor()->SetRootLayer(root_layer.get());
+
+  LayerOwner owner;
+  Layer* layer = new Layer;
+  owner.SetLayer(layer);
+  root_layer->Add(layer);
+
+  scoped_ptr<Layer> child(new Layer);
+  child->SetBounds(gfx::Rect(0, 0, 100, 100));
+  layer->Add(child.get());
+
+  // This observer checks that the compositor of |child| is not null upon
+  // animation completion.
+  scoped_ptr<TestLayerAnimationObserver> observer(
+      new TestLayerAnimationObserver(child.get()));
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> long_duration_animation(
+      new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  {
+    ui::ScopedLayerAnimationSettings animation(child->GetAnimator());
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.AddObserver(observer.get());
+    gfx::Transform transform;
+    transform.Scale(0.5f, 0.5f);
+    child->SetTransform(transform);
+  }
+
+  scoped_ptr<Layer> layer_copy = owner.RecreateLayer();
 }
 
 }  // namespace ui
