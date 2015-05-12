@@ -34,7 +34,7 @@ class TestDelegate : public SettingsPrivateDelegate {
 
   scoped_ptr<base::Value> GetPref(const std::string& name) override {
     if (name.compare(kTestPrefName) != 0)
-      return make_scoped_ptr(base::Value::CreateNullValue());
+      return base::Value::CreateNullValue();
 
     return CreateTestPrefObject()->ToValue();
   }

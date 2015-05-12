@@ -711,7 +711,7 @@ TEST_F(PrefsSyncableServiceTest, DeletePreference) {
 
   InitWithNoSyncData();
 
-  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   syncer::SyncChangeList list;
   list.push_back(MakeRemoteChange(
       1, prefs::kHomePage, *null_value, SyncChange::ACTION_DELETE));

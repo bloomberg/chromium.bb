@@ -69,7 +69,7 @@ scoped_ptr<Value> ParseJson(base::StringPiece json) {
       NULL, &error_msg));
   if (!result) {
     ADD_FAILURE() << "Failed to parse \"" << json << "\": " << error_msg;
-    result.reset(Value::CreateNullValue());
+    result = Value::CreateNullValue();
   }
   return result.Pass();
 }

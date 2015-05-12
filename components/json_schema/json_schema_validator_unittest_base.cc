@@ -154,11 +154,8 @@ void JSONSchemaValidatorTestBase::TestEnum() {
                  NULL,
                  std::string(),
                  JSONSchemaValidator::kInvalidEnum);
-  ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
-                 schema.get(),
-                 NULL,
-                 std::string(),
+  ExpectNotValid(TEST_SOURCE, base::Value::CreateNullValue().get(),
+                 schema.get(), NULL, std::string(),
                  JSONSchemaValidator::kInvalidEnum);
 }
 
@@ -166,9 +163,8 @@ void JSONSchemaValidatorTestBase::TestChoices() {
   scoped_ptr<base::DictionaryValue> schema(
       LoadDictionary("choices_schema.json"));
 
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
-              schema.get(), NULL);
+  ExpectValid(TEST_SOURCE, base::Value::CreateNullValue().get(), schema.get(),
+              NULL);
   ExpectValid(TEST_SOURCE,
               scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
               schema.get(), NULL);
@@ -620,7 +616,7 @@ void JSONSchemaValidatorTestBase::TestTypeClassifier() {
                 scoped_ptr<base::Value>(new base::DictionaryValue()).get()));
   EXPECT_EQ(std::string(schema::kNull),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(base::Value::CreateNullValue()).get()));
+                base::Value::CreateNullValue().get()));
 }
 
 void JSONSchemaValidatorTestBase::TestTypes() {
@@ -683,9 +679,8 @@ void JSONSchemaValidatorTestBase::TestTypes() {
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kNull);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
-              schema.get(), NULL);
+  ExpectValid(TEST_SOURCE, base::Value::CreateNullValue().get(), schema.get(),
+              NULL);
 
   // not valid
   schema->SetString(schema::kType, schema::kObject);
@@ -700,13 +695,10 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kObject);
   ExpectNotValid(
-      TEST_SOURCE,
-      scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
-      schema.get(),
-      NULL,
+      TEST_SOURCE, base::Value::CreateNullValue().get(), schema.get(), NULL,
       std::string(),
-      JSONSchemaValidator::FormatErrorMessage(
-          JSONSchemaValidator::kInvalidType, schema::kObject, schema::kNull));
+      JSONSchemaValidator::FormatErrorMessage(JSONSchemaValidator::kInvalidType,
+                                              schema::kObject, schema::kNull));
 
   schema->SetString(schema::kType, schema::kArray);
   ExpectNotValid(

@@ -273,6 +273,11 @@ void ExtensionFunction::SetResult(base::Value* result) {
   results_->Append(result);
 }
 
+void ExtensionFunction::SetResult(scoped_ptr<base::Value> result) {
+  results_.reset(new base::ListValue());
+  results_->Append(result.Pass());
+}
+
 void ExtensionFunction::SetResultList(scoped_ptr<base::ListValue> results) {
   results_ = results.Pass();
 }

@@ -303,8 +303,8 @@ void DisplayOptionsHandler::SendDisplayInfo(
     js_displays.Append(js_display);
   }
 
-  scoped_ptr<base::Value> layout_value(base::Value::CreateNullValue());
-  scoped_ptr<base::Value> offset_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> layout_value = base::Value::CreateNullValue();
+  scoped_ptr<base::Value> offset_value = base::Value::CreateNullValue();
   if (display_manager->GetNumDisplays() > 1) {
     const ash::DisplayLayout layout =
         display_manager->GetCurrentDisplayLayout();

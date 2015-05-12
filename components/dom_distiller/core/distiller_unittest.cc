@@ -530,11 +530,11 @@ TEST_F(DistillerTest, CheckMaxPageLimitExactLimit) {
 TEST_F(DistillerTest, SinglePageDistillationFailure) {
   base::MessageLoopForUI loop;
   // To simulate failure return a null value.
-  scoped_ptr<base::Value> nullValue(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   distiller_.reset(
       new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(kURL,
-              CreateMockDistillerPage(nullValue.get(), GURL(kURL)).Pass());
+              CreateMockDistillerPage(null_value.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ("", article_proto_->title());
   EXPECT_EQ(0, article_proto_->pages_size());
@@ -553,7 +553,7 @@ TEST_F(DistillerTest, MultiplePagesDistillationFailure) {
       distiller_data->distilled_values.begin() + failed_page_num);
   distiller_data->distilled_values.insert(
       distiller_data->distilled_values.begin() + failed_page_num,
-      base::Value::CreateNullValue());
+      base::Value::CreateNullValue().release());
   // Expect only calls till the failed page number.
   distiller_.reset(
       new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));

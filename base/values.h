@@ -64,7 +64,7 @@ class BASE_EXPORT Value {
 
   virtual ~Value();
 
-  static Value* CreateNullValue();
+  static scoped_ptr<Value> CreateNullValue();
 
   // Returns the type of the value stored by the current Value object.
   // Each type will be implemented by only one subclass of Value, so it's
@@ -493,6 +493,9 @@ class BASE_EXPORT ListValue : public Value {
   bool GetAsList(const ListValue** out_value) const override;
   ListValue* DeepCopy() const override;
   bool Equals(const Value* other) const override;
+
+  // Preferred version of DeepCopy. TODO(estade): remove DeepCopy.
+  scoped_ptr<ListValue> CreateDeepCopy() const;
 
  private:
   ValueVector list_;

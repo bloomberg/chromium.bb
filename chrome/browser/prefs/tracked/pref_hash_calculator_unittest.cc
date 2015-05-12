@@ -78,7 +78,7 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   static const char kSeed[] = "0123456789ABCDEF0123456789ABCDEF";
   static const char kDeviceId[] = "test_device_id1";
 
-  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   scoped_ptr<base::Value> bool_value(new base::FundamentalValue(false));
   scoped_ptr<base::Value> int_value(new base::FundamentalValue(1234567890));
   scoped_ptr<base::Value> double_value(

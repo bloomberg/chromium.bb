@@ -179,7 +179,7 @@ bool ReadValue(const Message* m, PickleIterator* iter, base::Value** value,
 
   switch (type) {
     case base::Value::TYPE_NULL:
-    *value = base::Value::CreateNullValue();
+      *value = base::Value::CreateNullValue().release();
     break;
     case base::Value::TYPE_BOOLEAN: {
       bool val;

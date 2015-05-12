@@ -460,7 +460,7 @@ jobject CoerceJavaScriptListToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   for (jsize i = 0; i < length; ++i) {
     const base::Value* value_element = null_value.get();
     list_value->Get(i, &value_element);
@@ -531,7 +531,7 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   if (!result) {
     return NULL;
   }
-  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   for (jsize i = 0; i < length; ++i) {
     const std::string key(base::IntToString(i));
     const base::Value* value_element = null_value.get();

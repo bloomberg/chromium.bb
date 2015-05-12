@@ -141,15 +141,16 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
   CookieTreeNode* parent_node = tree_model->AsNode(parent);
 
-  base::ListValue* children = new base::ListValue;
-  model_util_->GetChildNodeList(parent_node, start, count, children);
+  scoped_ptr<base::ListValue> children(new base::ListValue);
+  model_util_->GetChildNodeList(parent_node, start, count, children.get());
 
   base::ListValue args;
-  args.Append(parent == tree_model->GetRoot() ?
-      base::Value::CreateNullValue() :
-      new base::StringValue(model_util_->GetTreeNodeId(parent_node)));
-  args.Append(new base::FundamentalValue(start));
-  args.Append(children);
+  if (parent == tree_model->GetRoot())
+    args.Append(base::Value::CreateNullValue());
+  else
+    args.AppendString(model_util_->GetTreeNodeId(parent_node));
+  args.AppendInteger(start);
+  args.Append(children.Pass());
   web_ui()->CallJavascriptFunction("CookiesView.onTreeItemAdded", args);
 }
 
@@ -164,12 +165,12 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
 
   base::ListValue args;
-  args.Append(parent == tree_model->GetRoot() ?
-      base::Value::CreateNullValue() :
-      new base::StringValue(model_util_->GetTreeNodeId(
-          tree_model->AsNode(parent))));
-  args.Append(new base::FundamentalValue(start));
-  args.Append(new base::FundamentalValue(count));
+  if (parent == tree_model->GetRoot())
+    args.Append(base::Value::CreateNullValue());
+  else
+    args.AppendString(model_util_->GetTreeNodeId(tree_model->AsNode(parent)));
+  args.AppendInteger(start);
+  args.AppendInteger(count);
   web_ui()->CallJavascriptFunction("CookiesView.onTreeItemRemoved", args);
 }
 
@@ -258,15 +259,16 @@ void CookiesViewHandler::LoadChildren(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
-  base::ListValue* children = new base::ListValue;
+  scoped_ptr<base::ListValue> children(new base::ListValue);
   model_util_->GetChildNodeList(parent, 0, parent->child_count(),
-      children);
+                                children.get());
 
   base::ListValue args;
-  args.Append(parent == cookies_tree_model_->GetRoot() ?
-      base::Value::CreateNullValue() :
-      new base::StringValue(model_util_->GetTreeNodeId(parent)));
-  args.Append(children);
+  if (parent == cookies_tree_model_->GetRoot())
+    args.Append(base::Value::CreateNullValue());
+  else
+    args.AppendString(model_util_->GetTreeNodeId(parent));
+  args.Append(children.Pass());
 
   web_ui()->CallJavascriptFunction("CookiesView.loadChildren", args);
 }

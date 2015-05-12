@@ -293,7 +293,7 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
     return NULL;
 
   if (val->IsNull())
-    return base::Value::CreateNullValue();
+    return base::Value::CreateNullValue().release();
 
   if (val->IsBoolean())
     return new base::FundamentalValue(val->ToBoolean(isolate)->Value());
@@ -371,7 +371,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
     FromV8ValueState* state,
     v8::Isolate* isolate) const {
   if (!state->UpdateAndCheckUniqueness(val))
-    return base::Value::CreateNullValue();
+    return base::Value::CreateNullValue().release();
 
   scoped_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
@@ -456,7 +456,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
     FromV8ValueState* state,
     v8::Isolate* isolate) const {
   if (!state->UpdateAndCheckUniqueness(val))
-    return base::Value::CreateNullValue();
+    return base::Value::CreateNullValue().release();
 
   scoped_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to

@@ -317,7 +317,7 @@ void ScriptInjection::OnJsInjectionCompleted(
       result.reset(v8_converter->FromV8Value(results[0], context));
     }
     if (!result.get())
-      result.reset(base::Value::CreateNullValue());
+      result = base::Value::CreateNullValue();
     // We guarantee that the main frame's result is at the first index, but
     // any sub frames results do not have guaranteed order.
     execution_results_->Insert(

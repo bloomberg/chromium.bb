@@ -325,11 +325,11 @@ bool TopSitesImpl::HasBlacklistedItems() const {
 void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::Value* dummy = base::Value::CreateNullValue();
+  scoped_ptr<base::Value> dummy = base::Value::CreateNullValue();
   {
     DictionaryPrefUpdate update(pref_service_, blacklist_pref_name_);
     base::DictionaryValue* blacklist = update.Get();
-    blacklist->SetWithoutPathExpansion(GetURLHash(url), dummy);
+    blacklist->SetWithoutPathExpansion(GetURLHash(url), dummy.Pass());
   }
 
   ResetThreadSafeCache();

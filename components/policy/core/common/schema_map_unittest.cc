@@ -173,7 +173,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
           new base::FundamentalValue(1),
           NULL);
   map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateNullValue(), NULL);
+          base::Value::CreateNullValue().release(), NULL);
   map.Set("double",
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,

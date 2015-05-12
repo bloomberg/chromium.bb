@@ -174,7 +174,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     proxy_cros_settings_parser::GetProxyPrefValue(
         proxy_config_service_, pref_name, &value);
     if (!value)
-      return base::Value::CreateNullValue();
+      return base::Value::CreateNullValue().release();
 
     return value;
   }
@@ -202,7 +202,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
 
   const base::Value* pref_value = CrosSettings::Get()->GetPref(pref_name);
   if (!pref_value)
-    return base::Value::CreateNullValue();
+    return base::Value::CreateNullValue().release();
 
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
   // TODO(estade): seems that this should replicate CreateValueForPref less.

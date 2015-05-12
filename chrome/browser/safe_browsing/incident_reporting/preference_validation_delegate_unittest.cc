@@ -118,7 +118,7 @@ class PreferenceValidationDelegateValues
     using base::Value;
     switch (value_type) {
       case Value::TYPE_NULL:
-        return make_scoped_ptr(Value::CreateNullValue());
+        return Value::CreateNullValue();
       case Value::TYPE_BOOLEAN:
         return scoped_ptr<Value>(new base::FundamentalValue(false));
       case Value::TYPE_INTEGER:

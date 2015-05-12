@@ -386,8 +386,7 @@ TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
     metadata.Clear();
 
     EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetValue(key,
-                      scoped_ptr<base::Value>(base::Value::CreateNullValue()));
+    metadata.SetValue(key, base::Value::CreateNullValue());
     EXPECT_TRUE(metadata.HasKey(key));
     const base::Value* const null_value = metadata.GetValue(key);
     EXPECT_TRUE(null_value);

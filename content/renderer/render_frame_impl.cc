@@ -1484,8 +1484,9 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::completed(
       converter.SetDateAllowed(true);
       converter.SetRegExpAllowed(true);
       for (const auto& value : result) {
-        base::Value* result_value = converter.FromV8Value(value, context);
-        list.Append(result_value ? result_value
+        scoped_ptr<base::Value> result_value(
+            converter.FromV8Value(value, context));
+        list.Append(result_value ? result_value.Pass()
                                  : base::Value::CreateNullValue());
       }
     } else {
@@ -1511,8 +1512,10 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
       V8ValueConverterImpl converter;
       converter.SetDateAllowed(true);
       converter.SetRegExpAllowed(true);
-      base::Value* result_value = converter.FromV8Value(result, context);
-      list.Set(0, result_value ? result_value : base::Value::CreateNullValue());
+      scoped_ptr<base::Value> result_value(
+          converter.FromV8Value(result, context));
+      list.Set(0, result_value ? result_value.Pass()
+                               : base::Value::CreateNullValue());
     } else {
       list.Set(0, base::Value::CreateNullValue());
     }

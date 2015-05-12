@@ -30,7 +30,7 @@ void EventFilteringInfo::SetInstanceID(int instance_id) {
 
 scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
   if (IsEmpty())
-    return scoped_ptr<base::Value>(base::Value::CreateNullValue());
+    return base::Value::CreateNullValue();
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   if (has_url_)

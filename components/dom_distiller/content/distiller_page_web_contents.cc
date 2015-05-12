@@ -155,7 +155,7 @@ void DistillerPageWebContents::DidFailLoad(
     content::WebContentsObserver::Observe(NULL);
     DCHECK(state_ == LOADING_PAGE || state_ == EXECUTING_JAVASCRIPT);
     state_ = PAGELOAD_FAILED;
-    scoped_ptr<base::Value> empty(base::Value::CreateNullValue());
+    scoped_ptr<base::Value> empty = base::Value::CreateNullValue();
     OnWebContentsDistillationDone(GURL(), empty.get());
   }
 }

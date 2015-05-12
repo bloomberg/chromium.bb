@@ -221,10 +221,10 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  base::Value* dx_info = gpu_info.dx_diagnostics.children.size() ?
-    DxDiagNodeToList(gpu_info.dx_diagnostics) :
-    base::Value::CreateNullValue();
-  info->Set("diagnostics", dx_info);
+  scoped_ptr<base::Value> dx_info = base::Value::CreateNullValue();
+  if (gpu_info.dx_diagnostics.children.size())
+    dx_info.reset(DxDiagNodeToList(gpu_info.dx_diagnostics));
+  info->Set("diagnostics", dx_info.Pass());
 #endif
 
   return info;

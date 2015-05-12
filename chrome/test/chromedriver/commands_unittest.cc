@@ -360,7 +360,7 @@ class FindElementWebView : public StubWebView {
       }
       case kElementNotExistsQueryOnce: {
         if (only_one_)
-          result_.reset(base::Value::CreateNullValue());
+          result_ = base::Value::CreateNullValue();
         else
           result_.reset(new base::ListValue());
         break;
@@ -395,7 +395,7 @@ class FindElementWebView : public StubWebView {
         (scenario_ == kElementExistsQueryTwice && current_count_ == 1)) {
         // Always return empty result when testing timeout.
         if (only_one_)
-          result->reset(base::Value::CreateNullValue());
+          *result = base::Value::CreateNullValue();
         else
           result->reset(new base::ListValue());
     } else {
@@ -414,10 +414,10 @@ class FindElementWebView : public StubWebView {
         }
       }
 
-      result->reset(result_->DeepCopy());
+      *result = result_->CreateDeepCopy();
       frame_ = frame;
       function_ = function;
-      args_.reset(args.DeepCopy());
+      args_ = args.CreateDeepCopy();
     }
     return Status(kOk);
   }

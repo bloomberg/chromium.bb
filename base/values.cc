@@ -85,8 +85,8 @@ Value::~Value() {
 }
 
 // static
-Value* Value::CreateNullValue() {
-  return new Value(TYPE_NULL);
+scoped_ptr<Value> Value::CreateNullValue() {
+  return make_scoped_ptr(new Value(TYPE_NULL));
 }
 
 bool Value::GetAsBinary(const BinaryValue** out_value) const {
@@ -137,7 +137,7 @@ Value* Value::DeepCopy() const {
   // This method should only be getting called for null Values--all subclasses
   // need to provide their own implementation;.
   DCHECK(IsType(TYPE_NULL));
-  return CreateNullValue();
+  return CreateNullValue().release();
 }
 
 scoped_ptr<Value> Value::CreateDeepCopy() const {
@@ -1135,6 +1135,10 @@ ListValue* ListValue::DeepCopy() const {
     result->Append((*i)->DeepCopy());
 
   return result;
+}
+
+scoped_ptr<ListValue> ListValue::CreateDeepCopy() const {
+  return make_scoped_ptr(DeepCopy());
 }
 
 bool ListValue::Equals(const Value* other) const {

@@ -701,7 +701,7 @@ scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
     value.reset(error.release());
   }
   if (!value)
-    value.reset(base::Value::CreateNullValue());
+    value = base::Value::CreateNullValue();
 
   base::DictionaryValue body_params;
   body_params.SetInteger("status", status.code());

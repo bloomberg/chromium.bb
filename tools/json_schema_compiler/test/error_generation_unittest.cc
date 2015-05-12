@@ -101,8 +101,8 @@ TEST(JsonSchemaCompilerErrorTest, ParamIsRequired) {
     EXPECT_TRUE(TestFunction::Params::Create(*params_value, &error));
   }
   {
-    scoped_ptr<base::ListValue> params_value = List(
-        base::Value::CreateNullValue());
+    scoped_ptr<base::ListValue> params_value =
+        List(base::Value::CreateNullValue().release());
     base::string16 error;
     EXPECT_FALSE(TestFunction::Params::Create(*params_value, &error));
     EXPECT_TRUE(EqualsUtf16("'num' is required", error));

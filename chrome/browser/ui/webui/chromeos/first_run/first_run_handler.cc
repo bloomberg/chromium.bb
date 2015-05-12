@@ -54,7 +54,7 @@ void FirstRunHandler::ShowStepPointingTo(const std::string& name,
                                          int x,
                                          int y,
                                          int offset) {
-  scoped_ptr<base::Value> null(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null = base::Value::CreateNullValue();
   base::ListValue point_with_offset;
   point_with_offset.AppendInteger(x);
   point_with_offset.AppendInteger(y);

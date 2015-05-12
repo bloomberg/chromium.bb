@@ -320,9 +320,8 @@ TEST(ValuesTest, DictionaryRemoval) {
 
 TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   DictionaryValue dict;
-  dict.Set("this.is.expanded", make_scoped_ptr(Value::CreateNullValue()));
-  dict.SetWithoutPathExpansion("this.isnt.expanded",
-                               make_scoped_ptr(Value::CreateNullValue()));
+  dict.Set("this.is.expanded", Value::CreateNullValue());
+  dict.SetWithoutPathExpansion("this.isnt.expanded", Value::CreateNullValue());
 
   EXPECT_FALSE(dict.HasKey("this.is.expanded"));
   EXPECT_TRUE(dict.HasKey("this"));
@@ -392,7 +391,7 @@ TEST(ValuesTest, DictionaryRemovePath) {
 
 TEST(ValuesTest, DeepCopy) {
   DictionaryValue original_dict;
-  scoped_ptr<Value> scoped_null(Value::CreateNullValue());
+  scoped_ptr<Value> scoped_null = Value::CreateNullValue();
   Value* original_null = scoped_null.get();
   original_dict.Set("null", scoped_null.Pass());
   scoped_ptr<FundamentalValue> scoped_bool(new FundamentalValue(true));
@@ -549,8 +548,8 @@ TEST(ValuesTest, Equals) {
   EXPECT_NE(null1.get(), null2.get());
   EXPECT_TRUE(null1->Equals(null2.get()));
 
-  scoped_ptr<Value> boolean(new FundamentalValue(false));
-  EXPECT_FALSE(null1->Equals(boolean.get()));
+  FundamentalValue boolean(false);
+  EXPECT_FALSE(null1->Equals(&boolean));
 
   DictionaryValue dv;
   dv.SetBoolean("a", false);
@@ -558,14 +557,14 @@ TEST(ValuesTest, Equals) {
   dv.SetDouble("c", 2.5);
   dv.SetString("d1", "string");
   dv.SetString("d2", ASCIIToUTF16("http://google.com"));
-  dv.Set("e", make_scoped_ptr(Value::CreateNullValue()));
+  dv.Set("e", Value::CreateNullValue());
 
   scoped_ptr<DictionaryValue> copy = dv.CreateDeepCopy();
   EXPECT_TRUE(dv.Equals(copy.get()));
 
   scoped_ptr<ListValue> list(new ListValue);
   ListValue* original_list = list.get();
-  list->Append(make_scoped_ptr(Value::CreateNullValue()));
+  list->Append(Value::CreateNullValue());
   list->Append(make_scoped_ptr(new DictionaryValue));
   scoped_ptr<Value> list_copy(list->CreateDeepCopy());
 

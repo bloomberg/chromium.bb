@@ -722,7 +722,7 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
     return Status(kUnknownError, "Runtime.evaluate missing string 'type'");
 
   if (type == "undefined") {
-    result->reset(base::Value::CreateNullValue());
+    *result = base::Value::CreateNullValue();
   } else {
     base::Value* value;
     if (!temp_result->Get("value", &value))

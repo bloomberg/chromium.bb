@@ -190,8 +190,7 @@ scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValues() const {
   DCHECK(CalledOnValidThread());
   scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   for (const auto& it : *pref_registry_) {
-    const base::Value* value = GetPreferenceValue(it.first);
-    out->Set(it.first, value->DeepCopy());
+    out->Set(it.first, GetPreferenceValue(it.first)->CreateDeepCopy());
   }
   return out.Pass();
 }
@@ -204,7 +203,7 @@ scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValuesOmitDefaults()
     const Preference* pref = FindPreference(it.first);
     if (pref->IsDefaultValue())
       continue;
-    out->Set(it.first, pref->GetValue()->DeepCopy());
+    out->Set(it.first, pref->GetValue()->CreateDeepCopy());
   }
   return out.Pass();
 }
@@ -216,7 +215,7 @@ PrefService::GetPreferenceValuesWithoutPathExpansion() const {
   for (const auto& it : *pref_registry_) {
     const base::Value* value = GetPreferenceValue(it.first);
     DCHECK(value);
-    out->SetWithoutPathExpansion(it.first, value->DeepCopy());
+    out->SetWithoutPathExpansion(it.first, value->CreateDeepCopy());
   }
   return out.Pass();
 }

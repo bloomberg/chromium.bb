@@ -63,7 +63,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
   int int_value = 0;
   switch (schema.type()) {
     case base::Value::TYPE_NULL: {
-      return make_scoped_ptr(base::Value::CreateNullValue()).Pass();
+      return base::Value::CreateNullValue();
     }
     case base::Value::TYPE_BOOLEAN: {
       // Accept booleans encoded as either string or integer.

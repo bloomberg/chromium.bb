@@ -230,7 +230,7 @@ void JsonPrefStore::SetValue(const std::string& key,
   base::Value* old_value = NULL;
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
-    prefs_->Set(key, new_value.release());
+    prefs_->Set(key, new_value.Pass());
     ReportValueChanged(key, flags);
   }
 }
@@ -245,7 +245,7 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
   base::Value* old_value = NULL;
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
-    prefs_->Set(key, new_value.release());
+    prefs_->Set(key, new_value.Pass());
     ScheduleWrite(flags);
   }
 }

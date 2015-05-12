@@ -12,8 +12,7 @@ TEST(JSONWriterTest, BasicTypes) {
   std::string output_js;
 
   // Test null.
-  scoped_ptr<Value> root(Value::CreateNullValue());
-  EXPECT_TRUE(JSONWriter::Write(root.get(), &output_js));
+  EXPECT_TRUE(JSONWriter::Write(Value::CreateNullValue().get(), &output_js));
   EXPECT_EQ("null", output_js);
 
   // Test empty dict.
@@ -56,7 +55,6 @@ TEST(JSONWriterTest, BasicTypes) {
   EXPECT_TRUE(JSONWriter::Write(&string_value, &output_js));
   EXPECT_EQ("\"foo\"", output_js);
 }
-
 
 TEST(JSONWriterTest, NestedTypes) {
   std::string output_js;

@@ -96,7 +96,7 @@ TEST_F(ListPreferenceMergeTest, LocalEmpty) {
 }
 
 TEST_F(ListPreferenceMergeTest, ServerNull) {
-  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   {
     ListPrefUpdate update(pref_service_, prefs::kURLsToRestoreOnStartup);
     base::ListValue* local_list_value = update.Get();
@@ -233,7 +233,7 @@ TEST_F(DictionaryPreferenceMergeTest, LocalEmpty) {
 }
 
 TEST_F(DictionaryPreferenceMergeTest, ServerNull) {
-  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   {
     DictionaryPrefUpdate update(pref_service_,
                                 prefs::kContentSettingsPatternPairs);

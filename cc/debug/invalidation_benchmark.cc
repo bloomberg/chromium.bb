@@ -116,7 +116,7 @@ bool InvalidationBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
   if (message->HasKey("notify_done")) {
     message->GetBoolean("notify_done", &notify_done);
     if (notify_done)
-      NotifyDone(scoped_ptr<base::Value>(base::Value::CreateNullValue()));
+      NotifyDone(base::Value::CreateNullValue());
     return true;
   }
   return false;

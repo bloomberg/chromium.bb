@@ -45,7 +45,7 @@ void ArrayEntryToValue(const void* value, void* context) {
 
 scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
   if (CFCast<CFNullRef>(property))
-    return scoped_ptr<base::Value>(base::Value::CreateNullValue());
+    return base::Value::CreateNullValue();
 
   if (CFBooleanRef boolean = CFCast<CFBooleanRef>(property)) {
     return scoped_ptr<base::Value>(new base::FundamentalValue(
