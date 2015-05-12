@@ -485,6 +485,19 @@ class Page35(ToughVideoCasesPage):
   def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
+class Page36(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page36, self).__init__(
+      url=('file://tough_video_cases/video.html?src='
+           'smpte_3840x2160_60fps_vp9.webm'),
+      page_set=page_set)
+
+    self.add_browser_metrics = True
+
+  def RunPageInteractions(self, action_runner):
+    self.SeekBeforeAndAfterPlayhead(action_runner)
+
 class ToughVideoCasesPageSet(page_set_module.PageSet):
 
   """
@@ -529,3 +542,4 @@ class ToughVideoCasesPageSet(page_set_module.PageSet):
     self.AddUserStory(Page33(self))
     self.AddUserStory(Page34(self))
     self.AddUserStory(Page35(self))
+    self.AddUserStory(Page36(self))
