@@ -260,11 +260,21 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
                               video_frame->coded_size()));
   }
 
+  gfx::RectF ya_tex_coord_rect(tex_coord_rect.x() * ya_tex_size.width(),
+                               tex_coord_rect.y() * ya_tex_size.height(),
+                               tex_coord_rect.width() * ya_tex_size.width(),
+                               tex_coord_rect.height() * ya_tex_size.height());
+  gfx::RectF uv_tex_coord_rect(tex_coord_rect.x() * uv_tex_size.width(),
+                               tex_coord_rect.y() * uv_tex_size.height(),
+                               tex_coord_rect.width() * uv_tex_size.width(),
+                               tex_coord_rect.height() * uv_tex_size.height());
+
   YUVVideoDrawQuad* yuv_quad =
       render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                   tex_coord_rect, ya_tex_size, uv_tex_size, y_resource,
-                   u_resource, v_resource, a_resource, color_space);
+                   ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
+                   uv_tex_size, y_resource, u_resource, v_resource, a_resource,
+                   color_space);
 }
 
 void CreateTestYUVVideoDrawQuad_Striped(

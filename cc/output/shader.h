@@ -132,13 +132,17 @@ class VertexShaderPosTexYUVStretchOffset {
   static std::string GetShaderBody();
 
   int matrix_location() const { return matrix_location_; }
-  int tex_scale_location() const { return tex_scale_location_; }
-  int tex_offset_location() const { return tex_offset_location_; }
+  int ya_tex_scale_location() const { return ya_tex_scale_location_; }
+  int ya_tex_offset_location() const { return ya_tex_offset_location_; }
+  int uv_tex_scale_location() const { return uv_tex_scale_location_; }
+  int uv_tex_offset_location() const { return uv_tex_offset_location_; }
 
  private:
   int matrix_location_;
-  int tex_scale_location_;
-  int tex_offset_location_;
+  int ya_tex_scale_location_;
+  int ya_tex_offset_location_;
+  int uv_tex_scale_location_;
+  int uv_tex_offset_location_;
 
   DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexYUVStretchOffset);
 };

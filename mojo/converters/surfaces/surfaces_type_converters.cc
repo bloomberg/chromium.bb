@@ -168,20 +168,17 @@ bool ConvertDrawQuad(const QuadPtr& input,
         return false;
       cc::YUVVideoDrawQuad* yuv_quad =
           render_pass->CreateAndAppendDrawQuad<cc::YUVVideoDrawQuad>();
-      yuv_quad->SetAll(sqs,
-                       input->rect.To<gfx::Rect>(),
-                       input->opaque_rect.To<gfx::Rect>(),
-                       input->visible_rect.To<gfx::Rect>(),
-                       input->needs_blending,
-                       yuv_state->tex_coord_rect.To<gfx::RectF>(),
-                       gfx::Size(),  // TODO(jamesr): ya texture size
-                       gfx::Size(),  // TODO(jamesr): uv texture size
-                       yuv_state->y_plane_resource_id,
-                       yuv_state->u_plane_resource_id,
-                       yuv_state->v_plane_resource_id,
-                       yuv_state->a_plane_resource_id,
-                       static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
-                           yuv_state->color_space));
+      yuv_quad->SetAll(
+          sqs, input->rect.To<gfx::Rect>(), input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(), input->needs_blending,
+          gfx::RectF(),  // TODO(sky): ya tex coord rect
+          gfx::RectF(),  // TODO(sky): uv tex coord rect
+          gfx::Size(),   // TODO(sky): ya texture size
+          gfx::Size(),   // TODO(sky): uv texture size
+          yuv_state->y_plane_resource_id, yuv_state->u_plane_resource_id,
+          yuv_state->v_plane_resource_id, yuv_state->a_plane_resource_id,
+          static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
+              yuv_state->color_space));
       break;
     }
     default:
@@ -325,7 +322,10 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       const cc::YUVVideoDrawQuad* yuv_quad =
           cc::YUVVideoDrawQuad::MaterialCast(&input);
       YUVVideoQuadStatePtr yuv_state = YUVVideoQuadState::New();
-      yuv_state->tex_coord_rect = RectF::From(yuv_quad->tex_coord_rect);
+      // TODO(sky): ya_tex_coord_rect
+      // TODO(sky): uv_tex_coord_rect
+      // TODO(sky): ya_texture_size
+      // TODO(sky): uv_texture_size
       yuv_state->y_plane_resource_id = yuv_quad->y_plane_resource_id;
       yuv_state->u_plane_resource_id = yuv_quad->u_plane_resource_id;
       yuv_state->v_plane_resource_id = yuv_quad->v_plane_resource_id;

@@ -212,14 +212,18 @@ std::string VertexShaderPosTex::GetShaderBody() {
 }
 
 VertexShaderPosTexYUVStretchOffset::VertexShaderPosTexYUVStretchOffset()
-    : matrix_location_(-1), tex_scale_location_(-1), tex_offset_location_(-1) {
+    : matrix_location_(-1),
+      ya_tex_scale_location_(-1),
+      ya_tex_offset_location_(-1),
+      uv_tex_scale_location_(-1),
+      uv_tex_offset_location_(-1) {
 }
 
 void VertexShaderPosTexYUVStretchOffset::Init(GLES2Interface* context,
                                               unsigned program,
                                               int* base_uniform_index) {
   static const char* uniforms[] = {
-      "matrix", "texScale", "texOffset",
+      "matrix", "yaTexScale", "yaTexOffset", "uvTexScale", "uvTexOffset",
   };
   int locations[arraysize(uniforms)];
 
@@ -230,8 +234,10 @@ void VertexShaderPosTexYUVStretchOffset::Init(GLES2Interface* context,
                              locations,
                              base_uniform_index);
   matrix_location_ = locations[0];
-  tex_scale_location_ = locations[1];
-  tex_offset_location_ = locations[2];
+  ya_tex_scale_location_ = locations[1];
+  ya_tex_offset_location_ = locations[2];
+  uv_tex_scale_location_ = locations[3];
+  uv_tex_offset_location_ = locations[4];
 }
 
 std::string VertexShaderPosTexYUVStretchOffset::GetShaderString() const {
@@ -244,9 +250,12 @@ std::string VertexShaderPosTexYUVStretchOffset::GetShaderHead() {
     attribute vec4 a_position;
     attribute TexCoordPrecision vec2 a_texCoord;
     uniform mat4 matrix;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform TexCoordPrecision vec2 texScale;
-    uniform TexCoordPrecision vec2 texOffset;
+    varying TexCoordPrecision vec2 v_yaTexCoord;
+    varying TexCoordPrecision vec2 v_uvTexCoord;
+    uniform TexCoordPrecision vec2 yaTexScale;
+    uniform TexCoordPrecision vec2 yaTexOffset;
+    uniform TexCoordPrecision vec2 uvTexScale;
+    uniform TexCoordPrecision vec2 uvTexOffset;
   });
 }
 
@@ -254,7 +263,8 @@ std::string VertexShaderPosTexYUVStretchOffset::GetShaderBody() {
   return SHADER0([]() {
     void main() {
       gl_Position = matrix * a_position;
-      v_texCoord = a_texCoord * texScale + texOffset;
+      v_yaTexCoord = a_texCoord * yaTexScale + yaTexOffset;
+      v_uvTexCoord = a_texCoord * uvTexScale + uvTexOffset;
     }
   });
 }
@@ -2046,7 +2056,8 @@ std::string FragmentShaderYUVVideo::GetShaderHead() {
   return SHADER0([]() {
     precision mediump float;
     precision mediump int;
-    varying TexCoordPrecision vec2 v_texCoord;
+    varying TexCoordPrecision vec2 v_yaTexCoord;
+    varying TexCoordPrecision vec2 v_uvTexCoord;
     uniform SamplerType y_texture;
     uniform SamplerType u_texture;
     uniform SamplerType v_texture;
@@ -2062,10 +2073,10 @@ std::string FragmentShaderYUVVideo::GetShaderBody() {
   return SHADER0([]() {
     void main() {
       vec2 ya_clamped =
-          max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_texCoord));
+          max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));
       float y_raw = TextureLookup(y_texture, ya_clamped).x;
       vec2 uv_clamped =
-          max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_texCoord));
+          max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));
       float u_unsigned = TextureLookup(u_texture, uv_clamped).x;
       float v_unsigned = TextureLookup(v_texture, uv_clamped).x;
       vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
@@ -2128,7 +2139,8 @@ std::string FragmentShaderYUVAVideo::GetShaderHead() {
   return SHADER0([]() {
     precision mediump float;
     precision mediump int;
-    varying TexCoordPrecision vec2 v_texCoord;
+    varying TexCoordPrecision vec2 v_yaTexCoord;
+    varying TexCoordPrecision vec2 v_uvTexCoord;
     uniform SamplerType y_texture;
     uniform SamplerType u_texture;
     uniform SamplerType v_texture;
@@ -2145,10 +2157,10 @@ std::string FragmentShaderYUVAVideo::GetShaderBody() {
   return SHADER0([]() {
     void main() {
       vec2 ya_clamped =
-          max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_texCoord));
+          max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));
       float y_raw = TextureLookup(y_texture, ya_clamped).x;
       vec2 uv_clamped =
-          max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_texCoord));
+          max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));
       float u_unsigned = TextureLookup(u_texture, uv_clamped).x;
       float v_unsigned = TextureLookup(v_texture, uv_clamped).x;
       float a_raw = TextureLookup(a_texture, ya_clamped).x;

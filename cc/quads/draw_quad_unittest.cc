@@ -313,23 +313,13 @@ void CompareDrawQuad(DrawQuad* quad,
   }                                                              \
   SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_9_ALL(Type, a, b, c, d, e, f, g, h, i) \
-  {                                                        \
-    QUAD_DATA quad_all->SetAll(shared_state,               \
-                               quad_rect,                  \
-                               quad_opaque_rect,           \
-                               quad_visible_rect,          \
-                               needs_blending,             \
-                               a,                          \
-                               b,                          \
-                               c,                          \
-                               d,                          \
-                               e,                          \
-                               f,                          \
-                               g,                          \
-                               h,                          \
-                               i);                         \
-  }                                                        \
+#define CREATE_QUAD_9_ALL(Type, a, b, c, d, e, f, g, h, i)                    \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>();              \
+  {                                                                           \
+    QUAD_DATA quad_all->SetAll(shared_state, quad_rect, quad_opaque_rect,     \
+                               quad_visible_rect, needs_blending, a, b, c, d, \
+                               e, f, g, h, i);                                \
+  }                                                                           \
   SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
 #define CREATE_QUAD_10_NEW(Type, a, b, c, d, e, f, g, h, i, j)   \
@@ -338,6 +328,14 @@ void CompareDrawQuad(DrawQuad* quad,
     QUAD_DATA quad_new->SetNew(                                  \
         shared_state, quad_rect, a, b, c, d, e, f, g, h, i, j);  \
   }                                                              \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+
+#define CREATE_QUAD_11_NEW(Type, a, b, c, d, e, f, g, h, i, j, k)            \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();             \
+  {                                                                          \
+    QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g, \
+                               h, i, j, k);                                  \
+  }                                                                          \
   SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
 #define CREATE_QUAD_ALL_RP(Type, a, b, c, d, e, f, g, copy_a)    \
@@ -640,7 +638,8 @@ TEST(DrawQuadTest, CopyTileDrawQuad) {
 TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  gfx::RectF tex_coord_rect(0.0f, 0.0f, 0.75f, 0.5f);
+  gfx::RectF ya_tex_coord_rect(40, 50, 30, 20);
+  gfx::RectF uv_tex_coord_rect(20, 25, 15, 10);
   gfx::Size ya_tex_size(32, 68);
   gfx::Size uv_tex_size(41, 51);
   ResourceProvider::ResourceId y_plane_resource_id = 45;
@@ -650,14 +649,15 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_10_NEW(YUVVideoDrawQuad, opaque_rect, visible_rect,
-                     tex_coord_rect, ya_tex_size, uv_tex_size,
-                     y_plane_resource_id, u_plane_resource_id,
+  CREATE_QUAD_11_NEW(YUVVideoDrawQuad, opaque_rect, visible_rect,
+                     ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
+                     uv_tex_size, y_plane_resource_id, u_plane_resource_id,
                      v_plane_resource_id, a_plane_resource_id, color_space);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(opaque_rect, copy_quad->opaque_rect);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
+  EXPECT_EQ(ya_tex_coord_rect, copy_quad->ya_tex_coord_rect);
+  EXPECT_EQ(uv_tex_coord_rect, copy_quad->uv_tex_coord_rect);
   EXPECT_EQ(ya_tex_size, copy_quad->ya_tex_size);
   EXPECT_EQ(uv_tex_size, copy_quad->uv_tex_size);
   EXPECT_EQ(y_plane_resource_id, copy_quad->y_plane_resource_id);
@@ -666,11 +666,13 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(a_plane_resource_id, copy_quad->a_plane_resource_id);
   EXPECT_EQ(color_space, copy_quad->color_space);
 
-  CREATE_QUAD_8_ALL(YUVVideoDrawQuad, tex_coord_rect, ya_tex_size, uv_tex_size,
-                    y_plane_resource_id, u_plane_resource_id,
-                    v_plane_resource_id, a_plane_resource_id, color_space);
+  CREATE_QUAD_9_ALL(YUVVideoDrawQuad, ya_tex_coord_rect, uv_tex_coord_rect,
+                    ya_tex_size, uv_tex_size, y_plane_resource_id,
+                    u_plane_resource_id, v_plane_resource_id,
+                    a_plane_resource_id, color_space);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
-  EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
+  EXPECT_EQ(ya_tex_coord_rect, copy_quad->ya_tex_coord_rect);
+  EXPECT_EQ(uv_tex_coord_rect, copy_quad->uv_tex_coord_rect);
   EXPECT_EQ(ya_tex_size, copy_quad->ya_tex_size);
   EXPECT_EQ(uv_tex_size, copy_quad->uv_tex_size);
   EXPECT_EQ(y_plane_resource_id, copy_quad->y_plane_resource_id);
@@ -901,7 +903,8 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
 TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  gfx::RectF tex_coord_rect(0.0f, 0.0f, 0.75f, 0.5f);
+  gfx::RectF ya_tex_coord_rect(0.0f, 0.0f, 0.75f, 0.5f);
+  gfx::RectF uv_tex_coord_rect(0.0f, 0.0f, 0.375f, 0.25f);
   gfx::Size ya_tex_size(32, 68);
   gfx::Size uv_tex_size(41, 51);
   ResourceProvider::ResourceId y_plane_resource_id = 45;
@@ -911,9 +914,9 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_10_NEW(YUVVideoDrawQuad, opaque_rect, visible_rect,
-                     tex_coord_rect, ya_tex_size, uv_tex_size,
-                     y_plane_resource_id, u_plane_resource_id,
+  CREATE_QUAD_11_NEW(YUVVideoDrawQuad, opaque_rect, visible_rect,
+                     ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
+                     uv_tex_size, y_plane_resource_id, u_plane_resource_id,
                      v_plane_resource_id, a_plane_resource_id, color_space);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(y_plane_resource_id, quad_new->y_plane_resource_id);

@@ -19,6 +19,9 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               unsigned resource_id,
+              // |tex_coord_rect| contains non-normalized coordinates.
+              // TODO(reveman): Make the use of normalized vs non-normalized
+              // coordinates consistent across all quad types: crbug.com/487370
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool swizzle_contents,
@@ -30,6 +33,9 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               const gfx::Rect& visible_rect,
               bool needs_blending,
               unsigned resource_id,
+              // |tex_coord_rect| contains non-normalized coordinates.
+              // TODO(reveman): Make the use of normalized vs non-normalized
+              // coordinates consistent across all quad types: crbug.com/487370
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool swizzle_contents,

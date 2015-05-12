@@ -1903,23 +1903,27 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   ResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id, GL_TEXTURE1, GL_LINEAR);
-  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), y_plane_lock.target());
   ResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_, quad->u_plane_resource_id, GL_TEXTURE2, GL_LINEAR);
-  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), u_plane_lock.target());
+  DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   ResourceProvider::ScopedSamplerGL v_plane_lock(
       resource_provider_, quad->v_plane_resource_id, GL_TEXTURE3, GL_LINEAR);
-  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), v_plane_lock.target());
+  DCHECK_EQ(y_plane_lock.target(), v_plane_lock.target());
   scoped_ptr<ResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (use_alpha_plane) {
     a_plane_lock.reset(new ResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->a_plane_resource_id, GL_TEXTURE4, GL_LINEAR));
-    DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), a_plane_lock->target());
+    DCHECK_EQ(y_plane_lock.target(), a_plane_lock->target());
   }
 
+  // All planes must have the same sampler type.
+  SamplerType sampler = SamplerTypeFromTextureTarget(y_plane_lock.target());
+
   int matrix_location = -1;
-  int tex_scale_location = -1;
-  int tex_offset_location = -1;
+  int ya_tex_scale_location = -1;
+  int ya_tex_offset_location = -1;
+  int uv_tex_scale_location = -1;
+  int uv_tex_offset_location = -1;
   int ya_clamp_rect_location = -1;
   int uv_clamp_rect_location = -1;
   int y_texture_location = -1;
@@ -1930,12 +1934,15 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   int yuv_adj_location = -1;
   int alpha_location = -1;
   if (use_alpha_plane) {
-    const VideoYUVAProgram* program = GetVideoYUVAProgram(tex_coord_precision);
+    const VideoYUVAProgram* program =
+        GetVideoYUVAProgram(tex_coord_precision, sampler);
     DCHECK(program && (program->initialized() || IsContextLost()));
     SetUseProgram(program->program());
     matrix_location = program->vertex_shader().matrix_location();
-    tex_scale_location = program->vertex_shader().tex_scale_location();
-    tex_offset_location = program->vertex_shader().tex_offset_location();
+    ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
+    ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
+    uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
+    uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
     y_texture_location = program->fragment_shader().y_texture_location();
     u_texture_location = program->fragment_shader().u_texture_location();
     v_texture_location = program->fragment_shader().v_texture_location();
@@ -1948,12 +1955,15 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
         program->fragment_shader().uv_clamp_rect_location();
     alpha_location = program->fragment_shader().alpha_location();
   } else {
-    const VideoYUVProgram* program = GetVideoYUVProgram(tex_coord_precision);
+    const VideoYUVProgram* program =
+        GetVideoYUVProgram(tex_coord_precision, sampler);
     DCHECK(program && (program->initialized() || IsContextLost()));
     SetUseProgram(program->program());
     matrix_location = program->vertex_shader().matrix_location();
-    tex_scale_location = program->vertex_shader().tex_scale_location();
-    tex_offset_location = program->vertex_shader().tex_offset_location();
+    ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
+    ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
+    uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
+    uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
     y_texture_location = program->fragment_shader().y_texture_location();
     u_texture_location = program->fragment_shader().u_texture_location();
     v_texture_location = program->fragment_shader().v_texture_location();
@@ -1966,23 +1976,52 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     alpha_location = program->fragment_shader().alpha_location();
   }
 
-  gl_->Uniform2f(tex_scale_location, quad->tex_coord_rect.width(),
-                 quad->tex_coord_rect.height());
-  gl_->Uniform2f(tex_offset_location, quad->tex_coord_rect.x(),
-                 quad->tex_coord_rect.y());
-  // Clamping to half a texel inside the tex coord rect prevents bilinear
-  // filtering from filtering outside the tex coord rect.
-  gfx::RectF ya_clamp_rect(quad->tex_coord_rect);
-  // Special case: empty texture size implies no clamping.
-  if (!quad->ya_tex_size.IsEmpty()) {
-    ya_clamp_rect.Inset(0.5f / quad->ya_tex_size.width(),
-                        0.5f / quad->ya_tex_size.height());
+  gfx::SizeF ya_tex_scale(1.0f, 1.0f);
+  gfx::SizeF uv_tex_scale(1.0f, 1.0f);
+  if (sampler != SAMPLER_TYPE_2D_RECT) {
+    DCHECK(!quad->ya_tex_size.IsEmpty());
+    DCHECK(!quad->uv_tex_size.IsEmpty());
+    ya_tex_scale = gfx::SizeF(1.0f / quad->ya_tex_size.width(),
+                              1.0f / quad->ya_tex_size.height());
+    uv_tex_scale = gfx::SizeF(1.0f / quad->uv_tex_size.width(),
+                              1.0f / quad->uv_tex_size.height());
   }
-  gfx::RectF uv_clamp_rect(quad->tex_coord_rect);
-  if (!quad->uv_tex_size.IsEmpty()) {
-    uv_clamp_rect.Inset(0.5f / quad->uv_tex_size.width(),
-                        0.5f / quad->uv_tex_size.height());
-  }
+
+  float ya_vertex_tex_translate_x =
+      quad->ya_tex_coord_rect.x() * ya_tex_scale.width();
+  float ya_vertex_tex_translate_y =
+      quad->ya_tex_coord_rect.y() * ya_tex_scale.height();
+  float ya_vertex_tex_scale_x =
+      quad->ya_tex_coord_rect.width() * ya_tex_scale.width();
+  float ya_vertex_tex_scale_y =
+      quad->ya_tex_coord_rect.height() * ya_tex_scale.height();
+
+  float uv_vertex_tex_translate_x =
+      quad->uv_tex_coord_rect.x() * uv_tex_scale.width();
+  float uv_vertex_tex_translate_y =
+      quad->uv_tex_coord_rect.y() * uv_tex_scale.height();
+  float uv_vertex_tex_scale_x =
+      quad->uv_tex_coord_rect.width() * uv_tex_scale.width();
+  float uv_vertex_tex_scale_y =
+      quad->uv_tex_coord_rect.height() * uv_tex_scale.height();
+
+  gl_->Uniform2f(ya_tex_scale_location, ya_vertex_tex_scale_x,
+                 ya_vertex_tex_scale_y);
+  gl_->Uniform2f(ya_tex_offset_location, ya_vertex_tex_translate_x,
+                 ya_vertex_tex_translate_y);
+  gl_->Uniform2f(uv_tex_scale_location, uv_vertex_tex_scale_x,
+                 uv_vertex_tex_scale_y);
+  gl_->Uniform2f(uv_tex_offset_location, uv_vertex_tex_translate_x,
+                 uv_vertex_tex_translate_y);
+
+  gfx::RectF ya_clamp_rect(ya_vertex_tex_translate_x, ya_vertex_tex_translate_y,
+                           ya_vertex_tex_scale_x, ya_vertex_tex_scale_y);
+  ya_clamp_rect.Inset(0.5f * ya_tex_scale.width(),
+                      0.5f * ya_tex_scale.height());
+  gfx::RectF uv_clamp_rect(uv_vertex_tex_translate_x, uv_vertex_tex_translate_y,
+                           uv_vertex_tex_scale_x, uv_vertex_tex_scale_y);
+  uv_clamp_rect.Inset(0.5f * uv_tex_scale.width(),
+                      0.5f * uv_tex_scale.height());
   gl_->Uniform4f(ya_clamp_rect_location, ya_clamp_rect.x(), ya_clamp_rect.y(),
                  ya_clamp_rect.right(), ya_clamp_rect.bottom());
   gl_->Uniform4f(uv_clamp_rect_location, uv_clamp_rect.x(), uv_clamp_rect.y(),
@@ -3284,27 +3323,33 @@ const GLRenderer::TextureProgram* GLRenderer::GetTextureIOSurfaceProgram(
 }
 
 const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
-    TexCoordPrecision precision) {
+    TexCoordPrecision precision,
+    SamplerType sampler) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  VideoYUVProgram* program = &video_yuv_program_[precision];
+  DCHECK_GE(sampler, 0);
+  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
+  VideoYUVProgram* program = &video_yuv_program_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVProgram::initialize");
     program->Initialize(output_surface_->context_provider(), precision,
-                        SAMPLER_TYPE_2D);
+                        sampler);
   }
   return program;
 }
 
 const GLRenderer::VideoYUVAProgram* GLRenderer::GetVideoYUVAProgram(
-    TexCoordPrecision precision) {
+    TexCoordPrecision precision,
+    SamplerType sampler) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  VideoYUVAProgram* program = &video_yuva_program_[precision];
+  DCHECK_GE(sampler, 0);
+  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
+  VideoYUVAProgram* program = &video_yuva_program_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVAProgram::initialize");
     program->Initialize(output_surface_->context_provider(), precision,
-                        SAMPLER_TYPE_2D);
+                        sampler);
   }
   return program;
 }
@@ -3345,6 +3390,9 @@ void GLRenderer::CleanupSharedObjects() {
           render_pass_mask_color_matrix_program_[i][j][k][l].Cleanup(gl_);
         }
       }
+
+      video_yuv_program_[i][j].Cleanup(gl_);
+      video_yuva_program_[i][j].Cleanup(gl_);
     }
     for (int j = 0; j <= LAST_BLEND_MODE; j++) {
       render_pass_program_[i][j].Cleanup(gl_);
@@ -3361,8 +3409,6 @@ void GLRenderer::CleanupSharedObjects() {
     }
     texture_io_surface_program_[i].Cleanup(gl_);
 
-    video_yuv_program_[i].Cleanup(gl_);
-    video_yuva_program_[i].Cleanup(gl_);
     video_stream_texture_program_[i].Cleanup(gl_);
   }
 

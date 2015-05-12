@@ -184,10 +184,6 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       static_cast<float>(visible_rect.width()) / coded_size.width();
   const float tex_height_scale =
       static_cast<float>(visible_rect.height()) / coded_size.height();
-  const float tex_x_offset =
-      static_cast<float>(visible_rect.x()) / coded_size.width();
-  const float tex_y_offset =
-      static_cast<float>(visible_rect.y()) / coded_size.height();
 
   switch (frame_resource_type_) {
     // TODO(danakj): Remove this, hide it in the hardware path.
@@ -242,14 +238,25 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
                    frame_->format(), media::VideoFrame::kAPlane, coded_size));
       }
 
-      gfx::RectF tex_coord_rect(
-          tex_x_offset, tex_y_offset, tex_width_scale, tex_height_scale);
+      // Compute the UV sub-sampling factor based on the ratio between
+      // |ya_tex_size| and |uv_tex_size|.
+      float uv_subsampling_factor_x =
+          static_cast<float>(ya_tex_size.width()) / uv_tex_size.width();
+      float uv_subsampling_factor_y =
+          static_cast<float>(ya_tex_size.height()) / uv_tex_size.height();
+      gfx::RectF ya_tex_coord_rect(visible_rect);
+      gfx::RectF uv_tex_coord_rect(
+          visible_rect.x() / uv_subsampling_factor_x,
+          visible_rect.y() / uv_subsampling_factor_y,
+          visible_rect.width() / uv_subsampling_factor_x,
+          visible_rect.height() / uv_subsampling_factor_y);
+
       YUVVideoDrawQuad* yuv_video_quad =
           render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
       yuv_video_quad->SetNew(
           shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
-          tex_coord_rect, ya_tex_size, uv_tex_size, frame_resources_[0],
-          frame_resources_[1], frame_resources_[2],
+          ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
+          frame_resources_[0], frame_resources_[1], frame_resources_[2],
           frame_resources_.size() > 3 ? frame_resources_[3] : 0, color_space);
       ValidateQuadResources(yuv_video_quad);
       break;

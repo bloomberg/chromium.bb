@@ -401,10 +401,10 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const TextureProgram* GetTextureIOSurfaceProgram(
       TexCoordPrecision precision);
 
-  const VideoYUVProgram* GetVideoYUVProgram(
-      TexCoordPrecision precision);
-  const VideoYUVAProgram* GetVideoYUVAProgram(
-      TexCoordPrecision precision);
+  const VideoYUVProgram* GetVideoYUVProgram(TexCoordPrecision precision,
+                                            SamplerType sampler);
+  const VideoYUVAProgram* GetVideoYUVAProgram(TexCoordPrecision precision,
+                                              SamplerType sampler);
   const VideoStreamTextureProgram* GetVideoStreamTextureProgram(
       TexCoordPrecision precision);
 
@@ -472,8 +472,10 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                                [LAST_BLEND_MODE + 1]
                                                [LAST_MASK_VALUE + 1];
 
-  VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1];
-  VideoYUVAProgram video_yuva_program_[LAST_TEX_COORD_PRECISION + 1];
+  VideoYUVProgram
+      video_yuv_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
+  VideoYUVAProgram
+      video_yuva_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
   VideoStreamTextureProgram
       video_stream_texture_program_[LAST_TEX_COORD_PRECISION + 1];
 
