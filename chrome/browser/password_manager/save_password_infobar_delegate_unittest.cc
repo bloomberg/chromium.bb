@@ -39,7 +39,8 @@ class TestSavePasswordInfobarDelegate : public SavePasswordInfoBarDelegate {
       password_manager::CredentialSourceType source_type)
       : SavePasswordInfoBarDelegate(form_to_save.Pass(),
                                     std::string(),
-                                    source_type) {}
+                                    source_type,
+                                    true /* is_smartlock_branding_enabled */) {}
   ~TestSavePasswordInfobarDelegate() override {}
 };
 

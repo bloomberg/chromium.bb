@@ -62,7 +62,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   SavePasswordInfoBarDelegate(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix,
-      password_manager::CredentialSourceType source_type);
+      password_manager::CredentialSourceType source_type,
+      bool is_smartlock_branding_enabled);
 
  private:
   // The PasswordFormManager managing the form we're asking the user about,
@@ -83,6 +84,10 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Records source from where infobar was triggered.
   // Infobar appearance (title, buttons) depends on value of this parameter.
   password_manager::CredentialSourceType source_type_;
+
+  // Title for the infobar: branded as a part of Google Smart Lock for signed
+  // users.
+  base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };

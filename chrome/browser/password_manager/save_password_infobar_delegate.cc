@@ -6,6 +6,8 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -37,9 +39,12 @@ void SavePasswordInfoBarDelegate::Create(
     password_manager::CredentialSourceType source_type) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   SavePasswordInfoBarDelegate* infobar_delegate =
       new SavePasswordInfoBarDelegate(
-          form_to_save.Pass(), uma_histogram_suffix, source_type);
+          form_to_save.Pass(), uma_histogram_suffix, source_type,
+          password_bubble_experiment::IsEnabledSmartLockBranding(profile));
 #if defined(OS_ANDROID)
   // For Android in case of smart lock we need different appearance of infobar.
   scoped_ptr<infobars::InfoBar> infobar =
@@ -81,7 +86,8 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
     const std::string& uma_histogram_suffix,
-    password_manager::CredentialSourceType source_type)
+    password_manager::CredentialSourceType source_type,
+    bool is_smartlock_branding_enabled)
     : ConfirmInfoBarDelegate(),
       form_to_save_(form_to_save.Pass()),
       infobar_response_(password_manager::metrics_util::NO_RESPONSE),
@@ -92,6 +98,11 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
         "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
         true);
   }
+  int brand_string_id = is_smartlock_branding_enabled
+                            ? IDS_PASSWORD_MANAGER_SMART_LOCK
+                            : IDS_SAVE_PASSWORD_TITLE_BRAND;
+  title_ = l10n_util::GetStringFUTF16(
+      IDS_SAVE_PASSWORD, l10n_util::GetStringUTF16(brand_string_id));
 }
 
 bool SavePasswordInfoBarDelegate::ShouldShowMoreButton() {
@@ -125,13 +136,7 @@ void SavePasswordInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetMessageText() const {
-  int brand_string_id =
-      (source_type_ ==
-       password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API)
-          ? IDS_PASSWORD_MANAGER_SMART_LOCK
-          : IDS_SAVE_PASSWORD_TITLE_BRAND;
-  return l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD,
-                                    l10n_util::GetStringUTF16(brand_string_id));
+  return title_;
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
