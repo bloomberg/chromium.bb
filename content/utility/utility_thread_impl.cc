@@ -14,6 +14,7 @@
 #include "content/common/utility_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/utility/content_utility_client.h"
+#include "content/utility/utility_blink_platform_impl.h"
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
@@ -80,7 +81,7 @@ void UtilityThreadImpl::Init() {
     // we run the utility thread on separate thread. This means that if any code
     // needs WebKit initialized in the utility process, they need to have
     // another path to support single process mode.
-    blink_platform_impl_.reset(new BlinkPlatformImpl);
+    blink_platform_impl_.reset(new UtilityBlinkPlatformImpl);
     blink::initialize(blink_platform_impl_.get());
   }
   GetContentClient()->utility()->UtilityThreadStarted();

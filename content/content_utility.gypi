@@ -14,9 +14,13 @@
     'public/utility/utility_thread.h',
     'utility/in_process_utility_thread.cc',
     'utility/in_process_utility_thread.h',
+    'utility/utility_blink_platform_impl.cc',
+    'utility/utility_blink_platform_impl.h',
     'utility/utility_main.cc',
     'utility/utility_thread_impl.cc',
     'utility/utility_thread_impl.h',
+    'utility/webthread_impl_for_utility_thread.cc',
+    'utility/webthread_impl_for_utility_thread.h',
   ],
   'include_dirs': [
     '..',

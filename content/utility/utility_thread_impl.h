@@ -20,6 +20,7 @@ class FilePath;
 
 namespace content {
 class BlinkPlatformImpl;
+class UtilityBlinkPlatformImpl;
 
 #if defined(COMPILER_MSVC)
 // See explanation for other RenderViewHostImpl which is the same issue.
@@ -56,7 +57,7 @@ class UtilityThreadImpl : public UtilityThread,
   // True when we're running in batch mode.
   bool batch_mode_;
 
-  scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
+  scoped_ptr<UtilityBlinkPlatformImpl> blink_platform_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };
