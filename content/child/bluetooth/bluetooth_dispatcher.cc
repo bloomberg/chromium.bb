@@ -39,6 +39,8 @@ int CurrentWorkerId() {
 WebBluetoothError::ErrorType WebBluetoothErrorFromBluetoothError(
     BluetoothError error_type) {
   switch (error_type) {
+    case BluetoothError::NETWORK_ERROR:
+      return WebBluetoothError::NetworkError;
     case BluetoothError::NOT_FOUND:
       return WebBluetoothError::NotFoundError;
     case BluetoothError::SECURITY:
