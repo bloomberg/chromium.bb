@@ -162,11 +162,10 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 
   void RunQuery(const std::string& query,
                 const std::string& mock_server_response) {
+    mock_server_response_ = mock_server_response;
     webstore_provider_->Start(false, base::UTF8ToUTF16(query));
 
     if (webstore_provider_->query_pending_ && !mock_server_response.empty()) {
-      mock_server_response_ = mock_server_response;
-
       DCHECK(!run_loop_);
       run_loop_.reset(new base::RunLoop);
       run_loop_->Run();
