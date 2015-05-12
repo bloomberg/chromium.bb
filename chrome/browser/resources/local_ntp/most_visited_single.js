@@ -114,6 +114,7 @@ var logEvent = function(eventType) {
 var countLoad = function() {
   loadedCounter -= 1;
   if (loadedCounter <= 0) {
+    showTiles();
     logEvent(LOG_TYPE.NTP_TILE_LOADED);
     window.parent.postMessage({cmd: 'loaded'}, DOMAIN_ORIGIN);
     loadedCounter = 1;
@@ -147,9 +148,8 @@ var handleCommand = function(data) {
   if (cmd == 'tile') {
     addTile(data);
   } else if (cmd == 'show') {
-    showTiles();
-    hideOverflowTiles(data);
     countLoad();
+    hideOverflowTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
   } else if (cmd == 'tilesVisible') {
@@ -381,10 +381,6 @@ var renderTile = function(data) {
       thumb.classList.add('failed-img');
     }
   } else { // THUMBNAILS
-    var thumb = tile.querySelector('.mv-thumb');
-    var img = document.createElement('img');
-    var loaded = false;
-
     // We keep track of the outcome of loading possible thumbnails for this
     // tile. Possible values:
     //   - null: waiting for load/error
@@ -393,12 +389,15 @@ var renderTile = function(data) {
     // This is populated by acceptImage/rejectImage and loadBestImage
     // decides the best one to load.
     var results = [];
+    var thumb = tile.querySelector('.mv-thumb');
+    var img = document.createElement('img');
+    var loaded = false;
 
     var loadBestImage = function() {
       if (loaded) {
         return;
       }
-      for (i = 0; i < results.length; ++i) {
+      for (var i = 0; i < results.length; ++i) {
         if (results[i] === null) {
           return;
         }
@@ -411,6 +410,7 @@ var renderTile = function(data) {
       thumb.classList.add('failed-img');
       thumb.removeChild(img);
       logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
+      countLoad();
     };
 
     var acceptImage = function(idx, url) {
@@ -427,6 +427,19 @@ var renderTile = function(data) {
       };
     };
 
+    img.title = data.title;
+    img.classList.add('thumbnail');
+    loadedCounter += 1;
+    img.addEventListener('load', countLoad);
+    img.addEventListener('error', countLoad);
+    img.addEventListener('error', function(ev) {
+      thumb.classList.add('failed-img');
+      thumb.removeChild(img);
+      logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
+    });
+    thumb.appendChild(img);
+    logEvent(LOG_TYPE.NTP_THUMBNAIL_TILE);
+
     // Get all thumbnailUrls for the tile.
     // They are ordered from best one to be used to worst.
     for (var i = 0; i < data.thumbnailUrls.length; ++i) {
@@ -442,19 +455,6 @@ var renderTile = function(data) {
         rejectImage(i)(null);
       }
     }
-
-    img.title = data.title;
-    img.classList.add('thumbnail');
-    loadedCounter += 1;
-    img.addEventListener('load', countLoad);
-    img.addEventListener('error', countLoad);
-    img.addEventListener('error', function(ev) {
-      thumb.classList.add('failed-img');
-      thumb.removeChild(img);
-      logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
-    });
-    thumb.appendChild(img);
-    logEvent(LOG_TYPE.NTP_THUMBNAIL_TILE);
 
     var favicon = tile.querySelector('.mv-favicon');
     if (data.faviconUrl) {
