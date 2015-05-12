@@ -170,3 +170,4 @@ V8IdleTasks
 XSLT status=stable
 SVG1DOM status=stable
 ScrollCustomization
+ScrollRestoration status=experimental

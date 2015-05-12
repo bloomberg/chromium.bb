@@ -169,6 +169,16 @@ void WebHistoryItem::setFrameSequenceNumber(long long frameSequenceNumber)
     m_private->setFrameSequenceNumber(frameSequenceNumber);
 }
 
+WebHistoryScrollRestorationType WebHistoryItem::scrollRestorationType() const
+{
+    return static_cast<WebHistoryScrollRestorationType>(m_private->scrollRestorationType());
+}
+
+void WebHistoryItem::setScrollRestorationType(WebHistoryScrollRestorationType type)
+{
+    m_private->setScrollRestorationType(static_cast<HistoryScrollRestorationType>(type));
+}
+
 WebSerializedScriptValue WebHistoryItem::stateObject() const
 {
     return WebSerializedScriptValue(m_private->stateObject());

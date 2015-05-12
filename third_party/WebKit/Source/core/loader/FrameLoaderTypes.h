@@ -91,6 +91,11 @@ enum HistoryCommitType {
     HistoryInertCommit
 };
 
+enum HistoryScrollRestorationType {
+    ScrollRestorationAuto,
+    ScrollRestorationManual
+};
+
 }
 
 #endif

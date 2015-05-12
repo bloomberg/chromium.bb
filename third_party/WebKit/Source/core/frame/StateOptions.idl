@@ -1,0 +1,11 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Spec work is being tracked on W3C bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28553
+
+enum ScrollRestoration {"auto", "manual"};
+
+dictionary StateOptions {
+    ScrollRestoration scrollRestoration = "auto";
+};

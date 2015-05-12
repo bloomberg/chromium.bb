@@ -290,7 +290,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source, ownerDocument);
 }
 
-void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, bool isPushOrReplaceState, PassRefPtr<SerializedScriptValue> stateObject)
+void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, bool isPushOrReplaceState, HistoryScrollRestorationType scrollRestorationType, PassRefPtr<SerializedScriptValue> stateObject)
 {
     if (m_provisionalItem)
         m_currentItem = m_provisionalItem.release();
@@ -306,8 +306,10 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     m_currentItem->setURL(m_documentLoader->urlForHistory());
     m_currentItem->setDocumentState(m_frame->document()->formElementsState());
     m_currentItem->setTarget(m_frame->tree().uniqueName());
-    if (isPushOrReplaceState)
+    if (isPushOrReplaceState) {
         m_currentItem->setStateObject(stateObject);
+        m_currentItem->setScrollRestorationType(scrollRestorationType);
+    }
     m_currentItem->setReferrer(SecurityPolicy::generateReferrer(m_documentLoader->request().referrerPolicy(), m_currentItem->url(), m_documentLoader->request().httpReferrer()));
     m_currentItem->setFormInfoFromRequest(m_documentLoader->request());
 }
@@ -557,7 +559,7 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
     return allowed;
 }
 
-void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, FrameLoadType type)
+void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, HistoryScrollRestorationType scrollRestorationType, FrameLoadType type)
 {
     saveScrollState();
 
@@ -576,7 +578,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (!m_currentItem)
         historyCommitType = HistoryInertCommit;
 
-    setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi, data);
+    setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi, scrollRestorationType, data);
     client()->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     client()->dispatchDidReceiveTitle(m_frame->document()->title());
     if (m_frame->document()->loadEventFinished())
@@ -607,7 +609,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->localDOMWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
-    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, type);
+    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, ScrollRestorationAuto, type);
 
     m_frame->view()->setWasScrolledByUser(false);
 
@@ -1025,6 +1027,9 @@ void FrameLoader::restoreScrollPositionAndViewState()
         return;
 
     if (!needsHistoryItemRestore(m_loadType))
+        return;
+
+    if (m_currentItem->scrollRestorationType() == ScrollRestorationManual)
         return;
 
     // This tries to balance 1. restoring as soon as possible, 2. detecting

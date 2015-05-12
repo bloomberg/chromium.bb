@@ -1,0 +1,25 @@
+This test verifies that navigating to entries created by pushState or replaceState correctly restores scroll position correctly and respects "scrollRestoration" flag.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+verifying #4
+PASS history.state.key is "#4"
+PASS document.body.scrollLeft is 200
+PASS document.body.scrollTop is 400
+verifying #3
+PASS history.state.key is "#3"
+PASS document.body.scrollLeft is 150
+PASS document.body.scrollTop is 300
+verifying #2
+PASS history.state.key is "#2"
+PASS document.body.scrollLeft is 100
+PASS document.body.scrollTop is 200
+verifying #1
+PASS history.state.key is "#1"
+PASS document.body.scrollLeft is 50
+PASS document.body.scrollTop is 100
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -87,6 +87,7 @@
 #include "public/platform/WebFileError.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
+#include "public/platform/WebHistoryScrollRestorationType.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMediaSource.h"
@@ -642,6 +643,9 @@ STATIC_ASSERT_MATCHING_ENUM(WebHistoryInertCommit, HistoryInertCommit);
 
 STATIC_ASSERT_MATCHING_ENUM(WebHistorySameDocumentLoad, HistorySameDocumentLoad);
 STATIC_ASSERT_MATCHING_ENUM(WebHistoryDifferentDocumentLoad, HistoryDifferentDocumentLoad);
+
+STATIC_ASSERT_MATCHING_ENUM(WebHistoryScrollRestorationManual, ScrollRestorationManual);
+STATIC_ASSERT_MATCHING_ENUM(WebHistoryScrollRestorationAuto, ScrollRestorationAuto);
 
 STATIC_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelDebug, DebugMessageLevel);
 STATIC_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelLog, LogMessageLevel);

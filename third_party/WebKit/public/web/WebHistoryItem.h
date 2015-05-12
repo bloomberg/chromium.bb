@@ -32,6 +32,7 @@
 #define WebHistoryItem_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebHistoryScrollRestorationType.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebReferrerPolicy.h"
 
@@ -103,6 +104,9 @@ public:
 
     BLINK_EXPORT long long frameSequenceNumber() const;
     BLINK_EXPORT void setFrameSequenceNumber(long long);
+
+    BLINK_EXPORT WebHistoryScrollRestorationType scrollRestorationType() const;
+    BLINK_EXPORT void setScrollRestorationType(WebHistoryScrollRestorationType);
 
     BLINK_EXPORT WebSerializedScriptValue stateObject() const;
     BLINK_EXPORT void setStateObject(const WebSerializedScriptValue&);

@@ -168,7 +168,7 @@ public:
 
     bool allowPlugins(ReasonForCallingAllowPlugins);
 
-    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, FrameLoadType);
+    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, HistoryScrollRestorationType, FrameLoadType);
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
     void saveScrollState();
@@ -197,7 +197,7 @@ private:
     bool validateTransitionNavigationMode();
     bool dispatchNavigationTransitionData();
 
-    void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = nullptr);
+    void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, HistoryScrollRestorationType = ScrollRestorationAuto, PassRefPtr<SerializedScriptValue> = nullptr);
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType, ClientRedirectPolicy);
 
