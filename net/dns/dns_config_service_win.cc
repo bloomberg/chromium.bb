@@ -446,6 +446,19 @@ DnsSystemSettings::DnsSystemSettings()
       tcpip_devolution(),
       append_to_multi_label_name(),
       have_name_resolution_policy(false) {
+  policy_search_list.set = false;
+  tcpip_search_list.set = false;
+  tcpip_domain.set = false;
+  primary_dns_suffix.set = false;
+
+  policy_devolution.enabled.set = false;
+  policy_devolution.level.set = false;
+  dnscache_devolution.enabled.set = false;
+  dnscache_devolution.level.set = false;
+  tcpip_devolution.enabled.set = false;
+  tcpip_devolution.level.set = false;
+
+  append_to_multi_label_name.set = false;
 }
 
 DnsSystemSettings::~DnsSystemSettings() {
