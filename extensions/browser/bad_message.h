@@ -19,12 +19,12 @@ namespace bad_message {
 //
 // NOTE: Do not remove or reorder elements in this list. Add new entries at the
 // end. Items may be renamed but do not change the values. We rely on the enum
-// values in histograms.
+// values in histograms. Also update histograms.xml with any new values.
 enum BadMessageReason {
   EOG_BAD_ORIGIN = 0,
-  EVG_BAD_ORIGIN,
-  BH_BLOB_NOT_OWNED,
-  EH_BAD_EVENT_ID,
+  EVG_BAD_ORIGIN = 1,
+  BH_BLOB_NOT_OWNED = 2,
+  EH_BAD_EVENT_ID = 3,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ExtensionHost becomes EH) plus a unique description of the
   // reason.

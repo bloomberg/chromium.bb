@@ -18,28 +18,28 @@ namespace bad_message {
 //
 // NOTE: Do not remove or reorder elements in this list. Add new entries at the
 // end. Items may be renamed but do not change the values. We rely on the enum
-// values in histograms.
+// values in histograms. Also update histograms.xml with any new values.
 enum BadMessageReason {
   NC_IN_PAGE_NAVIGATION = 0,
-  RFH_CAN_COMMIT_URL_BLOCKED,
-  RFH_CAN_ACCESS_FILES_OF_PAGE_STATE,
-  RFH_SANDBOX_FLAGS,
-  RFH_NO_PROXY_TO_PARENT,
-  RPH_DESERIALIZATION_FAILED,
-  RVH_CAN_ACCESS_FILES_OF_PAGE_STATE,
-  RVH_FILE_CHOOSER_PATH,
-  RWH_SYNTHETIC_GESTURE,
-  RWH_FOCUS,
-  RWH_BLUR,
-  RWH_SHARED_BITMAP,
-  RWH_BAD_ACK_MESSAGE,
-  RWHVA_SHARED_MEMORY,
-  SERVICE_WORKER_BAD_URL,
-  WC_INVALID_FRAME_SOURCE,
-  RWHVM_UNEXPECTED_FRAME_TYPE,
-  RFPH_DETACH,
-  DFH_BAD_EMBEDDER_MESSAGE,
-  NC_AUTO_SUBFRAME,
+  RFH_CAN_COMMIT_URL_BLOCKED = 1,
+  RFH_CAN_ACCESS_FILES_OF_PAGE_STATE = 2,
+  RFH_SANDBOX_FLAGS = 3,
+  RFH_NO_PROXY_TO_PARENT = 4,
+  RPH_DESERIALIZATION_FAILED = 5,
+  RVH_CAN_ACCESS_FILES_OF_PAGE_STATE = 6,
+  RVH_FILE_CHOOSER_PATH = 7,
+  RWH_SYNTHETIC_GESTURE = 8,
+  RWH_FOCUS = 9,
+  RWH_BLUR = 10,
+  RWH_SHARED_BITMAP = 11,
+  RWH_BAD_ACK_MESSAGE = 12,
+  RWHVA_SHARED_MEMORY = 13,
+  SERVICE_WORKER_BAD_URL = 14,
+  WC_INVALID_FRAME_SOURCE = 15,
+  RWHVM_UNEXPECTED_FRAME_TYPE = 16,
+  RFPH_DETACH = 17,
+  DFH_BAD_EMBEDDER_MESSAGE = 18,
+  NC_AUTO_SUBFRAME = 19,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
   // reason.

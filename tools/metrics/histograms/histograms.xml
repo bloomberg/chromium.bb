@@ -47602,7 +47602,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="14" label="SERVICE_WORKER_BAD_URL"/>
   <int value="15" label="WC_INVALID_FRAME_SOURCE"/>
   <int value="16" label="RWHVM_UNEXPECTED_FRAME_TYPE"/>
-  <int value="17" label="DFH_BAD_EMBEDDER_MESSAGE"/>
+  <int value="17" label="RFPH_DETACH"/>
+  <int value="18" label="DFH_BAD_EMBEDDER_MESSAGE"/>
+  <int value="19" label="NC_AUTO_SUBFRAME"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
