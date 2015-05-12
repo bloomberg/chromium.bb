@@ -59,17 +59,12 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 #define MAYBE_SwitchAppListLockedProfile DISABLED_SwitchAppListLockedProfile
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     DISABLED_SwitchAppListProfilesDuringSearch
-#define MAYBE_ShowAppListNonDefaultProfile \
-    DISABLED_ShowAppListNonDefaultProfile
-#define MAYBE_DeleteShowingAppList DISABLED_DeleteShowingAppList
 #else
 #define MAYBE_ShowAndDismiss ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles SwitchAppListProfiles
 #define MAYBE_SwitchAppListLockedProfile SwitchAppListLockedProfile
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     SwitchAppListProfilesDuringSearch
-#define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
-#define MAYBE_DeleteShowingAppList DeleteShowingAppList
 #endif
 
 // Show the app list, then dismiss it.
@@ -220,7 +215,7 @@ class ShowAppListInteractiveTest : public InProcessBrowserTest {
 };
 
 // Test showing the app list using the command line switch.
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 // http://crbug.com/396499
 #define MAYBE_ShowAppListFlag DISABLED_ShowAppListFlag
 #else
@@ -255,6 +250,17 @@ IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, MAYBE_ShowAppListFlag) {
 #endif
 }
 
+// ChromeOS does not support ShowForProfile(), or profile switching within the
+// app list. Profile switching on CrOS goes through a different code path. Also
+// these tests are flaky on Linux. See http://crbug.com/483615.
+#if defined(OS_LINUX)
+#define MAYBE_ShowAppListNonDefaultProfile \
+    DISABLED_ShowAppListNonDefaultProfile
+#define MAYBE_DeleteShowingAppList DISABLED_DeleteShowingAppList
+#else
+#define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
+#define MAYBE_DeleteShowingAppList DeleteShowingAppList
+#endif
 // Interactive UI test that creates a non-default profile and configures it for
 // the --show-app-list flag.
 class ShowAppListNonDefaultInteractiveTest : public ShowAppListInteractiveTest {
