@@ -4,13 +4,13 @@
 
   Polymer({
 
-    is: 'paper-menu',
+    is: 'paper-item',
 
     enableCustomStyleProperties: true,
 
-    behaviors: [
-      Polymer.IronMenuBehavior
-    ]
+    hostAttributes: {
+      role: 'listitem'
+    }
 
   });
 

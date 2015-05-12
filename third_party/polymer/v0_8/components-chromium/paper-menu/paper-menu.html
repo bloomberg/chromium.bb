@@ -7,7 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-selector/iron-selectable.html">
+<link rel="import" href="../iron-menu-behavior/iron-menu-behavior.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
 
 <!--
@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <style>
 
     :host {
+      display: block;
       padding: 8px 0;
 
       background: var(--primary-background-color);
@@ -36,7 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     :host > ::content > .iron-selected::after {
-      mixin(--fit);
+      mixin(--layout-fit);
 
       background: currentColor;
       /* FIXME move to paper-styles for next widget */

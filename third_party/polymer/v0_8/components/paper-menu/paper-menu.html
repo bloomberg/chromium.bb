@@ -9,7 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-selector/iron-selectable.html">
+<link rel="import" href="../iron-menu-behavior/iron-menu-behavior.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
 
 <!--
@@ -21,6 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <style>
 
     :host {
+      display: block;
       padding: 8px 0;
 
       background: var(--primary-background-color);
@@ -38,7 +39,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     :host > ::content > .iron-selected::after {
-      mixin(--fit);
+      mixin(--layout-fit);
 
       background: currentColor;
       /* FIXME move to paper-styles for next widget */
@@ -68,259 +69,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 (function() {
 
-  // FIXME menu control should be refactored to a more general element
-
   Polymer({
 
     is: 'paper-menu',
 
     enableCustomStyleProperties: true,
 
-    mixins: [
-      Polymer.Core.Selectable
-    ],
-
-    properties: {
-
-      /**
-       * Returns the currently focused item.
-       *
-       * @attribute focusedItem
-       * @type Object
-       */
-      focusedItem: {
-        observer: 'focusedItemChanged',
-        readOnly: true,
-        type: Object
-      },
-
-      /**
-       * The attribute to use on menu items to look up the item title. Typing the first
-       * letter of an item when the menu is open focuses that item. If unset, `textContent`
-       * will be used.
-       *
-       * @attribute attrForItemTitle
-       * @type String
-       */
-      attrForItemTitle: {
-        type: String
-      },
-
-      /***********************************************************************/
-      /* Polymer.Core.Selectable                                             */
-      /***********************************************************************/
-
-      /**
-       * If you want to use the attribute value of an element for `selected` instead of the index,
-       * set this to the name of the attribute.
-       *
-       * @attribute attrForSelected
-       * @type String
-       */
-      attrForSelected: {
-        type: String
-      },
-
-      /**
-       * If true, multiple selections are allowed.
-       *
-       * @attribute multi
-       * @type Boolean
-       * @default false
-       */
-      multi: {
-        observer: 'multiChanged',
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * Gets or sets the selected element. The default is to use the index of the item.  In
-       * multi-selection this should be an array of values.
-       *
-       * @attribute selected
-       * @type String|Array
-       */
-      selected: {
-        notify: true,
-        observer: 'selectedChanged',
-        type: String
-      },
-
-      /**
-       * Returns the currently selected item. In multi-selection this returns an array of
-       * selected items.
-       *
-       * @attribute selectedItem
-       * @type Object|Array
-       */
-      selectedItem: {
-        notify: true,
-        observer: 'selectedItemChanged',
-        readOnly: true,
-        type: Object
-      },
-
-      /**
-       * The event that would be fired from the item to indicate it is being selected.  Set this
-       * to empty string or null if you don't want to listen for any events.
-       *
-       * @attribute activateEvent
-       * @type String
-       * @default 'click'
-       */
-      activateEvent: {
-        observer: 'activateEventChanged',
-        type: String,
-        value: 'click'
-      },
-
-      /**
-       * If this is set, only items with local name that matches the `selectable` are selectable.
-       *
-       * @attribute selectable
-       * @type String
-       */
-      selectable: {
-        type: String
-      }
-
-    },
-
-    hostAttributes: {
-      'role': 'menu',
-      'tabindex': '0'
-    },
-
-    listeners: {
-      'focus': 'onFocus',
-      'keydown': 'onKeydown'
-    },
-
-    created: function() {
-      this._bindActivateHandler = this.activateHandler.bind(this);
-    },
-
-    attached: function() {
-      this.selectableAttached();
-    },
-
-    detached: function() {
-      this.selectableDetached();
-      this.removeListener(this.activateEvent);
-    },
-
-    addListener: function(eventName) {
-      if (eventName) {
-        this.addEventListener(eventName, this._bindActivateHandler);
-      }
-    },
-
-    removeListener: function(eventName) {
-      if (eventName) {
-        this.removeEventListener(eventName, this._bindActivateHandler);
-      }
-    },
-
-    activateEventChanged: function(eventName, old) {
-      this.removeListener(old);
-      this.addListener(eventName);
-    },
-
-    focusedItemChanged: function(focusedItem, old) {
-      old && old.setAttribute('tabindex', '-1');
-      if (focusedItem) {
-        focusedItem.setAttribute('tabindex', '0');
-        focusedItem.focus();
-      }
-    },
-
-    multiChanged: function(multi) {
-      this.selection.multi = multi;
-      this.selectedChanged(this.selected);
-    },
-
-    selectedChanged: function(selected, old) {
-      this._selectedChanged(selected, old);
-    },
-
-    selectedItemChanged: function(selectedItem) {
-      this._setFocusedItem(Array.isArray(selectedItem) ? selectedItem[0] : selectedItem);
-    },
-
-    activateHandler: function(e) {
-      var t = e.target;
-      var items = this.items;
-      while (t && t != this) {
-        var i = items.indexOf(t);
-        if (i >= 0) {
-          if (t.hasAttribute('disabled')) {
-            return;
-          }
-          var value = this.indexToValue(i);
-          if (!this.fire('iron-activate', {selected: value, item: t}).defaultPrevented) {
-            this.select(value);
-          }
-          return;
-        }
-        t = t.parentNode;
-      }
-    },
-
-    onFocus: function(event) {
-      // clear the cached focus item
-      this._setFocusedItem(null);
-      // focus the selected item when the menu receives focus, or the first item
-      // if no item is selected
-      var selectedItem = this.selectedItem;
-      selectedItem = Array.isArray(selectedItem) ? selectedItem[0] : selectedItem;
-      if (selectedItem) {
-        this._setFocusedItem(selectedItem);
-      } else {
-        this._setFocusedItem(this.items[0]);
-      }
-    },
-
-    onKeydown: function(event) {
-      // FIXME want to define these somewhere, core-a11y-keys?
-      var DOWN = 40;
-      var UP = 38;
-      var ESC = 27;
-      var ENTER = 13;
-      if (event.keyCode === DOWN) {
-        // up and down arrows moves the focus
-        this.focusNext();
-      } else if (event.keyCode === UP) {
-        this.focusPrevious();
-      } else if (event.keyCode === ESC) {
-        // esc blurs the control
-        this.focusedItem.blur();
-      } else if (event.keyCode === ENTER) {
-        // enter activates the item
-        this.activateHandler(event);
-      } else {
-        // all other keys focus the menu item starting with that character
-        for (var i = 0, item; item = this.items[i]; i++) {
-          var attr = this.attrForItemTitle || 'textContent';
-          var title = item[attr] || item.getAttribute(attr);
-          if (title && title.charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
-            this._setFocusedItem(item);
-            break;
-          }
-        }
-      }
-    },
-
-    focusPrevious: function() {
-      var length = this.items.length;
-      var index = (Number(this.indexOf(this.focusedItem)) - 1 + length) % length;
-      this._setFocusedItem(this.items[index]);
-    },
-
-    focusNext: function() {
-      var index = (Number(this.indexOf(this.focusedItem)) + 1) % this.items.length;
-      this._setFocusedItem(this.items[index]);
-    }
+    behaviors: [
+      Polymer.IronMenuBehavior
+    ]
 
   });
 
