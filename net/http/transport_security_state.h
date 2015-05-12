@@ -66,7 +66,7 @@ class NET_EXPORT TransportSecurityState
     DomainState();
     ~DomainState();
 
-    struct STSState {
+    struct NET_EXPORT STSState {
       STSState();
       ~STSState();
 
@@ -88,7 +88,7 @@ class NET_EXPORT TransportSecurityState
       std::string domain;
     };
 
-    struct PKPState {
+    struct NET_EXPORT PKPState {
       PKPState();
       ~PKPState();
 
