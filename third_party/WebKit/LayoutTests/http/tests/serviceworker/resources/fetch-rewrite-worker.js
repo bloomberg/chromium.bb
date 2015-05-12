@@ -45,6 +45,18 @@ self.addEventListener('fetch', function(event) {
         }));
       return;
     }
+    if (params['generate-png']) {
+      var binary = atob(
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAA' +
+          'RnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAhSURBVDhPY3wro/Kf' +
+          'gQLABKXJBqMGjBoAAqMGDLwBDAwAEsoCTFWunmQAAAAASUVORK5CYII=');
+      var array = new Uint8Array(binary.length);
+      for(var i = 0; i < binary.length; i++) {
+        array[i] = binary.charCodeAt(i)
+      };
+      event.respondWith(new Response(new Blob([array], {type: 'image/png'})));
+      return;
+    }
     event.respondWith(new Promise(function(resolve, reject) {
         var request = event.request;
         if (url) {
