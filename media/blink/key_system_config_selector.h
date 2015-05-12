@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/eme_constants.h"
@@ -32,9 +31,8 @@ class MediaPermission;
 
 class MEDIA_EXPORT KeySystemConfigSelector {
  public:
-  KeySystemConfigSelector(
-      const KeySystems* key_systems,
-      MediaPermission* media_permission);
+  KeySystemConfigSelector(const KeySystems* key_systems,
+                          MediaPermission* media_permission);
 
   ~KeySystemConfigSelector();
 
@@ -43,10 +41,8 @@ class MEDIA_EXPORT KeySystemConfigSelector {
       const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
           candidate_configurations,
       const blink::WebSecurityOrigin& security_origin,
-      bool are_secure_codecs_supported,
-      // The second argument is |are_secure_codecs_required|.
-      base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
-                          bool)> succeeded_cb,
+      base::Callback<void(const blink::WebMediaKeySystemConfiguration&)>
+          succeeded_cb,
       base::Callback<void(const blink::WebString&)> not_supported_cb);
 
  private:

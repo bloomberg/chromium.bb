@@ -78,11 +78,9 @@ class WebEncryptedMediaClientImpl::Reporter {
 };
 
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
-    base::Callback<bool(void)> are_secure_codecs_supported_cb,
     CdmFactory* cdm_factory,
     MediaPermission* media_permission)
-    : are_secure_codecs_supported_cb_(are_secure_codecs_supported_cb),
-      cdm_factory_(cdm_factory),
+    : cdm_factory_(cdm_factory),
       key_system_config_selector_(KeySystems::GetInstance(), media_permission),
       weak_factory_(this) {
   DCHECK(cdm_factory_);
@@ -96,7 +94,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   GetReporter(request.keySystem())->ReportRequested();
   key_system_config_selector_.SelectConfig(
       request.keySystem(), request.supportedConfigurations(),
-      request.securityOrigin(), are_secure_codecs_supported_cb_.Run(),
+      request.securityOrigin(),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestSucceeded,
                  weak_factory_.GetWeakPtr(), request),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestNotSupported,
@@ -116,11 +114,8 @@ void WebEncryptedMediaClientImpl::CreateCdm(
 
 void WebEncryptedMediaClientImpl::OnRequestSucceeded(
     blink::WebEncryptedMediaRequest request,
-    const blink::WebMediaKeySystemConfiguration& accumulated_configuration,
-    bool are_secure_codecs_required) {
+    const blink::WebMediaKeySystemConfiguration& accumulated_configuration) {
   GetReporter(request.keySystem())->ReportSupported();
-  // TODO(sandersd): Pass |are_secure_codecs_required| along and use it to
-  // configure the CDM security level and use of secure surfaces on Android.
   request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
       request.keySystem(), accumulated_configuration, request.securityOrigin(),
       weak_factory_.GetWeakPtr()));

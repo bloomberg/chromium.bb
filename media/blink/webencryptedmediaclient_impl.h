@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -32,10 +31,8 @@ class MediaPermission;
 class MEDIA_EXPORT WebEncryptedMediaClientImpl
     : public blink::WebEncryptedMediaClient {
  public:
-  WebEncryptedMediaClientImpl(
-      base::Callback<bool(void)> are_secure_codecs_supported_cb,
-      CdmFactory* cdm_factory,
-      MediaPermission* media_permission);
+  WebEncryptedMediaClientImpl(CdmFactory* cdm_factory,
+                              MediaPermission* media_permission);
   virtual ~WebEncryptedMediaClientImpl();
 
   // WebEncryptedMediaClient implementation.
@@ -61,8 +58,7 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   // accumulated configuration.
   void OnRequestSucceeded(
       blink::WebEncryptedMediaRequest request,
-      const blink::WebMediaKeySystemConfiguration& accumulated_configuration,
-      bool are_secure_codecs_required);
+      const blink::WebMediaKeySystemConfiguration& accumulated_configuration);
 
   // Complete a requestMediaKeySystemAccess() request with an error message.
   void OnRequestNotSupported(blink::WebEncryptedMediaRequest request,
@@ -75,7 +71,6 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   // Reporter singletons.
   base::ScopedPtrHashMap<std::string, scoped_ptr<Reporter>> reporters_;
 
-  base::Callback<bool(void)> are_secure_codecs_supported_cb_;
   CdmFactory* cdm_factory_;
   KeySystemConfigSelector key_system_config_selector_;
   base::WeakPtrFactory<WebEncryptedMediaClientImpl> weak_factory_;

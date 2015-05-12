@@ -813,7 +813,6 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererMediaPlayerManager* GetMediaPlayerManager();
 #endif
 
-  bool AreSecureCodecsSupported();
   media::MediaPermission* GetMediaPermission();
   media::CdmFactory* GetCdmFactory();
 

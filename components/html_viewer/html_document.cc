@@ -109,12 +109,6 @@ bool CanNavigateLocally(blink::WebFrame* frame,
   return false;
 }
 
-bool AreSecureCodecsSupported() {
-  // Hardware-secure codecs are not currently supported by HTML Viewer on any
-  // platform.
-  return false;
-}
-
 }  // namespace
 
 HTMLDocument::HTMLDocument(
@@ -334,8 +328,7 @@ void HTMLDocument::didNavigateWithinPage(
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
   if (!web_encrypted_media_client_) {
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
-        base::Bind(&AreSecureCodecsSupported), GetCdmFactory(),
-        GetMediaPermission()));
+        GetCdmFactory(), GetMediaPermission()));
   }
   return web_encrypted_media_client_.get();
 }
