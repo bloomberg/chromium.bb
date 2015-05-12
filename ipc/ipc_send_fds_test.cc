@@ -19,9 +19,10 @@ extern "C" {
 
 #include "base/callback.h"
 #include "base/file_descriptor_posix.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_utils.h"
@@ -250,12 +251,10 @@ class PipeChannelHelper {
     out = IPC::Channel::CreateClient(out_handle, &cb_listener_);
     // PostTask the connect calls to make sure the callbacks happens
     // on the right threads.
-    in_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&PipeChannelHelper::Connect, in.get()));
-    out_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&PipeChannelHelper::Connect, out.get()));
+    in_thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&PipeChannelHelper::Connect, in.get()));
+    out_thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&PipeChannelHelper::Connect, out.get()));
   }
 
   static void DestroyChannel(scoped_ptr<IPC::Channel> *c,
@@ -267,12 +266,10 @@ class PipeChannelHelper {
   ~PipeChannelHelper() {
     base::WaitableEvent a(true, false);
     base::WaitableEvent b(true, false);
-    in_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&PipeChannelHelper::DestroyChannel, &in, &a));
-    out_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&PipeChannelHelper::DestroyChannel, &out, &b));
+    in_thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&PipeChannelHelper::DestroyChannel, &in, &a));
+    out_thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&PipeChannelHelper::DestroyChannel, &out, &b));
     a.Wait();
     b.Wait();
   }
@@ -321,11 +318,9 @@ class IPCMultiSendingFdsTest : public testing::Test {
     for (int i = 0; i < pipes_to_send; i++) {
       received_.Reset();
       std::pair<int, int> pipe_fds = make_socket_pair();
-      t->message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(&PipeChannelHelper::Send,
-                     base::Unretained(dest),
-                     pipe_fds.second));
+      t->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&PipeChannelHelper::Send,
+                                base::Unretained(dest), pipe_fds.second));
       char tmp = 'x';
       CHECK_EQ(1, HANDLE_EINTR(write(pipe_fds.first, &tmp, 1)));
       CHECK_EQ(0, IGNORE_EINTR(close(pipe_fds.first)));

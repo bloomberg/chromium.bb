@@ -9,13 +9,15 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_listener.h"
@@ -72,7 +74,7 @@ class Worker : public Listener, public Sender {
   }
   void Start() {
     StartThread(&listener_thread_, base::MessageLoop::TYPE_DEFAULT);
-    ListenerThread()->message_loop()->PostTask(
+    ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&Worker::OnStart, this));
   }
   void Shutdown() {
@@ -80,7 +82,7 @@ class Worker : public Listener, public Sender {
     // ~Worker(), since that'll reset the vtable pointer (to Worker's), which
     // may result in a race conditions. See http://crbug.com/25841.
     WaitableEvent listener_done(false, false), ipc_done(false, false);
-    ListenerThread()->message_loop()->PostTask(
+    ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown1, this,
                               &listener_done, &ipc_done));
     listener_done.Wait();
@@ -152,8 +154,8 @@ class Worker : public Listener, public Sender {
 
   virtual SyncChannel* CreateChannel() {
     scoped_ptr<SyncChannel> channel = SyncChannel::Create(
-        channel_name_, mode_, this, ipc_thread_.message_loop_proxy().get(),
-        true, &shutdown_event_);
+        channel_name_, mode_, this, ipc_thread_.task_runner().get(), true,
+        &shutdown_event_);
     return channel.release();
   }
 
@@ -190,9 +192,9 @@ class Worker : public Listener, public Sender {
     base::RunLoop().RunUntilIdle();
     ipc_event->Signal();
 
-    listener_thread_.message_loop()->PostTask(
-        FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown2, this,
-                              listener_event));
+    listener_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&Worker::OnListenerThreadShutdown2, this, listener_event));
   }
 
   void OnListenerThreadShutdown2(WaitableEvent* listener_event) {
@@ -324,8 +326,7 @@ class TwoStepServer : public Worker {
   SyncChannel* CreateChannel() override {
     SyncChannel* channel =
         SyncChannel::Create(channel_name(), mode(), this,
-                            ipc_thread().message_loop_proxy().get(),
-                            create_pipe_now_,
+                            ipc_thread().task_runner().get(), create_pipe_now_,
                             shutdown_event()).release();
     return channel;
   }
@@ -347,8 +348,7 @@ class TwoStepClient : public Worker {
   SyncChannel* CreateChannel() override {
     SyncChannel* channel =
         SyncChannel::Create(channel_name(), mode(), this,
-                            ipc_thread().message_loop_proxy().get(),
-                            create_pipe_now_,
+                            ipc_thread().task_runner().get(), create_pipe_now_,
                             shutdown_event()).release();
     return channel;
   }
@@ -896,11 +896,10 @@ class DoneEventRaceServer : public Worker {
       : Worker(Channel::MODE_SERVER, "done_event_race_server") { }
 
   void Run() override {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(&NestedCallback, this));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&TimeoutCallback),
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&NestedCallback, this));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&TimeoutCallback),
         base::TimeDelta::FromSeconds(9));
     // Even though we have a timeout on the Send, it will succeed since for this
     // bug, the reply message comes back and is deserialized, however the done
@@ -926,17 +925,17 @@ TEST_F(IPCSyncChannelTest, DoneEventRace) {
 
 class TestSyncMessageFilter : public SyncMessageFilter {
  public:
-  TestSyncMessageFilter(base::WaitableEvent* shutdown_event,
-                        Worker* worker,
-                        scoped_refptr<base::MessageLoopProxy> message_loop)
+  TestSyncMessageFilter(
+      base::WaitableEvent* shutdown_event,
+      Worker* worker,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : SyncMessageFilter(shutdown_event),
         worker_(worker),
-        message_loop_(message_loop) {
-  }
+        task_runner_(task_runner) {}
 
   void OnFilterAdded(Sender* sender) override {
     SyncMessageFilter::OnFilterAdded(sender);
-    message_loop_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&TestSyncMessageFilter::SendMessageOnHelperThread, this));
   }
@@ -954,7 +953,7 @@ class TestSyncMessageFilter : public SyncMessageFilter {
   ~TestSyncMessageFilter() override {}
 
   Worker* worker_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class SyncMessageFilterServer : public Worker {
@@ -966,7 +965,7 @@ class SyncMessageFilterServer : public Worker {
     options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
     thread_.StartWithOptions(options);
     filter_ = new TestSyncMessageFilter(shutdown_event(), this,
-                                        thread_.message_loop_proxy());
+                                        thread_.task_runner());
   }
 
   void Run() override {
@@ -987,7 +986,7 @@ class ServerSendAfterClose : public Worker {
   }
 
   bool SendDummy() {
-    ListenerThread()->message_loop()->PostTask(
+    ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(base::IgnoreResult(&ServerSendAfterClose::Send),
                               this, new SyncChannelTestMsg_NoArgs));
     return true;
@@ -1053,7 +1052,7 @@ class RestrictedDispatchServer : public Worker {
     Send(msg);
     // Signal the event after the message has been sent on the channel, on the
     // IPC thread.
-    ipc_thread().message_loop()->PostTask(
+    ipc_thread().task_runner()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnPingSent, this));
   }
 
@@ -1128,7 +1127,7 @@ class RestrictedDispatchClient : public Worker {
     // send a message on that same channel.
     channel()->SetRestrictDispatchChannelGroup(1);
 
-    server_->ListenerThread()->message_loop()->PostTask(
+    server_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 1));
     sent_ping_event_->Wait();
     Send(new SyncChannelTestMsg_NoArgs);
@@ -1137,15 +1136,11 @@ class RestrictedDispatchClient : public Worker {
     else
       LOG(ERROR) << "Send failed to dispatch incoming message on same channel";
 
-    non_restricted_channel_ =
-        SyncChannel::Create("non_restricted_channel",
-                            IPC::Channel::MODE_CLIENT,
-                            this,
-                            ipc_thread().message_loop_proxy().get(),
-                            true,
-                            shutdown_event());
+    non_restricted_channel_ = SyncChannel::Create(
+        "non_restricted_channel", IPC::Channel::MODE_CLIENT, this,
+        ipc_thread().task_runner().get(), true, shutdown_event());
 
-    server_->ListenerThread()->message_loop()->PostTask(
+    server_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 2));
     sent_ping_event_->Wait();
     // Check that the incoming message is *not* dispatched when sending on the
@@ -1170,7 +1165,7 @@ class RestrictedDispatchClient : public Worker {
 
     // Check that the incoming message on the non-restricted channel is
     // dispatched when sending on the restricted channel.
-    server2_->ListenerThread()->message_loop()->PostTask(
+    server2_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&NonRestrictedDispatchServer::OnDoPingTTL, server2_, 3));
     int value = 0;
@@ -1392,10 +1387,10 @@ class RestrictedDispatchDeadlockClient1 : public Worker {
 
   void Run() override {
     server_ready_event_->Wait();
-    server_->ListenerThread()->message_loop()->PostTask(
+    server_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&RestrictedDispatchDeadlockServer::OnDoServerTask, server_));
-    peer_->ListenerThread()->message_loop()->PostTask(
+    peer_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&RestrictedDispatchDeadlockClient2::OnDoClient2Task, peer_));
     events_[0]->Wait();
@@ -1528,13 +1523,9 @@ class RestrictedDispatchPipeWorker : public Worker {
     if (is_first())
       event1_->Signal();
     event2_->Wait();
-    other_channel_ =
-        SyncChannel::Create(other_channel_name_,
-                            IPC::Channel::MODE_CLIENT,
-                            this,
-                            ipc_thread().message_loop_proxy().get(),
-                            true,
-                            shutdown_event());
+    other_channel_ = SyncChannel::Create(
+        other_channel_name_, IPC::Channel::MODE_CLIENT, this,
+        ipc_thread().task_runner().get(), true, shutdown_event());
     other_channel_->SetRestrictDispatchChannelGroup(group_);
     if (!is_first()) {
       event1_->Signal();
@@ -1608,13 +1599,9 @@ class ReentrantReplyServer1 : public Worker {
         server_ready_(server_ready) { }
 
   void Run() override {
-    server2_channel_ =
-        SyncChannel::Create("reentrant_reply2",
-                            IPC::Channel::MODE_CLIENT,
-                            this,
-                            ipc_thread().message_loop_proxy().get(),
-                            true,
-                            shutdown_event());
+    server2_channel_ = SyncChannel::Create(
+        "reentrant_reply2", IPC::Channel::MODE_CLIENT, this,
+        ipc_thread().task_runner().get(), true, shutdown_event());
     server_ready_->Signal();
     Message* msg = new SyncChannelTestMsg_Reentrant1();
     server2_channel_->Send(msg);

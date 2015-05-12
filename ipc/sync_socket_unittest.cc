@@ -5,11 +5,12 @@
 #include "base/sync_socket.h"
 
 #include <stdio.h>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -227,7 +228,8 @@ TEST_F(SyncSocketTest, DisconnectTest) {
   // Try to do a blocking read from one of the sockets on the worker thread.
   char buf[0xff];
   size_t received = 1U;  // Initialize to an unexpected value.
-  worker.message_loop()->PostTask(FROM_HERE,
+  worker.task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&BlockingRead, &pair[0], &buf[0], arraysize(buf), &received));
 
   // Wait for the worker thread to say hello.
@@ -257,9 +259,9 @@ TEST_F(SyncSocketTest, BlockingReceiveTest) {
   // Try to do a blocking read from one of the sockets on the worker thread.
   char buf[kHelloStringLength] = {0};
   size_t received = 1U;  // Initialize to an unexpected value.
-  worker.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&BlockingRead, &pair[0], &buf[0],
-                 kHelloStringLength, &received));
+  worker.task_runner()->PostTask(FROM_HERE,
+                                 base::Bind(&BlockingRead, &pair[0], &buf[0],
+                                            kHelloStringLength, &received));
 
   // Wait for the worker thread to say hello.
   char hello[kHelloStringLength] = {0};

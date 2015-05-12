@@ -5,7 +5,8 @@
 #include "ipc/mojo/ipc_channel_mojo_host.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 
 namespace IPC {
@@ -97,7 +98,7 @@ ChannelMojoHost::~ChannelMojoHost() {
 }
 
 void ChannelMojoHost::OnClientLaunched(base::ProcessHandle process) {
-  if (io_task_runner_ == base::MessageLoop::current()->message_loop_proxy()) {
+  if (io_task_runner_ == base::MessageLoop::current()->task_runner()) {
     channel_delegate_->OnClientLaunched(process);
   } else {
     io_task_runner_->PostTask(FROM_HERE,

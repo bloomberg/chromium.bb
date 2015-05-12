@@ -8,7 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ipc/mojo/async_handle_waiter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 
@@ -221,8 +222,8 @@ void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
 void MessagePipeReader::DelayedDeleter::operator()(
     MessagePipeReader* ptr) const {
   ptr->Close();
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(&DeleteNow, ptr));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&DeleteNow, ptr));
 }
 
 }  // namespace internal

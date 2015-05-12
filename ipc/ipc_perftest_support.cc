@@ -342,7 +342,7 @@ int PingPongTestClient::RunMain() {
 }
 
 scoped_refptr<base::TaskRunner> PingPongTestClient::task_runner() {
-  return main_message_loop_.message_loop_proxy();
+  return main_message_loop_.task_runner();
 }
 
 LockThreadAffinity::LockThreadAffinity(int cpu_number)

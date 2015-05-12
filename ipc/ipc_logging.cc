@@ -13,9 +13,10 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "ipc/ipc_message_utils.h"
@@ -161,7 +162,7 @@ void Logging::OnPostDispatchMessage(const Message& message,
   if (base::MessageLoop::current() == main_thread_) {
     Log(data);
   } else {
-    main_thread_->PostTask(
+    main_thread_->task_runner()->PostTask(
         FROM_HERE, base::Bind(&Logging::Log, base::Unretained(this), data));
   }
 }
@@ -231,9 +232,8 @@ void Logging::Log(const LogData& data) {
       queued_logs_.push_back(data);
       if (!queue_invoke_later_pending_) {
         queue_invoke_later_pending_ = true;
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&Logging::OnSendLogs, base::Unretained(this)),
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE, base::Bind(&Logging::OnSendLogs, base::Unretained(this)),
             base::TimeDelta::FromMilliseconds(kLogSendDelayMs));
       }
     }

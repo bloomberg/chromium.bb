@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -128,7 +127,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
 
   // Set up IPC channel proxy.
   IPC::TestChannelListener listener;
-  CreateChannelProxy(&listener, thread.message_loop_proxy().get());
+  CreateChannelProxy(&listener, thread.task_runner().get());
   listener.Init(sender());
 
   ASSERT_TRUE(StartClient());

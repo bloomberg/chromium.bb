@@ -12,9 +12,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
@@ -74,9 +75,9 @@ class ChannelNacl::ReaderThreadRunner
   //                      above callbacks.
   ReaderThreadRunner(
       int pipe,
-      base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback,
-      base::Callback<void ()> failure_callback,
-      scoped_refptr<base::MessageLoopProxy> main_message_loop);
+      base::Callback<void(scoped_ptr<MessageContents>)> data_read_callback,
+      base::Callback<void()> failure_callback,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
   // DelegateSimpleThread implementation. Reads data from the pipe in a loop
   // until either we are told to quit or a read fails.
@@ -86,20 +87,20 @@ class ChannelNacl::ReaderThreadRunner
   int pipe_;
   base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback_;
   base::Callback<void ()> failure_callback_;
-  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ReaderThreadRunner);
 };
 
 ChannelNacl::ReaderThreadRunner::ReaderThreadRunner(
     int pipe,
-    base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback,
-    base::Callback<void ()> failure_callback,
-    scoped_refptr<base::MessageLoopProxy> main_message_loop)
+    base::Callback<void(scoped_ptr<MessageContents>)> data_read_callback,
+    base::Callback<void()> failure_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : pipe_(pipe),
       data_read_callback_(data_read_callback),
       failure_callback_(failure_callback),
-      main_message_loop_(main_message_loop) {
+      main_task_runner_(main_task_runner) {
 }
 
 void ChannelNacl::ReaderThreadRunner::Run() {
@@ -107,10 +108,11 @@ void ChannelNacl::ReaderThreadRunner::Run() {
     scoped_ptr<MessageContents> msg_contents(new MessageContents);
     bool success = ReadDataOnReaderThread(pipe_, msg_contents.get());
     if (success) {
-      main_message_loop_->PostTask(FROM_HERE,
+      main_task_runner_->PostTask(
+          FROM_HERE,
           base::Bind(data_read_callback_, base::Passed(&msg_contents)));
     } else {
-      main_message_loop_->PostTask(FROM_HERE, failure_callback_);
+      main_task_runner_->PostTask(FROM_HERE, failure_callback_);
       // Because the read failed, we know we're going to quit. Don't bother
       // trying to read again.
       return;
@@ -159,15 +161,13 @@ bool ChannelNacl::Connect() {
   // where Channel::Send will be called, and the same thread that should receive
   // messages). The constructor might be invoked on another thread (see
   // ChannelProxy for an example of that). Therefore, we must wait until Connect
-  // is called to decide which MessageLoopProxy to pass to ReaderThreadRunner.
-  reader_thread_runner_.reset(
-      new ReaderThreadRunner(
-          pipe_,
-          base::Bind(&ChannelNacl::DidRecvMsg,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&ChannelNacl::ReadDidFail,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::MessageLoopProxy::current()));
+  // is called to decide which SingleThreadTaskRunner to pass to
+  // ReaderThreadRunner.
+  reader_thread_runner_.reset(new ReaderThreadRunner(
+      pipe_,
+      base::Bind(&ChannelNacl::DidRecvMsg, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ChannelNacl::ReadDidFail, weak_ptr_factory_.GetWeakPtr()),
+      base::ThreadTaskRunnerHandle::Get()));
   reader_thread_.reset(
       new base::DelegateSimpleThread(reader_thread_runner_.get(),
                                      "ipc_channel_nacl reader thread"));
@@ -175,9 +175,9 @@ bool ChannelNacl::Connect() {
   waiting_connect_ = false;
   // If there were any messages queued before connection, send them.
   ProcessOutgoingMessages();
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(&ChannelNacl::CallOnChannelConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ChannelNacl::CallOnChannelConnected,
+                            weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }

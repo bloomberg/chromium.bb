@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -18,7 +20,7 @@ namespace {
 
 class SocketAcceptor : public base::MessageLoopForIO::Watcher {
  public:
-  SocketAcceptor(int fd, base::MessageLoopProxy* target_thread)
+  SocketAcceptor(int fd, base::SingleThreadTaskRunner* target_thread)
       : server_fd_(-1),
         target_thread_(target_thread),
         started_watching_event_(false, false),
@@ -69,7 +71,7 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
   void OnFileCanWriteWithoutBlocking(int fd) override {}
 
   int server_fd_;
-  base::MessageLoopProxy* target_thread_;
+  base::SingleThreadTaskRunner* target_thread_;
   scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> watcher_;
   base::WaitableEvent started_watching_event_;
   base::WaitableEvent accepted_event_;
@@ -103,8 +105,8 @@ class TestUnixSocketConnection {
     struct stat socket_stat;
     stat(socket_name_.value().c_str(), &socket_stat);
     EXPECT_TRUE(S_ISSOCK(socket_stat.st_mode));
-    acceptor_.reset(new SocketAcceptor(server_listen_fd_,
-                                       worker_.message_loop_proxy().get()));
+    acceptor_.reset(
+        new SocketAcceptor(server_listen_fd_, worker_.task_runner().get()));
     acceptor_->WaitUntilReady();
     return true;
   }

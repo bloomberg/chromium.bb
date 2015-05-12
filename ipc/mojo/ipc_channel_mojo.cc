@@ -293,7 +293,7 @@ ChannelMojo::ChannelMojo(ChannelMojo::Delegate* delegate,
   // Create MojoBootstrap after all members are set as it touches
   // ChannelMojo from a different thread.
   bootstrap_ = MojoBootstrap::Create(handle, mode, this);
-  if (io_runner == base::MessageLoop::current()->message_loop_proxy()) {
+  if (io_runner == base::MessageLoop::current()->task_runner()) {
     InitOnIOThread(delegate);
   } else {
     io_runner->PostTask(FROM_HERE,

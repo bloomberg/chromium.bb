@@ -4,7 +4,6 @@
 
 #include "build/build_config.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"
@@ -243,7 +242,7 @@ class IPCChannelProxyTest : public IPCTestBase {
     thread_->StartWithOptions(options);
 
     listener_.reset(new QuitListener());
-    CreateChannelProxy(listener_.get(), thread_->message_loop_proxy().get());
+    CreateChannelProxy(listener_.get(), thread_->task_runner().get());
 
     ASSERT_TRUE(StartClient());
   }

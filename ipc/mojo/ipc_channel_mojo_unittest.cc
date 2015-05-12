@@ -6,11 +6,13 @@
 
 #include "base/base_paths.h"
 #include "base/files/file.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
@@ -79,7 +81,8 @@ class ChannelClient {
     channel_->Close();
 
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
     run_loop.Run();
   }
 

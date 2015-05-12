@@ -14,11 +14,12 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "ipc/ipc_listener.h"
@@ -88,7 +89,7 @@ class IPCChannelPosixTestListener : public IPC::Listener {
       loop->QuitNow();
     } else {
       // Die as soon as Run is called.
-      loop->PostTask(FROM_HERE, loop->QuitClosure());
+      loop->task_runner()->PostTask(FROM_HERE, loop->QuitClosure());
     }
   }
 
@@ -188,7 +189,7 @@ void IPCChannelPosixTest::SpinRunLoop(base::TimeDelta delay) {
   // in the case of a bad test. Usually, the run loop will quit sooner than
   // that because all tests use a IPCChannelPosixTestListener which quits the
   // current run loop on any channel activity.
-  loop->PostDelayedTask(FROM_HERE, loop->QuitClosure(), delay);
+  loop->task_runner()->PostDelayedTask(FROM_HERE, loop->QuitClosure(), delay);
   loop->Run();
 }
 

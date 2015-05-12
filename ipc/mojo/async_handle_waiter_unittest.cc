@@ -5,8 +5,9 @@
 #include "ipc/mojo/async_handle_waiter.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
@@ -58,7 +59,7 @@ class AsyncHandleWaiterTest : public testing::Test {
   }
 
   void WriteToPipeFromWorker() {
-    worker_.message_loop_proxy()->PostTask(
+    worker_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&AsyncHandleWaiterTest::WriteToPipe,
                               base::Unretained(this)));
   }

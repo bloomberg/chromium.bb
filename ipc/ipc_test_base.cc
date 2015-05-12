@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 
+#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_test_base.h"
 
 #include "base/command_line.h"
@@ -154,7 +155,7 @@ IPC::ChannelHandle IPCTestBase::GetTestChannelHandle() {
 }
 
 scoped_refptr<base::SequencedTaskRunner> IPCTestBase::task_runner() {
-  return message_loop_->message_loop_proxy();
+  return message_loop_->task_runner();
 }
 
 scoped_ptr<IPC::ChannelFactory> IPCTestBase::CreateChannelFactory(
