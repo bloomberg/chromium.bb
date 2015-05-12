@@ -88,37 +88,6 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffs
 
 bool BMPImageReader::decodeBMP(bool onlySize)
 {
-    // If |imageReader| decodes any pixels between construction and destruction
-    // of this object, calls setPixelsChanged() on the image reader's buffer.
-    //
-    // This method is used to call setPixelsChanged() because
-    // BMPImageReader::processRLEData() and BMPImageReader::processNonRLEData()
-    // have complex enough control flow to make instrumenting them to do this
-    // cumbersome.
-    class PixelChangedScoper {
-    public:
-        PixelChangedScoper(ImageDecoder* parentDecoder, BMPImageReader* imageReader)
-            : m_parentDecoder(parentDecoder)
-            , m_imageReader(imageReader)
-            , m_coord(imageReader->m_coord)
-        {
-            ASSERT(m_parentDecoder && m_imageReader);
-        }
-
-        ~PixelChangedScoper()
-        {
-            if (m_parentDecoder->failed())
-                return; // Ignore since failure auto-deletes m_imageReader.
-            if (m_imageReader->m_coord != m_coord)
-                m_imageReader->m_buffer->setPixelsChanged(true);
-        }
-
-    private:
-        ImageDecoder* m_parentDecoder;
-        BMPImageReader* m_imageReader;
-        IntPoint m_coord;
-    };
-
     // Calculate size of info header.
     if (!m_infoHeader.biSize && !readInfoHeaderSize())
         return false;
@@ -159,15 +128,8 @@ bool BMPImageReader::decodeBMP(bool onlySize)
     }
 
     // Decode the data.
-    if (!m_decodingAndMask && !pastEndOfImage(0)) {
-        PixelChangedScoper pixelChangedScoper(m_parent, this);
-        if ((m_infoHeader.biCompression != RLE4) && (m_infoHeader.biCompression != RLE8) && (m_infoHeader.biCompression != RLE24)) {
-            const ProcessingResult result = processNonRLEData(false, 0);
-            if (result != Success)
-                return (result == Failure) ? m_parent->setFailed() : false;
-        } else if (!processRLEData())
-            return false;
-    }
+    if (!m_decodingAndMask && !pastEndOfImage(0) && !decodePixelData((m_infoHeader.biCompression != RLE4) && (m_infoHeader.biCompression != RLE8) && (m_infoHeader.biCompression != RLE24)))
+        return false;
 
     // If the image has an AND mask and there was no alpha data, process the
     // mask.
@@ -181,16 +143,21 @@ bool BMPImageReader::decodeBMP(bool onlySize)
 
         m_decodingAndMask = true;
     }
-    if (m_decodingAndMask) {
-        PixelChangedScoper pixelChangedScoper(m_parent, this);
-        const ProcessingResult result = processNonRLEData(false, 0);
-        if (result != Success)
-            return (result == Failure) ? m_parent->setFailed() : false;
-    }
+    if (m_decodingAndMask && !decodePixelData(true))
+        return false;
 
     // Done!
     m_buffer->setStatus(ImageFrame::FrameComplete);
     return true;
+}
+
+bool BMPImageReader::decodePixelData(bool nonRLE)
+{
+    const IntPoint coord(m_coord);
+    const ProcessingResult result = nonRLE ? processNonRLEData(false, 0) : processRLEData();
+    if (m_coord != coord)
+        m_buffer->setPixelsChanged(true);
+    return (result == Failure) ? m_parent->setFailed() : (result == Success);
 }
 
 bool BMPImageReader::readInfoHeaderSize()
@@ -592,10 +559,10 @@ bool BMPImageReader::processColorTable()
     return true;
 }
 
-bool BMPImageReader::processRLEData()
+BMPImageReader::ProcessingResult BMPImageReader::processRLEData()
 {
     if (m_decodedOffset > m_data->size())
-        return false;
+        return InsufficientData;
 
     // RLE decoding is poorly specified.  Two main problems:
     // (1) Are EOL markers necessary?  What happens when we have too many
@@ -623,14 +590,14 @@ bool BMPImageReader::processRLEData()
         // Every entry takes at least two bytes; bail if there isn't enough
         // data.
         if ((m_data->size() - m_decodedOffset) < 2)
-            return false;
+            return InsufficientData;
 
         // For every entry except EOF, we'd better not have reached the end of
         // the image.
         const uint8_t count = m_data->data()[m_decodedOffset];
         const uint8_t code = m_data->data()[m_decodedOffset + 1];
         if ((count || (code != 1)) && pastEndOfImage(0))
-            return m_parent->setFailed();
+            return Failure;
 
         // Decode.
         if (!count) {
@@ -652,13 +619,13 @@ bool BMPImageReader::processRLEData()
                 // to call setPixelsChanged().  If the only thing that's changed
                 // is the alpha state, that will be properly written into the
                 // underlying SkBitmap when we mark the frame complete.
-                return true;
+                return Success;
 
             case 2: {  // Magic token: Delta
                 // The next two bytes specify dx and dy.  Bail if there isn't
                 // enough data.
                 if ((m_data->size() - m_decodedOffset) < 4)
-                    return false;
+                    return InsufficientData;
 
                 // Fail if this takes us past the end of the desired row or
                 // past the end of the image.
@@ -667,7 +634,7 @@ bool BMPImageReader::processRLEData()
                 if (dx || dy)
                     m_buffer->setHasAlpha(true);
                 if (((m_coord.x() + dx) > m_parent->size().width()) || pastEndOfImage(dy))
-                    return m_parent->setFailed();
+                    return Failure;
 
                 // Skip intervening pixels.
                 m_coord.move(dx, m_isTopDown ? dy : -dy);
@@ -684,11 +651,9 @@ bool BMPImageReader::processRLEData()
                 // the escape bytes and then reset if decoding failed.
                 m_decodedOffset += 2;
                 const ProcessingResult result = processNonRLEData(true, code);
-                if (result == Failure)
-                    return m_parent->setFailed();
-                if (result == InsufficientData) {
+                if (result != Success) {
                     m_decodedOffset -= 2;
-                    return false;
+                    return result;
                 }
                 break;
             }
@@ -702,7 +667,7 @@ bool BMPImageReader::processRLEData()
             if (m_infoHeader.biCompression == RLE24) {
                 // Bail if there isn't enough data.
                 if ((m_data->size() - m_decodedOffset) < 4)
-                    return false;
+                    return InsufficientData;
 
                 // One BGR triple that we copy |count| times.
                 fillRGBA(endX, m_data->data()[m_decodedOffset + 3], m_data->data()[m_decodedOffset + 2], code, 0xff);
