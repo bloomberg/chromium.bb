@@ -159,7 +159,7 @@ TEST(JSONStringEscapeTest, EscapeBytes) {
     const char* escaped;
   } cases[] = {
     {"b\x0f\x7f\xf0\xff!", "b\\u000F\\u007F\\u00F0\\u00FF!"},
-    {"\xe5\xc4\x4f\x05\xb6\xfd\0", "\\u00E5\\u00C4O\\u0005\\u00B6\\u00FD"},
+    {"\xe5\xc4\x4f\x05\xb6\xfd", "\\u00E5\\u00C4O\\u0005\\u00B6\\u00FD"},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
