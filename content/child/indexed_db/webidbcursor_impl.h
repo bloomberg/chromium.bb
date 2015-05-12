@@ -15,9 +15,9 @@
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/WebIDBCursor.h"
-#include "third_party/WebKit/public/platform/WebIDBKey.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCursor.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKey.h"
 
 namespace content {
 class ThreadSafeSender;

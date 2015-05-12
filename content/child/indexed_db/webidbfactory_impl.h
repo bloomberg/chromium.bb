@@ -6,10 +6,10 @@
 #define CONTENT_CHILD_INDEXED_DB_WEBIDBFACTORY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
 
 namespace blink {
 class WebString;

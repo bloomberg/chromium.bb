@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebIDBCursor.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabase.h"
-#include "third_party/WebKit/public/platform/WebIDBTypes.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCursor.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabase.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace blink {
 class WebBlobInfo;

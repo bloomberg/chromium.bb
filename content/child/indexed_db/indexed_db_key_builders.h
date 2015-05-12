@@ -9,9 +9,9 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "third_party/WebKit/public/platform/WebIDBKey.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyRange.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKey.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKeyPath.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKeyRange.h"
 
 namespace blink {
 class WebIDBKey;

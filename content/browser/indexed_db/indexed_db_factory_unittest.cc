@@ -15,8 +15,8 @@
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
-#include "third_party/WebKit/public/platform/WebIDBTypes.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;

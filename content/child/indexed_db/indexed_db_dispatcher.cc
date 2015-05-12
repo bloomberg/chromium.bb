@@ -17,9 +17,9 @@
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 using blink::WebBlobInfo;
 using blink::WebData;

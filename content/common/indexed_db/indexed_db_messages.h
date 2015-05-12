@@ -14,7 +14,7 @@
 #include "content/common/indexed_db/indexed_db_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/public/platform/WebIDBTypes.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 // Singly-included section for typedefs in multiply-included file.
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_MESSAGES_H_

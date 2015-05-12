@@ -24,7 +24,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebIDBTypes.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 using base::ASCIIToUTF16;
 

@@ -13,10 +13,10 @@
 #include "content/child/worker_task_runner.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "third_party/WebKit/public/platform/WebBlobInfo.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
-#include "third_party/WebKit/public/platform/WebIDBMetadata.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKeyPath.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBMetadata.h"
 
 using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
