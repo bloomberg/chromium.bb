@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_API_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_API_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_HANDLER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_API_FILE_SYSTEM_PROVIDER_CAPABILITIES_FILE_SYSTEM_PROVIDER_CAPABILITIES_HANDLER_H_
+#define CHROME_COMMON_EXTENSIONS_API_FILE_SYSTEM_PROVIDER_CAPABILITIES_FILE_SYSTEM_PROVIDER_CAPABILITIES_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -40,11 +40,11 @@ class FileSystemProviderCapabilities : public Extension::ManifestData {
   FileSystemProviderSource source_;
 };
 
-// Parses the "file_system_provider" manifest key.
-class FileSystemProviderHandler : public ManifestHandler {
+// Parses the "file_system_provider_capabilities" manifest key.
+class FileSystemProviderCapabilitiesHandler : public ManifestHandler {
  public:
-  FileSystemProviderHandler();
-  ~FileSystemProviderHandler() override;
+  FileSystemProviderCapabilitiesHandler();
+  ~FileSystemProviderCapabilitiesHandler() override;
 
   // ManifestHandler overrides.
   bool Parse(Extension* extension, base::string16* error) override;
@@ -52,9 +52,9 @@ class FileSystemProviderHandler : public ManifestHandler {
  private:
   const std::vector<std::string> Keys() const override;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemProviderHandler);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemProviderCapabilitiesHandler);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_API_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_HANDLER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_API_FILE_SYSTEM_PROVIDER_CAPABILITIES_FILE_SYSTEM_PROVIDER_CAPABILITIES_HANDLER_H_

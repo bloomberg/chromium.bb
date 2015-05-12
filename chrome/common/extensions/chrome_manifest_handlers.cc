@@ -31,7 +31,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
-#include "chrome/common/extensions/api/file_system_provider/file_system_provider_handler.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #endif
 
@@ -68,7 +68,7 @@ void RegisterChromeManifestHandlers() {
   (new URLOverridesHandler)->Register();
 #if defined(OS_CHROMEOS)
   (new FileBrowserHandlerParser)->Register();
-  (new FileSystemProviderHandler)->Register();
+  (new FileSystemProviderCapabilitiesHandler)->Register();
   (new InputComponentsHandler)->Register();
 #endif
 }

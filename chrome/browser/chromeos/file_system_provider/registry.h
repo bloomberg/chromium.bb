@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
-#include "chrome/common/extensions/api/file_system_provider/file_system_provider_handler.h"
 
 class Profile;
 

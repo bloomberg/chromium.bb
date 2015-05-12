@@ -13,7 +13,7 @@
     },
     "fileManagerPrivate"
   ],
-  "file_system_provider": {
+  "file_system_provider_capabilities": {
     "configurable": true,
     "multiple_mounts": false,
     "source": "device"

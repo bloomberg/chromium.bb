@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/file_system_provider/file_system_provider_handler.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,24 +30,26 @@ FileSystemProviderCapabilities::FileSystemProviderCapabilities(
 FileSystemProviderCapabilities::~FileSystemProviderCapabilities() {
 }
 
-FileSystemProviderHandler::FileSystemProviderHandler() {
+FileSystemProviderCapabilitiesHandler::FileSystemProviderCapabilitiesHandler() {
 }
 
-FileSystemProviderHandler::~FileSystemProviderHandler() {
+FileSystemProviderCapabilitiesHandler::
+    ~FileSystemProviderCapabilitiesHandler() {
 }
 
 // static
 const FileSystemProviderCapabilities* FileSystemProviderCapabilities::Get(
     const Extension* extension) {
   return static_cast<FileSystemProviderCapabilities*>(
-      extension->GetManifestData(manifest_keys::kFileSystemProvider));
+      extension->GetManifestData(
+          manifest_keys::kFileSystemProviderCapabilities));
 }
 
-bool FileSystemProviderHandler::Parse(Extension* extension,
-                                      base::string16* error) {
+bool FileSystemProviderCapabilitiesHandler::Parse(Extension* extension,
+                                                  base::string16* error) {
   const base::DictionaryValue* section = NULL;
-  extension->manifest()->GetDictionary(manifest_keys::kFileSystemProvider,
-                                       &section);
+  extension->manifest()->GetDictionary(
+      manifest_keys::kFileSystemProviderCapabilities, &section);
   DCHECK(section);
 
   api::manifest_types::FileSystemProviderCapabilities idl_capabilities;
@@ -76,13 +78,14 @@ bool FileSystemProviderHandler::Parse(Extension* extension,
                                          idl_capabilities.multiple_mounts,
                                          source));
 
-  extension->SetManifestData(manifest_keys::kFileSystemProvider,
+  extension->SetManifestData(manifest_keys::kFileSystemProviderCapabilities,
                              capabilities.release());
   return true;
 }
 
-const std::vector<std::string> FileSystemProviderHandler::Keys() const {
-  return SingleKey(manifest_keys::kFileSystemProvider);
+const std::vector<std::string> FileSystemProviderCapabilitiesHandler::Keys()
+    const {
+  return SingleKey(manifest_keys::kFileSystemProviderCapabilities);
 }
 
 }  // namespace extensions

@@ -186,7 +186,7 @@ extern const char kWebviewAccessibleResources[];
 extern const char kWebviewPartitions[];
 extern const char kWhitelist[];
 #if defined(OS_CHROMEOS)
-extern const char kFileSystemProvider[];
+extern const char kFileSystemProviderCapabilities[];
 #endif
 }  // namespace manifest_keys
 
