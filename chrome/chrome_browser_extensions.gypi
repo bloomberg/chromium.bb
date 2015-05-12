@@ -584,6 +584,8 @@
       'browser/extensions/display_info_provider_win.h',
       'browser/extensions/error_console/error_console.cc',
       'browser/extensions/error_console/error_console.h',
+      'browser/extensions/error_console/error_console_factory.cc',
+      'browser/extensions/error_console/error_console_factory.h',
       'browser/extensions/event_router_forwarder.cc',
       'browser/extensions/event_router_forwarder.h',
       'browser/extensions/extension_action.cc',

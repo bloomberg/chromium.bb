@@ -60,7 +60,7 @@ void ChromeExtensionWebContentsObserver::OnDetailedConsoleMessageAdded(
   if (extension_id.empty())
     extension_id = GURL(source).host();
 
-  ExtensionSystem::Get(browser_context())->error_console()->ReportError(
+  ErrorConsole::Get(browser_context())->ReportError(
       scoped_ptr<ExtensionError>(
           new RuntimeError(extension_id,
                            browser_context()->IsOffTheRecord(),

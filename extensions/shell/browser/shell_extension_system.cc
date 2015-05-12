@@ -148,10 +148,6 @@ EventRouter* ShellExtensionSystem::event_router() {
   return event_router_.get();
 }
 
-ErrorConsole* ShellExtensionSystem::error_console() {
-  return nullptr;
-}
-
 InstallVerifier* ShellExtensionSystem::install_verifier() {
   return nullptr;
 }

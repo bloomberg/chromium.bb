@@ -59,10 +59,6 @@ EventRouter* MockExtensionSystem::event_router() {
   return event_router_;
 }
 
-ErrorConsole* MockExtensionSystem::error_console() {
-  return nullptr;
-}
-
 InstallVerifier* MockExtensionSystem::install_verifier() {
   return nullptr;
 }

@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -378,7 +377,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // Make the chrome://extension-icon/ resource available.
   content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
 
-  error_console_.reset(new ErrorConsole(profile_));
   quota_service_.reset(new QuotaService);
 
   if (extensions_enabled) {
@@ -450,10 +448,6 @@ LazyBackgroundTaskQueue*
 
 EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
-}
-
-ErrorConsole* ExtensionSystemImpl::Shared::error_console() {
-  return error_console_.get();
 }
 
 InstallVerifier* ExtensionSystemImpl::Shared::install_verifier() {
@@ -539,10 +533,6 @@ EventRouter* ExtensionSystemImpl::event_router() {
 
 const OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();
-}
-
-ErrorConsole* ExtensionSystemImpl::error_console() {
-  return shared_->error_console();
 }
 
 InstallVerifier* ExtensionSystemImpl::install_verifier() {

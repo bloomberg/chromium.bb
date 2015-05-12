@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/error_console/error_console_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature_channel.h"
@@ -78,7 +79,7 @@ ErrorConsole::~ErrorConsole() {
 
 // static
 ErrorConsole* ErrorConsole::Get(content::BrowserContext* browser_context) {
-  return ExtensionSystem::Get(browser_context)->error_console();
+  return ErrorConsoleFactory::GetForBrowserContext(browser_context);
 }
 
 void ErrorConsole::SetReportingForExtension(const std::string& extension_id,

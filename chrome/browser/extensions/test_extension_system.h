@@ -71,7 +71,6 @@ class TestExtensionSystem : public ExtensionSystem {
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   void SetEventRouter(scoped_ptr<EventRouter> event_router);
   EventRouter* event_router() override;
-  ErrorConsole* error_console() override;
   InstallVerifier* install_verifier() override;
   QuotaService* quota_service() override;
   const OneShotEvent& ready() const override;
@@ -100,7 +99,6 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_refptr<InfoMap> info_map_;
   scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
   scoped_ptr<EventRouter> event_router_;
-  scoped_ptr<ErrorConsole> error_console_;
   scoped_ptr<InstallVerifier> install_verifier_;
   scoped_ptr<QuotaService> quota_service_;
   OneShotEvent ready_;

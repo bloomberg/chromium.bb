@@ -46,7 +46,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;  // shared
   InfoMap* info_map() override;                                    // shared
   EventRouter* event_router() override;                            // shared
-  ErrorConsole* error_console() override;
   InstallVerifier* install_verifier() override;
   QuotaService* quota_service() override;  // shared
 
@@ -91,7 +90,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     InfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     EventRouter* event_router();
-    ErrorConsole* error_console();
     InstallVerifier* install_verifier();
     QuotaService* quota_service();
     const OneShotEvent& ready() const { return ready_; }
@@ -123,7 +121,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive process_manager_.
     scoped_refptr<InfoMap> extension_info_map_;
-    scoped_ptr<ErrorConsole> error_console_;
     scoped_ptr<InstallVerifier> install_verifier_;
     scoped_ptr<QuotaService> quota_service_;
 

@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
-#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
@@ -40,7 +39,6 @@ TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       value_store_(NULL),
       info_map_(new InfoMap()),
-      error_console_(new ErrorConsole(profile)),
       quota_service_(new QuotaService()) {}
 
 TestExtensionSystem::~TestExtensionSystem() {
@@ -156,10 +154,6 @@ void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {
 }
 
 EventRouter* TestExtensionSystem::event_router() { return event_router_.get(); }
-
-ErrorConsole* TestExtensionSystem::error_console() {
-  return error_console_.get();
-}
 
 InstallVerifier* TestExtensionSystem::install_verifier() {
   return install_verifier_.get();

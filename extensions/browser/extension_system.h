@@ -31,7 +31,6 @@ namespace extensions {
 
 class ContentVerifier;
 class DeclarativeUserScriptManager;
-class ErrorConsole;
 class EventRouter;
 class Extension;
 class ExtensionSet;
@@ -94,9 +93,6 @@ class ExtensionSystem : public KeyedService {
 
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
-
-  // The ErrorConsole is created at startup.
-  virtual ErrorConsole* error_console() = 0;
 
   // The InstallVerifier is created at startup.
   virtual InstallVerifier* install_verifier() = 0;
