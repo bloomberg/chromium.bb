@@ -402,38 +402,48 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   media::VideoFrame::Format frame_format = video_frame->format();
 
   DCHECK_EQ(frame_format, media::VideoFrame::NATIVE_TEXTURE);
-  if (frame_format != media::VideoFrame::NATIVE_TEXTURE)
-      return VideoFrameExternalResources();
-
   if (!context_provider_)
     return VideoFrameExternalResources();
 
-  DCHECK_EQ(1u, media::VideoFrame::NumTextures(video_frame->texture_format()));
-  const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
+  size_t textures =
+      media::VideoFrame::NumTextures(video_frame->texture_format());
+  DCHECK_GE(textures, 1u);
   VideoFrameExternalResources external_resources;
-  switch (mailbox_holder.texture_target) {
-    case GL_TEXTURE_2D:
-      external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
+  switch (video_frame->texture_format()) {
+    case media::VideoFrame::TEXTURE_RGBA:
+      DCHECK_EQ(1u, textures);
+      switch (video_frame->mailbox_holder(0).texture_target) {
+        case GL_TEXTURE_2D:
+          external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
+          break;
+        case GL_TEXTURE_EXTERNAL_OES:
+          external_resources.type =
+              VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
+          break;
+        case GL_TEXTURE_RECTANGLE_ARB:
+          external_resources.type = VideoFrameExternalResources::IO_SURFACE;
+          break;
+        default:
+          NOTREACHED();
+          return VideoFrameExternalResources();
+      }
       break;
-    case GL_TEXTURE_EXTERNAL_OES:
-      external_resources.type =
-          VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
+    case media::VideoFrame::TEXTURE_YUV_420:
+      external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
       break;
-    case GL_TEXTURE_RECTANGLE_ARB:
-      external_resources.type = VideoFrameExternalResources::IO_SURFACE;
-      break;
-    default:
-      NOTREACHED();
-      return VideoFrameExternalResources();
   }
+  DCHECK_NE(VideoFrameExternalResources::NONE, external_resources.type);
 
-  external_resources.mailboxes.push_back(
-      TextureMailbox(mailbox_holder.mailbox, mailbox_holder.texture_target,
-                     mailbox_holder.sync_point));
-  external_resources.mailboxes.back().set_allow_overlay(
-      video_frame->allow_overlay());
-  external_resources.release_callbacks.push_back(
-      base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
+  for (size_t i = 0; i < textures; ++i) {
+    const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
+    external_resources.mailboxes.push_back(
+        TextureMailbox(mailbox_holder.mailbox, mailbox_holder.texture_target,
+                       mailbox_holder.sync_point));
+    external_resources.mailboxes.back().set_allow_overlay(
+        video_frame->allow_overlay());
+    external_resources.release_callbacks.push_back(
+        base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
+  }
   return external_resources;
 }
 

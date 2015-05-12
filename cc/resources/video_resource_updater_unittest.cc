@@ -11,6 +11,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -104,6 +105,53 @@ class VideoResourceUpdaterTest : public testing::Test {
         v_data,                   // v_data
         base::TimeDelta(),        // timestamp,
         base::Closure());         // no_longer_needed_cb
+  }
+
+  static void ReleaseMailboxCB(unsigned sync_point) {}
+
+  scoped_refptr<media::VideoFrame> CreateTestRGBAHardwareVideoFrame() {
+    const int kDimension = 10;
+    gfx::Size size(kDimension, kDimension);
+
+    gpu::Mailbox mailbox;
+    mailbox.name[0] = 51;
+
+    const unsigned sync_point = 7;
+    const unsigned target = GL_TEXTURE_2D;
+    return media::VideoFrame::WrapNativeTexture(
+        gpu::MailboxHolder(mailbox, target, sync_point),
+        base::Bind(&ReleaseMailboxCB),
+        size,               // coded_size
+        gfx::Rect(size),    // visible_rect
+        size,               // natural_size
+        base::TimeDelta(),  // timestamp
+        false);             // allow_overlay
+  }
+
+  scoped_refptr<media::VideoFrame> CreateTestYUVHardareVideoFrame() {
+    const int kDimension = 10;
+    gfx::Size size(kDimension, kDimension);
+
+    const int kPlanesNum = 3;
+    gpu::Mailbox mailbox[kPlanesNum];
+    for (int i = 0; i < kPlanesNum; ++i) {
+      mailbox[i].name[0] = 50 + 1;
+    }
+    const unsigned sync_point = 7;
+    const unsigned target = GL_TEXTURE_RECTANGLE_ARB;
+    return media::VideoFrame::WrapYUV420NativeTextures(
+        gpu::MailboxHolder(mailbox[media::VideoFrame::kYPlane], target,
+                           sync_point),
+        gpu::MailboxHolder(mailbox[media::VideoFrame::kUPlane], target,
+                           sync_point),
+        gpu::MailboxHolder(mailbox[media::VideoFrame::kVPlane], target,
+                           sync_point),
+        base::Bind(&ReleaseMailboxCB),
+        size,               // coded_size
+        gfx::Rect(size),    // visible_rect
+        size,               // natural_size
+        base::TimeDelta(),  // timestamp
+        false);             // allow_overlay
   }
 
   WebGraphicsContext3DUploadCounter* context3d_;
@@ -251,5 +299,27 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
   EXPECT_EQ(0, shared_bitmap_manager_->AllocationCount());
 }
 
+TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
+  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+                               resource_provider3d_.get());
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      CreateTestRGBAHardwareVideoFrame();
+
+  VideoFrameExternalResources resources =
+      updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::RGB_RESOURCE, resources.type);
+  EXPECT_EQ(1u, resources.mailboxes.size());
+  EXPECT_EQ(1u, resources.release_callbacks.size());
+  EXPECT_EQ(0u, resources.software_resources.size());
+
+  video_frame = CreateTestYUVHardareVideoFrame();
+
+  resources = updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_EQ(3u, resources.mailboxes.size());
+  EXPECT_EQ(3u, resources.release_callbacks.size());
+  EXPECT_EQ(0u, resources.software_resources.size());
+}
 }  // namespace
 }  // namespace cc
