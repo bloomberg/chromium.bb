@@ -16,6 +16,9 @@ _RESOURCES_DIR = os.path.join(_SRC_DIR, "ui", "webui", "resources", "js")
 _ASSERT_JS = os.path.join(_RESOURCES_DIR, "assert.js")
 _CR_JS = os.path.join(_RESOURCES_DIR, "cr.js")
 _CR_UI_JS = os.path.join(_RESOURCES_DIR, "cr", "ui.js")
+_POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v0_8",
+                                "components-chromium", "polymer-externs",
+                                "polymer.externs.js")
 
 
 class CompilerCustomizationTest(unittest.TestCase):
@@ -29,7 +32,7 @@ class CompilerCustomizationTest(unittest.TestCase):
   def _runChecker(self, source_code):
     file_path = "/script.js"
     FileCache._cache[file_path] = source_code
-    return self._checker.check(file_path)
+    return self._checker.check(file_path, externs=[_POLYMER_EXTERNS])
 
   def _runCheckerTestExpectError(self, source_code, expected_error):
     _, stderr = self._runChecker(source_code)
