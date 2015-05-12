@@ -115,10 +115,7 @@ group("unittests") {
     ":test_support",
   ]
   if (is_android) {
-    deps += [
-      ":javatests",
-      ":jni_headers",
-    ]
+    deps += [ ":jni_headers" ]
   }
 }
 

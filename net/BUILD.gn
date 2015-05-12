@@ -1350,10 +1350,7 @@ if (!is_android && !is_mac) {
         # sense.
         "dns/dns_config_service_posix_unittest.cc",
       ]
-      deps += [
-        ":net_javatests",  # FIXME(brettw)
-        ":net_test_jni_headers",
-      ]
+      deps += [ ":net_test_jni_headers" ]
     }
 
     if (v8_use_external_startup_data) {

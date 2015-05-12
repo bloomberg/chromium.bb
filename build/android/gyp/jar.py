@@ -27,16 +27,20 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None):
     jar_cmd.append(os.path.abspath(manifest_file))
   jar_cmd.extend(class_files_rel)
 
-  record_path = '%s.md5.stamp' % jar_path
-  md5_check.CallAndRecordIfStale(
-      lambda: build_utils.CheckOutput(jar_cmd, cwd=jar_cwd),
-      record_path=record_path,
-      input_paths=class_files,
-      input_strings=jar_cmd,
-      force=not os.path.exists(jar_path),
-      )
+  with build_utils.TempDir() as temp_dir:
+    empty_file = os.path.join(temp_dir, '.empty')
+    build_utils.Touch(empty_file)
+    jar_cmd.append(os.path.relpath(empty_file, jar_cwd))
+    record_path = '%s.md5.stamp' % jar_path
+    md5_check.CallAndRecordIfStale(
+        lambda: build_utils.CheckOutput(jar_cmd, cwd=jar_cwd),
+        record_path=record_path,
+        input_paths=class_files,
+        input_strings=jar_cmd,
+        force=not os.path.exists(jar_path),
+        )
 
-  build_utils.Touch(jar_path, fail_if_missing=True)
+    build_utils.Touch(jar_path, fail_if_missing=True)
 
 
 def JarDirectory(classes_dir, excluded_classes, jar_path, manifest_file=None):

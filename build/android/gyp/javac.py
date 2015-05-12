@@ -236,11 +236,12 @@ def main(argv):
             break
       java_files = filtered_java_files
 
-    DoJavac(
-        classpath,
-        classes_dir,
-        options.chromium_code,
-        java_files)
+    if len(java_files) != 0:
+      DoJavac(
+          classpath,
+          classes_dir,
+          options.chromium_code,
+          java_files)
 
     if options.jar_path:
       if options.main_class or options.manifest_entry:

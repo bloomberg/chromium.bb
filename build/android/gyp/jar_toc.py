@@ -72,8 +72,10 @@ def ExtractToc(disassembled_classes):
 
 def UpdateToc(jar_path, toc_path):
   classes = GetClassesInZipFile(zipfile.ZipFile(jar_path))
-  javap_output = CallJavap(classpath=jar_path, classes=classes)
-  toc = ExtractToc(javap_output)
+  toc = ''
+  if len(classes) != 0:
+    javap_output = CallJavap(classpath=jar_path, classes=classes)
+    toc = ExtractToc(javap_output)
 
   with open(toc_path, 'w') as tocfile:
     tocfile.write(toc)

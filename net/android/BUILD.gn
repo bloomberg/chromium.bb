@@ -28,6 +28,9 @@ android_aidl("remote_android_keystore_aidl") {
 
 android_library("net_java_test_support") {
   DEPRECATED_java_in_dir = "../test/android/javatests/src"
+  deps = [
+    "//base:base_java",
+  ]
   srcjar_deps = [ ":net_java_test_support_enums_srcjar" ]
 }
 
