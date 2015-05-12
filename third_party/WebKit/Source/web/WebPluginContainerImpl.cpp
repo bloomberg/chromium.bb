@@ -904,7 +904,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
     case TouchEventRequestTypeNone:
         return;
     case TouchEventRequestTypeRaw: {
-        WebTouchEventBuilder webEvent(this, m_element->layoutObject(), *event);
+        WebTouchEventBuilder webEvent(m_element->layoutObject(), *event);
         if (webEvent.type == WebInputEvent::Undefined)
             return;
 
@@ -933,7 +933,7 @@ static inline bool gestureScrollHelper(ScrollbarGroup* scrollbarGroup, ScrollDir
 
 void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
 {
-    WebGestureEventBuilder webEvent(this, m_element->layoutObject(), *event);
+    WebGestureEventBuilder webEvent(m_element->layoutObject(), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
     if (event->type() == EventTypeNames::gesturetapdown)

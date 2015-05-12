@@ -106,7 +106,6 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
     webViewImpl->layout();
 
-    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
     LayoutView* documentLayoutView = document->layoutView();
@@ -132,7 +131,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         touchList->append(touch0);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchStart, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StatePressed, webTouchBuilder.touches[0].state);
@@ -155,7 +154,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         movedTouchList->append(touch0);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[0].state);
@@ -173,7 +172,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         movedTouchList->append(touch1);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[0].state);
@@ -190,7 +189,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         releasedTouchList->append(touch1);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), releasedTouchList.get(), EventTypeNames::touchend, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchEnd, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[0].state);
@@ -207,7 +206,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         cancelledTouchList->append(touch1);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), cancelledTouchList.get(), EventTypeNames::touchcancel, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchCancel, webTouchBuilder.type);
         EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[0].state);
@@ -227,7 +226,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         }
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchstart, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(static_cast<unsigned>(WebTouchEvent::touchesLengthCap), webTouchBuilder.touchesLength);
     }
 }
@@ -445,7 +444,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         // may lead to unexpected bugs if a PlatformGestureEvent is
         // transformed into WebGestureEvent and back.
         RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
-        WebGestureEventBuilder webGestureBuilder(view, documentLayoutView, *gestureEvent);
+        WebGestureEventBuilder webGestureBuilder(documentLayoutView, *gestureEvent);
 
         EXPECT_EQ(10, webGestureBuilder.x);
         EXPECT_EQ(12, webGestureBuilder.y);
@@ -465,7 +464,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         touchList->append(touch);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
         EXPECT_EQ(10, webTouchBuilder.touches[0].screenPosition.x);
         EXPECT_FLOAT_EQ(9.5, webTouchBuilder.touches[0].screenPosition.y);
@@ -661,7 +660,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
         EXPECT_EQ(1, platformGestureBuilder.tapCount());
 
         RefPtrWillBeRawPtr<GestureEvent> coreGestureEvent = GestureEvent::create(domWindow, platformGestureBuilder);
-        WebGestureEventBuilder recreatedWebGestureEvent(view, documentLayoutView, *coreGestureEvent);
+        WebGestureEventBuilder recreatedWebGestureEvent(documentLayoutView, *coreGestureEvent);
         EXPECT_EQ(webGestureEvent.type, recreatedWebGestureEvent.type);
         EXPECT_EQ(webGestureEvent.x, recreatedWebGestureEvent.x);
         EXPECT_EQ(webGestureEvent.y, recreatedWebGestureEvent.y);

@@ -122,14 +122,14 @@ public:
 // exceeding that cap will be dropped.
 class WebTouchEventBuilder : public WebTouchEvent {
 public:
-    WebTouchEventBuilder(const Widget*, const LayoutObject*, const TouchEvent&);
+    WebTouchEventBuilder(const LayoutObject*, const TouchEvent&);
 };
 
 // Converts GestureEvent to a corresponding WebGestureEvent.
 // NOTE: If event mapping fails, the type will be set to Undefined.
 class WebGestureEventBuilder : public WebGestureEvent {
 public:
-    WebGestureEventBuilder(const Widget*, const LayoutObject*, const GestureEvent&);
+    WebGestureEventBuilder(const LayoutObject*, const GestureEvent&);
 };
 
 unsigned toPlatformMouseEventModifiers(int webModifiers);

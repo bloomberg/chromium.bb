@@ -677,7 +677,7 @@ static unsigned indexOfTouchPointWithId(const WebTouchPoint* touchPoints, unsign
     return std::numeric_limits<unsigned>::max();
 }
 
-static void addTouchPointsUpdateStateIfNecessary(const Widget* widget, WebTouchPoint::State state, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const LayoutObject* layoutObject)
+static void addTouchPointsUpdateStateIfNecessary(WebTouchPoint::State state, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const LayoutObject* layoutObject)
 {
     unsigned initialTouchPointsLength = *touchPointsLength;
     for (unsigned i = 0; i < touches->length(); ++i) {
@@ -696,7 +696,7 @@ static void addTouchPointsUpdateStateIfNecessary(const Widget* widget, WebTouchP
     }
 }
 
-WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const LayoutObject* layoutObject, const TouchEvent& event)
+WebTouchEventBuilder::WebTouchEventBuilder(const LayoutObject* layoutObject, const TouchEvent& event)
 {
     if (event.type() == EventTypeNames::touchstart)
         type = TouchStart;
@@ -724,10 +724,10 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const LayoutObj
     }
     // If any existing points are also in the change list, we should update
     // their state, otherwise just add the new points.
-    addTouchPointsUpdateStateIfNecessary(widget, toWebTouchPointState(event.type()), event.changedTouches(), touches, &touchesLength, layoutObject);
+    addTouchPointsUpdateStateIfNecessary(toWebTouchPointState(event.type()), event.changedTouches(), touches, &touchesLength, layoutObject);
 }
 
-WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const LayoutObject* layoutObject, const GestureEvent& event)
+WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject, const GestureEvent& event)
 {
     if (event.type() == EventTypeNames::gestureshowpress)
         type = GestureShowPress;
