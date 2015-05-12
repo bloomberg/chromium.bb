@@ -12,26 +12,20 @@ namespace {
 // We cycle to the second mode if any of the following happens while the mouse
 // is on the edge of the workspace:
 // . The user stops moving the mouse for |kMaxDelay| and then moves the mouse
-//   again in the preferred direction from the last paused location for at least
-//   |kMaxPixelsAfterPause| horizontal pixels.
-// . The mouse moves |kMaxPixels| horizontal pixels in the preferred direction.
-// . The mouse is moved |kMaxMoves| times since the last pause.
-const int kMaxDelay = 400;
+//   again.
+// . The mouse moves |kMaxPixels| horizontal pixels.
+// . The mouse is moved |kMaxMoves| times.
+const int kMaxDelay = 500;
 const int kMaxPixels = 100;
-const int kMaxPixelsAfterPause = 10;
 const int kMaxMoves = 25;
 
 }  // namespace
 
-TwoStepEdgeCycler::TwoStepEdgeCycler(const gfx::Point& start,
-                                     TwoStepEdgeCycler::Direction direction)
+TwoStepEdgeCycler::TwoStepEdgeCycler(const gfx::Point& start)
     : second_mode_(false),
       time_last_move_(base::TimeTicks::Now()),
       num_moves_(0),
-      start_x_(start.x()),
-      paused_x_(start.x()),
-      paused_(false),
-      direction_(direction) {
+      start_x_(start.x()) {
 }
 
 TwoStepEdgeCycler::~TwoStepEdgeCycler() {
@@ -41,25 +35,13 @@ void TwoStepEdgeCycler::OnMove(const gfx::Point& location) {
   if (second_mode_)
     return;
 
-  if ((base::TimeTicks::Now() - time_last_move_).InMilliseconds() > kMaxDelay) {
-    paused_ = true;
-    paused_x_ = location.x();
-    num_moves_ = 0;
-  }
-  time_last_move_ = base::TimeTicks::Now();
-
-  int compare_x = paused_ ? paused_x_ : start_x_;
-  if (location.x() != compare_x &&
-      (location.x() < compare_x) != (direction_ == DIRECTION_LEFT)) {
-    return;
-  }
-
   ++num_moves_;
-  bool moved_in_the_same_direction_after_pause =
-      paused_ && std::abs(location.x() - paused_x_) >= kMaxPixelsAfterPause;
-  second_mode_ = moved_in_the_same_direction_after_pause ||
-                 std::abs(location.x() - start_x_) >= kMaxPixels ||
-                 num_moves_ >= kMaxMoves;
+  second_mode_ =
+      (base::TimeTicks::Now() - time_last_move_).InMilliseconds() >
+          kMaxDelay ||
+      std::abs(location.x() - start_x_) >= kMaxPixels ||
+      num_moves_ >= kMaxMoves;
+  time_last_move_ = base::TimeTicks::Now();
 }
 
 }  // namespace ash

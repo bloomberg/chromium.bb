@@ -19,10 +19,7 @@ namespace ash {
 // the workspace.
 class ASH_EXPORT TwoStepEdgeCycler {
  public:
-  // The direction in which a mouse should travel to switch mode.
-  enum Direction { DIRECTION_LEFT, DIRECTION_RIGHT };
-
-  explicit TwoStepEdgeCycler(const gfx::Point& start, Direction direction);
+  explicit TwoStepEdgeCycler(const gfx::Point& start);
   ~TwoStepEdgeCycler();
 
   // Update which mode should be used as a result of a mouse / touch move.
@@ -43,15 +40,6 @@ class ASH_EXPORT TwoStepEdgeCycler {
 
   // Initial x-coordinate.
   int start_x_;
-
-  // x-coordinate when paused.
-  int paused_x_;
-
-  // Whether the movement was paused.
-  bool paused_;
-
-  // Determines a preferred movement direction that we are watching.
-  Direction direction_;
 
   DISALLOW_COPY_AND_ASSIGN(TwoStepEdgeCycler);
 };
