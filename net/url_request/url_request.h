@@ -365,8 +365,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   LoadStateWithParam GetLoadState() const;
 
   // Returns a partial representation of the request's state as a value, for
-  // debugging.  Caller takes ownership of returned value.
-  base::Value* GetStateAsValue() const;
+  // debugging.
+  scoped_ptr<base::Value> GetStateAsValue() const;
 
   // Logs information about the what external object currently blocking the
   // request.  LogUnblocked must be called before resuming the request.  This

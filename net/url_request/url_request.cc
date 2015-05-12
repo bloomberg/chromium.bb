@@ -279,8 +279,8 @@ LoadStateWithParam URLRequest::GetLoadState() const {
                             base::string16());
 }
 
-base::Value* URLRequest::GetStateAsValue() const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> URLRequest::GetStateAsValue() const {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("url", original_url().possibly_invalid_spec());
 
   if (url_chain_.size() > 1) {
@@ -323,7 +323,7 @@ base::Value* URLRequest::GetStateAsValue() const {
   }
   if (status_.error() != OK)
     dict->SetInteger("net_error", status_.error());
-  return dict;
+  return dict.Pass();
 }
 
 void URLRequest::LogBlockedBy(const char* blocked_by) {

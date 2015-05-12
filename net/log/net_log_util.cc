@@ -130,7 +130,7 @@ bool RequestCreatedBefore(const URLRequest* request1,
 // net-internals was opened.
 base::Value* GetRequestStateAsValue(const net::URLRequest* request,
                                     NetLogCaptureMode capture_mode) {
-  return request->GetStateAsValue();
+  return request->GetStateAsValue().release();
 }
 
 }  // namespace

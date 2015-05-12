@@ -57,12 +57,12 @@ base::Value* NetLogRejectedRequestCallback(
     int num_failures,
     const base::TimeDelta& release_after,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("url", *url_id);
   dict->SetInteger("num_failures", num_failures);
   dict->SetInteger("release_after_ms",
                    static_cast<int>(release_after.InMilliseconds()));
-  return dict;
+  return dict.release();
 }
 
 URLRequestThrottlerEntry::URLRequestThrottlerEntry(
