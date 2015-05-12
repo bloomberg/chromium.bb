@@ -5,6 +5,7 @@ import time
 
 from profile_creators import profile_extender
 from telemetry.core import exceptions
+from telemetry.core import util
 
 
 class FastNavigationProfileExtender(profile_extender.ProfileExtender):
@@ -36,11 +37,13 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     # The number of tabs to use.
     self._NUM_TABS = maximum_batch_size
 
-    # The amount of time to wait for a batch of pages to finish loading.
-    self._BATCH_PAGE_LOAD_TIMEOUT_IN_SECONDS = 10
+    # The amount of additional time to wait for a batch of pages to finish
+    # loading for each page in the batch.
+    self._BATCH_TIMEOUT_PER_PAGE_IN_SECONDS = 20
 
-    # The default amount of time to wait for the retrieval of the URL of a tab.
-    self._TAB_URL_RETRIEVAL_TIMEOUT_IN_SECONDS = 1
+    # The amount of time to wait for a page to quiesce. Some pages will never
+    # quiesce.
+    self._TIME_TO_WAIT_FOR_PAGE_TO_QUIESCE_IN_SECONDS = 10
 
   def Run(self):
     """Superclass override."""
@@ -49,6 +52,21 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
       self._PerformNavigations()
     finally:
       self.TearDownBrowser()
+
+    # When there hasn't been an exception, verify that the profile was
+    # correctly extended.
+    # TODO(erikchen): I've intentionally omitted my implementation of
+    # VerifyProfileWasExtended() in small_profile_extender, since the profile
+    # is not being correctly extended. http://crbug.com/484833
+    # http://crbug.com/484880
+    self.VerifyProfileWasExtended()
+
+  def VerifyProfileWasExtended(self):
+    """Verifies that the profile was correctly extended.
+
+    Can be overridden by subclasses.
+    """
+    pass
 
   def GetUrlIterator(self):
     """Gets URLs for the browser to navigate to.
@@ -75,21 +93,6 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     """
     pass
 
-  def _AddNewTab(self):
-    """Adds a new tab to the browser."""
-
-    # Adding a new tab requires making a request over devtools. This can fail
-    # for a variety of reasons. Retry 3 times.
-    retry_count = 3
-    for i in range(retry_count):
-      try:
-        self._navigation_tabs.append(self._browser.tabs.New())
-      except exceptions.Error:
-        if i == retry_count - 1:
-          raise
-      else:
-        break
-
   def _RefreshNavigationTabs(self):
     """Updates the member self._navigation_tabs to contain self._NUM_TABS
     elements, each of which is not crashed. The crashed tabs are intentionally
@@ -104,7 +107,7 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     self._navigation_tabs = live_tabs
 
     while len(self._navigation_tabs) < self._NUM_TABS:
-      self._AddNewTab()
+      self._navigation_tabs.append(self._browser.tabs.New())
 
   def _RemoveNavigationTab(self, tab):
     """Removes a tab which is no longer in a useable state from
@@ -114,29 +117,49 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
 
   def _RetrieveTabUrl(self, tab, timeout):
     """Retrives the URL of the tab."""
-    try:
-      return tab.EvaluateJavaScript('document.URL', timeout)
-    except exceptions.Error:
-      return None
+    # TODO(erikchen): Use tab.url instead, which talks to the browser process
+    # instead of the renderer process. http://crbug.com/486119
+    return tab.EvaluateJavaScript('document.URL', timeout)
 
-  def _WaitForUrlToChange(self, tab, initial_url, timeout):
-    """Waits for the tab to navigate away from its initial url."""
-    end_time = time.time() + timeout
+  def _WaitForUrlToChange(self, tab, initial_url, end_time):
+    """Waits for the tab to navigate away from its initial url.
+
+    If time.time() is larger than end_time, the function does nothing.
+    Otherwise, the function tries to return no later than end_time.
+    """
     while True:
       seconds_to_wait = end_time - time.time()
-      seconds_to_wait = max(0, seconds_to_wait)
-
-      if seconds_to_wait == 0:
+      if seconds_to_wait <= 0:
         break
 
       current_url = self._RetrieveTabUrl(tab, seconds_to_wait)
-      if current_url != initial_url:
+      if current_url != initial_url and current_url != "":
         break
 
       # Retrieving the current url is a non-trivial operation. Add a small
       # sleep here to prevent this method from contending with the actual
       # navigation.
       time.sleep(0.01)
+
+  def _WaitForTabToBeReady(self, tab, end_time):
+    """Waits for the tab to be ready.
+
+    If time.time() is larger than end_time, the function does nothing.
+    Otherwise, the function tries to return no later than end_time.
+    """
+    seconds_to_wait = end_time - time.time()
+    if seconds_to_wait <= 0:
+      return
+    tab.WaitForDocumentReadyStateToBeComplete(seconds_to_wait)
+
+    # Wait up to 10 seconds for the page to quiesce. If the page hasn't
+    # quiesced in 10 seconds, it will probably never quiesce.
+    seconds_to_wait = end_time - time.time()
+    seconds_to_wait = max(0, seconds_to_wait)
+    try:
+      util.WaitFor(tab.HasReachedQuiescence, seconds_to_wait)
+    except exceptions.TimeoutException:
+      pass
 
   def _BatchNavigateTabs(self, batch):
     """Performs a batch of tab navigations with minimal delay.
@@ -148,21 +171,22 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
       A list of tuples (tab, initial_url). |initial_url| is the url of the
       |tab| prior to a navigation command being sent to it.
     """
-    timeout_in_seconds = 0
+    # Attempting to pass in a timeout of 0 seconds results in a synchronous
+    # socket error from the websocket library. Pass in a very small timeout
+    # instead so that the websocket library raises a Timeout exception. This
+    # prevents the logic from accidentally catching different socket
+    # exceptions.
+    timeout_in_seconds = 0.01
 
     queued_tabs = []
     for tab, url in batch:
-      initial_url = self._RetrieveTabUrl(tab,
-          self._TAB_URL_RETRIEVAL_TIMEOUT_IN_SECONDS)
-
+      initial_url = self._RetrieveTabUrl(tab, 20)
       try:
         tab.Navigate(url, None, timeout_in_seconds)
-      except exceptions.Error:
-        # We expect a time out. It's possible for other problems to arise, but
-        # this method is not responsible for dealing with them. Ignore all
-        # exceptions.
+      except exceptions.TimeoutException:
+        # We expect to receive a timeout exception, since we're not waiting for
+        # the navigation to complete.
         pass
-
       queued_tabs.append((tab, initial_url))
     return queued_tabs
 
@@ -173,30 +197,14 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
       queued_tabs: A list of tuples (tab, initial_url). Each tab is guaranteed
       to have already been sent a navigation command.
     """
-    end_time = time.time() + self._BATCH_PAGE_LOAD_TIMEOUT_IN_SECONDS
+    total_batch_timeout = (len(queued_tabs) *
+        self._BATCH_TIMEOUT_PER_PAGE_IN_SECONDS)
+    end_time = time.time() + total_batch_timeout
     for tab, initial_url in queued_tabs:
-      seconds_to_wait = end_time - time.time()
-      seconds_to_wait = max(0, seconds_to_wait)
-
-      if seconds_to_wait == 0:
-        break
-
-      # Since we don't wait any time for the tab url navigation to commit, it's
+      # Since we didn't wait any time for the tab url navigation to commit, it's
       # possible that the tab hasn't started navigating yet.
-      self._WaitForUrlToChange(tab, initial_url, seconds_to_wait)
-
-      seconds_to_wait = end_time - time.time()
-      seconds_to_wait = max(0, seconds_to_wait)
-
-      try:
-        tab.WaitForDocumentReadyStateToBeComplete(seconds_to_wait)
-      except exceptions.TimeoutException:
-        # Ignore time outs.
-        pass
-      except exceptions.Error:
-        # If any error occurs, remove the tab. it's probably in an
-        # unrecoverable state.
-        self._RemoveNavigationTab(tab)
+      self._WaitForUrlToChange(tab, initial_url, end_time)
+      self._WaitForTabToBeReady(tab, end_time)
 
   def _GetUrlsToNavigate(self, url_iterator):
     """Returns an array of urls to navigate to, given a url_iterator."""
