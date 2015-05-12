@@ -35,14 +35,15 @@ class ApplicationManager::ContentHandlerConnection : public ErrorHandler {
  public:
   ContentHandlerConnection(ApplicationManager* manager,
                            const GURL& content_handler_url,
+                           const GURL& requestor_url,
                            const std::string& qualifier)
       : manager_(manager),
         content_handler_url_(content_handler_url),
         content_handler_qualifier_(qualifier) {
     ServiceProviderPtr services;
     manager->ConnectToApplicationWithParameters(
-        content_handler_url, qualifier, GURL(), GetProxy(&services), nullptr,
-        base::Closure(), std::vector<std::string>());
+        content_handler_url, qualifier, requestor_url, GetProxy(&services),
+        nullptr, base::Closure(), std::vector<std::string>());
     MessagePipe pipe;
     content_handler_.Bind(pipe.handle0.Pass());
     services->ConnectToService(ContentHandler::Name_, pipe.handle1.Pass());
@@ -164,6 +165,12 @@ void ApplicationManager::ConnectToApplicationWithParameters(
       requested_url, qualifier, requestor_url, base::Passed(services.Pass()),
       base::Passed(exposed_services.Pass()), on_application_end,
       pre_redirect_parameters);
+
+  if (delegate_->CreateFetcher(
+          resolved_url,
+          base::Bind(callback, NativeApplicationCleanup::DONT_DELETE))) {
+    return;
+  }
 
   if (resolved_url.SchemeIsFile()) {
     new LocalFetcher(
@@ -311,7 +318,7 @@ void ApplicationManager::HandleFetchCallback(
   std::string shebang;
   if (fetcher->PeekContentHandler(&shebang, &content_handler_url)) {
     LoadWithContentHandler(
-        content_handler_url, qualifier, request.Pass(),
+        content_handler_url, requestor_url, qualifier, request.Pass(),
         fetcher->AsURLResponse(blocking_pool_,
                                static_cast<int>(shebang.size())));
     return;
@@ -319,7 +326,8 @@ void ApplicationManager::HandleFetchCallback(
 
   MimeTypeToURLMap::iterator iter = mime_type_to_url_.find(fetcher->MimeType());
   if (iter != mime_type_to_url_.end()) {
-    LoadWithContentHandler(iter->second, qualifier, request.Pass(),
+    LoadWithContentHandler(iter->second, requestor_url, qualifier,
+                           request.Pass(),
                            fetcher->AsURLResponse(blocking_pool_, 0));
     return;
   }
@@ -345,8 +353,8 @@ void ApplicationManager::HandleFetchCallback(
       qualifier = alias_iter->second.second;
     }
 
-    LoadWithContentHandler(alias_iter->second.first, qualifier, request.Pass(),
-                           response.Pass());
+    LoadWithContentHandler(alias_iter->second.first, requestor_url, qualifier,
+                           request.Pass(), response.Pass());
     return;
   }
 
@@ -417,6 +425,7 @@ void ApplicationManager::RegisterApplicationPackageAlias(
 
 void ApplicationManager::LoadWithContentHandler(
     const GURL& content_handler_url,
+    const GURL& requestor_url,
     const std::string& qualifier,
     InterfaceRequest<Application> application_request,
     URLResponsePtr url_response) {
@@ -426,8 +435,8 @@ void ApplicationManager::LoadWithContentHandler(
   if (iter != url_to_content_handler_.end()) {
     connection = iter->second;
   } else {
-    connection =
-        new ContentHandlerConnection(this, content_handler_url, qualifier);
+    connection = new ContentHandlerConnection(this, content_handler_url,
+                                              requestor_url, qualifier);
     url_to_content_handler_[key] = connection;
   }
 

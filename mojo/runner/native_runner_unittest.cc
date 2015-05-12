@@ -80,6 +80,11 @@ class NativeApplicationLoaderTest : public testing::Test,
   // shell::ApplicationManager::Delegate
   GURL ResolveMappings(const GURL& url) override { return url; }
   GURL ResolveMojoURL(const GURL& url) override { return url; }
+  bool CreateFetcher(
+      const GURL& url,
+      const shell::Fetcher::FetchCallback& loader_callback) override {
+    return false;
+  }
 };
 
 TEST_F(NativeApplicationLoaderTest, DoesNotExist) {

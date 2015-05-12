@@ -67,6 +67,9 @@ class Context : public shell::ApplicationManager::Delegate,
   // ApplicationManager::Delegate overrides.
   GURL ResolveMappings(const GURL& url) override;
   GURL ResolveMojoURL(const GURL& url) override;
+  bool CreateFetcher(
+      const GURL& url,
+      const shell::Fetcher::FetchCallback& loader_callback) override;
 
   // ProcessDelegate implementation.
   void OnShutdownComplete() override;

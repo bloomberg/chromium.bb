@@ -15,6 +15,7 @@
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/fetcher.h"
 #include "mojo/shell/test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,6 +26,36 @@ namespace {
 const char kTestURLString[] = "test:testService";
 const char kTestAURLString[] = "test:TestA";
 const char kTestBURLString[] = "test:TestB";
+
+const char kTestMimeType[] = "test/mime-type";
+
+class TestMimeTypeFetcher : public Fetcher {
+ public:
+  explicit TestMimeTypeFetcher(const FetchCallback& fetch_callback)
+      : Fetcher(fetch_callback), url_("xxx") {
+    loader_callback_.Run(make_scoped_ptr(this));
+  }
+  ~TestMimeTypeFetcher() override {}
+
+  // Fetcher:
+  const GURL& GetURL() const override { return url_; }
+  GURL GetRedirectURL() const override { return GURL("yyy"); }
+  URLResponsePtr AsURLResponse(base::TaskRunner* task_runner,
+                               uint32_t skip) override {
+    return URLResponse::New().Pass();
+  }
+  void AsPath(
+      base::TaskRunner* task_runner,
+      base::Callback<void(const base::FilePath&, bool)> callback) override {}
+  std::string MimeType() override { return kTestMimeType; }
+  bool HasMojoMagic() override { return false; }
+  bool PeekFirstLine(std::string* line) override { return false; }
+
+ private:
+  const GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMimeTypeFetcher);
+};
 
 struct TestContext {
   TestContext() : num_impls(0), num_loader_deletes(0) {}
@@ -115,6 +146,7 @@ class TestApplicationLoader : public ApplicationLoader,
   void set_context(TestContext* context) { context_ = context; }
   int num_loads() const { return num_loads_; }
   const std::vector<std::string>& GetArgs() const { return test_app_->args(); }
+  const GURL& last_requestor_url() const { return last_requestor_url_; }
 
  private:
   // ApplicationLoader implementation.
@@ -127,6 +159,7 @@ class TestApplicationLoader : public ApplicationLoader,
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     connection->AddService(this);
+    last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;
   }
 
@@ -139,6 +172,8 @@ class TestApplicationLoader : public ApplicationLoader,
   scoped_ptr<ApplicationImpl> test_app_;
   TestContext* context_;
   int num_loads_;
+  GURL last_requestor_url_;
+
   DISALLOW_COPY_AND_ASSIGN(TestApplicationLoader);
 };
 
@@ -393,7 +428,14 @@ class Tester : public ApplicationDelegate,
 
 class TestDelegate : public ApplicationManager::Delegate {
  public:
+  TestDelegate() : create_test_fetcher_(false) {}
+  ~TestDelegate() override {}
+
   void AddMapping(const GURL& from, const GURL& to) { mappings_[from] = to; }
+
+  void set_create_test_fetcher(bool create_test_fetcher) {
+    create_test_fetcher_ = create_test_fetcher;
+  }
 
   // ApplicationManager::Delegate
   GURL ResolveMappings(const GURL& url) override {
@@ -412,9 +454,19 @@ class TestDelegate : public ApplicationManager::Delegate {
     }
     return mapped_url;
   }
+  bool CreateFetcher(const GURL& url,
+                     const Fetcher::FetchCallback& loader_callback) override {
+    if (!create_test_fetcher_)
+      return false;
+    new TestMimeTypeFetcher(loader_callback);
+    return true;
+  }
 
  private:
   std::map<GURL, GURL> mappings_;
+  bool create_test_fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
 class ApplicationManagerTest : public testing::Test {
@@ -737,6 +789,34 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
       base::Bind(&QuitClosure, base::Unretained(&called)));
   loop_.Run();
   EXPECT_TRUE(called);
+}
+
+TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
+  const GURL content_handler_url("http://test.content.handler");
+  const GURL requestor_url("http://requestor.url");
+  TestContext test_context;
+  base::MessageLoop loop;
+  TestDelegate test_delegate;
+  test_delegate.set_create_test_fetcher(true);
+  ApplicationManager application_manager(&test_delegate);
+  application_manager.set_default_loader(nullptr);
+  application_manager.RegisterContentHandler(kTestMimeType,
+                                             content_handler_url);
+
+  TestApplicationLoader* loader = new TestApplicationLoader;
+  loader->set_context(&test_context);
+  application_manager.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader),
+                                      content_handler_url);
+
+  bool called = false;
+  application_manager.ConnectToApplication(
+      GURL("test:test"), requestor_url, nullptr, nullptr,
+      base::Bind(&QuitClosure, base::Unretained(&called)));
+  loop.Run();
+  EXPECT_TRUE(called);
+
+  ASSERT_EQ(1, loader->num_loads());
+  EXPECT_EQ(requestor_url, loader->last_requestor_url());
 }
 
 }  // namespace

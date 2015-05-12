@@ -16,6 +16,7 @@
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/shell/application_loader.h"
+#include "mojo/shell/fetcher.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
 #include "url/gurl.h"
@@ -28,7 +29,6 @@ class SequencedWorkerPool;
 namespace mojo {
 namespace shell {
 
-class Fetcher;
 class ShellImpl;
 
 class ApplicationManager {
@@ -42,6 +42,12 @@ class ApplicationManager {
     // Used to map a url with the scheme 'mojo' to the appropriate url. Return
     // |url| if the scheme is not 'mojo'.
     virtual GURL ResolveMojoURL(const GURL& url) = 0;
+
+    // Asks the delegate to create a Fetcher for the specified url. Return
+    // true on success, false if the default fetcher should be created.
+    virtual bool CreateFetcher(
+        const GURL& url,
+        const Fetcher::FetchCallback& loader_callback) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -210,6 +216,7 @@ class ApplicationManager {
                             bool path_exists);
 
   void LoadWithContentHandler(const GURL& content_handler_url,
+                              const GURL& requestor_url,
                               const std::string& qualifier,
                               InterfaceRequest<Application> application_request,
                               URLResponsePtr url_response);

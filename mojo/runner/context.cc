@@ -296,6 +296,12 @@ GURL Context::ResolveMojoURL(const GURL& url) {
   return url_resolver_.ResolveMojoURL(url);
 }
 
+bool Context::CreateFetcher(
+    const GURL& url,
+    const shell::Fetcher::FetchCallback& loader_callback) {
+  return false;
+}
+
 void Context::OnShutdownComplete() {
   DCHECK_EQ(base::MessageLoop::current()->task_runner(),
             task_runners_->shell_runner());
