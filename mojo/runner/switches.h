@@ -16,7 +16,6 @@ extern const char kApp[];
 extern const char kChildProcess[];
 extern const char kContentHandlers[];
 extern const char kDisableCache[];
-extern const char kEnableMultiprocess[];
 extern const char kForceInProcess[];
 extern const char kHelp[];
 extern const char kMapOrigin[];

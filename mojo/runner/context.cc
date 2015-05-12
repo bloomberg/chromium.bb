@@ -32,6 +32,7 @@
 #include "mojo/services/tracing/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 

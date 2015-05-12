@@ -11,6 +11,11 @@ namespace switches {
 // If set apps downloaded are not deleted.
 const char kDontDeleteOnDownload[] = "dont-delete-on-download";
 
+// Load apps in separate processes.
+// TODO(vtl): Work in progress; doesn't work. Flip this to "disable" (or maybe
+// change it to "single-process") when it works.
+const char kEnableMultiprocess[] = "enable-multiprocess";
+
 // If set apps downloaded are saved in with a predictable filename, to help
 // remote debugging: when gdb is used through gdbserver, it needs to be able to
 // find locally any loaded library. For this, gdb use the filename of the

@@ -24,11 +24,6 @@ const char kContentHandlers[] = "content-handlers";
 // instructions.
 const char kDisableCache[] = "disable-cache";
 
-// Load apps in separate processes.
-// TODO(vtl): Work in progress; doesn't work. Flip this to "disable" (or maybe
-// change it to "single-process") when it works.
-const char kEnableMultiprocess[] = "enable-multiprocess";
-
 // In multiprocess mode, force these apps to be loaded in the main process.
 // Comma-separate list of URLs. Example:
 // --force-in-process=mojo:native_viewport_service,mojo:network_service

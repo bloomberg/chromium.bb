@@ -91,9 +91,13 @@ class ApplicationManager {
 
   // Registers a package alias. When attempting to load |alias|, it will
   // instead redirect to |content_handler_package|, which is a content handler
-  // which will be passed the |alias| as the URLResponse::url.
+  // which will be passed the |alias| as the URLResponse::url. Different values
+  // of |alias| with the same |qualifier| that are in the same
+  // |content_handler_package| will run in the same process in multi-process
+  // mode.
   void RegisterApplicationPackageAlias(const GURL& alias,
-                                       const GURL& content_handler_package);
+                                       const GURL& content_handler_package,
+                                       const std::string& qualifier);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().
@@ -134,16 +138,18 @@ class ApplicationManager {
  private:
   class ContentHandlerConnection;
 
-  using ApplicationPackagedAlias = std::map<GURL, GURL>;
+  using ApplicationPackagedAlias = std::map<GURL, std::pair<GURL, std::string>>;
   using IdentityToShellImplMap = std::map<Identity, ShellImpl*>;
   using MimeTypeToURLMap = std::map<std::string, GURL>;
   using SchemeToLoaderMap = std::map<std::string, ApplicationLoader*>;
-  using URLToContentHandlerMap = std::map<GURL, ContentHandlerConnection*>;
+  using URLToContentHandlerMap =
+      std::map<std::pair<GURL, std::string>, ContentHandlerConnection*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
   using URLToNativeOptionsMap = std::map<GURL, NativeRunnerFactory::Options>;
 
   void ConnectToApplicationWithParameters(
       const GURL& application_url,
+      const std::string& qualifier,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
@@ -151,12 +157,14 @@ class ApplicationManager {
       const std::vector<std::string>& pre_redirect_parameters);
 
   bool ConnectToRunningApplication(const GURL& resolved_url,
+                                   const std::string& qualifier,
                                    const GURL& requestor_url,
                                    InterfaceRequest<ServiceProvider>* services,
                                    ServiceProviderPtr* exposed_services);
 
   bool ConnectToApplicationWithLoader(
       const GURL& requested_url,
+      const std::string& qualifier,
       const GURL& resolved_url,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider>* services,
@@ -167,13 +175,14 @@ class ApplicationManager {
 
   InterfaceRequest<Application> RegisterShell(
       const GURL& app_url,
+      const std::string& qualifier,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
       const base::Closure& on_application_end,
       const std::vector<std::string>& parameters);
 
-  ShellImpl* GetShellImpl(const GURL& url);
+  ShellImpl* GetShellImpl(const GURL& url, const std::string& qualifier);
 
   void ConnectToClient(ShellImpl* shell_impl,
                        const GURL& resolved_url,
@@ -184,6 +193,7 @@ class ApplicationManager {
   // Called once |fetcher| has found app. |requested_url| is the url of the
   // requested application before any mappings/resolution have been applied.
   void HandleFetchCallback(const GURL& requested_url,
+                           const std::string& qualifier,
                            const GURL& requestor_url,
                            InterfaceRequest<ServiceProvider> services,
                            ServiceProviderPtr exposed_services,
@@ -200,6 +210,7 @@ class ApplicationManager {
                             bool path_exists);
 
   void LoadWithContentHandler(const GURL& content_handler_url,
+                              const std::string& qualifier,
                               InterfaceRequest<Application> application_request,
                               URLResponsePtr url_response);
 
