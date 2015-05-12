@@ -38,6 +38,8 @@ static_library("browser") {
     "wallet/wallet_signin_helper.h",
   ]
 
+  configs += [ "//components/autofill/core/browser:wallet_service" ]
+
   public_deps = [
     "//skia",
   ]

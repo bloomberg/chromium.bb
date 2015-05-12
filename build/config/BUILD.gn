@@ -42,9 +42,7 @@ declare_args() {
 # For now we define these globally to match the current GYP build.
 config("feature_flags") {
   # TODO(brettw) this probably needs to be parameterized.
-  defines = [
-    "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
-  ]
+  defines = [ "V8_DEPRECATION_WARNINGS" ]  # Don't use deprecated V8 APIs anywhere.
 
   if (cld_version > 0) {
     defines += [ "CLD_VERSION=$cld_version" ]
@@ -278,6 +276,18 @@ config("debug") {
 
 config("release") {
   defines = [ "NDEBUG" ]
+
+  # Sanitizers.
+  # TODO(GYP) The GYP build has "release_valgrind_build == 0" for this
+  # condition. When Valgrind is set up, we need to do the same here.
+  if (!is_tsan) {
+    defines += [ "NVALGRIND" ]
+    if (!is_nacl) {
+      # NaCl always enables dynamic annotations. Currently this value is set to
+      # 1 for all .nexes.
+      defines += [ "DYNAMIC_ANNOTATIONS_ENABLED=0" ]
+    }
+  }
 }
 
 # Default libraries ------------------------------------------------------------

@@ -51,7 +51,11 @@ declare_args() {
   enable_media_router = !is_ios && !is_android
 
   # Enables proprietary codecs and demuxers; e.g. H264, MOV, AAC, and MP3.
-  proprietary_codecs = false
+  # Android OS includes support for proprietary codecs regardless of building
+  # Chromium or Google Chrome. We also ship Google Chrome and Chromecast with
+  # proprietary codecs.
+  # TODO(GYP) The GYP build has || chromecast==1 for this:
+  proprietary_codecs = is_android || is_chrome_branded
 
   enable_configuration_policy = true
 

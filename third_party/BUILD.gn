@@ -20,7 +20,7 @@ config("system_libjpeg_config") {
 }
 
 config("libjpeg_turbo_config") {
-  defines = [ "USE_LIBJPEG_TURBO" ]
+  defines = [ "USE_LIBJPEG_TURBO=1" ]
 }
 
 # This is a meta target that forwards to the system's libjpeg,

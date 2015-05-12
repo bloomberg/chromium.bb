@@ -336,6 +336,7 @@ config("compiler") {
         "-fno-unwind-tables",
         "-fno-asynchronous-unwind-tables",
       ]
+      defines += [ "NO_UNWIND_TABLES" ]
     } else {
       cflags += [ "-funwind-tables" ]
     }
@@ -636,6 +637,18 @@ config("chromium_code") {
       "__STDC_CONSTANT_MACROS",
       "__STDC_FORMAT_MACROS",
     ]
+
+    if (using_sanitizer) {
+      # _FORTIFY_SOURCE isn't really supported by Clang now, see
+      # http://llvm.org/bugs/show_bug.cgi?id=16821.
+      # It seems to work fine with Ubuntu 12 headers though, so use it in
+      # official builds.
+      #
+      # Non-chromium code is not guaranteed to compile cleanly with
+      # _FORTIFY_SOURCE. Also, fortified build may fail when optimizations are
+      # disabled, so only do that for Release build.
+      defines += [ "_FORTIFY_SOURCE=2" ]
+    }
   }
 }
 config("no_chromium_code") {
