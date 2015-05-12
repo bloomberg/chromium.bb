@@ -85,6 +85,13 @@ ECPrivateKey::~ECPrivateKey() {
     EVP_PKEY_free(key_);
 }
 
+ECPrivateKey* ECPrivateKey::Copy() const {
+  scoped_ptr<ECPrivateKey> copy(new ECPrivateKey);
+  if (key_)
+    copy->key_ = EVP_PKEY_dup(key_);
+  return copy.release();
+}
+
 // static
 bool ECPrivateKey::IsSupported() { return true; }
 

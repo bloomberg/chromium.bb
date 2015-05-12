@@ -82,7 +82,6 @@ TEST(ECPrivateKeyUnitTest, InitRandomTest) {
   EXPECT_EQ(raw_pubkey2, raw_pubkey4);
 }
 
-#if !defined(USE_OPENSSL)
 TEST(ECPrivateKeyUnitTest, Copy) {
   scoped_ptr<crypto::ECPrivateKey> keypair1(crypto::ECPrivateKey::Create());
   scoped_ptr<crypto::ECPrivateKey> keypair2(keypair1->Copy());
@@ -113,7 +112,6 @@ TEST(ECPrivateKeyUnitTest, Copy) {
   EXPECT_TRUE(keypair2->ExportRawPublicKey(&raw_pubkey2));
   EXPECT_EQ(raw_pubkey1, raw_pubkey2);
 }
-#endif  // !defined(USE_OPENSSL)
 
 TEST(ECPrivateKeyUnitTest, BadPasswordTest) {
   const std::string password1;
