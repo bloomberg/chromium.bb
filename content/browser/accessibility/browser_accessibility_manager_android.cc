@@ -71,8 +71,8 @@ BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory) {
-  SetContentViewCore(content_view_core);
   Initialize(initial_tree);
+  SetContentViewCore(content_view_core);
 }
 
 BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
