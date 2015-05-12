@@ -5,7 +5,7 @@
 assert(is_nacl,
        "These targets must only be built using the untrusted NaCl toolchains.")
 
-# TODO(sbc): Make sure this library gets built with -fPIC.  Right not it
+# TODO(sbc): Make sure this library gets built with -fPIC.  Right now it
 # doesn't seem that is built at all.
 source_set("ppapi_stub_lib") {
   sources = [
