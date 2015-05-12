@@ -157,8 +157,8 @@
   }
 
   // First makes a call between pc1 and pc2 where a stream is sent from pc1 to
-  // pc2. The stream sent from pc1 to pc2 is cloned from the stream received on 
-  // pc2  to test that cloning of remote video tracks works as intended and is 
+  // pc2. The stream sent from pc1 to pc2 is cloned from the stream received on
+  // pc2  to test that cloning of remote video tracks works as intended and is
   // sent back to pc1.
   function callAndForwardRemoteStream(constraints) {
     createConnections(null);
@@ -166,7 +166,7 @@
                                  addStreamToTheFirstConnectionAndNegotiate,
                                  printGetUserMediaError);
     var onRemoteStream2 = function() {
-      // Video has been detected to be playing in pc2. Clone the received 
+      // Video has been detected to be playing in pc2. Clone the received
       // stream and send it back to pc1.
       gSecondConnection.addStream(gRemoteStreams['remote-view-2'].clone());
       negotiate();
@@ -331,11 +331,12 @@
     navigator.webkitGetUserMedia({audio: true, video: true},
       addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     var onCallEstablished = function() {
-      // Send DTMF tones.
+      // Send DTMF tones. Allocate the sender in the window to keep it from
+      // being garbage collected. https://crbug.com/486654.
       var localAudioTrack = gLocalStream.getAudioTracks()[0];
-      var dtmfSender = gFirstConnection.createDTMFSender(localAudioTrack);
-      dtmfSender.ontonechange = onToneChange;
-      dtmfSender.insertDTMF(tones);
+      window.dtmfSender = gFirstConnection.createDTMFSender(localAudioTrack);
+      window.dtmfSender.ontonechange = onToneChange;
+      window.dtmfSender.insertDTMF(tones);
       // Wait for the DTMF tones callback.
       addExpectedEvent();
       var waitDtmf = setInterval(function() {
