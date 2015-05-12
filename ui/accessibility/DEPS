@@ -1,5 +1,4 @@
 include_rules = [
-  "+dbus",
   "+third_party/iaccessible2",
   "+ui/base/win",
   "+ui/gfx",
