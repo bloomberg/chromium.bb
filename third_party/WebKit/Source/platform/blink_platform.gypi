@@ -933,6 +933,7 @@
       'SharedBufferTest.cpp',
       'TestingPlatformSupport.cpp',
       'TestingPlatformSupport.h',
+      'TimerTest.cpp',
       'TracedValueTest.cpp',
       'WebScreenInfoTest.cpp',
       'WebVectorTest.cpp',

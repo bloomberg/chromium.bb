@@ -57,7 +57,7 @@ WTF_EXPORT double systemTraceTime();
 
 typedef double(*TimeFunction)(void);
 void setCurrentTimeFunction(TimeFunction);
-void setMonotonicallyIncreasingTimeFunction(TimeFunction);
+WTF_EXPORT void setMonotonicallyIncreasingTimeFunction(TimeFunction);
 void setSystemTraceTimeFunction(TimeFunction);
 
 
