@@ -246,9 +246,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // network.
   bool was_ever_used_;
 
-  // Stores client authentication information between ClientAuthHandler and
-  // GetSSLCertRequestInfo calls.
-  bool client_auth_cert_needed_;
   // List of DER-encoded X.509 DistinguishedName of certificate authorities
   // allowed by the server.
   std::vector<std::string> cert_authorities_;
