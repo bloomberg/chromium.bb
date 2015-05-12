@@ -326,30 +326,30 @@ class SSLServerSocketTest : public PlatformTest {
     scoped_ptr<crypto::RSAPrivateKey> private_key(
         crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
 
-    SSLConfig ssl_config;
-    ssl_config.false_start_enabled = false;
-    ssl_config.channel_id_enabled = false;
+    client_ssl_config_.false_start_enabled = false;
+    client_ssl_config_.channel_id_enabled = false;
 
     // Certificate provided by the host doesn't need authority.
     SSLConfig::CertAndStatus cert_and_status;
     cert_and_status.cert_status = CERT_STATUS_AUTHORITY_INVALID;
     cert_and_status.der_cert = cert_der;
-    ssl_config.allowed_bad_certs.push_back(cert_and_status);
+    client_ssl_config_.allowed_bad_certs.push_back(cert_and_status);
 
     HostPortPair host_and_pair("unittest", 0);
     SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
-    client_socket_ =
-        socket_factory_->CreateSSLClientSocket(
-            client_connection.Pass(), host_and_pair, ssl_config, context);
-    server_socket_ = CreateSSLServerSocket(
-        server_socket.Pass(),
-        cert.get(), private_key.get(), SSLConfig());
+    client_socket_ = socket_factory_->CreateSSLClientSocket(
+        client_connection.Pass(), host_and_pair, client_ssl_config_, context);
+    server_socket_ =
+        CreateSSLServerSocket(server_socket.Pass(), cert.get(),
+                              private_key.get(), server_ssl_config_);
   }
 
   FakeDataChannel channel_1_;
   FakeDataChannel channel_2_;
+  SSLConfig client_ssl_config_;
+  SSLConfig server_ssl_config_;
   scoped_ptr<SSLClientSocket> client_socket_;
   scoped_ptr<SSLServerSocket> server_socket_;
   ClientSocketFactory* socket_factory_;
@@ -589,6 +589,42 @@ TEST_F(SSLServerSocketTest, ExportKeyingMaterial) {
                                             client_bad, sizeof(client_bad));
   ASSERT_EQ(rv, OK);
   EXPECT_NE(0, memcmp(server_out, client_bad, sizeof(server_out)));
+}
+
+// Verifies that SSLConfig::require_ecdhe flags works properly.
+TEST_F(SSLServerSocketTest, RequireEcdheFlag) {
+  // Disable all ECDHE suites on the client side.
+  uint16_t kEcdheCiphers[] = {
+      0xc007,  // ECDHE_ECDSA_WITH_RC4_128_SHA
+      0xc009,  // ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+      0xc00a,  // ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+      0xc011,  // ECDHE_RSA_WITH_RC4_128_SHA
+      0xc013,  // ECDHE_RSA_WITH_AES_128_CBC_SHA
+      0xc014,  // ECDHE_RSA_WITH_AES_256_CBC_SHA
+      0xc02b,  // ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+      0xc02f,  // ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      0xcc13,  // ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      0xcc14,  // ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+  };
+  client_ssl_config_.disabled_cipher_suites.assign(
+      kEcdheCiphers, kEcdheCiphers + arraysize(kEcdheCiphers));
+
+  // Require ECDHE on the server.
+  server_ssl_config_.require_ecdhe = true;
+
+  Initialize();
+
+  TestCompletionCallback connect_callback;
+  TestCompletionCallback handshake_callback;
+
+  int client_ret = client_socket_->Connect(connect_callback.callback());
+  int server_ret = server_socket_->Handshake(handshake_callback.callback());
+
+  client_ret = connect_callback.GetResult(client_ret);
+  server_ret = handshake_callback.GetResult(client_ret);
+
+  ASSERT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, client_ret);
+  ASSERT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, server_ret);
 }
 
 }  // namespace net

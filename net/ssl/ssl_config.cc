@@ -26,7 +26,7 @@ SSLConfig::SSLConfig()
       channel_id_enabled(true),
       false_start_enabled(true),
       signed_cert_timestamps_enabled(true),
-      require_forward_secrecy(false),
+      require_ecdhe(false),
       send_client_cert(false),
       verify_ev_cert(false),
       version_fallback(false),

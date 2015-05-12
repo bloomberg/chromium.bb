@@ -109,7 +109,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     }
 
     net::SSLConfig ssl_config;
-    ssl_config.require_forward_secrecy = true;
+    ssl_config.require_ecdhe = true;
 
     scoped_ptr<net::SSLServerSocket> server_socket =
         net::CreateSSLServerSocket(socket.Pass(),
