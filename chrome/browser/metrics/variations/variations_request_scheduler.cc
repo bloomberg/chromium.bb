@@ -4,7 +4,28 @@
 
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "components/variations/variations_associated_data.h"
+
 namespace chrome_variations {
+
+namespace {
+
+// Returns the time interval between variations seed fetches.
+base::TimeDelta GetFetchPeriod() {
+  // The fetch interval can be overridden by a variation param.
+  std::string period_min_str =
+      variations::GetVariationParamValue("VarationsServiceControl",
+                                         "fetch_period_min");
+  size_t period_min;
+  if (base::StringToSizeT(period_min_str, &period_min))
+    return base::TimeDelta::FromMinutes(period_min);
+
+  // The default fetch interval is every 5 hours.
+  return base::TimeDelta::FromHours(5);
+}
+
+}  // namespace
 
 VariationsRequestScheduler::VariationsRequestScheduler(
     const base::Closure& task) : task_(task) {
@@ -14,10 +35,8 @@ VariationsRequestScheduler::~VariationsRequestScheduler() {
 }
 
 void VariationsRequestScheduler::Start() {
-  // Time between regular seed fetches, in hours.
-  const int kFetchPeriodHours = 5;
   task_.Run();
-  timer_.Start(FROM_HERE, base::TimeDelta::FromHours(kFetchPeriodHours), task_);
+  timer_.Start(FROM_HERE, GetFetchPeriod(), task_);
 }
 
 void VariationsRequestScheduler::Reset() {
