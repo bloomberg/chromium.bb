@@ -29,6 +29,7 @@ STABLE_TEST_SUITES = [
     'content_unittests',
     'events_unittests',
     'gl_tests',
+    'gl_unittests',
     'gpu_unittests',
     'ipc_tests',
     'media_unittests',
