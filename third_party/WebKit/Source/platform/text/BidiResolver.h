@@ -256,7 +256,16 @@ public:
 
     bool isEndOfLine(const Iterator& end) { return m_current == end || m_current.atEnd(); }
 
-    TextDirection determineParagraphDirectionality(bool* hasStrongDirectionality = 0);
+    TextDirection determineParagraphDirectionality(bool* hasStrongDirectionality = 0)
+    {
+        bool breakOnParagraph = true;
+        return determineDirectionalityInternal(breakOnParagraph, hasStrongDirectionality);
+    }
+    TextDirection determineDirectionality(bool* hasStrongDirectionality = 0)
+    {
+        bool breakOnParagraph = false;
+        return determineDirectionalityInternal(breakOnParagraph, hasStrongDirectionality);
+    }
 
     void setMidpointStateForIsolatedRun(Run*, const MidpointState<Iterator>&);
     MidpointState<Iterator> midpointStateForIsolatedRun(Run*);
@@ -310,6 +319,8 @@ private:
     int findFirstTrailingSpaceAtRun(Run*) { return 0; }
     // http://www.unicode.org/reports/tr9/#L1
     void applyL1Rule(BidiRunList<Run>&);
+
+    TextDirection determineDirectionalityInternal(bool breakOnParagraph, bool* hasStrongDirectionality);
 
     Vector<BidiEmbedding, 8> m_currentExplicitEmbeddingSequence;
     HashMap<Run *, MidpointState<Iterator>> m_midpointStateForIsolatedRun;
@@ -629,14 +640,15 @@ inline void BidiResolver<Iterator, Run>::reorderRunsFromLevels(BidiRunList<Run>&
 }
 
 template <class Iterator, class Run>
-TextDirection BidiResolver<Iterator, Run>::determineParagraphDirectionality(bool* hasStrongDirectionality)
+TextDirection BidiResolver<Iterator, Run>::determineDirectionalityInternal(
+    bool breakOnParagraph, bool* hasStrongDirectionality)
 {
     while (!m_current.atEnd()) {
         if (inIsolate()) {
             increment();
             continue;
         }
-        if (m_current.atParagraphSeparator())
+        if (breakOnParagraph && m_current.atParagraphSeparator())
             break;
         UChar32 current = m_current.current();
         if (UNLIKELY(U16_IS_SURROGATE(current))) {

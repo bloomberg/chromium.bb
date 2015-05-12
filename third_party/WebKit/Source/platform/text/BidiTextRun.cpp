@@ -51,7 +51,7 @@ TextDirection directionForRun(TextRun& run, bool* hasStrongDirectionality)
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
     bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
-    return bidiResolver.determineParagraphDirectionality(hasStrongDirectionality);
+    return bidiResolver.determineDirectionality(hasStrongDirectionality);
 }
 
 TextDirection determineDirectionality(const String& value, bool* hasStrongDirectionality)
