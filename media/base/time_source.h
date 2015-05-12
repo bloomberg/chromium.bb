@@ -51,9 +51,12 @@ class MEDIA_EXPORT TimeSource {
 
   // Converts a vector of media timestamps into a vector of wall clock times. If
   // the media time is stopped, returns false and does not modify the output
-  // vector. Returns true and converts all timestamps otherwise. Guarantees that
-  // wall clock time does not go backwards for monotonically increasing media
-  // timestamps.
+  // vector. Returns true and converts all timestamps otherwise.
+  //
+  // Within a single call to GetWallClockTimes() the returned wall clock times
+  // are a strictly increasing function of the given media times. There is no
+  // such guarantee between calls though; e.g., playback rate or audio delay may
+  // change on other threads within the pipeline.
   //
   // Each timestamp converted from |media_timestamps| will be pushed into
   // |wall_clock_times| such that after all timestamps are converted, the two
