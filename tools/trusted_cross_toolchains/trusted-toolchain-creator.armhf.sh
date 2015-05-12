@@ -222,6 +222,7 @@ CleanupSysrootSymlinks() {
   done
 
   find usr/lib -type l -printf '%p %l\n' | while read link target; do
+    # Make sure we catch new bad links.
     if [ ! -r "${link}" ]; then
       echo "ERROR: FOUND BAD LINK ${link}"
       exit -1
@@ -245,17 +246,13 @@ CleanupSysrootSymlinks() {
 # So instead we chose to build 32bit shared images.
 #
 
-readonly QEMU_TARBALL=qemu-1.0.1.tar.gz
-readonly QEMU_SHA=4d08b5a83538fcd7b222bec6f1c584da8d12497a
-readonly QEMU_DIR=qemu-1.0.1
-
-# TODO(sbc): update to version 2.3.0
-#readonly QEMU_TARBALL=qemu-2.3.0.tar.bz2
-#readonly QEMU_SHA=373d74bfafce1ca45f85195190d0a5e22b29299e
-#readonly QEMU_DIR=qemu-2.3.0
+readonly QEMU_TARBALL=qemu-2.3.0.tar.bz2
+readonly QEMU_SHA=373d74bfafce1ca45f85195190d0a5e22b29299e
+readonly QEMU_DIR=qemu-2.3.0
 
 readonly QEMU_URL=http://wiki.qemu-project.org/download/${QEMU_TARBALL}
-readonly QEMU_PATCH=${NACL_ROOT}/../third_party/qemu/${QEMU_DIR}.patch_arm
+readonly QEMU_PATCH=tools/trusted_cross_toolchains/${QEMU_DIR}.patch_arm
+
 
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
@@ -297,11 +294,13 @@ BuildAndInstallQemu() {
   cd ${QEMU_DIR}
 
   SubBanner "Patching ${QEMU_PATCH}"
-  patch -p1 < ${QEMU_PATCH}
+  patch -p1 < ${saved_dir}/${QEMU_PATCH}
 
   SubBanner "Configuring"
   set -x
-  env -i PATH=/usr/bin/:/bin LIBS=-lrt \
+  # We forace gcc-4.6 since this the DEBIAN_I386_SYSROOT image only
+  # contains that C++ headers for version 4.6.
+  env -i CC=gcc-4.6 CXX=g++-4.6  PATH=/usr/bin/:/bin LIBS=-lrt \
     ./configure \
     --extra-cflags="-m32 --sysroot=$DEBIAN_I386_SYSROOT" \
     --extra-ldflags="-Wl,-rpath-link=$DEBIAN_I386_SYSROOT/lib/i386-linux-gnu" \
@@ -312,9 +311,6 @@ BuildAndInstallQemu() {
     --target-list=arm-linux-user \
     --disable-smartcard-nss \
     --disable-sdl
-
-# see above for why we can no longer use -static
-#    --static
 
   SubBanner "Make"
   env -i PATH=/usr/bin/:/bin make MAKE_OPTS=${MAKE_OPTS}
