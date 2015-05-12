@@ -96,7 +96,7 @@
     <style name="ThemeWithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:windowBackground">@drawable/action_bar_activity_bg</item>
         <!-- Action bar color -->
-        <item name="colorPrimary">#263238</item>
+        <item name="colorPrimary">@color/dark_action_bar_color</item>
         <!-- Status bar color -->
         <item name="colorPrimaryDark">#161e21</item>
         <!-- Color of checkboxes, switches, buttons, etc. -->
