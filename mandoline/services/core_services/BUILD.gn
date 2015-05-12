@@ -1,14 +1,55 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+#
+# core_services should be thought of as a bundle of many of the services which
+# we ship with.
 
 import("//build/config/ui.gni")
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 import("//testing/test.gni")
 
-# core_services should be thought of as a bundle of many of the services which
-# we ship with.
-mojo_native_application("core_services") {
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  java_library_path = "$target_out_dir/java_library.dex.jar"
+
+  mojo_android_application("core_services") {
+    input_so = "$root_out_dir/lib.stripped/libcore_services.so"
+    input_dex_jar = java_library_path
+  }
+
+  shared_library("native_library") {
+    output_name = "core_services"
+
+    sources = [
+      "android_hooks.cc",
+    ]
+
+    deps = [
+      ":sources",
+      "//base",
+      "//net",
+      "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+    ]
+  }
+
+  android_standalone_library("java_library") {
+    dex_path = java_library_path
+
+    deps = [
+      "//net/android:net_java",
+    ]
+  }
+} else {
+  mojo_native_application("core_services") {
+    deps = [
+      ":sources",
+    ]
+  }
+}
+
+source_set("sources") {
   sources = [
     "core_services_application_delegate.cc",
     "main.cc",
@@ -24,15 +65,10 @@ mojo_native_application("core_services") {
     "//mojo/common",
     "//mojo/common:tracing_impl",
     "//mojo/environment:chromium",
+    "//mojo/services/network:lib",
     "//mojo/services/tracing:lib",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
-
-  # TODO(erg): The android network service has some weirdness to let it link
-  # with java stuff. Someone who understand how that works should look at this.
-  if (!is_android) {
-    deps += [ "//mojo/services/network:lib" ]
-  }
 }
