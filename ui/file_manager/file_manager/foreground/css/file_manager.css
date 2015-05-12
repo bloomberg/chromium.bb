@@ -423,7 +423,12 @@ body.check-select #gear-button {
 }
 
 #cloud-import-details-button {
-  -webkit-margin-start: -15px;
+  -webkit-margin-start: -11px;
+  width: 24px;
+}
+
+#cloud-import-details-button core-icon {
+  margin: 8px 4px;
 }
 
 #cloud-import-details {
