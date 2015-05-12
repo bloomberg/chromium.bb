@@ -92,6 +92,11 @@ public class WebsitePreferences extends PreferenceFragment
     private static final String BLOCKED_GROUP = "blocked_group";
 
     private void getInfoForOrigins() {
+        if (mFilter.showGeolocationSites(mCategoryFilter)
+                && !LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
+            return;  // No need to fetch any data if we're not going to show it.
+        }
+
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(new ResultsPopulator());
         fetcher.fetchPreferencesWithFilter(mCategoryFilter);
     }
@@ -574,6 +579,8 @@ public class WebsitePreferences extends PreferenceFragment
                     && (LocationSettings.getInstance().isChromeLocationSettingEnabled()
                                || !isCategoryManaged())) {
                 getPreferenceScreen().removePreference(globalToggle);
+                getPreferenceScreen().removePreference(allowedGroup);
+                getPreferenceScreen().removePreference(blockedGroup);
 
                 // Show the link to system settings since system location is disabled.
                 ChromeBasePreference locationMessage =
