@@ -14,6 +14,3 @@ WebInputEventAuraTest.TestMakeWebKeyboardEventWindowsKeyCode
 # Flaky: https://crbug.com/460578
 DesktopCaptureDeviceTest.InvertedFrame
 DesktopCaptureDeviceTest.UnpackedFrame
-
-# http://crbug.com/487056
-WebInputEventAuraTest.TestMakeWebKeyboardEventKeyPadKeyCode
