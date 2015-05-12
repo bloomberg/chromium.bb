@@ -102,12 +102,26 @@ class TabSwitchingToughImageCases(benchmark.Benchmark):
     return 'tab_switching.tough_image_cases'
 
 
-@benchmark.Disabled  # Just for local testing, not on waterfall.
+@benchmark.Enabled('linux', 'mac', 'win', 'chromeos')
 class TabSwitchingFlashEnergyCases(benchmark.Benchmark):
   test = tab_switching.TabSwitching
   page_set = page_sets.FlashEnergyCasesPageSet
   options = {'pageset_repeat': 10}
+
   @classmethod
   def Name(cls):
     return 'tab_switching.flash_energy_cases'
 
+
+@benchmark.Enabled('linux', 'mac', 'win', 'chromeos')
+class TabSwitchingPluginPowerSaver(benchmark.Benchmark):
+  test = tab_switching.TabSwitching
+  page_set = page_sets.FlashEnergyCasesPageSet
+  options = {'pageset_repeat': 10}
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
+
+  @classmethod
+  def Name(cls):
+    return 'tab_switching.plugin_power_saver'
