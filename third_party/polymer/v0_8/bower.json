@@ -14,6 +14,7 @@
     "paper-button": "PolymerElements/paper-button#^0.8.0",
     "paper-checkbox": "PolymerElements/paper-checkbox#^0.8.0",
     "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^0.8.0",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^0.8.0",
     "paper-input": "PolymerElements/paper-input#^0.8.0",
     "paper-item": "PolymerElements/paper-item#^0.8.0",
     "paper-menu": "PolymerElements/paper-menu#^0.8.0",
