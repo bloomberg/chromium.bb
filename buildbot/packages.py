@@ -19,28 +19,32 @@ PACKAGE_VERSION_DIR = os.path.join(BUILD_DIR, 'package_version')
 PACKAGE_VERSION_SCRIPT = os.path.join(PACKAGE_VERSION_DIR, 'package_version.py')
 
 
-def UploadPackages(filename, is_try):
+def UploadPackages(filename, is_try, is_sanitizer=False):
   """ Upload packages to Google Storage.
 
   Args:
     filename: File to read package descriptions from.
     is_try: True if the run is for a trybot, False if for a real buildbot.
+    is_sanitizer: True if building with a sanitizer.
   """
   print '@@@BUILD_STEP upload_package_info@@@'
   sys.stdout.flush()
 
+  buildbot_buildername = os.getenv('BUILDBOT_BUILDERNAME', None)
+  if buildbot_buildername is None:
+    print 'Error - could not obtain buildbot builder name'
+    sys.exit(1)
   if not is_try:
     buildbot_revision = os.getenv('BUILDBOT_GOT_REVISION', None)
     if buildbot_revision is None:
       print 'Error - Could not obtain buildbot revision number'
       sys.exit(1)
-    upload_rev = buildbot_revision
+    if is_sanitizer:
+      upload_rev = '%s/%s' % (buildbot_buildername, buildbot_revision)
+    else:
+      upload_rev = buildbot_revision
     upload_args = []
   else:
-    buildbot_buildername = os.getenv('BUILDBOT_BUILDERNAME', None)
-    if buildbot_buildername is None:
-      print 'Error - could not obtain buildbot builder name'
-      sys.exit(1)
     buildbot_buildnumber = os.getenv('BUILDBOT_BUILDNUMBER', None)
     if buildbot_buildnumber is None:
       print 'Error - could not obtain buildbot build number'

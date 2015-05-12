@@ -46,6 +46,12 @@ BOT_ASSIGNMENT = {
     'mac10.7-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
 
+    # Sanitizer Pnacl toolchain buildbot.
+    'asan':
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --buildbot --tests-arch x86-64 '
+        ' --sanitize address --skip-tests',
+
     # PNaCl.
     'oneiric_32-newlib-arm_hw-pnacl-panda-dbg':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',

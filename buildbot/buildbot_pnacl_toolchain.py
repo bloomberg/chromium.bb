@@ -146,13 +146,10 @@ if args.skip_tests:
   sys.exit(0)
 
 if args.buildbot or args.trybot:
-  # Don't upload package descriptions when sanitizing, since the
-  # package names are the same as for the unsanitized versions.
-  if not args.sanitize:
-    # Don't upload packages from the 32-bit linux bot to avoid racing on
-    # uploading the same packages as the 64-bit linux bot
-    if host_os != 'linux' or pynacl.platform.IsArch64Bit():
-      packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
+  # Don't upload packages from the 32-bit linux bot to avoid racing on
+  # uploading the same packages as the 64-bit linux bot
+  if host_os != 'linux' or pynacl.platform.IsArch64Bit():
+    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot, args.sanitizer)
 
 # Since windows bots don't build target libraries or run tests yet, Run a basic
 # sanity check that tests the host components (LLVM, binutils, gold plugin).
