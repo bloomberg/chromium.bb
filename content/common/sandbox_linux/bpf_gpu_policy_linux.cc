@@ -321,7 +321,6 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
     const std::vector<BrokerFilePermission>& permissions_extra) {
   static const char kDriRcPath[] = "/etc/drirc";
   static const char kDriCard0Path[] = "/dev/dri/card0";
-  static const char kDriRenderNode0Path[] = "/dev/dri/renderD128";
   static const char kDevShm[] = "/dev/shm/";
 
   CHECK(broker_process_ == NULL);
@@ -329,7 +328,6 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
   // All GPU process policies need these files brokered out.
   std::vector<BrokerFilePermission> permissions;
   permissions.push_back(BrokerFilePermission::ReadWrite(kDriCard0Path));
-  permissions.push_back(BrokerFilePermission::ReadWrite(kDriRenderNode0Path));
   permissions.push_back(BrokerFilePermission::ReadOnly(kDriRcPath));
   if (!IsChromeOS()) {
     permissions.push_back(

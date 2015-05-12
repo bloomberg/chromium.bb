@@ -62,6 +62,10 @@
 #include "content/common/sandbox_mac.h"
 #endif
 
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#include "content/common/gpu/media/vaapi_wrapper.h"
+#endif
+
 #if defined(SANITIZER_COVERAGE)
 #include <sanitizer/common_interface_defs.h>
 #include <sanitizer/coverage_interface.h>
@@ -217,6 +221,10 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
   GetGpuInfoFromCommandLine(gpu_info, command_line);
+
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  VaapiWrapper::PreSandboxInitialization();
+#endif
 
   // Warm up resources that don't need access to GPUInfo.
   if (WarmUpSandbox(command_line)) {

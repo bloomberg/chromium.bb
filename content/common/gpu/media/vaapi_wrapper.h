@@ -134,9 +134,6 @@ class CONTENT_EXPORT VaapiWrapper {
                             gfx::Size dest_size);
 #endif  // USE_X11
 
-  // Returns true if the VAAPI version is less than the specified version.
-  bool VAAPIVersionLessThan(int major, int minor);
-
   // Get a VAImage from a VASurface and map it into memory. The size and format
   // are derived from the surface. Use GetVaImage() instead if |format| or
   // |size| are different from surface internal representation. The VAImage
@@ -191,6 +188,9 @@ class CONTENT_EXPORT VaapiWrapper {
                    VASurfaceID va_surface_id_dest,
                    const gfx::Size& dest_size);
 
+  // Initialize static data before sandbox is enabled.
+  static void PreSandboxInitialization();
+
  private:
   struct ProfileInfo {
     VAProfile va_profile;
@@ -207,6 +207,51 @@ class CONTENT_EXPORT VaapiWrapper {
 
    private:
     std::vector<ProfileInfo> supported_profiles_[kCodecModeMax];
+  };
+
+  class VADisplayState {
+   public:
+    VADisplayState();
+    ~VADisplayState();
+
+    // |va_lock_| must be held on entry.
+    bool Initialize(VAStatus* status);
+    void Deinitialize(VAStatus* status);
+
+    base::Lock* va_lock() { return &va_lock_; }
+    VADisplay va_display() const { return va_display_; }
+
+#if defined(USE_OZONE)
+    void SetDrmFd(base::PlatformFile fd);
+#endif  // USE_OZONE
+
+   private:
+    friend class base::LazyInstance<VADisplayState>;
+
+    // Returns true if the VAAPI version is less than the specified version.
+    bool VAAPIVersionLessThan(int major, int minor);
+
+    // Protected by |va_lock_|.
+    int refcount_;
+
+    // Libva is not thread safe, so we have to do locking for it ourselves.
+    // This lock is to be taken for the duration of all VA-API calls and for
+    // the entire job submission sequence in ExecuteAndDestroyPendingBuffers().
+    base::Lock va_lock_;
+
+#if defined(USE_OZONE)
+    // Drm fd used to obtain access to the driver interface by VA.
+    base::ScopedFD drm_fd_;
+#endif  // USE_OZONE
+
+    // The VADisplay handle.
+    VADisplay va_display_;
+
+    // The VAAPI version.
+    int major_version_, minor_version_;
+
+    // True if vaInitialize has been called successfully.
+    bool va_initialized_;
   };
 
   VaapiWrapper();
@@ -269,16 +314,15 @@ class CONTENT_EXPORT VaapiWrapper {
   static VAProfile ProfileToVAProfile(media::VideoCodecProfile profile,
                                       CodecMode mode);
 
-  // Libva is not thread safe, so we have to do locking for it ourselves.
-  // This lock is to be taken for the duration of all VA-API calls and for
-  // the entire job submission sequence in ExecuteAndDestroyPendingBuffers().
-  base::Lock va_lock_;
+  // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for
+  // the lifetime of VaapiWrapper.
+  base::Lock* va_lock_;
 
   // Allocated ids for VASurfaces.
   std::vector<VASurfaceID> va_surface_ids_;
 
-  // The VAAPI version.
-  int major_version_, minor_version_;
+  // Singleton instance of VADisplayState.
+  static base::LazyInstance<VADisplayState> va_display_state_;
 
   // VA handles.
   // All valid after successful Initialize() and until Deinitialize().
@@ -287,8 +331,6 @@ class CONTENT_EXPORT VaapiWrapper {
   // Created for the current set of va_surface_ids_ in CreateSurfaces() and
   // valid until DestroySurfaces().
   VAContextID va_context_id_;
-  // True if vaInitialize has been called successfully.
-  bool va_initialized_;
 
   // Data queued up for HW codec, to be committed on next execution.
   std::vector<VABufferID> pending_slice_bufs_;
@@ -307,11 +349,6 @@ class CONTENT_EXPORT VaapiWrapper {
   VAConfigID va_vpp_config_id_;
   VAContextID va_vpp_context_id_;
   VABufferID va_vpp_buffer_id_;
-
-#if defined(USE_OZONE)
-  // Drm file used to obtain access to the driver interface by VA.
-  base::File drm_file_;
-#endif  // USE_OZONE
 
   // Singleton variable to store supported profile information for encode and
   // decode.

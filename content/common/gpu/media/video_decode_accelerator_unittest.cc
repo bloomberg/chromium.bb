@@ -1638,6 +1638,10 @@ int main(int argc, char **argv) {
   ui::OzonePlatform::InitializeForUI();
 #endif
 
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  content::VaapiWrapper::PreSandboxInitialization();
+#endif
+
   content::g_env =
       reinterpret_cast<content::VideoDecodeAcceleratorTestEnvironment*>(
           testing::AddGlobalTestEnvironment(

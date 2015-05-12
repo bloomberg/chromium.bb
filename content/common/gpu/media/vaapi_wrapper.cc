@@ -62,6 +62,9 @@ namespace content {
 // and not taken from HW documentation.
 const int kMaxEncoderFramerate = 30;
 
+base::LazyInstance<VaapiWrapper::VADisplayState>
+    VaapiWrapper::va_display_state_ = LAZY_INSTANCE_INITIALIZER;
+
 base::LazyInstance<VaapiWrapper::LazyProfileInfos>
     VaapiWrapper::profile_infos_ = LAZY_INSTANCE_INITIALIZER;
 
@@ -123,10 +126,10 @@ VaapiWrapper::VaapiWrapper()
     : va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
       va_context_id_(VA_INVALID_ID),
-      va_initialized_(false),
       va_vpp_config_id_(VA_INVALID_ID),
       va_vpp_context_id_(VA_INVALID_ID),
       va_vpp_buffer_id_(VA_INVALID_ID) {
+  va_lock_ = va_display_state_.Get().va_lock();
 }
 
 VaapiWrapper::~VaapiWrapper() {
@@ -223,7 +226,7 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
 }
 
 void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
   VADisplayAttribute item = {VADisplayAttribRenderMode,
                              1,  // At least support '_LOCAL_OVERLAY'.
                              -1,  // The maximum possible support 'ALL'.
@@ -272,7 +275,7 @@ VaapiWrapper::GetSupportedProfileInfosForCodecModeInternal(CodecMode mode) {
   VAEntrypoint entrypoint =
       (mode == kEncode ? VAEntrypointEncSlice: VAEntrypointVLD);
 
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
   for (const auto& va_profile : va_profiles) {
     if (!IsEntrypointSupported_Locked(va_profile, entrypoint))
       continue;
@@ -312,37 +315,26 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
 
   report_error_to_uma_cb_ = report_error_to_uma_cb;
 
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
-#if defined(USE_X11)
-  va_display_ = vaGetDisplay(gfx::GetXDisplay());
-#elif defined(USE_OZONE)
-  const char* kDriRenderNode0Path = "/dev/dri/renderD128";
-  drm_file_ = base::File(base::FilePath::FromUTF8Unsafe(kDriRenderNode0Path),
-                         base::File::FLAG_OPEN | base::File::FLAG_READ |
-                         base::File::FLAG_WRITE);
-  va_display_ = vaGetDisplayDRM(drm_file_.GetPlatformFile());
-#endif  // USE_X11
-
-  if (!vaDisplayIsValid(va_display_)) {
-    LOG(ERROR) << "Could not get a valid VA display";
+  VADisplayState* va_display_state = &va_display_state_.Get();
+  if (!va_display_state) {
+    LOG(ERROR) << "Failed to allocate VA display state";
     return false;
   }
 
-  VAStatus va_res = vaInitialize(va_display_, &major_version_, &minor_version_);
-  VA_SUCCESS_OR_RETURN(va_res, "vaInitialize failed", false);
-  va_initialized_ = true;
-  DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
-
-  if (VAAPIVersionLessThan(0, 34)) {
-    LOG(ERROR) << "VAAPI version < 0.34 is not supported.";
+  VAStatus va_res = VA_STATUS_SUCCESS;
+  if (!va_display_state->Initialize(&va_res)) {
+    VA_LOG_ON_ERROR(va_res, "vaInitialize failed");
     return false;
   }
+
+  va_display_ = va_display_state->va_display();
   return true;
 }
 
 bool VaapiWrapper::GetSupportedVaProfiles(std::vector<VAProfile>* profiles) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
   // Query the driver for supported profiles.
   int max_profiles = vaMaxNumProfiles(va_display_);
   std::vector<VAProfile> supported_profiles(
@@ -364,7 +356,7 @@ bool VaapiWrapper::GetSupportedVaProfiles(std::vector<VAProfile>* profiles) {
 
 bool VaapiWrapper::IsEntrypointSupported_Locked(VAProfile va_profile,
                                                 VAEntrypoint entrypoint) {
-  va_lock_.AssertAcquired();
+  va_lock_->AssertAcquired();
   // Query the driver for supported entrypoints.
   int max_entrypoints = vaMaxNumEntrypoints(va_display_);
   std::vector<VAEntrypoint> supported_entrypoints(
@@ -396,7 +388,7 @@ bool VaapiWrapper::AreAttribsSupported_Locked(
     VAProfile va_profile,
     VAEntrypoint entrypoint,
     const std::vector<VAConfigAttrib>& required_attribs) {
-  va_lock_.AssertAcquired();
+  va_lock_->AssertAcquired();
   // Query the driver for required attributes.
   std::vector<VAConfigAttrib> attribs = required_attribs;
   for (size_t i = 0; i < required_attribs.size(); ++i)
@@ -423,7 +415,7 @@ bool VaapiWrapper::GetMaxResolution_Locked(
     VAEntrypoint entrypoint,
     std::vector<VAConfigAttrib>& required_attribs,
     gfx::Size* resolution) {
-  va_lock_.AssertAcquired();
+  va_lock_->AssertAcquired();
   VAConfigID va_config_id;
   VAStatus va_res = vaCreateConfig(
       va_display_,
@@ -472,7 +464,7 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
   VAEntrypoint entrypoint =
     (mode == kEncode ? VAEntrypointEncSlice : VAEntrypointVLD);
   std::vector<VAConfigAttrib> required_attribs = GetRequiredAttribs(mode);
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res = vaCreateConfig(va_display_,
                                    va_profile,
                                    entrypoint,
@@ -485,37 +477,28 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
 }
 
 void VaapiWrapper::Deinitialize() {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   if (va_config_id_ != VA_INVALID_ID) {
     VAStatus va_res = vaDestroyConfig(va_display_, va_config_id_);
     VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
   }
 
-  // Must check if vaInitialize completed successfully, to work around a bug in
-  // libva. The bug was fixed upstream:
-  // http://lists.freedesktop.org/archives/libva/2013-July/001807.html
-  // TODO(mgiuca): Remove this check, and the |va_initialized_| variable, once
-  // the fix has rolled out sufficiently.
-  if (va_initialized_ && va_display_) {
-    VAStatus va_res = vaTerminate(va_display_);
+  VADisplayState* va_display_state = &va_display_state_.Get();
+  if (va_display_state) {
+    VAStatus va_res = VA_STATUS_SUCCESS;
+    va_display_state->Deinitialize(&va_res);
     VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
   }
 
   va_config_id_ = VA_INVALID_ID;
   va_display_ = NULL;
-  va_initialized_ = false;
-}
-
-bool VaapiWrapper::VAAPIVersionLessThan(int major, int minor) {
-  return (major_version_ < major) ||
-      (major_version_ == major && minor_version_ < minor);
 }
 
 bool VaapiWrapper::CreateSurfaces(const gfx::Size& size,
                                   size_t num_surfaces,
                                   std::vector<VASurfaceID>* va_surfaces) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
   DVLOG(2) << "Creating " << num_surfaces << " surfaces";
 
   DCHECK(va_surfaces->empty());
@@ -553,7 +536,7 @@ bool VaapiWrapper::CreateSurfaces(const gfx::Size& size,
 }
 
 void VaapiWrapper::DestroySurfaces() {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
   DVLOG(2) << "Destroying " << va_surface_ids_.size()  << " surfaces";
 
   if (va_context_id_ != VA_INVALID_ID) {
@@ -575,7 +558,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
     unsigned int va_format,
     const gfx::Size& size,
     const std::vector<VASurfaceAttrib>& va_attribs) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   std::vector<VASurfaceAttrib> attribs(va_attribs);
   VASurfaceID va_surface_id;
@@ -598,7 +581,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
 }
 
 void VaapiWrapper::DestroyUnownedSurface(VASurfaceID va_surface_id) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
   VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces on surface failed");
@@ -607,7 +590,7 @@ void VaapiWrapper::DestroyUnownedSurface(VASurfaceID va_surface_id) {
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
                                 size_t size,
                                 void* buffer) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VABufferID buffer_id;
   VAStatus va_res = vaCreateBuffer(va_display_, va_context_id_,
@@ -634,7 +617,7 @@ bool VaapiWrapper::SubmitVAEncMiscParamBuffer(
     VAEncMiscParameterType misc_param_type,
     size_t size,
     void* buffer) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VABufferID buffer_id;
   VAStatus va_res = vaCreateBuffer(va_display_,
@@ -668,7 +651,7 @@ bool VaapiWrapper::SubmitVAEncMiscParamBuffer(
 }
 
 void VaapiWrapper::DestroyPendingBuffers() {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   for (const auto& pending_va_buf : pending_va_bufs_) {
     VAStatus va_res = vaDestroyBuffer(va_display_, pending_va_buf);
@@ -685,7 +668,7 @@ void VaapiWrapper::DestroyPendingBuffers() {
 }
 
 bool VaapiWrapper::CreateCodedBuffer(size_t size, VABufferID* buffer_id) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res = vaCreateBuffer(va_display_,
                                    va_context_id_,
                                    VAEncCodedBufferType,
@@ -700,7 +683,7 @@ bool VaapiWrapper::CreateCodedBuffer(size_t size, VABufferID* buffer_id) {
 }
 
 void VaapiWrapper::DestroyCodedBuffers() {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   for (std::set<VABufferID>::const_iterator iter = coded_buffers_.begin();
        iter != coded_buffers_.end();
@@ -713,7 +696,7 @@ void VaapiWrapper::DestroyCodedBuffers() {
 }
 
 bool VaapiWrapper::Execute(VASurfaceID va_surface_id) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
   DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();
@@ -759,7 +742,7 @@ bool VaapiWrapper::ExecuteAndDestroyPendingBuffers(VASurfaceID va_surface_id) {
 bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
                                         Pixmap x_pixmap,
                                         gfx::Size dest_size) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
@@ -779,7 +762,7 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
 bool VaapiWrapper::GetDerivedVaImage(VASurfaceID va_surface_id,
                                      VAImage* image,
                                      void** mem) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
@@ -807,7 +790,7 @@ bool VaapiWrapper::GetVaImage(VASurfaceID va_surface_id,
                               const gfx::Size& size,
                               VAImage* image,
                               void** mem) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
@@ -836,7 +819,7 @@ bool VaapiWrapper::GetVaImage(VASurfaceID va_surface_id,
 }
 
 void VaapiWrapper::ReturnVaImage(VAImage* image) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaUnmapBuffer(va_display_, image->buf);
   VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
@@ -853,7 +836,7 @@ static void DestroyVAImage(VADisplay va_display, VAImage image) {
 bool VaapiWrapper::UploadVideoFrameToSurface(
     const scoped_refptr<media::VideoFrame>& frame,
     VASurfaceID va_surface_id) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VAImage image;
   VAStatus va_res = vaDeriveImage(va_display_, va_surface_id, &image);
@@ -878,7 +861,7 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
 
   int ret = 0;
   {
-    base::AutoUnlock auto_unlock(va_lock_);
+    base::AutoUnlock auto_unlock(*va_lock_);
     ret = libyuv::I420ToNV12(frame->data(media::VideoFrame::kYPlane),
                              frame->stride(media::VideoFrame::kYPlane),
                              frame->data(media::VideoFrame::kUPlane),
@@ -904,7 +887,7 @@ bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
                                                  uint8* target_ptr,
                                                  size_t target_size,
                                                  size_t* coded_data_size) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
@@ -916,7 +899,7 @@ bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
   DCHECK(target_ptr);
 
   {
-    base::AutoUnlock auto_unlock(va_lock_);
+    base::AutoUnlock auto_unlock(*va_lock_);
     *coded_data_size = 0;
 
     while (buffer_segment) {
@@ -953,7 +936,7 @@ bool VaapiWrapper::BlitSurface(VASurfaceID va_surface_id_src,
                                const gfx::Size& src_size,
                                VASurfaceID va_surface_id_dest,
                                const gfx::Size& dest_size) {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   // Initialize the post processing engine if not already done.
   if (va_vpp_buffer_id_ == VA_INVALID_ID) {
@@ -1002,7 +985,7 @@ bool VaapiWrapper::BlitSurface(VASurfaceID va_surface_id_src,
 }
 
 bool VaapiWrapper::InitializeVpp_Locked() {
-  va_lock_.AssertAcquired();
+  va_lock_->AssertAcquired();
 
   VA_SUCCESS_OR_RETURN(
       vaCreateConfig(va_display_, VAProfileNone, VAEntrypointVideoProc, NULL, 0,
@@ -1025,7 +1008,7 @@ bool VaapiWrapper::InitializeVpp_Locked() {
 }
 
 void VaapiWrapper::DeinitializeVpp() {
-  base::AutoLock auto_lock(va_lock_);
+  base::AutoLock auto_lock(*va_lock_);
 
   if (va_vpp_buffer_id_ != VA_INVALID_ID) {
     vaDestroyBuffer(va_display_, va_vpp_buffer_id_);
@@ -1039,6 +1022,18 @@ void VaapiWrapper::DeinitializeVpp() {
     vaDestroyConfig(va_display_, va_vpp_config_id_);
     va_vpp_config_id_ = VA_INVALID_ID;
   }
+}
+
+// static
+void VaapiWrapper::PreSandboxInitialization() {
+#if defined(USE_OZONE)
+  const char* kDriRenderNode0Path = "/dev/dri/renderD128";
+  base::File drm_file = base::File(
+      base::FilePath::FromUTF8Unsafe(kDriRenderNode0Path),
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
+  if (drm_file.IsValid())
+    va_display_state_.Get().SetDrmFd(drm_file.GetPlatformFile());
+#endif
 }
 
 // static
@@ -1085,6 +1080,72 @@ bool VaapiWrapper::LazyProfileInfos::IsProfileSupported(
       return true;
   }
   return false;
+}
+
+VaapiWrapper::VADisplayState::VADisplayState()
+    : refcount_(0),
+      va_display_(nullptr),
+      major_version_(-1),
+      minor_version_(-1),
+      va_initialized_(false) {}
+
+VaapiWrapper::VADisplayState::~VADisplayState() {}
+
+bool VaapiWrapper::VADisplayState::Initialize(VAStatus* status) {
+  va_lock_.AssertAcquired();
+  if (refcount_++ == 0) {
+#if defined(USE_X11)
+    va_display_ = vaGetDisplay(gfx::GetXDisplay());
+#elif defined(USE_OZONE)
+    va_display_ = vaGetDisplayDRM(drm_fd_.get());
+#endif  // USE_X11
+
+    if (!vaDisplayIsValid(va_display_)) {
+      LOG(ERROR) << "Could not get a valid VA display";
+      return false;
+    }
+
+    *status = vaInitialize(va_display_, &major_version_, &minor_version_);
+    if (*status != VA_STATUS_SUCCESS)
+      return false;
+
+    va_initialized_ = true;
+    DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
+  }
+
+  if (VAAPIVersionLessThan(0, 34)) {
+    LOG(ERROR) << "VAAPI version < 0.34 is not supported.";
+    return false;
+  }
+  return true;
+}
+
+void VaapiWrapper::VADisplayState::Deinitialize(VAStatus* status) {
+  va_lock_.AssertAcquired();
+  if (--refcount_ > 0)
+    return;
+
+  // Must check if vaInitialize completed successfully, to work around a bug in
+  // libva. The bug was fixed upstream:
+  // http://lists.freedesktop.org/archives/libva/2013-July/001807.html
+  // TODO(mgiuca): Remove this check, and the |va_initialized_| variable, once
+  // the fix has rolled out sufficiently.
+  if (va_initialized_ && va_display_) {
+    *status = vaTerminate(va_display_);
+  }
+  va_initialized_ = false;
+  va_display_ = nullptr;
+}
+
+#if defined(USE_OZONE)
+void VaapiWrapper::VADisplayState::SetDrmFd(base::PlatformFile fd) {
+  drm_fd_.reset(HANDLE_EINTR(dup(fd)));
+}
+#endif  // USE_OZONE
+
+bool VaapiWrapper::VADisplayState::VAAPIVersionLessThan(int major, int minor) {
+  return (major_version_ < major) ||
+      (major_version_ == major && minor_version_ < minor);
 }
 
 }  // namespace content

@@ -31,6 +31,7 @@
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
+#include "content/common/gpu/media/vaapi_wrapper.h"
 #endif  // defined(ARCH_CPU_X86_FAMILY)
 #else
 #error The VideoEncodeAcceleratorUnittest is not supported on this platform.
@@ -1430,6 +1431,10 @@ int main(int argc, char** argv) {
       continue;
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
+
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  content::VaapiWrapper::PreSandboxInitialization();
+#endif
 
   content::g_env =
       reinterpret_cast<content::VideoEncodeAcceleratorTestEnvironment*>(
