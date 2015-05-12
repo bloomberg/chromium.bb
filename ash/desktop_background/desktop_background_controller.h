@@ -133,8 +133,9 @@ class ASH_EXPORT DesktopBackgroundController
   // Send notification that background animation finished.
   void NotifyAnimationFinished();
 
-  // Reload the wallpaper.
-  void UpdateWallpaper();
+  // Reload the wallpaper. |clear_cache| specifies whether to clear the
+  // wallpaper cahce or not.
+  void UpdateWallpaper(bool clear_cache);
 
   void set_wallpaper_reload_delay_for_test(bool value) {
     wallpaper_reload_delay_ = value;

@@ -45,7 +45,7 @@ namespace {
 
 // How long to wait reloading the wallpaper after the max display has
 // changed?
-const int kWallpaperReloadDelayMs = 2000;
+const int kWallpaperReloadDelayMs = 100;
 
 }  // namespace
 
@@ -136,8 +136,8 @@ void DesktopBackgroundController::OnDisplayConfigurationChanged() {
       timer_.Stop();
       timer_.Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(wallpaper_reload_delay_),
-                   this,
-                   &DesktopBackgroundController::UpdateWallpaper);
+                   base::Bind(&DesktopBackgroundController::UpdateWallpaper,
+                              base::Unretained(this), false /* clear cache */));
     }
   }
 }
@@ -153,7 +153,7 @@ void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
     current_max_display_size_ = max_display_size;
     if (desktop_background_mode_ == BACKGROUND_IMAGE &&
         current_wallpaper_.get())
-      UpdateWallpaper();
+      UpdateWallpaper(true /* clear cache */);
   }
 
   InstallDesktopController(root_window);
@@ -275,10 +275,10 @@ int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
                 : kShellWindowId_DesktopBackgroundContainer;
 }
 
-void DesktopBackgroundController::UpdateWallpaper() {
+void DesktopBackgroundController::UpdateWallpaper(bool clear_cache) {
   current_wallpaper_.reset(NULL);
-  ash::Shell::GetInstance()->user_wallpaper_delegate()->
-      UpdateWallpaper(true /* clear cache */);
+  ash::Shell::GetInstance()->user_wallpaper_delegate()->UpdateWallpaper(
+      clear_cache);
 }
 
 }  // namespace ash
