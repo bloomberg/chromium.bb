@@ -88,8 +88,7 @@ TEST(LinkHeaderTest, Single)
 
 
     // Test the cases with a single header
-    for (size_t i = 0; i < arraysize(cases); ++i) {
-        TestCase& testCase = cases[i];
+    for (auto& testCase : cases) {
         LinkHeaderSet headerSet(testCase.headerValue);
         LinkHeader& header = headerSet[0];
         ASSERT_STREQ(testCase.url, header.url().ascii().data());
@@ -108,12 +107,11 @@ TEST(LinkHeaderTest, Double)
         const char* url2;
         const char* rel2;
         bool valid2;
-    } doubleCases[] = {
+    } cases[] = {
         {"<ybg.css>; rel=stylesheet, <simple.css>; rel=stylesheet", "ybg.css", "stylesheet", true, "simple.css", "stylesheet", true},
     };
 
-    for (size_t i = 0; i < arraysize(doubleCases); ++i) {
-        DoubleTestCase& testCase = doubleCases[i];
+    for (auto& testCase : cases) {
         LinkHeaderSet headerSet(testCase.headerValue);
         LinkHeader& header1 = headerSet[0];
         LinkHeader& header2 = headerSet[1];
@@ -126,4 +124,32 @@ TEST(LinkHeaderTest, Double)
     }
 }
 
+TEST(LinkHeaderTest, CrossOrigin)
+{
+    struct TestCase {
+        const char* headerValue;
+        const char* url;
+        const char* rel;
+        const CrossOriginAttributeValue crossorigin;
+        bool valid;
+    } cases[] = {
+        {"<http://whatever.com>; rel=preconnect", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin=", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin=anonymous", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin=use-credentials", "http://whatever.com", "preconnect", CrossOriginAttributeUseCredentials, true},
+        {"<http://whatever.com>; rel=preconnect; crossorigin=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous,  true},
+    };
+
+
+    // Test the cases with a single header
+    for (auto& testCase : cases) {
+        LinkHeaderSet headerSet(testCase.headerValue);
+        LinkHeader& header = headerSet[0];
+        ASSERT_STREQ(testCase.url, header.url().ascii().data());
+        ASSERT_STREQ(testCase.rel, header.rel().ascii().data());
+        ASSERT_EQ(testCase.crossorigin, header.crossOrigin());
+        ASSERT_EQ(testCase.valid, header.valid());
+    }
+}
 } // namespace blink
