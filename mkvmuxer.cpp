@@ -1485,35 +1485,34 @@ bool Cluster::Init(IMkvWriter* ptr_writer) {
   return true;
 }
 
-bool Cluster::AddFrame(const uint8* frame, uint64 length, uint64 track_number,
+bool Cluster::AddFrame(const uint8* data, uint64 length, uint64 track_number,
                        uint64 abs_timecode, bool is_key) {
-  return DoWriteBlock(frame, length, track_number, abs_timecode, is_key ? 1 : 0,
+  return DoWriteBlock(data, length, track_number, abs_timecode, is_key ? 1 : 0,
                       &WriteSimpleBlock);
 }
 
-bool Cluster::AddFrameWithAdditional(const uint8* frame, uint64 length,
+bool Cluster::AddFrameWithAdditional(const uint8* data, uint64 length,
                                      const uint8* additional,
                                      uint64 additional_length, uint64 add_id,
                                      uint64 track_number, uint64 abs_timecode,
                                      bool is_key) {
   return DoWriteBlockWithAdditional(
-      frame, length, additional, additional_length, add_id, track_number,
+      data, length, additional, additional_length, add_id, track_number,
       abs_timecode, is_key ? 1 : 0, &WriteBlockWithAdditional);
 }
 
-bool Cluster::AddFrameWithDiscardPadding(const uint8* frame, uint64 length,
+bool Cluster::AddFrameWithDiscardPadding(const uint8* data, uint64 length,
                                          int64 discard_padding,
                                          uint64 track_number,
                                          uint64 abs_timecode, bool is_key) {
   return DoWriteBlockWithDiscardPadding(
-      frame, length, discard_padding, track_number, abs_timecode,
+      data, length, discard_padding, track_number, abs_timecode,
       is_key ? 1 : 0, &WriteBlockWithDiscardPadding);
 }
 
-bool Cluster::AddMetadata(const uint8* frame, uint64 length,
-                          uint64 track_number, uint64 abs_timecode,
-                          uint64 duration_timecode) {
-  return DoWriteBlock(frame, length, track_number, abs_timecode,
+bool Cluster::AddMetadata(const uint8* data, uint64 length, uint64 track_number,
+                          uint64 abs_timecode, uint64 duration_timecode) {
+  return DoWriteBlock(data, length, track_number, abs_timecode,
                       duration_timecode, &WriteMetadataBlock);
 }
 
@@ -2321,9 +2320,9 @@ uint64 Segment::AddAudioTrack(int32 sample_rate, int32 channels, int32 number) {
   return track->number();
 }
 
-bool Segment::AddFrame(const uint8* frame, uint64 length, uint64 track_number,
+bool Segment::AddFrame(const uint8* data, uint64 length, uint64 track_number,
                        uint64 timestamp, bool is_key) {
-  if (!frame)
+  if (!data)
     return false;
 
   if (!CheckHeaderInfo())
@@ -2342,7 +2341,7 @@ bool Segment::AddFrame(const uint8* frame, uint64 length, uint64 track_number,
   // muxed into the same cluster.
   if (has_video_ && tracks_.TrackIsAudio(track_number) && !force_new_cluster_) {
     Frame* const new_frame = new (std::nothrow) Frame();
-    if (new_frame == NULL || !new_frame->Init(frame, length))
+    if (new_frame == NULL || !new_frame->Init(data, length))
       return false;
     new_frame->set_track_number(track_number);
     new_frame->set_timestamp(timestamp);
@@ -2367,7 +2366,7 @@ bool Segment::AddFrame(const uint8* frame, uint64 length, uint64 track_number,
   const uint64 timecode_scale = segment_info_.timecode_scale();
   const uint64 abs_timecode = timestamp / timecode_scale;
 
-  if (!cluster->AddFrame(frame, length, track_number, abs_timecode, is_key))
+  if (!cluster->AddFrame(data, length, track_number, abs_timecode, is_key))
     return false;
 
   if (new_cuepoint_ && cues_track_ == track_number) {
@@ -2381,12 +2380,12 @@ bool Segment::AddFrame(const uint8* frame, uint64 length, uint64 track_number,
   return true;
 }
 
-bool Segment::AddFrameWithAdditional(const uint8* frame, uint64 length,
+bool Segment::AddFrameWithAdditional(const uint8* data, uint64 length,
                                      const uint8* additional,
                                      uint64 additional_length, uint64 add_id,
                                      uint64 track_number, uint64 timestamp,
                                      bool is_key) {
-  if (frame == NULL || additional == NULL)
+  if (data == NULL || additional == NULL)
     return false;
 
   if (!CheckHeaderInfo())
@@ -2405,7 +2404,7 @@ bool Segment::AddFrameWithAdditional(const uint8* frame, uint64 length,
   // muxed into the same cluster.
   if (has_video_ && tracks_.TrackIsAudio(track_number) && !force_new_cluster_) {
     Frame* const new_frame = new (std::nothrow) Frame();
-    if (new_frame == NULL || !new_frame->Init(frame, length))
+    if (new_frame == NULL || !new_frame->Init(data, length))
       return false;
     new_frame->set_track_number(track_number);
     new_frame->set_timestamp(timestamp);
@@ -2430,7 +2429,7 @@ bool Segment::AddFrameWithAdditional(const uint8* frame, uint64 length,
   const uint64 timecode_scale = segment_info_.timecode_scale();
   const uint64 abs_timecode = timestamp / timecode_scale;
 
-  if (!cluster->AddFrameWithAdditional(frame, length, additional,
+  if (!cluster->AddFrameWithAdditional(data, length, additional,
                                        additional_length, add_id, track_number,
                                        abs_timecode, is_key))
     return false;
@@ -2446,11 +2445,11 @@ bool Segment::AddFrameWithAdditional(const uint8* frame, uint64 length,
   return true;
 }
 
-bool Segment::AddFrameWithDiscardPadding(const uint8* frame, uint64 length,
+bool Segment::AddFrameWithDiscardPadding(const uint8* data, uint64 length,
                                          int64 discard_padding,
                                          uint64 track_number, uint64 timestamp,
                                          bool is_key) {
-  if (frame == NULL)
+  if (data == NULL)
     return false;
 
   if (!CheckHeaderInfo())
@@ -2472,7 +2471,7 @@ bool Segment::AddFrameWithDiscardPadding(const uint8* frame, uint64 length,
   // muxed into the same cluster.
   if (has_video_ && tracks_.TrackIsAudio(track_number) && !force_new_cluster_) {
     Frame* const new_frame = new (std::nothrow) Frame();
-    if (new_frame == NULL || !new_frame->Init(frame, length))
+    if (new_frame == NULL || !new_frame->Init(data, length))
       return false;
     new_frame->set_track_number(track_number);
     new_frame->set_timestamp(timestamp);
@@ -2499,7 +2498,7 @@ bool Segment::AddFrameWithDiscardPadding(const uint8* frame, uint64 length,
   const uint64 abs_timecode = timestamp / timecode_scale;
 
   if (!cluster->AddFrameWithDiscardPadding(
-          frame, length, discard_padding, track_number, abs_timecode, is_key)) {
+          data, length, discard_padding, track_number, abs_timecode, is_key)) {
     return false;
   }
 
@@ -2514,10 +2513,10 @@ bool Segment::AddFrameWithDiscardPadding(const uint8* frame, uint64 length,
   return true;
 }
 
-bool Segment::AddMetadata(const uint8* frame, uint64 length,
+bool Segment::AddMetadata(const uint8* data, uint64 length,
                           uint64 track_number, uint64 timestamp_ns,
                           uint64 duration_ns) {
-  if (!frame)
+  if (!data)
     return false;
 
   if (!CheckHeaderInfo())
@@ -2546,7 +2545,7 @@ bool Segment::AddMetadata(const uint8* frame, uint64 length,
   const uint64 abs_timecode = timestamp_ns / timecode_scale;
   const uint64 duration_timecode = duration_ns / timecode_scale;
 
-  if (!cluster->AddMetadata(frame, length, track_number, abs_timecode,
+  if (!cluster->AddMetadata(data, length, track_number, abs_timecode,
                             duration_timecode))
     return false;
 
