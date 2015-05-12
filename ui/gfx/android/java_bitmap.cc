@@ -29,6 +29,7 @@ JavaBitmap::JavaBitmap(jobject bitmap)
   size_ = gfx::Size(info.width, info.height);
   format_ = info.format;
   stride_ = info.stride;
+  byte_count_ = Java_BitmapHelper_getByteCount(AttachCurrentThread(), bitmap_);
 }
 
 JavaBitmap::~JavaBitmap() {
@@ -108,6 +109,7 @@ SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap) {
       CHECK(false) << "Invalid Java bitmap format: " << jbitmap.format();
       break;
   }
+  CHECK_EQ(jbitmap.byte_count(), static_cast<int>(skbitmap.getSize()));
   const void* src_pixels = jbitmap.pixels();
   void* dst_pixels = skbitmap.getPixels();
   memcpy(dst_pixels, src_pixels, skbitmap.getSize());

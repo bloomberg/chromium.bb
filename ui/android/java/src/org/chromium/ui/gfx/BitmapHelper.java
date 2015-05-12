@@ -44,7 +44,7 @@ public class BitmapHelper {
         }
     }
 
-     /**
+    /**
      * Provides a matching Bitmap.Config for the enum config value passed.
      *
      * @param bitmapFormatValue The Bitmap Configuration enum value.
@@ -64,4 +64,8 @@ public class BitmapHelper {
         }
     }
 
+    @CalledByNative
+    private static int getByteCount(Bitmap bitmap) {
+        return bitmap.getByteCount();
+    }
 }

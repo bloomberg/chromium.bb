@@ -37,6 +37,7 @@ class GFX_EXPORT JavaBitmap {
   // Formats are in android/bitmap.h; e.g. ANDROID_BITMAP_FORMAT_RGBA_8888
   inline int format() const { return format_; }
   inline uint32_t stride() const { return stride_; }
+  inline int byte_count() const { return byte_count_; }
 
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterJavaBitmap(JNIEnv* env);
@@ -47,6 +48,7 @@ class GFX_EXPORT JavaBitmap {
   gfx::Size size_;
   int format_;
   uint32_t stride_;
+  int byte_count_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBitmap);
 };
