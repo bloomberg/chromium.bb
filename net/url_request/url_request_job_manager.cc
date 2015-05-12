@@ -53,8 +53,8 @@ URLRequestJob* URLRequestJobManager::CreateJob(
     return new URLRequestErrorJob(request, network_delegate, ERR_INVALID_URL);
 
   // We do this here to avoid asking interceptors about unsupported schemes.
-  const URLRequestJobFactory* job_factory = NULL;
-  job_factory = request->context()->job_factory();
+  const URLRequestJobFactory* job_factory =
+      request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
   if (!job_factory->IsHandledProtocol(scheme)) {
