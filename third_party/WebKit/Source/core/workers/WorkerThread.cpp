@@ -58,32 +58,20 @@ namespace {
 const int64_t kShortIdleHandlerDelayMs = 1000;
 const int64_t kLongIdleHandlerDelayMs = 10*1000;
 
-} // namespace
-
-class WorkerMicrotaskRunner : public WebThread::TaskObserver {
+class MicrotaskRunner : public WebThread::TaskObserver {
 public:
-    explicit WorkerMicrotaskRunner(WorkerThread* workerThread)
+    explicit MicrotaskRunner(WorkerThread* workerThread)
         : m_workerThread(workerThread)
     {
     }
 
-    virtual void willProcessTask() override
-    {
-        // No tasks should get executed after we have closed.
-        WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope();
-        ASSERT_UNUSED(globalScope, !globalScope || !globalScope->isClosing());
-    }
-
+    virtual void willProcessTask() override { }
     virtual void didProcessTask() override
     {
         Microtask::performCheckpoint();
         if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
             if (WorkerScriptController* scriptController = globalScope->script())
                 scriptController->rejectedPromises()->processQueue();
-            if (globalScope->isClosing()) {
-                m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
-                m_workerThread->shutdown();
-            }
         }
     }
 
@@ -92,6 +80,8 @@ private:
     // valid for the lifetime of this object.
     WorkerThread* m_workerThread;
 };
+
+} // namespace
 
 static Mutex& threadSetMutex()
 {
@@ -218,11 +208,15 @@ public:
     virtual void run() override
     {
         WorkerGlobalScope* workerGlobalScope = m_workerThread.workerGlobalScope();
-        ASSERT(workerGlobalScope);
+        // Tasks could be put on the message loop after the cleanup task,
+        // ensure none of those are ran.
+        if (!workerGlobalScope)
+            return;
 
         if (m_isInstrumented)
             InspectorInstrumentation::willPerformExecutionContextTask(workerGlobalScope, m_task.get());
-        m_task->performTask(workerGlobalScope);
+        if ((!workerGlobalScope->isClosing() && !m_workerThread.terminated()) || m_task->isCleanupTask())
+            m_task->performTask(workerGlobalScope);
         if (m_isInstrumented)
             InspectorInstrumentation::didPerformExecutionContextTask(workerGlobalScope);
     }
@@ -315,7 +309,7 @@ void WorkerThread::initialize()
     V8CacheOptions v8CacheOptions = m_startupData->m_v8CacheOptions;
 
     {
-        MutexLocker lock(m_threadStateMutex);
+        MutexLocker lock(m_threadCreationMutex);
 
         // The worker was terminated before the thread had a chance to run.
         if (m_terminated) {
@@ -325,9 +319,9 @@ void WorkerThread::initialize()
             return;
         }
 
-        m_microtaskRunner = adoptPtr(new WorkerMicrotaskRunner(this));
+        m_microtaskRunner = adoptPtr(new MicrotaskRunner(this));
         backingThread().addTaskObserver(m_microtaskRunner.get());
-        backingThread().initialize();
+        backingThread().attachGC();
 
         m_isolate = initializeIsolate();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
@@ -358,15 +352,8 @@ void WorkerThread::initialize()
     postDelayedTask(FROM_HERE, createSameThreadTask(&WorkerThread::idleHandler, this), kShortIdleHandlerDelayMs);
 }
 
-void WorkerThread::shutdown()
+void WorkerThread::cleanup()
 {
-    MutexLocker lock(m_threadStateMutex);
-    ASSERT(isCurrentThread());
-
-    PlatformThreadData::current().threadTimers().setSharedTimer(nullptr);
-    workerGlobalScope()->dispose();
-    willDestroyIsolate();
-
     // This should be called before we start the shutdown procedure.
     workerReportingProxy().willDestroyWorkerGlobalScope();
 
@@ -379,10 +366,10 @@ void WorkerThread::shutdown()
     m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
-    backingThread().removeTaskObserver(m_microtaskRunner.get());
-    backingThread().shutdown();
+    backingThread().detachGC();
     destroyIsolate();
 
+    backingThread().removeTaskObserver(m_microtaskRunner.get());
     m_microtaskRunner = nullptr;
 
     // Notify the proxy that the WorkerGlobalScope has been disposed of.
@@ -395,6 +382,50 @@ void WorkerThread::shutdown()
     PlatformThreadData::current().destroy();
 }
 
+class WorkerThreadShutdownFinishTask : public ExecutionContextTask {
+public:
+    static PassOwnPtr<WorkerThreadShutdownFinishTask> create()
+    {
+        return adoptPtr(new WorkerThreadShutdownFinishTask());
+    }
+
+    virtual void performTask(ExecutionContext *context)
+    {
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+        workerGlobalScope->dispose();
+
+        WorkerThread* workerThread = workerGlobalScope->thread();
+        workerThread->willDestroyIsolate();
+        workerThread->backingThread().postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerThread)));
+    }
+
+    virtual bool isCleanupTask() const { return true; }
+};
+
+class WorkerThreadShutdownStartTask : public ExecutionContextTask {
+public:
+    static PassOwnPtr<WorkerThreadShutdownStartTask> create()
+    {
+        return adoptPtr(new WorkerThreadShutdownStartTask());
+    }
+
+    virtual void performTask(ExecutionContext *context)
+    {
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+        workerGlobalScope->stopActiveDOMObjects();
+        PlatformThreadData::current().threadTimers().setSharedTimer(nullptr);
+
+        // Event listeners would keep DOMWrapperWorld objects alive for too long. Also, they have references to JS objects,
+        // which become dangling once Heap is destroyed.
+        workerGlobalScope->removeAllEventListeners();
+
+        // Stick a shutdown command at the end of the queue, so that we deal
+        // with all the cleanup tasks the databases post first.
+        workerGlobalScope->postTask(FROM_HERE, WorkerThreadShutdownFinishTask::create());
+    }
+
+    virtual bool isCleanupTask() const { return true; }
+};
 
 void WorkerThread::stop()
 {
@@ -416,14 +447,14 @@ void WorkerThread::terminateAndWait()
 
 bool WorkerThread::terminated()
 {
-    MutexLocker lock(m_threadStateMutex);
+    MutexLocker lock(m_threadCreationMutex);
     return m_terminated;
 }
 
 void WorkerThread::stopInternal()
 {
-    // Protect against this method, initialize() or termination via the global scope racing each other.
-    MutexLocker lock(m_threadStateMutex);
+    // Protect against this method and initialize() racing each other.
+    MutexLocker lock(m_threadCreationMutex);
 
     // If stop has already been called, just return.
     if (m_terminated)
@@ -442,7 +473,7 @@ void WorkerThread::stopInternal()
 
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerMessageQueue.kill();
-    backingThread().postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this))));
+    postTask(FROM_HERE, WorkerThreadShutdownStartTask::create());
 }
 
 void WorkerThread::didStartRunLoop()

@@ -6,7 +6,6 @@
 #include "platform/WebThreadSupportingGC.h"
 
 #include "platform/heap/SafePoint.h"
-#include "public/platform/WebScheduler.h"
 #include "wtf/Threading.h"
 
 namespace blink {
@@ -33,7 +32,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
     }
 }
 
-void WebThreadSupportingGC::initialize()
+void WebThreadSupportingGC::attachGC()
 {
     m_pendingGCRunner = adoptPtr(new PendingGCRunner);
     m_messageLoopInterruptor = adoptPtr(new MessageLoopInterruptor(&platformThread()));
@@ -42,16 +41,13 @@ void WebThreadSupportingGC::initialize()
     ThreadState::current()->addInterruptor(m_messageLoopInterruptor.get());
 }
 
-void WebThreadSupportingGC::shutdown()
+void WebThreadSupportingGC::detachGC()
 {
     ThreadState::current()->removeInterruptor(m_messageLoopInterruptor.get());
     ThreadState::detach();
     platformThread().removeTaskObserver(m_pendingGCRunner.get());
     m_pendingGCRunner = nullptr;
     m_messageLoopInterruptor = nullptr;
-
-    // Ensure no posted tasks will run from this point on.
-    platformThread().scheduler()->shutdown();
 }
 
 } // namespace blink

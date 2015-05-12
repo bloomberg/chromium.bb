@@ -58,7 +58,7 @@ void HTMLParserThread::init()
 void HTMLParserThread::setupHTMLParserThread()
 {
     ASSERT(m_thread);
-    m_thread->initialize();
+    m_thread->attachGC();
 }
 
 void HTMLParserThread::shutdown()
@@ -74,7 +74,7 @@ void HTMLParserThread::shutdown()
 
 void HTMLParserThread::cleanupHTMLParserThread()
 {
-    m_thread->shutdown();
+    m_thread->detachGC();
 }
 
 HTMLParserThread* HTMLParserThread::shared()

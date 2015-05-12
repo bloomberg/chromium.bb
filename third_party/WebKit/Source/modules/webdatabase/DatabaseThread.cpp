@@ -71,7 +71,7 @@ void DatabaseThread::start()
 
 void DatabaseThread::setupDatabaseThread()
 {
-    m_thread->initialize();
+    m_thread->attachGC();
 }
 
 void DatabaseThread::terminate()
@@ -122,7 +122,7 @@ void DatabaseThread::cleanupDatabaseThread()
 
 void DatabaseThread::cleanupDatabaseThreadCompleted()
 {
-    m_thread->shutdown();
+    m_thread->detachGC();
     if (m_cleanupSync) // Someone wanted to know when we were done cleaning up.
         m_cleanupSync->taskCompleted();
 }

@@ -68,6 +68,23 @@
 
 namespace blink {
 
+class CloseWorkerGlobalScopeTask : public ExecutionContextTask {
+public:
+    static PassOwnPtr<CloseWorkerGlobalScopeTask> create()
+    {
+        return adoptPtr(new CloseWorkerGlobalScopeTask);
+    }
+
+    virtual void performTask(ExecutionContext *context)
+    {
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+        // Notify parent that this context is closed. Parent is responsible for calling WorkerThread::stop().
+        workerGlobalScope->thread()->workerReportingProxy().workerGlobalScopeClosed();
+    }
+
+    virtual bool isCleanupTask() const { return true; }
+};
+
 WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
@@ -159,8 +176,14 @@ WorkerLocation* WorkerGlobalScope::location() const
 
 void WorkerGlobalScope::close()
 {
-    // Let current script run to completion, but tell the worker micro task runner to tear down the thread after this task.
+    if (m_closing)
+        return;
+
+    // Let current script run to completion but prevent future script evaluations.
+    // After m_closing is set, all the tasks in the queue continue to be fetched but only
+    // tasks with isCleanupTask()==true will be executed.
     m_closing = true;
+    postTask(FROM_HERE, CloseWorkerGlobalScopeTask::create());
 }
 
 WorkerConsole* WorkerGlobalScope::console()
@@ -193,11 +216,6 @@ void WorkerGlobalScope::clearInspector()
 void WorkerGlobalScope::dispose()
 {
     ASSERT(thread()->isCurrentThread());
-    stopActiveDOMObjects();
-
-    // Event listeners would keep DOMWrapperWorld objects alive for too long. Also, they have references to JS objects,
-    // which become dangling once Heap is destroyed.
-    removeAllEventListeners();
 
     clearScript();
     clearInspector();

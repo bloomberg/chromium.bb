@@ -46,9 +46,9 @@ namespace blink {
 class WebWaitableEvent;
 class WorkerGlobalScope;
 class WorkerInspectorController;
-class WorkerMicrotaskRunner;
 class WorkerReportingProxy;
 class WorkerSharedTimer;
+class WorkerThreadShutdownFinishTask;
 class WorkerThreadStartupData;
 class WorkerThreadTask;
 
@@ -130,13 +130,13 @@ protected:
 
 private:
     friend class WorkerSharedTimer;
-    friend class WorkerMicrotaskRunner;
+    friend class WorkerThreadShutdownFinishTask;
 
     void stopInShutdownSequence();
     void stopInternal();
 
     void initialize();
-    void shutdown();
+    void cleanup();
     void idleHandler();
     void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
@@ -152,9 +152,7 @@ private:
     RefPtrWillBePersistent<WorkerInspectorController> m_workerInspectorController;
     Mutex m_workerInspectorControllerMutex;
 
-    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_isolate| and |m_microtaskRunner|.
-    Mutex m_threadStateMutex;
-
+    Mutex m_threadCreationMutex;
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
     OwnPtr<WorkerThreadStartupData> m_startupData;
 
