@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_BROWSERTEST_H_
 
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
 
 class Profile;
 
@@ -40,6 +42,9 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   void SetAutoConfirmUninstall();
 
+  // Enables the error console so errors are displayed in the extensions page.
+  void EnableErrorConsole();
+
  private:
   bool WaitForExtensionViewsToLoad();
   const extensions::Extension* InstallUnpackedExtension(
@@ -55,6 +60,9 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
   extensions::TestManagementPolicyProvider policy_provider_;
 
   base::FilePath test_data_dir_;
+
+  // Used to enable the error console.
+  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> error_console_override_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsUIBrowserTest);
 };

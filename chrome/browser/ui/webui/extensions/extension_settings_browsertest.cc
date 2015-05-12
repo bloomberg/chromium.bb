@@ -34,7 +34,7 @@ using extensions::Extension;
 using extensions::TestManagementPolicyProvider;
 
 ExtensionSettingsUIBrowserTest::ExtensionSettingsUIBrowserTest()
-    : profile_(NULL),
+    : profile_(nullptr),
       policy_provider_(TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS |
                        TestManagementPolicyProvider::MUST_REMAIN_ENABLED |
                        TestManagementPolicyProvider::MUST_REMAIN_INSTALLED) {
@@ -90,6 +90,11 @@ void ExtensionSettingsUIBrowserTest::SetAutoConfirmUninstall() {
   extensions::ManagementUninstallFunctionBase::SetAutoConfirmForTest(true);
 }
 
+void ExtensionSettingsUIBrowserTest::EnableErrorConsole() {
+  error_console_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::error_console(), true));
+}
+
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
   explicit MockAutoConfirmExtensionInstallPrompt(
@@ -107,7 +112,7 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
 const Extension* ExtensionSettingsUIBrowserTest::InstallUnpackedExtension(
     const base::FilePath& path) {
   if (path.empty())
-    return NULL;
+    return nullptr;
 
   Profile* profile = GetProfile();
   ExtensionService* service =
@@ -143,7 +148,7 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
     base::FilePath crx_path = path;
     DCHECK(crx_path.Extension() == FILE_PATH_LITERAL(".crx"));
     if (crx_path.empty())
-      return NULL;
+      return nullptr;
 
     scoped_refptr<extensions::CrxInstaller> installer(
         extensions::CrxInstaller::Create(service, install_ui.Pass()));
@@ -180,10 +185,10 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
          iter != errors->end(); ++iter)
       VLOG(1) << *iter;
 
-    return NULL;
+    return nullptr;
   }
 
   if (!observer_->WaitForExtensionViewsToLoad())
-    return NULL;
+    return nullptr;
   return service->GetExtensionById(last_loaded_extension_id(), false);
 }

@@ -7,9 +7,11 @@
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 
-// chrome/test/data/extensions/good.crx's extension ID. good.crx is loaded by
-// ExtensionSettingsUIBrowserTest::InstallGoodExtension() in some of the tests.
-var GOOD_CRX_ID = 'ldnnhddmnhbkjipkidpdiheffobcpfmf';
+// The id of the extension from |InstallGoodExtension|.
+var GOOD_EXTENSION_ID = 'ldnnhddmnhbkjipkidpdiheffobcpfmf';
+
+// The id of the extension from |InstallErrorsExtension|.
+var ERROR_EXTENSION_ID = 'pdlpifnclfacjobnmbpngemkalkjamnf';
 
 /**
  * Test C++ fixture for settings WebUI testing.
@@ -199,11 +201,11 @@ BasicExtensionSettingsWebUITest.prototype = {
     var listener = new UpdateListener(
         chrome.developerPrivate.EventType.UNLOADED,
         function() {
-      var node = getRequiredElement(GOOD_CRX_ID);
+      var node = getRequiredElement(GOOD_EXTENSION_ID);
       assertTrue(node.classList.contains('inactive-extension'));
       this.nextStep();
     }.bind(this));
-    chrome.management.setEnabled(GOOD_CRX_ID, false);
+    chrome.management.setEnabled(GOOD_EXTENSION_ID, false);
   },
 
   /** @protected */
@@ -211,11 +213,11 @@ BasicExtensionSettingsWebUITest.prototype = {
     var listener = new UpdateListener(
         chrome.developerPrivate.EventType.LOADED,
         function() {
-      var node = getRequiredElement(GOOD_CRX_ID);
+      var node = getRequiredElement(GOOD_EXTENSION_ID);
       assertFalse(node.classList.contains('inactive-extension'));
       this.nextStep();
     }.bind(this));
-    chrome.management.setEnabled(GOOD_CRX_ID, true);
+    chrome.management.setEnabled(GOOD_EXTENSION_ID, true);
   },
 
   /** @protected */
@@ -223,11 +225,11 @@ BasicExtensionSettingsWebUITest.prototype = {
     var listener = new UpdateListener(
         chrome.developerPrivate.EventType.UNINSTALLED,
         function() {
-      assertEquals(null, $(GOOD_CRX_ID));
+      assertEquals(null, $(GOOD_EXTENSION_ID));
       this.nextStep();
     }.bind(this));
     chrome.test.runWithUserGesture(function() {
-      chrome.management.uninstall(GOOD_CRX_ID);
+      chrome.management.uninstall(GOOD_EXTENSION_ID);
     });
   },
 };
@@ -271,32 +273,35 @@ TEST_F('BasicExtensionSettingsWebUITest', 'testNonEmptyExtensionList',
   this.nextStep();
 });
 
-function AsyncExtensionSettingsWebUITest() {}
+function ErrorConsoleExtensionSettingsWebUITest() {}
 
-AsyncExtensionSettingsWebUITest.prototype = {
+ErrorConsoleExtensionSettingsWebUITest.prototype = {
   __proto__: ExtensionSettingsWebUITest.prototype,
 
   /** @override */
   testGenPreamble: function() {
+    GEN('  EnableErrorConsole();');
     GEN('  InstallGoodExtension();');
     GEN('  InstallErrorsExtension();');
   },
 };
 
-// Still fails on CrWinClang tester. BUG=463245
-TEST_F('AsyncExtensionSettingsWebUITest',
-       'DISABLED_testErrorListButtonVisibility',
-    function() {
+TEST_F('ErrorConsoleExtensionSettingsWebUITest',
+       'testErrorListButtonVisibility', function() {
   var testButtonVisibility = function() {
     var extensionList = $('extension-list-wrapper');
 
-    // 2 extensions are loaded:
-    //   The 'good' extension will have 0 errors wich means no error button.
-    //   The 'bad' extension will have >3 manifest errors and <3 runtime errors.
-    //     This means there will be a single error button.
     var visibleButtons = extensionList.querySelectorAll(
         '.errors-link:not([hidden])');
     expectEquals(1, visibleButtons.length);
+
+    if (visibleButtons.length > 0) {
+      var errorLink = $(ERROR_EXTENSION_ID).querySelector('.errors-link');
+      expectEquals(visibleButtons[0], errorLink);
+
+      var errorIcon = errorLink.querySelector('img');
+      expectTrue(errorIcon.classList.contains('extension-error-warning-icon'));
+    }
 
     var hiddenButtons = extensionList.querySelectorAll('.errors-link[hidden]');
     expectEquals(1, hiddenButtons.length);
@@ -369,7 +374,7 @@ TEST_F('InstallGoodExtensionSettingsWebUITest', 'testAccessibility',
 TEST_F('InstallGoodExtensionSettingsWebUITest', 'showOptions', function() {
   var showExtensionOptions = function() {
     var optionsOverlay = extensions.ExtensionOptionsOverlay.getInstance();
-    optionsOverlay.setExtensionAndShow(GOOD_CRX_ID, 'GOOD!', '',
+    optionsOverlay.setExtensionAndShow(GOOD_EXTENSION_ID, 'GOOD!', '',
                                        this.nextStep.bind(this));
 
     // Preferred size changes don't happen in browser tests. Just fake it.
@@ -412,7 +417,7 @@ OptionsDialogExtensionSettingsWebUITest.prototype = {
 
   /** @override */
   browsePreload: ExtensionSettingsWebUITest.prototype.browsePreload +
-      '?options=' + GOOD_CRX_ID,
+      '?options=' + GOOD_EXTENSION_ID,
 };
 
 TEST_F('OptionsDialogExtensionSettingsWebUITest', 'testAccessibility',
