@@ -61,9 +61,6 @@ void DeleteUrlFromHistory(int index, const GURL& url);
 // profile.
 void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls);
 
-// Modifies an URL stored in history by setting a new title.
-void SetPageTitle(int index, const GURL& url, const std::string& title);
-
 // Returns true if all clients match the verifier profile.
 bool CheckAllProfilesHaveSameURLsAsVerifier();
 

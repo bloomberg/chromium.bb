@@ -169,6 +169,7 @@ void AddToHistory(history::HistoryService* service,
                    transition,
                    source,
                    false);
+  service->SetPageTitle(url, base::ASCIIToUTF16(url.spec() + " - title"));
 }
 
 history::URLRows GetTypedUrlsFromHistoryService(
@@ -328,16 +329,6 @@ void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls) {
     HistoryServiceFactory::GetForProfile(test()->verifier(),
                                          ServiceAccessType::IMPLICIT_ACCESS)
         ->DeleteURLsForTest(urls);
-  WaitForHistoryDBThread(index);
-}
-
-void SetPageTitle(int index, const GURL& url, const std::string& title) {
-  HistoryServiceFactory::GetForProfileWithoutCreating(test()->GetProfile(index))
-      ->SetPageTitle(url, base::UTF8ToUTF16(title));
-  if (test()->use_verifier())
-    HistoryServiceFactory::GetForProfile(test()->verifier(),
-                                         ServiceAccessType::IMPLICIT_ACCESS)
-        ->SetPageTitle(url, base::UTF8ToUTF16(title));
   WaitForHistoryDBThread(index);
 }
 

@@ -377,44 +377,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
   ASSERT_EQ(2, GetVisitCountForFirstURL(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       DontSyncUpdatedNonTypedURLs) {
-  // Checks if a non-typed URL that has been updated (modified) doesn't get
-  // synced. This is a regression test after fixing a bug where adding a
-  // non-typed URL was guarded against but later modifying it was not. Since
-  // "update" is "update or create if missing", non-typed URLs were being
-  // created.
-  const GURL kNonTypedURL("http://link.google.com/");
-  const GURL kTypedURL("http://typed.google.com/");
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  AddUrlToHistoryWithTransition(0, kNonTypedURL, ui::PAGE_TRANSITION_LINK,
-                                history::SOURCE_BROWSED);
-  AddUrlToHistoryWithTransition(0, kTypedURL, ui::PAGE_TRANSITION_TYPED,
-                                history::SOURCE_BROWSED);
-
-  // Modify the non-typed URL. It should not get synced.
-  typed_urls_helper::SetPageTitle(0, kNonTypedURL, "Welcome to Non-Typed URL");
-  ASSERT_TRUE(AwaitCheckAllProfilesHaveSameURLsAsVerifier());
-
-  history::VisitVector visits;
-  // First client has both visits.
-  visits = typed_urls_helper::GetVisitsForURLFromClient(0, kNonTypedURL);
-  ASSERT_EQ(1U, visits.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(visits[0].transition,
-                                           ui::PAGE_TRANSITION_LINK));
-  visits = typed_urls_helper::GetVisitsForURLFromClient(0, kTypedURL);
-  ASSERT_EQ(1U, visits.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(visits[0].transition,
-                                           ui::PAGE_TRANSITION_TYPED));
-  // Second client has only the typed visit.
-  visits = typed_urls_helper::GetVisitsForURLFromClient(1, kNonTypedURL);
-  ASSERT_EQ(0U, visits.size());
-  visits = typed_urls_helper::GetVisitsForURLFromClient(1, kTypedURL);
-  ASSERT_EQ(1U, visits.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(visits[0].transition,
-                                           ui::PAGE_TRANSITION_TYPED));
-}
-
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, SyncTypedRedirects) {
   const base::string16 kHistoryUrl(ASCIIToUTF16("http://typed.google.com/"));
   const base::string16 kRedirectedHistoryUrl(
