@@ -70,7 +70,6 @@ GeometryInterfaces status=test
 HTMLPopupMenu status=stable
 GlobalCacheStorage status=stable
 ImageColorProfiles
-ImageDataConstructor status=stable
 ImageRenderingPixelated status=stable
 IMEAPI status=experimental
 IndexedDBExperimental status=experimental

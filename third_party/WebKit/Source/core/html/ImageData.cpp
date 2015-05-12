@@ -64,10 +64,6 @@ ImageData* ImageData::create(const IntSize& size, PassRefPtr<DOMUint8ClampedArra
 
 ImageData* ImageData::create(unsigned width, unsigned height, ExceptionState& exceptionState)
 {
-    if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
-        exceptionState.throwTypeError("Illegal constructor");
-        return nullptr;
-    }
     if (!width || !height) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is zero or not a number.", width ? "height" : "width"));
         return nullptr;
@@ -111,10 +107,6 @@ bool ImageData::validateConstructorArguments(DOMUint8ClampedArray* data, unsigne
 
 ImageData* ImageData::create(DOMUint8ClampedArray* data, unsigned width, ExceptionState& exceptionState)
 {
-    if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
-        exceptionState.throwTypeError("Illegal constructor");
-        return nullptr;
-    }
     unsigned lengthInPixels = 0;
     if (!validateConstructorArguments(data, width, lengthInPixels, exceptionState)) {
         ASSERT(exceptionState.hadException());
@@ -127,10 +119,6 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data, unsigned width, Excepti
 
 ImageData* ImageData::create(DOMUint8ClampedArray* data, unsigned width, unsigned height, ExceptionState& exceptionState)
 {
-    if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
-        exceptionState.throwTypeError("Illegal constructor");
-        return nullptr;
-    }
     unsigned lengthInPixels = 0;
     if (!validateConstructorArguments(data, width, lengthInPixels, exceptionState)) {
         ASSERT(exceptionState.hadException());
