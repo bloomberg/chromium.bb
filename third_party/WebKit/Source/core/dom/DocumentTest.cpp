@@ -342,6 +342,7 @@ TEST_F(DocumentTest, referrerPolicyParsing)
         { "not-a-real-policy", ReferrerPolicyDefault },
         { "origin", ReferrerPolicyOrigin },
         { "origin-when-crossorigin", ReferrerPolicyOriginWhenCrossOrigin },
+        { "origin-when-cross-origin", ReferrerPolicyOriginWhenCrossOrigin },
         { "unsafe-url", ReferrerPolicyAlways },
     };
 

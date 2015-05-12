@@ -699,7 +699,7 @@ void CSPDirectiveList::parseReferrer(const String& name, const String& value)
         m_referrerPolicy = ReferrerPolicyDefault;
     } else if (equalIgnoringCase("origin", begin, position - begin)) {
         m_referrerPolicy = ReferrerPolicyOrigin;
-    } else if (equalIgnoringCase("origin-when-crossorigin", begin, position - begin)) {
+    } else if (equalIgnoringCase("origin-when-cross-origin", begin, position - begin) || equalIgnoringCase("origin-when-crossorigin", begin, position - begin)) {
         m_referrerPolicy = ReferrerPolicyOriginWhenCrossOrigin;
     } else {
         m_policy->reportInvalidReferrer(value);

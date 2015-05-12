@@ -5,6 +5,6 @@ This test checks the origin referrer policy when navigating from an insecure URL
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-HTTP Referer header is http://127.0.0.1:8000/security/resources/referrer-policy-start.html?origin-when-crossorigin
-Referrer is http://127.0.0.1:8000/security/resources/referrer-policy-start.html?origin-when-crossorigin
+HTTP Referer header is http://127.0.0.1:8000/security/resources/referrer-policy-start.html?origin-when-cross-origin
+Referrer is http://127.0.0.1:8000/security/resources/referrer-policy-start.html?origin-when-cross-origin
 
