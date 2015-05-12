@@ -41,6 +41,7 @@ class CopresencePrivateService final : public BrowserContextKeyedAPI {
   friend class BrowserContextKeyedAPIFactory<CopresencePrivateService>;
 
   // BrowserContextKeyedAPI implementation.
+  static const bool kServiceRedirectedInIncognito = true;
   static const char* service_name() { return "CopresencePrivateService"; }
 
   bool initialized_;
