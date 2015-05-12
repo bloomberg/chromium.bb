@@ -68,13 +68,14 @@ TouchSelectionController::~TouchSelectionController() {
 void TouchSelectionController::OnSelectionBoundsChanged(
     const SelectionBound& start,
     const SelectionBound& end) {
-  if (start == start_ && end_ == end)
+  if (!force_next_update_ && start == start_ && end_ == end)
     return;
 
   start_ = start;
   end_ = end;
   start_orientation_ = ToTouchHandleOrientation(start_.type());
   end_orientation_ = ToTouchHandleOrientation(end_.type());
+  force_next_update_ = false;
 
   if (!activate_selection_automatically_ &&
       !activate_insertion_automatically_) {
@@ -155,7 +156,7 @@ void TouchSelectionController::OnLongPressEvent() {
   response_pending_input_event_ = LONG_PRESS;
   ShowSelectionHandlesAutomatically();
   ShowInsertionHandleAutomatically();
-  ResetCachedValuesIfInactive();
+  ForceNextUpdateIfInactive();
 }
 
 void TouchSelectionController::AllowShowingFromCurrentSelection() {
@@ -179,7 +180,7 @@ void TouchSelectionController::OnTapEvent() {
   ShowInsertionHandleAutomatically();
   if (selection_empty_ && !show_on_tap_for_empty_editable_)
     DeactivateInsertion();
-  ResetCachedValuesIfInactive();
+  ForceNextUpdateIfInactive();
 }
 
 void TouchSelectionController::HideAndDisallowShowingAutomatically() {
@@ -208,7 +209,7 @@ void TouchSelectionController::OnSelectionEditable(bool editable) {
   if (selection_editable_ == editable)
     return;
   selection_editable_ = editable;
-  ResetCachedValuesIfInactive();
+  ForceNextUpdateIfInactive();
   if (!selection_editable_)
     DeactivateInsertion();
 }
@@ -217,7 +218,7 @@ void TouchSelectionController::OnSelectionEmpty(bool empty) {
   if (selection_empty_ == empty)
     return;
   selection_empty_ = empty;
-  ResetCachedValuesIfInactive();
+  ForceNextUpdateIfInactive();
 }
 
 bool TouchSelectionController::Animate(base::TimeTicks frame_time) {
@@ -340,14 +341,14 @@ void TouchSelectionController::ShowInsertionHandleAutomatically() {
   if (activate_insertion_automatically_)
     return;
   activate_insertion_automatically_ = true;
-  ResetCachedValuesIfInactive();
+  ForceNextUpdateIfInactive();
 }
 
 void TouchSelectionController::ShowSelectionHandlesAutomatically() {
   if (activate_selection_automatically_)
     return;
   activate_selection_automatically_ = true;
-  ResetCachedValuesIfInactive();
+  ForceNextUpdateIfInactive();
 }
 
 void TouchSelectionController::OnInsertionChanged() {
@@ -463,13 +464,9 @@ void TouchSelectionController::DeactivateSelection() {
   client_->OnSelectionEvent(SELECTION_CLEARED);
 }
 
-void TouchSelectionController::ResetCachedValuesIfInactive() {
-  if (active_status_ != INACTIVE)
-    return;
-  start_ = SelectionBound();
-  end_ = SelectionBound();
-  start_orientation_ = TouchHandleOrientation::UNDEFINED;
-  end_orientation_ = TouchHandleOrientation::UNDEFINED;
+void TouchSelectionController::ForceNextUpdateIfInactive() {
+  if (active_status_ == INACTIVE)
+    force_next_update_ = true;
 }
 
 gfx::Vector2dF TouchSelectionController::GetStartLineOffset() const {
