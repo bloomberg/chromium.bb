@@ -42,8 +42,16 @@ InspectorTest.dumpCacheTree = function()
                         nextOrResolve();
                         return;
                     }
-                    for (var entry of view._entries)
-                        InspectorTest.addResult("        '" + entry.request + "': '" + entry.response + "'");
+                    var dataGrid = view._dataGrid;
+                    for (var node of dataGrid.rootNode().children) {
+                        var entries = [];
+                        for (var j = 0; j < node.element().children.length; j++) {
+                            var td = node.element().children[j];
+                            if (td.textContent)
+                                entries.push(td.textContent);
+                        }
+                        InspectorTest.addResult("        " + entries.join(", "));
+                    }
                     nextOrResolve();
                 }
 
