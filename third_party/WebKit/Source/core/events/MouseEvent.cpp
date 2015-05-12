@@ -104,7 +104,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
 MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& initializer)
     : MouseRelatedEvent(eventType, initializer.bubbles(), initializer.cancelable(), initializer.view(), initializer.detail(), IntPoint(initializer.screenX(), initializer.screenY()),
         IntPoint(0 /* pageX */, 0 /* pageY */),
-        IntPoint(0 /* movementX */, 0 /* movementY */),
+        IntPoint(initializer.movementX(), initializer.movementY()),
         initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), false /* isSimulated */)
     , m_button(initializer.button() == (unsigned short)-1 ? 0 : initializer.button())
     , m_buttons(initializer.buttons())

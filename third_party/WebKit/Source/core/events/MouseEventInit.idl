@@ -14,7 +14,7 @@ dictionary MouseEventInit : SharedKeyboardAndMouseEventInit {
     unsigned short buttons = 0;
     EventTarget? relatedTarget = null;
 
-    // Non-standard
+    // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-mouseeventinit-dictionary
     long movementX = 0;
     long movementY = 0;
 };
