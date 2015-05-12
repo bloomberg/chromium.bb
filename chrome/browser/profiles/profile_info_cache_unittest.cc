@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -88,7 +89,8 @@ ProfileInfoCache* ProfileNameVerifierObserver::GetCache() {
 
 ProfileInfoCacheTest::ProfileInfoCacheTest()
     : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
-      name_observer_(&testing_profile_manager_) {
+      name_observer_(&testing_profile_manager_),
+      user_data_dir_override_(chrome::DIR_USER_DATA) {
 }
 
 ProfileInfoCacheTest::~ProfileInfoCacheTest() {
@@ -556,7 +558,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   ProfileInfoCache profile_info_cache(g_browser_process->local_state(),
       testing_profile_manager_.profile_manager()->user_data_dir());
 
-  // // Make sure there are no avatars already on disk.
+  // Make sure there are no avatars already on disk.
   const size_t kIconIndex = 0;
   base::FilePath icon_path =
       profiles::GetPathOfHighResAvatarAtIndex(kIconIndex);
