@@ -1025,18 +1025,6 @@ void IOThread::ConfigureSpdyGlobals(
     globals->next_protos.push_back(net::kProtoQUIC1SPDY3);
   }
 
-  if (command_line.HasSwitch(switches::kEnableSpdy4)) {
-    globals->next_protos.push_back(net::kProtoSPDY31);
-    globals->next_protos.push_back(net::kProtoSPDY4_14);
-    globals->next_protos.push_back(net::kProtoSPDY4);
-    globals->use_alternate_protocols.set(true);
-    return;
-  }
-  if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
-    globals->use_alternate_protocols.set(false);
-    return;
-  }
-
   // No SPDY command-line flags have been specified. Examine trial groups.
   if (spdy_trial_group.starts_with(kSpdyFieldTrialHoldbackGroupNamePrefix)) {
     net::HttpStreamFactory::set_spdy_enabled(false);

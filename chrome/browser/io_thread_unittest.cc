@@ -143,30 +143,6 @@ TEST_F(IOThreadTest, SpdyFieldTrialParametrized) {
   EXPECT_TRUE(use_alternate_protocols);
 }
 
-TEST_F(IOThreadTest, SpdyCommandLineEnable) {
-  command_line_.AppendSwitch("enable-spdy4");
-  // Command line should overwrite field trial group.
-  field_trial_group_ = "SpdyDisabled";
-  ConfigureSpdyGlobals();
-  EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
-                          net::kProtoSPDY4_14, net::kProtoSPDY4));
-  bool use_alternate_protocols = false;
-  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
-  EXPECT_TRUE(use_alternate_protocols);
-}
-
-TEST_F(IOThreadTest, SpdyCommandLineDisable) {
-  command_line_.AppendSwitch("enable-npn-http");
-  // Command line should overwrite field trial group.
-  field_trial_group_ = "Spdy4Enabled";
-  ConfigureSpdyGlobals();
-  EXPECT_THAT(globals_.next_protos, ElementsAre(net::kProtoHTTP11));
-  bool use_alternate_protocols = true;
-  globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
-  EXPECT_FALSE(use_alternate_protocols);
-}
-
 TEST_F(IOThreadTest, SpdyCommandLineUseSpdyOff) {
   command_line_.AppendSwitchASCII("use-spdy", "off");
   // Command line should overwrite field trial group.
