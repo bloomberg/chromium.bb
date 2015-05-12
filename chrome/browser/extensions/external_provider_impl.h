@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_PROVIDER_IMPL_H_
 
+#include <set>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -73,6 +74,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   static const char kSupportedLocales[];
   static const char kWasInstalledByOem[];
   static const char kMayBeUntrusted[];
+  static const char kMinProfileCreatedByVersion[];
 
   void set_auto_acknowledge(bool auto_acknowledge) {
     auto_acknowledge_ = auto_acknowledge;
@@ -83,6 +85,10 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   }
 
  private:
+  bool HandleMinProfileVersion(const base::DictionaryValue* extension,
+                               const std::string& extension_id,
+                               std::set<std::string>* unsupported_extensions);
+
   // Location for external extensions that are provided by this provider from
   // local crx files.
   const Manifest::Location crx_location_;

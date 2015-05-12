@@ -461,6 +461,8 @@ class MockProviderVisitor
     EXPECT_TRUE(provider->IsReady());
   }
 
+  Profile* profile() { return profile_.get(); }
+
  private:
   int ids_found_;
   base::FilePath fake_base_path_;
@@ -5533,6 +5535,36 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "  }"
       "}";
   EXPECT_EQ(1, was_installed_by_eom_visitor.Visit(json_data));
+
+  // Test min_profile_created_by_version.
+  MockProviderVisitor min_profile_created_by_version_visitor(base_path);
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"min_profile_created_by_version\": \"42.0.0.1\""
+      "  },"
+      "  \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
+      "    \"external_crx\": \"RandomExtension2.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"min_profile_created_by_version\": \"43.0.0.1\""
+      "  },"
+      "  \"cccccccccccccccccccccccccccccccc\": {"
+      "    \"external_crx\": \"RandomExtension3.crx\","
+      "    \"external_version\": \"3.0\","
+      "    \"min_profile_created_by_version\": \"44.0.0.1\""
+      "  }"
+      "}";
+  min_profile_created_by_version_visitor.profile()->GetPrefs()->SetString(
+      prefs::kProfileCreatedByVersion, "40.0.0.1");
+  EXPECT_EQ(0, min_profile_created_by_version_visitor.Visit(json_data));
+  min_profile_created_by_version_visitor.profile()->GetPrefs()->SetString(
+      prefs::kProfileCreatedByVersion, "43.0.0.1");
+  EXPECT_EQ(2, min_profile_created_by_version_visitor.Visit(json_data));
+  min_profile_created_by_version_visitor.profile()->GetPrefs()->SetString(
+      prefs::kProfileCreatedByVersion, "45.0.0.1");
+  EXPECT_EQ(3, min_profile_created_by_version_visitor.Visit(json_data));
 }
 
 // Test loading good extensions from the profile directory.

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
@@ -66,6 +68,8 @@ const char ExternalProviderImpl::kKeepIfPresent[] = "keep_if_present";
 const char ExternalProviderImpl::kWasInstalledByOem[] = "was_installed_by_oem";
 const char ExternalProviderImpl::kSupportedLocales[] = "supported_locales";
 const char ExternalProviderImpl::kMayBeUntrusted[] = "may_be_untrusted";
+const char ExternalProviderImpl::kMinProfileCreatedByVersion[] =
+    "min_profile_created_by_version";
 
 ExternalProviderImpl::ExternalProviderImpl(
     VisitorInterface* service,
@@ -218,6 +222,7 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
       const Extension* extension = extension_service ?
           extension_service->GetExtensionById(extension_id, true) : NULL;
       if (!extension) {
+        unsupported_extensions.insert(extension_id);
         VLOG(1) << "Skip installing (or uninstall) external extension: "
                 << extension_id << " because the extension should be kept "
                 << "only if it is already installed.";
@@ -234,6 +239,10 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
         may_be_untrusted) {
       creation_flags |= Extension::MAY_BE_UNTRUSTED;
     }
+
+    if (!ExternalProviderImpl::HandleMinProfileVersion(extension, extension_id,
+                                                       &unsupported_extensions))
+      continue;
 
     std::string install_parameter;
     extension->GetString(kInstallParam, &install_parameter);
@@ -357,6 +366,30 @@ bool ExternalProviderImpl::GetExtensionDetails(
   if (location)
     *location = loc;
 
+  return true;
+}
+
+bool ExternalProviderImpl::HandleMinProfileVersion(
+    const base::DictionaryValue* extension,
+    const std::string& extension_id,
+    std::set<std::string>* unsupported_extensions) {
+  std::string min_profile_created_by_version;
+  if (profile_ &&
+      extension->GetString(kMinProfileCreatedByVersion,
+                           &min_profile_created_by_version)) {
+    Version profile_version(
+        profile_->GetPrefs()->GetString(prefs::kProfileCreatedByVersion));
+    Version min_version(min_profile_created_by_version);
+    if (min_version.IsValid() && profile_version.CompareTo(min_version) < 0) {
+      unsupported_extensions->insert(extension_id);
+      VLOG(1) << "Skip installing (or uninstall) external extension: "
+              << extension_id
+              << " profile.created_by_version: " << profile_version.GetString()
+              << " min_profile_created_by_version: "
+              << min_profile_created_by_version;
+      return false;
+    }
+  }
   return true;
 }
 
