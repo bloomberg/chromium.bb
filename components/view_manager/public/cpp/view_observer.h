@@ -54,10 +54,10 @@ class ViewObserver {
                                    const Rect& old_bounds,
                                    const Rect& new_bounds) {}
 
-  virtual void OnViewViewportMetricsChanged(View* view,
-                                            const ViewportMetrics& old_bounds,
-                                            const ViewportMetrics& new_bounds) {
-  }
+  virtual void OnViewViewportMetricsChanged(
+      View* view,
+      const ViewportMetrics& old_metrics,
+      const ViewportMetrics& new_metrics) {}
 
   virtual void OnViewFocusChanged(View* gained_focus, View* lost_focus) {}
 

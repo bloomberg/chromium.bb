@@ -75,6 +75,8 @@ source_set("lib") {
     "html_document.h",
     "mock_web_blob_registry_impl.cc",
     "mock_web_blob_registry_impl.h",
+    "setup.cc",
+    "setup.h",
     "touch_handler.cc",
     "touch_handler.h",
     "web_clipboard_impl.cc",
@@ -113,6 +115,8 @@ source_set("lib") {
     "//components/clipboard/public/interfaces",
     "//components/gpu/public/interfaces",
     "//components/mime_util",
+    "//components/resource_provider/public/cpp",
+    "//components/resource_provider/public/interfaces",
     "//components/scheduler:scheduler",
     "//components/surfaces/public/interfaces",
     "//components/webcrypto",
@@ -177,8 +181,6 @@ mojo_application_package("html_viewer") {
   deps = [
     ":html_viewer_resources_grit",
     ":lib",
-    "//components/resource_provider/public/cpp",
-    "//components/resource_provider/public/interfaces",
     "//mojo/common",
     "//mojo/platform_handle",
     "//third_party/icu:icudata",
@@ -223,10 +225,13 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
-    ":lib",
-    ":html_viewer",
+    "//base",
+    "//mojo/application",
     "//mojo/application:test_support",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/mojo_services/src/accessibility/public/interfaces",
   ]
+
+  data_deps = [ ":html_viewer" ]
 }

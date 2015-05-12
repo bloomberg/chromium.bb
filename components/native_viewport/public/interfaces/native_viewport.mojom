@@ -10,7 +10,8 @@ import "ui/mojo/events/input_events.mojom";
 
 struct ViewportMetrics {
   Size size;
-  float device_pixel_ratio = 1.0;
+  // A value of 0 indicates the real value is not yet available.
+  float device_pixel_ratio = 0.0;
 };
 
 interface NativeViewport {

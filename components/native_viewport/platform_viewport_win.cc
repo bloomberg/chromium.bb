@@ -40,6 +40,8 @@ class PlatformViewportWin : public PlatformViewport,
   // Overridden from PlatformViewport:
   void Init(const gfx::Rect& bounds) override {
     metrics_ = mojo::ViewportMetrics::New();
+    // TODO(sky): make density real.
+    metrics_->device_pixel_ratio = 1.f;
     metrics_->size = mojo::Size::From(bounds.size());
     platform_window_.reset(new ui::WinWindow(this, bounds));
   }
@@ -117,7 +119,8 @@ class PlatformViewportWin : public PlatformViewport,
 
   void OnAcceleratedWidgetAvailable(
       gfx::AcceleratedWidget widget) override {
-    delegate_->OnAcceleratedWidgetAvailable(widget);
+    delegate_->OnAcceleratedWidgetAvailable(widget,
+                                            metrics_->device_pixel_ratio);
   }
 
   void OnActivationChanged(bool active) override {}

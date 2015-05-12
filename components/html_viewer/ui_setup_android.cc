@@ -6,15 +6,18 @@
 
 #include "base/memory/singleton.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/screen.h"
 
 namespace html_viewer {
 namespace {
 
-// TODO(sky): The values these serve up need to come from a service.
 class ScreenMandoline : public gfx::Screen {
  public:
-  ScreenMandoline() {}
+  ScreenMandoline(const gfx::Size& screen_size_in_pixels,
+                  float device_pixel_ratio)
+      : screen_size_in_pixels_(screen_size_in_pixels),
+        device_pixel_ratio_(device_pixel_ratio) {}
 
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
 
@@ -29,9 +32,11 @@ class ScreenMandoline : public gfx::Screen {
   }
 
   gfx::Display GetPrimaryDisplay() const override {
-    NOTIMPLEMENTED();
-    gfx::Display display(0, gfx::Rect(0, 0, 1000, 1000));
-    display.set_device_scale_factor(2.0f);
+    const gfx::Rect bounds_in_pixels(gfx::Point(), screen_size_in_pixels_);
+    const gfx::Rect bounds_in_dip(gfx::ToCeiledSize(
+        gfx::ScaleSize(bounds_in_pixels.size(), 1.0f / device_pixel_ratio_)));
+    gfx::Display display(0, bounds_in_dip);
+    display.set_device_scale_factor(device_pixel_ratio_);
     return display;
   }
 
@@ -62,11 +67,15 @@ class ScreenMandoline : public gfx::Screen {
   }
 
  private:
+  const gfx::Size screen_size_in_pixels_;
+  const float device_pixel_ratio_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenMandoline);
 };
 
 }  // namespace
 
+// TODO(sky): this needs to come from system.
 class GestureConfigurationMandoline : public ui::GestureConfiguration {
  public:
   GestureConfigurationMandoline() : GestureConfiguration() {
@@ -89,8 +98,9 @@ class GestureConfigurationMandoline : public ui::GestureConfiguration {
   DISALLOW_COPY_AND_ASSIGN(GestureConfigurationMandoline);
 };
 
-UISetup::UISetup()
-    : screen_(new ScreenMandoline),
+UISetup::UISetup(const gfx::Size& screen_size_in_pixels,
+                 float device_pixel_ratio)
+    : screen_(new ScreenMandoline(screen_size_in_pixels, device_pixel_ratio)),
       gesture_configuration_(new GestureConfigurationMandoline) {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                  screen_.get());

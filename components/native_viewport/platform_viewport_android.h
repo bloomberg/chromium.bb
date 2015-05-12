@@ -30,7 +30,10 @@ class PlatformViewportAndroid : public PlatformViewport {
   ~PlatformViewportAndroid() override;
 
   void Destroy(JNIEnv* env, jobject obj);
-  void SurfaceCreated(JNIEnv* env, jobject obj, jobject jsurface);
+  void SurfaceCreated(JNIEnv* env,
+                      jobject obj,
+                      jobject jsurface,
+                      float device_pixel_ratio);
   void SurfaceDestroyed(JNIEnv* env, jobject obj);
   void SurfaceSetSize(JNIEnv* env,
                       jobject obj,

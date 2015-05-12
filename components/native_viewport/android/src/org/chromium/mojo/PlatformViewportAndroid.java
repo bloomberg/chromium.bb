@@ -54,7 +54,7 @@ public class PlatformViewportAndroid extends SurfaceView {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 assert mNativeMojoViewport != 0;
-                nativeSurfaceCreated(mNativeMojoViewport, holder.getSurface());
+                nativeSurfaceCreated(mNativeMojoViewport, holder.getSurface(), density);
             }
 
             @Override
@@ -167,7 +167,7 @@ public class PlatformViewportAndroid extends SurfaceView {
     private static native void nativeDestroy(long nativePlatformViewportAndroid);
 
     private static native void nativeSurfaceCreated(
-            long nativePlatformViewportAndroid, Surface surface);
+            long nativePlatformViewportAndroid, Surface surface, float devicePixelRatio);
 
     private static native void nativeSurfaceDestroyed(
             long nativePlatformViewportAndroid);

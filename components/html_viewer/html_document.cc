@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
+#include "components/html_viewer/setup.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_media_player_factory.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
@@ -43,6 +44,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/size.h"
 
 using mojo::AxProvider;
 using mojo::Rect;
@@ -121,22 +123,18 @@ HTMLDocument::HTMLDocument(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     URLResponsePtr response,
     mojo::Shell* shell,
-    scoped_refptr<base::MessageLoopProxy> compositor_thread,
-    WebMediaPlayerFactory* web_media_player_factory,
-    bool is_headless)
+    Setup* setup)
     : response_(response.Pass()),
       shell_(shell),
       web_view_(nullptr),
       root_(nullptr),
       view_manager_client_factory_(shell_, this),
-      compositor_thread_(compositor_thread),
-      web_media_player_factory_(web_media_player_factory),
-      is_headless_(is_headless),
-      device_pixel_ratio_(1.0) {
+      setup_(setup) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
   exported_services_.Bind(services.Pass());
-  Load(response_.Pass());
+  if (setup_->did_init())
+    Load(response_.Pass());
 }
 
 HTMLDocument::~HTMLDocument() {
@@ -153,13 +151,13 @@ void HTMLDocument::OnEmbed(
     View* root,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
-  DCHECK(!is_headless_);
+  DCHECK(!setup_->is_headless());
   root_ = root;
+  root_->AddObserver(this);
   embedder_service_provider_ = exposed_services.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
-  UpdateWebviewSizeFromViewSize();
-  web_layer_tree_view_impl_->set_view(root_);
-  root_->AddObserver(this);
+
+  InitSetupAndLoadIfNecessary();
 }
 
 void HTMLDocument::OnViewManagerDisconnected(ViewManager* view_manager) {
@@ -201,8 +199,7 @@ void HTMLDocument::Load(URLResponsePtr response) {
 }
 
 void HTMLDocument::UpdateWebviewSizeFromViewSize() {
-  device_pixel_ratio_ = root_->viewport_metrics().device_pixel_ratio;
-  web_view_->setDeviceScaleFactor(device_pixel_ratio_);
+  web_view_->setDeviceScaleFactor(setup_->device_pixel_ratio());
   const gfx::Size size_in_pixels(root_->bounds().width, root_->bounds().height);
   const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
       root_->viewport_metrics().device_pixel_ratio, size_in_pixels);
@@ -211,14 +208,28 @@ void HTMLDocument::UpdateWebviewSizeFromViewSize() {
   web_layer_tree_view_impl_->setViewportSize(size_in_pixels);
 }
 
+void HTMLDocument::InitSetupAndLoadIfNecessary() {
+  DCHECK(root_);
+  if (web_view_ || root_->viewport_metrics().device_pixel_ratio == 0.f)
+    return;
+
+  setup_->InitIfNecessary(gfx::Size(root_->viewport_metrics().size->width,
+                                    root_->viewport_metrics().size->height),
+                          root_->viewport_metrics().device_pixel_ratio);
+  Load(response_.Pass());
+
+  UpdateWebviewSizeFromViewSize();
+  web_layer_tree_view_impl_->set_view(root_);
+}
+
 blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
 
 void HTMLDocument::initializeLayerTreeView() {
-  if (is_headless_) {
-    web_layer_tree_view_impl_.reset(
-        new WebLayerTreeViewImpl(compositor_thread_, nullptr, nullptr));
+  if (setup_->is_headless()) {
+    web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
+        setup_->compositor_thread(), nullptr, nullptr));
     return;
   }
 
@@ -235,7 +246,7 @@ void HTMLDocument::initializeLayerTreeView() {
   mojo::GpuPtr gpu_service;
   ConnectToService(gpu_service_provider.get(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-      compositor_thread_, surface.Pass(), gpu_service.Pass()));
+      setup_->compositor_thread(), surface.Pass(), gpu_service.Pass()));
 }
 
 blink::WebLayerTreeView* HTMLDocument::layerTreeView() {
@@ -255,8 +266,8 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
   blink::WebMediaPlayer* player =
-      web_media_player_factory_
-          ? web_media_player_factory_->CreateMediaPlayer(
+      setup_->web_media_player_factory()
+          ? setup_->web_media_player_factory()->CreateMediaPlayer(
                 frame, url, client, GetMediaPermission(), GetCdmFactory(),
                 initial_cdm, shell_)
           : nullptr;
@@ -347,6 +358,13 @@ void HTMLDocument::OnViewBoundsChanged(View* view,
   UpdateWebviewSizeFromViewSize();
 }
 
+void HTMLDocument::OnViewViewportMetricsChanged(
+    mojo::View* view,
+    const mojo::ViewportMetrics& old_metrics,
+    const mojo::ViewportMetrics& new_metrics) {
+  InitSetupAndLoadIfNecessary();
+}
+
 void HTMLDocument::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, root_);
   root_ = nullptr;
@@ -357,10 +375,10 @@ void HTMLDocument::OnViewDestroyed(View* view) {
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
   if (event->pointer_data) {
     // Blink expects coordintes to be in DIPs.
-    event->pointer_data->x /= device_pixel_ratio_;
-    event->pointer_data->y /= device_pixel_ratio_;
-    event->pointer_data->screen_x /= device_pixel_ratio_;
-    event->pointer_data->screen_y /= device_pixel_ratio_;
+    event->pointer_data->x /= setup_->device_pixel_ratio();
+    event->pointer_data->y /= setup_->device_pixel_ratio();
+    event->pointer_data->screen_x /= setup_->device_pixel_ratio();
+    event->pointer_data->screen_y /= setup_->device_pixel_ratio();
   }
 
   if ((event->action == mojo::EVENT_TYPE_POINTER_DOWN ||

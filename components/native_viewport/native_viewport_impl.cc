@@ -99,7 +99,9 @@ void NativeViewportImpl::OnMetricsChanged(mojo::ViewportMetricsPtr metrics) {
 }
 
 void NativeViewportImpl::OnAcceleratedWidgetAvailable(
-    gfx::AcceleratedWidget widget) {
+    gfx::AcceleratedWidget widget,
+    float device_pixel_ratio) {
+  metrics_->device_pixel_ratio = device_pixel_ratio;
   context_provider_.SetAcceleratedWidget(widget);
   // TODO: The metrics here might not match the actual window size on android
   // where we don't know the actual size until the first OnMetricsChanged call.

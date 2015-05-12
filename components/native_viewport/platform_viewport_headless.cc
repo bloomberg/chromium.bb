@@ -17,6 +17,7 @@ PlatformViewportHeadless::~PlatformViewportHeadless() {
 
 void PlatformViewportHeadless::Init(const gfx::Rect& bounds) {
   metrics_ = mojo::ViewportMetrics::New();
+  metrics_->device_pixel_ratio = 1.f;
   metrics_->size = mojo::Size::From(bounds.size());
 }
 

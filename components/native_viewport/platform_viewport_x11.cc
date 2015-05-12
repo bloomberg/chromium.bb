@@ -51,6 +51,8 @@ class PlatformViewportX11 : public PlatformViewport,
     event_source_ = ui::PlatformEventSource::CreateDefault();
 
     metrics_ = mojo::ViewportMetrics::New();
+    // TODO(sky): make density real.
+    metrics_->device_pixel_ratio = 1.f;
     metrics_->size = mojo::Size::From(bounds.size());
 
     platform_window_.reset(new ui::X11Window(this));
@@ -146,7 +148,8 @@ class PlatformViewportX11 : public PlatformViewport,
   void OnLostCapture() override {}
 
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
-    delegate_->OnAcceleratedWidgetAvailable(widget);
+    delegate_->OnAcceleratedWidgetAvailable(widget,
+                                            metrics_->device_pixel_ratio);
   }
 
   void OnActivationChanged(bool active) override {}

@@ -10,6 +10,7 @@
 
 namespace gfx {
 class Screen;
+class Size;
 }
 
 namespace ui {
@@ -22,7 +23,7 @@ class GestureConfigurationMandoline;
 
 class UISetup {
  public:
-  UISetup();
+  UISetup(const gfx::Size& screen_size_in_pixels, float device_pixel_ratio);
   ~UISetup();
 
  private:

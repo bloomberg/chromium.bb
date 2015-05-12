@@ -7,12 +7,16 @@
 
 #include "base/basictypes.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace html_viewer {
 
 // UISetup is intended for platform specific UI setup.
 class UISetup {
  public:
-  UISetup() {}
+  UISetup(const gfx::Size& screen_size_in_pixels, float device_pixel_ratio) {}
   ~UISetup() {}
 
  private:

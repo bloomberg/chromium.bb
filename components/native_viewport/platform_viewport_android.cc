@@ -74,7 +74,8 @@ void PlatformViewportAndroid::Destroy(JNIEnv* env, jobject obj) {
 
 void PlatformViewportAndroid::SurfaceCreated(JNIEnv* env,
                                              jobject obj,
-                                             jobject jsurface) {
+                                             jobject jsurface,
+                                             float device_pixel_ratio) {
   base::android::ScopedJavaLocalRef<jobject> protector(env, jsurface);
   // Note: This ensures that any local references used by
   // ANativeWindow_fromSurface are released immediately. This is needed as a
@@ -83,7 +84,7 @@ void PlatformViewportAndroid::SurfaceCreated(JNIEnv* env,
     base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
     window_ = ANativeWindow_fromSurface(env, jsurface);
   }
-  delegate_->OnAcceleratedWidgetAvailable(window_);
+  delegate_->OnAcceleratedWidgetAvailable(window_, device_pixel_ratio);
 }
 
 void PlatformViewportAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {
