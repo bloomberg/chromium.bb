@@ -393,7 +393,7 @@ android_apk("chrome_sync_shell_apk") {
 # GYP: part of //chrome/chrome_tests.gypi:chrome_shell_test_apk
 android_library("chrome_javatests") {
   testonly = true
-  DEPRECATED_java_in_dir = "javatests/src"
+  DEPRECATED_java_in_dir = "javatests_shell/src"
   deps = [
     ":chrome_java",
     ":chrome_java_resources",

@@ -2959,7 +2959,7 @@
           'variables': {
             'apk_name': 'ChromeShellTest',
             'java_in_dir': 'android/shell/javatests',
-            'additional_src_dirs': ['android/javatests/src'],
+            'additional_src_dirs': ['android/javatests_shell/src'],
             'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],
