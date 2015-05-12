@@ -1569,6 +1569,10 @@
       'browser/ui/app_list/test/fake_profile_store.h',
       'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
     ],
+    # ChromeOS only sources of app_list.
+    'chrome_unit_tests_app_list_chromeos_sources': [
+      'browser/ui/app_list/search/launcher_search/extension_badged_icon_image_unittest.cc',
+    ],
   },
   'targets': [
     {
@@ -2606,6 +2610,9 @@
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list_test_support',
           ],
+        }],
+        ['enable_app_list==1 and chromeos==1', {
+          'sources': [ '<@(chrome_unit_tests_app_list_chromeos_sources)' ],
         }],
         ['enable_plugin_installation==0', {
           'sources!': [

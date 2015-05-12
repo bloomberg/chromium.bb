@@ -713,6 +713,10 @@
     # ChromeOS-only sources that don't end in _chromeos or live in a chromeos
     # directory.
     'chrome_browser_ui_chromeos_sources': [
+      'browser/ui/app_list/search/launcher_search/extension_badged_icon_image.cc',
+      'browser/ui/app_list/search/launcher_search/extension_badged_icon_image.h',
+      'browser/ui/app_list/search/launcher_search/extension_badged_icon_image_impl.cc',
+      'browser/ui/app_list/search/launcher_search/extension_badged_icon_image_impl.h',
       'browser/ui/app_list/search/launcher_search/launcher_search_provider.cc',
       'browser/ui/app_list/search/launcher_search/launcher_search_provider.h',
       'browser/ui/app_list/search/launcher_search/launcher_search_result.cc',

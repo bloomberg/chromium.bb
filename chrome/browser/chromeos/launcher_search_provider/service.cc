@@ -99,6 +99,7 @@ void Service::OnOpenResult(const ExtensionId& extension_id,
 
 void Service::SetSearchResults(
     const extensions::Extension* extension,
+    scoped_ptr<ErrorReporter> error_reporter,
     const std::string& query_id,
     const std::vector<linked_ptr<
         extensions::api::launcher_search_provider::SearchResult>>& results) {
@@ -122,7 +123,8 @@ void Service::SetSearchResults(
 
     app_list::LauncherSearchResult* search_result =
         new app_list::LauncherSearchResult(result->item_id, icon_url, relevance,
-                                           profile_, extension);
+                                           profile_, extension,
+                                           error_reporter->Duplicate());
     search_result->set_title(base::UTF8ToUTF16(result->title));
     search_results.push_back(search_result);
   }
@@ -134,6 +136,7 @@ bool Service::IsQueryRunning() const {
 }
 
 std::set<ExtensionId> Service::GetListenerExtensionIds() {
+  // TODO(yawano): Cache this result for optimization (crbug.com/440649).
   std::set<ExtensionId> extension_ids;
 
   const ExtensionSet& extension_set = extension_registry_->enabled_extensions();

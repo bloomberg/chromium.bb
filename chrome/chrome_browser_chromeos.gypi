@@ -414,6 +414,8 @@
         'browser/chromeos/input_method/mode_indicator_controller.h',
         'browser/chromeos/language_preferences.cc',
         'browser/chromeos/language_preferences.h',
+        'browser/chromeos/launcher_search_provider/error_reporter.cc',
+        'browser/chromeos/launcher_search_provider/error_reporter.h',
         'browser/chromeos/launcher_search_provider/service.cc',
         'browser/chromeos/launcher_search_provider/service.h',
         'browser/chromeos/launcher_search_provider/service_factory.cc',

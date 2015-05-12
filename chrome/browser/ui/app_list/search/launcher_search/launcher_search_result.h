@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "extensions/browser/extension_icon_image.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/extension_badged_icon_image.h"
 #include "extensions/common/extension.h"
 #include "ui/app_list/search_result.h"
 #include "url/gurl.h"
@@ -17,27 +17,29 @@
 namespace app_list {
 
 class LauncherSearchResult : public SearchResult,
-                             public extensions::IconImage::Observer {
+                             public ExtensionBadgedIconImage::Observer {
  public:
-  LauncherSearchResult(const std::string& item_id,
-                       const GURL& icon_url,
-                       const int discrete_value_relevance,
-                       Profile* profile,
-                       const extensions::Extension* extension);
+  LauncherSearchResult(
+      const std::string& item_id,
+      const GURL& icon_url,
+      const int discrete_value_relevance,
+      Profile* profile,
+      const extensions::Extension* extension,
+      scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
+          error_reporter);
   ~LauncherSearchResult() override;
   scoped_ptr<SearchResult> Duplicate() const override;
   void Open(int event_flags) override;
 
-  void OnExtensionIconImageChanged(extensions::IconImage* image) override;
+  void OnIconImageChanged(ExtensionBadgedIconImage* image) override;
 
  private:
   // Constructor for duplicating a result.
-  LauncherSearchResult(
-      const std::string& item_id,
-      const int discrete_value_relevance,
-      Profile* profile,
-      const extensions::Extension* extension,
-      const linked_ptr<extensions::IconImage>& extension_icon_image);
+  LauncherSearchResult(const std::string& item_id,
+                       const int discrete_value_relevance,
+                       Profile* profile,
+                       const extensions::Extension* extension,
+                       const linked_ptr<ExtensionBadgedIconImage>& icon_image);
   void Initialize();
 
   void UpdateIcon();
@@ -52,7 +54,7 @@ class LauncherSearchResult : public SearchResult,
   const int discrete_value_relevance_;
   Profile* profile_;
   const extensions::Extension* extension_;
-  linked_ptr<extensions::IconImage> extension_icon_image_;
+  linked_ptr<ExtensionBadgedIconImage> icon_image_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherSearchResult);
 };

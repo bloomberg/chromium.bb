@@ -1677,6 +1677,12 @@ if (!is_android) {
                       "//chrome")
       deps += [ "//ui/app_list:test_support" ]
     }
+    if (enable_app_list && is_chromeos) {
+      sources += rebase_path(
+              unit_gypi_values.chrome_unit_tests_app_list_chromeos_sources,
+              ".",
+              "//chrome")
+    }
     if (!enable_plugin_installation) {
       sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]
     }
