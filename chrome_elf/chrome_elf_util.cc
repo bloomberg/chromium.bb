@@ -4,13 +4,10 @@
 
 #include "chrome_elf/chrome_elf_util.h"
 
-#include <assert.h>
 #include <windows.h>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-
-ProcessType g_process_type = ProcessType::UNINITIALIZED;
 
 namespace {
 
@@ -195,27 +192,18 @@ bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
   return false;
 }
 
-void InitializeProcessType() {
-  assert(g_process_type == UNINITIALIZED);
+bool IsNonBrowserProcess() {
   typedef bool (*IsSandboxedProcessFunc)();
   IsSandboxedProcessFunc is_sandboxed_process_func =
       reinterpret_cast<IsSandboxedProcessFunc>(
           GetProcAddress(GetModuleHandle(NULL), "IsSandboxedProcess"));
-  if (is_sandboxed_process_func && is_sandboxed_process_func()) {
-    g_process_type = NON_BROWSER_PROCESS;
-    return;
-  }
+  bool is_sandboxed_process =
+      is_sandboxed_process_func && is_sandboxed_process_func();
 
-  const wchar_t* command_line = GetCommandLine();
-  if (command_line && wcsstr(command_line, L"--type")) {
-    g_process_type = NON_BROWSER_PROCESS;
-    return;
-  }
+  // TODO(robertshield): Drop the command line check when we drop support for
+  // enabling chrome_elf in unsandboxed processes.
+  wchar_t* command_line = GetCommandLine();
+  bool has_process_type_flag = command_line && wcsstr(command_line, L"--type");
 
-  g_process_type = BROWSER_PROCESS;
-}
-
-bool IsNonBrowserProcess() {
-  assert(g_process_type != UNINITIALIZED);
-  return g_process_type == NON_BROWSER_PROCESS;
+  return (has_process_type_flag || is_sandboxed_process);
 }

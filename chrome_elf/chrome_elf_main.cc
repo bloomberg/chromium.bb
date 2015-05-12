@@ -8,7 +8,6 @@
 
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/breakpad.h"
-#include "chrome_elf/chrome_elf_util.h"
 #include "chrome_elf/ntdll_cache.h"
 
 void SignalChromeElf() {
@@ -20,7 +19,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
     InitializeCrashReporting();
 
     __try {
-      InitializeProcessType();
       InitCache();
       blacklist::Initialize(false);  // Don't force, abort if beacon is present.
     } __except(GenerateCrashDump(GetExceptionInformation())) {
