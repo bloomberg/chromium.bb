@@ -273,14 +273,19 @@ cr.define('extensions', function() {
           case EventType.ERROR_ADDED:
           case EventType.ERRORS_REMOVED:
           case EventType.PREFS_CHANGED:
-            if (eventData.extensionInfo)
+            if (eventData.extensionInfo) {
               this.updateExtension_(eventData.extensionInfo);
+              this.focusGrid_.ensureRowActive();
+            }
             break;
           case EventType.UNINSTALLED:
             var index = this.getIndexOfExtension_(eventData.item_id);
             this.extensions_.splice(index, 1);
             var childNode = $(eventData.item_id);
             childNode.parentNode.removeChild(childNode);
+            this.focusGrid_.removeRow(assertInstanceof(childNode,
+                                                       ExtensionFocusRow));
+            this.focusGrid_.ensureRowActive();
             break;
           default:
             assertNotReached();
@@ -389,9 +394,6 @@ cr.define('extensions', function() {
      * @private
      */
     showExtensionNodes_: function() {
-      // Remove the rows from |focusGrid_| without destroying them.
-      this.focusGrid_.rows.length = 0;
-
       // Any node that is not updated will be removed.
       var seenIds = [];
 
@@ -670,6 +672,12 @@ cr.define('extensions', function() {
       // when adding only one new row.
       this.insertBefore(row, nextNode);
       this.updateNode_(extension, row);
+
+      var nextRow = null;
+      if (nextNode)
+        nextRow = assertInstanceof(nextNode, ExtensionFocusRow);
+
+      this.focusGrid_.addRowBefore(row, nextRow);
     },
 
     /**
@@ -1025,7 +1033,6 @@ cr.define('extensions', function() {
       }
 
       row.updateFocusableElements();
-      this.focusGrid_.addRow(row);
     },
 
     /**

@@ -139,14 +139,37 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Add a FocusRow to this grid. This needs to be called AFTER adding columns
-     * to the row. This is so that TAB focus can be properly enabled in the
-     * columns.
-     * @param {cr.ui.FocusRow} row The row that needs to be added to this grid.
+     * Adds |row| to the end of this list.
+     * @param {!cr.ui.FocusRow} row The row that needs to be added to this grid.
      */
     addRow: function(row) {
+      this.addRowBefore(row, null);
+    },
+
+    /**
+     * Adds |row| before |nextRow|. If |nextRow| is not in the list or it's
+     * null, |row| is added to the end.
+     * @param {!cr.ui.FocusRow} row The row that needs to be added to this grid.
+     * @param {cr.ui.FocusRow} nextRow The row that should follow |row|.
+     */
+    addRowBefore: function(row, nextRow) {
       row.delegate = row.delegate || this.delegate_;
-      this.rows.push(row);
+
+      var nextRowIndex = this.rows.indexOf(nextRow);
+      if (nextRowIndex == -1)
+        this.rows.push(row);
+      else
+        this.rows.splice(nextRowIndex, 0, row);
+    },
+
+    /**
+     * Removes a row from the focus row. No-op if row is not in the grid.
+     * @param {cr.ui.FocusRow} row The row that needs to be removed.
+     */
+    removeRow: function(row) {
+      var nextRowIndex = this.rows.indexOf(row);
+      if (nextRowIndex > -1)
+        this.rows.splice(nextRowIndex, 1);
     },
 
     /**
