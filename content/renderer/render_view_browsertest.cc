@@ -367,8 +367,9 @@ class DevToolsAgentTest : public RenderViewImplTest {
   }
 };
 
-// Test for https://crbug.com/461191.
-TEST_F(RenderViewImplTest, RenderFrameMessageAfterDetach) {
+// Ensure that the main RenderFrame is deleted and cleared from the RenderView
+// after closing it.
+TEST_F(RenderViewImplTest, RenderFrameClearedAfterClose) {
   // Create a new main frame RenderFrame so that we don't interfere with the
   // shutdown of frame() in RenderViewTest.TearDown.
   blink::WebURLRequest popup_request(GURL("http://foo.com"));
@@ -376,17 +377,10 @@ TEST_F(RenderViewImplTest, RenderFrameMessageAfterDetach) {
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::WebNavigationPolicyNewForegroundTab, false);
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
-  RenderFrameImpl* new_frame =
-      static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame());
 
-  // Detach the main frame.
+  // Close the view, causing the main RenderFrame to be detached and deleted.
   new_view->Close();
-
-  // Before the frame is asynchronously deleted, it may receive a message.
-  // We should not crash here, and the message should not be processed.
-  scoped_ptr<const IPC::Message> msg(
-      new FrameMsg_Stop(frame()->GetRoutingID()));
-  EXPECT_FALSE(new_frame->OnMessageReceived(*msg));
+  EXPECT_FALSE(new_view->GetMainRenderFrame());
 
   // Clean up after the new view so we don't leak it.
   new_view->Release();
@@ -2014,7 +2008,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
 // This test ensures that a RenderFrame object is created for the top level
 // frame in the RenderView.
 TEST_F(RenderViewImplTest, BasicRenderFrame) {
-  EXPECT_TRUE(view()->main_render_frame_.get());
+  EXPECT_TRUE(view()->main_render_frame_);
 }
 
 TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {

@@ -730,12 +730,18 @@ RenderFrameImpl::~RenderFrameImpl() {
     render_view_->UnregisterVideoHoleFrame(this);
 #endif
 
-  // RenderFrameProxy is only "owned" by RenderFrameImpl in the case it is the
-  // main frame. Ensure it is deleted along with this object.
-  if (!is_subframe_ && render_frame_proxy_) {
-    // The following method calls back into this object and clears
-    // |render_frame_proxy_|.
-    render_frame_proxy_->frameDetached();
+  if (!is_subframe_) {
+    // RenderFrameProxy is "owned" by RenderFrameImpl in the case it is
+    // the main frame. Ensure it is deleted along with this object.
+    if (render_frame_proxy_) {
+      // The following method calls back into this object and clears
+      // |render_frame_proxy_|.
+      render_frame_proxy_->frameDetached();
+    }
+
+    // Ensure the RenderView doesn't point to this object, once it is destroyed.
+    CHECK_EQ(render_view_->main_render_frame_, this);
+    render_view_->main_render_frame_ = nullptr;
   }
 
   render_view_->UnregisterRenderFrame(this);
@@ -2231,10 +2237,8 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   frame->close();
   frame_ = nullptr;
 
-  if (is_subframe_) {
-    delete this;
-    // Object is invalid after this point.
-  }
+  delete this;
+  // Object is invalid after this point.
 }
 
 void RenderFrameImpl::frameFocused() {
@@ -2643,6 +2647,13 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     CHECK(proxy);
     proxy->web_frame()->swap(frame_);
     proxy_routing_id_ = MSG_ROUTING_NONE;
+
+    // If this is the main frame going from a remote frame to a local frame,
+    // it needs to set RenderViewImpl's pointer for the main frame to itself.
+    if (!is_subframe_) {
+      CHECK(!render_view_->main_render_frame_);
+      render_view_->main_render_frame_ = this;
+    }
   }
 
   // When we perform a new navigation, we need to update the last committed

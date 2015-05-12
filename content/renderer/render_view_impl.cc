@@ -669,11 +669,11 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
 
-  main_render_frame_.reset(RenderFrameImpl::Create(
-      this, params.main_frame_routing_id));
+  main_render_frame_ = RenderFrameImpl::Create(
+      this, params.main_frame_routing_id);
   // The main frame WebLocalFrame object is closed by
   // RenderFrameImpl::frameDetached().
-  WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame_.get());
+  WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame_);
   main_render_frame_->SetWebFrame(web_frame);
 
   compositor_deps_ = compositor_deps;
@@ -734,7 +734,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
     proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-        main_render_frame_.get(), params.proxy_routing_id);
+        main_render_frame_, params.proxy_routing_id);
     main_render_frame_->set_render_frame_proxy(proxy);
   }
 
@@ -2170,7 +2170,7 @@ bool RenderViewImpl::Send(IPC::Message* message) {
 }
 
 RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
-  return main_render_frame_.get();
+  return main_render_frame_;
 }
 
 int RenderViewImpl::GetRoutingID() const {
@@ -3492,7 +3492,7 @@ blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
   blink::WebPageVisibilityState override_state = current_state;
   // TODO(jam): move this method to WebFrameClient.
   if (GetContentClient()->renderer()->
-          ShouldOverridePageVisibilityState(main_render_frame_.get(),
+          ShouldOverridePageVisibilityState(main_render_frame_,
                                             &override_state))
     return override_state;
   return current_state;
