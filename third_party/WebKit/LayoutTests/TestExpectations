@@ -1938,5 +1938,6 @@ crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 
+crbug.com/486962 [ Win Debug ] svg/W3C-SVG-1.1/animate-elem-40-t.svg [ ImageOnlyFailure Pass ]
 crbug.com/486962 [ Win Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
 crbug.com/486962 [ Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
