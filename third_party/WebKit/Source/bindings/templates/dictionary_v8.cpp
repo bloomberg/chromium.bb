@@ -99,6 +99,7 @@ v8::Local<v8::Value> toV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creat
 
 bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
+    // TODO(bashi): Use ForceSet() instead of Set(). http://crbug.com/476720
     {% for member in members %}
     if (impl.{{member.has_method_name}}()) {
         {% if member.is_object %}

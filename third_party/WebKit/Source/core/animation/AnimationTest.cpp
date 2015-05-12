@@ -111,7 +111,6 @@ TEST_F(AnimationAnimationTest, InitialState)
     EXPECT_TRUE(animation->hasStartTime());
 }
 
-
 TEST_F(AnimationAnimationTest, CurrentTimeDoesNotSetOutdated)
 {
     EXPECT_FALSE(animation->outdated());
@@ -465,7 +464,6 @@ TEST_F(AnimationAnimationTest, ReverseBeyondLimit)
     EXPECT_EQ(30, animation->currentTimeInternal());
 }
 
-
 TEST_F(AnimationAnimationTest, Finish)
 {
     animation->finish(exceptionState);
@@ -516,7 +514,6 @@ TEST_F(AnimationAnimationTest, FinishRaisesException)
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(InvalidStateError, exceptionState.code());
 }
-
 
 TEST_F(AnimationAnimationTest, LimitingAtSourceEnd)
 {

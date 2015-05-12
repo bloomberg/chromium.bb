@@ -43,7 +43,8 @@ static void domExceptionStackGetter(v8::Local<v8::Name> name, const v8::Property
 
 static void domExceptionStackSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
-    info.Data().As<v8::Object>()->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
+    v8::Maybe<bool> unused = info.Data().As<v8::Object>()->Set(info.GetIsolate()->GetCurrentContext(), v8AtomicString(info.GetIsolate(), "stack"), value);
+    ALLOW_UNUSED_LOCAL(unused);
 }
 
 v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext)

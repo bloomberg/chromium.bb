@@ -815,7 +815,7 @@ v8::Local<v8::Function> getBoundFunction(v8::Local<v8::Function> function)
     return boundFunction->IsFunction() ? v8::Local<v8::Function>::Cast(boundFunction) : function;
 }
 
-void addHiddenValueToArray(v8::Isolate* isolate, v8::Local<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex)
+bool addHiddenValueToArray(v8::Isolate* isolate, v8::Local<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex)
 {
     ASSERT(!value.IsEmpty());
     v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
@@ -825,7 +825,7 @@ void addHiddenValueToArray(v8::Isolate* isolate, v8::Local<v8::Object> object, v
     }
 
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(arrayValue);
-    array->Set(v8::Integer::New(isolate, array->Length()), value);
+    return v8CallBoolean(array->Set(isolate->GetCurrentContext(), v8::Integer::New(isolate, array->Length()), value));
 }
 
 void removeHiddenValueFromArray(v8::Isolate* isolate, v8::Local<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex)

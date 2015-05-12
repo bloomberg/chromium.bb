@@ -150,8 +150,10 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     info.Holder()->Delete(isolate->GetCurrentContext(), v8AtomicString(isolate, "opener"));
 
     // Put property on the front (this) object.
-    if (info.This()->IsObject())
-        v8::Local<v8::Object>::Cast(info.This())->Set(v8AtomicString(isolate, "opener"), value);
+    if (info.This()->IsObject()) {
+        v8::Maybe<bool> unused = v8::Local<v8::Object>::Cast(info.This())->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "opener"), value);
+        ALLOW_UNUSED_LOCAL(unused);
+    }
 }
 
 static bool isLegacyTargetOriginDesignation(v8::Local<v8::Value> value)

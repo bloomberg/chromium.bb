@@ -70,12 +70,12 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(keyframe1, "easing", "ease-in-out");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "1");
-    setV8ObjectPropertyAsString(keyframe2, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "easing", "ease-in-out");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -140,13 +140,13 @@ TEST_F(AnimationKeyframeEffectV8Test, MismatchedKeyframePropertyRaisesException)
     v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0");
 
     // Height property appears only in keyframe2
-    setV8ObjectPropertyAsString(keyframe2, "height", "100px");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "height", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "1");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -163,10 +163,10 @@ TEST_F(AnimationKeyframeEffectV8Test, MissingOffsetZeroRaisesException)
     v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0.1");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0.1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "1");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -183,10 +183,10 @@ TEST_F(AnimationKeyframeEffectV8Test, MissingOffsetOneRaisesException)
     v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "0.1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "0.1");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -203,10 +203,10 @@ TEST_F(AnimationKeyframeEffectV8Test, MissingOffsetZeroAndOneRaisesException)
     v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0.1");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "0.2");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0.1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "0.2");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -222,14 +222,14 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
     Vector<Dictionary, 0> jsKeyframes;
 
     v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-    setV8ObjectPropertyAsNumber(timingInput, "delay", 2);
-    setV8ObjectPropertyAsNumber(timingInput, "endDelay", 0.5);
-    setV8ObjectPropertyAsString(timingInput, "fill", "backwards");
-    setV8ObjectPropertyAsNumber(timingInput, "iterationStart", 2);
-    setV8ObjectPropertyAsNumber(timingInput, "iterations", 10);
-    setV8ObjectPropertyAsNumber(timingInput, "playbackRate", 2);
-    setV8ObjectPropertyAsString(timingInput, "direction", "reverse");
-    setV8ObjectPropertyAsString(timingInput, "easing", "step-start");
+    setV8ObjectPropertyAsNumber(m_isolate, timingInput, "delay", 2);
+    setV8ObjectPropertyAsNumber(m_isolate, timingInput, "endDelay", 0.5);
+    setV8ObjectPropertyAsString(m_isolate, timingInput, "fill", "backwards");
+    setV8ObjectPropertyAsNumber(m_isolate, timingInput, "iterationStart", 2);
+    setV8ObjectPropertyAsNumber(m_isolate, timingInput, "iterations", 10);
+    setV8ObjectPropertyAsNumber(m_isolate, timingInput, "playbackRate", 2);
+    setV8ObjectPropertyAsString(m_isolate, timingInput, "direction", "reverse");
+    setV8ObjectPropertyAsString(m_isolate, timingInput, "easing", "step-start");
     KeyframeEffectOptions timingInputDictionary;
     V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
 
@@ -251,7 +251,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter)
     Vector<Dictionary, 0> jsKeyframes;
 
     v8::Local<v8::Object> timingInputWithDuration = v8::Object::New(m_isolate);
-    setV8ObjectPropertyAsNumber(timingInputWithDuration, "duration", 2.5);
+    setV8ObjectPropertyAsNumber(m_isolate, timingInputWithDuration, "duration", 2.5);
     KeyframeEffectOptions timingInputDictionaryWithDuration;
     V8KeyframeEffectOptions::toImpl(m_isolate, timingInputWithDuration, timingInputDictionaryWithDuration, exceptionState);
 

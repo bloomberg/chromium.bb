@@ -428,8 +428,7 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
         ExceptionCatcher exceptionCatcher;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        obj->Set(npIdentifierToV8Identifier(isolate, propertyName), convertNPVariantToV8Object(isolate, value, object->rootObject->frame()->script().windowScriptNPObject()));
-        return true;
+        return v8CallBoolean(obj->Set(scriptState->context(), npIdentifierToV8Identifier(isolate, propertyName), convertNPVariantToV8Object(isolate, value, object->rootObject->frame()->script().windowScriptNPObject())));
     }
 
     if (npObject->_class->setProperty)
@@ -456,8 +455,7 @@ bool _NPN_RemoveProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
 
     v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
     // FIXME: Verify that setting to undefined is right.
-    obj->Set(npIdentifierToV8Identifier(isolate, propertyName), v8::Undefined(isolate));
-    return true;
+    return v8CallBoolean(obj->Set(scriptState->context(), npIdentifierToV8Identifier(isolate, propertyName), v8::Undefined(isolate)));
 }
 
 bool _NPN_HasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)

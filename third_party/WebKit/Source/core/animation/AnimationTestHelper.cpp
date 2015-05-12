@@ -19,14 +19,14 @@ v8::Local<v8::Value> doubleToV8Value(double number)
     return v8::Local<v8::Value>::Cast(v8::Number::New(v8::Isolate::GetCurrent(), number));
 }
 
-void setV8ObjectPropertyAsString(v8::Local<v8::Object> object, String name, String value)
+void setV8ObjectPropertyAsString(v8::Isolate* isolate, v8::Local<v8::Object> object, String name, String value)
 {
-    object->Set(stringToV8Value(name), stringToV8Value(value));
+    v8CallOrCrash(object->Set(isolate->GetCurrentContext(), stringToV8Value(name), stringToV8Value(value)));
 }
 
-void setV8ObjectPropertyAsNumber(v8::Local<v8::Object> object, String name, double value)
+void setV8ObjectPropertyAsNumber(v8::Isolate* isolate, v8::Local<v8::Object> object, String name, double value)
 {
-    object->Set(stringToV8Value(name), doubleToV8Value(value));
+    v8CallOrCrash(object->Set(isolate->GetCurrentContext(), stringToV8Value(name), doubleToV8Value(value)));
 }
 
 } // namespace blink

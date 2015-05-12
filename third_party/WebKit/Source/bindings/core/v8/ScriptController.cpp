@@ -235,17 +235,17 @@ TextPosition ScriptController::eventHandlerPosition() const
 }
 
 // Create a V8 object with an interceptor of NPObjectPropertyGetter.
-void ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, NPObject* object)
+bool ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, NPObject* object)
 {
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
     if (!scriptState->contextIsValid())
-        return;
+        return false;
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> value = createV8ObjectForNPObject(isolate(), object, 0);
 
     // Attach to the global object.
-    scriptState->context()->Global()->Set(v8String(isolate(), key), value);
+    return v8CallBoolean(scriptState->context()->Global()->Set(scriptState->context(), v8String(isolate(), key), value));
 }
 
 void ScriptController::enableEval()
@@ -585,7 +585,8 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const WillBeHea
         v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(scriptState->context(), sources[i]);
         if (evaluationResult.IsEmpty())
             evaluationResult = v8::Local<v8::Value>::New(isolate(), v8::Undefined(isolate()));
-        resultArray->Set(i, evaluationResult);
+        if (!v8CallBoolean(resultArray->Set(scriptState->context(), v8::Integer::New(scriptState->isolate(), i), evaluationResult)))
+            return;
     }
 
     if (results) {

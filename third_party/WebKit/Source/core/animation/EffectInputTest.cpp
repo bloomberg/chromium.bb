@@ -44,10 +44,10 @@ TEST_F(AnimationEffectInputTest, SortedOffsets)
     v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "1");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -64,10 +64,10 @@ TEST_F(AnimationEffectInputTest, UnsortedOffsets)
     v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "1");
-    setV8ObjectPropertyAsString(keyframe2, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "offset", "0");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -84,11 +84,11 @@ TEST_F(AnimationEffectInputTest, LooslySorted)
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(keyframe2, "width", "200px");
-    setV8ObjectPropertyAsString(keyframe3, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe3, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "200px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe3, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe3, "offset", "1");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -108,13 +108,13 @@ TEST_F(AnimationEffectInputTest, OutOfOrderWithNullOffsets)
     v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe4 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "height", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0.5");
-    setV8ObjectPropertyAsString(keyframe2, "height", "150px");
-    setV8ObjectPropertyAsString(keyframe3, "height", "200px");
-    setV8ObjectPropertyAsString(keyframe3, "offset", "0");
-    setV8ObjectPropertyAsString(keyframe4, "height", "300px");
-    setV8ObjectPropertyAsString(keyframe4, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "height", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "0.5");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "height", "150px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe3, "height", "200px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe3, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe4, "height", "300px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe4, "offset", "1");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
@@ -133,11 +133,11 @@ TEST_F(AnimationEffectInputTest, Invalid)
     v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
     v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "1");
-    setV8ObjectPropertyAsString(keyframe2, "width", "200px");
-    setV8ObjectPropertyAsString(keyframe3, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe3, "offset", "0");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "width", "0px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe1, "offset", "1");
+    setV8ObjectPropertyAsString(m_isolate, keyframe2, "width", "200px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe3, "width", "100px");
+    setV8ObjectPropertyAsString(m_isolate, keyframe3, "offset", "0");
 
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));

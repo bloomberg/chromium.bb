@@ -115,7 +115,7 @@ public:
     bool shouldBypassMainWorldCSP();
 
     // Creates a property of the global object of a frame.
-    void bindToWindowObject(LocalFrame*, const String& key, NPObject*);
+    bool bindToWindowObject(LocalFrame*, const String& key, NPObject*);
 
     PassRefPtr<SharedPersistent<v8::Object>> createPluginWrapper(Widget*);
 

@@ -14,9 +14,9 @@ v8::Local<v8::Value> stringToV8Value(String);
 
 v8::Local<v8::Value> doubleToV8Value(double);
 
-void setV8ObjectPropertyAsString(v8::Local<v8::Object>, String, String);
+void setV8ObjectPropertyAsString(v8::Isolate*, v8::Local<v8::Object>, String, String);
 
-void setV8ObjectPropertyAsNumber(v8::Local<v8::Object>, String, double);
+void setV8ObjectPropertyAsNumber(v8::Isolate*, v8::Local<v8::Object>, String, double);
 
 } // namespace blink
 

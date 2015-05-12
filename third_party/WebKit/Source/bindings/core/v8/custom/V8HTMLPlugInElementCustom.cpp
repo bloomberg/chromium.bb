@@ -113,7 +113,8 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
     // DOM element will also be set. For plugin's that don't intercept the call
     // (all except gTalk) this makes no difference at all. For gTalk the fact
     // that the property on the DOM element also gets set is inconsequential.
-    instance->Set(property, value);
+    v8::Maybe<bool> unused = instance->Set(info.GetIsolate()->GetCurrentContext(), property, value);
+    ALLOW_UNUSED_LOCAL(unused);
 }
 } // namespace
 

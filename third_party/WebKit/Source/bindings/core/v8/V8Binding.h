@@ -986,9 +986,9 @@ template<typename Collection> static void indexedPropertyEnumerator(const v8::Pr
     int length = collection->length();
     v8::Local<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
     for (int i = 0; i < length; ++i) {
-        // FIXME: Do we need to check that the item function returns a non-null value for this index?
         v8::Local<v8::Integer> integer = v8::Integer::New(info.GetIsolate(), i);
-        properties->Set(integer, integer);
+        if (!v8CallBoolean(properties->Set(info.GetIsolate()->GetCurrentContext(), integer, integer)))
+            return;
     }
     v8SetReturnValue(info, properties);
 }
@@ -997,7 +997,7 @@ CORE_EXPORT bool isValidEnum(const String& value, const char** validValues, size
 CORE_EXPORT bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, const String& enumName, ExceptionState&);
 
 // These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
-void addHiddenValueToArray(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
+bool addHiddenValueToArray(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
 void removeHiddenValueFromArray(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
 CORE_EXPORT void moveEventListenerToNewWrapper(v8::Isolate*, v8::Local<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex);
 

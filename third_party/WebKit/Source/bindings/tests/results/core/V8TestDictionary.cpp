@@ -553,6 +553,7 @@ v8::Local<v8::Value> toV8(const TestDictionary& impl, v8::Local<v8::Object> crea
 
 bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
+    // TODO(bashi): Use ForceSet() instead of Set(). http://crbug.com/476720
     if (impl.hasBooleanMember()) {
         if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
             return false;

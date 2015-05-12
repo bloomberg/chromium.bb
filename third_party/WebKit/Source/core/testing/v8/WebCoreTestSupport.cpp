@@ -43,8 +43,11 @@ void injectInternalsObject(v8::Local<v8::Context> context)
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = scriptState->context()->Global();
     ExecutionContext* executionContext = scriptState->executionContext();
-    if (executionContext->isDocument())
-        global->Set(v8AtomicString(scriptState->isolate(), Internals::internalsId), toV8(Internals::create(toDocument(executionContext)), global, scriptState->isolate()));
+    if (executionContext->isDocument()) {
+        v8::Local<v8::Value> internals = toV8(Internals::create(toDocument(executionContext)), global, scriptState->isolate());
+        ASSERT(!internals.IsEmpty());
+        v8CallOrCrash(global->Set(scriptState->context(), v8AtomicString(scriptState->isolate(), Internals::internalsId), internals));
+    }
 }
 
 void resetInternalsObject(v8::Local<v8::Context> context)

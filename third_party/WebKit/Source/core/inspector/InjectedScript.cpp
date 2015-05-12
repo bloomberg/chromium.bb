@@ -87,7 +87,8 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, const ScriptV
 {
     ScriptFunctionCall function(injectedScriptObject(), "evaluateOnCallFrame");
     function.appendArgument(callFrames);
-    function.appendArgument(asyncCallStacks);
+    if (!function.appendArgument(asyncCallStacks))
+        return;
     function.appendArgument(callFrameId);
     function.appendArgument(expression);
     function.appendArgument(objectGroup);

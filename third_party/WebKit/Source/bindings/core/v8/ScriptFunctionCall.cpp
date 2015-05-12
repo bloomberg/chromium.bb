@@ -71,18 +71,22 @@ void ScriptCallArgumentHandler::appendArgument(bool argument)
     m_arguments.append(ScriptValue(m_scriptState.get(), v8Boolean(argument, isolate)));
 }
 
-void ScriptCallArgumentHandler::appendArgument(const Vector<ScriptValue>& argument)
+bool ScriptCallArgumentHandler::appendArgument(const Vector<ScriptValue>& argument)
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
     v8::Local<v8::Array> result = v8::Array::New(isolate, argument.size());
     for (size_t i = 0; i < argument.size(); ++i) {
-        if (argument[i].scriptState() != m_scriptState)
-            result->Set(v8::Integer::New(isolate, i), v8::Undefined(isolate));
+        v8::Local<v8::Value> value;
+        if (argument[i].scriptState() == m_scriptState)
+            value = argument[i].v8Value();
         else
-            result->Set(v8::Integer::New(isolate, i), argument[i].v8Value());
+            value = v8::Undefined(isolate);
+        if (!v8CallBoolean(result->Set(m_scriptState->context(), v8::Integer::New(isolate, i), value)))
+            return false;
     }
     m_arguments.append(ScriptValue(m_scriptState.get(), result));
+    return true;
 }
 
 void ScriptCallArgumentHandler::appendUndefinedArgument()

@@ -396,10 +396,14 @@ void npObjectPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info,
                 IdentifierRep* identifier = static_cast<IdentifierRep*>(identifiers[i]);
                 if (namedProperty == identifier->m_isString) {
                     ASSERT(propertyIndex < propertiesCount);
+                    v8::Local<v8::Value> value;
                     if (namedProperty)
-                        properties->Set(v8::Integer::New(info.GetIsolate(), propertyIndex++), v8AtomicString(info.GetIsolate(), identifier->string()));
+                        value = v8AtomicString(info.GetIsolate(), identifier->string());
                     else
-                        properties->Set(v8::Integer::New(info.GetIsolate(), propertyIndex++), v8::Integer::New(info.GetIsolate(), identifier->number()));
+                        value = v8::Integer::New(info.GetIsolate(), identifier->number());
+                    v8::Local<v8::Number> index = v8::Integer::New(info.GetIsolate(), propertyIndex++);
+                    if (!v8CallBoolean(properties->Set(info.GetIsolate()->GetCurrentContext(), index, value)))
+                        return;
                 }
             }
 

@@ -25,7 +25,7 @@ protected:
     Timing applyTimingInputNumber(String timingProperty, double timingPropertyValue)
     {
         v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-        setV8ObjectPropertyAsNumber(timingInput, timingProperty, timingPropertyValue);
+        setV8ObjectPropertyAsNumber(m_isolate, timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
         V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
         return TimingInput::convert(timingInputDictionary);
@@ -34,7 +34,7 @@ protected:
     Timing applyTimingInputString(String timingProperty, String timingPropertyValue)
     {
         v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-        setV8ObjectPropertyAsString(timingInput, timingProperty, timingPropertyValue);
+        setV8ObjectPropertyAsString(m_isolate, timingInput, timingProperty, timingPropertyValue);
         KeyframeEffectOptions timingInputDictionary;
         V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
         return TimingInput::convert(timingInputDictionary);

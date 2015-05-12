@@ -207,7 +207,8 @@ inline v8::Local<v8::Value> toV8SequenceInternal(const Sequence& sequence, v8::L
         v8::Local<v8::Value> value = toV8(*iter, creationContext, isolate);
         if (value.IsEmpty())
             value = v8::Undefined(isolate);
-        array->Set(v8::Integer::New(isolate, index++), value);
+        if (!v8CallBoolean(array->Set(isolate->GetCurrentContext(), v8::Integer::New(isolate, index++), value)))
+            return v8::Local<v8::Value>();
     }
     return array;
 }
@@ -232,7 +233,8 @@ inline v8::Local<v8::Value> toV8(const Vector<std::pair<String, T>>& value, v8::
         v8::Local<v8::Value> v8Value = toV8(value[i].second, creationContext, isolate);
         if (v8Value.IsEmpty())
             v8Value = v8::Undefined(isolate);
-        object->Set(v8String(isolate, value[i].first), v8Value);
+        if (!v8CallBoolean(object->Set(isolate->GetCurrentContext(), v8String(isolate, value[i].first), v8Value)))
+            return v8::Local<v8::Value>();
     }
     return object;
 }

@@ -10,11 +10,11 @@ namespace blink {
 v8::Local<v8::Object> v8IteratorResultValue(v8::Isolate* isolate, bool done, v8::Local<v8::Value> value)
 {
     v8::Local<v8::Object> result = v8::Object::New(isolate);
-    result->Set(v8String(isolate, "done"), v8Boolean(done, isolate));
     if (value.IsEmpty())
-        result->Set(v8String(isolate, "value"), v8::Undefined(isolate));
-    else
-        result->Set(v8String(isolate, "value"), value);
+        value = v8::Undefined(isolate);
+    if (!v8CallBoolean(result->Set(isolate->GetCurrentContext(), v8String(isolate, "done"), v8Boolean(done, isolate)))
+        || !v8CallBoolean(result->Set(isolate->GetCurrentContext(), v8String(isolate, "value"), value)))
+        return v8::Local<v8::Object>();
     return result;
 }
 

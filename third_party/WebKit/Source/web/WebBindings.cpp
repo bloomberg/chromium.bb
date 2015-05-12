@@ -318,8 +318,12 @@ static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isola
 {
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Array> result = v8::Array::New(isolate, data.size());
-    for (size_t i = 0; i < data.size(); ++i)
-        result->Set(i, v8::Number::New(isolate, data[i]));
+    for (size_t i = 0; i < data.size(); ++i) {
+        if (!v8CallBoolean(result->Set(isolate->GetCurrentContext(), v8::Integer::New(isolate, i), v8::Number::New(isolate, data[i])))) {
+            result.Clear();
+            break;
+        }
+    }
 
     LocalDOMWindow* window = currentDOMWindow(isolate);
     return npCreateV8ScriptObject(isolate, 0, result, window);
@@ -329,8 +333,12 @@ static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isola
 {
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Array> result = v8::Array::New(isolate, data.size());
-    for (size_t i = 0; i < data.size(); ++i)
-        result->Set(i, v8String(isolate, data[i]));
+    for (size_t i = 0; i < data.size(); ++i) {
+        if (!v8CallBoolean(result->Set(isolate->GetCurrentContext(), v8::Integer::New(isolate, i), v8String(isolate, data[i])))) {
+            result.Clear();
+            break;
+        }
+    }
 
     LocalDOMWindow* window = currentDOMWindow(isolate);
     return npCreateV8ScriptObject(isolate, 0, result, window);
