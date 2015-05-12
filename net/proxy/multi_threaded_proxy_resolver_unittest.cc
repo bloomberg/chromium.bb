@@ -526,7 +526,7 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
   // One thread has been provisioned (i.e. one ProxyResolver was created).
   ASSERT_EQ(1u, factory().resolvers().size());
 
-  const int kNumRequests = 9;
+  const int kNumRequests = 8;
   int rv;
   TestCompletionCallback callback[kNumRequests];
   ProxyInfo results[kNumRequests];
@@ -548,33 +548,32 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
 
   base::MessageLoop::current()->RunUntilIdle();
 
-  // We now start 8 requests in parallel -- this will cause the maximum of
-  // three threads to be provisioned (an additional two from what we already
-  // have).
+  // We now block the first resolver to ensure a request is sent to the second
+  // thread.
+  factory().resolvers()[0]->Block();
+  rv = resolver().GetProxyForURL(GURL("http://request1"), &results[1],
+                                 callback[1].callback(), &request[1],
+                                 BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = resolver().GetProxyForURL(GURL("http://request2"), &results[2],
+                                 callback[2].callback(), &request[2],
+                                 BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(0, callback[2].WaitForResult());
+  ASSERT_EQ(2u, factory().resolvers().size());
 
-  for (int i = 1; i < kNumRequests; ++i) {
-    rv = resolver().GetProxyForURL(
-        GURL(base::StringPrintf("http://request%d", i)), &results[i],
-        callback[i].callback(), &request[i], BoundNetLog());
-    EXPECT_EQ(ERR_IO_PENDING, rv);
-  }
-
-  // Cancel 3 of the 8 oustanding requests.
-  resolver().CancelRequest(request[1]);
-  resolver().CancelRequest(request[3]);
-  resolver().CancelRequest(request[6]);
-
-  // Wait for the remaining requests to complete.
-  int kNonCancelledRequests[] = {2, 4, 5, 7, 8};
-  for (size_t i = 0; i < arraysize(kNonCancelledRequests); ++i) {
-    int request_index = kNonCancelledRequests[i];
-    EXPECT_GE(callback[request_index].WaitForResult(), 0);
-  }
-
-  // Check that the cancelled requests never invoked their callback.
-  EXPECT_FALSE(callback[1].have_result());
-  EXPECT_FALSE(callback[3].have_result());
-  EXPECT_FALSE(callback[6].have_result());
+  // We now block the second resolver as well to ensure a request is sent to the
+  // third thread.
+  factory().resolvers()[1]->Block();
+  rv = resolver().GetProxyForURL(GURL("http://request3"), &results[3],
+                                 callback[3].callback(), &request[3],
+                                 BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = resolver().GetProxyForURL(GURL("http://request4"), &results[4],
+                                 callback[4].callback(), &request[4],
+                                 BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(0, callback[4].WaitForResult());
 
   // We should now have a total of 3 threads, each with its own ProxyResolver
   // that will get initialized with the same data.
@@ -587,17 +586,41 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
         << "i=" << i;
   }
 
-  // We don't know the exact ordering that requests ran on threads with,
-  // but we do know the total count that should have reached the threads.
-  // 8 total were submitted, and three were cancelled. Of the three that
-  // were cancelled, one of them (request 1) was cancelled after it had
-  // already been posted to the worker thread. So the resolvers will
-  // have seen 6 total (and 1 from the run prior).
-  int total_count = 0;
-  for (int i = 0; i < 3; ++i) {
-    total_count += factory().resolvers()[i]->request_count();
-  }
-  EXPECT_EQ(7, total_count);
+  // Start and cancel two requests. Since the first two threads are still
+  // blocked, they'll both be serviced by the third thread. The first request
+  // will reach the resolver, but the second will still be queued when canceled.
+  // Start a third request so we can be sure the resolver has completed running
+  // the first request.
+  rv = resolver().GetProxyForURL(GURL("http://request5"), &results[5],
+                                 callback[5].callback(), &request[5],
+                                 BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = resolver().GetProxyForURL(GURL("http://request6"), &results[6],
+                                 callback[6].callback(), &request[6],
+                                 BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = resolver().GetProxyForURL(GURL("http://request7"), &results[7],
+                                 callback[7].callback(), &request[7],
+                                 BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  resolver().CancelRequest(request[5]);
+  resolver().CancelRequest(request[6]);
+
+  EXPECT_EQ(2, callback[7].WaitForResult());
+
+  // Check that the cancelled requests never invoked their callback.
+  EXPECT_FALSE(callback[5].have_result());
+  EXPECT_FALSE(callback[6].have_result());
+
+  // Unblock the first two threads and wait for their requests to complete.
+  factory().resolvers()[0]->Unblock();
+  factory().resolvers()[1]->Unblock();
+  EXPECT_EQ(1, callback[1].WaitForResult());
+  EXPECT_EQ(1, callback[3].WaitForResult());
+
+  EXPECT_EQ(2, factory().resolvers()[0]->request_count());
+  EXPECT_EQ(2, factory().resolvers()[1]->request_count());
+  EXPECT_EQ(3, factory().resolvers()[2]->request_count());
 }
 
 // Tests using two threads. The first request hangs the first thread. Checks
