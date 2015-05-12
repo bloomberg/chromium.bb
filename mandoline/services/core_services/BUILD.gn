@@ -17,6 +17,7 @@ mojo_native_application("core_services") {
   deps = [
     "//base",
     "//components/clipboard:lib",
+    "//components/surfaces:lib",
     "//components/view_manager:view_manager_lib",
     "//mandoline/ui/browser:kiosk_wm_lib",
     "//mojo/application",

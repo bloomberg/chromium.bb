@@ -6,7 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/display.h"
-#include "components/surfaces/context_provider_mojo.h"
+#include "components/surfaces/surfaces_context_provider.h"
 #include "components/surfaces/surfaces_output_surface.h"
 #include "components/surfaces/surfaces_scheduler.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -46,8 +46,8 @@ void DisplayImpl::OnContextCreated(mojo::CommandBufferPtr gles2_client) {
   cc::RendererSettings settings;
   display_.reset(new cc::Display(this, manager_, nullptr, nullptr, settings));
   scheduler_->AddDisplay(display_.get());
-  display_->Initialize(make_scoped_ptr(new mojo::DirectOutputSurface(
-      new mojo::ContextProviderMojo(gles2_client.PassMessagePipe()))));
+  display_->Initialize(make_scoped_ptr(new surfaces::DirectOutputSurface(
+      new surfaces::SurfacesContextProvider(gles2_client.PassMessagePipe()))));
 
   factory_.Create(cc_id_);
   display_->SetSurfaceId(cc_id_, 1.f);

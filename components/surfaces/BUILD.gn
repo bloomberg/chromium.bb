@@ -7,12 +7,24 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 mojo_native_application("surfaces") {
   output_name = "surfaces_service"
   sources = [
-    "context_provider_mojo.cc",
-    "context_provider_mojo.h",
+    "main.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+  ]
+}
+
+source_set("lib") {
+  sources = [
     "display_factory_impl.cc",
     "display_factory_impl.h",
     "display_impl.cc",
     "display_impl.h",
+    "surfaces_context_provider.cc",
+    "surfaces_context_provider.h",
     "surfaces_impl.cc",
     "surfaces_impl.h",
     "surfaces_output_surface.cc",
@@ -36,11 +48,9 @@ mojo_native_application("surfaces") {
     "//mojo/common:tracing_impl",
     "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
-    "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/gles2",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",
-    "//third_party/mojo/src/mojo/public/cpp/system",
     "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
   ]

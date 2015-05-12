@@ -7,8 +7,6 @@
 #include "components/surfaces/display_factory_impl.h"
 #include "components/surfaces/surfaces_impl.h"
 #include "components/surfaces/surfaces_scheduler.h"
-#include "mojo/application/application_runner_chromium.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 namespace surfaces {
 
@@ -46,9 +44,3 @@ void SurfacesServiceApplication::Create(
 }
 
 }  // namespace surfaces
-
-MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(
-      new surfaces::SurfacesServiceApplication);
-  return runner.Run(shell_handle);
-}

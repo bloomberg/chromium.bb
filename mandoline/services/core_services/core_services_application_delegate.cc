@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "components/clipboard/clipboard_application_delegate.h"
+#include "components/surfaces/surfaces_service_application.h"
 #include "components/view_manager/view_manager_app.h"
 #include "mandoline/ui/browser/browser.h"
 #include "mojo/common/message_pump_mojo.h"
@@ -129,6 +130,8 @@ void CoreServicesApplicationDelegate::StartApplication(
   else if (url == "mojo://network_service/")
     delegate.reset(new NetworkServiceDelegate);
 #endif
+  else if (url == "mojo://surfaces_service/")
+    delegate.reset(new surfaces::SurfacesServiceApplication);
   else if (url == "mojo://tracing/")
     delegate.reset(new tracing::TracingApp);
   else if (url == "mojo://view_manager/")

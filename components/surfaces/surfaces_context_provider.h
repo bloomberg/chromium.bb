@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SURFACES_CONTEXT_PROVIDER_MOJO_H_
-#define COMPONENTS_SURFACES_CONTEXT_PROVIDER_MOJO_H_
+#ifndef COMPONENTS_SURFACES_SURFACES_CONTEXT_PROVIDER_H_
+#define COMPONENTS_SURFACES_SURFACES_CONTEXT_PROVIDER_H_
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
@@ -11,11 +11,12 @@
 #include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
-namespace mojo {
+namespace surfaces {
 
-class ContextProviderMojo : public cc::ContextProvider {
+class SurfacesContextProvider : public cc::ContextProvider {
  public:
-  explicit ContextProviderMojo(ScopedMessagePipeHandle command_buffer_handle);
+  explicit SurfacesContextProvider(
+      mojo::ScopedMessagePipeHandle command_buffer_handle);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -37,26 +38,26 @@ class ContextProviderMojo : public cc::ContextProvider {
   base::Lock* GetLock() override;
 
  protected:
-  friend class base::RefCountedThreadSafe<ContextProviderMojo>;
-  ~ContextProviderMojo() override;
+  friend class base::RefCountedThreadSafe<SurfacesContextProvider>;
+  ~SurfacesContextProvider() override;
 
  private:
   static void ContextLostThunk(void* closure) {
-    static_cast<ContextProviderMojo*>(closure)->ContextLost();
+    static_cast<SurfacesContextProvider*>(closure)->ContextLost();
   }
   void ContextLost();
 
   cc::ContextProvider::Capabilities capabilities_;
-  ScopedMessagePipeHandle command_buffer_handle_;
+  mojo::ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
   bool context_lost_;
   LostContextCallback lost_context_callback_;
 
   base::Lock context_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextProviderMojo);
+  DISALLOW_COPY_AND_ASSIGN(SurfacesContextProvider);
 };
 
-}  // namespace mojo
+}  // namespace surfaces
 
-#endif  // COMPONENTS_SURFACES_CONTEXT_PROVIDER_MOJO_H_
+#endif  // COMPONENTS_SURFACES_SURFACES_CONTEXT_PROVIDER_H_
