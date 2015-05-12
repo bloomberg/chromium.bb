@@ -108,7 +108,12 @@ class KillProcessObserver : public content::BrowserChildProcessObserver {
 #endif
 
     // Use a non-zero exit code so it counts as a crash.
-    EXPECT_TRUE(base::Process(handle).Terminate(1, true));
+    // Don't wait for the process after sending the termination signal
+    // (SIGTERM). According to POSIX, doing so causes the resulting zombie to be
+    // removed from the process table. However, Chromium treats an error on
+    // |waitpid| (in this case, ECHILD) as a "normal" termination and doesn't
+    // invoke the process host delegate's OnProcessCrashed().
+    EXPECT_TRUE(base::Process(handle).Terminate(1, false));
     did_kill_ = true;
   }
 
@@ -157,8 +162,7 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndDestroy) {
 // Note: This test is inherently racy because KillProcessObserver lives on the
 // UI thread but ImageDecoder does its work mainly on the IO thread. So the test
 // checks for both possible valid outcomes.
-// BUG(486194): Disabled due to flakyness.
-IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, DISABLED_StartAndKillProcess) {
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndKillProcess) {
   KillProcessObserver observer;
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
