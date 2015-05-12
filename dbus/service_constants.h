@@ -275,6 +275,7 @@ const char kUnregisterDarkSuspendDelayMethod[] = "UnregisterDarkSuspendDelay";
 const char kHandleDarkSuspendReadinessMethod[] = "HandleDarkSuspendReadiness";
 const char kHandlePowerButtonAcknowledgmentMethod[] =
     "HandlePowerButtonAcknowledgment";
+const char kRecordDarkResumeWakeReasonMethod[] = "RecordDarkResumeWakeReason";
 // Signals emitted by powerd.
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";

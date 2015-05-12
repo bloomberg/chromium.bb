@@ -101,3 +101,12 @@ message SuspendReadinessInfo {
   // readiness call.
   optional int32 suspend_id = 2;
 }
+
+// Included in calls to powerd's RecordDarkResumeWakeReason method.
+message DarkResumeWakeReason {
+  // Next ID to use: 2
+
+  // Wake reason that caused the current dark resume.
+  optional string wake_reason = 1;
+}
+
