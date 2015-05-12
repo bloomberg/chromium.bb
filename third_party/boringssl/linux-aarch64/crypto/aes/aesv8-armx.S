@@ -2,7 +2,9 @@
 
 #if __ARM_MAX_ARCH__>=7
 .text
+#if !defined(__clang__)
 .arch	armv8-a+crypto
+#endif
 .align	5
 .Lrcon:
 .long	0x01,0x01,0x01,0x01

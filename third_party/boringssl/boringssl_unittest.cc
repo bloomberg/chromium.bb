@@ -157,10 +157,6 @@ TEST(BoringSSL, ByteString) {
   TestSimple("bytestring_test");
 }
 
-TEST(BoringSSL, ConstantTime) {
-  TestSimple("constant_time_test");
-}
-
 TEST(BoringSSL, Cipher) {
   base::FilePath data_file;
   ASSERT_TRUE(CryptoCipherTestPath(&data_file));
@@ -170,6 +166,14 @@ TEST(BoringSSL, Cipher) {
   args.push_back(data_file.value());
 
   TestProcess("cipher_test", args);
+}
+
+TEST(BoringSSL, CMAC) {
+  TestSimple("cmac_test");
+}
+
+TEST(BoringSSL, ConstantTime) {
+  TestSimple("constant_time_test");
 }
 
 TEST(BoringSSL, DH) {
@@ -201,7 +205,16 @@ TEST(BoringSSL, GCM) {
 }
 
 TEST(BoringSSL, HMAC) {
-  TestSimple("hmac_test");
+  base::FilePath data_file;
+  ASSERT_TRUE(BoringSSLPath(&data_file));
+  data_file = data_file.Append(FILE_PATH_LITERAL("crypto"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("hmac"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("hmac_tests.txt"));
+
+  std::vector<base::CommandLine::StringType> args;
+  args.push_back(data_file.value());
+
+  TestProcess("hmac_test", args);
 }
 
 TEST(BoringSSL, LH) {
@@ -225,7 +238,34 @@ TEST(BoringSSL, ExampleMul) {
 }
 
 TEST(BoringSSL, EVP) {
-  TestSimple("evp_test");
+  base::FilePath data_file;
+  ASSERT_TRUE(BoringSSLPath(&data_file));
+  data_file = data_file.Append(FILE_PATH_LITERAL("crypto"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("evp"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("evp_tests.txt"));
+
+  std::vector<base::CommandLine::StringType> args;
+  args.push_back(data_file.value());
+
+  TestProcess("evp_test", args);
+}
+
+// evp_test is also run on hmac_test's input.
+TEST(BoringSSL, EVPHMAC) {
+  base::FilePath data_file;
+  ASSERT_TRUE(BoringSSLPath(&data_file));
+  data_file = data_file.Append(FILE_PATH_LITERAL("crypto"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("hmac"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("hmac_tests.txt"));
+
+  std::vector<base::CommandLine::StringType> args;
+  args.push_back(data_file.value());
+
+  TestProcess("evp_test", args);
+}
+
+TEST(BoringSSL, EVPExtra) {
+  TestSimple("evp_extra_test");
 }
 
 TEST(BoringSSL, SSL) {
