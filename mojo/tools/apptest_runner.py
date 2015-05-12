@@ -11,7 +11,6 @@ import sys
 
 from mopy import dart_apptest
 from mopy import gtest
-# TODO(msw): Mojo's script pulls in android.py via mojo/devtools/common/pylib.
 from mopy.android import AndroidShell
 from mopy.config import Config
 from mopy.gn import ConfigForGNArgs, ParseGNConfig
@@ -48,7 +47,7 @@ def main():
     paths = Paths(config)
     shell = AndroidShell(paths.target_mojo_shell_path, paths.build_dir,
                          paths.adb_path)
-    extra_args.extend(shell.PrepareShellRun(fixed_port=False))
+    extra_args.extend(shell.PrepareShellRun('localhost'))
   else:
     shell = None
 

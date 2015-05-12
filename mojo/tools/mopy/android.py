@@ -37,8 +37,6 @@ MOJO_SHELL_PACKAGE_NAME = 'org.chromium.mojo.shell'
 
 MAPPING_PREFIX = '--map-origin='
 
-DEFAULT_BASE_PORT = 31337
-
 ZERO = datetime.timedelta(0)
 
 class UTC_TZINFO(datetime.tzinfo):
@@ -272,7 +270,6 @@ class AndroidShell(object):
     """Starts an http server serving files from |path|. Returns the local
     url."""
     assert path
-    print 'starting http for', path
     httpd = _SilentTCPServer(('127.0.0.1', 0), _GetHandlerClassForPath(path))
     atexit.register(httpd.shutdown)
 
@@ -280,7 +277,7 @@ class AndroidShell(object):
     http_thread.daemon = True
     http_thread.start()
 
-    print 'local port=%d' % httpd.server_address[1]
+    print 'Hosting %s at http://127.0.0.1:%d' % (path, httpd.server_address[1])
     return 'http://127.0.0.1:%d/' % self._MapPort(port, httpd.server_address[1])
 
   def _StartHttpServerForOriginMapping(self, mapping, port):
@@ -301,7 +298,7 @@ class AndroidShell(object):
     print 'started server at %s for %s' % (dest, localUrl)
     return parts[0] + '=' + localUrl
 
-  def _StartHttpServerForOriginMappings(self, map_parameters, fixed_port):
+  def _StartHttpServerForOriginMappings(self, map_parameters):
     """Calls _StartHttpServerForOriginMapping for every --map-origin
     argument."""
     if not map_parameters:
@@ -311,15 +308,14 @@ class AndroidShell(object):
         *map(lambda x: x[len(MAPPING_PREFIX):].split(','), map_parameters)))
     sorted(original_values)
     result = []
-    for i, value in enumerate(original_values):
-      result.append(self._StartHttpServerForOriginMapping(
-          value, DEFAULT_BASE_PORT + 1 + i if fixed_port else 0))
+    for value in original_values:
+      result.append(self._StartHttpServerForOriginMapping(value, 0))
     return [MAPPING_PREFIX + ','.join(result)]
 
-  def PrepareShellRun(self, origin=None, fixed_port=True):
-    """ Prepares for StartShell: runs adb as root and installs the apk.  If no
-    --origin is specified, local http server will be set up to serve files from
-    the build directory along with port forwarding.
+  def PrepareShellRun(self, origin=None):
+    """ Prepares for StartShell: runs adb as root and installs the apk.  If the
+    origin specified is 'localhost', a local http server will be set up to serve
+    files from the build directory along with port forwarding.
 
     Returns arguments that should be appended to shell argument list."""
     if 'cannot run as root' in subprocess.check_output(
@@ -331,18 +327,16 @@ class AndroidShell(object):
     atexit.register(self.StopShell)
 
     extra_shell_args = []
+    if origin is 'localhost':
+      origin = self._StartHttpServerForDirectory(self.local_dir, 0)
     if origin:
-      origin_url = origin if origin else self._StartHttpServerForDirectory(
-          self.local_dir, DEFAULT_BASE_PORT if fixed_port else 0)
-      extra_shell_args.append("--origin=" + origin_url)
-
+      extra_shell_args.append("--origin=" + origin)
     return extra_shell_args
 
   def StartShell(self,
                  arguments,
                  stdout=None,
-                 on_application_stop=None,
-                 fixed_port=True):
+                 on_application_stop=None):
     """
     Starts the mojo shell, passing it the given arguments.
 
@@ -370,8 +364,7 @@ class AndroidShell(object):
     # Extract map-origin arguments.
     map_parameters, other_parameters = _Split(arguments, _IsMapOrigin)
     parameters += other_parameters
-    parameters += self._StartHttpServerForOriginMappings(map_parameters,
-                                                         fixed_port)
+    parameters += self._StartHttpServerForOriginMappings(map_parameters)
 
     if parameters:
       encodedParameters = json.dumps(parameters)
