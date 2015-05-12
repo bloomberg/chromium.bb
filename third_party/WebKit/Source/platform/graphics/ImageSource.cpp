@@ -103,15 +103,12 @@ int ImageSource::repetitionCount()
 
 size_t ImageSource::frameCount() const
 {
-    int count = m_decoder ? m_decoder->frameCount() : 0;
-    return count;
+    return m_decoder ? m_decoder->frameCount() : 0;
 }
 
 bool ImageSource::createFrameAtIndex(size_t index, SkBitmap* bitmap)
 {
-    if (!m_decoder)
-        return false;
-    return m_decoder->createFrameAtIndex(index, bitmap);
+    return m_decoder && m_decoder->createFrameAtIndex(index, bitmap);
 }
 
 float ImageSource::frameDurationAtIndex(size_t index) const
@@ -144,7 +141,7 @@ bool ImageSource::frameIsCompleteAtIndex(size_t index) const
     return m_decoder && m_decoder->frameIsCompleteAtIndex(index);
 }
 
-unsigned ImageSource::frameBytesAtIndex(size_t index) const
+size_t ImageSource::frameBytesAtIndex(size_t index) const
 {
     return m_decoder ? m_decoder->frameBytesAtIndex(index) : 0;
 }

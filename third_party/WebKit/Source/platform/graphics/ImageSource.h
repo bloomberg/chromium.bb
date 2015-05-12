@@ -94,6 +94,9 @@ public:
 
     size_t frameCount() const;
 
+    // Attempts to create the requested frame if necessary, and sets the
+    // SkBitmap outparam to the associated bitmap.  Returns whether a valid
+    // bitmap was set.
     bool createFrameAtIndex(size_t, SkBitmap*);
 
     float frameDurationAtIndex(size_t) const;
@@ -101,9 +104,9 @@ public:
     bool frameIsCompleteAtIndex(size_t) const; // Whether or not the frame is fully received.
     ImageOrientation orientationAtIndex(size_t) const; // EXIF image orientation
 
-    // Return the number of bytes in the decoded frame. If the frame is not yet
-    // decoded then return 0.
-    unsigned frameBytesAtIndex(size_t) const;
+    // Returns the number of bytes in the decoded frame. May return 0 if the
+    // frame has not yet begun to decode.
+    size_t frameBytesAtIndex(size_t) const;
 
 private:
     OwnPtr<DeferredImageDecoder> m_decoder;

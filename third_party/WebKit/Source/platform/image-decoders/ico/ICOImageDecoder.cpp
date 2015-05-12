@@ -33,7 +33,6 @@
 
 #include <algorithm>
 
-#include "platform/PlatformInstrumentation.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -70,14 +69,6 @@ void ICOImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
         setDataForPNGDecoderAtIndex(i);
 }
 
-bool ICOImageDecoder::isSizeAvailable()
-{
-    if (!ImageDecoder::isSizeAvailable())
-        decode(0, true);
-
-    return ImageDecoder::isSizeAvailable();
-}
-
 IntSize ICOImageDecoder::size() const
 {
     return m_frameSize.isEmpty() ? ImageDecoder::size() : m_frameSize;
@@ -93,36 +84,6 @@ bool ICOImageDecoder::setSize(unsigned width, unsigned height)
     // The size calculated inside the BMPImageReader had better match the one in
     // the icon directory.
     return m_frameSize.isEmpty() ? ImageDecoder::setSize(width, height) : ((IntSize(width, height) == m_frameSize) || setFailed());
-}
-
-size_t ICOImageDecoder::frameCount()
-{
-    decode(0, true);
-    if (m_frameBufferCache.isEmpty()) {
-        m_frameBufferCache.resize(m_dirEntries.size());
-        for (size_t i = 0; i < m_dirEntries.size(); ++i)
-            m_frameBufferCache[i].setPremultiplyAlpha(m_premultiplyAlpha);
-    }
-    // CAUTION: We must not resize m_frameBufferCache again after this, as
-    // decodeAtIndex() may give a BMPImageReader a pointer to one of the
-    // entries.
-    return m_frameBufferCache.size();
-}
-
-ImageFrame* ICOImageDecoder::frameBufferAtIndex(size_t index)
-{
-    // Ensure |index| is valid.
-    if (index >= frameCount())
-        return 0;
-
-    ImageFrame* buffer = &m_frameBufferCache[index];
-    if (buffer->status() != ImageFrame::FrameComplete) {
-        PlatformInstrumentation::willDecodeImage("ICO");
-        decode(index, false);
-        PlatformInstrumentation::didDecodeImage();
-    }
-    buffer->notifyBitmapIfPixelsChanged();
-    return buffer;
 }
 
 bool ICOImageDecoder::setFailed()
@@ -157,6 +118,12 @@ bool ICOImageDecoder::compareEntries(const IconDirectoryEntry& a, const IconDire
     const int aEntryArea = a.m_size.width() * a.m_size.height();
     const int bEntryArea = b.m_size.width() * b.m_size.height();
     return (aEntryArea == bEntryArea) ? (a.m_bitCount > b.m_bitCount) : (aEntryArea > bEntryArea);
+}
+
+size_t ICOImageDecoder::decodeFrameCount()
+{
+    decodeSize();
+    return m_dirEntries.size();
 }
 
 void ICOImageDecoder::setDataForPNGDecoderAtIndex(size_t index)

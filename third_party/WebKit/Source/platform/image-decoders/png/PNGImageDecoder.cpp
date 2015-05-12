@@ -39,7 +39,6 @@
 #include "config.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
-#include "platform/PlatformInstrumentation.h"
 #include "wtf/PassOwnPtr.h"
 
 #include "png.h"
@@ -135,10 +134,7 @@ public:
             m_readOffset += segmentLength;
             m_currentBufferSize = m_readOffset;
             png_process_data(m_png, m_info, reinterpret_cast<png_bytep>(const_cast<char*>(segment)), segmentLength);
-            // We explicitly specify the superclass isSizeAvailable() because we
-            // merely want to check if we've managed to set the size, not
-            // (recursively) trigger additional decoding if we haven't.
-            if (sizeOnly ? m_decoder->ImageDecoder::isSizeAvailable() : m_decoder->isComplete())
+            if (sizeOnly ? m_decoder->isDecodedSizeAvailable() : m_decoder->isComplete())
                 return true;
         }
 
@@ -216,35 +212,6 @@ PNGImageDecoder::PNGImageDecoder(ImageSource::AlphaOption alphaOption, ImageSour
 
 PNGImageDecoder::~PNGImageDecoder()
 {
-}
-
-bool PNGImageDecoder::isSizeAvailable()
-{
-    if (!ImageDecoder::isSizeAvailable())
-         decode(true);
-
-    return ImageDecoder::isSizeAvailable();
-}
-
-ImageFrame* PNGImageDecoder::frameBufferAtIndex(size_t index)
-{
-    if (index)
-        return 0;
-
-    if (m_frameBufferCache.isEmpty()) {
-        m_frameBufferCache.resize(1);
-        m_frameBufferCache[0].setPremultiplyAlpha(m_premultiplyAlpha);
-    }
-
-    ImageFrame& frame = m_frameBufferCache[0];
-    if (frame.status() != ImageFrame::FrameComplete) {
-        PlatformInstrumentation::willDecodeImage("PNG");
-        decode(false);
-        PlatformInstrumentation::didDecodeImage();
-    }
-
-    frame.notifyBitmapIfPixelsChanged();
-    return &frame;
 }
 
 #if USE(QCMSLIB)

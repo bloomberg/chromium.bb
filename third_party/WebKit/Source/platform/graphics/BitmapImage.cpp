@@ -184,13 +184,8 @@ void BitmapImage::cacheFrame(size_t index)
     if (frameSize != m_size)
         m_hasUniformFrameSize = false;
 
-    if (created) {
-        int deltaBytes = safeCast<int>(m_frames[index].m_frameBytes);
-        // The fully-decoded frame will subsume the partially decoded data used
-        // to determine image properties.
-        if (imageObserver())
-            imageObserver()->decodedSizeChanged(this, deltaBytes);
-    }
+    if (created && imageObserver())
+        imageObserver()->decodedSizeChanged(this, safeCast<int>(m_frames[index].m_frameBytes));
 }
 
 void BitmapImage::updateSize() const
@@ -241,12 +236,12 @@ bool BitmapImage::dataChanged(bool allDataReceived)
     // start of the frame data), and any or none of them might be the particular
     // frame affected by appending new data here. Thus we have to clear all the
     // incomplete frames to be safe.
-    unsigned frameBytesCleared = 0;
+    size_t frameBytesCleared = 0;
     for (size_t i = 0; i < m_frames.size(); ++i) {
         // NOTE: Don't call frameIsCompleteAtIndex() here, that will try to
         // decode any uncached (i.e. never-decoded or
         // cleared-on-a-previous-pass) frames!
-        unsigned frameBytes = m_frames[i].m_frameBytes;
+        size_t frameBytes = m_frames[i].m_frameBytes;
         if (m_frames[i].m_haveMetadata && !m_frames[i].m_isComplete)
             frameBytesCleared += (m_frames[i].clear(true) ? frameBytes : 0);
     }

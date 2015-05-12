@@ -21,6 +21,7 @@
 #include "config.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
+#include "platform/PlatformInstrumentation.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
@@ -114,6 +115,36 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     return nullptr;
 }
 
+size_t ImageDecoder::frameCount()
+{
+    const size_t oldSize = m_frameBufferCache.size();
+    const size_t newSize = decodeFrameCount();
+    if (oldSize != newSize) {
+        m_frameBufferCache.resize(newSize);
+        for (size_t i = oldSize; i < newSize; ++i) {
+            m_frameBufferCache[i].setPremultiplyAlpha(m_premultiplyAlpha);
+            initializeNewFrame(i);
+        }
+    }
+    return newSize;
+}
+
+ImageFrame* ImageDecoder::frameBufferAtIndex(size_t index)
+{
+    if (index >= frameCount())
+        return 0;
+
+    ImageFrame* frame = &m_frameBufferCache[index];
+    if (frame->status() != ImageFrame::FrameComplete) {
+        PlatformInstrumentation::willDecodeImage(filenameExtension());
+        decode(index);
+        PlatformInstrumentation::didDecodeImage();
+    }
+
+    frame->notifyBitmapIfPixelsChanged();
+    return frame;
+}
+
 bool ImageDecoder::frameHasAlphaAtIndex(size_t index) const
 {
     return !frameIsCompleteAtIndex(index) || m_frameBufferCache[index].hasAlpha();
@@ -125,12 +156,11 @@ bool ImageDecoder::frameIsCompleteAtIndex(size_t index) const
         (m_frameBufferCache[index].status() == ImageFrame::FrameComplete);
 }
 
-unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
+size_t ImageDecoder::frameBytesAtIndex(size_t index) const
 {
-    if (m_frameBufferCache.size() <= index || m_frameBufferCache[index].status() == ImageFrame::FrameEmpty)
+    if (index >= m_frameBufferCache.size() || m_frameBufferCache[index].status() == ImageFrame::FrameEmpty)
         return 0;
-    // FIXME: Use the dimension of the requested frame.
-    return m_size.area() * sizeof(ImageFrame::PixelData);
+    return frameSizeAtIndex(index).area() * sizeof(ImageFrame::PixelData);
 }
 
 bool ImageDecoder::deferredImageDecodingEnabled()

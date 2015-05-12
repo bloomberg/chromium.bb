@@ -58,7 +58,7 @@ public:
         m_generator = ImageFrameGenerator::create(fullSize(), m_data, false);
         useMockImageDecoderFactory();
         m_decodersDestroyed = 0;
-        m_frameBufferRequestCount = 0;
+        m_decodeRequestCount = 0;
         m_status = ImageFrame::FrameEmpty;
         m_frameCount = 1;
     }
@@ -73,9 +73,9 @@ public:
         ++m_decodersDestroyed;
     }
 
-    virtual void frameBufferRequested() override
+    virtual void decodeRequested() override
     {
-        ++m_frameBufferRequestCount;
+        ++m_decodeRequestCount;
     }
 
     virtual ImageFrame::Status status() override
@@ -116,7 +116,7 @@ protected:
     RefPtr<SharedBuffer> m_data;
     RefPtr<ImageFrameGenerator> m_generator;
     int m_decodersDestroyed;
-    int m_frameBufferRequestCount;
+    int m_decodeRequestCount;
     ImageFrame::Status m_status;
     ImageFrame::Status m_nextFrameStatus;
     size_t m_frameCount;
@@ -128,11 +128,11 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecode)
 
     char buffer[100 * 100 * 4];
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(1, m_frameBufferRequestCount);
+    EXPECT_EQ(1, m_decodeRequestCount);
 
     addNewData();
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(2, m_frameBufferRequestCount);
+    EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
 }
 
@@ -142,19 +142,19 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete)
 
     char buffer[100 * 100 * 4];
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(1, m_frameBufferRequestCount);
+    EXPECT_EQ(1, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
 
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
 
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(2, m_frameBufferRequestCount);
+    EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
 
     // Decoder created again.
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(3, m_frameBufferRequestCount);
+    EXPECT_EQ(3, m_decodeRequestCount);
 }
 
 static void decodeThreadMain(ImageFrameGenerator* generator)
@@ -169,7 +169,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
 
     char buffer[100 * 100 * 4];
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(1, m_frameBufferRequestCount);
+    EXPECT_EQ(1, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
 
     // LocalFrame can now be decoded completely.
@@ -178,12 +178,12 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
     thread->postTask(FROM_HERE, new Task(WTF::bind(&decodeThreadMain, m_generator.get())));
     thread.clear();
-    EXPECT_EQ(2, m_frameBufferRequestCount);
+    EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
 
     // Decoder created again.
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(3, m_frameBufferRequestCount);
+    EXPECT_EQ(3, m_decodeRequestCount);
 }
 
 TEST_F(ImageFrameGeneratorTest, frameHasAlpha)
@@ -193,17 +193,18 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha)
     char buffer[100 * 100 * 4];
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_TRUE(m_generator->hasAlpha(0));
-    EXPECT_EQ(1, m_frameBufferRequestCount);
+    EXPECT_EQ(1, m_decodeRequestCount);
 
     ImageDecoder* tempDecoder = 0;
     EXPECT_TRUE(ImageDecodingStore::instance().lockDecoder(m_generator.get(), fullSize(), &tempDecoder));
     ASSERT_TRUE(tempDecoder);
-    static_cast<MockImageDecoder*>(tempDecoder)->setFrameHasAlpha(false);
+    tempDecoder->frameBufferAtIndex(0)->setHasAlpha(false);
     ImageDecodingStore::instance().unlockDecoder(m_generator.get(), tempDecoder);
+    EXPECT_EQ(2, m_decodeRequestCount);
 
     setFrameStatus(ImageFrame::FrameComplete);
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(2, m_frameBufferRequestCount);
+    EXPECT_EQ(3, m_decodeRequestCount);
     EXPECT_FALSE(m_generator->hasAlpha(0));
 }
 
@@ -214,20 +215,20 @@ TEST_F(ImageFrameGeneratorTest, removeMultiFrameDecoder)
 
     char buffer[100 * 100 * 4];
     m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
-    EXPECT_EQ(1, m_frameBufferRequestCount);
+    EXPECT_EQ(1, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
 
     setFrameStatus(ImageFrame::FrameComplete);
 
     m_generator->decodeAndScale(imageInfo(), 1, buffer, 100 * 4);
-    EXPECT_EQ(2, m_frameBufferRequestCount);
+    EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
 
     setFrameStatus(ImageFrame::FrameComplete);
 
     // Multi frame decoder should be removed.
     m_generator->decodeAndScale(imageInfo(), 2, buffer, 100 * 4);
-    EXPECT_EQ(3, m_frameBufferRequestCount);
+    EXPECT_EQ(3, m_decodeRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
 }
 

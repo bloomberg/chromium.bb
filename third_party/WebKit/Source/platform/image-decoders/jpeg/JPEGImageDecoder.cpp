@@ -688,14 +688,6 @@ JPEGImageDecoder::~JPEGImageDecoder()
 {
 }
 
-bool JPEGImageDecoder::isSizeAvailable()
-{
-    if (!ImageDecoder::isSizeAvailable())
-         decode(true);
-
-    return ImageDecoder::isSizeAvailable();
-}
-
 bool JPEGImageDecoder::setSize(unsigned width, unsigned height)
 {
     if (!ImageDecoder::setSize(width, height))
@@ -737,11 +729,11 @@ unsigned JPEGImageDecoder::desiredScaleNumerator() const
     return scaleNumerator;
 }
 
-bool JPEGImageDecoder::canDecodeToYUV() const
+bool JPEGImageDecoder::canDecodeToYUV()
 {
-    ASSERT(ImageDecoder::isSizeAvailable() && m_reader);
-
-    return m_reader->info()->out_color_space == JCS_YCbCr;
+    // Calling isSizeAvailable() ensures the reader is created and the output
+    // color space is set.
+    return isSizeAvailable() && m_reader->info()->out_color_space == JCS_YCbCr;
 }
 
 bool JPEGImageDecoder::decodeToYUV()
@@ -752,27 +744,6 @@ bool JPEGImageDecoder::decodeToYUV()
     decode(false);
     PlatformInstrumentation::didDecodeImage();
     return !failed();
-}
-
-ImageFrame* JPEGImageDecoder::frameBufferAtIndex(size_t index)
-{
-    if (index)
-        return 0;
-
-    if (m_frameBufferCache.isEmpty()) {
-        m_frameBufferCache.resize(1);
-        m_frameBufferCache[0].setPremultiplyAlpha(m_premultiplyAlpha);
-    }
-
-    ImageFrame& frame = m_frameBufferCache[0];
-    if (frame.status() != ImageFrame::FrameComplete) {
-        PlatformInstrumentation::willDecodeImage("JPEG");
-        decode(false);
-        PlatformInstrumentation::didDecodeImage();
-    }
-
-    frame.notifyBitmapIfPixelsChanged();
-    return &frame;
 }
 
 bool JPEGImageDecoder::setFailed()

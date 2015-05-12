@@ -58,7 +58,7 @@ public:
 
     String filenameExtension() const;
 
-    bool createFrameAtIndex(size_t, SkBitmap*) WARN_UNUSED_RETURN;
+    bool createFrameAtIndex(size_t, SkBitmap*);
 
     void setData(SharedBuffer& data, bool allDataReceived);
 
@@ -72,7 +72,7 @@ public:
     bool frameHasAlphaAtIndex(size_t index) const;
     bool frameIsCompleteAtIndex(size_t) const;
     float frameDurationAtIndex(size_t) const;
-    unsigned frameBytesAtIndex(size_t index) const;
+    size_t frameBytesAtIndex(size_t index) const;
     ImageOrientation orientationAtIndex(size_t index) const;
     bool hotSpot(IntPoint&) const;
 

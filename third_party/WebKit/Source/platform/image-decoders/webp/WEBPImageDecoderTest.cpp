@@ -241,13 +241,17 @@ void testInvalidImage(const char* webpFile, bool parseErrorExpected)
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
-    if (parseErrorExpected)
+    if (parseErrorExpected) {
         EXPECT_EQ(0u, decoder->frameCount());
-    else
-        EXPECT_LT(0u, decoder->frameCount());
-    ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    EXPECT_FALSE(frame);
+        EXPECT_FALSE(decoder->frameBufferAtIndex(0));
+    } else {
+        EXPECT_GT(decoder->frameCount(), 0u);
+        ImageFrame* frame = decoder->frameBufferAtIndex(0);
+        ASSERT_TRUE(frame);
+        EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    }
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
+    EXPECT_TRUE(decoder->failed());
 }
 
 uint32_t premultiplyColor(uint32_t c)
@@ -475,10 +479,17 @@ TEST(AnimatedWebPTests, truncatedLastFrame)
 
     size_t frameCount = 8;
     EXPECT_EQ(frameCount, decoder->frameCount());
-    ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
-    EXPECT_FALSE(frame);
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_FALSE(decoder->failed());
+    frame = decoder->frameBufferAtIndex(frameCount - 1);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_TRUE(decoder->failed());
     frame = decoder->frameBufferAtIndex(0);
-    EXPECT_FALSE(frame);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
 }
 
 TEST(AnimatedWebPTests, truncatedInBetweenFrame)
@@ -490,8 +501,13 @@ TEST(AnimatedWebPTests, truncatedInBetweenFrame)
     RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), fullData->size() - 1);
     decoder->setData(data.get(), false);
 
-    ImageFrame* frame = decoder->frameBufferAtIndex(2);
-    EXPECT_FALSE(frame);
+    ImageFrame* frame = decoder->frameBufferAtIndex(1);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    frame = decoder->frameBufferAtIndex(2);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_TRUE(decoder->failed());
 }
 
 // Reproduce a crash that used to happen for a specific file with specific sequence of method calls.
@@ -508,13 +524,19 @@ TEST(AnimatedWebPTests, reproCrash)
     RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), partialSize);
     decoder->setData(data.get(), false);
     EXPECT_EQ(1u, decoder->frameCount());
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_FALSE(decoder->failed());
 
     // Parse full data now. The error in bitstream should now be detected.
     decoder->setData(fullData.get(), true);
-    EXPECT_EQ(0u, decoder->frameCount());
-    ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    EXPECT_FALSE(frame);
+    EXPECT_EQ(1u, decoder->frameCount());
+    frame = decoder->frameBufferAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
+    EXPECT_TRUE(decoder->failed());
 }
 
 TEST(AnimatedWebPTests, progressiveDecode)

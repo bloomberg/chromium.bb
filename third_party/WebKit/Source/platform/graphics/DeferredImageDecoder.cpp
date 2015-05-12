@@ -92,27 +92,22 @@ bool DeferredImageDecoder::createFrameAtIndex(size_t index, SkBitmap* bitmap)
 {
     prepareLazyDecodedFrames();
     if (index < m_frameData.size()) {
-        // ImageFrameGenerator has the latest known alpha state. There will
-        // be a performance boost if this frame is opaque.
+        // ImageFrameGenerator has the latest known alpha state. There will be a
+        // performance boost if this frame is opaque.
         *bitmap = createBitmap(index);
-        if (m_frameGenerator->hasAlpha(index)) {
-            m_frameData[index].m_hasAlpha = true;
-            bitmap->setAlphaType(kPremul_SkAlphaType);
-        } else {
-            m_frameData[index].m_hasAlpha = false;
-            bitmap->setAlphaType(kOpaque_SkAlphaType);
-        }
-        m_frameData[index].m_frameBytes = m_size.area() *  sizeof(ImageFrame::PixelData);
+        FrameData* frameData = &m_frameData[index];
+        frameData->m_hasAlpha = m_frameGenerator->hasAlpha(index);
+        bitmap->setAlphaType(frameData->m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+        frameData->m_frameBytes = m_size.area() *  sizeof(ImageFrame::PixelData);
         return true;
     }
-    if (m_actualDecoder) {
-        ImageFrame* buffer = m_actualDecoder->frameBufferAtIndex(index);
-        if (!buffer || buffer->status() == ImageFrame::FrameEmpty)
-            return false;
-        *bitmap = buffer->bitmap();
-        return true;
-    }
-    return false;
+    if (!m_actualDecoder)
+        return false;
+    ImageFrame* buffer = m_actualDecoder->frameBufferAtIndex(index);
+    if (!buffer || buffer->status() == ImageFrame::FrameEmpty)
+        return false;
+    *bitmap = buffer->bitmap();
+    return true;
 }
 
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
@@ -204,7 +199,7 @@ float DeferredImageDecoder::frameDurationAtIndex(size_t index) const
     return 0;
 }
 
-unsigned DeferredImageDecoder::frameBytesAtIndex(size_t index) const
+size_t DeferredImageDecoder::frameBytesAtIndex(size_t index) const
 {
     if (m_actualDecoder)
         return m_actualDecoder->frameBytesAtIndex(index);

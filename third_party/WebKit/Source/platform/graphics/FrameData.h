@@ -52,7 +52,7 @@ public:
     bool m_haveMetadata : 1;
     bool m_isComplete : 1;
     bool m_hasAlpha : 1;
-    unsigned m_frameBytes;
+    size_t m_frameBytes;
 };
 
 } // namespace blink

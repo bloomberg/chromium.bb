@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
-#include "platform/PlatformInstrumentation.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -55,34 +54,6 @@ void BMPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
     ImageDecoder::setData(data, allDataReceived);
     if (m_reader)
         m_reader->setData(data);
-}
-
-bool BMPImageDecoder::isSizeAvailable()
-{
-    if (!ImageDecoder::isSizeAvailable())
-        decode(true);
-
-    return ImageDecoder::isSizeAvailable();
-}
-
-ImageFrame* BMPImageDecoder::frameBufferAtIndex(size_t index)
-{
-    if (index)
-        return 0;
-
-    if (m_frameBufferCache.isEmpty()) {
-        m_frameBufferCache.resize(1);
-        m_frameBufferCache.first().setPremultiplyAlpha(m_premultiplyAlpha);
-    }
-
-    ImageFrame* buffer = &m_frameBufferCache.first();
-    if (buffer->status() != ImageFrame::FrameComplete) {
-        PlatformInstrumentation::willDecodeImage("BMP");
-        decode(false);
-        PlatformInstrumentation::didDecodeImage();
-    }
-    buffer->notifyBitmapIfPixelsChanged();
-    return buffer;
 }
 
 bool BMPImageDecoder::setFailed()

@@ -233,9 +233,6 @@ TEST(JPEGImageDecoderTest, yuv)
 
     OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes());
     decoder->setImagePlanes(imagePlanes.release());
-    bool sizeIsAvailable = decoder->isSizeAvailable();
-    ASSERT_TRUE(sizeIsAvailable);
-
-    bool canDecodeToYUV = decoder->canDecodeToYUV();
-    ASSERT_FALSE(canDecodeToYUV);
+    ASSERT_TRUE(decoder->isSizeAvailable());
+    ASSERT_FALSE(decoder->canDecodeToYUV());
 }

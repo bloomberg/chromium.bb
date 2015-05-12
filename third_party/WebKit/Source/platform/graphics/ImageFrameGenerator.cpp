@@ -68,9 +68,7 @@ private:
 
 static bool updateYUVComponentSizes(ImageDecoder* decoder, SkISize componentSizes[3], ImageDecoder::SizeType sizeType)
 {
-    // canDecodeToYUV() has to be called AFTER isSizeAvailable(),
-    // otherwise the output color space may not be set in the decoder.
-    if (!decoder->isSizeAvailable() || !decoder->canDecodeToYUV())
+    if (!decoder->canDecodeToYUV())
         return false;
 
     IntSize size = decoder->decodedYUVSize(0, sizeType);

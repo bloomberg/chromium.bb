@@ -82,7 +82,7 @@ public:
         m_lazyDecoder = DeferredImageDecoder::createForTesting(decoder.release());
         m_surface.reset(SkSurface::NewRasterN32Premul(100, 100));
         ASSERT_TRUE(m_surface.get());
-        m_frameBufferRequestCount = 0;
+        m_decodeRequestCount = 0;
         m_repetitionCount = cAnimationNone;
         m_status = ImageFrame::FrameComplete;
         m_frameDuration = 0;
@@ -99,9 +99,9 @@ public:
         m_actualDecoder = 0;
     }
 
-    virtual void frameBufferRequested() override
+    virtual void decodeRequested() override
     {
-        ++m_frameBufferRequestCount;
+        ++m_decodeRequestCount;
     }
 
     virtual size_t frameCount() override
@@ -139,7 +139,7 @@ protected:
     MockImageDecoder* m_actualDecoder;
     OwnPtr<DeferredImageDecoder> m_lazyDecoder;
     SkAutoTUnref<SkSurface> m_surface;
-    int m_frameBufferRequestCount;
+    int m_decodeRequestCount;
     RefPtr<SharedBuffer> m_data;
     size_t m_frameCount;
     int m_repetitionCount;
@@ -162,10 +162,10 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(bitmap, 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
-    EXPECT_EQ(0, m_frameBufferRequestCount);
+    EXPECT_EQ(0, m_decodeRequestCount);
 
     m_surface->getCanvas()->drawPicture(picture.get());
-    EXPECT_EQ(0, m_frameBufferRequestCount);
+    EXPECT_EQ(0, m_decodeRequestCount);
 
     SkBitmap canvasBitmap;
     canvasBitmap.allocN32Pixels(100, 100);
@@ -222,13 +222,13 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(bitmap, 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
-    EXPECT_EQ(0, m_frameBufferRequestCount);
+    EXPECT_EQ(0, m_decodeRequestCount);
 
     // Create a thread to rasterize SkPicture.
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("RasterThread"));
     thread->postTask(FROM_HERE, new Task(WTF::bind(&rasterizeMain, m_surface->getCanvas(), picture.get())));
     thread.clear();
-    EXPECT_EQ(0, m_frameBufferRequestCount);
+    EXPECT_EQ(0, m_decodeRequestCount);
 
     SkBitmap canvasBitmap;
     canvasBitmap.allocN32Pixels(100, 100);
@@ -255,7 +255,7 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
     unsigned secondId = bitmap.getGenerationID();
-    EXPECT_FALSE(m_frameBufferRequestCount);
+    EXPECT_FALSE(m_decodeRequestCount);
     EXPECT_NE(firstId, secondId);
 }
 
@@ -317,9 +317,9 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(bitmap, 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
-    EXPECT_EQ(0, m_frameBufferRequestCount);
+    EXPECT_EQ(0, m_decodeRequestCount);
     m_surface->getCanvas()->drawPicture(picture.get());
-    EXPECT_EQ(1, m_frameBufferRequestCount);
+    EXPECT_EQ(1, m_decodeRequestCount);
 }
 
 TEST_F(DeferredImageDecoderTest, smallerFrameCount)

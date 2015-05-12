@@ -40,11 +40,9 @@ public:
     PNGImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
     virtual ~PNGImageDecoder();
 
-    // ImageDecoder
+    // ImageDecoder:
     virtual String filenameExtension() const override { return "png"; }
-    virtual bool isSizeAvailable() override;
     virtual bool hasColorProfile() const override { return m_hasColorProfile; }
-    virtual ImageFrame* frameBufferAtIndex(size_t) override;
 
     // Callbacks from libpng
     void headerAvailable();
@@ -54,6 +52,10 @@ public:
     bool isComplete() const;
 
 private:
+    // ImageDecoder:
+    virtual void decodeSize() override { decode(true); }
+    virtual void decode(size_t) override { decode(false); }
+
     // Decodes the image.  If |onlySize| is true, stops decoding after
     // calculating the image size.  If decoding fails but there is no more
     // data coming, sets the "decode failure" flag.

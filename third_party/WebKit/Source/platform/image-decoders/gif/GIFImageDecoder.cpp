@@ -27,7 +27,6 @@
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 
 #include <limits>
-#include "platform/PlatformInstrumentation.h"
 #include "platform/image-decoders/gif/GIFImageReader.h"
 #include "wtf/NotFound.h"
 #include "wtf/PassOwnPtr.h"
@@ -52,20 +51,6 @@ void GIFImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
     ImageDecoder::setData(data, allDataReceived);
     if (m_reader)
         m_reader->setData(data);
-}
-
-bool GIFImageDecoder::isSizeAvailable()
-{
-    if (!ImageDecoder::isSizeAvailable())
-        parse(GIFSizeQuery);
-
-    return ImageDecoder::isSizeAvailable();
-}
-
-size_t GIFImageDecoder::frameCount()
-{
-    parse(GIFFrameCountQuery);
-    return m_frameBufferCache.size();
 }
 
 int GIFImageDecoder::repetitionCount() const
@@ -101,22 +86,6 @@ int GIFImageDecoder::repetitionCount() const
     else if (m_reader && m_reader->loopCount() != cLoopCountNotSeen)
         m_repetitionCount = m_reader->loopCount();
     return m_repetitionCount;
-}
-
-ImageFrame* GIFImageDecoder::frameBufferAtIndex(size_t index)
-{
-    if (index >= frameCount())
-        return 0;
-
-    ImageFrame& frame = m_frameBufferCache[index];
-    if (frame.status() != ImageFrame::FrameComplete) {
-        PlatformInstrumentation::willDecodeImage("GIF");
-        decode(index);
-        PlatformInstrumentation::didDecodeImage();
-    }
-
-    frame.notifyBitmapIfPixelsChanged();
-    return &frame;
 }
 
 bool GIFImageDecoder::frameIsCompleteAtIndex(size_t index) const
@@ -277,6 +246,53 @@ void GIFImageDecoder::clearFrameBuffer(size_t frameIndex)
     ImageDecoder::clearFrameBuffer(frameIndex);
 }
 
+size_t GIFImageDecoder::decodeFrameCount()
+{
+    parse(GIFFrameCountQuery);
+    return m_reader->imagesCount();
+}
+
+void GIFImageDecoder::initializeNewFrame(size_t index)
+{
+    ImageFrame* buffer = &m_frameBufferCache[index];
+    const GIFFrameContext* frameContext = m_reader->frameContext(index);
+    buffer->setOriginalFrameRect(intersection(frameContext->frameRect(), IntRect(IntPoint(), size())));
+    buffer->setDuration(frameContext->delayTime());
+    buffer->setDisposalMethod(frameContext->disposalMethod());
+    buffer->setRequiredPreviousFrameIndex(findRequiredPreviousFrame(index, false));
+}
+
+void GIFImageDecoder::decode(size_t index)
+{
+    parse(GIFFrameCountQuery);
+
+    if (failed())
+        return;
+
+    Vector<size_t> framesToDecode;
+    size_t frameToDecode = index;
+    do {
+        framesToDecode.append(frameToDecode);
+        frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
+    } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
+
+    for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); ++i) {
+        if (!m_reader->decode(*i)) {
+            setFailed();
+            return;
+        }
+
+        // We need more data to continue decoding.
+        if (m_frameBufferCache[*i].status() != ImageFrame::FrameComplete)
+            break;
+    }
+
+    // It is also a fatal error if all data is received and we have decoded all
+    // frames available but the file is truncated.
+    if (index >= m_frameBufferCache.size() - 1 && isAllDataReceived() && m_reader && !m_reader->parseCompleted())
+        setFailed();
+}
+
 void GIFImageDecoder::parse(GIFParseQuery query)
 {
     if (failed())
@@ -287,64 +303,7 @@ void GIFImageDecoder::parse(GIFParseQuery query)
         m_reader->setData(m_data);
     }
 
-    if (!m_reader->parse(query)) {
-        setFailed();
-        return;
-    }
-
-    const size_t oldSize = m_frameBufferCache.size();
-    m_frameBufferCache.resize(m_reader->imagesCount());
-
-    for (size_t i = oldSize; i < m_reader->imagesCount(); ++i) {
-        ImageFrame& buffer = m_frameBufferCache[i];
-        const GIFFrameContext* frameContext = m_reader->frameContext(i);
-        buffer.setPremultiplyAlpha(m_premultiplyAlpha);
-        buffer.setRequiredPreviousFrameIndex(findRequiredPreviousFrame(i, false));
-        buffer.setDuration(frameContext->delayTime());
-        buffer.setDisposalMethod(frameContext->disposalMethod());
-
-        // Initialize the frame rect in our buffer.
-        IntRect frameRect = frameContext->frameRect();
-
-        // Make sure the frameRect doesn't extend outside the buffer.
-        if (frameRect.maxX() > size().width())
-            frameRect.setWidth(size().width() - frameRect.x());
-        if (frameRect.maxY() > size().height())
-            frameRect.setHeight(size().height() - frameRect.y());
-
-        buffer.setOriginalFrameRect(frameRect);
-    }
-}
-
-void GIFImageDecoder::decode(size_t frameIndex)
-{
-    parse(GIFFrameCountQuery);
-
-    if (failed())
-        return;
-
-    Vector<size_t> framesToDecode;
-    size_t frameToDecode = frameIndex;
-    do {
-        framesToDecode.append(frameToDecode);
-        frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
-    } while (frameToDecode != kNotFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
-
-    for (size_t i = framesToDecode.size(); i > 0; --i) {
-        size_t frameIndex = framesToDecode[i - 1];
-        if (!m_reader->decode(frameIndex)) {
-            setFailed();
-            return;
-        }
-
-        // We need more data to continue decoding.
-        if (m_frameBufferCache[frameIndex].status() != ImageFrame::FrameComplete)
-            break;
-    }
-
-    // It is also a fatal error if all data is received and we have decoded all
-    // frames available but the file is truncated.
-    if (frameIndex >= m_frameBufferCache.size() - 1 && isAllDataReceived() && m_reader && !m_reader->parseCompleted())
+    if (!m_reader->parse(query))
         setFailed();
 }
 

@@ -56,7 +56,7 @@ public:
         ++m_decodersDestroyed;
     }
 
-    virtual void frameBufferRequested()
+    virtual void decodeRequested()
     {
         // Decoder is never used by ImageDecodingStore.
         ASSERT_TRUE(false);

@@ -102,12 +102,16 @@ public:
         m_isAllDataReceived = allDataReceived;
     }
 
-    virtual bool isSizeAvailable()
+    bool isSizeAvailable()
     {
-        return !m_failed && m_sizeAvailable;
+        if (m_failed)
+            return false;
+        if (!m_sizeAvailable)
+            decodeSize();
+        return isDecodedSizeAvailable();
     }
 
-    bool isSizeAvailable() const
+    bool isDecodedSizeAvailable() const
     {
         return !m_failed && m_sizeAvailable;
     }
@@ -143,29 +147,31 @@ public:
         return true;
     }
 
-    // Lazily-decodes enough of the image to get the frame count (if
-    // possible), without decoding the individual frames.
-    // FIXME: Right now that has to be done by each subclass; factor the
-    // decode call out and use it here.
-    virtual size_t frameCount() { return 1; }
+    // Calls decodeFrameCount() to get the frame count (if possible), without
+    // decoding the individual frames.  Resizes m_frameBufferCache to the
+    // correct size and returns its size.
+    size_t frameCount();
 
     virtual int repetitionCount() const { return cAnimationNone; }
 
     // Decodes as much of the requested frame as possible, and returns an
     // ImageDecoder-owned pointer.
-    virtual ImageFrame* frameBufferAtIndex(size_t) = 0;
+    ImageFrame* frameBufferAtIndex(size_t);
 
-    // Make the best effort guess to check if the requested frame has alpha channel.
+    // Whether the requested frame has alpha.
     virtual bool frameHasAlphaAtIndex(size_t) const;
 
     // Whether or not the frame is fully received.
     virtual bool frameIsCompleteAtIndex(size_t) const;
 
-    // Duration for displaying a frame in seconds. This method is used by animated images only.
+    // Duration for displaying a frame in seconds. This method is only used by
+    // animated images.
     virtual float frameDurationAtIndex(size_t) const { return 0; }
 
-    // Number of bytes in the decoded frame requested. Return 0 if not yet decoded.
-    virtual unsigned frameBytesAtIndex(size_t) const;
+    // Number of bytes in the decoded frame. Returns 0 if the decoder doesn't
+    // have this frame cached (either because it hasn't been decoded, or because
+    // it has been cleared).
+    size_t frameBytesAtIndex(size_t) const;
 
     ImageOrientation orientation() const { return m_orientation; }
 
@@ -271,7 +277,7 @@ public:
         m_frameBufferCache[0].setMemoryAllocator(allocator);
     }
 
-    virtual bool canDecodeToYUV() const { return false; }
+    virtual bool canDecodeToYUV() { return false; }
     virtual bool decodeToYUV() { return false; }
     virtual void setImagePlanes(PassOwnPtr<ImagePlanes>) { }
 
@@ -296,6 +302,20 @@ protected:
     size_t findRequiredPreviousFrame(size_t frameIndex, bool frameRectIsOpaque);
 
     virtual void clearFrameBuffer(size_t frameIndex);
+
+    // Decodes the image sufficiently to determine the image size.
+    virtual void decodeSize() = 0;
+
+    // Decodes the image sufficiently to determine the number of frames and
+    // returns that number.
+    virtual size_t decodeFrameCount() { return 1; }
+
+    // Performs any additional setup of the requested frame after it has been
+    // initially created, e.g. setting a duration or disposal method.
+    virtual void initializeNewFrame(size_t) { }
+
+    // Decodes the requested frame.
+    virtual void decode(size_t) = 0;
 
     RefPtr<SharedBuffer> m_data; // The encoded data.
     Vector<ImageFrame, 1> m_frameBufferCache;

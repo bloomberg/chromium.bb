@@ -48,7 +48,6 @@ public:
     }
 
     virtual String filenameExtension() const override { return ""; }
-    virtual ImageFrame* frameBufferAtIndex(size_t) override { return 0; }
 
     Vector<ImageFrame, 1>& frameBufferCache()
     {
@@ -68,6 +67,10 @@ public:
         for (size_t i = 0; i < numFrames; ++i)
             m_frameBufferCache[i].setOriginalFrameRect(IntRect(0, 0, width, height));
     }
+
+private:
+    virtual void decodeSize() override { }
+    virtual void decode(size_t index) override { }
 };
 
 TEST(ImageDecoderTest, sizeCalculationMayOverflow)

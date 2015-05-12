@@ -45,13 +45,10 @@ public:
 
     enum GIFParseQuery { GIFSizeQuery, GIFFrameCountQuery };
 
-    // ImageDecoder
+    // ImageDecoder:
     virtual String filenameExtension() const override { return "gif"; }
     virtual void setData(SharedBuffer* data, bool allDataReceived) override;
-    virtual bool isSizeAvailable() override;
-    virtual size_t frameCount() override;
     virtual int repetitionCount() const override;
-    virtual ImageFrame* frameBufferAtIndex(size_t) override;
     virtual bool frameIsCompleteAtIndex(size_t) const override;
     virtual float frameDurationAtIndex(size_t) const override;
     virtual size_t clearCacheExceptFrame(size_t) override;
@@ -68,16 +65,16 @@ public:
     bool parseCompleted() const;
 
 private:
+    // ImageDecoder:
     virtual void clearFrameBuffer(size_t frameIndex) override;
+    virtual void decodeSize() { parse(GIFSizeQuery); }
+    virtual size_t decodeFrameCount() override;
+    virtual void initializeNewFrame(size_t) override;
+    virtual void decode(size_t) override;
 
     // Parses as much as is needed to answer the query, ignoring bitmap
     // data. If parsing fails, sets the "decode failure" flag.
     void parse(GIFParseQuery);
-
-    // Decodes bitmap data of the frame. Depending on the disposal method
-    // of prior frames, also decodes all required prior frames. If decoding
-    // fails, sets the "decode failure" flag.
-    void decode(size_t frameIndex);
 
     // Called to initialize the frame buffer with the given index, based on
     // the previous frame's disposal method. Returns true on success. On
