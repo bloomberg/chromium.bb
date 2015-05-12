@@ -1,7 +1,7 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-style/core-style.html">
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
-<core-style id="settingsMainStyle">
 :host {
   background-color: rgb(219, 222, 224);
   color: black;
@@ -22,4 +22,3 @@
 ::content core-icon-button {
   position: absolute;
 }
-</core-style>

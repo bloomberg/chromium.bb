@@ -41,8 +41,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_JS"
                  file="settings_drawer/settings_drawer.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_STYLE_HTML"
-                 file="settings_main/settings_main_style.html"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_CSS"
+                 file="settings_main/settings_main.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_HTML"
                  file="settings_main/settings_main.html"

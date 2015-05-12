@@ -1,7 +1,8 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
-<link rel="import" href="chrome://resources/polymer/core-transition/core-transition.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://md-settings/routes.html">
+
+<!-- TODO: Uncomment pages as they are upgraded.
 <link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
@@ -9,41 +10,54 @@
 <link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/search_page/search_page.html">
-<link rel="import" href="chrome://md-settings/routes.html">
-<link rel="import" href="settings_main_style.html">
+-->
 
-<polymer-element name="cr-settings-main">
+<dom-module id="cr-settings-main">
+  <link rel="import" type="css" href="settings_main.css">
   <template>
-    <core-style ref="settingsMainStyle"></core-style>
     <div id="mainContainer">
-      <cr-settings-page-header selectedPage="{{$.pageContainer.selectedItem}}">
+      <cr-settings-page-header selected-page="[[selectedPage]]">
       </cr-settings-page-header>
-      <content select="core-icon-button"></content>
-      <more-route-selector selectedParams="{{params}}">
-        <core-animated-pages id="pageContainer"
-            on-core-select="{{onCoreSelect_}}" valueattr="PAGE_ID"
-            transitions="cross-fade">
+      <content select="paper-icon-button"></content>
+      <more-route-selector selected-params="{{params}}">
+        <iron-pages id="pageContainer" selected-item="{{selectedPage}}"
+            on-iron-select="onIronSelect_" attr-for-selected="PAGE_ID">
+          <!-- TODO: Uncomment pages as they are upgraded. -->
 <if expr="chromeos">
+          <!--
           <cr-settings-internet-page route="internet">
           </cr-settings-internet-page>
+          -->
+          <!--
           <cr-settings-internet-detail-page route="internet-detail"
               subpage="true" guid="{{params.guid}}">
           </cr-settings-internet-detail-page>
+          -->
 </if>
+          <!--
           <cr-settings-a11y-page prefs="{{prefs}}" route="a11y">
           </cr-settings-a11y-page>
+          -->
 <if expr="chromeos">
+          <!--
           <cr-settings-date-time-page prefs="{{prefs}}" route="dateTime">
           </cr-settings-date-time-page>
 </if>
+          -->
+          <!--
           <cr-settings-downloads-page prefs="{{prefs}}" route="downloads">
           </cr-settings-downloads-page>
+          -->
+          <!--
           <cr-settings-search-page prefs="{{prefs}}" route="search">
           </cr-settings-search-page>
+          -->
+          <!--
           <cr-settings-search-engines-page prefs="{{prefs}}"
               route="search-engines">
           </cr-settings-search-engines-page>
-        </core-animated-pages>
+          -->
+        </iron-pages>
       </more-route-selector>
     </div>
   </template>

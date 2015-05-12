@@ -8,47 +8,51 @@
  *
  * Example:
  *
- *     <cr-settings-main pages="{{pages}}" selectedPageId="{{selectedId}}">
+ *     <cr-settings-main pages="[[pages]]" selected-page-id="{{selectedId}}">
  *     </cr-settings-main>
  *
- * See cr-settings-drawer for example of use in 'core-drawer-panel'.
+ * See cr-settings-drawer for example of use in 'paper-drawer-panel'.
  *
  * @group Chrome Settings Elements
  * @element cr-settings-main
  */
-Polymer('cr-settings-main', {
-  publish: {
+Polymer({
+  is: 'cr-settings-main',
+
+  properties: {
     /**
      * Preferences state.
      *
-     * @attribute prefs
-     * @type CrSettingsPrefsElement
-     * @default null
+     * @type {?CrSettingsPrefsElement}
      */
-    prefs: null,
+    prefs: {
+      type: Object,
+      notify: true,
+    },
 
     /**
      * Pages that may be shown.
-     *
-     * @attribute pages
-     * @type Array<!Object>
-     * @default null
+     * @type {?Array<!HTMLElement>}
      */
-    pages: null,
+    pages: Array,
+
+    /**
+     * Currently selected page.
+     * @type {?HTMLElement}
+     */
+    selectedPage: {
+      type: Object,
+      notify: true,
+    },
 
     /**
      * ID of the currently selected page.
-     *
-     * @attribute selectedPageId
-     * @type string
-     * default ''
      */
-    selectedPageId: '',
-  },
-
-  /** @override */
-  created: function() {
-    this.pages = [];
+    selectedPageId: {
+      type: String,
+      notify: true,
+      observe: 'selectedPageIdChanged_',
+    },
   },
 
   /** @override */
@@ -62,14 +66,15 @@ Polymer('cr-settings-main', {
   },
 
   /**
-   * Polymer changed event for selectedPageId. See note for onCoreSelect_ below.
+   * Polymer changed event for selectedPageId. See note for onIronSelect_ below.
+   * @private
    */
-  selectedPageIdChanged: function() {
+  selectedPageIdChanged_: function() {
     this.$.pageContainer.selected = this.selectedPageId;
   },
 
   /**
-   * We observe $.pageContainer.on-core-select instead of using data binding
+   * We observe $.pageContainer.on-iron-select instead of using data binding
    * for two reasons:
    * 1) We need to exclude subpages
    * 2) There is a bug with data binding or our useage of it here causing
@@ -78,7 +83,7 @@ Polymer('cr-settings-main', {
    *    fixing this and using filters once we switch to Polymer 0.8.
    * @private
    */
-  onCoreSelect_: function(event) {
+  onIronSelect_: function(event) {
     if (event.target != this.$.pageContainer || !event.detail.isSelected ||
         event.detail.item.subpage) {
       return;
@@ -89,7 +94,6 @@ Polymer('cr-settings-main', {
   /**
    * If no page is selected, selects the first page. This happens on load and
    * when a selected page is removed.
-   *
    * @private
    */
   ensureSelection_: function() {
@@ -100,8 +104,7 @@ Polymer('cr-settings-main', {
   },
 
   /**
-   * Updates the list of pages using the pages in core-animated-pages.
-   *
+   * Updates the list of pages using the pages in iron-pages.
    * @private
    */
   pageContainerUpdated_: function() {
