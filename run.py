@@ -97,15 +97,17 @@ def SetupArch(arch, allow_build=True):
   '''
   env.arch = arch
   # Path to Native NaCl toolchain (glibc)
-  toolchain_arch, tooldir_arch, libdir = {
-      'x86-32': ('x86', 'x86_64', 'lib32'),
-      'x86-64': ('x86', 'x86_64', 'lib'),
-      'arm': ('arm', 'arm', 'lib'),
-      }[arch]
-  env.nnacl_tooldir = os.path.join(env.toolchain_base,
-                                   'nacl_%s_glibc' % toolchain_arch,
-                                   '%s-nacl' % tooldir_arch)
-  env.nnacl_libdir = os.path.join(env.nnacl_tooldir, libdir)
+  # MIPS does not have glibc support.
+  if arch != 'mips32':
+    toolchain_arch, tooldir_arch, libdir = {
+        'x86-32': ('x86', 'x86_64', 'lib32'),
+        'x86-64': ('x86', 'x86_64', 'lib'),
+        'arm': ('arm', 'arm', 'lib'),
+        }[arch]
+    env.nnacl_tooldir = os.path.join(env.toolchain_base,
+                                     'nacl_%s_glibc' % toolchain_arch,
+                                     '%s-nacl' % tooldir_arch)
+    env.nnacl_libdir = os.path.join(env.nnacl_tooldir, libdir)
   env.sel_ldr = FindOrBuildSelLdr(allow_build=allow_build)
   env.irt = FindOrBuildIRT(allow_build=allow_build)
   if arch == 'arm':
