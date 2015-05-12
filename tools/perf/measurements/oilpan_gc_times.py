@@ -134,7 +134,6 @@ def _AddTracingResults(thread, results):
 class _OilpanGCTimesBase(page_test.PageTest):
   def __init__(self, action_name=''):
     super(_OilpanGCTimesBase, self).__init__(action_name)
-    self._timeline_model = None
 
   def WillNavigateToPage(self, page, tab):
     # FIXME: Remove webkit.console when blink.console lands in chromium and
@@ -148,12 +147,10 @@ class _OilpanGCTimesBase(page_test.PageTest):
     tab.browser.platform.tracing_controller.Start(options, category_filter,
                                                   timeout=1000)
 
-  def DidRunActions(self, page, tab):
-    timeline_data = tab.browser.platform.tracing_controller.Stop()
-    self._timeline_model = TimelineModel(timeline_data)
-
   def ValidateAndMeasurePage(self, page, tab, results):
-    threads = self._timeline_model.GetAllThreads()
+    timeline_data = tab.browser.platform.tracing_controller.Stop()
+    timeline_model = TimelineModel(timeline_data)
+    threads = timeline_model.GetAllThreads()
     for thread in threads:
       if thread.name == _CR_RENDERER_MAIN:
         _AddTracingResults(thread, results)
@@ -173,9 +170,10 @@ class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):
     self._interaction = runner.CreateInteraction(_RUN_SMOOTH_ACTIONS)
     self._interaction.Begin()
 
-  def DidRunActions(self, page, tab):
+  def ValidateAndMeasurePage(self, page, tab, results):
     self._interaction.End()
-    super(OilpanGCTimesForSmoothness, self).DidRunActions(page, tab)
+    super(OilpanGCTimesForSmoothness, self).ValidateAndMeasurePage(
+        page, tab, results)
 
 
 class OilpanGCTimesForBlinkPerf(_OilpanGCTimesBase):
@@ -189,9 +187,10 @@ class OilpanGCTimesForBlinkPerf(_OilpanGCTimesBase):
     page.script_to_evaluate_on_commit = self._blink_perf_js
     super(OilpanGCTimesForBlinkPerf, self).WillNavigateToPage(page, tab)
 
-  def DidRunActions(self, page, tab):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('testRunner.isDone', 600)
-    super(OilpanGCTimesForBlinkPerf, self).DidRunActions(page, tab)
+    super(OilpanGCTimesForBlinkPerf, self).ValidateAndMeasurePage(
+        page, tab, results)
 
 
 class OilpanGCTimesForInternals(OilpanGCTimesForBlinkPerf):

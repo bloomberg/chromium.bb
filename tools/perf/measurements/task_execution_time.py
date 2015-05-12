@@ -53,14 +53,15 @@ class TaskExecutionTime(page_test.PageTest):
     tab.browser.platform.tracing_controller.Start(
         options, category_filter, self._TIME_OUT_IN_SECONDS)
 
-  def DidRunActions(self, page, tab):
+  def ValidateAndMeasurePage(self, page, tab, results):
     trace_data = tab.browser.platform.tracing_controller.Stop()
     timeline_model = TimelineModel(trace_data)
 
     self._renderer_process = timeline_model.GetRendererProcessFromTabId(tab.id)
     self._browser_process = timeline_model.browser_process
+    self._AddResults(results)
 
-  def ValidateAndMeasurePage(self, page, tab, results):
+  def _AddResults(self, results):
     self._results = results
 
     for thread in self._BROWSER_THREADS:

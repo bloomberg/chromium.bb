@@ -4,12 +4,16 @@
 
 from measurements import oilpan_gc_times
 
+from telemetry.core import util
 from telemetry.results import page_test_results
 from telemetry.timeline import model
 from telemetry.timeline import slice as slice_data
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
 from telemetry.page import page as page_module
+
+util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
+import mock  # pylint: disable=import-error
 
 
 class TestOilpanGCTimesPage(page_module.Page):
@@ -90,9 +94,12 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     data = self._GenerateDataForParsingOldFormat()
 
     measurement = oilpan_gc_times._OilpanGCTimesBase()
-    measurement._renderer_process = data._renderer_process
-    measurement._timeline_model = data._model
-    measurement.ValidateAndMeasurePage(None, None, data.results)
+
+    tab = mock.MagicMock()
+    with mock.patch(
+        'measurements.oilpan_gc_times.TimelineModel') as MockTimelineModel:
+      MockTimelineModel.return_value = data._model
+      measurement.ValidateAndMeasurePage(None, tab, data.results)
 
     results = data.results
     self.assertEquals(7, len(getMetric(results, 'oilpan_coalesce')))
@@ -121,9 +128,12 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     data = self._GenerateDataForParsing()
 
     measurement = oilpan_gc_times._OilpanGCTimesBase()
-    measurement._renderer_process = data._renderer_process
     measurement._timeline_model = data._model
-    measurement.ValidateAndMeasurePage(None, None, data.results)
+    tab = mock.MagicMock()
+    with mock.patch(
+        'measurements.oilpan_gc_times.TimelineModel') as MockTimelineModel:
+      MockTimelineModel.return_value = data._model
+      measurement.ValidateAndMeasurePage(None, tab, data.results)
 
     results = data.results
     self.assertEquals(8, len(getMetric(results, 'oilpan_coalesce')))

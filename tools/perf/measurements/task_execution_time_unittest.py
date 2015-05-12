@@ -161,7 +161,7 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
       data.AddSlice('task' + str(duration), 0, duration)
 
     # Run the code we are testing.
-    self._measurement.ValidateAndMeasurePage(None, None, data.results)
+    self._measurement._AddResults(data.results)
 
     # Check that the last (i.e. biggest) _NUMBER_OF_RESULTS_TO_DISPLAY get
     # returned in the results.
@@ -187,7 +187,7 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
     data.AddSlice('slow', 0, 1000)
 
     # Run the code we are testing and return results.
-    self._measurement.ValidateAndMeasurePage(None, None, data.results)
+    self._measurement._AddResults(data.results)
     return data
 
   def _GenerateResultsFromMockedIdleData(self):
@@ -217,7 +217,7 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
     data.AddSlice('not_idle', slice_start_time, fast_slice_duration)
 
     # Run the code we are testing.
-    self._measurement.ValidateAndMeasurePage(None, None, data.results)
+    self._measurement._AddResults(data.results)
 
     return data
 

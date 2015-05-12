@@ -23,7 +23,6 @@ class V8GCTimes(page_test.PageTest):
 
   def __init__(self):
     super(V8GCTimes, self).__init__()
-    self._renderer_process = None
 
   def WillNavigateToPage(self, page, tab):
     category_filter = tracing_category_filter.TracingCategoryFilter()
@@ -37,14 +36,11 @@ class V8GCTimes(page_test.PageTest):
     tab.browser.platform.tracing_controller.Start(
         options, category_filter, self._TIME_OUT_IN_SECONDS)
 
-  def DidRunActions(self, page, tab):
+  def ValidateAndMeasurePage(self, page, tab, results):
     trace_data = tab.browser.platform.tracing_controller.Stop()
     timeline_model = TimelineModel(trace_data)
-
-    self._renderer_process = timeline_model.GetRendererProcessFromTabId(tab.id)
-
-  def ValidateAndMeasurePage(self, page, tab, results):
-    self._AddV8MetricsToResults(self._renderer_process, results)
+    renderer_process = timeline_model.GetRendererProcessFromTabId(tab.id)
+    self._AddV8MetricsToResults(renderer_process, results)
 
   def _AddV8MetricsToResults(self, process, results):
     if process is None:
