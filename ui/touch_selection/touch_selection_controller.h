@@ -132,7 +132,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   void DeactivateInsertion();
   void ActivateSelection();
   void DeactivateSelection();
-  void ForceNextUpdateIfInactive();
+  void ResetCachedValuesIfInactive();
 
   gfx::Vector2dF GetStartLineOffset() const;
   gfx::Vector2dF GetEndLineOffset() const;
@@ -145,10 +145,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   TouchSelectionControllerClient* const client_;
   const base::TimeDelta tap_timeout_;
   const float tap_slop_;
-
-  // Whether to force an update on the next selection event even if the
-  // cached selection matches the new selection.
-  bool force_next_update_;
 
   // Controls whether an insertion handle is shown on a tap for an empty
   // editable text.
