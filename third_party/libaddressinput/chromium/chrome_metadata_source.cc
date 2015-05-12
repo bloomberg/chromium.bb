@@ -88,7 +88,7 @@ ChromeMetadataSource::Request::Request(const std::string& key,
 void ChromeMetadataSource::Download(const std::string& key,
                                     const Callback& downloaded) {
   GURL resource(validation_data_url_ + key);
-  if (!resource.SchemeIsSecure()) {
+  if (!resource.SchemeIsCryptographic()) {
     downloaded(false, key, NULL);
     return;
   }

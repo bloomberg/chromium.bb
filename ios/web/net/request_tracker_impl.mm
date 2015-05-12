@@ -288,7 +288,7 @@ struct TrackerCounts {
     status_.content_status = web::SSLStatus::NORMAL_CONTENT;
   }
 
-  if (!url_.SchemeIsSecure()) {
+  if (!url_.SchemeIsCryptographic()) {
     // Should not happen as the sslInfo is valid.
     NOTREACHED();
     status_.security_style = web::SECURITY_STYLE_UNAUTHENTICATED;
@@ -495,7 +495,7 @@ void RequestTrackerImpl::StartRequest(net::URLRequest* request) {
       GURLByRemovingRefFromGURL(url), request);
   counts_.push_back(counts);
   counts_by_request_[request] = counts;
-  if (page_url_.SchemeIsSecure() && !url.SchemeIsSecure())
+  if (page_url_.SchemeIsCryptographic() && !url.SchemeIsCryptographic())
     has_mixed_content_ = true;
   Notify();
 }
@@ -811,7 +811,7 @@ void RequestTrackerImpl::SSLNotify() {
   if (!counts_.size())
     return;  // Nothing yet to notify.
 
-  if (!page_url_.SchemeIsSecure())
+  if (!page_url_.SchemeIsCryptographic())
     return;
 
   const GURL page_origin = page_url_.GetOrigin();
@@ -1103,12 +1103,12 @@ void RequestTrackerImpl::RecomputeMixedContent(
     const TrackerCounts* split_position) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
   // Check if the mixed content before trimming was correct.
-  if (page_url_.SchemeIsSecure() && has_mixed_content_) {
+  if (page_url_.SchemeIsCryptographic() && has_mixed_content_) {
     bool old_url_has_mixed_content = false;
     const GURL origin = page_url_.GetOrigin();
     ScopedVector<TrackerCounts>::iterator it = counts_.begin();
     while (it != counts_.end() && *it != split_position) {
-      if (!(*it)->url.SchemeIsSecure() &&
+      if (!(*it)->url.SchemeIsCryptographic() &&
           origin == (*it)->first_party_for_cookies_origin) {
         old_url_has_mixed_content = true;
         break;
@@ -1168,10 +1168,10 @@ void RequestTrackerImpl::TrimToURL(const GURL& full_url, id user_info) {
 
   // Locate the request with this url, if present.
   bool new_url_has_mixed_content = false;
-  bool url_scheme_is_secure = url.SchemeIsSecure();
+  bool url_scheme_is_secure = url.SchemeIsCryptographic();
   ScopedVector<TrackerCounts>::const_reverse_iterator rit = counts_.rbegin();
   while (rit != counts_.rend() && (*rit)->url != url) {
-    if (url_scheme_is_secure && !(*rit)->url.SchemeIsSecure() &&
+    if (url_scheme_is_secure && !(*rit)->url.SchemeIsCryptographic() &&
         (*rit)->first_party_for_cookies_origin == url.GetOrigin()) {
       new_url_has_mixed_content = true;
     }
@@ -1196,9 +1196,8 @@ void RequestTrackerImpl::TrimToURL(const GURL& full_url, id user_info) {
     if (url_scheme_is_secure && counts_.size()) {
       TrackerCounts* back = counts_.back();
       const GURL& back_url = back->url;
-      if (back_url.SchemeIsSecure() &&
-          back_url.GetOrigin() == url.GetOrigin() &&
-          !back->is_subrequest) {
+      if (back_url.SchemeIsCryptographic() &&
+          back_url.GetOrigin() == url.GetOrigin() && !back->is_subrequest) {
         split_position = back;
       }
     }

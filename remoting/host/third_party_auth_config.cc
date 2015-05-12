@@ -25,7 +25,7 @@ bool ParseUrlPolicy(const std::string& str, GURL* out) {
   }
 // We validate https-vs-http only on Release builds to help with manual testing.
 #if defined(NDEBUG)
-  if (!gurl.SchemeIsSecure()) {
+  if (!gurl.SchemeIsCryptographic()) {
     LOG(ERROR) << "Not a secure URL: " << str;
     return false;
   }

@@ -258,7 +258,7 @@ class RequestTrackerTest : public PlatformTest {
         EXPECT_TRUE(requests_[i]->ssl_info().is_valid());
       }
     }
-    EXPECT_TRUE(!secure == !requests_[i]->url().SchemeIsSecure());
+    EXPECT_TRUE(!secure == !requests_[i]->url().SchemeIsCryptographic());
     return requests_[i];
   }
 

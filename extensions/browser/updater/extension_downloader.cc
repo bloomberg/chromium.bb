@@ -279,7 +279,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
   // by a public key signature like .crx files are.
   scoped_ptr<ManifestFetchData> blacklist_fetch(CreateManifestFetchData(
       extension_urls::GetWebstoreUpdateUrl(), request_id));
-  DCHECK(blacklist_fetch->base_url().SchemeIsSecure());
+  DCHECK(blacklist_fetch->base_url().SchemeIsCryptographic());
   blacklist_fetch->AddExtension(kBlacklistAppID,
                                 version,
                                 &ping_data,
@@ -313,7 +313,7 @@ bool ExtensionDownloader::AddExtensionData(
 
   // Make sure we use SSL for store-hosted extensions.
   if (extension_urls::IsWebstoreUpdateUrl(update_url) &&
-      !update_url.SchemeIsSecure())
+      !update_url.SchemeIsCryptographic())
     update_url = extension_urls::GetWebstoreUpdateUrl();
 
   // Skip extensions with empty IDs.
@@ -589,7 +589,7 @@ void ExtensionDownloader::HandleManifestResults(
       DCHECK(extension_urls::IsBlacklistUpdateUrl(crx_url)) << crx_url;
 
       // Force https (crbug.com/129587).
-      if (!crx_url.SchemeIsSecure()) {
+      if (!crx_url.SchemeIsCryptographic()) {
         url::Replacements<char> replacements;
         std::string scheme("https");
         replacements.SetScheme(scheme.c_str(),
@@ -766,7 +766,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
   extension_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
 
   int load_flags = net::LOAD_DISABLE_CACHE;
-  bool is_secure = fetch->url.SchemeIsSecure();
+  bool is_secure = fetch->url.SchemeIsCryptographic();
   if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
     load_flags |= net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   }

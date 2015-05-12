@@ -86,7 +86,7 @@ std::string ExtractDomainName(const std::string& email_address) {
 }
 
 bool IsGaiaSignonRealm(const GURL& url) {
-  if (!url.SchemeIsSecure())
+  if (!url.SchemeIsCryptographic())
     return false;
 
   return url == GaiaUrls::GetInstance()->gaia_url();

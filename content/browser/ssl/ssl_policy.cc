@@ -251,8 +251,9 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
   if (entry->GetSSL().security_style != SECURITY_STYLE_UNKNOWN)
     return;
 
-  entry->GetSSL().security_style = entry->GetURL().SchemeIsCryptographic() ?
-      SECURITY_STYLE_AUTHENTICATED : SECURITY_STYLE_UNAUTHENTICATED;
+  entry->GetSSL().security_style = entry->GetURL().SchemeIsCryptographic()
+                                       ? SECURITY_STYLE_AUTHENTICATED
+                                       : SECURITY_STYLE_UNAUTHENTICATED;
 }
 
 void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {
