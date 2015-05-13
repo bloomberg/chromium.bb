@@ -104,12 +104,16 @@ void SearchController::InvokeResultAction(SearchResult* result,
   result->InvokeAction(action_index, event_flags);
 }
 
-size_t SearchController::AddGroup(size_t max_results, double boost) {
-  return mixer_->AddGroup(max_results, boost);
+size_t SearchController::AddGroup(size_t max_results,
+                                  double boost,
+                                  double multiplier) {
+  return mixer_->AddGroup(max_results, boost, multiplier);
 }
 
-size_t SearchController::AddOmniboxGroup(size_t max_results, double boost) {
-  return mixer_->AddOmniboxGroup(max_results, boost);
+size_t SearchController::AddOmniboxGroup(size_t max_results,
+                                         double boost,
+                                         double multiplier) {
+  return mixer_->AddOmniboxGroup(max_results, boost, multiplier);
 }
 
 void SearchController::AddProvider(size_t group_id,

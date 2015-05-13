@@ -21,7 +21,8 @@ namespace test {
 
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
-const size_t kMaxOmniboxResults = 0;  // Ignored.
+// Ignored unless AppListMixer field trial is "Blended".
+const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
 const size_t kMaxPeopleResults = 2;
 
@@ -100,6 +101,8 @@ class TestSearchProvider : public SearchProvider {
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };
 
+// TODO(mgiuca): Parameterize this test so it tests both the default and
+// "Blended" states for the AppListMixer field trial.
 class MixerTest : public testing::Test {
  public:
   MixerTest() : is_voice_query_(false) {}
@@ -118,10 +121,11 @@ class MixerTest : public testing::Test {
 
     mixer_.reset(new Mixer(results_.get()));
 
-    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 3.0);
-    size_t omnibox_group_id = mixer_->AddOmniboxGroup(kMaxOmniboxResults, 2.0);
-    size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 1.0);
-    size_t people_group_id = mixer_->AddGroup(kMaxPeopleResults, 0.0);
+    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 3.0, 1.0);
+    size_t omnibox_group_id =
+        mixer_->AddOmniboxGroup(kMaxOmniboxResults, 2.0, 1.0);
+    size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 1.0, 0.5);
+    size_t people_group_id = mixer_->AddGroup(kMaxPeopleResults, 0.0, 1.0);
 
     mixer_->AddProviderToGroup(apps_group_id, providers_[0]);
     mixer_->AddProviderToGroup(omnibox_group_id, providers_[1]);

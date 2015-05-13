@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/field_trial.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/search_result.h"
 
@@ -17,8 +18,18 @@ namespace app_list {
 
 namespace {
 
-// Maximum number of results to show.
+// Maximum number of results to show. Ignored if the AppListMixer field trial is
+// "Blended".
 const size_t kMaxResults = 6;
+
+// The minimum number of results to show, if the AppListMixer field trial is
+// "Blended". If this quota is not reached, the per-group limitations are
+// removed and we try again. (We may still not reach the minumum, but at least
+// we tried.) Ignored if the field trial is off.
+const size_t kMinBlendedResults = 6;
+
+const char kAppListMixerFieldTrialName[] = "AppListMixer";
+const char kAppListMixerFieldTrialEnabled[] = "Blended";
 
 void UpdateResult(const SearchResult& source, SearchResult* target) {
   target->set_display_type(source.display_type());
@@ -26,6 +37,15 @@ void UpdateResult(const SearchResult& source, SearchResult* target) {
   target->set_title_tags(source.title_tags());
   target->set_details(source.details());
   target->set_details_tags(source.details_tags());
+}
+
+// Returns true if the "AppListMixer" trial is set to "Blended". This is an
+// experiment on the new Mixer logic that allows results from different groups
+// to be blended together, rather than stratified.
+bool IsBlendedMixerTrialEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kAppListMixerFieldTrialName);
+  return group_name == kAppListMixerFieldTrialEnabled;
 }
 
 }  // namespace
@@ -45,8 +65,8 @@ bool Mixer::SortData::operator<(const SortData& other) const {
 // Used to group relevant providers together for mixing their results.
 class Mixer::Group {
  public:
-  Group(size_t max_results, double boost)
-      : max_results_(max_results), boost_(boost) {}
+  Group(size_t max_results, double boost, double multiplier)
+      : max_results_(max_results), boost_(boost), multiplier_(multiplier) {}
   ~Group() {}
 
   void AddProvider(SearchProvider* provider) { providers_.push_back(provider); }
@@ -63,6 +83,7 @@ class Mixer::Group {
         // Google+ API). Clamp to that range.
         double relevance = std::min(std::max(result->relevance(), 0.0), 1.0);
 
+        double multiplier = multiplier_;
         double boost = boost_;
         KnownResults::const_iterator known_it =
             known_results.find(result->id());
@@ -90,7 +111,7 @@ class Mixer::Group {
         if (is_voice_query && result->voice_result())
           boost += 4.0;
 
-        results_.push_back(SortData(result, relevance + boost));
+        results_.push_back(SortData(result, relevance * multiplier + boost));
       }
     }
 
@@ -105,6 +126,7 @@ class Mixer::Group {
   typedef std::vector<SearchProvider*> Providers;
   const size_t max_results_;
   const double boost_;
+  const double multiplier_;
 
   Providers providers_;  // Not owned.
   SortedResults results_;
@@ -118,15 +140,23 @@ Mixer::Mixer(AppListModel::SearchResults* ui_results)
 Mixer::~Mixer() {
 }
 
-size_t Mixer::AddGroup(size_t max_results, double boost) {
-  groups_.push_back(new Group(max_results, boost));
+size_t Mixer::AddGroup(size_t max_results, double boost, double multiplier) {
+  // Only consider |boost| if the AppListMixer field trial is default.
+  // Only consider |multiplier| if the AppListMixer field trial is "Blended".
+  if (IsBlendedMixerTrialEnabled())
+    boost = 0.0;
+  else
+    multiplier = 1.0;
+  groups_.push_back(new Group(max_results, boost, multiplier));
   return groups_.size() - 1;
 }
 
-size_t Mixer::AddOmniboxGroup(size_t max_results, double boost) {
+size_t Mixer::AddOmniboxGroup(size_t max_results,
+                              double boost,
+                              double multiplier) {
   // There should not already be an omnibox group.
   DCHECK(!has_omnibox_group_);
-  size_t id = AddGroup(max_results, boost);
+  size_t id = AddGroup(max_results, boost, multiplier);
   omnibox_group_ = id;
   has_omnibox_group_ = true;
   return id;
@@ -141,41 +171,79 @@ void Mixer::MixAndPublish(bool is_voice_query,
   FetchResults(is_voice_query, known_results);
 
   SortedResults results;
-  results.reserve(kMaxResults);
 
-  // Add results from non-omnibox groups first. Limit to the maximum number of
-  // results in each group.
-  for (size_t i = 0; i < groups_.size(); ++i) {
-    if (!has_omnibox_group_ || i != omnibox_group_) {
-      const Group& group = *groups_[i];
+  if (IsBlendedMixerTrialEnabled()) {
+    results.reserve(kMinBlendedResults);
+
+    // Add results from each group. Limit to the maximum number of results in
+    // each group.
+    for (const Group* group : groups_) {
       size_t num_results =
-          std::min(group.results().size(), group.max_results());
-      results.insert(results.end(), group.results().begin(),
-                     group.results().begin() + num_results);
+          std::min(group->results().size(), group->max_results());
+      results.insert(results.end(), group->results().begin(),
+                     group->results().begin() + num_results);
     }
+    // Remove results with duplicate IDs before sorting. If two providers give a
+    // result with the same ID, the result from the provider with the *lower
+    // group number* will be kept (e.g., an app result takes priority over a web
+    // store result with the same ID).
+    RemoveDuplicates(&results);
+    std::sort(results.begin(), results.end());
+
+    if (results.size() < kMinBlendedResults) {
+      size_t original_size = results.size();
+      // We didn't get enough results. Insert all the results again, and this
+      // time, do not limit the maximum number of results from each group. (This
+      // will result in duplicates, which will be removed by RemoveDuplicates.)
+      for (const Group* group : groups_) {
+        results.insert(results.end(), group->results().begin(),
+                       group->results().end());
+      }
+      RemoveDuplicates(&results);
+      // Sort just the newly added results. This ensures that, for example, if
+      // there are 6 Omnibox results (score = 0.8) and 1 People result (score =
+      // 0.4) that the People result will be 5th, not 7th, because the Omnibox
+      // group has a soft maximum of 4 results. (Otherwise, the People result
+      // would not be seen at all once the result list is truncated.)
+      std::sort(results.begin() + original_size, results.end());
+    }
+  } else {
+    results.reserve(kMaxResults);
+
+    // Add results from non-omnibox groups first. Limit to the maximum number of
+    // results in each group.
+    for (size_t i = 0; i < groups_.size(); ++i) {
+      if (!has_omnibox_group_ || i != omnibox_group_) {
+        const Group& group = *groups_[i];
+        size_t num_results =
+            std::min(group.results().size(), group.max_results());
+        results.insert(results.end(), group.results().begin(),
+                       group.results().begin() + num_results);
+      }
+    }
+
+    // Collapse duplicate apps from local and web store.
+    RemoveDuplicates(&results);
+
+    // Fill the remaining slots with omnibox results. Always add at least one
+    // omnibox result (even if there are no more slots; if we over-fill the
+    // vector, the web store and people results will be removed in a later
+    // step). Note: max_results() is ignored for the omnibox group.
+    if (has_omnibox_group_) {
+      CHECK_LT(omnibox_group_, groups_.size());
+      const Group& omnibox_group = *groups_[omnibox_group_];
+      const size_t omnibox_results = std::min(
+          omnibox_group.results().size(),
+          results.size() < kMaxResults ? kMaxResults - results.size() : 1);
+      results.insert(results.end(), omnibox_group.results().begin(),
+                     omnibox_group.results().begin() + omnibox_results);
+    }
+
+    std::sort(results.begin(), results.end());
+    RemoveDuplicates(&results);
+    if (results.size() > kMaxResults)
+      results.resize(kMaxResults);
   }
-
-  // Collapse duplicate apps from local and web store.
-  RemoveDuplicates(&results);
-
-  // Fill the remaining slots with omnibox results. Always add at least one
-  // omnibox result (even if there are no more slots; if we over-fill the
-  // vector, the web store and people results will be removed in a later step).
-  // Note: max_results() is ignored for the omnibox group.
-  if (has_omnibox_group_) {
-    CHECK_LT(omnibox_group_, groups_.size());
-    const Group& omnibox_group = *groups_[omnibox_group_];
-    const size_t omnibox_results = std::min(
-        omnibox_group.results().size(),
-        results.size() < kMaxResults ? kMaxResults - results.size() : 1);
-    results.insert(results.end(), omnibox_group.results().begin(),
-                   omnibox_group.results().begin() + omnibox_results);
-  }
-
-  std::sort(results.begin(), results.end());
-  RemoveDuplicates(&results);
-  if (results.size() > kMaxResults)
-    results.resize(kMaxResults);
 
   Publish(results, ui_results_);
 }

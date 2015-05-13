@@ -31,7 +31,8 @@ namespace {
 
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
-const size_t kMaxOmniboxResults = 0;  // Ignored.
+// Ignored unless AppListMixer field trial is "Blended".
+const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
 const size_t kMaxPeopleResults = 2;
 const size_t kMaxSuggestionsResults = 6;
@@ -63,14 +64,19 @@ scoped_ptr<SearchController> CreateSearchController(
                            HistoryFactory::GetForBrowserContext(profile)));
 
   // Add mixer groups. There are four main groups: apps, people, webstore and
-  // omnibox. The apps, people and webstore groups each have a fixed maximum
-  // number of results. The omnibox group fills the remaining slots (with a
-  // minimum of one result).
-  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, 3.0);
+  // omnibox. The behaviour depends on the AppListMixer field trial:
+  // - If default: The apps, people and webstore groups each have a fixed
+  //   maximum number of results. The omnibox group fills the remaining slots
+  //   (with a minimum of one result).
+  // - If "Blended": Each group has a "soft" maximum number of results. However,
+  //   if a query turns up very few results, the mixer may take more than this
+  //   maximum from a particular group.
+  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, 3.0, 1.0);
   size_t omnibox_group_id =
-      controller->AddOmniboxGroup(kMaxOmniboxResults, 2.0);
-  size_t webstore_group_id = controller->AddGroup(kMaxWebstoreResults, 1.0);
-  size_t people_group_id = controller->AddGroup(kMaxPeopleResults, 0.0);
+      controller->AddOmniboxGroup(kMaxOmniboxResults, 2.0, 1.0);
+  size_t webstore_group_id =
+      controller->AddGroup(kMaxWebstoreResults, 1.0, 0.4);
+  size_t people_group_id = controller->AddGroup(kMaxPeopleResults, 0.0, 0.85);
 
   // Add search providers.
   controller->AddProvider(
@@ -89,7 +95,7 @@ scoped_ptr<SearchController> CreateSearchController(
       scoped_ptr<SearchProvider>(new PeopleProvider(profile, list_controller)));
   if (IsSuggestionsSearchProviderEnabled()) {
     size_t suggestions_group_id =
-        controller->AddGroup(kMaxSuggestionsResults, 3.0);
+        controller->AddGroup(kMaxSuggestionsResults, 3.0, 1.0);
     controller->AddProvider(
         suggestions_group_id,
         scoped_ptr<SearchProvider>(
@@ -101,7 +107,7 @@ scoped_ptr<SearchController> CreateSearchController(
 #if defined(OS_CHROMEOS)
   if (app_list::switches::IsLauncherSearchProviderApiEnabled()) {
     size_t search_api_group_id =
-        controller->AddGroup(kMaxLauncherSearchResults, 0.0);
+        controller->AddGroup(kMaxLauncherSearchResults, 0.0, 1.0);
     controller->AddProvider(
         search_api_group_id,
         scoped_ptr<SearchProvider>(new LauncherSearchProvider(profile)));
