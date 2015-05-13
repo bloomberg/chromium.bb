@@ -192,6 +192,11 @@ int16 BluetoothDeviceWin::GetInquiryRSSI() const {
   return kUnknownPower;
 }
 
+int16 BluetoothDeviceWin::GetInquiryTxPower() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
 bool BluetoothDeviceWin::ExpectingPinCode() const {
   NOTIMPLEMENTED();
   return false;

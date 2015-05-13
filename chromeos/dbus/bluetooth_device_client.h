@@ -48,6 +48,10 @@ class CHROMEOS_EXPORT BluetoothDeviceClient : public DBusClient {
     // Read-only.
     dbus::Property<std::vector<std::string> > uuids;
 
+    // Transmitted power level. This field is avaliable only for LE devices
+    // that include this field in AD. Read-only.
+    dbus::Property<int16> tx_power;
+
     // Indicates that the device is currently paired. Read-only.
     dbus::Property<bool> paired;
 

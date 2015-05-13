@@ -263,6 +263,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // this method will return |kUnknownPower|.
   virtual int16 GetInquiryRSSI() const = 0;
 
+  // The transmitted power level. This field is avaliable only for LE devices
+  // that include this field in AD. It is avaliable and valid only during
+  // discovery. If not during discovery, or TxPower wasn't reported, this
+  // method will return |kUnknownPower|.
+  virtual int16 GetInquiryTxPower() const = 0;
+
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;

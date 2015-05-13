@@ -2204,6 +2204,76 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   EXPECT_EQ(uuids[4], BluetoothUUID("110a"));
 }
 
+TEST_F(BluetoothChromeOSTest, DeviceInquiryRSSIInvalidated) {
+  // Simulate invalidation of inquiry RSSI of a device, as it occurs
+  // when discovery is finished.
+  GetAdapter();
+
+  BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+  ASSERT_EQ(2U, devices.size());
+  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+            devices[0]->GetAddress());
+
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  // During discovery, rssi is a valid value (-75)
+  properties->rssi.ReplaceValue(-75);
+  properties->rssi.set_valid(true);
+
+  ASSERT_EQ(-75, devices[0]->GetInquiryRSSI());
+
+  // Install an observer; expect the DeviceChanged method to be called when
+  // we invalidate the RSSI of the device.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // When discovery is over, the value should be invalidated.
+  properties->rssi.set_valid(false);
+  properties->NotifyPropertyChanged(properties->rssi.name());
+
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(devices[0], observer.last_device());
+
+  int unknown_power = BluetoothDevice::kUnknownPower;
+  EXPECT_EQ(unknown_power, devices[0]->GetInquiryRSSI());
+}
+
+TEST_F(BluetoothChromeOSTest, DeviceInquiryTxPowerInvalidated) {
+  // Simulate invalidation of inquiry TxPower of a device, as it occurs
+  // when discovery is finished.
+  GetAdapter();
+
+  BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+  ASSERT_EQ(2U, devices.size());
+  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+            devices[0]->GetAddress());
+
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  // During discovery, tx_power is a valid value (0)
+  properties->tx_power.ReplaceValue(0);
+  properties->tx_power.set_valid(true);
+
+  ASSERT_EQ(0, devices[0]->GetInquiryTxPower());
+
+  // Install an observer; expect the DeviceChanged method to be called when
+  // we invalidate the tx_power of the device.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // When discovery is over, the value should be invalidated.
+  properties->tx_power.set_valid(false);
+  properties->NotifyPropertyChanged(properties->tx_power.name());
+
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(devices[0], observer.last_device());
+
+  int unknown_power = BluetoothDevice::kUnknownPower;
+  EXPECT_EQ(unknown_power, devices[0]->GetInquiryTxPower());
+}
+
 TEST_F(BluetoothChromeOSTest, ForgetDevice) {
   GetAdapter();
 

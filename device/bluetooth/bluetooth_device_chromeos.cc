@@ -278,6 +278,18 @@ int16 BluetoothDeviceChromeOS::GetInquiryRSSI() const {
   return properties->rssi.value();
 }
 
+int16 BluetoothDeviceChromeOS::GetInquiryTxPower() const {
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+          GetProperties(object_path_);
+  DCHECK(properties);
+
+  if (!properties->tx_power.is_valid())
+    return kUnknownPower;
+
+  return properties->tx_power.value();
+}
+
 bool BluetoothDeviceChromeOS::ExpectingPinCode() const {
   return pairing_.get() && pairing_->ExpectingPinCode();
 }

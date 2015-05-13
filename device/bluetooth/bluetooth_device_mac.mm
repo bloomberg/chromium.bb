@@ -129,6 +129,11 @@ int16 BluetoothDeviceMac::GetInquiryRSSI() const {
   return kUnknownPower;
 }
 
+int16 BluetoothDeviceMac::GetInquiryTxPower() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
 bool BluetoothDeviceMac::ExpectingPinCode() const {
   NOTIMPLEMENTED();
   return false;

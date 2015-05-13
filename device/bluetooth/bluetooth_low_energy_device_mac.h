@@ -42,6 +42,7 @@ class BluetoothLowEnergyDeviceMac : public BluetoothDevice {
   bool IsConnecting() const override;
   BluetoothDevice::UUIDList GetUUIDs() const override;
   int16 GetInquiryRSSI() const override;
+  int16 GetInquiryTxPower() const override;
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;

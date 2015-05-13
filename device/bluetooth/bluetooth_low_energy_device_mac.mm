@@ -147,6 +147,11 @@ int16 BluetoothLowEnergyDeviceMac::GetInquiryRSSI() const {
   return kUnknownPower;
 }
 
+int16 BluetoothLowEnergyDeviceMac::GetInquiryTxPower() const {
+  NOTIMPLEMENTED();
+  return kUnknownPower;
+}
+
 bool BluetoothLowEnergyDeviceMac::ExpectingPinCode() const {
   return false;
 }

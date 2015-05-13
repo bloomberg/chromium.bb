@@ -75,6 +75,11 @@ namespace bluetooth {
     // The received signal strength, in dBm. This field is avaliable and valid
     // only during discovery. Outside of discovery it's value is not specified.
     long? inquiryRssi;
+  
+    // The transmitted power level. This field is avaliable only for LE devices
+    // that include this field in AD. It is avaliable and valid only during
+    // discovery.
+    long? inquiryTxPower;
   };
 
   // Callback from the <code>getDevice</code> method.

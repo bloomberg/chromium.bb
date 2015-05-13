@@ -123,6 +123,11 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
     out->inquiry_rssi.reset(new int(device.GetInquiryRSSI()));
   else
     out->inquiry_rssi.reset();
+
+  if (device.GetInquiryTxPower() != device::BluetoothDevice::kUnknownPower)
+    out->inquiry_tx_power.reset(new int(device.GetInquiryTxPower()));
+  else
+    out->inquiry_tx_power.reset();
 }
 
 void PopulateAdapterState(const device::BluetoothAdapter& adapter,

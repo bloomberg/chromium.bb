@@ -428,7 +428,8 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
       property_name == properties->trusted.name() ||
       property_name == properties->connected.name() ||
       property_name == properties->uuids.name() ||
-      property_name == properties->rssi.name())
+      property_name == properties->rssi.name() ||
+      property_name == properties->tx_power.name())
     NotifyDeviceChanged(device_chromeos);
 
   // When a device becomes paired, mark it as trusted so that the user does

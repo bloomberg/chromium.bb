@@ -47,6 +47,7 @@ BluetoothDeviceClient::Properties::Properties(
   RegisterProperty(bluetooth_device::kLegacyPairingProperty, &legacy_pairing);
   RegisterProperty(bluetooth_device::kModaliasProperty, &modalias);
   RegisterProperty(bluetooth_device::kRSSIProperty, &rssi);
+  RegisterProperty(bluetooth_device::kTxPowerProperty, &tx_power);
 }
 
 BluetoothDeviceClient::Properties::~Properties() {

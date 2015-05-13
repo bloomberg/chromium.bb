@@ -41,6 +41,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(IsConnecting, bool());
   MOCK_CONST_METHOD0(GetUUIDs, UUIDList());
   MOCK_CONST_METHOD0(GetInquiryRSSI, int16());
+  MOCK_CONST_METHOD0(GetInquiryTxPower, int16());
   MOCK_CONST_METHOD0(ExpectingPinCode, bool());
   MOCK_CONST_METHOD0(ExpectingPasskey, bool());
   MOCK_CONST_METHOD0(ExpectingConfirmation, bool());
