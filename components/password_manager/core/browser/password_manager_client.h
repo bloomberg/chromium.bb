@@ -24,9 +24,10 @@ class PasswordManager;
 class PasswordManagerDriver;
 class PasswordStore;
 
-enum CustomPassphraseState {
-  WITHOUT_CUSTOM_PASSPHRASE,
-  ONLY_CUSTOM_PASSPHRASE
+enum PasswordSyncState {
+  NOT_SYNCING_PASSWORDS,
+  SYNCING_NORMAL_ENCRYPTION,
+  SYNCING_WITH_CUSTOM_PASSPHRASE
 };
 
 enum class CredentialSourceType {
@@ -125,10 +126,9 @@ class PasswordManagerClient {
   // Returns the PasswordStore associated with this instance.
   virtual PasswordStore* GetPasswordStore() const = 0;
 
-  // Returns true if password sync is enabled in the embedder. Return value for
-  // custom passphrase users depends on |state|. The default implementation
-  // always returns false.
-  virtual bool IsPasswordSyncEnabled(CustomPassphraseState state) const;
+  // Reports whether and how passwords are synced in the embedder. The default
+  // implementation always returns NOT_SYNCING_PASSWORDS.
+  virtual PasswordSyncState GetPasswordSyncState() const;
 
   // Only for clients which registered with a LogRouter: If called with
   // |router_can_be_used| set to false, the client may no longer use the

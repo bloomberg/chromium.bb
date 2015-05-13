@@ -357,7 +357,7 @@ TEST_F(ChromePasswordManagerClientTest,
   EXPECT_TRUE(client->IsPasswordManagementEnabledForCurrentPage());
 }
 
-TEST_F(ChromePasswordManagerClientTest, IsPasswordSyncEnabled) {
+TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   ChromePasswordManagerClient* client = GetClient();
 
   ProfileSyncServiceMock* mock_sync_service =
@@ -376,39 +376,31 @@ TEST_F(ChromePasswordManagerClientTest, IsPasswordSyncEnabled) {
       .WillRepeatedly(Return(false));
 
   // Passwords are syncing and custom passphrase isn't used.
-  EXPECT_FALSE(
-      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
-  EXPECT_TRUE(client->IsPasswordSyncEnabled(
-      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+  EXPECT_EQ(password_manager::SYNCING_NORMAL_ENCRYPTION,
+            client->GetPasswordSyncState());
 
   // Again, using a custom passphrase.
   EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
 
-  EXPECT_TRUE(
-      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
-  EXPECT_FALSE(client->IsPasswordSyncEnabled(
-      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+  EXPECT_EQ(password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE,
+            client->GetPasswordSyncState());
 
-  // Always return false if we aren't syncing passwords.
+  // Report correctly if we aren't syncing passwords.
   active_types.Remove(syncer::PASSWORDS);
   active_types.Put(syncer::BOOKMARKS);
   EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
       .WillRepeatedly(Return(active_types));
 
-  EXPECT_FALSE(
-      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
-  EXPECT_FALSE(client->IsPasswordSyncEnabled(
-      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+  EXPECT_EQ(password_manager::NOT_SYNCING_PASSWORDS,
+            client->GetPasswordSyncState());
 
   // Again, without a custom passphrase.
   EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
 
-  EXPECT_FALSE(
-      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
-  EXPECT_FALSE(client->IsPasswordSyncEnabled(
-      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+  EXPECT_EQ(password_manager::NOT_SYNCING_PASSWORDS,
+            client->GetPasswordSyncState());
 }
 
 TEST_F(ChromePasswordManagerClientTest, IsOffTheRecordTest) {

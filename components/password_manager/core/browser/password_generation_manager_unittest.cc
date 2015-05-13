@@ -66,7 +66,7 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_CONST_METHOD1(IsPasswordSyncEnabled, bool(CustomPassphraseState));
+  MOCK_CONST_METHOD0(GetPasswordSyncState, PasswordSyncState());
   MOCK_CONST_METHOD0(IsSavingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 
@@ -122,24 +122,32 @@ class PasswordGenerationManagerTest : public testing::Test {
 
 TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
   // Enabling the PasswordManager and password sync should cause generation to
-  // be enabled.
+  // be enabled, unless the sync is with a custom passphrase.
   EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
   EXPECT_TRUE(IsGenerationEnabled());
 
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_WITH_CUSTOM_PASSPHRASE));
+  EXPECT_FALSE(IsGenerationEnabled());
+
   // Disabling password syncing should cause generation to be disabled.
-  EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
-      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(NOT_SYNCING_PASSWORDS));
   EXPECT_FALSE(IsGenerationEnabled());
 
   // Disabling the PasswordManager should cause generation to be disabled even
   // if syncing is enabled.
   EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(testing::Return(false));
-  EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
+  EXPECT_FALSE(IsGenerationEnabled());
+
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_WITH_CUSTOM_PASSPHRASE));
   EXPECT_FALSE(IsGenerationEnabled());
 }
 
@@ -147,8 +155,8 @@ TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
   // Setup so that IsGenerationEnabled() returns true.
   EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
 
   autofill::FormData login_form;
   login_form.origin = GURL("http://www.yahoo.com/login/");
@@ -201,8 +209,8 @@ TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
   EXPECT_CALL(*client_, IsOffTheRecord()).WillRepeatedly(testing::Return(true));
   PrefService* prefs = client_->GetPrefs();
   prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
-  EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
-      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
 
   EXPECT_FALSE(IsGenerationEnabled());
 }

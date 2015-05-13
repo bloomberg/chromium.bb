@@ -29,9 +29,8 @@ void PasswordManagerClient::PasswordAutofillWasBlocked(
     const autofill::PasswordFormMap& best_matches) const {
 }
 
-bool PasswordManagerClient::IsPasswordSyncEnabled(
-    CustomPassphraseState state) const {
-  return false;
+PasswordSyncState PasswordManagerClient::GetPasswordSyncState() const {
+  return NOT_SYNCING_PASSWORDS;
 }
 
 void PasswordManagerClient::OnLogRouterAvailabilityChanged(

@@ -57,8 +57,8 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
   }
 
   // Don't consider sync enabled if the user has a custom passphrase. See
-  // crbug.com/358998 for more details.
-  if (!client_->IsPasswordSyncEnabled(WITHOUT_CUSTOM_PASSPHRASE)) {
+  // http://crbug.com/358998 for more details.
+  if (client_->GetPasswordSyncState() != SYNCING_NORMAL_ENCRYPTION) {
     VLOG(2) << "Generation disabled because passwords are not being synced or"
              << " custom passphrase is used.";
     return false;
