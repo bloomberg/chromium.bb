@@ -50,6 +50,8 @@ class FakeDriveUploader : public drive::DriveUploaderInterface {
   ~FakeDriveUploader() override;
 
   // DriveUploaderInterface overrides.
+  void StartBatchProcessing() override;
+  void StopBatchProcessing() override;
   google_apis::CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
       const base::FilePath& local_file_path,

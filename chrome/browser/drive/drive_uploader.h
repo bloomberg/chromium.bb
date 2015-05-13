@@ -43,6 +43,16 @@ class DriveUploaderInterface {
  public:
   virtual ~DriveUploaderInterface() {}
 
+  // Starts batch processing for upload requests. All requests which upload
+  // small files (less than kMaxMultipartUploadSize) between
+  // |StartBatchProcessing| and |StopBatchProcessing| are sent as a single batch
+  // request.
+  virtual void StartBatchProcessing() = 0;
+
+  // Stops batch processing. Must be called after calling |StartBatchProcessing|
+  // to commit requests.
+  virtual void StopBatchProcessing() = 0;
+
   // Uploads a new file to a directory specified by |upload_location|.
   // Returns a callback for cancelling the uploading job.
   //
@@ -114,6 +124,8 @@ class DriveUploader : public DriveUploaderInterface {
   ~DriveUploader() override;
 
   // DriveUploaderInterface overrides.
+  void StartBatchProcessing() override;
+  void StopBatchProcessing() override;
   google_apis::CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
       const base::FilePath& local_file_path,
@@ -137,6 +149,7 @@ class DriveUploader : public DriveUploaderInterface {
       const google_apis::ProgressCallback& progress_callback) override;
 
  private:
+  class RefCountedBatchRequest;
   struct UploadFileInfo;
   typedef base::Callback<void(scoped_ptr<UploadFileInfo> upload_file_info)>
       StartInitiateUploadCallback;
@@ -153,18 +166,25 @@ class DriveUploader : public DriveUploaderInterface {
   // Checks file size and call InitiateUploadNewFile or MultipartUploadNewFile
   // API.  Upon completion, OnUploadLocationReceived (for InitiateUploadNewFile)
   // or OnMultipartUploadComplete (for MultipartUploadNewFile) should be called.
-  void CallUploadServiceAPINewFile(const std::string& parent_resource_id,
-                                   const std::string& title,
-                                   const UploadNewFileOptions& options,
-                                   scoped_ptr<UploadFileInfo> upload_file_info);
+  // If |batch_request| is non-null, it calls the API function on the batch
+  // request.
+  void CallUploadServiceAPINewFile(
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const UploadNewFileOptions& options,
+      const scoped_refptr<RefCountedBatchRequest>& batch_request,
+      scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Checks file size and call InitiateUploadExistingFile or
   // MultipartUploadExistingFile API.  Upon completion, OnUploadLocationReceived
   // (for InitiateUploadExistingFile) or OnMultipartUploadComplete (for
   // MultipartUploadExistingFile) should be called.
+  // If |batch_request| is non-null, it calls the API function on the batch
+  // request.
   void CallUploadServiceAPIExistingFile(
       const std::string& resource_id,
       const UploadExistingFileOptions& options,
+      const scoped_refptr<RefCountedBatchRequest>& batch_request,
       scoped_ptr<UploadFileInfo> upload_file_info);
 
   // DriveService callback for InitiateUpload.
@@ -207,6 +227,7 @@ class DriveUploader : public DriveUploaderInterface {
   DriveServiceInterface* drive_service_;  // Not owned by this class.
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
+  scoped_refptr<RefCountedBatchRequest> current_batch_request_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

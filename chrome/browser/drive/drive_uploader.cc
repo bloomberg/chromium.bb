@@ -44,6 +44,30 @@ const int64 kUploadChunkSize = (1LL << 30);  // 1GB
 const int64 kMaxMultipartUploadSize = (1LL << 20);  // 1MB
 }  // namespace
 
+// Refcounted helper class to manage batch request. DriveUploader uses the class
+// for keeping the BatchRequestConfigurator instance while it prepares upload
+// file information asynchronously. DriveUploader discard the reference after
+// getting file information and the instance will be destroyed after all
+// preparations complete. At that time, the helper instance commits owned batch
+// request at the destrutor.
+class DriveUploader::RefCountedBatchRequest
+    : public base::RefCounted<RefCountedBatchRequest> {
+ public:
+  RefCountedBatchRequest(
+      scoped_ptr<BatchRequestConfiguratorInterface> configurator)
+      : configurator_(configurator.Pass()) {}
+
+  // Gets pointer of BatchRequestConfiguratorInterface owned by the instance.
+  BatchRequestConfiguratorInterface* configurator() const {
+    return configurator_.get();
+  }
+
+ private:
+  friend class base::RefCounted<RefCountedBatchRequest>;
+  ~RefCountedBatchRequest() { configurator_->Commit(); }
+  scoped_ptr<BatchRequestConfiguratorInterface> configurator_;
+};
+
 // Structure containing current upload information of file, passed between
 // DriveServiceInterface methods and callbacks.
 struct DriveUploader::UploadFileInfo {
@@ -155,7 +179,17 @@ CancelCallback DriveUploader::UploadNewFile(
           local_file_path, content_type, callback, progress_callback)),
       base::Bind(&DriveUploader::CallUploadServiceAPINewFile,
                  weak_ptr_factory_.GetWeakPtr(), parent_resource_id, title,
-                 options));
+                 options, current_batch_request_));
+}
+
+void DriveUploader::StartBatchProcessing() {
+  DCHECK(current_batch_request_ == nullptr);
+  current_batch_request_ =
+      new RefCountedBatchRequest(drive_service_->StartBatchRequest().Pass());
+}
+
+void DriveUploader::StopBatchProcessing() {
+  current_batch_request_ = nullptr;
 }
 
 CancelCallback DriveUploader::UploadExistingFile(
@@ -175,7 +209,8 @@ CancelCallback DriveUploader::UploadExistingFile(
       scoped_ptr<UploadFileInfo>(new UploadFileInfo(
           local_file_path, content_type, callback, progress_callback)),
       base::Bind(&DriveUploader::CallUploadServiceAPIExistingFile,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id, options));
+                 weak_ptr_factory_.GetWeakPtr(), resource_id, options,
+                 current_batch_request_));
 }
 
 CancelCallback DriveUploader::ResumeUploadFile(
@@ -190,8 +225,7 @@ CancelCallback DriveUploader::ResumeUploadFile(
   DCHECK(!callback.is_null());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo(
-      local_file_path, content_type,
-      callback, progress_callback));
+      local_file_path, content_type, callback, progress_callback));
   upload_file_info->upload_location = upload_location;
 
   return StartUploadFile(
@@ -243,12 +277,17 @@ void DriveUploader::CallUploadServiceAPINewFile(
     const std::string& parent_resource_id,
     const std::string& title,
     const UploadNewFileOptions& options,
+    const scoped_refptr<RefCountedBatchRequest>& batch_request,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UploadFileInfo* const info_ptr = upload_file_info.get();
   if (info_ptr->content_length <= kMaxMultipartUploadSize) {
-    info_ptr->cancel_callback = drive_service_->MultipartUploadNewFile(
+    DriveServiceBatchOperationsInterface* service = drive_service_;
+    // If this is a batched request, calls the API on the request instead.
+    if (batch_request.get())
+      service = batch_request->configurator();
+    info_ptr->cancel_callback = service->MultipartUploadNewFile(
         info_ptr->content_type, info_ptr->content_length, parent_resource_id,
         title, info_ptr->file_path, options,
         base::Bind(&DriveUploader::OnMultipartUploadComplete,
@@ -267,12 +306,17 @@ void DriveUploader::CallUploadServiceAPINewFile(
 void DriveUploader::CallUploadServiceAPIExistingFile(
     const std::string& resource_id,
     const UploadExistingFileOptions& options,
+    const scoped_refptr<RefCountedBatchRequest>& batch_request,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UploadFileInfo* const info_ptr = upload_file_info.get();
   if (info_ptr->content_length <= kMaxMultipartUploadSize) {
-    info_ptr->cancel_callback = drive_service_->MultipartUploadExistingFile(
+    DriveServiceBatchOperationsInterface* service = drive_service_;
+    // If this is a batched request, calls the API on the request instead.
+    if (batch_request.get())
+      service = batch_request->configurator();
+    info_ptr->cancel_callback = service->MultipartUploadExistingFile(
         info_ptr->content_type, info_ptr->content_length, resource_id,
         info_ptr->file_path, options,
         base::Bind(&DriveUploader::OnMultipartUploadComplete,
