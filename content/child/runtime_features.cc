@@ -124,6 +124,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableWebAudio(false);
 #endif
 
+  if (command_line.HasSwitch(switches::kDisableSpeechAPI))
+    WebRuntimeFeatures::enableScriptedSpeech(false);
+
   if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
     WebRuntimeFeatures::enableEncryptedMedia(false);
 

@@ -81,6 +81,7 @@ CONTENT_EXPORT extern const char kDisableSharedWorkers[];
 CONTENT_EXPORT extern const char kDisableSingleThreadProxyScheduler[];
 CONTENT_EXPORT extern const char kDisableSmoothScrolling[];
 CONTENT_EXPORT extern const char kDisableSoftwareRasterizer[];
+CONTENT_EXPORT extern const char kDisableSpeechAPI[];
 CONTENT_EXPORT extern const char kDisableSVG1DOM[];
 CONTENT_EXPORT extern const char kDisableTextBlobs[];
 CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
