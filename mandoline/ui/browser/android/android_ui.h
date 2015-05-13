@@ -37,7 +37,6 @@ class AndroidUI : public BrowserUI,
   Browser* browser_;
   mojo::ApplicationImpl* application_impl_;
   mojo::View* root_;
-  mojo::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidUI);
 };

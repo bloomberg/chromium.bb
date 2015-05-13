@@ -16,8 +16,7 @@ class Browser;
 AndroidUI::AndroidUI(Browser* browser, mojo::ApplicationImpl* application_impl)
     : browser_(browser),
       application_impl_(application_impl),
-      root_(nullptr),
-      content_(nullptr) {}
+      root_(nullptr) {}
 
 AndroidUI::~AndroidUI() {
   root_->RemoveObserver(this);
@@ -36,7 +35,7 @@ void AndroidUI::OnURLChanged() {
 void AndroidUI::OnViewBoundsChanged(mojo::View* view,
                                     const mojo::Rect& old_bounds,
                                     const mojo::Rect& new_bounds) {
-  content_->SetBounds(
+  browser_->content()->SetBounds(
       *mojo::Rect::From(gfx::Rect(0, 0, new_bounds.width, new_bounds.height)));
 }
 
