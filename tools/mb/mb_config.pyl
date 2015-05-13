@@ -177,7 +177,7 @@
       'Win GN': 'gn_release_bot_x86',
       'Win GN (dbg)': 'gn_debug_static_bot_x86',
     },
-    'client.v8': {
+    'client.v8.fyi': {
       'V8 Linux GN': 'gn_release_bot',
       'V8 Android GN (dbg)': 'android_gn_debug_bot',
     },
