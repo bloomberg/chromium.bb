@@ -1952,3 +1952,31 @@ content.dll!content::RenderThreadImpl::HostAllocateSharedMemoryBuffer
 content.dll!content::RenderThreadImpl::AllocateSharedMemory
 ...
 content.dll!content::WebGraphicsContext3DCommandBufferImpl::CreateContext
+
+HANDLE LEAK
+name=https://crbug.com/487492
+system call NtCreateSection
+KERNELBASE.dll!CreateFileMappingW
+base.dll!base::SharedMemory::Create
+base.dll!base::SharedMemory::CreateAnonymous
+content.dll!content::ChildThreadImpl::AllocateSharedMemory
+...
+ppapi_proxy.dll!ppapi::proxy::PPB_ImageData_Proxy::CreateImageData
+
+HANDLE LEAK
+name=https://crbug.com/487492_b
+system call NtGdiCreateDIBSection
+GDI32.dll!CreateDIBSection
+skia.dll!`anonymous namespace'::CreateHBitmap
+...
+content.dll!content::PepperGraphics2DHost::Flush
+
+HANDLE LEAK
+name=https://crbug.com/487492_c
+system call NtCreateSection
+KERNELBASE.dll!CreateFileMappingW
+base.dll!base::SharedMemory::Create
+base.dll!base::SharedMemory::CreateAnonymous
+content.dll!content::ChildThreadImpl::AllocateSharedMemory
+...
+content.dll!content::PepperPluginInstanceImpl::PrepareTextureMailbox
