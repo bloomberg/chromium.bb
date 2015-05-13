@@ -512,24 +512,23 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
   // TODO(shess): GTK has this as a member var, figure out why.
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
-  const ConnectionSecurityHelper::SecurityLevel security_level =
+  const ToolbarModel::SecurityLevel security_level =
       controller()->GetToolbarModel()->GetSecurityLevel(false);
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
-      scheme.is_nonempty() &&
-      (security_level != ConnectionSecurityHelper::NONE)) {
+      scheme.is_nonempty() && (security_level != ToolbarModel::NONE)) {
     NSColor* color;
-    if (security_level == ConnectionSecurityHelper::EV_SECURE ||
-        security_level == ConnectionSecurityHelper::SECURE) {
+    if (security_level == ToolbarModel::EV_SECURE ||
+        security_level == ToolbarModel::SECURE) {
       color = SecureSchemeColor();
-    } else if (security_level == ConnectionSecurityHelper::SECURITY_ERROR) {
+    } else if (security_level == ToolbarModel::SECURITY_ERROR) {
       color = SecurityErrorSchemeColor();
       // Add a strikethrough through the scheme.
       [as addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
-    } else if (security_level == ConnectionSecurityHelper::SECURITY_WARNING) {
+    } else if (security_level == ToolbarModel::SECURITY_WARNING) {
       color = BaseTextColor();
     } else {
       NOTREACHED();

@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ssl/connection_security_helper.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -21,6 +20,37 @@ class X509Certificate;
 // from the navigation controller returned by GetNavigationController().
 class ToolbarModel {
  public:
+  // TODO(wtc): unify ToolbarModel::SecurityLevel with SecurityStyle.  We
+  // don't need two sets of security UI levels.  SECURITY_STYLE_AUTHENTICATED
+  // needs to be refined into three levels: warning, standard, and EV.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ui.toolbar
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ToolbarModelSecurityLevel
+  enum SecurityLevel {
+    // HTTP/no URL/user is editing
+    NONE = 0,
+
+    // HTTPS with valid EV cert
+    EV_SECURE = 1,
+
+    // HTTPS (non-EV)
+    SECURE = 2,
+
+    // HTTPS, but unable to check certificate revocation status or with insecure
+    // content on the page
+    SECURITY_WARNING = 3,
+
+    // HTTPS, but the certificate verification chain is anchored on a
+    // certificate that was installed by the system administrator
+    SECURITY_POLICY_WARNING = 4,
+
+    // Attempted HTTPS and failed, page not authenticated
+    SECURITY_ERROR = 5,
+
+    NUM_SECURITY_LEVELS = 6,
+  };
+
   virtual ~ToolbarModel();
 
   // Returns the text to be displayed in the toolbar for the current page.
@@ -63,8 +93,7 @@ class ToolbarModel {
   // |ignore_editing| is true, the result reflects the underlying state of the
   // page without regard to any user edits that may be in progress in the
   // omnibox.
-  virtual ConnectionSecurityHelper::SecurityLevel GetSecurityLevel(
-      bool ignore_editing) const = 0;
+  virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const = 0;
 
   // Returns the resource_id of the icon to show to the left of the address,
   // based on the current URL.  When search term replacement is active, this
@@ -74,8 +103,7 @@ class ToolbarModel {
 
   // As |GetIcon()|, but returns the icon only taking into account the security
   // |level| given, ignoring search term replacement state.
-  virtual int GetIconForSecurityLevel(
-      ConnectionSecurityHelper::SecurityLevel level) const = 0;
+  virtual int GetIconForSecurityLevel(SecurityLevel level) const = 0;
 
   // Returns the name of the EV cert holder.  This returns an empty string if
   // the security level is not EV_SECURE.

@@ -12,7 +12,7 @@ import android.text.style.StrikethroughSpan;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
+import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 
 import java.util.Locale;
 
@@ -135,7 +135,7 @@ public class OmniboxUrlEmphasizer {
      *            modified.
      * @param resources Resources for the given application context.
      * @param profile The profile viewing the given URL.
-     * @param securityLevel A valid ConnectionSecurityHelperSecurityLevel for the specified
+     * @param securityLevel A valid ToolbarModelSecurityLevel for the specified
      *                      web contents.
      * @param isInternalPage Whether this page is an internal Chrome page.
      * @param useDarkColors Whether the text colors should be dark (i.e.
@@ -164,26 +164,25 @@ public class OmniboxUrlEmphasizer {
         if (emphasizeResponse.hasScheme()) {
             int colorId = nonEmphasizedColorId;
             if (!isInternalPage
-                    && (useDarkColors
-                               || securityLevel
-                                       == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR)) {
+                    && (useDarkColors || securityLevel
+                            == ToolbarModelSecurityLevel.SECURITY_ERROR)) {
                 switch (securityLevel) {
-                    case ConnectionSecurityHelperSecurityLevel.NONE:
+                    case ToolbarModelSecurityLevel.NONE:
                         colorId = nonEmphasizedColorId;
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING:
+                    case ToolbarModelSecurityLevel.SECURITY_WARNING:
                         colorId = R.color.url_emphasis_start_scheme_security_warning;
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR:
+                    case ToolbarModelSecurityLevel.SECURITY_ERROR:
                         colorId = R.color.url_emphasis_start_scheme_security_error;
                         UrlEmphasisSecurityErrorSpan ss = new UrlEmphasisSecurityErrorSpan();
                         url.setSpan(ss, startSchemeIndex, endSchemeIndex,
                                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.EV_SECURE:
+                    case ToolbarModelSecurityLevel.EV_SECURE:
                         colorId = R.color.url_emphasis_start_scheme_ev_secure;
                         break;
-                    case ConnectionSecurityHelperSecurityLevel.SECURE:
+                    case ToolbarModelSecurityLevel.SECURE:
                         colorId = R.color.url_emphasis_start_scheme_secure;
                         break;
                     default:

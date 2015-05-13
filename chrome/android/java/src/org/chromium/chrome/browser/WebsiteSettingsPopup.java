@@ -41,9 +41,8 @@ import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelper;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
+import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.Clipboard;
@@ -244,7 +243,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // chrome://settings page).
     private boolean mIsInternalPage;
 
-    // The security level of the page (a valid ConnectionSecurityHelperSecurityLevel).
+    // The security level of the page (a valid ToolbarModelSecurityLevel).
     private int mSecurityLevel;
 
     // Whether the security level of the page was deprecated due to SHA-1.
@@ -376,7 +375,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             mParsedUrl = null;
             mIsInternalPage = false;
         }
-        mSecurityLevel = ConnectionSecurityHelper.getSecurityLevelForWebContents(mWebContents);
+        mSecurityLevel = ToolbarModel.getSecurityLevelForWebContents(mWebContents);
         mDeprecatedSHA1Present = ToolbarModel.isDeprecatedSHA1Present(mWebContents);
 
         SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
@@ -434,26 +433,26 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * Gets the message to display in the connection message box for the given security level. Does
      * not apply to SECURITY_ERROR pages, since these have their own coloured/formatted message.
      *
-     * @param securityLevel A valid ConnectionSecurityHelperSecurityLevel, which is the security
-     *                      level of the page.
+     * @param toolbarModelSecurityLevel A valid ToolbarModelSecurityLevel, which is the security
+     *                                  level of the page.
      * @param isInternalPage Whether or not this page is an internal chrome page (e.g. the
      *                       chrome://settings page).
      * @return The ID of the message to display in the connection message box.
      */
-    private int getConnectionMessageId(int securityLevel, boolean isInternalPage) {
+    private int getConnectionMessageId(int toolbarModelSecurityLevel, boolean isInternalPage) {
         if (isInternalPage) return R.string.page_info_connection_internal_page;
 
-        switch (securityLevel) {
-            case ConnectionSecurityHelperSecurityLevel.NONE:
+        switch (toolbarModelSecurityLevel) {
+            case ToolbarModelSecurityLevel.NONE:
                 return R.string.page_info_connection_http;
-            case ConnectionSecurityHelperSecurityLevel.SECURE:
-            case ConnectionSecurityHelperSecurityLevel.EV_SECURE:
+            case ToolbarModelSecurityLevel.SECURE:
+            case ToolbarModelSecurityLevel.EV_SECURE:
                 return R.string.page_info_connection_https;
-            case ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING:
-            case ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING:
+            case ToolbarModelSecurityLevel.SECURITY_WARNING:
+            case ToolbarModelSecurityLevel.SECURITY_POLICY_WARNING:
                 return R.string.page_info_connection_mixed;
             default:
-                assert false : "Invalid security level specified: " + securityLevel;
+                assert false : "Invalid security level specified: " + toolbarModelSecurityLevel;
                 return R.string.page_info_connection_http;
         }
     }
@@ -463,7 +462,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * HTTPS connections.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return !mIsInternalPage && mSecurityLevel != ConnectionSecurityHelperSecurityLevel.NONE;
+        return !mIsInternalPage && mSecurityLevel != ToolbarModelSecurityLevel.NONE;
     }
 
     /**
@@ -475,7 +474,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         if (mDeprecatedSHA1Present) {
             messageBuilder.append(
                     mContext.getResources().getString(R.string.page_info_connection_sha1));
-        } else if (mSecurityLevel != ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR) {
+        } else if (mSecurityLevel != ToolbarModelSecurityLevel.SECURITY_ERROR) {
             messageBuilder.append(mContext.getResources().getString(
                     getConnectionMessageId(mSecurityLevel, mIsInternalPage)));
         } else {

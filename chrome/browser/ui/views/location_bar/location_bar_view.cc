@@ -211,10 +211,9 @@ void LocationBarView::Init() {
       location_height - bubble_vertical_padding));
 
   const SkColor background_color =
-      GetColor(ConnectionSecurityHelper::NONE, LocationBarView::BACKGROUND);
+      GetColor(ToolbarModel::NONE, LocationBarView::BACKGROUND);
   ev_bubble_view_ = new EVBubbleView(
-      bubble_font_list,
-      GetColor(ConnectionSecurityHelper::EV_SECURE, SECURITY_TEXT),
+      bubble_font_list, GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT),
       background_color, this);
   ev_bubble_view_->set_drag_controller(this);
   AddChildView(ev_bubble_view_);
@@ -240,7 +239,7 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
-  const SkColor text_color = GetColor(ConnectionSecurityHelper::NONE, TEXT);
+  const SkColor text_color = GetColor(ToolbarModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
       bubble_font_list, text_color, background_color, profile());
   AddChildView(selected_keyword_view_);
@@ -249,13 +248,13 @@ void LocationBarView::Init() {
   suggested_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   suggested_text_view_->SetAutoColorReadabilityEnabled(false);
   suggested_text_view_->SetEnabledColor(GetColor(
-      ConnectionSecurityHelper::NONE, LocationBarView::DEEMPHASIZED_TEXT));
+      ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
   suggested_text_view_->SetVisible(false);
   AddChildView(suggested_text_view_);
 
   keyword_hint_view_ = new KeywordHintView(
-      profile(), font_list, GetColor(ConnectionSecurityHelper::NONE,
-                                     LocationBarView::DEEMPHASIZED_TEXT),
+      profile(), font_list,
+      GetColor(ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
       background_color);
   AddChildView(keyword_hint_view_);
 
@@ -314,9 +313,8 @@ bool LocationBarView::IsInitialized() const {
   return omnibox_view_ != NULL;
 }
 
-SkColor LocationBarView::GetColor(
-    ConnectionSecurityHelper::SecurityLevel security_level,
-    ColorKind kind) const {
+SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
+                                  ColorKind kind) const {
   const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (kind) {
     case BACKGROUND:
@@ -340,17 +338,17 @@ SkColor LocationBarView::GetColor(
     case SECURITY_TEXT: {
       SkColor color;
       switch (security_level) {
-        case ConnectionSecurityHelper::EV_SECURE:
-        case ConnectionSecurityHelper::SECURE:
+        case ToolbarModel::EV_SECURE:
+        case ToolbarModel::SECURE:
           color = SkColorSetRGB(7, 149, 0);
           break;
 
-        case ConnectionSecurityHelper::SECURITY_WARNING:
-        case ConnectionSecurityHelper::SECURITY_POLICY_WARNING:
+        case ToolbarModel::SECURITY_WARNING:
+        case ToolbarModel::SECURITY_POLICY_WARNING:
           return GetColor(security_level, DEEMPHASIZED_TEXT);
           break;
 
-        case ConnectionSecurityHelper::SECURITY_ERROR:
+        case ToolbarModel::SECURITY_ERROR:
           color = SkColorSetRGB(162, 0, 0);
           break;
 
@@ -1000,8 +998,8 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 bool LocationBarView::ShouldShowEVBubble() const {
-  return (GetToolbarModel()->GetSecurityLevel(false) ==
-          ConnectionSecurityHelper::EV_SECURE);
+  return
+      (GetToolbarModel()->GetSecurityLevel(false) == ToolbarModel::EV_SECURE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1222,7 +1220,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // the omnibox background, so we can't just blindly fill our entire bounds.
   gfx::Rect bounds(GetContentsBounds());
   bounds.Inset(GetHorizontalEdgeThickness(), vertical_edge_thickness());
-  SkColor color(GetColor(ConnectionSecurityHelper::NONE, BACKGROUND));
+  SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
   if (is_popup_mode_) {
     canvas->FillRect(bounds, color);
   } else {
