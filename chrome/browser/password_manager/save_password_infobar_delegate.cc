@@ -98,11 +98,18 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
         "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
         true);
   }
-  int brand_string_id = is_smartlock_branding_enabled
-                            ? IDS_PASSWORD_MANAGER_SMART_LOCK
-                            : IDS_SAVE_PASSWORD_TITLE_BRAND;
-  title_ = l10n_util::GetStringFUTF16(
-      IDS_SAVE_PASSWORD, l10n_util::GetStringUTF16(brand_string_id));
+  title_link_range_ = gfx::Range();
+  if (is_smartlock_branding_enabled) {
+    size_t offset = 0;
+    base::string16 title_link =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+    title_ = l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD, title_link, &offset);
+    title_link_range_ = gfx::Range(offset, offset + title_link.length());
+  } else {
+    title_ = l10n_util::GetStringFUTF16(
+        IDS_SAVE_PASSWORD,
+        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND));
+  }
 }
 
 bool SavePasswordInfoBarDelegate::ShouldShowMoreButton() {
@@ -162,5 +169,17 @@ bool SavePasswordInfoBarDelegate::Cancel() {
     form_to_save_->PermanentlyBlacklist();
     infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
   }
+  return true;
+}
+
+bool SavePasswordInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  InfoBarService::WebContentsFromInfoBar(infobar())
+      ->OpenURL(content::OpenURLParams(
+          GURL(l10n_util::GetStringUTF16(
+              IDS_PASSWORD_MANAGER_SMART_LOCK_ARTICLE)),
+          content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          ui::PAGE_TRANSITION_LINK, false));
   return true;
 }

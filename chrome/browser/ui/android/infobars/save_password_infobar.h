@@ -23,6 +23,7 @@ class SavePasswordInfoBar : public ConfirmInfoBar {
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
+  void OnLinkClicked(JNIEnv* env, jobject obj) override;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBar);
 };

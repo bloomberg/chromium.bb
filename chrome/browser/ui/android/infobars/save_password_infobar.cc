@@ -31,8 +31,13 @@ SavePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   return Java_SavePasswordInfoBar_show(
       env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
-      message_text.obj(), ok_button_text.obj(), cancel_button_text.obj(),
-      save_password_delegate->ShouldShowMoreButton());
+      message_text.obj(), save_password_delegate->title_link_range().start(),
+      save_password_delegate->title_link_range().end(), ok_button_text.obj(),
+      cancel_button_text.obj(), save_password_delegate->ShouldShowMoreButton());
+}
+
+void SavePasswordInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
+  GetDelegate()->LinkClicked(NEW_FOREGROUND_TAB);
 }
 
 bool SavePasswordInfoBar::Register(JNIEnv* env) {

@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ClickableSpan;
+import android.view.View;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
 
@@ -14,19 +19,28 @@ import org.chromium.chrome.browser.ResourceId;
  */
 public class SavePasswordInfoBar extends ConfirmInfoBar {
     private final boolean mIsMoreButtonNeeded;
+    private final int mTitleLinkRangeStart;
+    private final int mTitleLinkRangeEnd;
+    private final String mTitle;
 
     @CalledByNative
     private static InfoBar show(long nativeInfoBar, int enumeratedIconId, String message,
-            String primaryButtonText, String secondaryButtonText, boolean isMoreButtonNeeded) {
+            int titleLinkStart, int titleLinkEnd, String primaryButtonText,
+            String secondaryButtonText, boolean isMoreButtonNeeded) {
         return new SavePasswordInfoBar(nativeInfoBar, ResourceId.mapToDrawableId(enumeratedIconId),
-                message, primaryButtonText, secondaryButtonText, isMoreButtonNeeded);
+                message, titleLinkStart, titleLinkEnd, primaryButtonText, secondaryButtonText,
+                isMoreButtonNeeded);
     }
 
     private SavePasswordInfoBar(long nativeInfoBar, int iconDrawbleId, String message,
-            String primaryButtonText, String secondaryButtonText, boolean isMoreButtonNeeded) {
+            int titleLinkStart, int titleLinkEnd, String primaryButtonText,
+            String secondaryButtonText, boolean isMoreButtonNeeded) {
         super(nativeInfoBar, null, iconDrawbleId, null, message, null, primaryButtonText,
                 secondaryButtonText);
         mIsMoreButtonNeeded = isMoreButtonNeeded;
+        mTitleLinkRangeStart = titleLinkStart;
+        mTitleLinkRangeEnd = titleLinkEnd;
+        mTitle = message;
     }
 
     @Override
@@ -34,6 +48,16 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
         super.createContent(layout);
         if (mIsMoreButtonNeeded) {
             layout.setCustomViewInButtonRow(OverflowSelector.createOverflowSelector(getContext()));
+        }
+        if (mTitleLinkRangeStart != 0 && mTitleLinkRangeEnd != 0) {
+            SpannableString title = new SpannableString(mTitle);
+            title.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(View view) {
+                    onLinkClicked();
+                }
+            }, mTitleLinkRangeStart, mTitleLinkRangeEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+            layout.setMessage(title);
         }
     }
 }

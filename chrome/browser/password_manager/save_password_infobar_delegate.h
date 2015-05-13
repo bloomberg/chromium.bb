@@ -11,6 +11,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "ui/gfx/range/range.h"
 
 namespace content {
 class WebContents;
@@ -46,6 +47,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Android it should display the "More" button.
   bool ShouldShowMoreButton();
 
+  const gfx::Range& title_link_range() const { return title_link_range_; }
+
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   InfoBarAutomationType GetInfoBarAutomationType() const override;
@@ -54,6 +57,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
   bool Accept() override;
   bool Cancel() override;
 
@@ -88,6 +92,10 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Title for the infobar: branded as a part of Google Smart Lock for signed
   // users.
   base::string16 title_;
+
+  // If set, describes the location of the link to the help center article for
+  // Smart Lock.
+  gfx::Range title_link_range_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };
