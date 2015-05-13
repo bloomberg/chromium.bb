@@ -51,6 +51,8 @@ public:
     size_t rowCount() const { return m_rowCount; }
     size_t columnCount() const { return m_columnCount; }
 
+    bool equals(const CSSGridTemplateAreasValue&) const;
+
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
