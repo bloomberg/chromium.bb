@@ -185,7 +185,6 @@ private:
     bool prepareRequestForThisFrame(FrameLoadRequest&);
     static void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer, Document*);
     FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
-    bool isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadRequest&) const;
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
 

@@ -1724,7 +1724,6 @@
             'loader/DocumentWriter.cpp',
             'loader/EmptyClients.cpp',
             'loader/EmptyClients.h',
-            'loader/FormState.cpp',
             'loader/FormSubmission.cpp',
             'loader/FrameFetchContext.cpp',
             'loader/FrameFetchContext.h',

@@ -64,7 +64,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -642,16 +641,6 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
     request.addHTTPOriginIfNeeded(referrerOrigin->toAtomicString());
 }
 
-bool FrameLoader::isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadRequest& request) const
-{
-    // If this is a child frame and the form submission was triggered by a script, lock the back/forward list
-    // to match IE and Opera.
-    // See https://bugs.webkit.org/show_bug.cgi?id=32383 for the original motivation for this.
-    if (!m_frame->tree().parent() || UserGestureIndicator::processingUserGesture())
-        return false;
-    return request.formState() && request.formState()->formSubmissionTrigger() == SubmittedByJavaScript;
-}
-
 FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& request)
 {
     if (m_frame->tree().parent() && !m_stateMachine.committedFirstRealDocumentLoad())
@@ -664,7 +653,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeReload;
     if (request.resourceRequest().cachePolicy() == ReloadBypassingCache)
         return FrameLoadTypeReloadFromOrigin;
-    if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
+    if (request.lockBackForwardList())
         return FrameLoadTypeRedirectWithLockedBackForwardList;
     if (!request.originDocument() && request.resourceRequest().url() == m_documentLoader->urlForHistory())
         return FrameLoadTypeSame;
@@ -688,7 +677,7 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
         return false;
     }
 
-    if (!request.formState() && request.frameName().isEmpty())
+    if (!request.form() && request.frameName().isEmpty())
         request.setFrameName(m_frame->document()->baseTarget());
     return true;
 }
@@ -699,7 +688,7 @@ static bool shouldOpenInNewWindow(LocalFrame* targetFrame, const FrameLoadReques
         return true;
     // FIXME: This case is a workaround for the fact that ctrl+clicking a form submission incorrectly
     // sends as a GET rather than a POST if it creates a new window in a different process.
-    return request.formState() && policy != NavigationPolicyCurrentTab;
+    return request.form() && policy != NavigationPolicyCurrentTab;
 }
 
 static NavigationType determineNavigationType(FrameLoadType frameLoadType, bool isFormSubmission, bool haveEvent)
@@ -745,7 +734,7 @@ static NavigationPolicy navigationPolicyForRequest(const FrameLoadRequest& reque
     if (!event)
         return policy;
 
-    if (request.formState() && event->underlyingEvent())
+    if (request.form() && event->underlyingEvent())
         event = event->underlyingEvent();
 
     if (event->isMouseEvent()) {
@@ -778,7 +767,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!prepareRequestForThisFrame(request))
         return;
 
-    RefPtrWillBeRawPtr<LocalFrame> targetFrame = toLocalFrame(request.formState() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame));
+    RefPtrWillBeRawPtr<LocalFrame> targetFrame = toLocalFrame(request.form() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame));
     if (targetFrame && targetFrame.get() != m_frame) {
         bool wasInSamePage = targetFrame->page() == m_frame->page();
 
@@ -805,7 +794,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     }
 
     const KURL& url = request.resourceRequest().url();
-    if (policy == NavigationPolicyCurrentTab && shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, url)) {
+    if (policy == NavigationPolicyCurrentTab && shouldPerformFragmentNavigation(request.form(), request.resourceRequest().httpMethod(), newLoadType, url)) {
         m_documentLoader->setNavigationType(determineNavigationType(newLoadType, false, request.triggeringEvent()));
         if (shouldTreatURLAsSameAsCurrent(url))
             newLoadType = FrameLoadTypeRedirectWithLockedBackForwardList;
@@ -1229,7 +1218,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
-    NavigationType navigationType = determineNavigationType(type, frameLoadRequest.resourceRequest().httpBody() || frameLoadRequest.formState(), frameLoadRequest.triggeringEvent());
+    NavigationType navigationType = determineNavigationType(type, frameLoadRequest.resourceRequest().httpBody() || frameLoadRequest.form(), frameLoadRequest.triggeringEvent());
     frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
@@ -1287,8 +1276,8 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     m_provisionalDocumentLoader = m_policyDocumentLoader.release();
     m_loadType = type;
 
-    if (FormState* formState = frameLoadRequest.formState())
-        client()->dispatchWillSubmitForm(formState->form());
+    if (frameLoadRequest.form())
+        client()->dispatchWillSubmitForm(frameLoadRequest.form());
 
     m_progressTracker->progressStarted();
     if (m_provisionalDocumentLoader->isClientRedirect())

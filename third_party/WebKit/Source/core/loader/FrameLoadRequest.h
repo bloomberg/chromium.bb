@@ -120,8 +120,8 @@ public:
     Event* triggeringEvent() const { return m_triggeringEvent.get(); }
     void setTriggeringEvent(PassRefPtrWillBeRawPtr<Event> triggeringEvent) { m_triggeringEvent = triggeringEvent; }
 
-    FormState* formState() const { return m_formState.get(); }
-    void setFormState(PassRefPtrWillBeRawPtr<FormState> formState) { m_formState = formState; }
+    HTMLFormElement* form() const { return m_form.get(); }
+    void setForm(PassRefPtrWillBeRawPtr<HTMLFormElement> form) { m_form = form; }
 
     ShouldSendReferrer shouldSendReferrer() const { return m_shouldSendReferrer; }
     void setShouldSendReferrer(ShouldSendReferrer shouldSendReferrer) { m_shouldSendReferrer = shouldSendReferrer; }
@@ -136,7 +136,7 @@ private:
     bool m_lockBackForwardList;
     ClientRedirectPolicy m_clientRedirect;
     RefPtrWillBeMember<Event> m_triggeringEvent;
-    RefPtrWillBeMember<FormState> m_formState;
+    RefPtrWillBeMember<HTMLFormElement> m_form;
     ShouldSendReferrer m_shouldSendReferrer;
     ContentSecurityPolicyDisposition m_shouldCheckMainWorldContentSecurityPolicy;
 };

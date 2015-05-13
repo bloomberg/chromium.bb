@@ -31,7 +31,6 @@
 #ifndef FormSubmission_h
 #define FormSubmission_h
 
-#include "core/loader/FormState.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
@@ -88,7 +87,7 @@ public:
         String m_acceptCharset;
     };
 
-    static PassRefPtrWillBeRawPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, PassRefPtrWillBeRawPtr<Event>, FormSubmissionTrigger);
+    static PassRefPtrWillBeRawPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, PassRefPtrWillBeRawPtr<Event>);
     DECLARE_TRACE();
 
     void populateFrameLoadRequest(FrameLoadRequest&);
@@ -99,14 +98,14 @@ public:
     const KURL& action() const { return m_action; }
     const AtomicString& target() const { return m_target; }
     void clearTarget() { m_target = nullAtom; }
-    FormState* state() const { return m_formState.get(); }
+    HTMLFormElement* form() const { return m_form.get(); }
     FormData* data() const { return m_formData.get(); }
     Event* event() const { return m_event.get(); }
 
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtrWillBeRawPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
+    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<FormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
@@ -115,7 +114,7 @@ private:
     KURL m_action;
     AtomicString m_target;
     AtomicString m_contentType;
-    RefPtrWillBeMember<FormState> m_formState;
+    RefPtrWillBeMember<HTMLFormElement> m_form;
     RefPtr<FormData> m_formData;
     String m_boundary;
     RefPtrWillBeMember<Event> m_event;

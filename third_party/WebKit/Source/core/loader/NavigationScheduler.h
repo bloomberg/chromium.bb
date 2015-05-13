@@ -80,7 +80,7 @@ public:
     void scheduleRedirect(double delay, const String& url);
     void scheduleLocationChange(Document*, const String& url, bool lockBackForwardList = true);
     void schedulePageBlock(Document*);
-    void scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission>);
+    void scheduleFormSubmission(Document*, PassRefPtrWillBeRawPtr<FormSubmission>);
     void scheduleReload();
 
     void startTimer();

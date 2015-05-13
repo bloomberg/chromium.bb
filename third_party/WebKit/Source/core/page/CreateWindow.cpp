@@ -200,7 +200,7 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
         newFrame->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());
     }
     FrameLoadRequest newRequest(0, request.resourceRequest());
-    newRequest.setFormState(request.formState());
+    newRequest.setForm(request.form());
     newFrame->loader().load(newRequest);
 }
 

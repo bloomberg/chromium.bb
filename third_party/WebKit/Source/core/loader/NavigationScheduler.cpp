@@ -40,7 +40,6 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
@@ -58,8 +57,9 @@ unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 class ScheduledNavigation {
     WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED(ScheduledNavigation);
 public:
-    ScheduledNavigation(double delay, bool lockBackForwardList, bool isLocationChange)
+    ScheduledNavigation(double delay, Document* originDocument, bool lockBackForwardList, bool isLocationChange)
         : m_delay(delay)
+        , m_originDocument(originDocument)
         , m_lockBackForwardList(lockBackForwardList)
         , m_isLocationChange(isLocationChange)
         , m_wasUserGesture(UserGestureIndicator::processingUserGesture())
@@ -74,6 +74,7 @@ public:
     virtual bool shouldStartTimer(LocalFrame*) { return true; }
 
     double delay() const { return m_delay; }
+    Document* originDocument() const { return m_originDocument.get(); }
     bool lockBackForwardList() const { return m_lockBackForwardList; }
     bool isLocationChange() const { return m_isLocationChange; }
     PassOwnPtr<UserGestureIndicator> createUserGestureIndicator()
@@ -88,6 +89,7 @@ protected:
 
 private:
     double m_delay;
+    RefPtrWillBeMember<Document> m_originDocument;
     bool m_lockBackForwardList;
     bool m_isLocationChange;
     bool m_wasUserGesture;
@@ -97,8 +99,7 @@ private:
 class ScheduledURLNavigation : public ScheduledNavigation {
 protected:
     ScheduledURLNavigation(double delay, Document* originDocument, const String& url, bool lockBackForwardList, bool isLocationChange)
-        : ScheduledNavigation(delay, lockBackForwardList, isLocationChange)
-        , m_originDocument(originDocument)
+        : ScheduledNavigation(delay, originDocument, lockBackForwardList, isLocationChange)
         , m_url(url)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
     {
@@ -109,17 +110,15 @@ protected:
     virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        FrameLoadRequest request(m_originDocument.get(), m_url, "_self", m_shouldCheckMainWorldContentSecurityPolicy);
+        FrameLoadRequest request(originDocument(), m_url, "_self", m_shouldCheckMainWorldContentSecurityPolicy);
         request.setLockBackForwardList(lockBackForwardList());
         request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
 
-    Document* originDocument() const { return m_originDocument.get(); }
     String url() const { return m_url; }
 
 private:
-    RefPtrWillBePersistent<Document> m_originDocument;
     String m_url;
     ContentSecurityPolicyDisposition m_shouldCheckMainWorldContentSecurityPolicy;
 };
@@ -155,7 +154,7 @@ public:
 class ScheduledReload final : public ScheduledNavigation {
 public:
     ScheduledReload()
-        : ScheduledNavigation(0.0, true, true)
+        : ScheduledNavigation(0.0, nullptr, true, true)
     {
     }
 
@@ -186,21 +185,21 @@ public:
 
 class ScheduledFormSubmission final : public ScheduledNavigation {
 public:
-    ScheduledFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission, bool lockBackForwardList)
-        : ScheduledNavigation(0, lockBackForwardList, true)
+    ScheduledFormSubmission(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission, bool lockBackForwardList)
+        : ScheduledNavigation(0, document, lockBackForwardList, true)
         , m_submission(submission)
     {
-        ASSERT(m_submission->state());
+        ASSERT(m_submission->form());
     }
 
     virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        FrameLoadRequest frameRequest(m_submission->state()->sourceDocument());
+        FrameLoadRequest frameRequest(originDocument());
         m_submission->populateFrameLoadRequest(frameRequest);
         frameRequest.setLockBackForwardList(lockBackForwardList());
         frameRequest.setTriggeringEvent(m_submission->event());
-        frameRequest.setFormState(m_submission->state());
+        frameRequest.setForm(m_submission->form());
         frame->loader().load(frameRequest);
     }
 
@@ -304,10 +303,10 @@ void NavigationScheduler::schedulePageBlock(Document* originDocument)
     schedule(adoptPtr(new ScheduledPageBlock(originDocument, url)));
 }
 
-void NavigationScheduler::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission)
+void NavigationScheduler::scheduleFormSubmission(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission)
 {
     ASSERT(m_frame->page());
-    schedule(adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
+    schedule(adoptPtr(new ScheduledFormSubmission(document, submission, mustLockBackForwardList(m_frame))));
 }
 
 void NavigationScheduler::scheduleReload()
