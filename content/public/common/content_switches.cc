@@ -984,13 +984,9 @@ const char kDeviceScaleFactor[]     = "device-scale-factor";
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 
-// Enables or disables the Win32K process mitigation policy for renderer
-// processes which prevents them from invoking user32 and gdi32 system calls
-// which enter the kernel. This is only supported on Windows 8 and beyond.
+// Disables the Win32K process mitigation policy for renderer processes.
 const char kDisableWin32kRendererLockDown[] =
     "disable-win32k-renderer-lockdown";
-const char kEnableWin32kRendererLockDown[] =
-    "enable-win32k-renderer-lockdown";
 
 // DirectWrite FontCache is shared by browser to renderers using shared memory.
 // This switch allows us to pass the shared memory handle to the renderer.

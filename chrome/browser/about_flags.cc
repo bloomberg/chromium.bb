@@ -570,14 +570,6 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kDisableDirectWrite)
   },
-  {
-    "enable-win32k-renderer-lockdown",
-    IDS_FLAGS_ENABLE_WIN32K_RENDERER_LOCKDOWN_NAME,
-    IDS_FLAGS_ENABLE_WIN32K_RENDERER_LOCKDOWN_DESCRIPTION,
-    kOsWin,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableWin32kRendererLockDown,
-                              switches::kDisableWin32kRendererLockDown)
-  },
 #endif
   {
     "enable-experimental-canvas-features",

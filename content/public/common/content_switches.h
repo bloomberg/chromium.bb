@@ -291,10 +291,7 @@ extern const char kDisableThreadedEventHandlingMac[];
 // like renderers, etc.
 CONTENT_EXPORT extern const char kDeviceScaleFactor[];
 CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
-// This switch will be removed when we enable the win32K lockdown process
-// mitigation.
 CONTENT_EXPORT extern const char kDisableWin32kRendererLockDown[];
-CONTENT_EXPORT extern const char kEnableWin32kRendererLockDown[];
 CONTENT_EXPORT extern const char kMemoryPressureThresholdsMb[];
 // Switch to pass the font cache shared memory handle to the renderer.
 CONTENT_EXPORT extern const char kFontCacheSharedHandle[];

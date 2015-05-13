@@ -197,42 +197,5 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   }
 }
 
-#if defined(OS_WIN)
-// Provides functionality to test renderer processes with the Win32K lockdown
-// process mitigation.
-class Win32KLockdownRendererProcessHostTest : public RenderProcessHostTest {
- public:
-  Win32KLockdownRendererProcessHostTest() {}
-
-  ~Win32KLockdownRendererProcessHostTest() override {}
-
- protected:
-  void SetUp() override {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(switches::kEnableWin32kRendererLockDown);
-    RenderProcessHostTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Win32KLockdownRendererProcessHostTest);
-};
-
-// Tests whether navigation requests with the Win32K lockdown mitigation set
-// work correctly.
-IN_PROC_BROWSER_TEST_F(Win32KLockdownRendererProcessHostTest,
-                       RendererWin32KLockdownNavigationTest) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), test_url);
-
-  EXPECT_EQ(1, RenderProcessHostCount());
-  EXPECT_EQ(0, process_exits_);
-}
-#endif
-
 }  // namespace
 }  // namespace content

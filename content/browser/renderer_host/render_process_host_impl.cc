@@ -1372,7 +1372,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if defined(OS_WIN)
     switches::kDisableDirectWrite,
-    switches::kEnableWin32kRendererLockDown,
     switches::kDisableWin32kRendererLockDown,
     switches::kTraceExportEventsToETW,
 #endif
