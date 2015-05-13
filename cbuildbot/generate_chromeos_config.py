@@ -107,7 +107,7 @@ def OverrideConfigForTrybot(build_config, options):
 
     if options.hwtest:
       if not my_config['hw_tests']:
-        my_config['hw_tests'] = HWTestConfig.DefaultList(
+        my_config['hw_tests'] = HWTestDefaultList(
             num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
             file_bugs=False)
       else:
@@ -732,171 +732,6 @@ class HWTestConfig(object):
   # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
   DEFAULT_HW_TEST_TIMEOUT = 60 * 220
   BRANCHED_HW_TEST_TIMEOUT = 10 * 60 * 60
-  # Number of tests running in parallel in the AU suite.
-  AU_TESTS_NUM = 2
-  # Number of tests running in parallel in the asynchronous canary
-  # test suite
-  ASYNC_TEST_NUM = 2
-
-  @classmethod
-  def DefaultList(cls, **kwargs):
-    """Returns a default list of HWTestConfig's for a build
-
-    Args:
-      *kwargs: overrides for the configs
-    """
-    # Set the number of machines for the au and qav suites. If we are
-    # constrained in the number of duts in the lab, only give 1 dut to each.
-    if (kwargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
-        constants.HWTEST_DEFAULT_NUM):
-      au_dict = dict(num=cls.AU_TESTS_NUM)
-      async_dict = dict(num=cls.ASYNC_TEST_NUM)
-    else:
-      au_dict = dict(num=1)
-      async_dict = dict(num=1)
-
-    au_kwargs = kwargs.copy()
-    au_kwargs.update(au_dict)
-
-    async_kwargs = kwargs.copy()
-    async_kwargs.update(async_dict)
-    async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
-    async_kwargs['retry'] = False
-    async_kwargs['max_retries'] = None
-    async_kwargs['async'] = True
-    async_kwargs['suite_min_duts'] = 1
-
-    # BVT + AU suite.
-    return [cls(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
-            cls(constants.HWTEST_AU_SUITE, blocking=True, **au_kwargs),
-            cls(constants.HWTEST_COMMIT_SUITE, **async_kwargs),
-            cls(constants.HWTEST_CANARY_SUITE, **async_kwargs)]
-
-  @classmethod
-  def DefaultListCanary(cls, **kwargs):
-    """Returns a default list of HWTestConfig's for a canary build.
-
-    Args:
-      *kwargs: overrides for the configs
-    """
-    # Set minimum_duts default to 4, which means that lab will check the
-    # number of available duts to meet the minimum requirement before creating
-    # the suite job for canary builds.
-    kwargs.setdefault('minimum_duts', 4)
-    kwargs.setdefault('file_bugs', True)
-    return cls.DefaultList(**kwargs)
-
-  @classmethod
-  def AFDOList(cls, **kwargs):
-    """Returns a default list of HWTestConfig's for a AFDO build.
-
-    Args:
-      *kwargs: overrides for the configs
-    """
-    afdo_dict = dict(pool=constants.HWTEST_SUITES_POOL,
-                     timeout=120 * 60, num=1, async=True, retry=False,
-                     max_retries=None)
-    afdo_dict.update(kwargs)
-    return [cls('perf_v2', **afdo_dict)]
-
-  @classmethod
-  def DefaultListNonCanary(cls, **kwargs):
-    """Return a default list of HWTestConfig's for a non-canary build.
-
-    Optional arguments may be overridden in `kwargs`, except that
-    the `blocking` setting cannot be provided.
-    """
-    return [cls(constants.HWTEST_BVT_SUITE, **kwargs),
-            cls(constants.HWTEST_COMMIT_SUITE, **kwargs)]
-
-  @classmethod
-  def DefaultListCQ(cls, **kwargs):
-    """Return a default list of HWTestConfig's for a CQ build.
-
-    Optional arguments may be overridden in `kwargs`, except that
-    the `blocking` setting cannot be provided.
-    """
-    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
-                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
-                        minimum_duts=4)
-    # Allows kwargs overrides to default_dict for cq.
-    default_dict.update(kwargs)
-    return cls.DefaultListNonCanary(**default_dict)
-
-  @classmethod
-  def DefaultListPFQ(cls, **kwargs):
-    """Return a default list of HWTestConfig's for a PFQ build.
-
-    Optional arguments may be overridden in `kwargs`, except that
-    the `blocking` setting cannot be provided.
-    """
-    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
-                        priority=constants.HWTEST_PFQ_PRIORITY,
-                        retry=False, max_retries=None, minimum_duts=4)
-    # Allows kwargs overrides to default_dict for pfq.
-    default_dict.update(kwargs)
-    return cls.DefaultListNonCanary(**default_dict)
-
-  @classmethod
-  def SharedPoolPFQ(cls, **kwargs):
-    """Return a list of HWTestConfigs for PFQ which uses a shared pool.
-
-    The returned suites will run in pool:critical by default, which is
-    shared with other types of builders (canaries, cq). The first suite in the
-    list is a blocking sanity suite that verifies the build will not break dut.
-    """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY,
-                       retry=False, max_retries=None)
-    sanity_dict.update(kwargs)
-    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
-                            blocking=True))
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                        suite_min_duts=3)
-    default_dict.update(kwargs)
-    suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
-    suite_list.extend(cls.DefaultListPFQ(**default_dict))
-    return suite_list
-
-  @classmethod
-  def SharedPoolCQ(cls, **kwargs):
-    """Return a list of HWTestConfigs for CQ which uses a shared pool.
-
-    The returned suites will run in pool:critical by default, which is
-    shared with other types of builder (canaries, pfq). The first suite in the
-    list is a blocking sanity suite that verifies the build will not break dut.
-    """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
-                       file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
-    sanity_dict.update(kwargs)
-    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
-                            blocking=True))
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                        suite_min_duts=10)
-    default_dict.update(kwargs)
-    suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
-    suite_list.extend(cls.DefaultListCQ(**default_dict))
-    return suite_list
-
-  @classmethod
-  def SharedPoolCanary(cls, **kwargs):
-    """Return a list of HWTestConfigs for Canary which uses a shared pool.
-
-    The returned suites will run in pool:critical by default, which is
-    shared with CQs. The first suite in the list is a blocking sanity suite
-    that verifies the build will not break dut.
-    """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=True)
-    sanity_dict.update(kwargs)
-    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
-                            blocking=True))
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                        suite_min_duts=6)
-    default_dict.update(kwargs)
-    suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
-    suite_list.extend(cls.DefaultListCanary(**default_dict))
-    return suite_list
-
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
@@ -944,7 +779,172 @@ class HWTestConfig(object):
     return self.__dict__ == other.__dict__
 
 
-def AFDORecordTest(**kwargs):
+def HWTestDefaultList(**kwargs):
+  """Returns a default list of HWTestConfig's for a build
+
+  Args:
+    *kwargs: overrides for the configs
+  """
+  # Number of tests running in parallel in the AU suite.
+  AU_TESTS_NUM = 2
+  # Number of tests running in parallel in the asynchronous canary
+  # test suite
+  ASYNC_TEST_NUM = 2
+
+  # Set the number of machines for the au and qav suites. If we are
+  # constrained in the number of duts in the lab, only give 1 dut to each.
+  if (kwargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
+      constants.HWTEST_DEFAULT_NUM):
+    au_dict = dict(num=AU_TESTS_NUM)
+    async_dict = dict(num=ASYNC_TEST_NUM)
+  else:
+    au_dict = dict(num=1)
+    async_dict = dict(num=1)
+
+  au_kwargs = kwargs.copy()
+  au_kwargs.update(au_dict)
+
+  async_kwargs = kwargs.copy()
+  async_kwargs.update(async_dict)
+  async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
+  async_kwargs['retry'] = False
+  async_kwargs['max_retries'] = None
+  async_kwargs['async'] = True
+  async_kwargs['suite_min_duts'] = 1
+
+  # BVT + AU suite.
+  return [HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
+          HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True, **au_kwargs),
+          HWTestConfig(constants.HWTEST_COMMIT_SUITE, **async_kwargs),
+          HWTestConfig(constants.HWTEST_CANARY_SUITE, **async_kwargs)]
+
+
+def HWTestDefaultListCanary(**kwargs):
+  """Returns a default list of HWTestConfig's for a canary build.
+
+  Args:
+    *kwargs: overrides for the configs
+  """
+  # Set minimum_duts default to 4, which means that lab will check the
+  # number of available duts to meet the minimum requirement before creating
+  # the suite job for canary builds.
+  kwargs.setdefault('minimum_duts', 4)
+  kwargs.setdefault('file_bugs', True)
+  return HWTestDefaultList(**kwargs)
+
+
+def HWTestAFDOList(**kwargs):
+  """Returns a default list of HWTestConfig's for a AFDO build.
+
+  Args:
+    *kwargs: overrides for the configs
+  """
+  afdo_dict = dict(pool=constants.HWTEST_SUITES_POOL,
+                   timeout=120 * 60, num=1, async=True, retry=False,
+                   max_retries=None)
+  afdo_dict.update(kwargs)
+  return [HWTestConfig('perf_v2', **afdo_dict)]
+
+
+def HWTestDefaultListNonCanary(**kwargs):
+  """Return a default list of HWTestConfig's for a non-canary build.
+
+  Optional arguments may be overridden in `kwargs`, except that
+  the `blocking` setting cannot be provided.
+  """
+  return [HWTestConfig(constants.HWTEST_BVT_SUITE, **kwargs),
+          HWTestConfig(constants.HWTEST_COMMIT_SUITE, **kwargs)]
+
+
+def HWTestDefaultListCQ(**kwargs):
+  """Return a default list of HWTestConfig's for a CQ build.
+
+  Optional arguments may be overridden in `kwargs`, except that
+  the `blocking` setting cannot be provided.
+  """
+  default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
+                      file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
+                      minimum_duts=4)
+  # Allows kwargs overrides to default_dict for cq.
+  default_dict.update(kwargs)
+  return HWTestDefaultListNonCanary(**default_dict)
+
+
+def HWTestDefaultListPFQ(**kwargs):
+  """Return a default list of HWTestConfig's for a PFQ build.
+
+  Optional arguments may be overridden in `kwargs`, except that
+  the `blocking` setting cannot be provided.
+  """
+  default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
+                      priority=constants.HWTEST_PFQ_PRIORITY,
+                      retry=False, max_retries=None, minimum_duts=4)
+  # Allows kwargs overrides to default_dict for pfq.
+  default_dict.update(kwargs)
+  return HWTestDefaultListNonCanary(**default_dict)
+
+
+def HWTestSharedPoolPFQ(**kwargs):
+  """Return a list of HWTestConfigs for PFQ which uses a shared pool.
+
+  The returned suites will run in pool:critical by default, which is
+  shared with other types of builders (canaries, cq). The first suite in the
+  list is a blocking sanity suite that verifies the build will not break dut.
+  """
+  sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                     file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY,
+                     retry=False, max_retries=None)
+  sanity_dict.update(kwargs)
+  sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+                          blocking=True))
+  default_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                      suite_min_duts=3)
+  default_dict.update(kwargs)
+  suite_list = [HWTestConfig(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+  suite_list.extend(HWTestDefaultListPFQ(**default_dict))
+  return suite_list
+
+
+def HWTestSharedPoolCQ(**kwargs):
+  """Return a list of HWTestConfigs for CQ which uses a shared pool.
+
+  The returned suites will run in pool:critical by default, which is
+  shared with other types of builder (canaries, pfq). The first suite in the
+  list is a blocking sanity suite that verifies the build will not break dut.
+  """
+  sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
+                     file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
+  sanity_dict.update(kwargs)
+  sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+                          blocking=True))
+  default_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                      suite_min_duts=10)
+  default_dict.update(kwargs)
+  suite_list = [HWTestConfig(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+  suite_list.extend(HWTestDefaultListCQ(**default_dict))
+  return suite_list
+
+
+def HWTestSharedPoolCanary(**kwargs):
+  """Return a list of HWTestConfigs for Canary which uses a shared pool.
+
+  The returned suites will run in pool:critical by default, which is
+  shared with CQs. The first suite in the list is a blocking sanity suite
+  that verifies the build will not break dut.
+  """
+  sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=True)
+  sanity_dict.update(kwargs)
+  sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+                          blocking=True))
+  default_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                      suite_min_duts=6)
+  default_dict.update(kwargs)
+  suite_list = [HWTestConfig(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+  suite_list.extend(HWTestDefaultListCanary(**default_dict))
+  return suite_list
+
+
+def HWTestAFDORecordTest(**kwargs):
   default_dict = dict(pool=constants.HWTEST_SUITES_POOL,
                       warn_only=True, num=1, file_bugs=True,
                       timeout=constants.AFDO_GENERATE_TIMEOUT)
@@ -1779,28 +1779,28 @@ add_config(chrome_pfq, 'alex-chrome-pfq',
 add_config(chrome_pfq, 'lumpy-chrome-pfq',
   _base_configs['lumpy'],
   afdo_generate=True,
-  hw_tests=[AFDORecordTest()] + HWTestConfig.SharedPoolPFQ(),
+  hw_tests=[HWTestAFDORecordTest()] + HWTestSharedPoolPFQ(),
 )
 
 add_config(chrome_pfq, 'daisy_skate-chrome-pfq',
   _base_configs['daisy_skate'],
-  hw_tests=HWTestConfig.SharedPoolPFQ(),
+  hw_tests=HWTestSharedPoolPFQ(),
 )
 
 add_config(chrome_pfq, 'falco-chrome-pfq',
   _base_configs['falco'],
-  hw_tests=HWTestConfig.SharedPoolPFQ(),
+  hw_tests=HWTestSharedPoolPFQ(),
 )
 
 add_config(chrome_pfq, 'peach_pit-chrome-pfq',
   _base_configs['peach_pit'],
-  hw_tests=HWTestConfig.SharedPoolPFQ(),
+  hw_tests=HWTestSharedPoolPFQ(),
   important=False,
 )
 
 add_config(chrome_pfq, 'tricky-chrome-pfq',
   _base_configs['tricky'],
-  hw_tests=HWTestConfig.SharedPoolPFQ(),
+  hw_tests=HWTestSharedPoolPFQ(),
   important=False,
 )
 
@@ -2090,7 +2090,7 @@ add_config(internal_pfq_branch, 'lumpy-pre-flight-branch',
   boards=['lumpy'],
   afdo_generate=True,
   afdo_update_ebuild=True,
-  hw_tests=[AFDORecordTest()],
+  hw_tests=[HWTestAFDORecordTest()],
 )
 
 # A test-ap image is just a test image with a special profile enabled.
@@ -2152,7 +2152,7 @@ add_config(internal_paladin, 'wolf-tot-paladin',
   boards=['wolf'],
   do_not_apply_cq_patches=True,
   prebuilts=False,
-  hw_tests=HWTestConfig.SharedPoolCQ(),
+  hw_tests=HWTestSharedPoolCQ(),
 )
 
 _paladin_boards = _all_boards
@@ -2252,7 +2252,7 @@ def _CreatePaladinConfigs():
     customizations = BuildConfig()
     base_config = _base_configs[board]
     if board in _paladin_hwtest_boards:
-      customizations.update(hw_tests=HWTestConfig.DefaultListCQ())
+      customizations.update(hw_tests=HWTestDefaultListCQ())
     if board in _paladin_moblab_hwtest_boards:
       customizations.update(
           hw_tests=[HWTestConfig(constants.HWTEST_MOBLAB_QUICK_SUITE,
@@ -2489,7 +2489,7 @@ _release = full.derive(official, internal,
   git_sync=False,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.DEV_MODE_TEST_TYPE,
             constants.CROS_VM_TEST_TYPE],
-  hw_tests=HWTestConfig.SharedPoolCanary(),
+  hw_tests=HWTestSharedPoolCanary(),
   paygen=True,
   signer_tests=True,
   trybot_list=True,
@@ -2555,9 +2555,9 @@ add_group('x86-zgb-release-group',
 
 release_afdo = _release.derive(
   trybot_list=False,
-  hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_SUITES_POOL,
+  hw_tests=HWTestDefaultList(pool=constants.HWTEST_SUITES_POOL,
                                     num=4) +
-           HWTestConfig.AFDOList(),
+           HWTestAFDOList(),
   push_image=False,
   paygen=False,
   dev_installer_prebuilts=False,
