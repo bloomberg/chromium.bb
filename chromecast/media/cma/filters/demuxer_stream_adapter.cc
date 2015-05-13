@@ -183,6 +183,13 @@ void DemuxerStreamAdapter::OnNewBuffer(
 
   DCHECK_EQ(status, ::media::DemuxerStream::kOk);
 
+  if (input->end_of_stream()) {
+    // This stream has ended, its media time will stop increasing, but there
+    // might be other streams that are still playing. Remove the task runner of
+    // this stream to ensure other streams are not blocked waiting for this one.
+    ResetMediaTaskRunner();
+  }
+
   // Updates the timestamp used for task scheduling.
   if (!input->end_of_stream() &&
       input->timestamp() != ::media::kNoTimestamp() &&
