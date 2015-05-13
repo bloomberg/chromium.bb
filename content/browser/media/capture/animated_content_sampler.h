@@ -27,6 +27,13 @@ class CONTENT_EXPORT AnimatedContentSampler {
   explicit AnimatedContentSampler(base::TimeDelta min_capture_period);
   ~AnimatedContentSampler();
 
+  // Get/Set the target sampling period.  This is used to determine whether to
+  // subsample the frames of animated content.
+  base::TimeDelta target_sampling_period() const {
+    return target_sampling_period_;
+  }
+  void SetTargetSamplingPeriod(base::TimeDelta period);
+
   // Examines the given presentation event metadata, along with recent history,
   // to detect animated content, updating the state of this sampler.
   // |damage_rect| is the region of a frame about to be drawn, while
@@ -42,8 +49,13 @@ class CONTENT_EXPORT AnimatedContentSampler {
   bool ShouldSample() const;
 
   // Returns a frame timestamp to provide to consumers of the sampled frame.
-  // Only valid when should_sample() returns true.
+  // Only valid when ShouldSample() returns true.
   base::TimeTicks frame_timestamp() const { return frame_timestamp_; }
+
+  // Returns the current sampling period.  This can be treated as the estimated
+  // duration of the frame to be sampled.  Only valid when HasProposal()
+  // returns true.
+  base::TimeDelta sampling_period() const { return sampling_period_; }
 
   // Accessors to currently-detected animating region/period, for logging.
   const gfx::Rect& detected_region() const { return detected_region_; }
@@ -86,7 +98,17 @@ class CONTENT_EXPORT AnimatedContentSampler {
 
   // Called by ConsiderPresentationEvent() when the current event is part of a
   // detected animation, to update |frame_timestamp_|.
-  void UpdateFrameTimestamp(base::TimeTicks event_time);
+  base::TimeTicks ComputeNextFrameTimestamp(base::TimeTicks event_time) const;
+
+  // When the animation frame rate is greater than the target sampling rate,
+  // this function determines an integer division of the animation frame rate
+  // that is closest to the target sampling rate.  Returns the inverse of that
+  // result (the period).  If the animation frame rate is slower or the same as
+  // the target sampling rate, this function just returns |animation_period|.
+  static base::TimeDelta ComputeSamplingPeriod(
+      base::TimeDelta animation_period,
+      base::TimeDelta target_sampling_period,
+      base::TimeDelta min_capture_period);
 
   // The client expects frame timestamps to be at least this far apart.
   const base::TimeDelta min_capture_period_;
@@ -103,23 +125,31 @@ class CONTENT_EXPORT AnimatedContentSampler {
   // that means "not detected."
   base::TimeDelta detected_period_;
 
+  // Target period between sampled frames.  This can be changed by the client at
+  // any time (e.g., to sample high frame rate content at a lower rate).
+  base::TimeDelta target_sampling_period_;
+
+  // The sampling period computed during the last call to
+  // ConsiderPresentationEvent().
+  base::TimeDelta sampling_period_;
+
+  // Indicates whether the last event caused animated content to be detected and
+  // whether the current event should be sampled.
+  enum {
+    NOT_SAMPLING,
+    START_SAMPLING,
+    SHOULD_NOT_SAMPLE,
+    SHOULD_SAMPLE
+  } sampling_state_;
+
+  // A token bucket that is used to decide which subset of the frames containing
+  // the animated content should be sampled.  Here, the smallest discrete unit
+  // of time (one microsecond) equals one token; and, tokens are only taken from
+  // the bucket when at least a full sampling period's worth are present.
+  base::TimeDelta token_bucket_;
+
   // The rewritten frame timestamp for the latest event.
   base::TimeTicks frame_timestamp_;
-
-  // The frame timestamp provided in the last call to RecordSample().  This
-  // timestamp may or may not have been one proposed by AnimatedContentSampler.
-  base::TimeTicks recorded_frame_timestamp_;
-
-  // Accumulates all the time advancements since the last call to
-  // RecordSample().  When this is greater than zero, there have been one or
-  // more events proposed for sampling, but not yet recorded.  This accounts for
-  // the cases where AnimatedContentSampler indicates a frame should be sampled,
-  // but the client chooses not to do so.
-  base::TimeDelta sequence_offset_;
-
-  // A token bucket that is used to decide which frames to drop whenever
-  // |detected_period_| is less than |min_capture_period_|.
-  base::TimeDelta borrowed_time_;
 };
 
 }  // namespace content

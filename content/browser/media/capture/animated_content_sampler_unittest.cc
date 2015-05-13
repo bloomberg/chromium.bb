@@ -4,7 +4,7 @@
 
 #include "content/browser/media/capture/animated_content_sampler.h"
 
-#include <cstdlib>
+#include <cmath>
 #include <utility>
 #include <vector>
 
@@ -20,6 +20,10 @@ namespace {
 
 base::TimeTicks InitialTestTimeTicks() {
   return base::TimeTicks() + base::TimeDelta::FromSeconds(1);
+}
+
+base::TimeDelta FpsAsPeriod(int frame_rate) {
+  return base::TimeDelta::FromSeconds(1) / frame_rate;
 }
 
 }  // namespace
@@ -70,6 +74,14 @@ class AnimatedContentSamplerTest : public ::testing::Test {
 
   gfx::Rect ElectMajorityDamageRect() const {
     return sampler_->ElectMajorityDamageRect();
+  }
+
+  static base::TimeDelta ComputeSamplingPeriod(
+      base::TimeDelta detected_period,
+      base::TimeDelta target_sampling_period,
+      base::TimeDelta min_capture_period) {
+    return AnimatedContentSampler::ComputeSamplingPeriod(
+        detected_period, target_sampling_period, min_capture_period);
   }
 
  private:
@@ -162,6 +174,45 @@ TEST_F(AnimatedContentSamplerTest, Elects24FpsVideoInsteadOf48FpsSpinner) {
   EXPECT_EQ(video_rect, ElectMajorityDamageRect());
 }
 
+TEST_F(AnimatedContentSamplerTest, TargetsSamplingPeriod) {
+  struct Helper {
+    static void RunTargetSamplingPeriodTest(int target_fps) {
+      const base::TimeDelta min_capture_period = FpsAsPeriod(60);
+      const base::TimeDelta target_sampling_period = FpsAsPeriod(target_fps);
+
+      for (int content_fps = 1; content_fps <= 60; ++content_fps) {
+        const base::TimeDelta content_period = FpsAsPeriod(content_fps);
+        const base::TimeDelta sampling_period =
+            ComputeSamplingPeriod(content_period,
+                                  target_sampling_period,
+                                  min_capture_period);
+        if (content_period >= target_sampling_period) {
+          ASSERT_EQ(content_period, sampling_period);
+        } else {
+          ASSERT_LE(min_capture_period, sampling_period);
+
+          // Check that the sampling rate is as close (or closer) to the target
+          // sampling rate than any integer-subsampling of the content frame
+          // rate.
+          const double absolute_diff =
+              std::abs(1.0 / sampling_period.InSecondsF() - target_fps);
+          const double fudge_for_acceptable_rounding_error = 0.005;
+          for (double divisor = 1; divisor < 4; ++divisor) {
+            SCOPED_TRACE(::testing::Message() << "target_fps=" << target_fps
+                                              << ", content_fps=" << content_fps
+                                              << ", divisor=" << divisor);
+            ASSERT_GE(std::abs(content_fps / divisor - target_fps),
+                      absolute_diff - fudge_for_acceptable_rounding_error);
+          }
+        }
+      }
+    }
+  };
+
+  for (int target_fps = 1; target_fps <= 60; ++target_fps)
+    Helper::RunTargetSamplingPeriodTest(target_fps);
+}
+
 namespace {
 
 // A test scenario for AnimatedContentSamplerParameterizedTest.
@@ -169,9 +220,26 @@ struct Scenario {
   base::TimeDelta vsync_interval;  // Reflects compositor's update rate.
   base::TimeDelta min_capture_period;  // Reflects maximum capture rate.
   base::TimeDelta content_period;  // Reflects content animation rate.
+  base::TimeDelta target_sampling_period;
 
-  Scenario(base::TimeDelta v, base::TimeDelta m, base::TimeDelta c)
-      : vsync_interval(v), min_capture_period(m), content_period(c) {
+  Scenario(int compositor_frequency,
+           int max_frame_rate,
+           int content_frame_rate)
+      : vsync_interval(FpsAsPeriod(compositor_frequency)),
+        min_capture_period(FpsAsPeriod(max_frame_rate)),
+        content_period(FpsAsPeriod(content_frame_rate)) {
+    CHECK(content_period >= vsync_interval)
+        << "Bad test params: Impossible to animate faster than the compositor.";
+  }
+
+  Scenario(int compositor_frequency,
+           int max_frame_rate,
+           int content_frame_rate,
+           int target_sampling_rate)
+      : vsync_interval(FpsAsPeriod(compositor_frequency)),
+        min_capture_period(FpsAsPeriod(max_frame_rate)),
+        content_period(FpsAsPeriod(content_frame_rate)),
+        target_sampling_period(FpsAsPeriod(target_sampling_rate)) {
     CHECK(content_period >= vsync_interval)
         << "Bad test params: Impossible to animate faster than the compositor.";
   }
@@ -185,10 +253,6 @@ struct Scenario {
             << " }";
 }
 
-base::TimeDelta FpsAsPeriod(int frame_rate) {
-  return base::TimeDelta::FromSeconds(1) / frame_rate;
-}
-
 }  // namespace
 
 class AnimatedContentSamplerParameterizedTest
@@ -199,6 +263,11 @@ class AnimatedContentSamplerParameterizedTest
       : count_dropped_frames_(0), count_sampled_frames_(0) {}
   virtual ~AnimatedContentSamplerParameterizedTest() {}
 
+  void SetUp() override {
+    AnimatedContentSamplerTest::SetUp();
+    sampler()->SetTargetSamplingPeriod(GetParam().target_sampling_period);
+  }
+
  protected:
   typedef std::pair<gfx::Rect, base::TimeTicks> Event;
 
@@ -206,23 +275,42 @@ class AnimatedContentSamplerParameterizedTest
     return GetParam().min_capture_period;
   }
 
+  base::TimeDelta ComputeExpectedSamplingPeriod() const {
+    return AnimatedContentSamplerTest::ComputeSamplingPeriod(
+        GetParam().content_period,
+        GetParam().target_sampling_period,
+        GetParam().min_capture_period);
+  }
+
   // Generate a sequence of events from the compositor pipeline.  The event
   // times will all be at compositor vsync boundaries.
   std::vector<Event> GenerateEventSequence(base::TimeTicks begin,
                                            base::TimeTicks end,
                                            bool include_content_frame_events,
-                                           bool include_random_events) {
+                                           bool include_random_events,
+                                           base::TimeTicks* next_begin_time) {
     DCHECK(GetParam().content_period >= GetParam().vsync_interval);
-    base::TimeTicks next_content_time = begin - GetParam().content_period;
+    base::TimeTicks next_content_time = begin;
     std::vector<Event> events;
-    for (base::TimeTicks compositor_time = begin; compositor_time < end;
+    base::TimeTicks compositor_time;
+    for (compositor_time = begin; compositor_time < end;
          compositor_time += GetParam().vsync_interval) {
-      if (include_content_frame_events && next_content_time < compositor_time) {
-        events.push_back(Event(GetContentDamageRect(), compositor_time));
+      if (next_content_time <= compositor_time) {
         next_content_time += GetParam().content_period;
-      } else if (include_random_events && GetRandomInRange(0, 1) == 0) {
+        if (include_content_frame_events) {
+          events.push_back(Event(GetContentDamageRect(), compositor_time));
+          continue;
+        }
+      }
+      if (include_random_events && GetRandomInRange(0, 1) == 0) {
         events.push_back(Event(GetRandomDamageRect(), compositor_time));
       }
+    }
+
+    if (next_begin_time) {
+      while (compositor_time < next_content_time)
+        compositor_time += GetParam().vsync_interval;
+      *next_begin_time = compositor_time;
     }
 
     DCHECK(!events.empty());
@@ -235,21 +323,31 @@ class AnimatedContentSamplerParameterizedTest
   void RunEventSequence(const std::vector<Event> events,
                         bool was_detecting_before,
                         bool is_detecting_after,
-                        bool simulate_pipeline_back_pressure) {
+                        bool simulate_pipeline_back_pressure,
+                        const char* description) {
+    SCOPED_TRACE(::testing::Message() << "Description: " << description);
+
     gfx::Rect first_detected_region;
 
     EXPECT_EQ(was_detecting_before, sampler()->HasProposal());
     bool has_detection_switched = false;
+    bool has_detection_flip_flopped_once = false;
     ResetFrameCounters();
     for (std::vector<Event>::const_iterator i = events.begin();
          i != events.end(); ++i) {
       sampler()->ConsiderPresentationEvent(i->first, i->second);
 
       // Detect when the sampler locks in/out, and that it stays that way for
-      // all further iterations of this loop.
+      // all further iterations of this loop.  It is permissible for the lock-in
+      // to flip-flop once, but no more than that.
       if (!has_detection_switched &&
           was_detecting_before != sampler()->HasProposal()) {
         has_detection_switched = true;
+      } else if (has_detection_switched &&
+                 is_detecting_after != sampler()->HasProposal()) {
+        ASSERT_FALSE(has_detection_flip_flopped_once);
+        has_detection_flip_flopped_once = true;
+        has_detection_switched = false;
       }
       ASSERT_EQ(
           has_detection_switched ? is_detecting_after : was_detecting_before,
@@ -314,15 +412,16 @@ class AnimatedContentSamplerParameterizedTest
       EXPECT_EQ(0, count_dropped_frames_);
       return;
     }
-    const double content_framerate =
-        1000000.0 / GetParam().content_period.InMicroseconds();
-    const double capture_framerate =
-        1000000.0 / GetParam().min_capture_period.InMicroseconds();
-    const double expected_drop_rate = std::max(
-        0.0, (content_framerate - capture_framerate) / capture_framerate);
-    const double actual_drop_rate =
-        static_cast<double>(count_dropped_frames_) / count_sampled_frames_;
-    EXPECT_NEAR(expected_drop_rate, actual_drop_rate, 0.015);
+    const double expected_sampling_ratio =
+        GetParam().content_period.InSecondsF() /
+            ComputeExpectedSamplingPeriod().InSecondsF();
+    const int total_frames = count_dropped_frames_ + count_sampled_frames_;
+    EXPECT_NEAR(total_frames * expected_sampling_ratio,
+                count_sampled_frames_,
+                1.5);
+    EXPECT_NEAR(total_frames * (1.0 - expected_sampling_ratio),
+                count_dropped_frames_,
+                1.5);
   }
 
  private:
@@ -340,57 +439,97 @@ TEST_P(AnimatedContentSamplerParameterizedTest, DetectsAnimatedContent) {
   base::TimeTicks begin = InitialTestTimeTicks();
 
   // Provide random events and expect no lock-in.
-  base::TimeTicks end = begin + base::TimeDelta::FromSeconds(5);
-  RunEventSequence(GenerateEventSequence(begin, end, false, true),
-                   false,
-                   false,
-                   false);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(5),
+                            false,
+                            true,
+                            &begin),
+      false,
+      false,
+      false,
+      "Provide random events and expect no lock-in.");
+  if (HasFailure())
+    return;
 
   // Provide content frame events with some random events mixed-in, and expect
   // the sampler to lock-in.
-  end = begin + base::TimeDelta::FromSeconds(5);
-  RunEventSequence(GenerateEventSequence(begin, end, true, true),
-                   false,
-                   true,
-                   false);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(5),
+                            true,
+                            true,
+                            &begin),
+      false,
+      true,
+      false,
+      "Provide content frame events with some random events mixed-in, and "
+      "expect the sampler to lock-in.");
+  if (HasFailure())
+    return;
 
   // Continue providing content frame events without the random events mixed-in
   // and expect the lock-in to hold.
-  end = begin + base::TimeDelta::FromSeconds(5);
-  RunEventSequence(GenerateEventSequence(begin, end, true, false),
-                   true,
-                   true,
-                   false);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(5),
+                            true,
+                            false,
+                            &begin),
+      true,
+      true,
+      false,
+      "Continue providing content frame events without the random events "
+      "mixed-in and expect the lock-in to hold.");
+  if (HasFailure())
+    return;
 
   // Continue providing just content frame events and expect the lock-in to
   // hold.  Also simulate the capture pipeline experiencing back pressure.
-  end = begin + base::TimeDelta::FromSeconds(20);
-  RunEventSequence(GenerateEventSequence(begin, end, true, false),
-                   true,
-                   true,
-                   true);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(20),
+                            true,
+                            false,
+                            &begin),
+      true,
+      true,
+      true,
+      "Continue providing just content frame events and expect the lock-in to "
+      "hold.  Also simulate the capture pipeline experiencing back pressure.");
+  if (HasFailure())
+    return;
+
 
   // Provide a half-second of random events only, and expect the lock-in to be
   // broken.
-  end = begin + base::TimeDelta::FromMilliseconds(500);
-  RunEventSequence(GenerateEventSequence(begin, end, false, true),
-                   true,
-                   false,
-                   false);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromMilliseconds(500),
+                            false,
+                            true,
+                            &begin),
+      true,
+      false,
+      false,
+      "Provide a half-second of random events only, and expect the lock-in to "
+      "be broken.");
+  if (HasFailure())
+    return;
 
   // Now, go back to providing content frame events, and expect the sampler to
   // lock-in once again.
-  end = begin + base::TimeDelta::FromSeconds(5);
-  RunEventSequence(GenerateEventSequence(begin, end, true, false),
-                   false,
-                   true,
-                   false);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(5),
+                            true,
+                            false,
+                            &begin),
+      false,
+      true,
+      false,
+      "Now, go back to providing content frame events, and expect the sampler "
+      "to lock-in once again.");
 }
 
 // Tests that AnimatedContentSampler won't lock in to, nor flip-flop between,
@@ -407,20 +546,30 @@ TEST_P(AnimatedContentSamplerParameterizedTest,
   // Start the first animation and run for a bit, and expect the sampler to
   // lock-in.
   base::TimeTicks begin = InitialTestTimeTicks();
-  base::TimeTicks end = begin + base::TimeDelta::FromSeconds(5);
-  RunEventSequence(GenerateEventSequence(begin, end, true, false),
-                   false,
-                   true,
-                   false);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(5),
+                            true,
+                            false,
+                            &begin),
+      false,
+      true,
+      false,
+      "Start the first animation and run for a bit, and expect the sampler to "
+      "lock-in.");
+  if (HasFailure())
+    return;
 
-  // Now, keep the first animation and blend in an second animation of the same
+  // Now, keep the first animation and blend in a second animation of the same
   // size and frame rate, but at a different position.  This will should cause
   // the sampler to enter an "undetected" state since it's unclear which
   // animation should be locked into.
-  end = begin + base::TimeDelta::FromSeconds(20);
   std::vector<Event> first_animation_events =
-      GenerateEventSequence(begin, end, true, false);
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(20),
+                            true,
+                            false,
+                            &begin);
   gfx::Rect second_animation_rect(
       gfx::Point(0, GetContentDamageRect().height()),
       GetContentDamageRect().size());
@@ -432,24 +581,39 @@ TEST_P(AnimatedContentSamplerParameterizedTest,
     both_animations_events.push_back(
         Event(second_animation_rect, i->second + second_animation_offset));
   }
-  RunEventSequence(both_animations_events, true, false, false);
-  begin = end;
+  RunEventSequence(
+      both_animations_events, true, false, false,
+      "Now, blend-in a second animation of the same size and frame rate, but "
+      "at a different position.");
+  if (HasFailure())
+    return;
 
   // Now, run just the first animation, and expect the sampler to lock-in once
   // again.
-  end = begin + base::TimeDelta::FromSeconds(5);
-  RunEventSequence(GenerateEventSequence(begin, end, true, false),
-                   false,
-                   true,
-                   false);
-  begin = end;
+  RunEventSequence(
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(5),
+                            true,
+                            false,
+                            &begin),
+      false,
+      true,
+      false,
+      "Now, run just the first animation, and expect the sampler to lock-in "
+      "once again.");
+  if (HasFailure())
+    return;
 
   // Now, blend in the second animation again, but it has half the frame rate of
   // the first animation and damage Rects with twice the area.  This will should
   // cause the sampler to enter an "undetected" state again.  This tests that
   // pixel-weighting is being accounted for in the sampler's logic.
-  end = begin + base::TimeDelta::FromSeconds(20);
-  first_animation_events = GenerateEventSequence(begin, end, true, false);
+  first_animation_events =
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromSeconds(20),
+                            true,
+                            false,
+                            &begin);
   second_animation_rect.set_width(second_animation_rect.width() * 2);
   both_animations_events.clear();
   bool include_second_animation_frame = true;
@@ -462,8 +626,10 @@ TEST_P(AnimatedContentSamplerParameterizedTest,
     }
     include_second_animation_frame = !include_second_animation_frame;
   }
-  RunEventSequence(both_animations_events, true, false, false);
-  begin = end;
+  RunEventSequence(
+      both_animations_events, true, false, false,
+      "Now, blend in the second animation again, but it has half the frame "
+      "rate of the first animation and damage Rects with twice the area.");
 }
 
 // Tests that the frame timestamps are smooth; meaning, that when run through a
@@ -473,12 +639,13 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
   // Generate 30 seconds of animated content events, run the events through
   // AnimatedContentSampler, and record all frame timestamps being proposed
   // once lock-in is continuous.
-  base::TimeTicks begin = InitialTestTimeTicks();
+  const base::TimeTicks begin = InitialTestTimeTicks();
   std::vector<Event> events = GenerateEventSequence(
       begin,
       begin + base::TimeDelta::FromSeconds(20),
       true,
-      false);
+      false,
+      nullptr);
   typedef std::vector<base::TimeTicks> Timestamps;
   Timestamps frame_timestamps;
   for (std::vector<Event>::const_iterator i = events.begin(); i != events.end();
@@ -501,8 +668,7 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
   // display_counts[2] == 10.  Quit early if any one frame was obviously
   // repeated too many times.
   const int64 max_expected_repeats_per_frame = 1 +
-      std::max(GetParam().min_capture_period, GetParam().content_period) /
-          GetParam().vsync_interval;
+      ComputeExpectedSamplingPeriod() / GetParam().vsync_interval;
   std::vector<size_t> display_counts(max_expected_repeats_per_frame + 1, 0);
   base::TimeTicks last_present_time = frame_timestamps.front();
   for (Timestamps::const_iterator i = frame_timestamps.begin() + 1;
@@ -541,7 +707,8 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
     if (display_counts[repeats] == highest_count) {
       EXPECT_EQ(second_highest_count, display_counts[repeats + 1]);
       ++repeats;
-    } else if (display_counts[repeats] == second_highest_count) {
+    } else if (second_highest_count > 0 &&
+               display_counts[repeats] == second_highest_count) {
       EXPECT_EQ(highest_count, display_counts[repeats + 1]);
       ++repeats;
     } else {
@@ -560,8 +727,12 @@ TEST_P(AnimatedContentSamplerParameterizedTest,
 
   // Generate a full minute of events.
   const base::TimeTicks begin = InitialTestTimeTicks();
-  const base::TimeTicks end = begin + base::TimeDelta::FromMinutes(1);
-  std::vector<Event> events = GenerateEventSequence(begin, end, true, false);
+  std::vector<Event> events =
+      GenerateEventSequence(begin,
+                            begin + base::TimeDelta::FromMinutes(1),
+                            true,
+                            false,
+                            nullptr);
 
   // Modify the event sequence so that 1-3 ms of additional drift is suddenly
   // present every 100 events.  This is meant to simulate that, external to
@@ -603,39 +774,45 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
          // Typical frame rate content: Compositor runs at 60 Hz, capture at 30
          // Hz, and content video animates at 30, 25, or 24 Hz.
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(30)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(25)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(24)),
+         Scenario(60, 30, 30),
+         Scenario(60, 30, 25),
+         Scenario(60, 30, 24),
 
          // High frame rate content that leverages the Compositor's
          // capabilities, but capture is still at 30 Hz.
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(60)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(50)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(48)),
+         Scenario(60, 30, 60),
+         Scenario(60, 30, 50),
+         Scenario(60, 30, 48),
 
          // High frame rate content that leverages the Compositor's
          // capabilities, and capture is also a buttery 60 Hz.
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(60), FpsAsPeriod(60)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(60), FpsAsPeriod(50)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(60), FpsAsPeriod(48)),
+         Scenario(60, 60, 60),
+         Scenario(60, 60, 50),
+         Scenario(60, 60, 48),
+
+         // High frame rate content that leverages the Compositor's
+         // capabilities, but the client has disabled HFR sampling.
+         Scenario(60, 60, 60, 30),
+         Scenario(60, 60, 50, 30),
+         Scenario(60, 60, 48, 30),
 
          // On some platforms, the Compositor runs at 50 Hz.
-         Scenario(FpsAsPeriod(50), FpsAsPeriod(30), FpsAsPeriod(30)),
-         Scenario(FpsAsPeriod(50), FpsAsPeriod(30), FpsAsPeriod(25)),
-         Scenario(FpsAsPeriod(50), FpsAsPeriod(30), FpsAsPeriod(24)),
-         Scenario(FpsAsPeriod(50), FpsAsPeriod(30), FpsAsPeriod(50)),
-         Scenario(FpsAsPeriod(50), FpsAsPeriod(30), FpsAsPeriod(48)),
+         Scenario(50, 30, 30),
+         Scenario(50, 30, 25),
+         Scenario(50, 30, 24),
+         Scenario(50, 30, 50),
+         Scenario(50, 30, 48),
 
          // Stable, but non-standard content frame rates.
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(16)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(20)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(23)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(26)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(27)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(28)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(29)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(31)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(32)),
-         Scenario(FpsAsPeriod(60), FpsAsPeriod(30), FpsAsPeriod(33))));
+         Scenario(60, 30, 16),
+         Scenario(60, 30, 20),
+         Scenario(60, 30, 23),
+         Scenario(60, 30, 26),
+         Scenario(60, 30, 27),
+         Scenario(60, 30, 28),
+         Scenario(60, 30, 29),
+         Scenario(60, 30, 31),
+         Scenario(60, 30, 32),
+         Scenario(60, 30, 33)));
 
 }  // namespace content

@@ -41,41 +41,101 @@ const int kDriftCorrectionMillis = 2000;
 
 AnimatedContentSampler::AnimatedContentSampler(
     base::TimeDelta min_capture_period)
-    : min_capture_period_(min_capture_period) {}
+    : min_capture_period_(min_capture_period),
+      sampling_state_(NOT_SAMPLING) {
+  DCHECK_GT(min_capture_period_, base::TimeDelta());
+}
 
 AnimatedContentSampler::~AnimatedContentSampler() {}
 
+void AnimatedContentSampler::SetTargetSamplingPeriod(base::TimeDelta period) {
+  target_sampling_period_ = period;
+}
+
 void AnimatedContentSampler::ConsiderPresentationEvent(
     const gfx::Rect& damage_rect, base::TimeTicks event_time) {
+  // Analyze the current event and recent history to determine whether animating
+  // content is detected.
   AddObservation(damage_rect, event_time);
-
-  if (AnalyzeObservations(event_time, &detected_region_, &detected_period_) &&
-      detected_period_ > base::TimeDelta() &&
-      detected_period_ <=
+  if (!AnalyzeObservations(event_time, &detected_region_, &detected_period_) ||
+      detected_period_ <= base::TimeDelta() ||
+      detected_period_ >
           base::TimeDelta::FromMicroseconds(kMaxLockInPeriodMicros)) {
-    if (damage_rect == detected_region_)
-      UpdateFrameTimestamp(event_time);
-    else
-      frame_timestamp_ = base::TimeTicks();
-  } else {
+    // Animated content not detected.
     detected_region_ = gfx::Rect();
     detected_period_ = base::TimeDelta();
-    frame_timestamp_ = base::TimeTicks();
+    sampling_state_ = NOT_SAMPLING;
+    return;
+  }
+
+  // At this point, animation is being detected.  Update the sampling period
+  // since the client may call the accessor method even if the heuristics below
+  // decide not to sample the current event.
+  sampling_period_ = ComputeSamplingPeriod(detected_period_,
+                                           target_sampling_period_,
+                                           min_capture_period_);
+
+  // If this is the first event causing animating content to be detected,
+  // transition to the START_SAMPLING state.
+  if (sampling_state_ == NOT_SAMPLING)
+    sampling_state_ = START_SAMPLING;
+
+  // If the current event does not represent a frame that is part of the
+  // animation, do not sample.
+  if (damage_rect != detected_region_) {
+    if (sampling_state_ == SHOULD_SAMPLE)
+      sampling_state_ = SHOULD_NOT_SAMPLE;
+    return;
+  }
+
+  // When starting sampling, determine where to sync-up for sampling and frame
+  // timestamp rewriting.  Otherwise, just add one animation period's worth of
+  // tokens to the token bucket.
+  if (sampling_state_ == START_SAMPLING) {
+    if (event_time - frame_timestamp_ > sampling_period_) {
+      // The frame timestamp sequence should start with the current event
+      // time.
+      frame_timestamp_ = event_time - sampling_period_;
+      token_bucket_ = sampling_period_;
+    } else {
+      // The frame timestamp sequence will continue from the last recorded
+      // frame timestamp.
+      token_bucket_ = event_time - frame_timestamp_;
+    }
+
+    // Provide a little extra in the initial token bucket so that minor error in
+    // the detected period won't prevent a reasonably-timed event from being
+    // sampled.
+    token_bucket_ += detected_period_ / 2;
+  } else {
+    token_bucket_ += detected_period_;
+  }
+
+  // If the token bucket is full enough, take tokens from it and propose
+  // sampling.  Otherwise, do not sample.
+  DCHECK_LE(detected_period_, sampling_period_);
+  if (token_bucket_ >= sampling_period_) {
+    token_bucket_ -= sampling_period_;
+    frame_timestamp_ = ComputeNextFrameTimestamp(event_time);
+    sampling_state_ = SHOULD_SAMPLE;
+  } else {
+    sampling_state_ = SHOULD_NOT_SAMPLE;
   }
 }
 
 bool AnimatedContentSampler::HasProposal() const {
-  return detected_period_ > base::TimeDelta();
+  return sampling_state_ != NOT_SAMPLING;
 }
 
 bool AnimatedContentSampler::ShouldSample() const {
-  return !frame_timestamp_.is_null();
+  return sampling_state_ == SHOULD_SAMPLE;
 }
 
 void AnimatedContentSampler::RecordSample(base::TimeTicks frame_timestamp) {
-  recorded_frame_timestamp_ =
-      HasProposal() ? frame_timestamp : base::TimeTicks();
-  sequence_offset_ = base::TimeDelta();
+  if (sampling_state_ == NOT_SAMPLING)
+    frame_timestamp_ = frame_timestamp;
+  else if (sampling_state_ == SHOULD_SAMPLE)
+    sampling_state_ = SHOULD_NOT_SAMPLE;
 }
 
 void AnimatedContentSampler::AddObservation(const gfx::Rect& damage_rect,
@@ -175,48 +235,59 @@ bool AnimatedContentSampler::AnalyzeObservations(
   return true;
 }
 
-void AnimatedContentSampler::UpdateFrameTimestamp(base::TimeTicks event_time) {
-  // This is how much time to advance from the last frame timestamp.  Never
-  // advance by less than |min_capture_period_| because the downstream consumer
-  // cannot handle the higher frame rate.  If |detected_period_| is less than
-  // |min_capture_period_|, excess frames should be dropped.
-  const base::TimeDelta advancement =
-      std::max(detected_period_, min_capture_period_);
+base::TimeTicks AnimatedContentSampler::ComputeNextFrameTimestamp(
+    base::TimeTicks event_time) const {
+  // The ideal next frame timestamp one sampling period since the last one.
+  const base::TimeTicks ideal_timestamp = frame_timestamp_ + sampling_period_;
 
-  // Compute the |timebase| upon which to determine the |frame_timestamp_|.
-  // Ideally, this would always equal the timestamp of the last recorded frame
-  // sampling.  Determine how much drift from the ideal is present, then adjust
-  // the timebase by a small amount to spread out the entire correction over
-  // many frame timestamps.
+  // Account for two main sources of drift: 1) The clock drift of the system
+  // clock relative to the video hardware, which affects the event times; and
+  // 2) The small error introduced by this frame timestamp rewriting, as it is
+  // based on averaging over recent events.
   //
-  // This accounts for two main sources of drift: 1) The clock drift of the
-  // system clock relative to the video hardware, which affects the event times;
-  // and 2) The small error introduced by this frame timestamp rewriting, as it
-  // is based on averaging over recent events.
-  base::TimeTicks timebase = event_time - sequence_offset_ - advancement;
-  if (!recorded_frame_timestamp_.is_null()) {
-    const base::TimeDelta drift = recorded_frame_timestamp_ - timebase;
-    const int64 correct_over_num_frames =
-        base::TimeDelta::FromMilliseconds(kDriftCorrectionMillis) /
-            detected_period_;
-    DCHECK_GT(correct_over_num_frames, 0);
-    timebase = recorded_frame_timestamp_ - (drift / correct_over_num_frames);
+  // TODO(miu): This is similar to the ClockSmoother in
+  // media/base/audio_shifter.cc.  Consider refactor-and-reuse here.
+  const base::TimeDelta drift = ideal_timestamp - event_time;
+  const int64 correct_over_num_frames =
+      base::TimeDelta::FromMilliseconds(kDriftCorrectionMillis) /
+          sampling_period_;
+  DCHECK_GT(correct_over_num_frames, 0);
+
+  return ideal_timestamp - drift / correct_over_num_frames;
+}
+
+// static
+base::TimeDelta AnimatedContentSampler::ComputeSamplingPeriod(
+      base::TimeDelta animation_period,
+      base::TimeDelta target_sampling_period,
+      base::TimeDelta min_capture_period) {
+  // If the animation rate is unknown, return the ideal sampling period.
+  if (animation_period == base::TimeDelta()) {
+    return std::max(target_sampling_period, min_capture_period);
   }
 
-  // Compute |frame_timestamp_|.  Whenever |detected_period_| is less than
-  // |min_capture_period_|, some extra time is "borrowed" to be able to advance
-  // by the full |min_capture_period_|.  Then, whenever the total amount of
-  // borrowed time reaches a full |min_capture_period_|, drop a frame.  Note
-  // that when |detected_period_| is greater or equal to |min_capture_period_|,
-  // this logic is effectively disabled.
-  borrowed_time_ += advancement - detected_period_;
-  if (borrowed_time_ >= min_capture_period_) {
-    borrowed_time_ -= min_capture_period_;
-    frame_timestamp_ = base::TimeTicks();
+  // Determine whether subsampling is needed.  If so, compute the sampling
+  // period corresponding to the sampling rate is the closest integer division
+  // of the animation frame rate to the target sampling rate.
+  //
+  // For example, consider a target sampling rate of 30 FPS and an animation
+  // rate of 42 FPS.  Possible sampling rates would be 42/1 = 42, 42/2 = 21,
+  // 42/3 = 14, and so on.  Of these candidates, 21 FPS is closest to 30.
+  base::TimeDelta sampling_period;
+  if (animation_period < target_sampling_period) {
+    const int64 ratio = target_sampling_period / animation_period;
+    const double target_fps = 1.0 / target_sampling_period.InSecondsF();
+    const double animation_fps = 1.0 / animation_period.InSecondsF();
+    if (std::abs(animation_fps / ratio - target_fps) <
+            std::abs(animation_fps / (ratio + 1) - target_fps)) {
+      sampling_period = ratio * animation_period;
+    } else {
+      sampling_period = (ratio + 1) * animation_period;
+    }
   } else {
-    sequence_offset_ += advancement;
-    frame_timestamp_ = timebase + sequence_offset_;
+    sampling_period = animation_period;
   }
+  return std::max(sampling_period, min_capture_period);
 }
 
 }  // namespace content
