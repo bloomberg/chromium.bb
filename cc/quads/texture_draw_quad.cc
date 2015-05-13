@@ -16,7 +16,7 @@ TextureDrawQuad::TextureDrawQuad()
     : resource_id(0),
       premultiplied_alpha(false),
       background_color(SK_ColorTRANSPARENT),
-      flipped(false),
+      y_flipped(false),
       nearest_neighbor(false) {
   this->vertex_opacity[0] = 0.f;
   this->vertex_opacity[1] = 0.f;
@@ -34,7 +34,7 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::PointF& uv_bottom_right,
                              SkColor background_color,
                              const float vertex_opacity[4],
-                             bool flipped,
+                             bool y_flipped,
                              bool nearest_neighbor) {
   bool needs_blending = vertex_opacity[0] != 1.0f || vertex_opacity[1] != 1.0f
       || vertex_opacity[2] != 1.0f || vertex_opacity[3] != 1.0f;
@@ -49,7 +49,7 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->vertex_opacity[1] = vertex_opacity[1];
   this->vertex_opacity[2] = vertex_opacity[2];
   this->vertex_opacity[3] = vertex_opacity[3];
-  this->flipped = flipped;
+  this->y_flipped = y_flipped;
   this->nearest_neighbor = nearest_neighbor;
 }
 
@@ -64,7 +64,7 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              const gfx::PointF& uv_bottom_right,
                              SkColor background_color,
                              const float vertex_opacity[4],
-                             bool flipped,
+                             bool y_flipped,
                              bool nearest_neighbor) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
@@ -77,7 +77,7 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->vertex_opacity[1] = vertex_opacity[1];
   this->vertex_opacity[2] = vertex_opacity[2];
   this->vertex_opacity[3] = vertex_opacity[3];
-  this->flipped = flipped;
+  this->y_flipped = y_flipped;
   this->nearest_neighbor = nearest_neighbor;
 }
 
@@ -105,7 +105,7 @@ void TextureDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
     value->AppendDouble(vertex_opacity[i]);
   value->EndArray();
 
-  value->SetBoolean("flipped", flipped);
+  value->SetBoolean("y_flipped", y_flipped);
   value->SetBoolean("nearest_neighbor", nearest_neighbor);
 }
 

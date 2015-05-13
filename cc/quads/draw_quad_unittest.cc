@@ -549,7 +549,7 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   gfx::PointF uv_top_left(0.5f, 224.f);
   gfx::PointF uv_bottom_right(51.5f, 260.f);
   const float vertex_opacity[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-  bool flipped = true;
+  bool y_flipped = true;
   bool nearest_neighbor = true;
   CREATE_SHARED_STATE();
 
@@ -562,7 +562,7 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
                      uv_bottom_right,
                      SK_ColorTRANSPARENT,
                      vertex_opacity,
-                     flipped,
+                     y_flipped,
                      nearest_neighbor);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
@@ -572,7 +572,7 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_EQ(uv_top_left, copy_quad->uv_top_left);
   EXPECT_EQ(uv_bottom_right, copy_quad->uv_bottom_right);
   EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copy_quad->vertex_opacity, 4);
-  EXPECT_EQ(flipped, copy_quad->flipped);
+  EXPECT_EQ(y_flipped, copy_quad->y_flipped);
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 
   CREATE_QUAD_8_ALL(TextureDrawQuad,
@@ -582,7 +582,7 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
                     uv_bottom_right,
                     SK_ColorTRANSPARENT,
                     vertex_opacity,
-                    flipped,
+                    y_flipped,
                     nearest_neighbor);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(resource_id, copy_quad->resource_id);
@@ -590,7 +590,7 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_EQ(uv_top_left, copy_quad->uv_top_left);
   EXPECT_EQ(uv_bottom_right, copy_quad->uv_bottom_right);
   EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copy_quad->vertex_opacity, 4);
-  EXPECT_EQ(flipped, copy_quad->flipped);
+  EXPECT_EQ(y_flipped, copy_quad->y_flipped);
   EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 }
 
@@ -857,7 +857,7 @@ TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
   gfx::PointF uv_top_left(0.5f, 224.f);
   gfx::PointF uv_bottom_right(51.5f, 260.f);
   const float vertex_opacity[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-  bool flipped = true;
+  bool y_flipped = true;
   bool nearest_neighbor = true;
 
   CREATE_SHARED_STATE();
@@ -870,7 +870,7 @@ TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
                      uv_bottom_right,
                      SK_ColorTRANSPARENT,
                      vertex_opacity,
-                     flipped,
+                     y_flipped,
                      nearest_neighbor);
   EXPECT_EQ(resource_id, quad_new->resource_id);
   EXPECT_EQ(1, IterateAndCount(quad_new));

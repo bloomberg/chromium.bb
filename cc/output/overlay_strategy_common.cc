@@ -56,7 +56,8 @@ bool OverlayStrategyCommon::IsInvisibleQuad(const DrawQuad* draw_quad) {
 bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
                                                OverlayCandidate* quad_info) {
   gfx::OverlayTransform overlay_transform =
-      OverlayCandidate::GetOverlayTransform(quad.quadTransform(), quad.flipped);
+      OverlayCandidate::GetOverlayTransform(quad.quadTransform(),
+                                            quad.y_flipped);
   if (quad.background_color != SK_ColorTRANSPARENT ||
       quad.premultiplied_alpha ||
       overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)

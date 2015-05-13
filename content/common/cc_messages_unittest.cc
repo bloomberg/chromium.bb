@@ -185,7 +185,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->vertex_opacity[1], b->vertex_opacity[1]);
     EXPECT_EQ(a->vertex_opacity[2], b->vertex_opacity[2]);
     EXPECT_EQ(a->vertex_opacity[3], b->vertex_opacity[3]);
-    EXPECT_EQ(a->flipped, b->flipped);
+    EXPECT_EQ(a->y_flipped, b->y_flipped);
     EXPECT_EQ(a->nearest_neighbor, b->nearest_neighbor);
   }
 

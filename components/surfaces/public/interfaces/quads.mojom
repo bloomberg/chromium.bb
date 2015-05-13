@@ -63,7 +63,7 @@ struct TextureQuadState {
   PointF uv_bottom_right;
   Color background_color;
   array<float, 4> vertex_opacity;
-  bool flipped;
+  bool y_flipped;
   bool nearest_neighbor;
 };
 

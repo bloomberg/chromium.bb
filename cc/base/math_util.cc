@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -865,6 +866,18 @@ double MathUtil::AsDoubleSafely(double value) {
 
 float MathUtil::AsFloatSafely(float value) {
   return std::min(value, std::numeric_limits<float>::max());
+}
+
+gfx::Vector3dF MathUtil::GetXAxis(const gfx::Transform& transform) {
+  return gfx::Vector3dF(transform.matrix().getFloat(0, 0),
+                        transform.matrix().getFloat(1, 0),
+                        transform.matrix().getFloat(2, 0));
+}
+
+gfx::Vector3dF MathUtil::GetYAxis(const gfx::Transform& transform) {
+  return gfx::Vector3dF(transform.matrix().getFloat(0, 1),
+                        transform.matrix().getFloat(1, 1),
+                        transform.matrix().getFloat(2, 1));
 }
 
 }  // namespace cc

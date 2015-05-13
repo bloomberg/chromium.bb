@@ -108,7 +108,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   gfx::PointF uv_bottom_right(-7.f, 16.3f);
   SkColor background_color = SK_ColorYELLOW;
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
-  bool flipped = false;
+  bool y_flipped = false;
   bool nearest_neighbor = false;
   texture_quad->SetAll(sqs,
                        rect,
@@ -121,7 +121,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
                        uv_bottom_right,
                        background_color,
                        vertex_opacity,
-                       flipped,
+                       y_flipped,
                        nearest_neighbor);
 
   QuadPtr mojo_quad = Quad::From<cc::DrawQuad>(*texture_quad);
@@ -138,7 +138,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   for (size_t i = 0; i < 4; ++i) {
     EXPECT_EQ(vertex_opacity[i], mojo_texture_state->vertex_opacity[i]) << i;
   }
-  EXPECT_EQ(flipped, mojo_texture_state->flipped);
+  EXPECT_EQ(y_flipped, mojo_texture_state->y_flipped);
 }
 
 TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
@@ -275,7 +275,7 @@ TEST(SurfaceLibTest, RenderPass) {
   gfx::PointF uv_bottom_right(-7.f, 16.3f);
   SkColor background_color = SK_ColorYELLOW;
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
-  bool flipped = false;
+  bool y_flipped = false;
   bool nearest_neighbor = false;
   texture_quad->SetAll(sqs,
                        rect,
@@ -288,7 +288,7 @@ TEST(SurfaceLibTest, RenderPass) {
                        uv_bottom_right,
                        background_color,
                        vertex_opacity,
-                       flipped,
+                       y_flipped,
                        nearest_neighbor);
 
   PassPtr mojo_pass = Pass::From(*pass);
@@ -362,7 +362,7 @@ TEST(SurfaceLibTest, RenderPass) {
     EXPECT_EQ(vertex_opacity[i], round_trip_texture_quad->vertex_opacity[i])
         << i;
   }
-  EXPECT_EQ(flipped, round_trip_texture_quad->flipped);
+  EXPECT_EQ(y_flipped, round_trip_texture_quad->y_flipped);
 }
 
 TEST(SurfaceLibTest, Mailbox) {

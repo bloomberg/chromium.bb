@@ -5,10 +5,34 @@
 #include "cc/output/overlay_candidate.h"
 
 #include <algorithm>
+#include <limits>
 #include "base/logging.h"
+#include "cc/base/math_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace cc {
+
+namespace {
+// Tolerance for considering axis vector elements to be zero.
+const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
+
+enum Axis { NONE, AXIS_POS_X, AXIS_NEG_X, AXIS_POS_Y, AXIS_NEG_Y };
+
+Axis VectorToAxis(const gfx::Vector3dF& vec) {
+  if (std::abs(vec.z()) > kEpsilon)
+    return NONE;
+  const bool x_zero = (std::abs(vec.x()) <= kEpsilon);
+  const bool y_zero = (std::abs(vec.y()) <= kEpsilon);
+  if (x_zero && !y_zero)
+    return (vec.y() > 0) ? AXIS_POS_Y : AXIS_NEG_Y;
+  else if (y_zero && !x_zero)
+    return (vec.x() > 0) ? AXIS_POS_X : AXIS_NEG_X;
+  else
+    return NONE;
+}
+
+}  // namespace
 
 OverlayCandidate::OverlayCandidate()
     : transform(gfx::OVERLAY_TRANSFORM_NONE),
@@ -23,12 +47,34 @@ OverlayCandidate::~OverlayCandidate() {}
 // static
 gfx::OverlayTransform OverlayCandidate::GetOverlayTransform(
     const gfx::Transform& quad_transform,
-    bool flipped) {
-  if (!quad_transform.IsPositiveScaleOrTranslation())
+    bool y_flipped) {
+  if (!quad_transform.Preserves2dAxisAlignment()) {
     return gfx::OVERLAY_TRANSFORM_INVALID;
+  }
 
-  return flipped ? gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL
-                 : gfx::OVERLAY_TRANSFORM_NONE;
+  gfx::Vector3dF x_axis = MathUtil::GetXAxis(quad_transform);
+  gfx::Vector3dF y_axis = MathUtil::GetYAxis(quad_transform);
+  if (y_flipped) {
+    y_axis.Scale(-1);
+  }
+
+  Axis x_to = VectorToAxis(x_axis);
+  Axis y_to = VectorToAxis(y_axis);
+
+  if (x_to == AXIS_POS_X && y_to == AXIS_POS_Y)
+    return gfx::OVERLAY_TRANSFORM_NONE;
+  else if (x_to == AXIS_NEG_X && y_to == AXIS_POS_Y)
+    return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
+  else if (x_to == AXIS_POS_X && y_to == AXIS_NEG_Y)
+    return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
+  else if (x_to == AXIS_NEG_Y && y_to == AXIS_POS_X)
+    return gfx::OVERLAY_TRANSFORM_ROTATE_270;
+  else if (x_to == AXIS_NEG_X && y_to == AXIS_NEG_Y)
+    return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+  else if (x_to == AXIS_POS_Y && y_to == AXIS_NEG_X)
+    return gfx::OVERLAY_TRANSFORM_ROTATE_90;
+  else
+    return gfx::OVERLAY_TRANSFORM_INVALID;
 }
 
 // static
@@ -131,7 +177,7 @@ gfx::OverlayTransform OverlayCandidate::ModifyTransform(
 gfx::RectF OverlayCandidate::GetOverlayRect(
     const gfx::Transform& quad_transform,
     const gfx::Rect& rect) {
-  DCHECK(quad_transform.IsPositiveScaleOrTranslation());
+  DCHECK(quad_transform.Preserves2dAxisAlignment());
 
   gfx::RectF float_rect(rect);
   quad_transform.TransformRect(&float_rect);

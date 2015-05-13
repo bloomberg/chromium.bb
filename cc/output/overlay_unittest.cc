@@ -61,10 +61,14 @@ void SingleOverlayValidator::CheckOverlaySupport(
   ASSERT_EQ(2U, surfaces->size());
 
   OverlayCandidate& candidate = surfaces->back();
-  if (candidate.display_rect.width() == 64)
+  if (candidate.display_rect.width() == 64) {
     EXPECT_EQ(kOverlayBottomRightRect, candidate.display_rect);
-  else
-    EXPECT_EQ(kOverlayRect, candidate.display_rect);
+  } else {
+    EXPECT_NEAR(kOverlayRect.x(), candidate.display_rect.x(), 0.01f);
+    EXPECT_NEAR(kOverlayRect.y(), candidate.display_rect.y(), 0.01f);
+    EXPECT_NEAR(kOverlayRect.width(), candidate.display_rect.width(), 0.01f);
+    EXPECT_NEAR(kOverlayRect.height(), candidate.display_rect.height(), 0.01f);
+  }
   EXPECT_EQ(BoundingRect(kUVTopLeft, kUVBottomRight).ToString(),
             candidate.uv_rect.ToString());
   candidate.overlay_handled = true;
@@ -540,7 +544,7 @@ TEST_F(SingleOverlayOnTopTest, RejectOpacity) {
   EXPECT_EQ(0U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, RejectNonScaleTransform) {
+TEST_F(SingleOverlayOnTopTest, RejectNonAxisAlignedTransform) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateQuad(resource_provider_.get(),
                                 pass->shared_quad_state_list.back(),
@@ -556,11 +560,13 @@ TEST_F(SingleOverlayOnTopTest, RejectNonScaleTransform) {
   EXPECT_EQ(0U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, RejectNegativeScaleTransform) {
+TEST_F(SingleOverlayOnTopTest, AllowVerticalFlip) {
+  gfx::Rect rect = kOverlayRect;
+  rect.set_width(rect.width() / 2);
+  rect.Offset(0, -rect.height());
   scoped_ptr<RenderPass> pass = CreateRenderPass();
-  CreateFullscreenCandidateQuad(resource_provider_.get(),
-                                pass->shared_quad_state_list.back(),
-                                pass.get());
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(), rect);
   pass->shared_quad_state_list.back()->content_to_target_transform.Scale(2.0f,
                                                                          -1.0f);
 
@@ -569,7 +575,29 @@ TEST_F(SingleOverlayOnTopTest, RejectNegativeScaleTransform) {
   OverlayCandidateList candidate_list;
   overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(0U, candidate_list.size());
+  ASSERT_EQ(2U, candidate_list.size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL,
+            candidate_list.back().transform);
+}
+
+TEST_F(SingleOverlayOnTopTest, AllowHorizontalFlip) {
+  gfx::Rect rect = kOverlayRect;
+  rect.set_height(rect.height() / 2);
+  rect.Offset(-rect.width(), 0);
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(), rect);
+  pass->shared_quad_state_list.back()->content_to_target_transform.Scale(-1.0f,
+                                                                         2.0f);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  ASSERT_EQ(1U, pass_list.size());
+  ASSERT_EQ(2U, candidate_list.size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL,
+            candidate_list.back().transform);
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
@@ -587,6 +615,60 @@ TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
   overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
   ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(2U, candidate_list.size());
+}
+
+TEST_F(SingleOverlayOnTopTest, Allow90DegreeRotation) {
+  gfx::Rect rect = kOverlayRect;
+  rect.Offset(0, -rect.height());
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(), rect);
+  pass->shared_quad_state_list.back()
+      ->content_to_target_transform.RotateAboutZAxis(90.f);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  ASSERT_EQ(1U, pass_list.size());
+  ASSERT_EQ(2U, candidate_list.size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90, candidate_list.back().transform);
+}
+
+TEST_F(SingleOverlayOnTopTest, Allow180DegreeRotation) {
+  gfx::Rect rect = kOverlayRect;
+  rect.Offset(-rect.width(), -rect.height());
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(), rect);
+  pass->shared_quad_state_list.back()
+      ->content_to_target_transform.RotateAboutZAxis(180.f);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  ASSERT_EQ(1U, pass_list.size());
+  ASSERT_EQ(2U, candidate_list.size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_180, candidate_list.back().transform);
+}
+
+TEST_F(SingleOverlayOnTopTest, Allow270DegreeRotation) {
+  gfx::Rect rect = kOverlayRect;
+  rect.Offset(-rect.width(), 0);
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(), rect);
+  pass->shared_quad_state_list.back()
+      ->content_to_target_transform.RotateAboutZAxis(270.f);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+  ASSERT_EQ(1U, pass_list.size());
+  ASSERT_EQ(2U, candidate_list.size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270, candidate_list.back().transform);
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {

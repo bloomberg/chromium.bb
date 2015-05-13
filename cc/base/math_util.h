@@ -33,6 +33,7 @@ class RectF;
 class Transform;
 class Vector2dF;
 class Vector2d;
+class Vector3dF;
 }
 
 namespace cc {
@@ -240,6 +241,12 @@ class CC_EXPORT MathUtil {
   // If the value is inf, returns max double/float representation.
   static double AsDoubleSafely(double value);
   static float AsFloatSafely(float value);
+
+  // Returns vector that x axis (1,0,0) transforms to under given transform.
+  static gfx::Vector3dF GetXAxis(const gfx::Transform& transform);
+
+  // Returns vector that y axis (0,1,0) transforms to under given transform.
+  static gfx::Vector3dF GetYAxis(const gfx::Transform& transform);
 };
 
 }  // namespace cc

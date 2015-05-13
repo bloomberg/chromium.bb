@@ -140,7 +140,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           texture_quad_state->uv_bottom_right.To<gfx::PointF>(),
           texture_quad_state->background_color.To<SkColor>(),
           &texture_quad_state->vertex_opacity.storage()[0],
-          texture_quad_state->flipped,
+          texture_quad_state->y_flipped,
           texture_quad_state->nearest_neighbor);
       break;
     }
@@ -302,7 +302,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
         vertex_opacity[i] = texture_quad->vertex_opacity[i];
       }
       texture_state->vertex_opacity = vertex_opacity.Pass();
-      texture_state->flipped = texture_quad->flipped;
+      texture_state->y_flipped = texture_quad->y_flipped;
       quad->texture_quad_state = texture_state.Pass();
       break;
     }
