@@ -1194,7 +1194,7 @@ static inline void stripTrailingSpace(FloatWillBeLayoutUnit& inlineMax, FloatWil
             ? TextRun::ForceSimple
             : TextRun::ForceComplex);
         float spaceWidth = font.width(run);
-        inlineMax -= spaceWidth + font.fontDescription().wordSpacing();
+        inlineMax -= LayoutUnit::fromFloatCeil(spaceWidth + font.fontDescription().wordSpacing());
         if (inlineMin > inlineMax)
             inlineMin = inlineMax;
     }

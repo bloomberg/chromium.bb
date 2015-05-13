@@ -629,7 +629,7 @@ crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
 crbug.com/321237 [ Lion ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Lion ] virtual/slimmingpaint/fast/text/international/complex-text-leading-space-wrapping.html [ Skip ]
-crbug.com/321237 [ Lion ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
+crbug.com/321237 [ Lion Win ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
@@ -1937,3 +1937,7 @@ crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-40-t.svg [ Ima
 crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
 crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
 
+crbug.com/478014 [ Mac ] fast/forms/button-cannot-be-nested.html [ NeedsRebaseline ]
+crbug.com/478014 [ Mac ] fast/forms/button-white-space.html [ NeedsRebaseline ]
+crbug.com/478014 [ Mac ] fast/writing-mode/fallback-orientation.html [ NeedsRebaseline ]
+crbug.com/478014 [ Mac Win ] svg/css/text-shadow-multiple.xhtml [ NeedsRebaseline ]
