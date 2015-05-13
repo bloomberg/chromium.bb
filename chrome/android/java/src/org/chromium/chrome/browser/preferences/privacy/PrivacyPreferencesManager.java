@@ -340,11 +340,24 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * This function should not result in a native call as it can be called in circumstances where
      * natives are not guaranteed to be loaded.
      *
-     * @return boolean to whether to allow uploading crash dump now.
+     * @return whether to allow uploading crash dump now.
      */
     @Override
     public boolean isUploadPermitted() {
         return mCrashUploadingEnabled && isNetworkAvailable() && (allowUploadCrashDump()
                 || CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD));
+    }
+
+    /**
+     * Check whether uploading crash dump should be in constrained mode based on user experiments.
+     * This function shows whether in general uploads should be limited for this user and does not
+     * determine whether crash uploads are currently possible or not. Use |isUploadPermitted|
+     * function for that before calling |isUploadLimited|.
+     *
+     * @return whether uploading logic should be constrained.
+     */
+    @Override
+    public boolean isUploadLimited() {
+        return isCellularExperimentEnabled();
     }
 }
