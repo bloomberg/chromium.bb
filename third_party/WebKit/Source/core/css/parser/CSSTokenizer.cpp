@@ -729,12 +729,12 @@ UChar32 CSSTokenizer::consumeEscape()
         UChar32 codePoint = hexChars.toString().toUIntStrict(&ok, 16);
         ASSERT(ok);
         if (codePoint == 0 || (0xD800 <= codePoint && codePoint <= 0xDFFF) || codePoint > 0x10FFFF)
-            return WTF::Unicode::replacementCharacter;
+            return replacementCharacter;
         return codePoint;
     }
 
     if (cc == kEndOfFileMarker)
-        return WTF::Unicode::replacementCharacter;
+        return replacementCharacter;
     return cc;
 }
 

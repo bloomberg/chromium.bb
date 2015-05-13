@@ -151,7 +151,7 @@ static inline bool shouldBreakAfter(UChar lastCh, UChar ch, UChar nextCh)
 
 inline bool needsLineBreakIterator(UChar ch)
 {
-    return ch > asciiLineBreakTableLastChar && ch != noBreakSpace;
+    return ch > asciiLineBreakTableLastChar && ch != noBreakSpaceCharacter;
 }
 
 template<typename CharacterType>

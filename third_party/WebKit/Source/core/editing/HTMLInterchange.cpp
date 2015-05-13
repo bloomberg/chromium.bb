@@ -42,7 +42,7 @@ String convertHTMLTextToInterchangeFormat(const String& in, const Text& node)
         return in;
 
     const char convertedSpaceString[] = "<span class=\"" AppleConvertedSpace "\">\xA0</span>";
-    static_assert((static_cast<unsigned char>('\xA0') == noBreakSpace), "\\xA0 should be non-breaking space");
+    static_assert((static_cast<unsigned char>('\xA0') == noBreakSpaceCharacter), "\\xA0 should be non-breaking space");
 
     StringBuilder s;
 

@@ -111,17 +111,17 @@ const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(const Fon
             // All fonts are custom fonts and are loading. Return the first FontData.
             fontData = fontDataAt(fontDescription, 0);
             if (fontData)
-                return fontData->fontDataForCharacter(space);
+                return fontData->fontDataForCharacter(spaceCharacter);
 
             SimpleFontData* lastResortFallback = FontCache::fontCache()->getLastResortFallbackFont(fontDescription).get();
             ASSERT(lastResortFallback);
             return lastResortFallback;
         }
 
-        if (fontData->isSegmented() && !toSegmentedFontData(fontData)->containsCharacter(space))
+        if (fontData->isSegmented() && !toSegmentedFontData(fontData)->containsCharacter(spaceCharacter))
             continue;
 
-        const SimpleFontData* fontDataForSpace = fontData->fontDataForCharacter(space);
+        const SimpleFontData* fontDataForSpace = fontData->fontDataForCharacter(spaceCharacter);
         ASSERT(fontDataForSpace);
 
         // When a custom font is loading, we should use the correct fallback font to layout the text.

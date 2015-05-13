@@ -1126,9 +1126,9 @@ const AtomicString& ComputedStyle::hyphenString() const
         return hyphenationString;
 
     // FIXME: This should depend on locale.
-    DEFINE_STATIC_LOCAL(AtomicString, hyphenMinusString, (&hyphenMinus, 1));
-    DEFINE_STATIC_LOCAL(AtomicString, hyphenString, (&hyphen, 1));
-    return font().primaryFontHasGlyphForCharacter(hyphen) ? hyphenString : hyphenMinusString;
+    DEFINE_STATIC_LOCAL(AtomicString, hyphenMinusString, (&hyphenMinusCharacter, 1));
+    DEFINE_STATIC_LOCAL(AtomicString, hyphenString, (&hyphenCharacter, 1));
+    return font().primaryFontHasGlyphForCharacter(hyphenCharacter) ? hyphenString : hyphenMinusString;
 }
 
 const AtomicString& ComputedStyle::textEmphasisMarkString() const
@@ -1139,28 +1139,28 @@ const AtomicString& ComputedStyle::textEmphasisMarkString() const
     case TextEmphasisMarkCustom:
         return textEmphasisCustomMark();
     case TextEmphasisMarkDot: {
-        DEFINE_STATIC_LOCAL(AtomicString, filledDotString, (&bullet, 1));
-        DEFINE_STATIC_LOCAL(AtomicString, openDotString, (&whiteBullet, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, filledDotString, (&bulletCharacter, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, openDotString, (&whiteBulletCharacter, 1));
         return textEmphasisFill() == TextEmphasisFillFilled ? filledDotString : openDotString;
     }
     case TextEmphasisMarkCircle: {
-        DEFINE_STATIC_LOCAL(AtomicString, filledCircleString, (&blackCircle, 1));
-        DEFINE_STATIC_LOCAL(AtomicString, openCircleString, (&whiteCircle, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, filledCircleString, (&blackCircleCharacter, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, openCircleString, (&whiteCircleCharacter, 1));
         return textEmphasisFill() == TextEmphasisFillFilled ? filledCircleString : openCircleString;
     }
     case TextEmphasisMarkDoubleCircle: {
-        DEFINE_STATIC_LOCAL(AtomicString, filledDoubleCircleString, (&fisheye, 1));
-        DEFINE_STATIC_LOCAL(AtomicString, openDoubleCircleString, (&bullseye, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, filledDoubleCircleString, (&fisheyeCharacter, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, openDoubleCircleString, (&bullseyeCharacter, 1));
         return textEmphasisFill() == TextEmphasisFillFilled ? filledDoubleCircleString : openDoubleCircleString;
     }
     case TextEmphasisMarkTriangle: {
-        DEFINE_STATIC_LOCAL(AtomicString, filledTriangleString, (&blackUpPointingTriangle, 1));
-        DEFINE_STATIC_LOCAL(AtomicString, openTriangleString, (&whiteUpPointingTriangle, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, filledTriangleString, (&blackUpPointingTriangleCharacter, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, openTriangleString, (&whiteUpPointingTriangleCharacter, 1));
         return textEmphasisFill() == TextEmphasisFillFilled ? filledTriangleString : openTriangleString;
     }
     case TextEmphasisMarkSesame: {
-        DEFINE_STATIC_LOCAL(AtomicString, filledSesameString, (&sesameDot, 1));
-        DEFINE_STATIC_LOCAL(AtomicString, openSesameString, (&whiteSesameDot, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, filledSesameString, (&sesameDotCharacter, 1));
+        DEFINE_STATIC_LOCAL(AtomicString, openSesameString, (&whiteSesameDotCharacter, 1));
         return textEmphasisFill() == TextEmphasisFillFilled ? filledSesameString : openSesameString;
     }
     case TextEmphasisMarkAuto:

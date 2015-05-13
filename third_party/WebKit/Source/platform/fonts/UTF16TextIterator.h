@@ -45,7 +45,7 @@ public:
         character = *m_characters;
         m_currentGlyphLength = 1;
 
-        if (character < HiraganaLetterSmallA || consumeSlowCase(character)) {
+        if (character < hiraganaLetterSmallACharacter || consumeSlowCase(character)) {
             if (U_GET_GC_MASK(character) & U_GC_M_MASK)
                 consumeMultipleUChar();
             return true;

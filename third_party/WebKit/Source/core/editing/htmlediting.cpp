@@ -384,7 +384,7 @@ String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfP
         }
 
         if (previousCharacterWasSpace || (!i && startIsStartOfParagraph) || (i + 1 == length && endIsEndOfParagraph)) {
-            rebalancedString.append(noBreakSpace);
+            rebalancedString.append(noBreakSpaceCharacter);
             previousCharacterWasSpace = false;
         } else {
             rebalancedString.append(' ');
@@ -405,7 +405,7 @@ bool isTableStructureNode(const Node *node)
 
 const String& nonBreakingSpaceString()
 {
-    DEFINE_STATIC_LOCAL(String, nonBreakingSpaceString, (&noBreakSpace, 1));
+    DEFINE_STATIC_LOCAL(String, nonBreakingSpaceString, (&noBreakSpaceCharacter, 1));
     return nonBreakingSpaceString;
 }
 
@@ -918,7 +918,7 @@ Position leadingWhitespacePosition(const Position& position, EAffinity affinity,
     if (prev != position && inSameContainingBlockFlowElement(prev.anchorNode(), position.anchorNode()) && prev.anchorNode()->isTextNode()) {
         String string = toText(prev.anchorNode())->data();
         UChar previousCharacter = string[prev.deprecatedEditingOffset()];
-        bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(previousCharacter) || previousCharacter == noBreakSpace) : isCollapsibleWhitespace(previousCharacter);
+        bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(previousCharacter) || previousCharacter == noBreakSpaceCharacter) : isCollapsibleWhitespace(previousCharacter);
         if (isSpace && isEditablePosition(prev))
             return prev;
     }
@@ -935,7 +935,7 @@ Position trailingWhitespacePosition(const Position& position, EAffinity, Whitesp
 
     VisiblePosition visiblePosition(position);
     UChar characterAfterVisiblePosition = visiblePosition.characterAfter();
-    bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(characterAfterVisiblePosition) || characterAfterVisiblePosition == noBreakSpace) : isCollapsibleWhitespace(characterAfterVisiblePosition);
+    bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(characterAfterVisiblePosition) || characterAfterVisiblePosition == noBreakSpaceCharacter) : isCollapsibleWhitespace(characterAfterVisiblePosition);
     // The space must not be in another paragraph and it must be editable.
     if (isSpace && !isEndOfParagraph(visiblePosition) && visiblePosition.next(CannotCrossEditingBoundary).isNotNull())
         return position;

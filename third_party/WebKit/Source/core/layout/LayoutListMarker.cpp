@@ -111,7 +111,7 @@ static inline String toAlphabeticOrNumeric(numberType number, const CharacterTyp
             letters[lettersSize - ++length] = sequence[numberShadow % sequenceSize];
     }
     if (isNegativeNumber)
-        letters[lettersSize - ++length] = hyphenMinus;
+        letters[lettersSize - ++length] = hyphenMinusCharacter;
 
     ASSERT(length <= lettersSize);
     return String(&letters[lettersSize - length], length);
@@ -541,7 +541,7 @@ UChar LayoutListMarker::listMarkerSuffix(EListStyleType type, int value)
     case TigrinyaErAbegede:
     case TigrinyaEt:
     case TigrinyaEtAbegede:
-        return ethiopicPrefaceColon;
+        return ethiopicPrefaceColonCharacter;
     case Armenian:
     case ArabicIndic:
     case Bengali:
@@ -614,9 +614,9 @@ String listMarkerText(EListStyleType type, int value)
     // We use the same characters for text security.
     // See LayoutText::setInternalString.
     case Circle:
-        return String(&whiteBullet, 1);
+        return String(&whiteBulletCharacter, 1);
     case Disc:
-        return String(&bullet, 1);
+        return String(&bulletCharacter, 1);
     case Footnotes: {
         static const UChar footnotesSymbols[4] = {
             0x002A, 0x2051, 0x2020, 0x2021
@@ -626,7 +626,7 @@ String listMarkerText(EListStyleType type, int value)
     case Square:
         // The CSS 2.1 test suite uses U+25EE BLACK MEDIUM SMALL SQUARE
         // instead, but I think this looks better.
-        return String(&blackSquare, 1);
+        return String(&blackSquareCharacter, 1);
 
     case DecimalListStyle:
         return String::number(value);

@@ -45,15 +45,15 @@ template <typename CharType>
 static inline CharType foldQuoteMarkOrSoftHyphen(CharType c)
 {
     switch (static_cast<UChar>(c)) {
-    case hebrewPunctuationGershayim:
-    case leftDoubleQuotationMark:
-    case rightDoubleQuotationMark:
+    case hebrewPunctuationGershayimCharacter:
+    case leftDoubleQuotationMarkCharacter:
+    case rightDoubleQuotationMarkCharacter:
         return '"';
-    case hebrewPunctuationGeresh:
-    case leftSingleQuotationMark:
-    case rightSingleQuotationMark:
+    case hebrewPunctuationGereshCharacter:
+    case leftSingleQuotationMarkCharacter:
+    case rightSingleQuotationMarkCharacter:
         return '\'';
-    case softHyphen:
+    case softHyphenCharacter:
         // Replace soft hyphen with an ignorable character so that their presence or absence will
         // not affect string comparison.
         return 0;
@@ -70,15 +70,15 @@ void foldQuoteMarksAndSoftHyphens(UChar* data, size_t length)
 
 void foldQuoteMarksAndSoftHyphens(String& s)
 {
-    s.replace(hebrewPunctuationGeresh, '\'');
-    s.replace(hebrewPunctuationGershayim, '"');
-    s.replace(leftDoubleQuotationMark, '"');
-    s.replace(leftSingleQuotationMark, '\'');
-    s.replace(rightDoubleQuotationMark, '"');
-    s.replace(rightSingleQuotationMark, '\'');
+    s.replace(hebrewPunctuationGereshCharacter, '\'');
+    s.replace(hebrewPunctuationGershayimCharacter, '"');
+    s.replace(leftDoubleQuotationMarkCharacter, '"');
+    s.replace(leftSingleQuotationMarkCharacter, '\'');
+    s.replace(rightDoubleQuotationMarkCharacter, '"');
+    s.replace(rightSingleQuotationMarkCharacter, '\'');
     // Replace soft hyphen with an ignorable character so that their presence or absence will
     // not affect string comparison.
-    s.replace(softHyphen, 0);
+    s.replace(softHyphenCharacter, 0);
 }
 
 static bool isNonLatin1Separator(UChar32 character)

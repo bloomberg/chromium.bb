@@ -54,7 +54,7 @@ static inline bool isPunctuationForFirstLetter(UChar c)
 
 static inline bool isSpaceForFirstLetter(UChar c)
 {
-    return isSpaceOrNewline(c) || c == noBreakSpace;
+    return isSpaceOrNewline(c) || c == noBreakSpaceCharacter;
 }
 
 unsigned FirstLetterPseudoElement::firstLetterLength(const String& text)

@@ -72,7 +72,7 @@ float SimpleShaper::characterWidth(UChar32 character, const GlyphData& glyphData
     const SimpleFontData* fontData = glyphData.fontData;
     ASSERT(fontData);
 
-    if (UNLIKELY(character == characterTabulation && m_run.allowTabs()))
+    if (UNLIKELY(character == tabulationCharacter && m_run.allowTabs()))
         return m_font->tabWidth(*fontData, m_run.tabSize(), m_run.xPos() + m_runWidthSoFar);
 
     float width = fontData->widthForGlyph(glyphData.glyph);
@@ -112,8 +112,8 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
 
         // Account for word spacing.
         // We apply additional space between "words" by adding width to the space character.
-        if (isExpansionOpportunity && (charData.character != characterTabulation || !m_run.allowTabs())
-            && (charData.characterOffset || charData.character == noBreakSpace)
+        if (isExpansionOpportunity && (charData.character != tabulationCharacter || !m_run.allowTabs())
+            && (charData.characterOffset || charData.character == noBreakSpaceCharacter)
             && m_font->fontDescription().wordSpacing()) {
             width += m_font->fontDescription().wordSpacing();
         }
@@ -145,7 +145,7 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         float width;
         bool spaceUsedAsZeroWidthSpace = false;
         if (!glyphData.glyph && Character::treatAsZeroWidthSpace(charData.character)) {
-            charData.character = space;
+            charData.character = spaceCharacter;
             glyphData = glyphDataForCharacter(charData);
             width = 0;
             spaceUsedAsZeroWidthSpace = true;

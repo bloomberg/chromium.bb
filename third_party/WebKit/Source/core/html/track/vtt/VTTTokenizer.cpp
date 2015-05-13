@@ -140,11 +140,11 @@ bool VTTTokenizer::nextToken(VTTToken& token)
                 } else if (equalLiteral(buffer, "&gt")) {
                     result.append('>');
                 } else if (equalLiteral(buffer, "&lrm")) {
-                    result.append(leftToRightMark);
+                    result.append(leftToRightMarkCharacter);
                 } else if (equalLiteral(buffer, "&rlm")) {
-                    result.append(rightToLeftMark);
+                    result.append(rightToLeftMarkCharacter);
                 } else if (equalLiteral(buffer, "&nbsp")) {
-                    result.append(noBreakSpace);
+                    result.append(noBreakSpaceCharacter);
                 } else {
                     buffer.append(static_cast<LChar>(cc));
                     result.append(buffer);

@@ -56,10 +56,10 @@ bool BufferedLineReader::getLine(String& line)
         UChar c = m_buffer.currentChar();
         m_buffer.advance();
 
-        if (c == newlineCharacter || c == carriageReturn) {
+        if (c == newlineCharacter || c == carriageReturnCharacter) {
             // We found a line ending. Return the accumulated line.
             shouldReturnLine = true;
-            checkForLF = (c == carriageReturn);
+            checkForLF = (c == carriageReturnCharacter);
             break;
         }
 

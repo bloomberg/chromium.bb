@@ -286,7 +286,7 @@ TEST(BufferedLineReader, NormalizedNUL)
     reader.append(String("X\0Y\n", 4));
     String line;
     ASSERT_TRUE(reader.getLine(line));
-    ASSERT_EQ(line[1], WTF::Unicode::replacementCharacter);
+    ASSERT_EQ(line[1], replacementCharacter);
 }
 
 } // namespace

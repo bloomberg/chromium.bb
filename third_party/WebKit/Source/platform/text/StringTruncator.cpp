@@ -70,7 +70,7 @@ static unsigned centerTruncateToBuffer(const String& string, unsigned length, un
     ASSERT(truncatedLength <= length);
 
     string.copyTo(buffer, 0, omitStart);
-    buffer[omitStart] = horizontalEllipsis;
+    buffer[omitStart] = horizontalEllipsisCharacter;
     string.copyTo(&buffer[omitStart + 1], omitEnd, length - omitEnd);
 
     return truncatedLength;
@@ -86,7 +86,7 @@ static unsigned rightTruncateToBuffer(const String& string, unsigned length, uns
     unsigned truncatedLength = keepLength + 1;
 
     string.copyTo(buffer, 0, keepLength);
-    buffer[keepLength] = horizontalEllipsis;
+    buffer[keepLength] = horizontalEllipsisCharacter;
 
     return truncatedLength;
 }
@@ -110,7 +110,7 @@ static String truncateString(const String& string, float maxWidth, const Font& f
 
     ASSERT(maxWidth >= 0);
 
-    float currentEllipsisWidth = stringWidth(font, &horizontalEllipsis, 1);
+    float currentEllipsisWidth = stringWidth(font, &horizontalEllipsisCharacter, 1);
 
     UChar stringBuffer[STRING_BUFFER_SIZE];
     unsigned truncatedLength;

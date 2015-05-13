@@ -870,13 +870,13 @@ String AXLayoutObject::text() const
         case TSNONE:
             break; // Fall through to the non-password branch.
         case TSDISC:
-            maskCharacter = bullet;
+            maskCharacter = bulletCharacter;
             break;
         case TSCIRCLE:
-            maskCharacter = whiteBullet;
+            maskCharacter = whiteBulletCharacter;
             break;
         case TSSQUARE:
-            maskCharacter = blackSquare;
+            maskCharacter = blackSquareCharacter;
             break;
         }
         if (maskCharacter) {

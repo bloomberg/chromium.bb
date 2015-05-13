@@ -185,43 +185,43 @@ void GlyphPageTreeNode::initializePurePage(const FontData* fontData, unsigned pa
         if (start == 0) {
             // Control characters must not render at all.
             for (i = 0; i < 0x20; ++i)
-                buffer[i] = zeroWidthSpace;
+                buffer[i] = zeroWidthSpaceCharacter;
             for (i = 0x7F; i < 0xA0; i++)
-                buffer[i] = zeroWidthSpace;
-            buffer[softHyphen] = zeroWidthSpace;
+                buffer[i] = zeroWidthSpaceCharacter;
+            buffer[softHyphenCharacter] = zeroWidthSpaceCharacter;
 
-            // \n and \t must render as a space.
-            buffer[newlineCharacter] = space;
-            buffer[characterTabulation] = space;
-        } else if (start == (arabicLetterMark & ~(GlyphPage::size - 1))) {
-            buffer[arabicLetterMark - start] = zeroWidthSpace;
-        } else if (start == (leftToRightMark & ~(GlyphPage::size - 1))) {
+            // \n and \t must render as a spaceCharacter.
+            buffer[newlineCharacter] = spaceCharacter;
+            buffer[tabulationCharacter] = spaceCharacter;
+        } else if (start == (arabicLetterMarkCharacter & ~(GlyphPage::size - 1))) {
+            buffer[arabicLetterMarkCharacter - start] = zeroWidthSpaceCharacter;
+        } else if (start == (leftToRightMarkCharacter & ~(GlyphPage::size - 1))) {
             // LRM, RLM, LRE, RLE, ZWNJ, ZWJ, and PDF must not render at all.
-            buffer[leftToRightMark - start] = zeroWidthSpace;
-            buffer[rightToLeftMark - start] = zeroWidthSpace;
-            buffer[leftToRightEmbed - start] = zeroWidthSpace;
-            buffer[rightToLeftEmbed - start] = zeroWidthSpace;
-            buffer[leftToRightOverride - start] = zeroWidthSpace;
-            buffer[rightToLeftOverride - start] = zeroWidthSpace;
-            buffer[zeroWidthNonJoiner - start] = zeroWidthSpace;
-            buffer[zeroWidthJoiner - start] = zeroWidthSpace;
-            buffer[popDirectionalFormatting - start] = zeroWidthSpace;
-            buffer[activateArabicFormShaping - start] = zeroWidthSpace;
-            buffer[activateSymmetricSwapping - start] = zeroWidthSpace;
-            buffer[firstStrongIsolate - start] = zeroWidthSpace;
-            buffer[inhibitArabicFormShaping - start] = zeroWidthSpace;
-            buffer[inhibitSymmetricSwapping - start] = zeroWidthSpace;
-            buffer[leftToRightIsolate - start] = zeroWidthSpace;
-            buffer[nationalDigitShapes - start] = zeroWidthSpace;
-            buffer[nominalDigitShapes - start] = zeroWidthSpace;
-            buffer[popDirectionalIsolate - start] = zeroWidthSpace;
-            buffer[rightToLeftIsolate - start] = zeroWidthSpace;
+            buffer[leftToRightMarkCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[rightToLeftMarkCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[leftToRightEmbedCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[rightToLeftEmbedCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[leftToRightOverrideCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[rightToLeftOverrideCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[zeroWidthNonJoinerCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[zeroWidthJoinerCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[popDirectionalFormattingCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[activateArabicFormShapingCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[activateSymmetricSwappingCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[firstStrongIsolateCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[inhibitArabicFormShapingCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[inhibitSymmetricSwappingCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[leftToRightIsolateCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[nationalDigitShapesCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[nominalDigitShapesCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[popDirectionalIsolateCharacter - start] = zeroWidthSpaceCharacter;
+            buffer[rightToLeftIsolateCharacter - start] = zeroWidthSpaceCharacter;
         } else if (start == (objectReplacementCharacter & ~(GlyphPage::size - 1))) {
             // Object replacement character must not render at all.
-            buffer[objectReplacementCharacter - start] = zeroWidthSpace;
-        } else if (start == (zeroWidthNoBreakSpace & ~(GlyphPage::size - 1))) {
+            buffer[objectReplacementCharacter - start] = zeroWidthSpaceCharacter;
+        } else if (start == (zeroWidthNoBreakSpaceCharacter & ~(GlyphPage::size - 1))) {
             // ZWNBS/BOM must not render at all.
-            buffer[zeroWidthNoBreakSpace - start] = zeroWidthSpace;
+            buffer[zeroWidthNoBreakSpaceCharacter - start] = zeroWidthSpaceCharacter;
         }
     } else {
         bufferLength = GlyphPage::size * 2;

@@ -119,7 +119,7 @@ String HTMLTextFormControlElement::strippedPlaceholder() const
     // According to the HTML5 specification, we need to remove CR and LF from
     // the attribute value.
     const AtomicString& attributeValue = fastGetAttribute(placeholderAttr);
-    if (!attributeValue.contains(newlineCharacter) && !attributeValue.contains(carriageReturn))
+    if (!attributeValue.contains(newlineCharacter) && !attributeValue.contains(carriageReturnCharacter))
         return attributeValue;
 
     StringBuilder stripped;
@@ -127,14 +127,14 @@ String HTMLTextFormControlElement::strippedPlaceholder() const
     stripped.reserveCapacity(length);
     for (unsigned i = 0; i < length; ++i) {
         UChar character = attributeValue[i];
-        if (character == newlineCharacter || character == carriageReturn)
+        if (character == newlineCharacter || character == carriageReturnCharacter)
             continue;
         stripped.append(character);
     }
     return stripped.toString();
 }
 
-static bool isNotLineBreak(UChar ch) { return ch != newlineCharacter && ch != carriageReturn; }
+static bool isNotLineBreak(UChar ch) { return ch != newlineCharacter && ch != carriageReturnCharacter; }
 
 bool HTMLTextFormControlElement::isPlaceholderEmpty() const
 {

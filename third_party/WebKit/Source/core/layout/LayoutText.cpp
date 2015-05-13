@@ -108,11 +108,11 @@ static void makeCapitalized(String* string, UChar previous)
         CRASH();
 
     StringBuffer<UChar> stringWithPrevious(length + 1);
-    stringWithPrevious[0] = previous == noBreakSpace ? space : previous;
+    stringWithPrevious[0] = previous == noBreakSpaceCharacter ? spaceCharacter : previous;
     for (unsigned i = 1; i < length + 1; i++) {
         // Replace &nbsp with a real space since ICU no longer treats &nbsp as a word separator.
-        if (input[i - 1] == noBreakSpace)
-            stringWithPrevious[i] = space;
+        if (input[i - 1] == noBreakSpaceCharacter)
+            stringWithPrevious[i] = spaceCharacter;
         else
             stringWithPrevious[i] = input[i - 1];
     }
@@ -128,7 +128,7 @@ static void makeCapitalized(String* string, UChar previous)
     int32_t startOfWord = boundary->first();
     for (endOfWord = boundary->next(); endOfWord != TextBreakDone; startOfWord = endOfWord, endOfWord = boundary->next()) {
         if (startOfWord) // Ignore first char of previous string
-            result.append(input[startOfWord - 1] == noBreakSpace ? noBreakSpace : toTitleCase(stringWithPrevious[startOfWord]));
+            result.append(input[startOfWord - 1] == noBreakSpaceCharacter ? noBreakSpaceCharacter : toTitleCase(stringWithPrevious[startOfWord]));
         for (int i = startOfWord + 1; i < endOfWord; i++)
             result.append(input[i - 1]);
     }
@@ -314,7 +314,7 @@ String LayoutText::plainText() const
         String text = m_text.substring(textBox->start(), textBox->len()).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);
         plainTextBuilder.append(text);
         if (textBox->nextTextBox() && textBox->nextTextBox()->start() > textBox->end() && text.length() && !text.right(1).containsOnlyWhitespace())
-            plainTextBuilder.append(space);
+            plainTextBuilder.append(spaceCharacter);
     }
     return plainTextBuilder.toString();
 }
@@ -768,10 +768,10 @@ void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
 
     ASSERT(m_text);
     StringImpl& text = *m_text.impl();
-    if (text[0] == space || (text[0] == newlineCharacter && !style()->preserveNewline()) || text[0] == characterTabulation) {
+    if (text[0] == spaceCharacter || (text[0] == newlineCharacter && !style()->preserveNewline()) || text[0] == tabulationCharacter) {
         const Font& font = style()->font(); // FIXME: This ignores first-line.
         if (stripFrontSpaces) {
-            const UChar spaceChar = space;
+            const UChar spaceChar = spaceCharacter;
             TextRun run = constructTextRun(this, font, &spaceChar, 1, styleRef(), direction);
             run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
             float spaceWidth = font.width(run);
@@ -938,7 +938,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             } else {
                 isSpace = true;
             }
-        } else if (c == characterTabulation) {
+        } else if (c == tabulationCharacter) {
             if (!styleToUse.collapseWhiteSpace()) {
                 m_hasTab = true;
                 isSpace = false;
@@ -946,7 +946,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                 isSpace = true;
             }
         } else {
-            isSpace = c == space;
+            isSpace = c == spaceCharacter;
         }
 
         bool isBreakableLocation = isNewline || (isSpace && styleToUse.autoWrap());
@@ -969,7 +969,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             lastWordBoundary++;
             continue;
         }
-        if (c == softHyphen) {
+        if (c == softHyphenCharacter) {
             currMaxWidth += widthFromCache(f, lastWordBoundary, i - lastWordBoundary, leadWidth + currMaxWidth, textDirection, &fallbackFonts, &glyphOverflow);
             if (firstGlyphLeftOverflow < 0)
                 firstGlyphLeftOverflow = glyphOverflow.left;
@@ -980,12 +980,12 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         bool hasBreak = breakIterator.isBreakable(i, nextBreakable, breakAll ? LineBreakType::BreakAll : keepAll ? LineBreakType::KeepAll : LineBreakType::Normal);
         bool betweenWords = true;
         int j = i;
-        while (c != newlineCharacter && c != space && c != characterTabulation && (c != softHyphen)) {
+        while (c != newlineCharacter && c != spaceCharacter && c != tabulationCharacter && (c != softHyphenCharacter)) {
             j++;
             if (j == len)
                 break;
             c = uncheckedCharacterAt(j);
-            if (breakIterator.isBreakable(j, nextBreakable) && characterAt(j - 1) != softHyphen)
+            if (breakIterator.isBreakable(j, nextBreakable) && characterAt(j - 1) != softHyphenCharacter)
                 break;
             if (breakAll) {
                 betweenWords = false;
@@ -998,7 +998,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             j = std::min(j, run->stop() + 1);
         int wordLen = j - i;
         if (wordLen) {
-            bool isSpace = (j < len) && c == space;
+            bool isSpace = (j < len) && c == spaceCharacter;
 
             // Non-zero only when kerning is enabled, in which case we measure words with their trailing
             // space, then subtract its width.
@@ -1006,7 +1006,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             if (isSpace && (f.fontDescription().typesettingFeatures() & Kerning)) {
                 ASSERT(textDirection >=0 && textDirection <= 1);
                 if (!cachedWordTrailingSpaceWidth[textDirection])
-                    cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(this, f, &space, 1, styleToUse, textDirection)) + wordSpacing;
+                    cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(this, f, &spaceCharacter, 1, styleToUse, textDirection)) + wordSpacing;
                 wordTrailingSpaceWidth = cachedWordTrailingSpaceWidth[textDirection];
             }
 
@@ -1015,7 +1015,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                 w = widthFromCache(f, i, wordLen + 1, leadWidth + currMaxWidth, textDirection, &fallbackFonts, &glyphOverflow) - wordTrailingSpaceWidth;
             } else {
                 w = widthFromCache(f, i, wordLen, leadWidth + currMaxWidth, textDirection, &fallbackFonts, &glyphOverflow);
-                if (c == softHyphen)
+                if (c == softHyphenCharacter)
                     currMinWidth += hyphenWidth(this, f, textDirection);
             }
 
@@ -1139,7 +1139,7 @@ bool LayoutText::containsOnlyWhitespace(unsigned from, unsigned len) const
     StringImpl& text = *m_text.impl();
     unsigned currPos;
     for (currPos = from;
-    currPos < from + len && (text[currPos] == newlineCharacter || text[currPos] == space || text[currPos] == characterTabulation);
+    currPos < from + len && (text[currPos] == newlineCharacter || text[currPos] == spaceCharacter || text[currPos] == tabulationCharacter);
     currPos++) { }
     return currPos >= (from + len);
 }
@@ -1296,7 +1296,7 @@ UChar LayoutText::previousCharacter() const
         if (!isInlineFlowOrEmptyText(previousText))
             break;
     }
-    UChar prev = space;
+    UChar prev = spaceCharacter;
     if (previousText && previousText->isText()) {
         if (StringImpl* previousString = toLayoutText(previousText)->text().impl())
             prev = (*previousString)[previousString->length() - 1];
@@ -1343,13 +1343,13 @@ void LayoutText::setTextInternal(PassRefPtr<StringImpl> text)
         case TSNONE:
             break;
         case TSCIRCLE:
-            secureText(whiteBullet);
+            secureText(whiteBulletCharacter);
             break;
         case TSDISC:
-            secureText(bullet);
+            secureText(bulletCharacter);
             break;
         case TSSQUARE:
-            secureText(blackSquare);
+            secureText(blackSquareCharacter);
         }
     }
 

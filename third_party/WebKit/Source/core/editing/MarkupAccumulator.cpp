@@ -84,7 +84,7 @@ void MarkupAccumulator::appendCharactersReplacingEntities(StringBuilder& result,
         { '<', ltReference, EntityLt },
         { '>', gtReference, EntityGt },
         { '"', quotReference, EntityQuot },
-        { noBreakSpace, nbspReference, EntityNbsp },
+        { noBreakSpaceCharacter, nbspReference, EntityNbsp },
     };
 
     if (!(offset + length))

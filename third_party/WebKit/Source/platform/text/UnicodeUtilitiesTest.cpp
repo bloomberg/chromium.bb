@@ -129,9 +129,9 @@ TEST(WebCoreUnicodeUnit, ContainsKanaLetters)
 TEST(WebCoreUnicodeUnit, FoldQuoteMarkOrSoftHyphenTest)
 {
     const UChar charactersToFold[] = {
-        hebrewPunctuationGershayim, leftDoubleQuotationMark, rightDoubleQuotationMark,
-        hebrewPunctuationGeresh, leftSingleQuotationMark, rightSingleQuotationMark,
-        softHyphen
+        hebrewPunctuationGershayimCharacter, leftDoubleQuotationMarkCharacter, rightDoubleQuotationMarkCharacter,
+        hebrewPunctuationGereshCharacter, leftSingleQuotationMarkCharacter, rightSingleQuotationMarkCharacter,
+        softHyphenCharacter
     };
 
     String stringToFold(charactersToFold, WTF_ARRAY_LENGTH(charactersToFold));

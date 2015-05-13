@@ -102,7 +102,7 @@ static inline bool isIdentifierStartCharacter(UChar c)
 
 static inline bool isIdentifierCharacter(UChar c)
 {
-    return (category(c) & (unicodeLetter | unicodeCombiningMark | unicodeDigit | unicodeConnectorPunctuation)) || (c == '$') || (c == '_') || (c == zeroWidthNonJoiner) || (c == zeroWidthJoiner);
+    return (category(c) & (unicodeLetter | unicodeCombiningMark | unicodeDigit | unicodeConnectorPunctuation)) || (c == '$') || (c == '_') || (c == zeroWidthNonJoinerCharacter) || (c == zeroWidthJoinerCharacter);
 }
 
 } // namespace

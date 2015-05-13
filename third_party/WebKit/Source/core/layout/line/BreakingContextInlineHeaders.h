@@ -194,7 +194,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
         return true;
 
     UChar current = it.current();
-    bool notJustWhitespace = current != space && current != characterTabulation && current != softHyphen && (current != newlineCharacter || it.object()->preservesNewline());
+    bool notJustWhitespace = current != spaceCharacter && current != tabulationCharacter && current != softHyphenCharacter && (current != newlineCharacter || it.object()->preservesNewline());
     return notJustWhitespace || isEmptyInline(it.object());
 }
 
@@ -579,7 +579,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     // Non-zero only when kerning is enabled, in which case we measure
     // words with their trailing space, then subtract its width.
     float wordTrailingSpaceWidth = (font.fontDescription().typesettingFeatures() & Kerning) ?
-        font.width(constructTextRun(layoutText, font, &space, 1, style, style.direction())) + wordSpacing
+        font.width(constructTextRun(layoutText, font, &spaceCharacter, 1, style, style.direction())) + wordSpacing
         : 0;
 
     UChar lastCharacter = m_layoutTextInfo.m_lineBreakIterator.lastCharacter();
@@ -588,12 +588,12 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         bool previousCharacterIsSpace = m_currentCharacterIsSpace;
         bool previousCharacterShouldCollapseIfPreWap = m_currentCharacterShouldCollapseIfPreWap;
         UChar c = m_current.current();
-        m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = c == space || c == characterTabulation || (!m_preservesNewline && (c == newlineCharacter));
+        m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = c == spaceCharacter || c == tabulationCharacter || (!m_preservesNewline && (c == newlineCharacter));
 
         if (!m_collapseWhiteSpace || !m_currentCharacterIsSpace)
             m_lineInfo.setEmpty(false, m_block, &m_width);
 
-        if (c == softHyphen && m_autoWrap && !hyphenWidth) {
+        if (c == softHyphenCharacter && m_autoWrap && !hyphenWidth) {
             hyphenWidth = measureHyphenWidth(layoutText, font, textDirectionFromUnicode(m_resolver.position().direction()));
             m_width.addUncommittedWidth(hyphenWidth);
         }
@@ -638,7 +638,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             wordMeasurement.startOffset = lastSpace;
 
             float additionalTempWidth;
-            if (wordTrailingSpaceWidth && c == space)
+            if (wordTrailingSpaceWidth && c == spaceCharacter)
                 additionalTempWidth = textWidth(layoutText, lastSpace, m_current.offset() + 1 - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts) - wordTrailingSpaceWidth;
             else
                 additionalTempWidth = textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts);
@@ -685,7 +685,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                         m_lineInfo.setPreviousLineBrokeCleanly(true);
                         wordMeasurement.endOffset = m_lineBreak.offset();
                     }
-                    if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object()->isText() && toLayoutText(m_lineBreak.object())->textLength() && toLayoutText(m_lineBreak.object())->characterAt(m_lineBreak.offset() - 1) == softHyphen)
+                    if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object()->isText() && toLayoutText(m_lineBreak.object())->textLength() && toLayoutText(m_lineBreak.object())->characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter)
                         hyphenated = true;
                     if (m_lineBreak.offset() && m_lineBreak.offset() != (unsigned)wordMeasurement.endOffset && !wordMeasurement.width) {
                         if (charWidth) {
@@ -816,7 +816,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     m_includeEndWidth = false;
 
     if (!m_width.fitsOnLine()) {
-        if (!hyphenated && m_lineBreak.previousInSameNode() == softHyphen) {
+        if (!hyphenated && m_lineBreak.previousInSameNode() == softHyphenCharacter) {
             hyphenated = true;
             m_atEnd = true;
         }
@@ -839,7 +839,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
                 // If the next item on the line is text, and if we did not end with
                 // a space, then the next text run continues our word (and so it needs to
                 // keep adding to the uncommitted width. Just update and continue.
-                checkForBreak = !m_currentCharacterIsSpace && (c == space || c == characterTabulation || (c == newlineCharacter && !m_nextObject->preservesNewline()));
+                checkForBreak = !m_currentCharacterIsSpace && (c == spaceCharacter || c == tabulationCharacter || (c == newlineCharacter && !m_nextObject->preservesNewline()));
             } else if (nextText->isWordBreak()) {
                 checkForBreak = true;
             }

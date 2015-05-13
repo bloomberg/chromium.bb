@@ -283,7 +283,7 @@ void SimpleFontData::platformGlyphInit()
     // Nasty hack to determine if we should round or ceil space widths.
     // If the font is monospace or fake monospace we ceil to ensure that
     // every character and the space are the same width.  Otherwise we round.
-    m_spaceGlyph = glyphPageZero->glyphForCharacter(space);
+    m_spaceGlyph = glyphPageZero->glyphForCharacter(spaceCharacter);
     float width = widthForGlyph(m_spaceGlyph);
     m_spaceWidth = width;
     m_zeroGlyph = glyphPageZero->glyphForCharacter('0');

@@ -606,7 +606,7 @@ PassRefPtr<StringImpl> StringImpl::upper()
         //  2. Lower case sharp-S converts to "SS" (two characters)
         for (int32_t i = 0; i < length; ++i) {
             LChar c = characters8()[i];
-            if (UNLIKELY(c == smallLetterSharpS))
+            if (UNLIKELY(c == smallLetterSharpSCharacter))
                 ++numberSharpSCharacters;
             UChar upper = static_cast<UChar>(Unicode::toUpper(c));
             if (UNLIKELY(upper > 0xff)) {
@@ -626,7 +626,7 @@ PassRefPtr<StringImpl> StringImpl::upper()
 
         for (int32_t i = 0; i < length; ++i) {
             LChar c = characters8()[i];
-            if (c == smallLetterSharpS) {
+            if (c == smallLetterSharpSCharacter) {
                 *dest++ = 'S';
                 *dest++ = 'S';
             } else

@@ -138,7 +138,7 @@ String quoteAndEscapeNonPrintables(const String& s)
         } else if (c == '"') {
             result.append('\\');
             result.append('"');
-        } else if (c == '\n' || c == noBreakSpace) {
+        } else if (c == '\n' || c == noBreakSpaceCharacter) {
             result.append(' ');
         } else {
             if (c >= 0x20 && c < 0x7F) {
@@ -332,13 +332,13 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
                 text = quoteAndEscapeNonPrintables(text);
             } else {
                 switch (text[0]) {
-                case bullet:
+                case bulletCharacter:
                     text = "bullet";
                     break;
-                case blackSquare:
+                case blackSquareCharacter:
                     text = "black square";
                     break;
-                case whiteBullet:
+                case whiteBulletCharacter:
                     text = "white bullet";
                     break;
                 default:

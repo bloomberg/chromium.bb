@@ -1299,7 +1299,7 @@ bool ReplaceSelectionCommand::shouldPerformSmartReplace() const
 
 static bool isCharacterSmartReplaceExemptConsideringNonBreakingSpace(UChar32 character, bool previousCharacter)
 {
-    return isCharacterSmartReplaceExempt(character == noBreakSpace ? ' ' : character, previousCharacter);
+    return isCharacterSmartReplaceExempt(character == noBreakSpaceCharacter ? ' ' : character, previousCharacter);
 }
 
 void ReplaceSelectionCommand::addSpacesForSmartReplace()

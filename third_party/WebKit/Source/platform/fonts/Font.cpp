@@ -440,7 +440,7 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
     }
 
     if (normalizeSpace && Character::isNormalizedCanvasSpaceCharacter(c))
-        c = space;
+        c = spaceCharacter;
 
     if (mirror)
         c = mirroredChar(c);

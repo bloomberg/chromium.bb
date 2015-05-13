@@ -136,7 +136,7 @@ static const size_t maxInputSampleSize = 128;
 static String trimInputSample(const char* p, size_t length)
 {
     if (length > maxInputSampleSize)
-        return String(p, maxInputSampleSize) + horizontalEllipsis;
+        return String(p, maxInputSampleSize) + horizontalEllipsisCharacter;
     return String(p, length);
 }
 

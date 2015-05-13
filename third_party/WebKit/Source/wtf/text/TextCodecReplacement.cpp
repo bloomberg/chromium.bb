@@ -48,7 +48,7 @@ String TextCodecReplacement::decode(const char*, size_t, FlushBehavior, bool, bo
         return String();
 
     m_sentEOF = true;
-    return String(&Unicode::replacementCharacter, 1);
+    return String(&replacementCharacter, 1);
 }
 
 } // namespace WTF

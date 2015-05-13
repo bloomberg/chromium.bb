@@ -424,7 +424,7 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode()
     if (!layoutObject->style()->collapseWhiteSpace()) {
         int runStart = m_offset;
         if (m_lastTextNodeEndedWithCollapsedSpace && hasVisibleTextNode(layoutObject)) {
-            emitCharacter(space, textNode, 0, runStart, runStart);
+            emitCharacter(spaceCharacter, textNode, 0, runStart, runStart);
             return false;
         }
         if (!m_handledFirstLetter && layoutObject->isTextFragment() && !m_offset) {
@@ -508,7 +508,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
                         --spaceRunStart;
                     emitText(m_node, layoutObject, spaceRunStart, spaceRunStart + 1);
                 } else {
-                    emitCharacter(space, m_node, 0, runStart, runStart);
+                    emitCharacter(spaceCharacter, m_node, 0, runStart, runStart);
                 }
                 return;
             }
@@ -540,7 +540,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
                 // or a run of characters that does not include a newline.
                 // This effectively translates newlines to spaces without copying the text.
                 if (str[runStart] == '\n') {
-                    emitCharacter(space, m_node, 0, runStart, runStart + 1);
+                    emitCharacter(spaceCharacter, m_node, 0, runStart, runStart + 1);
                     m_offset = runStart + 1;
                 } else {
                     size_t subrunEnd = str.find('\n', runStart);
@@ -638,7 +638,7 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
     }
 
     if (m_lastTextNodeEndedWithCollapsedSpace) {
-        emitCharacter(space, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
+        emitCharacter(spaceCharacter, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
         return false;
     }
 
@@ -875,7 +875,7 @@ void TextIteratorAlgorithm<Strategy>::representNodeOffsetZero()
             emitCharacter('\n', Strategy::parent(*m_node), m_node, 0, 0);
     } else if (shouldEmitSpaceBeforeAndAfterNode(m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter(space, Strategy::parent(*m_node), m_node, 0, 0);
+            emitCharacter(spaceCharacter, Strategy::parent(*m_node), m_node, 0, 0);
     }
 }
 
@@ -886,7 +886,7 @@ bool TextIteratorAlgorithm<Strategy>::handleNonTextNode()
     if (shouldEmitNewlineForNode(m_node, emitsOriginalText()))
         emitCharacter('\n', Strategy::parent(*m_node), m_node, 0, 1);
     else if (emitsCharactersBetweenAllVisiblePositions() && m_node->layoutObject() && m_node->layoutObject()->isHR())
-        emitCharacter(space, Strategy::parent(*m_node), m_node, 0, 1);
+        emitCharacter(spaceCharacter, Strategy::parent(*m_node), m_node, 0, 1);
     else
         representNodeOffsetZero();
 
@@ -920,19 +920,19 @@ void TextIteratorAlgorithm<Strategy>::exitNode()
         // contain a VisiblePosition when doing selection preservation.
         if (m_textState.lastCharacter() != '\n') {
             // insert a newline with a position following this block's contents.
-            emitCharacter('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
+            emitCharacter(newlineCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
             // remember whether to later add a newline for the current node
             ASSERT(!m_needsAnotherNewline);
             m_needsAnotherNewline = addNewline;
         } else if (addNewline) {
             // insert a newline with a position following this block's contents.
-            emitCharacter('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
+            emitCharacter(newlineCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
         }
     }
 
     // If nothing was emitted, see if we need to emit a space.
     if (!m_textState.positionNode() && shouldEmitSpaceBeforeAndAfterNode(m_node))
-        emitCharacter(space, Strategy::parent(*baseNode), baseNode, 1, 1);
+        emitCharacter(spaceCharacter, Strategy::parent(*baseNode), baseNode, 1, 1);
 }
 
 template<typename Strategy>

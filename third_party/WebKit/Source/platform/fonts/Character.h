@@ -61,26 +61,26 @@ public:
 
     static bool treatAsSpace(UChar c)
     {
-        return c == space
-            || c == characterTabulation
+        return c == spaceCharacter
+            || c == tabulationCharacter
             || c == newlineCharacter
-            || c == noBreakSpace;
+            || c == noBreakSpaceCharacter;
     }
     static bool treatAsZeroWidthSpace(UChar c)
     {
         return treatAsZeroWidthSpaceInComplexScript(c)
-            || c == zeroWidthNonJoiner
-            || c == zeroWidthJoiner;
+            || c == zeroWidthNonJoinerCharacter
+            || c == zeroWidthJoinerCharacter;
     }
     static bool treatAsZeroWidthSpaceInComplexScript(UChar c)
     {
         return c < 0x20 // ASCII Control Characters
-            || (c >= 0x7F && c < 0xA0) // ASCII Delete .. No-break space
-            || c == softHyphen
-            || c == zeroWidthSpace
-            || (c >= leftToRightMark && c <= rightToLeftMark)
-            || (c >= leftToRightEmbed && c <= rightToLeftOverride)
-            || c == zeroWidthNoBreakSpace
+            || (c >= 0x7F && c < 0xA0) // ASCII Delete .. No-break spaceCharacter
+            || c == softHyphenCharacter
+            || c == zeroWidthSpaceCharacter
+            || (c >= leftToRightMarkCharacter && c <= rightToLeftMarkCharacter)
+            || (c >= leftToRightEmbedCharacter && c <= rightToLeftOverrideCharacter)
+            || c == zeroWidthNoBreakSpaceCharacter
             || c == objectReplacementCharacter;
     }
     static bool canReceiveTextEmphasis(UChar32);
@@ -88,10 +88,10 @@ public:
     static inline UChar normalizeSpaces(UChar character)
     {
         if (treatAsSpace(character))
-            return space;
+            return spaceCharacter;
 
         if (treatAsZeroWidthSpace(character))
-            return zeroWidthSpace;
+            return zeroWidthSpaceCharacter;
 
         return character;
     }

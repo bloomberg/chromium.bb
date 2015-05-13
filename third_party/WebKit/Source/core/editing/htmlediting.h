@@ -237,7 +237,7 @@ Position adjustedSelectionStartForStyleComputation(const VisibleSelection&);
 // Miscellaneous functions on Text
 inline bool isWhitespace(UChar c)
 {
-    return c == noBreakSpace || c == ' ' || c == '\n' || c == '\t';
+    return c == noBreakSpaceCharacter || c == ' ' || c == '\n' || c == '\t';
 }
 
 // FIXME: Can't really answer this question correctly without knowing the white-space mode.
@@ -251,7 +251,7 @@ inline bool isAmbiguousBoundaryCharacter(UChar character)
     // These are characters that can behave as word boundaries, but can appear within words.
     // If they are just typed, i.e. if they are immediately followed by a caret, we want to delay text checking until the next character has been typed.
     // FIXME: this is required until 6853027 is fixed and text checking can do this for us.
-    return character == '\'' || character == rightSingleQuotationMark || character == hebrewPunctuationGershayim;
+    return character == '\'' || character == rightSingleQuotationMarkCharacter || character == hebrewPunctuationGershayimCharacter;
 }
 
 String stringWithRebalancedWhitespace(const String&, bool startIsStartOfParagraph, bool endIsEndOfParagraph);

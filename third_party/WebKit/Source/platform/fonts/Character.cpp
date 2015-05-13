@@ -427,8 +427,8 @@ bool Character::canReceiveTextEmphasis(UChar32 c)
         return false;
 
     // Additional word-separator characters listed in CSS Text Level 3 Editor's Draft 3 November 2010.
-    if (c == ethiopicWordspace || c == aegeanWordSeparatorLine || c == aegeanWordSeparatorDot
-        || c == ugariticWordDivider || c == tibetanMarkIntersyllabicTsheg || c == tibetanMarkDelimiterTshegBstar)
+    if (c == ethiopicWordspaceCharacter || c == aegeanWordSeparatorLineCharacter || c == aegeanWordSeparatorDotCharacter
+        || c == ugariticWordDividerCharacter || c == tibetanMarkIntersyllabicTshegCharacter || c == tibetanMarkDelimiterTshegBstarCharacter)
         return false;
 
     return true;

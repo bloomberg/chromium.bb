@@ -365,11 +365,11 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
         U16_NEXT(source, position, length, character);
         // Don't normalize tabs as they are not treated as spaces for word-end.
         if (run.normalizeSpace() && Character::isNormalizedCanvasSpaceCharacter(character))
-            character = space;
-        else if (Character::treatAsSpace(character) && character != characterTabulation)
-            character = space;
+            character = spaceCharacter;
+        else if (Character::treatAsSpace(character) && character != tabulationCharacter)
+            character = spaceCharacter;
         else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
-            character = zeroWidthSpace;
+            character = zeroWidthSpaceCharacter;
 
         U16_APPEND(destination, *destinationLength, length, character, error);
         ASSERT_UNUSED(error, !error);
@@ -594,7 +594,7 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
             nextScript = uscript_getScript(character, &errorCode);
             if (U_FAILURE(errorCode))
                 return false;
-            if (lastCharacter == zeroWidthJoiner)
+            if (lastCharacter == zeroWidthJoinerCharacter)
                 currentFontData = nextFontData;
             if ((nextFontData != currentFontData) || ((currentScript != nextScript) && (nextScript != USCRIPT_INHERITED) && (!uscript_hasScript(character, currentScript))))
                 break;
@@ -854,7 +854,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 
         // Add a space as pre-context to the buffer. This prevents showing dotted-circle
         // for combining marks at the beginning of runs.
-        static const uint16_t preContext = space;
+        static const uint16_t preContext = spaceCharacter;
         hb_buffer_add_utf16(harfBuzzBuffer.get(), &preContext, 1, 1, 0);
 
         addToHarfBuzzBufferInternal(harfBuzzBuffer.get(),

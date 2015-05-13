@@ -328,7 +328,7 @@ void VisibleSelection::appendTrailingWhitespace()
 
     for (; charIt.length(); charIt.advance(1)) {
         UChar c = charIt.characterAt(0);
-        if ((!isSpaceOrNewline(c) && c != noBreakSpace) || c == '\n')
+        if ((!isSpaceOrNewline(c) && c != noBreakSpaceCharacter) || c == '\n')
             break;
         m_end = charIt.endPosition();
         changed = true;

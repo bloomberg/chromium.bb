@@ -455,7 +455,7 @@ inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
 
 static inline bool isCollapsibleSpace(UChar character, LayoutText* layoutObject)
 {
-    if (character == ' ' || character == '\t' || character == softHyphen)
+    if (character == ' ' || character == '\t' || character == softHyphenCharacter)
         return true;
     if (character == '\n')
         return !layoutObject->style()->preserveNewline();
