@@ -401,12 +401,6 @@ public:
     virtual void copySubTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
         WGC3Duint destId, WGC3Dint xoffset, WGC3Dint yoffset) { }
 
-    // TODO(dshwang): Remove methods with |level|. crbug.com/443151
-    virtual void copyTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
-        WGC3Duint destId, WGC3Dint level, WGC3Denum internalFormat, WGC3Denum destType) { }
-    virtual void copySubTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
-        WGC3Duint destId, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset) { }
-
     // GL_CHROMIUM_shallow_flush
     virtual void shallowFlushCHROMIUM() { }
     virtual void shallowFinishCHROMIUM() { }
