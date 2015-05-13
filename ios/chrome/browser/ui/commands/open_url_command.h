@@ -19,30 +19,43 @@ class GURL;
 // A command to open a new tab.
 @interface OpenUrlCommand : GenericChromeCommand
 
-// Whether or not this URL command comes from a chrome context (e.g., settings),
-// as opposed to a web page context.
-@property(nonatomic, readonly) BOOL fromChrome;
+// Mark inherited initializer as unavailable to prevent calling it by mistake.
+- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
 
 // Initializes a command intended to open a URL as a link from a page.
-// Designated initializer.
-- (id)initWithURL:(const GURL&)url
-         referrer:(const web::Referrer&)referrer
-       windowName:(NSString*)windowName
-      inIncognito:(BOOL)inIncognito
-     inBackground:(BOOL)inBackground
-         appendTo:(OpenPosition)append;
+- (instancetype)initWithURL:(const GURL&)url
+                   referrer:(const web::Referrer&)referrer
+                 windowName:(NSString*)windowName
+                inIncognito:(BOOL)inIncognito
+               inBackground:(BOOL)inBackground
+                   appendTo:(OpenPosition)append NS_DESIGNATED_INITIALIZER;
 
 // Initializes a command intended to open a URL from browser chrome (e.g.,
 // settings). This will always open in a new foreground tab in non-incognito
 // mode.
-- (id)initWithURLFromChrome:(const GURL&)url;
+- (instancetype)initWithURLFromChrome:(const GURL&)url;
 
-- (const GURL&)url;
-- (const web::Referrer&)referrer;
-- (NSString*)windowName;
-- (BOOL)inIncognito;
-- (BOOL)inBackground;
-- (OpenPosition)appendTo;
+// URL to open.
+@property(nonatomic, readonly) const GURL& url;
+
+// Referrer for the URL.
+@property(nonatomic, readonly) const web::Referrer& referrer;
+
+// Name of the window.
+@property(nonatomic, readonly) NSString* windowName;
+
+// Whether this URL command requests opening in incognito or not.
+@property(nonatomic, readonly) BOOL inIncognito;
+
+// Whether this URL command requests opening in background or not.
+@property(nonatomic, readonly) BOOL inBackground;
+
+// Whether or not this URL command comes from a chrome context (e.g., settings),
+// as opposed to a web page context.
+@property(nonatomic, readonly) BOOL fromChrome;
+
+// Location where the new tab should be opened.
+@property(nonatomic, readonly) OpenPosition appendTo;
 
 @end
 

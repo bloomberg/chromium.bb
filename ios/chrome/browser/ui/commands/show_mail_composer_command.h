@@ -15,18 +15,35 @@ class FilePath;
 
 @interface ShowMailComposerCommand : GenericChromeCommand
 
+// Mark inherited initializer as unavailable to prevent calling it by mistake.
+- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+
+// Initializes a command designed to open the mail composer with pre-filled
+// recipients, subject, body.
 - (instancetype)initWithToRecipient:(NSString*)toRecipient
                              subject:(NSString*)subject
                                 body:(NSString*)body
       emailNotConfiguredAlertTitleId:(int)alertTitleId
-    emailNotConfiguredAlertMessageId:(int)alertMessageId;
+    emailNotConfiguredAlertMessageId:(int)alertMessageId
+    NS_DESIGNATED_INITIALIZER;
 
-@property(nonatomic, readonly, assign) NSArray* toRecipients;
-@property(nonatomic, readonly, assign) NSString* subject;
-@property(nonatomic, readonly, assign) NSString* body;
-@property(nonatomic, assign) base::FilePath textFileToAttach;
-@property(nonatomic, readonly, assign) int emailNotConfiguredAlertTitleId;
-@property(nonatomic, readonly, assign) int emailNotConfiguredAlertMessageId;
+// List of email recipients.
+@property(nonatomic, readonly) NSArray* toRecipients;
+
+// Pre-filled default email subject.
+@property(nonatomic, readonly) NSString* subject;
+
+// Pre-filled default email body.
+@property(nonatomic, readonly) NSString* body;
+
+// Path to file to attach to email.
+@property(nonatomic, assign) const base::FilePath& textFileToAttach;
+
+// Identifier for alert if the email title is empty.
+@property(nonatomic, readonly) int emailNotConfiguredAlertTitleId;
+
+// Identifier for alert if the email body is empty.
+@property(nonatomic, readonly) int emailNotConfiguredAlertMessageId;
 
 @end
 

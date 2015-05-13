@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/web/public/referrer.h"
 #include "url/gurl.h"
 
@@ -12,24 +14,28 @@
   GURL _url;
   web::Referrer _referrer;
   base::scoped_nsobject<NSString> _windowName;
-  BOOL _inIncognito;
-  BOOL _inBackground;
-  BOOL _fromChrome;
-  OpenPosition _appendTo;
 }
 
+@synthesize inIncognito = _inIncognito;
+@synthesize inBackground = _inBackground;
 @synthesize fromChrome = _fromChrome;
+@synthesize appendTo = _appendTo;
 
-- (id)initWithURL:(const GURL&)url
-         referrer:(const web::Referrer&)referrer
-       windowName:(NSString*)windowName
-      inIncognito:(BOOL)inIncognito
-     inBackground:(BOOL)inBackground
-         appendTo:(OpenPosition)appendTo {
-  if ((self = [super init])) {
+- (instancetype)initWithTag:(NSInteger)tag {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithURL:(const GURL&)url
+                   referrer:(const web::Referrer&)referrer
+                 windowName:(NSString*)windowName
+                inIncognito:(BOOL)inIncognito
+               inBackground:(BOOL)inBackground
+                   appendTo:(OpenPosition)appendTo {
+  if ((self = [super initWithTag:IDC_OPEN_URL])) {
     _url = url;
     _referrer = referrer;
-    _windowName.reset([windowName retain]);
+    _windowName.reset([windowName copy]);
     _inIncognito = inIncognito;
     _inBackground = inBackground;
     _appendTo = appendTo;
@@ -37,7 +43,7 @@
   return self;
 }
 
-- (id)initWithURLFromChrome:(const GURL&)url {
+- (instancetype)initWithURLFromChrome:(const GURL&)url {
   if ((self = [self initWithURL:url
                        referrer:web::Referrer()
                      windowName:nil
@@ -59,18 +65,6 @@
 
 - (NSString*)windowName {
   return _windowName.get();
-}
-
-- (BOOL)inIncognito {
-  return _inIncognito;
-}
-
-- (BOOL)inBackground {
-  return _inBackground;
-}
-
-- (OpenPosition)appendTo {
-  return _appendTo;
 }
 
 @end

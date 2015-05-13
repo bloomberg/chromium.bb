@@ -20,6 +20,7 @@ TEST_F(SetUpForTestingCommandTest, InitNoArguments) {
       [[SetUpForTestingCommand alloc] initWithURL:url]);
   EXPECT_FALSE([command clearBrowsingData]);
   EXPECT_FALSE([command closeTabs]);
+  EXPECT_EQ(0, [command numberOfNewTabs]);
 }
 
 TEST_F(SetUpForTestingCommandTest, InitClearBrowsingData) {
@@ -58,6 +59,15 @@ TEST_F(SetUpForTestingCommandTest, InitWithBadNumberOfNewTabs) {
   EXPECT_EQ(0, [command numberOfNewTabs]);
 }
 
+TEST_F(SetUpForTestingCommandTest, InitWithNegativeNumberOfNewTabs) {
+  GURL url("chrome://setupfortesting?numberOfNewTabs=-3");
+  base::scoped_nsobject<SetUpForTestingCommand> command(
+      [[SetUpForTestingCommand alloc] initWithURL:url]);
+  EXPECT_FALSE([command clearBrowsingData]);
+  EXPECT_FALSE([command closeTabs]);
+  EXPECT_EQ(0, [command numberOfNewTabs]);
+}
+
 TEST_F(SetUpForTestingCommandTest, InitWithArguments) {
   GURL url(
       "chrome://setupfortesting?clearBrowsingData&closeTabs&numberOfNewTabs=5");
@@ -74,6 +84,7 @@ TEST_F(SetUpForTestingCommandTest, InitWithBadArguments) {
       [[SetUpForTestingCommand alloc] initWithURL:url]);
   EXPECT_FALSE([command clearBrowsingData]);
   EXPECT_FALSE([command closeTabs]);
+  EXPECT_EQ(0, [command numberOfNewTabs]);
 }
 
 }  // namespace

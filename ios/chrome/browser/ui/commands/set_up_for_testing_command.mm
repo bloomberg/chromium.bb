@@ -5,45 +5,44 @@
 #import "ios/chrome/browser/ui/commands/set_up_for_testing_command.h"
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "net/base/mac/url_conversions.h"
-#import "third_party/google_toolbox_for_mac/src/Foundation/GTMNSDictionary+URLArguments.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace {
 // Clear all browsing data.
-NSString* const kClearBrowsingData = @"clearBrowsingData";
+const char kClearBrowsingData[] = "clearBrowsingData";
 // Close existing tabs.
-NSString* const kCloseTabs = @"closeTabs";
+const char kCloseTabs[] = "closeTabs";
 // Number of new tabs.
-NSString* const kNumberOfNewTabs = @"numberOfNewTabs";
+const char kNumberOfNewTabs[] = "numberOfNewTabs";
 }  // namespace
 
-@implementation SetUpForTestingCommand {
-  // Whether the browsing data should be cleared.
-  BOOL _clearBrowsingData;
-  // Whether the existing tabs should be closed.
-  BOOL _closeTabs;
-  // The number of new tabs to create.
-  NSInteger _numberOfNewTabs;
-}
+@implementation SetUpForTestingCommand
 
 @synthesize clearBrowsingData = _clearBrowsingData;
 @synthesize closeTabs = _closeTabs;
 @synthesize numberOfNewTabs = _numberOfNewTabs;
 
-- (instancetype)initWithURL:(const GURL&)url {
-  // TODO(ios): Rewrite to use GetValueForKeyInQuery.
-  NSURL* nsurl = net::NSURLWithGURL(url);
-  DCHECK(nsurl);
-  NSDictionary* urlArguments =
-      [NSDictionary gtm_dictionaryWithHttpArgumentsString:nsurl.query];
-  BOOL clearBrowsingData =
-      [urlArguments objectForKey:kClearBrowsingData] != nil;
-  BOOL closeTabs = [urlArguments objectForKey:kCloseTabs] != nil;
-  NSInteger numberOfNewTabs =
-      [[urlArguments objectForKey:kNumberOfNewTabs] integerValue];
+- (instancetype)initWithTag:(NSInteger)tag {
+  NOTREACHED();
+  return nil;
+}
 
+- (instancetype)initWithURL:(const GURL&)url {
+  std::string value;
+  int numberOfNewTabs = 0;
+  if (net::GetValueForKeyInQuery(url, kNumberOfNewTabs, &value)) {
+    if (!base::StringToInt(value, &numberOfNewTabs) || numberOfNewTabs < 0) {
+      // Ignore incorrect value for "numberOfNewTabs".
+      numberOfNewTabs = 0;
+    }
+  }
+  std::string ignored;
+  bool clearBrowsingData =
+      net::GetValueForKeyInQuery(url, kClearBrowsingData, &ignored);
+  bool closeTabs = net::GetValueForKeyInQuery(url, kCloseTabs, &ignored);
   return [self initWithClearBrowsingData:clearBrowsingData
                                closeTabs:closeTabs
                          numberOfNewTabs:numberOfNewTabs];
@@ -52,17 +51,13 @@ NSString* const kNumberOfNewTabs = @"numberOfNewTabs";
 - (instancetype)initWithClearBrowsingData:(BOOL)clearBrowsingData
                                 closeTabs:(BOOL)closeTabs
                           numberOfNewTabs:(NSInteger)numberOfNewTabs {
-  self = [super init];
+  self = [super initWithTag:IDC_SETUP_FOR_TESTING];
   if (self) {
     _clearBrowsingData = clearBrowsingData;
     _closeTabs = closeTabs;
     _numberOfNewTabs = numberOfNewTabs;
   }
   return self;
-}
-
-- (NSInteger)tag {
-  return IDC_SETUP_FOR_TESTING;
 }
 
 @end

@@ -7,10 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+
 class GURL;
 
 // Set up for testing command that can be passed to |chromeExecuteCommand|.
-@interface SetUpForTestingCommand : NSObject
+@interface SetUpForTestingCommand : GenericChromeCommand
+
+// Mark inherited initializer as unavailable to prevent calling it by mistake.
+- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
 
 // Initializes this command by parsing the url query.
 - (instancetype)initWithURL:(const GURL&)url;
@@ -18,11 +23,17 @@ class GURL;
 // Initializes this command.
 - (instancetype)initWithClearBrowsingData:(BOOL)clearBrowsingData
                                 closeTabs:(BOOL)closeTabs
-                          numberOfNewTabs:(NSInteger)numberOfNewTabs;
+                          numberOfNewTabs:(NSInteger)numberOfNewTabs
+    NS_DESIGNATED_INITIALIZER;
 
-@property(nonatomic, readonly, assign) BOOL clearBrowsingData;
-@property(nonatomic, readonly, assign) BOOL closeTabs;
-@property(nonatomic, assign) NSInteger numberOfNewTabs;
+// Whether the browsing data should be cleared.
+@property(nonatomic, readonly) BOOL clearBrowsingData;
+
+// Whether the existing tabs should be closed.
+@property(nonatomic, readonly) BOOL closeTabs;
+
+// The number of new tabs to create.
+@property(nonatomic, readonly) NSInteger numberOfNewTabs;
 
 @end
 

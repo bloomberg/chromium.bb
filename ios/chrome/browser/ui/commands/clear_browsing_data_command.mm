@@ -7,27 +7,25 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 
-@implementation ClearBrowsingDataCommand {
-  ios::ChromeBrowserState* _browserState;  // Weak.
-  int _mask;  // Removal mask: see BrowsingDataRemover::RemoveDataMask.
-}
+@implementation ClearBrowsingDataCommand
 
 @synthesize browserState = _browserState;
 @synthesize mask = _mask;
 
+- (instancetype)initWithTag:(NSInteger)tag {
+  NOTREACHED();
+  return nil;
+}
+
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                 mask:(int)mask {
-  self = [super init];
+  self = [super initWithTag:IDC_CLEAR_BROWSING_DATA_IOS];
   if (self) {
     DCHECK(browserState);
     _browserState = browserState;
     _mask = mask;
   }
   return self;
-}
-
-- (NSInteger)tag {
-  return IDC_CLEAR_BROWSING_DATA_IOS;
 }
 
 @end

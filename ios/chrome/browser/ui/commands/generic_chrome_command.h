@@ -10,13 +10,17 @@
 // Generic command that can be passed to |chromeExecuteCommand|.
 @interface GenericChromeCommand : NSObject
 
-@property(nonatomic, assign) NSInteger tag;
+// Mark inherited initializer as unavailable to prevent calling it by mistake.
+- (instancetype)init NS_UNAVAILABLE;
 
-// Designated initializer.
-- (instancetype)initWithTag:(NSInteger)tag;
+// Initializes the GenericChromeCommand with given |tag|.
+- (instancetype)initWithTag:(NSInteger)tag NS_DESIGNATED_INITIALIZER;
 
 // Convenience method to execute this command on the main window.
 - (void)executeOnMainWindow;
+
+// Command tag.
+@property(nonatomic, assign) NSInteger tag;
 
 @end
 

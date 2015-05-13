@@ -9,15 +9,9 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 
-@implementation GenericChromeCommand {
-  NSInteger _tag;
-}
+@implementation GenericChromeCommand
 
 @synthesize tag = _tag;
-
-- (instancetype)init {
-  return [self initWithTag:0];
-}
 
 - (instancetype)initWithTag:(NSInteger)tag {
   self = [super init];

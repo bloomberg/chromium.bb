@@ -14,26 +14,29 @@
   base::scoped_nsobject<NSString> _subject;
   base::scoped_nsobject<NSString> _body;
   base::FilePath _textFileToAttach;
-  // Alert message ids for the case when no email account is configured.
-  int _emailNotConfiguredAlertTitleId;
-  int _emailNotConfiguredAlertMessageId;
 }
 
-@synthesize textFileToAttach;
+@synthesize emailNotConfiguredAlertTitleId = _emailNotConfiguredAlertTitleId;
+@synthesize emailNotConfiguredAlertMessageId =
+    _emailNotConfiguredAlertMessageId;
 
-- (id)initWithToRecipient:(NSString*)toRecipient
+- (instancetype)initWithTag:(NSInteger)tag {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithToRecipient:(NSString*)toRecipient
                              subject:(NSString*)subject
                                 body:(NSString*)body
       emailNotConfiguredAlertTitleId:(int)alertTitleId
     emailNotConfiguredAlertMessageId:(int)alertMessageId {
   DCHECK(alertTitleId);
   DCHECK(alertMessageId);
-  self = [super init];
+  self = [super initWithTag:IDC_SHOW_MAIL_COMPOSER];
   if (self) {
-    self.tag = IDC_SHOW_MAIL_COMPOSER;
     _toRecipients.reset([@[ toRecipient ] retain]);
-    _subject.reset([subject retain]);
-    _body.reset([body retain]);
+    _subject.reset([subject copy]);
+    _body.reset([body copy]);
     _emailNotConfiguredAlertTitleId = alertTitleId;
     _emailNotConfiguredAlertMessageId = alertMessageId;
   }
@@ -52,12 +55,12 @@
   return _body.get();
 }
 
-- (int)emailNotConfiguredAlertTitleId {
-  return _emailNotConfiguredAlertTitleId;
+- (const base::FilePath&)textFileToAttach {
+  return _textFileToAttach;
 }
 
-- (int)emailNotConfiguredAlertMessageId {
-  return _emailNotConfiguredAlertMessageId;
+- (void)setTextFileToAttach:(const base::FilePath&)textFileToAttach {
+  _textFileToAttach = textFileToAttach;
 }
 
 @end
