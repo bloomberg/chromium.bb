@@ -467,7 +467,7 @@
           'target_name': 'sync_fake_server_jni_headers',
           'type': 'none',
           'sources': [
-            '../chrome/android/sync_shell/javatests/src/chromium/chrome/browser/sync/FakeServerHelper.java',
+            '../chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java',
           ],
           'variables': {
             'jni_gen_package': 'sync/test/fake_server',

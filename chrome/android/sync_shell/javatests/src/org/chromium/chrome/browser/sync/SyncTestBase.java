@@ -81,6 +81,7 @@ public class SyncTestBase extends ChromeShellTestBase {
                 }
 
                 AccountIdProvider.setInstance(new AccountIdProvider() {
+                    @Override
                     public String getAccountId(Context ctx, String accountName) {
                         return "gaia-id-" + accountName;
                     }

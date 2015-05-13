@@ -800,7 +800,7 @@ if (is_android) {
     testonly = true
     jni_package = "sync/test/fake_server"
     sources = [
-      "//chrome/android/sync_shell/javatests/src/chromium/chrome/browser/sync/FakeServerHelper.java",
+      "//chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
     ]
   }
 
