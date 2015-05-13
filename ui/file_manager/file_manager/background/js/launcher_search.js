@@ -118,11 +118,18 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
         chrome.launcherSearchProvider.setSearchResults(
             queryId,
             results.map(function(result) {
-              // TODO(yawano): Set custome icon to a result when the API becomes
-              //     to support it.
+              // Use high-dpi icons since preferred icon size is 24px in the
+              // current implementation.
+              //
+              // TODO(yawano): Use filetype_folder_shared.png for a shared
+              //     folder.
+              var iconUrl = chrome.runtime.getURL(
+                  'foreground/images/filetype/2x/filetype_' +
+                  FileType.getIcon(result.entry) + '.png');
               return {
                 itemId: result.entry.toURL(),
                 title: result.entry.name,
+                iconUrl: iconUrl,
                 // Relevance is set as 2 for all results as a temporary
                 // implementation. 2 is the middle value.
                 // TODO(yawano): Implement practical relevance calculation.
