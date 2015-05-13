@@ -187,7 +187,6 @@ public class Runner {
         protected CompilerOptions createOptions() {
             CompilerOptions options = super.createOptions();
             options.setIdeMode(true);
-            options.setExtraAnnotationNames(Collections.singletonList("suppressReceiverCheck"));
             return options;
         }
 
