@@ -110,6 +110,11 @@ class WebContents : public PageNavigator,
     int routing_id;
     int main_frame_routing_id;
 
+    // The name of the top-level frame of the new window. It is non-empty
+    // when creating a named window (e.g. <a target="foo"> or
+    // window.open('', 'bar')).
+    std::string main_frame_name;
+
     // Initial size of the new WebContent's view. Can be (0, 0) if not needed.
     gfx::Size initial_size;
 

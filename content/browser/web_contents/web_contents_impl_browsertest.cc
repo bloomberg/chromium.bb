@@ -687,4 +687,52 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
   EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url = embedded_test_server()->GetURL("/click-noreferrer-links.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  {
+    ShellAddedObserver new_shell_observer;
+
+    // Open a new, named window.
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                              "window.open('about:blank','new_window');"));
+
+    Shell* new_shell = new_shell_observer.GetShell();
+    WaitForLoadStop(new_shell->web_contents());
+
+    EXPECT_EQ("new_window",
+              static_cast<WebContentsImpl*>(new_shell->web_contents())
+                  ->GetFrameTree()->root()->frame_name());
+
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        new_shell->web_contents(),
+        "window.domAutomationController.send(window.name == 'new_window');",
+        &success));
+    EXPECT_TRUE(success);
+  }
+
+  {
+    ShellAddedObserver new_shell_observer;
+
+    // Test clicking a target=foo link.
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell()->web_contents(),
+        "window.domAutomationController.send(clickSameSiteTargetedLink());",
+        &success));
+    EXPECT_TRUE(success);
+
+    Shell* new_shell = new_shell_observer.GetShell();
+    WaitForLoadStop(new_shell->web_contents());
+
+    EXPECT_EQ("foo",
+              static_cast<WebContentsImpl*>(new_shell->web_contents())
+                  ->GetFrameTree()->root()->frame_name());
+  }
+}
+
 }  // namespace content
