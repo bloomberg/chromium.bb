@@ -32,8 +32,8 @@
       <structure name="IDR_SETTINGS_CHECKBOX_CSS"
                  file="checkbox/checkbox.css"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_STYLE_HTML"
-                 file="settings_drawer/settings_drawer_style.html"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_CSS"
+                 file="settings_drawer/settings_drawer.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_HTML"
                  file="settings_drawer/settings_drawer.html"

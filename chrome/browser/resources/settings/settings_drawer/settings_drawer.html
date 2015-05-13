@@ -1,19 +1,20 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
-<link rel="import" href="settings_drawer_style.html">
 
-<polymer-element name="cr-settings-drawer" layout vertical>
+<dom-module id="cr-settings-drawer">
+  <link rel="import" type="css" href="settings_drawer.css">
   <template>
-    <core-style ref="settingsDrawerStyle"></core-style>
     <!-- TODO(michaelpg): Create a new user card component. -->
-    <div id="user-card" class="medium" layout horizontal center>
-      <img src="{{user.iconUrl}}">
-      <div flex>
-        <div class="name">{{user.name}}</div>
-        <div class="email">{{user.email}}</div>
+    <div id="user-card" class="layout horizontal center">
+      <img src$="[[user_.iconUrl]]">
+      <div class="flex">
+        <div class="name">[[user_.name]]</div>
+        <div class="email">[[user_.email]]</div>
       </div>
     </div>
-    <cr-settings-menu flex selectedId="{{selectedId}}" pages="{{pages}}">
+    <cr-settings-menu class="flex" selected-id="{{selectedId}}"
+        pages="[[pages]]">
     </cr-settings-menu>
   </template>
   <script src="settings_drawer.js"></script>
