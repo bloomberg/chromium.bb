@@ -377,6 +377,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
                           plugin_metadata->identifier(), &plugin_setting,
                           &uses_default_content_setting, &is_managed);
 
+  // TODO(tommycli): Remove once we deprecate the plugin ASK policy.
   bool legacy_ask_user = plugin_setting == CONTENT_SETTING_ASK;
   plugin_setting = content_settings::PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
@@ -568,8 +569,13 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
 
     // If there is a plugin-specific setting, we use it, unless the general
     // setting was set by policy, in which case it takes precedence.
-    uses_plugin_specific_setting = specific_setting &&
-        (general_info.source != content_settings::SETTING_SOURCE_POLICY);
+    // TODO(tommycli): Remove once we deprecate the plugin ASK policy.
+    bool legacy_ask_user = content_settings::ValueToContentSetting(
+                               general_setting.get()) == CONTENT_SETTING_ASK;
+    bool use_policy =
+        general_info.source == content_settings::SETTING_SOURCE_POLICY &&
+        !legacy_ask_user;
+    uses_plugin_specific_setting = specific_setting && !use_policy;
     if (uses_plugin_specific_setting) {
       value = specific_setting.Pass();
       info = specific_info;
