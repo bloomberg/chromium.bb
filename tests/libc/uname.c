@@ -19,9 +19,9 @@
 int main(void) {
   struct utsname buf;
   int rv = uname(&buf);
-#ifdef __GLIBC__
+#if defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 9
   /*
-   * glibc currently return ENOSYS
+   * The old glibc currently return ENOSYS.
    * TODO(sbc): Fix uname() implementation in glibc.
    */
   if (rv == 0) {
