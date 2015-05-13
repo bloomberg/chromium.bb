@@ -105,9 +105,11 @@ class OAuth2LoginManager : public KeyedService,
 
   const base::Time& session_restore_start() { return session_restore_start_; }
 
+  bool SessionRestoreIsRunning() const;
+
   // Returns true if the tab loading should block until session restore
   // finishes.
-  bool ShouldBlockTabLoading();
+  bool ShouldBlockTabLoading() const;
 
  private:
   friend class MergeSessionLoadPageTest;

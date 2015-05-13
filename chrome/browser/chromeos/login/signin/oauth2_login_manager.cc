@@ -72,11 +72,11 @@ void OAuth2LoginManager::RestoreSession(
   refresh_token_ = oauth2_refresh_token;
   oauthlogin_access_token_ = oauth2_access_token;
   session_restore_start_ = base::Time::Now();
-  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_PREPARING);
   ContinueSessionRestore();
 }
 
 void OAuth2LoginManager::ContinueSessionRestore() {
+  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_PREPARING);
   if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
     FetchOAuth2Tokens();
     return;
@@ -119,9 +119,13 @@ void OAuth2LoginManager::Stop() {
   login_verifier_.reset();
 }
 
-bool OAuth2LoginManager::ShouldBlockTabLoading() {
+bool OAuth2LoginManager::SessionRestoreIsRunning() const {
   return state_ == SESSION_RESTORE_PREPARING ||
          state_ == SESSION_RESTORE_IN_PROGRESS;
+}
+
+bool OAuth2LoginManager::ShouldBlockTabLoading() const {
+  return SessionRestoreIsRunning();
 }
 
 void OAuth2LoginManager::OnRefreshTokenAvailable(

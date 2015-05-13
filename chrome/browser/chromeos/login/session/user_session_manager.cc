@@ -762,8 +762,7 @@ void UserSessionManager::OnConnectionTypeChanged(
         pending_signin_restore_sessions_.end();
     OAuth2LoginManager* login_manager =
         OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
-    if (login_manager->state() ==
-            OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
+    if (login_manager->SessionRestoreIsRunning()) {
       // If we come online for the first time after successful offline login,
       // we need to kick off OAuth token verification process again.
       login_manager->ContinueSessionRestore();
