@@ -759,7 +759,8 @@ void PushMessagingMessageFilter::OnGetPermissionStatus(
       service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
-    Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
+    Send(new PushMessagingMsg_GetPermissionStatusError(
+        request_id, blink::WebPushError::ErrorTypeAbort));
     return;
   }
 
@@ -777,6 +778,11 @@ void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
   blink::WebPushPermissionStatus permission_status;
   PushMessagingService* push_service = service();
   if (push_service) {
+    if (!user_visible && !push_service->SupportNonVisibleMessages()) {
+      Send(new PushMessagingMsg_GetPermissionStatusError(
+          request_id, blink::WebPushError::ErrorTypeNotSupported));
+      return;
+    }
     GURL embedding_origin = requesting_origin;
     permission_status = push_service->GetPermissionStatus(requesting_origin,
                                                           embedding_origin,
@@ -785,7 +791,8 @@ void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
     // Return prompt, so the website can't detect incognito mode.
     permission_status = blink::WebPushPermissionStatusPrompt;
   } else {
-    Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
+    Send(new PushMessagingMsg_GetPermissionStatusError(
+        request_id, blink::WebPushError::ErrorTypeAbort));
     return;
   }
   Send(new PushMessagingMsg_GetPermissionStatusSuccess(request_id,

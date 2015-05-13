@@ -77,7 +77,8 @@ class PushProvider : public blink::WebPushProvider,
   void OnGetRegistrationError(int request_id, PushGetRegistrationStatus status);
   void OnGetPermissionStatusSuccess(int request_id,
                                     blink::WebPushPermissionStatus status);
-  void OnGetPermissionStatusError(int request_id);
+  void OnGetPermissionStatusError(int request_id,
+                                  blink::WebPushError::ErrorType error);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<PushDispatcher> push_dispatcher_;

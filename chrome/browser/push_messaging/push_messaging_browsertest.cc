@@ -370,8 +370,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingManifestUserVisibleOnlyTrueTest,
   ASSERT_TRUE(RunScript("subscribePush()", &script_result));
   EXPECT_EQ(GetEndpointForSubscriptionId("1-0"), script_result);
 
+  // permissionState has been introduced later so it does not
+  // respect the manifest key.
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
-  EXPECT_EQ("permission status - granted", script_result);
+  EXPECT_EQ(
+      "NotSupportedError - Push subscriptions that don't enable"
+      " userVisibleOnly are not supported.",
+      script_result);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {

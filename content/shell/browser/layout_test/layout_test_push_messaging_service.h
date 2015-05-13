@@ -39,6 +39,7 @@ class LayoutTestPushMessagingService : public PushMessagingService {
       const GURL& requesting_origin,
       const GURL& embedding_origin,
       bool user_visible) override;
+  bool SupportNonVisibleMessages() override;
   void Unregister(const GURL& requesting_origin,
                   int64 service_worker_registration_id,
                   const std::string& sender_id,

@@ -71,8 +71,9 @@ IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetPermissionStatusSuccess,
                      int32_t /* request_id */,
                      blink::WebPushPermissionStatus /* status */)
 
-IPC_MESSAGE_CONTROL1(PushMessagingMsg_GetPermissionStatusError,
-                     int32_t /* request_id */)
+IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetPermissionStatusError,
+                     int32_t /* request_id */,
+                     blink::WebPushError::ErrorType /* error_type */)
 
 // Messages sent from the child process to the browser.
 

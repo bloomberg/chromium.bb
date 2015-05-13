@@ -82,6 +82,10 @@ LayoutTestPushMessagingService::GetPermissionStatus(
                             embedding_origin));
 }
 
+bool LayoutTestPushMessagingService::SupportNonVisibleMessages() {
+  return false;
+}
+
 void LayoutTestPushMessagingService::Unregister(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,

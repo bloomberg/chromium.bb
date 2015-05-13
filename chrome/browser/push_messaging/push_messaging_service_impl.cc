@@ -404,6 +404,10 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
       requesting_origin, embedding_origin));
 }
 
+bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
+  return false;
+}
+
 void PushMessagingServiceImpl::RegisterEnd(
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& registration_id,

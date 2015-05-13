@@ -251,13 +251,25 @@ void PushProvider::OnGetPermissionStatusSuccess(
   permission_status_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnGetPermissionStatusError(int request_id) {
+void PushProvider::OnGetPermissionStatusError(
+    int request_id,
+    blink::WebPushError::ErrorType error) {
   blink::WebPushPermissionStatusCallbacks* callbacks =
       permission_status_callbacks_.Lookup(request_id);
   if (!callbacks)
     return;
 
-  callbacks->onError();
+  std::string error_message;
+  if (error == blink::WebPushError::ErrorTypeNotSupported) {
+    error_message =
+        "Push subscriptions that don't enable userVisibleOnly are not "
+        "supported.";
+  }
+
+  scoped_ptr<blink::WebPushError> web_error(new blink::WebPushError(
+      error, blink::WebString::fromUTF8(error_message)));
+
+  callbacks->onError(web_error.release());
 
   permission_status_callbacks_.Remove(request_id);
 }

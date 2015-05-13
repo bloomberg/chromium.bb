@@ -86,6 +86,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
       bool user_visible) override;
+  bool SupportNonVisibleMessages() override;
+
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
