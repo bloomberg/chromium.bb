@@ -20,9 +20,8 @@ var tests = {
   '#3': {type: 'push',    expectedScroll: [150, 300], options: {scrollRestoration: 'auto'}},
   '#4': {type: 'replace', expectedScroll: [200, 400], options: {scrollRestoration: 'auto'}},
   /* Scroll position should not be restored for these two. */
-  // TODO(majidvp): uncomment these test cases once chromium side CL (https://crrev.com/959783003) lands
-  // '#5': {type: 'push',    expectedScroll: [0, 0],     options: {scrollRestoration: 'manual'}},
-  // '#6': {type: 'replace', expectedScroll: [0, 0],     options: {scrollRestoration: 'manual'}}
+  '#5': {type: 'push',    expectedScroll: [0, 0],     options: {scrollRestoration: 'manual'}},
+  '#6': {type: 'replace', expectedScroll: [0, 0],     options: {scrollRestoration: 'manual'}}
 };
 
 // Navigation steps:
