@@ -15,7 +15,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 
 namespace content {
@@ -390,7 +389,7 @@ void HostDiscardableSharedMemoryManager::ScheduleEnforceMemoryPolicy() {
     return;
 
   enforce_memory_policy_pending_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&HostDiscardableSharedMemoryManager::EnforceMemoryPolicy,
                  weak_ptr_factory_.GetWeakPtr()),

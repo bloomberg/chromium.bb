@@ -27,6 +27,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace media {
 class H264Parser;
 }  // namespace media
@@ -78,7 +82,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
       const scoped_refptr<V4L2Device>& device,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
   ~V4L2VideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -311,11 +315,11 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // - V4L2_CID_MIN_BUFFERS_FOR_CAPTURE has changed.
   bool IsResolutionChangeNecessary();
 
-  // Our original calling task runner for the child thread.
-  scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
+  // Our original calling message loop for the child thread.
+  scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
 
-  // Task runner of the IO thread.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // Message loop of the IO thread.
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder or
   // device worker threads back to the child thread.  Because the worker threads
@@ -327,10 +331,10 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
-  // child_task_runner_.
+  // child_message_loop_proxy_.
   scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
   base::WeakPtr<Client> client_;
-  // Callbacks to |io_client_| must be executed on |io_task_runner_|.
+  // Callbacks to |io_client_| must be executed on |io_message_loop_proxy_|.
   base::WeakPtr<Client> io_client_;
 
   //

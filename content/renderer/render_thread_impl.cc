@@ -1469,9 +1469,8 @@ bool RenderThreadImpl::IsMainThread() {
   return !!current();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetIOThreadTaskRunner() {
-  return io_thread_task_runner_;
+scoped_refptr<base::MessageLoopProxy> RenderThreadImpl::GetIOLoopProxy() {
+  return io_message_loop_proxy_;
 }
 
 scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
@@ -1615,7 +1614,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 
   // Cache some variables that are needed on the compositor thread for our
   // implementation of GpuChannelHostFactory.
-  io_thread_task_runner_ = ChildProcess::current()->io_message_loop_proxy();
+  io_message_loop_proxy_ = ChildProcess::current()->io_message_loop_proxy();
 
   gpu_channel_ =
       GpuChannelHost::Create(this,

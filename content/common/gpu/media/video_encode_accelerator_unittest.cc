@@ -795,9 +795,10 @@ VEAClient::~VEAClient() { CHECK(!has_encoder()); }
 scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder;
   if (g_fake_encoder) {
-    encoder.reset(new media::FakeVideoEncodeAccelerator(
-        scoped_refptr<base::SingleThreadTaskRunner>(
-            base::ThreadTaskRunnerHandle::Get())));
+    encoder.reset(
+        new media::FakeVideoEncodeAccelerator(
+            scoped_refptr<base::SingleThreadTaskRunner>(
+                base::MessageLoopProxy::current())));
   }
   return encoder.Pass();
 }

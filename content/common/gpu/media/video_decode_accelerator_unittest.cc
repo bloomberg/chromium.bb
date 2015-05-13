@@ -35,6 +35,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/md5.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -534,8 +535,10 @@ GLRenderingVDAClient::CreateV4L2VDA() {
     decoder.reset(new V4L2VideoDecodeAccelerator(
         static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
         static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
-        weak_client, base::Bind(&DoNothingReturnTrue), device,
-        base::ThreadTaskRunnerHandle::Get()));
+        weak_client,
+        base::Bind(&DoNothingReturnTrue),
+        device,
+        base::MessageLoopProxy::current()));
   }
 #endif
   return decoder.Pass();
@@ -549,10 +552,12 @@ GLRenderingVDAClient::CreateV4L2SliceVDA() {
   if (device.get()) {
     base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
     decoder.reset(new V4L2SliceVideoDecodeAccelerator(
-        device, static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+        device,
+        static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
         static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
-        weak_client, base::Bind(&DoNothingReturnTrue),
-        base::ThreadTaskRunnerHandle::Get()));
+        weak_client,
+        base::Bind(&DoNothingReturnTrue),
+        base::MessageLoopProxy::current()));
   }
 #endif
   return decoder.Pass();

@@ -29,6 +29,7 @@
 struct GPUCreateCommandBufferConfig;
 
 namespace base {
+class MessageLoopProxy;
 class WaitableEvent;
 }
 
@@ -65,7 +66,7 @@ class GpuChannel : public IPC::Listener, public IPC::Sender,
              bool allow_future_sync_points);
   ~GpuChannel() override;
 
-  void Init(base::SingleThreadTaskRunner* io_task_runner,
+  void Init(base::MessageLoopProxy* io_message_loop,
             base::WaitableEvent* shutdown_event);
 
   // Get the GpuChannelManager that owns this channel.
@@ -84,8 +85,8 @@ class GpuChannel : public IPC::Listener, public IPC::Sender,
 
   int client_id() const { return client_id_; }
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
-    return io_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
+    return io_message_loop_;
   }
 
   // IPC::Listener implementation:
@@ -237,7 +238,7 @@ class GpuChannel : public IPC::Listener, public IPC::Sender,
   IPC::Message* currently_processing_message_;
 
   scoped_refptr<GpuChannelMessageFilter> filter_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   size_t num_stubs_descheduled_;
 

@@ -385,8 +385,9 @@ void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
     delay = 0;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&GpuCommandBufferStub::PollWork, AsWeakPtr()),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&GpuCommandBufferStub::PollWork, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay));
 }
 
@@ -830,7 +831,7 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
   GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
-      decoder_route_id, this, channel_->io_task_runner());
+      decoder_route_id, this, channel_->io_message_loop());
   decoder->Initialize(profile, reply_message);
   // decoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.

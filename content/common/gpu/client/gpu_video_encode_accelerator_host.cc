@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
@@ -199,9 +200,11 @@ void GpuVideoEncodeAcceleratorHost::PostNotifyError(Error error) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "PostNotifyError(): error=" << error;
   // Post the error notification back to this thread, to avoid re-entrancy.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&GpuVideoEncodeAcceleratorHost::OnNotifyError,
-                            weak_this_factory_.GetWeakPtr(), error));
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuVideoEncodeAcceleratorHost::OnNotifyError,
+                 weak_this_factory_.GetWeakPtr(),
+                 error));
 }
 
 void GpuVideoEncodeAcceleratorHost::Send(IPC::Message* message) {

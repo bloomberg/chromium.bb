@@ -13,11 +13,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/gpu_channel_manager.h"
@@ -79,13 +77,13 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   GpuChannelMessageFilter(
       base::WeakPtr<GpuChannel> gpu_channel,
       scoped_refptr<gpu::SyncPointManager> sync_point_manager,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::MessageLoopProxy> message_loop,
       bool future_sync_points)
       : preemption_state_(IDLE),
         gpu_channel_(gpu_channel),
         sender_(NULL),
         sync_point_manager_(sync_point_manager),
-        task_runner_(task_runner),
+        message_loop_(message_loop),
         messages_forwarded_to_channel_(0),
         a_stub_is_descheduled_(false),
         future_sync_points_(future_sync_points) {}
@@ -129,11 +127,14 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
       uint32 sync_point = sync_point_manager_->GenerateSyncPoint();
       GpuCommandBufferMsg_InsertSyncPoint::WriteReplyParams(reply, sync_point);
       Send(reply);
-      task_runner_->PostTask(
+      message_loop_->PostTask(
           FROM_HERE,
           base::Bind(&GpuChannelMessageFilter::InsertSyncPointOnMainThread,
-                     gpu_channel_, sync_point_manager_, message.routing_id(),
-                     get<0>(retire), sync_point));
+                     gpu_channel_,
+                     sync_point_manager_,
+                     message.routing_id(),
+                     get<0>(retire),
+                     sync_point));
       handled = true;
     }
 
@@ -382,7 +383,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   base::WeakPtr<GpuChannel> gpu_channel_;
   IPC::Sender* sender_;
   scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<gpu::PreemptionFlag> preempting_flag_;
 
   std::queue<PendingMessage> pending_messages_;
@@ -436,19 +437,24 @@ GpuChannel::~GpuChannel() {
     preempting_flag_->Reset();
 }
 
-void GpuChannel::Init(base::SingleThreadTaskRunner* io_task_runner,
+void GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                       base::WaitableEvent* shutdown_event) {
   DCHECK(!channel_.get());
 
   // Map renderer ID to a (single) channel to that process.
-  channel_ =
-      IPC::SyncChannel::Create(channel_id_, IPC::Channel::MODE_SERVER, this,
-                               io_task_runner, false, shutdown_event);
+  channel_ = IPC::SyncChannel::Create(channel_id_,
+                                      IPC::Channel::MODE_SERVER,
+                                      this,
+                                      io_message_loop,
+                                      false,
+                                      shutdown_event);
 
-  filter_ = new GpuChannelMessageFilter(
-      weak_factory_.GetWeakPtr(), gpu_channel_manager_->sync_point_manager(),
-      base::ThreadTaskRunnerHandle::Get(), allow_future_sync_points_);
-  io_task_runner_ = io_task_runner;
+  filter_ =
+      new GpuChannelMessageFilter(weak_factory_.GetWeakPtr(),
+                                  gpu_channel_manager_->sync_point_manager(),
+                                  base::MessageLoopProxy::current(),
+                                  allow_future_sync_points_);
+  io_message_loop_ = io_message_loop;
   channel_->AddFilter(filter_.get());
   pending_valuebuffer_state_ = new gpu::ValueStateMap();
 }
@@ -534,7 +540,7 @@ void GpuChannel::OnScheduled() {
   // defer newly received messages until the ones in the queue have all been
   // handled by HandleMessage. HandleMessage is invoked as a
   // task to prevent reentrancy.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GpuChannel::HandleMessage, weak_factory_.GetWeakPtr()));
   handle_messages_scheduled_ = true;
@@ -553,10 +559,11 @@ void GpuChannel::StubSchedulingChanged(bool scheduled) {
 
   if (a_stub_is_descheduled != a_stub_was_descheduled) {
     if (preempting_flag_.get()) {
-      io_task_runner_->PostTask(
+      io_message_loop_->PostTask(
           FROM_HERE,
           base::Bind(&GpuChannelMessageFilter::UpdateStubSchedulingState,
-                     filter_, a_stub_is_descheduled));
+                     filter_,
+                     a_stub_is_descheduled));
     }
   }
 }
@@ -635,9 +642,8 @@ void GpuChannel::RemoveRoute(int32 route_id) {
 gpu::PreemptionFlag* GpuChannel::GetPreemptionFlag() {
   if (!preempting_flag_.get()) {
     preempting_flag_ = new gpu::PreemptionFlag;
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
+    io_message_loop_->PostTask(
+        FROM_HERE, base::Bind(
             &GpuChannelMessageFilter::SetPreemptingFlagAndSchedulingState,
             filter_, preempting_flag_, num_stubs_descheduled_ > 0));
   }
@@ -790,9 +796,11 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 void GpuChannel::MessageProcessed() {
   messages_processed_++;
   if (preempting_flag_.get()) {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuChannelMessageFilter::MessageProcessed,
-                              filter_, messages_processed_));
+    io_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&GpuChannelMessageFilter::MessageProcessed,
+                   filter_,
+                   messages_processed_));
   }
 }
 

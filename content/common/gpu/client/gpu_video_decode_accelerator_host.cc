@@ -188,9 +188,11 @@ void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
 void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "PostNotifyError(): error=" << error;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&GpuVideoDecodeAcceleratorHost::OnNotifyError,
-                            weak_this_factory_.GetWeakPtr(), error));
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuVideoDecodeAcceleratorHost::OnNotifyError,
+                 weak_this_factory_.GetWeakPtr(),
+                 error));
 }
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {

@@ -23,6 +23,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context_cgl.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace content {
 
 // Preload VideoToolbox libraries, needed for sandbox warmup.

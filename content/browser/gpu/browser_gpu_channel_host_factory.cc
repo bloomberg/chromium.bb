@@ -305,8 +305,8 @@ bool BrowserGpuChannelHostFactory::IsMainThread() {
   return BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-BrowserGpuChannelHostFactory::GetIOThreadTaskRunner() {
+scoped_refptr<base::MessageLoopProxy>
+BrowserGpuChannelHostFactory::GetIOLoopProxy() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
@@ -353,10 +353,12 @@ CreateCommandBufferResult BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) {
   CreateRequest request(route_id);
-  GetIOThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO,
-                 base::Unretained(this), &request, surface_id, init_params));
+  GetIOLoopProxy()->PostTask(FROM_HERE, base::Bind(
+        &BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO,
+        base::Unretained(this),
+        &request,
+        surface_id,
+        init_params));
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(

@@ -44,7 +44,7 @@ class SimpleWorker : public Listener, public Sender {
 
   virtual void Shutdown() {
     WaitableEvent ipc_done(false, false);
-    ipc_thread_.task_runner()->PostTask(
+    ipc_thread_.message_loop()->PostTask(
         FROM_HERE, base::Bind(&SimpleWorker::OnShutdown, this, &ipc_done));
 
     channel_.reset();
@@ -56,8 +56,8 @@ class SimpleWorker : public Listener, public Sender {
  protected:
   SyncChannel* CreateChannel() {
     scoped_ptr<SyncChannel> channel = SyncChannel::Create(
-        channel_name_, mode_, this, ipc_thread_.task_runner().get(), true,
-        &shutdown_event_);
+        channel_name_, mode_, this, ipc_thread_.message_loop_proxy().get(),
+        true, &shutdown_event_);
     return channel.release();
   }
 
@@ -111,8 +111,11 @@ class SimpleGpuClient : public IPC::SimpleWorker {
   void Start() override {
     IPC::SimpleWorker::Start();
     gpu_channel_manager_.reset(
-        new GpuChannelManager(&router_, NULL, ipc_thread().task_runner().get(),
-                              shutdown_event(), channel()));
+        new GpuChannelManager(&router_,
+                              NULL,
+                              ipc_thread().message_loop_proxy().get(),
+                              shutdown_event(),
+                              channel()));
   }
 
   void Shutdown() override {

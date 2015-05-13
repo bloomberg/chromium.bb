@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -64,7 +65,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
  public:
   GpuChannelManager(MessageRouter* router,
                     GpuWatchdog* watchdog,
-                    base::SingleThreadTaskRunner* io_task_runner,
+                    base::MessageLoopProxy* io_message_loop,
                     base::WaitableEvent* shutdown_event,
                     IPC::SyncChannel* channel);
   ~GpuChannelManager() override;
@@ -137,7 +138,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   void OnLoseAllContexts();
   void CheckRelinquishGpuResources();
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   base::WaitableEvent* shutdown_event_;
 
   // Used to send and receive IPC messages from the browser process.

@@ -324,7 +324,7 @@ bool VTVideoDecodeAccelerator::Initialize(
 }
 
 bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
   if (session_) {
     OSStatus status = VTDecompressionSessionWaitForAsynchronousFrames(session_);
     if (status) {
@@ -337,7 +337,7 @@ bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
 }
 
 bool VTVideoDecodeAccelerator::ConfigureDecoder() {
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
   DCHECK(!last_sps_.empty());
   DCHECK(!last_pps_.empty());
 
@@ -447,7 +447,7 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
 void VTVideoDecodeAccelerator::DecodeTask(
     const media::BitstreamBuffer& bitstream,
     Frame* frame) {
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   // Map the bitstream buffer.
   base::SharedMemory memory(bitstream.handle(), true);
@@ -744,7 +744,7 @@ void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
 }
 
 void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
   FinishDelayedFrames();
 
   // Always queue a task, even if FinishDelayedFrames() fails, so that
@@ -765,9 +765,9 @@ void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
   assigned_bitstream_ids_.insert(bitstream.id());
   Frame* frame = new Frame(bitstream.id());
   pending_frames_[frame->bitstream_id] = make_linked_ptr(frame);
-  decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VTVideoDecodeAccelerator::DecodeTask,
-                            base::Unretained(this), bitstream, frame));
+  decoder_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
+      &VTVideoDecodeAccelerator::DecodeTask, base::Unretained(this),
+      bitstream, frame));
 }
 
 void VTVideoDecodeAccelerator::AssignPictureBuffers(
@@ -1004,9 +1004,9 @@ void VTVideoDecodeAccelerator::NotifyError(
 void VTVideoDecodeAccelerator::QueueFlush(TaskType type) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   pending_flush_tasks_.push(type);
-  decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VTVideoDecodeAccelerator::FlushTask,
-                            base::Unretained(this), type));
+  decoder_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
+      &VTVideoDecodeAccelerator::FlushTask, base::Unretained(this),
+      type));
 
   // If this is a new flush request, see if we can make progress.
   if (pending_flush_tasks_.size() == 1)

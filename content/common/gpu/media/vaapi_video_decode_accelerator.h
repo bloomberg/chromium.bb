@@ -282,7 +282,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   // Use this to post tasks to |decoder_thread_| instead of
   // |decoder_thread_.message_loop()| because the latter will be NULL once
   // |decoder_thread_.Stop()| returns.
-  scoped_refptr<base::SingleThreadTaskRunner> decoder_thread_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> decoder_thread_proxy_;
 
   int num_frames_at_client_;
   int num_stream_bufs_at_decoder_;
