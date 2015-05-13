@@ -549,7 +549,7 @@ hooks = [
     'action': [
         'python',
         'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
-        '--linux-only'],
+        '--running-as-hook'],
   },
   {
     # Update the Windows toolchain if necessary.

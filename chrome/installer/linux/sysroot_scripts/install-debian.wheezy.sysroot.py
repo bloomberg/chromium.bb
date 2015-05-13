@@ -88,11 +88,8 @@ def DetectArch(gyp_defines):
 
 
 def main():
-  if options.linux_only:
-    # This argument is passed when run from the gclient hooks.
-    # In this case we return early on non-linux platforms.
-    if not sys.platform.startswith('linux'):
-      return 0
+  if options.running_as_hook and not sys.platform.startswith('linux'):
+    return 0
 
   gyp_defines = os.environ.get('GYP_DEFINES', '')
 
@@ -104,15 +101,15 @@ def main():
       print 'Unable to detect host architecture'
       return 1
 
-  if options.linux_only and target_arch != 'arm':
+  if options.running_as_hook and target_arch != 'arm':
     # When run from runhooks, only install the sysroot for an Official Chrome
     # Linux build, except on ARM where we always use a sysroot.
-    defined = ['branding=Chrome', 'buildtype=Official']
-    undefined = ['chromeos=1']
-    for option in defined:
+    skip_if_defined = ['branding=Chrome', 'buildtype=Official']
+    skip_if_undefined = ['chromeos=1']
+    for option in skip_if_defined:
       if option not in gyp_defines:
         return 0
-    for option in undefined:
+    for option in skip_if_undefined:
       if option in gyp_defines:
         return 0
 
@@ -173,9 +170,11 @@ def main():
 
 if __name__ == '__main__':
   parser = optparse.OptionParser('usage: %prog [OPTIONS]')
-  parser.add_option('--linux-only', action='store_true',
-                    default=False, help='Only install sysroot for official '
-                                        'Linux builds')
+  parser.add_option('--running-as-hook', action='store_true',
+                    default=False, help='Used when running from gclient hooks.'
+                                        ' In this mode the sysroot will only '
+                                        'be installed for official Linux '
+                                        'builds or ARM Linux builds')
   parser.add_option('--arch', type='choice', choices=valid_archs,
                     help='Sysroot architecture: %s' % ', '.join(valid_archs))
   options, _ = parser.parse_args()
