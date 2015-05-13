@@ -60,6 +60,10 @@ typedef std::vector<KeyIdAndKeyPair> KeyIdAndKeyPairs;
 MEDIA_EXPORT std::string GenerateJWKSet(const uint8* key, int key_length,
                                         const uint8* key_id, int key_id_length);
 
+// Converts a set of |key|, |key_id| pairs to a JSON Web Key Set.
+MEDIA_EXPORT std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
+                                        MediaKeys::SessionType session_type);
+
 // Extracts the JSON Web Keys from a JSON Web Key Set. If |input| looks like
 // a valid JWK Set, then true is returned and |keys| and |session_type| are
 // updated to contain the values found. Otherwise return false.

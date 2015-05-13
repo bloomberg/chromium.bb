@@ -71,6 +71,14 @@ class JSONWebKeyTest : public testing::Test {
                                   expected_key + expected_key_length);
     EXPECT_EQ(key_result, key);
   }
+
+  KeyIdAndKeyPair MakeKeyIdAndKeyPair(const uint8* key,
+                                      int key_length,
+                                      const uint8* key_id,
+                                      int key_id_length) {
+    return std::make_pair(std::string(key_id, key_id + key_id_length),
+                          std::string(key, key + key_length));
+  }
 };
 
 TEST_F(JSONWebKeyTest, GenerateJWKSet) {
@@ -92,6 +100,29 @@ TEST_F(JSONWebKeyTest, GenerateJWKSet) {
       "{\"keys\":[{\"k\":\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kid\":"
       "\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kty\":\"oct\"}]}",
       GenerateJWKSet(data3, arraysize(data3), data3, arraysize(data3)));
+
+  KeyIdAndKeyPairs keys;
+  keys.push_back(
+      MakeKeyIdAndKeyPair(data1, arraysize(data1), data1, arraysize(data1)));
+  EXPECT_EQ(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "\"temporary\"}",
+      GenerateJWKSet(keys, MediaKeys::TEMPORARY_SESSION));
+  keys.push_back(
+      MakeKeyIdAndKeyPair(data2, arraysize(data2), data2, arraysize(data2)));
+  EXPECT_EQ(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"},{\"k\":"
+      "\"AQIDBA\",\"kid\":\"AQIDBA\",\"kty\":\"oct\"}],\"type\":\"persistent-"
+      "license\"}",
+      GenerateJWKSet(keys, MediaKeys::PERSISTENT_LICENSE_SESSION));
+  keys.push_back(
+      MakeKeyIdAndKeyPair(data3, arraysize(data3), data3, arraysize(data3)));
+  EXPECT_EQ(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"},{\"k\":"
+      "\"AQIDBA\",\"kid\":\"AQIDBA\",\"kty\":\"oct\"},{\"k\":"
+      "\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kid\":\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kty\":"
+      "\"oct\"}],\"type\":\"persistent-release-message\"}",
+      GenerateJWKSet(keys, MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION));
 }
 
 TEST_F(JSONWebKeyTest, ExtractValidJWKKeys) {

@@ -22,6 +22,7 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
+#include "media/cdm/key_system_names.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaKeyInformation.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -148,6 +149,67 @@ static bool SanitizeInitData(EmeInitDataType init_data_type,
   return false;
 }
 
+static bool SanitizeSessionId(const blink::WebString& session_id,
+                              std::string* sanitized_session_id) {
+  // The user agent should thoroughly validate the sessionId value before
+  // passing it to the CDM. At a minimum, this should include checking that
+  // the length and value (e.g. alphanumeric) are reasonable.
+  if (!base::IsStringASCII(session_id))
+    return false;
+
+  sanitized_session_id->assign(base::UTF16ToASCII(session_id));
+  if (sanitized_session_id->length() > limits::kMaxSessionIdLength)
+    return false;
+
+  for (const char c : *sanitized_session_id) {
+    if (!IsAsciiAlpha(c) && !IsAsciiDigit(c))
+      return false;
+  }
+
+  return true;
+}
+
+static bool SanitizeResponse(const std::string& key_system,
+                             const uint8* response,
+                             size_t response_length,
+                             std::vector<uint8>* sanitized_response) {
+  // The user agent should thoroughly validate the response before passing it
+  // to the CDM. This may include verifying values are within reasonable limits,
+  // stripping irrelevant data or fields, pre-parsing it, sanitizing it,
+  // and/or generating a fully sanitized version. The user agent should check
+  // that the length and values of fields are reasonable. Unknown fields should
+  // be rejected or removed.
+  if (response_length > limits::kMaxSessionResponseLength)
+    return false;
+
+  if (IsClearKey(key_system) || IsExternalClearKey(key_system)) {
+    std::string key_string(response, response + response_length);
+    KeyIdAndKeyPairs keys;
+    MediaKeys::SessionType session_type = MediaKeys::TEMPORARY_SESSION;
+    if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type))
+      return false;
+
+    // Must contain at least one key.
+    if (keys.empty())
+      return false;
+
+    for (const auto key_pair : keys) {
+      if (key_pair.first.size() < limits::kMinKeyIdLength ||
+          key_pair.first.size() > limits::kMaxKeyIdLength) {
+        return false;
+      }
+    }
+
+    std::string sanitized_data = GenerateJWKSet(keys, session_type);
+    sanitized_response->assign(sanitized_data.begin(), sanitized_data.end());
+    return true;
+  }
+
+  // TODO(jrummell): Verify responses for Widevine.
+  sanitized_response->assign(response, response + response_length);
+  return true;
+}
+
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter), is_closed_(false), weak_ptr_factory_(this) {
@@ -240,11 +302,19 @@ void WebContentDecryptionModuleSessionImpl::load(
   DCHECK(!session_id.isEmpty());
   DCHECK(session_id_.empty());
 
+  std::string sanitized_session_id;
+  if (!SanitizeSessionId(session_id, &sanitized_session_id)) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionInvalidAccessError, 0,
+        "Invalid session ID.");
+    return;
+  }
+
   // TODO(jrummell): Now that there are 2 types of persistent sessions, the
   // session type should be passed from blink. Type should also be passed in the
   // constructor (and removed from initializeNewSession()).
   adapter_->LoadSession(
-      MediaKeys::PERSISTENT_LICENSE_SESSION, base::UTF16ToASCII(session_id),
+      MediaKeys::PERSISTENT_LICENSE_SESSION, sanitized_session_id,
       scoped_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix() + kLoadSessionUMAName,
           base::Bind(
@@ -258,8 +328,18 @@ void WebContentDecryptionModuleSessionImpl::update(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
   DCHECK(!session_id_.empty());
+
+  std::vector<uint8> sanitized_response;
+  if (!SanitizeResponse(adapter_->GetKeySystem(), response, response_length,
+                        &sanitized_response)) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionInvalidAccessError, 0,
+        "Invalid response.");
+    return;
+  }
+
   adapter_->UpdateSession(
-      session_id_, std::vector<uint8>(response, response + response_length),
+      session_id_, sanitized_response,
       scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
           result, adapter_->GetKeySystemUMAPrefix() + kUpdateSessionUMAName)));
 }
