@@ -699,8 +699,6 @@ void PepperPluginInstanceImpl::Delete() {
     fullscreen_container_ = NULL;
   }
 
-  throttler_.reset();
-
   // Force-unbind any Graphics. In the case of Graphics2D, if the plugin
   // leaks the graphics 2D, it may actually get cleaned up after our
   // destruction, so we need its pointers to be up-to-date.
