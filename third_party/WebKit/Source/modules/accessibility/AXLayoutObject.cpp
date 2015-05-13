@@ -1363,8 +1363,13 @@ String AXLayoutObject::deprecatedTextUnderElement(TextUnderElementMode mode) con
     if (m_layoutObject->isFileUploadControl())
         return toLayoutFileUploadControl(m_layoutObject)->buttonValue();
 
-    if (m_layoutObject->isText())
-        return toLayoutText(m_layoutObject)->plainText();
+    if (m_layoutObject->isText()) {
+        LayoutText* layoutText = toLayoutText(m_layoutObject);
+        String result = layoutText->plainText();
+        if (!result.isEmpty() || layoutText->isAllCollapsibleWhitespace())
+            return result;
+        return layoutText->text();
+    }
 
     return AXNodeObject::deprecatedTextUnderElement(mode);
 }
