@@ -10514,7 +10514,7 @@ Dead Jim feedback.
           Turn off Smart Lock?
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_DESCRIPTION" desc="The description text of the Easy unlock turn off dialog.">
-          If you turn off Smart Lock for Chrome, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.
+          If you turn off Smart Lock for Chromebook, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE" desc="The title text on the Easy unlock turn off dialog when Easy unlock could not be turned off because the device is offline.">
           Please connect to a network
@@ -15367,7 +15367,7 @@ After you create a new supervised user, you can manage their settings at any tim
       <!-- Easy Unlock strings -->
       <!-- Strings for the Easy Unlock promo notification -->
       <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
-        Smart Lock for Chrome
+        Smart Lock for Chromebook
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
         Tired of typing passwords? Use your phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>—no password needed.
@@ -15535,7 +15535,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Your phone is locked. Unlock it to enter.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_UNLOCKABLE" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it does not have lock screen enabled, in which case it is not allowed to unlock Chromebooks.">
-        To keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> safe, Smart Lock for Chrome requires a screen lock on your phone.
+        To keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> safe, Smart Lock for Chromebook requires a screen lock on your phone.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's not in the Chromebook's proximity (> 30 feet away).">
         Can’t find your phone. Make sure it’s within arm’s reach.
@@ -15568,7 +15568,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Smart Lock couldn’t verify your account. Type your password to enter.
       </message>
       <message name="IDS_SMART_LOCK_SCREENLOCK_TOOLTIP_HARDLOCK_REAUTH_USER" desc="Tooltip text shown on a user's lock screen pod to reauthenticate the user before setting up Smart Lock. A password has to be entered to unlock the device.">
-        To set up Smart Lock for Chrome, Google needs to make sure it’s you—type your password to get started.
+        To set up Smart Lock for Chromebook, Google needs to make sure it’s you—type your password to get started.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_USER_POD_AUTH_VALUE" desc="Message on lock screen user pod shown in place of password field when Easy Unlock is enabled and a phone that can unlock the Chromebook is detected in proximity.">
         Click your photo

@@ -6943,7 +6943,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Upon a successful Smart Lock unlock or signin, records whether the user's
     phone was locked during any point while the lock screen was up. This can be
-    used to get a sense for whether users are using Smart Lock for Chrome
+    used to get a sense for whether users are using Smart Lock for Chromebook
     without something like Smart Lock for Android to keep their phones unlocked.
   </summary>
 </histogram>
