@@ -427,7 +427,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // GpuChannelHostFactory implementation:
   bool IsMainThread() override;
-  scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
   CreateCommandBufferResult CreateViewCommandBuffer(
       int32 surface_id,
@@ -545,7 +545,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Cache of variables that are needed on the compositor thread by
   // GpuChannelHostFactory methods.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   // The message loop of the renderer main thread.
   // This message loop should be destructed before the RenderThreadImpl

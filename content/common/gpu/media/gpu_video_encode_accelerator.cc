@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
@@ -280,8 +279,9 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
           buffer_offset,
           base::TimeDelta(),
           // It's turtles all the way down...
-          base::Bind(base::IgnoreResult(&base::MessageLoopProxy::PostTask),
-                     base::MessageLoopProxy::current(),
+          base::Bind(base::IgnoreResult(
+                         &base::SingleThreadTaskRunner::PostTask),
+                     base::ThreadTaskRunnerHandle::Get(),
                      FROM_HERE,
                      base::Bind(&GpuVideoEncodeAccelerator::EncodeFrameFinished,
                                 weak_this_factory_.GetWeakPtr(),

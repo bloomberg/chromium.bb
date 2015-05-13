@@ -38,7 +38,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
       EGLContext egl_context,
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~V4L2SliceVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -274,11 +274,11 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   size_t input_planes_count_;
   size_t output_planes_count_;
 
-  // GPU Child thread message loop.
-  const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
+  // GPU Child thread task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
-  // IO thread message loop.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  // IO thread task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder or
   // device worker threads back to the child thread.
@@ -286,11 +286,11 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
-  // child_message_loop_proxy_.
+  // child_task_runner_.
   scoped_ptr<base::WeakPtrFactory<VideoDecodeAccelerator::Client>>
       client_ptr_factory_;
   base::WeakPtr<VideoDecodeAccelerator::Client> client_;
-  // Callbacks to |io_client_| must be executed on |io_message_loop_proxy_|.
+  // Callbacks to |io_client_| must be executed on |io_task_runner_|.
   base::WeakPtr<Client> io_client_;
 
   // V4L2 device in use.
@@ -298,7 +298,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Thread to communicate with the device on.
   base::Thread decoder_thread_;
-  scoped_refptr<base::MessageLoopProxy> decoder_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> decoder_thread_task_runner_;
 
   // Thread used to poll the device for events.
   base::Thread device_poll_thread_;

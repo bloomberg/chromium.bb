@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -127,13 +129,13 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     int32 host_route_id,
     GpuCommandBufferStub* stub,
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : host_route_id_(host_route_id),
       stub_(stub),
       texture_target_(0),
       filter_removed_(true, false),
-      child_message_loop_(base::MessageLoopProxy::current()),
-      io_message_loop_(io_message_loop),
+      child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_task_runner_(io_task_runner),
       weak_factory_for_io_(this) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
@@ -205,10 +207,10 @@ void GpuVideoDecodeAccelerator::PictureReady(
   // VDA may call PictureReady on IO thread. SetTextureCleared should run on
   // the child thread. VDA is responsible to call PictureReady on the child
   // thread when a picture buffer is delivered the first time.
-  if (child_message_loop_->BelongsToCurrentThread()) {
+  if (child_task_runner_->BelongsToCurrentThread()) {
     SetTextureCleared(picture);
   } else {
-    DCHECK(io_message_loop_->BelongsToCurrentThread());
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
     DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
     DCHECK_EQ(0u, uncleared_textures_.count(picture.picture_buffer_id()));
   }
@@ -425,10 +427,10 @@ void GpuVideoDecodeAccelerator::OnDecode(
   DCHECK(video_decode_accelerator_.get());
   if (id < 0) {
     DLOG(ERROR) << "BitstreamBuffer id " << id << " out of range";
-    if (child_message_loop_->BelongsToCurrentThread()) {
+    if (child_task_runner_->BelongsToCurrentThread()) {
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
     } else {
-      child_message_loop_->PostTask(
+      child_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&GpuVideoDecodeAccelerator::NotifyError,
                      base::Unretained(this),
@@ -588,7 +590,7 @@ void GpuVideoDecodeAccelerator::OnWillDestroyStub() {
 
 void GpuVideoDecodeAccelerator::SetTextureCleared(
     const media::Picture& picture) {
-  DCHECK(child_message_loop_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
   std::map<int32, scoped_refptr<gpu::gles2::TextureRef> >::iterator it;
   it = uncleared_textures_.find(picture.picture_buffer_id());
@@ -605,9 +607,9 @@ void GpuVideoDecodeAccelerator::SetTextureCleared(
 }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
-  if (filter_.get() && io_message_loop_->BelongsToCurrentThread())
+  if (filter_.get() && io_task_runner_->BelongsToCurrentThread())
     return filter_->SendOnIOThread(message);
-  DCHECK(child_message_loop_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   return stub_->channel()->Send(message);
 }
 

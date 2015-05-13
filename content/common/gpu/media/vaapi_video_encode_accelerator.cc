@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/common/gpu/media/h264_dpb.h"
@@ -133,7 +132,7 @@ VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
       cpb_size_(0),
       encoding_parameters_changed_(false),
       encoder_thread_("VAVEAEncoderThread"),
-      child_message_loop_proxy_(base::MessageLoopProxy::current()),
+      child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_this_ptr_factory_(this) {
   DVLOGF(4);
   weak_this_ = weak_this_ptr_factory_.GetWeakPtr();
@@ -147,7 +146,7 @@ VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
 
 VaapiVideoEncodeAccelerator::~VaapiVideoEncodeAccelerator() {
   DVLOGF(4);
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!encoder_thread_.IsRunning());
 }
 
@@ -157,7 +156,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,
     Client* client) {
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!encoder_thread_.IsRunning());
   DCHECK_EQ(state_, kUninitialized);
 
@@ -207,19 +206,18 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     LOG(ERROR) << "Failed to start encoder thread";
     return false;
   }
-  encoder_thread_proxy_ = encoder_thread_.message_loop_proxy();
+  encoder_thread_task_runner_ = encoder_thread_.task_runner();
 
   // Finish the remaining initialization on the encoder thread.
-  encoder_thread_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&VaapiVideoEncodeAccelerator::InitializeTask,
-                 base::Unretained(this)));
+  encoder_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VaapiVideoEncodeAccelerator::InitializeTask,
+                            base::Unretained(this)));
 
   return true;
 }
 
 void VaapiVideoEncodeAccelerator::InitializeTask() {
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized);
   DVLOGF(4);
 
@@ -239,13 +237,10 @@ void VaapiVideoEncodeAccelerator::InitializeTask() {
   UpdatePPS();
   GeneratePackedPPS();
 
-  child_message_loop_proxy_->PostTask(
+  child_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::RequireBitstreamBuffers,
-                 client_,
-                 kNumInputBuffers,
-                 coded_size_,
-                 output_buffer_byte_size_));
+      base::Bind(&Client::RequireBitstreamBuffers, client_, kNumInputBuffers,
+                 coded_size_, output_buffer_byte_size_));
 
   SetState(kEncoding);
 }
@@ -253,7 +248,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask() {
 void VaapiVideoEncodeAccelerator::RecycleVASurfaceID(
     VASurfaceID va_surface_id) {
   DVLOGF(4) << "va_surface_id: " << va_surface_id;
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   available_va_surface_ids_.push_back(va_surface_id);
   EncodeFrameTask();
@@ -525,7 +520,7 @@ bool VaapiVideoEncodeAccelerator::UploadFrame(
 }
 
 void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffer() {
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (state_ != kEncoding)
     return;
@@ -556,12 +551,9 @@ void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffer() {
             << (encode_job->keyframe ? "(keyframe)" : "")
             << " id: " << buffer->id << " size: " << data_size;
 
-  child_message_loop_proxy_->PostTask(FROM_HERE,
-                                      base::Bind(&Client::BitstreamBufferReady,
-                                                 client_,
-                                                 buffer->id,
-                                                 data_size,
-                                                 encode_job->keyframe));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_, buffer->id,
+                            data_size, encode_job->keyframe));
 }
 
 void VaapiVideoEncodeAccelerator::Encode(
@@ -569,14 +561,11 @@ void VaapiVideoEncodeAccelerator::Encode(
     bool force_keyframe) {
   DVLOGF(3) << "Frame timestamp: " << frame->timestamp().InMilliseconds()
             << " force_keyframe: " << force_keyframe;
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  encoder_thread_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&VaapiVideoEncodeAccelerator::EncodeTask,
-                 base::Unretained(this),
-                 frame,
-                 force_keyframe));
+  encoder_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VaapiVideoEncodeAccelerator::EncodeTask,
+                            base::Unretained(this), frame, force_keyframe));
 }
 
 bool VaapiVideoEncodeAccelerator::PrepareNextJob() {
@@ -611,7 +600,7 @@ bool VaapiVideoEncodeAccelerator::PrepareNextJob() {
 void VaapiVideoEncodeAccelerator::EncodeTask(
     const scoped_refptr<media::VideoFrame>& frame,
     bool force_keyframe) {
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
   encoder_input_queue_.push(
@@ -620,7 +609,7 @@ void VaapiVideoEncodeAccelerator::EncodeTask(
 }
 
 void VaapiVideoEncodeAccelerator::EncodeFrameTask() {
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (state_ != kEncoding || encoder_input_queue_.empty())
     return;
@@ -663,7 +652,7 @@ void VaapiVideoEncodeAccelerator::EncodeFrameTask() {
 void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     const media::BitstreamBuffer& buffer) {
   DVLOGF(4) << "id: " << buffer.id();
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (buffer.size() < output_buffer_byte_size_) {
     NOTIFY_ERROR(kInvalidArgumentError, "Provided bitstream buffer too small");
@@ -680,16 +669,15 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
   scoped_ptr<BitstreamBufferRef> buffer_ref(
       new BitstreamBufferRef(buffer.id(), shm.Pass(), buffer.size()));
 
-  encoder_thread_proxy_->PostTask(
+  encoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
-                 base::Unretained(this),
-                 base::Passed(&buffer_ref)));
+                 base::Unretained(this), base::Passed(&buffer_ref)));
 }
 
 void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
     scoped_ptr<BitstreamBufferRef> buffer_ref) {
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
   available_bitstream_buffers_.push(make_linked_ptr(buffer_ref.release()));
@@ -700,21 +688,19 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32 bitrate,
     uint32 framerate) {
   DVLOGF(2) << "bitrate: " << bitrate << " framerate: " << framerate;
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  encoder_thread_proxy_->PostTask(
+  encoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
           &VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask,
-          base::Unretained(this),
-          bitrate,
-          framerate));
+          base::Unretained(this), bitrate, framerate));
 }
 
 void VaapiVideoEncodeAccelerator::UpdateRates(uint32 bitrate,
                                               uint32 framerate) {
   if (encoder_thread_.IsRunning())
-    DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+    DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(bitrate, 0u);
   DCHECK_NE(framerate, 0u);
   bitrate_ = bitrate;
@@ -726,7 +712,7 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     uint32 bitrate,
     uint32 framerate) {
   DVLOGF(2) << "bitrate: " << bitrate << " framerate: " << framerate;
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
   // This is a workaround to zero being temporarily, as part of the initial
@@ -752,7 +738,7 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
 }
 
 void VaapiVideoEncodeAccelerator::Destroy() {
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   // Can't call client anymore after Destroy() returns.
   client_ptr_factory_.reset();
@@ -772,7 +758,7 @@ void VaapiVideoEncodeAccelerator::Destroy() {
 
 void VaapiVideoEncodeAccelerator::DestroyTask() {
   DVLOGF(2);
-  DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   SetState(kError);
 }
 
@@ -1036,12 +1022,10 @@ void VaapiVideoEncodeAccelerator::GeneratePackedPPS() {
 void VaapiVideoEncodeAccelerator::SetState(State state) {
   // Only touch state on encoder thread, unless it's not running.
   if (encoder_thread_.IsRunning() &&
-      !encoder_thread_proxy_->BelongsToCurrentThread()) {
-    encoder_thread_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&VaapiVideoEncodeAccelerator::SetState,
-                   base::Unretained(this),
-                   state));
+      !encoder_thread_task_runner_->BelongsToCurrentThread()) {
+    encoder_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VaapiVideoEncodeAccelerator::SetState,
+                              base::Unretained(this), state));
     return;
   }
 
@@ -1050,11 +1034,10 @@ void VaapiVideoEncodeAccelerator::SetState(State state) {
 }
 
 void VaapiVideoEncodeAccelerator::NotifyError(Error error) {
-  if (!child_message_loop_proxy_->BelongsToCurrentThread()) {
-    child_message_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &VaapiVideoEncodeAccelerator::NotifyError, weak_this_, error));
+  if (!child_task_runner_->BelongsToCurrentThread()) {
+    child_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VaapiVideoEncodeAccelerator::NotifyError,
+                              weak_this_, error));
     return;
   }
 

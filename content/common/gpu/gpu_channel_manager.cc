@@ -6,6 +6,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
@@ -85,12 +88,13 @@ gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType() {
 
 }  // namespace
 
-GpuChannelManager::GpuChannelManager(MessageRouter* router,
-                                     GpuWatchdog* watchdog,
-                                     base::MessageLoopProxy* io_message_loop,
-                                     base::WaitableEvent* shutdown_event,
-                                     IPC::SyncChannel* channel)
-    : io_message_loop_(io_message_loop),
+GpuChannelManager::GpuChannelManager(
+    MessageRouter* router,
+    GpuWatchdog* watchdog,
+    base::SingleThreadTaskRunner* io_task_runner,
+    base::WaitableEvent* shutdown_event,
+    IPC::SyncChannel* channel)
+    : io_task_runner_(io_task_runner),
       shutdown_event_(shutdown_event),
       router_(router),
       gpu_memory_manager_(
@@ -106,7 +110,7 @@ GpuChannelManager::GpuChannelManager(MessageRouter* router,
       relinquish_resources_pending_(false),
       weak_factory_(this) {
   DCHECK(router_);
-  DCHECK(io_message_loop);
+  DCHECK(io_task_runner);
   DCHECK(shutdown_event);
   channel_->AddFilter(filter_.get());
 }
@@ -206,7 +210,7 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
                                                 client_id,
                                                 false,
                                                 allow_future_sync_points));
-  channel->Init(io_message_loop_.get(), shutdown_event_);
+  channel->Init(io_task_runner_.get(), shutdown_event_);
   channel_handle.name = channel->GetChannelName();
 
 #if defined(OS_POSIX)
@@ -255,12 +259,9 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
 void GpuChannelManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuChannelManager::DestroyGpuMemoryBufferOnIO,
-                 base::Unretained(this),
-                 id,
-                 client_id));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuChannelManager::DestroyGpuMemoryBufferOnIO,
+                            base::Unretained(this), id, client_id));
 }
 
 void GpuChannelManager::DestroyGpuMemoryBufferOnIO(
@@ -324,10 +325,9 @@ void GpuChannelManager::LoseAllContexts() {
        iter != gpu_channels_.end(); ++iter) {
     iter->second->MarkAllContextsLost();
   }
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuChannelManager::OnLoseAllContexts,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&GpuChannelManager::OnLoseAllContexts,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void GpuChannelManager::OnLoseAllContexts() {

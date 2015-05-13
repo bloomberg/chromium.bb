@@ -345,7 +345,7 @@ base::TaskRunner* GinJavaBridgeDispatcherHost::OverrideTaskRunnerForMessage(
   {
     base::AutoLock locker(objects_lock_);
     if (objects_.find(object_id) != objects_.end()) {
-        return g_background_thread.Get().message_loop()->task_runner().get();
+      return g_background_thread.Get().message_loop()->task_runner().get();
     }
   }
   return NULL;

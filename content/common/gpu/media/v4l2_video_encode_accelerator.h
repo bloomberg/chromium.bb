@@ -18,12 +18,6 @@
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-
-class MessageLoopProxy;
-
-}  // namespace base
-
 namespace media {
 
 class BitstreamBuffer;
@@ -192,8 +186,8 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Set controls in |ctrls| and return true if successful.
   bool SetExtCtrls(std::vector<struct v4l2_ext_control> ctrls);
 
-  // Our original calling message loop for the child thread.
-  const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
+  // Our original calling task runner for the child thread.
+  const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
   gfx::Size visible_size_;
   // Input allocated size required by the device.
@@ -262,7 +256,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
-  // child_message_loop_proxy_.
+  // child_task_runner_.
   base::WeakPtr<Client> client_;
   scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
 

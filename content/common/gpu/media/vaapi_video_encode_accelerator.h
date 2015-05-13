@@ -235,13 +235,13 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
 
   // Encoder thread. All tasks are executed on it.
   base::Thread encoder_thread_;
-  scoped_refptr<base::MessageLoopProxy> encoder_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> encoder_thread_task_runner_;
 
-  const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
-  // child_message_loop_proxy_.
+  // child_task_runner_.
   scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
