@@ -4841,6 +4841,9 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode [US Dvorak keyboard].">
     US Dvorak
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA_DVP" desc="In the language menu button, this shows the input mode [US Programmer Dvorak keyboard].">
+    US Programmer Dvorak
+  </message>
   <message name="IDS_STATUSBAR_LAYOUT_USA_COLEMAK" desc="In the language menu button, this shows the input mode [US Colemak keyboard].">
     US Colemak
   </message>
@@ -5126,6 +5129,9 @@ Battery full
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_US_DVORAK" desc="The input method name shows in system tray menu, this shows [US Dvorak keyboard].">
     US Dvorak keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US_DVP" desc="The input method name shows in system tray menu, this shows [US Programmer Dvorak keyboard].">
+    US Programmer Dvorak keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_US_EXTENDED" desc="The input method name shows in system tray menu, this shows [US Extended keyboard].">
     US Extended keyboard

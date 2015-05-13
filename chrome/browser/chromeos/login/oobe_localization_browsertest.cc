@@ -93,7 +93,7 @@ struct LocalizationTestParams {
        "en-US",
        "xkb:is::ice",
        "xkb:is::ice,[xkb:us::eng,xkb:us:intl:eng,xkb:us:altgr-intl:eng,"
-           "xkb:us:dvorak:eng,xkb:us:colemak:eng]"},
+           "xkb:us:dvorak:eng,xkb:us:dvp:eng,xkb:us:colemak:eng]"},
       // ------------------ Full Latin setup
       // French Swiss keyboard.
       {"fr",

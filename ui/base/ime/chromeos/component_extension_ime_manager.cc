@@ -56,6 +56,7 @@ const char* kLoginLayoutWhitelist[] = {
   "us(altgr-intl)",
   "us(colemak)",
   "us(dvorak)",
+  "us(dvp)",
   "us(intl)"
 };
 
