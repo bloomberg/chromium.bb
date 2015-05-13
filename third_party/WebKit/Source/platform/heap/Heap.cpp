@@ -2266,6 +2266,7 @@ const char* Heap::gcReasonString(GCReason reason)
 void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType, GCReason reason)
 {
     ThreadState* state = ThreadState::current();
+    RELEASE_ASSERT(!state->isInGC());
     ThreadState::GCState originalGCState = state->gcState();
     state->setGCState(ThreadState::StoppingOtherThreads);
 
