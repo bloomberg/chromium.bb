@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
@@ -168,8 +169,18 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         view.setOnClickListener(this);
         view.setTag(position);
 
+        // TODO(finnur): There's a tinting bug in the AppCompat lib (see http://crbug.com/474695),
+        // which causes the first radiobox to always appear selected, even if it is not. It is being
+        // addressed, but in the meantime we should use the native RadioButton instead.
         RadioButton radioButton = (RadioButton) view.findViewById(R.id.radiobutton);
+        // On Lollipop this removes the redundant animation ring on selection but on older versions
+        // it would cause the radio button to disappear.
+        // TODO(finnur): Remove the encompassing if statement once we go back to using the AppCompat
+        // control.
         boolean selected = position == mSelectedSearchEnginePosition;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            radioButton.setBackgroundResource(0);
+        }
         radioButton.setChecked(selected);
 
         TextView description = (TextView) view.findViewById(R.id.description);

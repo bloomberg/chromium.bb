@@ -12,13 +12,12 @@
     android:paddingTop="6dp"
     android:paddingBottom="6dp">
 
-    <RadioButton
+    <android.widget.RadioButton
         android:id="@+id/radiobutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="21dp"
         android:layout_marginEnd="16dp"
-        android:background="@null"
         android:clickable="false" />
 
     <LinearLayout
