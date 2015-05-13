@@ -164,31 +164,21 @@ gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
   gfx::Rect native_bounds = host->GetBounds();
   native_bounds.Inset(ash_host->GetHostInsets());
-
-  bool vertical = bounds_in_screen.width() < bounds_in_screen.height();
-  gfx::Point start_in_native;
-  gfx::Point end_in_native;
-
-  if (vertical) {
-    start_in_native = bounds_in_screen.origin();
-    end_in_native = start_in_native;
-    end_in_native.set_y(bounds_in_screen.bottom());
-  } else {
-    start_in_native = bounds_in_screen.origin();
-    end_in_native = start_in_native;
-    end_in_native.set_x(bounds_in_screen.right());
-  }
+  gfx::Point start_in_native = bounds_in_screen.origin();
+  gfx::Point end_in_native = bounds_in_screen.bottom_right();
 
   ConvertPointFromScreenToNative(host, &start_in_native);
   ConvertPointFromScreenToNative(host, &end_in_native);
-  if (vertical) {
+
+  if (std::abs(start_in_native.x() - end_in_native.x()) <
+      std::abs(start_in_native.y() - end_in_native.y())) {
     // vertical in native
     int x = std::abs(native_bounds.x() - start_in_native.x()) <
                     std::abs(native_bounds.right() - start_in_native.x())
                 ? native_bounds.x()
                 : native_bounds.right() - 1;
     return gfx::Rect(x, std::min(start_in_native.y(), end_in_native.y()), 1,
-                     end_in_native.y() - start_in_native.y());
+                     std::abs(end_in_native.y() - start_in_native.y()));
   } else {
     // horizontal in native
     int y = std::abs(native_bounds.y() - start_in_native.y()) <
@@ -196,7 +186,7 @@ gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
                 ? native_bounds.y()
                 : native_bounds.bottom() - 1;
     return gfx::Rect(std::min(start_in_native.x(), end_in_native.x()), y,
-                     end_in_native.x() - start_in_native.x(), 1);
+                     std::abs(end_in_native.x() - start_in_native.x()), 1);
   }
 }
 

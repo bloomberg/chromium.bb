@@ -780,6 +780,7 @@
       'display/display_error_observer_chromeos_unittest.cc',
       'display/display_info_unittest.cc',
       'display/display_manager_unittest.cc',
+      'display/display_util_unittest.cc',
       'display/extended_mouse_warp_controller_unittest.cc',
       'display/mirror_window_controller_unittest.cc',
       'display/mouse_cursor_event_filter_unittest.cc',

@@ -42,8 +42,8 @@ void ComputeBoundary(const gfx::Display& primary_display,
 
 // Creates edge bounds from |bounds_in_screen| that fits the edge
 // of the native window for |ash_host|.
-gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
-                              const gfx::Rect& bounds_in_screen);
+ASH_EXPORT gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
+                                         const gfx::Rect& bounds_in_screen);
 
 // Moves the cursor to the point inside the |ash_host| that is closest to
 // the point_in_screen, which may be outside of the root window.
