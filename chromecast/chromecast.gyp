@@ -38,6 +38,7 @@
       'sources': [
         'public/cast_egl_platform.h',
         'public/cast_egl_platform_shlib.h',
+        'public/cast_media_shlib.h',
         'public/cast_sys_info.h',
         'public/chromecast_export.h',
         'public/graphics_properties_shlib.h',

@@ -33,6 +33,7 @@
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/net/connectivity_checker.h"
+#include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/cast_sys_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -286,10 +287,10 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetPrefService(
       PrefServiceHelper::CreatePrefService(pref_registry.get()));
 
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
   ::media::SetMediaClientAndroid(new media::CastMediaClientAndroid());
 #else
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
     ::media::SetBrowserCdmFactory(new media::CastBrowserCdmFactory());
 #endif  // defined(OS_ANDROID)
@@ -314,6 +315,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   cast_browser_process_->SetRemoteDebuggingServer(
       make_scoped_ptr(new RemoteDebuggingServer()));
+
+  media::CastMediaShlib::Initialize(cmd_line->argv());
 
   cast_browser_process_->SetCastService(CastService::Create(
       cast_browser_process_->browser_context(),
@@ -372,6 +375,8 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_browser_process_.reset();
   DeregisterKillOnAlarm();
 #endif
+
+  media::CastMediaShlib::Finalize();
 }
 
 }  // namespace shell
