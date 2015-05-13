@@ -67,23 +67,33 @@ gfx::Size GetDrmModeSize(const drmModeModeInfo& mode) {
   return gfx::Size(mode.hdisplay, mode.vdisplay);
 }
 
+std::vector<drmModeModeInfo> GetDrmModeVector(drmModeConnector* connector) {
+  std::vector<drmModeModeInfo> modes;
+  for (int i = 0; i < connector->count_modes; ++i)
+    modes.push_back(connector->modes[i]);
+
+  return modes;
+}
+
 }  // namespace
 
 DrmDisplay::DrmDisplay(ScreenManager* screen_manager,
-                       int64_t display_id,
-                       const scoped_refptr<DrmDevice>& drm,
-                       uint32_t crtc,
-                       uint32_t connector,
-                       const std::vector<drmModeModeInfo>& modes)
-    : screen_manager_(screen_manager),
-      display_id_(display_id),
-      drm_(drm),
-      crtc_(crtc),
-      connector_(connector),
-      modes_(modes) {
+                       const scoped_refptr<DrmDevice>& drm)
+    : screen_manager_(screen_manager), display_id_(-1), drm_(drm) {
 }
 
 DrmDisplay::~DrmDisplay() {
+}
+
+DisplaySnapshot_Params DrmDisplay::Update(HardwareDisplayControllerInfo* info,
+                                          size_t display_index) {
+  DisplaySnapshot_Params params =
+      CreateDisplaySnapshotParams(info, drm_->get_fd(), display_index, origin_);
+  crtc_ = info->crtc()->crtc_id;
+  connector_ = info->connector()->connector_id;
+  display_id_ = params.display_id;
+  modes_ = GetDrmModeVector(info->connector());
+  return params;
 }
 
 bool DrmDisplay::Configure(const drmModeModeInfo* mode,
@@ -108,6 +118,7 @@ bool DrmDisplay::Configure(const drmModeModeInfo* mode,
     }
   }
 
+  origin_ = origin;
   return true;
 }
 

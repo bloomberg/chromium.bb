@@ -55,14 +55,6 @@ bool FindMatchingMode(const std::vector<drmModeModeInfo> modes,
   return false;
 }
 
-std::vector<drmModeModeInfo> GetDrmModeVector(drmModeConnector* connector) {
-  std::vector<drmModeModeInfo> modes;
-  for (int i = 0; i < connector->count_modes; ++i)
-    modes.push_back(connector->modes[i]);
-
-  return modes;
-}
-
 }  // namespace
 
 DrmGpuDisplayManager::DrmGpuDisplayManager(ScreenManager* screen_manager,
@@ -84,15 +76,18 @@ std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
     ScopedVector<HardwareDisplayControllerInfo> display_infos =
         GetAvailableDisplayControllerInfos(drm->get_fd());
     for (auto* display_info : display_infos) {
-      DisplaySnapshot_Params params =
-          CreateDisplaySnapshotParams(display_info, drm->get_fd(), index++);
-      params_list.push_back(params);
+      auto it = std::find_if(
+          old_displays.begin(), old_displays.end(),
+          DisplayComparator(drm, display_info->crtc()->crtc_id,
+                            display_info->connector()->connector_id));
+      if (it != old_displays.end()) {
+        displays_.push_back(*it);
+        old_displays.weak_erase(it);
+      } else {
+        displays_.push_back(new DrmDisplay(screen_manager_, drm));
+      }
 
-      displays_.push_back(
-          new DrmDisplay(screen_manager_, params.display_id, drm,
-                         display_info->crtc()->crtc_id,
-                         display_info->connector()->connector_id,
-                         GetDrmModeVector(display_info->connector())));
+      params_list.push_back(displays_.back()->Update(display_info, index++));
     }
   }
 

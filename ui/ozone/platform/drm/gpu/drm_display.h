@@ -9,16 +9,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
-
-namespace gfx {
-class Point;
-}
 
 namespace ui {
 
 class DrmDevice;
+class HardwareDisplayControllerInfo;
 class ScreenManager;
 
 struct GammaRampRGBEntry;
@@ -26,11 +25,7 @@ struct GammaRampRGBEntry;
 class DrmDisplay {
  public:
   DrmDisplay(ScreenManager* screen_manager,
-             int64_t display_id,
-             const scoped_refptr<DrmDevice>& drm,
-             uint32_t crtc,
-             uint32_t connector,
-             const std::vector<drmModeModeInfo>& modes);
+             const scoped_refptr<DrmDevice>& drm);
   ~DrmDisplay();
 
   int64_t display_id() const { return display_id_; }
@@ -38,6 +33,9 @@ class DrmDisplay {
   uint32_t crtc() const { return crtc_; }
   uint32_t connector() const { return connector_; }
   const std::vector<drmModeModeInfo>& modes() const { return modes_; }
+
+  DisplaySnapshot_Params Update(HardwareDisplayControllerInfo* info,
+                                size_t display_index);
 
   bool Configure(const drmModeModeInfo* mode, const gfx::Point& origin);
   bool GetHDCPState(HDCPState* state);
@@ -52,6 +50,7 @@ class DrmDisplay {
   uint32_t crtc_;
   uint32_t connector_;
   std::vector<drmModeModeInfo> modes_;
+  gfx::Point origin_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDisplay);
 };

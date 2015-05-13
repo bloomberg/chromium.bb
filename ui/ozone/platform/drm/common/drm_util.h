@@ -13,6 +13,10 @@
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
 
 // Representation of the information required to initialize and configure a
@@ -49,7 +53,8 @@ DisplayMode_Params CreateDisplayModeParams(const drmModeModeInfo& mode);
 DisplaySnapshot_Params CreateDisplaySnapshotParams(
     HardwareDisplayControllerInfo* info,
     int fd,
-    size_t display_index);
+    size_t display_index,
+    const gfx::Point& origin);
 
 }  // namespace ui
 
