@@ -55,3 +55,6 @@ WebRtcBrowserTest.CanMakeAudioCallAndThenRenegotiateToVideo
 
 # https://crbug.com/480750
 *_ClearKey/EncryptedMediaTest.Playback_*
+
+# https://crbug.com/487501
+*_MediaTest.VideoBearSilentWebm_0
