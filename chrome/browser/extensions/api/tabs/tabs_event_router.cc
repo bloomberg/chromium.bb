@@ -396,7 +396,8 @@ void TabsEventRouter::TabUpdated(WebContents* contents, bool did_navigate) {
   TabEntry* entry = GetTabEntry(contents);
   scoped_ptr<base::DictionaryValue> changed_properties;
 
-  CHECK(entry);
+  if (!entry)
+    return;
 
   if (did_navigate)
     changed_properties.reset(entry->DidNavigate(contents));
