@@ -344,7 +344,6 @@
     'devtools': [ 'pfeldman+blink@chromium.org',
                   'aandrey+blink@chromium.org',
                   'apavlov+blink@chromium.org',
-                  'loislo+blink@chromium.org',
                   'lushnikov+blink@chromium.org',
                   'yurys+blink@chromium.org',
                   'caseq+blink@chromium.org',
