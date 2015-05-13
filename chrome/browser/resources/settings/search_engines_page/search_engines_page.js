@@ -17,134 +17,60 @@
  * @group Chrome Settings Elements
  * @element cr-settings-search-engines-page
  */
-Polymer('cr-settings-search-engines-page', {
-  publish: {
+Polymer({
+  is: 'cr-settings-search-engines-page',
+
+  properties: {
     /**
      * Preferences state.
-     *
-     * @attribute prefs
-     * @type {CrSettingsPrefsElement}
-     * @default null
+     * @type {?CrSettingsPrefsElement}
      */
-    prefs: null,
+    prefs: {
+      type: Object,
+      notify: true
+    },
 
     /**
      * Route for the page.
-     *
-     * @attribute route
-     * @type {string}
-     * @default ''
      */
-    route: '',
+    route: {
+      type: String,
+      value: ''
+    },
 
     /**
      * Whether the page is a subpage.
-     *
-     * @attribute subpage
-     * @type {boolean}
-     * @default true
      */
-    subpage: true,
+    subpage: {
+      type: Boolean,
+      value: true,
+      readOnly: true
+    },
 
     /**
      * ID of the page.
-     *
-     * @attribute PAGE_ID
-     * @const {string}
-     * @default 'search'
      */
-    PAGE_ID: 'search_engines',
+    PAGE_ID: {
+      type: String,
+      value: 'search_engines',
+      readOnly: true
+    },
 
     /**
      * Title for the page header and navigation menu.
-     *
-     * @attribute pageTitle
-     * @type {string}
      */
-    pageTitle: loadTimeData.getString('searchEnginesPageTitle'),
+    pageTitle: {
+      type: String,
+      value: loadTimeData.getString('searchEnginesPageTitle'),
+      readOnly: true
+    },
 
     /**
      * Name of the 'core-icon' to be shown in the settings-page-header.
-     *
-     * @attribute icon
-     * @type {string}
-     * @default 'search'
      */
-    icon: 'search',
-
-    /**
-     * List of default search engines available.
-     *
-     * @attribute defaultSearchEngines
-     * @type {Array<!SearchEngine>}
-     * @default null
-     */
-    defaultSearchEngines: null,
-
-    /**
-     * List of other search engines available.
-     *
-     * @attribute otherSearchEngines
-     * @type {Array<!SearchEngine>}
-     * @default null
-     */
-    otherSearchEngines: null,
-
-    /**
-     * GUID of the currently selected default search engine.
-     *
-     * @attribute defaultEngineGuid
-     * @type {string}
-     * @default ''
-     */
-    defaultEngineGuid: '',
-  },
-
-  /** @override */
-  created: function() {
-    this.searchEngines = [];
-  },
-
-  /** @override */
-  domReady: function() {
-    chrome.searchEnginesPrivate.onSearchEnginesChanged.addListener(
-        this.updateSearchEngines_.bind(this));
-    chrome.searchEnginesPrivate.getSearchEngines(
-        this.updateSearchEngines_.bind(this));
-  },
-
-  /**
-   * Persists the new default search engine back to Chrome. Called when the
-   * user selects a new default in the search engines dropdown.
-   */
-  defaultEngineGuidChanged: function() {
-    chrome.searchEnginesPrivate.setSelectedSearchEngine(this.defaultEngineGuid);
-  },
-
-
-  /**
-   * Updates the lists of search engines based on the given |engines|.
-   * @param {!Array<!SearchEngine>} engines All the search engines.
-   * @private
-   */
-  updateSearchEngines_: function(engines) {
-    var defaultEngines = [];
-    var otherEngines = [];
-
-    engines.forEach(function(engine) {
-      if (engine.type ==
-          chrome.searchEnginesPrivate.SearchEngineType.DEFAULT) {
-        defaultEngines.push(engine);
-        if (engine.isSelected) {
-          this.defaultEngineGuid = engine.guid;
-        }
-      } else if (engine.type ==
-                 chrome.searchEnginesPrivate.SearchEngineType.OTHER) {
-        otherEngines.push(engine);
-      }
-    }, this);
-
-    this.defaultSearchEngines = defaultEngines;
-    this.otherSearchEngines = otherEngines;
-  }
+    icon: {
+      type: String,
+      value: 'search',
+      readOnly: true
+    },
 });

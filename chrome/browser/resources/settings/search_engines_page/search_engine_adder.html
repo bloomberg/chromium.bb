@@ -1,45 +1,43 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/polymer/core-style/core-style.html">
-<link rel="import" href="search_engine_adder_style.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_collapse/cr_collapse.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_input/cr_input.html">
 
-<polymer-element name="cr-search-engine-adder">
+<dom-module id="cr-search-engine-adder">
+  <link rel="import" type="css" href="search_engine_adder.css">
   <template>
-    <core-style ref="searchEngineAdderStyle"></core-style>
-
-    <div class="add-label" layout horizontal center justified>
+    <div class="add-label layout horizontal center justified">
       <span i18n-content="searchEnginesAddSearchEngineLabel"></span>
       <cr-expand-button expanded="{{opened}}"></cr-expand-button>
     </div>
     <cr-collapse opened="{{opened}}">
-      <div class="container" layout horizontal>
-        <div class="input-field" flex two>
+      <div class="container layout horizontal">
+        <div class="input-field flex two">
           <div class="input-label" i18n-content="searchEnginesDomainLabel">
           </div>
-          <cr-input id="domainField" autoValidate="false" required>
+          <cr-input id="domainField" auto-validate="false" required>
           </cr-input>
         </div>
-        <div class="input-field" flex two>
+        <div class="input-field flex two">
           <div class="input-label" i18n-content="searchEnginesKeywordLabel">
           </div>
-          <cr-input id="keywordField" autoValidate="false" required>
+          <cr-input id="keywordField" auto-validate="false" required>
           </cr-input>
         </div>
-        <div class="input-field" flex four>
+        <div class="input-field flex four">
           <div class="input-label" i18n-content="searchEnginesQueryURLLabel">
           </div>
-          <cr-input id="queryURLField" autoValidate="false" required>
+          <cr-input id="queryURLField" auto-validate="false" required>
           </cr-input>
         </div>
-        <div layout horizontal center>
+        <div class="layout horizontal center">
           <cr-button i18n-content="searchEnginesAddButtonLabel"
-              on-click="{{add_}}"raised>
+              on-click="{{add_}}" raised>
           </cr-button>
         </div>
       </div>
     </cr-collapse>
   </template>
   <script src="search_engine_adder.js"></script>
-</polymer-element>
+</dom-module>

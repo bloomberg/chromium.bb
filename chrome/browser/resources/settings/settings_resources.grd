@@ -129,8 +129,8 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ADDER_STYLE_HTML"
-                 file="search_engines_page/search_engine_adder_style.html"
+      <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ADDER_CSS"
+                 file="search_engines_page/search_engine_adder.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_PAGE_JS"
                  file="search_engines_page/search_engines_page.js"
@@ -140,9 +140,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_PAGE_STYLE_HTML"
-                 file="search_engines_page/search_engines_page_style.html"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SEARCH_PAGE_JS"
                  file="search_page/search_page.js"
                  type="chrome_html" />

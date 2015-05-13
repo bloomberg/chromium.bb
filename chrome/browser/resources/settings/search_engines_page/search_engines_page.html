@@ -1,20 +1,17 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
-<link rel="import" href="chrome://resources/polymer/core-style/core-style.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-material/paper-material.html">
 <link rel="import" href="search_engine_adder.html">
-<link rel="import" href="search_engines_page_style.html">
 
-<polymer-element name="cr-settings-search-engines-page">
+<dom-module id="cr-settings-search-engines-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <template>
-    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <core-style ref="searchEnginesPageStyle"></core-style>
-
-    <paper-shadow layout vertical cross-fade>
+    <paper-material>
       <div class="content">
         <cr-search-engine-adder></cr-search-engine-adder>
+        <!-- TODO(orenb): Add search engine lists with defaultSearchEngines and
+             otherSearchEngines. -->
       </div>
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="search_engines_page.js"></script>
-</polymer-element>
+</dom-module>

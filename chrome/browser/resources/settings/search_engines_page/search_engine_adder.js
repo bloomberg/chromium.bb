@@ -9,7 +9,9 @@
  * @group Chrome Settings Elements
  * @element cr-settings-search-engine-adder
  */
-Polymer('cr-search-engine-adder', {
+Polymer({
+  is: 'cr-search-engine-adder',
+
   /** @private */
   add_: function() {
     if (!this.$.domainField.isInvalid &&
