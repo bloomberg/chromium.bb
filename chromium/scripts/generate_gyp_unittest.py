@@ -11,10 +11,9 @@ functions, so this focuses on the higher-level functions assuming those two
 functions are working as intended (i.e., producing lists of files).
 """
 
+import generate_gyp as gg
 import string
 import unittest
-import generate_gyp as gg
-
 
 class ModuleUnittest(unittest.TestCase):
   def testGetObjectToSourceMapping(self):
@@ -176,9 +175,8 @@ class SourceSetUnittest(unittest.TestCase):
 
     # All targets case.
     a = gg.SourceSet(set(['a', 'b']), set(['arm']),
-                     set(['Chromium', 'ChromiumOS', 'Chrome', 'ChromeOS']),
+                     set(['Chromium', 'ChromiumOS', 'Chrome', 'ChromeOS', 'Ensemble']),
                      set(['win'])).GenerateGypStanza()
-    print a
     string.index(a, '(1)')
 
   def testGenerateGnStanza(self):

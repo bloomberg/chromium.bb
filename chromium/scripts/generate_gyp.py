@@ -708,7 +708,7 @@ def GetIncludedSources(file_path, source_dir, include_set):
   include_set.add(file_path)
 
   for line in open(file_path):
-    include_match = re.search('#include\s+"([^"]+)"', line)
+    include_match = re.search('#\s*include\s+"([^"]+)"', line)
     if (include_match is not None):
       include_file_path = include_match.group(1)
       resolved_include_path = '';
