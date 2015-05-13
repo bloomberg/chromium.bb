@@ -64,7 +64,6 @@ class ChrootPathResolver(object):
     # The following are only needed if outside the chroot.
     if self._inside_chroot:
       self._chroot_path = None
-      self._cache_path = None
       self._chroot_to_host_roots = None
     else:
       if self._workspace_path is None:
@@ -73,14 +72,18 @@ class ChrootPathResolver(object):
         self._chroot_path = os.path.realpath(
             workspace_lib.ChrootPath(self._workspace_path))
 
-      self._cache_path = os.path.realpath(GetCacheDir())
-
       # Initialize mapping of known root bind mounts.
       self._chroot_to_host_roots = (
           (constants.CHROOT_SOURCE_ROOT, self._source_path),
           (constants.CHROOT_WORKSPACE_ROOT, self._workspace_path),
-          (constants.CHROOT_CACHE_ROOT, self._cache_path),
+          (constants.CHROOT_CACHE_ROOT, self._GetCachePath),
       )
+
+  @classmethod
+  @cros_build_lib.MemoizedSingleCall
+  def _GetCachePath(cls):
+    """Returns the cache directory."""
+    return os.path.realpath(GetCacheDir())
 
   def _GetSourcePathChroot(self, source_path):
     """Returns path to the chroot directory of a given source root."""
@@ -88,23 +91,25 @@ class ChrootPathResolver(object):
       return None
     return os.path.join(source_path, constants.DEFAULT_CHROOT_DIR)
 
-  def _TranslatePath(self, path, src_root, dst_root):
-    """If |path| starts with |src_root|, replace it with |dst_root|.
+  def _TranslatePath(self, path, src_root, dst_root_input):
+    """If |path| starts with |src_root|, replace it using |dst_root_input|.
 
     Args:
       path: An absolute path we want to convert to a destination equivalent.
       src_root: The root that path needs to be contained in.
-      dst_root: The root we want to relocate the relative path into.
+      dst_root_input: The root we want to relocate the relative path into, or a
+        function returning this value.
 
     Returns:
       A translated path, or None if |src_root| is not a prefix of |path|.
 
     Raises:
-      ValueError: If |src_root| is a prefix but |dst_root| is None, which means
-        we don't have sufficient information to do the translation.
+      ValueError: If |src_root| is a prefix but |dst_root_input| yields None,
+        which means we don't have sufficient information to do the translation.
     """
     if not path.startswith(os.path.join(src_root, '')) and path != src_root:
       return None
+    dst_root = dst_root_input() if callable(dst_root_input) else dst_root_input
     if dst_root is None:
       raise ValueError('No target root to translate path to')
     return os.path.join(dst_root, path[len(src_root):].lstrip(os.path.sep))
@@ -151,7 +156,7 @@ class ChrootPathResolver(object):
 
     # Third, check the cache directory.
     if new_path is None:
-      new_path = self._TranslatePath(path, self._cache_path,
+      new_path = self._TranslatePath(path, self._GetCachePath(),
                                      constants.CHROOT_CACHE_ROOT)
 
     # Finally, check the current SDK checkout tree.
