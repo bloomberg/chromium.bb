@@ -319,9 +319,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       lock_updates_count_(0),
       ignore_window_pos_changes_(false),
       last_monitor_(NULL),
-      use_layered_buffer_(false),
-      layered_alpha_(255),
-      waiting_for_redraw_layered_window_contents_(false),
       is_first_nccalc_(true),
       menu_depth_(0),
       id_generator_(0),
@@ -788,35 +785,6 @@ void HWNDMessageHandler::FrameTypeChanged() {
   }
 }
 
-void HWNDMessageHandler::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (use_layered_buffer_) {
-    // We must update the back-buffer immediately, since Windows' handling of
-    // invalid rects is somewhat mysterious.
-    invalid_rect_.Union(rect);
-
-    // In some situations, such as drag and drop, when Windows itself runs a
-    // nested message loop our message loop appears to be starved and we don't
-    // receive calls to DidProcessMessage(). This only seems to affect layered
-    // windows, so we schedule a redraw manually using a task, since those never
-    // seem to be starved. Also, wtf.
-    if (!waiting_for_redraw_layered_window_contents_) {
-      waiting_for_redraw_layered_window_contents_ = true;
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&HWNDMessageHandler::RedrawLayeredWindowContents,
-                     weak_factory_.GetWeakPtr()));
-    }
-  } else {
-    // InvalidateRect() expects client coordinates.
-    RECT r = rect.ToRECT();
-    InvalidateRect(hwnd(), &r, FALSE);
-  }
-}
-
-void HWNDMessageHandler::SetOpacity(BYTE opacity) {
-  layered_alpha_ = opacity;
-}
-
 void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                         const gfx::ImageSkia& app_icon) {
   if (!window_icon.isNull()) {
@@ -1108,8 +1076,6 @@ void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
 void HWNDMessageHandler::ClientAreaSizeChanged() {
   gfx::Size s = GetClientAreaBounds().size();
   delegate_->HandleClientSizeChanged(s);
-  if (use_layered_buffer_)
-    layered_window_contents_.reset(new gfx::Canvas(s, 1.0f, false));
 }
 
 bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
@@ -1239,35 +1205,6 @@ void HWNDMessageHandler::UnlockUpdates(bool force) {
   }
 }
 
-void HWNDMessageHandler::RedrawLayeredWindowContents() {
-  waiting_for_redraw_layered_window_contents_ = false;
-  if (invalid_rect_.IsEmpty())
-    return;
-
-  // We need to clip to the dirty rect ourselves.
-  layered_window_contents_->sk_canvas()->save();
-  double scale = gfx::GetDPIScale();
-  layered_window_contents_->sk_canvas()->scale(
-      SkScalar(scale),SkScalar(scale));
-  layered_window_contents_->ClipRect(invalid_rect_);
-  delegate_->PaintLayeredWindow(layered_window_contents_.get());
-  layered_window_contents_->sk_canvas()->scale(
-      SkScalar(1.0/scale),SkScalar(1.0/scale));
-  layered_window_contents_->sk_canvas()->restore();
-
-  RECT wr;
-  GetWindowRect(hwnd(), &wr);
-  SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
-  POINT position = {wr.left, wr.top};
-  HDC dib_dc = skia::BeginPlatformPaint(layered_window_contents_->sk_canvas());
-  POINT zero = {0, 0};
-  BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
-  UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
-                      RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-  invalid_rect_.SetRect(0, 0, 0, 0);
-  skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
-}
-
 void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
   if (ui::IsWorkstationLocked()) {
     // Presents will continue to fail as long as the input desktop is
@@ -1364,8 +1301,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate1"));
-
-  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
 
   if (window_ex_style() &  WS_EX_COMPOSITED) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
@@ -2054,17 +1989,6 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
     OffsetRect(&dirty_region, -window_rect.left, -window_rect.top);
   }
 
-  gfx::Rect old_paint_region = invalid_rect_;
-  if (!old_paint_region.IsEmpty()) {
-    // The root view has a region that needs to be painted. Include it in the
-    // region we're going to paint.
-
-    RECT old_paint_region_crect = old_paint_region.ToRECT();
-    RECT tmp = dirty_region;
-    UnionRect(&dirty_region, &tmp, &old_paint_region_crect);
-  }
-
-  SchedulePaintInRect(gfx::Rect(dirty_region));
   delegate_->HandlePaintAccelerated(gfx::Rect(dirty_region));
 
   // When using a custom frame, we want to avoid calling DefWindowProc() since

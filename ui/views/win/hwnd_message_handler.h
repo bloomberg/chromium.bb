@@ -189,9 +189,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   void FrameTypeChanged();
 
-  void SchedulePaintInRect(const gfx::Rect& rect);
-  void SetOpacity(BYTE opacity);
-
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon);
 
@@ -304,10 +301,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Stops ignoring SetWindowPos() requests (see below).
   void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }
-
-  // Synchronously updates the invalid contents of the Widget. Valid for
-  // layered windows only.
-  void RedrawLayeredWindowContents();
 
   // Attempts to force the window to be redrawn, ensuring that it gets
   // onscreen.
@@ -544,39 +537,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // used to catch updates to the rect and work area and react accordingly.
   HMONITOR last_monitor_;
   gfx::Rect last_monitor_rect_, last_work_area_;
-
-  // Layered windows -----------------------------------------------------------
-
-  // Should we keep an off-screen buffer? This is false by default, set to true
-  // when WS_EX_LAYERED is specified before the native window is created.
-  //
-  // NOTE: this is intended to be used with a layered window (a window with an
-  // extended window style of WS_EX_LAYERED). If you are using a layered window
-  // and NOT changing the layered alpha or anything else, then leave this value
-  // alone. OTOH if you are invoking SetLayeredWindowAttributes then you'll
-  // most likely want to set this to false, or after changing the alpha toggle
-  // the extended style bit to false than back to true. See MSDN for more
-  // details.
-  bool use_layered_buffer_;
-
-  // The default alpha to be applied to the layered window.
-  BYTE layered_alpha_;
-
-  // A canvas that contains the window contents in the case of a layered
-  // window.
-  scoped_ptr<gfx::Canvas> layered_window_contents_;
-
-  // We must track the invalid rect ourselves, for two reasons:
-  // For layered windows, Windows will not do this properly with
-  // InvalidateRect()/GetUpdateRect(). (In fact, it'll return misleading
-  // information from GetUpdateRect()).
-  // We also need to keep track of the invalid rectangle for the RootView should
-  // we need to paint the non-client area. The data supplied to WM_NCPAINT seems
-  // to be insufficient.
-  gfx::Rect invalid_rect_;
-
-  // Set to true when waiting for RedrawLayeredWindowContents().
-  bool waiting_for_redraw_layered_window_contents_;
 
   // True the first time nccalc is called on a sizable widget
   bool is_first_nccalc_;
