@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -26,8 +25,7 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
       : init_count_(0),
         shutting_down_(false),
         was_shut_down_(false),
-        observer_(nullptr),
-        weak_factory_(this) {}
+        observer_(nullptr) {}
 
   ~IPCSupportInitializer() override { DCHECK(!observer_); }
 
@@ -43,11 +41,8 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
   // exists when the loop is being destroyed.
   class MessageLoopObserver : public base::MessageLoop::DestructionObserver {
    public:
-    MessageLoopObserver(
-        scoped_refptr<base::TaskRunner> initializer_task_runner,
-        base::WeakPtr<IPCSupportInitializer> weak_initializer)
-        : initializer_task_runner_(initializer_task_runner),
-          weak_initializer_(weak_initializer) {}
+    MessageLoopObserver(IPCSupportInitializer* initializer)
+        : initializer_(initializer) {}
 
     ~MessageLoopObserver() override {
       base::MessageLoop::current()->RemoveDestructionObserver(this);
@@ -56,13 +51,10 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
    private:
     // base::MessageLoop::DestructionObserver:
     void WillDestroyCurrentMessageLoop() override {
-      initializer_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&IPCSupportInitializer::ForceShutdown, weak_initializer_));
+      initializer_->ForceShutdown();
     }
 
-    scoped_refptr<base::TaskRunner> initializer_task_runner_;
-    base::WeakPtr<IPCSupportInitializer> weak_initializer_;
+    IPCSupportInitializer* initializer_;
 
     DISALLOW_COPY_AND_ASSIGN(MessageLoopObserver);
   };
@@ -89,8 +81,6 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
 
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
-  base::WeakPtrFactory<IPCSupportInitializer> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(IPCSupportInitializer);
 };
 
@@ -111,8 +101,7 @@ void IPCSupportInitializer::Init(
   init_count_++;
   if (init_count_ == 1) {
     was_shut_down_ = false;
-    observer_ = new MessageLoopObserver(base::ThreadTaskRunnerHandle::Get(),
-                                        weak_factory_.GetWeakPtr());
+    observer_ = new MessageLoopObserver(this);
     io_thread_task_runner_ = io_thread_task_runner;
     io_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WatchMessageLoopOnIOThread, observer_));
