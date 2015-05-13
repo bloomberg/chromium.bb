@@ -261,11 +261,13 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       ValidateQuadResources(yuv_video_quad);
       break;
     }
+    case VideoFrameExternalResources::RGBA_RESOURCE:
     case VideoFrameExternalResources::RGB_RESOURCE: {
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
-      bool premultiplied_alpha = true;
+      bool premultiplied_alpha =
+          (frame_resource_type_ == VideoFrameExternalResources::RGBA_RESOURCE);
       gfx::PointF uv_top_left(0.f, 0.f);
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};

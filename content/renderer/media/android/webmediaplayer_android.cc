@@ -1211,7 +1211,7 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
                                           remote_playback_texture_id)),
       canvas_size /* coded_size */, gfx::Rect(canvas_size) /* visible_rect */,
       canvas_size /* natural_size */, base::TimeDelta() /* timestamp */,
-      false /* allow overlay */);
+      false /* allow overlay */, true /* has_alpha */);
   SetCurrentFrameInternal(new_frame);
 }
 
@@ -1247,7 +1247,7 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
         media::BindToCurrentLoop(base::Bind(
             &OnReleaseTexture, stream_texture_factory_, texture_id_ref)),
         natural_size_, gfx::Rect(natural_size_), natural_size_,
-        base::TimeDelta(), false);
+        base::TimeDelta(), false /* allow_overlay */, true /* has_alpha */);
     SetCurrentFrameInternal(new_frame);
   }
 }

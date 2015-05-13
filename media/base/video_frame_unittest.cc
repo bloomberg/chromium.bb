@@ -258,7 +258,8 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
         gfx::Rect(10, 10),  // visible_rect
         gfx::Size(10, 10),  // natural_size
         base::TimeDelta(),  // timestamp
-        false);             // allow_overlay
+        false,              // allow_overlay
+        true);              // has_alpha
     EXPECT_EQ(VideoFrame::TEXTURE_RGBA, frame->texture_format());
   }
   // Nobody set a sync point to |frame|, so |frame| set |called_sync_point| to 0

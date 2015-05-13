@@ -566,7 +566,8 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
               &VideoCaptureDeviceClient::TextureWrapHelper::ReleaseCallback,
               this, image_id, texture_id)),
           frame_format.frame_size, gfx::Rect(frame_format.frame_size),
-          frame_format.frame_size, base::TimeDelta(), true /* allow_overlay */);
+          frame_format.frame_size, base::TimeDelta(), true /* allow_overlay */,
+          true /* has_alpha */);
   video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                      frame_format.frame_rate);
 

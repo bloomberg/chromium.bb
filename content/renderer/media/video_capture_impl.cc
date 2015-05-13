@@ -281,7 +281,8 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
           &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
           buffer_id, scoped_refptr<ClientBuffer>())),
       packed_frame_size, gfx::Rect(packed_frame_size), packed_frame_size,
-      timestamp - first_frame_timestamp_, false);
+      timestamp - first_frame_timestamp_, false /* allow_overlay */,
+      true /* has_alpha */);
   frame->metadata()->MergeInternalValuesFrom(metadata);
 
   for (const auto& client : clients_)

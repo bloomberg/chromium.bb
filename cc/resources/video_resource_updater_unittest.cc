@@ -125,7 +125,8 @@ class VideoResourceUpdaterTest : public testing::Test {
         gfx::Rect(size),    // visible_rect
         size,               // natural_size
         base::TimeDelta(),  // timestamp
-        false);             // allow_overlay
+        false,              // allow_overlay
+        true);              // has_alpha
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVHardareVideoFrame() {
@@ -308,7 +309,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
 
   VideoFrameExternalResources resources =
       updater.CreateExternalResourcesFromVideoFrame(video_frame);
-  EXPECT_EQ(VideoFrameExternalResources::RGB_RESOURCE, resources.type);
+  EXPECT_EQ(VideoFrameExternalResources::RGBA_RESOURCE, resources.type);
   EXPECT_EQ(1u, resources.mailboxes.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
   EXPECT_EQ(0u, resources.software_resources.size());

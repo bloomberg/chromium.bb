@@ -35,6 +35,7 @@ class CC_EXPORT VideoFrameExternalResources {
     NONE,
     YUV_RESOURCE,
     RGB_RESOURCE,
+    RGBA_RESOURCE,
     STREAM_TEXTURE_RESOURCE,
     IO_SURFACE,
 

@@ -70,6 +70,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // holders.
   enum TextureFormat {
     TEXTURE_RGBA,     // One RGBA texture.
+    TEXTURE_RGB,      // One RGB texture.
     TEXTURE_YUV_420,  // 3 RED textures one per channel. UV are 2x2 subsampled.
   };
 
@@ -112,7 +113,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
-      bool allow_overlay);
+      bool allow_overlay,
+      bool has_alpha);
 
   // Wraps a set of native textures representing YUV data with a VideoFrame.
   // |mailbox_holders_release_cb| will be called with a syncpoint as the

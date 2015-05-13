@@ -425,7 +425,7 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
           &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
       pb.size(), visible_rect, visible_rect.size(), timestamp_ms,
-      picture.allow_overlay());
+      picture.allow_overlay(), true /* has_alpha */);
 }
 
 void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {

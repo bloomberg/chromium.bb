@@ -411,10 +411,15 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   VideoFrameExternalResources external_resources;
   switch (video_frame->texture_format()) {
     case media::VideoFrame::TEXTURE_RGBA:
+    case media::VideoFrame::TEXTURE_RGB:
       DCHECK_EQ(1u, textures);
       switch (video_frame->mailbox_holder(0).texture_target) {
         case GL_TEXTURE_2D:
-          external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
+          if (video_frame->texture_format() == media::VideoFrame::TEXTURE_RGB)
+            external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
+          else
+            external_resources.type =
+                VideoFrameExternalResources::RGBA_RESOURCE;
           break;
         case GL_TEXTURE_EXTERNAL_OES:
           external_resources.type =
