@@ -61,11 +61,11 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   // To be called before forwarding a tap event. This allows automatically
   // showing the insertion handle from subsequent bounds changes.
-  void OnTapEvent();
+  bool WillHandleTapEvent(const gfx::PointF& location);
 
   // To be called before forwarding a longpress event. This allows automatically
   // showing the selection or insertion handles from subsequent bounds changes.
-  void OnLongPressEvent();
+  bool WillHandleLongPressEvent(const gfx::PointF& location);
 
   // Allow showing the selection handles from the most recent selection bounds
   // update (if valid), or a future valid bounds update.
@@ -124,6 +124,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   void ShowInsertionHandleAutomatically();
   void ShowSelectionHandlesAutomatically();
+  bool WillHandleTapOrLongPress(const gfx::PointF& location);
 
   void OnInsertionChanged();
   void OnSelectionChanged();

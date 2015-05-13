@@ -1582,16 +1582,17 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
-  if (selection_controller_) {
-    switch (input_event.type) {
-      case blink::WebInputEvent::GestureLongPress:
-        selection_controller_->OnLongPressEvent();
-        break;
-      case blink::WebInputEvent::GestureTap:
-        selection_controller_->OnTapEvent();
-        break;
-      default:
-        break;
+  if (selection_controller_ &&
+      blink::WebInputEvent::isGestureEventType(input_event.type)) {
+    const blink::WebGestureEvent& gesture_event =
+        static_cast<const blink::WebGestureEvent&>(input_event);
+    gfx::PointF gesture_location(gesture_event.x, gesture_event.y);
+    if (input_event.type == blink::WebInputEvent::GestureLongPress) {
+      if (selection_controller_->WillHandleLongPressEvent(gesture_location))
+        return INPUT_EVENT_ACK_STATE_CONSUMED;
+    } else if (input_event.type == blink::WebInputEvent::GestureTap) {
+      if (selection_controller_->WillHandleTapEvent(gesture_location))
+        return INPUT_EVENT_ACK_STATE_CONSUMED;
     }
   }
 

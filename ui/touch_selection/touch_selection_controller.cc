@@ -153,11 +153,30 @@ bool TouchSelectionController::WillHandleTouchEvent(const MotionEvent& event) {
   return false;
 }
 
-void TouchSelectionController::OnLongPressEvent() {
+bool TouchSelectionController::WillHandleTapEvent(const gfx::PointF& location) {
+  if (WillHandleTapOrLongPress(location))
+    return true;
+
+  response_pending_input_event_ = TAP;
+  if (active_status_ != SELECTION_ACTIVE)
+    activate_selection_automatically_ = false;
+  ShowInsertionHandleAutomatically();
+  if (selection_empty_ && !show_on_tap_for_empty_editable_)
+    DeactivateInsertion();
+  ForceNextUpdateIfInactive();
+  return false;
+}
+
+bool TouchSelectionController::WillHandleLongPressEvent(
+    const gfx::PointF& location) {
+  if (WillHandleTapOrLongPress(location))
+    return true;
+
   response_pending_input_event_ = LONG_PRESS;
   ShowSelectionHandlesAutomatically();
   ShowInsertionHandleAutomatically();
   ForceNextUpdateIfInactive();
+  return false;
 }
 
 void TouchSelectionController::AllowShowingFromCurrentSelection() {
@@ -172,16 +191,6 @@ void TouchSelectionController::AllowShowingFromCurrentSelection() {
              selection_editable_) {
     OnInsertionChanged();
   }
-}
-
-void TouchSelectionController::OnTapEvent() {
-  response_pending_input_event_ = TAP;
-  if (active_status_ != SELECTION_ACTIVE)
-    activate_selection_automatically_ = false;
-  ShowInsertionHandleAutomatically();
-  if (selection_empty_ && !show_on_tap_for_empty_editable_)
-    DeactivateInsertion();
-  ForceNextUpdateIfInactive();
 }
 
 void TouchSelectionController::HideAndDisallowShowingAutomatically() {
@@ -350,6 +359,22 @@ void TouchSelectionController::ShowSelectionHandlesAutomatically() {
     return;
   activate_selection_automatically_ = true;
   ForceNextUpdateIfInactive();
+}
+
+bool TouchSelectionController::WillHandleTapOrLongPress(
+    const gfx::PointF& location) {
+  // If there is an active selection that was not triggered by a user gesture,
+  // allow showing the handles for that selection if a gesture occurs within
+  // the selection rect. Note that this hit test is at best a crude
+  // approximation, and may swallow taps that actually fall outside the
+  // real selection.
+  if (active_status_ == INACTIVE &&
+      GetStartPosition() != GetEndPosition() &&
+      RectFBetweenSelectionBounds(start_, end_).Contains(location)) {
+    AllowShowingFromCurrentSelection();
+    return true;
+  }
+  return false;
 }
 
 void TouchSelectionController::OnInsertionChanged() {
