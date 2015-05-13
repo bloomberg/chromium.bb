@@ -62,6 +62,7 @@
         # into chrome.exe, not into a dependent.
         '<(DEPTH)/content/app/startup_helper_win.cc',
         '<(DEPTH)/content/public/common/content_switches.cc',
+        'app/chrome_exe_load_config_win.cc',
         'app/chrome_exe_main_aura.cc',
         'app/chrome_exe_main_mac.cc',
         'app/chrome_exe_main_win.cc',

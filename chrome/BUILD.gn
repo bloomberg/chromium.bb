@@ -37,6 +37,7 @@ if (!is_android) {
         "app/chrome_crash_reporter_client.cc",
         "app/chrome_crash_reporter_client.h",
         "app/chrome_exe.rc",
+        "app/chrome_exe_load_config_win.cc",
         "app/chrome_exe_main_win.cc",
         "app/chrome_watcher_client_win.cc",
         "app/chrome_watcher_client_win.h",
