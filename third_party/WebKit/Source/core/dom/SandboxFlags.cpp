@@ -28,6 +28,7 @@
 #include "core/dom/SandboxFlags.h"
 
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -65,6 +66,8 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidT
             flags &= ~SandboxPointerLock;
         } else if (equalIgnoringCase(sandboxToken, "allow-orientation-lock")) {
             flags &= ~SandboxOrientationLock;
+        } else if (equalIgnoringCase(sandboxToken, "allow-unsandboxed-auxiliary") && RuntimeEnabledFeatures::unsandboxedAuxiliaryEnabled()) {
+            flags &= ~SandboxPropagatesToAuxiliaryBrowsingContexts;
         } else {
             if (numberOfTokenErrors)
                 tokenErrors.appendLiteral(", '");

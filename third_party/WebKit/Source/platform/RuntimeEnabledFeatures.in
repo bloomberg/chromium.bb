@@ -157,6 +157,7 @@ ThreadedParserDataReceiver
 Touch status=stable
 TouchIconLoading
 UnsafeES3APIs
+UnsandboxedAuxiliary status=experimental
 UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental

@@ -119,7 +119,8 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
     host->chrome().setWindowRect(windowRect);
     host->chrome().show(policy);
 
-    frame.loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
+    if (openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
+        frame.loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
 
     created = true;
     return &frame;
