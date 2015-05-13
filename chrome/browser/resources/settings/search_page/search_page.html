@@ -1,35 +1,29 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
-<link rel="import" href="chrome://resources/polymer/core-style/core-style.html">
-<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/more-routing/more-routing.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_button/cr_button.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
-<link rel="import" href="search_page_style.html">
 
-<polymer-element name="cr-settings-search-page">
+<dom-module id="cr-settings-search-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="search_page.css">
   <template>
-    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <core-style ref="searchPageStyle"></core-style>
-    <paper-shadow layout vertical cross-fade>
+    <paper-material>
       <p i18n-content="searchExplanation"></p>
 
-      <div class="search-engines" layout horizontal center>
-        <cr-dropdown-menu class="search-engines-dropdown">
-          <core-menu id="searchEnginesMenu" class="menu" valueAttr="guid"
-              selected="{{defaultEngineGuid}}">
-            <template repeat="{{engine in searchEngines}}">
-              <paper-item guid="{{engine.guid}}">{{engine.name}}</paper-item>
-            </template>
-          </core-menu>
-        </cr-dropdown-menu>
+      <div class="search-engines">
+        <select id="searchEnginesMenu" on-change="defaultEngineGuidChanged_">
+          <template is="x-repeat" items="[[searchEngines]]">
+            <option value="[[item.guid]]">{{item.name}}</option>
+          </template>
+        </select>
 
         <cr-button class="manage-search-engines"
             i18n-content="searchManageButtonLabel"
-            on-click="{{manageSearchEngines_}}" raised>
+            on-click="manageSearchEngines_" raised>
         </cr-button>
       </div>
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="search_page.js"></script>
-</polymer-element>
+</dom-module>

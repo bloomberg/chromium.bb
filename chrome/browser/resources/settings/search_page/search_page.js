@@ -8,95 +8,76 @@
  *
  * Example:
  *
- *    <core-animated-pages>
+ *    <iron-animated-pages>
  *      <cr-settings-search-page prefs="{{prefs}}"></cr-settings-search-page>
  *      ... other pages ...
- *    </core-animated-pages>
+ *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
  * @element cr-settings-search-page
  */
-Polymer('cr-settings-search-page', {
-  publish: {
+Polymer({
+  is: 'cr-settings-search-page',
+
+  properties: {
     /**
      * Preferences state.
-     *
-     * @attribute prefs
-     * @type {CrSettingsPrefsElement}
-     * @default null
+     * @type {?CrSettingsPrefsElement}
      */
-    prefs: null,
+    prefs: {
+      type: Object,
+      notify: true,
+    },
 
     /**
      * Route for the page.
-     *
-     * @attribute route
-     * @type {string}
-     * @default ''
      */
-    route: '',
+    route: String,
 
     /**
      * Whether the page is a subpage.
-     *
-     * @attribute subpage
-     * @type {boolean}
-     * @default false
      */
-    subpage: false,
+    subpage: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * ID of the page.
-     *
-     * @attribute PAGE_ID
-     * @const {string}
-     * @default 'search'
      */
-    PAGE_ID: 'search',
+    PAGE_ID: {
+      type: String,
+      value: 'search',
+    },
 
     /**
      * Title for the page header and navigation menu.
-     *
-     * @attribute pageTitle
-     * @type {string}
      */
-    pageTitle: loadTimeData.getString('searchPageTitle'),
+    pageTitle: {
+      type: String,
+      value: function() { return loadTimeData.getString('searchPageTitle'); },
+    },
 
     /**
-     * Name of the 'core-icon' to be shown in the settings-page-header.
-     *
-     * @attribute icon
-     * @type {string}
-     * @default 'search'
+     * Name of the 'iron-icon' to be shown in the settings-page-header.
      */
-    icon: 'search',
+    icon: {
+      type: Boolean,
+      value: 'search',
+    },
 
     /**
      * List of default search engines available.
-     *
-     * @attribute searchEngines
-     * @type {Array<!SearchEngine>}
-     * @default null
+     * @type {?Array<!SearchEngine>}
      */
-    searchEngines: null,
-
-    /**
-     * GUID of the currently selected default search engine.
-     *
-     * @attribute defaultEngineGuid
-     * @type {string}
-     * @default ''
-     */
-    defaultEngineGuid: '',
+    searchEngines: {
+      type: Array,
+      value: function() { return []; },
+    },
   },
 
   /** @override */
   created: function() {
-    this.searchEngines = [];
-  },
-
-  /** @override */
-  domReady: function() {
     chrome.searchEnginesPrivate.onSearchEnginesChanged.addListener(
         this.updateSearchEngines_.bind(this));
     chrome.searchEnginesPrivate.getSearchEngines(
@@ -106,9 +87,11 @@ Polymer('cr-settings-search-page', {
   /**
    * Persists the new default search engine back to Chrome. Called when the
    * user selects a new default in the search engines dropdown.
+   * @private
    */
-  defaultEngineGuidChanged: function() {
-    chrome.searchEnginesPrivate.setSelectedSearchEngine(this.defaultEngineGuid);
+  defaultEngineGuidChanged_: function() {
+    chrome.searchEnginesPrivate.setSelectedSearchEngine(
+        this.$.searchEnginesMenu.value);
   },
 
 
@@ -125,7 +108,7 @@ Polymer('cr-settings-search-page', {
           chrome.searchEnginesPrivate.SearchEngineType.DEFAULT) {
         defaultEngines.push(engine);
         if (engine.isSelected) {
-          this.defaultEngineGuid = engine.guid;
+          this.$.searchEnginesMenu.value = engine.guid;
         }
       }
     }, this);

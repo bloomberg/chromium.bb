@@ -1,0 +1,17 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.manage-search-engines {
+  -webkit-margin-start: 10px;
+}
+
+.search-engines {
+  align-items: center;
+  display: flex;
+  margin-top: 20px;
+}
+
+#searchEnginesMenu {
+  min-width: 150px;
+}
