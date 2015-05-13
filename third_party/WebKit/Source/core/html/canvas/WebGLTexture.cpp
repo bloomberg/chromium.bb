@@ -220,8 +220,7 @@ void WebGLTexture::generateMipmapLevelInfo()
     if (!canGenerateMipmaps())
         return;
     if (!m_isComplete) {
-
-        size_t baseLevel = std::min(m_baseLevel, m_info[0].size());
+        size_t baseLevel = std::min(m_baseLevel, m_info[0].size() - 1);
         for (size_t ii = 0; ii < m_info.size(); ++ii) {
             const LevelInfo& info0 = m_info[ii][baseLevel];
             GLsizei width = info0.width;
@@ -361,7 +360,7 @@ bool WebGLTexture::canGenerateMipmaps()
     if (!m_isWebGL2OrHigher && isNPOT())
         return false;
 
-    size_t baseLevel = std::min(m_baseLevel, m_info[0].size());
+    size_t baseLevel = std::min(m_baseLevel, m_info[0].size() - 1);
     const LevelInfo& base = m_info[0][baseLevel];
     for (size_t ii = 0; ii < m_info.size(); ++ii) {
         const LevelInfo& info = m_info[ii][baseLevel];
@@ -406,7 +405,7 @@ void WebGLTexture::update()
     m_isComplete = true;
     m_isCubeComplete = true;
 
-    size_t baseLevel = std::min(m_baseLevel, m_info[0].size());
+    size_t baseLevel = std::min(m_baseLevel, m_info[0].size() - 1);
     const LevelInfo& base = m_info[0][baseLevel];
     size_t levelCount = computeLevelCount(base.width, base.height, base.depth);
     size_t maxLevel = m_isWebGL2OrHigher ? std::min(m_maxLevel, baseLevel + levelCount - 1) : baseLevel + levelCount - 1;
