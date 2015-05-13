@@ -31,6 +31,22 @@ namespace blink {
 class LayoutTable;
 class LayoutTableCell;
 
+enum CellsToProcess {
+    AllCells,
+    NonEmptyCells
+};
+
+enum DistributionMode {
+    ExtraWidth,
+    InitialWidth,
+    LeftoverWidth
+};
+
+enum DistributionDirection {
+    StartToEnd,
+    EndToStart
+};
+
 class TableLayoutAlgorithmAuto final : public TableLayoutAlgorithm {
 public:
     TableLayoutAlgorithmAuto(LayoutTable*);
@@ -46,7 +62,8 @@ private:
     void recalcColumn(unsigned effCol);
 
     int calcEffectiveLogicalWidth();
-    void shrinkCellWidth(const LengthType&, int& available);
+    void shrinkColumnWidth(const LengthType&, int& available);
+    template<typename Total, LengthType, CellsToProcess, DistributionMode, DistributionDirection> void distributeWidthToColumns(int& available, Total);
 
     void insertSpanCell(LayoutTableCell*);
 
