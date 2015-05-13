@@ -29,7 +29,7 @@ ProtocolEventBuffer::GetBufferedProtocolEvents() const {
   ScopedVector<ProtocolEvent> ret;
   for (std::deque<ProtocolEvent*>::const_iterator it = buffer_.begin();
        it != buffer_.end(); ++it) {
-    ret.push_back((*it)->Clone().release());
+    ret.push_back((*it)->Clone().Pass());
   }
   return ret.Pass();
 }

@@ -225,7 +225,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   commit_contributor_map_.insert(std::make_pair(type, worker.get()));
 
   // The container takes ownership.
-  model_type_sync_workers_.push_back(worker.release());
+  model_type_sync_workers_.push_back(worker.Pass());
 
   DCHECK(Intersection(GetEnabledDirectoryTypes(),
                       GetEnabledNonBlockingTypes()).Empty());
