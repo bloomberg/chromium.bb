@@ -13,8 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_flags.h"
@@ -856,14 +858,17 @@ class ProxyService::PacRequest
   int QueryDidComplete(int result_code) {
     DCHECK(!was_cancelled());
 
+    // This state is cleared when resolve_job_ is set to nullptr below.
+    bool script_executed = is_started();
+
     // Clear |resolve_job_| so is_started() returns false while
     // DidFinishResolvingProxy() runs.
     resolve_job_ = nullptr;
 
     // Note that DidFinishResolvingProxy might modify |results_|.
-    int rv = service_->DidFinishResolvingProxy(url_, load_flags_,
-                                               network_delegate_, results_,
-                                               result_code, net_log_);
+    int rv = service_->DidFinishResolvingProxy(
+        url_, load_flags_, network_delegate_, results_, result_code, net_log_,
+        creation_time_, script_executed);
 
     // Make a note in the results which configuration was in use at the
     // time of the resolve.
@@ -1059,9 +1064,12 @@ int ProxyService::ResolveProxyHelper(const GURL& raw_url,
   // using a direct connection for example).
   int rv = TryToCompleteSynchronously(url, load_flags,
                                       network_delegate, result);
-  if (rv != ERR_IO_PENDING)
-    return DidFinishResolvingProxy(url, load_flags, network_delegate,
-                                   result, rv, net_log);
+  if (rv != ERR_IO_PENDING) {
+    rv = DidFinishResolvingProxy(
+        url, load_flags, network_delegate, result, rv, net_log,
+        callback.is_null() ? TimeTicks() : TimeTicks::Now(), false);
+    return rv;
+  }
 
   if (callback.is_null())
     return ERR_IO_PENDING;
@@ -1371,7 +1379,30 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
                                           NetworkDelegate* network_delegate,
                                           ProxyInfo* result,
                                           int result_code,
-                                          const BoundNetLog& net_log) {
+                                          const BoundNetLog& net_log,
+                                          base::TimeTicks start_time,
+                                          bool script_executed) {
+  // Don't track any metrics if start_time is 0, which will happen when the user
+  // calls |TryResolveProxySynchronously|.
+  if (!start_time.is_null()) {
+    TimeDelta diff = TimeTicks::Now() - start_time;
+    if (script_executed) {
+      // This function "fixes" the result code, so make sure script terminated
+      // errors are tracked. Only track result codes that were a result of
+      // script execution.
+      UMA_HISTOGRAM_BOOLEAN("Net.ProxyService.ScriptTerminated",
+                            result_code == ERR_PAC_SCRIPT_TERMINATED);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Net.ProxyService.GetProxyUsingScriptTime",
+                                 diff, base::TimeDelta::FromMicroseconds(100),
+                                 base::TimeDelta::FromSeconds(20), 50);
+    }
+    UMA_HISTOGRAM_BOOLEAN("Net.ProxyService.ResolvedUsingScript",
+                          script_executed);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.ProxyService.ResolveProxyTime", diff,
+                               base::TimeDelta::FromMicroseconds(100),
+                               base::TimeDelta::FromSeconds(20), 50);
+  }
+
   // Log the result of the proxy resolution.
   if (result_code == OK) {
     // Allow the network delegate to interpose on the resolution decision,

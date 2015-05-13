@@ -20394,6 +20394,50 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The length of the URL that was passed into the PAC script.</summary>
 </histogram>
 
+<histogram name="Net.ProxyService.GetProxyUsingScriptTime"
+    units="100s of microseconds">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    The time taken to resolve a URL by forwarding the request to the proxy
+    resolver and executing the PAC script. This includes PAC script execution,
+    DNS queries, and internal retries. This does not include retries initiated
+    by the user, such as by calling ProxyService::ReconsiderProxyAfterError().
+  </summary>
+</histogram>
+
+<histogram name="Net.ProxyService.ResolvedUsingScript" enum="Boolean">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    Whether proxy resolution occured by forwarding the request to the proxy
+    resolver and executing the PAC script. This histogram records all URLs,
+    regardless of whether a proxy configuration is set. Note that in some cases,
+    the system proxy resolver is used. If so, this histogram indicates whether
+    the request was forwarded to the system resolver. However, on desktop
+    platforms, the number of users using the system resolver should be small
+    since the default is to use V8. Hence, the count of emissions to the 'True'
+    bucket on desktop caused by users of the system resolver should be small.
+  </summary>
+</histogram>
+
+<histogram name="Net.ProxyService.ResolveProxyTime"
+    units="100s of microseconds">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    The total time taken to resolve a URL. This includes PAC script execution,
+    DNS queries, and internal retries. This does not include retries initiated
+    by the user, such as by calling ProxyService::ReconsiderProxyAfterError().
+  </summary>
+</histogram>
+
+<histogram name="Net.ProxyService.ScriptTerminated" enum="Boolean">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    Whether a proxy resolution resulted in the PAC script terminating
+    unexpectedly. This only happens when the resolver process crashes when using
+    out-of-process PAC.
+  </summary>
+</histogram>
+
 <histogram name="Net.PublicKeyPinFailureDomain" enum="PublicKeyPinFailedDomain">
   <owner>agl@chromium.org</owner>
   <summary>

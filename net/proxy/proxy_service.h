@@ -363,7 +363,9 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
                               NetworkDelegate* network_delegate,
                               ProxyInfo* result,
                               int result_code,
-                              const BoundNetLog& net_log);
+                              const BoundNetLog& net_log,
+                              base::TimeTicks start_time,
+                              bool script_executed);
 
   // Start initialization using |fetched_config_|.
   void InitializeUsingLastFetchedConfig();
