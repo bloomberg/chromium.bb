@@ -404,6 +404,7 @@
   'targets': [
     {
       'target_name': 'ffmpeg',
+      'type': 'none',
       'defines': [
         '__STDC_CONSTANT_MACROS',  # FFmpeg uses INT64_C. maybe this can go.....
       ],
@@ -412,7 +413,6 @@
 
       'conditions': [
         ['build_ffmpegsumo == 1', {
-          'type': 'none',
           'dependencies': [
               'ffmpegsumo',
             ],
