@@ -226,6 +226,14 @@ CronetURLRequestAdapter::GetNegotiatedProtocol(JNIEnv* env,
       env, url_request_->response_info().npn_negotiated_protocol);
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+CronetURLRequestAdapter::GetProxyServer(JNIEnv* env,
+                                        jobject jcaller) const {
+  DCHECK(context_->IsOnNetworkThread());
+  return ConvertUTF8ToJavaString(
+      env, url_request_->response_info().proxy_server.ToString());
+}
+
 jboolean CronetURLRequestAdapter::GetWasCached(JNIEnv* env,
                                                jobject jcaller) const {
   DCHECK(context_->IsOnNetworkThread());

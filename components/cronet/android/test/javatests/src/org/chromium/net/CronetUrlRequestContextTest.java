@@ -105,6 +105,53 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    public void testDataReductionProxyEnabled() throws Exception {
+        mActivity = launchCronetTestAppAndSkipFactoryInit();
+
+        // Ensure native code is loaded before trying to start test server.
+        UrlRequestContext.createContext(
+                getInstrumentation().getTargetContext(),
+                new UrlRequestContextConfig().setLibraryName("cronet_tests"))
+                .shutdown();
+
+        assertTrue(NativeTestServer.startNativeTestServer(
+                getInstrumentation().getTargetContext()));
+
+        String serverHostPort = NativeTestServer.getHostPort();
+
+        // Enable the Data Reduction Proxy and configure it to use the test
+        // server as its primary proxy, and to check successfully that this
+        // proxy is OK to use.
+        UrlRequestContextConfig config = new UrlRequestContextConfig();
+        config.enableDataReductionProxy("test-key");
+        config.setDataReductionProxyOptions(
+                serverHostPort, "unused.net:9999",
+                NativeTestServer.getFileURL("/secureproxychecksuccess.txt"));
+        config.setLibraryName("cronet_tests");
+        mActivity.mUrlRequestContext =
+                mActivity.mUrlRequestContext.createContext(
+                        getInstrumentation().getTargetContext(), config);
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+
+        // Construct and start a request that can only be returned by the test
+        // server. This request will fail if the configuration logic for the
+        // Data Reduction Proxy is not used.
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                "http://google.com/datareductionproxysuccess.txt",
+                listener, listener.getExecutor());
+        urlRequest.start();
+        listener.blockForDone();
+
+        // Verify that the request is successful and that the Data Reduction
+        // Proxy logic configured to use the test server as its proxy.
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals(serverHostPort, listener.mResponseInfo.getProxyServer());
+        assertEquals("http://www.google.com/datareductionproxysuccess.txt",
+                listener.mResponseInfo.getUrl());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
     public void testShutdown() throws Exception {
         mActivity = launchCronetTestApp();
         TestUrlRequestListener listener = new ShutdownTestUrlRequestListener();

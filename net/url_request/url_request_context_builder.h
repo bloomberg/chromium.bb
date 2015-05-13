@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
@@ -43,6 +44,7 @@ class HostMappingRules;
 class HttpAuthHandlerFactory;
 class ProxyConfigService;
 class URLRequestContext;
+class URLRequestInterceptor;
 
 class NET_EXPORT URLRequestContextBuilder {
  public:
@@ -179,6 +181,9 @@ class NET_EXPORT URLRequestContextBuilder {
     throttling_enabled_ = throttling_enabled;
   }
 
+  void SetInterceptors(
+      ScopedVector<URLRequestInterceptor> url_request_interceptors);
+
   // Override the default in-memory cookie store and channel id service.
   // |cookie_store| must not be NULL. |channel_id_service| may be NULL to
   // disable channel id for this context.
@@ -242,6 +247,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_refptr<CookieStore> cookie_store_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   std::vector<SchemeFactory> extra_http_auth_handlers_;
+  ScopedVector<URLRequestInterceptor> url_request_interceptors_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);
 };

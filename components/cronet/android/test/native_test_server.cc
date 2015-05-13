@@ -20,6 +20,7 @@
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/android/url_request_context_adapter.h"
 #include "jni/NativeTestServer_jni.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/url_util.h"
 #include "net/dns/host_resolver_impl.h"
 #include "net/dns/mock_host_resolver.h"
@@ -296,6 +297,13 @@ jstring GetSdchURL(JNIEnv* env, jclass jcaller) {
   std::string url(base::StringPrintf("http://%s:%d", kFakeSdchDomain,
                                      g_test_server->port()));
   return base::android::ConvertUTF8ToJavaString(env, url).Release();
+}
+
+jstring GetHostPort(JNIEnv* env, jclass jcaller) {
+  DCHECK(g_test_server);
+  std::string host_port =
+      net::HostPortPair::FromURL(g_test_server->base_url()).ToString();
+  return base::android::ConvertUTF8ToJavaString(env, host_port).Release();
 }
 
 bool RegisterNativeTestServer(JNIEnv* env) {

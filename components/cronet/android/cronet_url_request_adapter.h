@@ -104,6 +104,11 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
       JNIEnv* env,
       jobject jcaller) const;
 
+  // Returns the host and port of the proxy server, if one was used.
+  base::android::ScopedJavaLocalRef<jstring> GetProxyServer(
+      JNIEnv* env,
+      jobject jcaller) const;
+
   // Returns true if response is coming from the cache.
   jboolean GetWasCached(JNIEnv* env, jobject jcaller) const;
 

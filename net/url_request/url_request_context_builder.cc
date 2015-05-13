@@ -35,6 +35,8 @@
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
+#include "net/url_request/url_request_intercepting_job_factory.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
@@ -229,6 +231,11 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
   http_network_session_params_.enable_quic = quic_enabled;
 }
 
+void URLRequestContextBuilder::SetInterceptors(
+    ScopedVector<URLRequestInterceptor> url_request_interceptors) {
+  url_request_interceptors_ = url_request_interceptors.Pass();
+}
+
 void URLRequestContextBuilder::SetCookieAndChannelIdStores(
       const scoped_refptr<CookieStore>& cookie_store,
       scoped_ptr<ChannelIDService> channel_id_service) {
@@ -408,8 +415,19 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   }
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
-  storage->set_job_factory(job_factory);
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory(job_factory);
+  if (!url_request_interceptors_.empty()) {
+    // Set up interceptors in the reverse order.
 
+    for (ScopedVector<net::URLRequestInterceptor>::reverse_iterator i =
+             url_request_interceptors_.rbegin();
+         i != url_request_interceptors_.rend(); ++i) {
+      top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
+          top_job_factory.Pass(), make_scoped_ptr(*i)));
+    }
+    url_request_interceptors_.weak_clear();
+  }
+  storage->set_job_factory(top_job_factory.release());
   // TODO(willchan): Support sdch.
 
   return context;

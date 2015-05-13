@@ -12,6 +12,7 @@
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
 #include "base/android/library_loader/library_loader_hooks.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "components/cronet/android/chromium_url_request.h"
@@ -98,6 +99,9 @@ void CronetInitOnMainThread(JNIEnv* env, jclass jcaller) {
   base::i18n::InitializeICU();
 #endif
 
+  // TODO(bengr): Remove once Data Reduction Proxy no longer needs this for
+  // configuration information.
+  base::CommandLine::Init(0, nullptr);
   DCHECK(!base::MessageLoop::current());
   DCHECK(!g_main_message_loop);
   g_main_message_loop = new base::MessageLoopForUI();

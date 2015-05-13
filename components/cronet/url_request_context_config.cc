@@ -106,6 +106,18 @@ void URLRequestContextConfig::RegisterJSONConverter(
   converter->RegisterStringField(
       REQUEST_CONTEXT_CONFIG_QUIC_OPTIONS,
       &URLRequestContextConfig::quic_connection_options);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_PRIMARY_PROXY,
+      &URLRequestContextConfig::data_reduction_primary_proxy);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_FALLBACK_PROXY,
+      &URLRequestContextConfig::data_reduction_fallback_proxy);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_SECURE_PROXY_CHECK_URL,
+      &URLRequestContextConfig::data_reduction_secure_proxy_check_url);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_PROXY_KEY,
+      &URLRequestContextConfig::data_reduction_proxy_key);
 }
 
 }  // namespace cronet

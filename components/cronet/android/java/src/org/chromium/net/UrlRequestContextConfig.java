@@ -109,6 +109,41 @@ public class UrlRequestContextConfig {
     }
 
     /**
+     * String, key to use when authenticating with the proxy.
+     */
+    public UrlRequestContextConfig enableDataReductionProxy(String key) {
+        return (putString(
+                UrlRequestContextConfigList.DATA_REDUCTION_PROXY_KEY, key));
+    }
+
+    /**
+     * Overrides Data Reduction Proxy configuration parameters with a primary
+     * proxy name, fallback proxy name, and a secure proxy check url. Proxies
+     * are specified as [scheme://]host[:port]. Used for testing.
+     * @param primaryProxy The primary data reduction proxy to use.
+     * @param fallbackProxy A fallback data reduction proxy to use.
+     * @param secureProxyCheckUrl A url to fetch to determine if using a secure
+     * proxy is allowed.
+     */
+    public UrlRequestContextConfig setDataReductionProxyOptions(
+            String primaryProxy,
+            String fallbackProxy,
+            String secureProxyCheckUrl) {
+        if (primaryProxy.isEmpty() || fallbackProxy.isEmpty()
+                || secureProxyCheckUrl.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Primary and fallback proxies and check url must be set");
+        }
+        putString(UrlRequestContextConfigList.DATA_REDUCTION_PRIMARY_PROXY,
+                primaryProxy);
+        putString(UrlRequestContextConfigList.DATA_REDUCTION_FALLBACK_PROXY,
+                fallbackProxy);
+        putString(UrlRequestContextConfigList
+                .DATA_REDUCTION_SECURE_PROXY_CHECK_URL, secureProxyCheckUrl);
+        return this;
+    }
+
+    /**
      * Enumeration, disable or enable cache in memory or on disk.
      */
     public enum HttpCache {

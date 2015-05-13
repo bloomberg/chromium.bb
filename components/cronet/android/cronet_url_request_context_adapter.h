@@ -30,6 +30,7 @@ class SdchOwner;
 
 namespace cronet {
 
+class CronetDataReductionProxy;
 struct URLRequestContextConfig;
 
 bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env);
@@ -103,6 +104,7 @@ class CronetURLRequestContextAdapter {
   std::queue<base::Closure> tasks_waiting_for_context_;
   bool is_context_initialized_;
   int default_load_flags_;
+  scoped_ptr<CronetDataReductionProxy> data_reduction_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextAdapter);
 };

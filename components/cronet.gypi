@@ -108,6 +108,7 @@
             'DISABLE_FTP_SUPPORT=1',
           ],
           'dependencies': [
+            '../components/components.gyp:data_reduction_proxy_core_browser_small',
             '../net/net.gyp:net_small',
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],
@@ -117,6 +118,7 @@
           'target_name': 'cronet_static',
           'dependencies': [
             '../base/base.gyp:base_i18n',
+            '../components/components.gyp:data_reduction_proxy_core_browser',
             '../net/net.gyp:net',
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],

@@ -76,6 +76,11 @@ struct URLRequestContextConfig {
   ScopedVector<QuicHint> quic_hints;
   // Comma-separted list of QUIC connection options.
   std::string quic_connection_options;
+  // Enable Data Reduction Proxy with authentication key.
+  std::string data_reduction_proxy_key;
+  std::string data_reduction_primary_proxy;
+  std::string data_reduction_fallback_proxy;
+  std::string data_reduction_secure_proxy_check_url;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfig);

@@ -10,8 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
+#include "components/cronet/android/cronet_data_reduction_proxy.h"
 #include "components/cronet/url_request_context_config.h"
 #include "jni/CronetUrlRequestContext_jni.h"
 #include "net/base/load_flags.h"
@@ -23,6 +25,7 @@
 #include "net/sdch/sdch_owner.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_interceptor.h"
 
 namespace {
 
@@ -151,10 +154,32 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   DCHECK(proxy_config_service_);
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
-  context_builder.set_network_delegate(new BasicNetworkDelegate());
+
+  scoped_ptr<net::NetLog> net_log(new net::NetLog);
+  scoped_ptr<net::NetworkDelegate> network_delegate(new BasicNetworkDelegate());
+  DCHECK(!data_reduction_proxy_);
+  // For now, the choice to enable the data reduction proxy happens once,
+  // at initialization. It cannot be disabled thereafter.
+  if (!config->data_reduction_proxy_key.empty()) {
+    data_reduction_proxy_.reset(
+        new CronetDataReductionProxy(
+            config->data_reduction_proxy_key,
+            config->data_reduction_primary_proxy,
+            config->data_reduction_fallback_proxy,
+            config->data_reduction_secure_proxy_check_url,
+            config->user_agent,
+            GetNetworkTaskRunner(),
+            net_log.get()));
+    network_delegate =
+        data_reduction_proxy_->CreateNetworkDelegate(network_delegate.Pass());
+    ScopedVector<net::URLRequestInterceptor> interceptors;
+    interceptors.push_back(data_reduction_proxy_->CreateInterceptor());
+    context_builder.SetInterceptors(interceptors.Pass());
+  }
+  context_builder.set_network_delegate(network_delegate.release());
+  context_builder.set_net_log(net_log.release());
   context_builder.set_proxy_config_service(proxy_config_service_.release());
   config->ConfigureURLRequestContextBuilder(&context_builder);
-
   context_.reset(context_builder.Build());
 
   default_load_flags_ = net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -216,6 +241,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   Java_CronetUrlRequestContext_initNetworkThread(
       env, jcronet_url_request_context.obj());
 
+  if (data_reduction_proxy_)
+    data_reduction_proxy_->Init(true, GetURLRequestContext());
   is_context_initialized_ = true;
   while (!tasks_waiting_for_context_.empty()) {
     tasks_waiting_for_context_.front().Run();

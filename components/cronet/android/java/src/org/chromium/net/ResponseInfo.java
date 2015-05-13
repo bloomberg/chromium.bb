@@ -68,4 +68,9 @@ public interface ResponseInfo {
      * and without a revalidation request.
      */
     String getNegotiatedProtocol();
+
+    /**
+     * @return the proxy server that was used for the request.
+     */
+    String getProxyServer();
 };

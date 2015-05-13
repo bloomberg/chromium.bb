@@ -107,17 +107,19 @@ final class CronetUrlRequest implements UrlRequest {
         private final HeadersList mAllHeaders = new HeadersList();
         private final boolean mWasCached;
         private final String mNegotiatedProtocol;
+        private final String mProxyServer;
         private Map<String, List<String>> mResponseHeaders;
         private List<Pair<String, String>> mUnmodifiableAllHeaders;
 
         NativeResponseInfo(String[] urlChain, int httpStatusCode,
                 String httpStatusText, boolean wasCached,
-                String negotiatedProtocol) {
+                String negotiatedProtocol, String proxyServer) {
             mResponseInfoUrlChain = urlChain;
             mHttpStatusCode = httpStatusCode;
             mHttpStatusText = httpStatusText;
             mWasCached = wasCached;
             mNegotiatedProtocol = negotiatedProtocol;
+            mProxyServer = proxyServer;
         }
 
         @Override
@@ -176,6 +178,11 @@ final class CronetUrlRequest implements UrlRequest {
         @Override
         public String getNegotiatedProtocol() {
             return mNegotiatedProtocol;
+        }
+
+        @Override
+        public String getProxyServer() {
+            return mProxyServer;
         }
     };
 
@@ -421,7 +428,8 @@ final class CronetUrlRequest implements UrlRequest {
                 httpStatusCode,
                 nativeGetHttpStatusText(urlRequestAdapter),
                 nativeGetWasCached(urlRequestAdapter),
-                nativeGetNegotiatedProtocol(urlRequestAdapter));
+                nativeGetNegotiatedProtocol(urlRequestAdapter),
+                nativeGetProxyServer(urlRequestAdapter));
         nativePopulateResponseHeaders(urlRequestAdapter,
                                       responseInfo.mAllHeaders);
         return responseInfo;
@@ -700,6 +708,9 @@ final class CronetUrlRequest implements UrlRequest {
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native String nativeGetNegotiatedProtocol(long nativePtr);
+
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native String nativeGetProxyServer(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeGetWasCached(long nativePtr);
