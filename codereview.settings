@@ -1,5 +1,7 @@
 # This file is used by gcl to get repository specific information.
-CODE_REVIEW_SERVER: codereview.chromium.org
+GERRIT_HOST: chromium-review.googlesource.com
+GERRIT_PORT: 29418
+CODE_REVIEW_SERVER: chromium-review.googlesource.com
 CC_LIST: chromium-reviews@chromium.org, feature-media-reviews@chromium.org
 GITCL_PREUPLOAD: http://src.chromium.org/viewvc/trunk/tools/depot_tools/git-cl-upload-hook?revision=HEAD&root=chrome
 GITCL_PREDCOMMIT: http://src.chromium.org/viewvc/trunk/tools/depot_tools/git-cl-upload-hook?revision=HEAD&root=chrome
