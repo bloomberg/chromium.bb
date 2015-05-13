@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/common/page_zoom.h"
 #include "content/shell/renderer/test_runner/mock_spell_check.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
@@ -1563,7 +1562,7 @@ void EventSender::SetPageZoomFactor(double zoom_factor) {
 
   for (size_t i = 0; i < window_list.size(); ++i) {
     window_list.at(i)->GetWebView()->setZoomLevel(
-        ZoomFactorToZoomLevel(zoom_factor));
+        std::log(zoom_factor) / std::log(1.2));
   }
 }
 
