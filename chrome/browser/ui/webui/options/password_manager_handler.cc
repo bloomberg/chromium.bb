@@ -219,8 +219,8 @@ void PasswordManagerHandler::SetPasswordExceptionList(
     const ScopedVector<autofill::PasswordForm>& password_exception_list) {
   base::ListValue entries;
   for (size_t i = 0; i < password_exception_list.size(); ++i) {
-    entries.Append(new base::StringValue(
-        net::FormatUrl(password_exception_list[i]->origin, languages_)));
+    entries.AppendString(
+        GetHumanReadableOrigin(*password_exception_list[i], languages_));
   }
 
   web_ui()->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
