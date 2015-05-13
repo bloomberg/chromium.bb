@@ -6,7 +6,6 @@
 #define CC_RESOURCES_TILE_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/resources/raster_source.h"
 #include "cc/resources/tile_draw_info.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -85,7 +84,6 @@ class CC_EXPORT Tile {
 
   // Methods called by by tile manager.
   Tile(TileManager* tile_manager,
-       RasterSource* raster_source,
        const gfx::Size& desired_texture_size,
        const gfx::Rect& content_rect,
        float contents_scale,

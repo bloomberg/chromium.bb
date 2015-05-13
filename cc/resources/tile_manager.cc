@@ -751,16 +751,15 @@ void TileManager::UpdateTileDrawInfo(
   client_->NotifyTileStateChanged(tile);
 }
 
-ScopedTilePtr TileManager::CreateTile(RasterSource* raster_source,
-                                      const gfx::Size& desired_texture_size,
+ScopedTilePtr TileManager::CreateTile(const gfx::Size& desired_texture_size,
                                       const gfx::Rect& content_rect,
                                       float contents_scale,
                                       int layer_id,
                                       int source_frame_number,
                                       int flags) {
-  ScopedTilePtr tile(new Tile(this, raster_source, desired_texture_size,
-                              content_rect, contents_scale, layer_id,
-                              source_frame_number, flags));
+  ScopedTilePtr tile(new Tile(this, desired_texture_size, content_rect,
+                              contents_scale, layer_id, source_frame_number,
+                              flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile.get();

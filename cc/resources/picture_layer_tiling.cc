@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/prioritized_tile.h"
+#include "cc/resources/raster_source.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "ui/gfx/geometry/point_conversions.h"

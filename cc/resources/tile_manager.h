@@ -116,8 +116,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
 
   void UpdateVisibleTiles(const GlobalStateThatImpactsTilePriority& state);
 
-  ScopedTilePtr CreateTile(RasterSource* raster_source,
-                           const gfx::Size& desired_texture_size,
+  ScopedTilePtr CreateTile(const gfx::Size& desired_texture_size,
                            const gfx::Rect& content_rect,
                            float contents_scale,
                            int layer_id,

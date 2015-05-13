@@ -628,8 +628,8 @@ ScopedTilePtr PictureLayerImpl::CreateTile(float contents_scale,
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
-      raster_source_.get(), content_rect.size(), content_rect, contents_scale,
-      id(), layer_tree_impl()->source_frame_number(), flags);
+      content_rect.size(), content_rect, contents_scale, id(),
+      layer_tree_impl()->source_frame_number(), flags);
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {

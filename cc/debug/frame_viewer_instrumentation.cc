@@ -4,6 +4,8 @@
 
 #include "cc/debug/frame_viewer_instrumentation.h"
 
+#include "cc/debug/traced_value.h"
+
 namespace cc {
 namespace frame_viewer_instrumentation {
 

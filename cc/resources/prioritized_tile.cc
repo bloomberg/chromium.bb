@@ -4,6 +4,7 @@
 
 #include "cc/resources/prioritized_tile.h"
 
+#include "cc/debug/traced_value.h"
 #include "cc/resources/picture_layer_tiling.h"
 
 namespace cc {

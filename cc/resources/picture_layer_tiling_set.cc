@@ -8,6 +8,8 @@
 #include <set>
 #include <vector>
 
+#include "cc/resources/raster_source.h"
+
 namespace cc {
 
 namespace {

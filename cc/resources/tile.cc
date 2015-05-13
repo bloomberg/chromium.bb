@@ -16,7 +16,6 @@ namespace cc {
 Tile::Id Tile::s_next_id_ = 0;
 
 Tile::Tile(TileManager* tile_manager,
-           RasterSource* raster_source,
            const gfx::Size& desired_texture_size,
            const gfx::Rect& content_rect,
            float contents_scale,

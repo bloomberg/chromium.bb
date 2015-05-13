@@ -16,6 +16,7 @@ namespace cc {
 
 class ContextProvider;
 class ResourceProvider;
+class RasterSource;
 
 class CC_EXPORT GpuRasterizer {
  public:
