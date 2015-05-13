@@ -36,7 +36,7 @@ class MemoryKeyPairStore {
   }
 
   bool StoreKeyPair(EVP_PKEY* pkey) {
-    EVP_PKEY_dup(pkey);
+    EVP_PKEY_up_ref(pkey);
     base::AutoLock lock(lock_);
     keys_.push_back(pkey);
     return true;

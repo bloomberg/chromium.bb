@@ -37,18 +37,17 @@ OpenSSLClientKeyStore::OpenSSLClientKeyStore() {
 OpenSSLClientKeyStore::~OpenSSLClientKeyStore() {
 }
 
-OpenSSLClientKeyStore::KeyPair::KeyPair(EVP_PKEY* pub_key,
-                                        EVP_PKEY* priv_key)
-    : public_key(EVP_PKEY_dup(pub_key)),
-      private_key(EVP_PKEY_dup(priv_key)) {
+OpenSSLClientKeyStore::KeyPair::KeyPair(EVP_PKEY* pub_key, EVP_PKEY* priv_key)
+    : public_key(EVP_PKEY_up_ref(pub_key)),
+      private_key(EVP_PKEY_up_ref(priv_key)) {
 }
 
 OpenSSLClientKeyStore::KeyPair::~KeyPair() {
 }
 
 OpenSSLClientKeyStore::KeyPair::KeyPair(const KeyPair& other)
-    : public_key(EVP_PKEY_dup(other.public_key.get())),
-      private_key(EVP_PKEY_dup(other.private_key.get())) {
+    : public_key(EVP_PKEY_up_ref(other.public_key.get())),
+      private_key(EVP_PKEY_up_ref(other.private_key.get())) {
 }
 
 void OpenSSLClientKeyStore::KeyPair::operator=(KeyPair other) {
@@ -109,7 +108,8 @@ crypto::ScopedEVP_PKEY OpenSSLClientKeyStore::FetchClientCertPrivateKey(
   if (index < 0)
     return crypto::ScopedEVP_PKEY();
 
-  return crypto::ScopedEVP_PKEY(EVP_PKEY_dup(pairs_[index].private_key.get()));
+  return crypto::ScopedEVP_PKEY(
+      EVP_PKEY_up_ref(pairs_[index].private_key.get()));
 }
 
 void OpenSSLClientKeyStore::Flush() {
