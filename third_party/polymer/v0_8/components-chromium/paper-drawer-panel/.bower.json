@@ -1,6 +1,6 @@
 {
   "name": "paper-drawer-panel",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "authors": [
     "The Polymer Authors"
   ],
@@ -27,11 +27,11 @@
     "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
     "paper-styles": "PolymerElements/paper-styles#^0.8.0"
   },
-  "_release": "0.8.3",
+  "_release": "0.8.4",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.3",
-    "commit": "48222bc964338c0291c21bbdf92a1b1d3d30b589"
+    "tag": "v0.8.4",
+    "commit": "362863ba324c41f67ad5104f6942efa04b3e4ea5"
   },
   "_source": "git://github.com/PolymerElements/paper-drawer-panel.git",
   "_target": "^0.8.0",

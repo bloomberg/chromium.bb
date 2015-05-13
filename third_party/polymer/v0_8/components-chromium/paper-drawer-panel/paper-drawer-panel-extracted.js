@@ -136,7 +136,8 @@
         narrow: {
           reflectToAttribute: true,
           type: Boolean,
-          value: false
+          value: false,
+          notify: true
         },
 
         // Whether the drawer is peeking out from the edge.
@@ -213,8 +214,8 @@
       },
 
       listeners: {
-        click: 'onClick',
-        track: 'onTrack'
+        tap: '_onTap',
+        track: '_onTrack'
 
         // TODO: Implement tap handlers when taps are supported.
         //
@@ -257,7 +258,7 @@
         return !narrow || disableEdgeSwipe;
       },
 
-      onTrack: function(event) {
+      _onTrack: function(event) {
         switch (event.detail.state) {
           case 'end':
             this.trackEnd(event);
@@ -349,22 +350,21 @@
         }
       },
 
-      // TODO: Implement tap handlers when taps are supported.
-      //
-      // downHandler: function(e) {
-      //   if (!this.dragging && this.isMainSelected() && this.isEdgeTouch(e)) {
-      //     this.startEdgePeek();
-      //   }
-      // },
-      //
-      // upHandler: function(e) {
-      //   this.stopEdgePeek();
-      // },
+      _downHandler: function(e) {
+        if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(e)) {
+          this._startEdgePeek();
+        }
+      },
 
-      onClick: function(e) {
-        var isTargetToggleElement = e.target &&
+      _upHandler: function(e) {
+        this._stopEdgePeek();
+      },
+
+      _onTap: function(e) {
+        var targetElement = Polymer.dom(e).localTarget;
+        var isTargetToggleElement = targetElement &&
           this.drawerToggleAttribute &&
-          e.target.hasAttribute(this.drawerToggleAttribute);
+          targetElement.hasAttribute(this.drawerToggleAttribute);
 
         if (isTargetToggleElement) {
           this.togglePanel();
@@ -461,11 +461,6 @@
         } else {
           s.webkitTransform = this.transformForTranslateX(translateX);
         }
-      },
-
-      onSelect: function(e) {
-        e.preventDefault();
-        this.selected = e.detail.selected;
       }
 
     });

@@ -232,11 +232,11 @@ To position the drawer to the right, add `rightDrawer` attribute.
     <iron-media-query on-query-matches-changed="onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
     </iron-media-query>
 
-    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer)]]" on-iron-activate="onSelect" selected="[[selected]]">
+    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer)]]" activate-event="" selected="[[selected]]">
 
       <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
         <content select="[main]"></content>
-        <div id="scrim"></div>
+        <div id="scrim" on-tap="closeDrawer"></div>
         <div id="edgeSwipeOverlay" hidden$="[[_computeSwipeOverlayHidden(narrow, disableEdgeSwipe)]]">
         </div>
       </div>
