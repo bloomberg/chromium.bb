@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -40,7 +40,7 @@ public class AddToHomescreenDialog {
     public static void show(final Activity activity, final Tab currentTab) {
         View view = activity.getLayoutInflater().inflate(
                 R.layout.add_to_homescreen_dialog, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                 .setTitle(R.string.menu_add_to_homescreen)
                 .setNegativeButton(R.string.cancel,
                         new DialogInterface.OnClickListener() {
@@ -54,7 +54,7 @@ public class AddToHomescreenDialog {
         // On click of the menu item for "add to homescreen", an alert dialog pops asking the user
         // if the title needs to be edited. On click of "Add", shortcut is created. Default
         // title is the title of the page. OK button is disabled if the title text is empty.
-        final View progressBarView = (View) view.findViewById(R.id.spinny);
+        final View progressBarView = view.findViewById(R.id.spinny);
         final ImageView iconView = (ImageView) view.findViewById(R.id.icon);
         final EditText input = (EditText) view.findViewById(R.id.text);
         input.setEnabled(false);

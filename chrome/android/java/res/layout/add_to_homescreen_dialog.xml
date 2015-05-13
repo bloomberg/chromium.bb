@@ -18,7 +18,8 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="10dp" />
-    <EditText android:id="@+id/text"
+    <org.chromium.chrome.browser.widget.AlertDialogEditText
+        android:id="@+id/text"
         android:inputType="text"
         android:layout_width="match_parent"
         android:layout_height="32dp"
