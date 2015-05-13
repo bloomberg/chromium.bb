@@ -111,7 +111,7 @@ public:
 
     // ExecutionContextClient
     WorkerEventQueue* eventQueue() const override final;
-    SecurityContext& securityContext() override final { return *this; }
+    const SecurityContext& securityContext() const override final { return *this; }
 
     bool isContextThread() const override final;
     bool isJSExecutionForbidden() const override final;
@@ -137,7 +137,7 @@ public:
 
     virtual void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) { }
 
-    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) override;
+    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -1069,7 +1069,7 @@ public:
 
     NthIndexCache* nthIndexCache() const { return m_nthIndexCache; }
 
-    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) override;
+    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const override;
 
     void setClientHintsPreferences(const ClientHintsPreferences& preferences) { m_clientHintsPreferences.set(preferences); }
     const ClientHintsPreferences& clientHintsPreferences() const { return m_clientHintsPreferences; }
@@ -1100,7 +1100,7 @@ private:
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     ScriptedAnimationController& ensureScriptedAnimationController();
-    virtual SecurityContext& securityContext() override final { return *this; }
+    virtual const SecurityContext& securityContext() const override final { return *this; }
     virtual EventQueue* eventQueue() const override final;
 
     // FIXME: Rename the StyleRecalc state to LayoutTreeUpdate.

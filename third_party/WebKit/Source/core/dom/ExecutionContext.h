@@ -99,7 +99,7 @@ public:
 
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
 
-    virtual SecurityContext& securityContext() = 0;
+    virtual const SecurityContext& securityContext() const = 0;
     KURL contextURL() const { return virtualURL(); }
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
@@ -152,7 +152,7 @@ public:
 
     // Decides whether this context is privileged, as described in
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
-    virtual bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) = 0;
+    virtual bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const = 0;
 
     virtual void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }

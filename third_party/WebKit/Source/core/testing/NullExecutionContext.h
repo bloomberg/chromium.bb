@@ -34,7 +34,7 @@ public:
 
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) override { }
     virtual void didUpdateSecurityOrigin() override { }
-    virtual SecurityContext& securityContext() override { return *this; }
+    virtual const SecurityContext& securityContext() const override { return *this; }
     virtual DOMTimerCoordinator* timers() override { return nullptr; }
 
     double timerAlignmentInterval() const;
@@ -42,7 +42,7 @@ public:
     virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
 
-    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck);
+    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const override;
 
     DEFINE_INLINE_TRACE()
     {
