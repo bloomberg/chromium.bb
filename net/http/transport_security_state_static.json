@@ -2159,7 +2159,6 @@
     { "name": "securedrop.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "sigterm.sh", "include_subdomains": true, "mode": "force-https" },
     { "name": "sleio.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "snowflake.ch", "include_subdomains": true, "mode": "force-https" },
     { "name": "souki.cz", "include_subdomains": true, "mode": "force-https" },
     { "name": "speedcounter.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "stesti.cz", "include_subdomains": true, "mode": "force-https" },
