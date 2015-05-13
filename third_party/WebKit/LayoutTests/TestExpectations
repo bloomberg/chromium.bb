@@ -1941,3 +1941,5 @@ crbug.com/478014 [ Mac ] fast/forms/button-cannot-be-nested.html [ NeedsRebaseli
 crbug.com/478014 [ Mac ] fast/forms/button-white-space.html [ NeedsRebaseline ]
 crbug.com/478014 [ Mac ] fast/writing-mode/fallback-orientation.html [ NeedsRebaseline ]
 crbug.com/478014 [ Mac Win ] svg/css/text-shadow-multiple.xhtml [ NeedsRebaseline ]
+
+crbug.com/487671 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Pass Timeout ]
