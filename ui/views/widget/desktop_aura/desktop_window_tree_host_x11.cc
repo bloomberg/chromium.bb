@@ -793,9 +793,7 @@ void DesktopWindowTreeHostX11::SetWindowIcons(
   if (app_icon.HasRepresentation(1.0f))
     SerializeImageRepresentation(app_icon.GetRepresentation(1.0f), &data);
 
-  if (data.empty())
-    XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom("_NET_WM_ICON"));
-  else
+  if (!data.empty())
     ui::SetAtomArrayProperty(xwindow_, "_NET_WM_ICON", "CARDINAL", data);
 }
 
