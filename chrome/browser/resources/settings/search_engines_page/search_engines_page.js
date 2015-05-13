@@ -73,4 +73,5 @@ Polymer({
       value: 'search',
       readOnly: true
     },
+  },
 });

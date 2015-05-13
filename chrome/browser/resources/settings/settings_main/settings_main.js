@@ -32,9 +32,14 @@ Polymer({
 
     /**
      * Pages that may be shown.
-     * @type {?Array<!HTMLElement>}
+     * @type {!Array<!HTMLElement>}
      */
-    pages: Array,
+    pages: {
+      type: Array,
+      value: function() { return []; },
+      notify: true,
+      readOnly: true,
+    },
 
     /**
      * Currently selected page.
@@ -51,7 +56,8 @@ Polymer({
     selectedPageId: {
       type: String,
       notify: true,
-      observe: 'selectedPageIdChanged_',
+      value: '',
+      observer: 'selectedPageIdChanged_',
     },
   },
 
@@ -84,8 +90,7 @@ Polymer({
    * @private
    */
   onIronSelect_: function(event) {
-    if (event.target != this.$.pageContainer || !event.detail.isSelected ||
-        event.detail.item.subpage) {
+    if (event.target != this.$.pageContainer || event.detail.item.subpage) {
       return;
     }
     this.selectedPageId = event.detail.item.PAGE_ID;
@@ -108,9 +113,9 @@ Polymer({
    * @private
    */
   pageContainerUpdated_: function() {
-    this.pages = this.$.pageContainer.items.filter(function(item) {
+    this._setPages(this.$.pageContainer.items.filter(function(item) {
       return !item.subpage;
-    });
+    }));
     this.ensureSelection_();
   },
 });

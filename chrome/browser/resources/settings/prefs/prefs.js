@@ -83,7 +83,8 @@
           let token = tokens[i];
 
           if (!root.hasOwnProperty(token)) {
-            root[token] = {};
+            let path = 'settings.' + tokens.slice(0, i + 1).join('.');
+            this.setPathValue(path, {});
           }
           root = root[token];
         }
@@ -91,7 +92,8 @@
         // NOTE: Do this copy rather than just a re-assignment, so that the
         // ObjectObserver fires.
         for (let objKey in prefObj) {
-          root[objKey] = prefObj[objKey];
+          let path = 'settings.' + prefObj.key + '.' + objKey;
+          this.setPathValue(path, prefObj[objKey]);
         }
 
         if (shouldObserve) {
