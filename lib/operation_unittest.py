@@ -16,7 +16,7 @@ from chromite.lib import operation
 
 class TestWrapperProgressBarOperation(operation.ProgressBarOperation):
   """Inherit from operation.ProgressBarOperation for testing."""
-  def ParseOutput(self):
+  def ParseOutput(self, output=None):
     print("Calling ParseOutput")
     print(self._stdout.read())
 
@@ -27,7 +27,7 @@ class FakeParallelEmergeOperation(operation.ParallelEmergeOperation):
     super(FakeParallelEmergeOperation, self).__init__()
     self._queue = queue
 
-  def ParseOutput(self):
+  def ParseOutput(self, output=None):
     super(FakeParallelEmergeOperation, self).ParseOutput()
     self._queue.put('advance')
 
