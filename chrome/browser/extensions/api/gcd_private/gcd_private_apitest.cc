@@ -361,13 +361,8 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, WifiMessage) {
 }
 
 IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, WifiPasswords) {
-// TODO(noamsml): Win Dbg has a workaround that makes RunExtensionSubtest
-// always return true without actually running the test. Remove when fixed.
-// See http://crbug.com/177163 for details.
-#if !defined(OS_WIN) || defined(NDEBUG)
   EXPECT_CALL(wifi_manager_factory_, WifiManagerCreated())
       .WillOnce(Invoke(this, &GcdPrivateAPITest::OnCreateWifiManager));
-#endif
 
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "wifi_password.html"));
 }
