@@ -4,6 +4,8 @@
 
 rootUi = new (function() {
 
+this.savedScrollTop_ = 0;
+
 this.onDomReady_ = function() {
   $('#js_loading_banner').hide();
   $('#tabs').tabs({activate: this.onTabChange_.bind(this)});
@@ -82,6 +84,15 @@ this.onServerUnreachableOrTimeout = function() {
   timers.stopAll();
   this.showDialog('The www service is unreachable. ' +
                   'It probably crashed, Check the terminal output.');
+};
+
+// Sad hack required to work around a Google Table bug (goo.gl/TXr3vL).
+this.saveScrollPosition = function() {
+  this.savedScrollTop_ = $('#wrapper').scrollTop();
+};
+
+this.restoreScrollPosition = function() {
+  $('#wrapper').scrollTop(this.savedScrollTop_);
 };
 
 $(document).ready(this.onDomReady_.bind(this));

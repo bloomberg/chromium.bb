@@ -234,7 +234,7 @@ class AndroidDevice(backends.Device):
         wrapper_file.write('#!/system/bin/sh\n'
                            'LD_PRELOAD="libheap_profiler.so:$LD_PRELOAD" '
                            'exec %s.real "$@"\n' % app_process)
-        wrapper_file.close()
+        wrapper_file.flush()
         self.adb.Push(wrapper_file.name, app_process)
       self.adb.Shell(['chown', 'root.shell', app_process])
       self.adb.Shell(['chmod', '755', app_process])

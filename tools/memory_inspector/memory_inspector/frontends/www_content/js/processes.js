@@ -46,6 +46,8 @@ this.onDomReady_ = function() {
   this.psTable_ = new google.visualization.Table($('#ps-table')[0]);
   google.visualization.events.addListener(
       this.psTable_, 'select', this.onPsTableRowSelect_.bind(this));
+  google.visualization.events.addListener(
+      this.psTable_, 'ready', this.onPsTableRedrawn_.bind(this));
   $('#ps-table').on('dblclick', this.snapshotSelectedProcess_.bind(this));
 
   // Create the device stats charts.
@@ -199,6 +201,10 @@ this.onPsTableRowSelect_ = function() {
   this.startSelectedProcessStats();
 };
 
+this.onPsTableRedrawn_ = function() {
+  rootUi.restoreScrollPosition();
+};
+
 this.onPsAjaxResponse_ = function(data) {
   this.psTableData_ = new google.visualization.DataTable(data);
   this.redrawPsTable_();
@@ -210,6 +216,7 @@ this.redrawPsTable_ = function(data) {
 
   // Redraw table preserving sorting info.
   var sort = this.psTable_.getSortInfo() || {column: -1, ascending: false};
+  rootUi.saveScrollPosition();
   this.psTable_.draw(this.psTableData_, {sortColumn: sort.column,
                                          sortAscending: sort.ascending});
 };
