@@ -173,7 +173,10 @@
         '../sync/tools/sync_tools.gyp:sync_client',
         '../sync/tools/sync_tools.gyp:sync_listen_notifications',
         '../testing/gmock.gyp:gmock_main',
-        '../third_party/WebKit/public/all.gyp:blink_tests',
+        '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_heap_unittests',
+        '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_platform_unittests',
+        '../third_party/WebKit/Source/web/web_tests.gyp:webkit_unit_tests',
+        '../third_party/WebKit/Source/wtf/wtf_tests.gyp:wtf_unittests',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
         '../third_party/codesighs/codesighs.gyp:codesighs',
         '../third_party/codesighs/codesighs.gyp:maptsvdifftool',
@@ -276,8 +279,6 @@
             '../ui/ozone/ozone.gyp:ozone',
           ],
         }],
-
-
         ['use_x11==1', {
           'dependencies': [
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -313,6 +314,10 @@
 
             '../content/content_shell_and_tests.gyp:content_shell_apk',
 
+            '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_heap_unittests_apk',
+            '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_platform_unittests_apk',
+            '../third_party/WebKit/Source/web/web_tests.gyp:webkit_unit_tests_apk',
+            '../third_party/WebKit/Source/wtf/wtf_tests.gyp:wtf_unittests_apk',
             # TODO(GYP): Are these needed, or will they be pulled in automatically?
             #"//third_party/android_tools:android_gcm_java",
             #"//third_party/android_tools:uiautomator_java",
