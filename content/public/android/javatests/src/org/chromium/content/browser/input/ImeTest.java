@@ -331,7 +331,16 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
         DOMUtils.focusNode(mWebContents, "textarea");
         assertWaitForKeyboardStatus(true);
-        Thread.sleep(50);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return "textarea".equals(DOMUtils.getFocusedNode(mWebContents));
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        }));
 
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
@@ -623,6 +632,16 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
         DOMUtils.focusNode(mWebContents, "textarea");
         assertWaitForKeyboardStatus(true);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return "textarea".equals(DOMUtils.getFocusedNode(mWebContents));
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        }));
 
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);

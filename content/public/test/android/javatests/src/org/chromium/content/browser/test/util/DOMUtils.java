@@ -153,6 +153,27 @@ public class DOMUtils {
     }
 
     /**
+     * Get the id of the currently focused node.
+     */
+    public static String getFocusedNode(WebContents webContents)
+            throws InterruptedException, TimeoutException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  var node = document.activeElement;");
+        sb.append("  if (!node) return null;");
+        sb.append("  return node.id;");
+        sb.append("})();");
+
+        String id = JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, sb.toString());
+
+        // String results from JavaScript includes surrounding quotes.  Remove them.
+        if (id != null && id.length() >= 2 && id.charAt(0) == '"') {
+            id = id.substring(1, id.length() - 1);
+        }
+        return id;
+    }
+
+    /**
      * Click a DOM node by its id.
      */
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,
