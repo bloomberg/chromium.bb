@@ -794,21 +794,19 @@ void DisplayManager::UpdateDisplays(
   RefreshFontParams();
   base::AutoReset<bool> resetter(&change_display_upon_host_resize_, false);
 
+  int active_display_list_size = active_display_list_.size();
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
   active_display_list_.insert(active_display_list_.end(),
                               removed_displays.begin(), removed_displays.end());
 
-  for (DisplayList::const_reverse_iterator iter = removed_displays.rbegin();
-       iter != removed_displays.rend(); ++iter) {
-    screen_->NotifyDisplayRemoved(active_display_list_.back());
-    active_display_list_.pop_back();
-  }
+  for (const auto& display : removed_displays)
+    screen_->NotifyDisplayRemoved(display);
 
-  for (std::vector<size_t>::iterator iter = added_display_indices.begin();
-       iter != added_display_indices.end(); ++iter) {
-    screen_->NotifyDisplayAdded(active_display_list_[*iter]);
-  }
+  for (size_t index : added_display_indices)
+    screen_->NotifyDisplayAdded(active_display_list_[index]);
+
+  active_display_list_.resize(active_display_list_size);
 
   bool notify_primary_change =
       delegate_ ? old_primary.id() != screen_->GetPrimaryDisplay().id() : false;

@@ -34,11 +34,16 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
   std::vector<std::string> parts;
   base::SplitString(specs, ',', &parts);
   size_t index = 0;
+
+  DisplayManager::DisplayList list =
+      display_manager->IsInUnifiedMode()
+          ? display_manager->software_mirroring_display_list()
+          : display_manager->active_display_list();
+
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
-    int64 id = index < display_manager->GetNumDisplays() ?
-        display_manager->GetDisplayAt(index).id() :
-        gfx::Display::kInvalidDisplayID;
+    int64 id = (index < list.size()) ? list[index].id()
+                                     : gfx::Display::kInvalidDisplayID;
     display_info_list.push_back(
         DisplayInfo::CreateFromSpecWithID(*iter, id));
   }
