@@ -777,3 +777,12 @@ blink_web.dll!blink::WebFrameWidgetImpl::setIsAcceleratedCompositingActive
 blink_web.dll!blink::WebFrameWidgetImpl::setRootGraphicsLayer
 blink_web.dll!blink::ChromeClientImpl::attachRootGraphicsLayer
 blink_web.dll!blink::DeprecatedPaintLayerCompositor::detachRootLayer
+
+HANDLE LEAK
+name=http://crbug.com/487500
+system call NtCreateEvent
+...
+v8.dll!v8::base::Mutex::Lock
+base.dll!base::`anonymous namespace'::WorkItemCallback
+ntdll.dll!vsnprintf
+ntdll.dll!TpCallbackIndependent
