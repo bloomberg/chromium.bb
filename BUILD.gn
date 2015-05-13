@@ -9,20 +9,6 @@ import("ffmpeg_generated.gni")
 platform_config_root =
     "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_arch"
 
-# Stub generator script and signatures of all functions used by Chrome.
-generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
-
-# Used by ffmpeg_generate_stubs and ffmpeg_generate_def
-sig_files = [ "chromium/ffmpegsumo.sigs" ]
-
-# TODO(ajwong): Should be in ffmpeg_generate_stubs if we could grab the
-# outputs of an action via a function.
-if (is_win) {
-  stubs_filename_root = "ffmpegsumo"
-} else {
-  stubs_filename_root = "ffmpeg_stubs"
-}
-
 if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm") {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
@@ -59,67 +45,8 @@ if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
   }
 }
 
-# FFMpeg is dynamically loaded on all platforms but our code calls it
-# as if it were directly linked. To make this work, the build system needs
-# to generate stubs that indirect into the library calls.
-#
-# On Windows, this script calls the windows stub generator. Otherwise, assume
-# this is a POSIX platform and generate our own wrapper stubs.
-action("ffmpeg_generate_stubs") {
-  extra_header = "chromium/ffmpeg_stub_headers.fragment"
-
-  script = generate_stubs_script
-  sources = sig_files
-  inputs = [ extra_header ]
-
-  if (is_win) {
-    if (current_cpu == "x64") {
-      outfile_type = "windows_lib_x64"
-    } else {
-      outfile_type = "windows_lib"
-    }
-
-    # TODO(ajwong): these need to be in the ffmpeg build.
-    outputs = [
-      "$target_gen_dir/$stubs_filename_root.lib",
-    ]
-
-    args = [
-      # TODO(ajwong): In gyp, this uses different directories for the
-      # windows build. We should think this through.
-      "-i", rebase_path(target_gen_dir, root_build_dir),
-      "-o", rebase_path(target_gen_dir, root_build_dir),
-      "-t", outfile_type,
-    ]
-  } else {
-    # If it's not windows, clearly it must be posix.
-
-    # TODO(ajwong): these need to be included in the ffmpeg build.
-    outputs = [
-      "$target_gen_dir/$stubs_filename_root.cc",
-      "$target_gen_dir/$stubs_filename_root.h",
-    ]
-    args = [
-      # TODO(ajwong): IN gyp, this used to output the .h file into a shared
-      # directory that other targets could reference. The .cc ends up in a
-      # special generated directory that gyp would guaranteed that no one else
-      # could look at. Now we're dumping both into the generated directory.
-      # Verify what the best + simplest behavior is here and use that.
-      "-i", rebase_path(target_gen_dir, root_build_dir),
-      "-o", rebase_path(target_gen_dir, root_build_dir),
-      "-t", "posix_stubs",
-      "-e", rebase_path(extra_header, root_build_dir),
-      "-s", stubs_filename_root,
-      "-p", "third_party/ffmpeg",
-    ]
-  }
-
-  args += rebase_path(sources, root_build_dir)
-}
-
 if (build_ffmpegsumo) {
-  shared_library("ffmpegsumo") {
-    # TODO(gyp): Add version number to dll.
+  static_library("ffmpegsumo") {
     sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
       "$platform_config_root/libavutil/avconfig.h",
@@ -168,9 +95,6 @@ if (build_ffmpegsumo) {
       # a lot of unresolved symbols. The only supported mode is 'size' (see
       # crbug.com/264459).
       configs += [ "//build/config/compiler:optimize" ]
-      ldflags =
-          [ "/DEF:" +
-            rebase_path("$target_gen_dir/ffmpegsumo.def", root_build_dir) ]
     } else {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
@@ -326,12 +250,6 @@ if (build_ffmpegsumo) {
 #                'libraries': [
 #                  '$(SDKROOT)/usr/lib/libz.dylib',
 #                ],
-      # Ensure the symbols are exported.
-      #
-      # TODO(ajwong): Manually tag the API that we use to be exported.
-      if (!is_win) {
-        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-      }
 # TODO(ajwong): How to handle @loader_path?
 #              'xcode_settings': {
 #                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
@@ -387,7 +305,6 @@ if (build_ffmpegsumo) {
           "/wd4267"  # Conversion from size_t to 'type'.
         ]
       }
-      deps += [ ":ffmpeg_generate_def" ]
     }
 
     if ((current_cpu == "x86" || current_cpu == "x64") &&
@@ -404,26 +321,11 @@ if (is_win) {
       ".",
     ]
     libs = [ rebase_path("$target_gen_dir/ffmpegsumo.lib", root_build_dir) ]
-    ldflags = [ "/DELAYLOAD:ffmpegsumo.dll" ]
-  }
-
-  action("ffmpeg_generate_def") {
-    script = generate_stubs_script
-    sources = sig_files
-    outputs = [ "$target_gen_dir/ffmpegsumo.def" ]
-    args = [
-# TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
-      "-i", rebase_path(target_out_dir, root_build_dir),
-      "-o", rebase_path(target_gen_dir, root_build_dir),
-      "-t", "windows_def",
-      "-m", "ffmpegsumo.dll",
-    ] + rebase_path(sources, root_build_dir)
   }
 
   group("ffmpeg") {
     public_configs = [ ":ffmpeg_win_dependent_config" ]
     public_deps = [
-      ":ffmpeg_generate_stubs",
       ":ffmpegsumo",
     ]
   }
@@ -435,11 +337,6 @@ if (is_win) {
     ]
   }
   component("ffmpeg") {
-    sources = [
-      "$target_gen_dir/$stubs_filename_root.cc",
-      "$target_gen_dir/$stubs_filename_root.h",
-    ]
-    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
     defines = [
       "__STDC_CONSTANT_MACROS",  # FFmpeg uses INT64_C.
     ]
@@ -451,7 +348,6 @@ if (is_win) {
 
     public_configs = [ ":ffmpeg_posix_dependent_config" ]
     deps = [
-      ":ffmpeg_generate_stubs",
       ":ffmpegsumo",
       "//base",  # ffmpeg_stubs use base's logging functionality
     ]
