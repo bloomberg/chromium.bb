@@ -7,8 +7,8 @@
 [implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"]
 namespace fileSystemProvider {
   // Error codes used by providing extensions in response to requests as well
-  // as in case of errors when calling methods of the API. For success, <code>
-  // OK</code> must be used.
+  // as in case of errors when calling methods of the API. For success,
+  // <code>OK</code> must be used.
   enum ProviderError {
     OK,
     FAILED,
@@ -29,7 +29,7 @@ namespace fileSystemProvider {
     IO
   };
 
-  // Mode of opening a file. Used by <code>onOpenFileRequested</code>.
+  // Mode of opening a file. Used by $(ref:onOpenFileRequested).
   enum OpenFileMode {
     READ,
     WRITE
@@ -61,7 +61,7 @@ namespace fileSystemProvider {
 
     // Thumbnail image as a data URI in either PNG, JPEG or WEBP format, at most
     // 32 KB in size. Optional, but can be provided only when explicitly
-    // requested by the <code>onGetMetadataRequested</code> event.
+    // requested by the $(ref:onGetMetadataRequested) event.
     DOMString? thumbnail;
   };
 
@@ -117,7 +117,7 @@ namespace fileSystemProvider {
     [nodoc] Watcher[] watchers;
   };
 
-  // Options for the <code>mount()</code> method.
+  // Options for the $(ref:mount) method.
   dictionary MountOptions {
     // The string indentifier of the file system. Must be unique per each
     // extension.
@@ -139,13 +139,13 @@ namespace fileSystemProvider {
     [nodoc] boolean? supportsNotifyTag;
   };
 
-  // Options for the <code>unmount()</code> method.
+  // Options for the $(ref:unmount) method.
   dictionary UnmountOptions {
     // The identifier of the file system to be unmounted.
     DOMString fileSystemId;
   };
 
-  // Options for the <code>onUnmountRequested()</code> event.
+  // Options for the $(ref:onUnmountRequested) event.
   dictionary UnmountRequestedOptions {
     // The identifier of the file system to be unmounted.
     DOMString fileSystemId;
@@ -154,7 +154,7 @@ namespace fileSystemProvider {
     long requestId;
   };
 
-  // Options for the <code>onGetMetadataRequested()</code> event.
+  // Options for the $(ref:onGetMetadataRequested) event.
   dictionary GetMetadataRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -169,7 +169,7 @@ namespace fileSystemProvider {
     boolean thumbnail;
   };
 
-  // Options for the <code>onReadDirectoryRequested()</code> event.
+  // Options for the $(ref:onReadDirectoryRequested) event.
   dictionary ReadDirectoryRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -181,7 +181,7 @@ namespace fileSystemProvider {
     DOMString directoryPath;
   };
 
-  // Options for the <code>onOpenFileRequested()</code> event.
+  // Options for the $(ref:onOpenFileRequested) event.
   dictionary OpenFileRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -197,7 +197,7 @@ namespace fileSystemProvider {
     OpenFileMode mode;
   };
 
-  // Options for the <code>onCloseFileRequested()</code> event.
+  // Options for the $(ref:onCloseFileRequested) event.
   dictionary CloseFileRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -209,7 +209,7 @@ namespace fileSystemProvider {
     long openRequestId;
   };
 
-  // Options for the <code>onReadFileRequested()</code> event.
+  // Options for the $(ref:onReadFileRequested) event.
   dictionary ReadFileRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -227,7 +227,7 @@ namespace fileSystemProvider {
     double length;
   };
 
-  // Options for the <code>onCreateDirectoryRequested()</code> event.
+  // Options for the $(ref:onCreateDirectoryRequested) event.
   dictionary CreateDirectoryRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -242,7 +242,7 @@ namespace fileSystemProvider {
     boolean recursive;
   };
 
-  // Options for the <code>onDeleteEntryRequested()</code> event.
+  // Options for the $(ref:onDeleteEntryRequested) event.
   dictionary DeleteEntryRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -257,7 +257,7 @@ namespace fileSystemProvider {
     boolean recursive;
   };
 
-  // Options for the <code>onCreateFileRequested()</code> event.
+  // Options for the $(ref:onCreateFileRequested) event.
   dictionary CreateFileRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -269,7 +269,7 @@ namespace fileSystemProvider {
     DOMString filePath;
   };
 
-  // Options for the <code>onCopyEntryRequested()</code> event.
+  // Options for the $(ref:onCopyEntryRequested) event.
   dictionary CopyEntryRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -284,7 +284,7 @@ namespace fileSystemProvider {
     DOMString targetPath;
   };
 
-  // Options for the <code>onMoveEntryRequested()</code> event.
+  // Options for the $(ref:onMoveEntryRequested) event.
   dictionary MoveEntryRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -299,7 +299,7 @@ namespace fileSystemProvider {
     DOMString targetPath;
   };
 
-  // Options for the <code>onTruncateRequested()</code> event.
+  // Options for the $(ref:onTruncateRequested) event.
   dictionary TruncateRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -314,7 +314,7 @@ namespace fileSystemProvider {
     double length;
   };
 
-  // Options for the <code>onWriteFileRequested()</code> event.
+  // Options for the $(ref:onWriteFileRequested) event.
   dictionary WriteFileRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -332,7 +332,7 @@ namespace fileSystemProvider {
     ArrayBuffer data;
   };
 
-  // Options for the <code>onAbortRequested()</code> event.
+  // Options for the $(ref:onAbortRequested) event.
   dictionary AbortRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -344,7 +344,7 @@ namespace fileSystemProvider {
     long operationRequestId;
   };
 
-  // Options for the <code>onAddWatcherRequested()</code> event.
+  // Options for the $(ref:onAddWatcherRequested) event.
   dictionary AddWatcherRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -360,7 +360,7 @@ namespace fileSystemProvider {
     boolean recursive;
   };
 
-  // Options for the <code>onRemoveWatcherRequested()</code> event.
+  // Options for the $(ref:onRemoveWatcherRequested) event.
   dictionary RemoveWatcherRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
@@ -385,7 +385,7 @@ namespace fileSystemProvider {
     ChangeType changeType;
   };
 
-  // Options for the <code>Notify()</code> method.
+  // Options for the $(ref:notify) method.
   dictionary NotifyOptions {
     // The identifier of the file system related to this change.
     DOMString fileSystemId;
@@ -412,8 +412,8 @@ namespace fileSystemProvider {
     DOMString? tag;
   };
 
-  // Options for the <code>onConfigureRequested()</code> event.
-  [nodoc] dictionary ConfigureRequestedOptions {
+  // Options for the $(ref:onConfigureRequested) event.
+  dictionary ConfigureRequestedOptions {
     // The identifier of the file system to be configured.
     DOMString fileSystemId;
 
@@ -421,10 +421,10 @@ namespace fileSystemProvider {
     long requestId;
   };
 
-  // Callback to receive the result of getAll() function.
+  // Callback to receive the result of $(ref:getAll) function.
   callback GetAllCallback = void(FileSystemInfo[] fileSystems);
 
-  // Callback to receive the result of get() function.
+  // Callback to receive the result of $(ref:get) function.
   callback GetCallback = void(FileSystemInfo fileSystem);
 
   // Callback to be called by the providing extension in case of a success.
@@ -433,18 +433,18 @@ namespace fileSystemProvider {
   // Callback to be called by the providing extension in case of an error.
   [nocompile] callback ProviderErrorCallback = void(ProviderError error);
 
-  // Success callback for the <code>onGetMetadataRequested</code> event.
+  // Success callback for the $(ref:onGetMetadataRequested) event.
   [nocompile] callback MetadataCallback = void(
       EntryMetadata metadata);
 
-  // Success callback for the <code>onReadDirectoryRequested</code> event. If
-  // more entries will be returned, then <code>hasMore</code> must be true, and
-  // it has to be called again with additional entries. If no more entries are
+  // Success callback for the $(ref:onReadDirectoryRequested) event. If more
+  // entries will be returned, then <code>hasMore</code> must be true, and it
+  // has to be called again with additional entries. If no more entries are
   // available, then <code>hasMore</code> must be set to false.
   [nocompile] callback EntriesCallback = void(
       EntryMetadata[] entries, boolean hasMore);
 
-  // Success callback for the <code>onReadFileRequested</code> event. If more
+  // Success callback for the $(ref:onReadFileRequested) event. If more
   // data will be returned, then <code>hasMore</code> must be true, and it
   // has to be called again with additional entries. If no more data is
   // available, then <code>hasMore</code> must be set to false.
@@ -455,52 +455,52 @@ namespace fileSystemProvider {
   callback ResultCallback = void();
 
   interface Functions {
-    // Mounts a file system with the given <code>fileSystemId</code> and <code>
-    // displayName</code>. <code>displayName</code> will be shown in the left
-    // panel of Files.app. <code>displayName</code> can contain any characters
-    // including '/', but cannot be an empty string. <code>displayName</code>
-    // must be descriptive but doesn't have to be unique. The <code>fileSystemId
-    // </code> must not be an empty string.
+    // Mounts a file system with the given <code>fileSystemId</code> and
+    // <code>displayName</code>. <code>displayName</code> will be shown in the
+    // left panel of Files.app. <code>displayName</code> can contain any
+    // characters including '/', but cannot be an empty string.
+    // <code>displayName</code> must be descriptive but doesn't have to be
+    // unique. The <code>fileSystemId</code> must not be an empty string.
     //
-    // Depending on the type of the file system being mounted, the <code>source
-    // </code> option must be set appropriately.
+    // Depending on the type of the file system being mounted, the
+    // <code>source</code> option must be set appropriately.
     //
-    // In case of an error, <code>chrome.runtime.lastError</code> will be set
-    // will a corresponding error code.
+    // In case of an error, $(ref:runtime.lastError) will be set with a
+    // corresponding error code.
     static void mount(MountOptions options,
                       optional ResultCallback callback);
 
     // Unmounts a file system with the given <code>fileSystemId</code>. It
-    // must be called after <code>onUnmountRequested</code> is invoked. Also,
+    // must be called after $(ref:onUnmountRequested) is invoked. Also,
     // the providing extension can decide to perform unmounting if not requested
     // (eg. in case of lost connection, or a file error).
     //
-    // In case of an error, <code>chrome.runtime.lastError</code> will be set
-    // will a corresponding error code.
+    // In case of an error, $(ref:runtime.lastError) will be set with a
+    // corresponding error code.
     static void unmount(UnmountOptions options,
                         optional ResultCallback callback);
 
     // Returns all file systems mounted by the extension.
     static void getAll(GetAllCallback callback);
 
-    // Returns information about a file system with the passed <code>
-    // fileSystemId</code>.
+    // Returns information about a file system with the passed
+    // <code>fileSystemId</code>.
     static void get(DOMString fileSystemId, GetCallback callback);
 
-    // Notifies about changes in the watched directory at <code>
-    // observedPath</code> in <code>recursive</code mode. If the file system is
-    // mounted with <code>supportsNofityTag</code>, then <code>tag</code> must
-    // be provided, and all changes since the last notification always reported,
-    // even if the system was shutdown. The last tag can be obtained with <code>
-    // getAll()</code>. Note, that <code>tag</code> is required in order to
-    // enable the internal cache.
+    // Notifies about changes in the watched directory at
+    // <code>observedPath</code> in <code>recursive</code> mode. If the file
+    // system is mounted with <code>supportsNofityTag</code>, then
+    // <code>tag</code> must be provided, and all changes since the last
+    // notification always reported, even if the system was shutdown. The last
+    // tag can be obtained with $(ref:getAll). Note, that <code>tag</code> is
+    // required in order to enable the internal cache.
     //
     // Value of <code>tag</code> can be any string which is unique per call,
     // so it's possible to identify the last registered notification. Eg. if
     // the providing extension starts after a reboot, and the last registered
-    // notification's tag is equal to "123", then it should call notify() for
-    // all changes which happened since the change tagged as "123". It cannot
-    // be an empty string.
+    // notification's tag is equal to "123", then it should call $(ref:notify)
+    // for all changes which happened since the change tagged as "123". It
+    // cannot be an empty string.
     //
     // Not all providers are able to provide a tag, but if the file system has
     // a changelog, then the tag can be eg. a change number, or a revision
@@ -512,36 +512,36 @@ namespace fileSystemProvider {
     // entries are in fact removed, as there is no entry under their original
     // paths anymore.
     //
-    // In case of an error, <code>chrome.runtime.lastError</code> will be set
+    // In case of an error, $(ref:chrome.runtime.lastError) will be set
     // will a corresponding error code.
     [nodoc] static void notify(NotifyOptions options,
                                optional ResultCallback callback);
   };
 
   interface Events {
-    // Raised when unmounting for the file system with the <code>fileSystemId
-    // </code> identifier is requested. In the response, the <code>unmount
-    // </code> API method must be called together with <code>successCallback
-    // </code>. If unmounting is not possible (eg. due to a pending operation),
-    // then <code>errorCallback</code> must be called.
+    // Raised when unmounting for the file system with the
+    // <code>fileSystemId</code> identifier is requested. In the response, the
+    // $(ref:unmount) API method must be called together with
+    // <code>successCallback</code>. If unmounting is not possible (eg. due to
+    // a pending operation), then <code>errorCallback</code> must be called.
     [maxListeners=1] static void onUnmountRequested(
         UnmountRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when metadata of a file or a directory at <code>entryPath</code>
-    // is requested. The metadata must be returned with the <code>
-    // successCallback</code> call. In case of an error, <code>errorCallback
-    // </code> must be called.
+    // is requested. The metadata must be returned with the
+    // <code>successCallback</code> call. In case of an error,
+    // <code>errorCallback</code> must be called.
     [maxListeners=1] static void onGetMetadataRequested(
         GetMetadataRequestedOptions options,
         MetadataCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when contents of a directory at <code>directoryPath</code> are
-    // requested. The results must be returned in chunks by calling the <code>
-    // successCallback</code> several times. In case of an error, <code>
-    // errorCallback</code> must be called.
+    // requested. The results must be returned in chunks by calling the
+    // <code>successCallback</code> several times. In case of an error,
+    // <code>errorCallback</code> must be called.
     [maxListeners=1] static void onReadDirectoryRequested(
         ReadDirectoryRequestedOptions options,
         EntriesCallback successCallback,
@@ -555,15 +555,15 @@ namespace fileSystemProvider {
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
-    // Raised when opening a file previously opened with <code>openRequestId
-    // </code> is requested to be closed.
+    // Raised when opening a file previously opened with
+    // <code>openRequestId</code> is requested to be closed.
     [maxListeners=1] static void onCloseFileRequested(
         CloseFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
-    // Raised when reading contents of a file opened previously with <code>
-    // openRequestId</code> is requested. The results must be returned in
+    // Raised when reading contents of a file opened previously with
+    // <code>openRequestId</code> is requested. The results must be returned in
     // chunks by calling <code>successCallback</code> several times. In case of
     // an error, <code>errorCallback</code> must be called.
     [maxListeners=1] static void onReadFileRequested(
@@ -589,8 +589,8 @@ namespace fileSystemProvider {
         ProviderErrorCallback errorCallback);
 
     // Raised when creating a file is requested. If the file already exists,
-    // then <code>errorCallback</code> must be called with the <code>EXISTS
-    // </code> error code.
+    // then <code>errorCallback</code> must be called with the
+    // <code>"EXISTS"</code> error code.
     [maxListeners=1] static void onCreateFileRequested(
         CreateFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
@@ -617,8 +617,8 @@ namespace fileSystemProvider {
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
-    // Raised when writing contents to a file opened previously with <code>
-    // openRequestId</code> is requested.
+    // Raised when writing contents to a file opened previously with
+    // <code>openRequestId</code> is requested.
     [maxListeners=1] static void onWriteFileRequested(
         WriteFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
@@ -627,27 +627,31 @@ namespace fileSystemProvider {
     // Raised when aborting an operation with <code>operationRequestId</code>
     // is requested. The operation executed with <code>operationRequestId</code>
     // must be immediately stopped and <code>successCallback</code> of this
-    // abort request executed. If aborting fails, then <code>errorCallback
-    // </code> must be called. Note, that callbacks of the aborted operation
-    // must not be called, as they will be ignored. Despite calling <code>
-    // errorCallback</code>, the request may be forcibly aborted. 
+    // abort request executed. If aborting fails, then
+    // <code>errorCallback</code> must be called. Note, that callbacks of the
+    // aborted operation must not be called, as they will be ignored. Despite
+    // calling <code>errorCallback</code>, the request may be forcibly aborted.
     [maxListeners=1] static void onAbortRequested(
         AbortRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when showing a configuration dialog for <code>fileSystemId</code>
-    // is requested. If it's not supported, then this event must not be handled.
-    [maxListeners=1, nodoc] static void onConfigureRequested(
+    // is requested. If it's handled, the
+    // <code>file_system_provider.configurable</code> manfiest option must be
+    // set to true.
+    [maxListeners=1] static void onConfigureRequested(
         ConfigureRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when showing a dialog for mounting a new file system is requested.
     // If the extension/app is a file handler, then this event shouldn't be
-    // handled. Instead <code>onLaunched</code> should be handled in order to
-    // mount new file systems when a file is opened.
-    [maxListeners=1, nodoc] static void onMountRequested(
+    // handled. Instead <code>app.runtime.onLaunched</code> should be handled in
+    // order to mount new file systems when a file is opened. For multiple
+    // mounts, the <code>file_system_provider.multiple_mounts</code> manifest
+    // option must be set to true.
+    [maxListeners=1] static void onMountRequested(
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 

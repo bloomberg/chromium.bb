@@ -172,7 +172,7 @@
       {
         "id": "FileSystemProviderSource",
         "type": "string",
-        "description": "For <code>file</code> the source is a file passed via <code>onLaunched</code> event. For <code>device</code> contents are fetched from an external device (eg. plugged via USB), without using <code>file_handlers</code>. Finally, for <code>device</code> source, contents should be fetched via network.",
+        "description": "For <code>\"file\"</code> the source is a file passed via <code>onLaunched</code> event. For <code>\"device\"</code> contents are fetched from an external device (eg. plugged via USB), without using <code>file_handlers</code>. Finally, for <code>\"network\"</code> source, contents should be fetched via network.",
         "enum": ["file", "device", "network"]
       },
       {

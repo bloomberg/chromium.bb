@@ -88,6 +88,14 @@
     "documentation": "manifest/file_handlers",
     "example": {}
   },
+  "file_system_provider_capabilities": {
+    "documentation": "manifest/file_system_provider",
+    "example": {
+      "configurable": true,
+      "multiple_mounts": true,
+      "source": "network"
+    }
+  },
   "homepage_url": {
     "documentation": "manifest/homepage_url",
     "example": "http://path/to/homepage"
