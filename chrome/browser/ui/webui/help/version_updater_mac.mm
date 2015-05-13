@@ -53,7 +53,8 @@
 
 @end  // @implementation KeystoneObserver
 
-VersionUpdater* VersionUpdater::Create(content::BrowserContext* /* context */) {
+VersionUpdater* VersionUpdater::Create(
+    content::WebContents* /* web_contents */) {
   return new VersionUpdaterMac;
 }
 

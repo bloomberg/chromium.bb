@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 
 namespace content {
-class BrowserContext;
+class WebContents;
 }
 
 // Interface implemented to expose per-platform updating functionality.
@@ -59,7 +59,7 @@ class VersionUpdater {
 
   // Sub-classes must implement this method to create the respective
   // specialization.
-  static VersionUpdater* Create(content::BrowserContext* context);
+  static VersionUpdater* Create(content::WebContents* web_contents);
 
   // Begins the update process by checking for update availability.
   // |status_callback| is called for each status update. |promote_callback| can

@@ -22,6 +22,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -109,8 +110,8 @@ bool EnsureCanUpdate(const VersionUpdater::StatusCallback& callback) {
 
 }  // namespace
 
-VersionUpdater* VersionUpdater::Create(content::BrowserContext* context) {
-  return new VersionUpdaterCros(context);
+VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {
+  return new VersionUpdaterCros(web_contents);
 }
 
 void VersionUpdaterCros::GetUpdateStatus(const StatusCallback& callback) {
@@ -181,8 +182,8 @@ void VersionUpdaterCros::GetChannel(bool get_current_channel,
   update_engine_client->GetChannel(get_current_channel, cb);
 }
 
-VersionUpdaterCros::VersionUpdaterCros(content::BrowserContext* context)
-    : context_(context),
+VersionUpdaterCros::VersionUpdaterCros(content::WebContents* web_contents)
+    : context_(web_contents ? web_contents->GetBrowserContext() : nullptr),
       last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
       check_for_update_when_idle_(false),
       weak_ptr_factory_(this) {

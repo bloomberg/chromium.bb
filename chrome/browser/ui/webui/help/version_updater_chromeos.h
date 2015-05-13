@@ -10,6 +10,11 @@
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chromeos/dbus/update_engine_client.h"
 
+namespace content {
+class BrowserContext;
+class WebContents;
+}
+
 class VersionUpdaterCros : public VersionUpdater,
                            public chromeos::UpdateEngineClient::Observer {
  public:
@@ -28,7 +33,7 @@ class VersionUpdaterCros : public VersionUpdater,
   friend class VersionUpdater;
 
   // Clients must use VersionUpdater::Create().
-  explicit VersionUpdaterCros(content::BrowserContext* context);
+  explicit VersionUpdaterCros(content::WebContents* web_contents);
   ~VersionUpdaterCros() override;
 
  private:

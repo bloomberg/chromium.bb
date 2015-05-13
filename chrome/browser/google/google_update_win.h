@@ -8,33 +8,15 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "google_update/google_update_idl.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class TaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
-
-// The status of the upgrade. UPGRADE_STARTED and UPGRADE_CHECK_STARTED are
-// internal states and will not be reported as results to the listener.
-// These values are used for a histogram. Do not reorder.
-enum GoogleUpdateUpgradeResult {
-  // The upgrade has started.
-  UPGRADE_STARTED = 0,
-  // A check for upgrade has been initiated.
-  UPGRADE_CHECK_STARTED = 1,
-  // An update is available.
-  UPGRADE_IS_AVAILABLE = 2,
-  // The upgrade happened successfully.
-  UPGRADE_SUCCESSFUL = 3,
-  // No need to upgrade, Chrome is up to date.
-  UPGRADE_ALREADY_UP_TO_DATE = 4,
-  // An error occurred.
-  UPGRADE_ERROR = 5,
-  NUM_UPGRADE_RESULTS
-};
 
 // These values are used for a histogram. Do not reorder.
 enum GoogleUpdateErrorCode {
@@ -44,8 +26,8 @@ enum GoogleUpdateErrorCode {
   // location. This error will appear for developer builds and with
   // installations unzipped to random locations.
   CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY = 1,
-  // Failed to create Google Update JobServer COM class.
-  GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED = 2,
+  // Failed to create Google Update JobServer COM class. DEPRECATED.
+  // GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED = 2,
   // Failed to create Google Update OnDemand COM class.
   GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND = 3,
   // Google Update OnDemand COM class reported an error during a check for
@@ -63,38 +45,69 @@ enum GoogleUpdateErrorCode {
   GOOGLE_UPDATE_DISABLED_BY_POLICY = 8,
   // Updates can not be downloaded because the administrator has disabled
   // manual (on-demand) updates.  Automatic background updates are allowed.
-  GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY = 9,
+  // DEPRECATED.
+  // GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY = 9,
   NUM_ERROR_CODES
 };
 
-// A callback run when a check for updates has completed. |result| indicates the
-// end state of the operation. When |result| is UPGRADE_ERROR, |error_code| and
-// |error_message| indicate the the nature of the error. When |result| is
-// UPGRADE_IS_AVAILABLE or UPGRADE_SUCCESSFUL, |version| may indicate the new
-// version Google Update detected (it may, however, be empty).
-typedef base::Callback<void(GoogleUpdateUpgradeResult result,
-                            GoogleUpdateErrorCode error_code,
-                            const base::string16& error_message,
-                            const base::string16& version)> UpdateCheckCallback;
+// A delegate by which a caller of BeginUpdateCheck is notified of the status
+// and results of an update check.
+class UpdateCheckDelegate {
+ public:
+  virtual ~UpdateCheckDelegate() {}
 
-// Begins an asynchronous update check on |task_runner|, which must run a
-// TYPE_UI message loop. If |install_if_newer| is true, an update will be
-// applied. |elevation_window| is the window which should own any necessary
-// elevation UI. |callback| will be run on the caller's thread when the check
-// completes.
-void BeginUpdateCheck(const scoped_refptr<base::TaskRunner>& task_runner,
-                      bool install_if_newer,
-                      gfx::AcceleratedWidget elevation_window,
-                      const UpdateCheckCallback& callback);
+  // Invoked following a successful update check. |new_version|, if not empty,
+  // indicates the new version that is available. Otherwise (if |new_version| is
+  // empty), Chrome is up to date. This method will only be invoked when
+  // BeginUpdateCheck is called with |install_update_if_possible| == false.
+  virtual void OnUpdateCheckComplete(const base::string16& new_version) = 0;
 
-// A type of callback supplied by tests to provide a custom IGoogleUpdate
-// implementation.
-typedef base::Callback<HRESULT(base::win::ScopedComPtr<IGoogleUpdate>*)>
-    OnDemandAppsClassFactory;
+  // Invoked zero or more times during an upgrade. |progress|, a number between
+  // 0 and 100 (inclusive), is an estimation as to what percentage of the
+  // upgrade has completed. |new_version| indicates the version that is being
+  // download and installed. This method will only be invoked when
+  // BeginUpdateCheck is called with |install_update_if_possible| == true.
+  virtual void OnUpgradeProgress(int progress,
+                                 const base::string16& new_version) = 0;
 
-// For use by tests that wish to provide a custom IGoogleUpdate implementation
-// independent of Google Update's.
+  // Invoked following a successful upgrade. |new_version| indicates the version
+  // to which Chrome was updated. This method will only be invoked when
+  // BeginUpdateCheck is called with |install_update_if_possible| == true.
+  virtual void OnUpgradeComplete(const base::string16& new_version) = 0;
+
+  // Invoked following an unrecoverable error, indicated by |error_code|.
+  // |error_message|, if not empty, contains a localized string that may be
+  // presented to the user explaining the nature of the error. |new_version|, if
+  // not empty, indicates the version to which an upgrade attempt was made.
+  virtual void OnError(GoogleUpdateErrorCode error_code,
+                       const base::string16& error_message,
+                       const base::string16& new_version) = 0;
+
+ protected:
+  UpdateCheckDelegate() {}
+};
+
+// Begins an asynchronous update check on |task_runner|. If a new version is
+// available and |install_update_if_possible| is true, the new version will be
+// automatically downloaded and installed. |elevation_window| is the window
+// which should own any necessary elevation UI. Methods on |delegate| will be
+// invoked on the caller's thread to provide feedback on the operation, with
+// messages localized to |locale| if possible.
+void BeginUpdateCheck(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const std::string& locale,
+    bool install_update_if_possible,
+    gfx::AcceleratedWidget elevation_window,
+    const base::WeakPtr<UpdateCheckDelegate>& delegate);
+
+// A type of callback supplied by tests to provide a custom IGoogleUpdate3Web
+// implementation (see src/google_update/google_update_idl.idl).
+typedef base::Callback<HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*)>
+    GoogleUpdate3ClassFactory;
+
+// For use by tests that wish to provide a custom IGoogleUpdate3Web
+// implementation independent of Google Update's.
 void SetGoogleUpdateFactoryForTesting(
-    const OnDemandAppsClassFactory& google_update_factory);
+    const GoogleUpdate3ClassFactory& google_update_factory);
 
 #endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_

@@ -7419,6 +7419,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED" desc="The error message for the specific case when we cannot create the Google Update component">
           Update check failed to start (error code <ph name="ERROR">$1<ex>0x80000005</ex></ph>).
         </message>
+        <message name="IDS_ABOUT_BOX_GOOGLE_UPDATE_ERROR" desc="An error message from Google Update with details.">
+          <ph name="ERROR">$1<ex>An error message from Google Update.</ex></ph> (error code <ph name="ERROR_CODE">$2<ex>7: 0x80000005</ex></ph>).
+        </message>
       </if>
 
       <!-- Omnibox -->
@@ -8501,14 +8504,9 @@ I don't think this site should be blocked!
           Update failed (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
         </message>
       </if>
-      <if expr="is_win or chromeos">
+      <if expr="chromeos">
         <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
           Updates are disabled by the administrator
-        </message>
-      </if>
-      <if expr="is_win">
-        <message name="IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL" desc="Status label: Manual upgrades disabled by policy, automatic upgrades ok">
-          Manual updates are disabled by the administrator.  Automatic updates are enabled.
         </message>
       </if>
       <message name="IDS_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">
