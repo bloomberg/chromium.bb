@@ -1,9 +1,24 @@
-<h1>Other Deployment Options</h1>
+<h1>Alternative Extension Distribution Options</h1>
 
 <p>
-Usually, users install their own extensions.
+All Chrome extensions must be distributed either directly from the Chrome Web Store,
+using
+<a href="/webstore/inline_installation">inline installation</a>,
+or using the mechanisms described below.
+Failure to comply with one of these distribution methods constitutes
+a violation of the
+<a href="/extensions/single_purpose">Chrome extension policy</a>
+and may result in the extension
+and/or the software distributing it to be flagged as
+<a href="https://www.google.com/about/company/unwanted-software-policy.html">unwanted software</a>.
+</p>
+
+<p>
+Usually, users install their own extensions from the Chrome Web Store
+or some other site via
+<a href="/webstore/inline_installation">inline installation</a>.
 But sometimes you might want an extension
-to be installed automatically.
+to be installed via other means.
 Here are two typical cases:
 </p>
 
@@ -12,53 +27,56 @@ Here are two typical cases:
     An extension is associated with some other software,
     and the extension should be installed
     whenever the user installs that other software.
-    The extension could also be uninstalled
-    when the user removes that other software.
   </li>
   <li>
     A network admin wants to install the same extensions
-    throughout the company.
+    throughout their organization.
   </li>
 </ul>
 
 <p>
-An extension that's installed automatically is known as an
+An extension that's installed neither from the Chrome West Store
+nor as an inline installation is known as an
 <em>external extension</em>.
-Google Chrome supports two ways of
-installing external extensions:
+For developers who want to distribute an extension as part
+of the installation process for other software,
+or for network admins that want to distribute an extension
+throughout their organization,
+Google Chrome supports the following extension installation methods:
 </p>
 
 <ul>
-  <li> Using a preferences JSON file (Mac OS X and Linux only)</li>
-  <li> Using the Windows registry (Windows only) </li>
+  <li> Using a preferences JSON file (for Mac OS X and Linux only)</li>
+  <li> Using the Windows registry (for Windows only) </li>
 </ul>
 
 <p>
 Both ways support installing an extension hosted at an
 <code>update_URL</code>.
-In the Windows registry,
+On Windows and Mac,
 the <code>update_URL</code> must point to the Chrome Web Store
-where the extension is hosted.
+where the extension must be hosted.
 </p>
 
 <p>
-In the preferences file,
-it can point to your own server where you are hosting the extension
+The preferences file on Linux can point
+to your own server where you are hosting the extension
 (see <a href="autoupdate#update_url">autoupdating</a>).
 The preferences JSON file also supports installing
 an extension from a <code>.crx</code> extension
-file on the user's computer
+file on the user's Linux computer
 (see <a href="hosting">hosting</a>).
 </p>
 
 
 <p class="note">
 <b>Install extensions from your website:</b>
-The safest option for your users is to publish your extension
+Among these methods,
+the safest option for your users is to publish your extension
 in the Chrome Web Store.
 Instead of hosting your own extension,
-publish it in the store, and link to the store install using
-<a href="https://developers.google.com/chrome/web-store/docs/inline_installation">inline installation</a>.
+publish it in the store, and provide an
+<a href="https://developers.google.com/chrome/web-store/docs/inline_installation">inline installation</a> link from your website.
 </p>
 
 <h2 id="prereqs">Before you begin</h2>
@@ -72,10 +90,13 @@ and make sure that it installs successfully.
 
 
 <p class="warning">
-<b>Windows installs must come from Chrome Web Store:</b><br>
+<b>Windows and Mac installs must come from Chrome Web Store:</b><br>
 As of Chrome 33,
-no external installs are allowed from a path to a local <code>.crx</code>
+no external installs are allowed from a path to a local <code>.crx</code> on Windows
 (see <a href="http://blog.chromium.org/2013/11/protecting-windows-users-from-malicious.html">Protecting Windows users from malicious extensions</a>).
+As of Chrome 44,
+no external installs are allowed from a path to a local .crx on Mac
+(see <a href="http://blog.chromium.org/2015/05/continuing-to-protect-chrome-users-from.html">Continuing to protect Chrome users from malicious extensions</a>).
 </p>
 
 <p>
@@ -115,7 +136,7 @@ Use <a href="#registry">Windows registry</a> instead.
 </p>
 
 <ol>
-<li>If you are installing from a file, make the <code>.crx</code> extension
+<li>If you are installing from a file on Linux, make the <code>.crx</code> extension
 file available to the machine you want to install the extension on.
 (Copy it to a local directory or to a network share for example,
 <code>\\server\share\extension.crx</code>
@@ -148,35 +169,59 @@ or <code>/home/share/extension.crx</code>.)
   </dl>
 </li>
 
-<li>If you are installing from a file, specify the extension's location and version with fields
+<li>Linux only: If you are installing from a file, specify the extension's location and version with fields
 named "external_crx" and "external_version" in the file created above.
-<p>
-Example:
+  <ul>
+    <li>Example:</li>
+    <li>
 <pre>
   {
     "external_crx": "/home/share/extension.crx",
     "external_version": "1.0"
   }
 </pre>
-</p>
-<p class="note">
-<b>Note:</b>
-You need to escape
-each <code>\</code> character in the location.
-For example,
-<code>\\server\share\extension.crx</code> would be
-<code>"\\\\server\\share\\extension.crx"</code>.
-</p>
-<p>
-<p>
-If you are installing from an update URL, specify the extension's update URL
-with field name "external_update_url".
-</p>
-Example:
-<pre>{
-  "external_update_url": "http://myhost.com/mytestextension/updates.xml"
-}</pre>
-<p>
+    </li>
+    <li>
+      <b>Note:</b>
+      You need to escape
+      each <code>\</code> character in the location.
+      For example,
+      <code>\\server\share\extension.crx</code> would be
+      <code>"\\\\server\\share\\extension.crx"</code>.
+    </li>
+  </ul>
+</li>
+
+<li>If you are installing from an update URL, specify the extension's update URL
+with field name "external_update_url".</li>
+
+<li>
+Example of installation from local .crx file (Linux only):
+  <ol>
+    <li>
+<pre>
+  {
+    "external_update_url": "http://myhost.com/mytestextension/updates.xml"
+  }
+</pre>
+    </li>
+  </ol>
+</li>
+
+<li>
+Example of installation from the Chrome Webstore (Mac and Linux):
+  <ol>
+    <li>
+<pre>
+  {
+    "external_update_url": "https://clients2.google.com/service/update2/crx"
+  }
+</pre>
+    </li>
+  </ol>
+</li>
+
+<li>
 If you would like to install extension only for some browser locales,
 you can list supported locales in field name "supported_locale". Locale may
 specify parent locale like "en", in this case the extension will be
@@ -184,12 +229,17 @@ installed for all English locales like "en-US", "en-GB", etc.
 If another browser locale is selected that is not supported by the extension,
 the external extensions will be uninstalled. If "supported_locales" list
 is missing, the extension will be installed for any locale.
-</p>
-Example:
-<pre>{
-  "external_update_url": "http://myhost.com/mytestextension/updates.xml",
-  "supported_locales": [ "en", "fr", "de" ]
-}</pre>
+  <ul>
+    <li>Example:</li>
+    <li>
+<pre>
+  {
+    "external_update_url": "https://clients2.google.com/service/update2/crx",
+    "supported_locales": [ "en", "fr", "de" ]
+  }
+</pre>
+    </li>
+  </ul>
 </li>
 <li>Save the JSON file.</li>
 <li>Launch Google Chrome and go to <b>chrome://extensions</b>;

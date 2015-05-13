@@ -9,12 +9,14 @@ to have a single purpose.
 We are also introducing the new
 <a href="http://blog.chromium.org/2014/03/protecting-user-settings-on-windows.html">Settings Override API</a>
 to allow extensions to manage important Chrome settings on Windows.
-Beginning with the July release of Chrome,
+Beginning with the July 2014 release of Chrome,
 the Settings Override API will be the only approved path
 for offering settings changes to Chrome users on Windows.
 In addition, starting with the May 20, 2014 release of Chrome,
 we <a href="http://blog.chromium.org/2014/02/make-sure-to-get-your-extension-in.html">have begun to require</a>
 that extensions in Chrome for Windows be hosted in the Chrome Web Store.
+Starting in Chrome 44 in July 2015,
+extensions in Mac are also required to be hosted in the Chrome Web Store.
 </p>
 
 <h2 id="two">2.) Why did Google launch a “single purpose” Chrome extensions policy?</h2>
@@ -24,7 +26,7 @@ that extensions in Chrome for Windows be hosted in the Chrome Web Store.
 
 <p>We launched this policy because
 multi-purpose extensions can crowd your browser UI
-and slow down your web browsing - sometimes significantly.
+and slow down your web browsing sometimes significantly.
 Speed and simplicity have always been part of Chrome's core principles,
 so this policy will help us get back to the design that was originally intended.
 Also, unexpected changes to browser functionality and
@@ -75,6 +77,13 @@ change the browser’s homepage, or
 make any other changes to browser functionality.
 </p>
 
+<p>
+Be conscious of your extension’s permissions.
+We assume your extension utilizes each of the permissions it requests.
+Excessive permissions unrelated to your extension’s single purpose will be viewed
+as enabling unrelated functionalities, resulting in a policy violation.   
+</p>
+
 <h2 id="five">5.) Will this policy affect my extension?</h2>
 
 <p>
@@ -93,6 +102,7 @@ Ask yourself these questions:
   does it only affect a narrow function of the browser?</li>
   <li>Does my extension modify Chrome’s behavior in a predictable way,
   in line with the extension's narrow, stated purpose?</li>
+  <li>Does my extension request any unnecessary permissions?</li>
 </ul>
 
 <p>
@@ -225,13 +235,13 @@ will remain unchanged until the user manually updates those settings or
 installs an extension that uses the Settings Override API to change them. 
 </p>
 
-<h2 id="twelve">12.) Is this new policy Windows-only?</h2>
+<h2 id="twelve">12.) Is this new policy only on some operating systems?</h2>
 
 <p>
 The <a href="https://developer.chrome.com/extensions/hosting_changes">requirement</a>
 that Chrome extensions be hosted in the Chrome Web Store
-initially applies only to Windows extensions.
-Likewise, the new Settings Override API will initially be made available
+initially applies only to Windows and Mac extensions.
+The new Settings Override API will initially be made available
 only on Chrome for Windows.
 However, the single-purpose policy will apply to all Chrome extensions.
 </p>
@@ -283,7 +293,7 @@ It's a better user experience, with no performance or security downsides.
 that were already installed by users?</h2>
 
 <p>
-All extensions will need to comply with the Extension Quality Guidelines.
+All extensions must comply with the Extension Quality Guidelines.
 If a user installed a non-compliant extension,
 then you will need to update them to a compliant extension
 that is hosted in the Chrome Web Store.
@@ -307,9 +317,11 @@ in the Chrome Web Store comes into effect?</h2>
 If your extension is rejected from the Chrome Web Store,
 you will need to make changes or appeal the decision.
 After the requirement to host extensions
-in the Chrome Web Store comes into effect in late May 2014,
+in the Chrome Web Store comes into effect for Windows in late May 2014,
 your extension must be hosted in the Chrome Web Store or
-it will be automatically disabled from the users’ browsers. 
+it will be automatically disabled from the users’ browsers.
+The same will occur for Mac extensions that are not hosted
+on the Chrome Web Store prior to the release of 44 in July 2015.
 </p>
 
 <h2 id="eighteen">18.) If my extension gets flagged for review under the single purpose policy,
