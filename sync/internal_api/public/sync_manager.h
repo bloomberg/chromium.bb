@@ -298,8 +298,7 @@ class SYNC_EXPORT SyncManager {
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(
-      const ModelSafeRoutingInfo& routing_info,
-      base::Time last_poll_time) = 0;
+      const ModelSafeRoutingInfo& routing_info) = 0;
 
   // Switches the mode of operation to CONFIGURATION_MODE and performs
   // any configuration tasks needed as determined by the params. Once complete,

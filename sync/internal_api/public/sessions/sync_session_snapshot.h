@@ -39,7 +39,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
       bool notifications_enabled,
       size_t num_entries,
       base::Time sync_start_time,
-      base::Time poll_finish_time,
       const std::vector<int>& num_entries_by_type,
       const std::vector<int>& num_to_delete_entries_by_type,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source);
@@ -60,7 +59,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
   bool notifications_enabled() const;
   size_t num_entries() const;
   base::Time sync_start_time() const;
-  base::Time poll_finish_time() const;
   const std::vector<int>& num_entries_by_type() const;
   const std::vector<int>& num_to_delete_entries_by_type() const;
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source() const;
@@ -78,7 +76,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
   bool notifications_enabled_;
   size_t num_entries_;
   base::Time sync_start_time_;
-  base::Time poll_finish_time_;
 
   std::vector<int> num_entries_by_type_;
   std::vector<int> num_to_delete_entries_by_type_;

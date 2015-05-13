@@ -60,7 +60,6 @@ SyncSessionSnapshot SyncSession::TakeSnapshotWithSource(
       context_->notifications_enabled(),
       dir->GetEntriesCount(),
       status_controller_->sync_start_time(),
-      status_controller_->poll_finish_time(),
       num_entries_by_type,
       num_to_delete_entries_by_type,
       legacy_updates_source);

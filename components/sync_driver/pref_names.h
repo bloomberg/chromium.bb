@@ -11,7 +11,6 @@ namespace sync_driver {
 namespace prefs {
 
 extern const char kSyncLastSyncedTime[];
-extern const char kSyncLastPollTime[];
 extern const char kSyncHasAuthError[];
 extern const char kSyncHasSetupCompleted[];
 extern const char kSyncKeepEverythingSynced[];

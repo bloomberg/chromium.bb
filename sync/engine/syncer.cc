@@ -4,7 +4,6 @@
 
 #include "sync/engine/syncer.h"
 
-#include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -46,8 +45,7 @@ using sessions::SyncSession;
 using sessions::NudgeTracker;
 
 Syncer::Syncer(syncer::CancelationSignal* cancelation_signal)
-    : cancelation_signal_(cancelation_signal),
-      is_syncing_(false) {
+    : cancelation_signal_(cancelation_signal) {
 }
 
 Syncer::~Syncer() {}
@@ -56,14 +54,9 @@ bool Syncer::ExitRequested() {
   return cancelation_signal_->IsSignalled();
 }
 
-bool Syncer::IsSyncing() const {
-  return is_syncing_;
-}
-
 bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                              NudgeTracker* nudge_tracker,
                              SyncSession* session) {
-  base::AutoReset<bool> is_syncing(&is_syncing_, true);
   HandleCycleBegin(session);
   if (nudge_tracker->IsGetUpdatesRequired() ||
       session->context()->ShouldFetchUpdatesBeforeCommit()) {
@@ -95,7 +88,6 @@ bool Syncer::ConfigureSyncShare(
     ModelTypeSet request_types,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     SyncSession* session) {
-  base::AutoReset<bool> is_syncing(&is_syncing_, true);
   VLOG(1) << "Configuring types " << ModelTypeSetToString(request_types);
   HandleCycleBegin(session);
   ConfigureGetUpdatesDelegate configure_delegate(source);
@@ -112,7 +104,6 @@ bool Syncer::ConfigureSyncShare(
 
 bool Syncer::PollSyncShare(ModelTypeSet request_types,
                            SyncSession* session) {
-  base::AutoReset<bool> is_syncing(&is_syncing_, true);
   VLOG(1) << "Polling types " << ModelTypeSetToString(request_types);
   HandleCycleBegin(session);
   PollGetUpdatesDelegate poll_delegate;
@@ -211,12 +202,7 @@ bool Syncer::HandleCycleEnd(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
   if (!ExitRequested()) {
     session->SendSyncCycleEndEventNotification(source);
-
-    bool success = !sessions::HasSyncerError(
-          session->status_controller().model_neutral_state());
-    if (success && source == sync_pb::GetUpdatesCallerInfo::PERIODIC)
-      session->mutable_status_controller()->UpdatePollTime();
-    return success;
+    return true;
   } else {
     return false;
   }

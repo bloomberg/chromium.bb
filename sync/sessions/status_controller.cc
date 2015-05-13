@@ -36,10 +36,6 @@ void StatusController::UpdateStartTime() {
   sync_start_time_ = base::Time::Now();
 }
 
-void StatusController::UpdatePollTime() {
-  poll_finish_time_ = base::Time::Now();
-}
-
 void StatusController::set_num_successful_bookmark_commits(int value) {
   model_neutral_.num_successful_bookmark_commits = value;
 }

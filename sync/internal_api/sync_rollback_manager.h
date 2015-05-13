@@ -23,8 +23,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManager : public SyncRollbackManagerBase {
 
   // SyncManager implementation.
   void Init(InitArgs* args) override;
-  void StartSyncingNormally(const ModelSafeRoutingInfo& routing_info,
-                            base::Time last_poll_time) override;
+  void StartSyncingNormally(const ModelSafeRoutingInfo& routing_info) override;
 
  private:
   // Deletes specified entries in local model.

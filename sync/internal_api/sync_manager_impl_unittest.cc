@@ -1075,7 +1075,7 @@ class SyncManagerTest : public testing::Test,
 TEST_F(SyncManagerTest, GetAllNodesForTypeTest) {
   ModelSafeRoutingInfo routing_info;
   GetModelSafeRoutingInfo(&routing_info);
-  sync_manager_.StartSyncingNormally(routing_info, base::Time());
+  sync_manager_.StartSyncingNormally(routing_info);
 
   scoped_ptr<base::ListValue> node_list(
       sync_manager_.GetAllNodesForType(syncer::PREFERENCES));
@@ -2377,7 +2377,7 @@ class MockSyncScheduler : public FakeSyncScheduler {
   MockSyncScheduler() : FakeSyncScheduler() {}
   virtual ~MockSyncScheduler() {}
 
-  MOCK_METHOD2(Start, void(SyncScheduler::Mode, base::Time));
+  MOCK_METHOD1(Start, void(SyncScheduler::Mode));
   MOCK_METHOD1(ScheduleConfiguration, void(const ConfigurationParams&));
 };
 
@@ -2437,7 +2437,7 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
 
   ConfigurationParams params;
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE, _));
+  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
   EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
       WillOnce(SaveArg<0>(&params));
 
@@ -2489,7 +2489,7 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   ModelTypeSet enabled_types = GetRoutingInfoTypes(new_routing_info);
 
   ConfigurationParams params;
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE, _));
+  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CONFIGURATION_MODE));
   EXPECT_CALL(*scheduler(), ScheduleConfiguration(_)).
       WillOnce(SaveArg<0>(&params));
 

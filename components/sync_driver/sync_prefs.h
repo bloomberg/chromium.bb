@@ -80,9 +80,6 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   base::Time GetLastSyncedTime() const;
   void SetLastSyncedTime(base::Time time);
 
-  base::Time GetLastPollTime() const;
-  void SetLastPollTime(base::Time time);
-
   bool HasKeepEverythingSynced() const;
   void SetKeepEverythingSynced(bool keep_everything_synced);
 

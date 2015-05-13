@@ -19,7 +19,7 @@ class FakeSyncScheduler : public SyncScheduler {
   FakeSyncScheduler();
   ~FakeSyncScheduler() override;
 
-  void Start(Mode mode, base::Time last_poll_time) override;
+  void Start(Mode mode) override;
   void Stop() override;
   void ScheduleLocalNudge(
       ModelTypeSet types,

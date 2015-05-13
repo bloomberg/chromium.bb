@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -155,11 +156,12 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
           TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds)),
       syncer_long_poll_interval_seconds_(
           TimeDelta::FromSeconds(kDefaultLongPollIntervalSeconds)),
-      mode_(CONFIGURATION_MODE),
+      mode_(NORMAL_MODE),
       delay_provider_(delay_provider),
       syncer_(syncer),
       session_context_(context),
-      last_poll_reset_(base::TimeTicks::Now()),
+      no_scheduling_allowed_(false),
+      do_poll_after_credentials_updated_(false),
       next_sync_session_job_priority_(NORMAL_PRIORITY),
       weak_ptr_factory_(this),
       weak_ptr_factory_for_weak_handle_(this) {
@@ -205,7 +207,7 @@ void SyncSchedulerImpl::OnServerConnectionErrorFixed() {
   TryCanaryJob();
 }
 
-void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
+void SyncSchedulerImpl::Start(Mode mode) {
   DCHECK(CalledOnValidThread());
   std::string thread_name = base::MessageLoop::current()->thread_name();
   if (thread_name.empty())
@@ -221,23 +223,11 @@ void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
   DCHECK(syncer_.get());
   Mode old_mode = mode_;
   mode_ = mode;
-  // Only adjust the poll reset time if it was valid and in the past.
-  if (!last_poll_time.is_null() && last_poll_time < base::Time::Now()) {
-    // Convert from base::Time to base::TimeTicks. The reason we use Time
-    // for persisting is that TimeTicks can stop making forward progress when
-    // the machine is suspended. This implies that on resume the client might
-    // actually have miss the real poll, unless the client is restarted. Fixing
-    // that would require using an AlarmTimer though, which is only supported
-    // on certain platforms.
-    last_poll_reset_ =
-        base::TimeTicks::Now() - (base::Time::Now() - last_poll_time);
-  }
+  AdjustPolling(UPDATE_INTERVAL);  // Will kick start poll timer if needed.
 
   if (old_mode != mode_ && mode_ == NORMAL_MODE) {
     // We just got back to normal mode.  Let's try to run the work that was
     // queued up while we were configuring.
-
-    AdjustPolling(UPDATE_INTERVAL);  // Will kick start poll timer if needed.
 
     // Update our current time before checking IsRetryRequired().
     nudge_tracker_.SetSyncCycleStartTime(base::TimeTicks::Now());
@@ -316,12 +306,14 @@ void SyncSchedulerImpl::ScheduleConfiguration(
 
 bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
   DCHECK(CalledOnValidThread());
-  if (IsCurrentlyThrottled()) {
+  if (wait_interval_ && wait_interval_->mode == WaitInterval::THROTTLED) {
     SDVLOG(1) << "Unable to run a job because we're throttled.";
     return false;
   }
 
-  if (IsBackingOff() && priority != CANARY_PRIORITY) {
+  if (wait_interval_
+      && wait_interval_->mode == WaitInterval::EXPONENTIAL_BACKOFF
+      && priority != CANARY_PRIORITY) {
     SDVLOG(1) << "Unable to run a job because we're backing off.";
     return false;
   }
@@ -412,7 +404,11 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     const TimeDelta& delay,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
-  CHECK(!syncer_->IsSyncing());
+
+  if (no_scheduling_allowed_) {
+    NOTREACHED() << "Illegal to schedule job while session in progress.";
+    return;
+  }
 
   if (!started_) {
     SDVLOG_LOC(nudge_location, 2)
@@ -468,23 +464,25 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
   DVLOG(2) << "Will run normal mode sync cycle with types "
            << ModelTypeSetToString(session_context_->GetEnabledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
-  bool success = syncer_->NormalSyncShare(
+  bool premature_exit = !syncer_->NormalSyncShare(
       GetEnabledAndUnthrottledTypes(), &nudge_tracker_, session.get());
+  AdjustPolling(FORCE_RESET);
+  // Don't run poll job till the next time poll timer fires.
+  do_poll_after_credentials_updated_ = false;
+
+  bool success = !premature_exit
+      && !sessions::HasSyncerError(
+          session->status_controller().model_neutral_state());
 
   if (success) {
     // That cycle took care of any outstanding work we had.
     SDVLOG(2) << "Nudge succeeded.";
     nudge_tracker_.RecordSuccessfulSyncCycle();
     scheduled_nudge_time_ = base::TimeTicks();
-    HandleSuccess();
 
-    // If this was a canary, we may need to restart the poll timer (the poll
-    // timer may have fired while the scheduler was in an error state, ignoring
-    // the poll).
-    if (!poll_timer_.IsRunning()) {
-      SDVLOG(1) << "Canary succeeded, restarting polling.";
-      AdjustPolling(UPDATE_INTERVAL);
-    }
+    // If we're here, then we successfully reached the server.  End all backoff.
+    wait_interval_.reset();
+    NotifyRetryTime(base::Time());
   } else {
     HandleFailure(session->status_controller().model_neutral_state());
   }
@@ -507,16 +505,26 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
   SDVLOG(2) << "Will run configure SyncShare with types "
             << ModelTypeSetToString(session_context_->GetEnabledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
-  bool success = syncer_->ConfigureSyncShare(
+  bool premature_exit = !syncer_->ConfigureSyncShare(
       pending_configure_params_->types_to_download,
       pending_configure_params_->source,
       session.get());
+  AdjustPolling(FORCE_RESET);
+  // Don't run poll job till the next time poll timer fires.
+  do_poll_after_credentials_updated_ = false;
+
+  bool success = !premature_exit
+      && !sessions::HasSyncerError(
+          session->status_controller().model_neutral_state());
 
   if (success) {
     SDVLOG(2) << "Configure succeeded.";
     pending_configure_params_->ready_task.Run();
     pending_configure_params_.reset();
-    HandleSuccess();
+
+    // If we're here, then we successfully reached the server.  End all backoff.
+    wait_interval_.reset();
+    NotifyRetryTime(base::Time());
   } else {
     HandleFailure(session->status_controller().model_neutral_state());
     // Sync cycle might receive response from server that causes scheduler to
@@ -528,16 +536,11 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
   }
 }
 
-void SyncSchedulerImpl::HandleSuccess() {
-  // If we're here, then we successfully reached the server.  End all backoff.
-  wait_interval_.reset();
-  NotifyRetryTime(base::Time());
-}
-
 void SyncSchedulerImpl::HandleFailure(
     const sessions::ModelNeutralState& model_neutral_state) {
   if (IsCurrentlyThrottled()) {
     SDVLOG(2) << "Was throttled during previous sync cycle.";
+    RestartWaiting();
   } else if (!IsBackingOff()) {
     // Setup our backoff if this is our first such failure.
     TimeDelta length = delay_provider_->GetDelay(
@@ -546,32 +549,27 @@ void SyncSchedulerImpl::HandleFailure(
         new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
         << wait_interval_->length.InMilliseconds() << "ms.";
-  } else {
-    // Increase our backoff interval and schedule another retry.
-    TimeDelta length = delay_provider_->GetDelay(wait_interval_->length);
-    wait_interval_.reset(
-        new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
-    SDVLOG(2) << "Sync cycle failed.  Will back off for "
-        << wait_interval_->length.InMilliseconds() << "ms.";
+    RestartWaiting();
   }
-  RestartWaiting();
 }
 
 void SyncSchedulerImpl::DoPollSyncSessionJob() {
+  base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
+
   SDVLOG(2) << "Polling with types "
             << ModelTypeSetToString(GetEnabledAndUnthrottledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
-  bool success = syncer_->PollSyncShare(
+  syncer_->PollSyncShare(
       GetEnabledAndUnthrottledTypes(),
       session.get());
 
-  // Only restart the timer if the poll succeeded. Otherwise rely on normal
-  // failure handling to retry with backoff.
-  if (success) {
-    AdjustPolling(FORCE_RESET);
-    HandleSuccess();
-  } else {
-    HandleFailure(session->status_controller().model_neutral_state());
+  AdjustPolling(FORCE_RESET);
+
+  if (IsCurrentlyThrottled()) {
+    SDVLOG(2) << "Poll request got us throttled.";
+    // The OnSilencedUntil() call set up the WaitInterval for us.  All we need
+    // to do is start the timer.
+    RestartWaiting();
   }
 }
 
@@ -601,39 +599,23 @@ TimeDelta SyncSchedulerImpl::GetPollInterval() {
 
 void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {
   DCHECK(CalledOnValidThread());
-  if (!started_)
-    return;
 
-  TimeDelta poll_interval = GetPollInterval();
-  TimeDelta poll_delay = poll_interval;
-  const TimeTicks now = TimeTicks::Now();
+  TimeDelta poll = GetPollInterval();
+  bool rate_changed = !poll_timer_.IsRunning() ||
+                       poll != poll_timer_.GetCurrentDelay();
 
-  if (type == UPDATE_INTERVAL) {
-    // Override the delay based on the last successful poll time (if it was
-    // set).
-    TimeTicks new_poll_time;
-    if (!last_poll_reset_.is_null())
-      new_poll_time = poll_interval + last_poll_reset_;
-    else
-      new_poll_time = poll_interval + now;
-    poll_delay = new_poll_time - now;
-    if (poll_delay < TimeDelta()) {
-      // The desired poll time was in the past, so trigger a poll now (the timer
-      /// will post the task asynchronously, so re-entrancy isn't an issue).
-      poll_delay = TimeDelta();
-    }
-  } else {
-    // Otherwise just restart the timer.
-    DCHECK_EQ(FORCE_RESET, type);
-    DCHECK_EQ(GetPollInterval(), poll_delay);
-    last_poll_reset_ = now;
+  if (type == FORCE_RESET) {
+    last_poll_reset_ = base::TimeTicks::Now();
+    if (!rate_changed)
+      poll_timer_.Reset();
   }
 
-  SDVLOG(1) << "Updating polling delay to " << poll_delay.InMinutes()
-            << " minutes.";
+  if (!rate_changed)
+    return;
 
-  // Adjust poll rate. Start will reset the timer if it was already running.
-  poll_timer_.Start(FROM_HERE, poll_delay, this,
+  // Adjust poll rate.
+  poll_timer_.Stop();
+  poll_timer_.Start(FROM_HERE, poll, this,
                     &SyncSchedulerImpl::PollTimerCallback);
 }
 
@@ -677,7 +659,6 @@ void SyncSchedulerImpl::Stop() {
 // privileges.  Everyone else should use NORMAL_PRIORITY.
 void SyncSchedulerImpl::TryCanaryJob() {
   next_sync_session_job_priority_ = CANARY_PRIORITY;
-  SDVLOG(2) << "Attempting canary job";
   TrySyncSessionJob();
 }
 
@@ -705,16 +686,24 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
     if (nudge_tracker_.IsSyncRequired()) {
       SDVLOG(2) << "Found pending nudge job";
       DoNudgeSyncSessionJob(priority);
-    } else if (((base::TimeTicks::Now() - last_poll_reset_) >=
-                GetPollInterval())) {
-      SDVLOG(2) << "Found pending poll";
+    } else if (do_poll_after_credentials_updated_ ||
+        ((base::TimeTicks::Now() - last_poll_reset_) >= GetPollInterval())) {
       DoPollSyncSessionJob();
+      // Poll timer fires infrequently. Usually by this time access token is
+      // already expired and poll job will fail with auth error. Set flag to
+      // retry poll once ProfileSyncService gets new access token, TryCanaryJob
+      // will be called after access token is retrieved.
+      if (HttpResponse::SYNC_AUTH_ERROR ==
+          session_context_->connection_manager()->server_status()) {
+        do_poll_after_credentials_updated_ = true;
+      }
     }
-  } else {
-    // We must be in an error state. Transitioning out of each of these
-    // error states should trigger a canary job.
-    DCHECK(IsCurrentlyThrottled() || IsBackingOff() ||
-           session_context_->connection_manager()->HasInvalidAuthToken());
+  }
+
+  if (priority == CANARY_PRIORITY) {
+    // If this is canary job then whatever result was don't run poll job till
+    // the next time poll timer fires.
+    do_poll_after_credentials_updated_ = false;
   }
 
   if (IsBackingOff() && !pending_wakeup_timer_.IsRunning()) {
@@ -723,7 +712,7 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
     // another retry.
     TimeDelta length = delay_provider_->GetDelay(wait_interval_->length);
     wait_interval_.reset(
-        new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
+      new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF, length));
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
         << wait_interval_->length.InMilliseconds() << "ms.";
     RestartWaiting();
@@ -732,7 +721,16 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
 
 void SyncSchedulerImpl::PollTimerCallback() {
   DCHECK(CalledOnValidThread());
-  CHECK(!syncer_->IsSyncing());
+  if (no_scheduling_allowed_) {
+    // The no_scheduling_allowed_ flag is set by a function-scoped AutoReset in
+    // functions that are called only on the sync thread.  This function is also
+    // called only on the sync thread, and only when it is posted by an expiring
+    // timer.  If we find that no_scheduling_allowed_ is set here, then
+    // something is very wrong.  Maybe someone mistakenly called us directly, or
+    // mishandled the book-keeping for no_scheduling_allowed_.
+    NOTREACHED() << "Illegal to schedule job while session in progress.";
+    return;
+  }
 
   TrySyncSessionJob();
 }
@@ -828,9 +826,6 @@ void SyncSchedulerImpl::OnTypesThrottled(
     const base::TimeDelta& throttle_duration) {
   base::TimeTicks now = base::TimeTicks::Now();
 
-  SDVLOG(1) << "Throttling " << ModelTypeSetToString(types) << " for "
-            << throttle_duration.InMinutes() << " minutes.";
-
   nudge_tracker_.SetTypesThrottledUntil(types, throttle_duration, now);
   base::TimeDelta time_until_next_unthrottle =
       nudge_tracker_.GetTimeUntilNextUnthrottle(now);
@@ -852,23 +847,13 @@ bool SyncSchedulerImpl::IsCurrentlyThrottled() {
 void SyncSchedulerImpl::OnReceivedShortPollIntervalUpdate(
     const base::TimeDelta& new_interval) {
   DCHECK(CalledOnValidThread());
-  if (new_interval == syncer_short_poll_interval_seconds_)
-    return;
-  SDVLOG(1) << "Updating short poll interval to " << new_interval.InMinutes()
-            << " minutes.";
   syncer_short_poll_interval_seconds_ = new_interval;
-  AdjustPolling(UPDATE_INTERVAL);
 }
 
 void SyncSchedulerImpl::OnReceivedLongPollIntervalUpdate(
     const base::TimeDelta& new_interval) {
   DCHECK(CalledOnValidThread());
-  if (new_interval == syncer_long_poll_interval_seconds_)
-    return;
-  SDVLOG(1) << "Updating long poll interval to " << new_interval.InMinutes()
-            << " minutes.";
   syncer_long_poll_interval_seconds_ = new_interval;
-  AdjustPolling(UPDATE_INTERVAL);
 }
 
 void SyncSchedulerImpl::OnReceivedCustomNudgeDelays(

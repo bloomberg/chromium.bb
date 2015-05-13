@@ -218,7 +218,7 @@ void SyncManagerImpl::ConfigureSyncer(
                              ready_task,
                              retry_task);
 
-  scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
+  scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
   scheduler_->ScheduleConfiguration(params);
 }
 
@@ -334,7 +334,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   scheduler_ = args->internal_components_factory->BuildScheduler(
       name_, session_context_.get(), args->cancelation_signal).Pass();
 
-  scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
+  scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
 
   initialized_ = true;
 
@@ -406,8 +406,7 @@ void SyncManagerImpl::OnPassphraseTypeChanged(
 }
 
 void SyncManagerImpl::StartSyncingNormally(
-    const ModelSafeRoutingInfo& routing_info,
-    base::Time last_poll_time) {
+    const ModelSafeRoutingInfo& routing_info) {
   // Start the sync scheduler.
   // TODO(sync): We always want the newest set of routes when we switch back
   // to normal mode. Figure out how to enforce set_routing_info is always
@@ -415,8 +414,7 @@ void SyncManagerImpl::StartSyncingNormally(
   // mode.
   DCHECK(thread_checker_.CalledOnValidThread());
   session_context_->SetRoutingInfo(routing_info);
-  scheduler_->Start(SyncScheduler::NORMAL_MODE,
-                    last_poll_time);
+  scheduler_->Start(SyncScheduler::NORMAL_MODE);
 }
 
 syncable::Directory* SyncManagerImpl::directory() {

@@ -56,15 +56,9 @@ class SYNC_EXPORT_PRIVATE StatusController {
 
   int num_server_overwrites() const;
 
-  // The time at which we started the first sync cycle in this session.
   base::Time sync_start_time() const {
+    // The time at which we sent the first GetUpdates command for this sync.
     return sync_start_time_;
-  }
-
-  // If a poll was performed in this session, the time at which it finished.
-  // Not set if no poll was performed.
-  base::Time poll_finish_time() const {
-    return poll_finish_time_;
   }
 
   const ModelNeutralState& model_neutral_state() const {
@@ -97,17 +91,11 @@ class SYNC_EXPORT_PRIVATE StatusController {
   void set_commit_result(const SyncerError result);
 
   void UpdateStartTime();
-  void UpdatePollTime();
 
  private:
   ModelNeutralState model_neutral_;
 
-  // Time the last sync cycle began.
   base::Time sync_start_time_;
-
-  // If a poll was performed, the time it finished. Not set if not poll was
-  // performed.
-  base::Time poll_finish_time_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusController);
 };

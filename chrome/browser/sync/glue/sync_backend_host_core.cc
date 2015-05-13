@@ -457,10 +457,9 @@ void SyncBackendHostCore::DoUpdateCredentials(
 }
 
 void SyncBackendHostCore::DoStartSyncing(
-    const syncer::ModelSafeRoutingInfo& routing_info,
-    base::Time last_poll_time) {
+    const syncer::ModelSafeRoutingInfo& routing_info) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  sync_manager_->StartSyncingNormally(routing_info, last_poll_time);
+  sync_manager_->StartSyncingNormally(routing_info);
 }
 
 void SyncBackendHostCore::DoSetEncryptionPassphrase(

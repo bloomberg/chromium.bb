@@ -150,8 +150,7 @@ class SyncBackendHostCore
 
   // Called to tell the syncapi to start syncing (generally after
   // initialization and authentication).
-  void DoStartSyncing(const syncer::ModelSafeRoutingInfo& routing_info,
-                      base::Time last_poll_time);
+  void DoStartSyncing(const syncer::ModelSafeRoutingInfo& routing_info);
 
   // Called to set the passphrase for encryption.
   void DoSetEncryptionPassphrase(const std::string& passphrase,

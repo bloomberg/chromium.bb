@@ -51,7 +51,6 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                                false,
                                0,
                                base::Time::Now(),
-                               base::Time::Now(),
                                std::vector<int>(MODEL_TYPE_COUNT,0),
                                std::vector<int>(MODEL_TYPE_COUNT, 0),
                                sync_pb::GetUpdatesCallerInfo::UNKNOWN);

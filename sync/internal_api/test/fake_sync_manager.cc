@@ -118,7 +118,7 @@ void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
 }
 
 void FakeSyncManager::StartSyncingNormally(
-      const ModelSafeRoutingInfo& routing_info, base::Time last_poll_time) {
+      const ModelSafeRoutingInfo& routing_info) {
   // Do nothing.
 }
 
