@@ -16,6 +16,7 @@
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
+#include "mandoline/ui/omnibox/omnibox_impl.h"
 #include "mojo/services/network/network_service_delegate.h"
 #endif
 
@@ -129,6 +130,8 @@ void CoreServicesApplicationDelegate::StartApplication(
 #if !defined(OS_ANDROID)
   else if (url == "mojo://network_service/")
     delegate.reset(new NetworkServiceDelegate);
+  else if (url == "mojo://omnibox/")
+    delegate.reset(new mandoline::OmniboxImpl);
 #endif
   else if (url == "mojo://surfaces_service/")
     delegate.reset(new surfaces::SurfacesServiceApplication);

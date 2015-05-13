@@ -11,7 +11,9 @@ namespace mandoline {
 
 // static
 ScreenMojo* ScreenMojo::Create() {
-  return new ScreenMojo(gfx::Rect(0, 0, 800, 600));
+  // TODO(beng): this is bogus & should be derived from the native viewport's
+  //             client area. https://crbug.com/487340
+  return new ScreenMojo(gfx::Rect(1280, 800));
 }
 
 ScreenMojo::~ScreenMojo() {

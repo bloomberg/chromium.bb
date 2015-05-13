@@ -12,11 +12,13 @@
 #include "components/window_manager/window_manager_delegate.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/ui/browser/navigator_host_impl.h"
+#include "mandoline/ui/browser/omnibox.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
 #include "ui/mojo/events/input_events.mojom.h"
+#include "url/gurl.h"
 
 namespace mandoline {
 
@@ -26,6 +28,7 @@ class MergedServiceProvider;
 class Browser : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
                 public window_manager::WindowManagerDelegate,
+                public OmniboxClient,
                 public mojo::InterfaceFactory<mojo::NavigatorHost> {
  public:
   Browser();
@@ -34,6 +37,11 @@ class Browser : public mojo::ApplicationDelegate,
   base::WeakPtr<Browser> GetWeakPtr();
 
   void ReplaceContentWithURL(const mojo::String& url);
+
+  mojo::View* content() { return content_; }
+  mojo::View* omnibox() { return omnibox_; }
+
+  const GURL& current_url() const { return current_url_; }
 
  private:
   // Overridden from mojo::ApplicationDelegate:
@@ -57,9 +65,16 @@ class Browser : public mojo::ApplicationDelegate,
                             mojo::KeyboardCode keyboard_code,
                             mojo::EventFlags flags) override;
 
+  // Overridden from OmniboxClient:
+  void OpenURL(const mojo::String& url) override;
+
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
+
+  void ShowOmnibox(const mojo::String& url,
+                   mojo::InterfaceRequest<mojo::ServiceProvider> services,
+                   mojo::ServiceProviderPtr exposed_services);
 
   scoped_ptr<window_manager::WindowManagerApp> window_manager_app_;
 
@@ -67,6 +82,7 @@ class Browser : public mojo::ApplicationDelegate,
   // and embedding-level state are shared on the same object.
   mojo::View* root_;
   mojo::View* content_;
+  mojo::View* omnibox_;
   std::string default_url_;
   std::string pending_url_;
 
@@ -74,6 +90,8 @@ class Browser : public mojo::ApplicationDelegate,
   scoped_ptr<MergedServiceProvider> merged_service_provider_;
 
   NavigatorHostImpl navigator_host_;
+
+  GURL current_url_;
 
   scoped_ptr<BrowserUI> ui_;
 

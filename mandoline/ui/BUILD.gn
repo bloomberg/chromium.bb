@@ -6,6 +6,10 @@ import("//third_party/mojo/src/mojo/public/mojo.gni")
 
 group("ui") {
   deps = [
-    "//mandoline/ui/browser",
+    "browser",
   ]
+
+  if (!is_android) {
+    deps += [ "omnibox" ]
+  }
 }

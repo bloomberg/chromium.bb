@@ -9,6 +9,7 @@
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/merged_service_provider.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/common/common_type_converters.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -18,6 +19,7 @@ Browser::Browser()
     : window_manager_app_(new window_manager::WindowManagerApp(this, this)),
       root_(nullptr),
       content_(nullptr),
+      omnibox_(nullptr),
       navigator_host_(this),
       ui_(nullptr),
       weak_factory_(this) {
@@ -31,14 +33,13 @@ base::WeakPtr<Browser> Browser::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-// Convenience method:
 void Browser::ReplaceContentWithURL(const mojo::String& url) {
   Embed(url, nullptr, nullptr);
 }
 
 void Browser::Initialize(mojo::ApplicationImpl* app) {
   window_manager_app_->Initialize(app);
-  ui_.reset(BrowserUI::Create(this, app->shell()));
+  ui_.reset(BrowserUI::Create(this, app));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringVector args = command_line->GetArgs();
@@ -77,7 +78,7 @@ void Browser::OnEmbed(
   //             the UI class.
   root_ = root;
   content_ = root->view_manager()->CreateView();
-  ui_->Init(root_, content_);
+  ui_->Init(root_);
 
 #if defined(OS_ANDROID)
   // Resize to match the Nexus 5 aspect ratio:
@@ -108,6 +109,11 @@ void Browser::OnViewManagerDisconnected(
 void Browser::Embed(const mojo::String& url,
                     mojo::InterfaceRequest<mojo::ServiceProvider> services,
                     mojo::ServiceProviderPtr exposed_services) {
+  if (url == "mojo:omnibox") {
+    ShowOmnibox(url, services.Pass(), exposed_services.Pass());
+    return;
+  }
+
   // We can get Embed calls before we've actually been
   // embedded into the root view and content_ is created.
   // Just save the last url, we'll embed it when we're ready.
@@ -115,6 +121,12 @@ void Browser::Embed(const mojo::String& url,
     pending_url_ = url;
     return;
   }
+
+  GURL gurl(url.To<base::string16>());
+  bool changed = current_url_ != gurl;
+  current_url_ = gurl;
+  if (changed)
+    ui_->OnURLChanged();
 
   merged_service_provider_.reset(
       new MergedServiceProvider(exposed_services.Pass(), this));
@@ -131,9 +143,27 @@ void Browser::OnAcceleratorPressed(mojo::View* view,
   navigator_host_.RequestNavigateHistory(-1);
 }
 
+void Browser::OpenURL(const mojo::String& url) {
+  omnibox_->SetVisible(false);
+  ReplaceContentWithURL(url);
+}
+
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<mojo::NavigatorHost> request) {
   navigator_host_.Bind(request.Pass());
+}
+
+void Browser::ShowOmnibox(
+    const mojo::String& url,
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
+  if (!omnibox_) {
+    omnibox_ = root_->view_manager()->CreateView();
+    root_->AddChild(omnibox_);
+    omnibox_->SetVisible(true);
+    omnibox_->SetBounds(root_->bounds());
+  }
+  omnibox_->Embed(url, services.Pass(), exposed_services.Pass());
 }
 
 }  // namespace mandoline

@@ -71,4 +71,11 @@ source_set("sources") {
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
+
+  if (!is_android) {
+    deps += [
+      "//mandoline/ui/omnibox:lib",
+      "//mojo/services/network:lib",
+    ]
+  }
 }

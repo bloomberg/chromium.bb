@@ -21,12 +21,13 @@ class Browser;
 class AndroidUI : public BrowserUI,
                   public mojo::ViewObserver {
  public:
-  AndroidUI(Browser* browser, mojo::Shell* shell);
+  AndroidUI(Browser* browser, mojo::ApplicationImpl* application_impl);
   ~AndroidUI() override;
 
  private:
   // Overridden from BrowserUI:
-  void Init(mojo::View* root, mojo::View* content) override;
+  void Init(mojo::View* root) override;
+  void OnURLChanged() override;
 
   // Overriden from mojo::ViewObserver:
   virtual void OnViewBoundsChanged(mojo::View* view,
@@ -34,7 +35,7 @@ class AndroidUI : public BrowserUI,
                                    const mojo::Rect& new_bounds) override;
 
   Browser* browser_;
-  mojo::Shell* shell_;
+  mojo::ApplicationImpl* application_impl_;
   mojo::View* root_;
   mojo::View* content_;
 

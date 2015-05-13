@@ -6,7 +6,7 @@
 #define MANDOLINE_UI_BROWSER_BROWSER_UI_H_
 
 namespace mojo {
-class Shell;
+class ApplicationImpl;
 class View;
 }
 
@@ -17,13 +17,16 @@ class Browser;
 class BrowserUI {
  public:
   virtual ~BrowserUI() {}
-  static BrowserUI* Create(Browser* browser, mojo::Shell* shell);
+  static BrowserUI* Create(Browser* browser,
+                           mojo::ApplicationImpl* application_impl);
 
   // Called when the Browser UI is embedded within the specified view.
   // BrowserUI is destroyed prior to |root| being destroyed. That is, the
   // BrowserUI implementations can assume |root| is never deleted out from under
   // them.
-  virtual void Init(mojo::View* root, mojo::View* content) = 0;
+  virtual void Init(mojo::View* root) = 0;
+
+  virtual void OnURLChanged() = 0;
 };
 
 }  // namespace mandoline
