@@ -243,6 +243,7 @@ public:
     BLINK_EXPORT void setFocused(bool) const;
     BLINK_EXPORT void setSelectedTextRange(int selectionStart, int selectionEnd) const;
     BLINK_EXPORT void setValue(WebString) const;
+    BLINK_EXPORT void showContextMenu() const;
 
     // For a table
     BLINK_EXPORT unsigned columnCount() const;

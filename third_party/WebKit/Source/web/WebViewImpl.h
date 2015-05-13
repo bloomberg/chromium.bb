@@ -81,6 +81,7 @@ class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebCompositorAnimationTimeline;
 class WebDevToolsAgentImpl;
+class WebElement;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebImage;
@@ -369,6 +370,8 @@ public:
     bool sendContextMenuEvent(const WebKeyboardEvent&);
 
     void showContextMenuAtPoint(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>);
+
+    void showContextMenuForElement(WebElement);
 
     // Notifies the WebView that a load has been committed. isNewNavigation
     // will be true if a new session history item should be created for that

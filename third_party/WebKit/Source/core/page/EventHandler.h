@@ -169,8 +169,8 @@ public:
     // FIXME: This doesn't appear to be used outside tests anymore, what path are we using now and is it tested?
     bool bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode);
 
-    bool sendContextMenuEvent(const PlatformMouseEvent&);
-    bool sendContextMenuEventForKey();
+    bool sendContextMenuEvent(const PlatformMouseEvent&, Node* overrideTargetNode = nullptr);
+    bool sendContextMenuEventForKey(Element* overrideTargetElement = nullptr);
     bool sendContextMenuEventForGesture(const GestureEventWithHitTestResults&);
 
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }

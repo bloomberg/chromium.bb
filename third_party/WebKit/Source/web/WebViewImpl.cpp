@@ -125,6 +125,7 @@
 #include "public/web/WebActiveWheelFlingParameters.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebBeginFrameArgs.h"
+#include "public/web/WebElement.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
@@ -599,7 +600,7 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
 #endif
 
     m_contextMenuAllowed = true;
-    targetLocalFrame->eventHandler().sendContextMenuEvent(pme);
+    targetLocalFrame->eventHandler().sendContextMenuEvent(pme, nullptr);
     m_contextMenuAllowed = false;
     // Actually showing the context menu is handled by the ContextMenuClient
     // implementation...
@@ -1479,7 +1480,7 @@ bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
     Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
     if (!focusedFrame->isLocalFrame())
         return false;
-    bool handled = toLocalFrame(focusedFrame)->eventHandler().sendContextMenuEventForKey();
+    bool handled = toLocalFrame(focusedFrame)->eventHandler().sendContextMenuEventForKey(nullptr);
     m_contextMenuAllowed = false;
     return handled;
 }
@@ -1492,6 +1493,18 @@ void WebViewImpl::showContextMenuAtPoint(float x, float y, PassRefPtrWillBeRawPt
     m_contextMenuAllowed = true;
     page()->contextMenuController().clearContextMenu();
     page()->contextMenuController().showContextMenuAtPoint(page()->deprecatedLocalMainFrame(), x, y, menuProvider);
+    m_contextMenuAllowed = false;
+}
+
+void WebViewImpl::showContextMenuForElement(WebElement element)
+{
+    if (!page())
+        return;
+
+    page()->contextMenuController().clearContextMenu();
+    m_contextMenuAllowed = true;
+    if (LocalFrame* focusedFrame = toLocalFrame(page()->focusController().focusedOrMainFrame()))
+        focusedFrame->eventHandler().sendContextMenuEventForKey(element.unwrap<Element>());
     m_contextMenuAllowed = false;
 }
 
@@ -3825,7 +3838,7 @@ void WebViewImpl::showContextMenu()
     page()->contextMenuController().clearContextMenu();
     m_contextMenuAllowed = true;
     if (LocalFrame* focusedFrame = toLocalFrame(page()->focusController().focusedOrMainFrame()))
-        focusedFrame->eventHandler().sendContextMenuEventForKey();
+        focusedFrame->eventHandler().sendContextMenuEventForKey(nullptr);
     m_contextMenuAllowed = false;
 }
 

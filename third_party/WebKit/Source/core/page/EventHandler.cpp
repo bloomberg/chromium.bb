@@ -2996,7 +2996,7 @@ void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent, HitT
     }
 }
 
-bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
+bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event, Node* overrideTargetNode)
 {
     FrameView* v = m_frame->view();
     if (!v)
@@ -3022,10 +3022,11 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
             selectClosestWordOrLinkFromMouseEvent(mev);
     }
 
-    return !dispatchMouseEvent(EventTypeNames::contextmenu, mev.innerNode(), 0, event, false);
+    Node* targetNode = overrideTargetNode ? overrideTargetNode : mev.innerNode();
+    return !dispatchMouseEvent(EventTypeNames::contextmenu, targetNode, 0, event, false);
 }
 
-bool EventHandler::sendContextMenuEventForKey()
+bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
 {
     FrameView* view = m_frame->view();
     if (!view)
@@ -3046,12 +3047,13 @@ bool EventHandler::sendContextMenuEventForKey()
     int rightAligned = 0;
 #endif
     IntPoint locationInRootFrame;
-    Element* focusedElement = doc->focusedElement();
+
+    Element* focusedElement = overrideTargetElement ? overrideTargetElement : doc->focusedElement();
     FrameSelection& selection = m_frame->selection();
     Position start = selection.selection().start();
     PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
 
-    if (start.deprecatedNode() && (selection.rootEditableElement() || selection.isRange())) {
+    if (!overrideTargetElement && start.deprecatedNode() && (selection.rootEditableElement() || selection.isRange())) {
         RefPtrWillBeRawPtr<Range> selectionRange = selection.toNormalizedRange();
         IntRect firstRect = m_frame->editor().firstRectForRange(selectionRange.get());
 
@@ -3076,7 +3078,7 @@ bool EventHandler::sendContextMenuEventForKey()
     IntPoint locationInViewport = pinchViewport.rootFrameToViewport(locationInRootFrame);
     IntPoint globalPosition = view->hostWindow()->viewportToScreen(IntRect(locationInViewport, IntSize())).location();
 
-    Node* targetNode = doc->focusedElement();
+    Node* targetNode = overrideTargetElement ? overrideTargetElement : doc->focusedElement();
     if (!targetNode)
         targetNode = doc;
 
@@ -3095,7 +3097,7 @@ bool EventHandler::sendContextMenuEventForKey()
     PlatformMouseEvent mouseEvent(locationInRootFrame, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
 
     handleMousePressEvent(mouseEvent);
-    return sendContextMenuEvent(mouseEvent);
+    return sendContextMenuEvent(mouseEvent, overrideTargetElement);
 }
 
 bool EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestResults& targetedEvent)

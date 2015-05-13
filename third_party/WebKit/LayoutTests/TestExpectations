@@ -1937,3 +1937,7 @@ crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] fast/text/international/co
 crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 
 crbug.com/487671 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Pass Timeout ]
+
+# Disabled briefly until test runner support lands.
+crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
+crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]

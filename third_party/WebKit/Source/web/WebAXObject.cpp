@@ -54,7 +54,10 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebDocument.h"
+#include "public/web/WebElement.h"
 #include "public/web/WebNode.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -886,6 +889,39 @@ void WebAXObject::setValue(WebString value) const
         return;
 
     m_private->setValue(value);
+}
+
+void WebAXObject::showContextMenu() const
+{
+    if (isDetached())
+        return;
+
+    Node* node = m_private->node();
+    if (!node)
+        return;
+
+    Element* element = nullptr;
+    if (node->isElementNode()) {
+        element = toElement(node);
+    } else {
+        node->updateDistribution();
+        ContainerNode* parent = ComposedTreeTraversal::parent(*node);
+        ASSERT_WITH_SECURITY_IMPLICATION(parent->isElementNode());
+        element = toElement(parent);
+    }
+
+    if (!element)
+        return;
+
+    LocalFrame* frame = element->document().frame();
+    if (!frame)
+        return;
+
+    WebViewImpl* view = WebLocalFrameImpl::fromFrame(frame)->viewImpl();
+    if (!view)
+        return;
+
+    view->showContextMenuForElement(WebElement(element));
 }
 
 WebString WebAXObject::stringValue() const
