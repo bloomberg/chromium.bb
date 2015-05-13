@@ -633,13 +633,6 @@ bool HTMLTextAreaElement::supportsAutofocus() const
     return true;
 }
 
-void HTMLTextAreaElement::copyNonAttributePropertiesFromElement(const Element& source)
-{
-    const HTMLTextAreaElement& sourceElement = static_cast<const HTMLTextAreaElement&>(source);
-    m_value = sourceElement.m_value;
-    HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);
-}
-
 const AtomicString& HTMLTextAreaElement::defaultAutocapitalize() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
