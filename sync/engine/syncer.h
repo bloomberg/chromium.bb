@@ -41,12 +41,18 @@ class SYNC_EXPORT_PRIVATE Syncer {
   Syncer(CancelationSignal* cancelation_signal);
   virtual ~Syncer();
 
+  // Whether an early exist was requested due to a cancelation signal.
   bool ExitRequested();
+
+  // Whether the syncer is in the middle of a sync cycle.
+  bool IsSyncing() const;
 
   // Fetches and applies updates, resolves conflicts and commits local changes
   // for |request_types| as necessary until client and server states are in
   // sync.  The |nudge_tracker| contains state that describes why the client is
   // out of sync and what must be done to bring it back into sync.
+  // Returns: false if an error occurred and retries should backoff, true
+  // otherwise.
   virtual bool NormalSyncShare(ModelTypeSet request_types,
                                sessions::NudgeTracker* nudge_tracker,
                                sessions::SyncSession* session);
@@ -56,6 +62,8 @@ class SYNC_EXPORT_PRIVATE Syncer {
   // processors are in "passive" mode, so none of the downloaded updates will be
   // applied to the model.  The |source| is sent up to the server for debug
   // purposes.  It describes the reson for performing this initial download.
+  // Returns: false if an error occurred and retries should backoff, true
+  // otherwise.
   virtual bool ConfigureSyncShare(
       ModelTypeSet request_types,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
@@ -65,10 +73,34 @@ class SYNC_EXPORT_PRIVATE Syncer {
   // client with a working connection to the invalidations server, this should
   // be unnecessary.  It may be invoked periodically to try to keep the client
   // in sync despite bugs or transient failures.
+  // Returns: false if an error occurred and retries should backoff, true
+  // otherwise.
   virtual bool PollSyncShare(ModelTypeSet request_types,
                              sessions::SyncSession* session);
 
  private:
+  friend class SyncerTest;
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, NameClashWithResolver);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, IllegalAndLegalUpdates);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingAndNewParent);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
+                           TestCommitListOrderingAndNewParentAndChild);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingCounterexample);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingWithNesting);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingWithNewItems);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestGetUnsyncedAndSimpleCommit);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestPurgeWhileUnsynced);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestPurgeWhileUnapplied);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, UnappliedUpdateDuringCommit);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, DeletingEntryInFolder);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
+                           LongChangelistCreatesFakeOrphanedEntries);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, QuicklyMergeDualCreatedHierarchy);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, LongChangelistWithApplicationConflict);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, DeletingEntryWithLocalEdits);
+  FRIEND_TEST_ALL_PREFIXES(EntryCreatedInNewFolderTest,
+                           EntryCreatedInNewFolderMidSync);
+
   bool DownloadAndApplyUpdates(
       ModelTypeSet* request_types,
       sessions::SyncSession* session,
@@ -91,27 +123,8 @@ class SYNC_EXPORT_PRIVATE Syncer {
 
   syncer::CancelationSignal* const cancelation_signal_;
 
-  friend class SyncerTest;
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, NameClashWithResolver);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, IllegalAndLegalUpdates);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingAndNewParent);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
-                           TestCommitListOrderingAndNewParentAndChild);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingCounterexample);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingWithNesting);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingWithNewItems);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestGetUnsyncedAndSimpleCommit);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestPurgeWhileUnsynced);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestPurgeWhileUnapplied);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, UnappliedUpdateDuringCommit);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, DeletingEntryInFolder);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
-                           LongChangelistCreatesFakeOrphanedEntries);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, QuicklyMergeDualCreatedHierarchy);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, LongChangelistWithApplicationConflict);
-  FRIEND_TEST_ALL_PREFIXES(SyncerTest, DeletingEntryWithLocalEdits);
-  FRIEND_TEST_ALL_PREFIXES(EntryCreatedInNewFolderTest,
-                           EntryCreatedInNewFolderMidSync);
+  // Whether the syncer is in the middle of a sync attempt.
+  bool is_syncing_;
 
   DISALLOW_COPY_AND_ASSIGN(Syncer);
 };

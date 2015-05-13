@@ -41,7 +41,8 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       ModelTypeSet types) override;
   bool PurgePartiallySyncedTypes() override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
-  void StartSyncingNormally(const ModelSafeRoutingInfo& routing_info) override;
+  void StartSyncingNormally(const ModelSafeRoutingInfo& routing_info,
+                            base::Time last_poll_time) override;
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
                        ModelTypeSet to_purge,

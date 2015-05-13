@@ -51,7 +51,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Calls Stop().
   ~SyncSchedulerImpl() override;
 
-  void Start(Mode mode) override;
+  void Start(Mode mode, base::Time last_poll_time) override;
   void ScheduleConfiguration(const ConfigurationParams& params) override;
   void Stop() override;
   void ScheduleLocalNudge(
@@ -151,7 +151,10 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Invoke the syncer to perform a configuration job.
   void DoConfigurationSyncSessionJob(JobPriority priority);
 
-  // Helper function for Do{Nudge,Configuration}SyncSessionJob.
+  // Helper function for Do{Nudge,Configuration,Poll}SyncSessionJob.
+  void HandleSuccess();
+
+  // Helper function for Do{Nudge,Configuration,Poll}SyncSessionJob.
   void HandleFailure(
       const sessions::ModelNeutralState& model_neutral_state);
 
@@ -246,8 +249,10 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   base::TimeDelta syncer_short_poll_interval_seconds_;
   base::TimeDelta syncer_long_poll_interval_seconds_;
 
-  // Periodic timer for polling.  See AdjustPolling.
-  base::RepeatingTimer<SyncSchedulerImpl> poll_timer_;
+  // Timer for polling. Restarted on each successful poll, and when entering
+  // normal sync mode or exiting an error state. Not active in configuration
+  // mode.
+  base::OneShotTimer<SyncSchedulerImpl> poll_timer_;
 
   // The mode of operation.
   Mode mode_;
@@ -290,15 +295,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // take place during a sync cycle. We call this out because such violations
   // could result in tight sync loops hitting sync servers.
   bool no_scheduling_allowed_;
-
-  // crbug/251307. This is a workaround for M29. crbug/259913 tracks proper fix
-  // for M30.
-  // The issue is that poll job runs after few hours of inactivity and therefore
-  // will always fail with auth error because of expired access token. Once
-  // fresh access token is requested poll job is not retried.
-  // The change is to remember that poll timer just fired and retry poll job
-  // after credentials are updated.
-  bool do_poll_after_credentials_updated_;
 
   // TryJob might get called for multiple reasons. It should only call
   // DoPollSyncSessionJob after some time since the last attempt.

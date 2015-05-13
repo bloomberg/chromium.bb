@@ -447,7 +447,7 @@ int SyncClientMain(int argc, char* argv[]) {
   invalidator->RegisterHandler(shim.get());
   invalidator->UpdateRegisteredIds(
       shim.get(), ModelTypeSetToObjectIdSet(model_types));
-  sync_manager->StartSyncingNormally(routing_info);
+  sync_manager->StartSyncingNormally(routing_info, base::Time());
 
   sync_loop.Run();
 

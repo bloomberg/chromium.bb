@@ -34,6 +34,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     bool notifications_enabled,
     size_t num_entries,
     base::Time sync_start_time,
+    base::Time poll_finish_time,
     const std::vector<int>& num_entries_by_type,
     const std::vector<int>& num_to_delete_entries_by_type,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source)
@@ -46,6 +47,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       notifications_enabled_(notifications_enabled),
       num_entries_(num_entries),
       sync_start_time_(sync_start_time),
+      poll_finish_time_(poll_finish_time),
       num_entries_by_type_(num_entries_by_type),
       num_to_delete_entries_by_type_(num_to_delete_entries_by_type),
       legacy_updates_source_(legacy_updates_source),
@@ -138,6 +140,10 @@ size_t SyncSessionSnapshot::num_entries() const {
 
 base::Time SyncSessionSnapshot::sync_start_time() const {
   return sync_start_time_;
+}
+
+base::Time SyncSessionSnapshot::poll_finish_time() const {
+  return poll_finish_time_;
 }
 
 bool SyncSessionSnapshot::is_initialized() const {

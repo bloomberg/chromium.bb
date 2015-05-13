@@ -38,6 +38,7 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
   registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
+  registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncFirstSyncTime, 0);
 
   // All datatypes are on by default, but this gets set explicitly
@@ -97,6 +98,7 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 void SyncPrefs::ClearPreferences() {
   DCHECK(CalledOnValidThread());
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
+  pref_service_->ClearPref(prefs::kSyncLastPollTime);
   pref_service_->ClearPref(prefs::kSyncHasSetupCompleted);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
@@ -146,6 +148,17 @@ base::Time SyncPrefs::GetLastSyncedTime() const {
 void SyncPrefs::SetLastSyncedTime(base::Time time) {
   DCHECK(CalledOnValidThread());
   pref_service_->SetInt64(prefs::kSyncLastSyncedTime, time.ToInternalValue());
+}
+
+base::Time SyncPrefs::GetLastPollTime() const {
+  DCHECK(CalledOnValidThread());
+  return base::Time::FromInternalValue(
+      pref_service_->GetInt64(prefs::kSyncLastSyncedTime));
+}
+
+void SyncPrefs::SetLastPollTime(base::Time time) {
+  DCHECK(CalledOnValidThread());
+  pref_service_->SetInt64(prefs::kSyncLastPollTime, time.ToInternalValue());
 }
 
 bool SyncPrefs::HasKeepEverythingSynced() const {
