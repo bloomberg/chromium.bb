@@ -50,8 +50,18 @@ DEFAULT_TARGET_VERSION_MAP = {
 TARGET_VERSION_MAP = {
     'host' : {
         'gdb' : PACKAGE_NONE,
+        'ex_go' : PACKAGE_NONE,
     },
 }
+
+# Enable the Go compiler for these targets.
+TARGET_GO_ENABLED = (
+    'x86_64-cros-linux-gnu',
+    'i686-pc-linux-gnu',
+    'armv7a-cros-linux-gnueabi',
+)
+CROSSDEV_GO_ARGS = ['--ex-pkg', 'dev-lang/go']
+
 # Overrides for {gcc,binutils}-config, pick a package with particular suffix.
 CONFIG_TARGET_SUFFIXES = {
     'binutils' : {
@@ -102,10 +112,14 @@ class Crossdev(object):
       target_tuple = target
       if target == 'host':
         target_tuple = toolchain.GetHostTuple()
+      # Build the crossdev command.
+      cmd = ['crossdev', '--show-target-cfg', '--ex-gdb']
+      if target in TARGET_GO_ENABLED:
+        cmd.extend(CROSSDEV_GO_ARGS)
+      cmd.extend(['-t', target_tuple])
       # Catch output of crossdev.
-      out = cros_build_lib.RunCommand(
-          ['crossdev', '--show-target-cfg', '--ex-gdb', target_tuple],
-          print_cmd=False, redirect_stdout=True).output.splitlines()
+      out = cros_build_lib.RunCommand(cmd, print_cmd=False,
+                                      redirect_stdout=True).output.splitlines()
       # List of tuples split at the first '=', converted into dict.
       val[target] = dict([x.split('=', 1) for x in out])
     return val[target]
@@ -144,10 +158,13 @@ class Crossdev(object):
         if pkg == 'gdb':
           # Gdb does not have selectable versions.
           cmd.append('--ex-gdb')
-          continue
-        # The first of the desired versions is the "primary" one.
-        version = GetDesiredPackageVersions(target, pkg)[0]
-        cmd.extend(['--%s' % pkg, version])
+        elif pkg == 'ex_go':
+          # Go does not have selectable versions.
+          cmd.extend(CROSSDEV_GO_ARGS)
+        else:
+          # The first of the desired versions is the "primary" one.
+          version = GetDesiredPackageVersions(target, pkg)[0]
+          cmd.extend(['--%s' % pkg, version])
 
       cmd.extend(targets[target]['crossdev'].split())
       if config_only:
@@ -753,6 +770,20 @@ def _GetFilesForTarget(target, root='/'):
     if pkg in ('kernel', 'libc'):
       continue
 
+    # Skip Go compiler from redistributable packages.
+    # The "go" executable has GOROOT=/usr/lib/go/${CTARGET} hardcoded
+    # into it. Due to this, the toolchain cannot be unpacked anywhere
+    # else and be readily useful. To enable packaging Go, we need to:
+    # -) Tweak the wrappers/environment to override GOROOT
+    #    automatically based on the unpack location.
+    # -) Make sure the ELF dependency checking and wrapping logic
+    #    below skips the Go toolchain executables and libraries.
+    # -) Make sure the packaging process maintains the relative
+    #    timestamps of precompiled standard library packages.
+    #    (see dev-lang/go ebuild for details).
+    if pkg == 'ex_go':
+      continue
+
     atom = GetPortagePackage(target, pkg)
     cat, pn = atom.split('/')
     ver = GetInstalledPackageVersions(atom, root=root)[0]
@@ -1080,6 +1111,17 @@ def main(argv):
                    if options.include_boards else set())
   bricks_wanted = (set(options.include_bricks.split(','))
                    if options.include_bricks else set())
+
+  # pylint: disable=global-statement
+  global TARGET_GO_ENABLED
+  if GetStablePackageVersion('sys-devel/crossdev', True) < '20150527':
+    # Crossdev --ex-pkg flag was added in version 20150527.
+    # Disable Go toolchain until the chroot gets a newer crossdev.
+    TARGET_GO_ENABLED = ()
+  if options.usepkg:
+    # For bootstrapping, disable Go toolchain if using binary packages.
+    # Allow the sdk bot to catch up and make binary packages available.
+    TARGET_GO_ENABLED = ()
 
   if options.cfg_name:
     ShowConfig(options.cfg_name)
