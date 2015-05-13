@@ -304,7 +304,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   scoped_ptr<DefaultOverlayProcessor> overlay_processor(
       new DefaultOverlayProcessor(&output_surface, resource_provider.get()));
   overlay_processor->Initialize();
-  EXPECT_GE(1U, overlay_processor->GetStrategyCount());
+  EXPECT_GE(2U, overlay_processor->GetStrategyCount());
 }
 
 template <typename OverlayStrategyType>
@@ -948,10 +948,10 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
-TEST_F(GLRendererWithOverlaysTest, OccludedQuadDrawn) {
+TEST_F(GLRendererWithOverlaysTest, OccludedQuadInUnderlay) {
   bool use_validator = true;
   Init(use_validator);
-  renderer_->set_expect_overlays(false);
+  renderer_->set_expect_overlays(true);
   gfx::Rect viewport_rect(16, 16);
 
   scoped_ptr<RenderPass> pass = CreateRenderPass();
@@ -970,9 +970,12 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadDrawn) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  // 3 quads in the pass, all should draw.
+  // Candidate quad should fail to be overlaid on top because of occlusion.
+  // Expect to be replaced with transparent hole quad and placed in underlay.
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(3);
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(scheduler_,
+              Schedule(-1, gfx::OVERLAY_TRANSFORM_NONE, _, kOverlayRect,
+                       BoundingRect(kUVTopLeft, kUVBottomRight))).Times(1);
   renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
 
   SwapBuffers();
