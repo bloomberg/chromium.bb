@@ -51,32 +51,6 @@ using extensions::AppWindow;
 
 namespace {
 
-void SetWorkspacesCollectionBehavior(NSWindow* window, bool always_visible) {
-  NSWindowCollectionBehavior behavior = [window collectionBehavior];
-  if (always_visible)
-    behavior |= NSWindowCollectionBehaviorCanJoinAllSpaces;
-  else
-    behavior &= ~NSWindowCollectionBehaviorCanJoinAllSpaces;
-  [window setCollectionBehavior:behavior];
-}
-
-void InitCollectionBehavior(NSWindow* window) {
-  // Since always-on-top windows have a higher window level
-  // than NSNormalWindowLevel, they will default to
-  // NSWindowCollectionBehaviorTransient. Set the value
-  // explicitly here to match normal windows.
-  NSWindowCollectionBehavior behavior = [window collectionBehavior];
-  behavior |= NSWindowCollectionBehaviorManaged;
-  [window setCollectionBehavior:behavior];
-}
-
-// Returns the level for windows that are configured to be always on top.
-// This is not a constant because NSFloatingWindowLevel is a macro defined
-// as a function call.
-NSInteger AlwaysOnTopWindowLevel() {
-  return NSFloatingWindowLevel;
-}
-
 NSRect GfxToCocoaBounds(gfx::Rect bounds) {
   typedef AppWindow::BoundsSpecification BoundsSpecification;
 
@@ -358,10 +332,10 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     [window setBottomCornerRounded:NO];
 
   if (params.always_on_top)
-    [window setLevel:AlwaysOnTopWindowLevel()];
-  InitCollectionBehavior(window);
+    gfx::SetNSWindowAlwaysOnTop(window, true);
 
-  SetWorkspacesCollectionBehavior(window, params.visible_on_all_workspaces);
+  gfx::SetNSWindowVisibleOnAllWorkspaces(window,
+                                         params.visible_on_all_workspaces);
 
   window_controller_.reset(
       [[NativeAppWindowController alloc] initWithWindow:window.release()]);
@@ -709,7 +683,7 @@ void NativeAppWindowCocoa::FlashFrame(bool flash) {
 }
 
 bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
-  return [window() level] == AlwaysOnTopWindowLevel();
+  return gfx::IsNSWindowAlwaysOnTop(window());
 }
 
 void NativeAppWindowCocoa::RenderViewCreated(content::RenderViewHost* rvh) {
@@ -923,12 +897,11 @@ void NativeAppWindowCocoa::SetContentSizeConstraints(
 }
 
 void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
-  [window() setLevel:(always_on_top ? AlwaysOnTopWindowLevel() :
-                                      NSNormalWindowLevel)];
+  gfx::SetNSWindowAlwaysOnTop(window(), always_on_top);
 }
 
 void NativeAppWindowCocoa::SetVisibleOnAllWorkspaces(bool always_visible) {
-  SetWorkspacesCollectionBehavior(window(), always_visible);
+  gfx::SetNSWindowVisibleOnAllWorkspaces(window(), always_visible);
 }
 
 void NativeAppWindowCocoa::SetInterceptAllKeys(bool want_all_key) {

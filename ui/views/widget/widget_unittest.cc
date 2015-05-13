@@ -3433,5 +3433,15 @@ TEST_F(WidgetTest, CharMessagesAsKeyboardMessagesDoesNotCrash) {
 }
 #endif
 
+// Test that SetAlwaysOnTop and IsAlwaysOnTop are consistent.
+TEST_F(WidgetTest, AlwaysOnTop) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  EXPECT_FALSE(widget->IsAlwaysOnTop());
+  widget->SetAlwaysOnTop(true);
+  EXPECT_TRUE(widget->IsAlwaysOnTop());
+  widget->SetAlwaysOnTop(false);
+  EXPECT_FALSE(widget->IsAlwaysOnTop());
+}
+
 }  // namespace test
 }  // namespace views

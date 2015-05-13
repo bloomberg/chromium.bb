@@ -12,6 +12,7 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#import "ui/gfx/mac/nswindow_frame_controls.h"
 #include "ui/native_theme/native_theme.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
@@ -82,6 +83,11 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   base::scoped_nsobject<NSWindow> window([CreateNSWindow(params) retain]);
   [window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
   bridge_->Init(window, params);
+
+  // Only set always-on-top here if it is true since setting it may affect how
+  // the window is treated by Expose.
+  if (params.keep_on_top)
+    SetAlwaysOnTop(true);
 
   delegate_->OnNativeWidgetCreated(true);
 
@@ -377,16 +383,15 @@ bool NativeWidgetMac::IsActive() const {
 }
 
 void NativeWidgetMac::SetAlwaysOnTop(bool always_on_top) {
-  NOTIMPLEMENTED();
+  gfx::SetNSWindowAlwaysOnTop(GetNativeWindow(), always_on_top);
 }
 
 bool NativeWidgetMac::IsAlwaysOnTop() const {
-  NOTIMPLEMENTED();
-  return false;
+  return gfx::IsNSWindowAlwaysOnTop(GetNativeWindow());
 }
 
 void NativeWidgetMac::SetVisibleOnAllWorkspaces(bool always_visible) {
-  NOTIMPLEMENTED();
+  gfx::SetNSWindowVisibleOnAllWorkspaces(GetNativeWindow(), always_visible);
 }
 
 void NativeWidgetMac::Maximize() {
