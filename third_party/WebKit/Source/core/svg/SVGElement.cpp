@@ -594,7 +594,6 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         SVGParsingError parseError = NoError;
         m_className->setBaseValueAsString(value, parseError);
         reportAttributeParsingError(parseError, name, value);
-    } else if (name.matches(XMLNames::langAttr) || name.matches(XMLNames::spaceAttr)) {
     } else if (name == tabindexAttr) {
         Element::parseAttribute(name, value);
     } else {

@@ -4133,9 +4133,6 @@ interface SVGElement
     getter style
     getter tabIndex
     getter viewportElement
-    getter xmlbase
-    getter xmllang
-    getter xmlspace
     method constructor
     setter onabort
     setter onautocomplete
@@ -4199,9 +4196,6 @@ interface SVGElement
     setter onvolumechange
     setter onwaiting
     setter tabIndex
-    setter xmlbase
-    setter xmllang
-    setter xmlspace
 interface SVGEllipseElement
     getter cx
     getter cy
