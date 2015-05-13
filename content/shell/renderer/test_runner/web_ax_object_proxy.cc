@@ -268,10 +268,12 @@ std::string DeprecatedGetHelpText(const blink::WebAXObject& object) {
 std::string GetStringValue(const blink::WebAXObject& object) {
   std::string value;
   if (object.role() == blink::WebAXRoleColorWell) {
-    int r, g, b;
-    object.colorValue(r, g, b);
-    value = base::StringPrintf("rgb %7.5f %7.5f %7.5f 1",
-                               r / 255., g / 255., b / 255.);
+    unsigned int color = object.colorValue();
+    unsigned int red = (color >> 16) & 0xFF;
+    unsigned int green = (color >> 8) & 0xFF;
+    unsigned int blue = color & 0xFF;
+    value = base::StringPrintf("rgba(%d, %d, %d, 1)",
+                               red, green, blue);
   } else {
     value = object.stringValue().utf8();
   }
@@ -509,6 +511,10 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("hasPopup", &WebAXObjectProxy::HasPopup)
       .SetProperty("isValid", &WebAXObjectProxy::IsValid)
       .SetProperty("isReadOnly", &WebAXObjectProxy::IsReadOnly)
+      .SetProperty("backgroundColor", &WebAXObjectProxy::BackgroundColor)
+      .SetProperty("color", &WebAXObjectProxy::Color)
+      .SetProperty("colorValue", &WebAXObjectProxy::ColorValue)
+      .SetProperty("fontSize", &WebAXObjectProxy::FontSize)
       .SetProperty("orientation", &WebAXObjectProxy::Orientation)
       .SetProperty("posInSet", &WebAXObjectProxy::PosInSet)
       .SetProperty("setSize", &WebAXObjectProxy::SetSize)
@@ -820,6 +826,29 @@ bool WebAXObjectProxy::IsValid() {
 bool WebAXObjectProxy::IsReadOnly() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return accessibility_object_.isReadOnly();
+}
+
+unsigned int WebAXObjectProxy::BackgroundColor() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.backgroundColor();
+}
+
+unsigned int WebAXObjectProxy::Color() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  unsigned int color = accessibility_object_.color();
+  // Remove the alpha because it's always 1 and thus not informative.
+  return color & 0xFFFFFF;
+}
+
+// For input elements of type color.
+unsigned int WebAXObjectProxy::ColorValue() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.colorValue();
+}
+
+float WebAXObjectProxy::FontSize() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.fontSize();
 }
 
 std::string WebAXObjectProxy::Orientation() {

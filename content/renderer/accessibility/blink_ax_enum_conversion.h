@@ -27,6 +27,8 @@ uint32 AXStateFromBlink(const blink::WebAXObject& o);
 ui::AXTextDirection AXTextDirectionFromBlink(
     blink::WebAXTextDirection text_direction);
 
+ui::AXTextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style);
+
 // Convert a Blink WebAXInvalidState to an AXInvalidState defined in
 // ui/accessibility.
 ui::AXInvalidState AXInvalidStateFromBlink(

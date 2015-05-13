@@ -8,6 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
 using base::DoubleToString;
@@ -210,36 +211,52 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;
         break;
-      case AX_ATTR_COLOR_VALUE_RED:
-        result += " color_value_red=" + value;
-        break;
-      case AX_ATTR_COLOR_VALUE_GREEN:
-        result += " color_value_green=" + value;
-        break;
-      case AX_ATTR_COLOR_VALUE_BLUE:
-        result += " color_value_blue=" + value;
-        break;
       case AX_ATTR_TREE_ID:
         result += " tree_id=" + value;
         break;
       case AX_ATTR_CHILD_TREE_ID:
         result += " child_tree_id=" + value;
         break;
+      case AX_ATTR_COLOR_VALUE:
+        result += base::StringPrintf(" color_value=&%X",
+                                     int_attributes[i].second);
+        break;
+      case AX_ATTR_BACKGROUND_COLOR:
+        result += base::StringPrintf(" background_color=&%X",
+                                     int_attributes[i].second);
+        break;
+      case AX_ATTR_COLOR:
+        result += base::StringPrintf(" color=&%X", int_attributes[i].second);
+        break;
       case AX_ATTR_TEXT_DIRECTION:
         switch (int_attributes[i].second) {
-          case AX_TEXT_DIRECTION_LR:
-          default:
-            result += " text_direction=lr";
+          case AX_TEXT_DIRECTION_LTR:
+            result += " text_direction=ltr";
             break;
-          case AX_TEXT_DIRECTION_RL:
-            result += " text_direction=rl";
+          case AX_TEXT_DIRECTION_RTL:
+            result += " text_direction=rtl";
             break;
-          case AX_TEXT_DIRECTION_TB:
-            result += " text_direction=tb";
+          case AX_TEXT_DIRECTION_TTB:
+            result += " text_direction=ttb";
             break;
-          case AX_TEXT_DIRECTION_BT:
-            result += " text_direction=bt";
+          case AX_TEXT_DIRECTION_BTT:
+            result += " text_direction=btt";
             break;
+        }
+        case AX_ATTR_TEXT_STYLE: {
+          unsigned int text_style = int_attributes[i].second;
+          if (text_style == AX_TEXT_STYLE_NONE)
+            break;
+          std::string text_style_value(" text_style=");
+          if (text_style & AX_TEXT_STYLE_BOLD)
+            text_style_value += "bold,";
+          if (text_style & AX_TEXT_STYLE_ITALIC)
+            text_style_value += "italic,";
+          if (text_style & AX_TEXT_STYLE_UNDERLINE)
+            text_style_value += "underline,";
+          if (text_style & AX_TEXT_STYLE_LINE_THROUGH)
+            text_style_value += "line-through,";
+          result += text_style_value.substr(0, text_style_value.size() - 1);;
         }
         break;
       case AX_ATTR_SET_SIZE:
@@ -366,6 +383,9 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_MIN_VALUE_FOR_RANGE:
         result += " min_value=" + value;
+        break;
+      case AX_ATTR_FONT_SIZE:
+        result += " font_size=" + value;
         break;
       case AX_FLOAT_ATTRIBUTE_NONE:
         break;

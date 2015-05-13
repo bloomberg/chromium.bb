@@ -605,16 +605,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
 
   // Expose color well value.
   if (target->ia2_role() == IA2_ROLE_COLOR_CHOOSER) {
-    int r = target->GetIntAttribute(
-        ui::AX_ATTR_COLOR_VALUE_RED);
-    int g = target->GetIntAttribute(
-        ui::AX_ATTR_COLOR_VALUE_GREEN);
-    int b = target->GetIntAttribute(
-        ui::AX_ATTR_COLOR_VALUE_BLUE);
+    int color = target->GetIntAttribute(ui::AX_ATTR_COLOR_VALUE);
+    int red = (color >> 16) & 0xFF;
+    int green = (color >> 8) & 0xFF;
+    int blue = color & 0xFF;
     base::string16 value_text;
-    value_text = base::IntToString16((r * 100) / 255) + L"% red " +
-                 base::IntToString16((g * 100) / 255) + L"% green " +
-                 base::IntToString16((b * 100) / 255) + L"% blue";
+    value_text = base::IntToString16((red * 100) / 255) + L"% red " +
+                 base::IntToString16((green * 100) / 255) + L"% green " +
+                 base::IntToString16((blue * 100) / 255) + L"% blue";
     *value = SysAllocString(value_text.c_str());
     DCHECK(*value);
     return S_OK;

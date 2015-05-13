@@ -351,9 +351,10 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   // For color wells, the color is stored in separate attributes.
   // Perhaps we could return color names in the future?
   if (GetRole() == ui::AX_ROLE_COLOR_WELL) {
-    int red = GetIntAttribute(ui::AX_ATTR_COLOR_VALUE_RED);
-    int green = GetIntAttribute(ui::AX_ATTR_COLOR_VALUE_GREEN);
-    int blue = GetIntAttribute(ui::AX_ATTR_COLOR_VALUE_BLUE);
+    int color = GetIntAttribute(ui::AX_ATTR_COLOR_VALUE);
+    int red = (color >> 16) & 0xFF;
+    int green = (color >> 8) & 0xFF;
+    int blue = color & 0xFF;
     return base::UTF8ToUTF16(
         base::StringPrintf("#%02X%02X%02X", red, green, blue));
   }

@@ -970,15 +970,14 @@ NSDictionary* attributeToMethodNameMap = nil;
       return [NSNumber numberWithFloat:floatValue];
     }
   } else if ([role isEqualToString:NSAccessibilityColorWellRole]) {
-    int r = browserAccessibility_->GetIntAttribute(
-        ui::AX_ATTR_COLOR_VALUE_RED);
-    int g = browserAccessibility_->GetIntAttribute(
-        ui::AX_ATTR_COLOR_VALUE_GREEN);
-    int b = browserAccessibility_->GetIntAttribute(
-        ui::AX_ATTR_COLOR_VALUE_BLUE);
+    int color = browserAccessibility_->GetIntAttribute(
+        ui::AX_ATTR_COLOR_VALUE);
+    int red = (color >> 16) & 0xFF;
+    int green = (color >> 8) & 0xFF;
+    int blue = color & 0xFF;
     // This string matches the one returned by a native Mac color well.
     return [NSString stringWithFormat:@"rgb %7.5f %7.5f %7.5f 1",
-                r / 255., g / 255., b / 255.];
+                red / 255., green / 255., blue / 255.];
   }
 
   return NSStringForStringAttribute(

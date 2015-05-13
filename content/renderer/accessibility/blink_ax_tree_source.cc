@@ -234,13 +234,20 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddStringAttribute(ui::AX_ATTR_VALUE, UTF16ToUTF8(src.stringValue()));
   }
 
-  if (dst->role == ui::AX_ROLE_COLOR_WELL) {
-    int r, g, b;
-    src.colorValue(r, g, b);
-    dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE_RED, r);
-    dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE_GREEN, g);
-    dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE_BLUE, b);
-  }
+  if (dst->role == ui::AX_ROLE_COLOR_WELL)
+    dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE, src.colorValue());
+
+
+  // Text attributes.
+  if (src.backgroundColor())
+    dst->AddIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR, src.backgroundColor());
+
+  if (src.color())
+    dst->AddIntAttribute(ui::AX_ATTR_COLOR, src.color());
+
+  // Font size is in pixels.
+  if (src.fontSize())
+    dst->AddFloatAttribute(ui::AX_ATTR_FONT_SIZE, src.fontSize());
 
   if (src.invalidState()) {
     dst->AddIntAttribute(ui::AX_ATTR_INVALID_STATE,
@@ -251,10 +258,18 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                             UTF16ToUTF8(src.ariaInvalidValue()));
   }
 
-  if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
+  if (src.textDirection()) {
     dst->AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                          AXTextDirectionFromBlink(src.textDirection()));
+  }
 
+  if (src.textStyle()) {
+    dst->AddIntAttribute(ui::AX_ATTR_TEXT_STYLE,
+                         AXTextStyleFromBlink(src.textStyle()));
+  }
+
+
+  if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
     WebVector<int> src_character_offsets;
     src.characterOffsets(src_character_offsets);
     std::vector<int32> character_offsets;
