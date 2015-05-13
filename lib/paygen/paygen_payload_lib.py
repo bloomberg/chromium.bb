@@ -136,7 +136,8 @@ class _PaygenPayload(object):
       generator_uri = gspaths.ChromeosReleases.GeneratorUri(
           self.payload.tgt_image.channel,
           self.payload.tgt_image.board,
-          self.payload.tgt_image.version)
+          self.payload.tgt_image.version,
+          self.payload.tgt_image.bucket)
 
     logging.info('Preparing au-generate.zip from %s.', generator_uri)
 
