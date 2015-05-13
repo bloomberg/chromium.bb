@@ -8,10 +8,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
@@ -72,6 +73,9 @@ public class CronetTestActivity extends Activity {
 
     int mHttpStatusCode = 0;
 
+    // UrlRequestContextConfig used for this activity.
+    private UrlRequestContextConfig mConfig;
+
     class TestHttpUrlRequestListener implements HttpUrlRequestListener {
         public TestHttpUrlRequestListener() {
         }
@@ -92,6 +96,25 @@ public class CronetTestActivity extends Activity {
         super.onCreate(savedInstanceState);
         prepareTestStorage();
 
+        // Print out extra arguments passed in starting this activity.
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        Log.i(TAG, "Cronet extras: " + extras);
+        if (extras != null) {
+            String[] commandLine = extras.getStringArray(COMMAND_LINE_ARGS_KEY);
+            if (commandLine != null) {
+                assertEquals(0, commandLine.length % 2);
+                for (int i = 0; i < commandLine.length / 2; i++) {
+                    Log.i(TAG, "Cronet commandLine %s = %s", commandLine[i * 2],
+                            commandLine[i * 2 + 1]);
+                }
+            }
+        }
+
+        // Initializes UrlRequestContextConfig from commandLine args.
+        mConfig = initializeContextConfig();
+        Log.i(TAG, "Using Config: " + mConfig.toString());
+
         String initString = getCommandLineArg(LIBRARY_INIT_KEY);
         if (LIBRARY_INIT_SKIP.equals(initString)) {
             return;
@@ -99,7 +122,7 @@ public class CronetTestActivity extends Activity {
 
         if (LIBRARY_INIT_WRAPPER.equals(initString)) {
             mStreamHandlerFactory =
-                new CronetURLStreamHandlerFactory(this, getContextConfig());
+                new CronetURLStreamHandlerFactory(this, mConfig);
         }
 
         mUrlRequestContext = initRequestContext();
@@ -143,7 +166,24 @@ public class CronetTestActivity extends Activity {
     }
 
     UrlRequestContextConfig getContextConfig() {
+        return mConfig;
+    }
+
+    private UrlRequestContextConfig initializeContextConfig() {
         UrlRequestContextConfig config = new UrlRequestContextConfig();
+        config.enableSPDY(true).enableQUIC(true);
+
+        // Override config if it is passed from the launcher.
+        String configString = getCommandLineArg(CONFIG_KEY);
+        if (configString != null) {
+            try {
+                config = new UrlRequestContextConfig(configString);
+            } catch (org.json.JSONException e) {
+                Log.e(TAG, "Invalid Config.", e);
+                finish();
+                return null;
+            }
+        }
 
         String cacheString = getCommandLineArg(CACHE_KEY);
         if (CACHE_DISK.equals(cacheString)) {
@@ -155,20 +195,6 @@ public class CronetTestActivity extends Activity {
         } else if (CACHE_IN_MEMORY.equals(cacheString)) {
             config.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY, 100 * 1024);
         }
-        config.enableSPDY(true).enableQUIC(true);
-
-        // Override config if it is passed from the launcher.
-        String configString = getCommandLineArg(CONFIG_KEY);
-        if (configString != null) {
-            try {
-                Log.i(TAG, "Using Config: " + configString);
-                config = new UrlRequestContextConfig(configString);
-            } catch (org.json.JSONException e) {
-                Log.e(TAG, "Invalid Config.", e);
-                finish();
-                return null;
-            }
-        }
 
         // Setting this here so it isn't overridden on the command line
         config.setLibraryName("cronet_tests");
@@ -177,12 +203,12 @@ public class CronetTestActivity extends Activity {
 
     // Helper function to initialize request context. Also used in testing.
     public UrlRequestContext initRequestContext() {
-        return UrlRequestContext.createContext(this, getContextConfig());
+        return UrlRequestContext.createContext(this, mConfig);
     }
 
     // Helper function to initialize request factory. Also used in testing.
     public HttpUrlRequestFactory initRequestFactory() {
-        return HttpUrlRequestFactory.createFactory(this, getContextConfig());
+        return HttpUrlRequestFactory.createFactory(this, mConfig);
     }
 
     private static String getUrlFromIntent(Intent intent) {
@@ -192,13 +218,10 @@ public class CronetTestActivity extends Activity {
     private String getCommandLineArg(String key) {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
-        Log.i(TAG, "Cronet extras: " + extras);
         if (extras != null) {
             String[] commandLine = extras.getStringArray(COMMAND_LINE_ARGS_KEY);
             if (commandLine != null) {
                 for (int i = 0; i < commandLine.length; ++i) {
-                    Log.i(TAG,
-                            "Cronet commandLine[" + i + "]=" + commandLine[i]);
                     if (commandLine[i].equals(key)) {
                         return commandLine[++i];
                     }

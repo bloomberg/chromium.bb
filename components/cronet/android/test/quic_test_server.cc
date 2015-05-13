@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/threading/thread.h"
 #include "jni/QuicTestServer_jni.h"
 #include "net/base/ip_endpoint.h"
@@ -30,6 +31,7 @@ void ServeFilesFromDirectory(
   DCHECK(g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   DCHECK(!g_quic_server);
   base::FilePath file_dir = directory.Append("quic_data");
+  CHECK(base::PathExists(file_dir)) << "Quic data does not exist";
   net::tools::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
       file_dir.value());
   net::IPAddressNumber ip;
