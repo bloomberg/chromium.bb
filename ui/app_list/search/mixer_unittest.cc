@@ -6,9 +6,11 @@
 #include <string>
 
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/history_types.h"
@@ -101,15 +103,21 @@ class TestSearchProvider : public SearchProvider {
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };
 
-// TODO(mgiuca): Parameterize this test so it tests both the default and
-// "Blended" states for the AppListMixer field trial.
-class MixerTest : public testing::Test {
+// Test is parameterized with bool. True enables the "Blended" field trial.
+class MixerTest : public testing::Test,
+                  public testing::WithParamInterface<bool> {
  public:
-  MixerTest() : is_voice_query_(false) {}
+  MixerTest()
+      : is_voice_query_(false),
+        field_trial_list_(new base::MockEntropyProvider()) {}
   ~MixerTest() override {}
 
   // testing::Test overrides:
   void SetUp() override {
+    // If the parameter is true, enable the field trial.
+    const char* field_trial_name = GetParam() ? "Blended" : "default";
+    base::FieldTrialList::CreateFieldTrial("AppListMixer", field_trial_name);
+
     results_.reset(new AppListModel::SearchResults);
 
     providers_.push_back(new TestSearchProvider("app"));
@@ -180,36 +188,137 @@ class MixerTest : public testing::Test {
 
   ScopedVector<TestSearchProvider> providers_;
 
+  base::FieldTrialList field_trial_list_;
+
   DISALLOW_COPY_AND_ASSIGN(MixerTest);
 };
 
-TEST_F(MixerTest, Basic) {
+TEST_P(MixerTest, Basic) {
+  // Note: Some cases in |expected_blended| have vastly more results than
+  // others, due to the "at least 6" mechanism. If it gets at least 6 results
+  // from all providers, it stops at 6. If not, it fetches potentially many more
+  // results from all providers. Not ideal, but currently by design.
   struct TestCase {
     const size_t app_results;
     const size_t omnibox_results;
     const size_t webstore_results;
     const size_t people_results;
-    const char* expected;
+    const char* expected_default;  // Expected results with trial off.
+    const char* expected_blended;  // Expected results with trial on.
   } kTestCases[] = {
-      {0, 0, 0, 0, ""},
-      {10, 0, 0, 0, "app0,app1,app2,app3"},
-      {0, 0, 10, 0, "webstore0,webstore1"},
-      {0, 0, 0, 10, "people0,people1"},
-      {4, 6, 0, 0, "app0,app1,app2,app3,omnibox0,omnibox1"},
-      {4, 6, 2, 0, "app0,app1,app2,app3,omnibox0,webstore0"},
-      {4, 6, 0, 2, "app0,app1,app2,app3,omnibox0,people0"},
-      {10, 10, 10, 0, "app0,app1,app2,app3,omnibox0,webstore0"},
-      {0, 10, 0, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5"},
-      {0, 10, 1, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0"},
-      {0, 10, 2, 0, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
-      {1, 10, 0, 0, "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4"},
-      {2, 10, 0, 0, "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3"},
-      {2, 10, 1, 0, "app0,app1,omnibox0,omnibox1,omnibox2,webstore0"},
-      {2, 10, 2, 0, "app0,app1,omnibox0,omnibox1,webstore0,webstore1"},
-      {2, 0, 2, 0, "app0,app1,webstore0,webstore1"},
-      {10, 0, 10, 10, "app0,app1,app2,app3,webstore0,webstore1"},
-      {10, 10, 10, 10, "app0,app1,app2,app3,omnibox0,webstore0"},
-      {0, 0, 0, 0, ""},
+      {0, 0, 0, 0, "", ""},
+      {10,
+       0,
+       0,
+       0,
+       "app0,app1,app2,app3",
+       "app0,app1,app2,app3,app4,app5,app6,app7,app8,app9"},
+      {0,
+       0,
+       10,
+       0,
+       "webstore0,webstore1",
+       "webstore0,webstore1,webstore2,webstore3,webstore4,webstore5,webstore6,"
+       "webstore7,webstore8,webstore9"},
+      {0,
+       0,
+       0,
+       10,
+       "people0,people1",
+       "people0,people1,people2,people3,people4,people5,people6,people7,"
+       "people8,people9"},
+      {4,
+       6,
+       0,
+       0,
+       "app0,app1,app2,app3,omnibox0,omnibox1",
+       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3"},
+      {4,
+       6,
+       2,
+       0,
+       "app0,app1,app2,app3,omnibox0,webstore0",
+       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
+       "webstore1"},
+      {4,
+       6,
+       0,
+       2,
+       "app0,app1,app2,app3,omnibox0,people0",
+       "app0,omnibox0,people0,app1,omnibox1,people1,app2,omnibox2,app3,"
+       "omnibox3"},
+      {10,
+       10,
+       10,
+       0,
+       "app0,app1,app2,app3,omnibox0,webstore0",
+       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
+       "webstore1"},
+      {0,
+       10,
+       0,
+       0,
+       "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5",
+       "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
+       "omnibox7,omnibox8,omnibox9"},
+      {0,
+       10,
+       1,
+       0,
+       "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0",
+       "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,omnibox4,omnibox5,"
+       "omnibox6,omnibox7,omnibox8,omnibox9"},
+      {0,
+       10,
+       2,
+       0,
+       "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1",
+       "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
+      {1,
+       10,
+       0,
+       0,
+       "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4",
+       "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
+       "omnibox7,omnibox8,omnibox9"},
+      {2,
+       10,
+       0,
+       0,
+       "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3",
+       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3"},
+      {2,
+       10,
+       1,
+       0,
+       "app0,app1,omnibox0,omnibox1,omnibox2,webstore0",
+       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0"},
+      {2,
+       10,
+       2,
+       0,
+       "app0,app1,omnibox0,omnibox1,webstore0,webstore1",
+       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
+      {2,
+       0,
+       2,
+       0,
+       "app0,app1,webstore0,webstore1",
+       "app0,app1,webstore0,webstore1"},
+      {10,
+       0,
+       10,
+       10,
+       "app0,app1,app2,app3,webstore0,webstore1",
+       "app0,people0,app1,people1,app2,app3,webstore0,webstore1"},
+      {10,
+       10,
+       10,
+       10,
+       "app0,app1,app2,app3,omnibox0,webstore0",
+       "app0,omnibox0,people0,app1,omnibox1,people1,app2,omnibox2,app3,"
+       "omnibox3,webstore0,webstore1"},
+      {0, 0, 0, 0, "", ""},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -219,11 +328,13 @@ TEST_F(MixerTest, Basic) {
     people_provider()->set_count(kTestCases[i].people_results);
     RunQuery();
 
-    EXPECT_EQ(kTestCases[i].expected, GetResults()) << "Case " << i;
+    const char* expected = GetParam() ? kTestCases[i].expected_blended
+                                      : kTestCases[i].expected_default;
+    EXPECT_EQ(expected, GetResults()) << "Case " << i;
   }
 }
 
-TEST_F(MixerTest, RemoveDuplicates) {
+TEST_P(MixerTest, RemoveDuplicates) {
   const std::string dup = "dup";
 
   // This gives "dup0,dup1,dup2".
@@ -245,7 +356,7 @@ TEST_F(MixerTest, RemoveDuplicates) {
 }
 
 // Tests that "known results" have priority over others.
-TEST_F(MixerTest, KnownResultsPriority) {
+TEST_P(MixerTest, KnownResultsPriority) {
   // This gives omnibox 0 -- 5.
   omnibox_provider()->set_count(6);
 
@@ -263,7 +374,7 @@ TEST_F(MixerTest, KnownResultsPriority) {
             GetResults());
 }
 
-TEST_F(MixerTest, VoiceQuery) {
+TEST_P(MixerTest, VoiceQuery) {
   omnibox_provider()->set_count(3);
   RunQuery();
   EXPECT_EQ("omnibox0,omnibox1,omnibox2", GetResults());
@@ -285,7 +396,7 @@ TEST_F(MixerTest, VoiceQuery) {
   EXPECT_EQ("omnibox1,omnibox2,omnibox0", GetResults());
 }
 
-TEST_F(MixerTest, BadRelevanceRange) {
+TEST_P(MixerTest, BadRelevanceRange) {
   // This gives relevance scores: (10.0, 0.0). Even though providers are
   // supposed to give scores within the range [0.0, 1.0], we cannot rely on
   // providers to do this, since they retrieve results from disparate and
@@ -304,7 +415,7 @@ TEST_F(MixerTest, BadRelevanceRange) {
   EXPECT_EQ("people1,people0", GetResults());
 }
 
-TEST_F(MixerTest, Publish) {
+TEST_P(MixerTest, Publish) {
   scoped_ptr<SearchResult> result1(new TestSearchResult("app1", 0));
   scoped_ptr<SearchResult> result2(new TestSearchResult("app2", 0));
   scoped_ptr<SearchResult> result3(new TestSearchResult("app3", 0));
@@ -391,6 +502,8 @@ TEST_F(MixerTest, Publish) {
   EXPECT_EQ(old_ui_result_ids[2],
             TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
 }
+
+INSTANTIATE_TEST_CASE_P(MixerTestInstance, MixerTest, testing::Bool());
 
 }  // namespace test
 }  // namespace app_list
