@@ -101,7 +101,23 @@ bool IsCellularLogicEnabled() {
       net::NetworkChangeNotifier::GetConnectionType());
 }
 
+// Checks whether it is the first time that cellular uploads logic should be
+// enabled based on whether the the preference for that logic is initialized.
+// This should happen only once as the used preference will be initialized
+// afterwards in |UmaSessionStats.java|.
+bool ShouldClearSavedMetrics() {
+#if defined(OS_ANDROID)
+  PrefService* local_state = g_browser_process->local_state();
+  return !local_state->HasPrefPath(prefs::kMetricsReportingEnabled) &&
+         variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
+                                            "Enabled") == "true";
+#else
+  return false;
+#endif
+}
+
 }  // namespace
+
 
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
@@ -279,6 +295,15 @@ void ChromeMetricsServiceClient::LogPluginLoadingError(
 }
 
 void ChromeMetricsServiceClient::Initialize() {
+  // Clear metrics reports if it is the first time cellular upload logic should
+  // apply to avoid sudden bulk uploads. It needs to be done before initializing
+  // metrics service so that metrics log manager is initialized correctly.
+  if (ShouldClearSavedMetrics()) {
+    PrefService* local_state = g_browser_process->local_state();
+    local_state->ClearPref(metrics::prefs::kMetricsInitialLogs);
+    local_state->ClearPref(metrics::prefs::kMetricsOngoingLogs);
+  }
+
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_manager_, this, g_browser_process->local_state()));
 
@@ -363,6 +388,12 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(
           SigninStatusMetricsProvider::CreateInstance()));
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_IOS)
+
+  // Clear stability metrics if it is the first time cellular upload logic
+  // should apply to avoid sudden bulk uploads. It needs to be done after all
+  // providers are registered.
+  if (ShouldClearSavedMetrics())
+    metrics_service_->ClearSavedStabilityMetrics();
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotHardwareClass() {
