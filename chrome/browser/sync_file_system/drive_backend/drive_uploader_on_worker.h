@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_UPLOADER_ON_WORKER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_UPLOADER_ON_WORKER_H_
 
-#include <string>
-
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -34,8 +32,6 @@ class DriveUploaderOnWorker : public drive::DriveUploaderInterface {
       base::SequencedTaskRunner* worker_task_runner);
   ~DriveUploaderOnWorker() override;
 
-  void StartBatchProcessing() override;
-  void StopBatchProcessing() override;
   google_apis::CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
       const base::FilePath& local_file_path,

@@ -28,11 +28,6 @@ DriveUploaderOnWorker::DriveUploaderOnWorker(
 
 DriveUploaderOnWorker::~DriveUploaderOnWorker() {}
 
-void DriveUploaderOnWorker::StartBatchProcessing() {
-}
-void DriveUploaderOnWorker::StopBatchProcessing() {
-}
-
 google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
     const std::string& parent_resource_id,
     const base::FilePath& local_file_path,

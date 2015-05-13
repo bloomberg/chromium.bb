@@ -41,18 +41,22 @@ void JobQueue::PopForRun(int accepted_priority, std::vector<JobID>* jobs) {
     return;
 
   // Looks up the queue in the order of priority upto |accepted_priority|.
-  uint64 total_size = 0;
-  bool batchable = true;
+  bool processing_batch_request = false;
+  int64 total_size = 0;
   for (int priority = 0; priority <= accepted_priority; ++priority) {
-    while (!queue_[priority].empty()) {
-      const auto& item = queue_[priority].front();
-      total_size += item.size;
-      batchable = batchable && item.batchable && total_size <= max_batch_size_;
-      if (!(jobs->empty() || batchable))
-        return;
-      jobs->push_back(item.id);
-      running_.insert(item.id);
-      queue_[priority].pop_front();
+    auto it = queue_[priority].begin();
+    while (it != queue_[priority].end()) {
+      if (!processing_batch_request ||
+          (it->batchable && total_size + it->size <= max_batch_size_)) {
+        total_size += it->size;
+        processing_batch_request = it->batchable;
+        jobs->push_back(it->id);
+        running_.insert(it->id);
+        it = queue_[priority].erase(it);
+        if (processing_batch_request)
+          continue;
+      }
+      return;
     }
   }
 }

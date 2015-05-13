@@ -4,7 +4,6 @@
 
 #include "chrome/browser/drive/drive_uploader.h"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -51,30 +50,6 @@ const char kTestUploadExistingFileURL[] =
     "http://test/upload_location/existing_file";
 const int64 kUploadChunkSize = 1024 * 1024 * 1024;
 const char kTestETag[] = "test_etag";
-
-CancelCallback SendMultipartUploadResult(
-    DriveApiErrorCode response_code,
-    int64 content_length,
-    const google_apis::FileResourceCallback& callback,
-    const google_apis::ProgressCallback& progress_callback) {
-  // Callback progress
-  if (!progress_callback.is_null()) {
-    // For the testing purpose, it always notifies the progress at the end of
-    // whole file uploading.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(progress_callback, content_length, content_length));
-  }
-
-  // MultipartUploadXXXFile is an asynchronous function, so don't callback
-  // directly.
-  scoped_ptr<FileResource> entry;
-  entry.reset(new FileResource);
-  entry->set_md5_checksum(kTestDummyMd5);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, response_code, base::Passed(&entry)));
-  return CancelCallback();
-}
 
 // Mock DriveService that verifies if the uploaded content matches the preset
 // expectation.
@@ -241,8 +216,6 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     EXPECT_EQ(kTestDocumentTitle, title);
     EXPECT_EQ(expected_upload_file_, local_file_path);
 
-    received_bytes_ = content_length;
-    multipart_upload_call_count_++;
     return SendMultipartUploadResult(HTTP_CREATED, content_length, callback,
                                      progress_callback);
   }
@@ -268,10 +241,35 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       return CancelCallback();
     }
 
-    received_bytes_ = content_length;
-    multipart_upload_call_count_++;
     return SendMultipartUploadResult(HTTP_SUCCESS, content_length, callback,
                                      progress_callback);
+  }
+
+  CancelCallback SendMultipartUploadResult(
+      DriveApiErrorCode response_code,
+      int64 content_length,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) {
+    received_bytes_ = content_length;
+    multipart_upload_call_count_++;
+
+    // Callback progress
+    if (!progress_callback.is_null()) {
+      // For the testing purpose, it always notifies the progress at the end of
+      // whole file uploading.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(progress_callback, content_length, content_length));
+    }
+
+    // MultipartUploadXXXFile is an asynchronous function, so don't callback
+    // directly.
+    scoped_ptr<FileResource> entry;
+    entry.reset(new FileResource);
+    entry->set_md5_checksum(kTestDummyMd5);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, response_code, base::Passed(&entry)));
+    return CancelCallback();
   }
 
   const base::FilePath expected_upload_file_;
@@ -766,190 +764,4 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
             upload_progress_values[0]);
 }
 
-class MockDriveServiceForBatchProcessing : public DummyDriveService {
- public:
-  struct UploadFileInfo {
-    enum { NEW_FILE, EXISTING_FILE } type;
-    std::string content_type;
-    uint64 content_length;
-    std::string parent_resource_id;
-    std::string resource_id;
-    std::string title;
-    base::FilePath local_file_path;
-    google_apis::FileResourceCallback callback;
-    google_apis::ProgressCallback progress_callback;
-  };
-
-  class BatchRequestConfigurator : public BatchRequestConfiguratorInterface {
-   public:
-    explicit BatchRequestConfigurator(
-        MockDriveServiceForBatchProcessing* service)
-        : service(service) {}
-
-    CancelCallback MultipartUploadNewFile(
-        const std::string& content_type,
-        int64 content_length,
-        const std::string& parent_resource_id,
-        const std::string& title,
-        const base::FilePath& local_file_path,
-        const UploadNewFileOptions& options,
-        const google_apis::FileResourceCallback& callback,
-        const google_apis::ProgressCallback& progress_callback) override {
-      UploadFileInfo info;
-      info.type = UploadFileInfo::NEW_FILE;
-      info.content_type = content_type;
-      info.content_length = content_length;
-      info.parent_resource_id = parent_resource_id;
-      info.title = title;
-      info.local_file_path = local_file_path;
-      info.callback = callback;
-      info.progress_callback = progress_callback;
-      service->files.push_back(info);
-      return CancelCallback();
-    }
-
-    CancelCallback MultipartUploadExistingFile(
-        const std::string& content_type,
-        int64 content_length,
-        const std::string& resource_id,
-        const base::FilePath& local_file_path,
-        const UploadExistingFileOptions& options,
-        const google_apis::FileResourceCallback& callback,
-        const google_apis::ProgressCallback& progress_callback) override {
-      UploadFileInfo info;
-      info.type = UploadFileInfo::EXISTING_FILE;
-      info.content_type = content_type;
-      info.content_length = content_length;
-      info.resource_id = resource_id;
-      info.local_file_path = local_file_path;
-      info.callback = callback;
-      info.progress_callback = progress_callback;
-      service->files.push_back(info);
-      return CancelCallback();
-    }
-
-    void Commit() override {
-      ASSERT_FALSE(service->committed);
-      service->committed = true;
-      for (const auto& file : service->files) {
-        SendMultipartUploadResult(HTTP_SUCCESS, file.content_length,
-                                  file.callback, file.progress_callback);
-      }
-    }
-
-   private:
-    MockDriveServiceForBatchProcessing* service;
-  };
-
- public:
-  scoped_ptr<BatchRequestConfiguratorInterface> StartBatchRequest() override {
-    committed = false;
-    return scoped_ptr<BatchRequestConfiguratorInterface>(
-        new BatchRequestConfigurator(this));
-  }
-
-  std::vector<UploadFileInfo> files;
-  bool committed;
-};
-
-TEST_F(DriveUploaderTest, BatchProcessing) {
-  // Preapre test file.
-  const size_t kTestFileSize = 1024 * 512;
-  base::FilePath local_path;
-  std::string data;
-  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
-      temp_dir_.path(), kTestFileSize, &local_path, &data));
-
-  // Prepare test target.
-  MockDriveServiceForBatchProcessing service;
-  DriveUploader uploader(&service, base::ThreadTaskRunnerHandle::Get().get());
-
-  struct {
-    DriveApiErrorCode error;
-    GURL resume_url;
-    scoped_ptr<FileResource> file;
-    UploadCompletionCallback callback() {
-      return test_util::CreateCopyResultCallback(&error, &resume_url, &file);
-    }
-  } results[2];
-
-  uploader.StartBatchProcessing();
-  uploader.UploadNewFile("parent_resource_id", local_path, "title",
-                         kTestMimeType, UploadNewFileOptions(),
-                         results[0].callback(),
-                         google_apis::ProgressCallback());
-  uploader.UploadExistingFile(
-      "resource_id", local_path, kTestMimeType, UploadExistingFileOptions(),
-      results[1].callback(), google_apis::ProgressCallback());
-  uploader.StopBatchProcessing();
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(2u, service.files.size());
-  EXPECT_TRUE(service.committed);
-
-  EXPECT_EQ(MockDriveServiceForBatchProcessing::UploadFileInfo::NEW_FILE,
-            service.files[0].type);
-  EXPECT_EQ(kTestMimeType, service.files[0].content_type);
-  EXPECT_EQ(kTestFileSize, service.files[0].content_length);
-  EXPECT_EQ("parent_resource_id", service.files[0].parent_resource_id);
-  EXPECT_EQ("", service.files[0].resource_id);
-  EXPECT_EQ("title", service.files[0].title);
-  EXPECT_EQ(local_path.value(), service.files[0].local_file_path.value());
-
-  EXPECT_EQ(MockDriveServiceForBatchProcessing::UploadFileInfo::EXISTING_FILE,
-            service.files[1].type);
-  EXPECT_EQ(kTestMimeType, service.files[1].content_type);
-  EXPECT_EQ(kTestFileSize, service.files[1].content_length);
-  EXPECT_EQ("", service.files[1].parent_resource_id);
-  EXPECT_EQ("resource_id", service.files[1].resource_id);
-  EXPECT_EQ("", service.files[1].title);
-  EXPECT_EQ(local_path.value(), service.files[1].local_file_path.value());
-
-  EXPECT_EQ(HTTP_SUCCESS, results[0].error);
-  EXPECT_TRUE(results[0].resume_url.is_empty());
-  EXPECT_TRUE(results[0].file);
-
-  EXPECT_EQ(HTTP_SUCCESS, results[1].error);
-  EXPECT_TRUE(results[1].resume_url.is_empty());
-  EXPECT_TRUE(results[1].file);
-}
-
-TEST_F(DriveUploaderTest, BatchProcessingWithError) {
-  // Prepare test target.
-  MockDriveServiceForBatchProcessing service;
-  DriveUploader uploader(&service, base::ThreadTaskRunnerHandle::Get().get());
-
-  struct {
-    DriveApiErrorCode error;
-    GURL resume_url;
-    scoped_ptr<FileResource> file;
-    UploadCompletionCallback callback() {
-      return test_util::CreateCopyResultCallback(&error, &resume_url, &file);
-    }
-  } results[2];
-
-  uploader.StartBatchProcessing();
-  uploader.UploadNewFile("parent_resource_id",
-                         base::FilePath(FILE_PATH_LITERAL("/path/non_exists")),
-                         "title", kTestMimeType, UploadNewFileOptions(),
-                         results[0].callback(),
-                         google_apis::ProgressCallback());
-  uploader.UploadExistingFile(
-      "resource_id", base::FilePath(FILE_PATH_LITERAL("/path/non_exists")),
-      kTestMimeType, UploadExistingFileOptions(), results[1].callback(),
-      google_apis::ProgressCallback());
-  uploader.StopBatchProcessing();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0u, service.files.size());
-  EXPECT_TRUE(service.committed);
-
-  EXPECT_EQ(HTTP_NOT_FOUND, results[0].error);
-  EXPECT_TRUE(results[0].resume_url.is_empty());
-  EXPECT_FALSE(results[0].file);
-
-  EXPECT_EQ(HTTP_NOT_FOUND, results[1].error);
-  EXPECT_TRUE(results[1].resume_url.is_empty());
-  EXPECT_FALSE(results[1].file);
-}
 }  // namespace drive

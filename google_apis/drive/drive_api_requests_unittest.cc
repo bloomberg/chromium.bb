@@ -2066,12 +2066,9 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
 }
 
 TEST_F(DriveApiRequestsTest, EmptyBatchUploadRequest) {
-  drive::BatchUploadRequest* const request =
-      new drive::BatchUploadRequest(request_sender_.get(), *url_generator_);
-  base::WeakPtr<drive::BatchUploadRequest> weak_ptr =
-      request->GetWeakPtrAsBatchUploadRequest();
-  request->Commit();
-  ASSERT_FALSE(weak_ptr.get());
+  scoped_ptr<drive::BatchUploadRequest> request(new drive::BatchUploadRequest(
+      request_sender_.get(), *url_generator_));
+  EXPECT_DEATH(request->Commit(), "");
 }
 
 TEST_F(DriveApiRequestsTest, BatchUploadRequestWithBodyIncludingZero) {
