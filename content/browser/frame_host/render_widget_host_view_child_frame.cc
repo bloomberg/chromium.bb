@@ -222,12 +222,6 @@ bool RenderWidgetHostViewChildFrame::LockMouse() {
 void RenderWidgetHostViewChildFrame::UnlockMouse() {
 }
 
-uint32_t RenderWidgetHostViewChildFrame::GetSurfaceIdNamespace() {
-  // TODO(kenrb): Create SurfaceFactory here when RWHVChildFrame
-  // gets compositor surface support.
-  return 0;
-}
-
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewChildFrame::SetActive(bool active) {
 }

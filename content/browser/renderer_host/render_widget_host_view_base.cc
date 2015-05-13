@@ -695,8 +695,4 @@ RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
-uint32_t RenderWidgetHostViewBase::GetSurfaceIdNamespace() {
-  return 0;
-}
-
 }  // namespace content

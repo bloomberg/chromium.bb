@@ -65,9 +65,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       current_scale_factor_(1.f),
       can_lock_compositor_(YES_CAN_LOCK),
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->AddObserver(this);
-  id_allocator_ = factory->GetContextFactory()->CreateSurfaceIdAllocator();
+  ImageTransportFactory::GetInstance()->AddObserver(this);
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -193,13 +191,6 @@ void DelegatedFrameHost::BeginFrameSubscription(
 void DelegatedFrameHost::EndFrameSubscription() {
   idle_frame_subscriber_textures_.clear();
   frame_subscriber_.reset();
-}
-
-uint32_t DelegatedFrameHost::GetSurfaceIdNamespace() {
-  if (!use_surfaces_)
-    return 0;
-
-  return id_allocator_->id_namespace();
 }
 
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {
@@ -372,6 +363,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
       cc::SurfaceManager* manager = factory->GetSurfaceManager();
       if (!surface_factory_) {
+        id_allocator_ =
+            factory->GetContextFactory()->CreateSurfaceIdAllocator();
         surface_factory_ =
             make_scoped_ptr(new cc::SurfaceFactory(manager, this));
       }

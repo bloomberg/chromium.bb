@@ -101,7 +101,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 #endif  // defined(USE_AURA)
   bool LockMouse() override;
   void UnlockMouse() override;
-  uint32_t GetSurfaceIdNamespace() override;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.

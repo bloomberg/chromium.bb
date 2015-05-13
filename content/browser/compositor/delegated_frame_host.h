@@ -143,7 +143,6 @@ class CONTENT_EXPORT DelegatedFrameHost
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();
   bool HasFrameSubscriber() const { return frame_subscriber_; }
-  uint32_t GetSurfaceIdNamespace();
 
   // Exposed for tests.
   cc::DelegatedFrameProvider* FrameProviderForTesting() const {
