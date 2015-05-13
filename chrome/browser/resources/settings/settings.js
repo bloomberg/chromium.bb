@@ -16,7 +16,7 @@
 Polymer({
   is: 'cr-settings',
 
-  properties {
+  properties: {
     /**
      * The CrSettingsPrefsElement used throughout the app.
      * @private {!CrSettingsPrefsElement}
