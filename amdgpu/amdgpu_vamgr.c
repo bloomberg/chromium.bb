@@ -113,6 +113,9 @@ void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va,
 {
 	struct amdgpu_bo_va_hole *hole;
 
+	if (va == AMDGPU_INVALID_VA_ADDRESS)
+		return;
+
 	size = ALIGN(size, mgr->va_alignment);
 
 	pthread_mutex_lock(&mgr->bo_va_mutex);
