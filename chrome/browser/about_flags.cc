@@ -2444,7 +2444,16 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
         switches::kEnableBlinkFeatures, "ScrollTopLeftInterop",
         switches::kDisableBlinkFeatures, "ScrollTopLeftInterop")
-  }
+  },
+#if defined(OS_WIN)
+  {
+    "try-supported-channel-layouts",
+    IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_NAME,
+    IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)
+  },
+#endif
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

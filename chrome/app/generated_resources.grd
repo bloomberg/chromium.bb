@@ -6923,6 +6923,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Control whether document.body.scrollTop/scrollLeft in JavaScript reflects the standard interoperable behavior (enabled) or legacy WebKit behavior (disabled).
         When enabled, document.scrollingElement is document.documentElement, when disabled it's document.body (for strict-mode pages).
       </message>
+      <message name="IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_NAME" desc="Title for the flag to enable support for trying supported channel layouts.">
+        Causes audio output streams to check if channel layouts other than the default hardware layout are available.
+      </message>
+      <message name="IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_DESCRIPTION" desc="Description for the flag to enable support for trying supported channel layouts.">
+        Causes audio output streams to check if channel layouts other than the default hardware layout are available. Turning this on will allow the OS to do stereo to surround expansion if supported. May expose third party driver bugs, use with caution.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

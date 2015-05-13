@@ -56412,6 +56412,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813474479" label="site-per-process"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
+  <int value="-798187384" label="try-supported-channel-layouts"/>
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-770319039" label="enable-touch-editing"/>
