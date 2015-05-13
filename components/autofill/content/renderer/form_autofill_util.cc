@@ -898,12 +898,23 @@ bool IsWebNodeVisibleImpl(const blink::WebNode& node, const int depth) {
   return false;
 }
 
+// Extracts the fields from |control_elements| with |extract_mask| to
+// |form_fields|. The extracted fields are also placed in |element_map|.
+// |form_fields| and |element_map| should start out empty.
+// |fields_extracted| should have as many elements as |control_elements|,
+// initialized to false.
+// Returns true if the number of fields extracted is within
+// [1, kMaxParseableFields].
 bool ExtractFieldsFromControlElements(
     const WebVector<WebFormControlElement>& control_elements,
     ExtractMask extract_mask,
     ScopedVector<FormFieldData>* form_fields,
     std::vector<bool>* fields_extracted,
     std::map<WebFormControlElement, FormFieldData*>* element_map) {
+  DCHECK(form_fields->empty());
+  DCHECK(element_map->empty());
+  DCHECK_EQ(control_elements.size(), fields_extracted->size());
+
   for (size_t i = 0; i < control_elements.size(); ++i) {
     const WebFormControlElement& control_element = control_elements[i];
 
@@ -916,13 +927,15 @@ bool ExtractFieldsFromControlElements(
     form_fields->push_back(form_field);
     (*element_map)[control_element] = form_field;
     (*fields_extracted)[i] = true;
+
+    // To avoid overly expensive computation, we impose a maximum number of
+    // allowable fields.
+    if (form_fields->size() > kMaxParseableFields)
+      return false;
   }
 
-  // If we failed to extract any fields, give up.  Also, to avoid overly
-  // expensive computation, we impose a maximum number of allowable fields.
-  if (form_fields->empty() || form_fields->size() > kMaxParseableFields)
-    return false;
-  return true;
+  // Succeeded if fields were extracted.
+  return !form_fields->empty();
 }
 
 // For each label element, get the corresponding form control element, use the
