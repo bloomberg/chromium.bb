@@ -87,7 +87,7 @@ SAMPLE_JSON = '''
 '''
 
 
-class FakeResults:
+class FakeResults(object):
   def __init__(self, current_page):
     self._received_values = []
     self._current_page = current_page
