@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_MAC_DISPATCH_SOURCE_MACH_H_
-#define SANDBOX_MAC_DISPATCH_SOURCE_MACH_H_
+#ifndef BASE_MAC_DISPATCH_SOURCE_MACH_H_
+#define BASE_MAC_DISPATCH_SOURCE_MACH_H_
 
 #include <dispatch/dispatch.h>
 
+#include "base/base_export.h"
 #include "base/macros.h"
-#include "sandbox/sandbox_export.h"
 
-namespace sandbox {
+namespace base {
 
 // This class encapsulates a MACH_RECV dispatch source. When this object is
 // destroyed, the source will be cancelled and it will wait for the source
 // to stop executing work. The source can run on either a user-supplied queue,
 // or it can create its own for the source.
-class SANDBOX_EXPORT DispatchSourceMach {
+class BASE_EXPORT DispatchSourceMach {
  public:
   // Creates a new dispatch source for the |port| and schedules it on a new
   // queue that will be created with |name|. When a Mach message is received,
@@ -56,6 +56,6 @@ class SANDBOX_EXPORT DispatchSourceMach {
   DISALLOW_COPY_AND_ASSIGN(DispatchSourceMach);
 };
 
-}  // namespace sandbox
+}  // namespace base
 
-#endif  // SANDBOX_MAC_DISPATCH_SOURCE_MACH_H_
+#endif  // BASE_MAC_DISPATCH_SOURCE_MACH_H_

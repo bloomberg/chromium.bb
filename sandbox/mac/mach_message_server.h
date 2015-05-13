@@ -7,14 +7,13 @@
 
 #include <mach/mach.h>
 
+#include "base/mac/dispatch_source_mach.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_mach_vm.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
 
 namespace sandbox {
-
-class DispatchSourceMach;
 
 // A Mach message server that operates a receive port. Messages are received
 // and then passed to the MessageDemuxer for handling. The Demuxer
@@ -62,7 +61,7 @@ class MachMessageServer : public MessageServer {
   base::mac::ScopedMachVM reply_buffer_;
 
   // MACH_RECV dispatch source that handles the |server_port_|.
-  scoped_ptr<DispatchSourceMach> dispatch_source_;
+  scoped_ptr<base::DispatchSourceMach> dispatch_source_;
 
   // Whether or not ForwardMessage() was called during ReceiveMessage().
   bool did_forward_message_;

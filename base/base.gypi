@@ -280,6 +280,8 @@
           'mac/bundle_locations.mm',
           'mac/close_nocancel.cc',
           'mac/cocoa_protocols.h',
+          'mac/dispatch_source_mach.cc',
+          'mac/dispatch_source_mach.h',
           'mac/foundation_util.h',
           'mac/foundation_util.mm',
           'mac/launch_services_util.cc',

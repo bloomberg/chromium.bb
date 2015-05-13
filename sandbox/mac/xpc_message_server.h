@@ -7,6 +7,7 @@
 
 #include <AvailabilityMacros.h>
 
+#include "base/mac/dispatch_source_mach.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
@@ -26,8 +27,6 @@ XPC_EXPORT XPC_NONNULL1 void xpc_release(xpc_object_t object);
 #endif
 
 namespace sandbox {
-
-class DispatchSourceMach;
 
 // An implementation of MessageServer that uses XPC pipes to read and write XPC
 // messages from a Mach port.
@@ -62,7 +61,7 @@ class SANDBOX_EXPORT XPCMessageServer : public MessageServer {
   base::mac::ScopedMachReceiveRight server_port_;
 
   // MACH_RECV dispatch source that handles the |server_port_|.
-  scoped_ptr<DispatchSourceMach> dispatch_source_;
+  scoped_ptr<base::DispatchSourceMach> dispatch_source_;
 
   // The reply message, if one has been created.
   xpc_object_t reply_message_;

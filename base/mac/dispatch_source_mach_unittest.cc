@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/mac/dispatch_source_mach.h"
+#include "base/mac/dispatch_source_mach.h"
 
 #include <mach/mach.h>
 
@@ -12,7 +12,7 @@
 #include "base/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sandbox {
+namespace base {
 
 class DispatchSourceMachTest : public testing::Test {
  public:
@@ -44,7 +44,7 @@ TEST_F(DispatchSourceMachTest, ReceiveAfterResume) {
   dispatch_semaphore_t signal = dispatch_semaphore_create(0);
 
   bool __block did_receive = false;
-  DispatchSourceMach source("org.chromium.sandbox.test.ReceiveAfterResume",
+  DispatchSourceMach source("org.chromium.base.test.ReceiveAfterResume",
       port(), ^{
           mach_msg_empty_rcv_t msg = {{0}};
           msg.header.msgh_size = sizeof(msg);
@@ -75,7 +75,7 @@ TEST_F(DispatchSourceMachTest, NoMessagesAfterDestruction) {
   int* __block count_ptr = count.get();
 
   scoped_ptr<DispatchSourceMach> source(new DispatchSourceMach(
-      "org.chromium.sandbox.test.NoMessagesAfterDestruction",
+      "org.chromium.base.test.NoMessagesAfterDestruction",
       port(), ^{
           mach_msg_empty_rcv_t msg = {{0}};
           msg.header.msgh_size = sizeof(msg);
@@ -87,7 +87,7 @@ TEST_F(DispatchSourceMachTest, NoMessagesAfterDestruction) {
   source->Resume();
 
   dispatch_queue_t queue =
-      dispatch_queue_create("org.chromium.sandbox.test.MessageSend", NULL);
+      dispatch_queue_create("org.chromium.base.test.MessageSend", NULL);
   dispatch_semaphore_t signal = dispatch_semaphore_create(0);
   for (int i = 0; i < 30; ++i) {
     dispatch_async(queue, ^{
@@ -116,4 +116,4 @@ TEST_F(DispatchSourceMachTest, NoMessagesAfterDestruction) {
   dispatch_release(queue);
 }
 
-}  // namespace sandbox
+}  // namespace base

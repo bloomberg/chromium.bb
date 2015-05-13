@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/strings/stringprintf.h"
-#include "sandbox/mac/dispatch_source_mach.h"
 
 namespace sandbox {
 
@@ -69,7 +68,7 @@ bool MachMessageServer::Initialize() {
   // Set up the dispatch queue to service the bootstrap port.
   std::string label = base::StringPrintf(
       "org.chromium.sandbox.MachMessageServer.%p", demuxer_);
-  dispatch_source_.reset(new DispatchSourceMach(
+  dispatch_source_.reset(new base::DispatchSourceMach(
       label.c_str(), server_port_.get(), ^{ ReceiveMessage(); }));
   dispatch_source_->Resume();
 
