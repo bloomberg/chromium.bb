@@ -158,12 +158,14 @@ static inline float cornerRectIntercept(float y, const FloatRect& cornerRect)
 
 FloatRect FloatRoundedRect::radiusCenterRect() const
 {
-    ASSERT(isRenderable());
-    int minX = m_rect.x() + std::max(m_radii.topLeft().width(), m_radii.bottomLeft().width());
-    int minY = m_rect.y() + std::max(m_radii.topLeft().height(), m_radii.topRight().height());
-    int maxX = m_rect.maxX() - std::max(m_radii.topRight().width(), m_radii.bottomRight().width());
-    int maxY = m_rect.maxY() - std::max(m_radii.bottomLeft().height(), m_radii.bottomRight().height());
-    return FloatRect(minX, minY, maxX - minX, maxY - minY);
+    FloatRectOutsets maximumRadiusInsets(
+        -std::max(m_radii.topLeft().height(), m_radii.topRight().height()),
+        -std::max(m_radii.topRight().width(), m_radii.bottomRight().width()),
+        -std::max(m_radii.bottomLeft().height(), m_radii.bottomRight().height()),
+        -std::max(m_radii.topLeft().width(), m_radii.bottomLeft().width()));
+    FloatRect centerRect(m_rect);
+    centerRect.expand(maximumRadiusInsets);
+    return centerRect;
 }
 
 bool FloatRoundedRect::xInterceptsAtY(float y, float& minXIntercept, float& maxXIntercept) const

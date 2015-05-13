@@ -196,5 +196,22 @@ TEST(FloatRoundedRectTest, ellipticalCorners)
     EXPECT_FALSE(r.xInterceptsAtY(101, minXIntercept, maxXIntercept));
 }
 
+TEST(FloatRoundedRectTest, radiusCenterRect)
+{
+    FloatSize cornerRect(10, 10);
+    FloatRoundedRect r0(FloatRect(0, 0, 100, 50), FloatRoundedRect::Radii(cornerRect, cornerRect, cornerRect, cornerRect));
+    EXPECT_EQ(FloatRect(10, 10, 80, 30), r0.radiusCenterRect());
+
+    // "Degenerate" cases all return an empty rectangle.
+    FloatRect collapsedRect(0, 0, 100, 50);
+    collapsedRect.expand(FloatRectOutsets(-200, -200, -200, -200));
+    FloatRoundedRect r1(collapsedRect);
+    EXPECT_TRUE(r1.radiusCenterRect().isEmpty());
+
+    FloatRoundedRect::Radii radiiWithTooLargeCorner(FloatSize(55, 55), FloatSize(), FloatSize(), FloatSize());
+    FloatRoundedRect r2(FloatRect(0, 0, 100, 50), radiiWithTooLargeCorner);
+    EXPECT_TRUE(r2.radiusCenterRect().isEmpty());
+}
+
 } // namespace
 
