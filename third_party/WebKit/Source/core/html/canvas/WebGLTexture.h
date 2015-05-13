@@ -53,6 +53,7 @@ public:
     int getMinFilter() const { return m_minFilter; }
 
     void setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLenum type);
+    void setTexStorageInfo(GLenum target, GLint levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth);
 
     bool canGenerateMipmaps();
     // Generate all level information.
@@ -64,6 +65,7 @@ public:
     GLsizei getHeight(GLenum target, GLint level) const;
     GLsizei getDepth(GLenum target, GLint level) const;
     bool isValid(GLenum target, GLint level) const;
+    bool isImmutable() const { return m_immutable; }
 
     // Whether width/height is NotPowerOfTwo.
     static bool isNPOT(GLsizei, GLsizei);
@@ -119,6 +121,8 @@ private:
 
     const LevelInfo* getLevelInfo(GLenum target, GLint level) const;
 
+    static GLenum getValidTypeForInternalFormat(GLenum);
+
     GLenum m_target;
 
     GLenum m_minFilter;
@@ -136,7 +140,9 @@ private:
     bool m_isFloatType;
     bool m_isHalfFloatType;
     bool m_isWebGL2OrHigher;
-
+    bool m_immutable;
+    size_t m_baseLevel;
+    size_t m_maxLevel;
 };
 
 } // namespace blink

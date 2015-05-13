@@ -177,6 +177,12 @@ protected:
 
     bool validateClearBuffer(const char* functionName, GLenum buffer, GLsizei length);
 
+    enum TexStorageType {
+        TexStorageType2D,
+        TexStorageType3D,
+    };
+    bool validateTexStorage(const char*, GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, TexStorageType);
+
     ScriptValue getInt64Parameter(ScriptState*, GLenum);
 
     void texSubImage3DImpl(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, Image*, WebGLImageConversion::ImageHtmlDomSource, bool, bool);
@@ -188,8 +194,11 @@ protected:
     WebGLTexture* validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap) override;
     bool validateFramebufferTarget(GLenum target) override;
     WebGLFramebuffer* getFramebufferBinding(GLenum target) override;
+    GLint getMaxTextureLevelForTarget(GLenum target) override;
 
     RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
+    GLint m_max3DTextureSize;
+    GLint m_max3DTextureLevel;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,

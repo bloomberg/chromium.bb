@@ -57,6 +57,10 @@ void WebGL2RenderingContextBase::initializeNewContext()
 
     m_readFramebufferBinding = nullptr;
 
+    m_max3DTextureSize = 0;
+    webContext()->getIntegerv(GL_MAX_3D_TEXTURE_SIZE, &m_max3DTextureSize);
+    m_max3DTextureLevel = WebGLTexture::computeLevelCount(m_max3DTextureSize, m_max3DTextureSize, m_max3DTextureSize);
+
     WebGLRenderingContextBase::initializeNewContext();
 }
 
@@ -153,20 +157,72 @@ void WebGL2RenderingContextBase::renderbufferStorageMultisample(GLenum target, G
 }
 
 /* Texture objects */
+bool WebGL2RenderingContextBase::validateTexStorage(const char* functionName, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, TexStorageType functionType)
+{
+    if (functionType == TexStorageType2D) {
+        if (target != GL_TEXTURE_2D && target != GL_TEXTURE_CUBE_MAP) {
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid 2D target");
+            return false;
+        }
+    } else {
+        if (target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY) {
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid 3D target");
+            return false;
+        }
+    }
+
+    WebGLTexture* tex = validateTextureBinding(functionName, target, false);
+    if (!tex)
+        return false;
+
+    if (tex->isImmutable()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "attempted to modify immutable texture");
+        return false;
+    }
+
+    if (width <= 0 || height <= 0 || depth <= 0) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid dimensions");
+        return false;
+    }
+
+    if (levels <= 0) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid levels");
+        return false;
+    }
+
+    if (target == GL_TEXTURE_3D) {
+        if (levels > log2(std::max(std::max(width, height), depth)) + 1) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "to many levels");
+            return false;
+        }
+    } else {
+        if (levels > log2(std::max(width, height)) + 1) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "to many levels");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void WebGL2RenderingContextBase::texStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
-    if (isContextLost())
+    if (isContextLost() || !validateTexStorage("texStorage2D", target, levels, internalformat, width, height, 1, TexStorageType2D))
         return;
 
+    WebGLTexture* tex = validateTextureBinding("texStorage2D", target, false);
     webContext()->texStorage2DEXT(target, levels, internalformat, width, height);
+    tex->setTexStorageInfo(target, levels, internalformat, width, height, 1);
 }
 
 void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
 {
-    if (isContextLost())
+    if (isContextLost() || !validateTexStorage("texStorage3D", target, levels, internalformat, width, height, depth, TexStorageType3D))
         return;
 
+    WebGLTexture* tex = validateTextureBinding("texStorage3D", target, false);
     webContext()->texStorage3D(target, levels, internalformat, width, height, depth);
+    tex->setTexStorageInfo(target, levels, internalformat, width, height, depth);
 }
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
@@ -185,6 +241,12 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     WebGLTexture* tex = validateTextureBinding("texImage3D", target, true);
     if (!tex)
         return;
+
+    if (tex->isImmutable()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "texImage3D", "attempted to modify immutable texture");
+        return;
+    }
+
     webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, pixels);
     tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }
@@ -329,7 +391,17 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
     if (isContextLost())
         return;
 
-    notImplemented();
+    WebGLTexture* tex = validateTextureBinding("compressedTexImage3D", target, true);
+    if (!tex)
+        return;
+
+    if (tex->isImmutable()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "compressedTexImage3D", "attempted to modify immutable texture");
+        return;
+    }
+
+    webContext()->compressedTexImage3D(target, level, internalformat, width, height, depth, border, data->byteLength(), data->baseAddress());
+    tex->setLevelInfo(target, level, internalformat, width, height, depth, GL_UNSIGNED_BYTE);
 }
 
 void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* data)
@@ -337,7 +409,17 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint le
     if (isContextLost())
         return;
 
-    notImplemented();
+    WebGLTexture* tex = validateTextureBinding("compressedTexSubImage3D", target, true);
+    if (!tex)
+        return;
+
+    if (format != tex->getInternalFormat(target, level)) {
+        synthesizeGLError(GL_INVALID_OPERATION, "compressedTexSubImage3D", "format does not match texture format");
+        return;
+    }
+
+    webContext()->compressedTexSubImage3D(target, level, xoffset, yoffset, zoffset,
+        width, height, depth, format, data->byteLength(), data->baseAddress());
 }
 
 GLint WebGL2RenderingContextBase::getFragDataLocation(WebGLProgram* program, const String& name)
@@ -1678,6 +1760,17 @@ WebGLTexture* WebGL2RenderingContextBase::validateTextureBinding(const char* fun
         return WebGLRenderingContextBase::validateTextureBinding(functionName, target, useSixEnumsForCubeMap);
     }
     return tex;
+}
+
+GLint WebGL2RenderingContextBase::getMaxTextureLevelForTarget(GLenum target)
+{
+    switch (target) {
+    case GL_TEXTURE_3D:
+        return m_max3DTextureLevel;
+    case GL_TEXTURE_2D_ARRAY:
+        return m_maxTextureLevel;
+    }
+    return WebGLRenderingContextBase::getMaxTextureLevelForTarget(target);
 }
 
 ScriptValue WebGL2RenderingContextBase::getTexParameter(ScriptState* scriptState, GLenum target, GLenum pname)

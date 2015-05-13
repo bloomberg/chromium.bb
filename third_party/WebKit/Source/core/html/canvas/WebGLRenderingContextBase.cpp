@@ -1205,17 +1205,17 @@ void WebGLRenderingContextBase::bindTexture(GLenum target, WebGLTexture* texture
         synthesizeGLError(GL_INVALID_OPERATION, "bindTexture", "textures can not be used with multiple targets");
         return;
     }
-    GLint maxLevel = 0;
     if (target == GL_TEXTURE_2D) {
         m_textureUnits[m_activeTextureUnit].m_texture2DBinding = texture;
-        maxLevel = m_maxTextureLevel;
 
         if (!m_activeTextureUnit)
             drawingBuffer()->setTexture2DBinding(objectOrZero(texture));
-
     } else if (target == GL_TEXTURE_CUBE_MAP) {
         m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding = texture;
-        maxLevel = m_maxCubeMapTextureLevel;
+    } else if (isWebGL2OrHigher() && target == GL_TEXTURE_2D_ARRAY) {
+        m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding = texture;
+    } else if (isWebGL2OrHigher() && target == GL_TEXTURE_3D) {
+        m_textureUnits[m_activeTextureUnit].m_texture3DBinding = texture;
     } else {
         synthesizeGLError(GL_INVALID_ENUM, "bindTexture", "invalid target");
         return;
@@ -1223,7 +1223,7 @@ void WebGLRenderingContextBase::bindTexture(GLenum target, WebGLTexture* texture
 
     webContext()->bindTexture(target, objectOrZero(texture));
     if (texture) {
-        texture->setTarget(target, maxLevel);
+        texture->setTarget(target, getMaxTextureLevelForTarget(target));
         m_onePlusMaxNonDefaultTextureUnit = max(m_activeTextureUnit + 1, m_onePlusMaxNonDefaultTextureUnit);
     } else {
         // If the disabled index is the current maximum, trace backwards to find the new max enabled texture index
@@ -1492,6 +1492,11 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
     WebGLTexture* tex = validateTextureBinding("compressedTexImage2D", target, true);
     if (!tex)
         return;
+
+    if (tex->isImmutable()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "compressedTexImage2D", "attempted to modify immutable texture");
+        return;
+    }
     if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D", "level > 0 not power of 2");
         return;
@@ -1550,6 +1555,10 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
     WebGLTexture* tex = validateTextureBinding("copyTexImage2D", target, true);
     if (!tex)
         return;
+    if (tex->isImmutable()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "attempted to modify immutable texture");
+        return;
+    }
     if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
         synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "framebuffer is incompatible format");
         return;
@@ -3662,6 +3671,11 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
         return false;
 
     if (functionType == NotTexSubImage2D) {
+        if (texture->isImmutable()) {
+            synthesizeGLError(GL_INVALID_OPERATION, "texImage2DBase", "attempted to modify immutable texture");
+            return false;
+        }
+
         if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
             synthesizeGLError(GL_INVALID_VALUE, functionName, "level > 0 not power of 2");
             return false;
@@ -5068,30 +5082,33 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncLevel(const char* functionName, GLenum target, GLint level)
+GLint WebGLRenderingContextBase::getMaxTextureLevelForTarget(GLenum target)
 {
-    if (level < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "level < 0");
-        return false;
-    }
     switch (target) {
     case GL_TEXTURE_2D:
-        if (level >= m_maxTextureLevel) {
-            synthesizeGLError(GL_INVALID_VALUE, functionName, "level out of range");
-            return false;
-        }
-        break;
+        return m_maxTextureLevel;
+    case GL_TEXTURE_CUBE_MAP:
     case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
     case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
     case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
-        if (level >= m_maxCubeMapTextureLevel) {
-            synthesizeGLError(GL_INVALID_VALUE, functionName, "level out of range");
-            return false;
-        }
-        break;
+        return m_maxCubeMapTextureLevel;
+    }
+    return 0;
+}
+
+bool WebGLRenderingContextBase::validateTexFuncLevel(const char* functionName, GLenum target, GLint level)
+{
+    if (level < 0) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "level < 0");
+        return false;
+    }
+    GLint maxLevel = getMaxTextureLevelForTarget(target);
+    if (maxLevel && level >= maxLevel) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "level out of range");
+        return false;
     }
     // This function only checks if level is legal, so we return true and don't
     // generate INVALID_ENUM if target is illegal.

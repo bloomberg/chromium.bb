@@ -802,6 +802,8 @@ protected:
     // Generates GL error and returns false if parameters are invalid.
     bool validateTexFuncFormatAndType(const char* functionName, GLenum format, GLenum type, GLint level);
 
+    virtual GLint getMaxTextureLevelForTarget(GLenum target);
+
     // Helper function to check input level for functions {copy}Tex{Sub}Image.
     // Generates GL error and returns false if level is invalid.
     bool validateTexFuncLevel(const char* functionName, GLenum target, GLint level);
