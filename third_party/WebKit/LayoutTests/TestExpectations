@@ -1416,8 +1416,6 @@ crbug.com/399507 virtual/deferred/inspector/tracing/update-layer-tree.html [ Fai
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass ]
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
-# Will be converted to requestMediaKeySystemAccess() tests.
-crbug.com/425186 media/encrypted-media/encrypted-media-istypesupported.html [ Skip ]
 
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 
