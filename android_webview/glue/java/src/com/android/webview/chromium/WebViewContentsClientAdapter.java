@@ -393,8 +393,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             TraceEvent.begin("WebViewContentsClientAdapter.startActionMode");
             if (TRACE) Log.d(TAG, "startActionMode");
             if (floating) return null;
-            ActionMode.Callback callback =
-                    new SelectActionModeCallback(view.getContext(), actionHandler);
+            ActionMode.Callback callback = new SelectActionModeCallback(mContext, actionHandler);
             ActionMode actionMode = view.startActionMode(callback);
             return actionMode != null ? new SelectActionMode(actionMode) : null;
         } finally {

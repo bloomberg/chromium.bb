@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -141,7 +142,7 @@ public class SelectActionModeCallback implements ActionMode.Callback {
     }
 
     private void createActionMenu(ActionMode mode, Menu menu) {
-        mode.getMenuInflater().inflate(R.menu.select_action_menu, menu);
+        new MenuInflater(getContext()).inflate(R.menu.select_action_menu, menu);
 
         if (mIsInsertion) {
             menu.removeItem(R.id.select_action_menu_select_all);
