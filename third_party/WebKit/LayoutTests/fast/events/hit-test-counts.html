@@ -43,7 +43,7 @@ function hitTestCountDelta(doc)
     return newCount - lastCount;
 }
 
-function logCounts(label, documents, eventSenderFunction)
+function logCounts(label, documents, multiTapNotification, eventSenderFunction)
 {
     if (eventSenderFunction)
         eventSenderFunction();
@@ -52,22 +52,14 @@ function logCounts(label, documents, eventSenderFunction)
     for(var i = 0; i < documents.length; i++)
         countStr += ' ' + hitTestCountDelta(documents[i]);
 
-    // Get the same counts with multiTargetTapNotification enabled
-    var countStr2 = '';
-    if (eventSenderFunction) {
-        window.internals.settings.setMultiTargetTapNotificationEnabled(true);
-        eventSenderFunction();
-        for(var i = 0; i < documents.length; i++)
-            countStr2 += ' ' + hitTestCountDelta(documents[i]);
-        window.internals.settings.setMultiTargetTapNotificationEnabled(false);
-
-        if (countStr == countStr2)
-            countStr2 = ''
+    if (multiTapNotification) {
+      debug(label + ':' + eventCounts[label]
+        + ((countStr == eventCounts[label])? '': ' [with multiTargetTapNotification:' + countStr + ']'));
+    } else {
+        // store the count for later; to be compared when the
+        // multiTapNotification test is run.
+        eventCounts[label] = countStr;
     }
-
-    // We are interested about countStr2 only when it's different
-    debug(label + ':' + countStr
-        + ((countStr2 == '')? '': ' [with multiTargetTapNotification:' + countStr2 + ']'));
 }
 
 function clearCounts(documents)
@@ -76,70 +68,77 @@ function clearCounts(documents)
         documents[i].lastHitTestCount = internals.hitTestCount(documents[i]);
 }
 
-function sendEvents(targetX, targetY, documents)
+function sendEvents(targetX, targetY, documents, multiTapNotification)
 {
-    logCounts('Initial', documents);
+    logCounts('Initial', documents, multiTapNotification);
 
-    logCounts('MouseMove', documents, function() {
+    logCounts('MouseMove', documents, multiTapNotification, function() {
         eventSender.mouseMoveTo(targetX, targetY);
     });
 
-    logCounts('MouseDown', documents, function() {
+    logCounts('MouseDown', documents, multiTapNotification, function() {
         eventSender.mouseDown();
     });
 
-    logCounts('MouseUp', documents, function() {
+    logCounts('MouseUp', documents, multiTapNotification, function() {
         eventSender.mouseUp();
     });
 
-    logCounts('Wheel', documents, function() {
+    logCounts('Wheel', documents, multiTapNotification, function() {
         eventSender.mouseScrollBy(0, 5);
     });
 
-    logCounts('TouchStart', documents, function() {
+    logCounts('TouchStart', documents, multiTapNotification, function() {
         eventSender.addTouchPoint(targetX, targetY);
         eventSender.touchStart();
     });
 
-    logCounts('TouchMove', documents, function() {
+    logCounts('TouchMove', documents, multiTapNotification, function() {
         eventSender.updateTouchPoint(0, targetX + 1, targetY);
         eventSender.touchMove();
     });
 
-    logCounts('TouchEnd', documents, function() {
+    logCounts('TouchEnd', documents, multiTapNotification, function() {
         eventSender.releaseTouchPoint(0);
         eventSender.touchEnd();
     });
-
-    logCounts('GestureTapDown', documents, function() {
+    logCounts('GestureTapDown', documents, multiTapNotification, function() {
         eventSender.gestureTapDown(targetX, targetY, 30, 30);
     });
 
-    logCounts('GestureShowPress', documents, function() {
+    logCounts('GestureShowPress', documents, multiTapNotification, function() {
         eventSender.gestureShowPress(targetX, targetY, 30, 30);
     });
 
-    logCounts('GestureTap', documents, function() {
+    logCounts('GestureTap', documents, multiTapNotification, function() {
         eventSender.gestureTap(targetX, targetY, 1, 30, 30);
     });
 
-    logCounts('GestureScrollBegin', documents, function() {
+    logCounts('GestureScrollBegin', documents, multiTapNotification, function() {
         eventSender.gestureTapDown(targetX, targetY, 30, 30);
         clearCounts(documents);
         eventSender.gestureScrollBegin(targetX, targetY);
     });
 
-    logCounts('GestureTapCancel', documents, function() {
+    logCounts('GestureTapCancel', documents, multiTapNotification, function() {
         eventSender.gestureTapCancel(targetX, targetY);
     });
 
-    logCounts('GestureScrollUpdate', documents, function() {
+    logCounts('GestureScrollUpdate', documents, multiTapNotification, function() {
         eventSender.gestureScrollUpdate(0, 5);
     });
 
-    logCounts('GestureScrollEnd', documents, function() {
+    logCounts('GestureScrollEnd', documents, multiTapNotification, function() {
         eventSender.gestureScrollEnd(0, 5);
     });
+}
+
+function runTestForDocuments(targetX, targetY, documents)
+{
+    sendEvents(targetX, targetY, documents, false);
+    window.internals.settings.setMultiTargetTapNotificationEnabled(true);
+    sendEvents(targetX, targetY, documents, true);
+    window.internals.settings.setMultiTargetTapNotificationEnabled(false);
 }
 
 function centerOf(element) {
@@ -150,13 +149,14 @@ function centerOf(element) {
     };
 }
 
+eventCounts = {};
 onload = function() {
     window.internals.settings.setMultiTargetTapNotificationEnabled(false);
 
     debug('Event on a simple div');
     debug('---------------------');
     var point = centerOf(document.getElementById('target'));
-    sendEvents(point.x, point.y, [document]);
+    runTestForDocuments(point.x, point.y, [document]);
     debug('');
 
     debug('Event entirely over one iframe nested in another');
@@ -165,20 +165,20 @@ onload = function() {
     var doc2 = frame.contentDocument;
     var doc3 = doc2.querySelector('iframe').contentDocument;
     var point = centerOf(frame);
-    sendEvents(point.x, point.y, [document, doc2, doc3]);
+    runTestForDocuments(point.x, point.y, [document, doc2, doc3]);
     debug('');
 
     debug('Event near boundary of two iframes');
     debug('---------------------');
     var rect = frame.getBoundingClientRect();
-    sendEvents(rect.left + 3, rect.top + 3, [document, doc2, doc3]);
+    runTestForDocuments(rect.left + 3, rect.top + 3, [document, doc2, doc3]);
     debug('');
 
     window.internals.settings.setViewportEnabled(false);
     debug('Event on a simple div (desktop viewport)');
     debug('---------------------');
     var point = centerOf(document.getElementById('target'));
-    sendEvents(point.x, point.y, [document]);
+    runTestForDocuments(point.x, point.y, [document]);
     debug('');
     window.internals.settings.setViewportEnabled(true);
 }

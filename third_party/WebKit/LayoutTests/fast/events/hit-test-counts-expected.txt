@@ -18,11 +18,11 @@ TouchMove: 0
 TouchEnd: 0
 GestureTapDown: 2
 GestureShowPress: 2
-GestureTap: 4
+GestureTap: 4 [with multiTargetTapNotification: 5]
 GestureScrollBegin: 1
 GestureTapCancel: 1
 GestureScrollUpdate: 0
-GestureScrollEnd: 0 [with multiTargetTapNotification: 1]
+GestureScrollEnd: 0
 
 Event entirely over one iframe nested in another
 ---------------------
@@ -31,7 +31,7 @@ MouseMove: 1 1 1
 MouseDown: 2 2 2
 MouseUp: 1 1 1
 Wheel: 1 1 1
-TouchStart: 1 1 1 [with multiTargetTapNotification: 0 0 1]
+TouchStart: 1 1 1
 TouchMove: 0 0 0
 TouchEnd: 0 0 0
 GestureTapDown: 1 1 2
@@ -40,7 +40,7 @@ GestureTap: 1 1 4
 GestureScrollBegin: 1 1 1
 GestureTapCancel: 1 1 1
 GestureScrollUpdate: 0 0 0
-GestureScrollEnd: 0 0 0 [with multiTargetTapNotification: 1 1 1]
+GestureScrollEnd: 0 0 0
 
 Event near boundary of two iframes
 ---------------------
@@ -49,7 +49,7 @@ MouseMove: 1 1 0
 MouseDown: 2 2 0
 MouseUp: 1 1 0
 Wheel: 1 1 0
-TouchStart: 1 1 0 [with multiTargetTapNotification: 0 1 0]
+TouchStart: 1 1 0
 TouchMove: 0 0 0
 TouchEnd: 0 0 0
 GestureTapDown: 1 4 16
@@ -58,7 +58,7 @@ GestureTap: 1 4 16 [with multiTargetTapNotification: 2 8 32]
 GestureScrollBegin: 1 1 0
 GestureTapCancel: 1 1 0
 GestureScrollUpdate: 0 0 0
-GestureScrollEnd: 0 0 0 [with multiTargetTapNotification: 1 1 1]
+GestureScrollEnd: 0 0 0
 
 Event on a simple div (desktop viewport)
 ---------------------
@@ -72,10 +72,10 @@ TouchMove: 0
 TouchEnd: 0
 GestureTapDown: 2
 GestureShowPress: 2
-GestureTap: 4 [with multiTargetTapNotification: 5]
+GestureTap: 4 [with multiTargetTapNotification: 6]
 GestureScrollBegin: 1
 GestureTapCancel: 1
 GestureScrollUpdate: 0
-GestureScrollEnd: 0 [with multiTargetTapNotification: 1]
+GestureScrollEnd: 0
 
 
