@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,15 +18,15 @@
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace extensions {
 
-using extensions::PrinterProviderAPI;
-using extensions::PrinterProviderAPIFactory;
+namespace {
 
 // Callback for PrinterProviderAPI::DispatchGetPrintersRequested calls.
 // It appends items in |printers| to |*printers_out|. If |done| is set, it runs
@@ -70,7 +71,7 @@ void RecordDictAndRunCallback(std::string* result,
 }
 
 // Tests for chrome.printerProvider API.
-class PrinterProviderApiTest : public extensions::ShellApiTest {
+class PrinterProviderApiTest : public ShellApiTest {
  public:
   enum PrintRequestDataType {
     PRINT_REQUEST_DATA_TYPE_NOT_SET,
@@ -92,7 +93,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   void StartPrintRequestWithNoData(
       const std::string& extension_id,
       const PrinterProviderAPI::PrintCallback& callback) {
-    extensions::PrinterProviderPrintJob job;
+    PrinterProviderPrintJob job;
     job.printer_id = extension_id + ":printer_id";
     job.ticket_json = "{}";
     job.content_type = "application/pdf";
@@ -105,7 +106,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   void StartPrintRequestUsingDocumentBytes(
       const std::string& extension_id,
       const PrinterProviderAPI::PrintCallback& callback) {
-    extensions::PrinterProviderPrintJob job;
+    PrinterProviderPrintJob job;
     job.printer_id = extension_id + ":printer_id";
     job.job_title = base::ASCIIToUTF16("Print job");
     job.ticket_json = "{}";
@@ -122,7 +123,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   bool StartPrintRequestUsingFileInfo(
       const std::string& extension_id,
       const PrinterProviderAPI::PrintCallback& callback) {
-    extensions::PrinterProviderPrintJob job;
+    PrinterProviderPrintJob job;
 
     const char kBytes[] = {'b', 'y', 't', 'e', 's'};
     if (!CreateTempFileWithContents(kBytes, static_cast<int>(arraysize(kBytes)),
@@ -166,7 +167,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     ExtensionTestMessageListener loaded_listener("loaded", true);
     ExtensionTestMessageListener ready_listener("ready", false);
 
-    const extensions::Extension* extension = LoadApp(app_path);
+    const Extension* extension = LoadApp(app_path);
     ASSERT_TRUE(extension);
     const std::string extension_id = extension->id();
 
@@ -188,7 +189,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   void RunPrintRequestTestApp(const std::string& test_param,
                               PrintRequestDataType data_type,
                               const std::string& expected_result) {
-    extensions::ResultCatcher catcher;
+    ResultCatcher catcher;
 
     std::string extension_id;
     InitializePrinterProviderTestApp("api_test/printer_provider/request_print",
@@ -233,7 +234,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   // |expected_result|: The printer capability the app is expected to report.
   void RunPrinterCapabilitiesRequestTest(const std::string& test_param,
                                          const std::string& expected_result) {
-    extensions::ResultCatcher catcher;
+    ResultCatcher catcher;
 
     std::string extension_id;
     InitializePrinterProviderTestApp(
@@ -255,18 +256,17 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   }
 
   bool SimulateExtensionUnload(const std::string& extension_id) {
-    extensions::ExtensionRegistry* extension_registry =
-        extensions::ExtensionRegistry::Get(browser_context());
+    ExtensionRegistry* extension_registry =
+        ExtensionRegistry::Get(browser_context());
 
-    const extensions::Extension* extension =
-        extension_registry->GetExtensionById(
-            extension_id, extensions::ExtensionRegistry::ENABLED);
+    const Extension* extension = extension_registry->GetExtensionById(
+        extension_id, ExtensionRegistry::ENABLED);
     if (!extension)
       return false;
 
     extension_registry->RemoveEnabled(extension_id);
     extension_registry->TriggerOnUnloaded(
-        extension, extensions::UnloadedExtensionInfo::REASON_TERMINATE);
+        extension, UnloadedExtensionInfo::REASON_TERMINATE);
     return true;
   }
 
@@ -277,16 +277,9 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   // in |expoected_printers| are unique.
   void ValidatePrinterListValue(
       const base::ListValue& printers,
-      const std::vector<std::string>& expected_printers) {
+      const ScopedVector<base::Value>& expected_printers) {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
-    for (size_t i = 0; i < expected_printers.size(); ++i) {
-      JSONStringValueDeserializer deserializer(expected_printers[i]);
-      int error_code;
-      scoped_ptr<base::Value> printer_value(
-          deserializer.Deserialize(&error_code, NULL));
-      ASSERT_TRUE(printer_value) << "Failed to deserialize "
-                                 << expected_printers[i] << ": "
-                                 << "error code " << error_code;
+    for (const base::Value* printer_value : expected_printers) {
       EXPECT_TRUE(printers.Find(*printer_value) != printers.end())
           << "Unabe to find " << *printer_value << " in " << printers;
     }
@@ -356,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestDataNotSet) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestAppUnloaded) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_print",
@@ -401,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, CapabilityInvalidValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilityAppUnloaded) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp(
@@ -423,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetCapabilityAppUnloaded) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -440,30 +433,29 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
 
   run_loop.Run();
 
-  std::vector<std::string> expected_printers;
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printer1\","
-      "\"name\":\"Printer 1\""
-      "}",
-      extension_id.c_str(), extension_id.c_str()));
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printerNoDesc\","
-      "\"name\":\"Printer 2\""
-      "}",
-      extension_id.c_str(), extension_id.c_str()));
+  ScopedVector<base::Value> expected_printers;
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("description", "Test printer")
+          .Set("extensionId", extension_id)
+          .Set("extensionName", "Test printer provider")
+          .Set("id", base::StringPrintf("%s:printer1", extension_id.c_str()))
+          .Set("name", "Printer 1")
+          .Build());
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("extensionId", extension_id)
+          .Set("extensionName", "Test printer provider")
+          .Set("id",
+               base::StringPrintf("%s:printerNoDesc", extension_id.c_str()))
+          .Set("name", "Printer 2")
+          .Build());
 
   ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -480,22 +472,21 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
 
   run_loop.Run();
 
-  std::vector<std::string> expected_printers;
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printer1\","
-      "\"name\":\"Printer 1\""
-      "}",
-      extension_id.c_str(), extension_id.c_str()));
+  ScopedVector<base::Value> expected_printers;
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("description", "Test printer")
+          .Set("extensionId", extension_id)
+          .Set("extensionName", "Test printer provider")
+          .Set("id", base::StringPrintf("%s:printer1", extension_id.c_str()))
+          .Set("name", "Printer 1")
+          .Build());
 
   ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id_1;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -519,48 +510,46 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
 
   run_loop.Run();
 
-  std::vector<std::string> expected_printers;
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printer1\","
-      "\"name\":\"Printer 1\""
-      "}",
-      extension_id_1.c_str(), extension_id_1.c_str()));
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printerNoDesc\","
-      "\"name\":\"Printer 2\""
-      "}",
-      extension_id_1.c_str(), extension_id_1.c_str()));
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printer1\","
-      "\"name\":\"Printer 1\""
-      "}",
-      extension_id_2.c_str(), extension_id_2.c_str()));
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printerNoDesc\","
-      "\"name\":\"Printer 2\""
-      "}",
-      extension_id_2.c_str(), extension_id_2.c_str()));
+  ScopedVector<base::Value> expected_printers;
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("description", "Test printer")
+          .Set("extensionId", extension_id_1)
+          .Set("extensionName", "Test printer provider")
+          .Set("id", base::StringPrintf("%s:printer1", extension_id_1.c_str()))
+          .Set("name", "Printer 1")
+          .Build());
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("extensionId", extension_id_1)
+          .Set("extensionName", "Test printer provider")
+          .Set("id",
+               base::StringPrintf("%s:printerNoDesc", extension_id_1.c_str()))
+          .Set("name", "Printer 2")
+          .Build());
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("description", "Test printer")
+          .Set("extensionId", extension_id_2)
+          .Set("extensionName", "Test printer provider")
+          .Set("id", base::StringPrintf("%s:printer1", extension_id_2.c_str()))
+          .Set("name", "Printer 1")
+          .Build());
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("extensionId", extension_id_2)
+          .Set("extensionName", "Test printer provider")
+          .Set("id",
+               base::StringPrintf("%s:printerNoDesc", extension_id_2.c_str()))
+          .Set("name", "Printer 2")
+          .Build());
 
   ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                        GetPrintersTwoExtensionsBothUnloaded) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id_1;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -592,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                        GetPrintersTwoExtensionsOneFails) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id_1;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -616,31 +605,30 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 
   run_loop.Run();
 
-  std::vector<std::string> expected_printers;
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printer1\","
-      "\"name\":\"Printer 1\""
-      "}",
-      extension_id_2.c_str(), extension_id_2.c_str()));
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printerNoDesc\","
-      "\"name\":\"Printer 2\""
-      "}",
-      extension_id_2.c_str(), extension_id_2.c_str()));
+  ScopedVector<base::Value> expected_printers;
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("description", "Test printer")
+          .Set("extensionId", extension_id_2)
+          .Set("extensionName", "Test printer provider")
+          .Set("id", base::StringPrintf("%s:printer1", extension_id_2.c_str()))
+          .Set("name", "Printer 1")
+          .Build());
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("extensionId", extension_id_2)
+          .Set("extensionName", "Test printer provider")
+          .Set("id",
+               base::StringPrintf("%s:printerNoDesc", extension_id_2.c_str()))
+          .Set("name", "Printer 2")
+          .Build());
 
   ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                        GetPrintersTwoExtensionsOneWithNoListener) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id_1;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -664,30 +652,29 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 
   run_loop.Run();
 
-  std::vector<std::string> expected_printers;
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"description\":\"Test printer\","
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printer1\","
-      "\"name\":\"Printer 1\""
-      "}",
-      extension_id_2.c_str(), extension_id_2.c_str()));
-  expected_printers.push_back(base::StringPrintf(
-      "{"
-      "\"extensionId\":\"%s\","
-      "\"extensionName\": \"Test printer provider\","
-      "\"id\":\"%s:printerNoDesc\","
-      "\"name\":\"Printer 2\""
-      "}",
-      extension_id_2.c_str(), extension_id_2.c_str()));
+  ScopedVector<base::Value> expected_printers;
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("description", "Test printer")
+          .Set("extensionId", extension_id_2)
+          .Set("extensionName", "Test printer provider")
+          .Set("id", base::StringPrintf("%s:printer1", extension_id_2.c_str()))
+          .Set("name", "Printer 1")
+          .Build());
+  expected_printers.push_back(
+      DictionaryBuilder()
+          .Set("extensionId", extension_id_2)
+          .Set("extensionName", "Test printer provider")
+          .Set("id",
+               base::StringPrintf("%s:printerNoDesc", extension_id_2.c_str()))
+          .Set("name", "Printer 2")
+          .Build());
 
   ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersNoListener) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -708,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersNoListener) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersNotArray) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -730,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersNotArray) {
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                        GetPrintersInvalidPrinterValueType) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -751,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersInvalidPrinterValue) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   std::string extension_id;
   InitializePrinterProviderTestApp("api_test/printer_provider/request_printers",
@@ -772,3 +759,5 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersInvalidPrinterValue) {
 }
 
 }  // namespace
+
+}  // namespace extensions
