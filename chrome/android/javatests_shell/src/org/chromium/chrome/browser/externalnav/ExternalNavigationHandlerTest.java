@@ -381,7 +381,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testTypedRedirectToExternalProtocol() {
-        // http://crbug.com/331571 reverted http://crbug.com/169549
+        // http://crbug.com/169549
         check("market://1234",
                 null, /* referrer */
                 false, /* incognito */
@@ -390,8 +390,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 true,
                 false,
                 null,
-                OverrideUrlLoadingResult.NO_OVERRIDE,
-                IGNORE);
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                START_ACTIVITY);
         // http://crbug.com/143118
         check("market://1234",
                 null, /* referrer */
@@ -656,10 +656,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 PageTransition.TYPED, NO_REDIRECT, true, false, redirectHandler,
                 OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
         check(INTENT_URL_WITH_FALLBACK_URL_WITHOUT_PACKAGE_NAME, null, /* referrer */
                 false, /* incognito */
-                PageTransition.TYPED, REDIRECT, true, false, redirectHandler,
+                PageTransition.LINK, NO_REDIRECT, true, false, redirectHandler,
                 OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
         // Now the user opens a link.

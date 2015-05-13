@@ -176,8 +176,14 @@ public class TabRedirectHandler {
      */
     public boolean shouldStayInChrome() {
         return mIsInitialIntentHeadingToChrome
-                || mInitialNavigationType == NAVIGATION_TYPE_FROM_USER_TYPING
                 || mInitialNavigationType == NAVIGATION_TYPE_FROM_LINK_WITHOUT_USER_GESTURE;
+    }
+
+    /**
+     * @return whether navigation is from a user's typing or not.
+     */
+    public boolean isNavigationFromUserTyping() {
+        return mInitialNavigationType == NAVIGATION_TYPE_FROM_USER_TYPING;
     }
 
     /**

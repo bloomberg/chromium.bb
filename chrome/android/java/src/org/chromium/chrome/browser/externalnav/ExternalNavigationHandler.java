@@ -125,6 +125,13 @@ public class ExternalNavigationHandler {
         boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
         boolean isForwardBackNavigation =
                 (params.getPageTransition() & PageTransition.FORWARD_BACK) != 0;
+        boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(params.getUrl());
+
+        // http://crbug.com/169549 : If you type in a URL that then redirects in server side to an
+        // link that cannot be rendered by the browser, we want to show the intent picker.
+        boolean isTyped = pageTransitionCore == PageTransition.TYPED;
+        boolean typedRedirectToExternalProtocol = isTyped && params.isRedirect()
+                && isExternalProtocol;
 
         // We do not want to show the intent picker for core types typed, bookmarks, auto toplevel,
         // generated, keyword, keyword generated. See below for exception to typed URL and
@@ -167,8 +174,14 @@ public class ExternalNavigationHandler {
         // following a form submit.
         boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
 
-        if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        if (!typedRedirectToExternalProtocol) {
+            if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+            if (params.getRedirectHandler() != null
+                    && params.getRedirectHandler().isNavigationFromUserTyping()) {
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
         }
 
         // Don't override navigation from a chrome:* url to http or https. For example,
@@ -270,7 +283,7 @@ public class ExternalNavigationHandler {
         // Make sure webkit can handle it internally before checking for specialized
         // handlers. If webkit can't handle it internally, we need to call
         // startActivityIfNeeded or startActivity.
-        if (UrlUtilities.isAcceptedScheme(params.getUrl())) {
+        if (!isExternalProtocol) {
             if (!mDelegate.isSpecializedHandlerAvailable(intent)) {
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             } else if (params.getReferrerUrl() != null && isLink) {

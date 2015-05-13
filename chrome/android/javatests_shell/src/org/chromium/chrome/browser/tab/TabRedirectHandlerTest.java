@@ -213,12 +213,12 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         TabRedirectHandler handler = new TabRedirectHandler(mContext);
         handler.updateIntent(sYtIntent);
         assertFalse(handler.isOnNavigation());
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.isNavigationFromUserTyping());
 
         handler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.isNavigationFromUserTyping());
         handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.isNavigationFromUserTyping());
 
         assertTrue(handler.isOnNavigation());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -226,7 +226,7 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.isNavigationFromUserTyping());
 
         assertTrue(handler.isOnNavigation());
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
