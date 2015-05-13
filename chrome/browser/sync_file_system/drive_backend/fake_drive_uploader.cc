@@ -87,6 +87,12 @@ FakeDriveUploader::FakeDriveUploader(
 
 FakeDriveUploader::~FakeDriveUploader() {}
 
+void FakeDriveUploader::StartBatchProcessing() {
+}
+
+void FakeDriveUploader::StopBatchProcessing() {
+}
+
 CancelCallback FakeDriveUploader::UploadNewFile(
     const std::string& parent_resource_id,
     const base::FilePath& local_file_path,

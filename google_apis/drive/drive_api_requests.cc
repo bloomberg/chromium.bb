@@ -1211,9 +1211,12 @@ void BatchUploadRequest::OnChildRequestPrepared(RequestID request_id,
 void BatchUploadRequest::Commit() {
   DCHECK(CalledOnValidThread());
   DCHECK(!committed_);
-  CHECK(!child_requests_.empty());
-  committed_ = true;
-  MayCompletePrepare();
+  if (child_requests_.empty()) {
+    Cancel();
+  } else {
+    committed_ = true;
+    MayCompletePrepare();
+  }
 }
 
 void BatchUploadRequest::Prepare(const PrepareCallback& callback) {
