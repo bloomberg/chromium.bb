@@ -193,13 +193,14 @@ struct SerializeObject {
 //         which is no longer used.
 // 20: Add pinch viewport scroll offset, the offset of the pinched zoomed
 //     viewport within the unzoomed main frame.
-// 21: Add frame sequence number
+// 21: Add frame sequence number.
+// 22: Add scroll restoration type.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
 //
 const int kMinVersion = 11;
-const int kCurrentVersion = 21;
+const int kCurrentVersion = 22;
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -497,6 +498,8 @@ void WriteFrameState(
   WriteReal(state.pinch_viewport_scroll_offset.x(), obj);
   WriteReal(state.pinch_viewport_scroll_offset.y(), obj);
 
+  WriteInteger(state.scroll_restoration_type, obj);
+
   bool has_state_object = !state.state_object.is_null();
   WriteBoolean(has_state_object, obj);
   if (has_state_object)
@@ -566,6 +569,11 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
     state->pinch_viewport_scroll_offset = gfx::PointF(x, y);
   } else {
     state->pinch_viewport_scroll_offset = gfx::PointF(-1, -1);
+  }
+
+  if (obj->version >= 22) {
+    state->scroll_restoration_type =
+        static_cast<blink::WebHistoryScrollRestorationType>(ReadInteger(obj));
   }
 
   bool has_state_object = ReadBoolean(obj);
@@ -674,7 +682,8 @@ ExplodedHttpBody::~ExplodedHttpBody() {
 }
 
 ExplodedFrameState::ExplodedFrameState()
-    : item_sequence_number(0),
+    : scroll_restoration_type(blink::WebHistoryScrollRestorationAuto),
+      item_sequence_number(0),
       document_sequence_number(0),
       frame_sequence_number(0),
       page_scale_factor(0.0),
@@ -699,6 +708,7 @@ void ExplodedFrameState::assign(const ExplodedFrameState& other) {
   target = other.target;
   state_object = other.state_object;
   document_state = other.document_state;
+  scroll_restoration_type = other.scroll_restoration_type;
   pinch_viewport_scroll_offset = other.pinch_viewport_scroll_offset;
   scroll_offset = other.scroll_offset;
   item_sequence_number = other.item_sequence_number;

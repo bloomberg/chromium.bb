@@ -10,6 +10,7 @@
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
+#include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -48,6 +49,7 @@ struct CONTENT_EXPORT ExplodedFrameState {
   base::NullableString16 target;
   base::NullableString16 state_object;
   std::vector<base::NullableString16> document_state;
+  blink::WebHistoryScrollRestorationType scroll_restoration_type;
   gfx::PointF pinch_viewport_scroll_offset;
   gfx::Point scroll_offset;
   int64 item_sequence_number;

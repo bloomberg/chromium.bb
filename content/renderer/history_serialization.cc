@@ -89,6 +89,7 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
   state->target = item.target();
   if (!item.stateObject().isNull())
     state->state_object = item.stateObject().toString();
+  state->scroll_restoration_type = item.scrollRestorationType();
   state->pinch_viewport_scroll_offset = item.pinchViewportScrollOffset();
   state->scroll_offset = item.scrollOffset();
   state->item_sequence_number = item.itemSequenceNumber();
@@ -142,6 +143,7 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
         WebSerializedScriptValue::fromString(state.state_object));
   }
   item.setDocumentState(state.document_state);
+  item.setScrollRestorationType(state.scroll_restoration_type);
   item.setPinchViewportScrollOffset(state.pinch_viewport_scroll_offset);
   item.setScrollOffset(state.scroll_offset);
   item.setPageScaleFactor(state.page_scale_factor);
