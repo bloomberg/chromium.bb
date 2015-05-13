@@ -260,7 +260,7 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
       enable_download_whitelist_(false),
       enable_extension_blacklist_(false),
       enable_ip_blacklist_(false),
-      enable_unwanted_software_blacklist_(false),
+      enable_unwanted_software_blacklist_(true),
       update_in_progress_(false),
       database_update_in_progress_(false),
       closing_database_(false),
@@ -293,10 +293,6 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
   // The client-side IP blacklist feature is tightly integrated with client-side
   // phishing protection for now.
   enable_ip_blacklist_ = enable_csd_whitelist_;
-
-  // The UwS blacklist feature is controlled by a flag for M40.
-  enable_unwanted_software_blacklist_ =
-      safe_browsing_util::GetUnwantedTrialGroup() > safe_browsing_util::UWS_OFF;
 #endif
 }
 

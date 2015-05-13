@@ -5,7 +5,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -169,13 +168,6 @@ bool IsKnownList(const std::string& name) {
   }
   return false;
 }
-
-// String constants for the M40 UwS Finch trial.
-const char kUnwantedTrialName[] = "UwSInterstitialStatus";
-const char kOff[] = "Off";
-const char kOnButInvisible[] = "OnButInvisible";
-const char kOn[] = "On";
-
 }  // namespace
 
 namespace safe_browsing_util {
@@ -530,17 +522,6 @@ SBFullHash StringToSBFullHash(const std::string& hash_in) {
 std::string SBFullHashToString(const SBFullHash& hash) {
   DCHECK_EQ(crypto::kSHA256Length, sizeof(hash.full_hash));
   return std::string(hash.full_hash, sizeof(hash.full_hash));
-}
-
-UnwantedStatus GetUnwantedTrialGroup() {
-  std::string status(base::FieldTrialList::FindFullName(kUnwantedTrialName));
-  if (status == kOff)
-    return UWS_OFF;
-  if (status == kOnButInvisible)
-    return UWS_ON_INVISIBLE;
-  if (status == kOn)
-    return UWS_ON;
-  return UWS_ON;
 }
 
 }  // namespace safe_browsing_util
