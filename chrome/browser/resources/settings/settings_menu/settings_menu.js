@@ -8,35 +8,32 @@
  *
  * Example:
  *
- *     <cr-settings-menu pages="{{pages}}" selectedId="{{selectedId}}">
+ *     <cr-settings-menu pages="[[pages]]" selected-id="{{selectedId}}">
  *     </cr-settings-menu>
  *
  * @group Chrome Settings Elements
  * @element cr-settings-menu
  */
-Polymer('cr-settings-menu', {
-  publish: {
+Polymer({
+  is: 'cr-settings-menu',
+
+  properties: {
     /**
      * Pages to show menu items for.
-     *
-     * @attribute pages
-     * @type Array<!Object>
-     * @default null
+     * @type {!Array<!HTMLElement>}
      */
-    pages: null,
+    pages: {
+      type: Array,
+      value: function() { return []; },
+    },
 
     /**
      * ID of the currently selected page.
-     *
-     * @attribute selectedId
-     * @type string
-     * default ''
      */
-    selectedId: '',
-  },
-
-  /** @override */
-  created: function() {
-    this.pages = [];
+    selectedId: {
+      type: String,
+      value: '',
+      notify: true,
+    },
   },
 });

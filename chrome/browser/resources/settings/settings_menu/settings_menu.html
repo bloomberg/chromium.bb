@@ -1,22 +1,20 @@
-<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
-<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
-<link rel="import" href="settings_menu_style.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-item/paper-icon-item.html">
 
-<polymer-element name="cr-settings-menu">
+<dom-module id="cr-settings-menu">
+  <link rel="import" type="css" href="settings_menu.css">
   <template>
-    <core-style ref="settingsMenuStyle"></core-style>
-    <!-- TODO(jlklein): selectedAttribute here is a workaround for
-         https://github.com/Polymer/polymer/issues/946. Remove when core-menu
-         is updated. -->
-    <core-menu selected="{{selectedId}}" valueattr="data-id"
-        selectedAttribute="">
-      <template repeat="{{pages}}">
-        <paper-item data-id="{{PAGE_ID}}">
-          <core-icon icon="{{icon}}"></core-icon>
-          {{pageTitle}}
-        </paper-item>
+    <paper-menu selected="{{selectedId}}" attr-for-selected="data-id">
+      <template is="x-repeat" items="[[pages]]">
+        <paper-icon-item data-id$="[[item.PAGE_ID]]" icon-width="34px">
+          <iron-icon icon="[[item.icon]]" item-icon></iron-icon>
+          <span>[[item.pageTitle]]</span>
+        </paper-icon-item>
       </template>
-    </core-menu>
+    </paper-menu>
   </template>
   <script src="settings_menu.js"></script>
-</polymer-element>
+</dom-module>
