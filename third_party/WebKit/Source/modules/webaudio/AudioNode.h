@@ -155,6 +155,9 @@ public:
     unsigned numberOfInputs() const { return m_inputs.size(); }
     unsigned numberOfOutputs() const { return m_outputs.size(); }
 
+    // Number of output channels.  This only matters for ScriptProcessorNodes.
+    virtual unsigned numberOfOutputChannels() const;
+
     // The argument must be less than numberOfInputs().
     AudioNodeInput& input(unsigned);
     // The argument must be less than numberOfOutputs().

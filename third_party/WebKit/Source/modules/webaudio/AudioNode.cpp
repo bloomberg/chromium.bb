@@ -504,6 +504,14 @@ void AudioHandler::updateChannelCountMode()
     updateChannelsForInputs();
 }
 
+unsigned AudioHandler::numberOfOutputChannels() const
+{
+    // This should only be called for ScriptProcessorNodes which are the only nodes where you can
+    // have an output with 0 channels.  All other nodes have have at least one output channel, so
+    // there's no reason other nodes should ever call this function.
+    ASSERT_WITH_MESSAGE(1, "numberOfOutputChannels() not valid for node type %d", nodeType());
+    return 1;
+}
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(AudioContext& context)
@@ -584,6 +592,16 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
         exceptionState.throwDOMException(
             SyntaxError,
             "cannot connect to a destination belonging to a different audio context.");
+        return;
+    }
+
+    // ScriptProcessorNodes with 0 output channels can't be connected to any destination.  If there
+    // are no output channels, what would the destination receive?  Just disallow this.
+    if (handler().nodeType() == AudioHandler::NodeTypeJavaScript
+        && handler().numberOfOutputChannels() == 0) {
+        exceptionState.throwDOMException(
+            InvalidAccessError,
+            "cannot connect a ScriptProcessorNode with 0 output channels to any destination node.");
         return;
     }
 
