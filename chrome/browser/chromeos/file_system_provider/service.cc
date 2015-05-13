@@ -318,11 +318,10 @@ std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
     ProvidingExtensionInfo info;
     info.extension_id = extension->id();
     info.name = extension->name();
-    const extensions::FileSystemProviderCapabilities* capabilities =
+    const extensions::FileSystemProviderCapabilities* const capabilities =
         extensions::FileSystemProviderCapabilities::Get(extension.get());
-    info.capabilities = capabilities
-                            ? *capabilities
-                            : extensions::FileSystemProviderCapabilities();
+    DCHECK(capabilities);
+    info.capabilities = *capabilities;
     result.push_back(info);
   }
 

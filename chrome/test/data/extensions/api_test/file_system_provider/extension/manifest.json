@@ -7,8 +7,6 @@
   "description": "Test for chrome.fileSystemProvider.mount() in an extension.",
   "permissions": ["fileSystemProvider", "fileManagerPrivate"],
   "file_system_provider_capabilities": {
-    "configurable": true,
-    "multiple_mounts": true,
     "source": "device"
   },
   "background": {

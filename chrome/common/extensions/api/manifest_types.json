@@ -183,11 +183,13 @@
         "properties": {
           "configurable": {
             "type": "boolean",
-            "description": "Whether configuring via <code>onConfigureRequested</code> is supported."
+            "optional": true,
+            "description": "Whether configuring via <code>onConfigureRequested</code> is supported. By default: <code>false</code>."
           },
           "multiple_mounts": {
             "type": "boolean",
-            "description": "Whether multiple (more than one) mounted file systems are supported."
+            "optional": true,
+            "description": "Whether multiple (more than one) mounted file systems are supported. By default: <code>false</code>."
           },
           "source": {
             "$ref": "FileSystemProviderSource",

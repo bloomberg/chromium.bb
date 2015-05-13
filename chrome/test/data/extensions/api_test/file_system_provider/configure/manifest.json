@@ -15,7 +15,6 @@
   ],
   "file_system_provider_capabilities": {
     "configurable": true,
-    "multiple_mounts": false,
     "source": "device"
   },
   "app": {

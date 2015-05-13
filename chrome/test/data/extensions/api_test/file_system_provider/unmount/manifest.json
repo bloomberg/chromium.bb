@@ -6,8 +6,6 @@
   "description": "Test for chrome.fileSystemProvider.unmount().",
   "permissions": ["fileSystemProvider", "fileManagerPrivate"],
   "file_system_provider_capabilities": {
-    "configurable": true,
-    "multiple_mounts": true,
     "source": "device"
   },
   "app": {

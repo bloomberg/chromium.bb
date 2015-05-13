@@ -95,9 +95,14 @@ bool FileSystemProviderCapabilitiesHandler::Parse(Extension* extension,
   }
 
   scoped_ptr<FileSystemProviderCapabilities> capabilities(
-      new FileSystemProviderCapabilities(idl_capabilities.configurable,
-                                         idl_capabilities.multiple_mounts,
-                                         source));
+      new FileSystemProviderCapabilities(
+          idl_capabilities.configurable.get()
+              ? *idl_capabilities.configurable.get()
+              : false /* false by default */,
+          idl_capabilities.multiple_mounts.get()
+              ? *idl_capabilities.multiple_mounts.get()
+              : false /* false by default */,
+          source));
 
   extension->SetManifestData(manifest_keys::kFileSystemProviderCapabilities,
                              capabilities.release());
