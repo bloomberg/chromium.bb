@@ -1024,6 +1024,7 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
         dirEntry &&
         !fileManager.isOnReadonlyDirectory() &&
         !fileManager.isOnDrive() &&
+        !fileManager.isOnMTP() &&
         selection && selection.totalCount > 0;
   }
 });

@@ -1254,6 +1254,13 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
+   * @return {boolean} True if the current directory content is from MTP volume.
+   */
+  FileManager.prototype.isOnMTP = function() {
+    return this.directoryModel_.isOnMTP();
+  };
+
+  /**
    * Check if the drive-related setting items should be shown on currently
    * displayed gear menu.
    * @return {boolean} True if those setting items should be shown.

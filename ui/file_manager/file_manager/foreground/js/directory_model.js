@@ -179,13 +179,29 @@ DirectoryModel.prototype.isSearching = function() {
 };
 
 /**
- * @return {boolean}
+ * @return {boolean} True if it's on Drive.
  */
 DirectoryModel.prototype.isOnDrive = function() {
+  return this.isCurrentRootVolumeType_(VolumeManagerCommon.VolumeType.DRIVE);
+};
+
+/**
+ * @return {boolean} True if it's on MTP volume.
+ */
+DirectoryModel.prototype.isOnMTP = function() {
+  return this.isCurrentRootVolumeType_(VolumeManagerCommon.VolumeType.MTP);
+};
+
+/**
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume Type
+ * @return {boolean} True if current root volume type is equal to specified
+ *     volume type.
+ * @private
+ */
+DirectoryModel.prototype.isCurrentRootVolumeType_ = function(volumeType) {
   var rootType = this.getCurrentRootType();
   return rootType != null &&
-      VolumeManagerCommon.getVolumeTypeFromRootType(rootType) ==
-      VolumeManagerCommon.VolumeType.DRIVE;
+      VolumeManagerCommon.getVolumeTypeFromRootType(rootType) === volumeType;
 };
 
 /**
