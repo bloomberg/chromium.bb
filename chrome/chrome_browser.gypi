@@ -2359,8 +2359,8 @@
       'browser/rlz/rlz_mac.cc',
       'browser/rlz/rlz_win.cc',
     ],
-    # Used for safe browsing in basic mode (safe_browsing=2) as well as full
-    # mode (safe_browsing=1).
+    # "Safe Browsing Basic" files used for safe browsing in full mode
+    # (safe_browsing=1), mobile (=2), and mobile-extended (=3).
     'chrome_browser_safe_browsing_basic_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle_factory.cc',
       'browser/renderer_host/safe_browsing_resource_throttle_factory.h',
@@ -2383,7 +2383,19 @@
       'browser/safe_browsing/ui_manager.cc',
       'browser/safe_browsing/ui_manager.h',
     ],
-    # Files in addition to the "basic" ones to use for full safe browsing.
+    # "Safe Browsing Extended Mobile" files in addition to the "basic" ones
+    # to use for mobile_extended mode. This has some in common with "full."
+    'chrome_browser_safe_browsing_mobile_extended_sources': [
+      'browser/renderer_host/safe_browsing_resource_throttle.cc',
+      'browser/renderer_host/safe_browsing_resource_throttle.h',
+      'browser/safe_browsing/android_safe_browsing_api_handler.cc',
+      'browser/safe_browsing/android_safe_browsing_api_handler.h',
+      'browser/safe_browsing/database_manager.h',
+      'browser/safe_browsing/remote_database_manager.cc',
+      'browser/safe_browsing/remote_database_manager.h',
+    ],
+    # "Safe Browsing Full" files in addition to the "basic" ones to use for
+    # full safe browsing. This has some in common with "mobile_extended."
     'chrome_browser_safe_browsing_full_sources': [
       'browser/download/download_completion_blocker.cc',
       'browser/download/download_completion_blocker.h',
@@ -2399,7 +2411,6 @@
       'browser/safe_browsing/client_side_detection_host.h',
       'browser/safe_browsing/client_side_detection_service.cc',
       'browser/safe_browsing/client_side_detection_service.h',
-      'browser/safe_browsing/database_manager.cc',
       'browser/safe_browsing/database_manager.h',
       'browser/safe_browsing/download_feedback.cc',
       'browser/safe_browsing/download_feedback.h',
@@ -2455,6 +2466,8 @@
       'browser/safe_browsing/incident_reporting/variations_seed_signature_analyzer.h',
       'browser/safe_browsing/incident_reporting/variations_seed_signature_incident.cc',
       'browser/safe_browsing/incident_reporting/variations_seed_signature_incident.h',
+      'browser/safe_browsing/local_database_manager.cc',
+      'browser/safe_browsing/local_database_manager.h',
       'browser/safe_browsing/path_sanitizer.cc',
       'browser/safe_browsing/path_sanitizer.h',
       'browser/safe_browsing/prefix_set.cc',
@@ -3358,6 +3371,12 @@
           'conditions': [
             ['safe_browsing == 1', {
               'sources': [ '<@(chrome_browser_safe_browsing_full_sources)' ],
+              'dependencies': [
+                'safe_browsing_proto',
+              ],
+            }],
+            ['safe_browsing == 3', {
+              'sources': [ '<@(chrome_browser_safe_browsing_mobile_extended_sources)' ],
               'dependencies': [
                 'safe_browsing_proto',
               ],

@@ -51,6 +51,12 @@
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
+#include "chrome/browser/safe_browsing/local_database_manager.h"
+#elif defined(SAFE_BROWSING_DB_REMOTE)
+#include "chrome/browser/safe_browsing/remote_database_manager.h"
+#endif
+
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
@@ -243,7 +249,7 @@ void SafeBrowsingService::Initialize() {
 
   off_domain_inclusion_detector_.reset(
       new safe_browsing::OffDomainInclusionDetector(database_manager_));
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(FULL_SAFE_BROWSING)
 
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
@@ -379,7 +385,9 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 
 SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
 #if defined(SAFE_BROWSING_DB_LOCAL)
-  return new SafeBrowsingDatabaseManager(this);
+  return new LocalSafeBrowsingDatabaseManager(this);
+#elif defined(SAFE_BROWSING_DB_REMOTE)
+  return new RemoteSafeBrowsingDatabaseManager();
 #else
   return NULL;
 #endif
@@ -466,6 +474,19 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
   return config;
 }
 
+// Any tests that create a DatabaseManager that isn't derived from
+// LocalSafeBrowsingDatabaseManager should override this to return NULL.
+SafeBrowsingProtocolManagerDelegate*
+SafeBrowsingService::GetProtocolManagerDelegate() {
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  return static_cast<LocalSafeBrowsingDatabaseManager*>(
+      database_manager_.get());
+#else
+  NOTREACHED();
+  return NULL;
+#endif
+}
+
 void SafeBrowsingService::StartOnIOThread(
     net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -475,14 +496,19 @@ void SafeBrowsingService::StartOnIOThread(
 
   SafeBrowsingProtocolConfig config = GetProtocolConfig();
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   DCHECK(database_manager_.get());
   database_manager_->StartOnIOThread();
+#endif
 
-  DCHECK(!protocol_manager_);
-  protocol_manager_ = SafeBrowsingProtocolManager::Create(
-      database_manager_.get(), url_request_context_getter, config);
-  protocol_manager_->Initialize();
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  SafeBrowsingProtocolManagerDelegate* protocol_manager_delegate =
+      GetProtocolManagerDelegate();
+  if (protocol_manager_delegate) {
+    protocol_manager_ = SafeBrowsingProtocolManager::Create(
+        protocol_manager_delegate, url_request_context_getter, config);
+    protocol_manager_->Initialize();
+  }
 #endif
 
   DCHECK(!ping_manager_);
@@ -493,7 +519,7 @@ void SafeBrowsingService::StartOnIOThread(
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   database_manager_->StopOnIOThread(shutdown);
 #endif
   ui_manager_->StopOnIOThread(shutdown);
@@ -505,8 +531,10 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
     // This cancels all in-flight GetHash requests. Note that database_manager_
     // relies on the protocol_manager_ so if the latter is destroyed, the
     // former must be stopped.
-    delete protocol_manager_;
-    protocol_manager_ = NULL;
+    if (protocol_manager_) {
+      delete protocol_manager_;
+      protocol_manager_ = NULL;
+    }
 #endif
     delete ping_manager_;
     ping_manager_ = NULL;

@@ -16,10 +16,12 @@
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -55,10 +57,9 @@ const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
 
 // A SafeBrowsingDatabaseManager class that allows us to inject the malicious
 // URLs.
-class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
+class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
-  explicit FakeSafeBrowsingDatabaseManager(SafeBrowsingService* service)
-      : SafeBrowsingDatabaseManager(service) { }
+  FakeSafeBrowsingDatabaseManager() {}
 
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.
@@ -78,21 +79,29 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
     std::vector<SBThreatType> expected_threats;
+    // TODO(nparker): Remove ref to LocalSafeBrowsingDatabase by calling
+    // client->OnCheckBrowseUrlResult(..) directly.
     expected_threats.push_back(SB_THREAT_TYPE_URL_MALWARE);
     expected_threats.push_back(SB_THREAT_TYPE_URL_PHISHING);
     expected_threats.push_back(SB_THREAT_TYPE_URL_UNWANTED);
-    SafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
+    LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
         std::vector<GURL>(1, gurl),
         std::vector<SBFullHash>(),
         client,
         safe_browsing_util::MALWARE,
         expected_threats);
     sb_check.url_results[0] = badurls[gurl.spec()];
-    client->OnSafeBrowsingResult(sb_check);
+    sb_check.OnSafeBrowsingResult();
   }
 
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
     badurls[url.spec()] = threat_type;
+  }
+
+  // Called during startup, so must not check-fail.
+  bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
+                         Client* client) override {
+    return true;
   }
 
  private:
@@ -172,13 +181,18 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   ~FakeSafeBrowsingService() override {}
 
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
-    fake_database_manager_ = new FakeSafeBrowsingDatabaseManager(this);
+    fake_database_manager_ = new FakeSafeBrowsingDatabaseManager();
     return fake_database_manager_;
   }
 
   SafeBrowsingUIManager* CreateUIManager() override {
     fake_ui_manager_ = new FakeSafeBrowsingUIManager(this);
     return fake_ui_manager_;
+  }
+
+  SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate() override {
+    // Our SafeBrowsingDatabaseManager doesn't implement this delegate.
+    return NULL;
   }
 
  private:

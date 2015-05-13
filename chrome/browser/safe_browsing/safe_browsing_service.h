@@ -33,6 +33,7 @@ struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingPingManager;
 class SafeBrowsingProtocolManager;
+class SafeBrowsingProtocolManagerDelegate;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingUIManager;
 class SafeBrowsingURLRequestContextGetter;
@@ -160,6 +161,9 @@ class SafeBrowsingService
   // Registers all the delayed analysis with the incident reporting service.
   // This is where you register your process-wide, profile-independent analysis.
   virtual void RegisterAllDelayedAnalysis();
+
+  // Return a ptr to DatabaseManager's delegate, or NULL if it doesn't have one.
+  virtual SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate();
 
  private:
   friend class SafeBrowsingServiceFactoryImpl;

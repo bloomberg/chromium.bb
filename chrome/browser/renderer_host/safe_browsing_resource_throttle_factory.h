@@ -21,10 +21,9 @@ class URLRequest;
 
 // Factory for creating a SafeBrowsingResourceThrottle. If a factory is
 // registered, the factory's CreateResourceThrottle() is called.  Otherwise,
-// when SAFE_BROWSING_DB_LOCAL is enabled, a new
+// if SAFE_BROWSING_DB_LOCAL || SAFE_BROWSING_DB_REMOTE is enabled, a new
 // SafeBrowsingResourceThrottle is returned, or NULL if only
 // SAFE_BROWSING_SERVICE is enabled.
-// TODO(nparker): Add support SAFE_BROWSING_DB_REMOTE
 class SafeBrowsingResourceThrottleFactory {
  public:
   // Registers a factory. Does not take the ownership of the factory. The

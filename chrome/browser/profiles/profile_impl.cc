@@ -828,11 +828,10 @@ void ProfileImpl::OnLocaleReady() {
   // TODO(sky): remove this in a couple of releases (m28ish).
   prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
 
-#if defined(OS_ANDROID) && defined(FULL_SAFE_BROWSING)
-  // Clear safe browsing setting in the case we need to roll back
-  // for users enrolled in Finch trial before.
-  if (!SafeBrowsingService::IsEnabledByFieldTrial())
-    prefs_->ClearPref(prefs::kSafeBrowsingEnabled);
+#if defined(SAFE_BROWSING_DB_REMOTE)
+  // Hardcode this pref on this build of Android until the UX is developed.
+  // http://crbug.com/481558
+  prefs_->SetBoolean(prefs::kSafeBrowsingEnabled, true);
 #endif
 
   g_browser_process->profile_manager()->InitProfileUserPrefs(this);

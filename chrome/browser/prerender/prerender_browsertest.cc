@@ -44,8 +44,10 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -700,14 +702,17 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
   std::deque<ExpectedContents> expected_contents_queue_;
 };
 
+// TODO(nparker): Switch this to use TestSafeBrowsingDatabaseManager and run
+// with SAFE_BROWSING_DB_LOCAL || SAFE_BROWSING_DB_REMOTE.
 #if defined(FULL_SAFE_BROWSING)
 // A SafeBrowsingDatabaseManager implementation that returns a fixed result for
 // a given URL.
-class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
+class FakeSafeBrowsingDatabaseManager
+    : public LocalSafeBrowsingDatabaseManager {
  public:
   explicit FakeSafeBrowsingDatabaseManager(SafeBrowsingService* service)
-      : SafeBrowsingDatabaseManager(service),
-        threat_type_(SB_THREAT_TYPE_SAFE) { }
+      : LocalSafeBrowsingDatabaseManager(service),
+        threat_type_(SB_THREAT_TYPE_SAFE) {}
 
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.
@@ -717,7 +722,7 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
   // specified by the user, and the user-specified result is not SAFE
   // (in which that result will be communicated back via a call into the
   // client, and false will be returned).
-  // Overrides SafeBrowsingService::CheckBrowseUrl.
+  // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
   bool CheckBrowseUrl(const GURL& gurl, Client* client) override {
     if (gurl != url_ || threat_type_ == SB_THREAT_TYPE_SAFE)
       return true;
@@ -741,14 +746,16 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
     std::vector<SBThreatType> expected_threats;
     expected_threats.push_back(SB_THREAT_TYPE_URL_MALWARE);
     expected_threats.push_back(SB_THREAT_TYPE_URL_PHISHING);
-    SafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
+    // TODO(nparker): Replace SafeBrowsingCheck w/ a call to
+    // client->OnCheckBrowseUrlResult()
+    LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
         std::vector<GURL>(1, gurl),
         std::vector<SBFullHash>(),
         client,
         safe_browsing_util::MALWARE,
         expected_threats);
     sb_check.url_results[0] = threat_type_;
-    client->OnSafeBrowsingResult(sb_check);
+    sb_check.OnSafeBrowsingResult();
   }
 
   GURL url_;

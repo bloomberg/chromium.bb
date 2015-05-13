@@ -18,7 +18,7 @@
 namespace extensions {
 
 FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager(bool enabled)
-    : SafeBrowsingDatabaseManager(
+    : LocalSafeBrowsingDatabaseManager(
           make_scoped_refptr(SafeBrowsingService::CreateSafeBrowsingService())),
       enabled_(enabled) {
 }
@@ -84,7 +84,7 @@ FakeSafeBrowsingDatabaseManager& FakeSafeBrowsingDatabaseManager::RemoveUnsafe(
 }
 
 void FakeSafeBrowsingDatabaseManager::NotifyUpdate() {
-  SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(true);
+  LocalSafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(true);
 }
 
 bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
@@ -118,17 +118,14 @@ bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeSafeBrowsingDatabaseManager::OnSafeBrowsingResult,
-                 this,
-                 base::Passed(&safe_browsing_check),
-                 client));
+      base::Bind(&FakeSafeBrowsingDatabaseManager::OnSafeBrowsingResult, this,
+                 base::Passed(&safe_browsing_check)));
   return false;
 }
 
 void FakeSafeBrowsingDatabaseManager::OnSafeBrowsingResult(
-    scoped_ptr<SafeBrowsingCheck> result,
-    Client* client) {
-  client->OnSafeBrowsingResult(*result);
+    scoped_ptr<SafeBrowsingCheck> result) {
+  result->OnSafeBrowsingResult();
 }
 
 }  // namespace extensions

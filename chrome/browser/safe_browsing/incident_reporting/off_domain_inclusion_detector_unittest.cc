@@ -21,6 +21,7 @@
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -127,11 +128,9 @@ enum class TestCase {
   UNKNOWN,
 };
 
-class MockSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
+class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
-  explicit MockSafeBrowsingDatabaseManager(
-      const scoped_refptr<SafeBrowsingService>& service)
-      : SafeBrowsingDatabaseManager(service) {}
+  MockSafeBrowsingDatabaseManager() {}
 
   MOCK_METHOD1(MatchInclusionWhitelistUrl, bool(const GURL& url));
 
@@ -345,13 +344,9 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
     ASSERT_TRUE(testing_profile_);
     ASSERT_FALSE(off_domain_inclusion_detector_);
 
-    // Only used for initializing MockSafeBrowsingDatabaseManager.
-    scoped_refptr<SafeBrowsingService> sb_service =
-        SafeBrowsingService::CreateSafeBrowsingService();
-
     scoped_refptr<MockSafeBrowsingDatabaseManager>
         mock_safe_browsing_database_manager =
-            new NiceMock<MockSafeBrowsingDatabaseManager>(sb_service);
+            new NiceMock<MockSafeBrowsingDatabaseManager>();
     ON_CALL(*mock_safe_browsing_database_manager, MatchInclusionWhitelistUrl(_))
         .WillByDefault(Return(ShouldWhitelistEverything()));
 

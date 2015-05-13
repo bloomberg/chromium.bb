@@ -18,6 +18,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -47,11 +48,9 @@ namespace safe_browsing {
 
 namespace {
 
-class MockSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
+class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
-  explicit MockSafeBrowsingDatabaseManager(
-      const scoped_refptr<SafeBrowsingService>& service)
-      : SafeBrowsingDatabaseManager(service) { }
+  MockSafeBrowsingDatabaseManager() {}
 
   MOCK_METHOD1(MatchMalwareIP, bool(const std::string& ip_address));
 
@@ -84,8 +83,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(profile()->CreateHistoryService(
         true /* delete_file */, false /* no_db */));
 
-    db_manager_ = new StrictMock<MockSafeBrowsingDatabaseManager>(
-        SafeBrowsingService::CreateSafeBrowsingService());
+    db_manager_ = new StrictMock<MockSafeBrowsingDatabaseManager>();
     host_.reset(new StrictMock<MockClientSideDetectionHost>(
         web_contents(), db_manager_.get()));
     extractor_.reset(

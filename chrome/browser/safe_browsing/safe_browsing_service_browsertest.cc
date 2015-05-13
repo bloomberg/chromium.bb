@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/metadata.pb.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
@@ -50,6 +51,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
+#endif
+
+#if !defined(SAFE_BROWSING_DB_LOCAL)
+#error This test requires SAFE_BROWSING_DB_LOCAL.
 #endif
 
 using content::BrowserThread;
@@ -474,13 +479,22 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     pm_factory_.GetProtocolManager()->IntroduceDelay(delay);
   }
 
-  base::TimeDelta GetCheckTimeout(SafeBrowsingService* sb_service) {
-    return sb_service->database_manager()->check_timeout_;
+  // TODO(nparker): Remove the need for this by wiring in our own
+  // SafeBrowsingDatabaseManager factory and keep a ptr to the subclass.
+  // Or add a Get/SetTimeout to sbdbmgr.
+  static LocalSafeBrowsingDatabaseManager* LocalDatabaseManagerForService(
+      SafeBrowsingService* sb_service) {
+    return static_cast<LocalSafeBrowsingDatabaseManager*>(
+        sb_service->database_manager().get());
   }
 
-  void SetCheckTimeout(SafeBrowsingService* sb_service,
-                       const base::TimeDelta& delay) {
-    sb_service->database_manager()->check_timeout_ = delay;
+  static base::TimeDelta GetCheckTimeout(SafeBrowsingService* sb_service) {
+    return LocalDatabaseManagerForService(sb_service)->check_timeout_;
+  }
+
+  static void SetCheckTimeout(SafeBrowsingService* sb_service,
+                              const base::TimeDelta& delay) {
+    LocalDatabaseManagerForService(sb_service)->check_timeout_ = delay;
   }
 
   void CreateCSDService() {
@@ -1256,8 +1270,8 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManagerCookieTest);
 };
 
-// Test that a Safe Browsing database update request both sends cookies and can
-// save cookies.
+// Test that a Local Safe Browsing database update request both sends cookies
+// and can save cookies.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
                        TestSBUpdateCookies) {
   content::WindowedNotificationObserver observer(

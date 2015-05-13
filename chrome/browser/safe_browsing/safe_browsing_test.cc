@@ -33,6 +33,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/local_safebrowsing_test_server.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -53,6 +54,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+
+#ifndef SAFE_BROWSING_DB_LOCAL
+#error This test requires the SAFE_BROWSING_DB_LOCAL implementation.
+#endif
 
 namespace {
 
@@ -187,9 +192,11 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
         base::TimeDelta::FromSeconds(0));
   }
 
+
   void CheckIsDatabaseReady() {
     base::AutoLock lock(update_status_mutex_);
-    is_database_ready_ = !database_manager()->database_update_in_progress_;
+    is_database_ready_ =
+        !local_database_manager()->database_update_in_progress_;
   }
 
   void CheckUrl(SafeBrowsingDatabaseManager::Client* helper, const GURL& url) {
@@ -209,6 +216,13 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   SafeBrowsingDatabaseManager* database_manager() {
     return safe_browsing_service_->database_manager().get();
   }
+
+  // TODO(nparker): Remove the need for this by wiring in our own
+  // SafeBrowsingDatabaseManager factory and keep a ptr to the subclass.
+  LocalSafeBrowsingDatabaseManager* local_database_manager() {
+    return static_cast<LocalSafeBrowsingDatabaseManager*>(database_manager());
+  }
+
 
   bool is_checked_url_in_db() {
     base::AutoLock l(update_status_mutex_);
@@ -241,7 +255,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
   scoped_refptr<base::SequencedTaskRunner> SafeBrowsingTaskRunner() {
-    return database_manager()->safe_browsing_task_runner_;
+    return local_database_manager()->safe_browsing_task_runner_;
   }
 
   const net::SpawnedTestServer& test_server() const {

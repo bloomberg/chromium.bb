@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -54,12 +54,12 @@ bool SafeBrowsingDatabaseManagerTest::RunSBHashTest(
     const std::string& result_list) {
   scoped_refptr<SafeBrowsingService> sb_service_(
       SafeBrowsingService::CreateSafeBrowsingService());
-  scoped_refptr<SafeBrowsingDatabaseManager> db_manager_(
-      new SafeBrowsingDatabaseManager(sb_service_));
+  scoped_refptr<LocalSafeBrowsingDatabaseManager> db_manager_(
+      new LocalSafeBrowsingDatabaseManager(sb_service_));
   const SBFullHash same_full_hash = {};
 
-  SafeBrowsingDatabaseManager::SafeBrowsingCheck* check =
-      new SafeBrowsingDatabaseManager::SafeBrowsingCheck(
+  LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check =
+      new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
           std::vector<GURL>(),
           std::vector<SBFullHash>(1, same_full_hash),
           NULL,
@@ -155,50 +155,50 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
   }
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
-            SafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
                 kMalwareHostHash, full_hashes));
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
-            SafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
                 kPhishingHostHash, full_hashes));
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED,
-            SafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
                 kUnwantedHostHash, full_hashes));
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
-            SafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
                 kUnwantedAndMalwareHostHash, full_hashes));
 
   EXPECT_EQ(SB_THREAT_TYPE_SAFE,
-            SafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
                 kSafeHostHash, full_hashes));
 
   const size_t kArbitraryValue = 123456U;
   size_t index = kArbitraryValue;
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
-            SafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
                 kMalwareUrl, full_hashes, &index));
   EXPECT_EQ(0U, index);
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
-            SafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
                 kPhishingUrl, full_hashes, &index));
   EXPECT_EQ(1U, index);
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED,
-            SafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
                 kUnwantedUrl, full_hashes, &index));
   EXPECT_EQ(2U, index);
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
-            SafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
                 kUnwantedAndMalwareUrl, full_hashes, &index));
   EXPECT_EQ(3U, index);
 
   index = kArbitraryValue;
   EXPECT_EQ(SB_THREAT_TYPE_SAFE,
-            SafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
                 kSafeUrl, full_hashes, &index));
   EXPECT_EQ(kArbitraryValue, index);
 }
@@ -206,8 +206,8 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
 TEST_F(SafeBrowsingDatabaseManagerTest, ServiceStopWithPendingChecks) {
   scoped_refptr<SafeBrowsingService> sb_service(
       SafeBrowsingService::CreateSafeBrowsingService());
-  scoped_refptr<SafeBrowsingDatabaseManager> db_manager(
-      new SafeBrowsingDatabaseManager(sb_service));
+  scoped_refptr<LocalSafeBrowsingDatabaseManager> db_manager(
+      new LocalSafeBrowsingDatabaseManager(sb_service));
   TestClient client;
 
   // Start the service and flush tasks to ensure database is made available.

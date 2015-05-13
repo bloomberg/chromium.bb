@@ -24,7 +24,9 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/testing_profile.h"
@@ -60,10 +62,9 @@ namespace safe_browsing {
 namespace {
 // A SafeBrowsingDatabaseManager implementation that returns a fixed result for
 // a given URL.
-class MockSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
+class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
-  explicit MockSafeBrowsingDatabaseManager(SafeBrowsingService* service)
-      : SafeBrowsingDatabaseManager(service) { }
+  MockSafeBrowsingDatabaseManager() {}
 
   MOCK_METHOD1(MatchDownloadWhitelistUrl, bool(const GURL&));
   MOCK_METHOD1(MatchDownloadWhitelistString, bool(const std::string&));
@@ -90,8 +91,13 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   ~FakeSafeBrowsingService() override {}
 
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
-    mock_database_manager_ = new MockSafeBrowsingDatabaseManager(this);
+    mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
     return mock_database_manager_;
+  }
+
+  SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate() override {
+    // Our SafeBrowsingDatabaseManager doesn't implement this delegate.
+    return NULL;
   }
 
   void RegisterAllDelayedAnalysis() override {}
@@ -176,13 +182,15 @@ ACTION_P(TrustSignature, certificate_file) {
 // easily.  Note: check will be deleted automatically when the callback is
 // deleted.
 void OnSafeBrowsingResult(
-    SafeBrowsingDatabaseManager::SafeBrowsingCheck* check) {
-  check->client->OnSafeBrowsingResult(*check);
+    LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check) {
+  check->OnSafeBrowsingResult();
 }
 
 ACTION_P(CheckDownloadUrlDone, threat_type) {
-  SafeBrowsingDatabaseManager::SafeBrowsingCheck* check =
-      new SafeBrowsingDatabaseManager::SafeBrowsingCheck(
+  // TODO(nparker): Remove use of SafeBrowsingCheck and instead call
+  // client->OnCheckDownloadUrlResult(..) directly.
+  LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check =
+      new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
           arg0,
           std::vector<SBFullHash>(),
           arg1,

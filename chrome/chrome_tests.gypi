@@ -794,6 +794,8 @@
       'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
       'browser/safe_browsing/safe_browsing_service_browsertest.cc',
       'browser/safe_browsing/safe_browsing_test.cc',
+      'browser/safe_browsing/test_database_manager.cc',
+      'browser/safe_browsing/test_database_manager.h',
       'renderer/safe_browsing/malware_dom_details_browsertest.cc',
       'renderer/safe_browsing/phishing_classifier_browsertest.cc',
       'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',

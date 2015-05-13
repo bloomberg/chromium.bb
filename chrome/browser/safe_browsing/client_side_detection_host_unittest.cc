@@ -13,6 +13,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -152,10 +153,9 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingUIManager);
 };
 
-class MockSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
+class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
-  explicit MockSafeBrowsingDatabaseManager(SafeBrowsingService* service)
-      : SafeBrowsingDatabaseManager(service) { }
+  MockSafeBrowsingDatabaseManager() {}
 
   MOCK_METHOD1(MatchCsdWhitelistUrl, bool(const GURL&));
   MOCK_METHOD1(MatchMalwareIP, bool(const std::string& ip_address));
@@ -206,12 +206,9 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
 
     // Inject service classes.
     csd_service_.reset(new StrictMock<MockClientSideDetectionService>());
-    // Only used for initializing mock objects.
-    SafeBrowsingService* sb_service =
-        SafeBrowsingService::CreateSafeBrowsingService();
-    database_manager_ =
-        new StrictMock<MockSafeBrowsingDatabaseManager>(sb_service);
-    ui_manager_ = new StrictMock<MockSafeBrowsingUIManager>(sb_service);
+    database_manager_ = new StrictMock<MockSafeBrowsingDatabaseManager>();
+    ui_manager_ = new StrictMock<MockSafeBrowsingUIManager>(
+        SafeBrowsingService::CreateSafeBrowsingService());
     csd_host_.reset(safe_browsing::ClientSideDetectionHost::Create(
         web_contents()));
     csd_host_->set_client_side_detection_service(csd_service_.get());

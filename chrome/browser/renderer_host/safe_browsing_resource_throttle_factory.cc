@@ -1,6 +1,6 @@
- // Copyright (c) 2012 The Chromium Authors. All rights reserved.
- // Use of this source code is governed by a BSD-style license that can be
- // found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 
@@ -14,7 +14,7 @@
 #error Need to define safe_browsing mode.
 #endif
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 #endif
 
@@ -40,8 +40,8 @@ ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
     return factory_->CreateResourceThrottle(
         request, resource_context, resource_type, service);
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
-  // Throttle consults a local database before proceeding.
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  // Throttle consults a local or remote database before proceeding.
   return new SafeBrowsingResourceThrottle(request, resource_type, service);
 #else
   return NULL;
