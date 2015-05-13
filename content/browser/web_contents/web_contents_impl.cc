@@ -3870,11 +3870,6 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       rvh->GetSiteInstance(), page_id);
 
-  // Re http://crbug.com/369661, page id is going away. This function should
-  // only ever be called for the last committed entry. When this is verified,
-  // this function can be greatly simplified.
-  CHECK_EQ(entry, controller_.GetLastCommittedEntry());
-
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
   // TODO(avi): Change to make decisions based on the RenderFrameHost.
