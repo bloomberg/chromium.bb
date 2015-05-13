@@ -1897,10 +1897,6 @@ static void CalculateDrawPropertiesInternal(
   layer_draw_properties.screen_space_transform.PreconcatTransform
       (layer_draw_properties.target_space_transform);
 
-  // Adjusting text AA method during animation may cause repaints, which in-turn
-  // causes jank.
-  bool adjust_text_aa =
-      !animating_opacity_to_screen && !animating_transform_to_screen;
   bool layer_can_use_lcd_text = true;
   bool subtree_can_use_lcd_text = true;
   if (!globals.layers_always_allowed_lcd_text) {
@@ -2145,8 +2141,7 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.render_target = layer->parent()->render_target();
   }
 
-  if (adjust_text_aa)
-    layer_draw_properties.can_use_lcd_text = layer_can_use_lcd_text;
+  layer_draw_properties.can_use_lcd_text = layer_can_use_lcd_text;
 
   gfx::Size content_size_affected_by_delta(layer->content_bounds());
 

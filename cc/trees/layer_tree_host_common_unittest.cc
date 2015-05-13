@@ -5977,6 +5977,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
 
 TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   bool expect_lcd_text = can_use_lcd_text_ || layers_always_allowed_lcd_text_;
+  bool expect_not_lcd_text = layers_always_allowed_lcd_text_;
 
   // Sanity check: Make sure can_use_lcd_text_ is set on each node.
   ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
@@ -5992,10 +5993,33 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
 
   ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
-  // Text AA should not be adjusted while animation is active.
-  // Make sure LCD text AA setting remains unchanged.
+  // Text LCD should be adjusted while animation is active.
+  EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
+  EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
+  EXPECT_EQ(expect_not_lcd_text, grand_child_->can_use_lcd_text());
+}
+
+TEST_P(LCDTextTest, CanUseLCDTextWithAnimationContentsOpaque) {
+  bool expect_lcd_text = can_use_lcd_text_ || layers_always_allowed_lcd_text_;
+  bool expect_not_lcd_text = layers_always_allowed_lcd_text_;
+
+  // Sanity check: Make sure can_use_lcd_text_ is set on each node.
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
+                                 layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_lcd_text, child_->can_use_lcd_text());
+  EXPECT_EQ(expect_lcd_text, grand_child_->can_use_lcd_text());
+
+  // Mark contents non-opaque within the first animation frame.
+  child_->SetContentsOpaque(false);
+  AddOpacityTransitionToController(child_->layer_animation_controller(), 10.0,
+                                   0.9f, 0.1f, false);
+
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
+                                 layers_always_allowed_lcd_text_);
+  // LCD text should be disabled for non-opaque layers even during animations.
+  EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
+  EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
   EXPECT_EQ(expect_lcd_text, grand_child_->can_use_lcd_text());
 }
 
