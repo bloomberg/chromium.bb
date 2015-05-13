@@ -627,10 +627,6 @@ crbug.com/307777 [ Android ] virtual/stable/fast/multicol/huge-column-gap-crash.
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
-crbug.com/321237 [ Lion ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
-crbug.com/321237 [ Lion ] virtual/slimmingpaint/fast/text/international/complex-text-leading-space-wrapping.html [ Skip ]
-crbug.com/321237 [ Lion Win ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
-
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
 
@@ -1941,5 +1937,7 @@ crbug.com/478014 [ Mac ] fast/forms/button-cannot-be-nested.html [ NeedsRebaseli
 crbug.com/478014 [ Mac ] fast/forms/button-white-space.html [ NeedsRebaseline ]
 crbug.com/478014 [ Mac ] fast/writing-mode/fallback-orientation.html [ NeedsRebaseline ]
 crbug.com/478014 [ Mac Win ] svg/css/text-shadow-multiple.xhtml [ NeedsRebaseline ]
+crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
+crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 
 crbug.com/487671 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Pass Timeout ]
