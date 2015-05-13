@@ -231,6 +231,23 @@ ui::ScaleFactor DataPack::GetScaleFactor() const {
   return scale_factor_;
 }
 
+#if DCHECK_IS_ON()
+void DataPack::CheckForDuplicateResources(
+    const ScopedVector<ResourceHandle>& packs) {
+  for (size_t i = 0; i < resource_count_ + 1; ++i) {
+    const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
+        mmap_->data() + kHeaderLength + (i * sizeof(DataPackEntry)));
+    const uint16 resource_id = entry->resource_id;
+    const float resource_scale = GetScaleForScaleFactor(scale_factor_);
+    for (const ResourceHandle* handle : packs) {
+      DCHECK_IMPLIES(
+          GetScaleForScaleFactor(handle->GetScaleFactor()) == resource_scale,
+          !handle->HasResource(resource_id));
+    }
+  }
+}
+#endif  // DCHECK_IS_ON()
+
 // static
 bool DataPack::WritePack(const base::FilePath& path,
                          const std::map<uint16, base::StringPiece>& resources,

@@ -298,6 +298,7 @@ test("components_unittests") {
     "//content/test:test_support",
     "//net",
     "//ui/base",
+    "//ui/resources:ui_test_pak",
   ]
   data_deps = [ ":components_tests_pak" ]
 
@@ -331,10 +332,6 @@ repack("components_tests_pak") {
   sources = [
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
-    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
-    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
-    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
 
   output = "$root_out_dir/components_tests_resources.pak"
@@ -342,8 +339,6 @@ repack("components_tests_pak") {
   deps = [
     "//components/resources",
     "//components/strings",
-    "//ui/resources",
-    "//ui/strings",
   ]
 }
 

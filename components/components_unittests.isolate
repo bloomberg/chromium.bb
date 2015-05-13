@@ -39,6 +39,7 @@
         'files': [
           'test/data/',
           '<(PRODUCT_DIR)/components_tests_resources.pak',
+          '<(PRODUCT_DIR)/ui_test.pak',
         ],
       },
     }],

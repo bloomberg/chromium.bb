@@ -216,7 +216,7 @@
     "includes": [28050],
   },
   "ui/file_manager/file_manager_resources.grd": {
-    "includes": [28100],
+    "includes": [28110],
   },
   "components/chrome_apps/chrome_apps_resources.grd": {
     "includes": [28250],

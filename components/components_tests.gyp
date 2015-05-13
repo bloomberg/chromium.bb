@@ -620,8 +620,6 @@
       'target_name': 'components_tests_pak',
       'type': 'none',
       'dependencies': [
-        '../ui/resources/ui_resources.gyp:ui_resources',
-        '../ui/strings/ui_strings.gyp:ui_strings',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
       ],
@@ -632,10 +630,6 @@
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/components_tests_resources.pak',
           },
@@ -735,6 +729,7 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/resources/ui_resources.gyp:ui_resources',
+        '../ui/resources/ui_resources.gyp:ui_test_pak',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../url/url.gyp:url_lib',
         'components.gyp:auto_login_parser',
@@ -939,6 +934,9 @@
             # Exclude all tests that depends on //content (based on layered-
             # component directory structure).
             ['exclude', '^[^/]*/content/'],
+          ],
+          'mac_bundle_resources': [
+            '<(PRODUCT_DIR)/ui_test.pak',
           ],
           'dependencies': [
             '../ios/ios_tests.gyp:test_support_ios',

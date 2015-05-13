@@ -60,8 +60,13 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #endif
     case UI_TEST_PAK:
+#if defined(OS_ANDROID)
+      if (!PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
+        return false;
+#else
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
+#endif
       cur = cur.AppendASCII("ui_test.pak");
       break;
     default:

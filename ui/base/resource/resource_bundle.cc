@@ -662,6 +662,9 @@ void ResourceBundle::AddDataPackFromPathInternal(const base::FilePath& path,
 }
 
 void ResourceBundle::AddDataPack(DataPack* data_pack) {
+#if DCHECK_IS_ON()
+  data_pack->CheckForDuplicateResources(data_packs_);
+#endif
   data_packs_.push_back(data_pack);
 
   if (GetScaleForScaleFactor(data_pack->GetScaleFactor()) >

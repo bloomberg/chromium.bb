@@ -15,6 +15,7 @@
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_export.h"
@@ -58,6 +59,12 @@ class UI_BASE_EXPORT DataPack : public ResourceHandle {
       uint16 resource_id) const override;
   TextEncodingType GetTextEncodingType() const override;
   ui::ScaleFactor GetScaleFactor() const override;
+
+#if DCHECK_IS_ON()
+  // Checks to see if any resource in this DataPack already exists in the list
+  // of resources.
+  void CheckForDuplicateResources(const ScopedVector<ResourceHandle>& packs);
+#endif
 
  private:
   // Does the actual loading of a pack file. Called by Load and LoadFromFile.
