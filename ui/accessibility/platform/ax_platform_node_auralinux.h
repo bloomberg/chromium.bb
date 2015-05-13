@@ -39,6 +39,10 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void GetPosition(gint* x, gint* y, AtkCoordType coord_type);
   void GetSize(gint* width, gint* height);
 
+  void SetExtentsRelativeToAtkCoordinateType(
+      gint* x, gint* y, gint* width, gint* height,
+      AtkCoordType coord_type);
+
   // AXPlatformNode overrides.
   void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;

@@ -204,7 +204,17 @@ static void ax_platform_node_auralinux_get_extents(AtkComponent* atk_component,
                                                    gint* x, gint* y,
                                                    gint* width, gint* height,
                                                    AtkCoordType coord_type) {
-  *x = *y = *width = *height = 0;
+  g_return_if_fail(ATK_IS_COMPONENT(atk_component));
+
+  if (x)
+    *x = 0;
+  if (y)
+    *y = 0;
+  if (width)
+    *width = 0;
+  if (height)
+    *height = 0;
+
   AtkObject* atk_object = ATK_OBJECT(atk_component);
   ui::AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(atk_object);
@@ -217,7 +227,13 @@ static void ax_platform_node_auralinux_get_extents(AtkComponent* atk_component,
 static void ax_platform_node_auralinux_get_position(AtkComponent* atk_component,
                                                     gint* x, gint* y,
                                                     AtkCoordType coord_type) {
-  *x = *y = 0;
+  g_return_if_fail(ATK_IS_COMPONENT(atk_component));
+
+  if (x)
+    *x = 0;
+  if (y)
+    *y = 0;
+
   AtkObject* atk_object = ATK_OBJECT(atk_component);
   ui::AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(atk_object);
@@ -229,7 +245,13 @@ static void ax_platform_node_auralinux_get_position(AtkComponent* atk_component,
 
 static void ax_platform_node_auralinux_get_size(AtkComponent* atk_component,
                                                 gint* width, gint* height) {
-  *width = *height = 0;
+  g_return_if_fail(ATK_IS_COMPONENT(atk_component));
+
+  if (width)
+    *width = 0;
+  if (height)
+    *height = 0;
+
   AtkObject* atk_object = ATK_OBJECT(atk_component);
   ui::AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(atk_object);
@@ -465,43 +487,50 @@ int AXPlatformNodeAuraLinux::GetIndexInParent() {
   return 0;
 }
 
-void AXPlatformNodeAuraLinux::GetExtents(gint* x, gint* y,
-                                         gint* width, gint* height,
-                                         AtkCoordType coord_type) {
+void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
+    gint* x, gint* y, gint* width, gint* height, AtkCoordType coord_type) {
   gfx::Rect extents = GetBoundsInScreen();
 
-  *x = extents.x();
-  *y = extents.y();
-  *width = extents.width();
-  *height = extents.height();
+  if (x)
+    *x = extents.x();
+  if (y)
+    *y = extents.y();
+  if (width)
+    *width = extents.width();
+  if (height)
+    *height = extents.height();
 
   if (coord_type == ATK_XY_WINDOW) {
     AtkObject* atk_object = GetParent();
     gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
-    *x -= window_coords.x();
-    *y -= window_coords.y();
+    if (x)
+      *x -= window_coords.x();
+    if (y)
+      *y -= window_coords.y();
   }
+}
+
+void AXPlatformNodeAuraLinux::GetExtents(gint* x, gint* y,
+                                         gint* width, gint* height,
+                                         AtkCoordType coord_type) {
+  SetExtentsRelativeToAtkCoordinateType(x, y,
+                                        width, height,
+                                        coord_type);
 }
 
 void AXPlatformNodeAuraLinux::GetPosition(gint* x, gint* y,
                                           AtkCoordType coord_type) {
-  gfx::Rect rect_pos = GetBoundsInScreen();
-
-  *x = rect_pos.x();
-  *y = rect_pos.y();
-
-  if (coord_type == ATK_XY_WINDOW) {
-    AtkObject* atk_object = GetParent();
-    gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
-    *x -= window_coords.x();
-    *y -= window_coords.y();
-  }
+  SetExtentsRelativeToAtkCoordinateType(x, y,
+                                        nullptr,nullptr,
+                                        coord_type);
 }
 
 void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
   gfx::Rect rect_size = GetData().location;
-  *width = rect_size.width();
-  *height = rect_size.height();
+  if (width)
+    *width = rect_size.width();
+  if (height)
+    *height = rect_size.height();
 }
 
 }  // namespace ui
