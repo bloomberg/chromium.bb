@@ -60,7 +60,7 @@ std::string ConvertKeyCodeToTextNoError(ui::KeyboardCode key_code,
 
 }  // namespace
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Fails on bots: crbug.com/174962
 #define MAYBE_KeyCodeToText DISABLED_KeyCodeToText
 #else
@@ -93,7 +93,7 @@ TEST(KeycodeTextConversionTest, MAYBE_KeyCodeToText) {
       ConvertKeyCodeToTextNoError(ui::VKEY_SHIFT, kShiftKeyModifierMask));
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Fails on bots: crbug.com/174962
 #define MAYBE_CharToKeyCode DISABLED_CharToKeyCode
 #else
@@ -117,7 +117,7 @@ TEST(KeycodeTextConversionTest, MAYBE_CharToKeyCode) {
   CheckCantConvertChar(L'\u2159');
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 // Not implemented on Linux.
 // Fails if German layout is not installed on Mac.
 #define MAYBE_NonShiftModifiers DISABLED_NonShiftModifiers
@@ -139,7 +139,7 @@ TEST(KeycodeTextConversionTest, MAYBE_NonShiftModifiers) {
 #endif
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 // Not implemented on Linux.
 // Fails if German layout is not installed on Mac.
 #define MAYBE_NonEnglish DISABLED_NonEnglish

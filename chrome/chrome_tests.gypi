@@ -1845,6 +1845,7 @@
         '../third_party/zlib/google/zip.gyp:zip',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/events/events.gyp:events_base',
+        '../ui/events/ozone/events_ozone.gyp:events_ozone_layout',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
       ],
