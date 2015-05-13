@@ -76,7 +76,7 @@ void MidiManagerUsb::ReceiveUsbMidiData(UsbMidiDevice* device,
 
 void MidiManagerUsb::OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) {
   int device_id = static_cast<int>(devices_.size());
-  devices_.push_back(device.release());
+  devices_.push_back(device.Pass());
   AddPorts(devices_.back(), device_id);
 }
 

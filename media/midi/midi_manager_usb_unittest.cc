@@ -255,7 +255,7 @@ TEST_F(MidiManagerUsbTest, Initialize) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.release());
+  devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(MIDI_OK, GetInitializationResult());
@@ -315,8 +315,8 @@ TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device1.release());
-  devices.push_back(device2.release());
+  devices.push_back(device1.Pass());
+  devices.push_back(device2.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(MIDI_OK, GetInitializationResult());
@@ -378,7 +378,7 @@ TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptors) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.release());
+  devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(MIDI_INITIALIZATION_ERROR, GetInitializationResult());
@@ -412,7 +412,7 @@ TEST_F(MidiManagerUsbTest, Send) {
   };
 
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.release());
+  devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(MIDI_OK, GetInitializationResult());
@@ -459,7 +459,7 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.release());
+  devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(MIDI_OK, GetInitializationResult());
@@ -505,7 +505,7 @@ TEST_F(MidiManagerUsbTest, Receive) {
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
   UsbMidiDevice* device_raw = device.get();
-  devices.push_back(device.release());
+  devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(MIDI_OK, GetInitializationResult());

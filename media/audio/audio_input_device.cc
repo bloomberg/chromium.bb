@@ -290,7 +290,7 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
         reinterpret_cast<media::AudioInputBuffer*>(ptr);
     scoped_ptr<media::AudioBus> audio_bus =
         media::AudioBus::WrapMemory(audio_parameters_, buffer->audio);
-    audio_buses_.push_back(audio_bus.release());
+    audio_buses_.push_back(audio_bus.Pass());
     ptr += segment_length_;
   }
 }
