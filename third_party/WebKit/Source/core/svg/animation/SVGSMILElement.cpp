@@ -557,6 +557,7 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
             clearAnimatedType();
     } else if (attrName == SVGNames::beginAttr || attrName == SVGNames::endAttr) {
         if (inDocument()) {
+            connectEventBaseConditions();
             if (attrName == SVGNames::beginAttr)
                 beginListChanged(elapsed());
             else if (attrName == SVGNames::endAttr)
