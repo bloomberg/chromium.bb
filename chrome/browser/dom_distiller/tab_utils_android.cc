@@ -28,6 +28,17 @@ void DistillCurrentPageAndView(JNIEnv* env,
   ::DistillCurrentPageAndView(web_contents);
 }
 
+void DistillAndView(JNIEnv* env,
+                    jclass clazz,
+                    jobject j_source_web_contents,
+                    jobject j_destination_web_contents) {
+  content::WebContents* source_web_contents =
+      content::WebContents::FromJavaWebContents(j_source_web_contents);
+  content::WebContents* destination_web_contents =
+      content::WebContents::FromJavaWebContents(j_destination_web_contents);
+  ::DistillAndView(source_web_contents, destination_web_contents);
+}
+
 jstring GetFormattedUrlFromOriginalDistillerUrl(JNIEnv* env,
                                                 jclass clazz,
                                                 jstring j_url) {

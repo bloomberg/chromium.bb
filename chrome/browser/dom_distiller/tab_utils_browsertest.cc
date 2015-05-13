@@ -21,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,6 +92,55 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
       after_web_contents->GetLastCommittedURL().SchemeIs(kDomDistillerScheme));
   EXPECT_EQ("Test Page Title",
             base::UTF16ToUTF8(after_web_contents->GetTitle()));
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
+                       TestDistillIntoWebContents) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  content::WebContents* source_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  const GURL& article_url = embedded_test_server()->GetURL(kSimpleArticlePath);
+
+  // This blocks until the navigation has completely finished.
+  ui_test_utils::NavigateToURL(browser(), article_url);
+
+  // Create destination WebContents.
+  content::WebContents::CreateParams create_params(
+      source_web_contents->GetBrowserContext());
+  content::WebContents* destination_web_contents =
+      content::WebContents::Create(create_params);
+  DCHECK(destination_web_contents);
+
+  browser()->tab_strip_model()->AppendWebContents(destination_web_contents,
+                                                  true);
+  ASSERT_EQ(destination_web_contents,
+            browser()->tab_strip_model()->GetWebContentsAt(1));
+
+  DistillAndView(source_web_contents, destination_web_contents);
+
+  // Wait until the destination WebContents has fully navigated.
+  base::RunLoop new_url_loaded_runner;
+  scoped_ptr<WebContentsMainFrameHelper> distilled_page_loaded(
+      new WebContentsMainFrameHelper(destination_web_contents,
+                                     new_url_loaded_runner.QuitClosure()));
+  new_url_loaded_runner.Run();
+
+  // Verify that the source WebContents is showing the original article.
+  EXPECT_EQ(article_url, source_web_contents->GetLastCommittedURL());
+  EXPECT_EQ("Test Page Title",
+            base::UTF16ToUTF8(source_web_contents->GetTitle()));
+
+  // Verify the destination WebContents is showing distilled content.
+  EXPECT_TRUE(destination_web_contents->GetLastCommittedURL().SchemeIs(
+      kDomDistillerScheme));
+  EXPECT_EQ("Test Page Title",
+            base::UTF16ToUTF8(destination_web_contents->GetTitle()));
+
+  content::WebContentsDestroyedWatcher destroyed_watcher(
+      destination_web_contents);
+  browser()->tab_strip_model()->CloseWebContentsAt(1, 0);
+  destroyed_watcher.Wait();
 }
 
 }  // namespace dom_distiller

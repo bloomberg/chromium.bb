@@ -110,23 +110,20 @@ void StartNavigationToDistillerViewer(content::WebContents* web_contents,
   web_contents->GetController().LoadURLWithParams(params);
 }
 
-void MaybeStartDistillation(content::WebContents* web_contents) {
-  const GURL& last_committed_url = web_contents->GetLastCommittedURL();
-  if (!dom_distiller::url_utils::IsUrlDistillable(last_committed_url)) {
-    delete web_contents;
+void MaybeStartDistillation(
+    scoped_ptr<SourcePageHandleWebContents> source_page_handle) {
+  const GURL& last_committed_url =
+      source_page_handle->web_contents()->GetLastCommittedURL();
+  if (!dom_distiller::url_utils::IsUrlDistillable(last_committed_url))
     return;
-  }
 
-  // Start distillation using |web_contents|, and ensure ViewerHandle stays
-  // around until the viewer requests distillation.
+  // Start distillation using |source_page_handle|, and ensure ViewerHandle
+  // stays around until the viewer requests distillation.
   SelfDeletingRequestDelegate* view_request_delegate =
-      new SelfDeletingRequestDelegate(web_contents);
-  scoped_ptr<content::WebContents> old_web_contents_sptr(web_contents);
-  scoped_ptr<SourcePageHandleWebContents> source_page_handle(
-      new SourcePageHandleWebContents(old_web_contents_sptr.Pass()));
+      new SelfDeletingRequestDelegate(source_page_handle->web_contents());
   DomDistillerService* dom_distiller_service =
       DomDistillerServiceFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext());
+          source_page_handle->web_contents()->GetBrowserContext());
   scoped_ptr<DistillerPage> distiller_page =
       dom_distiller_service->CreateDefaultDistillerPageWithHandle(
                                  source_page_handle.Pass()).Pass();
@@ -161,5 +158,21 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   CoreTabHelper::FromWebContents(old_web_contents)->delegate()->SwapTabContents(
       old_web_contents, new_web_contents, false, false);
 
-  MaybeStartDistillation(old_web_contents);
+  scoped_ptr<SourcePageHandleWebContents> source_page_handle(
+      new SourcePageHandleWebContents(old_web_contents, true));
+
+  MaybeStartDistillation(source_page_handle.Pass());
+}
+
+void DistillAndView(content::WebContents* source_web_contents,
+                    content::WebContents* destination_web_contents) {
+  DCHECK(source_web_contents);
+  DCHECK(destination_web_contents);
+
+  scoped_ptr<SourcePageHandleWebContents> source_page_handle(
+      new SourcePageHandleWebContents(source_web_contents, false));
+
+  MaybeStartDistillation(source_page_handle.Pass());
+  StartNavigationToDistillerViewer(destination_web_contents,
+                                   source_web_contents->GetLastCommittedURL());
 }

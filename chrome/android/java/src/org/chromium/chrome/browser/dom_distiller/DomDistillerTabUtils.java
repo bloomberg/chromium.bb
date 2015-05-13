@@ -28,6 +28,18 @@ public class DomDistillerTabUtils {
     }
 
     /**
+     * Starts distillation in the source @{link WebContents} while navigating the destination
+     * {@link WebContents} to view the distilled content. This does not take ownership of any
+     * of the WebContents.
+     *
+     * @param sourceWebContents the WebContents to distill.
+     * @param destinationWebContents the WebContents to display the distilled content in.
+     */
+    public static void distillAndView(
+            WebContents sourceWebContents, WebContents destinationWebContents) {
+        nativeDistillAndView(sourceWebContents, destinationWebContents);
+    }
+    /**
      * Returns the formatted version of the original URL of a distillation, given the original URL.
      *
      * @param url The original URL.
@@ -38,5 +50,7 @@ public class DomDistillerTabUtils {
     }
 
     private static native void nativeDistillCurrentPageAndView(WebContents webContents);
+    private static native void nativeDistillAndView(
+            WebContents sourceWebContents, WebContents destinationWebContents);
     private static native String nativeGetFormattedUrlFromOriginalDistillerUrl(String url);
 }

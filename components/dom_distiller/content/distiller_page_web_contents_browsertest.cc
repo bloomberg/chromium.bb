@@ -161,20 +161,7 @@ class TestDistillerPageWebContents : public DistillerPageWebContents {
   void CreateNewWebContents(const GURL& url) override {
     ASSERT_EQ(true, expect_new_web_contents_);
     new_web_contents_created_ = true;
-    // DistillerPageWebContents::CreateNewWebContents resets the scoped_ptr to
-    // the WebContents, so intentionally leak WebContents here, since it is
-    // owned by the shell.
-    content::WebContents* web_contents = web_contents_.release();
-    web_contents->GetLastCommittedURL();
     DistillerPageWebContents::CreateNewWebContents(url);
-  }
-
-  ~TestDistillerPageWebContents() override {
-    if (!expect_new_web_contents_) {
-      // Intentionally leaking WebContents, since it is owned by the shell.
-      content::WebContents* web_contents = web_contents_.release();
-      web_contents->GetLastCommittedURL();
-    }
   }
 
   bool new_web_contents_created() { return new_web_contents_created_; }
@@ -360,9 +347,8 @@ void DistillerPageWebContentsTest::RunUseCurrentWebContentsTest(
       std::string());
   url_loaded_runner.Run();
 
-  scoped_ptr<content::WebContents> old_web_contents_sptr(current_web_contents);
   scoped_ptr<SourcePageHandleWebContents> source_page_handle(
-      new SourcePageHandleWebContents(old_web_contents_sptr.Pass()));
+      new SourcePageHandleWebContents(current_web_contents, false));
 
   TestDistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
