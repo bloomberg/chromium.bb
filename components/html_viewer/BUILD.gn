@@ -186,10 +186,7 @@ mojo_application_package("html_viewer") {
     "//third_party/icu:icudata",
     "//ui/resources:ui_test_pak",
   ]
-  data_deps = [
-    "//mojo/services/network:network",
-    "//components/resource_provider",
-  ]
+  data_deps = [ "//mojo/services/network:network" ]
   resources = [
     "$root_out_dir/icudtl.dat",
     "$root_out_dir/ui_test.pak",

@@ -51,7 +51,6 @@ copy_ex("copy_mandoline_assets") {
   dest = mandoline_assets_dir
   deps = [
     "//components/html_viewer",
-    "//components/resource_provider",
     "//components/surfaces",
     "//mandoline/services/core_services",
   ]
@@ -61,7 +60,6 @@ copy_ex("copy_mandoline_assets") {
     "$root_out_dir/lib.stripped/libbootstrap.so",
     "$root_out_dir/network_service.mojo",
     "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
-    "$root_out_dir/resource_provider.mojo",
     "$root_out_dir/surfaces_service.mojo",
   ]
 }

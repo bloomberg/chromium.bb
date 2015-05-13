@@ -29,6 +29,7 @@ if (is_android) {
     deps = [
       ":sources",
       "//base",
+      "//components/resource_provider:jni_headers",
       "//net",
       "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     ]
@@ -38,6 +39,7 @@ if (is_android) {
     dex_path = java_library_path
 
     deps = [
+      "//components/resource_provider:java_library",
       "//net/android:net_java",
     ]
   }
@@ -59,6 +61,7 @@ source_set("sources") {
     "//base",
     "//components/clipboard:lib",
     "//components/surfaces:lib",
+    "//components/resource_provider:lib",
     "//components/view_manager:view_manager_lib",
     "//mandoline/ui/browser:kiosk_wm_lib",
     "//mojo/application",

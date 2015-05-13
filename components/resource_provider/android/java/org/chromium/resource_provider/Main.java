@@ -7,11 +7,13 @@ package org.chromium.resource_provider;
 import android.content.Context;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.base.PathUtils;
 
 /**
  * This class does setup for resource_provider.
  */
+@JNINamespace("resource_provider")
 public final class Main {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "resource_provider";
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "components/clipboard/clipboard_application_delegate.h"
+#include "components/resource_provider/resource_provider_app.h"
 #include "components/surfaces/surfaces_service_application.h"
 #include "components/view_manager/view_manager_app.h"
 #include "mandoline/ui/browser/browser.h"
@@ -133,6 +134,8 @@ void CoreServicesApplicationDelegate::StartApplication(
   else if (url == "mojo://omnibox/")
     delegate.reset(new mandoline::OmniboxImpl);
 #endif
+  else if (url == "mojo://resource_provider/")
+    delegate.reset(new resource_provider::ResourceProviderApp);
   else if (url == "mojo://surfaces_service/")
     delegate.reset(new surfaces::SurfacesServiceApplication);
   else if (url == "mojo://tracing/")

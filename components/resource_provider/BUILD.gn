@@ -20,8 +20,6 @@ if (is_android) {
     sources = [
       "android/android_hooks.cc",
       "main.cc",
-      "resource_provider_app.cc",
-      "resource_provider_app.h",
     ]
 
     deps = [
@@ -29,7 +27,6 @@ if (is_android) {
       ":lib",
       "//base",
       "//components/resource_provider/public/interfaces",
-      "//mojo/application",
       "//mojo/environment:chromium",
       "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
       "//url",
@@ -62,15 +59,12 @@ if (is_android) {
   mojo_native_application("resource_provider") {
     sources = [
       "main.cc",
-      "resource_provider_app.cc",
-      "resource_provider_app.h",
     ]
 
     deps = [
       ":lib",
       "//base",
       "//components/resource_provider/public/interfaces",
-      "//mojo/application",
       "//mojo/environment:chromium",
       "//url",
     ]
@@ -81,6 +75,8 @@ source_set("lib") {
   sources = [
     "file_utils.cc",
     "file_utils.h",
+    "resource_provider_app.cc",
+    "resource_provider_app.h",
     "resource_provider_impl.cc",
     "resource_provider_impl.h",
   ]
@@ -88,6 +84,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/resource_provider/public/interfaces",
+    "//mojo/application",
     "//mojo/common:common_base",
     "//mojo/platform_handle",
     "//url",
