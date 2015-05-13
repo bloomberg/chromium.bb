@@ -242,7 +242,7 @@ TEST_F(KeywordEditorControllerTest, MutateTemplateURLService) {
   int original_row_count = table_model()->RowCount();
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("b");
+  data.SetShortName(ASCIIToUTF16("b"));
   data.SetKeyword(ASCIIToUTF16("a"));
   TemplateURL* turl = new TemplateURL(data);
   util()->model()->Add(turl);

@@ -477,8 +477,8 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(model->loaded());
 
     TemplateURLData data;
-    data.short_name = base::ASCIIToUTF16(kShortName);
-    data.SetKeyword(data.short_name);
+    data.SetShortName(base::ASCIIToUTF16(kShortName));
+    data.SetKeyword(data.short_name());
     data.SetURL(test_server()->GetURL(kSearchURL).spec());
     data.image_url = GetImageSearchURL().spec();
     data.image_url_post_params = kImageSearchPostParams;

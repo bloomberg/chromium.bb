@@ -49,6 +49,7 @@ void InstantUnitTestBase::SetUpWithoutQueryExtraction() {
 void InstantUnitTestBase::SetUserSelectedDefaultSearchProvider(
     const std::string& base_url) {
   TemplateURLData data;
+  data.SetShortName(base::UTF8ToUTF16(base_url));
   data.SetKeyword(base::UTF8ToUTF16(base_url));
   data.SetURL(base_url + "url?bar={searchTerms}");
   data.instant_url = base_url +

@@ -400,7 +400,7 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
 TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   // Register a template URL that corresponds to 'foo' search engine.
   TemplateURLData url_data;
-  url_data.short_name = base::ASCIIToUTF16("unittest");
+  url_data.SetShortName(base::ASCIIToUTF16("unittest"));
   url_data.SetKeyword(base::ASCIIToUTF16("foo"));
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
   template_url_service_.get()->Add(new TemplateURL(url_data));
@@ -446,7 +446,7 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
 TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   // Register a template URL that corresponds to 'foo' search engine.
   TemplateURLData url_data;
-  url_data.short_name = base::ASCIIToUTF16("unittest");
+  url_data.SetShortName(base::ASCIIToUTF16("unittest"));
   url_data.SetKeyword(base::ASCIIToUTF16("foo"));
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
   template_url_service_.get()->Add(new TemplateURL(url_data));

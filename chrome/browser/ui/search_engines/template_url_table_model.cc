@@ -260,7 +260,7 @@ void TemplateURLTableModel::Add(int index,
   DCHECK(!url.empty());
   template_url_service_->RemoveObserver(this);
   TemplateURLData data;
-  data.short_name = short_name;
+  data.SetShortName(short_name);
   data.SetKeyword(keyword);
   data.SetURL(url);
   TemplateURL* turl = new TemplateURL(data);

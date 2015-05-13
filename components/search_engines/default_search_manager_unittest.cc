@@ -30,7 +30,7 @@ void ExpectSimilar(const TemplateURLData* expected,
   ASSERT_TRUE(expected != NULL);
   ASSERT_TRUE(actual != NULL);
 
-  EXPECT_EQ(expected->short_name, actual->short_name);
+  EXPECT_EQ(expected->short_name(), actual->short_name());
   EXPECT_EQ(expected->keyword(), actual->keyword());
   EXPECT_EQ(expected->url(), actual->url());
   EXPECT_EQ(expected->suggestions_url, actual->suggestions_url);
@@ -86,7 +86,7 @@ void SetPolicy(user_prefs::TestingPrefServiceSyncable* prefs,
     EXPECT_FALSE(data->url().empty());
   }
   scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-  entry->SetString(DefaultSearchManager::kShortName, data->short_name);
+  entry->SetString(DefaultSearchManager::kShortName, data->short_name());
   entry->SetString(DefaultSearchManager::kKeyword, data->keyword());
   entry->SetString(DefaultSearchManager::kURL, data->url());
   entry->SetString(DefaultSearchManager::kFaviconURL, data->favicon_url.spec());
@@ -120,7 +120,7 @@ void SetPolicy(user_prefs::TestingPrefServiceSyncable* prefs,
 
 scoped_ptr<TemplateURLData> GenerateDummyTemplateURLData(std::string type) {
   scoped_ptr<TemplateURLData> data(new TemplateURLData());
-  data->short_name = base::UTF8ToUTF16(std::string(type).append("name"));
+  data->SetShortName(base::UTF8ToUTF16(std::string(type).append("name")));
   data->SetKeyword(base::UTF8ToUTF16(std::string(type).append("key")));
   data->SetURL(std::string("http://").append(type).append("foo/{searchTerms}"));
   data->suggestions_url = std::string("http://").append(type).append("sugg");
@@ -162,7 +162,7 @@ TEST_F(DefaultSearchManagerTest, ReadAndWritePref) {
   DefaultSearchManager manager(pref_service(),
                                DefaultSearchManager::ObserverCallback());
   TemplateURLData data;
-  data.short_name = base::UTF8ToUTF16("name1");
+  data.SetShortName(base::UTF8ToUTF16("name1"));
   data.SetKeyword(base::UTF8ToUTF16("key1"));
   data.SetURL("http://foo1/{searchTerms}");
   data.suggestions_url = "http://sugg1";
@@ -242,8 +242,8 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByOverrides) {
   ExpectSimilar(prepopulated_urls[default_search_index],
                 manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
-  EXPECT_NE(manager.GetDefaultSearchEngine(NULL)->short_name,
-            first_default.short_name);
+  EXPECT_NE(manager.GetDefaultSearchEngine(NULL)->short_name(),
+            first_default.short_name());
   EXPECT_NE(manager.GetDefaultSearchEngine(NULL)->keyword(),
             first_default.keyword());
 }

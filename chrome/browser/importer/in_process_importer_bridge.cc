@@ -103,7 +103,7 @@ TemplateURL* CreateTemplateURL(const base::string16& url,
   data.SetKeyword(keyword);
   // We set short name by using the title if it exists.
   // Otherwise, we use the shortcut.
-  data.short_name = title.empty() ? keyword : title;
+  data.SetShortName(title.empty() ? keyword : title);
   data.SetURL(TemplateURLRef::DisplayURLToURLRef(url));
   return new TemplateURL(data);
 }

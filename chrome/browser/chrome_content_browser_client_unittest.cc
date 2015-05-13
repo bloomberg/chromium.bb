@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -163,6 +164,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
     ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 
     TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.new_tab_url = new_tab_page_url.spec();
     TemplateURL* template_url = new TemplateURL(data);

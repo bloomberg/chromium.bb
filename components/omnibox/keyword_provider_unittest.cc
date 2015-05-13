@@ -269,7 +269,7 @@ TEST_F(KeywordProviderTest, Contents) {
 
 TEST_F(KeywordProviderTest, AddKeyword) {
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("Test");
+  data.SetShortName(ASCIIToUTF16("Test"));
   base::string16 keyword(ASCIIToUTF16("foo"));
   data.SetKeyword(keyword);
   data.SetURL("http://www.google.com/foo?q={searchTerms}");

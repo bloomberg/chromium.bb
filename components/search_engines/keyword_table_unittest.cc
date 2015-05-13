@@ -42,7 +42,7 @@ class KeywordTableTest : public testing::Test {
 
   TemplateURLData CreateAndAddKeyword() const {
     TemplateURLData keyword;
-    keyword.short_name = ASCIIToUTF16("short_name");
+    keyword.SetShortName(ASCIIToUTF16("short_name"));
     keyword.SetKeyword(ASCIIToUTF16("keyword"));
     keyword.SetURL("http://url/");
     keyword.suggestions_url = "url2";
@@ -117,7 +117,7 @@ TEST_F(KeywordTableTest, Keywords) {
   EXPECT_EQ(1U, keywords.size());
   const TemplateURLData& restored_keyword = keywords.front();
 
-  EXPECT_EQ(keyword.short_name, restored_keyword.short_name);
+  EXPECT_EQ(keyword.short_name(), restored_keyword.short_name());
   EXPECT_EQ(keyword.keyword(), restored_keyword.keyword());
   EXPECT_EQ(keyword.url(), restored_keyword.url());
   EXPECT_EQ(keyword.suggestions_url, restored_keyword.suggestions_url);
@@ -162,7 +162,7 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(1U, keywords.size());
   const TemplateURLData& restored_keyword = keywords.front();
 
-  EXPECT_EQ(keyword.short_name, restored_keyword.short_name);
+  EXPECT_EQ(keyword.short_name(), restored_keyword.short_name());
   EXPECT_EQ(keyword.keyword(), restored_keyword.keyword());
   EXPECT_EQ(keyword.suggestions_url, restored_keyword.suggestions_url);
   EXPECT_EQ(keyword.instant_url, restored_keyword.instant_url);
@@ -179,7 +179,7 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
 
 TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
   TemplateURLData keyword;
-  keyword.short_name = ASCIIToUTF16("short_name");
+  keyword.SetShortName(ASCIIToUTF16("short_name"));
   keyword.SetKeyword(ASCIIToUTF16("keyword"));
   keyword.SetURL("http://url/");
   keyword.safe_for_autoreplace = true;
@@ -190,7 +190,7 @@ TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
   EXPECT_EQ(1U, keywords.size());
   const TemplateURLData& restored_keyword = keywords.front();
 
-  EXPECT_EQ(keyword.short_name, restored_keyword.short_name);
+  EXPECT_EQ(keyword.short_name(), restored_keyword.short_name());
   EXPECT_EQ(keyword.keyword(), restored_keyword.keyword());
   EXPECT_EQ(keyword.favicon_url, restored_keyword.favicon_url);
   EXPECT_EQ(keyword.safe_for_autoreplace,
@@ -200,13 +200,13 @@ TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
 
 TEST_F(KeywordTableTest, SanitizeURLs) {
   TemplateURLData keyword;
-  keyword.short_name = ASCIIToUTF16("legit");
+  keyword.SetShortName(ASCIIToUTF16("legit"));
   keyword.SetKeyword(ASCIIToUTF16("legit"));
   keyword.SetURL("http://url/");
   keyword.id = 1000;
   AddKeyword(keyword);
 
-  keyword.short_name = ASCIIToUTF16("bogus");
+  keyword.SetShortName(ASCIIToUTF16("bogus"));
   keyword.SetKeyword(ASCIIToUTF16("bogus"));
   keyword.id = 2000;
   AddKeyword(keyword);
@@ -223,4 +223,34 @@ TEST_F(KeywordTableTest, SanitizeURLs) {
 
   // GetKeywords() should erase the entry with the empty URL field.
   EXPECT_EQ(1U, GetKeywords().size());
+}
+
+TEST_F(KeywordTableTest, SanitizeShortName) {
+  TemplateURLData keyword;
+  {
+    keyword.SetShortName(ASCIIToUTF16("legit name"));
+    keyword.SetKeyword(ASCIIToUTF16("legit"));
+    keyword.SetURL("http://url/");
+    keyword.id = 1000;
+    AddKeyword(keyword);
+    KeywordTable::Keywords keywords(GetKeywords());
+    EXPECT_EQ(1U, keywords.size());
+    const TemplateURLData& keyword_from_database = keywords.front();
+    EXPECT_EQ(keyword.id, keyword_from_database.id);
+    EXPECT_EQ(ASCIIToUTF16("legit name"), keyword_from_database.short_name());
+    RemoveKeyword(keyword.id);
+  }
+
+  {
+    keyword.SetShortName(ASCIIToUTF16("\t\tbogus \tname \n"));
+    keyword.SetKeyword(ASCIIToUTF16("bogus"));
+    keyword.id = 2000;
+    AddKeyword(keyword);
+    KeywordTable::Keywords keywords(GetKeywords());
+    EXPECT_EQ(1U, keywords.size());
+    const TemplateURLData& keyword_from_database = keywords.front();
+    EXPECT_EQ(keyword.id, keyword_from_database.id);
+    EXPECT_EQ(ASCIIToUTF16("bogus name"), keyword_from_database.short_name());
+    RemoveKeyword(keyword.id);
+  }
 }

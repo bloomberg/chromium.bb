@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 TemplateURLData::TemplateURLData()
@@ -24,6 +25,14 @@ TemplateURLData::TemplateURLData()
 }
 
 TemplateURLData::~TemplateURLData() {
+}
+
+void TemplateURLData::SetShortName(const base::string16& short_name) {
+  DCHECK(!short_name.empty());
+
+  // Remove tabs, carriage returns, and the like, as they can corrupt
+  // how the short name is displayed.
+  short_name_ = base::CollapseWhitespace(short_name, true);
 }
 
 void TemplateURLData::SetKeyword(const base::string16& keyword) {

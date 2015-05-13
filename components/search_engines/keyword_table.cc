@@ -103,7 +103,7 @@ void BindURLToStatement(const TemplateURLData& data,
   base::JSONWriter::Write(&alternate_urls_value, &alternate_urls);
 
   s->BindInt64(id_column, data.id);
-  s->BindString16(starting_column, data.short_name);
+  s->BindString16(starting_column, data.short_name());
   s->BindString16(starting_column + 1, data.keyword());
   s->BindString(starting_column + 2, data.favicon_url.is_valid() ?
       history::URLDatabase::GURLToDatabaseURL(data.favicon_url) :
@@ -291,7 +291,7 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
                                                TemplateURLData* data) {
   DCHECK(data);
 
-  data->short_name = s.ColumnString16(1);
+  data->SetShortName(s.ColumnString16(1));
   data->SetKeyword(s.ColumnString16(2));
   // Due to past bugs, we might have persisted entries with empty URLs.  Avoid
   // reading these out.  (GetKeywords() will delete these entries on return.)

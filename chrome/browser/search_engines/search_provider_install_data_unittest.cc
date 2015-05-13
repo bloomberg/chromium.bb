@@ -174,7 +174,7 @@ TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(
     const std::string& url,
     const base::string16& keyword) {
   TemplateURLData data;
-  data.short_name = keyword;
+  data.SetShortName(keyword);
   data.SetKeyword(keyword);
   data.SetURL(url);
   TemplateURL* t_url = new TemplateURL(data);

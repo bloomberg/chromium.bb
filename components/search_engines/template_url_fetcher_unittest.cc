@@ -280,7 +280,7 @@ TEST_F(TemplateURLFetcherTest, ExplicitBeforeLoadTest) {
 TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   base::string16 keyword(ASCIIToUTF16("test"));
   TemplateURLData data;
-  data.short_name = keyword;
+  data.SetShortName(keyword);
   data.SetKeyword(keyword);
   data.SetURL("http://example.com/");
   test_util()->model()->Add(new TemplateURL(data));

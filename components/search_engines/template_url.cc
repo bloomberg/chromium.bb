@@ -1277,7 +1277,7 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
   if (!t_url || !data)
     return !t_url && !data;
 
-  return (t_url->short_name() == data->short_name) &&
+  return (t_url->short_name() == data->short_name()) &&
       t_url->HasSameKeywordAs(*data, search_terms_data) &&
       (t_url->url() == data->url()) &&
       (t_url->suggestions_url() == data->suggestions_url) &&
@@ -1299,7 +1299,7 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
 }
 
 base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
-  base::string16 bidi_safe_short_name = data_.short_name;
+  base::string16 bidi_safe_short_name = data_.short_name();
   base::i18n::AdjustStringForLocaleDirection(&bidi_safe_short_name);
   return bidi_safe_short_name;
 }

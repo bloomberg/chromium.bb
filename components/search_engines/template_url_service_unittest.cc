@@ -70,7 +70,7 @@ TemplateURL* CreateKeywordWithDate(
     Time date_created,
     Time last_modified) {
   TemplateURLData data;
-  data.short_name = base::UTF8ToUTF16(short_name);
+  data.SetShortName(base::UTF8ToUTF16(short_name));
   data.SetKeyword(base::UTF8ToUTF16(keyword));
   data.SetURL(url);
   data.suggestions_url = suggest_url;
@@ -249,7 +249,7 @@ TemplateURL* TemplateURLServiceTest::CreatePreloadedTemplateURL(
     bool safe_for_autoreplace,
     int prepopulate_id) {
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("unittest");
+  data.SetShortName(ASCIIToUTF16("unittest"));
   data.SetKeyword(ASCIIToUTF16("unittest"));
   data.SetURL("http://www.unittest.com/{searchTerms}");
   data.favicon_url = GURL("http://favicon.url");
@@ -285,7 +285,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   const size_t initial_count = model()->GetTemplateURLs().size();
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("google");
+  data.SetShortName(ASCIIToUTF16("google"));
   data.SetKeyword(ASCIIToUTF16("keyword"));
   data.SetURL("http://www.google.com/foo/bar");
   data.favicon_url = GURL("http://favicon.url");
@@ -363,7 +363,7 @@ TEST_F(TemplateURLServiceTest, AddSameKeyword) {
   // Test what happens when we try to add a TemplateURL with the same keyword as
   // one in the model.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("second");
+  data.SetShortName(ASCIIToUTF16("second"));
   data.SetKeyword(ASCIIToUTF16("keyword"));
   data.SetURL("http://test2");
   data.safe_for_autoreplace = false;
@@ -380,7 +380,7 @@ TEST_F(TemplateURLServiceTest, AddSameKeyword) {
 
   // Now try adding a replaceable TemplateURL.  This should just delete the
   // passed-in URL.
-  data.short_name = ASCIIToUTF16("third");
+  data.SetShortName(ASCIIToUTF16("third"));
   data.SetURL("http://test3");
   data.safe_for_autoreplace = true;
   model()->Add(new TemplateURL(data));
@@ -392,7 +392,7 @@ TEST_F(TemplateURLServiceTest, AddSameKeyword) {
 
   // Now try adding a non-replaceable TemplateURL again.  This should uniquify
   // the existing entry's keyword.
-  data.short_name = ASCIIToUTF16("fourth");
+  data.SetShortName(ASCIIToUTF16("fourth"));
   data.SetURL("http://test4");
   data.safe_for_autoreplace = false;
   TemplateURL* t_url2 = new TemplateURL(data);
@@ -464,7 +464,7 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
   // Adding another replaceable keyword should remove the existing one, but
   // leave the extension as is.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("name1");
+  data.SetShortName(ASCIIToUTF16("name1"));
   data.SetKeyword(ASCIIToUTF16("keyword"));
   data.SetURL("http://test3");
   data.safe_for_autoreplace = true;
@@ -477,7 +477,7 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
   // Adding a nonreplaceable keyword should remove the existing replaceable
   // keyword and replace the extension as the associated URL for this keyword,
   // but not evict the extension from the service entirely.
-  data.short_name = ASCIIToUTF16("name2");
+  data.SetShortName(ASCIIToUTF16("name2"));
   data.SetURL("http://test4");
   data.safe_for_autoreplace = false;
   TemplateURL* t_url2 = new TemplateURL(data);
@@ -620,7 +620,7 @@ TEST_F(TemplateURLServiceTest, Reset) {
   test_util()->VerifyLoad();
   const size_t initial_count = model()->GetTemplateURLs().size();
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("google");
+  data.SetShortName(ASCIIToUTF16("google"));
   data.SetKeyword(ASCIIToUTF16("keyword"));
   data.SetURL("http://www.google.com/foo/bar");
   data.favicon_url = GURL("http://favicon.url");
@@ -744,7 +744,7 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   test_util()->VerifyLoad();
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("a");
+  data.SetShortName(ASCIIToUTF16("a"));
   data.safe_for_autoreplace = true;
   data.SetURL("http://url/{searchTerms}");
   data.suggestions_url = "http://url2";
@@ -848,7 +848,7 @@ TEST_F(TemplateURLServiceTest, RepairSearchEnginesWithManagedDefault) {
   test_util()->VerifyLoad();
   // Verify that the default manager we are getting is the managed one.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16(kName);
+  data.SetShortName(ASCIIToUTF16(kName));
   data.SetKeyword(ASCIIToUTF16(kKeyword));
   data.SetURL(kSearchURL);
   data.favicon_url = GURL(kIconURL);
@@ -1227,7 +1227,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
 
   // Verify that the default manager we are getting is the managed one.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16(kName);
+  data.SetShortName(ASCIIToUTF16(kName));
   data.SetKeyword(ASCIIToUTF16(kKeyword));
   data.SetURL(kSearchURL);
   data.favicon_url = GURL(kIconURL);
@@ -1255,7 +1255,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
 
   // Verify that the default manager we are now getting is the correct one.
   TemplateURLData data2;
-  data2.short_name = ASCIIToUTF16(kNewName);
+  data2.SetShortName(ASCIIToUTF16(kNewName));
   data2.SetKeyword(ASCIIToUTF16(kNewKeyword));
   data2.SetURL(kNewSearchURL);
   data2.suggestions_url = kNewSuggestURL;
@@ -1330,7 +1330,7 @@ TEST_F(TemplateURLServiceTest, PatchEmptySyncGUID) {
   const size_t initial_count = model()->GetTemplateURLs().size();
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("google");
+  data.SetShortName(ASCIIToUTF16("google"));
   data.SetKeyword(ASCIIToUTF16("keyword"));
   data.SetURL("http://www.google.com/foo/bar");
   data.sync_guid.clear();
@@ -1359,7 +1359,7 @@ TEST_F(TemplateURLServiceTest, DuplicateInputEncodings) {
   const size_t initial_count = model()->GetTemplateURLs().size();
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("google");
+  data.SetShortName(ASCIIToUTF16("google"));
   data.SetKeyword(ASCIIToUTF16("keyword"));
   data.SetURL("http://www.google.com/foo/bar");
   std::vector<std::string> encodings;
@@ -1470,7 +1470,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
   test_util()->VerifyLoad();
   // Verify that the default manager we are getting is the managed one.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16(kName);
+  data.SetShortName(ASCIIToUTF16(kName));
   data.SetKeyword(ASCIIToUTF16(kKeyword));
   data.SetURL(kSearchURL);
   data.favicon_url = GURL(kIconURL);

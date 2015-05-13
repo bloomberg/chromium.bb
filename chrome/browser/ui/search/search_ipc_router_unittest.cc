@@ -108,6 +108,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 
     TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.instant_url = "http://foo.com/instant?"
         "{google:omniboxStartMarginParameter}foo=foo#foo=foo&espv";

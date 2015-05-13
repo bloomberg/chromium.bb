@@ -379,9 +379,10 @@ void TemplateURLService::AddWithOverrides(TemplateURL* template_url,
                                           const base::string16& short_name,
                                           const base::string16& keyword,
                                           const std::string& url) {
+  DCHECK(!short_name.empty());
   DCHECK(!keyword.empty());
   DCHECK(!url.empty());
-  template_url->data_.short_name = short_name;
+  template_url->data_.SetShortName(short_name);
   template_url->data_.SetKeyword(keyword);
   template_url->SetURL(url);
   Add(template_url);
@@ -476,7 +477,7 @@ void TemplateURLService::RegisterOmniboxKeyword(
     return;
 
   TemplateURLData data;
-  data.short_name = base::UTF8ToUTF16(extension_name);
+  data.SetShortName(base::UTF8ToUTF16(extension_name));
   data.SetKeyword(base::UTF8ToUTF16(keyword));
   data.SetURL(template_url_string);
   TemplateURL* url = new TemplateURL(data);
@@ -1206,7 +1207,7 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
 
   TemplateURLData data(existing_turl ?
       existing_turl->data() : TemplateURLData());
-  data.short_name = base::UTF8ToUTF16(specifics.short_name());
+  data.SetShortName(base::UTF8ToUTF16(specifics.short_name()));
   data.originating_url = GURL(specifics.originating_url());
   base::string16 keyword(base::UTF8ToUTF16(specifics.keyword()));
   // NOTE: Once this code has shipped in a couple of stable releases, we can
@@ -1342,7 +1343,7 @@ void TemplateURLService::Init(const Initializer* initializers,
       // TemplateURLService ends up owning the TemplateURL, don't try and free
       // it.
       TemplateURLData data;
-      data.short_name = base::UTF8ToUTF16(initializers[i].content);
+      data.SetShortName(base::UTF8ToUTF16(initializers[i].content));
       data.SetKeyword(base::UTF8ToUTF16(initializers[i].keyword));
       data.SetURL(initializers[i].url);
       TemplateURL* template_url = new TemplateURL(data);
@@ -1812,7 +1813,7 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
       if (!default_search_provider_->safe_for_autoreplace()) {
         update_data.safe_for_autoreplace = false;
         update_data.SetKeyword(default_search_provider_->keyword());
-        update_data.short_name = default_search_provider_->short_name();
+        update_data.SetShortName(default_search_provider_->short_name());
       }
       UpdateNoNotify(default_search_provider_, TemplateURL(update_data));
     } else {
@@ -1967,7 +1968,7 @@ bool TemplateURLService::ResetTemplateURLNoNotify(
   DCHECK(!keyword.empty());
   DCHECK(!search_url.empty());
   TemplateURLData data(url->data());
-  data.short_name = title;
+  data.SetShortName(title);
   data.SetKeyword(keyword);
   if (search_url != data.url()) {
     data.SetURL(search_url);

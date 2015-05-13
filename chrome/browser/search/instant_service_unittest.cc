@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/instant_unittest_base.h"
@@ -128,6 +129,7 @@ TEST_F(InstantServiceEnabledTest,
 
   // Set a default search provider that doesn't support Instant.
   TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16("foobar.com"));
   data.SetURL("https://foobar.com/url?bar={searchTerms}");
   TemplateURL* template_url = new TemplateURL(data);
   // Takes ownership of |template_url|.

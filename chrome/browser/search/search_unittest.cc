@@ -57,6 +57,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.instant_url = "http://foo.com/instant?"
         "{google:forceInstantResults}foo=foo#foo=foo&strk";
@@ -86,6 +87,7 @@ class SearchTest : public BrowserWithTestWindowTest {
         "http://foo.com/instant?foo=foo#foo=foo";
 
     TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.instant_url = (has_search_term_replacement_key ?
         kInstantURLWithStrk : kInstantURLNoStrk);
@@ -511,6 +513,7 @@ TEST_F(SearchTest, CommandLineOverrides) {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
   TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16("Google"));
   data.SetURL("{google:baseURL}search?q={searchTerms}");
   data.instant_url = "{google:baseURL}webhp?strk";
   data.search_terms_replacement_key = "strk";
@@ -763,6 +766,7 @@ class SearchURLTest : public SearchTest {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("Google"));
     data.SetURL("{google:baseURL}search?"
                 "{google:instantExtendedEnabledParameter}q={searchTerms}");
     data.search_terms_replacement_key = "espv";

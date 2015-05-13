@@ -100,6 +100,7 @@ void ShortcutsBackendTest::SetSearchProvider() {
       TemplateURLServiceFactory::GetForProfile(&profile_);
   TemplateURLData data;
   data.SetURL("http://foo.com/search?bar={searchTerms}");
+  data.SetShortName(base::UTF8ToUTF16("foo"));
   data.SetKeyword(base::UTF8ToUTF16("foo"));
 
   TemplateURL* template_url = new TemplateURL(data);

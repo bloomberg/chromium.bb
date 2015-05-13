@@ -52,6 +52,7 @@ class NewTabPageInterceptorTest : public InProcessBrowserTest {
     UIThreadSearchTermsData::SetGoogleBaseURL("https://mock.http/");
     std::string base_url("{google:baseURL}");
     TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("Google"));
     data.SetKeyword(base::UTF8ToUTF16(base_url));
     data.SetURL(base_url + "url?bar={searchTerms}");
     data.new_tab_url = base_url + new_tab_path;

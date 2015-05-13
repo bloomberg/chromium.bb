@@ -42,8 +42,8 @@ scoped_ptr<TemplateURLData> LoadDefaultSearchProviderFromLegacyPrefs(
     return scoped_ptr<TemplateURLData>();
 
   scoped_ptr<TemplateURLData> default_provider_data(new TemplateURLData);
-  default_provider_data->short_name =
-      base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName));
+  default_provider_data->SetShortName(
+      base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName)));
   default_provider_data->SetKeyword(keyword);
   default_provider_data->SetURL(search_url);
   default_provider_data->suggestions_url =

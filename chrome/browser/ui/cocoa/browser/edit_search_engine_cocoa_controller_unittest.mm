@@ -232,7 +232,7 @@ TEST_F(EditSearchEngineControllerTest, ValidateFields) {
 // Tests editing an existing TemplateURL.
 TEST_F(EditSearchEngineControllerTest, EditTemplateURL) {
   TemplateURLData data;
-  data.short_name = base::ASCIIToUTF16("Foobar");
+  data.SetShortName(base::ASCIIToUTF16("Foobar"));
   data.SetKeyword(base::ASCIIToUTF16("keyword"));
   std::string urlString = TemplateURLRef::DisplayURLToURLRef(
       base::ASCIIToUTF16("http://foo-bar.com"));

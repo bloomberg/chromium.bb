@@ -267,7 +267,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(model->loaded());
 
     TemplateURLData data;
-    data.short_name = ASCIIToUTF16(kSearchShortName);
+    data.SetShortName(ASCIIToUTF16(kSearchShortName));
     data.SetKeyword(ASCIIToUTF16(kSearchKeyword));
     data.SetURL(kSearchURL);
     TemplateURL* template_url = new TemplateURL(data);
@@ -630,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLDWithTemporaryText) {
   // non-verbatim entry with "ab" as a prefix. This way, by arrowing down, we
   // can set "abc" as temporary text in the omnibox.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("abc");
+  data.SetShortName(ASCIIToUTF16("abc"));
   data.SetKeyword(ASCIIToUTF16(kSearchText));
   data.SetURL("http://abc.com/");
   template_url_service->Add(new TemplateURL(data));
@@ -1077,7 +1077,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
 
   // Add a non-default substituting keyword.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("Search abc");
+  data.SetShortName(ASCIIToUTF16("Search abc"));
   data.SetKeyword(ASCIIToUTF16(kSearchText));
   data.SetURL("http://abc.com/{searchTerms}");
   TemplateURL* template_url = new TemplateURL(data);
@@ -1102,7 +1102,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
 
   // Try a non-substituting keyword.
   template_url_service->Remove(template_url);
-  data.short_name = ASCIIToUTF16("abc");
+  data.SetShortName(ASCIIToUTF16("abc"));
   data.SetURL("http://abc.com/");
   template_url_service->Add(new TemplateURL(data));
 

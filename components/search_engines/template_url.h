@@ -536,7 +536,7 @@ class TemplateURL {
 
   const TemplateURLData& data() const { return data_; }
 
-  const base::string16& short_name() const { return data_.short_name; }
+  const base::string16& short_name() const { return data_.short_name(); }
   // An accessor for the short_name, but adjusted so it can be appropriately
   // displayed even if it is LTR and the UI is RTL.
   base::string16 AdjustedShortNameForLocaleDirection() const;

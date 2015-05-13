@@ -214,7 +214,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   }
 
   TemplateURLData data;
-  data.short_name = keyword;
+  data.SetShortName(keyword);
   data.SetKeyword(keyword);
   data.SetURL(url.spec());
   DCHECK(controller.GetLastCommittedEntry());

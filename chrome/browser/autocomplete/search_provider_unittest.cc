@@ -291,7 +291,7 @@ void SearchProviderTest::SetUp() {
 
   // Reset the default TemplateURL.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("t");
+  data.SetShortName(ASCIIToUTF16("t"));
   data.SetURL("http://defaultturl/{searchTerms}");
   data.suggestions_url = "http://defaultturl2/{searchTerms}";
   data.instant_url = "http://does/not/exist?strk=1";
@@ -306,7 +306,7 @@ void SearchProviderTest::SetUp() {
   term1_url_ = AddSearchToHistory(default_t_url_, term1_, 1);
 
   // Create another TemplateURL.
-  data.short_name = ASCIIToUTF16("k");
+  data.SetShortName(ASCIIToUTF16("k"));
   data.SetKeyword(ASCIIToUTF16("k"));
   data.SetURL("http://keyword/{searchTerms}");
   data.suggestions_url = "http://suggest_keyword/{searchTerms}";
@@ -1283,8 +1283,8 @@ TEST_F(SearchProviderTest, CommandLineOverrides) {
       TemplateURLServiceFactory::GetForProfile(&profile_);
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("default");
-  data.SetKeyword(data.short_name);
+  data.SetShortName(ASCIIToUTF16("default"));
+  data.SetKeyword(data.short_name());
   data.SetURL("{google:baseURL}{searchTerms}");
   default_t_url_ = new TemplateURL(data);
   turl_model->Add(default_t_url_);
@@ -3235,7 +3235,7 @@ TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
 
 TEST_F(SearchProviderTest, CanSendURL) {
   TemplateURLData template_url_data;
-  template_url_data.short_name = ASCIIToUTF16("t");
+  template_url_data.SetShortName(ASCIIToUTF16("t"));
   template_url_data.SetURL("http://www.google.com/{searchTerms}");
   template_url_data.suggestions_url = "http://www.google.com/{searchTerms}";
   template_url_data.instant_url = "http://does/not/exist?strk=1";
@@ -3460,8 +3460,8 @@ TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
       TemplateURLServiceFactory::GetForProfile(&profile_);
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("default");
-  data.SetKeyword(data.short_name);
+  data.SetShortName(ASCIIToUTF16("default"));
+  data.SetKeyword(data.short_name());
   data.SetURL("http://example/{searchTerms}{google:sessionToken}");
   data.suggestions_url =
       "http://suggest/?q={searchTerms}&{google:sessionToken}";

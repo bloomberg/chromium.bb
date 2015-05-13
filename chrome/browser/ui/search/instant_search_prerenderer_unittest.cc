@@ -320,7 +320,7 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   // Do not allow prerendering for custom search provider requests.
   TemplateURLData data;
   data.SetURL("https://www.dummyurl.com/search?q=%s&img=1");
-  data.short_name = ASCIIToUTF16("t");
+  data.SetShortName(ASCIIToUTF16("t"));
   data.SetKeyword(ASCIIToUTF16("k"));
   TemplateURL* t_url = new TemplateURL(data);
   TemplateURLService* service =

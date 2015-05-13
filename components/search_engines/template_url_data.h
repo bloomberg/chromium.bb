@@ -23,7 +23,8 @@ struct TemplateURLData {
   // A short description of the template. This is the name we show to the user
   // in various places that use TemplateURLs. For example, the location bar
   // shows this when the user selects a substituting match.
-  base::string16 short_name;
+  void SetShortName(const base::string16& short_name);
+  const base::string16& short_name() const { return short_name_; }
 
   // The shortcut for this TemplateURL.  |keyword| must be non-empty.
   void SetKeyword(const base::string16& keyword);
@@ -115,6 +116,7 @@ struct TemplateURLData {
  private:
   // Private so we can enforce using the setters and thus enforce that these
   // fields are never empty.
+  base::string16 short_name_;
   base::string16 keyword_;
   std::string url_;
 };

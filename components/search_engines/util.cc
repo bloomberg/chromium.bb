@@ -169,7 +169,7 @@ void MergeIntoPrepopulatedEngineData(const TemplateURL* original_turl,
   if (!original_turl->safe_for_autoreplace()) {
     prepopulated_url->safe_for_autoreplace = false;
     prepopulated_url->SetKeyword(original_turl->keyword());
-    prepopulated_url->short_name = original_turl->short_name();
+    prepopulated_url->SetShortName(original_turl->short_name());
   }
   prepopulated_url->id = original_turl->id();
   prepopulated_url->sync_guid = original_turl->sync_guid();

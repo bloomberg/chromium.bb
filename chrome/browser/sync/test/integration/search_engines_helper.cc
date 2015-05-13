@@ -195,7 +195,7 @@ TemplateURL* CreateTestTemplateURL(Profile* profile,
                                    const std::string& url,
                                    const std::string& sync_guid) {
   TemplateURLData data;
-  data.short_name = CreateKeyword(seed);
+  data.SetShortName(CreateKeyword(seed));
   data.SetKeyword(keyword);
   data.SetURL(url);
   data.favicon_url = GURL("http://favicon.url");

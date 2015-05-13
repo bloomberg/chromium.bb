@@ -1050,7 +1050,7 @@ scoped_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
     int id) {
   scoped_ptr<TemplateURLData> data(new TemplateURLData);
 
-  data->short_name = name;
+  data->SetShortName(name);
   data->SetKeyword(keyword);
   data->SetURL(search_url.as_string());
   data->suggestions_url = suggest_url.as_string();

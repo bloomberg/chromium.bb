@@ -249,6 +249,7 @@ void AutocompleteProviderTest::RegisterTemplateURL(
   }
   TemplateURLData data;
   data.SetURL(template_url);
+  data.SetShortName(keyword);
   data.SetKeyword(keyword);
   TemplateURL* default_t_url = new TemplateURL(data);
   TemplateURLService* turl_model =
@@ -324,6 +325,8 @@ void AutocompleteProviderTest::
 
   // Reset the default TemplateURL.
   TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16("default"));
+  data.SetKeyword(base::ASCIIToUTF16("default"));
   data.SetURL("http://defaultturl/{searchTerms}");
   TemplateURL* default_t_url = new TemplateURL(data);
   TemplateURLService* turl_model =
@@ -335,7 +338,7 @@ void AutocompleteProviderTest::
 
   // Create another TemplateURL for KeywordProvider.
   TemplateURLData data2;
-  data2.short_name = base::ASCIIToUTF16("k");
+  data2.SetShortName(base::ASCIIToUTF16("k"));
   data2.SetKeyword(base::ASCIIToUTF16("k"));
   data2.SetURL("http://keyword/{searchTerms}");
   TemplateURL* keyword_t_url = new TemplateURL(data2);
@@ -356,7 +359,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
 
   // Create a TemplateURL for KeywordProvider.
   TemplateURLData data;
-  data.short_name = base::ASCIIToUTF16("foo.com");
+  data.SetShortName(base::ASCIIToUTF16("foo.com"));
   data.SetKeyword(base::ASCIIToUTF16("foo.com"));
   data.SetURL("http://foo.com/{searchTerms}");
   TemplateURL* keyword_t_url = new TemplateURL(data);
@@ -365,7 +368,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
 
   // Make a TemplateURL for KeywordProvider that a shorter version of the
   // first.
-  data.short_name = base::ASCIIToUTF16("f");
+  data.SetShortName(base::ASCIIToUTF16("f"));
   data.SetKeyword(base::ASCIIToUTF16("f"));
   data.SetURL("http://f.com/{searchTerms}");
   keyword_t_url = new TemplateURL(data);
@@ -373,7 +376,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   ASSERT_NE(0, keyword_t_url->id());
 
   // Create another TemplateURL for KeywordProvider.
-  data.short_name = base::ASCIIToUTF16("bar.com");
+  data.SetShortName(base::ASCIIToUTF16("bar.com"));
   data.SetKeyword(base::ASCIIToUTF16("bar.com"));
   data.SetURL("http://bar.com/{searchTerms}");
   keyword_t_url = new TemplateURL(data);

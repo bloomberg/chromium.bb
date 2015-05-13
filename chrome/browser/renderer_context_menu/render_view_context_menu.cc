@@ -1752,7 +1752,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           search_engine_tab_helper->delegate()) {
         base::string16 keyword(TemplateURL::GenerateKeyword(params_.page_url));
         TemplateURLData data;
-        data.short_name = keyword;
+        data.SetShortName(keyword);
         data.SetKeyword(keyword);
         data.SetURL(params_.keyword_url.spec());
         data.favicon_url =

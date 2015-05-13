@@ -120,7 +120,7 @@ SearchEnginesPrivateAddOtherSearchEngineFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   TemplateURLData data;
-  data.short_name = base::ASCIIToUTF16(parameters->name);
+  data.SetShortName(base::ASCIIToUTF16(parameters->name));
   data.SetKeyword(base::ASCIIToUTF16(parameters->keyword));
   data.SetURL(parameters->url);
   TemplateURL* turl = new TemplateURL(data);

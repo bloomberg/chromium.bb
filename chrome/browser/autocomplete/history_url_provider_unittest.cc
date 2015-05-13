@@ -836,6 +836,7 @@ TEST_F(HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
 TEST_F(HistoryURLProviderTest, CullSearchResults) {
   // Set up a default search engine.
   TemplateURLData data;
+  data.SetShortName(ASCIIToUTF16("TestEngine"));
   data.SetKeyword(ASCIIToUTF16("TestEngine"));
   data.SetURL("http://testsearch.com/?q={searchTerms}");
   TemplateURLService* template_url_service =
