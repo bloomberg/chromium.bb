@@ -21,9 +21,11 @@ class TestToolbarModel : public ToolbarModel {
   base::string16 GetCorpusNameForMobile() const override;
   GURL GetURL() const override;
   bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
-  SecurityLevel GetSecurityLevel(bool ignore_editing) const override;
+  ConnectionSecurityHelper::SecurityLevel GetSecurityLevel(
+      bool ignore_editing) const override;
   int GetIcon() const override;
-  int GetIconForSecurityLevel(SecurityLevel level) const override;
+  int GetIconForSecurityLevel(
+      ConnectionSecurityHelper::SecurityLevel level) const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
 
@@ -33,7 +35,8 @@ class TestToolbarModel : public ToolbarModel {
       bool perform_search_term_replacement) {
     perform_search_term_replacement_ = perform_search_term_replacement;
   }
-  void set_security_level(SecurityLevel security_level) {
+  void set_security_level(
+      ConnectionSecurityHelper::SecurityLevel security_level) {
     security_level_ = security_level;
   }
   void set_icon(int icon) { icon_ = icon; }
@@ -48,7 +51,7 @@ class TestToolbarModel : public ToolbarModel {
   base::string16 text_;
   GURL url_;
   bool perform_search_term_replacement_;
-  SecurityLevel security_level_;
+  ConnectionSecurityHelper::SecurityLevel security_level_;
   int icon_;
   base::string16 ev_cert_name_;
   bool should_display_url_;
