@@ -797,6 +797,7 @@
     ['OS=="mac" or OS=="win"', {
       'targets': [
         {
+          # GN version: //content/shell:layout_test_helper
           'target_name': 'layout_test_helper',
           'type': 'executable',
           'sources': [

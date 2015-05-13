@@ -541,3 +541,17 @@ if (!is_android && !is_mac) {
     ]
   }
 }
+
+if (is_mac || is_win) {
+  # GYP version: content/content_shell_and_tests.gyp:layout_test_helper
+  executable("layout_test_helper") {
+    sources = [
+      "renderer/test_runner/helper/layout_test_helper_mac.mm",
+      "renderer/test_runner/helper/layout_test_helper_win.cc",
+    ]
+
+    if (is_mac) {
+      libs = [ "AppKit.framework" ]
+    }
+  }
+}

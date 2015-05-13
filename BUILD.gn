@@ -752,8 +752,8 @@ if (!is_ios) {
 
     if (is_win) {
       deps += [
+        "//content/shell:layout_test_helper",
         #'../content/content_shell_and_tests.gyp:content_shell_crash_service', TODO(GYP)
-        #'../content/content_shell_and_tests.gyp:layout_test_helper', TODO(GYP)
       ]
     }
 
@@ -764,7 +764,7 @@ if (!is_ios) {
     if (is_mac) {
       deps += [
         "//breakpad:dump_syms($host_toolchain)",
-        #'../content/content_shell_and_tests.gyp:layout_test_helper', TODO(GYP)
+        "//content/shell:layout_test_helper",
       ]
     }
 
