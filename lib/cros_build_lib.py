@@ -2144,12 +2144,11 @@ class _FdCapturer(object):
 
 
 class OutputCapturer(object):
-  """Class for capturing test stdout/stderr output.
+  """Class for capturing stdout/stderr output.
 
-  Class is designed as a 'ContextManager'.  Example usage in a test method
-  of an object of TestCase:
+  Class is designed as a 'ContextManager'.  Example usage:
 
-  with self.OutputCapturer() as output:
+  with cros_build_lib.OutputCapturer() as output:
     # Capturing of stdout/stderr automatically starts now.
     # Do stuff that sends output to stdout/stderr.
     # Capturing automatically stops at end of 'with' block.
