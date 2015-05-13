@@ -204,32 +204,118 @@ ImageLoader.resizeDimensions = function(width, height, options) {
 };
 
 /**
- * Performs resizing of the source image into the target canvas.
+ * Performs resizing and cropping of the source image into the target canvas.
  *
  * @param {HTMLCanvasElement|Image} source Source image or canvas.
  * @param {HTMLCanvasElement} target Target canvas.
  * @param {Object} options Resizing options as a hash array.
  */
-ImageLoader.resize = function(source, target, options) {
-  var targetDimensions = ImageLoader.resizeDimensions(
-      source.width, source.height, options);
-
+ImageLoader.resizeAndCrop = function(source, target, options) {
   // Default orientation is 0deg.
-  var orientation = options.orientation || new ImageOrientation(1, 0, 0, 1);
-  var size = orientation.getSizeAfterCancelling(
-      targetDimensions.width, targetDimensions.height);
-  target.width = size.width;
-  target.height = size.height;
+  var orientation =
+      ImageOrientation.fromDriveOrientation(options.orientation || 0);
 
-  var targetContext = target.getContext('2d');
+  // Calculates copy parameters.
+  var copyParameters = ImageLoader.calculateCopyParameters(source, options);
+  target.width = copyParameters.canvas.width;
+  target.height = copyParameters.canvas.height;
+
+  // Apply.
+  var targetContext =
+      /** @type {CanvasRenderingContext2D} */ (target.getContext('2d'));
   targetContext.save();
   orientation.cancelImageOrientation(
-      targetContext, targetDimensions.width, targetDimensions.height);
+      targetContext, copyParameters.target.width, copyParameters.target.height);
   targetContext.drawImage(
       source,
-      0, 0, source.width, source.height,
-      0, 0, targetDimensions.width, targetDimensions.height);
+      copyParameters.source.x,
+      copyParameters.source.y,
+      copyParameters.source.width,
+      copyParameters.source.height,
+      copyParameters.target.x,
+      copyParameters.target.y,
+      copyParameters.target.width,
+      copyParameters.target.height);
   targetContext.restore();
+};
+
+/**
+ * @typedef {{
+ *   source: {x:number, y:number, width:number, height:number},
+ *   target: {x:number, y:number, width:number, height:number},
+ *   canvas: {width:number, height:number}
+ * }}
+ */
+ImageLoader.CopyParameters;
+
+/**
+ * Calculates copy parameters.
+ *
+ * @param {HTMLCanvasElement|Image} source Source image or canvas.
+ * @param {Object} options Resizing options as a hash array.
+ * @return {!ImageLoader.CopyParameters} Calculated copy parameters.
+ */
+ImageLoader.calculateCopyParameters = function(source, options) {
+  if (options.crop) {
+    // When an image is cropped, target should be a fixed size square.
+    assert(options.width);
+    assert(options.height);
+    assert(options.width === options.height);
+
+    // The length of shorter edge becomes dimension of cropped area in the
+    // source.
+    var cropSourceDimension = Math.min(source.width, source.height);
+
+    return {
+      source: {
+        x: Math.floor((source.width / 2) - (cropSourceDimension / 2)),
+        y: Math.floor((source.height / 2) - (cropSourceDimension / 2)),
+        width: cropSourceDimension,
+        height: cropSourceDimension
+      },
+      target: {
+        x: 0,
+        y: 0,
+        width: options.width,
+        height: options.height
+      },
+      canvas: {
+        width: options.width,
+        height: options.height
+      }
+    };
+  }
+
+  // Target dimension is calculated in the rotated(transformed) coordinate.
+  var targetCanvasDimensions = ImageLoader.resizeDimensions(
+      source.width, source.height, options);
+
+  var targetDimensions = targetCanvasDimensions;
+  if (options.orientation && options.orientation % 2) {
+    targetDimensions = {
+      width: targetCanvasDimensions.height,
+      height: targetCanvasDimensions.width
+    };
+  }
+
+  return {
+    source: {
+      x: 0,
+      y: 0,
+      width: source.width,
+      height: source.height
+    },
+    target: {
+      x: 0,
+      y: 0,
+      width: targetDimensions.width,
+      height: targetDimensions.height
+    },
+    canvas: {
+      width: targetCanvasDimensions.width,
+      height: targetCanvasDimensions.height
+    }
+  };
 };
 
 /**

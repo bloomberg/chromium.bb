@@ -264,11 +264,27 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
                            this.metadata_.filesystem &&
                            this.metadata_.filesystem.modificationTime &&
                            this.metadata_.filesystem.modificationTime.getTime();
-    var thumbnailUrl =
-        fillMode === ThumbnailLoader.FillMode.OVER_FILL &&
-        this.croppedThumbnailUrl_ ?
-        this.croppedThumbnailUrl_ :
-        this.thumbnailUrl_;
+    var thumbnailUrl = this.thumbnailUrl_;
+    var options = {
+      maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+      maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
+      cache: true,
+      priority: this.priority_,
+      timestamp: modificationTime
+    };
+
+    if (fillMode === ThumbnailLoader.FillMode.OVER_FILL) {
+      // Use cropped thumbnail url if available.
+      thumbnailUrl = this.croppedThumbnailUrl_ ?
+          this.croppedThumbnailUrl_ : this.thumbnailUrl_;
+
+      // Set crop option to image loader. Since image of croppedThumbnailUrl_ is
+      // 360x360 with current implemenation, it's no problem to crop it.
+      options['width'] = 360;
+      options['height'] = 360;
+      options['crop'] = true;
+    }
+
     ImageLoaderClient.getInstance().load(
         thumbnailUrl,
         function(result) {
@@ -277,13 +293,7 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
           else
             reject(result);
         },
-        {
-          maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
-          maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
-          cache: true,
-          priority: this.priority_,
-          timestamp: modificationTime
-        });
+        options);
   }.bind(this)).then(function(result) {
     if (!this.transform_)
       return result;

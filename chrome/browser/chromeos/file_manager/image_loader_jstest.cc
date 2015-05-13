@@ -16,6 +16,9 @@ IN_PROC_BROWSER_TEST_F(ImageLoaderJsTest, ImageLoaderClientTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(ImageLoaderJsTest, CacheTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "cache_unittest.html")));
+  RunTest(base::FilePath(FILE_PATH_LITERAL("cache_unittest.html")));
+}
+
+IN_PROC_BROWSER_TEST_F(ImageLoaderJsTest, ImageLoaderTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL("image_loader_unittest.html")));
 }

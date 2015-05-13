@@ -487,7 +487,7 @@ Request.prototype.onImageLoad_ = function() {
       ImageLoader.shouldProcess(this.image_.width,
                                 this.image_.height,
                                 this.request_)) {
-    ImageLoader.resize(this.image_, this.canvas_, this.request_);
+    ImageLoader.resizeAndCrop(this.image_, this.canvas_, this.request_);
     ImageLoader.convertColorSpace(
         this.canvas_, this.request_.colorSpace || ColorSpace.SRGB);
     this.sendImage_(true);  // Image changed.

@@ -7,7 +7,8 @@
       'target_name': 'background',
       'variables': {
         'depends': [
-          "../file_manager/common/js/file_type.js",
+          '../../webui/resources/js/assert.js',
+          '../file_manager/common/js/file_type.js',
           '../file_manager/common/js/metrics_base.js',
           '../file_manager/common/js/metrics.js',
           '../file_manager/common/js/metrics_events.js',

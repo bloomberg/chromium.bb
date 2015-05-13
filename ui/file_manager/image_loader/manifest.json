@@ -19,6 +19,7 @@
   "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self'; frame-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://www.googledrive.com",
   "background": {
     "scripts": [
+      "chrome://resources/js/assert.js",
       "chrome://resources/js/analytics.js",
       "cache.js",
       "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
