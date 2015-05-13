@@ -687,7 +687,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // flip_y==false means to keep the intrinsic orientation.
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
   web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, src_texture, texture,
-                                            0, internal_format, type);
+                                            internal_format, type);
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);
