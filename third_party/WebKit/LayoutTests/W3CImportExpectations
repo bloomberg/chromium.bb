@@ -139,9 +139,6 @@ imported/web-platform-tests/workers [ Skip ]
 # Exceptions for individual files that fail due to bugs in the upstream tests
 # that we shouldn't bother importing until they are fixed.
 
-# Many failures due to http://crbug.com/43394
-imported/web-platform-tests/IndexedDB/interfaces.html [ Skip ]
-
 # these contain an extraneous debug log div ..
 imported/web-platform-tests/html-imports/link-import-null.html [ Skip ]
 imported/web-platform-tests/html-imports/link-import.html [ Skip ]
@@ -170,6 +167,10 @@ imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html 
 # Uses custom request handler
 imported/web-platform-tests/encoding/single-byte-decoder.html [ Skip ]
 imported/web-platform-tests/encoding/resources/single-byte-raw.py [ Skip ]
+imported/web-platform-tests/encoding/resources/text-plain-charset.py [ Skip ]
 
-# crbug.com/479785: Whitespace in "expected" files confuses tools; skip until it passes
-imported/web-platform-tests/encoding/textdecoder-labels.html [ Skip ]
+# crbug.com/486860 Depends on unsupported .py request handler
+imported/web-platform-tests/referrer-policy/no-referrer-policy/no-referrer-policy.html [ Skip ]
+imported/web-platform-tests/referrer-policy/no-referrer-policy/no-referrer-policy.subresource.py [ Skip ]
+imported/web-platform-tests/referrer-policy/generic/common.js [ Skip ]
+
