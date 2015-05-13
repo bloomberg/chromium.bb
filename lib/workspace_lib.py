@@ -36,6 +36,7 @@ WORKSPACE_CONFIG = 'workspace-config.json'
 WORKSPACE_LOCAL_CONFIG = '.local.json'
 WORKSPACE_CHROOT_DIR = '.chroot'
 WORKSPACE_IMAGES_DIR = 'build/images'
+WORKSPACE_LOGS_DIR = 'build/logs'
 
 # Prefixes used by locators.
 _BOARD_LOCATOR_PREFIX = 'board:'

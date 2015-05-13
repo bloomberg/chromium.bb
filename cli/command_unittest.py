@@ -17,6 +17,7 @@ from chromite.lib import cros_import
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
+from chromite.lib import workspace_lib
 
 
 # pylint:disable=protected-access
@@ -174,7 +175,8 @@ class FileLoggerSetupTest(cros_test_lib.WorkspaceTestCase):
 
     # Test that the filename is correct.
     patch_handler.assert_called_with(
-        os.path.join(self.workspace_path, 'build/logs', 'foo.log'), mode='w')
+        os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
+                     'foo.log'), mode='w')
 
   def testSetupFileLoggerNoFilename(self):
     """Test that the filename and path are correct with no arguments."""
@@ -184,7 +186,8 @@ class FileLoggerSetupTest(cros_test_lib.WorkspaceTestCase):
 
     # Test that the filename is correct.
     patch_handler.assert_called_with(
-        os.path.join(self.workspace_path, 'build/logs', 'brillo.log'), mode='w')
+        os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
+                     'brillo.log'), mode='w')
 
   def testSetupFileLoggerLogLevels(self):
     """Test that the logger operates at the right level."""
@@ -196,7 +199,8 @@ class FileLoggerSetupTest(cros_test_lib.WorkspaceTestCase):
 
     # Test that the logs are correct.
     logs = open(
-        os.path.join(self.workspace_path, 'build/logs', 'foo.log'), 'r').read()
+        os.path.join(self.workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
+                     'foo.log'), 'r').read()
     self.assertNotIn('debug', logs)
     self.assertIn('info', logs)
     self.assertIn('notice', logs)

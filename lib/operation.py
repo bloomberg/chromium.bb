@@ -24,6 +24,7 @@ except ImportError:
   # pylint: disable=import-error
   import queue as Queue
 import re
+import shutil
 import struct
 import sys
 import termios
@@ -32,6 +33,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import workspace_lib
 from chromite.lib.terminal import Color
 
 
@@ -71,6 +73,7 @@ class ProgressBarOperation(object):
     self._stdout_path = None
     self._stderr_path = None
     self._progress_bar_displayed = False
+    self._workspace_path = workspace_lib.WorkspacePath()
 
   def _GetTerminalSize(self, fd=pty.STDOUT_FILENO):
     """Return a terminal size object for |fd|.
@@ -161,12 +164,23 @@ class ProgressBarOperation(object):
     restore_log_level = logging.getLogger().getEffectiveLevel()
     logging.getLogger().setLevel(log_level)
     try:
-      with cros_build_lib.OutputCapturer(stdout_path=self._stdout_path,
-                                         stderr_path=self._stderr_path):
+      with cros_build_lib.OutputCapturer(
+          stdout_path=self._stdout_path, stderr_path=self._stderr_path,
+          quiet_fail=self._workspace_path is not None):
         func(*args, **kwargs)
     finally:
       self._queue.put(_BackgroundTaskComplete())
       logging.getLogger().setLevel(restore_log_level)
+
+  def MoveStdoutStderrFiles(self):
+    """On failure, move stdout/stderr files to workspace/WORKSPACE_LOGS_DIR."""
+    path = os.path.join(self._workspace_path, workspace_lib.WORKSPACE_LOGS_DIR)
+    # TODO(ralphnathan): Not sure if we need this because it should be done when
+    # we store the log file for brillo commands.
+    osutils.SafeMakedirs(path)
+    shutil.move(self._stdout_path, path)
+    shutil.move(self._stderr_path, path)
+    logging.warning('Please look at %s for more information.', path)
 
   def Run(self, func, *args, **kwargs):
     """Run func, parse its output, and update the progress bar.
@@ -191,19 +205,27 @@ class ProgressBarOperation(object):
       self._stderr_path = os.path.join(tempdir, 'stderr')
       osutils.Touch(self._stdout_path)
       osutils.Touch(self._stderr_path)
-      with parallel.BackgroundTaskRunner(
-          self.CaptureOutputInBackground, func, *args, **kwargs) as queue:
-        queue.put([])
-        self.OpenStdoutStderr()
-        while True:
-          self.ParseOutput()
-          if self.WaitUntilComplete(update_period):
-            break
-      # Before we exit, parse the output again to update progress bar.
-      self.ParseOutput()
-      # Final sanity check to update the progress bar to 100% if it was used by
-      # ParseOutput
-      self.Cleanup()
+      try:
+        with parallel.BackgroundTaskRunner(
+            self.CaptureOutputInBackground, func, *args, **kwargs) as queue:
+          queue.put([])
+          self.OpenStdoutStderr()
+          while True:
+            self.ParseOutput()
+            if self.WaitUntilComplete(update_period):
+              break
+        # Before we exit, parse the output again to update progress bar.
+        self.ParseOutput()
+        # Final sanity check to update the progress bar to 100% if it was used
+        # by ParseOutput
+        self.Cleanup()
+      except:
+        logging.error('Oops. Something went wrong.')
+        # Move the stdout/stderr files to a location that the user can access.
+        if self._workspace_path is not None:
+          self.MoveStdoutStderrFiles()
+        # Raise the exception so it can be caught again.
+        raise
 
 
 class ParallelEmergeOperation(ProgressBarOperation):

@@ -8,10 +8,13 @@ from __future__ import print_function
 
 import multiprocessing
 import os
+import sys
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import operation
+from chromite.lib import parallel
+from chromite.lib import workspace_lib
 
 
 class TestWrapperProgressBarOperation(operation.ProgressBarOperation):
@@ -32,8 +35,12 @@ class FakeParallelEmergeOperation(operation.ParallelEmergeOperation):
     self._queue.put('advance')
 
 
-class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
-                               cros_test_lib.TempDirTestCase,
+class FakeException(Exception):
+  """Fake exception used for testing exception handling."""
+
+
+class ProgressBarOperationTest(cros_test_lib.WorkspaceTestCase,
+                               cros_test_lib.OutputTestCase,
                                cros_test_lib.LoggingTestCase):
   """Test the Progress Bar Operation class."""
   # pylint: disable=protected-access
@@ -111,6 +118,52 @@ class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
     #   statement is executed even once in which case ParseOutput would only be
     #   called once.
     self.AssertOutputContainsLine('Calling ParseOutput')
+
+  def testExceptionHandlingNotInWorkspace(self):
+    """Test exception handling if not in a workspace."""
+    def func():
+      print('foo')
+      print('bar', file=sys.stderr)
+      raise FakeException()
+
+    op = TestWrapperProgressBarOperation()
+    with self.OutputCapturer():
+      try:
+        with cros_test_lib.LoggingCapturer() as logs:
+          op.Run(func)
+      except parallel.BackgroundFailure:
+        pass
+
+    # Check that the output was dumped correctly.
+    self.AssertLogsContain(logs, 'Something went wrong.')
+    self.AssertOutputContainsLine('Captured stdout was')
+    self.AssertOutputContainsLine('Captured stderr was')
+    self.AssertOutputContainsLine('foo')
+    self.AssertOutputContainsLine('bar', check_stderr=True)
+
+  def testExceptionHandlingInWorkspace(self):
+    """Test that stdout/stderr files are moved correctly if in a workspace."""
+    def func():
+      print('foo')
+      print('bar', file=sys.stderr)
+      raise FakeException()
+
+    self.CreateWorkspace()
+    op = TestWrapperProgressBarOperation()
+    try:
+      with cros_test_lib.LoggingCapturer() as logs:
+        op.Run(func)
+    except parallel.BackgroundFailure as e:
+      if not e.HasFailureType(FakeException):
+        raise e
+
+    # Check that the files have been moved to the right location.
+    self.assertExists(os.path.join(self.workspace_path,
+                                   workspace_lib.WORKSPACE_LOGS_DIR, 'stdout'))
+    self.assertExists(os.path.join(self.workspace_path,
+                                   workspace_lib.WORKSPACE_LOGS_DIR, 'stderr'))
+    # Check that the log message contains the path.
+    self.AssertLogsContain(logs, self.workspace_path)
 
   def testLogLevel(self):
     """Test that the log level of the function running is set correctly."""

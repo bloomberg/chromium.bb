@@ -43,7 +43,8 @@ def SetupFileLogger(filename='brillo.log', log_level=logging.DEBUG):
   workspace_path = workspace_lib.WorkspacePath()
   if workspace_path is None:
     return
-  path = os.path.join(workspace_path, 'build/logs', filename)
+  path = os.path.join(workspace_path, workspace_lib.WORKSPACE_LOGS_DIR,
+                      filename)
   osutils.Touch(path, makedirs=True)
   logger = logging.getLogger()
   fh = logging.FileHandler(path, mode='w')

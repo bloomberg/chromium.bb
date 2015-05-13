@@ -2168,9 +2168,9 @@ class OutputCapturer(object):
   OPER_MSG_SPLIT_RE = re.compile(r'^\033\[1;.*?\033\[0m$|^[^\n]*$',
                                  re.DOTALL | re.MULTILINE)
 
-  __slots__ = ['_stdout_capturer', '_stderr_capturer']
+  __slots__ = ['_stdout_capturer', '_stderr_capturer', '_quiet_fail']
 
-  def __init__(self, stdout_path=None, stderr_path=None):
+  def __init__(self, stdout_path=None, stderr_path=None, quiet_fail=False):
     """Initalize OutputCapturer with capture files.
 
     If OutputCapturer is initialized with filenames to capture stdout and stderr
@@ -2179,9 +2179,12 @@ class OutputCapturer(object):
     Args:
       stdout_path: File to capture stdout to. If None, a temporary file is used.
       stderr_path: File to capture stderr to. If None, a temporary file is used.
+      quiet_fail: If True fail quietly without printing the captured stdout and
+        stderr.
     """
     self._stdout_capturer = _FdCapturer(sys.stdout, output=stdout_path)
     self._stderr_capturer = _FdCapturer(sys.stderr, output=stderr_path)
+    self._quiet_fail = quiet_fail
 
   def __enter__(self):
     # This method is called with entering 'with' block.
@@ -2192,7 +2195,7 @@ class OutputCapturer(object):
     # This method is called when exiting 'with' block.
     self.StopCapturing()
 
-    if exc_type:
+    if exc_type and not self._quiet_fail:
       print('Exception during output capturing: %r' % (exc_val,))
       stdout = self.GetStdout()
       if stdout:
