@@ -20,9 +20,6 @@ namespace {
 // Maximum number of results to show.
 const size_t kMaxResults = 6;
 
-// A value to indicate no max number of results limit.
-const size_t kNoMaxResultsLimit = 0;
-
 void UpdateResult(const SearchResult& source, SearchResult* target) {
   target->set_display_type(source.display_type());
   target->set_title(source.title());
@@ -45,7 +42,7 @@ bool Mixer::SortData::operator<(const SortData& other) const {
   return score > other.score;
 }
 
-// Used to group relevant providers together fox mixing their results.
+// Used to group relevant providers together for mixing their results.
 class Mixer::Group {
  public:
   Group(size_t max_results, double boost)
@@ -98,11 +95,11 @@ class Mixer::Group {
     }
 
     std::sort(results_.begin(), results_.end());
-    if (max_results_ != kNoMaxResultsLimit && results_.size() > max_results_)
-      results_.resize(max_results_);
   }
 
   const SortedResults& results() const { return results_; }
+
+  size_t max_results() const { return max_results_; }
 
  private:
   typedef std::vector<SearchProvider*> Providers;
@@ -146,12 +143,15 @@ void Mixer::MixAndPublish(bool is_voice_query,
   SortedResults results;
   results.reserve(kMaxResults);
 
-  // Add results from non-omnibox groups first.
+  // Add results from non-omnibox groups first. Limit to the maximum number of
+  // results in each group.
   for (size_t i = 0; i < groups_.size(); ++i) {
     if (!has_omnibox_group_ || i != omnibox_group_) {
       const Group& group = *groups_[i];
+      size_t num_results =
+          std::min(group.results().size(), group.max_results());
       results.insert(results.end(), group.results().begin(),
-                     group.results().end());
+                     group.results().begin() + num_results);
     }
   }
 
@@ -161,6 +161,7 @@ void Mixer::MixAndPublish(bool is_voice_query,
   // Fill the remaining slots with omnibox results. Always add at least one
   // omnibox result (even if there are no more slots; if we over-fill the
   // vector, the web store and people results will be removed in a later step).
+  // Note: max_results() is ignored for the omnibox group.
   if (has_omnibox_group_) {
     CHECK_LT(omnibox_group_, groups_.size());
     const Group& omnibox_group = *groups_[omnibox_group_];

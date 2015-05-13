@@ -21,7 +21,7 @@ namespace test {
 
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
-const size_t kMaxOmniboxResults = 0;  // Unlimited.
+const size_t kMaxOmniboxResults = 0;  // Ignored.
 const size_t kMaxWebstoreResults = 2;
 const size_t kMaxPeopleResults = 2;
 
