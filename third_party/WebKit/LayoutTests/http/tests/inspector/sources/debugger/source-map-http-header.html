@@ -17,7 +17,8 @@ var test = function()
         InspectorTest.addResult("Reloading...");
 
         var mainTarget = WebInspector.targetManager.mainTarget();
-        mainTarget.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(mainTarget);
+        debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
         function onScriptAdded(event)
         {
             var script = event.data;

@@ -280,7 +280,8 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
 
     while (asyncStackTrace) {
         results.push("    [" + (asyncStackTrace.description || "Async Call") + "]");
-        var printed = printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.mainTarget(), asyncStackTrace.callFrames));
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(WebInspector.targetManager.mainTarget());
+        var printed = printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, asyncStackTrace.callFrames));
         if (!printed)
             results.pop();
         if (asyncStackTrace.callFrames.peekLast().functionName === "testFunction")
@@ -303,7 +304,8 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(this.target(), callFrames), reason, breakpointIds, asyncStackTrace, auxData];
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(this.target());
+    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, callFrames), reason, breakpointIds, asyncStackTrace, auxData];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
@@ -481,12 +483,13 @@ InspectorTest.queryScripts = function(filter)
 InspectorTest.createScriptMock = function(url, startLine, startColumn, isContentScript, source, target, preRegisterCallback)
 {
     target = target || WebInspector.targetManager.mainTarget();
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
     var scriptId = ++InspectorTest._lastScriptId;
     var lineCount = source.lineEndings().length;
     var endLine = startLine + lineCount - 1;
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.lineEndings()[lineCount - 2];
     var hasSourceURL = !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m) || !!source.match(/\/\/@\ssourceURL=\s*(\S*?)\s*$/m);
-    var script = new WebInspector.Script(target, scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
+    var script = new WebInspector.Script(debuggerModel, scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
     script.requestContent = function(callback)
     {
         var trimmedSource = WebInspector.Script._trimSourceURLComment(source);
@@ -494,7 +497,7 @@ InspectorTest.createScriptMock = function(url, startLine, startColumn, isContent
     };
     if (preRegisterCallback)
         preRegisterCallback(script);
-    target.debuggerModel._registerScript(script);
+    debuggerModel._registerScript(script);
     return script;
 };
 

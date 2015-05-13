@@ -822,7 +822,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.networkManager = target.networkManager;
         InspectorTest.resourceTreeModel = target.resourceTreeModel;
         InspectorTest.networkLog = target.networkLog;
-        InspectorTest.debuggerModel = target.debuggerModel;
+        InspectorTest.debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
         InspectorTest.runtimeModel = target.runtimeModel;
         InspectorTest.domModel = WebInspector.DOMModel.fromTarget(target);
         InspectorTest.cssModel = WebInspector.CSSStyleModel.fromTarget(target);

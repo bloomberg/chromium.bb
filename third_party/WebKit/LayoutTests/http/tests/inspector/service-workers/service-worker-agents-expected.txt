@@ -7,17 +7,6 @@ Debugger-related command should be issued: {
         "workerId": "<id>",
         "message": {
             "id": "<id>",
-            "method": "Debugger.enable"
-        }
-    }
-}
-Debugger-related command should be issued: {
-    "id": "<id>",
-    "method": "ServiceWorker.sendMessage",
-    "params": {
-        "workerId": "<id>",
-        "message": {
-            "id": "<id>",
             "method": "Worker.sendMessageToWorker",
             "params": {
                 "workerId": "<id>",
@@ -31,17 +20,6 @@ Debugger-related command should be issued: {
 }
 Suspending targets.
 Resuming targets.
-Debugger-related command should be issued: {
-    "id": "<id>",
-    "method": "ServiceWorker.sendMessage",
-    "params": {
-        "workerId": "<id>",
-        "message": {
-            "id": "<id>",
-            "method": "Debugger.enable"
-        }
-    }
-}
 Debugger-related command should be issued: {
     "id": "<id>",
     "method": "ServiceWorker.sendMessage",

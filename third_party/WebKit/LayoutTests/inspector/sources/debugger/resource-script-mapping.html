@@ -20,7 +20,7 @@ function test()
 
     function uiLocation(script, lineNumber, columnNumber)
     {
-        var location = script.target().debuggerModel.createRawLocation(script, lineNumber, columnNumber);
+        var location = script.debuggerModel.createRawLocation(script, lineNumber, columnNumber);
         return InspectorTest.testDebuggerWorkspaceBinding.rawLocationToUILocation(location);
     }
 

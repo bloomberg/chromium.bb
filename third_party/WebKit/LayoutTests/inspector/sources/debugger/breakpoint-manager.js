@@ -17,7 +17,7 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
             var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
             if (!InspectorTest.uiSourceCodes[networkURL])
                 return null;
-            return new WebInspector.DebuggerModel.Location(target, networkURL, lineNumber, 0);
+            return new WebInspector.DebuggerModel.Location(target.debuggerModel, networkURL, lineNumber, 0);
         },
 
         isIdentity: function()
@@ -61,7 +61,7 @@ InspectorTest.DebuggerModelMock.prototype = {
 
     _addScript: function(scriptId, url)
     {
-        var script = new WebInspector.Script(this._target, scriptId, url);
+        var script = new WebInspector.Script(this, scriptId, url);
         this._scripts[scriptId] = script;
         this._debuggerWorkspaceBinding._targetToData.get(this._target)._parsedScriptSource({data: script});
     },
@@ -99,7 +99,7 @@ InspectorTest.DebuggerModelMock.prototype = {
 
     createRawLocation: function(script, line, column)
     {
-        return new WebInspector.DebuggerModel.Location(this.target(), script.scriptId, line, column);
+        return new WebInspector.DebuggerModel.Location(this, script.scriptId, line, column);
     },
 
     setBreakpointByURL: function(url, lineNumber, columnNumber, condition, callback)
@@ -118,7 +118,7 @@ InspectorTest.DebuggerModelMock.prototype = {
             return;
         }
         if (lineNumber >= 1000) {
-            var shiftedLocation = new WebInspector.DebuggerModel.Location(this._target, url, lineNumber + 10, columnNumber);
+            var shiftedLocation = new WebInspector.DebuggerModel.Location(this, url, lineNumber + 10, columnNumber);
             this._scheduleSetBeakpointCallback(callback, breakpointId, [shiftedLocation]);
             return;
         }
@@ -126,7 +126,7 @@ InspectorTest.DebuggerModelMock.prototype = {
         var locations = [];
         var script = this._scriptForURL(url);
         if (script) {
-            var location = new WebInspector.DebuggerModel.Location(this._target, script.scriptId, lineNumber, 0);
+            var location = new WebInspector.DebuggerModel.Location(this, script.scriptId, lineNumber, 0);
             locations.push(location);
         }
 

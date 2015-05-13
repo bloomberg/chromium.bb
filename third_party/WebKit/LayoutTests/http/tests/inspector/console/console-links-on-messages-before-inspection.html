@@ -15,9 +15,10 @@ function loadScript()
 function test()
 {
     var mainTarget = WebInspector.targetManager.mainTarget();
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(mainTarget);
     var message = new WebInspector.ConsoleMessage(mainTarget, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageLevel.Log, "hello?", null, " http://127.0.0.1:8000/inspector/resources/source2.js");
     mainTarget.consoleModel.addMessage(message);
-    mainTarget.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
 
     InspectorTest.dumpConsoleMessages();
     InspectorTest.evaluateInPage("loadScript()");
