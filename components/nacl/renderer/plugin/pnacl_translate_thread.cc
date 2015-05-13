@@ -190,21 +190,20 @@ void WINAPI PnaclTranslateThread::DoCompileThread(void* arg) {
 }
 
 void PnaclTranslateThread::DoCompile() {
-  // If the main thread asked us to exit in between starting the thread
-  // and now, just leave now.
   {
     nacl::MutexLocker ml(&subprocess_mu_);
+    // If the main thread asked us to exit in between starting the thread
+    // and now, just leave now.
     if (!compiler_subprocess_active_)
       return;
-  }
-
-  // Now that we are in helper thread, we can do the the blocking
-  // StartSrpcServices operation.
-  if (!compiler_subprocess_->StartSrpcServices()) {
-    TranslateFailed(
-        PP_NACL_ERROR_SRPC_CONNECTION_FAIL,
-        "SRPC connection failure for " + compiler_subprocess_->description());
-    return;
+    // Now that we are in helper thread, we can do the the blocking
+    // StartSrpcServices operation.
+    if (!compiler_subprocess_->StartSrpcServices()) {
+      TranslateFailed(
+          PP_NACL_ERROR_SRPC_CONNECTION_FAIL,
+          "SRPC connection failure for " + compiler_subprocess_->description());
+      return;
+    }
   }
 
   SrpcParams params;
@@ -338,21 +337,20 @@ void WINAPI PnaclTranslateThread::DoLinkThread(void* arg) {
 }
 
 void PnaclTranslateThread::DoLink() {
-  // If the main thread asked us to exit in between starting the thread
-  // and now, just leave now.
   {
     nacl::MutexLocker ml(&subprocess_mu_);
+    // If the main thread asked us to exit in between starting the thread
+    // and now, just leave now.
     if (!ld_subprocess_active_)
       return;
-  }
-
-  // Now that we are in helper thread, we can do the the blocking
-  // StartSrpcServices operation.
-  if (!ld_subprocess_->StartSrpcServices()) {
-    TranslateFailed(
-        PP_NACL_ERROR_SRPC_CONNECTION_FAIL,
-        "SRPC connection failure for " + ld_subprocess_->description());
-    return;
+    // Now that we are in helper thread, we can do the the blocking
+    // StartSrpcServices operation.
+    if (!ld_subprocess_->StartSrpcServices()) {
+      TranslateFailed(
+          PP_NACL_ERROR_SRPC_CONNECTION_FAIL,
+          "SRPC connection failure for " + ld_subprocess_->description());
+      return;
+    }
   }
 
   SrpcParams params;

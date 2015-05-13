@@ -113,9 +113,9 @@ class PnaclTranslateThread {
   // subprocesses. The *_subprocess_active flags indicate which subprocesses
   // are active to ensure the subprocesses don't get shutdown more than once.
   // The subprocess_mu_ must be held when shutting down the subprocesses
-  // or checking if it's already shut down (via the active flags).
+  // or otherwise accessing the service_runtime component of the subprocess.
   // There are some accesses to the subprocesses without locks held
-  // (invoking SRPC methods client).
+  // (invoking srpc_client methods -- in contrast to using the service_runtime).
   NaClSubprocess* compiler_subprocess_;
   NaClSubprocess* ld_subprocess_;
   bool compiler_subprocess_active_;
