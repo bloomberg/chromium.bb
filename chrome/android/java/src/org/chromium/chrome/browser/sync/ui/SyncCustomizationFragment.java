@@ -79,16 +79,18 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     public static final String PREFERENCE_SYNC_RECENT_TABS = "sync_recent_tabs";
     @VisibleForTesting
     public static final String PREFERENCE_ENCRYPTION = "encryption";
+    @VisibleForTesting
+    public static final String PREF_SYNC_SWITCH = "sync_switch";
+    @VisibleForTesting
+    public static final String PREFERENCE_SYNC_MANAGE_DATA = "sync_manage_data";
 
     public static final String ARGUMENT_ACCOUNT = "account";
 
     private static final int ERROR_COLOR = Color.RED;
-    @VisibleForTesting
-    public static final String PREF_SYNC_SWITCH = "sync_switch";
-    private static final String PREFERENCE_SYNC_MANAGE_DATA = "sync_manage_data";
 
     private ChromeSwitchPreference mSyncSwitchPreference;
     private AndroidSyncSettings mAndroidSyncSettings;
+    private boolean mIsSyncInitialized;
 
     @VisibleForTesting
     public static final String[] PREFS_TO_SAVE = {
@@ -120,6 +122,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
                              Bundle savedInstanceState) {
         mAndroidSyncSettings = AndroidSyncSettings.get(getActivity());
         mProfileSyncService = ProfileSyncService.get(getActivity());
+        mIsSyncInitialized = mProfileSyncService.isSyncInitialized();
 
         getActivity().setTitle(R.string.sign_in_sync);
 
@@ -223,6 +226,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     @Override
     public void onResume() {
         super.onResume();
+        mIsSyncInitialized = mProfileSyncService.isSyncInitialized();
         // This prevents sync from actually syncing until the dialog is closed.
         mProfileSyncService.setSetupInProgress(true);
         mProfileSyncService.addSyncStateChangedListener(this);
@@ -570,8 +574,12 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
      */
     @Override
     public void syncStateChanged() {
-        // Update all because Password syncability is also affected by the backend.
-        updateSyncStateFromSwitch();
+        boolean wasSyncInitialized = mIsSyncInitialized;
+        mIsSyncInitialized = mProfileSyncService.isSyncInitialized();
+        if (mIsSyncInitialized != wasSyncInitialized) {
+            // Update all because Password syncability is also affected by the backend.
+            updateSyncStateFromSwitch();
+        }
     }
 
     /**

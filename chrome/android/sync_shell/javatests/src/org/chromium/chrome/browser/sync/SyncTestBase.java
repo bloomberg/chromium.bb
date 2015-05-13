@@ -15,11 +15,15 @@ import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerat
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockAccountManager;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base class for common functionality between sync tests.
@@ -33,6 +37,7 @@ public class SyncTestBase extends ChromeShellTestBase {
     protected MockAccountManager mAccountManager;
     protected SyncController mSyncController;
     protected FakeServerHelper mFakeServerHelper;
+    protected ProfileSyncService mProfileSyncService;
 
     @Override
     protected void setUp() throws Exception {
@@ -42,8 +47,8 @@ public class SyncTestBase extends ChromeShellTestBase {
         mContext = new SyncTestUtil.SyncTestContext(targetContext);
 
         mapAccountNamesToIds();
-        setUpMockAccountManager();
         setUpMockAndroidSyncSettings();
+        setUpMockAccountManager();
 
         // Initializes ChromeSigninController to use our test context.
         ChromeSigninController.get(mContext);
@@ -53,10 +58,18 @@ public class SyncTestBase extends ChromeShellTestBase {
             @Override
             public void run() {
                 mSyncController = SyncController.get(mContext);
+                // Ensure SyncController is registered with the new AndroidSyncSettings.
+                AndroidSyncSettings.get(mContext).registerObserver(mSyncController);
                 mFakeServerHelper = FakeServerHelper.get();
             }
         });
         FakeServerHelper.useFakeServer(targetContext);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mProfileSyncService = ProfileSyncService.get(mContext);
+            }
+        });
     }
 
     @Override
@@ -130,5 +143,41 @@ public class SyncTestBase extends ChromeShellTestBase {
         SyncTestUtil.verifySyncIsSignedIn(mContext, defaultTestAccount);
         assertTrue("Sync everything should be enabled",
                 SyncTestUtil.isSyncEverythingEnabled(mContext));
+    }
+
+    protected void startSync() throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SyncController.get(mContext).start();
+            }
+        });
+        waitForSyncInitialized();
+    }
+
+    protected void stopSync() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SyncController.get(mContext).stop();
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+    }
+
+    protected void waitForSyncInitialized() throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final AtomicBoolean isInitialized = new AtomicBoolean(false);
+                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                    @Override
+                    public void run() {
+                        isInitialized.set(mProfileSyncService.isSyncInitialized());
+                    }
+                });
+                return isInitialized.get();
+            }
+        }));
     }
 }
