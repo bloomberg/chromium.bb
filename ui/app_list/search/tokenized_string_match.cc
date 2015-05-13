@@ -4,6 +4,8 @@
 
 #include "ui/app_list/search/tokenized_string_match.h"
 
+#include <cmath>
+
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "ui/app_list/search/tokenized_string_char_iterator.h"
@@ -218,10 +220,14 @@ bool TokenizedStringMatch::Calculate(const TokenizedString& query,
     }
   }
 
-  // Using length() for normalizing is not 100% correct but should be good
-  // enough compared with using real char count of the text.
-  if (text.text().length())
-    relevance_ /= text.text().length();
+  // Temper the relevance score with an exponential curve. Each point of
+  // relevance (roughly, each keystroke) is worth less than the last. This means
+  // that typing a few characters of a word is enough to promote matches very
+  // high, with any subsequent characters being worth comparatively less.
+  // TODO(mgiuca): This doesn't really play well with Omnibox results, since as
+  // you type more characters, the app/omnibox results tend to jump over each
+  // other.
+  relevance_ = 1.0 - std::pow(0.5, relevance_);
 
   return relevance_ > kNoMatchScore;
 }

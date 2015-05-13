@@ -14,7 +14,7 @@ namespace app_list {
 namespace test {
 
 // Returns a string of |text| marked the hits in |match| using block bracket.
-// e.g. text= "Text", hits = [{0,1}], returns "[T]ext".
+// e.g. text= "Text", match.hits = [{0,1}], returns "[T]ext".
 std::string MatchHit(const base::string16& text,
                      const TokenizedStringMatch& match) {
   base::string16 marked = text;
@@ -116,6 +116,37 @@ TEST(TokenizedStringMatchTest, Relevance) {
         << " : text=" << kTestCases[i].text
         << ", query_low=" << kTestCases[i].query_low
         << ", query_high=" << kTestCases[i].query_high;
+  }
+}
+
+// More specialized tests of the absolute relevance scores. (These tests are
+// minimal, because they are so brittle. Changing the scoring algorithm will
+// require updating this test.)
+TEST(TokenizedStringMatchTest, AbsoluteRelevance) {
+  const double kEpsilon = 0.006;
+  struct {
+    const char* text;
+    const char* query;
+    double expected_score;
+  } kTestCases[] = {
+      // The first few chars should increase the score extremely high. After
+      // that, they should count less.
+      // NOTE: 0.87 is a magic number, as it is the Omnibox score for a "pretty
+      // good" match. We want a 3-letter prefix match to be slightly above 0.87.
+      {"Google Chrome", "g", 0.5},
+      {"Google Chrome", "go", 0.75},
+      {"Google Chrome", "goo", 0.88},
+      {"Google Chrome", "goog", 0.94},
+  };
+
+  TokenizedStringMatch match;
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
+    EXPECT_TRUE(match.Calculate(base::UTF8ToUTF16(kTestCases[i].query), text));
+    EXPECT_NEAR(match.relevance(), kTestCases[i].expected_score, kEpsilon)
+        << "Test case " << i << " : text=" << kTestCases[i].text
+        << ", query=" << kTestCases[i].query
+        << ", expected_score=" << kTestCases[i].expected_score;
   }
 }
 
