@@ -20,8 +20,8 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_A11Y_PAGE_STYLE_HTML"
-                 file="a11y_page/a11y_page_style.html"
+      <structure name="IDR_SETTINGS_A11Y_PAGE_CSS"
+                 file="a11y_page/a11y_page.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CHECKBOX_HTML"
                  file="checkbox/checkbox.html"

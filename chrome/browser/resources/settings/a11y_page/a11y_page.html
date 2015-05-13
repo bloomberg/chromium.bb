@@ -1,17 +1,13 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
-<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
-<link rel="import" href="chrome://md-settings/settings_page/settings_page_header.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-material/paper-material.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
-<link rel="import" href="a11y_page_style.html">
 
-<polymer-element name="cr-settings-a11y-page">
+<dom-module id="cr-settings-a11y-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="a11y_page.css">
   <template>
-    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <core-style ref="a11yPageStyle"></core-style>
-    <paper-shadow layout vertical cross-fade>
+    <paper-material>
       <div class="more-a11y-link">
         <a href="https://chrome.google.com/webstore/category/collection/accessibility"
             target="_blank" i18n-content="accessibilityMoreFeaturesLink"></a>
@@ -51,30 +47,27 @@
           i18n-values="label:accessibilityClickOnStopLabel">
       </cr-settings-checkbox>
 
-      <core-label horizontal layout center class="autoclick-delay-label"
-          hidden?="{{!prefs.settings.settings.a11y.autoclick}}">
+      <div class="autoclick-delay-label"
+          hidden$="{{!prefs.settings.settings.a11y.autoclick}}">
         <span i18n-content="accessibilityDelayBeforeClickLabel"></span>
-        <cr-dropdown-menu class="autoclick-dropdown">
-          <core-menu class="menu" valueAttr="value" selectedAttribute=""
-              selected="{{prefs.settings.settings.a11y.autoclick_delay_ms}}">
-            <paper-item value="200"
-                i18n-content="accessibilityDelayBeforeClickExtremelyShort">
-            </paper-item>
-            <paper-item value="400"
-                i18n-content="accessibilityDelayBeforeClickVeryShort">
-            </paper-item>
-            <paper-item value="600"
-                i18n-content="accessibilityDelayBeforeClickShort">
-            </paper-item>
-            <paper-item value="800"
-                i18n-content="accessibilityDelayBeforeClickLong">
-            </paper-item>
-            <paper-item value="1000"
-                i18n-content="accessibilityDelayBeforeClickVeryLong">
-            </paper-item>
-          </core-menu>
-        </cr-dropdown-menu>
-      </core-label>
+        <select id="autoclickDropdown" on-change="autoclickSelectChanged_">
+          <option value="200"
+              i18n-content="accessibilityDelayBeforeClickExtremelyShort">
+          </option>
+          <option value="400"
+              i18n-content="accessibilityDelayBeforeClickVeryShort">
+          </option>
+          <option value="600"
+              i18n-content="accessibilityDelayBeforeClickShort">
+          </option>
+          <option value="800"
+              i18n-content="accessibilityDelayBeforeClickLong">
+          </option>
+          <option value="1000"
+              i18n-content="accessibilityDelayBeforeClickVeryLong">
+          </option>
+        </select>
+      </div>
 
       <cr-settings-checkbox
           pref="{{prefs.settings.settings.a11y.virtual_keyboard}}"
@@ -82,7 +75,7 @@
       </cr-settings-checkbox>
 </if>
 
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="a11y_page.js"></script>
-</polymer-element>
+</dom-module>

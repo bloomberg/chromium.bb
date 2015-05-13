@@ -9,6 +9,8 @@
 :host > paper-material {
   -webkit-padding-start: 80px;
   background-color: white;
+  display: flex;
+  flex-direction: column;
   padding-bottom: 40px;
   padding-top: 40px;
 }
