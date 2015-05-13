@@ -42,6 +42,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_prefs',
+        '../../breakpad/breakpad.gyp:breakpad_client',
         '../../components/components.gyp:autofill_core_browser',
         '../../components/components.gyp:autofill_ios_browser',
         '../../components/components.gyp:data_reduction_proxy_core_common',
@@ -118,6 +119,8 @@
         'browser/chrome_switches.h',
         'browser/chrome_url_constants.cc',
         'browser/chrome_url_constants.h',
+        'browser/crash_report/crash_report_background_uploader.h',
+        'browser/crash_report/crash_report_background_uploader.mm',
         'browser/dom_distiller/distiller_viewer.cc',
         'browser/dom_distiller/distiller_viewer.h',
         'browser/dom_distiller/dom_distiller_service_factory.cc',

@@ -1063,6 +1063,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BackgroundUploadReportAborted">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>pkl@chromium.org</owner>
+  <description>
+    An attempt to upload a crash report as a background task failed.
+  </description>
+</action>
+
+<action name="BackgroundUploadReportSucceeded">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>pkl@chromium.org</owner>
+  <description>
+    An attempt to upload a crash report as a background task succeeeded.
+  </description>
+</action>
+
 <action name="BadMessageTerminate_ACDH">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

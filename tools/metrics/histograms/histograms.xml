@@ -4022,6 +4022,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="CrashReport.CrashBackgroundUploadDelay" units="ms">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>pkl@chromium.org</owner>
+  <summary>
+    Time delta between when the crash took place and when the crash was uploaded
+    by the app as a background task. Only logged on iOS.
+  </summary>
+</histogram>
+
+<histogram name="CrashReport.PendingReportsOnBackgroundWakeUp">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>pkl@chromium.org</owner>
+  <summary>
+    The number of crash reports present when the app wakes up as a background
+    task to upload crash reports. Only logged on iOS.
+  </summary>
+</histogram>
+
 <histogram name="CrashReport.PermanentUploadFailure" enum="BooleanHit">
   <owner>erikwright@chromium.org</owner>
   <summary>

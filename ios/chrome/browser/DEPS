@@ -1,6 +1,7 @@
 include_rules = [
   "+ios/chrome/grit",
 
+  "+breakpad/src/client/ios",
   "+components/autofill/core/browser",
   "+components/autofill/ios/browser",
   "+components/data_reduction_proxy/core/common",
