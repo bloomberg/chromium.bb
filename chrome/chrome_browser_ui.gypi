@@ -2746,6 +2746,7 @@
         'chrome_resources.gyp:theme_resources',
         'common',
         'common_net',
+        'encrypted_cert_logger_proto',
         '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:device_event_log_component',
         '../components/components.gyp:dom_distiller_core',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
+#include "chrome/browser/ssl/chrome_fraudulent_certificate_reporter.h"
 
 #include <string>
 
@@ -26,10 +26,11 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using chrome_browser_net::CertificateErrorReporter;
 using content::BrowserThread;
 using net::SSLInfo;
 
-namespace chrome_browser_net {
+namespace {
 
 // Builds an SSLInfo from an invalid cert chain. In this case, the cert is
 // expired; what matters is that the cert would not pass even a normal
@@ -38,8 +39,8 @@ namespace chrome_browser_net {
 static SSLInfo GetBadSSLInfo() {
   SSLInfo info;
 
-  info.cert = net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                                      "expired_cert.pem");
+  info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "expired_cert.pem");
   info.cert_status = net::CERT_STATUS_DATE_INVALID;
   info.is_issued_by_known_root = false;
 
@@ -124,19 +125,16 @@ class MockReporter : public CertificateErrorReporter {
             CertificateErrorReporter::DO_NOT_SEND_COOKIES) {}
 
   void SendReport(ReportType type,
-                  const std::string& hostname,
-                  const net::SSLInfo& ssl_info) override {
+                  const std::string& serialized_report) override {
     EXPECT_EQ(type, REPORT_TYPE_PINNING_VIOLATION);
-    EXPECT_FALSE(hostname.empty());
-    EXPECT_TRUE(ssl_info.is_valid());
-    CertificateErrorReporter::SendReport(type, hostname, ssl_info);
+    EXPECT_FALSE(serialized_report.empty());
+    CertificateErrorReporter::SendReport(type, serialized_report);
   }
 
  private:
   scoped_ptr<net::URLRequest> CreateURLRequest(
       net::URLRequestContext* context) override {
-    return context->CreateRequest(GURL(std::string()),
-                                  net::DEFAULT_PRIORITY,
+    return context->CreateRequest(GURL(std::string()), net::DEFAULT_PRIORITY,
                                   NULL);
   }
 };
@@ -192,4 +190,4 @@ TEST(ChromeFraudulentCertificateReporterTest, ReportIsNotSent) {
   loop.RunUntilIdle();
 }
 
-}  // namespace chrome_browser_net
+}  // namespace

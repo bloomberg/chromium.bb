@@ -28,6 +28,7 @@
 #include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -663,8 +664,15 @@ void SSLBlockingPage::FinishCertCollection() {
       SecurityInterstitialMetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
 
   if (ShouldReportCertificateError()) {
-    ssl_cert_reporter_->ReportInvalidCertificateChain(request_url().host(),
-                                                      ssl_info_);
+    std::string serialized_report;
+    CertificateErrorReport report(request_url().host(), ssl_info_);
+
+    if (!report.Serialize(&serialized_report)) {
+      LOG(ERROR) << "Failed to serialize certificate report.";
+      return;
+    }
+
+    ssl_cert_reporter_->ReportInvalidCertificateChain(serialized_report);
   }
 }
 

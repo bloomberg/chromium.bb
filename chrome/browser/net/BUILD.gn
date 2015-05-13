@@ -11,9 +11,9 @@ proto_library("probe_message_proto") {
   ]
 }
 
-# GYP version: chrome/chrome_browser.gypi:cert_logger_proto
-proto_library("cert_logger_proto") {
+# GYP version: chrome/chrome_browser.gypi:encrypted_cert_logger_proto
+proto_library("encrypted_cert_logger_proto") {
   sources = [
-    "cert_logger.proto",
+    "encrypted_cert_logger.proto",
   ]
 }

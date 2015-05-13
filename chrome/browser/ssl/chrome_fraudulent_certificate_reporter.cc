@@ -1,11 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
+#include "chrome/browser/ssl/chrome_fraudulent_certificate_reporter.h"
 
 #include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/net/certificate_error_reporter.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
@@ -19,18 +20,17 @@ const char kFraudulentCertificateUploadEndpoint[] =
 
 }  // namespace
 
-namespace chrome_browser_net {
-
 ChromeFraudulentCertificateReporter::ChromeFraudulentCertificateReporter(
     net::URLRequestContext* request_context)
-    : certificate_reporter_(new CertificateErrorReporter(
+    : certificate_reporter_(new chrome_browser_net::CertificateErrorReporter(
           request_context,
           GURL(kFraudulentCertificateUploadEndpoint),
-          CertificateErrorReporter::DO_NOT_SEND_COOKIES)) {
+          chrome_browser_net::CertificateErrorReporter::DO_NOT_SEND_COOKIES)) {
 }
 
 ChromeFraudulentCertificateReporter::ChromeFraudulentCertificateReporter(
-    scoped_ptr<CertificateErrorReporter> certificate_reporter)
+    scoped_ptr<chrome_browser_net::CertificateErrorReporter>
+        certificate_reporter)
     : certificate_reporter_(certificate_reporter.Pass()) {
 }
 
@@ -45,9 +45,15 @@ void ChromeFraudulentCertificateReporter::SendReport(
   if (!net::TransportSecurityState::IsGooglePinnedProperty(hostname))
     return;
 
-  certificate_reporter_->SendReport(
-      CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION, hostname,
-      ssl_info);
-}
+  CertificateErrorReport report(hostname, ssl_info);
+  std::string serialized_report;
+  if (!report.Serialize(&serialized_report)) {
+    LOG(ERROR) << "Failed to serialize pinning violation report.";
+    return;
+  }
 
-}  // namespace chrome_browser_net
+  certificate_reporter_->SendReport(
+      chrome_browser_net::CertificateErrorReporter::
+          REPORT_TYPE_PINNING_VIOLATION,
+      serialized_report);
+}

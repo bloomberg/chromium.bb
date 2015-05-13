@@ -1822,8 +1822,6 @@
       'browser/net/chrome_cookie_notification_details.h',
       'browser/net/chrome_extensions_network_delegate.cc',
       'browser/net/chrome_extensions_network_delegate.h',
-      'browser/net/chrome_fraudulent_certificate_reporter.cc',
-      'browser/net/chrome_fraudulent_certificate_reporter.h',
       'browser/net/chrome_http_user_agent_settings.cc',
       'browser/net/chrome_http_user_agent_settings.h',
       'browser/net/chrome_net_log.cc',
@@ -2672,6 +2670,10 @@
       'browser/spellchecker/word_trimmer.h',
     ],
     'chrome_browser_ssl_sources': [
+      'browser/ssl/certificate_error_report.cc',
+      'browser/ssl/certificate_error_report.h',
+      'browser/ssl/chrome_fraudulent_certificate_reporter.cc',
+      'browser/ssl/chrome_fraudulent_certificate_reporter.h',
       'browser/ssl/chrome_ssl_host_state_delegate.cc',
       'browser/ssl/chrome_ssl_host_state_delegate.h',
       'browser/ssl/chrome_ssl_host_state_delegate_factory.cc',
@@ -3011,6 +3013,7 @@
         'chrome_resources.gyp:theme_resources',
         'common',
         'common_net',
+        'encrypted_cert_logger_proto',
         'in_memory_url_index_cache_proto',
         'probe_message_proto',
         '../components/components.gyp:autofill_core_browser',
@@ -3723,10 +3726,23 @@
     {
       # Protobuf compiler / generator for the fraudulent certificate reporting
       # protocol buffer.
-      # GN version: //chrome/browser/net:cert_logger_proto
+      # GN version: //chrome/browser/ssl:cert_logger_proto
       'target_name': 'cert_logger_proto',
       'type': 'static_library',
-      'sources': [ 'browser/net/cert_logger.proto', ],
+      'sources': [ 'browser/ssl/cert_logger.proto', ],
+      'variables': {
+        'proto_in_dir': 'browser/ssl',
+        'proto_out_dir': 'chrome/browser/ssl',
+      },
+      'includes': [ '../build/protoc.gypi', ],
+    },
+    {
+      # Protobuf compiler / generator for the encrypted certificate
+      #  reports protocol buffer.
+      # GN version: //chrome/browser/net:encrypted_cert_logger_proto
+      'target_name': 'encrypted_cert_logger_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/net/encrypted_cert_logger.proto', ],
       'variables': {
         'proto_in_dir': 'browser/net',
         'proto_out_dir': 'chrome/browser/net',

@@ -215,15 +215,14 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHit(
 }
 
 void SafeBrowsingUIManager::ReportInvalidCertificateChain(
-    const std::string& hostname,
-    const net::SSLInfo& ssl_info,
+    const std::string& serialized_report,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread, this,
-          hostname, ssl_info),
+          serialized_report),
       callback);
 }
 
@@ -261,8 +260,7 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
 }
 
 void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(
-    const std::string& hostname,
-    const net::SSLInfo& ssl_info) {
+    const std::string& serialized_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The service may delete the ping manager (i.e. when user disabling service,
@@ -270,8 +268,7 @@ void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(
   if (!sb_service_ || !sb_service_->ping_manager())
     return;
 
-  sb_service_->ping_manager()->ReportInvalidCertificateChain(hostname,
-                                                             ssl_info);
+  sb_service_->ping_manager()->ReportInvalidCertificateChain(serialized_report);
 }
 
 // If the user had opted-in to send MalwareDetails, this gets called

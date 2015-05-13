@@ -20,7 +20,6 @@ class SSLInfo;
 
 namespace chrome_browser_net {
 
-class CertLoggerRequest;
 class EncryptedCertLoggerRequest;
 
 // Provides functionality for sending reports about invalid SSL
@@ -41,7 +40,7 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   // to the server.
   enum CookiesPreference { SEND_COOKIES, DO_NOT_SEND_COOKIES };
 
-  // Create a certificate error reporter that will send certificate
+  // Creates a certificate error reporter that will send certificate
   // error reports to |upload_url|, using |request_context| as the
   // context for the reports. |cookies_preference| controls whether
   // cookies will be sent along with the reports.
@@ -58,11 +57,12 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
 
   ~CertificateErrorReporter() override;
 
-  // Construct, serialize, and send a certificate report to the report
-  // collection server containing the |ssl_info| associated with a
-  // connection to |hostname|.
+  // Sends a certificate report to the report collection server. The
+  // |serialized_report| is expected to be a serialized protobuf
+  // containing information about the hostname, certificate chain, and
+  // certificate errors encountered when validating the chain.
   //
-  // SendReport actually sends the report over the network; callers are
+  // |SendReport| actually sends the report over the network; callers are
   // responsible for enforcing any preconditions (such as obtaining user
   // opt-in, only sending reports for certain hostnames, checking for
   // incognito mode, etc.).
@@ -72,8 +72,7 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   // unsupported platforms, callers must send extended reporting reports
   // over SSL.
   virtual void SendReport(ReportType type,
-                          const std::string& hostname,
-                          const net::SSLInfo& ssl_info);
+                          const std::string& serialized_report);
 
   // net::URLRequest::Delegate
   void OnResponseStarted(net::URLRequest* request) override;
@@ -87,24 +86,17 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   static bool DecryptCertificateErrorReport(
       const uint8 server_private_key[32],
       const EncryptedCertLoggerRequest& encrypted_report,
-      CertLoggerRequest* decrypted_report);
+      std::string* decrypted_serialized_report);
 
  private:
-  // Create a URLRequest with which to send a certificate report to the
+  // Creates a URLRequest with which to send a certificate report to the
   // server.
   virtual scoped_ptr<net::URLRequest> CreateURLRequest(
       net::URLRequestContext* context);
 
-  // Serialize and send a CertLoggerRequest protobuf to the report
+  // Sends a serialized report (encrypted or not) to the report
   // collection server.
-  void SendCertLoggerRequest(const CertLoggerRequest& request);
-
   void SendSerializedRequest(const std::string& serialized_request);
-
-  // Populate the CertLoggerRequest for a report.
-  static void BuildReport(const std::string& hostname,
-                          const net::SSLInfo& ssl_info,
-                          CertLoggerRequest* out_request);
 
   // Performs post-report cleanup.
   void RequestComplete(net::URLRequest* request);

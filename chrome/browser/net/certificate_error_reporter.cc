@@ -7,9 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
-#include "base/time/time.h"
-#include "chrome/browser/net/cert_logger.pb.h"
+#include "chrome/browser/net/encrypted_cert_logger.pb.h"
 
 #if defined(USE_OPENSSL)
 #include "crypto/aead_openssl.h"
@@ -22,13 +20,9 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
-#include "net/cert/x509_certificate.h"
-#include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_context.h"
 
 namespace {
-
-using chrome_browser_net::CertLoggerRequest;
 
 // Constants used for crypto
 static const uint8 kServerPublicKey[] = {
@@ -56,7 +50,8 @@ bool EncryptSerializedReport(
   crypto::curve25519::ScalarMult(private_key, server_public_key, shared_secret);
 
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
-  crypto::HKDF hkdf(std::string((char*)shared_secret, sizeof(shared_secret)),
+  crypto::HKDF hkdf(std::string(reinterpret_cast<char*>(shared_secret),
+                                sizeof(shared_secret)),
                     std::string(),
                     base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)), 0, 0,
                     aead.KeyLength());
@@ -69,7 +64,7 @@ bool EncryptSerializedReport(
   std::string nonce(aead.NonceLength(), 0);
 
   std::string ciphertext;
-  if (!aead.Seal(report, nonce, "", &ciphertext)) {
+  if (!aead.Seal(report, nonce, std::string(), &ciphertext)) {
     LOG(ERROR) << "Error sealing certificate report.";
     return false;
   }
@@ -77,48 +72,13 @@ bool EncryptSerializedReport(
   encrypted_report->set_encrypted_report(ciphertext);
   encrypted_report->set_server_public_key_version(server_public_key_version);
   encrypted_report->set_client_public_key(
-      std::string((char*)public_key, sizeof(public_key)));
+      std::string(reinterpret_cast<char*>(public_key), sizeof(public_key)));
   encrypted_report->set_algorithm(
       chrome_browser_net::EncryptedCertLoggerRequest::
           AEAD_ECDH_AES_128_CTR_HMAC_SHA256);
   return true;
 }
 #endif
-
-void AddCertStatusToReportErrors(
-    net::CertStatus cert_status,
-    CertLoggerRequest* report) {
-  if (cert_status & net::CERT_STATUS_REVOKED)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_REVOKED);
-  if (cert_status & net::CERT_STATUS_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_INVALID);
-  if (cert_status & net::CERT_STATUS_PINNED_KEY_MISSING)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
-  if (cert_status & net::CERT_STATUS_AUTHORITY_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_AUTHORITY_INVALID);
-  if (cert_status & net::CERT_STATUS_COMMON_NAME_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_COMMON_NAME_INVALID);
-  if (cert_status & net::CERT_STATUS_NON_UNIQUE_NAME)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_NON_UNIQUE_NAME);
-  if (cert_status & net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_CERT_NAME_CONSTRAINT_VIOLATION);
-  if (cert_status & net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_CERT_WEAK_SIGNATURE_ALGORITHM);
-  if (cert_status & net::CERT_STATUS_WEAK_KEY)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_WEAK_KEY);
-  if (cert_status & net::CERT_STATUS_DATE_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_DATE_INVALID);
-  if (cert_status & net::CERT_STATUS_VALIDITY_TOO_LONG)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_VALIDITY_TOO_LONG);
-  if (cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_CERT_UNABLE_TO_CHECK_REVOCATION);
-  if (cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_NO_REVOCATION_MECHANISM);
-}
 
 }  // namespace
 
@@ -153,25 +113,20 @@ CertificateErrorReporter::~CertificateErrorReporter() {
   STLDeleteElements(&inflight_requests_);
 }
 
-void CertificateErrorReporter::SendReport(ReportType type,
-                                          const std::string& hostname,
-                                          const net::SSLInfo& ssl_info) {
-  CertLoggerRequest request;
-  BuildReport(hostname, ssl_info, &request);
-
+void CertificateErrorReporter::SendReport(
+    ReportType type,
+    const std::string& serialized_report) {
   switch (type) {
     case REPORT_TYPE_PINNING_VIOLATION:
-      SendCertLoggerRequest(request);
+      SendSerializedRequest(serialized_report);
       break;
     case REPORT_TYPE_EXTENDED_REPORTING:
       if (upload_url_.SchemeIsCryptographic()) {
-        SendCertLoggerRequest(request);
+        SendSerializedRequest(serialized_report);
       } else {
         DCHECK(IsHttpUploadUrlSupported());
 #if defined(USE_OPENSSL)
         EncryptedCertLoggerRequest encrypted_report;
-        std::string serialized_report;
-        request.SerializeToString(&serialized_report);
         if (!EncryptSerializedReport(server_public_key_,
                                      server_public_key_version_,
                                      serialized_report, &encrypted_report)) {
@@ -230,14 +185,16 @@ bool CertificateErrorReporter::IsHttpUploadUrlSupported() {
 bool CertificateErrorReporter::DecryptCertificateErrorReport(
     const uint8 server_private_key[32],
     const EncryptedCertLoggerRequest& encrypted_report,
-    CertLoggerRequest* decrypted_report) {
+    std::string* decrypted_serialized_report) {
   uint8 shared_secret[crypto::curve25519::kBytes];
   crypto::curve25519::ScalarMult(
-      server_private_key, (uint8*)encrypted_report.client_public_key().data(),
+      server_private_key, reinterpret_cast<const uint8*>(
+                              encrypted_report.client_public_key().data()),
       shared_secret);
 
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
-  crypto::HKDF hkdf(std::string((char*)shared_secret, sizeof(shared_secret)),
+  crypto::HKDF hkdf(std::string(reinterpret_cast<char*>(shared_secret),
+                                sizeof(shared_secret)),
                     std::string(),
                     base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)), 0, 0,
                     aead.KeyLength());
@@ -249,22 +206,10 @@ bool CertificateErrorReporter::DecryptCertificateErrorReport(
   // Use an all-zero nonce because the key is random per-message.
   std::string nonce(aead.NonceLength(), 0);
 
-  std::string plaintext;
-  if (!aead.Open(encrypted_report.encrypted_report(), nonce, "", &plaintext)) {
-    LOG(ERROR) << "Error opening certificate report";
-    return false;
-  }
-
-  return decrypted_report->ParseFromString(plaintext);
+  return aead.Open(encrypted_report.encrypted_report(), nonce, std::string(),
+                   decrypted_serialized_report);
 }
 #endif
-
-void CertificateErrorReporter::SendCertLoggerRequest(
-    const CertLoggerRequest& request) {
-  std::string serialized_request;
-  request.SerializeToString(&serialized_request);
-  SendSerializedRequest(serialized_request);
-}
 
 void CertificateErrorReporter::SendSerializedRequest(
     const std::string& serialized_request) {
@@ -284,26 +229,6 @@ void CertificateErrorReporter::SendSerializedRequest(
   net::URLRequest* raw_url_request = url_request.get();
   inflight_requests_.insert(url_request.release());
   raw_url_request->Start();
-}
-
-void CertificateErrorReporter::BuildReport(const std::string& hostname,
-                                           const net::SSLInfo& ssl_info,
-                                           CertLoggerRequest* out_request) {
-  base::Time now = base::Time::Now();
-  out_request->set_time_usec(now.ToInternalValue());
-  out_request->set_hostname(hostname);
-
-  std::vector<std::string> pem_encoded_chain;
-  if (!ssl_info.cert->GetPEMEncodedChain(&pem_encoded_chain))
-    LOG(ERROR) << "Could not get PEM encoded chain.";
-
-  std::string* cert_chain = out_request->mutable_cert_chain();
-  for (size_t i = 0; i < pem_encoded_chain.size(); ++i)
-    *cert_chain += pem_encoded_chain[i];
-
-  out_request->add_pin(ssl_info.pinning_failure_log);
-
-  AddCertStatusToReportErrors(ssl_info.cert_status, out_request);
 }
 
 void CertificateErrorReporter::RequestComplete(net::URLRequest* request) {

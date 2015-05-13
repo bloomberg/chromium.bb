@@ -21,6 +21,8 @@
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/ssl/cert_logger.pb.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
@@ -211,10 +213,11 @@ class MockReporter : public CertificateErrorReporter {
                                  cookies_preference) {}
 
   void SendReport(CertificateErrorReporter::ReportType type,
-                  const std::string& hostname,
-                  const net::SSLInfo& ssl_info) override {
+                  const std::string& serialized_report) override {
+    CertificateErrorReport report;
+    ASSERT_TRUE(report.InitializeFromString(serialized_report));
     EXPECT_EQ(CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, type);
-    latest_hostname_reported_ = hostname;
+    latest_hostname_reported_ = report.hostname();
   }
 
   const std::string& latest_hostname_reported() {
@@ -247,12 +250,12 @@ class MockSSLCertReporter : public SSLCertReporter {
   ~MockSSLCertReporter() override { EXPECT_EQ(expect_report_, reported_); }
 
   // SSLCertReporter implementation
-  void ReportInvalidCertificateChain(const std::string& hostname,
-                                     const net::SSLInfo& ssl_info) override {
+  void ReportInvalidCertificateChain(
+      const std::string& serialized_report) override {
     reported_ = true;
     if (expect_report_) {
       safe_browsing_ui_manager_->ReportInvalidCertificateChain(
-          hostname, ssl_info, report_sent_callback_);
+          serialized_report, report_sent_callback_);
     }
   }
 

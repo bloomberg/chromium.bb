@@ -34,7 +34,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/about_protocol_handler.h"
-#include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -46,6 +45,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ssl/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -1025,8 +1025,7 @@ void ProfileIOData::Init(
   network_delegate->set_force_google_safe_search(&force_google_safesearch_);
   network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
   fraudulent_certificate_reporter_.reset(
-      new chrome_browser_net::ChromeFraudulentCertificateReporter(
-          main_request_context_.get()));
+      new ChromeFraudulentCertificateReporter(main_request_context_.get()));
 
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.

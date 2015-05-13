@@ -17,11 +17,10 @@ class SSLCertReporter {
  public:
   virtual ~SSLCertReporter() {}
 
-  // Send a report for |hostname| with the given |ssl_info| to the
-  // report collection endpoint. |callback| will be run when the report has
-  // been sent off (not necessarily after a response has been received).
-  virtual void ReportInvalidCertificateChain(const std::string& hostname,
-                                             const net::SSLInfo& ssl_info) = 0;
+  // Sends a serialized certificate report to the report collection
+  // endpoint.
+  virtual void ReportInvalidCertificateChain(
+      const std::string& serialized_report) = 0;
 };
 
 #endif  // CHROME_BROWSER_SSL_SSL_CERT_REPORTER_H_

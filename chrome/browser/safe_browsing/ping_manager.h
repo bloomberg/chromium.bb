@@ -56,8 +56,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
 
   // Users can opt-in on the SSL interstitial to send reports of invalid
   // certificate chains.
-  void ReportInvalidCertificateChain(const std::string& hostname,
-                                     const net::SSLInfo& ssl_info);
+  void ReportInvalidCertificateChain(const std::string& serialized_report);
 
   void SetCertificateErrorReporterForTesting(scoped_ptr<
       chrome_browser_net::CertificateErrorReporter> certificate_error_reporter);

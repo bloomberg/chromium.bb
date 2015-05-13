@@ -530,11 +530,11 @@ class SafeBrowsingSSLCertReporter : public SSLCertReporter {
   ~SafeBrowsingSSLCertReporter() override {}
 
   // SSLCertReporter implementation
-  void ReportInvalidCertificateChain(const std::string& hostname,
-                                     const net::SSLInfo& ssl_info) override {
+  void ReportInvalidCertificateChain(
+      const std::string& serialized_report) override {
     if (safe_browsing_ui_manager_) {
       safe_browsing_ui_manager_->ReportInvalidCertificateChain(
-          hostname, ssl_info, base::Bind(&base::DoNothing));
+          serialized_report, base::Bind(&base::DoNothing));
     }
   }
 

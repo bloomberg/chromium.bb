@@ -1127,6 +1127,7 @@
         'debugger',
         'device_policy_proto',
         'drive_proto',
+        'encrypted_cert_logger_proto',
         'installer_util',
         'safe_browsing_chunk_proto',
         'safe_browsing_proto',

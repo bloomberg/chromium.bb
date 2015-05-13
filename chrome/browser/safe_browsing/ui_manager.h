@@ -130,8 +130,7 @@ class SafeBrowsingUIManager
 
   // Report an invalid TLS/SSL certificate chain to the server. Can only
   // be called on UI thread.
-  void ReportInvalidCertificateChain(const std::string& hostname,
-                                     const net::SSLInfo& ssl_info,
+  void ReportInvalidCertificateChain(const std::string& serialized_report,
                                      const base::Closure& callback);
 
   // Add and remove observers.  These methods must be invoked on the UI thread.
@@ -156,8 +155,8 @@ class SafeBrowsingUIManager
                                        const std::string& post_data);
 
   // Sends an invalid certificate chain report over the network.
-  void ReportInvalidCertificateChainOnIOThread(const std::string& hostname,
-                                               const net::SSLInfo& ssl_info);
+  void ReportInvalidCertificateChainOnIOThread(
+      const std::string& serialized_report);
 
   // Adds the given entry to the whitelist.  Called on the UI thread.
   void UpdateWhitelist(const UnsafeResource& resource);
