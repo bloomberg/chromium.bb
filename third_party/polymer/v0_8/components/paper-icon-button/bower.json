@@ -1,0 +1,24 @@
+{
+  "name": "paper-icon-button",
+  "private": true,
+  "version": "0.8.0",
+  "main": "paper-icon-button.html",
+  "author": [
+    "The Polymer Authors"
+  ],
+  "dependencies": {
+    "polymer": "polymer/polymer#v0.8.0-rc.7",
+    "iron-flex-layout": "polymerelements/iron-flex-layout#^0.8.0",
+    "iron-icon": "polymerelements/iron-icon#^0.8.0",
+    "iron-icons": "polymerelements/iron-icons#^0.8.0",
+    "paper-behaviors": "polymerelements/paper-behaviors#^0.8.0",
+    "paper-ripple": "polymerelements/paper-ripple#^0.8.0",
+    "paper-styles": "polymerelements/paper-styles#^0.8.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^0.8.0",
+    "test-fixture": "polymerelements/test-fixture#^0.8.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
+    "web-component-tester": "*"
+  }
+}

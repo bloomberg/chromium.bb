@@ -1,0 +1,30 @@
+{
+  "name": "iron-menu-behavior",
+  "version": "0.8.0",
+  "authors": "The Polymer Authors",
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "main": "iron-menu-behavior.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-menu-behavior"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/PolymerElements/iron-menu-behavior",
+  "ignore": [],
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7",
+    "iron-selector": "PolymerElements/iron-selector#^v0.8.0"
+  },
+  "devDependencies": {
+    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
+    "quick-element": "PolymerElements/quick-element#^0.8.0",
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
+    "web-component-tester": "Polymer/web-component-tester#^2.2.0",
+    "webcomponentsjs": "*"
+  }
+}
