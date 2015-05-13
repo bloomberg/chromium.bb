@@ -219,6 +219,8 @@
         'web_thread_impl.cc',
         'web_thread_impl.h',
         'web_view_util.mm',
+        'webui/crw_web_ui_manager.h',
+        'webui/crw_web_ui_manager.mm',
         'webui/crw_web_ui_page_builder.h',
         'webui/crw_web_ui_page_builder.mm',
         'webui/shared_resources_data_source_ios.cc',
@@ -335,11 +337,13 @@
       'sources': [
         'web_state/js/resources/plugin_placeholder.js',
         'web_state/js/resources/window_id.js',
+        'webui/resources/web_ui.js',
       ],
       'link_settings': {
         'mac_bundle_resources': [
           '<(SHARED_INTERMEDIATE_DIR)/plugin_placeholder.js',
           '<(SHARED_INTERMEDIATE_DIR)/window_id.js',
+          '<(SHARED_INTERMEDIATE_DIR)/web_ui.js',
         ],
       },
       'includes': [

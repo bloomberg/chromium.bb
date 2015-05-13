@@ -41,7 +41,7 @@ const char* kCssResourceUrl("http://csspage/resources/stylesheet.css");
 // URL for CSS resource with import.
 const char* kCssImportResourceUrl("http://csspage/resources/import.css");
 // Chrome URL for messaging JavaScript.
-const char* kCoreJsResourceUrl("chrome://resources/js/ios/core.js");
+const char* kCoreJsResourceUrl("chrome://resources/js/ios/web_ui.js");
 // String for relative resource URL.
 const char* kRelativeCssString("myresource.css");
 

@@ -194,6 +194,9 @@ class WebStateImpl;
                        withStateObject:(NSString*)stateObject;
 // Loads the HTML into the page.
 - (void)loadHTML:(NSString*)html;
+// Loads HTML in the page and presents it as if it was originating from an
+// application specific URL.
+- (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL;
 
 // Causes the page to start loading immediately if there is a pending load;
 // normally if the web view has been paged out for memory reasons, loads are

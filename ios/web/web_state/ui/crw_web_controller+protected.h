@@ -110,9 +110,6 @@ struct NewWindowInfo {
 // Returns the type of document object loaded in the web view.
 - (web::WebViewDocumentType)webViewDocumentType;
 
-// Loads the given request in the web view.
-- (void)loadWebRequest:(NSURLRequest*)request;
-
 // Loads the given HTML in the web view.
 - (void)loadWebHTMLString:(NSString*)html forURL:(const GURL&)URL;
 
@@ -121,6 +118,7 @@ struct NewWindowInfo {
 //       stringResultHandler:(web::JavaScriptCompletion)handler;
 //- (BOOL)scriptHasBeenInjectedForClass:(Class)jsInjectionManagerClass
 //                       presenceBeacon:(NSString*)beacon;
+//- (void)loadRequest:(NSMutableURLRequest*)request;
 // Subclasses must call super's implementation.
 //- (void)injectScript:(NSString*)script
 //            forClass:(Class)jsInjectionManagerClass;
@@ -182,6 +180,12 @@ struct NewWindowInfo {
 - (BOOL)handleWindowHistoryDidReplaceStateMessage:
     (base::DictionaryValue*)message
                                           context:(NSDictionary*)context;
+
+// Sets up WebUI for URL.
+- (void)createWebUIForURL:(const GURL&)URL;
+
+// Clears WebUI, if one exists.
+- (void)clearWebUI;
 
 #pragma mark - Internal methods for use by subclasses
 

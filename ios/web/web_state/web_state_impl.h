@@ -157,6 +157,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            const base::ListValue& args);
+  // Invokes page load for WebUI URL with HTML. URL must have an application
+  // specific scheme.
+  virtual void LoadWebUIHtml(const base::string16& html, const GURL& url);
 
   const base::string16& GetTitle() const;
 
@@ -173,7 +176,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Executes a JavaScript string on the page asynchronously.
   // TODO(shreyasv): Rename this to ExecuteJavaScript for consitency with
   // upstream API.
-  void ExecuteJavaScriptAsync(const base::string16& javascript);
+  virtual void ExecuteJavaScriptAsync(const base::string16& script);
 
   // Request tracker management. For now, this exposes the RequestTracker for
   // embedders to use.

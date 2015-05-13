@@ -28,15 +28,16 @@ typedef void (^URLFetcherBlockAdapterCompletion)(NSData*,
 // Class to manage retrieval of WebUI resources.
 class URLFetcherBlockAdapter : public net::URLFetcherDelegate {
  public:
-  // Create URLFetcherBlockAdapter for resource at |url| with |request_context|.
+  // Creates URLFetcherBlockAdapter for resource at |url| with
+  // |request_context|.
   // |completion_handler| is called with results of the fetch.
   URLFetcherBlockAdapter(
       const GURL& url,
       net::URLRequestContextGetter* request_context,
       web::URLFetcherBlockAdapterCompletion completion_handler);
   ~URLFetcherBlockAdapter() override;
-  // Start the fetch.
-  void Start();
+  // Starts the fetch.
+  virtual void Start();
 
  protected:
   // net::URLFetcherDelegate implementation.

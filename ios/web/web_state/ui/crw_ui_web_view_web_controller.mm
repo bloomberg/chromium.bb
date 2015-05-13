@@ -531,7 +531,18 @@ const size_t kMaxMessageQueueSize = 262144;
   return web::WEB_VIEW_DOCUMENT_TYPE_UNKNOWN;
 }
 
-- (void)loadWebRequest:(NSURLRequest*)request {
+- (void)loadRequest:(NSMutableURLRequest*)request {
+  DCHECK(web::GetWebClient());
+  GURL requestURL = net::GURLWithNSURL(request.URL);
+  // If the request is for WebUI, add information to let the network stack
+  // access the requestGroupID.
+  if (web::GetWebClient()->IsAppSpecificURL(requestURL)) {
+    // Sub requests of a chrome:// page will not contain the user agent.
+    // Instead use the username part of the URL to allow the network stack to
+    // associate a request to the correct tab.
+    request.URL = web::AddRequestGroupIDToURL(
+        request.URL, self.webStateImpl->GetRequestGroupID());
+  }
   [_uiWebView loadRequest:request];
 }
 

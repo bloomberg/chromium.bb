@@ -28,7 +28,7 @@ NSString* const kWebUIScriptTextTemplate = @"<script>%@</script>";
 // Template for creating inlined CSS tags.
 NSString* const kWebUIStyleTextTemplate = @"<style>%@</style>";
 // URL placeholder for WebUI messaging JavaScript.
-NSString* const kWebUICoreJSURL = @"chrome://resources/js/ios/core.js";
+NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 }  // namespace
 
 @interface CRWWebUIPageBuilder ()
@@ -160,9 +160,9 @@ NSString* const kWebUICoreJSURL = @"chrome://resources/js/ios/core.js";
   } copy] autorelease];
 
   for (NSString* URLString in subresourceURLStrings) {
-    // chrome://resources/js/ios/core.js is skipped because it is
+    // chrome://resources/js/ios/web_ui.js is skipped because it is
     // retrieved via webUIJavaScript rather than the net stack.
-    if ([URLString isEqualToString:kWebUICoreJSURL]) {
+    if ([URLString isEqualToString:kWebUIJSURL]) {
       pendingSubresourceCount--;
       if (!pendingSubresourceCount) {
         [weakSelf flattenHTML:webUIHTML withSubresources:subresources];
@@ -279,7 +279,9 @@ NSString* const kWebUICoreJSURL = @"chrome://resources/js/ios/core.js";
 - (void)flattenHTML:(NSMutableString*)HTML
     withSubresources:(std::map<GURL, std::string>)subresources {
   // Add core.js script to resources.
-  GURL webUIJSURL("chrome://resources/js/ios/core.js");
+  // TODO(ios): Move inclusion of this resource into WebUI implementation
+  // rather than forking each HTML file (crbug.com/487000).
+  GURL webUIJSURL("chrome://resources/js/ios/web_ui.js");
   subresources[webUIJSURL] = base::SysNSStringToUTF8([self webUIJavaScript]);
   for (auto it = subresources.begin(); it != subresources.end(); it++) {
     NSString* linkTemplate = @"";

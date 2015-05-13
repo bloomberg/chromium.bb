@@ -363,9 +363,6 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 - (NSData*)currentPOSTData;
 - (NSDictionary*)currentHttpHeaders;
 
-// Have the current web view load the request. If needed, it will add
-// information to let the network stack access the requestGroupID.
-- (void)loadRequest:(NSMutableURLRequest*)request;
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
 - (void)optOutScrollsToTopForSubviews;
@@ -1179,18 +1176,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)loadRequest:(NSMutableURLRequest*)request {
-  DCHECK(web::GetWebClient());
-  GURL url = net::GURLWithNSURL(request.URL);
-  // TODO(stuartmorgan): See if WKWebView has the same issue; if not, this can
-  // move into the subclass.
-  if (web::GetWebClient()->IsAppSpecificURL(url)) {
-    // Sub requests of a chrome:// page will not contain the user agent.
-    // Instead use the username part of the URL to allow the network stack to
-    // associate a request to the correct tab.
-    request.URL = web::AddRequestGroupIDToURL(
-        request.URL, _webStateImpl->GetRequestGroupID());
-  }
-  [self loadWebRequest:request];
+  // Subclasses must implement this method.
+  NOTREACHED();
 }
 
 - (void)registerLoadRequest:(const GURL&)requestURL
@@ -1505,7 +1492,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
 
   // Reset current WebUI if one exists.
-  _webStateImpl->ClearWebUI();
+  [self clearWebUI];
 
   // Precaution, so that the outgoing URL is registered, to reduce the risk of
   // it being seen as a fresh URL later by the same method (and new page change
@@ -1521,17 +1508,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Remove the interstitial before doing anything else.
   [self clearInterstitials];
 
-  const GURL currentUrl = [self currentNavigationURL];
+  const GURL currentURL = [self currentNavigationURL];
   // If it's a chrome URL, but not a native one, create the WebUI instance.
-  if (web::GetWebClient()->IsAppSpecificURL(currentUrl) &&
-      ![_nativeProvider hasControllerForURL:currentUrl]) {
-    _webStateImpl->CreateWebUI(currentUrl);
+  if (web::GetWebClient()->IsAppSpecificURL(currentURL) &&
+      ![_nativeProvider hasControllerForURL:currentURL]) {
+    [self createWebUIForURL:currentURL];
   }
 
   // Loading a new url, must check here if it's a native chrome URL and
   // replace the appropriate view if so, or transition back to a web view from
   // a native view.
-  if ([self shouldLoadURLInNativeView:currentUrl]) {
+  if ([self shouldLoadURLInNativeView:currentURL]) {
     [self loadCurrentURLInNativeView];
   } else {
     [self loadCurrentURLInWebView];
@@ -2066,11 +2053,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         DLOG(WARNING) << "JS message parameter not found: arguments";
         return NO;
       }
+      _webStateImpl->OnScriptCommandReceived(
+          messageContent, *message, currentURL,
+          context[web::kUserIsInteractingKey]);
       _webStateImpl->ProcessWebUIMessage(currentURL, messageContent,
                                          *arguments);
+      return YES;
     }
   }
-  return YES;
+
+  DLOG(WARNING)
+      << "chrome.send message not handled because WebUI was not found.";
+  return NO;
 }
 
 - (BOOL)handleConsoleMessage:(base::DictionaryValue*)message
@@ -2899,6 +2893,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 #pragma mark -
+#pragma mark WebUI
+
+- (void)createWebUIForURL:(const GURL&)URL {
+  _webStateImpl->CreateWebUI(URL);
+}
+
+- (void)clearWebUI {
+  _webStateImpl->ClearWebUI();
+}
+
+#pragma mark -
 #pragma mark UIGestureRecognizerDelegate
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
@@ -3571,6 +3576,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       << "self.webView null while trying to load HTML";
   _loadPhase = web::LOAD_REQUESTED;
   [self loadWebHTMLString:html forURL:url];
+}
+
+- (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
+  CHECK(web::GetWebClient()->IsAppSpecificURL(URL));
+  [self loadHTML:HTML forURL:URL];
 }
 
 - (void)stopLoading {

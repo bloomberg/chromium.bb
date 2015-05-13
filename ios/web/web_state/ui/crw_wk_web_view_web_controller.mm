@@ -14,7 +14,9 @@
 #include "base/values.h"
 #import "ios/web/crw_network_activity_indicator_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#include "ios/web/navigation/web_load_params.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/crw_native_content_provider.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/blocked_popup_info.h"
@@ -26,6 +28,7 @@
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/webui/crw_web_ui_manager.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
@@ -89,6 +92,9 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   // Set to YES on window.history.willChangeState message. To NO on
   // window.history.didPushState or window.history.didReplaceState.
   BOOL _changingHistoryState;
+
+  // CRWWebUIManager object for loading WebUI pages.
+  base::scoped_nsobject<CRWWebUIManager> web_ui_manager_;
 }
 
 // Response's MIME type of the last known navigation.
@@ -341,7 +347,7 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
 }
 
-- (void)loadWebRequest:(NSURLRequest*)request {
+- (void)loadRequest:(NSMutableURLRequest*)request {
   [_wkWebView loadRequest:request];
 }
 
@@ -793,6 +799,20 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 }
 
 #pragma mark -
+#pragma mark WebUI
+
+- (void)createWebUIForURL:(const GURL&)URL {
+  [super createWebUIForURL:URL];
+  web_ui_manager_.reset(
+      [[CRWWebUIManager alloc] initWithWebState:self.webStateImpl]);
+}
+
+- (void)clearWebUI {
+  [super clearWebUI];
+  web_ui_manager_.reset();
+}
+
+#pragma mark -
 #pragma mark KVO Observation
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -939,9 +959,22 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   // If this navigation has not yet been registered, do so. loadPhase check is
   // necessary because lastRegisteredRequestURL may be the same as the
   // webViewURL on a new tab created by window.open (default is about::blank).
+  // TODO(jyquinn): Audit [CRWWebController loadCurrentURL] for other tasks that
+  // should be performed here.
   if (self.lastRegisteredRequestURL != webViewURL ||
       self.loadPhase != web::LOAD_REQUESTED) {
-    [self registerLoadRequest:webViewURL];
+    // Reset current WebUI if one exists.
+    [self clearWebUI];
+    // If webViewURL is a chrome URL, abort the current load and initialize the
+    // load from the web controller.
+    if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
+      [self abortWebLoad];
+      web::WebLoadParams params(webViewURL);
+      [self loadWithParams:params];
+      return;
+    } else {
+      [self registerLoadRequest:webViewURL];
+    }
   }
   // Ensure the URL is registered and loadPhase is as expected.
   DCHECK(self.lastRegisteredRequestURL == webViewURL);
