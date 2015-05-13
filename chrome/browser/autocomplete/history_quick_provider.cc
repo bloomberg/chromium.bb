@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -258,7 +260,13 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
   if (history_match.can_inline) {
-    DCHECK(!new_matches.empty());
+    base::debug::ScopedCrashKey crash_info(
+        crash_keys::kBug464926CrashKey,
+        info.url().spec().substr(0, 30) + " " +
+        base::UTF16ToUTF8(autocomplete_input_.text()).substr(0, 20) + " " +
+        base::SizeTToString(history_match.url_matches.size()) + " " +
+        base::SizeTToString(offsets.size()));;
+    CHECK(!new_matches.empty());
     size_t inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;
     // |inline_autocomplete_offset| may be beyond the end of the
