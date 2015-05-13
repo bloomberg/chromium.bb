@@ -224,6 +224,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                              scoped_ptr<cc::CompositorFrame> frame) override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
+  uint32_t GetSurfaceIdNamespace() override;
 
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(

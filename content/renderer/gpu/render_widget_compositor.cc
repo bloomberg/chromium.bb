@@ -977,4 +977,9 @@ void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {
   provider->ContextGL()->RateLimitOffscreenContextCHROMIUM();
 }
 
+void RenderWidgetCompositor::SetSurfaceIdNamespace(
+    uint32_t surface_id_namespace) {
+  layer_tree_host_->set_surface_id_namespace(surface_id_namespace);
+}
+
 }  // namespace content

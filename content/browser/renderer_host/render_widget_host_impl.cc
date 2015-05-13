@@ -321,6 +321,13 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
     view_weak_.reset();
   view_ = view;
 
+  // If the renderer has not yet been initialized, then the surface ID
+  // namespace will be sent during initialization.
+  if (view_ && renderer_initialized_) {
+    Send(new ViewMsg_SetSurfaceIdNamespace(routing_id_,
+                                           view_->GetSurfaceIdNamespace()));
+  }
+
   GpuSurfaceTracker::Get()->SetSurfaceHandle(
       surface_id_, GetCompositingSurface());
 
@@ -414,6 +421,13 @@ void RenderWidgetHostImpl::Init() {
   // Send the ack along with the information on placement.
   Send(new ViewMsg_CreatingNew_ACK(routing_id_));
   GetProcess()->ResumeRequestsForView(routing_id_);
+
+  // If the RWHV has not yet been set, the surface ID namespace will get
+  // passed down by the call to SetView().
+  if (view_) {
+    Send(new ViewMsg_SetSurfaceIdNamespace(routing_id_,
+                                           view_->GetSurfaceIdNamespace()));
+  }
 
   WasResized();
 }

@@ -345,6 +345,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;
 
+  uint32_t GetSurfaceIdNamespace() override;
+
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
 
@@ -438,7 +440,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   };
   BrowserCompositorViewState browser_compositor_state_;
 
-  // Delegated frame management and compositior.
+  // Delegated frame management and compositor.
   scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
   scoped_ptr<ui::Layer> root_layer_;
 

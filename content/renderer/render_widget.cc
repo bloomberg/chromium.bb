@@ -748,6 +748,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetSurfaceIdNamespace, OnSetSurfaceIdNamespace)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeEventAck, OnImeEventAck)
@@ -1746,6 +1747,11 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
     window_screen_rect_ = window_screen_rect;
   }
   Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
+}
+
+void RenderWidget::OnSetSurfaceIdNamespace(uint32_t surface_id_namespace) {
+  if (compositor_)
+    compositor_->SetSurfaceIdNamespace(surface_id_namespace);
 }
 
 void RenderWidget::showImeIfNeeded() {

@@ -77,6 +77,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const base::Callback<void(scoped_ptr<base::Value>)>& callback);
   bool SendMessageToMicroBenchmark(int id, scoped_ptr<base::Value> value);
   void StartCompositor();
+  void SetSurfaceIdNamespace(uint32_t surface_id_namespace);
 
   // WebLayerTreeView implementation.
   virtual void setRootLayer(const blink::WebLayer& layer);

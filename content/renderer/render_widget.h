@@ -444,6 +444,7 @@ class CONTENT_EXPORT RenderWidget
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnShowImeIfNeeded();
+  void OnSetSurfaceIdNamespace(uint32_t surface_id_namespace);
 
 #if defined(OS_ANDROID)
   // Whenever an IME event that needs an acknowledgement is sent to the browser,
