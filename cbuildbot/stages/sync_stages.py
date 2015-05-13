@@ -35,6 +35,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import graphite
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
@@ -1495,6 +1496,13 @@ class PreCQLauncherStage(SyncStage):
     # Changes that will be passed.
     will_pass = set()
 
+    status_counts = {}
+    for status in status_map.values():
+      status_counts[status] = status_counts.get(status, 0) + 1
+    status_gauge = graphite.StatsFactory.GetInstance().Gauge('precq.status')
+    for status, count in status_counts.items():
+      status_gauge.send(status, count)
+
     for change in inflight:
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
         build_ids = [x for _, _, x in progress_map[change].values()]
@@ -1549,6 +1557,9 @@ class PreCQLauncherStage(SyncStage):
       else:
         logging.info('Tree is closed, not launching config %s for plan %s.',
                      config, cros_patch.GetChangesAsString(plan))
+
+    graphite.StatsFactory.GetInstance().Counter('precq').increment(
+        subname='launch_count', delta=launch_count)
 
     self.last_cycle_launch_count = launch_count
 
