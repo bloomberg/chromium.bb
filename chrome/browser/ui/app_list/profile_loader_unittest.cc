@@ -21,7 +21,7 @@ class ProfileLoaderUnittest : public testing::Test {
         new FakeProfile("p2", base::FilePath(FILE_PATH_LITERAL("profile2"))));
 
     profile_store_.reset(new FakeProfileStore(
-        base::FilePath(FILE_PATH_LITERAL("udd"))));
+        base::FilePath(FILE_PATH_LITERAL("udd")), "ip"));
     loader_.reset(new ProfileLoader(profile_store_.get()));
   }
 

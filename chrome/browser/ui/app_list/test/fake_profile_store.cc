@@ -6,8 +6,10 @@
 
 #include "chrome/browser/profiles/profile.h"
 
-FakeProfileStore::FakeProfileStore(const base::FilePath& user_data_dir)
-    : user_data_dir_(user_data_dir) {
+FakeProfileStore::FakeProfileStore(const base::FilePath& user_data_dir,
+                                   const std::string& last_used_profile)
+    : user_data_dir_(user_data_dir),
+      last_used_profile_name_(last_used_profile) {
 }
 
 FakeProfileStore::~FakeProfileStore() {
@@ -57,6 +59,10 @@ Profile* FakeProfileStore::GetProfileByPath(
 
 base::FilePath FakeProfileStore::GetUserDataDir() {
   return user_data_dir_;
+}
+
+std::string FakeProfileStore::GetLastUsedProfileName() {
+  return last_used_profile_name_;
 }
 
 bool FakeProfileStore::IsProfileSupervised(const base::FilePath& path) {

@@ -86,6 +86,7 @@ class AppListServiceUnitTest : public testing::Test {
  protected:
   void SetupWithCommandLine(const base::CommandLine& command_line) {
     user_data_dir_ = base::FilePath(FILE_PATH_LITERAL("udd"));
+    initial_profile_ = "ip";
     profile1_.reset(
         new FakeProfile("p1", user_data_dir_.AppendASCII("profile1")));
     profile2_.reset(
@@ -99,7 +100,7 @@ class AppListServiceUnitTest : public testing::Test {
     factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore));
     local_state_ = factory.Create(pref_registry).Pass();
 
-    profile_store_ = new FakeProfileStore(user_data_dir_);
+    profile_store_ = new FakeProfileStore(user_data_dir_, initial_profile_);
     service_.reset(new TestingAppListServiceImpl(
         command_line,
         local_state_.get(),
@@ -112,6 +113,7 @@ class AppListServiceUnitTest : public testing::Test {
   }
 
   base::FilePath user_data_dir_;
+  std::string initial_profile_;
   scoped_ptr<PrefService> local_state_;
   FakeProfileStore* profile_store_;
   scoped_ptr<TestingAppListServiceImpl> service_;
@@ -141,7 +143,7 @@ TEST_F(AppListServiceUnitTest, RemovedProfileResetsToInitialProfile) {
   EnableAppList();
   profile_store_->RemoveProfile(profile1_.get());
   base::FilePath initial_profile_path =
-      user_data_dir_.AppendASCII(chrome::kInitialProfile);
+      user_data_dir_.AppendASCII(initial_profile_);
   EXPECT_EQ(initial_profile_path,
             service_->GetProfilePath(profile_store_->GetUserDataDir()));
 }

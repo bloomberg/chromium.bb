@@ -29,6 +29,9 @@ class ProfileStore {
   // Chrome.
   virtual base::FilePath GetUserDataDir() = 0;
 
+  // The name of the last used profile.
+  virtual std::string GetLastUsedProfileName() = 0;
+
   // Returns true if the profile at |path| is supervised.
   virtual bool IsProfileSupervised(const base::FilePath& path) = 0;
 

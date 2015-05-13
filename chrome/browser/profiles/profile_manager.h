@@ -110,6 +110,10 @@ class ProfileManager : public base::NonThreadSafe,
   // profile.
   base::FilePath GetLastUsedProfileDir(const base::FilePath& user_data_dir);
 
+  // Get the name of the last used profile, or if that's undefined, the default
+  // profile.
+  std::string GetLastUsedProfileName();
+
   // Get the Profiles which are currently open, i.e., have open browsers, or
   // were open the last time Chrome was running. The Profiles appear in the
   // order they were opened. The last used profile will be on the list, but its
@@ -168,14 +172,12 @@ class ProfileManager : public base::NonThreadSafe,
   void ScheduleProfileForDeletion(const base::FilePath& profile_dir,
                                   const CreateCallback& callback);
 
-  // Called on start-up if there are any stale ephemeral profiles to be deleted.
-  // This can be the case if the browser has crashed and the clean-up code had
-  // no chance to run then.
-  static void CleanUpStaleProfiles(
-      const std::vector<base::FilePath>& profile_paths);
-
   // Autoloads profiles if they are running background apps.
   void AutoloadProfiles();
+
+  // Checks if any ephemeral profiles are left behind (e.g. because of a browser
+  // crash) and schedule them for deletion.
+  void CleanUpEphemeralProfiles();
 
   // Initializes user prefs of |profile|. This includes profile name and
   // avatar values.

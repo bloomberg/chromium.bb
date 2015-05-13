@@ -13,7 +13,8 @@
 
 class FakeProfileStore : public ProfileStore {
  public:
-  explicit FakeProfileStore(const base::FilePath& user_data_dir);
+  explicit FakeProfileStore(const base::FilePath& user_data_dir,
+                            const std::string& last_used_profile);
   ~FakeProfileStore() override;
 
   void LoadProfile(Profile* profile);
@@ -25,11 +26,13 @@ class FakeProfileStore : public ProfileStore {
                         base::Callback<void(Profile*)> callback) override;
   Profile* GetProfileByPath(const base::FilePath& path) override;
   base::FilePath GetUserDataDir() override;
+  std::string GetLastUsedProfileName() override;
   bool IsProfileSupervised(const base::FilePath& path) override;
   bool IsProfileLocked(const base::FilePath& path) override;
 
  private:
   base::FilePath user_data_dir_;
+  std::string last_used_profile_name_;
   typedef std::map<base::FilePath, base::Callback<void(Profile*)> >
       CallbacksByPath;
   CallbacksByPath callbacks_;

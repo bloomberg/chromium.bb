@@ -876,6 +876,53 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
   EXPECT_EQ(normal_profile, last_opened_profiles[0]);
 }
 
+TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
+  // Create two profiles, one of them ephemeral.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  ASSERT_EQ(0u, cache.GetNumberOfProfiles());
+
+  const std::string profile_name1 = "Homer";
+  base::FilePath path1 = temp_dir_.path().AppendASCII(profile_name1);
+  cache.AddProfileToCache(path1, base::UTF8ToUTF16(profile_name1),
+                          std::string(), base::UTF8ToUTF16(profile_name1), 0,
+                          std::string());
+  cache.SetProfileIsEphemeralAtIndex(0, true);
+  ASSERT_TRUE(base::CreateDirectory(path1));
+
+  const std::string profile_name2 = "Marge";
+  base::FilePath path2 = temp_dir_.path().AppendASCII(profile_name2);
+  cache.AddProfileToCache(path2, base::UTF8ToUTF16(profile_name2),
+                          std::string(), base::UTF8ToUTF16(profile_name2), 0,
+                          std::string());
+  ASSERT_EQ(2u, cache.GetNumberOfProfiles());
+  ASSERT_TRUE(base::CreateDirectory(path2));
+
+  // Set the active profile.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed, profile_name1);
+
+  profile_manager->CleanUpEphemeralProfiles();
+  base::RunLoop().RunUntilIdle();
+
+  // The ephemeral profile should be deleted, and the last used profile set to
+  // the other one.
+  EXPECT_FALSE(base::DirectoryExists(path1));
+  EXPECT_TRUE(base::DirectoryExists(path2));
+  EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
+  ASSERT_EQ(1u, cache.GetNumberOfProfiles());
+
+  // Mark the remaining profile ephemeral and clean up.
+  cache.SetProfileIsEphemeralAtIndex(0, true);
+  profile_manager->CleanUpEphemeralProfiles();
+  base::RunLoop().RunUntilIdle();
+
+  // The profile should be deleted, and the last used profile set to a new one.
+  EXPECT_FALSE(base::DirectoryExists(path2));
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+  EXPECT_EQ("Profile 1", local_state->GetString(prefs::kProfileLastUsed));
+}
+
 TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);

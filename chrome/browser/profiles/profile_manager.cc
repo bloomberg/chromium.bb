@@ -505,16 +505,18 @@ Profile* ProfileManager::GetLastUsedProfile(
 
 base::FilePath ProfileManager::GetLastUsedProfileDir(
     const base::FilePath& user_data_dir) {
-  base::FilePath last_used_profile_dir(user_data_dir);
+  return user_data_dir.AppendASCII(GetLastUsedProfileName());
+}
+
+std::string ProfileManager::GetLastUsedProfileName() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
+  const std::string last_used_profile_name =
+      local_state->GetString(prefs::kProfileLastUsed);
+  if (!last_used_profile_name.empty())
+    return last_used_profile_name;
 
-  if (local_state->HasPrefPath(prefs::kProfileLastUsed)) {
-    return last_used_profile_dir.AppendASCII(
-        local_state->GetString(prefs::kProfileLastUsed));
-  }
-
-  return last_used_profile_dir.AppendASCII(chrome::kInitialProfile);
+  return chrome::kInitialProfile;
 }
 
 std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
@@ -702,12 +704,10 @@ void ProfileManager::ScheduleProfileForDeletion(
   // On the Mac, the browser process is not killed when all browser windows are
   // closed, so just in case we are deleting the active profile, and no other
   // profile has been loaded, we must pre-load a next one.
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  const std::string last_used_profile =
-      local_state->GetString(prefs::kProfileLastUsed);
-  if (last_used_profile == profile_dir.BaseName().MaybeAsASCII() ||
-      last_used_profile == GetGuestProfilePath().BaseName().MaybeAsASCII()) {
+  const base::FilePath last_used_profile =
+      GetLastUsedProfileDir(user_data_dir_);
+  if (last_used_profile == profile_dir ||
+      last_used_profile == GetGuestProfilePath()) {
     CreateProfileAsync(last_non_supervised_profile_path,
                        base::Bind(&ProfileManager::OnNewActiveProfileLoaded,
                                   base::Unretained(this),
@@ -722,17 +722,6 @@ void ProfileManager::ScheduleProfileForDeletion(
 #endif  // defined(OS_MACOSX)
 
   FinishDeletingProfile(profile_dir, last_non_supervised_profile_path);
-}
-
-// static
-void ProfileManager::CleanUpStaleProfiles(
-    const std::vector<base::FilePath>& profile_paths) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  for (std::vector<base::FilePath>::const_iterator it = profile_paths.begin();
-       it != profile_paths.end(); ++it) {
-    NukeProfileFromDisk(*it);
-  }
 }
 
 void ProfileManager::AutoloadProfiles() {
@@ -754,6 +743,45 @@ void ProfileManager::AutoloadProfiles() {
       // register it with the BackgroundModeManager.
       GetProfile(cache.GetPathOfProfileAtIndex(p));
     }
+  }
+}
+
+void ProfileManager::CleanUpEphemeralProfiles() {
+  const std::string last_used_profile = GetLastUsedProfileName();
+
+  bool last_active_profile_deleted = false;
+  base::FilePath new_profile_path;
+  std::vector<base::FilePath> profiles_to_delete;
+  ProfileInfoCache& profile_cache = GetProfileInfoCache();
+  size_t profiles_count = profile_cache.GetNumberOfProfiles();
+  for (size_t i = 0; i < profiles_count; ++i) {
+    base::FilePath profile_path = profile_cache.GetPathOfProfileAtIndex(i);
+    if (profile_cache.ProfileIsEphemeralAtIndex(i)) {
+      profiles_to_delete.push_back(profile_path);
+      if (profile_path.BaseName().MaybeAsASCII() == last_used_profile)
+        last_active_profile_deleted = true;
+    } else if (new_profile_path.empty()) {
+      new_profile_path = profile_path;
+    }
+  }
+
+  // If the last active profile was ephemeral, set a new one.
+  if (last_active_profile_deleted) {
+    if (new_profile_path.empty())
+      new_profile_path = GenerateNextProfileDirectoryPath();
+
+    PrefService* local_state = g_browser_process->local_state();
+    local_state->SetString(prefs::kProfileLastUsed,
+                           new_profile_path.BaseName().MaybeAsASCII());
+  }
+
+  // This uses a separate loop, because deleting the profile from the
+  // ProfileInfoCache will modify indices.
+  for (const base::FilePath& profile_path : profiles_to_delete) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&NukeProfileFromDisk, profile_path));
+
+    profile_cache.DeleteProfileFromCache(profile_path);
   }
 }
 
@@ -1342,7 +1370,7 @@ void ProfileManager::UpdateLastUser(Profile* last_active) {
   if (profiles_info_.find(last_active->GetPath()) != profiles_info_.end()) {
     std::string profile_path_base =
         last_active->GetPath().BaseName().MaybeAsASCII();
-    if (profile_path_base != local_state->GetString(prefs::kProfileLastUsed))
+    if (profile_path_base != GetLastUsedProfileName())
       local_state->SetString(prefs::kProfileLastUsed, profile_path_base);
 
     ProfileInfoCache& cache = GetProfileInfoCache();

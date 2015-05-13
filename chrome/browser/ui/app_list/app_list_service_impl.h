@@ -87,13 +87,7 @@ class AppListServiceImpl : public AppListService,
   friend class test::AppListServiceImplTestApi;
   static void SendAppListStats();
 
-  // Loads a profile asynchronously and calls OnProfileLoaded() when done.
-  void LoadProfileAsync(const base::FilePath& profile_file_path);
-
-  // Callback for asynchronous profile load.
-  void OnProfileLoaded(int profile_load_sequence_id,
-                       Profile* profile,
-                       Profile::CreateStatus status);
+  std::string GetProfileName();
 
   // ProfileInfoCacheObserver overrides:
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
