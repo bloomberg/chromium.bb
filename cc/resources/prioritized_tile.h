@@ -11,6 +11,7 @@
 
 namespace cc {
 class PictureLayerTiling;
+class RasterSource;
 
 class CC_EXPORT PrioritizedTile {
  public:
@@ -20,15 +21,22 @@ class CC_EXPORT PrioritizedTile {
   ~PrioritizedTile();
 
   Tile* tile() const { return tile_; }
+  RasterSource* raster_source() const { return raster_source_; }
   const TilePriority& priority() const { return priority_; }
   bool is_occluded() const { return is_occluded_; }
+
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
  private:
   friend class PictureLayerTiling;
 
-  PrioritizedTile(Tile* tile, const TilePriority priority, bool is_occluded);
+  PrioritizedTile(Tile* tile,
+                  RasterSource* raster_source,
+                  const TilePriority priority,
+                  bool is_occluded);
 
   Tile* tile_;
+  RasterSource* raster_source_;
   TilePriority priority_;
   bool is_occluded_;
 };

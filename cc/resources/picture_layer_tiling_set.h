@@ -121,8 +121,8 @@ class CC_EXPORT PictureLayerTilingSet {
                             const Occlusion& occlusion_in_layer_space,
                             bool can_require_tiles_for_activation);
 
-  void GetAllTilesAndPrioritiesForTracing(
-      std::map<const Tile*, TilePriority>* tile_map) const;
+  void GetAllPrioritizedTilesForTracing(
+      std::vector<PrioritizedTile>* prioritized_tiles) const;
 
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate

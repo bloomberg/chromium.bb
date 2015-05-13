@@ -13,6 +13,7 @@
 
 namespace cc {
 
+class PrioritizedTile;
 class TileManager;
 struct TilePriority;
 
@@ -30,10 +31,6 @@ class CC_EXPORT Tile {
   Id id() const {
     return id_;
   }
-
-  RasterSource* raster_source() { return raster_source_.get(); }
-
-  const RasterSource* raster_source() const { return raster_source_.get(); }
 
   // TODO(vmpstr): Move this to the iterators.
   bool required_for_activation() const { return required_for_activation_; }
@@ -55,8 +52,7 @@ class CC_EXPORT Tile {
            !draw_info_.IsReadyToDraw();
   }
 
-  void AsValueWithPriorityInto(const TilePriority& priority,
-                               base::trace_event::TracedValue* dict) const;
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
   inline bool IsReadyToDraw() const { return draw_info_.IsReadyToDraw(); }
 
@@ -70,14 +66,6 @@ class CC_EXPORT Tile {
   int layer_id() const { return layer_id_; }
 
   int source_frame_number() const { return source_frame_number_; }
-
-  void set_raster_source(RasterSource* raster_source) {
-    DCHECK(raster_source->CoversRect(content_rect_, contents_scale_))
-        << "Recording rect: "
-        << gfx::ScaleToEnclosingRect(content_rect_, 1.f / contents_scale_)
-               .ToString();
-    raster_source_ = raster_source;
-  }
 
   size_t GPUMemoryUsageInBytes() const;
 
@@ -109,7 +97,6 @@ class CC_EXPORT Tile {
   bool HasRasterTask() const { return !!raster_task_.get(); }
 
   TileManager* tile_manager_;
-  scoped_refptr<RasterSource> raster_source_;
   gfx::Size desired_texture_size_;
   gfx::Rect content_rect_;
   float contents_scale_;

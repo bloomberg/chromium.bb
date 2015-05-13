@@ -955,8 +955,8 @@ AnimationRegistrar* LayerTreeImpl::GetAnimationRegistrar() const {
   return layer_tree_host_impl_->animation_registrar();
 }
 
-void LayerTreeImpl::GetAllTilesAndPrioritiesForTracing(
-    std::map<const Tile*, TilePriority>* tile_map) const {
+void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
+    std::vector<PrioritizedTile>* prioritized_tiles) const {
   typedef LayerIterator<LayerImpl> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
   for (LayerIteratorType it =
@@ -966,7 +966,7 @@ void LayerTreeImpl::GetAllTilesAndPrioritiesForTracing(
     if (!it.represents_itself())
       continue;
     LayerImpl* layer_impl = *it;
-    layer_impl->GetAllTilesAndPrioritiesForTracing(tile_map);
+    layer_impl->GetAllPrioritizedTilesForTracing(prioritized_tiles);
   }
 }
 

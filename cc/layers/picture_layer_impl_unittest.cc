@@ -257,9 +257,11 @@ class PictureLayerImplTest : public testing::Test {
     bool resourceless_software_draw = false;
     layer->UpdateTiles(resourceless_software_draw);
   }
-  static void VerifyAllTilesExistAndHavePile(
+  static void VerifyAllPrioritizedTilesExistAndHavePile(
       const PictureLayerTiling* tiling,
       PicturePileImpl* pile) {
+    auto prioritized_tiles =
+        tiling->UpdateAndGetAllPrioritizedTilesForTesting();
     for (PictureLayerTiling::CoverageIterator iter(
              tiling,
              tiling->contents_scale(),
@@ -267,7 +269,7 @@ class PictureLayerImplTest : public testing::Test {
          iter;
          ++iter) {
       EXPECT_TRUE(*iter);
-      EXPECT_EQ(pile, iter->raster_source());
+      EXPECT_EQ(pile, prioritized_tiles[*iter].raster_source());
     }
   }
 
@@ -696,6 +698,8 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
     gfx::Rect content_invalidation = gfx::ScaleToEnclosingRect(
         layer_invalidation,
         tiling->contents_scale());
+    auto prioritized_tiles =
+        tiling->UpdateAndGetAllPrioritizedTilesForTesting();
     for (PictureLayerTiling::CoverageIterator iter(
              tiling,
              tiling->contents_scale(),
@@ -706,7 +710,7 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
       // invalidated and it has the latest raster source.
       if (*iter) {
         EXPECT_FALSE(iter.geometry_rect().IsEmpty());
-        EXPECT_EQ(pending_pile.get(), iter->raster_source());
+        EXPECT_EQ(pending_pile.get(), prioritized_tiles[*iter].raster_source());
         EXPECT_TRUE(iter.geometry_rect().Intersects(content_invalidation));
       } else {
         // We don't create tiles in non-invalidated regions.
@@ -721,6 +725,8 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
     const PictureLayerTiling* tiling = tilings->tiling_at(i);
     gfx::Rect content_invalidation =
         gfx::ScaleToEnclosingRect(layer_invalidation, tiling->contents_scale());
+    auto prioritized_tiles =
+        tiling->UpdateAndGetAllPrioritizedTilesForTesting();
     for (PictureLayerTiling::CoverageIterator iter(
              tiling,
              tiling->contents_scale(),
@@ -730,7 +736,7 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
       // Pile will be updated upon activation.
-      EXPECT_EQ(active_pile.get(), iter->raster_source());
+      EXPECT_EQ(active_pile.get(), prioritized_tiles[*iter].raster_source());
     }
   }
 }
@@ -753,7 +759,8 @@ TEST_F(PictureLayerImplTest, CloneFullInvalidation) {
   const PictureLayerTilingSet* tilings = pending_layer_->tilings();
   EXPECT_GT(tilings->num_tilings(), 0u);
   for (size_t i = 0; i < tilings->num_tilings(); ++i)
-    VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), pending_pile.get());
+    VerifyAllPrioritizedTilesExistAndHavePile(tilings->tiling_at(i),
+                                              pending_pile.get());
 }
 
 TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
@@ -4991,8 +4998,12 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
   EXPECT_TRUE(pending_layer_->HighResTiling()->has_tiles());
   std::vector<Tile*> tiles =
       pending_layer_->HighResTiling()->AllTilesForTesting();
+  auto prioritized_tiles = pending_layer_->HighResTiling()
+                               ->UpdateAndGetAllPrioritizedTilesForTesting();
+
   for (Tile* tile : tiles)
-    EXPECT_EQ(pending_layer_->raster_source(), tile->raster_source());
+    EXPECT_EQ(pending_layer_->raster_source(),
+              prioritized_tiles[tile].raster_source());
 
   pending_layer_->draw_properties().can_use_lcd_text = false;
   pending_layer_->UpdateCanUseLCDTextAfterCommit();
@@ -5001,8 +5012,11 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
   EXPECT_NE(pending_pile.get(), pending_layer_->raster_source());
   EXPECT_TRUE(pending_layer_->HighResTiling()->has_tiles());
   tiles = pending_layer_->HighResTiling()->AllTilesForTesting();
+  prioritized_tiles = pending_layer_->HighResTiling()
+                          ->UpdateAndGetAllPrioritizedTilesForTesting();
   for (Tile* tile : tiles)
-    EXPECT_EQ(pending_layer_->raster_source(), tile->raster_source());
+    EXPECT_EQ(pending_layer_->raster_source(),
+              prioritized_tiles[tile].raster_source());
 }
 
 class TileSizeSettings : public GpuRasterizationEnabledSettings {

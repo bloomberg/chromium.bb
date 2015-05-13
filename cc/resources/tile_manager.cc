@@ -660,7 +660,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   ImageDecodeTask::Vector decode_tasks;
   PixelRefTaskMap& existing_pixel_refs = image_decode_tasks_[tile->layer_id()];
   std::vector<SkPixelRef*> pixel_refs;
-  tile->raster_source()->GatherPixelRefs(
+  prioritized_tile.raster_source()->GatherPixelRefs(
       tile->content_rect(), tile->contents_scale(), &pixel_refs);
   for (SkPixelRef* pixel_ref : pixel_refs) {
     uint32_t id = pixel_ref->getGenerationID();
@@ -680,7 +680,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   }
 
   return make_scoped_refptr(new RasterTaskImpl(
-      const_resource, tile->raster_source(), tile->content_rect(),
+      const_resource, prioritized_tile.raster_source(), tile->content_rect(),
       tile->contents_scale(), prioritized_tile.priority().resolution,
       tile->layer_id(), static_cast<const void*>(tile),
       tile->source_frame_number(), tile->use_picture_analysis(),

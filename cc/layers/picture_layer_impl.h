@@ -124,8 +124,8 @@ class CC_EXPORT PictureLayerImpl
   bool ShouldAdjustRasterScaleDuringScaleAnimations() const;
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
-  void GetAllTilesAndPrioritiesForTracing(
-      std::map<const Tile*, TilePriority>* tile_map) const override;
+  void GetAllPrioritizedTilesForTracing(
+      std::vector<PrioritizedTile>* prioritized_tiles) const override;
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   virtual void UpdateIdealScales();

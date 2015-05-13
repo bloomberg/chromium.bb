@@ -138,9 +138,6 @@ void PictureLayerTiling::TakeTilesAndPropertiesFrom(
 
   RemoveTilesInRegion(layer_invalidation, false /* recreate tiles */);
 
-  for (TileMap::value_type& tile_pair : tiles_)
-    tile_pair.second->set_raster_source(raster_source_.get());
-
   resolution_ = pending_twin->resolution_;
   bool create_missing_tiles = false;
   if (live_tiles_rect_.IsEmpty()) {
@@ -156,7 +153,6 @@ void PictureLayerTiling::TakeTilesAndPropertiesFrom(
     while (!pending_twin->tiles_.empty()) {
       TileMapKey key = pending_twin->tiles_.begin()->first;
       tiles_.set(key, pending_twin->tiles_.take_and_erase(key));
-      DCHECK(tiles_.get(key)->raster_source() == raster_source_.get());
     }
   }
   DCHECK(pending_twin->tiles_.empty());
@@ -295,14 +291,6 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
 
   for (const auto& key : new_tile_keys)
     CreateTile(key.first, key.second);
-}
-
-void PictureLayerTiling::SetRasterSourceOnTiles() {
-  if (tree_ == PENDING_TREE)
-    return;
-
-  for (TileMap::value_type& tile_pair : tiles_)
-    tile_pair.second->set_raster_source(raster_source_.get());
 }
 
 bool PictureLayerTiling::ShouldCreateTileAt(int i, int j) const {
@@ -819,12 +807,18 @@ void PictureLayerTiling::UpdateRequiredStatesOnTile(Tile* tile) const {
 
 PrioritizedTile PictureLayerTiling::MakePrioritizedTile(Tile* tile) const {
   DCHECK(tile);
-  return PrioritizedTile(tile, ComputePriorityForTile(tile),
+  DCHECK(
+      raster_source()->CoversRect(tile->content_rect(), tile->contents_scale()))
+      << "Recording rect: "
+      << gfx::ScaleToEnclosingRect(tile->content_rect(),
+                                   1.f / tile->contents_scale()).ToString();
+
+  return PrioritizedTile(tile, raster_source(), ComputePriorityForTile(tile),
                          IsTileOccluded(tile));
 }
 
 std::map<const Tile*, PrioritizedTile>
-PictureLayerTiling::UpdateAndGetAllPrioritizedTilesForTesting() {
+PictureLayerTiling::UpdateAndGetAllPrioritizedTilesForTesting() const {
   std::map<const Tile*, PrioritizedTile> result;
   for (const auto& key_tile_pair : tiles_) {
     UpdateRequiredStatesOnTile(key_tile_pair.second);
@@ -833,13 +827,6 @@ PictureLayerTiling::UpdateAndGetAllPrioritizedTilesForTesting() {
     result.insert(std::make_pair(prioritized_tile.tile(), prioritized_tile));
   }
   return result;
-}
-
-void PictureLayerTiling::VerifyAllTilesHaveCurrentRasterSource() const {
-#if DCHECK_IS_ON()
-  for (const auto& tile_pair : tiles_)
-    DCHECK_EQ(raster_source_.get(), tile_pair.second->raster_source());
-#endif
 }
 
 TilePriority PictureLayerTiling::ComputePriorityForTile(
@@ -877,13 +864,10 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
                       distance_to_visible);
 }
 
-void PictureLayerTiling::GetAllTilesAndPrioritiesForTracing(
-    std::map<const Tile*, TilePriority>* tile_map) const {
+void PictureLayerTiling::GetAllPrioritizedTilesForTracing(
+    std::vector<PrioritizedTile>* prioritized_tiles) const {
   for (const auto& tile_pair : tiles_) {
-    const Tile* tile = tile_pair.second;
-    const TilePriority& priority = ComputePriorityForTile(tile);
-    // Store combined priority.
-    (*tile_map)[tile] = priority;
+    prioritized_tiles->push_back(MakePrioritizedTile(tile_pair.second));
   }
 }
 

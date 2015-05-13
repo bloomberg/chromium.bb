@@ -36,7 +36,6 @@ Tile::Tile(TileManager* tile_manager,
       required_for_draw_(false),
       id_(s_next_id_++),
       scheduled_priority_(0) {
-  set_raster_source(raster_source);
 }
 
 Tile::~Tile() {
@@ -45,34 +44,27 @@ Tile::~Tile() {
       "cc::Tile", this);
 }
 
-void Tile::AsValueWithPriorityInto(const TilePriority& priority,
-                                   base::trace_event::TracedValue* res) const {
+void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"), res, "cc::Tile", this);
-  TracedValue::SetIDRef(raster_source_.get(), res, "picture_pile");
-  res->SetDouble("contents_scale", contents_scale_);
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), value, "cc::Tile", this);
+  value->SetDouble("contents_scale", contents_scale_);
 
-  MathUtil::AddToTracedValue("content_rect", content_rect_, res);
+  MathUtil::AddToTracedValue("content_rect", content_rect_, value);
 
-  res->SetInteger("layer_id", layer_id_);
+  value->SetInteger("layer_id", layer_id_);
 
-  res->BeginDictionary("combined_priority");
-  priority.AsValueInto(res);
-  res->EndDictionary();
+  value->BeginDictionary("draw_info");
+  draw_info_.AsValueInto(value);
+  value->EndDictionary();
 
-  res->BeginDictionary("draw_info");
-  draw_info_.AsValueInto(res);
-  res->EndDictionary();
+  value->SetBoolean("has_resource", HasResource());
+  value->SetBoolean("is_using_gpu_memory", HasResource() || HasRasterTask());
 
-  res->SetBoolean("has_resource", HasResource());
-  res->SetBoolean("is_using_gpu_memory", HasResource() || HasRasterTask());
-  res->SetString("resolution", TileResolutionToString(priority.resolution));
+  value->SetInteger("scheduled_priority", scheduled_priority_);
 
-  res->SetInteger("scheduled_priority", scheduled_priority_);
+  value->SetBoolean("use_picture_analysis", use_picture_analysis());
 
-  res->SetBoolean("use_picture_analysis", use_picture_analysis());
-
-  res->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
+  value->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
 }
 
 size_t Tile::GPUMemoryUsageInBytes() const {

@@ -3177,18 +3177,15 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
   MathUtil::AddToTracedValue("device_viewport_size", device_viewport_size_,
                              state);
 
-  std::map<const Tile*, TilePriority> tile_map;
-  active_tree_->GetAllTilesAndPrioritiesForTracing(&tile_map);
+  std::vector<PrioritizedTile> prioritized_tiles;
+  active_tree_->GetAllPrioritizedTilesForTracing(&prioritized_tiles);
   if (pending_tree_)
-    pending_tree_->GetAllTilesAndPrioritiesForTracing(&tile_map);
+    pending_tree_->GetAllPrioritizedTilesForTracing(&prioritized_tiles);
 
   state->BeginArray("active_tiles");
-  for (const auto& pair : tile_map) {
-    const Tile* tile = pair.first;
-    const TilePriority& priority = pair.second;
-
+  for (const auto& prioritized_tile : prioritized_tiles) {
     state->BeginDictionary();
-    tile->AsValueWithPriorityInto(priority, state);
+    prioritized_tile.AsValueInto(state);
     state->EndDictionary();
   }
   state->EndArray();

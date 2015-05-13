@@ -177,13 +177,13 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
   PictureLayerTiling* tiling = tiling_set->AddTiling(layer->contents_scale_x(),
                                                      layer->GetRasterSource());
   tiling->CreateAllTilesForTesting();
+  RasterSource* raster_source = tiling->raster_source();
   for (PictureLayerTiling::CoverageIterator it(
            tiling, layer->contents_scale_x(), layer->visible_content_rect());
        it;
        ++it) {
     DCHECK(*it);
 
-    RasterSource* raster_source = (*it)->raster_source();
     gfx::Rect content_rect = (*it)->content_rect();
     float contents_scale = (*it)->contents_scale();
 

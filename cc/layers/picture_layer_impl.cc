@@ -1183,11 +1183,11 @@ void PictureLayerImpl::GetDebugBorderProperties(
   *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
 }
 
-void PictureLayerImpl::GetAllTilesAndPrioritiesForTracing(
-    std::map<const Tile*, TilePriority>* tile_map) const {
+void PictureLayerImpl::GetAllPrioritizedTilesForTracing(
+    std::vector<PrioritizedTile>* prioritized_tiles) const {
   if (!tilings_)
     return;
-  tilings_->GetAllTilesAndPrioritiesForTracing(tile_map);
+  tilings_->GetAllPrioritizedTilesForTracing(prioritized_tiles);
 }
 
 void PictureLayerImpl::AsValueInto(

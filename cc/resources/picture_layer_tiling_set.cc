@@ -112,7 +112,6 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
 
     tiling->SetRasterSourceAndResize(raster_source);
     tiling->Invalidate(layer_invalidation);
-    tiling->SetRasterSourceOnTiles();
     // This is needed for cases where the live tiles rect didn't change but
     // recordings exist in the raster source that did not exist on the last
     // raster source.
@@ -138,7 +137,6 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
   for (PictureLayerTiling* tiling : tilings_) {
     tiling->SetRasterSourceAndResize(raster_source);
     tiling->Invalidate(layer_invalidation);
-    tiling->SetRasterSourceOnTiles();
     // This is needed for cases where the live tiles rect didn't change but
     // recordings exist in the raster source that did not exist on the last
     // raster source.
@@ -156,7 +154,6 @@ void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
     // Since the invalidation changed, we need to create any missing tiles in
     // the live tiles rect again.
     tiling->CreateMissingTilesInLiveTilesRect();
-    tiling->VerifyAllTilesHaveCurrentRasterSource();
   }
 }
 
@@ -373,10 +370,10 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
   return updated;
 }
 
-void PictureLayerTilingSet::GetAllTilesAndPrioritiesForTracing(
-    std::map<const Tile*, TilePriority>* tile_map) const {
+void PictureLayerTilingSet::GetAllPrioritizedTilesForTracing(
+    std::vector<PrioritizedTile>* prioritized_tiles) const {
   for (auto* tiling : tilings_)
-    tiling->GetAllTilesAndPrioritiesForTracing(tile_map);
+    tiling->GetAllPrioritizedTilesForTracing(prioritized_tiles);
 }
 
 PictureLayerTilingSet::CoverageIterator::CoverageIterator(

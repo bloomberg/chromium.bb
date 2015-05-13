@@ -75,7 +75,6 @@ class CC_EXPORT PictureLayerTiling {
 
   void SetRasterSourceAndResize(scoped_refptr<RasterSource> raster_source);
   void Invalidate(const Region& layer_invalidation);
-  void SetRasterSourceOnTiles();
   void CreateMissingTilesInLiveTilesRect();
   void TakeTilesAndPropertiesFrom(PictureLayerTiling* pending_twin,
                                   const Region& layer_invalidation);
@@ -120,7 +119,7 @@ class CC_EXPORT PictureLayerTiling {
       UpdateRequiredStatesOnTile(key_tile_pair.second);
   }
   std::map<const Tile*, PrioritizedTile>
-  UpdateAndGetAllPrioritizedTilesForTesting();
+  UpdateAndGetAllPrioritizedTilesForTesting() const;
 
   void SetAllTilesOccludedForTesting() {
     gfx::Rect viewport_in_layer_space =
@@ -133,8 +132,6 @@ class CC_EXPORT PictureLayerTiling {
   const gfx::Rect& GetCurrentVisibleRectForTesting() const {
     return current_visible_rect_;
   }
-
-  void VerifyAllTilesHaveCurrentRasterSource() const;
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
@@ -187,8 +184,8 @@ class CC_EXPORT PictureLayerTiling {
                                 double current_frame_time_in_seconds,
                                 const Occlusion& occlusion_in_layer_space);
 
-  void GetAllTilesAndPrioritiesForTracing(
-      std::map<const Tile*, TilePriority>* tile_map) const;
+  void GetAllPrioritizedTilesForTracing(
+      std::vector<PrioritizedTile>* prioritized_tiles) const;
   void AsValueInto(base::trace_event::TracedValue* array) const;
   size_t GPUMemoryUsageInBytes() const;
 

@@ -8,16 +8,33 @@
 
 namespace cc {
 
-PrioritizedTile::PrioritizedTile() : tile_(nullptr), is_occluded_(false) {
+PrioritizedTile::PrioritizedTile()
+    : tile_(nullptr), raster_source_(nullptr), is_occluded_(false) {
 }
 
 PrioritizedTile::PrioritizedTile(Tile* tile,
+                                 RasterSource* raster_source,
                                  const TilePriority priority,
                                  bool is_occluded)
-    : tile_(tile), priority_(priority), is_occluded_(is_occluded) {
+    : tile_(tile),
+      raster_source_(raster_source),
+      priority_(priority),
+      is_occluded_(is_occluded) {
 }
 
 PrioritizedTile::~PrioritizedTile() {
+}
+
+void PrioritizedTile::AsValueInto(base::trace_event::TracedValue* value) const {
+  tile_->AsValueInto(value);
+
+  TracedValue::SetIDRef(raster_source(), value, "picture_pile");
+
+  value->BeginDictionary("combined_priority");
+  priority().AsValueInto(value);
+  value->EndDictionary();
+
+  value->SetString("resolution", TileResolutionToString(priority().resolution));
 }
 
 }  // namespace cc

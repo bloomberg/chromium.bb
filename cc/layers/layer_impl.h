@@ -60,6 +60,7 @@ class Occlusion;
 template <typename LayerType>
 class OcclusionTracker;
 class OpacityTree;
+class PrioritizedTile;
 class RenderPass;
 class RenderPassId;
 class Renderer;
@@ -604,8 +605,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual void PushPropertiesTo(LayerImpl* layer);
 
-  virtual void GetAllTilesAndPrioritiesForTracing(
-      std::map<const Tile*, TilePriority>* tile_map) const;
+  virtual void GetAllPrioritizedTilesForTracing(
+      std::vector<PrioritizedTile>* prioritized_tiles) const;
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   virtual size_t GPUMemoryUsageInBytes() const;
