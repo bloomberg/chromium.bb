@@ -189,7 +189,6 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       for cert_type in ssl_client_cert_types:
         self.ssl_client_cert_types.append({
             "rsa_sign": tlslite.api.ClientCertificateType.rsa_sign,
-            "dss_sign": tlslite.api.ClientCertificateType.dss_sign,
             "ecdsa_sign": tlslite.api.ClientCertificateType.ecdsa_sign,
             }[cert_type])
 

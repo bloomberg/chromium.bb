@@ -50,8 +50,6 @@ std::string GetClientCertType(SSLClientCertType type) {
   switch (type) {
     case CLIENT_CERT_RSA_SIGN:
       return "rsa_sign";
-    case CLIENT_CERT_DSS_SIGN:
-      return "dss_sign";
     case CLIENT_CERT_ECDSA_SIGN:
       return "ecdsa_sign";
     default:

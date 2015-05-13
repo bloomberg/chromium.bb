@@ -92,11 +92,11 @@ void AwContentsClientBridgeTest::CertSelected(X509Certificate* cert) {
 }
 
 TEST_F(AwContentsClientBridgeTest, TestClientCertKeyTypesCorrectlyEncoded) {
-  SSLClientCertType cert_types[3] = {net::CLIENT_CERT_RSA_SIGN,
-      net::CLIENT_CERT_DSS_SIGN, net::CLIENT_CERT_ECDSA_SIGN};
-  std::string expected_names[3] = {"RSA", "DSA" ,"ECDSA"};
+  SSLClientCertType cert_types[2] = {net::CLIENT_CERT_RSA_SIGN,
+                                     net::CLIENT_CERT_ECDSA_SIGN};
+  std::string expected_names[2] = {"RSA", "ECDSA"};
 
-  for(int i = 0; i < 3; i++) {
+  for (int i = 0; i < 2; i++) {
     TestCertType(cert_types[i], expected_names[i]);
   }
 }

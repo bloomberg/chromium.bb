@@ -55,7 +55,6 @@ class TestServerBuilder {
 
         HashSet<String> sslClientCertTypes = new HashSet<String>();
         sslClientCertTypes.add("rsa_sign");
-        sslClientCertTypes.add("dss_sign");
         sslClientCertTypes.add("ecdsa_sign");
         SSL_CLIENT_CERT_TYPES = Collections.unmodifiableSet(sslClientCertTypes);
 

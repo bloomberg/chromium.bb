@@ -53,9 +53,6 @@ void StartClientCertificateRequest(
       case net::CLIENT_CERT_RSA_SIGN:
         key_types.push_back("RSA");
         break;
-      case net::CLIENT_CERT_DSS_SIGN:
-        key_types.push_back("DSA");
-        break;
       case net::CLIENT_CERT_ECDSA_SIGN:
         key_types.push_back("ECDSA");
         break;

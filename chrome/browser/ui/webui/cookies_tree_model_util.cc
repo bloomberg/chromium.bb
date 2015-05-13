@@ -18,7 +18,6 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/ssl/ssl_client_cert_type.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -67,19 +66,6 @@ const char kKeyCertType[] = "certType";
 const char kKeyScopes[] = "scopes";
 
 const int64 kNegligibleUsage = 1024;  // 1KiB
-
-std::string ClientCertTypeToString(net::SSLClientCertType type) {
-  switch (type) {
-    case net::CLIENT_CERT_RSA_SIGN:
-      return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_RSA_SIGN);
-    case net::CLIENT_CERT_DSS_SIGN:
-      return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_DSS_SIGN);
-    case net::CLIENT_CERT_ECDSA_SIGN:
-      return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_ECDSA_SIGN);
-    default:
-      return base::IntToString(type);
-  }
-}
 
 }  // namespace
 
@@ -258,7 +244,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       dict->SetString(kKeyServerId, channel_id.server_identifier());
       dict->SetString(kKeyCertType,
-                      ClientCertTypeToString(net::CLIENT_CERT_ECDSA_SIGN));
+                      l10n_util::GetStringUTF8(IDS_CLIENT_CERT_ECDSA_SIGN));
       dict->SetString(kKeyCreated, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               channel_id.creation_time())));
