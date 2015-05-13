@@ -95,7 +95,7 @@ remoting.Identity.prototype.getNewToken = function(opt_scopes) {
   return this.getToken(opt_scopes).then(function(/** string */ token) {
     return new Promise(function(resolve, reject) {
       chrome.identity.removeCachedAuthToken({'token': token }, function() {
-        resolve(that.getToken());
+        resolve(that.getToken(opt_scopes));
       });
     });
   });

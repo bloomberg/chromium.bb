@@ -239,10 +239,16 @@ remoting.AppConnectedView.prototype.sendGoogleDriveAccessToken_ =
   ];
   remoting.identity.getNewToken(googleDriveScopes).then(
     function(/** string */ token){
+      base.debug.assert(token !== previousToken_);
+      previousToken_ = token;
       sendExtensionMessage('accessToken', token);
   }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
     console.log('Failed to refresh access token: ' + error.toString());
   }));
 };
+
+// The access token last received from getNewToken. Saved to ensure that we
+// get a fresh token each time.
+var previousToken_ = '';
 
 })();
