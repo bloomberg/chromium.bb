@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -27,6 +28,9 @@ import android.widget.TextView;
 public class WebViewBrowserActivity extends Activity {
     private EditText mUrlBar;
     private WebView mWebView;
+
+    private static final String[] AUTOMATICALLY_GRANT =
+            { PermissionRequest.RESOURCE_VIDEO_CAPTURE, PermissionRequest.RESOURCE_AUDIO_CAPTURE };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,11 @@ public class WebViewBrowserActivity extends Activity {
             public void onGeolocationPermissionsShowPrompt(String origin,
                     GeolocationPermissions.Callback callback) {
                 callback.invoke(origin, true, false);
+            }
+
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                request.grant(AUTOMATICALLY_GRANT);
             }
         });
 
