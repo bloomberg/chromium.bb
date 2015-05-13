@@ -44,15 +44,17 @@ Polymer({
      */
     subpage: {
       type: Boolean,
-      value: false
-    }
+      value: false,
+      readOnly: true
+    },
 
     /**
      * ID of the page.
      */
     PAGE_ID: {
       type: String,
-      value: 'date-time'
+      value: 'date-time',
+      readOnly: true
     },
 
     /**
@@ -68,7 +70,8 @@ Polymer({
      */
     icon: {
       type: String,
-      value: 'device:access-time'
+      value: 'device:access-time',
+      readOnly: true
     },
   },
 });
