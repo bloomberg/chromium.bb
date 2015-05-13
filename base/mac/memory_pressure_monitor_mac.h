@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MEMORY_MEMORY_PRESSURE_MONITOR_MAC_H_
-#define BASE_MEMORY_MEMORY_PRESSURE_MONITOR_MAC_H_
+#ifndef BASE_MAC_MEMORY_PRESSURE_MONITOR_MAC_H_
+#define BASE_MAC_MEMORY_PRESSURE_MONITOR_MAC_H_
 
 #include <dispatch/dispatch.h>
 
@@ -59,4 +59,4 @@ class BASE_EXPORT MemoryPressureMonitorMac : public MemoryPressureMonitor {
 
 }  // namespace base
 
-#endif  // BASE_MEMORY_MEMORY_PRESSURE_MONITOR_MAC_H_
+#endif  // BASE_MAC_MEMORY_PRESSURE_MONITOR_MAC_H_

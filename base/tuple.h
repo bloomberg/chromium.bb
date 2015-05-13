@@ -25,8 +25,8 @@
 //   DispatchToMethod(&foo, &Foo::SomeMeth, MakeTuple(1, 2, 3));
 //   // foo->SomeMeth(1, 2, 3);
 
-#ifndef BASE_TUPLE_H__
-#define BASE_TUPLE_H__
+#ifndef BASE_TUPLE_H_
+#define BASE_TUPLE_H_
 
 #include "base/bind_helpers.h"
 
@@ -329,4 +329,4 @@ inline void DispatchToMethod(ObjT* obj,
                        MakeIndexSequence<sizeof...(OutTs)>());
 }
 
-#endif  // BASE_TUPLE_H__
+#endif  // BASE_TUPLE_H_

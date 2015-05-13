@@ -5,8 +5,8 @@
 // This file contains utility functions for accessing resources in external
 // files (DLLs) or embedded in the executable itself.
 
-#ifndef BASE_WIN_RESOURCE_UTIL_H__
-#define BASE_WIN_RESOURCE_UTIL_H__
+#ifndef BASE_WIN_RESOURCE_UTIL_H_
+#define BASE_WIN_RESOURCE_UTIL_H_
 
 #include <windows.h>
 
@@ -36,4 +36,4 @@ bool BASE_EXPORT GetDataResourceFromModule(HMODULE module,
 }  // namespace win
 }  // namespace base
 
-#endif  // BASE_WIN_RESOURCE_UTIL_H__
+#endif  // BASE_WIN_RESOURCE_UTIL_H_

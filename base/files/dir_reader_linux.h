@@ -95,4 +95,4 @@ class DirReaderLinux {
 
 }  // namespace base
 
-#endif // BASE_FILES_DIR_READER_LINUX_H_
+#endif  // BASE_FILES_DIR_READER_LINUX_H_

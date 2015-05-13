@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TRACE_EVENT_MEMORY_DUMP_REQUEST_H_
-#define BASE_TRACE_EVENT_MEMORY_DUMP_REQUEST_H_
+#ifndef BASE_TRACE_EVENT_MEMORY_DUMP_REQUEST_ARGS_H_
+#define BASE_TRACE_EVENT_MEMORY_DUMP_REQUEST_ARGS_H_
 
 // This file defines the types and structs used to issue memory dump requests.
 // These are also used in the IPCs for coordinating inter-process memory dumps.
@@ -38,4 +38,4 @@ struct BASE_EXPORT MemoryDumpRequestArgs {
 }  // namespace trace_event
 }  // namespace base
 
-#endif  // BASE_TRACE_EVENT_MEMORY_DUMP_REQUEST_H_
+#endif  // BASE_TRACE_EVENT_MEMORY_DUMP_REQUEST_ARGS_H_

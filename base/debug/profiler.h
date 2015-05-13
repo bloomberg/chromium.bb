@@ -87,4 +87,4 @@ BASE_EXPORT MoveDynamicSymbol GetProfilerMoveDynamicSymbolFunc();
 }  // namespace debug
 }  // namespace base
 
-#endif  // BASE_DEBUG_PROFILER_H__
+#endif  // BASE_DEBUG_PROFILER_H_

@@ -33,4 +33,4 @@ typedef DirReaderFallback DirReaderPosix;
 
 }  // namespace base
 
-#endif // BASE_FILES_DIR_READER_POSIX_H_
+#endif  // BASE_FILES_DIR_READER_POSIX_H_

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // This file contains the Windows-specific exporting to ETW.
-#ifndef BASE_TRACE_EVENT_TRACE_ETW_EXPORT_H_
-#define BASE_TRACE_EVENT_TRACE_ETW_EXPORT_H_
+#ifndef BASE_TRACE_EVENT_TRACE_EVENT_ETW_EXPORT_WIN_H_
+#define BASE_TRACE_EVENT_TRACE_EVENT_ETW_EXPORT_WIN_H_
 
 #include "base/base_export.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -72,4 +72,4 @@ class BASE_EXPORT TraceEventETWExport {
 }  // namespace trace_event
 }  // namespace base
 
-#endif  // BASE_TRACE_EVENT_TRACE_ETW_EXPORT_H_
+#endif  // BASE_TRACE_EVENT_TRACE_EVENT_ETW_EXPORT_WIN_H_

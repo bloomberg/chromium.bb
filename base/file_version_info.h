@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_FILE_VERSION_INFO_H__
-#define BASE_FILE_VERSION_INFO_H__
+#ifndef BASE_FILE_VERSION_INFO_H_
+#define BASE_FILE_VERSION_INFO_H_
 
 #include "build/build_config.h"
 
@@ -83,4 +83,4 @@ class BASE_EXPORT FileVersionInfo {
   virtual bool is_official_build() = 0;
 };
 
-#endif  // BASE_FILE_VERSION_INFO_H__
+#endif  // BASE_FILE_VERSION_INFO_H_

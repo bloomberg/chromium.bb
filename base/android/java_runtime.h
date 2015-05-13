@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ANDROID_JAVA_RUNTIME_H
-#define BASE_ANDROID_JAVA_RUNTIME_H
+#ifndef BASE_ANDROID_JAVA_RUNTIME_H_
+#define BASE_ANDROID_JAVA_RUNTIME_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/base_export.h"
@@ -25,4 +25,4 @@ class BASE_EXPORT JavaRuntime {
 }  // namespace android
 }  // namespace base
 
-#endif  // BASE_ANDROID_JAVA_RUNTIME_H
+#endif  // BASE_ANDROID_JAVA_RUNTIME_H_
