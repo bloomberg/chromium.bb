@@ -1378,6 +1378,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess {
   [_nativeController view].frame = [self visibleFrame];
   [_containerView addSubview:[_nativeController view]];
+  [[_nativeController view] setNeedsUpdateConstraints];
   const GURL currentURL([self currentURL]);
   [self didStartLoadingURL:currentURL updateHistory:loadSuccess];
   _loadPhase = web::PAGE_LOADED;
