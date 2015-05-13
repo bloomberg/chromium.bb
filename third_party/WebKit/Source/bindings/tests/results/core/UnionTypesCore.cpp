@@ -96,11 +96,9 @@ ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionar
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 ArrayBufferOrArrayBufferViewOrDictionary::ArrayBufferOrArrayBufferViewOrDictionary(const ArrayBufferOrArrayBufferViewOrDictionary&) = default;
 ArrayBufferOrArrayBufferViewOrDictionary::~ArrayBufferOrArrayBufferViewOrDictionary() = default;
 ArrayBufferOrArrayBufferViewOrDictionary& ArrayBufferOrArrayBufferViewOrDictionary::operator=(const ArrayBufferOrArrayBufferViewOrDictionary&) = default;
-#endif
 
 void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ArrayBufferOrArrayBufferViewOrDictionary& impl, ExceptionState& exceptionState)
 {
@@ -219,11 +217,9 @@ BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromUnr
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble(const BooleanOrStringOrUnrestrictedDouble&) = default;
 BooleanOrStringOrUnrestrictedDouble::~BooleanOrStringOrUnrestrictedDouble() = default;
 BooleanOrStringOrUnrestrictedDouble& BooleanOrStringOrUnrestrictedDouble::operator=(const BooleanOrStringOrUnrestrictedDouble&) = default;
-#endif
 
 void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, ExceptionState& exceptionState)
 {
@@ -322,11 +318,9 @@ DoubleOrString DoubleOrString::fromString(String value)
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 DoubleOrString::DoubleOrString(const DoubleOrString&) = default;
 DoubleOrString::~DoubleOrString() = default;
 DoubleOrString& DoubleOrString::operator=(const DoubleOrString&) = default;
-#endif
 
 void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, ExceptionState& exceptionState)
 {
@@ -418,11 +412,9 @@ LongOrTestDictionary LongOrTestDictionary::fromTestDictionary(TestDictionary val
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 LongOrTestDictionary::LongOrTestDictionary(const LongOrTestDictionary&) = default;
 LongOrTestDictionary::~LongOrTestDictionary() = default;
 LongOrTestDictionary& LongOrTestDictionary::operator=(const LongOrTestDictionary&) = default;
-#endif
 
 DEFINE_TRACE(LongOrTestDictionary)
 {
@@ -528,11 +520,9 @@ NodeOrNodeList NodeOrNodeList::fromNodeList(PassRefPtrWillBeRawPtr<NodeList> val
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 NodeOrNodeList::NodeOrNodeList(const NodeOrNodeList&) = default;
 NodeOrNodeList::~NodeOrNodeList() = default;
 NodeOrNodeList& NodeOrNodeList::operator=(const NodeOrNodeList&) = default;
-#endif
 
 DEFINE_TRACE(NodeOrNodeList)
 {
@@ -647,11 +637,9 @@ StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromA
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView(const StringOrArrayBufferOrArrayBufferView&) = default;
 StringOrArrayBufferOrArrayBufferView::~StringOrArrayBufferOrArrayBufferView() = default;
 StringOrArrayBufferOrArrayBufferView& StringOrArrayBufferOrArrayBufferView::operator=(const StringOrArrayBufferOrArrayBufferView&) = default;
-#endif
 
 void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, ExceptionState& exceptionState)
 {
@@ -749,11 +737,9 @@ StringOrDouble StringOrDouble::fromDouble(double value)
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 StringOrDouble::StringOrDouble(const StringOrDouble&) = default;
 StringOrDouble::~StringOrDouble() = default;
 StringOrDouble& StringOrDouble::operator=(const StringOrDouble&) = default;
-#endif
 
 void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrDouble& impl, ExceptionState& exceptionState)
 {
@@ -845,11 +831,9 @@ StringOrStringSequence StringOrStringSequence::fromStringSequence(const Vector<S
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 StringOrStringSequence::StringOrStringSequence(const StringOrStringSequence&) = default;
 StringOrStringSequence::~StringOrStringSequence() = default;
 StringOrStringSequence& StringOrStringSequence::operator=(const StringOrStringSequence&) = default;
-#endif
 
 void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrStringSequence& impl, ExceptionState& exceptionState)
 {
@@ -952,11 +936,9 @@ TestEnumOrDouble TestEnumOrDouble::fromDouble(double value)
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 TestEnumOrDouble::TestEnumOrDouble(const TestEnumOrDouble&) = default;
 TestEnumOrDouble::~TestEnumOrDouble() = default;
 TestEnumOrDouble& TestEnumOrDouble::operator=(const TestEnumOrDouble&) = default;
-#endif
 
 void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, ExceptionState& exceptionState)
 {
@@ -1056,11 +1038,9 @@ TestInterface2OrUint8Array TestInterface2OrUint8Array::fromUint8Array(PassRefPtr
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 TestInterface2OrUint8Array::TestInterface2OrUint8Array(const TestInterface2OrUint8Array&) = default;
 TestInterface2OrUint8Array::~TestInterface2OrUint8Array() = default;
 TestInterface2OrUint8Array& TestInterface2OrUint8Array::operator=(const TestInterface2OrUint8Array&) = default;
-#endif
 
 void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, ExceptionState& exceptionState)
 {
@@ -1149,11 +1129,9 @@ TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fro
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&) = default;
 TestInterfaceGarbageCollectedOrString::~TestInterfaceGarbageCollectedOrString() = default;
 TestInterfaceGarbageCollectedOrString& TestInterfaceGarbageCollectedOrString::operator=(const TestInterfaceGarbageCollectedOrString&) = default;
-#endif
 
 DEFINE_TRACE(TestInterfaceGarbageCollectedOrString)
 {
@@ -1248,11 +1226,9 @@ TestInterfaceOrLong TestInterfaceOrLong::fromLong(int value)
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 TestInterfaceOrLong::TestInterfaceOrLong(const TestInterfaceOrLong&) = default;
 TestInterfaceOrLong::~TestInterfaceOrLong() = default;
 TestInterfaceOrLong& TestInterfaceOrLong::operator=(const TestInterfaceOrLong&) = default;
-#endif
 
 void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, ExceptionState& exceptionState)
 {
@@ -1350,11 +1326,9 @@ TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInt
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty(const TestInterfaceOrTestInterfaceEmpty&) = default;
 TestInterfaceOrTestInterfaceEmpty::~TestInterfaceOrTestInterfaceEmpty() = default;
 TestInterfaceOrTestInterfaceEmpty& TestInterfaceOrTestInterfaceEmpty::operator=(const TestInterfaceOrTestInterfaceEmpty&) = default;
-#endif
 
 void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, ExceptionState& exceptionState)
 {
@@ -1443,11 +1417,9 @@ TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCo
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 TestInterfaceWillBeGarbageCollectedOrTestDictionary::TestInterfaceWillBeGarbageCollectedOrTestDictionary(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&) = default;
 TestInterfaceWillBeGarbageCollectedOrTestDictionary::~TestInterfaceWillBeGarbageCollectedOrTestDictionary() = default;
 TestInterfaceWillBeGarbageCollectedOrTestDictionary& TestInterfaceWillBeGarbageCollectedOrTestDictionary::operator=(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&) = default;
-#endif
 
 DEFINE_TRACE(TestInterfaceWillBeGarbageCollectedOrTestDictionary)
 {
@@ -1545,11 +1517,9 @@ UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromString(String value)
     return container;
 }
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
 UnrestrictedDoubleOrString::UnrestrictedDoubleOrString(const UnrestrictedDoubleOrString&) = default;
 UnrestrictedDoubleOrString::~UnrestrictedDoubleOrString() = default;
 UnrestrictedDoubleOrString& UnrestrictedDoubleOrString::operator=(const UnrestrictedDoubleOrString&) = default;
-#endif
 
 void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, ExceptionState& exceptionState)
 {

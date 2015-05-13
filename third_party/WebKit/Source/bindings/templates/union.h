@@ -26,14 +26,9 @@ public:
     static {{container.cpp_class}} from{{member.type_name}}({{member.rvalue_cpp_type}});
 
     {% endfor %}
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     {{container.cpp_class}}(const {{container.cpp_class}}&);
     ~{{container.cpp_class}}();
     {{container.cpp_class}}& operator=(const {{container.cpp_class}}&);
-#endif
     {% if container.needs_trace %}
     DECLARE_TRACE();
 

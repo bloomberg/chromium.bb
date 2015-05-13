@@ -48,14 +48,9 @@ public:
     void setDictionary(Dictionary);
     static ArrayBufferOrArrayBufferViewOrDictionary fromDictionary(Dictionary);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     ArrayBufferOrArrayBufferViewOrDictionary(const ArrayBufferOrArrayBufferViewOrDictionary&);
     ~ArrayBufferOrArrayBufferViewOrDictionary();
     ArrayBufferOrArrayBufferViewOrDictionary& operator=(const ArrayBufferOrArrayBufferViewOrDictionary&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -111,14 +106,9 @@ public:
     void setUnrestrictedDouble(double);
     static BooleanOrStringOrUnrestrictedDouble fromUnrestrictedDouble(double);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     BooleanOrStringOrUnrestrictedDouble(const BooleanOrStringOrUnrestrictedDouble&);
     ~BooleanOrStringOrUnrestrictedDouble();
     BooleanOrStringOrUnrestrictedDouble& operator=(const BooleanOrStringOrUnrestrictedDouble&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -169,14 +159,9 @@ public:
     void setString(String);
     static DoubleOrString fromString(String);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     DoubleOrString(const DoubleOrString&);
     ~DoubleOrString();
     DoubleOrString& operator=(const DoubleOrString&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -225,14 +210,9 @@ public:
     void setTestDictionary(TestDictionary);
     static LongOrTestDictionary fromTestDictionary(TestDictionary);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     LongOrTestDictionary(const LongOrTestDictionary&);
     ~LongOrTestDictionary();
     LongOrTestDictionary& operator=(const LongOrTestDictionary&);
-#endif
     DECLARE_TRACE();
 
 private:
@@ -283,14 +263,9 @@ public:
     void setNodeList(PassRefPtrWillBeRawPtr<NodeList>);
     static NodeOrNodeList fromNodeList(PassRefPtrWillBeRawPtr<NodeList>);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     NodeOrNodeList(const NodeOrNodeList&);
     ~NodeOrNodeList();
     NodeOrNodeList& operator=(const NodeOrNodeList&);
-#endif
     DECLARE_TRACE();
 
 private:
@@ -346,14 +321,9 @@ public:
     void setArrayBufferView(PassRefPtr<TestArrayBufferView>);
     static StringOrArrayBufferOrArrayBufferView fromArrayBufferView(PassRefPtr<TestArrayBufferView>);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     StringOrArrayBufferOrArrayBufferView(const StringOrArrayBufferOrArrayBufferView&);
     ~StringOrArrayBufferOrArrayBufferView();
     StringOrArrayBufferOrArrayBufferView& operator=(const StringOrArrayBufferOrArrayBufferView&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -404,14 +374,9 @@ public:
     void setDouble(double);
     static StringOrDouble fromDouble(double);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     StringOrDouble(const StringOrDouble&);
     ~StringOrDouble();
     StringOrDouble& operator=(const StringOrDouble&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -460,14 +425,9 @@ public:
     void setStringSequence(const Vector<String>&);
     static StringOrStringSequence fromStringSequence(const Vector<String>&);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     StringOrStringSequence(const StringOrStringSequence&);
     ~StringOrStringSequence();
     StringOrStringSequence& operator=(const StringOrStringSequence&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -516,14 +476,9 @@ public:
     void setDouble(double);
     static TestEnumOrDouble fromDouble(double);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     TestEnumOrDouble(const TestEnumOrDouble&);
     ~TestEnumOrDouble();
     TestEnumOrDouble& operator=(const TestEnumOrDouble&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -572,14 +527,9 @@ public:
     void setUint8Array(PassRefPtr<DOMUint8Array>);
     static TestInterface2OrUint8Array fromUint8Array(PassRefPtr<DOMUint8Array>);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
     ~TestInterface2OrUint8Array();
     TestInterface2OrUint8Array& operator=(const TestInterface2OrUint8Array&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -628,14 +578,9 @@ public:
     void setString(String);
     static TestInterfaceGarbageCollectedOrString fromString(String);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&);
     ~TestInterfaceGarbageCollectedOrString();
     TestInterfaceGarbageCollectedOrString& operator=(const TestInterfaceGarbageCollectedOrString&);
-#endif
     DECLARE_TRACE();
 
 private:
@@ -686,14 +631,9 @@ public:
     void setLong(int);
     static TestInterfaceOrLong fromLong(int);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     TestInterfaceOrLong(const TestInterfaceOrLong&);
     ~TestInterfaceOrLong();
     TestInterfaceOrLong& operator=(const TestInterfaceOrLong&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -742,14 +682,9 @@ public:
     void setTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
     static TestInterfaceOrTestInterfaceEmpty fromTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     TestInterfaceOrTestInterfaceEmpty(const TestInterfaceOrTestInterfaceEmpty&);
     ~TestInterfaceOrTestInterfaceEmpty();
     TestInterfaceOrTestInterfaceEmpty& operator=(const TestInterfaceOrTestInterfaceEmpty&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -798,14 +733,9 @@ public:
     void setTestDictionary(TestDictionary);
     static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestDictionary(TestDictionary);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     TestInterfaceWillBeGarbageCollectedOrTestDictionary(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&);
     ~TestInterfaceWillBeGarbageCollectedOrTestDictionary();
     TestInterfaceWillBeGarbageCollectedOrTestDictionary& operator=(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&);
-#endif
     DECLARE_TRACE();
 
 private:
@@ -856,14 +786,9 @@ public:
     void setString(String);
     static UnrestrictedDoubleOrString fromString(String);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     UnrestrictedDoubleOrString(const UnrestrictedDoubleOrString&);
     ~UnrestrictedDoubleOrString();
     UnrestrictedDoubleOrString& operator=(const UnrestrictedDoubleOrString&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,

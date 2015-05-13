@@ -33,14 +33,9 @@ public:
     void setString(String);
     static BooleanOrString fromString(String);
 
-#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
-    // Explicit declarations of copy constructor, destructor and operator=,
-    // because msvc automatically generates them if they are not declared in
-    // this header.
     BooleanOrString(const BooleanOrString&);
     ~BooleanOrString();
     BooleanOrString& operator=(const BooleanOrString&);
-#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
