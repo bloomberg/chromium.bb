@@ -8,7 +8,6 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 source_set("router") {
   deps = [
     ":router_core",
-    ":keyed_service_factories",
   ]
 }
 
@@ -32,8 +31,6 @@ source_set("router_core") {
     "media_route.h",
     "media_route_id.h",
     "media_router.h",
-    "media_router_impl.cc",
-    "media_router_impl.h",
     "media_router_type_converters.cc",
     "media_router_type_converters.h",
     "media_routes_observer.cc",
@@ -50,17 +47,6 @@ source_set("router_core") {
     "presentation_media_sinks_observer.h",
     "route_id_manager.cc",
     "route_id_manager.h",
-  ]
-}
-
-source_set("keyed_service_factories") {
-  deps = [
-    ":router_core",
-    "//components/keyed_service/content",
-  ]
-  sources = [
-    "media_router_impl_factory.cc",
-    "media_router_impl_factory.h",
   ]
 }
 
