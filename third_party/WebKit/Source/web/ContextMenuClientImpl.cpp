@@ -232,7 +232,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         // An image can be null for many reasons, like being blocked, no image
         // data received from server yet.
         data.hasImageContents = r.image() && !r.image()->isNull();
-        if (data.hasImageContents) {
+        if (data.hasImageContents && isHTMLImageElement(r.innerNodeOrImageMapImage())) {
             HTMLImageElement* imageElement = toHTMLImageElement(r.innerNodeOrImageMapImage());
             if (imageElement && imageElement->cachedImage())
                 data.imageResponseExtraData = WrappedResourceResponse(imageElement->cachedImage()->response()).extraData();
