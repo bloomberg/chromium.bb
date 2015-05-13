@@ -463,6 +463,29 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
   EXPECT_EQ(gfx::Rect(), controller()->current_keyboard_bounds());
 }
 
+// Verify switch to FULL_WIDTH mode will move virtual keyboard to the right
+// place and sets the correct overscroll.
+TEST_F(KeyboardControllerTest, SwitchToFullWidthVirtualKeyboard) {
+  ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
+
+  aura::Window* container(controller()->GetContainerWindow());
+  root_window()->AddChild(container);
+  gfx::Rect screen_bounds = root_window()->bounds();
+  keyboard::SetTouchKeyboardEnabled(true);
+  SetFocus(&input_client);
+
+  controller()->SetKeyboardMode(FLOATING);
+  EXPECT_EQ(gfx::Rect(), notified_bounds());
+  EXPECT_EQ(gfx::Rect(), controller()->current_keyboard_bounds());
+
+  controller()->SetKeyboardMode(FULL_WIDTH);
+  gfx::Rect expected_bounds(
+      0, screen_bounds.height() - kDefaultVirtualKeyboardHeight,
+      screen_bounds.width(), kDefaultVirtualKeyboardHeight);
+  EXPECT_EQ(expected_bounds, notified_bounds());
+  EXPECT_EQ(expected_bounds, controller()->current_keyboard_bounds());
+}
+
 TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
