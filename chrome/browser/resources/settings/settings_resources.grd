@@ -91,8 +91,8 @@
       <structure name="IDR_SETTINGS_DATE_TIME_PAGE_JS"
                  file="date_time_page/date_time_page.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_STYLE_HTML"
-                 file="downloads_page/downloads_page_style.html"
+      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
+                 file="downloads_page/downloads_page.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_HTML"
                  file="downloads_page/downloads_page.html"

@@ -1,25 +1,25 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
-<link rel="import" href="chrome://resources/polymer/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_input/cr_input.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
-<link rel="import" href="downloads_page_style.html">
 
-<polymer-element name="cr-settings-downloads-page">
+<dom-module id="cr-settings-downloads-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="downloads_page.css">
   <template>
-    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <core-style ref="downloadsPageStyle"></core-style>
-    <paper-shadow layout vertical cross-fade>
-      <div horizontal layout center>
-        <core-label horizontal layout center>
-          <span class="location-label" i18n-content="downloadsLocationLabel"></span>
-          <cr-input id="downloadsPath" floatingLabel="false"
-              value="{{prefs.settings.download.default_directory.value}}" readonly for>
+    <paper-material>
+      <div class="horizontal layout center">
+        <div class="layout horizontal center">
+          <div id="locationLabel" i18n-content="downloadsLocationLabel"></div>
+          <cr-input id="downloadsPath" floating-label="false"
+                value="{{prefs.settings.download.default_directory.value}}"
+                readonly aria-labelledby="locationLabel">
           </cr-input>
-        </core-label>
-        <cr-button id="changeDownloadsPath" on-click="{{selectDownloadLocation}}"
+        </div>
+        <cr-button id="changeDownloadsPath" on-click="selectDownloadLocation_"
             i18n-content="downloadsChangeLocationButton">
         </cr-button>
       </div>
@@ -27,7 +27,7 @@
           pref="{{prefs.settings.download.prompt_for_download}}"
           i18n-values="label:downloadsPromptForDownloadLabel">
       </cr-settings-checkbox>
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="downloads_page.js"></script>
-</polymer-element>
+</dom-module>

@@ -9,72 +9,73 @@
  *
  * Example:
  *
- *    <core-animated-pages>
+ *    <iron-animated-pages>
  *      <cr-settings-downloads-page prefs="{{prefs}}">
  *      </cr-settings-downloads-page>
  *      ... other pages ...
- *    </core-animated-pages>
+ *    </iron-animated-pages>
  *
  * @group Chrome Settings Elements
  * @element cr-settings-downloads-page
  */
-Polymer('cr-settings-downloads-page', {
-  publish: {
+Polymer({
+  is: 'cr-settings-downloads-page',
+
+  properties: {
     /**
      * Preferences state.
-     *
-     * @attribute prefs
-     * @type CrSettingsPrefsElement
-     * @default null
+     * @type {?CrSettingsPrefsElement}
      */
-    prefs: null,
+    prefs: {
+      type: Object,
+      notify: true,
+    },
 
     /**
      * Route for the page.
-     *
-     * @attribute route
-     * @type string
-     * @default ''
      */
-    route: '',
+    route: String,
 
     /**
      * Whether the page is a subpage.
-     *
-     * @attribute subpage
-     * @type boolean
-     * @default false
      */
-    subpage: false,
+    subpage: {
+      type: Boolean,
+      value: false,
+      readOnly: true,
+    },
 
     /**
      * ID of the page.
-     *
-     * @attribute PAGE_ID
-     * @const string
-     * @default 'downloads'
      */
-    PAGE_ID: 'downloads',
+    PAGE_ID: {
+      type: String,
+      value: 'downloads',
+      readOnly: true,
+    },
 
     /**
      * Title for the page header and navigation menu.
-     *
-     * @attribute pageTitle
-     * @type string
      */
-    pageTitle: loadTimeData.getString('downloadsPageTitle'),
+    pageTitle: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString('downloadsPageTitle');
+      },
+    },
 
     /**
-     * Name of the 'core-icon' to show.
-     *
-     * @attribute icon
-     * @type string
-     * @default 'file-download'
+     * Name of the 'iron-icon' to show.
      */
-    icon: 'file-download',
+    icon: {
+      type: String,
+      value: 'file-download',
+      readOnly: true,
+    },
   },
 
-  selectDownloadLocation: function() {
+  /** @private */
+  selectDownloadLocation_: function() {
     // TODO(orenb): Communicate with the C++ to actually display a folder
     // picker.
     this.$.downloadsPath.value = '/Downloads';
