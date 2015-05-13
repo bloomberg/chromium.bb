@@ -307,16 +307,9 @@ ChromePasswordManagerClient::GetPasswordStore() const {
 
 password_manager::PasswordSyncState
 ChromePasswordManagerClient::GetPasswordSyncState() const {
-  ProfileSyncService* sync_service =
+  const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (sync_service && sync_service->HasSyncSetupCompleted() &&
-      sync_service->SyncActive() &&
-      sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS)) {
-    return sync_service->IsUsingSecondaryPassphrase()
-               ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
-               : password_manager::SYNCING_NORMAL_ENCRYPTION;
-  }
-  return password_manager::NOT_SYNCING_PASSWORDS;
+  return password_manager_util::GetPasswordSyncState(sync_service);
 }
 
 void ChromePasswordManagerClient::OnLogRouterAvailabilityChanged(

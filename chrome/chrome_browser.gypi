@@ -1966,6 +1966,7 @@
     'chrome_browser_password_manager_sources': [
       'browser/password_manager/chrome_password_manager_client.cc',
       'browser/password_manager/chrome_password_manager_client.h',
+      'browser/password_manager/password_manager_util.cc',
       'browser/password_manager/password_manager_util.h',
       'browser/password_manager/password_manager_util_android.cc',
       'browser/password_manager/password_manager_util_linux.cc',
