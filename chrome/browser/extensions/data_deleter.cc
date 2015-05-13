@@ -100,9 +100,10 @@ void DataDeleter::StartDeleting(Profile* profile,
         profile,
         Extension::GetBaseURLFromExtensionId(extension->id()));
 
-    if (extension->is_hosted_app() &&
-        !profile->GetExtensionSpecialStoragePolicy()->
-            IsStorageProtected(launch_web_url_origin)) {
+    ExtensionSpecialStoragePolicy* storage_policy =
+        profile->GetExtensionSpecialStoragePolicy();
+    if (storage_policy->NeedsProtection(extension) &&
+        !storage_policy->IsStorageProtected(launch_web_url_origin)) {
       DeleteOrigin(profile,
                    partition,
                    launch_web_url_origin,
