@@ -203,7 +203,6 @@ extern const char kBrailleImeExtensionPath[];
 extern const char kBrailleImeEngineId[];
 // Path to preinstalled Connectivity Diagnostics extension.
 extern const char kConnectivityDiagnosticsPath[];
-extern const char kConnectivityDiagnosticsKioskPath[];
 extern const char kConnectivityDiagnosticsLauncherPath[];
 // The extension id of the first run dialog application.
 extern const char kFirstRunDialogId[];
