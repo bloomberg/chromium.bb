@@ -47,7 +47,7 @@ bool IsRunningSystemInstall() {
 
 google_breakpad::CustomClientInfo* GetCustomInfo() {
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      FileVersionInfo::CreateFileVersionInfoForModule(NULL));
 
   static google_breakpad::CustomInfoEntry ver_entry(
       L"ver", version_info->file_version().c_str());

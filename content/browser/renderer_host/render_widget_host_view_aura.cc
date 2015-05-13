@@ -337,6 +337,12 @@ void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
   if (target != window_ &&
       (!popup_parent_host_view_ ||
        target != popup_parent_host_view_->window_)) {
+    // If we enter this code path it means that we did not receive any focus
+    // lost notifications for the popup window. Ensure that blink is aware
+    // of the fact that focus was lost for the host window by sending a Blur
+    // notification.
+    if (popup_parent_host_view_ && popup_parent_host_view_->host_)
+      popup_parent_host_view_->host_->Blur();
     // Note: popup_parent_host_view_ may be NULL when there are multiple
     // popup children per view. See: RenderWidgetHostViewAura::InitAsPopup().
     Shutdown();
