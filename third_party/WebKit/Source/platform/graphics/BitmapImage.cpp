@@ -127,6 +127,15 @@ bool BitmapImage::currentFrameHasSingleSecurityOrigin() const
     return true;
 }
 
+int BitmapImage::totalFrameBytes()
+{
+    const size_t numFrames = frameCount();
+    size_t totalBytes = 0;
+    for (size_t i = 0; i < numFrames; ++i)
+        totalBytes += m_source.frameBytesAtIndex(i);
+    return safeCast<int>(totalBytes);
+}
+
 void BitmapImage::destroyDecodedData(bool destroyAll)
 {
     for (size_t i = 0; i < m_frames.size(); ++i) {
@@ -168,8 +177,8 @@ void BitmapImage::cacheFrame(size_t index)
     if (m_frames.size() < numFrames)
         m_frames.grow(numFrames);
 
-    bool created = m_source.createFrameAtIndex(index, &m_frames[index].m_frame);
-    if (numFrames == 1 && created)
+    int deltaBytes = totalFrameBytes();
+    if (m_source.createFrameAtIndex(index, &m_frames[index].m_frame) && numFrames == 1)
         checkForSolidColor();
 
     m_frames[index].m_orientation = m_source.orientationAtIndex(index);
@@ -184,8 +193,12 @@ void BitmapImage::cacheFrame(size_t index)
     if (frameSize != m_size)
         m_hasUniformFrameSize = false;
 
-    if (created && imageObserver())
-        imageObserver()->decodedSizeChanged(this, safeCast<int>(m_frames[index].m_frameBytes));
+    // We need to check the total bytes before and after the decode call, not
+    // just the current frame size, because some multi-frame images may require
+    // decoding multiple frames to decode the current frame.
+    deltaBytes = totalFrameBytes() - deltaBytes;
+    if (deltaBytes && imageObserver())
+        imageObserver()->decodedSizeChanged(this, deltaBytes);
 }
 
 void BitmapImage::updateSize() const

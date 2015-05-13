@@ -188,8 +188,6 @@ TEST_F(BitmapImageTest, isAllDataReceived)
     EXPECT_TRUE(image->isAllDataReceived());
 }
 
-#if USE(QCMSLIB)
-
 TEST_F(BitmapImageTest, noColorProfile)
 {
     loadImage("/LayoutTests/fast/images/resources/green.jpg");
@@ -197,6 +195,8 @@ TEST_F(BitmapImageTest, noColorProfile)
     EXPECT_EQ(1024u, decodedSize());
     EXPECT_FALSE(m_image->hasColorProfile());
 }
+
+#if USE(QCMSLIB)
 
 TEST_F(BitmapImageTest, jpegHasColorProfile)
 {
@@ -228,6 +228,8 @@ TEST_F(BitmapImageTest, webpHasColorProfile)
     destroyDecodedData(true);
 }
 
+#endif // USE(QCMSLIB)
+
 TEST_F(BitmapImageTest, icoHasWrongFrameDimensions)
 {
     loadImage("/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico");
@@ -243,9 +245,7 @@ TEST_F(BitmapImageTest, correctDecodedDataSize)
     loadImage("/LayoutTests/fast/images/resources/anim_none.gif", false);
     frameAtIndex(1);
     int frameSize = static_cast<int>(m_image->size().area() * sizeof(ImageFrame::PixelData));
-    // TODO(pkasting): This is currently incorrect ( http://crbug.com/480037 ).
-    // Uncomment this when the bug is fixed.
-    // EXPECT_EQ(frameSize * 2, m_imageObserver.m_lastDecodedSizeChangedDelta);
+    EXPECT_EQ(frameSize * 2, m_imageObserver.m_lastDecodedSizeChangedDelta);
 
     // Trying to destroy all data except an undecoded frame should cause the
     // decoder to seek backwards and preserve the most recent previous frame
@@ -276,7 +276,5 @@ TEST_F(BitmapImageDeferredDecodingTest, correctDecodedDataSize)
     destroyDecodedData(false);
     EXPECT_EQ(-frameSize * 2, m_imageObserver.m_lastDecodedSizeChangedDelta);
 }
-
-#endif // USE(QCMSLIB)
 
 } // namespace blink
