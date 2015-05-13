@@ -192,10 +192,10 @@ void BootstrapUserContextInitializer::OnNetworkError(int response_code) {
 }
 
 void BootstrapUserContextInitializer::OnScreenlockStateChanged(
-    EasyUnlockScreenlockStateHandler::State state) {
+    proximity_auth::ScreenlockState state) {
   // TODO(xiyuan): Add timeout and hook up with error UI after
   //     http://crbug.com/471067.
-  if (state != EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED)
+  if (state != proximity_auth::ScreenlockState::AUTHENTICATED)
     return;
 
   EasyUnlockService* service =

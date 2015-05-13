@@ -12,84 +12,89 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using proximity_auth::ScreenlockState;
+
 namespace {
 
 proximity_auth::ScreenlockBridge::UserPodCustomIcon GetIconForState(
-    EasyUnlockScreenlockStateHandler::State state) {
+    ScreenlockState state) {
   switch (state) {
-    case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
-    case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED:
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
-    case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
+    case ScreenlockState::NO_BLUETOOTH:
+    case ScreenlockState::NO_PHONE:
+    case ScreenlockState::PHONE_NOT_AUTHENTICATED:
+    case ScreenlockState::PHONE_LOCKED:
+    case ScreenlockState::PHONE_NOT_LOCKABLE:
+    case ScreenlockState::PHONE_UNSUPPORTED:
+    case ScreenlockState::RSSI_TOO_LOW:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
-    case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
-    case EasyUnlockScreenlockStateHandler::
-             STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+    case ScreenlockState::TX_POWER_TOO_HIGH:
+    case ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
       // TODO(isherman): This icon is currently identical to the regular locked
       // icon.  Once the reduced proximity range flag is removed, consider
       // deleting the redundant icon.
       return proximity_auth::ScreenlockBridge::
           USER_POD_CUSTOM_ICON_LOCKED_WITH_PROXIMITY_HINT;
-    case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
+    case ScreenlockState::BLUETOOTH_CONNECTING:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER;
-    case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
+    case ScreenlockState::AUTHENTICATED:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED;
-    default:
+    case ScreenlockState::INACTIVE:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
   }
+
+  NOTREACHED();
+  return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
 }
 
-bool HardlockOnClick(EasyUnlockScreenlockStateHandler::State state) {
-  return state != EasyUnlockScreenlockStateHandler::STATE_INACTIVE;
+bool HardlockOnClick(ScreenlockState state) {
+  return state != ScreenlockState::INACTIVE;
 }
 
-size_t GetTooltipResourceId(EasyUnlockScreenlockStateHandler::State state) {
+size_t GetTooltipResourceId(ScreenlockState state) {
   switch (state) {
-    case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
+    case ScreenlockState::INACTIVE:
+    case ScreenlockState::BLUETOOTH_CONNECTING:
+      return 0;
+    case ScreenlockState::NO_BLUETOOTH:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_NO_BLUETOOTH;
-    case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
+    case ScreenlockState::NO_PHONE:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_NO_PHONE;
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED:
+    case ScreenlockState::PHONE_NOT_AUTHENTICATED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_NOT_AUTHENTICATED;
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
+    case ScreenlockState::PHONE_LOCKED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED;
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
+    case ScreenlockState::PHONE_NOT_LOCKABLE:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_UNLOCKABLE;
-    case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
+    case ScreenlockState::PHONE_UNSUPPORTED:
+      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION;
+    case ScreenlockState::RSSI_TOO_LOW:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW;
-    case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
+    case ScreenlockState::TX_POWER_TOO_HIGH:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TX_POWER_TOO_HIGH;
-    case EasyUnlockScreenlockStateHandler::
-             STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+    case ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
       return
           IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
-    case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
+    case ScreenlockState::AUTHENTICATED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
-      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION;
-    default:
-      return 0;
   }
+
+  NOTREACHED();
+  return 0;
 }
 
-bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
-  return state == EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED ||
-         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
-         state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
-         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED ||
-         state == EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH ||
-         state == EasyUnlockScreenlockStateHandler::
-                      STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+bool TooltipContainsDeviceType(ScreenlockState state) {
+  return (state == ScreenlockState::AUTHENTICATED ||
+          state == ScreenlockState::PHONE_NOT_LOCKABLE ||
+          state == ScreenlockState::NO_BLUETOOTH ||
+          state == ScreenlockState::PHONE_UNSUPPORTED ||
+          state == ScreenlockState::TX_POWER_TOO_HIGH ||
+          state == ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH);
 }
 
 // Returns true iff the |state| corresponds to a locked remote device.
-bool IsLockedState(EasyUnlockScreenlockStateHandler::State state) {
-  return (state == EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED ||
-          state == EasyUnlockScreenlockStateHandler::
-                       STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH);
+bool IsLockedState(ScreenlockState state) {
+  return (state == ScreenlockState::PHONE_LOCKED ||
+          state == ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH);
 }
 
 }  // namespace
@@ -98,7 +103,7 @@ EasyUnlockScreenlockStateHandler::EasyUnlockScreenlockStateHandler(
     const std::string& user_email,
     HardlockState initial_hardlock_state,
     proximity_auth::ScreenlockBridge* screenlock_bridge)
-    : state_(STATE_INACTIVE),
+    : state_(ScreenlockState::INACTIVE),
       user_email_(user_email),
       screenlock_bridge_(screenlock_bridge),
       hardlock_state_(initial_hardlock_state),
@@ -112,22 +117,22 @@ EasyUnlockScreenlockStateHandler::EasyUnlockScreenlockStateHandler(
 EasyUnlockScreenlockStateHandler::~EasyUnlockScreenlockStateHandler() {
   screenlock_bridge_->RemoveObserver(this);
   // Make sure the screenlock state set by this gets cleared.
-  ChangeState(STATE_INACTIVE);
+  ChangeState(ScreenlockState::INACTIVE);
 }
 
 bool EasyUnlockScreenlockStateHandler::IsActive() const {
-  return state_ != STATE_INACTIVE;
+  return state_ != ScreenlockState::INACTIVE;
 }
 
 bool EasyUnlockScreenlockStateHandler::InStateValidOnRemoteAuthFailure() const {
   // Note that NO_PHONE is not valid in this case because the phone may close
   // the connection if the auth challenge sent to it is invalid. This case
   // should be handled as authentication failure.
-  return state_ == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
-         state_ == EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED;
+  return (state_ == ScreenlockState::NO_BLUETOOTH ||
+          state_ == ScreenlockState::PHONE_LOCKED);
 }
 
-void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
+void EasyUnlockScreenlockStateHandler::ChangeState(ScreenlockState new_state) {
   if (state_ == new_state)
     return;
 
@@ -175,7 +180,7 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   UpdateTooltipOptions(&icon_options);
 
   // For states without tooltips, we still need to set an accessibility label.
-  if (state_ == EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING) {
+  if (state_ == ScreenlockState::BLUETOOTH_CONNECTING) {
     icon_options.SetAriaLabel(
         l10n_util::GetStringUTF16(IDS_SMART_LOCK_SPINNER_ACCESSIBILITY_LABEL));
   }
@@ -237,7 +242,7 @@ void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock(
 
   // Upon a successful unlock event, record whether the user's phone was locked
   // at any point while the lock screen was up.
-  if (state_ == STATE_AUTHENTICATED)
+  if (state_ == ScreenlockState::AUTHENTICATED)
     RecordEasyUnlockDidUserManuallyUnlockPhone(did_see_locked_phone_);
   did_see_locked_phone_ = false;
 }
@@ -247,9 +252,9 @@ void EasyUnlockScreenlockStateHandler::OnFocusedUserChanged(
 }
 
 void EasyUnlockScreenlockStateHandler::RefreshScreenlockState() {
-  State last_state = state_;
+  ScreenlockState last_state = state_;
   // This should force updating screenlock state.
-  state_ = STATE_INACTIVE;
+  state_ = ScreenlockState::INACTIVE;
   ChangeState(last_state);
 }
 
@@ -326,7 +331,7 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
     proximity_auth::ScreenlockBridge::UserPodCustomIconOptions* icon_options) {
   size_t resource_id = 0;
   base::string16 device_name;
-  if (is_trial_run_ && state_ == STATE_AUTHENTICATED) {
+  if (is_trial_run_ && state_ == ScreenlockState::AUTHENTICATED) {
     resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED;
   } else {
     resource_id = GetTooltipResourceId(state_);
@@ -347,9 +352,9 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
   if (tooltip.empty())
     return;
 
-  icon_options->SetTooltip(
-      tooltip,
-      is_trial_run_ || (state_ != STATE_AUTHENTICATED) /* autoshow tooltip */);
+  bool autoshow_tooltip =
+      is_trial_run_ || state_ != ScreenlockState::AUTHENTICATED;
+  icon_options->SetTooltip(tooltip, autoshow_tooltip);
 }
 
 base::string16 EasyUnlockScreenlockStateHandler::GetDeviceName() {
@@ -372,7 +377,7 @@ void EasyUnlockScreenlockStateHandler::UpdateScreenlockAuthType() {
   DCHECK_NE(proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN,
             existing_auth_type);
 
-  if (state_ == STATE_AUTHENTICATED) {
+  if (state_ == ScreenlockState::AUTHENTICATED) {
     if (existing_auth_type !=
         proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK) {
       screenlock_bridge_->lock_handler()->SetAuthType(

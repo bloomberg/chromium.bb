@@ -48,6 +48,7 @@
         "proximity_auth/remote_status_update.h",
         "proximity_auth/screenlock_bridge.cc",
         "proximity_auth/screenlock_bridge.h",
+        "proximity_auth/screenlock_state.h",
         "proximity_auth/secure_context.h",
         "proximity_auth/switches.cc",
         "proximity_auth/switches.h",

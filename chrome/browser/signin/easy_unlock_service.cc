@@ -49,6 +49,8 @@
 #include "base/win/windows_version.h"
 #endif
 
+using proximity_auth::ScreenlockState;
+
 namespace {
 
 enum BluetoothType {
@@ -434,8 +436,7 @@ void EasyUnlockService::ShowInitialUserState() {
 
   if (state == EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
     // Show connecting icon early when there is a persisted non hardlock state.
-    UpdateScreenlockState(
-        EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING);
+    UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
   } else {
     screenlock_state_handler_->MaybeShowHardlockUI();
   }
@@ -452,15 +453,14 @@ EasyUnlockScreenlockStateHandler*
   return screenlock_state_handler_.get();
 }
 
-bool EasyUnlockService::UpdateScreenlockState(
-    EasyUnlockScreenlockStateHandler::State state) {
+bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
   EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
   if (!handler)
     return false;
 
   handler->ChangeState(state);
 
-  if (state == EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED) {
+  if (state == ScreenlockState::AUTHENTICATED) {
 #if defined(OS_CHROMEOS)
     if (power_monitor_)
       power_monitor_->RecordStartUpTime();
@@ -479,11 +479,10 @@ bool EasyUnlockService::UpdateScreenlockState(
   return true;
 }
 
-EasyUnlockScreenlockStateHandler::State
-EasyUnlockService::GetScreenlockState() {
+ScreenlockState EasyUnlockService::GetScreenlockState() {
   EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
   if (!handler)
-    return EasyUnlockScreenlockStateHandler::STATE_INACTIVE;
+    return ScreenlockState::INACTIVE;
 
   return handler->state();
 }
@@ -776,30 +775,29 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
     return PASSWORD_ENTRY_NO_SCREENLOCK_STATE_HANDLER;
   } else {
     switch (screenlock_state_handler()->state()) {
-      case EasyUnlockScreenlockStateHandler::STATE_INACTIVE:
+      case ScreenlockState::INACTIVE:
         return PASSWORD_ENTRY_SERVICE_NOT_ACTIVE;
-      case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
+      case ScreenlockState::NO_BLUETOOTH:
         return PASSWORD_ENTRY_NO_BLUETOOTH;
-      case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
+      case ScreenlockState::BLUETOOTH_CONNECTING:
         return PASSWORD_ENTRY_BLUETOOTH_CONNECTING;
-      case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
+      case ScreenlockState::NO_PHONE:
         return PASSWORD_ENTRY_NO_PHONE;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED:
+      case ScreenlockState::PHONE_NOT_AUTHENTICATED:
         return PASSWORD_ENTRY_PHONE_NOT_AUTHENTICATED;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
+      case ScreenlockState::PHONE_LOCKED:
         return PASSWORD_ENTRY_PHONE_LOCKED;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
+      case ScreenlockState::PHONE_NOT_LOCKABLE:
         return PASSWORD_ENTRY_PHONE_NOT_LOCKABLE;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
+      case ScreenlockState::PHONE_UNSUPPORTED:
         return PASSWORD_ENTRY_PHONE_UNSUPPORTED;
-      case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
+      case ScreenlockState::RSSI_TOO_LOW:
         return PASSWORD_ENTRY_RSSI_TOO_LOW;
-      case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
+      case ScreenlockState::TX_POWER_TOO_HIGH:
         return PASSWORD_ENTRY_TX_POWER_TOO_HIGH;
-      case EasyUnlockScreenlockStateHandler::
-               STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
+      case ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
         return PASSWORD_ENTRY_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
-      case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
+      case ScreenlockState::AUTHENTICATED:
         return PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE;
     }
   }
@@ -839,10 +837,8 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
 
 void EasyUnlockService::PrepareForSuspend() {
   app_manager_->DisableAppIfLoaded();
-  if (screenlock_state_handler_ && screenlock_state_handler_->IsActive()) {
-    UpdateScreenlockState(
-        EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING);
-  }
+  if (screenlock_state_handler_ && screenlock_state_handler_->IsActive())
+    UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
 }
 
 void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {

@@ -23,6 +23,7 @@
 #include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "components/proximity_auth/screenlock_state.h"
 #include "components/proximity_auth/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -39,6 +40,8 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
+using proximity_auth::ScreenlockState;
+
 namespace extensions {
 namespace api {
 
@@ -54,34 +57,32 @@ EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(
              ->crypto_delegate();
 }
 
-EasyUnlockScreenlockStateHandler::State ToScreenlockStateHandlerState(
-    easy_unlock_private::State state) {
+ScreenlockState ToScreenlockState(easy_unlock_private::State state) {
   switch (state) {
     case easy_unlock_private::STATE_NO_BLUETOOTH:
-      return EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH;
+      return ScreenlockState::NO_BLUETOOTH;
     case easy_unlock_private::STATE_BLUETOOTH_CONNECTING:
-      return EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING;
+      return ScreenlockState::BLUETOOTH_CONNECTING;
     case easy_unlock_private::STATE_NO_PHONE:
-      return EasyUnlockScreenlockStateHandler::STATE_NO_PHONE;
+      return ScreenlockState::NO_PHONE;
     case easy_unlock_private::STATE_PHONE_NOT_AUTHENTICATED:
-      return EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED;
+      return ScreenlockState::PHONE_NOT_AUTHENTICATED;
     case easy_unlock_private::STATE_PHONE_LOCKED:
-      return EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED;
+      return ScreenlockState::PHONE_LOCKED;
     case easy_unlock_private::STATE_PHONE_UNLOCKABLE:
-      return EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE;
+      return ScreenlockState::PHONE_NOT_LOCKABLE;
     case easy_unlock_private::STATE_PHONE_UNSUPPORTED:
-      return EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED;
+      return ScreenlockState::PHONE_UNSUPPORTED;
     case easy_unlock_private::STATE_RSSI_TOO_LOW:
-      return EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW;
+      return ScreenlockState::RSSI_TOO_LOW;
     case easy_unlock_private::STATE_TX_POWER_TOO_HIGH:
-      return EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH;
+      return ScreenlockState::TX_POWER_TOO_HIGH;
     case easy_unlock_private::STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
-      return EasyUnlockScreenlockStateHandler::
-                 STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
+      return ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
     case easy_unlock_private::STATE_AUTHENTICATED:
-      return EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED;
+      return ScreenlockState::AUTHENTICATED;
     default:
-      return EasyUnlockScreenlockStateHandler::STATE_INACTIVE;
+      return ScreenlockState::INACTIVE;
   }
 }
 
@@ -509,7 +510,7 @@ bool EasyUnlockPrivateUpdateScreenlockStateFunction::RunSync() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (EasyUnlockService::Get(profile)->UpdateScreenlockState(
-          ToScreenlockStateHandlerState(params->state)))
+          ToScreenlockState(params->state)))
     return true;
 
   SetError("Not allowed");

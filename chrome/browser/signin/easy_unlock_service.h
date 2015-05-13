@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/proximity_auth/screenlock_state.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
@@ -173,11 +174,11 @@ class EasyUnlockService : public KeyedService {
 
   // Updates the user pod on the signin/lock screen for the user associated with
   // the service to reflect the provided screenlock state.
-  bool UpdateScreenlockState(EasyUnlockScreenlockStateHandler::State state);
+  bool UpdateScreenlockState(proximity_auth::ScreenlockState state);
 
   // Returns the screenlock state if it is available. Otherwise STATE_INACTIVE
   // is returned.
-  EasyUnlockScreenlockStateHandler::State GetScreenlockState();
+  proximity_auth::ScreenlockState GetScreenlockState();
 
   // Starts an auth attempt for the user associated with the service. The
   // attempt type (unlock vs. signin) will depend on the service type.

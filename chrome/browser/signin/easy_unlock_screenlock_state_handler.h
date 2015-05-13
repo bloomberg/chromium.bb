@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "components/proximity_auth/screenlock_state.h"
 
 class PrefService;
 
@@ -17,44 +18,6 @@ class PrefService;
 class EasyUnlockScreenlockStateHandler
     : public proximity_auth::ScreenlockBridge::Observer {
  public:
-  // Available Easy Unlock states.
-  enum State {
-    // Easy Unlock is not enabled, or the screen is not locked.
-    STATE_INACTIVE,
-    // Bluetooth is not on.
-    STATE_NO_BLUETOOTH,
-    // Easy Unlock is in process of turning on Bluetooth.
-    STATE_BLUETOOTH_CONNECTING,
-    // No phones eligible to unlock the device can be found.
-    STATE_NO_PHONE,
-    // A phone eligible to unlock the device is found, but cannot be
-    // authenticated.
-    STATE_PHONE_NOT_AUTHENTICATED,
-    // A phone eligible to unlock the device is found, but it's locked.
-    STATE_PHONE_LOCKED,
-    // A phone eligible to unlock the device is found, but does not have lock
-    // screen enabled.
-    STATE_PHONE_UNLOCKABLE,
-    // An Easy Unlock enabled phone is found, but it is not allowed to unlock
-    // the device because it does not support reporting it's lock screen state.
-    STATE_PHONE_UNSUPPORTED,
-    // A phone eligible to unlock the device is found, but its received signal
-    // strength is too low, i.e. the phone is roughly more than 30 feet away,
-    // and therefore is not allowed to unlock the device.
-    STATE_RSSI_TOO_LOW,
-    // A phone eligible to unlock the device is found, but the local device's
-    // transmission power is too high, indicating that the phone is (probably)
-    // more than 1 foot away, and therefore is not allowed to unlock the device.
-    STATE_TX_POWER_TOO_HIGH,
-    // A phone eligible to unlock the device is found; but (a) the phone is
-    // locked, and (b) the local device's transmission power is too high,
-    // indicating that the phone is (probably) more than 1 foot away, and
-    // therefore is not allowed to unlock the device.
-    STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH,
-    // The device can be unlocked using Easy Unlock.
-    STATE_AUTHENTICATED
-  };
-
   // Hard lock states.
   enum HardlockState {
     NO_HARDLOCK = 0,           // Hard lock is not enforced. This is default.
@@ -88,7 +51,7 @@ class EasyUnlockScreenlockStateHandler
 
   // Changes internal state to |new_state| and updates the user's screenlock
   // accordingly.
-  void ChangeState(State new_state);
+  void ChangeState(proximity_auth::ScreenlockState new_state);
 
   // Updates the screenlock state.
   void SetHardlockState(HardlockState new_state);
@@ -103,7 +66,7 @@ class EasyUnlockScreenlockStateHandler
   // initiated by the Easy Unlock app.
   void RecordClickOnLockIcon();
 
-  State state() const { return state_; }
+  proximity_auth::ScreenlockState state() const { return state_; }
 
  private:
   // proximity_auth::ScreenlockBridge::Observer:
@@ -130,7 +93,7 @@ class EasyUnlockScreenlockStateHandler
   // Updates the screenlock auth type if it has to be changed.
   void UpdateScreenlockAuthType();
 
-  State state_;
+  proximity_auth::ScreenlockState state_;
   std::string user_email_;
   proximity_auth::ScreenlockBridge* screenlock_bridge_;
 

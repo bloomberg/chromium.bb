@@ -71,9 +71,8 @@ class BootstrapUserContextInitializer final
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
-  // EasyUnlockServiceObserver
-  void OnScreenlockStateChanged(
-      EasyUnlockScreenlockStateHandler::State state) override;
+  // EasyUnlockServiceObserver:
+  void OnScreenlockStateChanged(proximity_auth::ScreenlockState state) override;
 
   CompleteCallback callback_;
   scoped_ptr<gaia::GaiaOAuthClient> token_fetcher_;
