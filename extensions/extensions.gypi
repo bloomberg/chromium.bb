@@ -922,7 +922,6 @@
       'renderer/resources/permissions_custom_bindings.js',
       'renderer/resources/platform_app.css',
       'renderer/resources/platform_app.js',
-      'renderer/resources/port.js',
       'renderer/resources/runtime_custom_bindings.js',
       'renderer/resources/schema_utils.js',
       'renderer/resources/send_request.js',

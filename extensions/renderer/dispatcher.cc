@@ -479,7 +479,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("messaging", IDR_MESSAGING_JS));
   resources.push_back(std::make_pair("messaging_utils",
                                      IDR_MESSAGING_UTILS_JS));
-  resources.push_back(std::make_pair("port", IDR_PORT_JS));
   resources.push_back(std::make_pair(kSchemaUtils, IDR_SCHEMA_UTILS_JS));
   resources.push_back(std::make_pair("sendRequest", IDR_SEND_REQUEST_JS));
   resources.push_back(std::make_pair("setIcon", IDR_SET_ICON_JS));

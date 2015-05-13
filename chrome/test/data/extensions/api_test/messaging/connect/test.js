@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests for browser_tests --gtest_filter=ExtensionApiTest.Messaging
-
-var assertEq = chrome.test.assertEq;
-var assertTrue = chrome.test.assertTrue;
 var listenOnce = chrome.test.listenOnce;
 var listenForever = chrome.test.listenForever;
 
@@ -64,7 +60,7 @@ chrome.test.getConfig(function(config) {
       var port = chrome.tabs.connect(testTab.id, {name: portName});
       port.postMessage({testPortName: true});
       listenOnce(port.onMessage, function(msg) {
-        assertEq(msg.portName, portName);
+        chrome.test.assertEq(msg.portName, portName);
         port.disconnect();
       });
     },
@@ -72,14 +68,14 @@ chrome.test.getConfig(function(config) {
     // Tests that postMessage from the tab and its response works.
     function postMessageFromTab() {
       listenOnce(chrome.runtime.onConnect, function(port) {
-        assertEq({
+        chrome.test.assertEq({
           tab: testTab,
           frameId: 0, // Main frame
           url: testTab.url,
-          id: chrome.runtime.id
+           id: chrome.runtime.id
         }, port.sender);
         listenOnce(port.onMessage, function(msg) {
-          assertTrue(msg.testPostMessageFromTab);
+          chrome.test.assertTrue(msg.testPostMessageFromTab);
           port.postMessage({success: true, portName: port.name});
           chrome.test.log("postMessageFromTab: got message from tab");
         });
@@ -98,11 +94,11 @@ chrome.test.getConfig(function(config) {
       var doneListening = listenForever(
         chrome.runtime.onMessage,
         function(request, sender, sendResponse) {
-          assertEq({
+          chrome.test.assertEq({
             tab: testTab,
             frameId: 0, // Main frame
             url: testTab.url,
-            id: chrome.runtime.id
+             id: chrome.runtime.id
           }, sender);
           if (request.step == 1) {
             // Step 1: Page should send another request for step 2.
@@ -110,7 +106,7 @@ chrome.test.getConfig(function(config) {
             sendResponse({nextStep: true});
           } else {
             // Step 2.
-            assertEq(2, request.step);
+            chrome.test.assertEq(request.step, 2);
             sendResponse();
             doneListening();
           }
@@ -155,7 +151,7 @@ chrome.test.getConfig(function(config) {
                 };
               }).sort(sortByFrameId);
               senders.sort(sortByFrameId);
-              assertEq(expectedSenders, senders);
+              chrome.test.assertEq(expectedSenders, senders);
               doneListening();
             });
           }
@@ -187,7 +183,7 @@ chrome.test.getConfig(function(config) {
         var frames = details.filter(function(frame) {
           return /\?testSendMessageFromFrame1$/.test(frame.url);
         });
-        assertEq(1, frames.length);
+        chrome.test.assertEq(1, frames.length);
         connectToTabWithFrameId(frames[0].frameId, ['from_1']);
       });
     },
@@ -237,7 +233,7 @@ chrome.test.getConfig(function(config) {
     // Tests sending a request to a tab and receiving a response.
     function sendMessage() {
       chrome.tabs.sendMessage(testTab.id, {step2: 1}, function(response) {
-        assertTrue(response.success);
+        chrome.test.assertTrue(response.success);
         chrome.test.succeed();
       });
     },
@@ -281,7 +277,7 @@ chrome.test.getConfig(function(config) {
       } catch(e) {
         error = e;
       }
-      assertTrue(error != undefined);
+      chrome.test.assertTrue(error != undefined);
 
       error = undefined;
       try {
@@ -289,7 +285,7 @@ chrome.test.getConfig(function(config) {
       } catch(e) {
         error = e;
       }
-      assertTrue(error != undefined);
+      chrome.test.assertTrue(error != undefined);
 
       chrome.test.succeed();
     },
@@ -313,45 +309,35 @@ chrome.test.getConfig(function(config) {
     // given a callback. This requires a more creative test setup because there
     // is no callback to signal when it's supposed to have been done.
     // Regression test for http://crbug.com/479951.
-    function sendMessageToCurrentTextWithoutCallbackFails() {
-      // Make the iframe - in a different context - watch for the message
-      // event. It *should* get it, while the current context's one doesn't.
-      var iframe = document.createElement('iframe');
-      iframe.src = chrome.runtime.getURL('blank_iframe.html');
-      document.body.appendChild(iframe);
+    //
+    // NOTE(kalman): This test is correct. However, the patch which fixes it
+    // (see bug) was reverted, and I don't plan on resubmitting, so instead
+    // I'll comment out this test, and leave it here for the record.
+    //
+    // function sendMessageToCurrentTextWithoutCallbackFails() {
+    //   // Make the iframe - in a different context - watch for the message
+    //   // event. It *should* get it, while the current context's one doesn't.
+    //   var iframe = document.createElement('iframe');
+    //   iframe.src = chrome.runtime.getURL('blank_iframe.html');
+    //   document.body.appendChild(iframe);
 
-      var stopFailing = failWhileListening(chrome.runtime.onMessage);
-      listenOnce(
-        iframe.contentWindow.chrome.runtime.onMessage,
-        function(msg, sender) {
-          assertEq('ping', msg);
-          assertEq(chrome.runtime.id, sender.id);
-          assertEq(location.href, sender.url);
-          setTimeout(function() {
-            stopFailing();
-            chrome.test.succeed();
-          }, 0);
-        }
-      );
+    //   var stopFailing = failWhileListening(chrome.runtime.onMessage);
+    //   chrome.test.listenOnce(
+    //     iframe.contentWindow.chrome.runtime.onMessage,
+    //     function(msg, sender) {
+    //       chrome.test.assertEq('ping', msg);
+    //       chrome.test.assertEq(chrome.runtime.id, sender.id);
+    //       chrome.test.assertEq(location.href, sender.url);
+    //       setTimeout(function() {
+    //         stopFailing();
+    //         chrome.test.succeed();
+    //       }, 0);
+    //     }
+    //   );
+    //
+    //   chrome.runtime.sendMessage('ping');
+    // },
 
-      chrome.runtime.sendMessage('ping');
-    },
-
-    // Tests that destroying a port clears its onMessage and onDisconnect
-    // listeners.
-    function disconnectingPortRemovesEventListeners() {
-      var port = chrome.runtime.connect(chrome.runtime.id);
-      assertTrue(!port.onMessage.hasListeners() &&
-                 !port.onDisconnect.hasListeners());
-      port.onMessage.addListener(function() {});
-      port.onDisconnect.addListener(function() {});
-      assertTrue(port.onMessage.hasListeners() &&
-                 port.onDisconnect.hasListeners());
-      port.disconnect();
-      assertTrue(!port.onMessage.hasListeners() &&
-                 !port.onDisconnect.hasListeners());
-      chrome.test.succeed();
-    }
   ]);
 });
 
@@ -369,7 +355,7 @@ function connectToTabWithFrameId(frameId, expectedMessages) {
     messages.push(message);
     isDone = messages.length == expectedMessages.length;
     if (isDone) {
-      assertEq(expectedMessages.sort(), messages.sort());
+      chrome.test.assertEq(expectedMessages.sort(), messages.sort());
       chrome.test.succeed();
     }
   });

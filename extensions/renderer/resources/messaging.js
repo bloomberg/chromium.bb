@@ -6,13 +6,14 @@
 
   // TODO(kalman): factor requiring chrome out of here.
   var chrome = requireNative('chrome').GetChrome();
+  var Event = require('event_bindings').Event;
   var lastError = require('lastError');
   var logActivity = requireNative('activityLogger');
   var logging = requireNative('logging');
   var messagingNatives = requireNative('messaging_natives');
-  var Port = require('port').Port;
   var processNatives = requireNative('process');
   var unloadEvent = require('unload_event');
+  var utils = require('utils');
   var messagingUtils = require('messaging_utils');
 
   // The reserved channel name for the sendRequest/send(Native)Message APIs.
@@ -31,6 +32,64 @@
   // Change even to odd and vice versa, to get the other side of a given
   // channel.
   function getOppositePortId(portId) { return portId ^ 1; }
+
+  // Port object.  Represents a connection to another script context through
+  // which messages can be passed.
+  function PortImpl(portId, opt_name) {
+    this.portId_ = portId;
+    this.name = opt_name;
+
+    var portSchema = {name: 'port', $ref: 'runtime.Port'};
+    var options = {unmanaged: true};
+    this.onDisconnect = new Event(null, [portSchema], options);
+    this.onMessage = new Event(
+        null,
+        [{name: 'message', type: 'any', optional: true}, portSchema],
+        options);
+    this.onDestroy_ = null;
+  }
+
+  // Sends a message asynchronously to the context on the other end of this
+  // port.
+  PortImpl.prototype.postMessage = function(msg) {
+    // JSON.stringify doesn't support a root object which is undefined.
+    if (msg === undefined)
+      msg = null;
+    msg = $JSON.stringify(msg);
+    if (msg === undefined) {
+      // JSON.stringify can fail with unserializable objects. Log an error and
+      // drop the message.
+      //
+      // TODO(kalman/mpcomplete): it would be better to do the same validation
+      // here that we do for runtime.sendMessage (and variants), i.e. throw an
+      // schema validation Error, but just maintain the old behaviour until
+      // there's a good reason not to (http://crbug.com/263077).
+      console.error('Illegal argument to Port.postMessage');
+      return;
+    }
+    messagingNatives.PostMessage(this.portId_, msg);
+  };
+
+  // Disconnects the port from the other end.
+  PortImpl.prototype.disconnect = function() {
+    messagingNatives.CloseChannel(this.portId_, true);
+    this.destroy_();
+  };
+
+  PortImpl.prototype.destroy_ = function() {
+    var portId = this.portId_;
+
+    if (this.onDestroy_)
+      this.onDestroy_();
+    privates(this.onDisconnect).impl.destroy_();
+    privates(this.onMessage).impl.destroy_();
+
+    messagingNatives.PortRelease(portId);
+    unloadEvent.removeListener(portReleasers[portId]);
+
+    delete ports[portId];
+    delete portReleasers[portId];
+  };
 
   // Returns true if the specified port id is in this context. This is used by
   // the C++ to avoid creating the javascript message for all the contexts that
@@ -53,14 +112,6 @@
     messagingNatives.PortAddRef(portId);
     return port;
   };
-
-  // Called when a Port is destroyed. Does general accounting cleanup.
-  function onPortDestroyed(port) {
-    var portId = privates(port).impl.portId_;
-    unloadEvent.removeListener(portReleasers[portId]);
-    delete ports[portId];
-    delete portReleasers[portId];
-  }
 
   // Helper function for dispatchOnRequest.
   function handleSendRequestError(isSendMessage,
@@ -149,7 +200,6 @@
 
     privates(port).impl.onDestroy_ = function() {
       port.onMessage.removeListener(messageListener);
-      onPortDestroyed(port);
     };
     port.onMessage.addListener(messageListener);
 
@@ -308,7 +358,6 @@
     privates(port).impl.onDestroy_ = function() {
       port.onDisconnect.removeListener(disconnectListener);
       port.onMessage.removeListener(messageListener);
-      onPortDestroyed(port);
     };
     port.onDisconnect.addListener(disconnectListener);
     port.onMessage.addListener(messageListener);
@@ -324,9 +373,20 @@
     return alignedArgs;
   }
 
+var Port = utils.expose('Port', PortImpl, { functions: [
+    'disconnect',
+    'postMessage'
+  ],
+  properties: [
+    'name',
+    'onDisconnect',
+    'onMessage'
+  ] });
+
 exports.kRequestChannel = kRequestChannel;
 exports.kMessageChannel = kMessageChannel;
 exports.kNativeMessageChannel = kNativeMessageChannel;
+exports.Port = Port;
 exports.createPort = createPort;
 exports.sendMessageImpl = sendMessageImpl;
 exports.sendMessageUpdateArguments = sendMessageUpdateArguments;
