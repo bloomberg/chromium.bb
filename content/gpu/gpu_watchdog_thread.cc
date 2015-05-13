@@ -21,7 +21,6 @@
 
 namespace content {
 namespace {
-const int64 kCheckPeriodMs = 2000;
 #if defined(OS_CHROMEOS)
 const base::FilePath::CharType
     kTtyFilePath[] = FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
@@ -113,7 +112,6 @@ void GpuWatchdogThread::GpuWatchdogTaskObserver::WillProcessTask(
 
 void GpuWatchdogThread::GpuWatchdogTaskObserver::DidProcessTask(
     const base::PendingTask& pending_task) {
-  watchdog_->CheckArmed();
 }
 
 GpuWatchdogThread::~GpuWatchdogThread() {
@@ -168,7 +166,7 @@ void GpuWatchdogThread::OnAcknowledge() {
       FROM_HERE,
       base::Bind(&GpuWatchdogThread::OnCheck, weak_factory_.GetWeakPtr(),
           was_suspended),
-      base::TimeDelta::FromMilliseconds(kCheckPeriodMs));
+      0.5 * timeout_);
 }
 
 void GpuWatchdogThread::OnCheck(bool after_suspend) {
