@@ -115,10 +115,10 @@ struct NET_EXPORT SSLConfig {
   // TLS extension is enabled.
   bool signed_cert_timestamps_enabled;
 
-  // If true, causes only ECDHE cipher suites to be enabled. NOTE: This only
-  // applies to server sockets currently, although that could be extended if
-  // needed.
-  bool require_ecdhe;
+  // require_forward_secrecy, if true, causes only (EC)DHE cipher suites to be
+  // enabled. NOTE: this only applies to server sockets currently, although
+  // that could be extended if needed.
+  bool require_forward_secrecy;
 
   // TODO(wtc): move the following members to a new SSLParams structure.  They
   // are not SSL configuration settings.

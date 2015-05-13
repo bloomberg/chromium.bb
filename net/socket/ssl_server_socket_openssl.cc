@@ -9,7 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_openssl_types.h"
@@ -685,48 +684,6 @@ int SSLServerSocketOpenSSL::Init() {
 
   SSL_set_mode(ssl_, mode.set_mask);
   SSL_clear_mode(ssl_, mode.clear_mask);
-
-  // Removing ciphers by ID from OpenSSL is a bit involved as we must use the
-  // textual name with SSL_set_cipher_list because there is no public API to
-  // directly remove a cipher by ID.
-  STACK_OF(SSL_CIPHER)* ciphers = SSL_get_ciphers(ssl_);
-  DCHECK(ciphers);
-  // See SSLConfig::disabled_cipher_suites for description of the suites
-  // disabled by default. Note that !SHA256 and !SHA384 only remove HMAC-SHA256
-  // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
-  // as the handshake hash.
-  std::string command("DEFAULT:!SHA256:!SHA384:!AESGCM+AES256:!aPSK");
-  // Walk through all the installed ciphers, seeing if any need to be
-  // appended to the cipher removal |command|.
-  for (size_t i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
-    const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers, i);
-    const uint16_t id = static_cast<uint16_t>(SSL_CIPHER_get_id(cipher));
-
-    bool disable = false;
-    if (ssl_config_.require_ecdhe) {
-      base::StringPiece kx_name(SSL_CIPHER_get_kx_name(cipher));
-      disable = kx_name != "ECDHE_RSA" && kx_name != "ECDHE_ECDSA";
-    }
-    if (!disable) {
-      disable = std::find(ssl_config_.disabled_cipher_suites.begin(),
-                          ssl_config_.disabled_cipher_suites.end(),
-                          id) != ssl_config_.disabled_cipher_suites.end();
-    }
-    if (disable) {
-      const char* name = SSL_CIPHER_get_name(cipher);
-      DVLOG(3) << "Found cipher to remove: '" << name << "', ID: " << id
-               << " strength: " << SSL_CIPHER_get_bits(cipher, NULL);
-      command.append(":!");
-      command.append(name);
-    }
-  }
-
-  int rv = SSL_set_cipher_list(ssl_, command.c_str());
-  // If this fails (rv = 0) it means there are no ciphers enabled on this SSL.
-  // This will almost certainly result in the socket failing to complete the
-  // handshake at which point the appropriate error is bubbled up to the client.
-  LOG_IF(WARNING, rv != 1) << "SSL_set_cipher_list('" << command
-                           << "') returned " << rv;
 
   return OK;
 }

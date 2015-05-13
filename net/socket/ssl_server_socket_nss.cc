@@ -349,7 +349,7 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
     return ERR_NO_SSL_VERSIONS_ENABLED;
   }
 
-  if (ssl_config_.require_ecdhe) {
+  if (ssl_config_.require_forward_secrecy) {
     const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
     const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
 
