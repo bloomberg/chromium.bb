@@ -583,3 +583,44 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UninstallChangedFromSync) {
   EXPECT_TRUE(ExtensionRegistry::Get(profile())->GetExtensionById(
       chrome_app_id, ExtensionRegistry::EVERYTHING));
 }
+
+// Tests that sync changes are processed after DriveAppRegistry is updated.
+IN_PROC_BROWSER_TEST_F(DriveAppProviderTest,
+                       PRE_UpdateAfterDriveAppRegistryUpdate) {
+  // Add a Drive app.
+  fake_drive_service()->AddApp(
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
+  RefreshDriveAppRegistry();
+  WaitForPendingDriveAppConverters();
+
+  // The Drive app is present in the system.
+  std::string chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  EXPECT_FALSE(chrome_app_id.empty());
+  EXPECT_TRUE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
+}
+IN_PROC_BROWSER_TEST_F(DriveAppProviderTest,
+                       UpdateAfterDriveAppRegistryUpdate) {
+  // On the next run, uninstall from sync before DriveAppRegistry updates.
+  provider()->AddUninstalledDriveAppFromSync(kDriveAppId);
+  content::RunAllPendingInMessageLoop();
+  WaitForPendingDriveAppConverters();
+
+  // The app should still be there.
+  std::string chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  EXPECT_FALSE(chrome_app_id.empty());
+  EXPECT_TRUE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
+
+  // Now update DriveAppRegistry.
+  fake_drive_service()->AddApp(
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
+  RefreshDriveAppRegistry();
+  WaitForPendingDriveAppConverters();
+
+  // The app should be gone.
+  chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  EXPECT_TRUE(chrome_app_id.empty());
+  EXPECT_FALSE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
+}

@@ -42,6 +42,7 @@ DriveAppProvider::DriveAppProvider(
       uninstall_sync_service_(uninstall_sync_service),
       service_bridge_(DriveServiceBridge::Create(profile).Pass()),
       mapping_(new DriveAppMapping(profile->GetPrefs())),
+      drive_app_registry_updated_(false),
       weak_ptr_factory_(this) {
   service_bridge_->GetAppRegistry()->AddObserver(this);
   ExtensionRegistry::Get(profile_)->AddObserver(this);
@@ -236,6 +237,9 @@ void DriveAppProvider::ProcessRemovedDriveApp(const std::string& drive_app_id) {
 }
 
 void DriveAppProvider::UpdateDriveApps() {
+  if (!drive_app_registry_updated_)
+    return;
+
   service_bridge_->GetAppRegistry()->GetAppList(&drive_apps_);
 
   IdSet current_ids;
@@ -266,6 +270,7 @@ void DriveAppProvider::UpdateDriveApps() {
 }
 
 void DriveAppProvider::OnDriveAppRegistryUpdated() {
+  drive_app_registry_updated_ = true;
   UpdateDriveApps();
 }
 

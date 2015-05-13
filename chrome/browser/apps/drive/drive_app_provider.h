@@ -96,6 +96,7 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
   scoped_ptr<DriveServiceBridge> service_bridge_;
   scoped_ptr<DriveAppMapping> mapping_;
   DriveAppInfos drive_apps_;
+  bool drive_app_registry_updated_;
 
   // Tracks the pending web app convertions.
   ScopedVector<DriveAppConverter> pending_converters_;
