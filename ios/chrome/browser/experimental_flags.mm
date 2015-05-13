@@ -15,7 +15,17 @@
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
 
+namespace {
+NSString* const kEnableAlertOnBackgroundUpload =
+    @"EnableAlertsOnBackgroundUpload";
+}  // namespace
+
 namespace experimental_flags {
+
+bool IsAlertOnBackgroundUploadEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kEnableAlertOnBackgroundUpload];
+}
 
 bool IsOpenFromClipboardEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

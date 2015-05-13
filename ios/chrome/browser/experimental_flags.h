@@ -12,6 +12,9 @@
 
 namespace experimental_flags {
 
+// Whether background crash report upload should generate a local notification.
+bool IsAlertOnBackgroundUploadEnabled();
+
 // Returns true if the contents of the clipboard can be used for autocomplete.
 bool IsOpenFromClipboardEnabled();
 
