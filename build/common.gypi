@@ -2174,23 +2174,17 @@
                 ],
               },
               'clang_dynlib_flags%': '-Xclang -load -Xclang <(clang_lib_path) ',
-              'clang_plugin_args%': '',
             }, { # OS == "win"
               # On Windows, the plugin is built directly into clang, so there's
               # no need to load it dynamically.
               'clang_dynlib_flags%': '',
-
-              # Don't error on plugin warnings on Windows until pre-existing warnings
-              # are cleaned up.  https://crbug.com/467287
-              'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang warn-only',
             }]
           ],
         },
         # If you change these, also change build/config/clang/BUILD.gn.
         'clang_chrome_plugins_flags%':
           '<(clang_dynlib_flags)'
-          '-Xclang -add-plugin -Xclang find-bad-constructs '
-          '<(clang_plugin_args)',
+          '-Xclang -add-plugin -Xclang find-bad-constructs ',
       }],
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
