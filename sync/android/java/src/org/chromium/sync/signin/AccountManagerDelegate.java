@@ -37,9 +37,6 @@ public interface AccountManagerDelegate {
 
     boolean addAccountExplicitly(Account account, String password, Bundle userdata);
 
-    AccountManagerFuture<Boolean> removeAccount(Account account,
-            AccountManagerCallback<Boolean> callback, Handler handler);
-
     String getPassword(Account account);
 
     void setPassword(Account account, String password);

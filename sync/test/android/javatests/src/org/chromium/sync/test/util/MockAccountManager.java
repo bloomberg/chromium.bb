@@ -159,21 +159,6 @@ public class MockAccountManager implements AccountManagerDelegate {
     }
 
     @Override
-    public AccountManagerFuture<Boolean> removeAccount(Account account,
-            AccountManagerCallback<Boolean> callback, Handler handler) {
-        mAccounts.remove(getAccountHolder(account));
-        postAsyncAccountChangedEvent();
-        return runTask(mExecutor,
-                new AccountManagerTask<Boolean>(handler, callback, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        // Removal always successful.
-                        return true;
-                    }
-                }));
-    }
-
-    @Override
     public String getPassword(Account account) {
         return getAccountHolder(account).getPassword();
     }

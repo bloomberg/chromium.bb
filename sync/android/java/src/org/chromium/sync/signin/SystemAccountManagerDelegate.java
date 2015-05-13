@@ -73,12 +73,6 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public AccountManagerFuture<Boolean> removeAccount(Account account,
-            AccountManagerCallback<Boolean> callback, Handler handler) {
-        return mAccountManager.removeAccount(account, callback, handler);
-    }
-
-    @Override
     public String getPassword(Account account) {
         return mAccountManager.getPassword(account);
     }
