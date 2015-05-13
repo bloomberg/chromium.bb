@@ -10,16 +10,7 @@
 
 namespace media_router {
 
-class MediaRouterTypeConvertersTest : public ::testing::Test {
- protected:
-  MediaRouterTypeConvertersTest() {}
-  ~MediaRouterTypeConvertersTest() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterTypeConvertersTest);
-};
-
-TEST_F(MediaRouterTypeConvertersTest, ConvertMediaSink) {
+TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   MediaSink expected_media_sink("sinkId1", "Sink 1");
   interfaces::MediaSinkPtr expected_mojo_sink(interfaces::MediaSink::New());
   expected_mojo_sink->sink_id = "sinkId1";
@@ -36,10 +27,12 @@ TEST_F(MediaRouterTypeConvertersTest, ConvertMediaSink) {
       media_router::interfaces::MediaSinkPtr>::Convert(mojo_sink);
 
   // Convert MediaSink and back should result in identical object.
+  EXPECT_EQ(expected_media_sink.name(), media_sink.name());
+  EXPECT_EQ(expected_media_sink.id(), media_sink.id());
   EXPECT_TRUE(expected_media_sink.Equals(media_sink));
 }
 
-TEST_F(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
+TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   MediaSource expected_source(ForTabMediaSource(123));
   MediaRoute expected_media_route("routeId1", expected_source,
                                   MediaSink("sinkId", "sinkName"),
@@ -60,10 +53,20 @@ TEST_F(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
 
   MediaRoute media_route = mojo_route.To<MediaRoute>();
   EXPECT_TRUE(expected_media_route.Equals(media_route));
-  EXPECT_EQ("sinkName", media_route.media_sink().name());
+  EXPECT_EQ(expected_media_route.media_sink().name(),
+            media_route.media_sink().name());
+  EXPECT_EQ(expected_media_route.media_sink().id(),
+            media_route.media_sink().id());
+  EXPECT_EQ(expected_media_route.description(), media_route.description());
+  EXPECT_EQ(expected_media_route.state(), media_route.state());
+  EXPECT_TRUE(
+      expected_media_route.media_source().Equals(media_route.media_source()));
+  EXPECT_EQ(expected_media_route.media_source().id(),
+            media_route.media_source().id());
+  EXPECT_EQ(expected_media_route.is_local(), media_route.is_local());
 }
 
-TEST_F(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
+TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
   MediaRoute expected_media_route("routeId1", MediaSource(),
                                   MediaSink("sinkId", "sinkName"),
                                   "Description", false);
@@ -86,7 +89,7 @@ TEST_F(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
   EXPECT_EQ("sinkName", media_route.media_sink().name());
 }
 
-TEST_F(MediaRouterTypeConvertersTest, ConvertIssue) {
+TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
   interfaces::IssuePtr mojoIssue;
   mojoIssue = interfaces::Issue::New();
   mojoIssue->title = "title";
@@ -133,7 +136,7 @@ TEST_F(MediaRouterTypeConvertersTest, ConvertIssue) {
   EXPECT_FALSE(converted_issue.Equals(expected_issue));
 }
 
-TEST_F(MediaRouterTypeConvertersTest, ConvertIssueWithoutOptionalFields) {
+TEST(MediaRouterTypeConvertersTest, ConvertIssueWithoutOptionalFields) {
   interfaces::IssuePtr mojoIssue;
   mojoIssue = interfaces::Issue::New();
   mojoIssue->title = "title";
