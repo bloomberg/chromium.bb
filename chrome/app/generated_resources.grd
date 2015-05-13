@@ -10485,13 +10485,13 @@ Dead Jim feedback.
           Ask where to save each file before downloading
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
-          Smart Lock (beta)
+          Smart Lock for Chromebook (beta)
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_INTRO" desc="The text to show in Easy Unlock section to introduce the feature.">
           Keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> unlocked when your Android phone is unlocked and nearby—no need to type your password.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON" desc="The label of the button to set up Easy Unlock section on the settings page.">
-          Set up Smart Lock
+          Set up
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION" desc="The text that describes what Easy Unlock does.">
           Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be unlocked when your Android phone is unlocked and nearby.
@@ -10500,7 +10500,7 @@ Dead Jim feedback.
           Only unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your phone is within arm’s reach.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
-          Turn off Smart Lock
+          Turn off
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_NOTIFICATION_OPTION_LABEL" desc="The label of the preference in the Smart Lock settings page to control whether notifications should be shown when unlocking the Chromebook.">
           Get notified on your phone every time Smart Lock unlocks your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
@@ -10509,7 +10509,7 @@ Dead Jim feedback.
           Manage Bluetooth settings
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE" desc="The title of the Easy unlock turn off dialog.">
-          Turn off Smart Lock?
+          Turn off Smart Lock for Chromebook?
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_DESCRIPTION" desc="The description text of the Easy unlock turn off dialog.">
           If you turn off Smart Lock for Chromebook, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.
@@ -15401,7 +15401,7 @@ After you create a new supervised user, you can manage their settings at any tim
       <!-- Strings for the Easy Unlock setup dialog -->
       <!-- Step 1: Intro -->
       <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the first, introductory step.">
-        Get started with Smart Lock
+        Let’s get started
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the first, introductory step. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
         Keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> unlocked when your phone is unlocked and nearby.
@@ -15427,7 +15427,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Secure your <ph name="PHONE_TYPE">$1<ex>LGE Nexus 5</ex></ph> to continue
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog after a suitable phone has been found but is not secured by a lock screen. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-        To keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> safe, Smart Lock requires a screen lock on the phone that unlocks it. Already secured your phone? Click “Check again” to verify and continue setup.
+        To keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> safe, Smart Lock for Chromebook requires a screen lock on the phone that unlocks it. Already secured your phone? Click “Check again” to verify and continue setup.
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_BUTTON_LABEL" desc="The text to show as the 'How to secure the phone' button label in the Easy Unlock dialog. This button is visible during step 1.5, if the user is prompted to secure their phone.">
         How to secure the phone
@@ -15482,7 +15482,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Try it out
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT" desc="The text to show as the link text to access Easy Unlock settings. This button is visible during the penultimate step, once the Easy Unlock setup succeeds.">
-        Smart Lock settings
+        Settings
       </message>
       <!-- Step 4: Post Lock Screen -->
       <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_DISMISS_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog during the post lockscreen step. Clicking this button dismisses the dialog.">
@@ -15551,10 +15551,10 @@ After you create a new supervised user, you can manage their settings at any tim
         Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has been manually locked. You'll need to type your password to enter.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock feature is enabled for the user, but the pairing data is changed. A password has to be entered to unlock the device.">
-        Your phone used for Smart Lock changed. Type your password to update Smart Lock on this device. Next time, you can just click your picture to enter.
+        Your phone used for Smart Lock changed. Type your password to update Smart Lock for Chromebook on this device. Next time, you can just click your picture to enter.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock pairing data is synced on a new Chromebook.">
-        One-time activation: Type your password to activate Smart Lock. With Smart Lock, your phone will unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>—without a password. To change or turn off this feature, visit your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>'s settings.
+        One-time activation: Type your password to activate Smart Lock on this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. With Smart Lock, your phone will unlock this device—without a password. To change or turn off this feature, visit your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>'s settings.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE" desc="Tooltip text shown on a user's lock screen when Smart Lock signin attempt fails.">
         Smart Lock couldn’t verify your account. Type your password to enter.
