@@ -106,6 +106,8 @@ public class TabPersistentStore extends TabPersister {
     private boolean mCancelNormalTabLoads = false;
     private boolean mCancelIncognitoTabLoads = false;
 
+    private File mStateDirectory;
+
     // Keys are the original tab indexes, values are the tab ids.
     private SparseIntArray mNormalTabsRestored;
     private SparseIntArray mIncognitoTabsRestored;
@@ -143,7 +145,10 @@ public class TabPersistentStore extends TabPersister {
 
     @Override
     public File getStateDirectory() {
-        return getStateDirectory(mContext, mSelectorIndex);
+        if (mStateDirectory == null) {
+            mStateDirectory = getStateDirectory(mContext, mSelectorIndex);
+        }
+        return mStateDirectory;
     }
 
     /**
