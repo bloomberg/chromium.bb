@@ -63,14 +63,13 @@ IconLoader::IconSize SizeStringToIconSize(const std::string& size_string) {
 void ParseQueryParams(const std::string& query,
                       float* scale_factor,
                       IconLoader::IconSize* icon_size) {
-  typedef std::pair<std::string, std::string> KVPair;
-  std::vector<KVPair> parameters;
+  base::StringPairs parameters;
   if (icon_size)
     *icon_size = IconLoader::NORMAL;
   if (scale_factor)
     *scale_factor = 1.0f;
   base::SplitStringIntoKeyValuePairs(query, '=', '&', &parameters);
-  for (std::vector<KVPair>::const_iterator iter = parameters.begin();
+  for (base::StringPairs::const_iterator iter = parameters.begin();
        iter != parameters.end(); ++iter) {
     if (icon_size && iter->first == kIconSize)
       *icon_size = SizeStringToIconSize(iter->second);
