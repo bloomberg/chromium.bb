@@ -129,6 +129,7 @@ public:
         , m_subtreeIsCompositing(false)
         , m_hasUnisolatedCompositedBlendingDescendant(false)
         , m_testingOverlap(true)
+        , m_hasCompositedScrollingAncestor(false)
     {
     }
 
@@ -136,6 +137,7 @@ public:
     bool m_subtreeIsCompositing;
     bool m_hasUnisolatedCompositedBlendingDescendant;
     bool m_testingOverlap;
+    bool m_hasCompositedScrollingAncestor;
 };
 
 static bool requiresCompositingOrSquashing(CompositingReasons reasons)
@@ -245,12 +247,15 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
         }
     }
 
+    if (reasonsToComposite & CompositingReasonOverflowScrollingTouch)
+        currentRecursionData.m_hasCompositedScrollingAncestor = true;
+
     // Next, accumulate reasons related to overlap.
     // If overlap testing is used, this reason will be overridden. If overlap testing is not
     // used, we must assume we overlap if there is anything composited behind us in paint-order.
     CompositingReasons overlapCompositingReason = currentRecursionData.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
 
-    if (m_layoutView.compositor()->preferCompositingToLCDTextEnabled()) {
+    if (currentRecursionData.m_hasCompositedScrollingAncestor) {
         Vector<size_t> unclippedDescendantsToRemove;
         for (size_t i = 0; i < unclippedDescendants.size(); i++) {
             DeprecatedPaintLayer* unclippedDescendant = unclippedDescendants.at(i);

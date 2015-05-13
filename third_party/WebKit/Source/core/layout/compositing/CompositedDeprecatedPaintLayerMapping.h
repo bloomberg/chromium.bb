@@ -294,6 +294,8 @@ private:
     // clipping container for |m_owningLayer|.
     bool owningLayerClippedByLayerNotAboveCompositedAncestor(DeprecatedPaintLayer* scrollParent);
 
+    DeprecatedPaintLayer* scrollParent();
+
     DeprecatedPaintLayer& m_owningLayer;
 
     // The hierarchy of layers that is maintained by the CompositedDeprecatedPaintLayerMapping looks like this:
