@@ -52,7 +52,7 @@ class InstallExtensionHandler : public content::WebUIMessageHandler {
   // The path to the file that will be installed when HandleInstallMessage() is
   // called.
   base::FilePath file_to_install_;
-  base::string16 file_display_name_;
+  base::FilePath file_display_name_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallExtensionHandler);
 };
