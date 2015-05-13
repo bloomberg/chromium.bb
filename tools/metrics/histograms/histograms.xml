@@ -24755,6 +24755,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.IconsColor">
+  <owner>newt@chromium.org</owner>
+  <summary>
+    The number of most visited tiles on the new tab page that are displayed
+    using a fallback color (as opposed to having an icon, or simply being gray).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.IconsGray">
+  <owner>newt@chromium.org</owner>
+  <summary>
+    The number of most visited tiles on the new tab page that are displayed as
+    gray (as opposed to having an icon, or a fallback color).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.IconsReal">
+  <owner>newt@chromium.org</owner>
+  <summary>
+    The number of most visited tiles on the new tab page that are displayed with
+    the site's icon (as opposed using a fallback color or just gray).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.LoadTime" units="milliseconds">
   <owner>fserb@chromium.org</owner>
   <summary>
