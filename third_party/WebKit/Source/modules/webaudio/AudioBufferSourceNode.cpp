@@ -65,6 +65,7 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sample
     , m_isGrain(false)
     , m_grainOffset(0.0)
     , m_grainDuration(DefaultGrainDuration)
+    , m_minPlaybackRate(1.0)
 {
     // Default to mono. A call to setBuffer() will set the number of output
     // channels to that of the buffer.
@@ -536,6 +537,9 @@ double AudioBufferSourceHandler::computePlaybackRate()
     if (!isPlaybackRateValid)
         finalPlaybackRate = 1.0;
 
+    // Record the minimum playback rate for use by handleStoppableSourceNode.
+    m_minPlaybackRate = std::min(finalPlaybackRate, m_minPlaybackRate);
+
     return finalPlaybackRate;
 }
 
@@ -571,15 +575,22 @@ void AudioBufferSourceHandler::handleStoppableSourceNode()
     // been called but is never connected to the destination (directly or indirectly).  By stopping
     // the node, the node can be collected.  Otherwise, the node will never get collected, leaking
     // memory.
-    if (!loop() && buffer() && isPlayingOrScheduled()) {
+    if (!loop() && buffer() && isPlayingOrScheduled() && m_minPlaybackRate > 0) {
+        // Adjust the duration to include the playback rate. Only need to account for rate < 1
+        // which makes the sound last longer.  For rate >= 1, the source stops sooner, but that's
+        // ok.
+        double actualDuration = buffer()->duration() / m_minPlaybackRate;
+
+        double stopTime = m_startTime + actualDuration;
+
         // See crbug.com/478301. If a source node is started via start(), the source may not start
         // at that time but one quantum (128 frames) later.  But we compute the stop time based on
         // the start time and the duration, so we end up stopping one quantum early.  Thus, add a
         // little extra time; we just need to stop the source sometime after it should have stopped
         // if it hadn't already.  We don't need to be super precise on when to stop.
         double extraStopTime = kExtraStopFrames / static_cast<double>(context()->sampleRate());
-        double stopTime = m_startTime + buffer()->duration() + extraStopTime;
 
+        stopTime += extraStopTime;
         if (context()->currentTime() > stopTime) {
             // The context time has passed the time when the source nodes should have stopped
             // playing. Stop the node now and deref it. (But don't run the onEnded event because the

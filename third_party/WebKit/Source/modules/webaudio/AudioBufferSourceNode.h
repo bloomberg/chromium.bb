@@ -147,6 +147,10 @@ private:
 
     // This synchronizes process() with setBuffer() which can cause dynamic channel count changes.
     mutable Mutex m_processLock;
+
+    // The minimum playbackRate value ever used for this source.  This includes any adjustments
+    // caused by doppler too.
+    double m_minPlaybackRate;
 };
 
 class AudioBufferSourceNode final : public AudioScheduledSourceNode {
