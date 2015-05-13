@@ -6,17 +6,25 @@ module content;
 
 import "content/public/common/background_sync.mojom";
 
+enum BackgroundSyncError {
+  NONE,
+  STORAGE,
+  NOT_FOUND,
+  NO_SERVICE_WORKER,
+  MAX=NO_SERVICE_WORKER
+};
+
 interface BackgroundSyncService {
   Register(SyncRegistration options, int64 service_worker_registration_id)
-      => (SyncRegistration options);
+      => (BackgroundSyncError err, SyncRegistration options);
   GetRegistration(BackgroundSyncPeriodicity periodicity, string tag,
                   int64 service_worker_registration_id)
-      => (SyncRegistration? registration);
+      => (BackgroundSyncError err, SyncRegistration? registration);
   GetRegistrations(BackgroundSyncPeriodicity periodicity,
                    int64 service_worker_registration_id)
-      => (array<SyncRegistration> registrations);
+      => (BackgroundSyncError err, array<SyncRegistration> registrations);
   Unregister(BackgroundSyncPeriodicity periodicity, int64 id, string tag,
-             int64 service_worker_registration_id) => (bool success);
+             int64 service_worker_registration_id) => (BackgroundSyncError err);
 };
 
 interface BackgoundSyncServiceClient {

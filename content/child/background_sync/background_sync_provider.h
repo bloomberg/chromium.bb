@@ -52,12 +52,18 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
   // Callback handlers
   void RegisterCallback(
       scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
+      BackgroundSyncError error,
       const SyncRegistrationPtr& options);
   void UnregisterCallback(
       scoped_ptr<blink::WebSyncUnregistrationCallbacks> callbacks,
-      bool success);
+      BackgroundSyncError error);
+  void GetRegistrationCallback(
+      scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
+      BackgroundSyncError error,
+      const SyncRegistrationPtr& options);
   void GetRegistrationsCallback(
       scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
+      BackgroundSyncError error,
       const mojo::Array<SyncRegistrationPtr>& registrations);
 
   // Helper method that returns an initialized BackgroundSyncServicePtr.
