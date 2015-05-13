@@ -755,22 +755,12 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (switches::IsTouchEditingEnabled())
     webview()->settings()->setTouchEditingEnabled(true);
 
-#if defined(OS_ANDROID)
-  WebSettings::SelectionStrategyType selection_strategy_default =
-      WebSettings::SelectionStrategyType::Direction;
-#else
-  WebSettings::SelectionStrategyType selection_strategy_default =
-      WebSettings::SelectionStrategyType::Character;
-#endif
-
   WebSettings::SelectionStrategyType selection_strategy =
-      selection_strategy_default;
+      WebSettings::SelectionStrategyType::Character;
   const std::string selection_strategy_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTouchTextSelectionStrategy);
-  if (selection_strategy_str == "character")
-    selection_strategy = WebSettings::SelectionStrategyType::Character;
-  else if (selection_strategy_str == "direction")
+  if (selection_strategy_str == "direction")
     selection_strategy = WebSettings::SelectionStrategyType::Direction;
   webview()->settings()->setSelectionStrategy(selection_strategy);
 
