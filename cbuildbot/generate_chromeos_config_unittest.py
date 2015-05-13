@@ -14,6 +14,7 @@ import cPickle
 
 from chromite.cbuildbot import builders
 from chromite.cbuildbot import generate_chromeos_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.builders import generic_builders
 from chromite.lib import cros_build_lib
@@ -292,7 +293,7 @@ class CBuildBotTest(cros_test_lib.TestCase):
           'Config %s: has unexpected chrome_rev_local value.' % build_name)
       if config['chrome_rev']:
         self.assertTrue(
-            generate_chromeos_config.IsPFQType(config['build_type']),
+            config_lib.IsPFQType(config['build_type']),
             'Config %s: has chrome_rev but is not a PFQ.' % build_name)
 
   def testValidVMTestType(self):
@@ -380,7 +381,7 @@ class CBuildBotTest(cros_test_lib.TestCase):
         # they are internal or not.
         if not config['internal']:
           self.assertEqual(config['overlays'], constants.PUBLIC_OVERLAYS, error)
-        elif generate_chromeos_config.IsCQType(config['build_type']):
+        elif config_lib.IsCQType(config['build_type']):
           self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS, error)
 
   def testGetSlaves(self):
@@ -502,7 +503,7 @@ class CBuildBotTest(cros_test_lib.TestCase):
     config.
     """
     msg = 'Config %s should have %s as a parent'
-    parent_suffix = generate_chromeos_config.CONFIG_TYPE_RELEASE_AFDO
+    parent_suffix = config_lib.CONFIG_TYPE_RELEASE_AFDO
     generate_suffix = '%s-generate' % parent_suffix
     use_suffix = '%s-use' % parent_suffix
     for build_name, config in generate_chromeos_config.GetConfig().iteritems():
@@ -547,9 +548,9 @@ class CBuildBotTest(cros_test_lib.TestCase):
 
   def testNonOverlappingConfigTypes(self):
     """Test that a config can only match one build suffix."""
-    for config_type in generate_chromeos_config.CONFIG_TYPE_DUMP_ORDER:
+    for config_type in config_lib.CONFIG_TYPE_DUMP_ORDER:
       # A longer config_type should never end with a shorter suffix.
-      my_list = list(generate_chromeos_config.CONFIG_TYPE_DUMP_ORDER)
+      my_list = list(config_lib.CONFIG_TYPE_DUMP_ORDER)
       my_list.remove(config_type)
       self.assertEquals(
           generate_chromeos_config.GetDisplayPosition(
@@ -581,9 +582,9 @@ class CBuildBotTest(cros_test_lib.TestCase):
     for config_name in generate_chromeos_config.GetConfig():
       self.assertNotEqual(
           generate_chromeos_config.GetDisplayPosition(config_name),
-          len(generate_chromeos_config.CONFIG_TYPE_DUMP_ORDER),
+          len(config_lib.CONFIG_TYPE_DUMP_ORDER),
           '%s did not match any types in %s' %
-          (config_name, 'generate_chromeos_config.CONFIG_TYPE_DUMP_ORDER'))
+          (config_name, 'config_lib.CONFIG_TYPE_DUMP_ORDER'))
 
   def testCantBeBothTypesOfLKGM(self):
     """Using lkgm and chrome_lkgm doesn't make sense."""
@@ -836,7 +837,7 @@ class FindFullTest(cros_test_lib.TestCase):
     # build per board.  This is to ensure that we fail any new configs that
     # wrongly have names like *-bla-release or *-bla-full. This case can also
     # be caught if the new suffix was added to
-    # generate_chromeos_config.CONFIG_TYPE_DUMP_ORDER
+    # config_lib.CONFIG_TYPE_DUMP_ORDER
     # (see testNonOverlappingConfigTypes), but that's not guaranteed to happen.
     def AtMostOneConfig(board, label, configs):
       if len(configs) > 1:
@@ -953,7 +954,7 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     for config in generate_chromeos_config.GetConfig().itervalues():
       waterfall = config['active_waterfall']
       btype = config['build_type']
-      if not (waterfall and generate_chromeos_config.IsCanaryType(btype)):
+      if not (waterfall and config_lib.IsCanaryType(btype)):
         continue
 
       waterfall_seen = seen.setdefault(waterfall, set())

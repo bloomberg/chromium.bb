@@ -15,48 +15,31 @@ from __future__ import print_function
 import json
 import os
 
+# These symbols are imported to be exported (for now).
+# pylint: disable=unused-import
+# pylint: disable=wildcard-import
+# pylint: disable=unused-wildcard-import
+
 from chromite.cbuildbot import constants
+from chromite.cbuildbot.config_lib import *
 from chromite.lib import factory
 
 # In the Json, this special build config holds the default values for all
 # other configs.
 DEFAULT_BUILD_CONFIG = '_default'
 
-# These symbols are imported to be exported, not for use.
-# pylint: disable=unused-import
-
 from chromite.cbuildbot.generate_chromeos_config import (
     # Classes used to generate build configs.
     BuildConfig,
     HWTestConfig,
 
-    # General constant.
-    GS_PATH_DEFAULT,
-
-    # Define config types.
-    CONFIG_TYPE_PRECQ,
-    CONFIG_TYPE_PALADIN,
-    CONFIG_TYPE_RELEASE,
-    CONFIG_TYPE_FULL,
-    CONFIG_TYPE_FIRMWARE,
-    CONFIG_TYPE_FACTORY,
-    CONFIG_TYPE_RELEASE_AFDO,
-
-    # Contains the valid build config suffixes in the order that they are
-    # dumped.
-    CONFIG_TYPE_DUMP_ORDER,
-
-    # Exported methods for searching config information.
+    # Exported method for searching/modifying config information.
     FindCanonicalConfigForBoard,
     FindFullConfigsForBoard,
     GetCanariesForChromeLKGM,
     GetDisplayPosition,
     GetSlavesForMaster,
-
-    # Tests for config type categories.
-    IsCanaryType,
-    IsCQType,
-    IsPFQType,
+    OverrideConfigForTrybot,
     )
 
 

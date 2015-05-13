@@ -11,53 +11,8 @@ from __future__ import print_function
 import copy
 import json
 
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
-
-
-GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
-
-# Contains the valid build config suffixes in the order that they are dumped.
-CONFIG_TYPE_PRECQ = 'pre-cq'
-CONFIG_TYPE_PALADIN = 'paladin'
-CONFIG_TYPE_RELEASE = 'release'
-CONFIG_TYPE_FULL = 'full'
-CONFIG_TYPE_FIRMWARE = 'firmware'
-CONFIG_TYPE_FACTORY = 'factory'
-CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
-
-CONFIG_TYPE_DUMP_ORDER = (
-    CONFIG_TYPE_PALADIN,
-    constants.PRE_CQ_GROUP_CONFIG,
-    CONFIG_TYPE_PRECQ,
-    constants.PRE_CQ_LAUNCHER_CONFIG,
-    'incremental',
-    'telemetry',
-    CONFIG_TYPE_FULL,
-    'full-group',
-    CONFIG_TYPE_RELEASE,
-    'release-group',
-    'release-afdo',
-    'release-afdo-generate',
-    'release-afdo-use',
-    'sdk',
-    'chromium-pfq',
-    'chromium-pfq-informational',
-    'chrome-perf',
-    'chrome-pfq',
-    'chrome-pfq-informational',
-    'pre-flight-branch',
-    CONFIG_TYPE_FACTORY,
-    CONFIG_TYPE_FIRMWARE,
-    'toolchain-major',
-    'toolchain-minor',
-    'asan',
-    'asan-informational',
-    'refresh-packages',
-    'test-ap',
-    'test-ap-group',
-    constants.BRANCH_UTIL_CONFIG,
-    constants.PAYLOADS_TYPE,
-)
 
 _CONFIG = {}
 
@@ -138,21 +93,6 @@ def OverrideConfigForTrybot(build_config, options):
   return copy_config
 
 
-def IsPFQType(b_type):
-  """Returns True if this build type is a PFQ."""
-  return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
-                    constants.CHROME_PFQ_TYPE)
-
-
-def IsCQType(b_type):
-  """Returns True if this build type is a Commit Queue."""
-  return b_type == constants.PALADIN_TYPE
-
-
-def IsCanaryType(b_type):
-  """Returns True if this build type is a Canary."""
-  return b_type == constants.CANARY_TYPE
-
 def GetDefaultWaterfall(build_config):
   if not (build_config['important'] or build_config['master']):
     return None
@@ -161,9 +101,9 @@ def GetDefaultWaterfall(build_config):
 
   b_type = build_config['build_type']
   if (
-      IsPFQType(b_type) or
-      IsCQType(b_type) or
-      IsCanaryType(b_type) or
+      config_lib.IsPFQType(b_type) or
+      config_lib.IsCQType(b_type) or
+      config_lib.IsCanaryType(b_type) or
       b_type in (
         constants.PRE_CQ_LAUNCHER_TYPE,
       )):
@@ -200,9 +140,11 @@ def FindFullConfigsForBoard(board=None):
 
   for name, c in GetConfig().iteritems():
     if c['boards'] and (board is None or board in c['boards']):
-      if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
+      if (name.endswith('-%s' % config_lib.CONFIG_TYPE_RELEASE) and
+          c['internal']):
         int_cfgs.append(c.deepcopy())
-      elif name.endswith('-%s' % CONFIG_TYPE_FULL) and not c['internal']:
+      elif (name.endswith('-%s' % config_lib.CONFIG_TYPE_FULL) and
+            not c['internal']):
         ext_cfgs.append(c.deepcopy())
 
   return ext_cfgs, int_cfgs
@@ -482,7 +424,7 @@ _settings = dict(
 #            None - No upload
 #            GS_PATH_DEFAULT - 'gs://chromeos-image-archive/' + bot_id
 #            value - Upload to explicit path
-  gs_path=GS_PATH_DEFAULT,
+  gs_path=config_lib.GS_PATH_DEFAULT,
 
 # TODO(sosa): Deprecate binary.
 # build_type -- Type of builder.  Check constants.VALID_BUILD_TYPES.
@@ -1733,7 +1675,8 @@ def _AddFullConfigs():
   external_overrides.update(manifest=delete_key())
   external_overrides.update(
     useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]))
-  _CreateConfigsForBoards(full_prebuilts, _all_full_boards, CONFIG_TYPE_FULL,
+  _CreateConfigsForBoards(full_prebuilts, _all_full_boards,
+                          config_lib.CONFIG_TYPE_FULL,
                           **external_overrides)
   _CreateConfigsForBoards(chromium_info, _all_full_boards,
                           'tot-chromium-pfq-informational', important=False,
@@ -2586,11 +2529,14 @@ def _AddAFDOConfigs():
         afdo_use=True,
     )
 
-    config_name = '%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO)
+    config_name = '%s-%s' % (board, config_lib.CONFIG_TYPE_RELEASE_AFDO)
     if config_name not in _CONFIG:
-      generate_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO,
+      generate_config_name = '%s-%s-%s' % (board,
+                                           config_lib.CONFIG_TYPE_RELEASE_AFDO,
                                            'generate')
-      use_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO, 'use')
+      use_config_name = '%s-%s-%s' % (board,
+                                      config_lib.CONFIG_TYPE_RELEASE_AFDO,
+                                      'use')
       add_group(config_name,
                         add_config(release_afdo, generate_config_name,
                                                 generate_config),
@@ -2680,9 +2626,10 @@ def _AddReleaseConfigs():
   _CreateConfigsForBoards(
     chrome_pfq, _all_release_boards, 'chrome-pfq', important=False)
   _CreateConfigsForBoards(
-    _release, _critical_for_chrome_boards, CONFIG_TYPE_RELEASE,
+    _release, _critical_for_chrome_boards, config_lib.CONFIG_TYPE_RELEASE,
     critical_for_chrome=True)
-  _CreateConfigsForBoards(_release, _all_release_boards, CONFIG_TYPE_RELEASE)
+  _CreateConfigsForBoards(_release, _all_release_boards,
+                          config_lib.CONFIG_TYPE_RELEASE)
 
 
 _AddReleaseConfigs()
@@ -3150,18 +3097,19 @@ _x86_depthcharge_firmware_boards = frozenset([
 def _AddFirmwareConfigs():
   """Add x86 and arm firmware configs."""
   for board in _firmware_boards:
-    add_config(_firmware_release, '%s-%s' % (board, CONFIG_TYPE_FIRMWARE),
+    add_config(_firmware_release, '%s-%s' % (board,
+                                             config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
     )
 
   for board in _x86_depthcharge_firmware_boards:
     add_config(_depthcharge_release,
-        '%s-%s-%s' % (board, 'depthcharge', CONFIG_TYPE_FIRMWARE),
+        '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
     )
     add_config(_depthcharge_full_internal,
-        '%s-%s-%s-%s' % (board, 'depthcharge', CONFIG_TYPE_FULL,
-                         CONFIG_TYPE_FIRMWARE),
+        '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
+                         config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
     )
 
@@ -3242,7 +3190,8 @@ add_config(project_sdk,
   use_lkgm=False,
 )
 
-def GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
+def GetDisplayPosition(config_name,
+                       type_order=config_lib.CONFIG_TYPE_DUMP_ORDER):
   """Given a config_name, return display position specified by suffix_order.
 
   Args:
