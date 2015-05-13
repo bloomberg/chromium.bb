@@ -142,16 +142,6 @@ Examples:
 
   def Run(self):
     """Perfrom the cros flash command."""
-
-    # Enter the chroot to display the progress bar for flashing to usb if the
-    # following conditions are met:
-    # (1) Device is USB.
-    # (2) Logging level is less than equal to logging.NOTICE.
-    if self.options.device is not None and (
-        self.options.device.scheme == commandline.DEVICE_SCHEME_USB and
-        logging.getLogger().getEffectiveLevel() <= logging.NOTICE):
-      commandline.RunInsideChroot(self)
-
     self.options.Freeze()
     try:
       flash.Flash(
