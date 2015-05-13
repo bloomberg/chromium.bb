@@ -129,7 +129,7 @@ class _PaygenPayload(object):
     return uri + '.json'
 
   def _PrepareGenerator(self):
-    """Download, and extract au-generate.zip into self.generator_dir."""
+    """Download, and extract au-generator.zip into self.generator_dir."""
     if self._au_generator_uri_override:
       generator_uri = self._au_generator_uri_override
     else:
@@ -139,7 +139,7 @@ class _PaygenPayload(object):
           self.payload.tgt_image.version,
           self.payload.tgt_image.bucket)
 
-    logging.info('Preparing au-generate.zip from %s.', generator_uri)
+    logging.info('Preparing au-generator.zip from %s.', generator_uri)
 
     # Extract zipped delta generator files to the expected directory.
     tmp_zip = self.cache.GetFileInTempFile(generator_uri)
