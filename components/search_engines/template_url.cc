@@ -672,7 +672,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleSessionToken) {
     replacements->push_back(Replacement(GOOGLE_SESSION_TOKEN, start));
   } else if (parameter == kGoogleSourceIdParameter) {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
     url->insert(start, "sourceid=chrome-mobile&");
 #else
     url->insert(start, "sourceid=chrome&");
