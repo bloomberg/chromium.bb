@@ -59,6 +59,7 @@ source_set("unit_tests") {
     "//chrome/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/cld_2:cld2_static",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
   sources = [
