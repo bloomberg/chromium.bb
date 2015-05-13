@@ -21,16 +21,11 @@ Browser::Browser()
       content_(nullptr),
       omnibox_(nullptr),
       navigator_host_(this),
-      ui_(nullptr),
-      weak_factory_(this) {
+      ui_(nullptr) {
   exposed_services_impl_.AddService(this);
 }
 
 Browser::~Browser() {
-}
-
-base::WeakPtr<Browser> Browser::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void Browser::ReplaceContentWithURL(const mojo::String& url) {

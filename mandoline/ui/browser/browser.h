@@ -5,7 +5,6 @@
 #ifndef MANDOLINE_UI_BROWSER_BROWSER_H_
 #define MANDOLINE_UI_BROWSER_BROWSER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/window_manager/window_manager_app.h"
@@ -33,8 +32,6 @@ class Browser : public mojo::ApplicationDelegate,
  public:
   Browser();
   ~Browser() override;
-
-  base::WeakPtr<Browser> GetWeakPtr();
 
   void ReplaceContentWithURL(const mojo::String& url);
 
@@ -94,8 +91,6 @@ class Browser : public mojo::ApplicationDelegate,
   GURL current_url_;
 
   scoped_ptr<BrowserUI> ui_;
-
-  base::WeakPtrFactory<Browser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };
