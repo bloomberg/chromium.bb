@@ -724,7 +724,6 @@ public:
     virtual void updateFromElement() { }
 
     virtual void addAnnotatedRegions(Vector<AnnotatedRegionValue>&);
-    void collectAnnotatedRegions(Vector<AnnotatedRegionValue>&);
 
     CompositingState compositingState() const;
     virtual CompositingReasons additionalCompositingReasons() const;

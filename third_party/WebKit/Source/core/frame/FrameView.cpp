@@ -2394,7 +2394,7 @@ void FrameView::updateAnnotatedRegions()
     if (!document->hasAnnotatedRegions())
         return;
     Vector<AnnotatedRegionValue> newRegions;
-    document->layoutBox()->collectAnnotatedRegions(newRegions);
+    collectAnnotatedRegions(*(document->layoutBox()), newRegions);
     if (newRegions == document->annotatedRegions())
         return;
     document->setAnnotatedRegions(newRegions);
@@ -4015,6 +4015,18 @@ LayoutObject* FrameView::viewportLayoutObject()
             return element->layoutObject();
     }
     return nullptr;
+}
+
+void FrameView::collectAnnotatedRegions(LayoutObject& layoutObject, Vector<AnnotatedRegionValue>& regions)
+{
+    // LayoutTexts don't have their own style, they just use their parent's style,
+    // so we don't want to include them.
+    if (layoutObject.isText())
+        return;
+
+    layoutObject.addAnnotatedRegions(regions);
+    for (LayoutObject* curr = layoutObject.slowFirstChild(); curr; curr = curr->nextSibling())
+        collectAnnotatedRegions(*curr, regions);
 }
 
 } // namespace blink

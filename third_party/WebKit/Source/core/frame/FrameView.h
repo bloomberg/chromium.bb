@@ -65,6 +65,7 @@ class LayoutView;
 class Page;
 class ScrollingCoordinator;
 class TracedValue;
+struct AnnotatedRegionValue;
 struct CompositedSelection;
 
 typedef unsigned long long DOMTimeStamp;
@@ -717,6 +718,8 @@ private:
 
     // LayoutObject for the viewport-defining element (see Document::viewportDefiningElement).
     LayoutObject* viewportLayoutObject();
+
+    void collectAnnotatedRegions(LayoutObject&, Vector<AnnotatedRegionValue>&);
 
     LayoutSize m_size;
 

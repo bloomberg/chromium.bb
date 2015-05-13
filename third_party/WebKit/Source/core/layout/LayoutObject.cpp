@@ -2906,18 +2906,6 @@ void LayoutObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
-void LayoutObject::collectAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
-{
-    // LayoutTexts don't have their own style, they just use their parent's style,
-    // so we don't want to include them.
-    if (isText())
-        return;
-
-    addAnnotatedRegions(regions);
-    for (LayoutObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
-        curr->collectAnnotatedRegions(regions);
-}
-
 bool LayoutObject::willRenderImage(ImageResource*)
 {
     // Without visibility we won't render (and therefore don't care about animation).
