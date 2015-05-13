@@ -70,9 +70,6 @@ public:
         bool isInherited() const { return propertyMetadata().m_inherited; }
         bool isImplicit() const { return propertyMetadata().m_implicit; }
 
-        String cssName() const;
-        String cssText() const;
-
         const CSSValue* value() const { return propertyValue(); }
         // FIXME: We should try to remove this mutable overload.
         CSSValue* value() { return const_cast<CSSValue*>(propertyValue()); }

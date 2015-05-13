@@ -555,22 +555,4 @@ PassRefPtrWillBeRawPtr<MutableStylePropertySet> MutableStylePropertySet::create(
     return adoptRefWillBeNoop(new MutableStylePropertySet(properties, count));
 }
 
-String StylePropertySet::PropertyReference::cssName() const
-{
-    return getPropertyNameString(id());
-}
-
-String StylePropertySet::PropertyReference::cssText() const
-{
-    StringBuilder result;
-    result.append(cssName());
-    result.appendLiteral(": ");
-    result.append(propertyValue()->cssText());
-    if (isImportant())
-        result.appendLiteral(" !important");
-    result.append(';');
-    return result.toString();
-}
-
-
 } // namespace blink

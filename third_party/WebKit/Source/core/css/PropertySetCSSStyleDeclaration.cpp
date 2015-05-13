@@ -152,7 +152,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const
 {
     if (i >= propertySet().propertyCount())
         return "";
-    return propertySet().propertyAt(i).cssName();
+    return getPropertyName(propertySet().propertyAt(i).id());
 }
 
 String AbstractPropertySetCSSStyleDeclaration::cssText() const
