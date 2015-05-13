@@ -66,21 +66,18 @@ html[dir=rtl] .icon {
   right: 9px;
 }
 
-.download.otr > .safe,
-.download.otr > .show-dangerous {
+.download.otr > :-webkit-any(.safe, .dangerous) {
   -webkit-transition: opacity 150ms;
   background: url(../../../../ui/webui/resources/images/otr_icon_standalone.png)
               no-repeat right bottom;
   opacity: .66;
 }
 
-html[dir=rtl] .download.otr > .safe,
-html[dir=rtl] .download.otr > .show-dangerous {
+html[dir=rtl] .download.otr > :-webkit-any(.safe, .dangerous) {
   background-position: left bottom;
 }
 
-.download.otr > .safe:hover,
-.download.otr > .show-dangerous:hover {
+.download.otr > :-webkit-any(.safe, .dangerous):hover {
   opacity: 1;
 }
 
