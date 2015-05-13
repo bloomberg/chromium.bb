@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -25,19 +24,6 @@ public class ToolbarModel {
     }
 
     private long mNativeToolbarModelAndroid;
-
-    /**
-     * Fetch the security level for a given web contents.
-     *
-     * @param webContents The web contents to get the security level for.
-     * @return The ToolbarModelSecurityLevel for the specified web contents.
-     *
-     * @see ToolbarModelSecurityLevel
-     */
-    public static int getSecurityLevelForWebContents(WebContents webContents) {
-        if (webContents == null) return ToolbarModelSecurityLevel.NONE;
-        return nativeGetSecurityLevelForWebContents(webContents);
-    }
 
     /**
      * @param webContents The web contents to query for deprecated SHA-1 presence.
@@ -83,7 +69,6 @@ public class ToolbarModel {
         return nativeWouldReplaceURL(mNativeToolbarModelAndroid);
     }
 
-    private static native int nativeGetSecurityLevelForWebContents(WebContents webContents);
     private static native boolean nativeIsDeprecatedSHA1Present(WebContents webContents);
 
     private native long nativeInit(ToolbarModelDelegate delegate);

@@ -137,7 +137,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    const gfx::FontList& font_list)
     : OmniboxView(profile, controller, command_updater),
       popup_window_mode_(popup_window_mode),
-      security_level_(ToolbarModel::NONE),
+      security_level_(ConnectionSecurityHelper::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
       ime_composing_before_change_(false),
       delete_at_end_pressed_(false),
@@ -223,7 +223,8 @@ void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::Update() {
-  const ToolbarModel::SecurityLevel old_security_level = security_level_;
+  const ConnectionSecurityHelper::SecurityLevel old_security_level =
+      security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
   if (model()->UpdatePermanentText()) {
     // Something visibly changed.  Re-enable URL replacement.
@@ -325,7 +326,7 @@ void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   views::Textfield::OnNativeThemeChanged(theme);
   if (location_bar_view_) {
     SetBackgroundColor(location_bar_view_->GetColor(
-        ToolbarModel::NONE, LocationBarView::BACKGROUND));
+        ConnectionSecurityHelper::NONE, LocationBarView::BACKGROUND));
   }
   EmphasizeURLComponents();
 }
@@ -631,10 +632,12 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // may have incorrectly identified a qualifier as a scheme.
   SetStyle(gfx::DIAGONAL_STRIKE, false);
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
-      scheme.is_nonempty() && (security_level_ != ToolbarModel::NONE)) {
+      scheme.is_nonempty() &&
+      (security_level_ != ConnectionSecurityHelper::NONE)) {
     SkColor security_color = location_bar_view_->GetColor(
         security_level_, LocationBarView::SECURITY_TEXT);
-    const bool strike = (security_level_ == ToolbarModel::SECURITY_ERROR);
+    const bool strike =
+        (security_level_ == ConnectionSecurityHelper::SECURITY_ERROR);
     const gfx::Range scheme_range(scheme.begin, scheme.end());
     ApplyColor(security_color, scheme_range);
     ApplyStyle(gfx::DIAGONAL_STRIKE, strike, scheme_range);

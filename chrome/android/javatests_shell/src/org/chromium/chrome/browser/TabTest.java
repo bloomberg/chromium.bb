@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -96,5 +97,11 @@ public class TabTest extends ChromeShellTestBase {
         assertFalse(tab.isHidden());
         assertFalse(tab.needsReload());
         assertFalse(tab.isShowingSadTab());
+    }
+
+    @SmallTest
+    @Feature({"Tab"})
+    public void testTabSecurityLevel() {
+        assertEquals(ConnectionSecurityHelperSecurityLevel.NONE, mTab.getSecurityLevel());
     }
 }
