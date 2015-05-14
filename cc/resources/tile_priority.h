@@ -51,40 +51,7 @@ struct CC_EXPORT TilePriority {
         priority_bin(bin),
         distance_to_visible(distance_to_visible) {}
 
-  TilePriority(const TilePriority& active, const TilePriority& pending) {
-    if (active.resolution == HIGH_RESOLUTION ||
-        pending.resolution == HIGH_RESOLUTION)
-      resolution = HIGH_RESOLUTION;
-    else if (active.resolution == LOW_RESOLUTION ||
-             pending.resolution == LOW_RESOLUTION)
-      resolution = LOW_RESOLUTION;
-    else
-      resolution = NON_IDEAL_RESOLUTION;
-
-    if (active.priority_bin < pending.priority_bin) {
-      priority_bin = active.priority_bin;
-      distance_to_visible = active.distance_to_visible;
-    } else if (active.priority_bin > pending.priority_bin) {
-      priority_bin = pending.priority_bin;
-      distance_to_visible = pending.distance_to_visible;
-    } else {
-      priority_bin = active.priority_bin;
-      distance_to_visible =
-          std::min(active.distance_to_visible, pending.distance_to_visible);
-    }
-  }
-
   void AsValueInto(base::trace_event::TracedValue* dict) const;
-
-  bool operator ==(const TilePriority& other) const {
-    return resolution == other.resolution &&
-           priority_bin == other.priority_bin &&
-           distance_to_visible == other.distance_to_visible;
-  }
-
-  bool operator !=(const TilePriority& other) const {
-    return !(*this == other);
-  }
 
   bool IsHigherPriorityThan(const TilePriority& other) const {
     return priority_bin < other.priority_bin ||
