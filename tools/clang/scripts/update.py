@@ -27,7 +27,7 @@ use_head_revision = ('LLVM_FORCE_HEAD_REVISION' in os.environ or
   not re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')))
 
 if not use_head_revision:
-  LLVM_WIN_REVISION = '237003'
+  LLVM_WIN_REVISION = '235968'
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
