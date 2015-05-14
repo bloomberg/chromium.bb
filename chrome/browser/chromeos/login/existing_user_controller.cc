@@ -1236,7 +1236,7 @@ void ExistingUserController::OnOAuth2TokensFetched(
     OnAuthFailure(AuthFailure(AuthFailure::FAILED_TO_INITIALIZE_TOKEN));
     return;
   }
-  if (StartupUtils::IsWebviewSigninEnabled()) {
+  if (StartupUtils::IsWebviewSigninEnabled() && TokenHandlesEnabled()) {
     if (!token_handle_util_.get()) {
       token_handle_util_.reset(
           new TokenHandleUtil(user_manager::UserManager::Get()));
@@ -1258,6 +1258,16 @@ void ExistingUserController::OnTokenHandleObtained(
     LOG(ERROR) << "OAuth2 token handle fetch failed.";
     return;
   }
+}
+
+bool ExistingUserController::TokenHandlesEnabled() {
+  bool ephemeral_users_enabled = false;
+  bool show_names_on_signin = true;
+  cros_settings_->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
+                             &ephemeral_users_enabled);
+  cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
+                             &show_names_on_signin);
+  return show_names_on_signin && !ephemeral_users_enabled;
 }
 
 }  // namespace chromeos

@@ -247,6 +247,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnTokenHandleObtained(const user_manager::UserID& id,
                              TokenHandleUtil::TokenHandleStatus status);
 
+  // Returns |true| if token handles should be used on this device.
+  bool TokenHandlesEnabled();
+
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;
 
