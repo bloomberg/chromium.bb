@@ -26,6 +26,7 @@ from chromite.lib import osutils
 def GetParser():
   """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('--boto', type='path', help='Path to boto auth file.')
   parser.add_argument('uri', help='Google Storage URI to download')
   parser.add_argument('filename', help='Location to store the file.')
   return parser
@@ -45,7 +46,8 @@ def Copy(ctx, uri, filename):
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
-  ctx = gs.GSContext()
+  options.Freeze()
+  ctx = gs.GSContext(boto_file=options.boto)
   try:
     Copy(ctx, options.uri, options.filename)
   except gs.GSContextException as ex:
