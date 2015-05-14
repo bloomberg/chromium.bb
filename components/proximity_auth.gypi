@@ -19,8 +19,12 @@
         '../net/net.gyp:net',
       ],
       'sources': [
+        "proximity_auth/ble/bluetooth_low_energy_connection.cc",
+        "proximity_auth/ble/bluetooth_low_energy_connection.h",
         "proximity_auth/ble/bluetooth_low_energy_connection_finder.cc",
         "proximity_auth/ble/bluetooth_low_energy_connection_finder.h",
+        "proximity_auth/ble/fake_wire_message.cc",
+        "proximity_auth/ble/fake_wire_message.h",
         "proximity_auth/ble/proximity_auth_ble_system.cc",
         "proximity_auth/ble/proximity_auth_ble_system.h",
         "proximity_auth/bluetooth_connection.cc",

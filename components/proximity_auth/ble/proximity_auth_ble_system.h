@@ -19,7 +19,9 @@ class BluetoothGattConnection;
 
 namespace proximity_auth {
 
+class BluetoothLowEnergyConnection;
 class BluetoothLowEnergyConnectionFinder;
+class Connection;
 
 // This is the main entry point to start Proximity Auth over Bluetooth Low
 // Energy. This is the underlying system for the Smart Lock features. It will
@@ -40,14 +42,15 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer {
 
  private:
   // Handler for a new connection found event.
-  void OnConnectionFound(
-      scoped_ptr<device::BluetoothGattConnection> connection);
+  void OnConnectionFound(scoped_ptr<Connection> connection);
 
   ScreenlockBridge* screenlock_bridge_;  // Not owned. Must outlive this object.
   content::BrowserContext*
       browser_context_;  // Not owned. Must outlive this object.
 
   scoped_ptr<BluetoothLowEnergyConnectionFinder> connection_finder_;
+
+  scoped_ptr<Connection> connection_;
 
   base::WeakPtrFactory<ProximityAuthBleSystem> weak_ptr_factory_;
 
