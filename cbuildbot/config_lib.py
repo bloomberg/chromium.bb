@@ -260,3 +260,60 @@ class HWTestConfig(object):
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
 
+class Config(dict):
+  """This holds a set of named BuildConfig values."""
+
+  def __init__(self, defaults):
+    super(Config, self).__init__()
+    self._defaults = defaults
+
+  def GetDefault(self):
+    """Create the cannonical default build configuration."""
+    # Enumeration of valid settings; any/all config settings must be in this.
+    # All settings must be documented.
+    return BuildConfig(**self._defaults)
+
+  def add_config(self, config, name, *args, **kwargs):
+    """Derive and add the config to cbuildbot's usable config targets
+
+    Args:
+      config: BuildConfig to derive the new config from.
+      name: The name to label this configuration; this is what cbuildbot
+            would see.
+      args: See the docstring of derive.
+      kwargs: See the docstring of derive.
+
+    Returns:
+      See the docstring of derive.
+    """
+    inherits, overrides = args, kwargs
+    overrides['name'] = name
+
+    # Add ourselves into the global dictionary, adding in the defaults.
+    new_config = config.derive(*inherits, **overrides)
+    self[name] = self.GetDefault().derive(config, new_config)
+
+    # Return a BuildConfig object without the defaults, so that other objects
+    # can derive from us without inheriting the defaults.
+    return new_config
+
+  def add_raw_config(self, name, *args, **kwargs):
+    """Add a config containing only explicitly listed values (no defaults)."""
+    return self.add_config(BuildConfig(), name, *args, **kwargs)
+
+  def add_group(self, name, *args, **kwargs):
+    """Create a new group of build configurations.
+
+    Args:
+      name: The name to label this configuration; this is what cbuildbot
+            would see.
+      args: Configurations to build in this group. The first config in
+            the group is considered the primary configuration and is used
+            for syncing and creating the chroot.
+      kwargs: Override values to use for the parent config.
+
+    Returns:
+      A new BuildConfig instance.
+    """
+    child_configs = [self.GetDefault().derive(x, grouped=True) for x in args]
+    return self.add_config(args[0], name, child_configs=child_configs, **kwargs)

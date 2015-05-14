@@ -78,7 +78,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
 
     This checks for mispelled keys, or keys that are somehow removed.
     """
-    expected_keys = set(generate_chromeos_config.GetDefault().keys())
+    expected_keys = set(
+        generate_chromeos_config.GetConfig().GetDefault().iterkeys())
     for build_name, config in generate_chromeos_config.GetConfig().iteritems():
       config_keys = set(config.keys())
 

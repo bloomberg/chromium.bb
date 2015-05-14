@@ -14,7 +14,413 @@ import json
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 
-_CONFIG = {}
+
+# Enumeration of valid settings; any/all config settings must be in this.
+# All settings must be documented.
+_settings = dict(
+    # The name of the config.
+    name=None,
+
+    # A list of boards to build.
+    boards=None,
+
+    # The profile of the variant to set up and build.
+    profile=None,
+
+    # This bot pushes changes to the overlays.
+    master=False,
+
+    # If False, this flag indicates that the CQ should not check whether
+    # this bot passed or failed. Set this to False if you are setting up a
+    # new bot. Once the bot is on the waterfall and is consistently green,
+    # mark the builder as important=True.
+    important=False,
+
+    # An integer. If this builder fails this many times consecutively, send
+    # an alert email to the recipients health_alert_recipients. This does
+    # not apply to tryjobs. This feature is similar to the ERROR_WATERMARK
+    # feature of upload_symbols, and it may make sense to merge the features
+    # at some point.
+    health_threshold=0,
+
+    # List of email addresses to send health alerts to for this builder. It
+    # supports automatic email address lookup for the following sheriff
+    # types:
+    #     'tree': tree sheriffs
+    #     'chrome': chrome gardeners
+    health_alert_recipients=[],
+
+    # Whether this is an internal build config.
+    internal=False,
+
+    # Whether this is a branched build config. Used for pfq logic.
+    branch=False,
+
+    # The name of the manifest to use. E.g., to use the buildtools manifest,
+    # specify 'buildtools'.
+    manifest=constants.DEFAULT_MANIFEST,
+
+    # The name of the manifest to use if we're building on a local trybot.
+    # This should only require elevated access if it's really needed to
+    # build this config.
+    dev_manifest=constants.DEFAULT_MANIFEST,
+
+    # Applies only to paladin builders. If true, Sync to the manifest
+    # without applying any test patches, then do a fresh build in a new
+    # chroot. Then, apply the patches and build in the existing chroot.
+    build_before_patching=False,
+
+    # Applies only to paladin builders. If True, Sync to the master manifest
+    # without applying any of the test patches, rather than running
+    # CommitQueueSync. This is basically ToT immediately prior to the
+    # current commit queue run.
+    do_not_apply_cq_patches=False,
+
+    # Applies only to master builders. List of the names of slave builders
+    # to be treated as sanity checkers. If only sanity check builders fail,
+    # then the master will ignore the failures. In a CQ run, if any of the
+    # sanity check builders fail and other builders fail as well, the master
+    # will treat the build as failed, but will not reset the ready bit of
+    # the tested patches.
+    sanity_check_slaves=None,
+
+    # emerge use flags to use while setting up the board, building packages,
+    # making images, etc.
+    useflags=[],
+
+    # Set the variable CHROMEOS_OFFICIAL for the build. Known to affect
+    # parallel_emerge, cros_set_lsb_release, and chromeos_version.sh. See
+    # bug chromium-os:14649
+    chromeos_official=False,
+
+    # Use binary packages for building the toolchain. (emerge --getbinpkg)
+    usepkg_toolchain=True,
+
+    # Use binary packages for build_packages and setup_board.
+    usepkg_build_packages=True,
+
+    # If set, run BuildPackages in the background and allow subsequent
+    # stages to run in parallel with this one.
+    #
+    # For each release group, the first builder should be set to run in the
+    # foreground (to build binary packages), and the remainder of the
+    # builders should be set to run in parallel (to install the binary
+    # packages.)
+    build_packages_in_background=False,
+
+    # Only use binaries in build_packages for Chrome itself.
+    chrome_binhost_only=False,
+
+    # Does this profile need to sync chrome?  If None, we guess based on
+    # other factors.  If True/False, we always do that.
+    sync_chrome=None,
+
+    # Use the newest ebuilds for all the toolchain packages.
+    latest_toolchain=False,
+
+    # This is only valid when latest_toolchain is True. If you set this to a
+    # commit-ish, the gcc ebuild will use it to build the toolchain
+    # compiler.
+    gcc_githash=None,
+
+    # Wipe and replace the board inside the chroot.
+    board_replace=False,
+
+    # Wipe and replace chroot, but not source.
+    chroot_replace=False,
+
+    # Uprevs the local ebuilds to build new changes since last stable.
+    # build.  If master then also pushes these changes on success. Note that
+    # we uprev on just about every bot config because it gives us a more
+    # deterministic build system (the tradeoff being that some bots build
+    # from source more frequently than if they never did an uprev). This way
+    # the release/factory/etc... builders will pick up changes that devs
+    # pushed before it runs, but after the correspoding PFQ bot ran (which
+    # is what creates+uploads binpkgs).  The incremental bots are about the
+    # only ones that don't uprev because they mimic the flow a developer
+    # goes through on their own local systems.
+    uprev=True,
+
+    # Select what overlays to look at for revving and prebuilts. This can be
+    # any constants.VALID_OVERLAYS.
+    overlays=constants.PUBLIC_OVERLAYS,
+
+    # Select what overlays to push at. This should be a subset of overlays
+    # for the particular builder.  Must be None if not a master.  There
+    # should only be one master bot pushing changes to each overlay per
+    # branch.
+    push_overlays=None,
+
+    # Uprev Chrome, values of 'tot', 'stable_release', or None.
+    chrome_rev=None,
+
+    # Exit the builder right after checking compilation.
+    # TODO(mtennant): Should be something like "compile_check_only".
+    compilecheck=False,
+
+    # Test CLs to verify they're ready for the commit queue.
+    pre_cq=False,
+
+    # Runs the tests that the signer would run. This should only be set if
+    # 'recovery' is in images.
+    signer_tests=False,
+
+    # Runs unittests for packages.
+    unittests=True,
+
+    # If unittests is true, only run the unit tests for packages which have
+    # changed since the previous build.
+    quick_unit=False,
+
+    # A list of the packages to blacklist from unittests.
+    unittest_blacklist=[],
+
+    # Builds autotest tests.  Must be True if vm_tests is set.
+    build_tests=True,
+
+    # Generates AFDO data. Will capture a profile of chrome using a hwtest
+    # to run a predetermined set of benchmarks.
+    afdo_generate=False,
+
+    # Generates AFDO data, builds the minimum amount of artifacts and
+    # assumes a non-distributed builder (i.e.: the whole process in a single
+    # builder).
+    afdo_generate_min=False,
+
+    # Update the Chrome ebuild with the AFDO profile info.
+    afdo_update_ebuild=False,
+
+    # Uses AFDO data. The Chrome build will be optimized using the AFDO
+    # profile information found in the chrome ebuild file.
+    afdo_use=False,
+
+    # A list of vm tests to run.
+    vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
+            constants.SIMPLE_AU_TEST_TYPE],
+
+    # The number of times to run the VMTest stage. If this is >1, then we
+    # will run the stage this many times, stopping if we encounter any
+    # failures.
+    vm_test_runs=1,
+
+    # A list of HWTestConfig objects to run.
+    hw_tests=[],
+
+    # If true, uploads artifacts for hw testing. Upload payloads for test
+    # image if the image is built. If not, dev image is used and then base
+    # image.
+    upload_hw_test_artifacts=True,
+
+    # If true, uploads individual image tarballs.
+    upload_standalone_images=True,
+
+    # Google Storage path to offload files to.
+    #   None - No upload
+    #   GS_PATH_DEFAULT - 'gs://chromeos-image-archive/' + bot_id
+    #   value - Upload to explicit path
+    gs_path=config_lib.GS_PATH_DEFAULT,
+
+    # TODO(sosa): Deprecate binary.
+    # Type of builder.  Check constants.VALID_BUILD_TYPES.
+    build_type=constants.PFQ_TYPE,
+
+    # The class name used to build this config.  See the modules in
+    # cbuildbot / builders/*_builders.py for possible values.  This should
+    # be the name in string form -- e.g. "simple_builders.SimpleBuilder" to
+    # get the SimpleBuilder class in the simple_builders module.  If not
+    # specified, we'll fallback to legacy probing behavior until everyone
+    # has been converted (see the scripts/cbuildbot.py file for details).
+    builder_class_name=None,
+
+    # Whether the tests for the board we are building can be run on the
+    # builder. Normally, we wouldn't be able to run unit and VM tests form
+    # non-x86 boards.
+    tests_supported=True,
+
+    # List of images we want to build -- see build_image for more details.
+    images=['test'],
+
+    # Image from which we will build update payloads.  Must either be None
+    # or name one of the images in the 'images' list, above.
+    payload_image=None,
+
+    # Whether to build a netboot image.
+    factory_install_netboot=True,
+
+    # Whether to build the factory toolkit.
+    factory_toolkit=True,
+
+    # Whether to build factory packages in BuildPackages.
+    factory=True,
+
+    # Tuple of specific packages we want to build.  Most configs won't
+    # specify anything here and instead let build_packages calculate.
+    packages=[],
+
+    # Do we push a final release image to chromeos-images.
+    push_image=False,
+
+    # Do we upload debug symbols.
+    upload_symbols=False,
+
+    # Whether we upload a hwqual tarball.
+    hwqual=False,
+
+    # Run a stage that generates release payloads for signed images.
+    paygen=False,
+
+    # If the paygen stage runs, generate tests, and schedule auto-tests for
+    # them.
+    paygen_skip_testing=False,
+
+    # If the paygen stage runs, don't generate any delta payloads. This is
+    # only done if deltas are broken for a given board.
+    paygen_skip_delta_payloads=False,
+
+    # Run a stage that generates and uploads package CPE information.
+    cpe_export=True,
+
+    # Run a stage that generates and uploads debug symbols.
+    debug_symbols=True,
+
+    # Do not package the debug symbols in the binary package. The debug
+    # symbols will be in an archive with the name cpv.debug.tbz2 in
+    # /build/${BOARD}/packages and uploaded with the prebuilt.
+    separate_debug_symbols=True,
+
+    # Include *.debug files for debugging core files with gdb in debug.tgz.
+    # These are very large. This option only has an effect if debug_symbols
+    # and archive are set.
+    archive_build_debug=False,
+
+    # Run a stage that archives build and test artifacts for developer
+    # consumption.
+    archive=True,
+
+    # git repository URL for our manifests.
+    #  https://chromium.googlesource.com/chromiumos/manifest
+    #  https://chrome-internal.googlesource.com/chromeos/manifest-internal
+    manifest_repo_url=constants.MANIFEST_URL,
+
+    # Whether we are using the manifest_version repo that stores per-build
+    # manifests.
+    manifest_version=False,
+
+    # Use the Last Known Good Manifest blessed by Paladin.
+    use_lkgm=False,
+
+    # If we use_lkgm -- What is the name of the manifest to look for?
+    lkgm_manifest=constants.LKGM_MANIFEST,
+
+    # LKGM for Chrome OS generated for Chrome builds that are blessed from
+    # canary runs.
+    use_chrome_lkgm=False,
+
+    # True if this build config is critical for the chrome_lkgm decision.
+    critical_for_chrome=False,
+
+    # Upload prebuilts for this build. Valid values are PUBLIC, PRIVATE, or
+    # False.
+    prebuilts=False,
+
+    # Use SDK as opposed to building the chroot from source.
+    use_sdk=True,
+
+    # List this config when user runs cbuildbot with --list option without
+    # the --all flag.
+    trybot_list=False,
+
+    # The description string to print out for config when user runs --list.
+    description=None,
+
+    # Boolean that enables parameter --git-sync for upload_prebuilts.
+    git_sync=False,
+
+    # A list of the child config groups, if applicable. See the add_group
+    # method.
+    child_configs=[],
+
+    # Set shared user password for "chronos" user in built images. Use
+    # "None" (default) to remove the shared user password. Note that test
+    # images will always set the password to "test0000".
+    shared_user_password=None,
+
+    # Whether this config belongs to a config group.
+    grouped=False,
+
+    # layout of build_image resulting image. See
+    # scripts/build_library/legacy_disk_layout.json or
+    # overlay-<board>/scripts/disk_layout.json for possible values.
+    disk_layout=None,
+
+    # If enabled, run the PatchChanges stage.  Enabled by default. Can be
+    # overridden by the --nopatch flag.
+    postsync_patch=True,
+
+    # Reexec into the buildroot after syncing.  Enabled by default.
+    postsync_reexec=True,
+
+    # Create delta sysroot during ArchiveStage. Disabled by default.
+    create_delta_sysroot=False,
+
+    # Run the binhost_test stage. Only makes sense for builders that have no
+    # boards.
+    binhost_test=False,
+
+    # TODO(sosa): Collapse to one option.
+    # ========== Dev installer prebuilts options =======================
+
+    # Upload prebuilts for this build to this bucket. If it equals None the
+    # default buckets are used.
+    binhost_bucket=None,
+
+    # Parameter --key for upload_prebuilts. If it equals None, the default
+    # values are used, which depend on the build type.
+    binhost_key=None,
+
+    # Parameter --binhost-base-url for upload_prebuilts. If it equals None,
+    # the default value is used.
+    binhost_base_url=None,
+
+    # Upload dev installer prebuilts.
+    dev_installer_prebuilts=False,
+
+    # Enable rootfs verification on the image.
+    rootfs_verification=True,
+
+    # Build the Chrome SDK.
+    chrome_sdk=False,
+
+    # If chrome_sdk is set to True, this determines whether we attempt to
+    # build Chrome itself with the generated SDK.
+    chrome_sdk_build_chrome=True,
+
+    # If chrome_sdk is set to True, this determines whether we use goma to
+    # build chrome.
+    chrome_sdk_goma=False,
+
+    # Run image tests. This should only be set if 'base' is in our list of
+    # images.
+    image_test=False,
+
+    # ==================================================================
+    # The documentation associated with the config.
+    doc=None,
+
+    # ==================================================================
+    # Hints to Buildbot master UI
+
+    # If set, tells buildbot what name to give to the corresponding builder
+    # on its waterfall.
+    buildbot_waterfall_name=None,
+
+    # If not None, the name (in constants.CIDB_KNOWN_WATERFALLS) of the
+    # waterfall that this target should be active on.
+    active_waterfall=None,
+)
+
+
+_CONFIG = config_lib.Config(defaults=_settings)
 
 def GetConfig():
   """Get the full build configuration."""
@@ -205,430 +611,6 @@ def GetSlavesForMaster(master_config, options=None):
       slave_configs.append(build_config)
 
   return slave_configs
-
-
-# Enumeration of valid settings; any/all config settings must be in this.
-# All settings must be documented.
-
-_settings = dict(
-
-# name -- The name of the config.
-  name=None,
-
-# boards -- A list of boards to build.
-# TODO(mtennant): Change default to [].  The unittests fail if any config
-# entry does not overwrite this value to at least an empty list.
-  boards=None,
-
-# profile -- The profile of the variant to set up and build.
-  profile=None,
-
-# master -- This bot pushes changes to the overlays.
-  master=False,
-
-# important -- If False, this flag indicates that the CQ should not check
-#              whether this bot passed or failed. Set this to False if you are
-#              setting up a new bot. Once the bot is on the waterfall and is
-#              consistently green, mark the builder as important=True.
-  important=False,
-
-# health_threshold -- An integer. If this builder fails this many
-#                     times consecutively, send an alert email to the
-#                     recipients health_alert_recipients. This does
-#                     not apply to tryjobs. This feature is similar to
-#                     the ERROR_WATERMARK feature of upload_symbols,
-#                     and it may make sense to merge the features at
-#                     some point.
-  health_threshold=0,
-
-# health_alert_recipients -- List of email addresses to send health alerts to
-#                            for this builder. It supports automatic email
-#                            address lookup for the following sheriff types:
-#                                'tree': tree sheriffs
-#                                'chrome': chrome gardeners
-  health_alert_recipients=[],
-
-# internal -- Whether this is an internal build config.
-  internal=False,
-
-# branch -- Whether this is a branched build config. Used for pfq logic.
-  branch=False,
-
-# manifest -- The name of the manifest to use. E.g., to use the buildtools
-#             manifest, specify 'buildtools'.
-  manifest=constants.DEFAULT_MANIFEST,
-
-# dev_manifest -- The name of the manifest to use if we're building on a local
-#                 trybot. This should only require elevated access if it's
-#                 really needed to build this config.
-  dev_manifest=constants.DEFAULT_MANIFEST,
-
-# build_before_patching -- Applies only to paladin builders. If true, Sync to
-#                          the manifest without applying any test patches, then
-#                          do a fresh build in a new chroot. Then, apply the
-#                          patches and build in the existing chroot.
-  build_before_patching=False,
-
-# do_not_apply_cq_patches -- Applies only to paladin builders. If True, Sync to
-#                            the master manifest without applying any of the
-#                            test patches, rather than running CommitQueueSync.
-#                            This is basically ToT immediately prior to the
-#                            current commit queue run.
-  do_not_apply_cq_patches=False,
-
-# sanity_check_slaves -- Applies only to master builders. List of the names of
-#                        slave builders to be treated as sanity checkers. If
-#                        only sanity check builders fail, then the master will
-#                        ignore the failures. In a CQ run, if any of the sanity
-#                        check builders fail and other builders fail as well,
-#                        the master will treat the build as failed, but will
-#                        not reset the ready bit of the tested patches.
-  sanity_check_slaves=None,
-
-# useflags -- emerge use flags to use while setting up the board, building
-#             packages, making images, etc.
-  useflags=[],
-
-# chromeos_official -- Set the variable CHROMEOS_OFFICIAL for the build.
-#                      Known to affect parallel_emerge, cros_set_lsb_release,
-#                      and chromeos_version.sh. See bug chromium-os:14649
-  chromeos_official=False,
-
-# usepkg_toolchain -- Use binary packages for building the toolchain.
-#                     (emerge --getbinpkg)
-  usepkg_toolchain=True,
-
-# usepkg_build_packages -- Use binary packages for build_packages and
-#                          setup_board.
-  usepkg_build_packages=True,
-
-# build_packages_in_background -- If set, run BuildPackages in the background
-#                                 and allow subsequent stages to run in
-#                                 parallel with this one.
-#
-#                                 For each release group, the first builder
-#                                 should be set to run in the foreground (to
-#                                 build binary packages), and the remainder of
-#                                 the builders should be set to run in parallel
-#                                 (to install the binary packages.)
-  build_packages_in_background=False,
-
-# chrome_binhost_only -- Only use binaries in build_packages for Chrome itself.
-  chrome_binhost_only=False,
-
-# sync_chrome -- Does this profile need to sync chrome?  If None, we guess based
-#                on other factors.  If True/False, we always do that.
-  sync_chrome=None,
-
-# latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
-  latest_toolchain=False,
-
-# gcc_githash -- This is only valid when latest_toolchain is True.
-# If you set this to a commit-ish, the gcc ebuild will use it to build the
-# toolchain compiler.
-  gcc_githash=None,
-
-# board_replace -- wipe and replace the board inside the chroot.
-  board_replace=False,
-
-# chroot_replace -- wipe and replace chroot, but not source.
-  chroot_replace=False,
-
-# uprev -- Uprevs the local ebuilds to build new changes since last stable.
-#          build.  If master then also pushes these changes on success.
-#          Note that we uprev on just about every bot config because it gives us
-#          a more deterministic build system (the tradeoff being that some bots
-#          build from source more frequently than if they never did an uprev).
-#          This way the release/factory/etc... builders will pick up changes
-#          that devs pushed before it runs, but after the correspoding PFQ bot
-#          ran (which is what creates+uploads binpkgs).  The incremental bots
-#          are about the only ones that don't uprev because they mimic the flow
-#          a developer goes through on their own local systems.
-  uprev=True,
-
-# overlays -- Select what overlays to look at for revving and prebuilts. This
-#             can be any constants.VALID_OVERLAYS.
-  overlays=constants.PUBLIC_OVERLAYS,
-
-# push_overlays -- Select what overlays to push at. This should be a subset of
-#                  overlays for the particular builder.  Must be None if
-#                  not a master.  There should only be one master bot pushing
-#                  changes to each overlay per branch.
-  push_overlays=None,
-
-# chrome_rev -- Uprev Chrome, values of 'tot', 'stable_release', or None.
-  chrome_rev=None,
-
-# compilecheck -- Exit the builder right after checking compilation.
-# TODO(mtennant): Should be something like "compile_check_only".
-  compilecheck=False,
-
-# pre_cq -- Test CLs to verify they're ready for the commit queue.
-  pre_cq=False,
-
-# signer_tests -- Runs the tests that the signer would run. This should only be
-#                 set if 'recovery' is in images.
-  signer_tests=False,
-
-# unittests -- Runs unittests for packages.
-  unittests=True,
-
-# quick_unit -- If unittests is true, only run the unit tests for packages which
-#               have changed since the previous build.
-  quick_unit=False,
-
-# unittest_blacklist -- A list of the packages to blacklist from unittests.
-  unittest_blacklist=[],
-
-# build_tests -- Builds autotest tests.  Must be True if vm_tests is set.
-  build_tests=True,
-
-# afdo_generate -- Generates AFDO data. Will capture a profile of chrome
-#                  using a hwtest to run a predetermined set of benchmarks.
-  afdo_generate=False,
-
-# afdo_generate_min -- Generates AFDO data, builds the minimum amount
-#                      of artifacts and assumes a non-distributed builder
-#                      (i.e.: the whole process in a single builder).
-  afdo_generate_min=False,
-
-# afdo_update_ebuild -- Update the Chrome ebuild with the AFDO profile info.
-  afdo_update_ebuild=False,
-
-# afdo_use -- Uses AFDO data. The Chrome build will be optimized using the
-#             AFDO profile information found in the chrome ebuild file.
-  afdo_use=False,
-
-# vm_tests -- A list of vm tests to run.
-  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-            constants.SIMPLE_AU_TEST_TYPE],
-
-# vm_test_runs -- The number of times to run the VMTest stage. If this is >1,
-#                 then we will run the stage this many times, stopping if we
-#                 encounter any failures.
-  vm_test_runs=1,
-
-# A list of HWTestConfig objects to run.
-  hw_tests=[],
-
-# upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
-#                             Upload payloads for test image if the image is
-#                             built. If not, dev image is used and then base
-#                             image.
-  upload_hw_test_artifacts=True,
-
-# upload_standalone_images -- If true, uploads individual image tarballs.
-  upload_standalone_images=True,
-
-# gs_path -- Google Storage path to offload files to.
-#            None - No upload
-#            GS_PATH_DEFAULT - 'gs://chromeos-image-archive/' + bot_id
-#            value - Upload to explicit path
-  gs_path=config_lib.GS_PATH_DEFAULT,
-
-# TODO(sosa): Deprecate binary.
-# build_type -- Type of builder.  Check constants.VALID_BUILD_TYPES.
-  build_type=constants.PFQ_TYPE,
-
-# builder_class_name -- The class name used to build this config.  See the
-#modules in cbuildbot / builders/*_builders.py for possible values.  This
-# should be the name in string form -- e.g. "simple_builders.SimpleBuilder"
-# to get the SimpleBuilder class in the simple_builders module.  If not
-# specified, we'll fallback to legacy probing behavior until everyone has
-# been converted (see the scripts/cbuildbot.py file for details).
-  builder_class_name=None,
-
-# Whether the tests for the board we are building can be run on the builder.
-# Normally, we wouldn't be able to run unit and VM tests form non-x86 boards.
-  tests_supported=True,
-
-# images -- List of images we want to build -- see build_image for more details.
-  images=['test'],
-
-# payload_image -- Image from which we will build update payloads.  Must
-# either be None or name one of the images in the 'images' list, above.
-  payload_image=None,
-
-# factory_install_netboot -- Whether to build a netboot image.
-  factory_install_netboot=True,
-
-# factory_toolkit -- Whether to build the factory toolkit.
-  factory_toolkit=True,
-
-# factory -- Whether to build factory packages in BuildPackages.
-  factory=True,
-
-# packages -- Tuple of specific packages we want to build.  Most configs won't
-#             specify anything here and instead let build_packages calculate.
-  packages=[],
-
-# push_image -- Do we push a final release image to chromeos-images.
-  push_image=False,
-
-# upload_symbols -- Do we upload debug symbols.
-  upload_symbols=False,
-
-# hwqual -- Whether we upload a hwqual tarball.
-  hwqual=False,
-
-# paygen -- Run a stage that generates release payloads for signed images.
-  paygen=False,
-
-# paygen_skip_testing -- If the paygen stage runs, generate tests,
-#                           and schedule auto-tests for them.
-  paygen_skip_testing=False,
-
-# paygen_skip_testing -- If the paygen stage runs, don't generate any delta
-#                        payloads. This is only done if deltas are broken
-#                        for a given board.
-  paygen_skip_delta_payloads=False,
-
-# cpe_export -- Run a stage that generates and uploads package CPE information.
-  cpe_export=True,
-
-# debug_symbols -- Run a stage that generates and uploads debug symbols.
-  debug_symbols=True,
-
-# separate_debug_symbols -- Do not package the debug symbols in the binary
-# package. The debug symbols will be in an archive with the name cpv.debug.tbz2
-# in /build/${BOARD}/packages and uploaded with the prebuilt.
-  separate_debug_symbols=True,
-
-# archive_build_debug -- Include *.debug files for debugging core files with
-#                        gdb in debug.tgz. These are very large. This option
-#                        only has an effect if debug_symbols and archive are
-#                        set.
-  archive_build_debug=False,
-
-# archive -- Run a stage that archives build and test artifacts for developer
-#            consumption.
-  archive=True,
-
-# manifest_repo_url -- git repository URL for our manifests.
-#  External: https://chromium.googlesource.com/chromiumos/manifest
-#  Internal: https://chrome-internal.googlesource.com/chromeos/manifest-internal
-  manifest_repo_url=constants.MANIFEST_URL,
-
-# manifest_version -- Whether we are using the manifest_version repo that stores
-#                     per-build manifests.
-  manifest_version=False,
-
-# use_lkgm -- Use the Last Known Good Manifest blessed by Paladin.
-  use_lkgm=False,
-
-# If we use_lkgm -- What is the name of the manifest to look for?
-  lkgm_manifest=constants.LKGM_MANIFEST,
-
-# use_chrome_lkgm -- LKGM for Chrome OS generated for Chrome builds that are
-# blessed from canary runs.
-  use_chrome_lkgm=False,
-
-# True if this build config is critical for the chrome_lkgm decision.
-  critical_for_chrome=False,
-
-# prebuilts -- Upload prebuilts for this build. Valid values are PUBLIC,
-#              PRIVATE, or False.
-  prebuilts=False,
-
-# use_sdk -- Use SDK as opposed to building the chroot from source.
-  use_sdk=True,
-
-# trybot_list -- List this config when user runs cbuildbot with --list option
-#                without the --all flag.
-  trybot_list=False,
-
-# description -- The description string to print out for config when user runs
-#                --list.
-  description=None,
-
-# git_sync -- Boolean that enables parameter --git-sync for upload_prebuilts.
-  git_sync=False,
-
-# child_configs -- A list of the child config groups, if applicable. See the
-#                  add_group method.
-  child_configs=[],
-
-# shared_user_password -- Set shared user password for "chronos" user in built
-#                         images. Use "None" (default) to remove the shared
-#                         user password. Note that test images will always set
-#                         the password to "test0000".
-  shared_user_password=None,
-
-# grouped -- Whether this config belongs to a config group.
-  grouped=False,
-
-# disk_layout -- layout of build_image resulting image.
-#                See scripts/build_library/legacy_disk_layout.json or
-#                overlay-<board>/scripts/disk_layout.json for possible values.
-  disk_layout=None,
-
-# postsync_patch -- If enabled, run the PatchChanges stage.  Enabled by default.
-#                   Can be overridden by the --nopatch flag.
-  postsync_patch=True,
-
-# postsync_rexec -- Reexec into the buildroot after syncing.  Enabled by
-#                   default.
-  postsync_reexec=True,
-
-# create_delta_sysroot -- Create delta sysroot during ArchiveStage. Disabled by
-#                         default.
-  create_delta_sysroot=False,
-
-# binhost_test -- Run the binhost_test stage. Only makes sense for builders that
-#                 have no boards.
-  binhost_test=False,
-
-# TODO(sosa): Collapse to one option.
-# ====================== Dev installer prebuilts options =======================
-
-# binhost_bucket -- Upload prebuilts for this build to this bucket. If it equals
-#                   None the default buckets are used.
-  binhost_bucket=None,
-
-# binhost_key -- Parameter --key for upload_prebuilts. If it equals None, the
-#                default values are used, which depend on the build type.
-  binhost_key=None,
-
-# binhost_base_url -- Parameter --binhost-base-url for upload_prebuilts. If it
-#                     equals None, the default value is used.
-  binhost_base_url=None,
-
-# Upload dev installer prebuilts.
-  dev_installer_prebuilts=False,
-
-# Enable rootfs verification on the image.
-  rootfs_verification=True,
-
-# Build the Chrome SDK.
-  chrome_sdk=False,
-
-# If chrome_sdk is set to True, this determines whether we attempt to build
-# Chrome itself with the generated SDK.
-  chrome_sdk_build_chrome=True,
-
-# If chrome_sdk is set to True, this determines whether we use goma to build
-# chrome.
-  chrome_sdk_goma=False,
-
-# image_test -- Run image tests. This should only be set if 'base' is in
-#               our list of images.
-  image_test=False,
-
-# =============================================================================
-# The documentation associated with the config.
-  doc=None,
-
-# =============================================================================
-# Hints to Buildbot master UI
-
-# buildbot_waterfall_name -- If set, tells buildbot what name to give to the
-# corresponding builder on its waterfall.
-  buildbot_waterfall_name=None,
-
-# active_waterfall -- If not None, the name (in constants.CIDB_KNOWN_WATERFALLS)
-#                     of the waterfall that this target should be active on.
-  active_waterfall=None,
-)
 
 
 class _JSONEncoder(json.JSONEncoder):
@@ -845,56 +827,6 @@ def append_useflags(useflags):
   return handler
 
 
-def add_config(config, name, *args, **kwargs):
-  """Derive and add the config to cbuildbot's usable config targets
-
-  Args:
-    config: BuildConfig to derive the new config from.
-    name: The name to label this configuration; this is what cbuildbot
-          would see.
-    args: See the docstring of derive.
-    kwargs: See the docstring of derive.
-
-  Returns:
-    See the docstring of derive.
-  """
-  inherits, overrides = args, kwargs
-  overrides['name'] = name
-
-  # Add ourselves into the global dictionary, adding in the defaults.
-  new_config = config.derive(*inherits, **overrides)
-  _CONFIG[name] = _default.derive(config, new_config)
-
-  # Return a BuildConfig object without the defaults, so that other objects
-  # can derive from us without inheriting the defaults.
-  return new_config
-
-def add_raw_config(name, *args, **kwargs):
-  return add_config(config_lib.BuildConfig(), name, *args, **kwargs)
-
-def add_group(name, *args, **kwargs):
-  """Create a new group of build configurations.
-
-  Args:
-    name: The name to label this configuration; this is what cbuildbot
-          would see.
-    args: Configurations to build in this group. The first config in
-          the group is considered the primary configuration and is used
-          for syncing and creating the chroot.
-
-  Returns:
-    A new BuildConfig instance.
-  """
-  child_configs = [_default.derive(x, grouped=True) for x in args]
-  return add_config(args[0], name, child_configs=child_configs, **kwargs)
-
-
-def GetDefault():
-  """Create the cannonical default build configuration."""
-  return config_lib.BuildConfig(**_settings)
-
-_default = GetDefault()
-
 # Arch-specific mixins.
 
 # Config parameters for builders that do not run tests on the builder. Anything
@@ -1045,7 +977,7 @@ official = official_chrome.derive(
   chromeos_official=True,
 )
 
-_cros_sdk = add_config(full_prebuilts, 'chromiumos-sdk',
+_cros_sdk = _CONFIG.add_config(full_prebuilts, 'chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
   boards=['x86-generic', 'arm-generic', 'amd64-generic', 'mipsel-o32-generic'],
@@ -1099,7 +1031,7 @@ internal_chromium_pfq = internal.derive(
   prebuilts=constants.PUBLIC,
 )
 
-add_config(internal_chromium_pfq, 'master-chromium-pfq',
+_CONFIG.add_config(internal_chromium_pfq, 'master-chromium-pfq',
   boards=[],
   master=True,
   binhost_test=True,
@@ -1480,7 +1412,8 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
     config_name = '%s-%s' % (board, name_suffix)
     if config_name not in _CONFIG:
       base = config_lib.BuildConfig()
-      add_config(config_base, config_name, base, _base_configs[board], **kwargs)
+      _CONFIG.add_config(config_base, config_name, base, _base_configs[board],
+                         **kwargs)
 
 _chromium_pfq_important_boards = frozenset([
   'arm-generic_freon',
@@ -1515,12 +1448,12 @@ _AddFullConfigs()
 # These remaining chromium pfq configs have eccentricities that are easier to
 # create manually.
 
-add_config(internal_chromium_pfq, 'amd64-generic-chromium-pfq',
+_CONFIG.add_config(internal_chromium_pfq, 'amd64-generic-chromium-pfq',
   _base_configs['amd64-generic'],
   disk_layout='2gb-rootfs',
 )
 
-add_config(internal_chromium_pfq, 'amd64-generic_freon-chromium-pfq',
+_CONFIG.add_config(internal_chromium_pfq, 'amd64-generic_freon-chromium-pfq',
   _base_configs['amd64-generic_freon'],
   disk_layout='2gb-rootfs',
   vm_tests=[],
@@ -1536,33 +1469,33 @@ _chrome_pfq_important_boards = frozenset([
 
 
 # TODO(akeshet): Replace this with a config named x86-alex-chrome-pfq.
-add_config(chrome_pfq, 'alex-chrome-pfq',
+_CONFIG.add_config(chrome_pfq, 'alex-chrome-pfq',
   _base_configs['x86-alex'],
 )
 
-add_config(chrome_pfq, 'lumpy-chrome-pfq',
+_CONFIG.add_config(chrome_pfq, 'lumpy-chrome-pfq',
   _base_configs['lumpy'],
   afdo_generate=True,
   hw_tests=[HWTestAFDORecordTest()] + HWTestSharedPoolPFQ(),
 )
 
-add_config(chrome_pfq, 'daisy_skate-chrome-pfq',
+_CONFIG.add_config(chrome_pfq, 'daisy_skate-chrome-pfq',
   _base_configs['daisy_skate'],
   hw_tests=HWTestSharedPoolPFQ(),
 )
 
-add_config(chrome_pfq, 'falco-chrome-pfq',
+_CONFIG.add_config(chrome_pfq, 'falco-chrome-pfq',
   _base_configs['falco'],
   hw_tests=HWTestSharedPoolPFQ(),
 )
 
-add_config(chrome_pfq, 'peach_pit-chrome-pfq',
+_CONFIG.add_config(chrome_pfq, 'peach_pit-chrome-pfq',
   _base_configs['peach_pit'],
   hw_tests=HWTestSharedPoolPFQ(),
   important=False,
 )
 
-add_config(chrome_pfq, 'tricky-chrome-pfq',
+_CONFIG.add_config(chrome_pfq, 'tricky-chrome-pfq',
   _base_configs['tricky'],
   hw_tests=HWTestSharedPoolPFQ(),
   important=False,
@@ -1576,7 +1509,7 @@ _telemetry_boards = frozenset([
 
 _CreateConfigsForBoards(telemetry, _telemetry_boards, 'telemetry')
 
-_toolchain_major = add_config(_cros_sdk, 'toolchain-major',
+_toolchain_major = _CONFIG.add_config(_cros_sdk, 'toolchain-major',
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
@@ -1584,7 +1517,7 @@ _toolchain_major = add_config(_cros_sdk, 'toolchain-major',
   description='Test next major toolchain revision',
 )
 
-_toolchain_minor = add_config(_cros_sdk, 'toolchain-minor',
+_toolchain_minor = _CONFIG.add_config(_cros_sdk, 'toolchain-minor',
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
@@ -1592,76 +1525,76 @@ _toolchain_minor = add_config(_cros_sdk, 'toolchain-minor',
   description='Test next minor toolchain revision',
 )
 
-add_config(incremental, 'x86-generic-asan',
+_CONFIG.add_config(incremental, 'x86-generic-asan',
   asan,
   boards=['x86-generic'],
   description='Build with Address Sanitizer (Clang)',
   trybot_list=True,
 )
 
-add_config(chromium_info, 'x86-generic-tot-asan-informational',
+_CONFIG.add_config(chromium_info, 'x86-generic-tot-asan-informational',
   asan,
   boards=['x86-generic'],
   description='Full build with Address Sanitizer (Clang) on TOT',
 )
 
-add_config(incremental, 'amd64-generic-asan',
+_CONFIG.add_config(incremental, 'amd64-generic-asan',
   asan,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang)',
   trybot_list=True,
 )
 
-add_config(chromium_info, 'amd64-generic-tot-asan-informational',
+_CONFIG.add_config(chromium_info, 'amd64-generic-tot-asan-informational',
   asan,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang) on TOT',
 )
 
 incremental_beaglebone = incremental.derive(beaglebone)
-add_config(incremental_beaglebone, 'beaglebone-incremental',
+_CONFIG.add_config(incremental_beaglebone, 'beaglebone-incremental',
   boards=['beaglebone'],
   trybot_list=True,
   description='Incremental Beaglebone Builder',
 )
 
-add_raw_config('refresh-packages',
+_CONFIG.add_raw_config('refresh-packages',
   boards=['x86-generic', 'arm-generic'],
   builder_class_name='misc_builders.RefreshPackagesBuilder',
   description='Check upstream Gentoo for package updates',
 )
 
-add_config(incremental, 'x86-generic-incremental',
+_CONFIG.add_config(incremental, 'x86-generic-incremental',
   _base_configs['x86-generic'],
 )
 
-add_config(incremental, 'daisy-incremental',
+_CONFIG.add_config(incremental, 'daisy-incremental',
   _base_configs['daisy'],
   config_lib.BuildConfig.delete_keys(internal),
   manifest=config_lib.BuildConfig.delete_key(),
   useflags=append_useflags(['-chrome_internal']),
 )
 
-add_config(incremental, 'amd64-generic-incremental',
+_CONFIG.add_config(incremental, 'amd64-generic-incremental',
   _base_configs['amd64-generic'],
   # This builder runs on a VM, so it can't run VM tests.
   vm_tests=[],
 )
 
-add_config(incremental, 'x32-generic-incremental',
+_CONFIG.add_config(incremental, 'x32-generic-incremental',
   _base_configs['x32-generic'],
   # This builder runs on a VM, so it can't run VM tests.
   vm_tests=[],
 )
 
-add_config(paladin, 'x86-generic-asan-paladin',
+_CONFIG.add_config(paladin, 'x86-generic-asan-paladin',
   _base_configs['x86-generic'],
   asan,
   description='Paladin build with Address Sanitizer (Clang)',
   important=False,
 )
 
-add_config(incremental, 'amd64-generic-asan-paladin',
+_CONFIG.add_config(incremental, 'amd64-generic-asan-paladin',
   _base_configs['amd64-generic'],
   asan,
   description='Paladin build with Address Sanitizer (Clang)',
@@ -1678,54 +1611,56 @@ _CreateConfigsForBoards(chrome_perf, _chrome_perf_boards, 'chrome-perf',
                         trybot_list=True)
 
 chromium_info_x86 = \
-add_config(chromium_info, 'x86-generic-tot-chrome-pfq-informational',
+_CONFIG.add_config(chromium_info, 'x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
 )
 
 chromium_info_daisy = \
-add_config(chromium_info, 'daisy-tot-chrome-pfq-informational',
+_CONFIG.add_config(chromium_info, 'daisy-tot-chrome-pfq-informational',
   non_testable_builder,
   boards=['daisy'],
 )
 
 chromium_info_amd64 = \
-add_config(chromium_info, 'amd64-generic-tot-chrome-pfq-informational',
+_CONFIG.add_config(chromium_info, 'amd64-generic-tot-chrome-pfq-informational',
   boards=['amd64-generic'],
 )
 
-add_config(chromium_info, 'x32-generic-tot-chrome-pfq-informational',
+_CONFIG.add_config(chromium_info, 'x32-generic-tot-chrome-pfq-informational',
   boards=['x32-generic'],
 )
 
 _CreateConfigsForBoards(telemetry_info, ['x86-generic', 'amd64-generic'],
                         'telem-chrome-pfq-informational')
 
-add_config(chrome_info, 'alex-tot-chrome-pfq-informational',
+_CONFIG.add_config(chrome_info, 'alex-tot-chrome-pfq-informational',
   boards=['x86-alex'],
 )
 
-add_config(chrome_info, 'lumpy-tot-chrome-pfq-informational',
+_CONFIG.add_config(chrome_info, 'lumpy-tot-chrome-pfq-informational',
   boards=['lumpy'],
 )
 
 # WebRTC configurations.
-add_config(chrome_info, 'alex-webrtc-chrome-pfq-informational',
+_CONFIG.add_config(chrome_info, 'alex-webrtc-chrome-pfq-informational',
   boards=['x86-alex'],
 )
-add_config(chrome_info, 'lumpy-webrtc-chrome-pfq-informational',
+_CONFIG.add_config(chrome_info, 'lumpy-webrtc-chrome-pfq-informational',
   boards=['lumpy'],
 )
-add_config(chrome_info, 'daisy-webrtc-chrome-pfq-informational',
+_CONFIG.add_config(chrome_info, 'daisy-webrtc-chrome-pfq-informational',
   non_testable_builder,
   boards=['daisy'],
 )
-add_config(chromium_info_x86, 'x86-webrtc-chromium-pfq-informational',
+_CONFIG.add_config(chromium_info_x86, 'x86-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
-add_config(chromium_info_amd64, 'amd64-webrtc-chromium-pfq-informational',
+_CONFIG.add_config(chromium_info_amd64,
+                   'amd64-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
-add_config(chromium_info_daisy, 'daisy-webrtc-chromium-pfq-informational',
+_CONFIG.add_config(chromium_info_daisy,
+                   'daisy-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
 
@@ -1766,9 +1701,9 @@ _CreateConfigsForBoards(internal_nowithdebug_paladin,
   important=False,
 )
 
-add_config(internal_nowithdebug_paladin, 'x86-mario-nowithdebug-paladin',
-  boards=['x86-mario'],
-)
+_CONFIG.add_config(internal_nowithdebug_paladin,
+                   'x86-mario-nowithdebug-paladin',
+                   boards=['x86-mario'])
 
 # Used for builders which build completely from source except Chrome.
 full_compile_paladin = paladin.derive(
@@ -1826,7 +1761,7 @@ compile_only_pre_cq = unittest_only_pre_cq.derive(
   unittests=False,
 )
 
-add_config(internal_paladin, constants.BRANCH_UTIL_CONFIG,
+_CONFIG.add_config(internal_paladin, constants.BRANCH_UTIL_CONFIG,
   boards=[],
   # Disable postsync_patch to prevent conflicting patches from being applied -
   # e.g., patches from 'master' branch being applied to a branch.
@@ -1848,7 +1783,7 @@ internal_incremental = internal.derive(
   description='Incremental Builds (internal)',
 )
 
-add_config(internal_pfq_branch, 'lumpy-pre-flight-branch',
+_CONFIG.add_config(internal_pfq_branch, 'lumpy-pre-flight-branch',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   boards=['lumpy'],
@@ -1866,14 +1801,14 @@ _test_ap = internal.derive(
   vm_tests=[],
 )
 
-add_group('test-ap-group',
-  add_config(_test_ap, 'stumpy-test-ap', boards=['stumpy']),
-  add_config(_test_ap, 'panther-test-ap', boards=['panther']),
+_CONFIG.add_group('test-ap-group',
+  _CONFIG.add_config(_test_ap, 'stumpy-test-ap', boards=['stumpy']),
+  _CONFIG.add_config(_test_ap, 'panther-test-ap', boards=['panther']),
 )
 
 ### Master paladin (CQ builder).
 
-add_config(internal_paladin, 'master-paladin',
+_CONFIG.add_config(internal_paladin, 'master-paladin',
   boards=[],
   master=True,
   binhost_test=True,
@@ -1898,12 +1833,12 @@ add_config(internal_paladin, 'master-paladin',
 # TODO(mtennant): This master-slave relationship should be specified
 # here in the configuration, rather than GetSlavesForMaster().
 # Something like the following:
-# master_paladin = add_config(internal_paladin, ...)
-# master_paladin.AddSlave(add_config(internal_paladin, ...))
+# master_paladin = _CONFIG.add_config(internal_paladin, ...)
+# master_paladin.AddSlave(_CONFIG.add_config(internal_paladin, ...))
 
 # Old sanity check builder. This has been replaced by wolf-tot-paladin.
 # TODO(dnj): Remove this once wolf-tot-paladin is removed from the waterfall.
-add_config(internal_paladin, 'link-tot-paladin',
+_CONFIG.add_config(internal_paladin, 'link-tot-paladin',
   boards=['link'],
   do_not_apply_cq_patches=True,
   prebuilts=False,
@@ -1912,7 +1847,7 @@ add_config(internal_paladin, 'link-tot-paladin',
 
 # Sanity check builder, part of the CQ but builds without the patches
 # under test.
-add_config(internal_paladin, 'wolf-tot-paladin',
+_CONFIG.add_config(internal_paladin, 'wolf-tot-paladin',
   boards=['wolf'],
   do_not_apply_cq_patches=True,
   prebuilts=False,
@@ -2051,14 +1986,14 @@ def _CreatePaladinConfigs():
                             description=paladin['description'] + ' (internal)')
     else:
       customizations.update(prebuilts=constants.PUBLIC)
-    add_config(paladin, config_name,
+    _CONFIG.add_config(paladin, config_name,
                        customizations,
                        base_config)
 
 _CreatePaladinConfigs()
 
 
-add_config(internal_paladin, 'lumpy-incremental-paladin',
+_CONFIG.add_config(internal_paladin, 'lumpy-incremental-paladin',
   boards=['lumpy'],
   build_before_patching=True,
   chroot_replace=False,
@@ -2071,7 +2006,7 @@ add_config(internal_paladin, 'lumpy-incremental-paladin',
 ### itself.
 external_brillo_paladin = paladin.derive(brillo)
 
-add_config(external_brillo_paladin, 'panther_embedded-minimal-paladin',
+_CONFIG.add_config(external_brillo_paladin, 'panther_embedded-minimal-paladin',
   boards=['panther_embedded'],
   profile='minimal',
   trybot_list=True,
@@ -2079,12 +2014,12 @@ add_config(external_brillo_paladin, 'panther_embedded-minimal-paladin',
 
 internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
 
-add_config(internal_beaglebone_paladin, 'beaglebone-paladin',
+_CONFIG.add_config(internal_beaglebone_paladin, 'beaglebone-paladin',
   boards=['beaglebone'],
   trybot_list=True,
 )
 
-add_config(internal_beaglebone_paladin, 'beaglebone_servo-paladin',
+_CONFIG.add_config(internal_beaglebone_paladin, 'beaglebone_servo-paladin',
   boards=['beaglebone_servo'],
   important=False,
 )
@@ -2128,7 +2063,7 @@ _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
 _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
 _CreateConfigsForBoards(compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
 
-add_config(no_vmtest_pre_cq, constants.BINHOST_PRE_CQ,
+_CONFIG.add_config(no_vmtest_pre_cq, constants.BINHOST_PRE_CQ,
   internal,
   boards=[],
   binhost_test=True,
@@ -2136,40 +2071,40 @@ add_config(no_vmtest_pre_cq, constants.BINHOST_PRE_CQ,
 
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 # TODO(davidjames): Update daisy_spring to build images again.
-add_group('mixed-a-pre-cq',
+_CONFIG.add_group('mixed-a-pre-cq',
   # daisy_spring w/kernel 3.8.
   _CONFIG['daisy_spring-compile-only-pre-cq'],
   # lumpy w/kernel 3.8.
   _CONFIG['lumpy-compile-only-pre-cq'],
 )
 
-add_group('mixed-b-pre-cq',
+_CONFIG.add_group('mixed-b-pre-cq',
   # arm64 w/kernel 3.14.
   _CONFIG['rush_ryu-compile-only-pre-cq'],
   # samus w/kernel 3.14.
   _CONFIG['samus-compile-only-pre-cq'],
 )
 
-add_group('mixed-c-pre-cq',
+_CONFIG.add_group('mixed-c-pre-cq',
   # brillo
   _CONFIG['storm-compile-only-pre-cq'],
 )
 
-add_group('external-mixed-pre-cq',
+_CONFIG.add_group('external-mixed-pre-cq',
   _CONFIG['x86-generic-no-vmtest-pre-cq'],
   _CONFIG['amd64-generic-no-vmtest-pre-cq'],
 )
 
-add_group('kernel-3_14-a-pre-cq',
+_CONFIG.add_group('kernel-3_14-a-pre-cq',
   _CONFIG['x86-generic-no-vmtest-pre-cq'],
   _CONFIG['arm-generic-no-vmtest-pre-cq']
 )
 
-add_group('kernel-3_14-b-pre-cq',
+_CONFIG.add_group('kernel-3_14-b-pre-cq',
   _CONFIG['storm-no-vmtest-pre-cq'],
 )
 
-add_group('kernel-3_14-c-pre-cq',
+_CONFIG.add_group('kernel-3_14-c-pre-cq',
   _CONFIG['veyron_pinky-no-vmtest-pre-cq'],
   _CONFIG['rush_ryu-no-vmtest-pre-cq']
 )
@@ -2177,7 +2112,7 @@ add_group('kernel-3_14-c-pre-cq',
 # TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
 # configs. Remove this config when no active CL has been screened
 # with this config.
-add_group(constants.PRE_CQ_GROUP_CONFIG,
+_CONFIG.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
   _CONFIG['rambi-pre-cq'],
@@ -2188,7 +2123,7 @@ add_group(constants.PRE_CQ_GROUP_CONFIG,
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
   # after duck finishes BuildPackages.
-  add_config(unittest_only_pre_cq, 'storm-pre-cq',
+  _CONFIG.add_config(unittest_only_pre_cq, 'storm-pre-cq',
                                   _base_configs['storm'],
                                   build_packages_in_background=False),
 
@@ -2202,7 +2137,7 @@ add_group(constants.PRE_CQ_GROUP_CONFIG,
   _CONFIG['rush_ryu-compile-only-pre-cq'],
 )
 
-add_config(internal_paladin, 'pre-cq-launcher',
+_CONFIG.add_config(internal_paladin, 'pre-cq-launcher',
   boards=[],
   build_type=constants.PRE_CQ_LAUNCHER_TYPE,
   description='Launcher for Pre-CQ builders',
@@ -2216,21 +2151,23 @@ add_config(internal_paladin, 'pre-cq-launcher',
 )
 
 
-add_config(internal_incremental, 'mario-incremental',
+_CONFIG.add_config(internal_incremental, 'mario-incremental',
   boards=['x86-mario'],
 )
 
-add_config(internal_incremental, 'lakitu-incremental',
+_CONFIG.add_config(internal_incremental, 'lakitu-incremental',
   _base_configs['lakitu'],
 )
 
-add_config(_toolchain_major, 'internal-toolchain-major', internal, official,
+_CONFIG.add_config(
+  _toolchain_major, 'internal-toolchain-major', internal, official,
   boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
   description=_toolchain_major['description'] + ' (internal)',
 )
 
-add_config(_toolchain_minor, 'internal-toolchain-minor', internal, official,
+_CONFIG.add_config(
+  _toolchain_minor, 'internal-toolchain-minor', internal, official,
   boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
   description=_toolchain_minor['description'] + ' (internal)',
@@ -2280,7 +2217,7 @@ _grouped_variant_release = _release.derive(_grouped_variant_config)
 
 ### Master release config.
 
-add_config(_release, 'master-release',
+_CONFIG.add_config(_release, 'master-release',
   boards=[],
   master=True,
   sync_chrome=False,
@@ -2292,11 +2229,11 @@ add_config(_release, 'master-release',
 
 ### Release config groups.
 
-add_group('x86-alex-release-group',
-  add_config(_release, 'x86-alex-release',
+_CONFIG.add_group('x86-alex-release-group',
+  _CONFIG.add_config(_release, 'x86-alex-release',
     boards=['x86-alex'],
   ),
-  add_config(_grouped_variant_release, 'x86-alex_he-release',
+  _CONFIG.add_config(_grouped_variant_release, 'x86-alex_he-release',
     boards=['x86-alex_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -2304,11 +2241,11 @@ add_group('x86-alex-release-group',
   ),
 )
 
-add_group('x86-zgb-release-group',
-  add_config(_release, 'x86-zgb-release',
+_CONFIG.add_group('x86-zgb-release-group',
+  _CONFIG.add_config(_release, 'x86-zgb-release',
     boards=['x86-zgb'],
   ),
-  add_config(_grouped_variant_release, 'x86-zgb_he-release',
+  _CONFIG.add_config(_grouped_variant_release, 'x86-zgb_he-release',
     boards=['x86-zgb_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -2359,10 +2296,11 @@ def _AddAFDOConfigs():
       use_config_name = '%s-%s-%s' % (board,
                                       config_lib.CONFIG_TYPE_RELEASE_AFDO,
                                       'use')
-      add_group(config_name,
-                        add_config(release_afdo, generate_config_name,
-                                                generate_config),
-                        add_config(release_afdo, use_config_name, use_config))
+      _CONFIG.add_group(
+          config_name,
+          _CONFIG.add_config(release_afdo, generate_config_name,
+                             generate_config),
+          _CONFIG.add_config(release_afdo, use_config_name, use_config))
 
 _AddAFDOConfigs()
 
@@ -2376,14 +2314,14 @@ _critical_for_chrome_boards = frozenset([
 
 # bayleybay-release does not enable vm_tests or unittests due to the compiler
 # flags enabled for baytrail.
-add_config(_release, 'bayleybay-release',
+_CONFIG.add_config(_release, 'bayleybay-release',
   boards=['bayleybay'],
   hw_tests=[],
   vm_tests=[],
   unittests=False,
 )
 
-add_config(_release, 'beltino-release',
+_CONFIG.add_config(_release, 'beltino-release',
   boards=['beltino'],
   hw_tests=[],
   vm_tests=[],
@@ -2391,7 +2329,7 @@ add_config(_release, 'beltino-release',
 
 # bayleybay-release does not enable vm_tests or unittests due to the compiler
 # flags enabled for baytrail.
-add_config(_release, 'bobcat-release',
+_CONFIG.add_config(_release, 'bobcat-release',
   boards=['bobcat'],
   hw_tests=[],
   profile='minimal',
@@ -2400,33 +2338,33 @@ add_config(_release, 'bobcat-release',
   signer_tests=False,
 )
 
-add_config(_release, 'gizmo-release',
+_CONFIG.add_config(_release, 'gizmo-release',
   _base_configs['gizmo'],
   important=True,
   paygen=False,
   signer_tests=False,
 )
 
-add_config(_release, 'samus-release',
+_CONFIG.add_config(_release, 'samus-release',
   _base_configs['samus'],
   important=True,
 )
 
 # Builder for non-freon 'stout' for test coverage (crbug.com/474713).
-add_config(_release, 'stout-release',
+_CONFIG.add_config(_release, 'stout-release',
   _base_configs['stout'],
   important=True,
 )
 
 # Builder for non-freon 'quawks' for test coverage.
-add_config(_release, 'quawks-release',
+_CONFIG.add_config(_release, 'quawks-release',
   _base_configs['quawks'],
   important=True,
 )
 
 ### Arm release configs.
 
-add_config(_release, 'veyron_rialto-release',
+_CONFIG.add_config(_release, 'veyron_rialto-release',
   _base_configs['veyron_rialto'],
   # rialto does not use Chrome.
   sync_chrome=False,
@@ -2456,7 +2394,7 @@ def _AddReleaseConfigs():
 
 _AddReleaseConfigs()
 
-add_config(_release, 'panther_embedded-minimal-release',
+_CONFIG.add_config(_release, 'panther_embedded-minimal-release',
   _base_configs['panther_embedded'],
   profile='minimal',
   important=True,
@@ -2469,24 +2407,24 @@ _beaglebone_release = _release.derive(beaglebone, paygen=False,
                                       signer_tests=False,
                                       images=['base', 'test'])
 
-add_group('beaglebone-release-group',
-  add_config(_beaglebone_release, 'beaglebone-release',
+_CONFIG.add_group('beaglebone-release-group',
+  _CONFIG.add_config(_beaglebone_release, 'beaglebone-release',
     boards=['beaglebone'],
   ),
-  add_config(_beaglebone_release, 'beaglebone_servo-release',
+  _CONFIG.add_config(_beaglebone_release, 'beaglebone_servo-release',
     boards=['beaglebone_servo'],
     payload_image='base'
   ).derive(_grouped_variant_config),
   important=True,
 )
 
-add_config(_release, 'kayle-release',
+_CONFIG.add_config(_release, 'kayle-release',
   _base_configs['kayle'],
   paygen=False,
   signer_tests=False,
 )
 
-add_config(_release, 'cosmos-release',
+_CONFIG.add_config(_release, 'cosmos-release',
   _base_configs['cosmos'],
 
   paygen_skip_testing=True,
@@ -2494,7 +2432,7 @@ add_config(_release, 'cosmos-release',
   signer_tests=False,
 )
 
-add_config(_release, 'storm-release',
+_CONFIG.add_config(_release, 'storm-release',
   _base_configs['storm'],
 
   # Hw Lab can't test storm, yet.
@@ -2503,14 +2441,14 @@ add_config(_release, 'storm-release',
   signer_tests=False
 )
 
-add_config(_release, 'mipsel-o32-generic-release',
+_CONFIG.add_config(_release, 'mipsel-o32-generic-release',
   _base_configs['mipsel-o32-generic'],
   paygen_skip_delta_payloads=True,
   afdo_use=False,
   hw_tests=[],
 )
 
-add_config(_release, 'stumpy_moblab-release',
+_CONFIG.add_config(_release, 'stumpy_moblab-release',
   _base_configs['stumpy_moblab'],
   images=['base', 'recovery', 'test'],
   paygen_skip_delta_payloads=True,
@@ -2528,7 +2466,7 @@ add_config(_release, 'stumpy_moblab-release',
                               warn_only=True, num=1)],
 )
 
-add_config(_release, 'panther_moblab-release',
+_CONFIG.add_config(_release, 'panther_moblab-release',
   _base_configs['panther_moblab'],
   images=['base', 'recovery', 'test'],
   paygen_skip_delta_payloads=True,
@@ -2543,7 +2481,7 @@ add_config(_release, 'panther_moblab-release',
                                     warn_only=True, num=1)],
 )
 
-add_config(_release, 'rush-release',
+_CONFIG.add_config(_release, 'rush-release',
   _base_configs['rush'],
   hw_tests=[],
   # This build doesn't generate signed images, so don't try to release them.
@@ -2551,12 +2489,12 @@ add_config(_release, 'rush-release',
   signer_tests=False,
 )
 
-add_config(_release, 'rush_ryu-release',
+_CONFIG.add_config(_release, 'rush_ryu-release',
   _base_configs['rush_ryu'],
   hw_tests=[],
 )
 
-add_config(_release, 'whirlwind-release',
+_CONFIG.add_config(_release, 'whirlwind-release',
   _base_configs['whirlwind'],
   important=True,
   afdo_use=True,
@@ -2595,7 +2533,7 @@ def _AddGroupConfig(name, base_board, group_boards=None,
 
       config_name = '%s-%s-group' % (name, group)
       important = group == 'release' and kwargs.get('important', True)
-    add_group(config_name, *configs, description=desc,
+    _CONFIG.add_group(config_name, *configs, description=desc,
                       important=important)
 
 # pineview chipset boards
@@ -2920,17 +2858,17 @@ _x86_depthcharge_firmware_boards = frozenset([
 def _AddFirmwareConfigs():
   """Add x86 and arm firmware configs."""
   for board in _firmware_boards:
-    add_config(_firmware_release, '%s-%s' % (board,
+    _CONFIG.add_config(_firmware_release, '%s-%s' % (board,
                                              config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
     )
 
   for board in _x86_depthcharge_firmware_boards:
-    add_config(_depthcharge_release,
+    _CONFIG.add_config(_depthcharge_release,
         '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
     )
-    add_config(_depthcharge_full_internal,
+    _CONFIG.add_config(_depthcharge_full_internal,
         '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
                          config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
@@ -2941,13 +2879,13 @@ _AddFirmwareConfigs()
 
 # This is an example factory branch configuration for x86.
 # Modify it to match your factory branch.
-add_config(_factory_release, 'x86-mario-factory',
+_CONFIG.add_config(_factory_release, 'x86-mario-factory',
   boards=['x86-mario'],
 )
 
 # This is an example factory branch configuration for arm.
 # Modify it to match your factory branch.
-add_config(_factory_release, 'daisy-factory',
+_CONFIG.add_config(_factory_release, 'daisy-factory',
   non_testable_builder,
   boards=['daisy'],
 )
@@ -2993,19 +2931,19 @@ def _AddPayloadConfigs():
   # Generate a payloads trybot config for every board that generates payloads.
   for board in payload_boards:
     name = '%s-payloads' % board
-    add_config(_payloads, name, boards=[board])
+    _CONFIG.add_config(_payloads, name, boards=[board])
 
 _AddPayloadConfigs()
 
 def _AddProjectSdkConfigs():
   for board in _project_sdk_boards:
     name = '%s-project-sdk' % board
-    add_config(project_sdk, name, boards=[board])
+    _CONFIG.add_config(project_sdk, name, boards=[board])
 
 _AddProjectSdkConfigs()
 
 # LKGM builds don't work for tryjobs. Add this as a workaround, for now.
-add_config(project_sdk,
+_CONFIG.add_config(project_sdk,
   'trybot-project-sdk',
   boards=['panther_embedded'],
 

@@ -164,7 +164,7 @@ def main(argv):
   # Separate the defaults and show them at the top. We prefix the name with
   # an underscore so that it sorts to the top.
   if options.separate_defaults:
-    default = generate_chromeos_config.GetDefault()
+    default = config.GetDefault()
     for k, v in config.iteritems():
       config[k] = _HideDefaults(v, default)
     config['_default'] = default

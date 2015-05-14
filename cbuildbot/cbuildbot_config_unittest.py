@@ -18,11 +18,11 @@ class LoadChromeOsConfigTest(cros_test_lib.TestCase):
     # If there is a test failure, the diff will be big.
     self.maxDiff = None
 
-    self.assertDictEqual(generate_chromeos_config.GetDefault(),
-                         cbuildbot_config.GetDefault())
-
-    new = cbuildbot_config.GetConfig()
     src = generate_chromeos_config.GetConfig()
+    new = cbuildbot_config.GetConfig()
+
+    self.assertDictEqual(src.GetDefault(),
+                         cbuildbot_config.GetDefault())
 
     #
     # BUG ALERT ON TEST FAILURE
