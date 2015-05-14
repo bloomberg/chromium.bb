@@ -187,4 +187,18 @@ TEST(VideoCadenceEstimatorTest, CadenceHystersisPreventsOscillation) {
   EXPECT_FALSE(estimator->has_cadence());
 }
 
+TEST(VideoCadenceEstimatorTest, TwoFrameCadenceIsActuallyOneFrame) {
+  VideoCadenceEstimator estimator(
+      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
+  estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
+
+  const base::TimeDelta render_interval =
+      base::TimeDelta::FromMicroseconds(16715);
+  const base::TimeDelta frame_duration =
+      base::TimeDelta::FromMicroseconds(33360);
+
+  EXPECT_TRUE(estimator.UpdateCadenceEstimate(render_interval, frame_duration,
+                                              frame_duration / 2));
+}
+
 }  // namespace media

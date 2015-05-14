@@ -135,11 +135,18 @@ VideoCadenceEstimator::Cadence VideoCadenceEstimator::CalculateCadence(
     // interval; i.e. 24fps in 60hz.
     DCHECK_EQ(1u, result.size());
 
-    // Two pattern cadence is always an odd number.
-    DCHECK(result[0] & 1);
-
-    result[0] = std::ceil(result[0] / 2.0);
-    result.push_back(result[0] - 1);
+    // While we may find a two pattern cadence, sometimes one extra frame
+    // duration is enough to allow a match for 1-frame cadence if the
+    // |time_until_max_drift| was on the edge.
+    //
+    // All 2-frame cadence values should be odd, so we can detect this and fall
+    // back to 1-frame cadence when this occurs.
+    if (result[0] & 1) {
+      result[0] = std::ceil(result[0] / 2.0);
+      result.push_back(result[0] - 1);
+    } else {
+      result[0] /= 2;
+    }
   }
   return result;
 }
