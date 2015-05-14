@@ -202,9 +202,12 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
   // of this class. Callback will not be called once the instance of this class
   // is destroyed. However, this also means that the callback can be run on
   // the calling thread only.
-  return gfx::GLSurfaceAdapter::SwapBuffersAsync(
-      base::Bind(&PassThroughImageTransportSurface::SwapBuffersCallBack,
-          weak_ptr_factory_.GetWeakPtr()));
+  std::vector<ui::LatencyInfo>* latency_info_ptr =
+      new std::vector<ui::LatencyInfo>();
+  latency_info_ptr->swap(latency_info_);
+  return gfx::GLSurfaceAdapter::SwapBuffersAsync(base::Bind(
+      &PassThroughImageTransportSurface::SwapBuffersCallBack,
+      weak_ptr_factory_.GetWeakPtr(), base::Owned(latency_info_ptr)));
 }
 
 bool PassThroughImageTransportSurface::PostSubBuffer(
@@ -221,21 +224,26 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
   // of this class. Callback will not be called once the instance of this class
   // is destroyed. However, this also means that the callback can be run on
   // the calling thread only.
-  return gfx::GLSurfaceAdapter::PostSubBufferAsync(x, y, width, height,
+  std::vector<ui::LatencyInfo>* latency_info_ptr =
+      new std::vector<ui::LatencyInfo>();
+  latency_info_ptr->swap(latency_info_);
+  return gfx::GLSurfaceAdapter::PostSubBufferAsync(
+      x, y, width, height,
       base::Bind(&PassThroughImageTransportSurface::SwapBuffersCallBack,
-          weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(latency_info_ptr)));
 }
 
-void PassThroughImageTransportSurface::SwapBuffersCallBack() {
+void PassThroughImageTransportSurface::SwapBuffersCallBack(
+    std::vector<ui::LatencyInfo>* latency_info_ptr) {
   base::TimeTicks swap_ack_time = base::TimeTicks::Now();
-  for (auto& latency : latency_info_) {
+  for (auto& latency : *latency_info_ptr) {
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
         swap_ack_time, 1);
   }
 
-  helper_->stub()->SendSwapBuffersCompleted(latency_info_);
-  latency_info_.clear();
+  helper_->stub()->SendSwapBuffersCompleted(*latency_info_ptr);
 }
 
 bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
