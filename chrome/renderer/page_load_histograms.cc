@@ -213,6 +213,7 @@ int GetQueryStringBasedExperiment(const GURL& referrer) {
 void DumpHistograms(const WebPerformance& performance,
                     DocumentState* document_state,
                     bool data_reduction_proxy_was_used,
+                    data_reduction_proxy::AutoLoFiStatus auto_lofi_status,
                     bool came_from_websearch,
                     int websearch_chrome_joint_experiment_id,
                     bool is_preview,
@@ -412,6 +413,26 @@ void DumpHistograms(const WebPerformance& performance,
                       load_event_end - navigation_start);
         PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
                       load_event_end - request_start);
+        if (auto_lofi_status == data_reduction_proxy::AUTO_LOFI_STATUS_ON) {
+          PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy_AutoLoFiOn",
+                        load_event_end - begin);
+          PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy_AutoLoFiOn",
+                        load_event_end - response_start);
+          PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy_AutoLoFiOn",
+                        load_event_end - navigation_start);
+          PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy_AutoLoFiOn",
+                        load_event_end - request_start);
+        } else if (auto_lofi_status ==
+                   data_reduction_proxy::AUTO_LOFI_STATUS_OFF) {
+          PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy_AutoLoFiOff",
+                        load_event_end - begin);
+          PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy_AutoLoFiOff",
+                        load_event_end - response_start);
+          PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy_AutoLoFiOff",
+                        load_event_end - navigation_start);
+          PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy_AutoLoFiOff",
+                        load_event_end - request_start);
+        }
       } else {
         PLT_HISTOGRAM("PLT.PT_BeginToFinish_HTTPS_DataReductionProxy",
                       load_event_end - begin);
@@ -421,6 +442,34 @@ void DumpHistograms(const WebPerformance& performance,
                       load_event_end - navigation_start);
         PLT_HISTOGRAM("PLT.PT_StartToFinish_HTTPS_DataReductionProxy",
                       load_event_end - request_start);
+        if (auto_lofi_status == data_reduction_proxy::AUTO_LOFI_STATUS_ON) {
+          PLT_HISTOGRAM(
+              "PLT.PT_BeginToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
+              load_event_end - begin);
+          PLT_HISTOGRAM(
+              "PLT.PT_CommitToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
+              load_event_end - response_start);
+          PLT_HISTOGRAM(
+              "PLT.PT_RequestToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
+              load_event_end - navigation_start);
+          PLT_HISTOGRAM(
+              "PLT.PT_StartToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
+              load_event_end - request_start);
+        } else if (auto_lofi_status ==
+                   data_reduction_proxy::AUTO_LOFI_STATUS_OFF) {
+          PLT_HISTOGRAM(
+              "PLT.PT_BeginToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
+              load_event_end - begin);
+          PLT_HISTOGRAM(
+              "PLT.PT_CommitToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
+              load_event_end - response_start);
+          PLT_HISTOGRAM(
+              "PLT.PT_RequestToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
+              load_event_end - navigation_start);
+          PLT_HISTOGRAM(
+              "PLT.PT_StartToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
+              load_event_end - request_start);
+        }
       }
     }
   }
@@ -452,10 +501,32 @@ void DumpHistograms(const WebPerformance& performance,
       if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
         PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded_DataReductionProxy",
                       dom_content_loaded_start - navigation_start);
+        if (auto_lofi_status == data_reduction_proxy::AUTO_LOFI_STATUS_ON) {
+          PLT_HISTOGRAM(
+              "PLT.PT_RequestToDomContentLoaded_DataReductionProxy_AutoLoFiOn",
+              dom_content_loaded_start - navigation_start);
+        } else if (auto_lofi_status ==
+                   data_reduction_proxy::AUTO_LOFI_STATUS_OFF) {
+          PLT_HISTOGRAM(
+              "PLT.PT_RequestToDomContentLoaded_DataReductionProxy_AutoLoFiOff",
+              dom_content_loaded_start - navigation_start);
+        }
       } else {
         PLT_HISTOGRAM(
             "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy",
             dom_content_loaded_start - navigation_start);
+        if (auto_lofi_status == data_reduction_proxy::AUTO_LOFI_STATUS_ON) {
+          PLT_HISTOGRAM(
+              "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy_"
+              "AutoLoFiOn",
+              dom_content_loaded_start - navigation_start);
+        } else if (auto_lofi_status ==
+                   data_reduction_proxy::AUTO_LOFI_STATUS_OFF) {
+          PLT_HISTOGRAM(
+              "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy_"
+              "AutoLoFiOff",
+              dom_content_loaded_start - navigation_start);
+        }
       }
     }
   }
@@ -752,9 +823,12 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       DocumentState::FromDataSource(frame->dataSource());
 
   bool data_reduction_proxy_was_used = false;
+  data_reduction_proxy::AutoLoFiStatus auto_lofi_status =
+      data_reduction_proxy::AUTO_LOFI_STATUS_DISABLED;
   if (!document_state->proxy_server().IsEmpty()) {
-    Send(new DataReductionProxyViewHostMsg_IsDataReductionProxy(
-        document_state->proxy_server(), &data_reduction_proxy_was_used));
+    Send(new DataReductionProxyViewHostMsg_DataReductionProxyStatus(
+        document_state->proxy_server(), &data_reduction_proxy_was_used,
+        &auto_lofi_status));
   }
 
   bool came_from_websearch =
@@ -771,11 +845,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // Metrics based on the timing information recorded for the Navigation Timing
   // API - http://www.w3.org/TR/navigation-timing/.
   DumpHistograms(frame->performance(), document_state,
-                 data_reduction_proxy_was_used,
-                 came_from_websearch,
-                 websearch_chrome_joint_experiment_id,
-                 is_preview,
-                 scheme_type);
+                 data_reduction_proxy_was_used, auto_lofi_status,
+                 came_from_websearch, websearch_chrome_joint_experiment_id,
+                 is_preview, scheme_type);
 
   // Old metrics based on the timing information stored in DocumentState. These
   // are deprecated and should go away.

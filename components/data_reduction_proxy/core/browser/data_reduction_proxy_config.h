@@ -74,6 +74,23 @@ enum SecureProxyCheckFetchResult {
   SECURE_PROXY_CHECK_FETCH_RESULT_COUNT
 };
 
+// Auto LoFi current status.
+enum AutoLoFiStatus {
+  // Auto LoFi is either off or the current network conditions are not worse
+  // than the ones specified in Auto LoFi field trial parameters.
+  AUTO_LOFI_STATUS_DISABLED = 0,
+
+  // Auto LoFi is off but the current network conditions are worse than the
+  // ones specified in Auto LoFi field trial parameters.
+  AUTO_LOFI_STATUS_OFF,
+
+  // Auto LoFi is on and but the current network conditions are worse than the
+  // ones specified in Auto LoFi field trial parameters.
+  AUTO_LOFI_STATUS_ON,
+
+  AUTO_LOFI_STATUS_LAST = AUTO_LOFI_STATUS_ON
+};
+
 // Central point for holding the Data Reduction Proxy configuration.
 // This object lives on the IO thread and all of its methods are expected to be
 // called from there.
@@ -186,6 +203,10 @@ class DataReductionProxyConfig
   // tied to whether the Data Reduction Proxy is enabled.
   bool promo_allowed() const;
 
+  // Returns the Auto LoFi status. Enabling LoFi from command line switch has
+  // no effect on Auto LoFi.
+  AutoLoFiStatus GetAutoLoFiStatus() const;
+
  protected:
   // Writes a warning to the log that is used in backend processing of
   // customer feedback. Virtual so tests can mock it for verification.
@@ -256,6 +277,19 @@ class DataReductionProxyConfig
       const net::ProxyConfig::ProxyRules& proxy_rules,
       bool is_https,
       base::TimeDelta* min_retry_delay) const;
+
+  // Returns true if this client is part of LoFi enabled field trial.
+  // Virtualized for mocking.
+  virtual bool IsIncludedInLoFiEnabledFieldTrial() const;
+
+  // Returns true if this client is part of LoFi control field trial.
+  // Virtualized for mocking.
+  virtual bool IsIncludedInLoFiControlFieldTrial() const;
+
+  // Returns true if current network conditions are worse than the ones
+  // specified in the enabled or control field trial group parameters.
+  // Virtualized for mocking.
+  virtual bool IsNetworkBad() const;
 
   scoped_ptr<SecureProxyChecker> secure_proxy_checker_;
 

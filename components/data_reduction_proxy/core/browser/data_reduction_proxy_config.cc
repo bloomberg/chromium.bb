@@ -229,6 +229,36 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
   return bypassed;
 }
 
+bool DataReductionProxyConfig::IsNetworkBad() const {
+  // TODO(tbansal): This must return the network quality based on
+  // network quality estimated by NQE.
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return false;
+}
+
+bool DataReductionProxyConfig::IsIncludedInLoFiEnabledFieldTrial() const {
+  // TODO(tbansal): This must return if the current session is in the LoFi
+  // enabled field trial group.
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return false;
+}
+
+bool DataReductionProxyConfig::IsIncludedInLoFiControlFieldTrial() const {
+  // TODO(tbansal): This must return if the current session is in the LoFi
+  // control field trial group.
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return false;
+}
+
+AutoLoFiStatus DataReductionProxyConfig::GetAutoLoFiStatus() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (IsIncludedInLoFiControlFieldTrial() && IsNetworkBad())
+    return AUTO_LOFI_STATUS_OFF;
+  if (IsIncludedInLoFiEnabledFieldTrial() && IsNetworkBad())
+    return AUTO_LOFI_STATUS_ON;
+  return AUTO_LOFI_STATUS_DISABLED;
+}
+
 bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyRetryInfoMap& retry_map,
     const net::ProxyServer& proxy_server,

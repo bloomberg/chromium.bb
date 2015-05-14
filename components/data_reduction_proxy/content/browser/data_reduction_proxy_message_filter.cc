@@ -28,8 +28,8 @@ bool DataReductionProxyMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DataReductionProxyMessageFilter, message)
-    IPC_MESSAGE_HANDLER(DataReductionProxyViewHostMsg_IsDataReductionProxy,
-                        OnIsDataReductionProxy)
+  IPC_MESSAGE_HANDLER(DataReductionProxyViewHostMsg_DataReductionProxyStatus,
+                      OnDataReductionProxyStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -38,17 +38,24 @@ bool DataReductionProxyMessageFilter::OnMessageReceived(
 void DataReductionProxyMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, content::BrowserThread::ID* thread) {
   if (message.type() ==
-          DataReductionProxyViewHostMsg_IsDataReductionProxy::ID) {
+      DataReductionProxyViewHostMsg_DataReductionProxyStatus::ID) {
       *thread = content::BrowserThread::IO;
   }
 }
 
-void DataReductionProxyMessageFilter::OnIsDataReductionProxy(
-    const net::HostPortPair& proxy_server, bool* response) {
-  if (config_)
-    *response = config_->IsDataReductionProxy(proxy_server, nullptr);
-  else
-    *response = false;
+void DataReductionProxyMessageFilter::OnDataReductionProxyStatus(
+    const net::HostPortPair& proxy_server,
+    bool* is_data_reduction_proxy,
+    AutoLoFiStatus* lofi_status) {
+  *is_data_reduction_proxy = false;
+  *lofi_status = AUTO_LOFI_STATUS_DISABLED;
+  if (!config_) {
+    return;
+  }
+  *is_data_reduction_proxy =
+      config_->IsDataReductionProxy(proxy_server, nullptr);
+  if (*is_data_reduction_proxy)
+    *lofi_status = config_->GetAutoLoFiStatus();
 }
 
 }  // namespace data_reduction_proxy

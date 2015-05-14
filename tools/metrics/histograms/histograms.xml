@@ -66266,6 +66266,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_StartToFinish"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="DataReductionProxy_AutoLoFi" separator="_">
+  <suffix name="DataReductionProxy_AutoLoFiOn"
+      label="Only page loads through the data reduction proxy with auto LoFi
+             enabled are considered."/>
+  <suffix name="DataReductionProxy_AutoLoFiOff"
+      label="Only page loads through the data reduction proxy with auto LoFi
+             disabled are considered."/>
+  <suffix name="HTTPS_DataReductionProxy_AutoLoFiOn"
+      label="Only page loads through the data reduction proxy through an HTTP
+             tunnel for HTTPS origins with auto LoFi enabled are considered."/>
+  <suffix name="HTTPS_DataReductionProxy_AutoLoFiOff"
+      label="Only page loads through the data reduction proxy through an HTTP
+             tunnel for HTTPS origins with auto LoFi disabled are considered."/>
+  <affected-histogram name="PLT.PT_BeginToFinish"/>
+  <affected-histogram name="PLT.PT_CommitToFinish"/>
+  <affected-histogram name="PLT.PT_RequestToDomContentLoaded"/>
+  <affected-histogram name="PLT.PT_RequestToFinish"/>
+  <affected-histogram name="PLT.PT_StartToFinish"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="DataReductionProxy_TamperingFingerprints"
     separator="_">
   <suffix name="ChromeProxy"

@@ -111,6 +111,9 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   MOCK_METHOD2(SecureProxyCheck,
                void(const GURL& secure_proxy_check_url,
                     FetcherResponseCallback fetcher_callback));
+  MOCK_CONST_METHOD0(IsNetworkBad, bool());
+  MOCK_CONST_METHOD0(IsIncludedInLoFiEnabledFieldTrial, bool());
+  MOCK_CONST_METHOD0(IsIncludedInLoFiControlFieldTrial, bool());
 
   // UpdateConfigurator should always call LogProxyState exactly once.
   void UpdateConfigurator(bool enabled,

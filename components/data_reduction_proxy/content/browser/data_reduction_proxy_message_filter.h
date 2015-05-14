@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CONTENT_BROWSER_DATA_REDUCTION_PROXY_MESSAGE_FILTER_H_
 
 #include "base/macros.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace net {
@@ -14,7 +15,6 @@ class HostPortPair;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyConfig;
 class DataReductionProxySettings;
 
 // An IPC listener to handle DataReductionProxy IPC messages from the renderer.
@@ -24,10 +24,12 @@ class DataReductionProxyMessageFilter
   // |settings| may be null.
   DataReductionProxyMessageFilter(DataReductionProxySettings* settings);
 
-  // Sets |response| to true if the |proxy_server| corresponds to a Data
-  // Reduction Proxy.
-  void OnIsDataReductionProxy(const net::HostPortPair& proxy_server,
-                              bool* response);
+  // Sets |is_data_reduction_proxy| to true if the |proxy_server| corresponds to
+  // a Data Reduction Proxy.
+  // Sets |lofi_response| to the current status of the LoFi.
+  void OnDataReductionProxyStatus(const net::HostPortPair& proxy_server,
+                                  bool* is_data_reduction_proxy,
+                                  AutoLoFiStatus* lofi_status);
 
  private:
   ~DataReductionProxyMessageFilter() override;
