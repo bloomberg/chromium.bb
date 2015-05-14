@@ -416,7 +416,7 @@ void WebPluginContainerImpl::scrollRect(const WebRect& rect)
 void WebPluginContainerImpl::reportGeometry()
 {
     // We cannot compute geometry without a parent or layoutObject.
-    if (!parent() || !m_element->layoutObject())
+    if (!parent() || !m_element || !m_element->layoutObject())
         return;
 
     IntRect windowRect, clipRect, unobscuredRect;
