@@ -21369,6 +21369,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.RequestTime">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    success and various different errors.
+  </summary>
+</histogram>
+
 <histogram name="Net.ResourceLoader.ReadDeferral" units="milliseconds">
   <owner>clamy@chromium.org</owner>
   <summary>
@@ -68763,6 +68771,18 @@ To add a new entry, add it with any value and run test to compute valid value.
              WaitForDataReady or when the callback is executed"/>
   <affected-histogram name="Net.QuicDiskCache.APICall"/>
   <affected-histogram name="Net.QuicDiskCache.FailureReason"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NetRequestTime" separator=".">
+  <suffix name="ErrAborted" label="Request aborted"/>
+  <suffix name="ErrConnectionReset" label="Connection reset"/>
+  <suffix name="ErrConnectionTimedOut" label="Request connection timed out"/>
+  <suffix name="ErrInternetDisconnected" label="Internet disconnected"/>
+  <suffix name="ErrNameNotResolved" label="Request domain not resolved"/>
+  <suffix name="ErrTimedOut" label="Request timed out"/>
+  <suffix name="MiscError" label="Uncategorized error"/>
+  <suffix name="Success" label="Success"/>
+  <affected-histogram name="Net.RequestTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NetworkErrors" separator=".">
