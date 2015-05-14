@@ -61,6 +61,32 @@ write_surface_as_png(const struct surface* weston_surface, const char *fname) {
 	return true;
 }
 
+/** create_screenshot_surface()
+ *
+ *  Allocates and initializes a weston test surface for use in
+ *  storing a screenshot of the client's output.  Establishes a
+ *  shm backed wl_buffer for retrieving screenshot image data
+ *  from the server, sized to match the client's output display.
+ *
+ *  @returns stack allocated surface image, which should be
+ *  free'd when done using it.
+ */
+static struct surface*
+create_screenshot_surface(struct client *client) {
+	struct surface* screenshot;
+	screenshot = xzalloc(sizeof *screenshot);
+	if (screenshot == NULL)
+		return NULL;
+	screenshot->wl_buffer = create_shm_buffer(client,							      
+						  client->output->width,					      
+						  client->output->height,					      
+						  &screenshot->data);						      
+	screenshot->height = client->output->height;                                                                  
+	screenshot->width = client->output->width;                                                                    
+
+	return screenshot;
+}
+
 TEST(internal_screenshot)
 {
 	struct client *client;
@@ -81,17 +107,8 @@ TEST(internal_screenshot)
 	printf("Client created\n");
 
 	/* Create a surface to hold the screenshot */
-	screenshot = xzalloc(sizeof *screenshot);
+	screenshot = create_screenshot_surface(client);
 	assert(screenshot);
-
-	/* Create and attach buffer to our surface */
-	screenshot->wl_buffer = create_shm_buffer(client,
-						  client->output->width,
-						  client->output->height,
-						  &screenshot->data);
-	screenshot->height = client->output->height;
-	screenshot->width = client->output->width;
-	assert(screenshot->wl_buffer);
 	printf("Screenshot buffer created and attached to surface\n");
 
 	/* Take a snapshot.  Result will be in screenshot->wl_buffer. */
