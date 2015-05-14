@@ -2319,6 +2319,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 }
 
 void RenderProcessHostImpl::OnProcessLaunchFailed() {
+  // If this object will be destructed soon, then observers have already been
+  // sent a RenderProcessHostDestroyed notification, and we must observe our
+  // contract that says that will be the last call.
+  if (deleting_soon_)
+    return;
+
   RendererClosedDetails details { base::TERMINATION_STATUS_PROCESS_WAS_KILLED,
                                   -1 };
   ProcessDied(true, &details);
