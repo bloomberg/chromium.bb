@@ -125,25 +125,4 @@ bool CSSStyleDeclaration::anonymousNamedSetter(ScriptState* scriptState, const S
     return true;
 }
 
-void CSSStyleDeclaration::namedPropertyEnumerator(Vector<String>& names, ExceptionState&)
-{
-    typedef Vector<String, numCSSProperties - 1> PreAllocatedPropertyVector;
-    DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, propertyNames, ());
-    static unsigned propertyNamesLength = 0;
-    if (propertyNames.isEmpty()) {
-        for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
-            CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
-            if (CSSPropertyMetadata::isEnabledProperty(propertyId))
-                propertyNames.append(getJSPropertyName(propertyId));
-        }
-        std::sort(propertyNames.begin(), propertyNames.end(), codePointCompareLessThan);
-        propertyNamesLength = propertyNames.size();
-    }
-    for (unsigned i = 0; i < propertyNamesLength; ++i) {
-        String key = propertyNames.at(i);
-        ASSERT(!key.isNull());
-        names.append(key);
-    }
-}
-
 }

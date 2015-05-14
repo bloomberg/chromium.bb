@@ -151,6 +151,32 @@ static CSSPropertyID cssPropertyInfo(v8::Local<v8::String> v8PropertyName, v8::I
     return unresolvedProperty;
 }
 
+void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    typedef Vector<String, numCSSProperties - 1> PreAllocatedPropertyVector;
+    DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, propertyNames, ());
+    static unsigned propertyNamesLength = 0;
+
+    if (propertyNames.isEmpty()) {
+        for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+            CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
+            if (CSSPropertyMetadata::isEnabledProperty(propertyId))
+                propertyNames.append(getJSPropertyName(propertyId));
+        }
+        std::sort(propertyNames.begin(), propertyNames.end(), codePointCompareLessThan);
+        propertyNamesLength = propertyNames.size();
+    }
+
+    v8::Local<v8::Array> properties = v8::Array::New(info.GetIsolate(), propertyNamesLength);
+    for (unsigned i = 0; i < propertyNamesLength; ++i) {
+        String key = propertyNames.at(i);
+        ASSERT(!key.isNull());
+        properties->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), key));
+    }
+
+    v8SetReturnValue(info, properties);
+}
+
 void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     if (!v8Name->IsString())
