@@ -29,8 +29,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/command_line.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #endif  // OS_CHROMEOS
 
@@ -104,9 +102,7 @@ void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
                                               int socket_id,
                                               Socket* socket) {
 #if defined(OS_CHROMEOS)
-  if (!net::IsLocalhost(address) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableFirewallHolePunching)) {
+  if (!net::IsLocalhost(address)) {
     net::IPEndPoint local_address;
     if (!socket->GetLocalAddress(&local_address)) {
       NOTREACHED() << "Cannot get address of recently bound socket.";
