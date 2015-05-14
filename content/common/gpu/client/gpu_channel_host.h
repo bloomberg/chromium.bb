@@ -35,7 +35,6 @@ struct GPUCreateCommandBufferConfig;
 
 namespace base {
 class MessageLoop;
-class MessageLoopProxy;
 class WaitableEvent;
 }
 
@@ -61,7 +60,7 @@ struct GpuListenerInfo {
   ~GpuListenerInfo();
 
   base::WeakPtr<IPC::Listener> listener;
-  scoped_refptr<base::MessageLoopProxy> loop;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
 };
 
 struct ProxyFlushInfo {
@@ -80,7 +79,8 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual ~GpuChannelHostFactory() {}
 
   virtual bool IsMainThread() = 0;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetIOThreadTaskRunner() = 0;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
   virtual CreateCommandBufferResult CreateViewCommandBuffer(
       int32 surface_id,
@@ -207,7 +207,7 @@ class GpuChannelHost : public IPC::Sender,
     // Called on the IO thread.
     void AddRoute(int route_id,
                   base::WeakPtr<IPC::Listener> listener,
-                  scoped_refptr<base::MessageLoopProxy> loop);
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     // Called on the IO thread.
     void RemoveRoute(int route_id);
 

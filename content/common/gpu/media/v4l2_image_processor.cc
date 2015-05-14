@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/common/gpu/media/v4l2_image_processor.h"
 #include "media/base/bind_to_current_loop.h"
@@ -71,7 +70,7 @@ V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
       output_format_fourcc_(0),
       input_planes_count_(0),
       output_planes_count_(0),
-      child_message_loop_proxy_(base::MessageLoopProxy::current()),
+      child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(device),
       device_thread_("V4L2ImageProcessorThread"),
       device_poll_thread_("V4L2ImageProcessorDevicePollThread"),
@@ -83,7 +82,7 @@ V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
 }
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!device_thread_.IsRunning());
   DCHECK(!device_poll_thread_.IsRunning());
 
@@ -92,8 +91,8 @@ V4L2ImageProcessor::~V4L2ImageProcessor() {
 }
 
 void V4L2ImageProcessor::NotifyError() {
-  if (!child_message_loop_proxy_->BelongsToCurrentThread())
-    child_message_loop_proxy_->PostTask(FROM_HERE, error_cb_);
+  if (!child_task_runner_->BelongsToCurrentThread())
+    child_task_runner_->PostTask(FROM_HERE, error_cb_);
   else
     error_cb_.Run();
 }
@@ -195,7 +194,7 @@ void V4L2ImageProcessor::ProcessTask(scoped_ptr<JobRecord> job_record) {
 
 void V4L2ImageProcessor::Destroy() {
   DVLOG(3) << __func__;
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   // If the device thread is running, destroy using posted task.
   if (device_thread_.IsRunning()) {
@@ -224,7 +223,7 @@ void V4L2ImageProcessor::DestroyTask() {
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
   DVLOG(3) << __func__;
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
   struct v4l2_control control;
@@ -295,7 +294,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
   DVLOG(3) << __func__;
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 
   struct v4l2_format format;
@@ -358,7 +357,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
 }
 
 void V4L2ImageProcessor::DestroyInputBuffers() {
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
   struct v4l2_requestbuffers reqbufs;
@@ -373,7 +372,7 @@ void V4L2ImageProcessor::DestroyInputBuffers() {
 }
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 
   for (size_t buf = 0; buf < output_buffer_map_.size(); ++buf) {
@@ -570,7 +569,7 @@ void V4L2ImageProcessor::Dequeue() {
     DVLOG(3) << "Processing finished, returning frame, ts="
              << output_frame->timestamp().InMilliseconds();
 
-    child_message_loop_proxy_->PostTask(
+    child_task_runner_->PostTask(
         FROM_HERE, base::Bind(job_record->ready_cb, output_frame));
   }
 }

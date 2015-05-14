@@ -20,10 +20,6 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace content {
 
 class GpuVideoDecodeAccelerator
@@ -38,7 +34,7 @@ class GpuVideoDecodeAccelerator
   GpuVideoDecodeAccelerator(
       int32 host_route_id,
       GpuCommandBufferStub* stub,
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -140,11 +136,11 @@ class GpuVideoDecodeAccelerator
   // destroy the VDA.
   base::WaitableEvent filter_removed_;
 
-  // GPU child message loop.
-  const scoped_refptr<base::MessageLoopProxy> child_message_loop_;
+  // GPU child thread task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
-  // GPU IO message loop.
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  // GPU IO thread task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Weak pointers will be invalidated on IO thread.
   base::WeakPtrFactory<Client> weak_factory_for_io_;

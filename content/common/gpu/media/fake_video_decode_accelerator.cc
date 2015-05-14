@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
@@ -28,7 +29,7 @@ FakeVideoDecodeAccelerator::FakeVideoDecodeAccelerator(
     gfx::GLContext* gl,
     gfx::Size size,
     const base::Callback<bool(void)>& make_context_current)
-    : child_message_loop_proxy_(base::MessageLoopProxy::current()),
+    : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       client_(NULL),
       make_context_current_(make_context_current),
       gl_(gl),
@@ -42,7 +43,7 @@ FakeVideoDecodeAccelerator::~FakeVideoDecodeAccelerator() {
 
 bool FakeVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
                                             Client* client) {
-  DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   if (profile == media::VIDEO_CODEC_PROFILE_UNKNOWN) {
     LOG(ERROR) << "unknown codec profile";
     return false;
@@ -60,10 +61,9 @@ void FakeVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   int bitstream_buffer_id = bitstream_buffer.id();
   queued_bitstream_ids_.push(bitstream_buffer_id);
-  child_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
-                 weak_this_factory_.GetWeakPtr()));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
+                            weak_this_factory_.GetWeakPtr()));
 }
 
 // Similar to UseOutputBitstreamBuffer for the encode accelerator.
@@ -107,26 +107,23 @@ void FakeVideoDecodeAccelerator::AssignPictureBuffers(
     glBindTexture(GL_TEXTURE_2D, 0);
     free_output_buffers_.push(buffers[index].id());
   }
-  child_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
-                 weak_this_factory_.GetWeakPtr()));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
+                            weak_this_factory_.GetWeakPtr()));
 }
 
 void FakeVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   free_output_buffers_.push(picture_buffer_id);
-  child_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
-                 weak_this_factory_.GetWeakPtr()));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
+                            weak_this_factory_.GetWeakPtr()));
 }
 
 void FakeVideoDecodeAccelerator::Flush() {
   flushing_ = true;
-  child_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
-                 weak_this_factory_.GetWeakPtr()));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FakeVideoDecodeAccelerator::DoPictureReady,
+                            weak_this_factory_.GetWeakPtr()));
 }
 
 void FakeVideoDecodeAccelerator::Reset() {

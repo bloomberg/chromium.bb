@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -43,7 +42,7 @@ class CONTENT_EXPORT FakeVideoDecodeAccelerator
   // The message loop that created the class. Used for all callbacks. This
   // class expects all calls to this class to be on this message loop (not
   // checked).
-  const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
   Client* client_;
 

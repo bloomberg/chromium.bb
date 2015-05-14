@@ -7,9 +7,10 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
@@ -22,7 +23,6 @@
 #endif
 
 using base::AutoLock;
-using base::MessageLoopProxy;
 
 namespace content {
 
@@ -71,13 +71,11 @@ void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
   DCHECK(factory_->IsMainThread());
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
-  scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
-  channel_ = IPC::SyncChannel::Create(channel_handle,
-                                      IPC::Channel::MODE_CLIENT,
-                                      NULL,
-                                      io_loop.get(),
-                                      true,
-                                      shutdown_event);
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      factory_->GetIOThreadTaskRunner();
+  channel_ =
+      IPC::SyncChannel::Create(channel_handle, IPC::Channel::MODE_CLIENT, NULL,
+                               io_task_runner.get(), true, shutdown_event);
 
   sync_filter_ = new IPC::SyncMessageFilter(shutdown_event);
 
@@ -186,14 +184,11 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
       // then set up a new connection, and the GPU channel and any
       // view command buffers will all be associated with the same GPU
       // process.
-      DCHECK(MessageLoopProxy::current().get());
-
-      scoped_refptr<base::MessageLoopProxy> io_loop =
-          factory_->GetIOLoopProxy();
-      io_loop->PostTask(
-          FROM_HERE,
-          base::Bind(&GpuChannelHost::MessageFilter::OnChannelError,
-                     channel_filter_.get()));
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+          factory_->GetIOThreadTaskRunner();
+      io_task_runner->PostTask(
+          FROM_HERE, base::Bind(&GpuChannelHost::MessageFilter::OnChannelError,
+                                channel_filter_.get()));
     }
 
     return NULL;
@@ -287,20 +282,20 @@ void GpuChannelHost::DestroyChannel() {
 
 void GpuChannelHost::AddRoute(
     int route_id, base::WeakPtr<IPC::Listener> listener) {
-  DCHECK(MessageLoopProxy::current().get());
-
-  scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
-  io_loop->PostTask(FROM_HERE,
-                    base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
-                               channel_filter_.get(), route_id, listener,
-                               MessageLoopProxy::current()));
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      factory_->GetIOThreadTaskRunner();
+  io_task_runner->PostTask(FROM_HERE,
+                           base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
+                                      channel_filter_.get(), route_id, listener,
+                                      base::ThreadTaskRunnerHandle::Get()));
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
-  scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
-  io_loop->PostTask(FROM_HERE,
-                    base::Bind(&GpuChannelHost::MessageFilter::RemoveRoute,
-                               channel_filter_.get(), route_id));
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      factory_->GetIOThreadTaskRunner();
+  io_task_runner->PostTask(
+      FROM_HERE, base::Bind(&GpuChannelHost::MessageFilter::RemoveRoute,
+                            channel_filter_.get(), route_id));
 }
 
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
@@ -387,11 +382,12 @@ GpuChannelHost::MessageFilter::~MessageFilter() {}
 void GpuChannelHost::MessageFilter::AddRoute(
     int route_id,
     base::WeakPtr<IPC::Listener> listener,
-    scoped_refptr<MessageLoopProxy> loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(listeners_.find(route_id) == listeners_.end());
+  DCHECK(task_runner);
   GpuListenerInfo info;
   info.listener = listener;
-  info.loop = loop;
+  info.task_runner = task_runner;
   listeners_[route_id] = info;
 }
 
@@ -412,12 +408,10 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
     return false;
 
   const GpuListenerInfo& info = it->second;
-  info.loop->PostTask(
+  info.task_runner->PostTask(
       FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&IPC::Listener::OnMessageReceived),
-          info.listener,
-          message));
+      base::Bind(base::IgnoreResult(&IPC::Listener::OnMessageReceived),
+                 info.listener, message));
   return true;
 }
 
@@ -436,9 +430,8 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
        it != listeners_.end();
        it++) {
     const GpuListenerInfo& info = it->second;
-    info.loop->PostTask(
-        FROM_HERE,
-        base::Bind(&IPC::Listener::OnChannelError, info.listener));
+    info.task_runner->PostTask(
+        FROM_HERE, base::Bind(&IPC::Listener::OnChannelError, info.listener));
   }
 
   listeners_.clear();

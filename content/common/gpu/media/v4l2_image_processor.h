@@ -133,8 +133,8 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   size_t input_planes_count_;
   size_t output_planes_count_;
 
-  // Our original calling message loop for the child thread.
-  const scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
+  // Our original calling task runner for the child thread.
+  const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
