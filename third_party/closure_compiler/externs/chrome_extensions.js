@@ -189,6 +189,18 @@
  */
 
 
+/*
+ * Ensure projects don't execute this file.
+ * The throw is to catch executions of this file, however, without the guard,
+ * the compiler's flow analysis stops at the throw, even for an externs file.
+ * Therefore, the Math.random() guard fools the compiler during externs
+ * processing.
+ */
+if (Math.random() < 1) {  // always true but the compiler doesn't know that
+  throw 'Externs file "chrome_extensions.js" should not be executed';
+}
+
+
 /**
  * @see https://developer.chrome.com/extensions/accessibilityFeatures
  * @const
@@ -2083,6 +2095,11 @@ chrome.runtime.id;
  */
 chrome.runtime.getBackgroundPage = function(callback) {};
 
+
+/**
+ * @param {function(): void=} opt_callback Callback function.
+ */
+chrome.runtime.openOptionsPage = function(opt_callback) {};
 
 
 /**
@@ -8947,6 +8964,10 @@ chrome.networkingPrivate.onNetworksChanged;
 
 /** @type {!ChromeStringArrayEvent} */
 chrome.networkingPrivate.onNetworkListChanged;
+
+
+/** @type {!ChromeStringArrayEvent} */
+chrome.networkingPrivate.onDeviceStateListChanged;
 
 
 /** @type {!ChromeStringStringEvent} */
