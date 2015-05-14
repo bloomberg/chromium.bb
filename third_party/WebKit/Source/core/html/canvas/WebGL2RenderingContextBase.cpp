@@ -251,8 +251,36 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }
 
+bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth)
+{
+    switch (target) {
+    case GL_TEXTURE_3D:
+    case GL_TEXTURE_2D_ARRAY:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+
+    WebGLTexture* tex = validateTextureBinding(functionName, target, false);
+    if (!tex)
+        return false;
+
+    if (width - xoffset > tex->getWidth(target, level)
+        || height - yoffset > tex->getHeight(target, level)
+        || depth - zoffset > tex->getDepth(target, level)) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "dimensions out of range");
+        return false;
+    }
+
+    return true;
+}
+
 void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
 {
+    if (!validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, image->width(), image->height(), 1))
+        return;
+
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     Vector<uint8_t> data;
     WebGLImageConversion::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GL_NONE);
@@ -283,7 +311,7 @@ void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, G
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !pixels)
+    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, width, height, depth))
         return;
 
     // FIXME: Ensure pixels is large enough to contain the desired texture dimensions.
@@ -310,7 +338,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageData* pixels, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !pixels)
+    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, pixels->width(), pixels->height(), 1))
         return;
 
     Vector<uint8_t> data;
@@ -334,7 +362,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !image)
+    if (isContextLost() || !image || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, image->width(), image->height(), 1))
         return;
 
     if (isContextLost() || !validateHTMLImageElement("texSubImage3D", image, exceptionState))
@@ -349,9 +377,6 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
 {
-    if (isContextLost())
-        return;
-
     if (isContextLost() || !validateHTMLCanvasElement("texSubImage3D", canvas, exceptionState))
         return;
 
@@ -1432,7 +1457,7 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
         return ScriptValue::createNull(scriptState);
     switch (pname) {
     case GL_SHADING_LANGUAGE_VERSION:
-        return WebGLAny(scriptState, "WebGL GLSL ES 3.0 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
+        return WebGLAny(scriptState, "WebGL GLSL ES 3.00 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
     case GL_VERSION:
         return WebGLAny(scriptState, "WebGL 2.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
 
