@@ -106,7 +106,7 @@ void ImportBookmarksFile(
   base::Time last_folder_add_date;
   std::vector<base::string16> path;
   size_t toolbar_folder_index = 0;
-  std::string charset;
+  std::string charset = "UTF-8";  // If no charset is specified, assume utf-8.
   for (size_t i = 0;
        i < lines.size() &&
            (cancellation_callback.is_null() || !cancellation_callback.Run());
