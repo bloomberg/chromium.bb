@@ -9,8 +9,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "device/core/device_client.h"
 #include "device/hid/hid_device_info.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_device_handle.h"
+#include "device/usb/mock_usb_device.h"
+#include "device/usb/mock_usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
@@ -24,6 +24,8 @@ namespace {
 using device::HidDeviceId;
 using device::HidDeviceInfo;
 using device::HidService;
+using device::MockUsbDevice;
+using device::MockUsbService;
 using device::UsbDevice;
 using device::UsbDeviceHandle;
 using device::UsbService;
@@ -37,8 +39,6 @@ const uint64_t kTestDeviceIds[] = {1, 2, 3, 4};
 #else
 const char* kTestDeviceIds[] = {"A", "B", "C", "D"};
 #endif
-
-int next_id;
 
 class MockDeviceClient : device::DeviceClient {
  public:
@@ -61,37 +61,6 @@ class MockDeviceClient : device::DeviceClient {
  private:
   UsbService* usb_service_ = nullptr;
   HidService* hid_service_ = nullptr;
-};
-
-class MockUsbService : public UsbService {
- public:
-  MockUsbService() {}
-
-  MOCK_METHOD1(GetDeviceById, scoped_refptr<UsbDevice>(uint32));
-  MOCK_METHOD1(GetDevices, void(const GetDevicesCallback& callback));
-
-  // Public wrapper for the protected NotifyDeviceRemove function.
-  void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
-    UsbService::NotifyDeviceRemoved(device);
-  }
-};
-
-class MockUsbDevice : public UsbDevice {
- public:
-  explicit MockUsbDevice(const std::string& serial_number)
-      : UsbDevice(0,
-                  0,
-                  next_id++,
-                  base::ASCIIToUTF16("Test Manufacturer"),
-                  base::ASCIIToUTF16("Test Product"),
-                  base::ASCIIToUTF16(serial_number)) {}
-
-  MOCK_METHOD1(Open, void(const OpenCallback&));
-  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
-  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
-
- private:
-  virtual ~MockUsbDevice() {}
 };
 
 class MockHidService : public HidService {
@@ -134,10 +103,12 @@ class DevicePermissionsManagerTest : public testing::Test {
                                 "  },"
                                 "  \"permissions\": [ \"hid\", \"usb\" ]"
                                 "}"));
-    device0_ = new MockUsbDevice("ABCDE");
-    device1_ = new MockUsbDevice("");
-    device2_ = new MockUsbDevice("12345");
-    device3_ = new MockUsbDevice("");
+    device0_ =
+        new MockUsbDevice(0, 0, "Test Manufacturer", "Test Product", "ABCDE");
+    device1_ = new MockUsbDevice(0, 0, "Test Manufacturer", "Test Product", "");
+    device2_ =
+        new MockUsbDevice(0, 0, "Test Manufacturer", "Test Product", "12345");
+    device3_ = new MockUsbDevice(0, 0, "Test Manufacturer", "Test Product", "");
     device4_ =
         new HidDeviceInfo(kTestDeviceIds[0], 0, 0, "Test HID Device", "abcde",
                           device::kHIDBusTypeUSB, std::vector<uint8>());
@@ -299,8 +270,8 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
   EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
 
-  usb_service_.NotifyDeviceRemoved(device0_);
-  usb_service_.NotifyDeviceRemoved(device1_);
+  usb_service_.RemoveDevice(device0_);
+  usb_service_.RemoveDevice(device1_);
   hid_service_.RemoveDevice(device4_->device_id());
   hid_service_.RemoveDevice(device5_->device_id());
 

@@ -24,6 +24,7 @@
         'bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         'nfc/nfc.gyp:device_nfc',
         'usb/usb.gyp:device_usb',
+        'usb/usb.gyp:device_usb_mocks',
         'hid/hid.gyp:device_hid',
         'serial/serial.gyp:device_serial',
         'serial/serial.gyp:device_serial_test_util',
@@ -87,6 +88,7 @@
           'dependencies!': [
             '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
             'usb/usb.gyp:device_usb',
+            'usb/usb.gyp:device_usb_mocks',
             'serial/serial.gyp:device_serial',
             'serial/serial.gyp:device_serial_test_util',
             'hid/hid.gyp:device_hid',

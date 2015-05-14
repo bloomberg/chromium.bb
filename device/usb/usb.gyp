@@ -77,5 +77,24 @@
         }],
       ]
     },
+    {
+      'target_name': 'device_usb_mocks',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../testing/gmock.gyp:gmock',
+        'device_usb',
+      ],
+      'sources': [
+        'mock_usb_device.cc',
+        'mock_usb_device.h',
+        'mock_usb_device_handle.cc',
+        'mock_usb_device_handle.h',
+        'mock_usb_service.cc',
+        'mock_usb_service.h',
+      ],
+    },
   ],
 }

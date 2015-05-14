@@ -99,6 +99,7 @@ test("device_unittests") {
     ]
     deps += [
       "//device/usb",
+      "//device/usb:mocks",
       "//third_party/libusb",
     ]
   }

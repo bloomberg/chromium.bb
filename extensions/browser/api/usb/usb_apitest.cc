@@ -5,20 +5,24 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "device/usb/usb_service.h"
+#include "device/usb/mock_usb_device.h"
+#include "device/usb/mock_usb_device_handle.h"
+#include "device/usb/mock_usb_service.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/usb/usb_api.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/base/io_buffer.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
 using testing::Return;
 using content::BrowserThread;
+using device::MockUsbDevice;
+using device::MockUsbDeviceHandle;
+using device::MockUsbService;
 using device::UsbConfigDescriptor;
 using device::UsbDevice;
 using device::UsbDeviceHandle;
@@ -74,130 +78,17 @@ class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
   }
 };
 
-class MockUsbDeviceHandle : public UsbDeviceHandle {
- public:
-  MockUsbDeviceHandle() : UsbDeviceHandle() {}
-
-  MOCK_METHOD0(Close, void());
-
-  MOCK_METHOD10(ControlTransfer,
-                void(UsbEndpointDirection direction,
-                     TransferRequestType request_type,
-                     TransferRecipient recipient,
-                     uint8 request,
-                     uint16 value,
-                     uint16 index,
-                     scoped_refptr<net::IOBuffer> buffer,
-                     size_t length,
-                     unsigned int timeout,
-                     const TransferCallback& callback));
-
-  MOCK_METHOD6(BulkTransfer,
-               void(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
-                    size_t length,
-                    unsigned int timeout,
-                    const TransferCallback& callback));
-
-  MOCK_METHOD6(InterruptTransfer,
-               void(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
-                    size_t length,
-                    unsigned int timeout,
-                    const TransferCallback& callback));
-
-  MOCK_METHOD8(IsochronousTransfer,
-               void(UsbEndpointDirection direction,
-                    uint8 endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
-                    size_t length,
-                    unsigned int packets,
-                    unsigned int packet_length,
-                    unsigned int timeout,
-                    const TransferCallback& callback));
-
-  MOCK_METHOD1(ResetDevice, void(const ResultCallback& callback));
-  MOCK_METHOD2(GetStringDescriptor, bool(uint8_t, base::string16*));
-  MOCK_METHOD2(SetConfiguration,
-               void(int configuration_value, const ResultCallback& callback));
-  MOCK_METHOD2(ClaimInterface,
-               void(int interface_number, const ResultCallback& callback));
-  MOCK_METHOD1(ReleaseInterface, bool(int interface_number));
-  MOCK_METHOD3(SetInterfaceAlternateSetting,
-               void(int interface_number,
-                    int alternate_setting,
-                    const ResultCallback& callback));
-
-  scoped_refptr<UsbDevice> GetDevice() const override { return device_; }
-
-  void set_device(UsbDevice* device) { device_ = device; }
-
- protected:
-  UsbDevice* device_;
-
-  virtual ~MockUsbDeviceHandle() {}
-};
-
-class MockUsbDevice : public UsbDevice {
- public:
-  MockUsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
-      : UsbDevice(vendor_id,
-                  product_id,
-                  unique_id,
-                  base::string16(),
-                  base::string16(),
-                  base::string16()) {}
-
-  MOCK_METHOD1(Open, void(const OpenCallback&));
-  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
-  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
-
- private:
-  virtual ~MockUsbDevice() {}
-};
-
-class MockUsbService : public UsbService {
- public:
-  explicit MockUsbService(scoped_refptr<UsbDevice> device) : device_(device) {}
-
-  // Public wrapper around the protected base class method.
-  void NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
-    UsbService::NotifyDeviceAdded(device);
-  }
-
-  // Public wrapper around the protected base class method.
-  void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
-    UsbService::NotifyDeviceRemoved(device);
-  }
-
- protected:
-  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
-    EXPECT_EQ(unique_id, 0U);
-    return device_;
-  }
-
-  void GetDevices(const GetDevicesCallback& callback) override {
-    std::vector<scoped_refptr<UsbDevice>> devices;
-    devices.push_back(device_);
-    callback.Run(devices);
-  }
-
-  scoped_refptr<UsbDevice> device_;
-};
-
 class UsbApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
 
-    mock_device_ = new MockUsbDevice(0, 0, 0);
-    mock_device_handle_ = new MockUsbDeviceHandle();
-    mock_device_handle_->set_device(mock_device_.get());
+    mock_device_ = new MockUsbDevice(0, 0);
+    mock_device_handle_ = new MockUsbDeviceHandle(mock_device_.get());
     EXPECT_CALL(*mock_device_.get(), Open(_))
         .WillRepeatedly(InvokeCallback<0>(mock_device_handle_));
-    mock_service_.reset(new MockUsbService(mock_device_));
+    mock_service_.reset(new MockUsbService());
+    mock_service_->AddDevice(mock_device_);
   }
 
  protected:
@@ -304,11 +195,11 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceAdded) {
   ASSERT_TRUE(LoadApp("api_test/usb/add_event"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
-  scoped_refptr<MockUsbDevice> device(new MockUsbDevice(0x18D1, 0x58F0, 1));
-  mock_service_->NotifyDeviceAdded(device);
+  scoped_refptr<MockUsbDevice> device(new MockUsbDevice(0x18D1, 0x58F0));
+  mock_service_->AddDevice(device);
 
-  device = new MockUsbDevice(0x18D1, 0x58F1, 2);
-  mock_service_->NotifyDeviceAdded(device);
+  device = new MockUsbDevice(0x18D1, 0x58F1);
+  mock_service_->AddDevice(device);
 
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
@@ -321,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceRemoved) {
   ASSERT_TRUE(LoadApp("api_test/usb/remove_event"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
-  mock_service_->NotifyDeviceRemoved(mock_device_);
+  mock_service_->RemoveDevice(mock_device_);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
 
@@ -336,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, GetUserSelectedDevices) {
   ASSERT_TRUE(LoadApp("api_test/usb/get_user_selected_devices"));
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
 
-  mock_service_->NotifyDeviceRemoved(mock_device_);
+  mock_service_->RemoveDevice(mock_device_);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
 

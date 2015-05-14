@@ -51,6 +51,25 @@ source_set("usb") {
   }
 }
 
+source_set("mocks") {
+  testonly = true
+
+  sources = [
+    "mock_usb_device.cc",
+    "mock_usb_device.h",
+    "mock_usb_device_handle.cc",
+    "mock_usb_device_handle.h",
+    "mock_usb_service.cc",
+    "mock_usb_service.h",
+  ]
+
+  deps = [
+    "//base",
+    "//testing/gmock",
+    ":usb",
+  ]
+}
+
 action("usb_device_ids") {
   script = "//device/usb/tools/usb_ids.py"
   inputs = [

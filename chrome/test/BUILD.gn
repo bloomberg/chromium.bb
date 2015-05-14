@@ -1318,6 +1318,7 @@ if (!is_android) {
                       "//chrome")
       deps += [
         "//chrome/common/extensions/api",
+        "//device/usb:mocks",
         "//extensions:extensions_resources",
         "//extensions/strings",
       ]

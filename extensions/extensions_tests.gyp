@@ -78,6 +78,7 @@
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_support',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
         '<(DEPTH)/device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
+        '<(DEPTH)/device/usb/usb.gyp:device_usb_mocks',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],

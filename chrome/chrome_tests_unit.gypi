@@ -2199,6 +2199,7 @@
           'sources': [ '<@(chrome_unit_tests_extensions_sources)' ],
           'dependencies': [
             'common/extensions/api/api.gyp:chrome_api',
+            '../device/usb/usb.gyp:device_usb_mocks',
             '../components/components.gyp:audio_modem_test_support',
             '../extensions/extensions_resources.gyp:extensions_resources',
             '../extensions/extensions_strings.gyp:extensions_strings',

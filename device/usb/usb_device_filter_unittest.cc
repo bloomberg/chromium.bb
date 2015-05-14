@@ -5,10 +5,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "device/usb/mock_usb_device.h"
 #include "device/usb/usb_descriptors.h"
-#include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
-#include "device/usb/usb_device_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,24 +16,6 @@ namespace device {
 namespace {
 
 using testing::Return;
-
-class MockUsbDevice : public UsbDevice {
- public:
-  MockUsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
-      : UsbDevice(vendor_id,
-                  product_id,
-                  unique_id,
-                  base::string16(),
-                  base::string16(),
-                  base::string16()) {}
-
-  MOCK_METHOD1(Open, void(const OpenCallback&));
-  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
-  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
-
- private:
-  virtual ~MockUsbDevice() {}
-};
 
 class UsbFilterTest : public testing::Test {
  public:
@@ -47,7 +28,7 @@ class UsbFilterTest : public testing::Test {
     interface.interface_protocol = 0x01;
     config_.interfaces.push_back(interface);
 
-    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, 0);
+    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2);
   }
 
  protected:
