@@ -94,6 +94,10 @@ class Task {
   const base::ProcessHandle& process_handle() const { return process_handle_; }
   const base::ProcessId& process_id() const { return process_id_; }
 
+ protected:
+  void set_title(const base::string16& new_title) { title_ = new_title; }
+  void set_icon(const gfx::ImageSkia& new_icon) { icon_ = new_icon; }
+
  private:
   // The unique ID of this task.
   const int64 task_id_;

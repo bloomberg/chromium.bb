@@ -2920,6 +2920,8 @@
       'browser/task_management/providers/task.h',
       'browser/task_management/providers/web_contents/renderer_task.cc',
       'browser/task_management/providers/web_contents/renderer_task.h',
+      'browser/task_management/providers/web_contents/subframe_task.cc',
+      'browser/task_management/providers/web_contents/subframe_task.h',
 
       # Old Task Manager Sources:
       'browser/task_manager/background_information.cc',
