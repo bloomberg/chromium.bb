@@ -14220,7 +14220,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="LocalStorage.CommitDelay">
+<histogram name="LocalStorage.CommitDelay" units="milliseconds">
   <owner>michaeln@chromium.org</owner>
   <summary>
     Delay between a page making changes and those changes being written to the
