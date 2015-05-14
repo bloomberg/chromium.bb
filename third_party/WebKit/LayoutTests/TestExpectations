@@ -1672,6 +1672,9 @@ crbug.com/461238 [ Linux Win Debug ] editing/execCommand/delete-non-editable-ran
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
+crbug.com/487880 [ Win ] fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
+crbug.com/487880 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
+crbug.com/487880 [ Win ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
@@ -1944,3 +1947,6 @@ crbug.com/487671 http/tests/security/cross-origin-worker-indexeddb-allowed.html 
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
+
+crbug.com/487878 [ Linux ] compositing/video-frame-size-change.html [ Pass ImageOnlyFailure ]
+crbug.com/487878 [ Linux ] virtual/slimmingpaint/compositing/video-frame-size-change.html [ Pass ImageOnlyFailure ]
