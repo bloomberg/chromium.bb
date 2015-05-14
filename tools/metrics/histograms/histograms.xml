@@ -4484,6 +4484,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.SecureProxyCheck.Latency"
+    units="milliseconds">
+  <owner>jeremyim@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Time from when the Data Reduction Proxy secure proxy check starts until it
+    completes.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.SettingsConversion"
     enum="DataReductionProxySettingsConversion">
   <obsolete>

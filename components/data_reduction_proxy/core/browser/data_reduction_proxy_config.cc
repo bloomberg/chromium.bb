@@ -40,6 +40,10 @@ const char kUMAProxyProbeURL[] = "DataReductionProxy.ProbeURL";
 // Key of the UMA DataReductionProxy.ProbeURLNetError histogram.
 const char kUMAProxyProbeURLNetError[] = "DataReductionProxy.ProbeURLNetError";
 
+// Key of the UMA DataReductionProxy.SecureProxyCheck.Latency histogram.
+const char kUMAProxySecureProxyCheckLatency[] =
+    "DataReductionProxy.SecureProxyCheck.Latency";
+
 // Record a network change event.
 void RecordNetworkChangeEvent(DataReductionProxyNetworkChangeEvent event) {
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.NetworkChangeEvents", event,
@@ -64,6 +68,13 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
     std::string response;
     source->GetResponseAsString(&response);
 
+    base::TimeDelta secure_proxy_check_latency =
+        base::Time::Now() - secure_proxy_check_start_time_;
+    if (secure_proxy_check_latency >= base::TimeDelta()) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(kUMAProxySecureProxyCheckLatency,
+                                 secure_proxy_check_latency);
+    }
+
     fetcher_callback_.Run(response, status, source->GetResponseCode());
   }
 
@@ -85,6 +96,7 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
 
     fetcher_callback_ = fetcher_callback;
 
+    secure_proxy_check_start_time_ = base::Time::Now();
     fetcher_->Start();
   }
 
@@ -96,6 +108,10 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
   // The URLFetcher being used for the secure proxy check.
   scoped_ptr<net::URLFetcher> fetcher_;
   FetcherResponseCallback fetcher_callback_;
+
+  // Used to determine the latency in performing the Data Reduction Proxy secure
+  // proxy check.
+  base::Time secure_proxy_check_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SecureProxyChecker);
 };
