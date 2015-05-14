@@ -42,18 +42,26 @@ def run_test(test_base_name, cmd):
       # 'bad' (e.g. it has a cycle). The output still needs to be captured in
       # that case, since the expected results capture the errors.
       actual = e.output
+    finally:
+      # Clean up the .graph.json file to prevent false passes from stale results
+      # from a previous run.
+      os.remove('%s.graph.json' % test_base_name)
 
   # TODO(dcheng): Remove the rstrip() and just rebaseline the tests to match.
   actual = actual.rstrip()
 
+  # On Windows, clang emits CRLF as the end of line marker. Normalize it to LF
+  # to match posix systems.
+  actual = actual.replace('\r\n', '\n')
+
   try:
     expected = open('%s.txt' % test_base_name).read().rstrip()
   except IOError:
-    open('%s.txt' % test_base_name, 'w').write(actual)
+    open('%s.txt.actual' % test_base_name, 'w').write(actual)
     return 'no expected file found'
 
   if expected != actual:
-    open('%s.txt' % test_base_name, 'w').write(actual)
+    open('%s.txt.actual' % test_base_name, 'w').write(actual)
     return 'expected and actual differed'
 
 
@@ -72,7 +80,10 @@ def run_tests(clang_path, plugin_path):
   passing = []
   failing = []
 
-  base_cmd = [clang_path, '-fsyntax-only', '-std=c++11']
+  # The plugin option to dump the object graph is incompatible with
+  # -fsyntax-only. It generates the .graph.json file based on the name of the
+  # output file, but there is no output filename with -fsyntax-only.
+  base_cmd = [clang_path, '-c', '-std=c++11']
   base_cmd.extend(['-Wno-inaccessible-base'])
   if plugin_path:
     base_cmd.extend(['-Xclang', '-load', '-Xclang', plugin_path])
@@ -118,6 +129,7 @@ def main():
       len(passing) + len(failing), len(passing), len(failing))
   for test in failing:
     print '    %s' % test
+  return len(failing)
 
 
 if __name__ == '__main__':

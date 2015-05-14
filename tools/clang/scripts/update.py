@@ -295,6 +295,11 @@ def UpdateClang(args):
       CopyFile(os.path.join(sanitizer_include_dir, f),
                aux_sanitizer_include_dir)
 
+  if args.run_tests:
+    os.chdir(LLVM_BUILD_DIR)
+    RunCommand(GetVSVersion().SetupScript('x64') +
+               ['&&', 'ninja', 'cr-check-all'])
+
   WriteStampFile(LLVM_WIN_REVISION)
   print 'Clang update was successful.'
   return 0
@@ -329,6 +334,7 @@ def main():
   # mad if it sees a flag it doesn't recognize.
   parser.add_argument('--if-needed', action='store_true')
   parser.add_argument('--print-revision', action='store_true')
+  parser.add_argument('--run-tests', action='store_true')
 
   args = parser.parse_args()
 
