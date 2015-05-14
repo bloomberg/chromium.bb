@@ -279,14 +279,14 @@ class QuicNetworkTransactionTest
               response->connection_info);
   }
 
-  void CheckResponseData(HttpNetworkTransaction* trans,
+  void CheckResponseData(const scoped_ptr<HttpNetworkTransaction>& trans,
                          const std::string& expected) {
     std::string response_data;
-    ASSERT_EQ(OK, ReadTransaction(trans, &response_data));
+    ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
     EXPECT_EQ(expected, response_data);
   }
 
-  void RunTransaction(HttpNetworkTransaction* trans) {
+  void RunTransaction(const scoped_ptr<HttpNetworkTransaction>& trans) {
     TestCompletionCallback callback;
     int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -296,9 +296,9 @@ class QuicNetworkTransactionTest
   void SendRequestAndExpectHttpResponse(const std::string& expected) {
     scoped_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
-    RunTransaction(trans.get());
+    RunTransaction(trans);
     CheckWasHttpResponse(trans);
-    CheckResponseData(trans.get(), expected);
+    CheckResponseData(trans, expected);
   }
 
   void SendRequestAndExpectQuicResponse(const std::string& expected) {
@@ -376,10 +376,10 @@ class QuicNetworkTransactionTest
     trans->SetBeforeProxyHeadersSentCallback(
         base::Bind(&ProxyHeadersHandler::OnBeforeProxyHeadersSent,
                    base::Unretained(&proxy_headers_handler)));
-    RunTransaction(trans.get());
+    RunTransaction(trans);
     CheckWasQuicResponse(trans);
     CheckResponsePort(trans, port);
-    CheckResponseData(trans.get(), expected);
+    CheckResponseData(trans, expected);
     EXPECT_EQ(used_proxy, proxy_headers_handler.was_called());
   }
 };
