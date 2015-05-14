@@ -95,6 +95,7 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
         imageFilter = builder.buildTransform(resizeMatrix, imageFilter.get());
     }
 
+#ifdef SK_SUPPORT_LEGACY_IMAGEFILTER_CTM
     // See crbug.com/382491.
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         // If the CTM contains rotation or shearing, apply the filter to
@@ -112,6 +113,8 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
             imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
         }
     }
+#endif
+
     context->beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, imageFilter.get());
     context->endLayer();
     context->restore();
