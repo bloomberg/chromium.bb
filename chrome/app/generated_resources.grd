@@ -14536,9 +14536,6 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_FLAGS_SSL_VERSION_DEFAULT" desc="The description of the default value for the minimum SSL/TLS version.">
         Default
       </message>
-      <message name="IDS_FLAGS_SSL_VERSION_SSLV3" desc="Name of SSLv3. This is a technical term and it's very unlikely that any translation will be needed.">
-        SSLv3
-      </message>
       <message name="IDS_FLAGS_SSL_VERSION_TLSV1" desc="Name of TLS 1.0. This is a technical term and it's very unlikely that any translation will be needed.">
         TLS 1.0
       </message>

@@ -1030,21 +1030,18 @@ const char kSpellingServiceFeedbackIntervalSeconds[] =
     "spelling-service-feedback-interval-seconds";
 #endif
 
-// Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
-// "tls1.2").
+// Specifies the maximum SSL/TLS version ("tls1", "tls1.1", or "tls1.2").
 const char kSSLVersionMax[]                 = "ssl-version-max";
 
-// Specifies the minimum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
-// "tls1.2").
+// Specifies the minimum SSL/TLS version ("tls1", "tls1.1", or "tls1.2").
 const char kSSLVersionMin[]                 = "ssl-version-min";
 
-// Specifies the minimum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
-// "tls1.2") that TLS fallback will accept.
+// Specifies the minimum SSL/TLS version ("tls1", "tls1.1", or "tls1.2") that
+// TLS fallback will accept.
 const char kSSLVersionFallbackMin[]         = "ssl-version-fallback-min";
 
 // These values aren't switches, but rather the values that kSSLVersionMax,
 // kSSLVersionMin and kSSLVersionFallbackMin can have.
-const char kSSLVersionSSLv3[]               = "ssl3";
 const char kSSLVersionTLSv1[]               = "tls1";
 const char kSSLVersionTLSv11[]              = "tls1.1";
 const char kSSLVersionTLSv12[]              = "tls1.2";

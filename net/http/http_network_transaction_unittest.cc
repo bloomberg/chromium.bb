@@ -11089,8 +11089,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   // [ssl_]data3 contains the data for the third SSL handshake. When a
   // connection to a server fails during an SSL handshake,
-  // HttpNetworkTransaction will attempt to fallback to TLSv1 if the previous
-  // connection was attempted with TLSv1.1. This is transparent to the caller
+  // HttpNetworkTransaction will attempt to fallback to TLSv1.1 if the previous
+  // connection was attempted with TLSv1.2. This is transparent to the caller
   // of the HttpNetworkTransaction. Because this test failure is due to
   // requiring a client certificate, this fallback handshake should also
   // fail.
@@ -11102,8 +11102,8 @@ TEST_P(HttpNetworkTransactionTest,
 
   // [ssl_]data4 contains the data for the fourth SSL handshake. When a
   // connection to a server fails during an SSL handshake,
-  // HttpNetworkTransaction will attempt to fallback to SSLv3 if the previous
-  // connection was attempted with TLSv1. This is transparent to the caller
+  // HttpNetworkTransaction will attempt to fallback to TLSv1 if the previous
+  // connection was attempted with TLSv1.1. This is transparent to the caller
   // of the HttpNetworkTransaction. Because this test failure is due to
   // requiring a client certificate, this fallback handshake should also
   // fail.
@@ -11112,13 +11112,6 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data4);
   StaticSocketDataProvider data4(NULL, 0, NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data4);
-
-  // Need one more if TLSv1.2 is enabled.
-  SSLSocketDataProvider ssl_data5(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  ssl_data5.cert_request_info = cert_request.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data5);
-  StaticSocketDataProvider data5(NULL, 0, NULL, 0);
-  session_deps_.socket_factory->AddSocketDataProvider(&data5);
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(

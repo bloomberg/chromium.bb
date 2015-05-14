@@ -75,9 +75,7 @@ std::vector<uint16> ParseCipherSuites(
 // Returns 0 if the string is invalid.
 uint16 SSLProtocolVersionFromString(const std::string& version_str) {
   uint16 version = 0;  // Invalid.
-  if (version_str == switches::kSSLVersionSSLv3) {
-    version = net::SSL_PROTOCOL_VERSION_SSL3;
-  } else if (version_str == switches::kSSLVersionTLSv1) {
+  if (version_str == switches::kSSLVersionTLSv1) {
     version = net::SSL_PROTOCOL_VERSION_TLS1;
   } else if (version_str == switches::kSSLVersionTLSv11) {
     version = net::SSL_PROTOCOL_VERSION_TLS1_1;

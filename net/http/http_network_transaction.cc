@@ -1435,8 +1435,8 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
 void HttpNetworkTransaction::RecordSSLFallbackMetrics() {
   // Note: these values are used in histograms, so new values must be appended.
   enum FallbackVersion {
-    FALLBACK_NONE = 0,    // SSL version fallback did not occur.
-    FALLBACK_SSL3 = 1,    // Fell back to SSL 3.0.
+    FALLBACK_NONE = 0,  // SSL version fallback did not occur.
+    // Obsolete: FALLBACK_SSL3 = 1,
     FALLBACK_TLS1 = 2,    // Fell back to TLS 1.0.
     FALLBACK_TLS1_1 = 3,  // Fell back to TLS 1.1.
     FALLBACK_MAX,
@@ -1445,9 +1445,6 @@ void HttpNetworkTransaction::RecordSSLFallbackMetrics() {
   FallbackVersion fallback = FALLBACK_NONE;
   if (server_ssl_config_.version_fallback) {
     switch (server_ssl_config_.version_max) {
-      case SSL_PROTOCOL_VERSION_SSL3:
-        fallback = FALLBACK_SSL3;
-        break;
       case SSL_PROTOCOL_VERSION_TLS1:
         fallback = FALLBACK_TLS1;
         break;

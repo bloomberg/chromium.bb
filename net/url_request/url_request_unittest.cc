@@ -7896,7 +7896,6 @@ class FallbackTestURLRequestContext : public TestURLRequestContext {
                                  false /* online revocation checking */,
                                  false /* require rev. checking for local
                                           anchors */);
-    ssl_config_service->set_min_version(SSL_PROTOCOL_VERSION_SSL3);
     ssl_config_service->set_fallback_min_version(version);
     set_ssl_config_service(ssl_config_service);
   }
@@ -8024,7 +8023,7 @@ TEST_F(HTTPSFallbackTest, FallbackSCSVClosed) {
   ExpectFailure(ERR_CONNECTION_CLOSED);
 }
 
-// Tests that the SSLv3 fallback doesn't happen by default.
+// Tests that the SSLv3 fallback doesn't happen.
 TEST_F(HTTPSFallbackTest, SSLv3Fallback) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
@@ -8035,39 +8034,25 @@ TEST_F(HTTPSFallbackTest, SSLv3Fallback) {
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
-// Tests that the SSLv3 fallback works when explicitly enabled.
-TEST_F(HTTPSFallbackTest, SSLv3FallbackEnabled) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
-  set_fallback_min_version(SSL_PROTOCOL_VERSION_SSL3);
-
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_SSL3);
-}
-
-// Tests that the SSLv3 fallback triggers on closed connections when explicitly
-// enabled.
+// Tests that the TLSv1 fallback triggers on closed connections.
 TEST_F(HTTPSFallbackTest, SSLv3FallbackClosed) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
   ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
   ssl_options.tls_intolerance_type =
       SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
-  set_fallback_min_version(SSL_PROTOCOL_VERSION_SSL3);
 
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_SSL3);
+  ExpectConnection(SSL_CONNECTION_VERSION_TLS1);
 }
 
-// Test that SSLv3 fallback probe connections don't cause sessions to be cached.
-TEST_F(HTTPSRequestTest, SSLv3FallbackNoCache) {
+// Test that fallback probe connections don't cause sessions to be cached.
+TEST_F(HTTPSRequestTest, FallbackProbeNoCache) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
   ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
   ssl_options.tls_intolerance_type =
       SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE;
   ssl_options.record_resume = true;
@@ -8080,14 +8065,14 @@ TEST_F(HTTPSRequestTest, SSLv3FallbackNoCache) {
 
   SSLClientSocket::ClearSessionCache();
 
-  // Make a connection that does a probe fallback to SSLv3 but fails because
-  // SSLv3 fallback is disabled. We don't wish a session for this connection to
+  // Make a connection that does a probe fallback to TLSv1 but fails because
+  // TLSv1 fallback is disabled. We don't wish a session for this connection to
   // be inserted locally.
   {
     TestDelegate delegate;
     FallbackTestURLRequestContext context(true);
 
-    context.set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1);
+    context.set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1_2);
     context.Init();
     scoped_ptr<URLRequest> request(context.CreateRequest(
         test_server.GetURL(std::string()), DEFAULT_PRIORITY, &delegate));
@@ -8102,11 +8087,11 @@ TEST_F(HTTPSRequestTest, SSLv3FallbackNoCache) {
               request->status().error());
   }
 
-  // Now allow SSLv3 connections and request the session cache log.
+  // Now allow TLSv1 fallback connections and request the session cache log.
   {
     TestDelegate delegate;
     FallbackTestURLRequestContext context(true);
-    context.set_fallback_min_version(SSL_PROTOCOL_VERSION_SSL3);
+    context.set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1);
 
     context.Init();
     scoped_ptr<URLRequest> request(context.CreateRequest(
@@ -8117,8 +8102,9 @@ TEST_F(HTTPSRequestTest, SSLv3FallbackNoCache) {
 
     EXPECT_EQ(1, delegate.response_started_count());
     EXPECT_NE(0, delegate.bytes_received());
-    EXPECT_EQ(SSL_CONNECTION_VERSION_SSL3, SSLConnectionStatusToVersion(
-        request->ssl_info().connection_status));
+    EXPECT_EQ(
+        SSL_CONNECTION_VERSION_TLS1,
+        SSLConnectionStatusToVersion(request->ssl_info().connection_status));
     EXPECT_TRUE(request->ssl_info().connection_status &
                 SSL_CONNECTION_VERSION_FALLBACK);
 
@@ -8128,23 +8114,6 @@ TEST_F(HTTPSRequestTest, SSLv3FallbackNoCache) {
     AssertTwoDistinctSessionsInserted(delegate.data_received());
   }
 }
-
-// This test is disabled on Android because the remote test server doesn't cause
-// a TCP reset.
-#if !defined(OS_ANDROID)
-// Tests that a reset connection does not fallback down to SSL3.
-TEST_F(HTTPSFallbackTest, SSLv3NoFallbackReset) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
-  ssl_options.tls_intolerance_type =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANCE_RESET;
-
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectFailure(ERR_CONNECTION_RESET);
-}
-#endif  // !OS_ANDROID
 
 class HTTPSSessionTest : public testing::Test {
  public:

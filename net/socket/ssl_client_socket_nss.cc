@@ -2060,19 +2060,14 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
         SSL_CONNECTION_COMPRESSION_SHIFT;
 
     int version = SSL_CONNECTION_VERSION_UNKNOWN;
-    if (channel_info.protocolVersion < SSL_LIBRARY_VERSION_3_0) {
-      // All versions less than SSL_LIBRARY_VERSION_3_0 are treated as SSL
-      // version 2.
-      version = SSL_CONNECTION_VERSION_SSL2;
-    } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_3_0) {
-      version = SSL_CONNECTION_VERSION_SSL3;
-    } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_0) {
+    if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_0) {
       version = SSL_CONNECTION_VERSION_TLS1;
     } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_1) {
       version = SSL_CONNECTION_VERSION_TLS1_1;
     } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_2) {
       version = SSL_CONNECTION_VERSION_TLS1_2;
     }
+    DCHECK_NE(SSL_CONNECTION_VERSION_UNKNOWN, version);
     nss_handshake_state_.ssl_connection_status |=
         (version & SSL_CONNECTION_VERSION_MASK) <<
         SSL_CONNECTION_VERSION_SHIFT;
@@ -2915,9 +2910,6 @@ int SSLClientSocketNSS::InitializeSSLPeerName() {
   // Shard the session cache based on maximum protocol version. This causes
   // fallback connections to use a separate session cache.
   switch (ssl_config_.version_max) {
-    case SSL_PROTOCOL_VERSION_SSL3:
-      peer_id += "ssl3";
-      break;
     case SSL_PROTOCOL_VERSION_TLS1:
       peer_id += "tls1";
       break;

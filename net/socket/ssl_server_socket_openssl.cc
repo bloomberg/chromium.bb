@@ -655,24 +655,14 @@ int SSLServerSocketOpenSSL::Init() {
     return ERR_UNEXPECTED;
   }
 
+  DCHECK_LT(SSL3_VERSION, ssl_config_.version_min);
+  DCHECK_LT(SSL3_VERSION, ssl_config_.version_max);
+  SSL_set_min_version(ssl_, ssl_config_.version_min);
+  SSL_set_max_version(ssl_, ssl_config_.version_max);
+
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
   SslSetClearMask options;
-  options.ConfigureFlag(SSL_OP_NO_SSLv2, true);
-  bool ssl3_enabled = (ssl_config_.version_min == SSL_PROTOCOL_VERSION_SSL3);
-  options.ConfigureFlag(SSL_OP_NO_SSLv3, !ssl3_enabled);
-  bool tls1_enabled = (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1 &&
-                       ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1);
-  options.ConfigureFlag(SSL_OP_NO_TLSv1, !tls1_enabled);
-  bool tls1_1_enabled =
-      (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1_1 &&
-       ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_1);
-  options.ConfigureFlag(SSL_OP_NO_TLSv1_1, !tls1_1_enabled);
-  bool tls1_2_enabled =
-      (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1_2 &&
-       ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_2);
-  options.ConfigureFlag(SSL_OP_NO_TLSv1_2, !tls1_2_enabled);
-
   options.ConfigureFlag(SSL_OP_NO_COMPRESSION, true);
 
   SSL_set_options(ssl_, options.set_mask);

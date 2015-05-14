@@ -21,7 +21,6 @@ namespace net {
 // The most significant byte is |major|, and the least significant byte
 // is |minor|.
 enum {
-  SSL_PROTOCOL_VERSION_SSL3 = 0x0300,
   SSL_PROTOCOL_VERSION_TLS1 = 0x0301,
   SSL_PROTOCOL_VERSION_TLS1_1 = 0x0302,
   SSL_PROTOCOL_VERSION_TLS1_2 = 0x0303,
@@ -39,7 +38,6 @@ NET_EXPORT extern const uint16 kDefaultSSLVersionFallbackMin;
 // A collection of SSL-related configuration settings.
 struct NET_EXPORT SSLConfig {
   // Default to revocation checking.
-  // Default to SSL 3.0 ~ default_version_max() on.
   SSLConfig();
   ~SSLConfig();
 
@@ -70,10 +68,9 @@ struct NET_EXPORT SSLConfig {
   bool rev_checking_required_local_anchors;
 
   // The minimum and maximum protocol versions that are enabled.
-  // SSL 3.0 is 0x0300, TLS 1.0 is 0x0301, TLS 1.1 is 0x0302, and so on.
   // (Use the SSL_PROTOCOL_VERSION_xxx enumerators defined above.)
-  // SSL 2.0 is not supported. If version_max < version_min, it means no
-  // protocol versions are enabled.
+  // SSL 2.0 and SSL 3.0 are not supported. If version_max < version_min, it
+  // means no protocol versions are enabled.
   uint16 version_min;
   uint16 version_max;
 

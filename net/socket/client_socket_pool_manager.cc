@@ -139,9 +139,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
         case SSL_PROTOCOL_VERSION_TLS1:
           prefix = "ssl(max:3.1)/";
           break;
-        case SSL_PROTOCOL_VERSION_SSL3:
-          prefix = "sslv3/";
-          break;
         default:
           CHECK(false);
           break;

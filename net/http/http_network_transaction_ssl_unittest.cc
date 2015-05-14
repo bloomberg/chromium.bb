@@ -27,7 +27,7 @@ namespace {
 class TLS10SSLConfigService : public SSLConfigService {
  public:
   TLS10SSLConfigService() {
-    ssl_config_.version_min = SSL_PROTOCOL_VERSION_SSL3;
+    ssl_config_.version_min = SSL_PROTOCOL_VERSION_TLS1;
     ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1;
   }
 
@@ -39,17 +39,17 @@ class TLS10SSLConfigService : public SSLConfigService {
   SSLConfig ssl_config_;
 };
 
-class TLS11SSLConfigService : public SSLConfigService {
+class TLS12SSLConfigService : public SSLConfigService {
  public:
-  TLS11SSLConfigService() {
-    ssl_config_.version_min = SSL_PROTOCOL_VERSION_SSL3;
-    ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_1;
+  TLS12SSLConfigService() {
+    ssl_config_.version_min = SSL_PROTOCOL_VERSION_TLS1;
+    ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
   }
 
   void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
 
  private:
-  ~TLS11SSLConfigService() override {}
+  ~TLS12SSLConfigService() override {}
 
   SSLConfig ssl_config_;
 };
@@ -100,27 +100,27 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
 };
 
 // Tests that HttpNetworkTransaction attempts to fallback from
-// TLS 1.1 to TLS 1.0, then from TLS 1.0 to SSL 3.0.
+// TLS 1.2 to TLS 1.1, then from TLS 1.1 to TLS 1.0.
 TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
-  ssl_config_service_ = new TLS11SSLConfigService;
+  ssl_config_service_ = new TLS12SSLConfigService;
   session_params_.ssl_config_service = ssl_config_service_.get();
-  // |ssl_data1| is for the first handshake (TLS 1.1), which will fail
+  // |ssl_data1| is for the first handshake (TLS 1.2), which will fail
   // for protocol reasons (e.g., simulating a version rollback attack).
   SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data1);
   StaticSocketDataProvider data1(NULL, 0, NULL, 0);
   mock_socket_factory_.AddSocketDataProvider(&data1);
 
-  // |ssl_data2| contains the handshake result for a TLS 1.0
-  // handshake which will be attempted after the TLS 1.1
+  // |ssl_data2| contains the handshake result for a TLS 1.1
+  // handshake which will be attempted after the TLS 1.2
   // handshake fails.
   SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
   StaticSocketDataProvider data2(NULL, 0, NULL, 0);
   mock_socket_factory_.AddSocketDataProvider(&data2);
 
-  // |ssl_data3| contains the handshake result for a SSL 3.0
-  // handshake which will be attempted after the TLS 1.0
+  // |ssl_data3| contains the handshake result for a TLS 1.0
+  // handshake which will be attempted after the TLS 1.1
   // handshake fails.
   SSLSocketDataProvider ssl_data3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data3);
@@ -145,8 +145,8 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   EXPECT_EQ(3u, mock_data.next_index());
 
   SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  // |version_max| fallbacks to SSL 3.0.
-  EXPECT_EQ(SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
+  // |version_max| fallbacks to TLS 1.0.
+  EXPECT_EQ(SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_max);
   EXPECT_TRUE(ssl_config.version_fallback);
 }
 

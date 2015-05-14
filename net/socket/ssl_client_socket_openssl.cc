@@ -100,10 +100,6 @@ int EncodeSSLConnectionStatus(uint16 cipher_suite,
 // this SSL connection.
 int GetNetSSLVersion(SSL* ssl) {
   switch (SSL_version(ssl)) {
-    case SSL2_VERSION:
-      return SSL_CONNECTION_VERSION_SSL2;
-    case SSL3_VERSION:
-      return SSL_CONNECTION_VERSION_SSL3;
     case TLS1_VERSION:
       return SSL_CONNECTION_VERSION_TLS1;
     case TLS1_1_VERSION:
@@ -111,6 +107,7 @@ int GetNetSSLVersion(SSL* ssl) {
     case TLS1_2_VERSION:
       return SSL_CONNECTION_VERSION_TLS1_2;
     default:
+      NOTREACHED();
       return SSL_CONNECTION_VERSION_UNKNOWN;
   }
 }
@@ -713,24 +710,14 @@ int SSLClientSocketOpenSSL::Init() {
 
   SSL_set_bio(ssl_, ssl_bio, ssl_bio);
 
+  DCHECK_LT(SSL3_VERSION, ssl_config_.version_min);
+  DCHECK_LT(SSL3_VERSION, ssl_config_.version_max);
+  SSL_set_min_version(ssl_, ssl_config_.version_min);
+  SSL_set_max_version(ssl_, ssl_config_.version_max);
+
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
   SslSetClearMask options;
-  options.ConfigureFlag(SSL_OP_NO_SSLv2, true);
-  bool ssl3_enabled = (ssl_config_.version_min == SSL_PROTOCOL_VERSION_SSL3);
-  options.ConfigureFlag(SSL_OP_NO_SSLv3, !ssl3_enabled);
-  bool tls1_enabled = (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1 &&
-                       ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1);
-  options.ConfigureFlag(SSL_OP_NO_TLSv1, !tls1_enabled);
-  bool tls1_1_enabled =
-      (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1_1 &&
-       ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_1);
-  options.ConfigureFlag(SSL_OP_NO_TLSv1_1, !tls1_1_enabled);
-  bool tls1_2_enabled =
-      (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1_2 &&
-       ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_2);
-  options.ConfigureFlag(SSL_OP_NO_TLSv1_2, !tls1_2_enabled);
-
   options.ConfigureFlag(SSL_OP_NO_COMPRESSION, true);
 
   // TODO(joth): Set this conditionally, see http://crbug.com/55410
@@ -1880,9 +1867,6 @@ std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
   // fallback connections to use a separate session cache.
   result.append("/");
   switch (ssl_config_.version_max) {
-    case SSL_PROTOCOL_VERSION_SSL3:
-      result.append("ssl3");
-      break;
     case SSL_PROTOCOL_VERSION_TLS1:
       result.append("tls1");
       break;

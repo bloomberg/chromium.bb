@@ -420,8 +420,6 @@ const Experiment::Choice kAutofillSyncCredentialChoices[] = {
 
 const Experiment::Choice kSSLVersionMinChoices[] = {
   { IDS_FLAGS_SSL_VERSION_DEFAULT, "", "" },
-  { IDS_FLAGS_SSL_VERSION_SSLV3, switches::kSSLVersionMin,
-    switches::kSSLVersionSSLv3 },
   { IDS_FLAGS_SSL_VERSION_TLSV1, switches::kSSLVersionMin,
     switches::kSSLVersionTLSv1 },
   { IDS_FLAGS_SSL_VERSION_TLSV11, switches::kSSLVersionMin,
