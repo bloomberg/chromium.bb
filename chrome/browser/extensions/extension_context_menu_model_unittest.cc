@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -32,6 +33,9 @@
 namespace extensions {
 
 namespace {
+
+// Label for test extension menu item.
+const char* kTestExtensionItemLabel = "test-ext-item";
 
 // Build an extension to pass to the menu constructor, with the an action
 // specified by |action_key|.
@@ -86,6 +90,8 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   void RefreshMenu(ExtensionContextMenuModel* model);
 
   // Returns the number of extension menu items that show up in |model|.
+  // For this test, all the extension items have samel label
+  // |kTestExtensionItemLabel|.
   int CountExtensionItems(ExtensionContextMenuModel* model);
 
  private:
@@ -105,24 +111,29 @@ void ExtensionContextMenuModelTest::AddContextItemAndRefreshModel(
   const MenuItem::ExtensionKey key(extension->id());
   MenuItem::Id id(false, key);
   id.uid = ++cur_id_;
-  manager->AddContextItem(extension,
-                          new MenuItem(id,
-                                       "test",
-                                       false,  // checked
-                                       true,   // enabled
-                                       type,
-                                       contexts));
+  manager->AddContextItem(extension, new MenuItem(id, kTestExtensionItemLabel,
+                                                  false,  // checked
+                                                  true,   // enabled
+                                                  type, contexts));
   RefreshMenu(model);
 }
 
 void ExtensionContextMenuModelTest::RefreshMenu(
     ExtensionContextMenuModel* model) {
+  model->Clear();
   model->InitMenu(model->GetExtension(), ExtensionContextMenuModel::VISIBLE);
 }
 
 int ExtensionContextMenuModelTest::CountExtensionItems(
     ExtensionContextMenuModel* model) {
-  return model->extension_items_count_;
+  base::string16 expected_label = base::ASCIIToUTF16(kTestExtensionItemLabel);
+  int num_items_found = 0;
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    if (expected_label == model->GetLabelAt(i))
+      ++num_items_found;
+  }
+  EXPECT_EQ(num_items_found, model->extension_items_count_);
+  return num_items_found;
 }
 
 // Tests that applicable menu items are disabled when a ManagementPolicy

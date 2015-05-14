@@ -245,8 +245,6 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
     }
 
     int menu_id = ConvertToExtensionsCustomCommandId(*index);
-    ++(*index);
-    ++num_items;
     // Action context menus have a limit for top level extension items to
     // prevent control items from being pushed off the screen, since extension
     // items will not be placed in a submenu.
@@ -254,6 +252,9 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
     if (menu_id >= extensions_context_custom_last ||
         (is_action_menu_top_level && num_items >= top_level_limit))
       return;
+
+    ++(*index);
+    ++num_items;
 
     extension_item_map_[menu_id] = item->id();
     base::string16 title = item->TitleWithReplacement(selection_text,
