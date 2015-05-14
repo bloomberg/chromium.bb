@@ -6081,7 +6081,7 @@ All users must sign out to continue.
     Learn more about Enterprise Enrollment
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
-    Enter new or update existing information to be associated with this device. 
+    Optional — enter new or update existing information to be associated with this device.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_ATTRIBUTE_LINK" desc="Text on the link to the device attribute update help article.">
     Learn more.

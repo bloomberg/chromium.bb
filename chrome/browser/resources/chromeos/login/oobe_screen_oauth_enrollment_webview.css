@@ -183,3 +183,6 @@ html[dir=rtl] #oauth-enroll-back-button {
   color: black;
 }
 
+#oauth-enroll-skip-button {
+  min-width: 0;
+}
