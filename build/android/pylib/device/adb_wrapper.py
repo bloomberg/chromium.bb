@@ -415,6 +415,40 @@ class AdbWrapper(object):
       raise device_errors.AdbCommandFailedError(
           cmd, output, device_serial=self._device_serial)
 
+  def InstallMultiple(self, apk_paths, forward_lock=False, reinstall=False,
+                      sd_card=False, allow_downgrade=False, partial=False,
+                      timeout=60*2, retries=_DEFAULT_RETRIES):
+    """Install an apk with splits on the device.
+
+    Args:
+      apk_paths: Host path to the APK file.
+      forward_lock: (optional) If set forward-locks the app.
+      reinstall: (optional) If set reinstalls the app, keeping its data.
+      sd_card: (optional) If set installs on the SD card.
+      timeout: (optional) Timeout per try in seconds.
+      retries: (optional) Number of retries to attempt.
+      allow_downgrade: (optional) Allow versionCode downgrade.
+      partial: (optional) Package ID if apk_paths doesn't include all .apks.
+    """
+    for path in apk_paths:
+      _VerifyLocalFileExists(path)
+    cmd = ['install-multiple']
+    if forward_lock:
+      cmd.append('-l')
+    if reinstall:
+      cmd.append('-r')
+    if sd_card:
+      cmd.append('-s')
+    if allow_downgrade:
+      cmd.append('-d')
+    if partial:
+      cmd.extend(('-p', partial))
+    cmd.extend(apk_paths)
+    output = self._RunDeviceAdbCmd(cmd, timeout, retries)
+    if 'Success' not in output:
+      raise device_errors.AdbCommandFailedError(
+          cmd, output, device_serial=self._device_serial)
+
   def Uninstall(self, package, keep_data=False, timeout=_DEFAULT_TIMEOUT,
                 retries=_DEFAULT_RETRIES):
     """Remove the app |package| from the device.
@@ -570,4 +604,3 @@ class AdbWrapper(object):
       return self.GetState() == _READY_STATE
     except device_errors.CommandFailedError:
       return False
-

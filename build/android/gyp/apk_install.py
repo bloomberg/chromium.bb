@@ -58,6 +58,10 @@ def main():
   parser = optparse.OptionParser()
   parser.add_option('--apk-path',
       help='Path to .apk to install.')
+  parser.add_option('--split-apk-path',
+      help='Path to .apk splits (can specify multiple times, causes '
+      '--install-multiple to be used.',
+      action='append')
   parser.add_option('--install-record',
       help='Path to install record (touched only when APK is installed).')
   parser.add_option('--build-device-configuration',
@@ -85,7 +89,15 @@ def main():
   force_install = HasInstallMetadataChanged(device, apk_package, metadata_path)
 
   def Install():
-    device.Install(options.apk_path, reinstall=True)
+    # TODO: Filter splits using split-select.
+    active_splits = options.split_apk_path
+    if active_splits:
+      device.adb.InstallMultiple(
+          [options.apk_path] + active_splits,
+          reinstall=True)
+    else:
+      device.Install(options.apk_path, reinstall=True)
+
     RecordInstallMetadata(device, apk_package, metadata_path)
     build_utils.Touch(options.install_record)
 
