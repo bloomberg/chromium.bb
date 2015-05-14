@@ -668,19 +668,6 @@
       "input_view": "inputview.html#id=m17n:vi_viqr&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_viqr"
     },
     {
-      "name": "__MSG_keyboard_vietnamese_vni__",
-      "type": "ime",
-      "id": "vkd_vi_vni",
-      "description": "",
-      "language": [
-        "vi"
-      ],
-      "layouts": [
-        "us"
-      ],
-      "input_view": "inputview.html#id=m17n:vi_vni&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_vni"
-    },
-    {
       "name": "__MSG_keyboard_arabic__",
       "type": "ime",
       "id": "vkd_ar",
