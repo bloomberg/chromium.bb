@@ -55,7 +55,7 @@ def run_test_android(shell, shell_args, apps_and_args):
       _logger.debug("Starting shell with arguments: %s" % arguments)
       start_time = time.time()
       # TODO(vtl): Do more logging in lower layers.
-      shell.StartShell(arguments, wf, wf.close, False)
+      shell.StartShell(arguments, wf, wf.close)
       rv = rf.read()
       run_time = time.time() - start_time
       _logger.debug("Shell completed")
