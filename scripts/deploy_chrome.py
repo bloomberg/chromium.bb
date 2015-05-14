@@ -41,7 +41,6 @@ from chromite.lib import parallel
 from chromite.lib import remote_access as remote
 from chromite.lib import stats
 from chromite.lib import timeout_util
-from chromite.scripts import lddtree
 
 
 _USAGE = 'deploy_chrome [--]\n\n %s' % __doc__
@@ -515,16 +514,6 @@ def _PostParseCheck(options, _args):
   if options.strict and not options.gyp_defines:
     cros_build_lib.Die('When --strict is set, the GYP_DEFINES environment '
                        'variable must be set.')
-
-  if options.build_dir:
-    chrome_path = os.path.join(options.build_dir, 'chrome')
-    if os.path.isfile(chrome_path):
-      deps = lddtree.ParseELF(chrome_path)
-      if 'libbase.so' in deps['libs']:
-        logging.warning(
-            'Detected a component build of Chrome.  component build is '
-            'not working properly for Chrome OS.  See crbug.com/196317.  '
-            'Use at your own risk!')
 
 
 def _FetchChromePackage(cache_dir, tempdir, gs_path):
