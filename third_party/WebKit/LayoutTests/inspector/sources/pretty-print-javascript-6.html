@@ -27,7 +27,7 @@ function test()
         function generatorFormatter(next)
         {
             var mappingQueries = ["max", "*", "else"];
-            testJSFormatter("function *max(){ var a = yield; var b = yield; if (a > b) return a; else return b;}", mappingQueries, next);
+            testJSFormatter("function *max(){var a=yield;var b=yield 10;if(a>b)return a;else return b;}", mappingQueries, next);
         },
 
         function blockCommentFormatter(next)

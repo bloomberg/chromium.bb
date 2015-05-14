@@ -26,7 +26,7 @@ Running: generatorFormatter
 ====== 8< ------
 function *max() {
     var a = yield;
-    var b = yield;
+    var b = yield 10;
     if (a > b)
         return a;
     else
