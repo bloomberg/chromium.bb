@@ -54,6 +54,13 @@ bool TestNetLogEntry::GetIntegerValue(const std::string& name,
   return params->GetInteger(name, value);
 }
 
+bool TestNetLogEntry::GetBooleanValue(const std::string& name,
+                                      bool* value) const {
+  if (!params)
+    return false;
+  return params->GetBoolean(name, value);
+}
+
 bool TestNetLogEntry::GetListValue(const std::string& name,
                                    base::ListValue** value) const {
   if (!params)

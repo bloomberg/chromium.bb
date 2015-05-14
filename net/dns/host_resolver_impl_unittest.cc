@@ -25,6 +25,7 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -528,6 +529,10 @@ class HostResolverImplTest : public testing::Test {
 
   static unsigned maximum_dns_failures() {
     return HostResolverImpl::kMaximumDnsFailures;
+  }
+
+  bool IsIPv6Reachable(const BoundNetLog& net_log) {
+    return resolver_->IsIPv6Reachable(net_log);
   }
 
   scoped_refptr<MockHostResolverProc> proc_;
@@ -1395,6 +1400,33 @@ TEST_F(HostResolverImplTest, NameCollision127_0_53_53) {
   request = CreateRequest("not_reserved3");
   EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
   EXPECT_EQ(OK, request->WaitForResult());
+}
+
+TEST_F(HostResolverImplTest, IsIPv6Reachable) {
+  // Verify that two consecutive calls return the same value.
+  TestNetLog net_log;
+  BoundNetLog bound_net_log = BoundNetLog::Make(&net_log, NetLog::SOURCE_NONE);
+  bool result1 = IsIPv6Reachable(bound_net_log);
+  bool result2 = IsIPv6Reachable(bound_net_log);
+  EXPECT_EQ(result1, result2);
+
+  // Filter reachability check events and verify that there are two of them.
+  TestNetLogEntry::List event_list;
+  net_log.GetEntries(&event_list);
+  TestNetLogEntry::List probe_event_list;
+  for (const auto& event : event_list) {
+    if (event.type == NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK) {
+      probe_event_list.push_back(event);
+    }
+  }
+  ASSERT_EQ(2U, probe_event_list.size());
+
+  // Verify that the first request was not cached and the second one was.
+  bool cached;
+  EXPECT_TRUE(probe_event_list[0].GetBooleanValue("cached", &cached));
+  EXPECT_FALSE(cached);
+  EXPECT_TRUE(probe_event_list[1].GetBooleanValue("cached", &cached));
+  EXPECT_TRUE(cached);
 }
 
 DnsConfig CreateValidDnsConfig() {
