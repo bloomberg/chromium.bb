@@ -82,7 +82,7 @@ cvox.LiveRegions.nodesAlreadyHandled = [];
 cvox.LiveRegions.init = function(pageLoadTime, queueMode, disableSpeak) {
   cvox.LiveRegions.pageLoadTime = pageLoadTime;
 
-  if (disableSpeak || !document.hasFocus()) {
+  if (disableSpeak || !cvox.ChromeVox.documentHasFocus()) {
     return false;
   }
 
@@ -379,7 +379,7 @@ cvox.LiveRegions.announceChange = function(
   cvox.LiveRegions.lastAnnouncedMap[key] = now;
 
   var assertive = cvox.AriaUtil.getAriaLive(liveRoot) == 'assertive';
-  if (cvox.Interframe.isIframe() && !document.hasFocus()) {
+  if (cvox.Interframe.isIframe() && !cvox.ChromeVox.documentHasFocus()) {
     cvox.Interframe.sendMessageToParentWindow(
         {'command': 'speakLiveRegion',
          'content': JSON.stringify(navDescriptions),

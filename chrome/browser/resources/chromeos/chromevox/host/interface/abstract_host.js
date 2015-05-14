@@ -143,7 +143,7 @@ cvox.AbstractHost.prototype.onStateChanged_ = function(state) {
       cvox.ChromeVox.navigationManager.showOrHideIndicator(true);
       cvox.ChromeVoxEventWatcher.init(window);
       if (document.activeElement) {
-        var speakNodeAlso = document.hasFocus() && !document.webkitHidden;
+        var speakNodeAlso = cvox.ChromeVox.documentHasFocus();
         cvox.ApiImplementation.syncToNode(
             document.activeElement, speakNodeAlso);
       } else {

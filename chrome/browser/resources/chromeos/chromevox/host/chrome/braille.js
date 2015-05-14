@@ -49,7 +49,7 @@ cvox.ChromeBraille = function() {
     // within the iframe even though the containing document also has focus.
     // Don't process the event if this document isn't focused or focus lies in
     // a descendant.
-    if (!document.hasFocus() || document.activeElement.tagName == 'IFRAME') {
+    if (!cvox.ChromeVox.documentHasFocus()) {
       return;
     }
     if (msg['message'] == 'BRAILLE' && msg['args']) {

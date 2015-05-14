@@ -474,7 +474,7 @@ cvox.ActiveIndicator.prototype.moveIndicator_ = function(
   var now = new Date().getTime();
   var delta = now - this.lastMoveTime_;
   this.container_.className = 'cvox_indicator_container';
-  if (!document.hasFocus() || this.blurred_) {
+  if (!cvox.ChromeVox.documentHasFocus() || this.blurred_) {
     this.container_.classList.add('cvox_indicator_window_not_focused');
   }
   if (delta > cvox.ActiveIndicator.NORMAL_ANIM_DELAY_MS) {

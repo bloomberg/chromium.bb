@@ -275,3 +275,20 @@ function $(id) {
  * @param {Array} tabs
  */
 cvox.ChromeVox.injectChromeVoxIntoTabs = function(tabs) {};
+
+/**
+ * Returns whether the document has focus, taking into account whether
+ * it's hidden and also that if an iframe or webview element has focus,
+ * the focus is really inside that frame and not in this document.
+ * @return {boolean} True if the document has focus.
+ */
+cvox.ChromeVox.documentHasFocus = function() {
+  if (!document.hasFocus() || document.hidden) {
+    return false;
+  }
+  if (document.activeElement.tagName == 'IFRAME' ||
+      document.activeElement.tagName == 'WEBVIEW') {
+    return false;
+  }
+  return true;
+};

@@ -255,8 +255,14 @@ cvox.ChromeVoxEventWatcher.readFrom = function(store) {
  */
 cvox.ChromeVoxEventWatcher.addEvent = function(evt) {
   // Don't add any events to the events queue if ChromeVox is inactive or the
-  // page is hidden.
-  if (!cvox.ChromeVox.isActive || document.webkitHidden) {
+  // document isn't focused.
+  if (!cvox.ChromeVox.isActive || !cvox.ChromeVox.documentHasFocus()) {
+    if (evt.type == 'focus') {
+      // If it's a focus event, update the active indicator so that it
+      // properly shows and hides as focus moves to iframe and webview
+      // elements.
+      cvox.ChromeVox.navigationManager.activeIndicator.syncToNode(evt.target);
+    }
     return;
   }
   cvox.ChromeVoxEventWatcher.events_.push(evt);
@@ -871,7 +877,7 @@ cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
   // Don't announce anything unless this document has focus and the
   // editable element that's the target of the clipboard event is visible.
   var targetNode = /** @type {Node} */(evt.target);
-  if (!document.hasFocus() ||
+  if (!cvox.ChromeVox.documentHasFocus() ||
       !targetNode ||
       !cvox.DomUtil.isVisible(targetNode) ||
       cvox.AriaUtil.isHidden(targetNode)) {

@@ -62,7 +62,8 @@ cvox.InitialSpeech.speak = function() {
   // actually happens inside of NavigationManager.reset, which doesn't get
   // called until AbstractHost.onPageLoad, but we need to speak and braille the
   // initial node here.
-  if (document.hasFocus() && document.activeElement == document.body) {
+  if (cvox.ChromeVox.documentHasFocus() &&
+      document.activeElement == document.body) {
     cvox.ChromeVox.navigationManager.syncToBeginning();
   }
 
@@ -74,7 +75,7 @@ cvox.InitialSpeech.speak = function() {
   }
 
   // If this iframe has focus, speak and braille the current focused element.
-  if (document.hasFocus()) {
+  if (cvox.ChromeVox.documentHasFocus()) {
     if (!disableSpeak) {
       cvox.ChromeVoxEventSuspender.withSuspendedEvents(function() {
         cvox.ChromeVox.navigationManager.finishNavCommand(
