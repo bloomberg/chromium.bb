@@ -104,10 +104,20 @@ def load_tests(loader, standard_tests, pattern):
     # (above), if that test is disabled, we'll end up not running *any*
     # test from the class. We should probably discover all of the tests
     # in a class, and then throw the ones we don't need away instead.
-    if hasattr(benchmark, '_enabled_strings'):
-      method._enabled_strings = benchmark._enabled_strings
-    if hasattr(benchmark, '_disabled_strings'):
-      method._disabled_strings = benchmark._disabled_strings
+
+    # Merge decorators.
+    for attribute in ['_enabled_strings', '_disabled_strings']:
+      # Do set union of attributes to eliminate duplicates.
+      merged_attributes = list(set(getattr(method, attribute, []) +
+                                   getattr(benchmark, attribute, [])))
+      if merged_attributes:
+        setattr(method, attribute, merged_attributes)
+
+      # Handle the case where the benchmark is Enabled/Disabled everywhere.
+      if (getattr(method, attribute, None) == [] or
+          getattr(benchmark, attribute, None) == []):
+        setattr(method, attribute, [])
+
     setattr(BenchmarkSmokeTest, benchmark.Name(), method)
 
     suite.addTest(BenchmarkSmokeTest(benchmark.Name()))
