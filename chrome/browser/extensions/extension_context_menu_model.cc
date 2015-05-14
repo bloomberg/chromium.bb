@@ -26,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
@@ -38,6 +39,8 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -113,6 +116,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
     PopupDelegate* delegate)
     : SimpleMenuModel(this),
       extension_id_(extension->id()),
+      is_component_(extensions::Manifest::IsComponentLocation(
+                        extension->location())),
       browser_(browser),
       profile_(browser->profile()),
       delegate_(delegate),
@@ -121,7 +126,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
   InitMenu(extension, button_visibility);
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
-      delegate_) {
+      delegate_ &&
+      !is_component_) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
   }
@@ -129,14 +135,7 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
 
 ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
                                                      Browser* browser)
-    : SimpleMenuModel(this),
-      extension_id_(extension->id()),
-      browser_(browser),
-      profile_(browser->profile()),
-      delegate_(NULL),
-      action_type_(NO_ACTION),
-      extension_items_count_(0) {
-  InitMenu(extension, VISIBLE);
+    : ExtensionContextMenuModel(extension, browser, VISIBLE, nullptr) {
 }
 
 bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
@@ -158,8 +157,11 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     return extensions::OptionsPageInfo::HasOptionsPage(extension);
   } else if (command_id == NAME) {
     // The NAME links to the Homepage URL. If the extension doesn't have a
-    // homepage, we just disable this menu item.
-    return extensions::ManifestURL::GetHomepageURL(extension).is_valid();
+    // homepage, we just disable this menu item. We also disable for component
+    // extensions, because it doesn't make sense to link to a webstore page or
+    // chrome://extensions.
+    return extensions::ManifestURL::GetHomepageURL(extension).is_valid() &&
+        !is_component_;
   } else if (command_id == INSPECT_POPUP) {
     WebContents* web_contents = GetActiveWebContents();
     if (!web_contents)
@@ -301,8 +303,11 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     AddItemWithStringId(ALWAYS_RUN, IDS_EXTENSIONS_ALWAYS_RUN);
   }
 
-  AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
-  AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
+  if (!is_component_ || extensions::OptionsPageInfo::HasOptionsPage(extension))
+    AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
+
+  if (!is_component_)
+    AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
 
   // Add a toggle visibility (show/hide) if the extension icon is shown on the
   // toolbar.
@@ -311,8 +316,10 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
   if (visibility_string_id != -1)
     AddItemWithStringId(TOGGLE_VISIBILITY, visibility_string_id);
 
-  AddSeparator(ui::NORMAL_SEPARATOR);
-  AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSION);
+  if (!is_component_) {
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSION);
+  }
 }
 
 const Extension* ExtensionContextMenuModel::GetExtension() const {

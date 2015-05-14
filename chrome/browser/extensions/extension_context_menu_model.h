@@ -115,6 +115,9 @@ class ExtensionContextMenuModel
   // A copy of the extension's id.
   std::string extension_id_;
 
+  // Whether the menu is for a component extension.
+  bool is_component_;
+
   // The extension action of the extension we are displaying the menu for (if
   // it has one, otherwise NULL).
   ExtensionAction* extension_action_;
