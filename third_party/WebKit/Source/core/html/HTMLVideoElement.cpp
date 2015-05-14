@@ -116,10 +116,14 @@ bool HTMLVideoElement::isPresentationAttribute(const QualifiedName& name) const
 void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == posterAttr) {
-        // Force a poster recalc by setting m_displayMode to Unknown directly before calling updateDisplayState.
-        HTMLMediaElement::setDisplayMode(Unknown);
-        updateDisplayState();
-        if (shouldDisplayPosterImage()) {
+        // In case the poster attribute is set after playback, don't update the
+        // display state, post playback the correct state will be picked up.
+        if (displayMode() < Video || !hasAvailableVideoFrame()) {
+            // Force a poster recalc by setting m_displayMode to Unknown directly before calling updateDisplayState.
+            HTMLMediaElement::setDisplayMode(Unknown);
+            updateDisplayState();
+        }
+        if (!posterImageURL().isEmpty()) {
             if (!m_imageLoader)
                 m_imageLoader = HTMLImageLoader::create(this);
             m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);

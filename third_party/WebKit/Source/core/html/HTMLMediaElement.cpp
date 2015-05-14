@@ -872,6 +872,7 @@ void HTMLMediaElement::selectMediaResource()
             m_loadState = WaitingForSource;
             setShouldDelayLoadEvent(false);
             m_networkState = NETWORK_EMPTY;
+            updateDisplayState();
 
             WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), nothing to load", this);
             return;
