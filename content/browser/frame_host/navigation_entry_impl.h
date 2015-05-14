@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_message_enums.h"
 #include "content/public/browser/favicon_status.h"
@@ -153,7 +154,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // its FrameNavigationEntry.  A new FrameNavigationEntry is added if none
   // exists, or else the existing one (which might be shared with other
   // NavigationEntries) is updated with the given parameters.
-  void AddOrUpdateFrameEntry(int frame_tree_node_id,
+  void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
                              SiteInstanceImpl* site_instance,
                              const GURL& url,
                              const Referrer& referrer);

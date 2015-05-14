@@ -1473,11 +1473,9 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
           switches::kSitePerProcess)) {
     // This may be a "new auto" case where we add a new FrameNavigationEntry, or
     // it may be a "history auto" case where we update an existing one.
-    int frame_tree_node_id = rfh->frame_tree_node()->frame_tree_node_id();
     NavigationEntryImpl* last_committed = GetLastCommittedEntry();
-    last_committed->AddOrUpdateFrameEntry(frame_tree_node_id,
-                                          rfh->GetSiteInstance(),
-                                          params.url,
+    last_committed->AddOrUpdateFrameEntry(rfh->frame_tree_node(),
+                                          rfh->GetSiteInstance(), params.url,
                                           params.referrer);
   }
 

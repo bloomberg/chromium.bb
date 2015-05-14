@@ -6,26 +6,35 @@
 
 namespace content {
 
-FrameNavigationEntry::FrameNavigationEntry() {
+FrameNavigationEntry::FrameNavigationEntry(int64 frame_tree_node_id)
+    : frame_tree_node_id_(frame_tree_node_id) {
 }
 
-FrameNavigationEntry::FrameNavigationEntry(SiteInstanceImpl* site_instance,
+FrameNavigationEntry::FrameNavigationEntry(int64 frame_tree_node_id,
+                                           SiteInstanceImpl* site_instance,
                                            const GURL& url,
                                            const Referrer& referrer)
-    : site_instance_(site_instance), url_(url), referrer_(referrer) {
+    : frame_tree_node_id_(frame_tree_node_id),
+      site_instance_(site_instance),
+      url_(url),
+      referrer_(referrer) {
 }
 
 FrameNavigationEntry::~FrameNavigationEntry() {
 }
 
 FrameNavigationEntry* FrameNavigationEntry::Clone() const {
-  FrameNavigationEntry* copy = new FrameNavigationEntry();
-
-  copy->site_instance_ = site_instance_;
-  copy->url_ = url_;
-  copy->referrer_ = referrer_;
-
+  FrameNavigationEntry* copy = new FrameNavigationEntry(frame_tree_node_id_);
+  copy->UpdateEntry(site_instance_.get(), url_, referrer_);
   return copy;
+}
+
+void FrameNavigationEntry::UpdateEntry(SiteInstanceImpl* site_instance,
+                                       const GURL& url,
+                                       const Referrer& referrer) {
+  site_instance_ = site_instance;
+  url_ = url;
+  referrer_ = referrer;
 }
 
 }  // namespace content

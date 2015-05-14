@@ -24,14 +24,30 @@ namespace content {
 class CONTENT_EXPORT FrameNavigationEntry
     : public base::RefCounted<FrameNavigationEntry> {
  public:
-  FrameNavigationEntry();
-  FrameNavigationEntry(SiteInstanceImpl* site_instance,
+  // TODO(creis): We should not use FTN IDs here, since they will change if you
+  // leave a page and come back later.  We should evaluate whether Blink's
+  // frame sequence numbers or unique names would work instead, similar to
+  // HistoryNode.
+  explicit FrameNavigationEntry(int64 frame_tree_node_id);
+  FrameNavigationEntry(int64 frame_tree_node_id,
+                       SiteInstanceImpl* site_instance,
                        const GURL& url,
                        const Referrer& referrer);
 
   // Creates a copy of this FrameNavigationEntry that can be modified
   // independently from the original.
   FrameNavigationEntry* Clone() const;
+
+  // Updates all the members of this entry.
+  void UpdateEntry(SiteInstanceImpl* site_instance,
+                   const GURL& url,
+                   const Referrer& referrer);
+
+  // The ID of the FrameTreeNode this entry is for.  -1 for the main frame,
+  // since we don't always know the FrameTreeNode ID when creating the overall
+  // NavigationEntry.
+  // TODO(creis): Replace with frame sequence number or unique name.
+  int64 frame_tree_node_id() const { return frame_tree_node_id_; }
 
   // The SiteInstance responsible for rendering this frame.  All frames sharing
   // a SiteInstance must live in the same process.  This is a refcounted pointer
@@ -62,6 +78,7 @@ class CONTENT_EXPORT FrameNavigationEntry
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
   // See the accessors above for descriptions.
+  int64 frame_tree_node_id_;
   scoped_refptr<SiteInstanceImpl> site_instance_;
   GURL url_;
   Referrer referrer_;

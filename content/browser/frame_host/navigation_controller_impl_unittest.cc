@@ -2104,7 +2104,6 @@ TEST_F(NavigationControllerTest, NewSubframe) {
 
 // Auto subframes are ones the page loads automatically like ads. They should
 // not create new navigation entries.
-// TODO(creis): Test cross-site and nested iframes.
 // TODO(creis): Test updating entries for history auto subframe navigations.
 TEST_F(NavigationControllerTest, AutoSubframe) {
   NavigationControllerImpl& controller = controller_impl();
@@ -2170,6 +2169,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.page_id = 1;
+    params.nav_entry_id = 0;
+    params.did_create_new_entry = false;
     params.url = url3;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
     params.should_update_history = false;
@@ -2199,6 +2200,56 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     FrameNavigationEntry* new_frame_entry =
         entry->root_node()->children[1]->frame_entry.get();
     EXPECT_EQ(url3, new_frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
+
+  // Add a nested subframe and navigate.
+  subframe->OnCreateChildFrame(MSG_ROUTING_NONE, std::string(),
+                               SandboxFlags::NONE);
+  RenderFrameHostImpl* subframe3 = contents()
+                                       ->GetFrameTree()
+                                       ->root()
+                                       ->child_at(0)
+                                       ->child_at(0)
+                                       ->current_frame_host();
+  const GURL url4("http://foo/4");
+  {
+    FrameHostMsg_DidCommitProvisionalLoad_Params params;
+    params.page_id = 1;
+    params.nav_entry_id = 0;
+    params.did_create_new_entry = false;
+    params.url = url4;
+    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    params.should_update_history = false;
+    params.gesture = NavigationGestureUser;
+    params.is_post = false;
+    params.page_state = PageState::CreateFromURL(url4);
+
+    // Navigating should do nothing.
+    LoadCommittedDetails details;
+    EXPECT_FALSE(controller.RendererDidNavigate(subframe3, params, &details));
+    EXPECT_EQ(0U, notifications.size());
+  }
+
+  // There should still be only one entry, mostly unchanged.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+  EXPECT_EQ(url1, entry->GetURL());
+  EXPECT_EQ(1, entry->GetPageID());
+  EXPECT_EQ(root_entry, entry->root_node()->frame_entry.get());
+  EXPECT_EQ(url1, root_entry->url());
+
+  // Verify subframe entries if we're in --site-per-process mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // The entry should now have a nested FrameNavigationEntry.
+    EXPECT_EQ(2U, entry->root_node()->children.size());
+    ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
+    FrameNavigationEntry* new_frame_entry =
+        entry->root_node()->children[0]->children[0]->frame_entry.get();
+    EXPECT_EQ(url4, new_frame_entry->url());
   } else {
     // There are no subframe FrameNavigationEntries by default.
     EXPECT_EQ(0U, entry->root_node()->children.size());
@@ -3564,21 +3615,24 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   EXPECT_EQ(controller.GetEntryCount(), 1);
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
 
-  // Navigate a subframe that would normally count as in-page.
-  const GURL subframe("http://www.google.com/#");
+  // Add and navigate a subframe that would normally count as in-page.
+  main_test_rfh()->OnCreateChildFrame(MSG_ROUTING_NONE, std::string(),
+                                      SandboxFlags::NONE);
+  RenderFrameHostImpl* subframe =
+      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
+  const GURL subframe_url("http://www.google.com/#");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 0;
   params.nav_entry_id = 0;
   params.did_create_new_entry = false;
-  params.url = subframe;
+  params.url = subframe_url;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
-  params.page_state = PageState::CreateFromURL(subframe);
+  params.page_state = PageState::CreateFromURL(subframe_url);
   LoadCommittedDetails details;
-  EXPECT_FALSE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                              &details));
+  EXPECT_FALSE(controller.RendererDidNavigate(subframe, params, &details));
 
   // Nothing should have changed.
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -3712,6 +3766,10 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
 
   // Send a subframe update from the first page, as if one had just
   // automatically loaded. Auto subframes don't increment the page ID.
+  main_test_rfh()->OnCreateChildFrame(MSG_ROUTING_NONE, std::string(),
+                                      SandboxFlags::NONE);
+  RenderFrameHostImpl* subframe =
+      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   const GURL url1_sub("http://foo/subframe");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = controller.GetLastCommittedEntry()->GetPageID();
@@ -3726,8 +3784,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   LoadCommittedDetails details;
 
   // This should return false meaning that nothing was actually updated.
-  EXPECT_FALSE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                              &details));
+  EXPECT_FALSE(controller.RendererDidNavigate(subframe, params, &details));
 
   // The notification should have updated the last committed one, and not
   // the pending load.
