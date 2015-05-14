@@ -54,13 +54,12 @@ void Service::OnQueryStarted(app_list::LauncherSearchProvider* provider,
   for (const ExtensionId extension_id : extension_ids) {
     // Convert query_id_ to string here since queryId is defined as string in
     // javascript side API while we use uint32 internally to generate it.
-    // TODO(yawano): Consider if we can change it to integer at javascript side.
     event_router->DispatchEventToExtension(
         extension_id,
         make_scoped_ptr(new extensions::Event(
             api_launcher_search_provider::OnQueryStarted::kEventName,
             api_launcher_search_provider::OnQueryStarted::Create(
-                std::to_string(query_id_), query, max_result))));
+                query_id_, query, max_result))));
   }
 }
 
@@ -77,8 +76,7 @@ void Service::OnQueryEnded() {
         extension_id,
         make_scoped_ptr(new extensions::Event(
             api_launcher_search_provider::OnQueryEnded::kEventName,
-            api_launcher_search_provider::OnQueryEnded::Create(
-                std::to_string(query_id_)))));
+            api_launcher_search_provider::OnQueryEnded::Create(query_id_))));
   }
 
   is_query_running_ = false;
@@ -100,12 +98,12 @@ void Service::OnOpenResult(const ExtensionId& extension_id,
 void Service::SetSearchResults(
     const extensions::Extension* extension,
     scoped_ptr<ErrorReporter> error_reporter,
-    const std::string& query_id,
+    const int query_id,
     const std::vector<linked_ptr<
         extensions::api::launcher_search_provider::SearchResult>>& results) {
   // If query is not running or query_id is different from current query id,
   // discard the results.
-  if (!is_query_running_ || query_id != std::to_string(query_id_))
+  if (!is_query_running_ || query_id != query_id_)
     return;
 
   // If |extension| is not in the listener extensions list, ignore it.

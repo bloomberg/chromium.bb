@@ -24,19 +24,19 @@ namespace launcherSearchProvider {
     // guranteed that all provided results are shown to a user. The search
     // results will be sorted by relevance, with ties broken by the order of the
     // results in this list (highest priority first).
-    static void setSearchResults(DOMString queryId, SearchResult[] results);
+    static void setSearchResults(long queryId, SearchResult[] results);
   };
 
   interface Events {
     // Called when a user typed a query. maxResult is the maximum number of
     // results the extension should provide.
-    static void onQueryStarted(DOMString queryId,
+    static void onQueryStarted(long queryId,
                                DOMString query,
                                long maxResult);
 
     // Called when query of |queryId| is ended. After this call,
     // setSearchResults no longer accept the results for queryId.
-    static void onQueryEnded(DOMString queryId);
+    static void onQueryEnded(long queryId);
 
     // Called when a user clicks a search result which is provided by
     // setSearchResults.

@@ -53,7 +53,7 @@ class Service : public KeyedService {
   void SetSearchResults(
       const extensions::Extension* extension,
       scoped_ptr<ErrorReporter> error_reporter,
-      const std::string& query_id,
+      const int query_id,
       const std::vector<linked_ptr<
           extensions::api::launcher_search_provider::SearchResult>>& results);
 
@@ -67,7 +67,7 @@ class Service : public KeyedService {
   Profile* const profile_;
   extensions::ExtensionRegistry* extension_registry_;
   app_list::LauncherSearchProvider* provider_;
-  uint32 query_id_;
+  int query_id_;
   bool is_query_running_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);

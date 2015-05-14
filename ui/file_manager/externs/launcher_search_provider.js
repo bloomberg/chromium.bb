@@ -10,7 +10,7 @@
 chrome.launcherSearchProvider = {};
 
 /**
- * @param {string} queryId
+ * @param {number} queryId
  * @param {Array<{itemId:string, title:string, iconUrl:?string,
  *     relevance:number}>} results
  */
