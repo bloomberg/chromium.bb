@@ -56,6 +56,10 @@ extern const char kRoot[];
 extern const char kRoot_HelpShort[];
 extern const char kRoot_Help[];
 
+extern const char kRuntimeDepsListFile[];
+extern const char kRuntimeDepsListFile_HelpShort[];
+extern const char kRuntimeDepsListFile_Help[];
+
 extern const char kThreads[];
 extern const char kThreads_HelpShort[];
 extern const char kThreads_Help[];

@@ -18,7 +18,6 @@
 #include "tools/gn/source_file.h"
 
 class Item;
-class OutputFile;
 
 // Settings for one build, which is one toplevel output directory. There
 // may be multiple Settings objects that refer to this, one for each toolchain.

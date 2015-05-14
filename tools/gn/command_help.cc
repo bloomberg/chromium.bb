@@ -13,6 +13,7 @@
 #include "tools/gn/input_conversion.h"
 #include "tools/gn/label_pattern.h"
 #include "tools/gn/parser.h"
+#include "tools/gn/runtime_deps.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/substitution_writer.h"
@@ -61,9 +62,10 @@ void PrintToplevelHelp() {
   PrintShortHelp("buildargs: How build arguments work.");
   PrintShortHelp("dotfile: Info about the toplevel .gn file.");
   PrintShortHelp("grammar: Formal grammar for GN build files.");
-  PrintShortHelp("label_pattern: Matching more than one label.");
   PrintShortHelp(
       "input_conversion: Processing input from exec_script and read_file.");
+  PrintShortHelp("label_pattern: Matching more than one label.");
+  PrintShortHelp("runtime_deps: How runtime dependency computation works.");
   PrintShortHelp("source_expansion: Map sources to outputs for scripts.");
   PrintShortHelp("switches: Show available command-line switches.");
 }
@@ -123,6 +125,7 @@ void PrintAllHelp() {
   PrintLongHelp(kGrammar_Help);
   PrintLongHelp(kInputConversion_Help);
   PrintLongHelp(kLabelPattern_Help);
+  PrintLongHelp(kRuntimeDeps_Help);
   PrintLongHelp(kSourceExpansion_Help);
   PrintSwitchHelp();
 }
@@ -234,6 +237,10 @@ int RunHelp(const std::vector<std::string>& args) {
   }
   if (what == "label_pattern") {
     PrintLongHelp(kLabelPattern_Help);
+    return 0;
+  }
+  if (what == "runtime_deps") {
+    PrintLongHelp(kRuntimeDeps_Help);
     return 0;
   }
   if (what == "source_expansion") {

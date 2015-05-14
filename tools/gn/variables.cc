@@ -510,16 +510,23 @@ const char kData_Help[] =
     "data: Runtime data file dependencies.\n"
     "\n"
     "  Lists files required to run the given target. These are typically\n"
-    "  data files.\n"
+    "  data files. The paths are interpreted as being relative to the current\n"
+    "  build file. Since these are runtime dependencies, they do not affect\n"
+    "  which targets are built or when. To declare input files to a script,\n"
+    "  use \"inputs\".\n"
     "\n"
     "  Appearing in the \"data\" section does not imply any special handling\n"
     "  such as copying them to the output directory. This is just used for\n"
-    "  declaring runtime dependencies. There currently isn't a good use for\n"
-    "  these but it is envisioned that test data can be listed here for use\n"
-    "  running automated tests.\n"
+    "  declaring runtime dependencies. Runtime dependencies can be queried\n"
+    "  using the \"runtime_deps\" category of \"gn desc\" or written during\n"
+    "  build generation via \"--runtime-deps-list-file\".\n"
     "\n"
-    "  See also \"gn help inputs\" and \"gn help data_deps\", both of\n"
-    "  which actually affect the build in concrete ways.\n";
+    "  GN doesn't require data files to exist at build-time. So actions that\n"
+    "  produce files that are in turn runtime dependencies can list those\n"
+    "  generated files both in the \"outputs\" list as well as the \"data\"\n"
+    "  list.\n"
+    "\n"
+    "  See \"gn help runtime_deps\" for how these are used.\n";
 
 const char kDataDeps[] = "data_deps";
 const char kDataDeps_HelpShort[] =

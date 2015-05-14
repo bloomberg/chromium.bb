@@ -11,6 +11,7 @@
 #include "tools/gn/commands.h"
 #include "tools/gn/ninja_target_writer.h"
 #include "tools/gn/ninja_writer.h"
+#include "tools/gn/runtime_deps.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
@@ -97,6 +98,11 @@ int RunGen(const std::vector<std::string>& args) {
   if (!NinjaWriter::RunAndWriteFiles(&setup->build_settings(),
                                      setup->builder(),
                                      &err)) {
+    err.PrintToStdout();
+    return 1;
+  }
+
+  if (!WriteRuntimeDepsFilesIfNecessary(*setup->builder(), &err)) {
     err.PrintToStdout();
     return 1;
   }

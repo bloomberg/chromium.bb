@@ -14,6 +14,7 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label.h"
+#include "tools/gn/runtime_deps.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/substitution_writer.h"
@@ -23,6 +24,9 @@
 namespace commands {
 
 namespace {
+
+// The switch for displaying blame.
+const char kBlame[] = "blame";
 
 // Prints the given directory in a nice way for the user to view.
 std::string FormatSourceDir(const SourceDir& dir) {
@@ -404,7 +408,7 @@ template<typename T> void OutputRecursiveTargetConfig(
     const char* header_name,
     const std::vector<T>& (ConfigValues::* getter)() const) {
   bool display_blame =
-      base::CommandLine::ForCurrentProcess()->HasSwitch("blame");
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kBlame);
 
   DescValueWriter<T> writer;
   std::ostringstream out;
@@ -434,6 +438,30 @@ template<typename T> void OutputRecursiveTargetConfig(
   if (!out_str.empty()) {
     OutputString("\n" + std::string(header_name) + "\n");
     OutputString(out_str);
+  }
+}
+
+void PrintRuntimeDeps(const Target* target) {
+  bool display_blame =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kBlame);
+  Label toolchain = target->label().GetToolchainLabel();
+
+  const Target* previous_from = NULL;
+  for (const auto& pair : ComputeRuntimeDeps(target)) {
+    if (display_blame) {
+      // Generally a target's runtime deps will be listed sequentially, so
+      // group them and don't duplicate the "from" label for two in a row.
+      if (previous_from == pair.second) {
+        OutputString("  ");  // Just indent.
+      } else {
+        previous_from = pair.second;
+        OutputString("From ");
+        OutputString(pair.second->label().GetUserVisibleName(toolchain));
+        OutputString("\n  ");  // Make the file name indented.
+      }
+    }
+    OutputString(pair.first.value());
+    OutputString("\n");
   }
 }
 
@@ -513,6 +541,18 @@ const char kDesc_Help[] =
     "  libs\n"
     "      Shows the given values taken from the target and all configs\n"
     "      applying. See \"--blame\" below.\n"
+    "\n"
+    "  runtime_deps\n"
+    "      Compute all runtime deps for the given target. This is a\n"
+    "      computed list and does not correspond to any GN variable, unlike\n"
+    "      most other values here.\n"
+    "\n"
+    "      The output is a list of file names relative to the build\n"
+    "      directory. See \"gn help runtime_deps\" for how this is computed.\n"
+    "      This also works with \"--blame\" to see the source of the\n"
+    "      dependency.\n"
+    "\n"
+    "Shared flags\n"
     "\n"
     "  --blame\n"
     "      Used with any value specified by a config, this will name\n"
@@ -628,6 +668,8 @@ int RunDesc(const std::vector<std::string>& args) {
       PrintLibDirs(target, false);
     } else if (what == variables::kLibs) {
       PrintLibs(target, false);
+    } else if (what == "runtime_deps") {
+      PrintRuntimeDeps(target);
 
     CONFIG_VALUE_HANDLER(defines, std::string)
     CONFIG_VALUE_HANDLER(include_dirs, SourceDir)

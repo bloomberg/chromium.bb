@@ -239,7 +239,7 @@ void PrintLongHelp(const std::string& text) {
       OutputString(line.substr(0, chars_to_highlight), DECORATION_YELLOW);
       OutputString(line.substr(chars_to_highlight) + "\n");
       continue;
-    } else if (!line.empty() && !in_body) {
+    } else if (is_markdown && !line.empty() && !in_body) {
       OutputString("```\n", DECORATION_NONE);
       in_body = true;
     }

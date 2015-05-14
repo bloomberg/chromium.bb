@@ -4,7 +4,6 @@
 
 #include "tools/gn/ninja_target_writer.h"
 
-#include <fstream>
 #include <sstream>
 
 #include "base/files/file_util.h"

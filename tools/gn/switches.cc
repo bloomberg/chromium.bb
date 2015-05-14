@@ -58,9 +58,9 @@ const char kColor_Help[] = COLOR_HELP_LONG;
 
 const char kDotfile[] = "dotfile";
 const char kDotfile_HelpShort[] =
-    "--dotfile: override the name of the \".gn\" file.";
+    "--dotfile: Override the name of the \".gn\" file.";
 const char kDotfile_Help[] =
-    "--dotfile: override the name of the \".gn\" file.\n"
+    "--dotfile: Override the name of the \".gn\" file.\n"
     "\n"
     "  Normally GN loads the \".gn\"file  from the source root for some basic\n"
     "  configuration (see \"gn help dotfile\"). This flag allows you to\n"
@@ -107,6 +107,39 @@ const char kRoot_Help[] =
     "  gn gen //out/Default --root=/home/baracko/src\n"
     "\n"
     "  gn desc //out/Default --root=\"C:\\Users\\BObama\\My Documents\\foo\"\n";
+
+const char kRuntimeDepsListFile[] = "runtime-deps-list-file";
+const char kRuntimeDepsListFile_HelpShort[] =
+    "--runtime-deps-list-file: Save runtime dependencies for targets in file.";
+const char kRuntimeDepsListFile_Help[] =
+    "--runtime-deps-list-file: Save runtime dependencies for targets in file.\n"
+    "\n"
+    "  --runtime-deps-list-file=<filename>\n"
+    "\n"
+    "  Where <filename> is a text file consisting of the labels, one per\n"
+    "  line, of the targets for which runtime dependencies are desired.\n"
+    "\n"
+    "  See \"gn help runtime_deps\" for a description of how runtime\n"
+    "  dependencies are computed.\n"
+    "\n"
+    "Runtime deps output file\n"
+    "\n"
+    "  For each target requested, GN will write a separate runtime dependency\n"
+    "  file. The runtime dependency file will be in the output directory\n"
+    "  alongside the output file of the target, with a \".runtime_deps\"\n"
+    "  extension. For example, if the target \"//foo:bar\" is listed in the\n"
+    "  input file, and that target produces an output file \"bar.so\", GN\n"
+    "  will create a file \"bar.so.runtime_deps\" in the build directory.\n"
+    "\n"
+    "  If a source set, action, copy, or group is listed, the runtime deps\n"
+    "  file will correspond to the .stamp file corresponding to that target.\n"
+    "  This is probably not useful; the use-case for this feature is\n"
+    "  generally executable targets.\n"
+    "\n"
+    "  The runtime dependency file will list one file per line, with no\n"
+    "  escaping. The files will be relative to the root_build_dir. The first\n"
+    "  line of the file will be the main output file of the target itself\n"
+    "  (in the above example, \"bar.so\").\n";
 
 const char kThreads[] = "threads";
 const char kThreads_HelpShort[] =
@@ -194,6 +227,7 @@ const SwitchInfoMap& GetSwitches() {
     INSERT_VARIABLE(NoColor)
     INSERT_VARIABLE(Root)
     INSERT_VARIABLE(Quiet)
+    INSERT_VARIABLE(RuntimeDepsListFile)
     INSERT_VARIABLE(Time)
     INSERT_VARIABLE(Tracelog)
     INSERT_VARIABLE(Verbose)
