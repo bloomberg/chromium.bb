@@ -1535,11 +1535,10 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
         return true;
 
     swallowEvent = !dispatchMouseEvent(EventTypeNames::mousemove, mev.innerNode(), 0, mouseEvent, true);
+    if (!swallowEvent)
+        swallowEvent = handleMouseDraggedEvent(mev);
 
-    // http://www.w3.org/TR/DOM-Level-3-Events/#event-type-mousemove
-    // Since there is no default action for the mousemove event issue a
-    // mouse dragged event irrespective of whether the event is cancelled.
-    return handleMouseDraggedEvent(mev);
+    return swallowEvent;
 }
 
 void EventHandler::invalidateClick()
