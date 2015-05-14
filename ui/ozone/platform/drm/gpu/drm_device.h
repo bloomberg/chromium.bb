@@ -159,6 +159,7 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   virtual bool CommitProperties(drmModePropertySet* properties,
                                 uint32_t flags,
+                                bool is_sync,
                                 const PageFlipCallback& callback);
 
   // Set the gamma ramp for |crtc_id| to reflect the ramps in |lut|.

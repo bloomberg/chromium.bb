@@ -41,7 +41,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
 
   plane_list->plane_list.swap(plane_list->old_plane_list);
   plane_list->plane_list.clear();
-  if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), 0,
+  if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), 0, is_sync,
                               base::Bind(&AtomicPageFlipCallback))) {
     PLOG(ERROR) << "Failed to commit properties";
     return false;

@@ -559,20 +559,30 @@ bool DrmDevice::CloseBufferHandle(uint32_t handle) {
 
 bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                  uint32_t flags,
+                                 bool is_sync,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
+  flags |= DRM_MODE_PAGE_FLIP_EVENT;
   scoped_ptr<PageFlipPayload> payload(
       new PageFlipPayload(base::ThreadTaskRunnerHandle::Get(), callback));
+  uint64_t id = page_flip_manager_->GetNextId();
   if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags, payload.get(),
                                 properties)) {
-    // If successful the payload will be removed by the event
-    ignore_result(payload.release());
+    page_flip_manager_->RegisterCallback(id, callback);
+
+    // If the flip was requested synchronous or if no watcher has been installed
+    // yet, then synchronously handle the page flip events.
+    if (is_sync || !watcher_) {
+      TRACE_EVENT1("drm", "OnDrmEvent", "socket", file_.GetPlatformFile());
+
+      ProcessDrmEvent(
+          file_.GetPlatformFile(),
+          base::Bind(&PageFlipManager::OnPageFlip, page_flip_manager_));
+    }
     return true;
   }
-  return false;
-#else
-  return false;
 #endif  // defined(USE_DRM_ATOMIC)
+  return false;
 }
 
 bool DrmDevice::SetCapability(uint64_t capability, uint64_t value) {
