@@ -4,13 +4,13 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS context.createChannelMerger() did not throw an exception.
-PASS context.createChannelMerger(0) threw IndexSizeError.
+PASS context.createChannelMerger(0) threw IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': number of inputs (0) must be between 1 and 32..
 PASS context.createChannelMerger(32) did not throw an exception.
-PASS context.createChannelMerger(33) threw IndexSizeError.
+PASS context.createChannelMerger(33) threw IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': number of inputs (33) must be between 1 and 32..
 PASS merger.channelCount is equal to 1.
-PASS merger.channelCount = 3 threw InvalidStateError.
+PASS merger.channelCount = 3 threw InvalidStateError: Failed to set the 'channelCount' property on 'AudioNode': Failed to set the 'channelCount' property on 'ChannelMergerNode': channelCount cannot be changed.
 PASS merger.channelCountMode is equal to explicit.
-PASS merger.channelCountMode = "max" threw InvalidStateError.
+PASS merger.channelCountMode = "max" threw InvalidStateError: Failed to set the 'channelCountMode' property on 'AudioNode': Failed to set the 'channelCountMode' property on 'ChannelMergerNode': channelCountMode cannot be changed.
 PASS successfullyParsed is true
 
 TEST COMPLETE

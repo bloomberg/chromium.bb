@@ -433,9 +433,9 @@ var Should = (function () {
             this._testFailed('did not throw an exception');
         } catch (error) {
             if (errorType === undefined)
-                this._testPassed('threw an exception');
+                this._testPassed('threw an exception of type ' + error.name);
             else if (error.name === errorType)
-                this._testPassed('threw ' + errorType);
+                this._testPassed('threw ' + errorType + ': ' + error.message);
             else
                 this._testFailed('threw ' + error.name + ' instead of ' + exception);
         }
@@ -452,7 +452,7 @@ var Should = (function () {
             this.target();
             this._testPassed('did not throw an exception');
         } catch (error) {
-            this._testFailed('threw ' + error.name);
+            this._testFailed('threw ' + error.name + ': ' + error.message);
         }
     };
 
