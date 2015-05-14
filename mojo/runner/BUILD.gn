@@ -188,6 +188,7 @@ source_set("native_application_support") {
     "//base",
     "//mojo/gles2",
     "//mojo/platform_handle:defs",
+    "//mojo/shell",
   ]
 
   # This target has to include the public thunk headers, which generally

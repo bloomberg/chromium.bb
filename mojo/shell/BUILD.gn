@@ -33,6 +33,7 @@ source_set("shell") {
   public_deps = [
     "//base",
     "//mojo/common",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/interfaces/application:application",
     "//mojo/services/network/public/interfaces",
     "//url",
@@ -45,7 +46,6 @@ source_set("shell") {
     "//mojo/environment:chromium",
     "//mojo/util:filename_util",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
-    "//mojo/runner:native_application_support",
   ]
 }
 
