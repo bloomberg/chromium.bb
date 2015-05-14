@@ -64,7 +64,6 @@ class CC_EXPORT LayerTreeSettings {
   gfx::Size max_untiled_layer_size;
   gfx::Size default_tile_grid_size;
   gfx::Size minimum_occlusion_tracking_size;
-  bool use_pinch_zoom_scrollbars;
   bool use_pinch_virtual_viewport;
   float tiling_interest_area_viewport_multiplier;
   float skewport_target_time_in_seconds;
