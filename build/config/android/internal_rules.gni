@@ -1177,3 +1177,53 @@ template("deps_dex") {
     }
   }
 }
+
+# Creates an AndroidManifest.xml for an APK split.
+template("generate_split_manifest") {
+  assert(defined(invoker.main_manifest))
+  assert(defined(invoker.out_manifest))
+  assert(defined(invoker.split_name))
+
+  action(target_name) {
+    depfile = "$target_gen_dir/$target_name.d"
+    args = [
+      "--main-manifest",
+      rebase_path(invoker.main_manifest, root_build_dir),
+      "--out-manifest",
+      rebase_path(invoker.out_manifest, root_build_dir),
+      "--split",
+      invoker.split_name,
+    ]
+    if (defined(invoker.version_code)) {
+      args += [
+        "--version-code",
+        invoker.version_code,
+      ]
+    }
+    if (defined(invoker.version_name)) {
+      args += [
+        "--version-name",
+        invoker.version_name,
+      ]
+    }
+    if (defined(invoker.has_code)) {
+      args += [
+        "--has-code",
+        invoker.has_code,
+      ]
+    }
+    args += [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+    ]
+
+    script = "//build/android/gyp/generate_split_manifest.py"
+    outputs = [
+      depfile,
+      invoker.out_manifest,
+    ]
+    inputs = [
+      invoker.main_manifest,
+    ]
+  }
+}
