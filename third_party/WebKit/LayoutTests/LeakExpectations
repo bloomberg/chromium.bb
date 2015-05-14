@@ -138,4 +138,4 @@ crbug.com/482050 virtual/slimmingpaint/svg/as-background-image/animated-svg-anim
 crbug.com/488068 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak ]
 crbug.com/488068 http/tests/websocket/workers/worker-open-reload-repeated.html [ Leak ]
 crbug.com/488068 http/tests/websocket/workers/worker-stall-reload-repeated.html [ Leak ]
-
+crbug.com/488068 http/tests/websocket/workers/worker-reload.html [ Leak ]
