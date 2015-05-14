@@ -409,9 +409,9 @@ void GaiaAuthFetcher::ParseClientLoginResponse(const std::string& data,
   sid->clear();
   lsid->clear();
   token->clear();
-  vector<pair<string, string> > tokens;
+  base::StringPairs tokens;
   base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
-  for (vector<pair<string, string> >::iterator i = tokens.begin();
+  for (base::StringPairs::iterator i = tokens.begin();
       i != tokens.end(); ++i) {
     if (i->first == "SID") {
       sid->assign(i->second);
@@ -484,9 +484,9 @@ void GaiaAuthFetcher::ParseClientLoginFailure(const std::string& data,
   using std::pair;
   using std::string;
 
-  vector<pair<string, string> > tokens;
+  base::StringPairs tokens;
   base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
-  for (vector<pair<string, string> >::iterator i = tokens.begin();
+  for (base::StringPairs::iterator i = tokens.begin();
        i != tokens.end(); ++i) {
     if (i->first == kErrorParam) {
       error->assign(i->second);
