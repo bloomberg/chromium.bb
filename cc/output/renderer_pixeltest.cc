@@ -2498,6 +2498,114 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
       ExactPixelComparator(true)));
 }
 
+// This disables filtering by setting |nearest_neighbor| to true on the
+// TextureDrawQuad.
+TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
+  gfx::Rect viewport(this->device_viewport_size_);
+  bool nearest_neighbor = true;
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(2, 2);
+  {
+    SkAutoLockPixels lock(bitmap);
+    SkCanvas canvas(bitmap);
+    canvas.drawPoint(0, 0, SK_ColorGREEN);
+    canvas.drawPoint(0, 1, SK_ColorBLUE);
+    canvas.drawPoint(1, 0, SK_ColorBLUE);
+    canvas.drawPoint(1, 1, SK_ColorGREEN);
+  }
+
+  gfx::Size tile_size(2, 2);
+  ResourceProvider::ResourceId resource =
+      this->resource_provider_->CreateResource(
+          tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+          RGBA_8888);
+
+  {
+    SkAutoLockPixels lock(bitmap);
+    this->resource_provider_->CopyToResource(
+        resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
+  }
+
+  RenderPassId id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  SharedQuadState* shared_state = CreateTestSharedQuadState(
+      content_to_target_transform, viewport, pass.get());
+
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource, false,
+               gfx::PointF(0, 0), gfx::PointF(1, 1), SK_ColorBLACK,
+               vertex_opacity, false, nearest_neighbor);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
+      FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f)));
+}
+
+// This ensures filtering is enabled by setting |nearest_neighbor| to false on
+// the TextureDrawQuad.
+TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
+  gfx::Rect viewport(this->device_viewport_size_);
+  bool nearest_neighbor = false;
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(2, 2);
+  {
+    SkAutoLockPixels lock(bitmap);
+    SkCanvas canvas(bitmap);
+    canvas.drawPoint(0, 0, SK_ColorGREEN);
+    canvas.drawPoint(0, 1, SK_ColorBLUE);
+    canvas.drawPoint(1, 0, SK_ColorBLUE);
+    canvas.drawPoint(1, 1, SK_ColorGREEN);
+  }
+
+  gfx::Size tile_size(2, 2);
+  ResourceProvider::ResourceId resource =
+      this->resource_provider_->CreateResource(
+          tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+          RGBA_8888);
+
+  {
+    SkAutoLockPixels lock(bitmap);
+    this->resource_provider_->CopyToResource(
+        resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
+  }
+
+  RenderPassId id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  SharedQuadState* shared_state = CreateTestSharedQuadState(
+      content_to_target_transform, viewport, pass.get());
+
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource, false,
+               gfx::PointF(0, 0), gfx::PointF(1, 1), SK_ColorBLACK,
+               vertex_opacity, false, nearest_neighbor);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  // Allow for a small amount of error as the blending alogrithm used by Skia is
+  // affected by the offset in the expanded rect.
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers_linear.png")),
+      FuzzyPixelComparator(false, 100.f, 0.f, 16.f, 16.f, 0.f)));
+}
+
 TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);

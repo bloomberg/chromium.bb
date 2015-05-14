@@ -453,6 +453,8 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
     background_paint.setColor(quad->background_color);
     current_canvas_->drawRect(quad_rect, background_paint);
   }
+  current_paint_.setFilterQuality(
+      quad->nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality);
   SkShader::TileMode tile_mode = WrapModeToTileMode(lock.wrap_mode());
   if (tile_mode != SkShader::kClamp_TileMode) {
     SkMatrix matrix;
