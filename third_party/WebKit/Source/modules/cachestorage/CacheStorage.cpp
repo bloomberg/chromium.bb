@@ -247,7 +247,7 @@ ScriptPromise CacheStorage::match(ScriptState* scriptState, const RequestInfo& r
 
     if (request.isRequest())
         return matchImpl(scriptState, request.getAsRequest(), options);
-    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+    Request* newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
     return matchImpl(scriptState, newRequest, options);

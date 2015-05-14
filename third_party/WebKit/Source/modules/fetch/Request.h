@@ -32,12 +32,12 @@ public:
     ~Request() override { }
 
     // From Request.idl:
-    static Request* create(ExecutionContext*, const RequestInfo&, const Dictionary&, ExceptionState&);
+    static Request* create(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
-    static Request* create(ExecutionContext*, const String&, ExceptionState&);
-    static Request* create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
-    static Request* create(ExecutionContext*, Request*, ExceptionState&);
-    static Request* create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
+    static Request* create(ScriptState*, const String&, ExceptionState&);
+    static Request* create(ScriptState*, const String&, const Dictionary&, ExceptionState&);
+    static Request* create(ScriptState*, Request*, ExceptionState&);
+    static Request* create(ScriptState*, Request*, const Dictionary&, ExceptionState&);
     static Request* create(ExecutionContext*, FetchRequestData*);
     static Request* create(ExecutionContext*, const WebServiceWorkerRequest&);
 
@@ -69,7 +69,7 @@ private:
     Request(ExecutionContext*, const WebServiceWorkerRequest&);
     Request(ExecutionContext*, FetchRequestData*, Headers*);
 
-    static Request* createRequestWithRequestOrString(ExecutionContext*, Request*, const String&, const RequestInit&, ExceptionState&);
+    static Request* createRequestWithRequestOrString(ScriptState*, Request*, const String&, const RequestInit&, ExceptionState&);
     void clearHeaderList();
 
     PassRefPtr<BlobDataHandle> blobDataHandle() const override;

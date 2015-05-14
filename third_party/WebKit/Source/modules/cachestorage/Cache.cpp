@@ -225,7 +225,7 @@ ScriptPromise Cache::match(ScriptState* scriptState, const RequestInfo& request,
     ASSERT(!request.isNull());
     if (request.isRequest())
         return matchImpl(scriptState, request.getAsRequest(), options);
-    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+    Request* newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
     return matchImpl(scriptState, newRequest, options);
@@ -236,7 +236,7 @@ ScriptPromise Cache::matchAll(ScriptState* scriptState, const RequestInfo& reque
     ASSERT(!request.isNull());
     if (request.isRequest())
         return matchAllImpl(scriptState, request.getAsRequest(), options);
-    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+    Request* newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
     return matchAllImpl(scriptState, newRequest, options);
@@ -249,7 +249,7 @@ ScriptPromise Cache::add(ScriptState* scriptState, const RequestInfo& request, E
     if (request.isRequest()) {
         newRequest = request.getAsRequest();
     } else {
-        newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+        newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
 
         if (exceptionState.hadException())
             return ScriptPromise();
@@ -271,7 +271,7 @@ ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const RequestInfo&
     ASSERT(!request.isNull());
     if (request.isRequest())
         return deleteImpl(scriptState, request.getAsRequest(), options);
-    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+    Request* newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
     return deleteImpl(scriptState, newRequest, options);
@@ -282,7 +282,7 @@ ScriptPromise Cache::put(ScriptState* scriptState, const RequestInfo& request, R
     ASSERT(!request.isNull());
     if (request.isRequest())
         return putImpl(scriptState, request.getAsRequest(), response);
-    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+    Request* newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
     return putImpl(scriptState, newRequest, response);
@@ -298,7 +298,7 @@ ScriptPromise Cache::keys(ScriptState* scriptState, const RequestInfo& request, 
     ASSERT(!request.isNull());
     if (request.isRequest())
         return keysImpl(scriptState, request.getAsRequest(), options);
-    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+    Request* newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
     return keysImpl(scriptState, newRequest, options);

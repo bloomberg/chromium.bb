@@ -43,7 +43,7 @@ public:
         // "Let |r| be the associated request of the result of invoking the
         // initial value of Request as constructor with |input| and |init| as
         // arguments. If this throws an exception, reject |p| with it."
-        Request* r = Request::create(m_stopDetector->executionContext(), input, init, exceptionState);
+        Request* r = Request::create(scriptState, input, init, exceptionState);
         if (exceptionState.hadException())
             return ScriptPromise();
         return m_fetchManager->fetch(scriptState, r->passRequestData());

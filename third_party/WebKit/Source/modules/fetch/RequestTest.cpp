@@ -36,7 +36,7 @@ TEST_F(ServiceWorkerRequestTest, FromString)
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    Request* request = Request::create(executionContext(), url, exceptionState);
+    Request* request = Request::create(scriptState(), url, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request);
     EXPECT_EQ(url, request->url());
@@ -47,10 +47,10 @@ TEST_F(ServiceWorkerRequestTest, FromRequest)
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    Request* request1 = Request::create(executionContext(), url, exceptionState);
+    Request* request1 = Request::create(scriptState(), url, exceptionState);
     ASSERT(request1);
 
-    Request* request2 = Request::create(executionContext(), request1, exceptionState);
+    Request* request2 = Request::create(scriptState(), request1, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request2);
     EXPECT_EQ(url, request2->url());
@@ -111,7 +111,7 @@ TEST_F(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment)
     TrackExceptionState exceptionState;
     String urlWithoutFragment = "http://www.example.com/";
     String url = urlWithoutFragment + "#fragment";
-    Request* request = Request::create(executionContext(), url, exceptionState);
+    Request* request = Request::create(scriptState(), url, exceptionState);
     ASSERT(request);
 
     WebServiceWorkerRequest webRequest;

@@ -21,7 +21,7 @@
 
 namespace blink {
 
-FetchRequestData* createCopyOfFetchRequestDataForFetch(ExecutionContext* context, const FetchRequestData* original)
+FetchRequestData* createCopyOfFetchRequestDataForFetch(ScriptState* scriptState, const FetchRequestData* original)
 {
     FetchRequestData* request = FetchRequestData::create();
     request->setURL(original->url());
@@ -29,7 +29,11 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ExecutionContext* context
     request->setHeaderList(original->headerList()->clone());
     request->setUnsafeRequestFlag(true);
     // FIXME: Set client.
-    request->setOrigin(SecurityOrigin::create(context->url()));
+    DOMWrapperWorld& world = scriptState->world();
+    if (world.isIsolatedWorld())
+        request->setOrigin(world.isolatedWorldSecurityOrigin());
+    else
+        request->setOrigin(scriptState->executionContext()->securityOrigin());
     // FIXME: Set ForceOriginHeaderFlag.
     request->setSameOriginDataURLFlag(true);
     request->mutableReferrer()->setClient();
@@ -40,7 +44,7 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ExecutionContext* context
     return request;
 }
 
-Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Request* inputRequest, const String& inputString, const RequestInit& init, ExceptionState& exceptionState)
+Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Request* inputRequest, const String& inputString, const RequestInit& init, ExceptionState& exceptionState)
 {
     // "1. Let |temporaryBody| be null."
     RefPtr<BlobDataHandle> temporaryBody;
@@ -78,7 +82,7 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
     // |request|'s mode, credentials mode is |request|'s credentials mode,
     // cache mode is |request|'s cache mode, and redirect mode is request's
     // redirect mode."
-    FetchRequestData* request = createCopyOfFetchRequestDataForFetch(context, inputRequest ? inputRequest->request() : FetchRequestData::create());
+    FetchRequestData* request = createCopyOfFetchRequestDataForFetch(scriptState, inputRequest ? inputRequest->request() : FetchRequestData::create());
 
     // "5. Let |fallbackMode| be null."
     // "6. Let |fallbackCredentials| be null."
@@ -90,7 +94,7 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
     if (!inputRequest) {
         // "1. Let |parsedURL| be the result of parsing |input| with entry
         // settings object's API base URL."
-        KURL parsedURL = context->completeURL(inputString);
+        KURL parsedURL = scriptState->executionContext()->completeURL(inputString);
         // "2. If |parsedURL| is failure, throw a TypeError."
         if (!parsedURL.isValid()) {
             exceptionState.throwTypeError("Failed to parse URL from " + inputString);
@@ -168,7 +172,7 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
     }
     // "21. Let |r| be a new Request object associated with |request| and a new
     // Headers object whose guard is request."
-    Request* r = Request::create(context, request);
+    Request* r = Request::create(scriptState->executionContext(), request);
     // "22. Let |headers| be a copy of |r|'s Headers object."
     // "23. If |init|'s headers member is present, set |headers| to |init|'s
     // headers member."
@@ -250,32 +254,32 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
     return r;
 }
 
-Request* Request::create(ExecutionContext* context, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
+Request* Request::create(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
     ASSERT(!input.isNull());
     if (input.isUSVString())
-        return create(context, input.getAsUSVString(), init, exceptionState);
-    return create(context, input.getAsRequest(), init, exceptionState);
+        return create(scriptState, input.getAsUSVString(), init, exceptionState);
+    return create(scriptState, input.getAsRequest(), init, exceptionState);
 }
 
-Request* Request::create(ExecutionContext* context, const String& input, ExceptionState& exceptionState)
+Request* Request::create(ScriptState* scriptState, const String& input, ExceptionState& exceptionState)
 {
-    return create(context, input, Dictionary(), exceptionState);
+    return create(scriptState, input, Dictionary(), exceptionState);
 }
 
-Request* Request::create(ExecutionContext* context, const String& input, const Dictionary& init, ExceptionState& exceptionState)
+Request* Request::create(ScriptState* scriptState, const String& input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    return createRequestWithRequestOrString(context, nullptr, input, RequestInit(context, init, exceptionState), exceptionState);
+    return createRequestWithRequestOrString(scriptState, nullptr, input, RequestInit(scriptState->executionContext(), init, exceptionState), exceptionState);
 }
 
-Request* Request::create(ExecutionContext* context, Request* input, ExceptionState& exceptionState)
+Request* Request::create(ScriptState* scriptState, Request* input, ExceptionState& exceptionState)
 {
-    return create(context, input, Dictionary(), exceptionState);
+    return create(scriptState, input, Dictionary(), exceptionState);
 }
 
-Request* Request::create(ExecutionContext* context, Request* input, const Dictionary& init, ExceptionState& exceptionState)
+Request* Request::create(ScriptState* scriptState, Request* input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    return createRequestWithRequestOrString(context, input, String(), RequestInit(context, init, exceptionState), exceptionState);
+    return createRequestWithRequestOrString(scriptState, input, String(), RequestInit(scriptState->executionContext(), init, exceptionState), exceptionState);
 }
 
 Request* Request::create(ExecutionContext* context, FetchRequestData* request)

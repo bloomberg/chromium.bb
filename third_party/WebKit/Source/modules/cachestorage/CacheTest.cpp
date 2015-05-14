@@ -223,7 +223,7 @@ public:
     Request* newRequestFromUrl(const String& url)
     {
         TrackExceptionState exceptionState;
-        Request* request = Request::create(executionContext(), url, exceptionState);
+        Request* request = Request::create(scriptState(), url, exceptionState);
         EXPECT_FALSE(exceptionState.hadException());
         return exceptionState.hadException() ? 0 : request;
     }
