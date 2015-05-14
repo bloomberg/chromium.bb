@@ -62,7 +62,7 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
   // instance even on platforms that would otherwise not support it.
   if (default_adapter.Get())
     return true;
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
   return true;
 #elif defined(OS_MACOSX)
   return base::mac::IsOSLionOrLater();
