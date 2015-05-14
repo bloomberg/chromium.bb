@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -131,9 +130,7 @@ std::string ExtensionUninstallDialog::GetHeadingText() {
 }
 
 bool ExtensionUninstallDialog::ShouldShowReportAbuseCheckbox() const {
-  return ManifestURL::UpdatesFromGallery(extension_) &&
-      base::FieldTrialList::FindFullName("ExtensionUninstall.ReportAbuse") ==
-          "ShowCheckbox";
+  return ManifestURL::UpdatesFromGallery(extension_);
 }
 
 void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
