@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/display/display_manager.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -57,8 +58,8 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
   // for the mirrored display.
   void UpdateWindow();
 
-  // Close the mirror window.
-  void Close();
+  // Close the mirror window if they're not necessary any longer.
+  void CloseIfNotNecessary();
 
   // aura::WindowTreeHostObserver overrides:
   void OnHostResized(const aura::WindowTreeHost* host) override;
@@ -81,7 +82,13 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
 
   struct MirroringHostInfo;
 
-  void CloseAndDeleteHost(MirroringHostInfo* host_info);
+  // Close the mirror window. When |delay_host_deletion| is true, the window
+  // tree host will be deleted in an another task on UI thread. This is
+  // necessary to safely delete the WTH that is currently handling input events.
+  void Close(bool delay_host_deletion);
+
+  void CloseAndDeleteHost(MirroringHostInfo* host_info,
+                          bool delay_host_deletion);
 
   // Creates a RootWindowTransformer for current display
   // configuration.
@@ -89,6 +96,8 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
 
   typedef std::map<int64_t, MirroringHostInfo*> MirroringHostInfoMap;
   MirroringHostInfoMap mirroring_host_info_map_;
+
+  DisplayManager::MultiDisplayMode multi_display_mode_;
 
   scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 

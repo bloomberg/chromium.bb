@@ -805,8 +805,8 @@ void DisplayController::CreateOrUpdateMirroringDisplay(
   }
 }
 
-void DisplayController::CloseMirroringDisplay() {
-  mirror_window_controller_->Close();
+void DisplayController::CloseMirroringDisplayIfNotNecessary() {
+  mirror_window_controller_->CloseIfNotNecessary();
   // If cursor_compositing is enabled for large cursor, the cursor window is
   // always on the desktop display (the visible cursor on the non-desktop
   // display is drawn through compositor mirroring). Therefore, it's unnecessary

@@ -136,12 +136,13 @@ MirrorWindowController::MirroringHostInfo::~MirroringHostInfo() {
 }
 
 MirrorWindowController::MirrorWindowController()
-    : screen_position_client_(new MirroringScreenPositionClient(this)) {
+    : multi_display_mode_(DisplayManager::EXTENDED),
+      screen_position_client_(new MirroringScreenPositionClient(this)) {
 }
 
 MirrorWindowController::~MirrorWindowController() {
   // Make sure the root window gets deleted before cursor_window_delegate.
-  Close();
+  Close(false);
 }
 
 void MirrorWindowController::UpdateWindow(
@@ -247,7 +248,7 @@ void MirrorWindowController::UpdateWindow(
                        [iter](const DisplayInfo& info) {
                          return info.id() == iter->first;
                        }) == display_info_list.end()) {
-        CloseAndDeleteHost(iter->second);
+        CloseAndDeleteHost(iter->second, true);
         iter = mirroring_host_info_map_.erase(iter);
       } else {
         ++iter;
@@ -266,10 +267,23 @@ void MirrorWindowController::UpdateWindow() {
   UpdateWindow(display_info_list);
 }
 
-void MirrorWindowController::Close() {
-  for (auto& info : mirroring_host_info_map_) {
-    CloseAndDeleteHost(info.second);
-  }
+void MirrorWindowController::CloseIfNotNecessary() {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  DisplayManager::MultiDisplayMode new_mode =
+      display_manager->IsInUnifiedMode()
+          ? DisplayManager::UNIFIED
+          : (display_manager->IsInMirrorMode() ? DisplayManager::MIRRORING
+                                               : DisplayManager::EXTENDED);
+  if (multi_display_mode_ != new_mode)
+    Close(true);
+  multi_display_mode_ = new_mode;
+}
+
+void MirrorWindowController::Close(bool delay_host_deletion) {
+  for (auto& info : mirroring_host_info_map_)
+    CloseAndDeleteHost(info.second, delay_host_deletion);
+
   mirroring_host_info_map_.clear();
   if (reflector_) {
     aura::Env::GetInstance()->context_factory()->RemoveReflector(
@@ -342,7 +356,8 @@ aura::Window::Windows MirrorWindowController::GetAllRootWindows() const {
   return root_windows;
 }
 
-void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info) {
+void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info,
+                                                bool delay_host_deletion) {
   aura::WindowTreeHost* host = host_info->ash_host->AsWindowTreeHost();
 
   aura::client::SetScreenPositionClient(host->window(), nullptr);
@@ -357,7 +372,13 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info) {
   host_info->ash_host->PrepareForShutdown();
   reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
 
-  delete host_info;
+  // EventProcessor may be accessed after this call if the mirroring window
+  // was deleted as a result of input event (e.g. shortcut), so don't delete
+  // now.
+  if (delay_host_deletion)
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, host_info);
+  else
+    delete host_info;
 }
 
 scoped_ptr<RootWindowTransformer>

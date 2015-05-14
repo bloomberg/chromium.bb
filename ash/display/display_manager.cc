@@ -673,12 +673,13 @@ void DisplayManager::UpdateDisplays(
   std::sort(new_display_info_list.begin(),
             new_display_info_list.end(),
             DisplayInfoSortFunctor());
+
+  CreateSoftwareMirroringDisplayInfo(&new_display_info_list);
+
   // Close the mirroring window if any here to avoid creating two compositor on
   // one display.
   if (delegate_)
-    delegate_->CloseMirroringDisplay();
-
-  CreateSoftwareMirroringDisplay(&new_display_info_list);
+    delegate_->CloseMirroringDisplayIfNotNecessary();
 
   DisplayList new_displays;
   DisplayList removed_displays;
@@ -1081,7 +1082,7 @@ void DisplayManager::UpdateInternalDisplayModeListForTest() {
   SetInternalDisplayModeList(info);
 }
 
-void DisplayManager::CreateSoftwareMirroringDisplay(
+void DisplayManager::CreateSoftwareMirroringDisplayInfo(
     DisplayInfoList* display_info_list) {
   // Use the internal display or 1st as the mirror source, then scale
   // the root window so that it matches the external display's

@@ -159,7 +159,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // aura::DisplayManager::Delegate overrides:
   void CreateOrUpdateMirroringDisplay(
       const DisplayInfoList& info_list) override;
-  void CloseMirroringDisplay() override;
+  void CloseMirroringDisplayIfNotNecessary() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange() override;
 

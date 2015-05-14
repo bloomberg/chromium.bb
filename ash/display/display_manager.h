@@ -65,8 +65,8 @@ class ASH_EXPORT DisplayManager
     virtual void CreateOrUpdateMirroringDisplay(
         const DisplayInfoList& display_info_list) = 0;
 
-    // Closes the mirror window if exists.
-    virtual void CloseMirroringDisplay() = 0;
+    // Closes the mirror window if not necessary.
+    virtual void CloseMirroringDisplayIfNotNecessary() = 0;
 
     // Called before and after the display configuration changes.
     // When |clear_focus| is true, the implementation should
@@ -343,7 +343,7 @@ private:
 
   // Creates software mirroring display related information. The display
   // used to mirror the content is removed from the |display_info_list|.
-  void CreateSoftwareMirroringDisplay(DisplayInfoList* display_info_list);
+  void CreateSoftwareMirroringDisplayInfo(DisplayInfoList* display_info_list);
 
   gfx::Display* FindDisplayForId(int64 id);
 
