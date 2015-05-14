@@ -93,6 +93,7 @@
       'resources/scoped_gpu_raster_unittest.cc',
       'resources/scoped_resource_unittest.cc',
       'resources/task_graph_runner_unittest.cc',
+      'resources/texture_compressor_etc1_unittest.cc',
       'resources/texture_mailbox_deleter_unittest.cc',
       'resources/texture_uploader_unittest.cc',
       'resources/tile_manager_unittest.cc',

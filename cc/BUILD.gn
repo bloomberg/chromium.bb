@@ -540,6 +540,7 @@ component("cc") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//cc:cc_opts",
     "//cc/surfaces:surface_id",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
@@ -554,6 +555,36 @@ component("cc") {
   if (!is_debug && (is_win || is_android)) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
+  }
+}
+
+source_set("cc_opts") {
+  public_deps = [
+    "//cc:cc_opts_sse",
+  ]
+}
+
+source_set("cc_opts_sse") {
+  if (target_cpu == "x86" || target_cpu == "x64") {
+    deps = [
+      "//base",
+    ]
+
+    defines = [ "CC_IMPLEMENTATION=1" ]
+
+    if (!is_debug && (is_win || is_android)) {
+      configs -= [ "//build/config/compiler:optimize" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
+    sources = [
+      "resources/texture_compressor.h",
+      "resources/texture_compressor_etc1.h",
+      "resources/texture_compressor_etc1_sse.cc",
+      "resources/texture_compressor_etc1_sse.h",
+    ]
+
+    cflags = [ "-msse2" ]
   }
 }
 
@@ -811,6 +842,7 @@ test("cc_unittests") {
     "resources/scoped_gpu_raster_unittest.cc",
     "resources/scoped_resource_unittest.cc",
     "resources/task_graph_runner_unittest.cc",
+    "resources/texture_compressor_etc1_unittest.cc",
     "resources/texture_mailbox_deleter_unittest.cc",
     "resources/texture_uploader_unittest.cc",
     "resources/tile_manager_unittest.cc",

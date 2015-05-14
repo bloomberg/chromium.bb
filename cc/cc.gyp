@@ -20,6 +20,7 @@
         '<(DEPTH)/ui/events/events.gyp:events_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
+        'cc_opts',
       ],
       'variables': {
         'optimize': 'max',
@@ -632,5 +633,41 @@
         '../build/android/increase_size_for_speed.gypi',
       ],
     },
+    {
+      'target_name': 'cc_opts',
+      'type': 'static_library',
+      'conditions': [
+        ['target_arch == "ia32" or target_arch == "x64"', {
+          'defines': [
+            'CC_IMPLEMENTATION=1',
+          ],
+          'dependencies': [
+            'cc_opts_sse',
+          ]          
+        }],
+      ],  
+    },    
+    {
+      'target_name': 'cc_opts_sse',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+      ],
+      'conditions': [
+        ['target_arch == "ia32" or target_arch == "x64"', {
+          'defines': [
+            'CC_IMPLEMENTATION=1',
+          ],
+          'sources': [
+            # Conditional compilation for SSE2 code on x86 and x64 machines
+            'resources/texture_compressor_etc1_sse.cc',
+            'resources/texture_compressor_etc1_sse.h',
+          ],
+          'cflags': [
+            '-msse2',
+          ],
+        }],
+      ],
+    },    
   ],
 }
