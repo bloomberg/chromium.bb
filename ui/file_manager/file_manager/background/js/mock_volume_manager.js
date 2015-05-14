@@ -110,14 +110,15 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
       type,
       volumeId,
       fileSystem,
-      '',     // error
-      '',     // deviceType
-      '',     // devicePath
-      false,  // isReadonly
+      '',      // error
+      '',      // deviceType
+      '',      // devicePath
+      false,   // isReadonly
       {isCurrentProfile: true, displayName: ''},  // profile
-      label,  // label
-      '',     // extensionId
-      false); // hasMedia
+      label,   // label
+      '',      // extensionId
+      false,   // hasMedia
+      false);  // configurable
 
   return volumeInfo;
 };

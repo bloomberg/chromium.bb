@@ -460,6 +460,15 @@ VolumeItem.prototype = {
   get entry() {
     return this.volumeInfo_.displayRoot;
   },
+  /**
+   * @type {!VolumeInfo}
+   */
+  get volumeInfo() {
+    return this.volumeInfo_;
+  },
+  /**
+   * @type {!NavigationModelVolumeItem}
+   */
   get modelItem() {
     return this.modelItem_;
   }

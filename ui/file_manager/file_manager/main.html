@@ -235,6 +235,7 @@
       <command id="unmount" i18n-values="label:UNMOUNT_DEVICE_BUTTON_LABEL"
                shortcut="U+0045-Shift-Ctrl"><!-- Shortcut: 'Shift-Ctrl-E' -->
       <command id="format" i18n-values="label:FORMAT_DEVICE_BUTTON_LABEL">
+      <command id="configure" i18n-values="label:CONFIGURE_VOLUME_BUTTON_LABEL">
 
       <command id="volume-help" i18n-values="label:DRIVE_MENU_HELP">
       <command id="drive-buy-more-space"
@@ -297,6 +298,7 @@
     </cr-menu>
 
     <cr-menu id="roots-context-menu" class="chrome-menu" >
+      <cr-menu-item command="#configure"></cr-menu-item>
       <cr-menu-item command="#unmount"></cr-menu-item>
       <cr-menu-item command="#format"></cr-menu-item>
       <cr-menu-item command="#remove-folder-shortcut"></cr-menu-item>
@@ -322,6 +324,7 @@
       <cr-menu-item id="gear-menu-newwindow" command="#new-window"></cr-menu-item>
       <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
       <hr>
+      <cr-menu-item command="#configure"></cr-menu-item>
       <cr-menu-item id="gear-menu-toggle-hidden-files"
                     command="#toggle-hidden-files"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-sync-settings"

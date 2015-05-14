@@ -26,6 +26,7 @@
  *     volume. Empty for native volumes.
  * @param {boolean} hasMedia When true the volume has been identified
  *     as containing media such as photos or videos.
+ * @param {boolean} configurable When true, then the volume can be configured.
  */
 function VolumeInfo(
     volumeType,
@@ -38,7 +39,8 @@ function VolumeInfo(
     profile,
     label,
     extensionId,
-    hasMedia) {
+    hasMedia,
+    configurable) {
   this.volumeType_ = volumeType;
   this.volumeId_ = volumeId;
   this.fileSystem_ = fileSystem;
@@ -80,6 +82,7 @@ function VolumeInfo(
   this.profile_ = Object.freeze(profile);
   this.extensionId_ = extensionId;
   this.hasMedia_ = hasMedia;
+  this.configurable_ = configurable;
 }
 
 VolumeInfo.prototype = /** @struct */ {
@@ -161,6 +164,12 @@ VolumeInfo.prototype = /** @struct */ {
    */
   get hasMedia() {
     return this.hasMedia_;
+  },
+  /**
+   * @return {boolean} True if the volume is configurable.
+   */
+  get configurable() {
+    return this.configurable_;
   }
 };
 
@@ -245,20 +254,44 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
   }
 
   console.debug('Requesting file system.');
+  var configurable = false;
+
   return new Promise(
       function(resolve, reject) {
-        chrome.fileSystem.requestFileSystem(
-            {
-              volumeId: volumeMetadata.volumeId,
-              writable: !volumeMetadata.isReadOnly
-            },
-            function(isolatedFileSystem) {
-              if (chrome.runtime.lastError)
+        if (volumeMetadata.volumeType !==
+            VolumeManagerCommon.VolumeType.PROVIDED) {
+          resolve();
+        }
+
+        chrome.fileManagerPrivate.getProvidingExtensions(
+            function(extensions) {
+              if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError.message);
-              else
-                resolve(isolatedFileSystem);
+                return;
+              }
+              configurable = extensions.some(function(extension) {
+                return extension.extensionId === volumeMetadata.extensionId &&
+                    extension.configurable;
+              });
+              resolve();
             });
       })
+      .then(
+          function() {
+            return new Promise(function(resolve, reject) {
+              chrome.fileSystem.requestFileSystem(
+                  {
+                    volumeId: volumeMetadata.volumeId,
+                    writable: !volumeMetadata.isReadOnly
+                  },
+                  function(isolatedFileSystem) {
+                    if (chrome.runtime.lastError)
+                      reject(chrome.runtime.lastError.message);
+                    else
+                      resolve(isolatedFileSystem);
+                  });
+            });
+          })
       .then(
           /**
            * @param {!FileSystem} isolatedFileSystem
@@ -313,7 +346,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
                   volumeMetadata.profile,
                   localizedLabel,
                   volumeMetadata.extensionId,
-                  volumeMetadata.hasMedia);
+                  volumeMetadata.hasMedia,
+                  configurable);
       })
       .catch(
           /**
@@ -335,7 +369,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
                 volumeMetadata.profile,
                 localizedLabel,
                 volumeMetadata.extensionId,
-                volumeMetadata.hasMedia);
+                volumeMetadata.hasMedia,
+                configurable);
           });
 };
 

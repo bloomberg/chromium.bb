@@ -254,7 +254,8 @@ function testVolumeInfoListWhenReady(callback) {
       /* profile */ {},
       /* label */ null,
       /* extensionid */ null,
-      /* hasMedia */ false);
+      /* hasMedia */ false,
+      /* configurable */ false);
   list.add(volumeInfo);
   var promiseAfterAdd = list.whenVolumeInfoReady('volumeId');
   reportPromise(Promise.all([promiseBeforeAdd, promiseAfterAdd]).then(

@@ -321,7 +321,8 @@ CommandHandler.prototype.onCommand_ = function(event) {
   if (this.shouldIgnoreEvents_())
     return;
   var handler = CommandHandler.COMMANDS_[event.command.id];
-  handler.execute.call(/** @type {Command} */ (this), event, this.fileManager_);
+  handler.execute.call(/** @type {Command} */ (handler), event,
+                       this.fileManager_);
 };
 
 /**
@@ -333,7 +334,7 @@ CommandHandler.prototype.onCanExecute_ = function(event) {
   if (this.shouldIgnoreEvents_())
     return;
   var handler = CommandHandler.COMMANDS_[event.command.id];
-  handler.canExecute.call(/** @type {Command} */ (this), event,
+  handler.canExecute.call(/** @type {Command} */ (handler), event,
                           this.fileManager_);
 };
 
@@ -383,7 +384,7 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
     var root = CommandUtil.getCommandEntry(event.target);
     if (!root)
       return;
-    var locationInfo = this.fileManager_.volumeManager.getLocationInfo(root);
+    var locationInfo = fileManager.volumeManager.getLocationInfo(root);
     var rootType =
         locationInfo && locationInfo.isRootEntry && locationInfo.rootType;
 
@@ -1320,3 +1321,73 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
   },
   canExecute: CommandUtil.canExecuteAlways
 });
+
+/**
+ * Configures the currently selected volume.
+ */
+CommandHandler.COMMANDS_['configure'] = (function() {
+  /**
+   * @constructor
+   * @implements {Command}
+   */
+  var ConfigureCommand = function() {
+  };
+
+  ConfigureCommand.prototype = {
+    __proto__: Command.prototype,
+
+    /**
+     * @param {EventTarget} element
+     * @param {!FileManager} fileManager
+     * @return {VolumeInfo}
+     * @private
+     */
+    getElementVolumeInfo_: function(element, fileManager) {
+      if (element instanceof VolumeItem)
+        return element.volumeInfo;
+      if (element instanceof ShortcutItem) {
+        return element.entry && fileManager.volumeManager.getVolumeInfo(
+            element.entry);
+      }
+    },
+
+    /**
+     * If the command is executed on the navigation list, then use it's volume
+     * info, otherwise use the currently opened volume.
+     *
+     * @param {!Event} event
+     * @param {!FileManager} fileManager
+     * @return {VolumeInfo}
+     * @private
+     */
+    getCommandVolumeInfo_: function(event, fileManager) {
+      var currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();
+      return this.getElementVolumeInfo_(event.target, fileManager) ||
+          currentDirEntry && fileManager.volumeManager.getVolumeInfo(
+              currentDirEntry);
+    },
+
+    /**
+     * @override
+     */
+    execute: function(event, fileManager) {
+      var volumeInfo = this.getCommandVolumeInfo_(event, fileManager);
+      if (volumeInfo && volumeInfo.configurable) {
+        fileManager.providersModel.requestConfigure(
+            assert(volumeInfo.extensionId));
+      }
+    },
+
+    /**
+     * @override
+     */
+    canExecute: function(event, fileManager) {
+      var volumeInfo = this.getCommandVolumeInfo_(event, fileManager);
+      event.canExecute = volumeInfo && volumeInfo.configurable;
+      event.command.setHidden(!event.canExecute);
+    }
+  };
+
+  return new ConfigureCommand();
+})();
+
