@@ -485,6 +485,10 @@ void TableView::OnItemsRemoved(int start, int length) {
     selection_model_.SetSelectedIndex(
         ViewToModel(std::min(RowCount() - 1, previously_selected_view_index)));
   }
+  if (!selection_model_.empty() && selection_model_.active() == -1)
+    selection_model_.set_active(FirstSelectedRow());
+  if (!selection_model_.empty() && selection_model_.anchor() == -1)
+    selection_model_.set_anchor(FirstSelectedRow());
   if (table_view_observer_)
     table_view_observer_->OnSelectionChanged();
 }

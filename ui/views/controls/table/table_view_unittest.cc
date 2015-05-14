@@ -34,6 +34,14 @@ class TableViewTestHelper {
 
   TableHeader* header() { return table_->header_; }
 
+  void SetSelectionModel(const ui::ListSelectionModel& new_selection) {
+    table_->SetSelectionModel(new_selection);
+  }
+
+  void OnFocus() {
+    table_->OnFocus();
+  }
+
  private:
   TableView* table_;
 
@@ -842,6 +850,21 @@ TEST_F(TableViewTest, MultiselectionWithSort) {
   EXPECT_EQ("active=2 anchor=4 selection=2 3 4", SelectionStateAsString());
 
   table_->SetObserver(NULL);
+}
+
+// Verifies we don't crash after removing the selected row when there is
+// sorting and the anchor/active index also match the selected row.
+TEST_F(TableViewTest, FocusAfterRemovingAnchor) {
+  table_->ToggleSortOrder(0);
+
+  ui::ListSelectionModel new_selection;
+  new_selection.AddIndexToSelection(0);
+  new_selection.AddIndexToSelection(1);
+  new_selection.set_active(0);
+  new_selection.set_anchor(0);
+  helper_->SetSelectionModel(new_selection);
+  model_->RemoveRow(0);
+  helper_->OnFocus();
 }
 
 }  // namespace views
