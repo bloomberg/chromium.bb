@@ -130,17 +130,20 @@ public class SyncTest extends SyncTestBase {
 
     @LargeTest
     @Feature({"Sync"})
-    public void testDisableAndEnableSync() throws InterruptedException {
+    public void testDisableAndEnableSyncThroughAndroid() throws InterruptedException {
         setupTestAccountAndSignInToSync(CLIENT_ID);
+        SyncTestUtil.ensureSyncInitialized(mContext);
+
         Account account =
                 AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
+        String authority = AndroidSyncSettings.get(mContext).getContractAuthority();
 
         // Disabling Android sync should turn Chrome sync engine off.
-        AndroidSyncSettings.get(mContext).disableChromeSync();
+        mSyncContentResolver.setSyncAutomatically(account, authority, false);
         SyncTestUtil.verifySyncIsDisabled(mContext, account);
 
         // Enabling Android sync should turn Chrome sync engine on.
-        AndroidSyncSettings.get(mContext).enableChromeSync();
+        mSyncContentResolver.setSyncAutomatically(account, authority, true);
         SyncTestUtil.ensureSyncInitialized(mContext);
         SyncTestUtil.verifySignedInWithAccount(mContext, account);
     }

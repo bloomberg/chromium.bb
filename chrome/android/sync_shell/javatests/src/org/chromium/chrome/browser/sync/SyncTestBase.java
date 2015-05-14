@@ -38,6 +38,7 @@ public class SyncTestBase extends ChromeShellTestBase {
     protected SyncController mSyncController;
     protected FakeServerHelper mFakeServerHelper;
     protected ProfileSyncService mProfileSyncService;
+    protected MockSyncContentResolverDelegate mSyncContentResolver;
 
     @Override
     protected void setUp() throws Exception {
@@ -109,10 +110,9 @@ public class SyncTestBase extends ChromeShellTestBase {
     }
 
     private void setUpMockAndroidSyncSettings() {
-        MockSyncContentResolverDelegate syncContentResolverDelegate =
-                new MockSyncContentResolverDelegate();
-        syncContentResolverDelegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mContext, syncContentResolverDelegate);
+        mSyncContentResolver = new MockSyncContentResolverDelegate();
+        mSyncContentResolver.setMasterSyncAutomatically(true);
+        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolver);
     }
 
     protected void setupTestAccountAndSignInToSync(
