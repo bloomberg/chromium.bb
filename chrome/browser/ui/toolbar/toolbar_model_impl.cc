@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -12,8 +14,10 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ssl/connection_security_helper.h"
+#include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -35,15 +39,118 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#endif
+
 using content::NavigationController;
 using content::NavigationEntry;
+using content::SSLStatus;
 using content::WebContents;
+
+namespace {
+
+ToolbarModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
+  std::string choice = base::CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kMarkNonSecureAs);
+  if (choice == switches::kMarkNonSecureAsNeutral)
+    return ToolbarModel::NONE;
+  if (choice == switches::kMarkNonSecureAsDubious)
+    return ToolbarModel::SECURITY_WARNING;
+  if (choice == switches::kMarkNonSecureAsNonSecure)
+    return ToolbarModel::SECURITY_ERROR;
+
+  std::string group = base::FieldTrialList::FindFullName("MarkNonSecureAs");
+  if (group == switches::kMarkNonSecureAsNeutral)
+    return ToolbarModel::NONE;
+  if (group == switches::kMarkNonSecureAsDubious)
+    return ToolbarModel::SECURITY_WARNING;
+  if (group == switches::kMarkNonSecureAsNonSecure)
+    return ToolbarModel::SECURITY_ERROR;
+
+  return ToolbarModel::NONE;
+}
+
+}  // namespace
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
     : delegate_(delegate) {
 }
 
 ToolbarModelImpl::~ToolbarModelImpl() {
+}
+
+// static
+ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
+      content::WebContents* web_contents) {
+  if (!web_contents)
+    return NONE;
+
+  NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+  if (!entry)
+    return NONE;
+
+  const SSLStatus& ssl = entry->GetSSL();
+  switch (ssl.security_style) {
+    case content::SECURITY_STYLE_UNKNOWN:
+      return NONE;
+
+    case content::SECURITY_STYLE_UNAUTHENTICATED: {
+      const GURL& url = entry->GetURL();
+      if (url.SchemeIs("http") || url.SchemeIs("ftp"))
+        return GetSecurityLevelForNonSecureFieldTrial();
+      return NONE;
+    }
+
+    case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
+      return SECURITY_ERROR;
+
+    case content::SECURITY_STYLE_AUTHENTICATED: {
+#if defined(OS_CHROMEOS)
+      policy::PolicyCertService* service =
+          policy::PolicyCertServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+      if (service && service->UsedPolicyCertificates())
+        return SECURITY_POLICY_WARNING;
+#endif
+      if (!!(ssl.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT))
+        return SECURITY_WARNING;
+      scoped_refptr<net::X509Certificate> cert;
+      if (content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert) &&
+          (ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT)) {
+        // The internal representation of the dates for UI treatment of SHA-1.
+        // See http://crbug.com/401365 for details
+        static const int64_t kJanuary2017 = INT64_C(13127702400000000);
+        // kJanuary2016 needs to be kept in sync with
+        // ToolbarModelAndroid::IsDeprecatedSHA1Present().
+        static const int64_t kJanuary2016 = INT64_C(13096080000000000);
+        if (cert->valid_expiry() >=
+            base::Time::FromInternalValue(kJanuary2017)) {
+          return SECURITY_ERROR;
+        }
+        if (cert->valid_expiry() >=
+            base::Time::FromInternalValue(kJanuary2016)) {
+          return SECURITY_WARNING;
+        }
+      }
+      if (net::IsCertStatusError(ssl.cert_status)) {
+        DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
+        return SECURITY_WARNING;
+      }
+      if (net::SSLConnectionStatusToVersion(ssl.connection_status) ==
+          net::SSL_CONNECTION_VERSION_SSL3) {
+        // SSLv3 will be removed in the future.
+        return SECURITY_WARNING;
+      }
+      if ((ssl.cert_status & net::CERT_STATUS_IS_EV) && cert.get())
+        return EV_SECURE;
+      return SECURE;
+    }
+    default:
+      NOTREACHED();
+      return NONE;
+  }
 }
 
 // ToolbarModelImpl Implementation.
@@ -109,13 +216,11 @@ bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
   return !GetSearchTerms(ignore_editing).empty();
 }
 
-ConnectionSecurityHelper::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
+ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
     bool ignore_editing) const {
   // When editing, assume no security style.
-  return (input_in_progress() && !ignore_editing)
-             ? ConnectionSecurityHelper::NONE
-             : ConnectionSecurityHelper::GetSecurityLevelForWebContents(
-                   delegate_->GetActiveWebContents());
+  return (input_in_progress() && !ignore_editing) ?
+      NONE : GetSecurityLevelForWebContents(delegate_->GetActiveWebContents());
 }
 
 int ToolbarModelImpl::GetIcon() const {
@@ -125,28 +230,21 @@ int ToolbarModelImpl::GetIcon() const {
   return GetIconForSecurityLevel(GetSecurityLevel(false));
 }
 
-int ToolbarModelImpl::GetIconForSecurityLevel(
-    ConnectionSecurityHelper::SecurityLevel level) const {
-  switch (level) {
-    case ConnectionSecurityHelper::NONE:
-      return IDR_LOCATION_BAR_HTTP;
-    case ConnectionSecurityHelper::EV_SECURE:
-    case ConnectionSecurityHelper::SECURE:
-      return IDR_OMNIBOX_HTTPS_VALID;
-    case ConnectionSecurityHelper::SECURITY_WARNING:
-      return IDR_OMNIBOX_HTTPS_WARNING;
-    case ConnectionSecurityHelper::SECURITY_POLICY_WARNING:
-      return IDR_OMNIBOX_HTTPS_POLICY_WARNING;
-    case ConnectionSecurityHelper::SECURITY_ERROR:
-      return IDR_OMNIBOX_HTTPS_INVALID;
-  }
-
-  NOTREACHED();
-  return IDR_LOCATION_BAR_HTTP;
+int ToolbarModelImpl::GetIconForSecurityLevel(SecurityLevel level) const {
+  static int icon_ids[NUM_SECURITY_LEVELS] = {
+    IDR_LOCATION_BAR_HTTP,
+    IDR_OMNIBOX_HTTPS_VALID,
+    IDR_OMNIBOX_HTTPS_VALID,
+    IDR_OMNIBOX_HTTPS_WARNING,
+    IDR_OMNIBOX_HTTPS_POLICY_WARNING,
+    IDR_OMNIBOX_HTTPS_INVALID,
+  };
+  DCHECK(arraysize(icon_ids) == NUM_SECURITY_LEVELS);
+  return icon_ids[level];
 }
 
 base::string16 ToolbarModelImpl::GetEVCertName() const {
-  if (GetSecurityLevel(false) != ConnectionSecurityHelper::EV_SECURE)
+  if (GetSecurityLevel(false) != EV_SECURE)
     return base::string16();
 
   // Note: Navigation controller and active entry are guaranteed non-NULL or
@@ -239,10 +337,7 @@ base::string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
 
   // Otherwise, extract search terms for HTTPS pages that do not have a security
   // error.
-  ConnectionSecurityHelper::SecurityLevel security_level =
-      GetSecurityLevel(ignore_editing);
-  return ((security_level == ConnectionSecurityHelper::NONE) ||
-          (security_level == ConnectionSecurityHelper::SECURITY_ERROR))
-             ? base::string16()
-             : search_terms;
+  ToolbarModel::SecurityLevel security_level = GetSecurityLevel(ignore_editing);
+  return ((security_level == NONE) || (security_level == SECURITY_ERROR)) ?
+      base::string16() : search_terms;
 }
