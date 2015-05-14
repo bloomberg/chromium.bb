@@ -937,6 +937,7 @@ bool RenderFrameHostManager::ClearProxiesInSiteInstance(
     // in the proxy) and it was still pending swap out, move the RFH to the
     // pending deletion list first.
     if (node->IsMainFrame() &&
+        proxy->render_frame_host() &&
         proxy->render_frame_host()->rfh_state() ==
         RenderFrameHostImpl::STATE_PENDING_SWAP_OUT) {
       scoped_ptr<RenderFrameHostImpl> swapped_out_rfh =
