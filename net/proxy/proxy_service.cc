@@ -1302,18 +1302,12 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
 bool ProxyService::MarkProxiesAsBadUntil(
     const ProxyInfo& result,
     base::TimeDelta retry_delay,
-    const ProxyServer& another_bad_proxy,
+    const std::vector<ProxyServer>& additional_bad_proxies,
     const BoundNetLog& net_log) {
-  result.proxy_list_.UpdateRetryInfoOnFallback(&proxy_retry_info_,
-                                               retry_delay,
-                                               false,
-                                               another_bad_proxy,
-                                               OK,
-                                               net_log);
-  if (another_bad_proxy.is_valid())
-    return result.proxy_list_.size() > 2;
-  else
-    return result.proxy_list_.size() > 1;
+  result.proxy_list_.UpdateRetryInfoOnFallback(&proxy_retry_info_, retry_delay,
+                                               false, additional_bad_proxies,
+                                               OK, net_log);
+  return result.proxy_list_.size() > (additional_bad_proxies.size() + 1);
 }
 
 void ProxyService::ReportSuccess(const ProxyInfo& result,

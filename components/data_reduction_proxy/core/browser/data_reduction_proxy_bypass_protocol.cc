@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 
+#include <vector>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
@@ -39,6 +41,7 @@ void MarkProxiesAsBadUntil(
   // Synthesize a suitable |ProxyInfo| to add the proxies to the
   // |ProxyRetryInfoMap| of the proxy service.
   net::ProxyList proxy_list;
+  std::vector<net::ProxyServer> additional_bad_proxies;
   net::ProxyServer primary = data_reduction_proxies.first;
   if (primary.is_valid())
     proxy_list.AddProxyServer(primary);
@@ -47,8 +50,10 @@ void MarkProxiesAsBadUntil(
     if (data_reduction_proxies.second.is_valid() &&
         !data_reduction_proxies.second.host_port_pair().IsEmpty())
       fallback = data_reduction_proxies.second;
-    if (fallback.is_valid())
+    if (fallback.is_valid()) {
       proxy_list.AddProxyServer(fallback);
+      additional_bad_proxies.push_back(fallback);
+    }
     proxy_list.AddProxyServer(net::ProxyServer::Direct());
   }
   net::ProxyInfo proxy_info;
@@ -57,10 +62,8 @@ void MarkProxiesAsBadUntil(
   net::ProxyService* proxy_service = request->context()->proxy_service();
   DCHECK(proxy_service);
 
-  proxy_service->MarkProxiesAsBadUntil(proxy_info,
-                                       bypass_duration,
-                                       fallback,
-                                       request->net_log());
+  proxy_service->MarkProxiesAsBadUntil(
+      proxy_info, bypass_duration, additional_bad_proxies, request->net_log());
 }
 
 }  // namespace

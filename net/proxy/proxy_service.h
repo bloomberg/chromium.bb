@@ -164,18 +164,19 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   // Explicitly trigger proxy fallback for the given |results| by updating our
   // list of bad proxies to include the first entry of |results|, and,
-  // optionally, another bad proxy. Will retry after |retry_delay| if positive,
-  // and will use the default proxy retry duration otherwise. Proxies marked as
-  // bad will not be retried until |retry_delay| has passed. Returns true if
-  // there will be at least one proxy remaining in the list after fallback and
-  // false otherwise. This method should be used to add proxies to the bad
-  // proxy list only for reasons other than a network error. If a proxy needs
-  // to be added to the bad proxy list because a network error was encountered
-  // when trying to connect to it, use |ReconsiderProxyAfterError|.
-  bool MarkProxiesAsBadUntil(const ProxyInfo& results,
-                             base::TimeDelta retry_delay,
-                             const ProxyServer& another_bad_proxy,
-                             const BoundNetLog& net_log);
+  // additional bad proxies (can be none). Will retry after |retry_delay| if
+  // positive, and will use the default proxy retry duration otherwise. Proxies
+  // marked as bad will not be retried until |retry_delay| has passed. Returns
+  // true if there will be at least one proxy remaining in the list after
+  // fallback and false otherwise. This method should be used to add proxies to
+  // the bad proxy list only for reasons other than a network error. If a proxy
+  // needs to be added to the bad proxy list because a network error was
+  // encountered when trying to connect to it, use |ReconsiderProxyAfterError|.
+  bool MarkProxiesAsBadUntil(
+      const ProxyInfo& results,
+      base::TimeDelta retry_delay,
+      const std::vector<ProxyServer>& additional_bad_proxies,
+      const BoundNetLog& net_log);
 
   // Called to report that the last proxy connection succeeded.  If |proxy_info|
   // has a non empty proxy_retry_info map, the proxies that have been tried (and

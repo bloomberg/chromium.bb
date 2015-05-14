@@ -1576,6 +1576,39 @@ TEST_F(ProxyServiceTest, ProxyBypassList) {
   EXPECT_EQ("foopy1:8080", info[1].proxy_server().ToURI());
 }
 
+TEST_F(ProxyServiceTest, MarkProxiesAsBadTests) {
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString(
+      "http=foopy1:8080;http=foopy2:8080;http=foopy3.8080;http=foopy4:8080");
+  config.set_auto_detect(false);
+
+  ProxyList proxy_list;
+  std::vector<ProxyServer> additional_bad_proxies;
+  for (const ProxyServer& proxy_server :
+       config.proxy_rules().proxies_for_http.GetAll()) {
+    proxy_list.AddProxyServer(proxy_server);
+    if (proxy_server == config.proxy_rules().proxies_for_http.Get())
+      continue;
+
+    additional_bad_proxies.push_back(proxy_server);
+  }
+
+  EXPECT_EQ(3u, additional_bad_proxies.size());
+
+  ProxyService service(new MockProxyConfigService(config), nullptr, NULL);
+  ProxyInfo proxy_info;
+  proxy_info.UseProxyList(proxy_list);
+  const ProxyRetryInfoMap& retry_info = service.proxy_retry_info();
+  service.MarkProxiesAsBadUntil(proxy_info, base::TimeDelta::FromSeconds(1),
+                                additional_bad_proxies, BoundNetLog());
+  ASSERT_EQ(4u, retry_info.size());
+  for (const ProxyServer& proxy_server :
+       config.proxy_rules().proxies_for_http.GetAll()) {
+    ProxyRetryInfoMap::const_iterator i =
+        retry_info.find(proxy_server.host_port_pair().ToString());
+    ASSERT_TRUE(i != retry_info.end());
+  }
+}
 
 TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
   ProxyConfig config;

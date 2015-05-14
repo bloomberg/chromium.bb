@@ -172,12 +172,8 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
     return false;
   }
   // By default, proxies are not retried for 5 minutes.
-  UpdateRetryInfoOnFallback(proxy_retry_info,
-                            TimeDelta::FromMinutes(5),
-                            true,
-                            ProxyServer(),
-                            net_error,
-                            net_log);
+  UpdateRetryInfoOnFallback(proxy_retry_info, TimeDelta::FromMinutes(5), true,
+                            std::vector<ProxyServer>(), net_error, net_log);
 
   // Remove this proxy from our list.
   proxies_.erase(proxies_.begin());
@@ -213,7 +209,7 @@ void ProxyList::UpdateRetryInfoOnFallback(
     ProxyRetryInfoMap* proxy_retry_info,
     base::TimeDelta retry_delay,
     bool reconsider,
-    const ProxyServer& another_proxy_to_bypass,
+    const std::vector<ProxyServer>& additional_proxies_to_bypass,
     int net_error,
     const BoundNetLog& net_log) const {
   DCHECK(retry_delay != base::TimeDelta());
@@ -230,16 +226,11 @@ void ProxyList::UpdateRetryInfoOnFallback(
                         proxies_[0],
                         net_error,
                         net_log);
-
-    // If an additional proxy to bypass is specified, add it to the retry map
+    // If any additional proxies to bypass are specified, add to the retry map
     // as well.
-    if (another_proxy_to_bypass.is_valid()) {
-      AddProxyToRetryList(proxy_retry_info,
-                          retry_delay,
-                          reconsider,
-                          another_proxy_to_bypass,
-                          net_error,
-                          net_log);
+    for (const ProxyServer& additional_proxy : additional_proxies_to_bypass) {
+      AddProxyToRetryList(proxy_retry_info, retry_delay, reconsider,
+                          additional_proxy, net_error, net_log);
     }
   }
 }

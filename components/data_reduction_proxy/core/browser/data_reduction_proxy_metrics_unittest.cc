@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -153,7 +155,8 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
       proxy_info.UseProxyList(
           data_reduction_proxy_config.proxy_rules().proxies_for_http);
       EXPECT_TRUE(context.proxy_service()->MarkProxiesAsBadUntil(
-          proxy_info, test_case.bypass_duration, net::ProxyServer(),
+          proxy_info, test_case.bypass_duration,
+          std::vector<net::ProxyServer>(),
           net::BoundNetLog::Make(context.net_log(), net::NetLog::SOURCE_NONE)));
     }
 
