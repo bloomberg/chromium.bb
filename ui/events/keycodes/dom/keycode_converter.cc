@@ -108,13 +108,7 @@ int KeycodeConverter::CodeToNativeKeycode(const char* code) {
 
 // static
 int KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
-  if (code == DomCode::NONE)
-    return InvalidNativeKeycode();
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].usb_keycode == static_cast<uint32_t>(code))
-      return usb_keycode_map[i].native_keycode;
-  }
-  return InvalidNativeKeycode();
+  return UsbKeycodeToNativeKeycode(static_cast<uint32_t>(code));
 }
 
 // static

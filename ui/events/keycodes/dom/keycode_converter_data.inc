@@ -117,10 +117,12 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x070031, 0x0033, 0x002b, 0x002a, "Backslash", BACKSLASH),  // \|
   // USB#070032 never appears on keyboards that have USB#070031.
   // Platforms use the same scancode as for the two keys.
+  // Hence this code can only be generated synthetically
+  // (e.g. in a DOM Level 3 KeyboardEvent).
   // The keycap varies on international keyboards:
   //   Dan: '*  Dutch: <>  Ger: #'  UK: #~
   // TODO(garykac): Verify Mac intl keyboard.
-  //USB_KEYMAP(0x070032, 0x0033, 0x002b, 0x002a, "IntlHash", INTL_HASH),
+  USB_KEYMAP(0x070032, 0x0000, 0x0000, 0xffff, "IntlHash", INTL_HASH),
   USB_KEYMAP(0x070033, 0x002f, 0x0027, 0x0029, "Semicolon", SEMICOLON),  // ;:
   USB_KEYMAP(0x070034, 0x0030, 0x0028, 0x0027, "Quote", QUOTE),      // '"
   USB_KEYMAP(0x070035, 0x0031, 0x0029, 0x0032, "Backquote", BACKQUOTE),  // `~

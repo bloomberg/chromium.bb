@@ -8,6 +8,8 @@
 namespace ui {
 
 // This table maps a DomCode to a printable character, assuming US layout.
+// It is used by DomCodeToUsLayoutMeaning(), which provides a fallback
+// interpretation when there is no other way to map a physical key.
 const struct PrintableCodeEntry {
   DomCode dom_code;
   base::char16 character[2];  // normal, shift
@@ -60,7 +62,8 @@ const struct PrintableCodeEntry {
     {DomCode::COMMA, {',', '<'}},
     {DomCode::PERIOD, {'.', '>'}},
     {DomCode::SLASH, {'/', '?'}},
-    {DomCode::INTL_BACKSLASH, {'\\', '|'}},
+    {DomCode::INTL_BACKSLASH, {'<', '>'}},
+    {DomCode::INTL_HASH, {'\\', '|'}},
     {DomCode::INTL_YEN, {0x00A5, '|'}},
     {DomCode::NUMPAD_DIVIDE, {'/', '/'}},
     {DomCode::NUMPAD_MULTIPLY, {'*', '*'}},
@@ -85,6 +88,8 @@ const struct PrintableCodeEntry {
 };
 
 // This table maps a DomCode to a DomKey, assuming US keyboard layout.
+// It is used by DomCodeToUsLayoutMeaning(), which provides a fallback
+// interpretation when there is no other way to map a physical key.
 const struct NonPrintableCodeEntry {
   DomCode dom_code;
   DomKey dom_key;
@@ -427,7 +432,7 @@ const struct DomCodeToKeyboardCodeEntry {
     {DomCode::BRACKET_LEFT, VKEY_OEM_4},        // 0x07002F BracketLeft
     {DomCode::BRACKET_RIGHT, VKEY_OEM_6},       // 0x070030 BracketRight
     {DomCode::BACKSLASH, VKEY_OEM_5},           // 0x070031 Backslash
-    // DomCode::INTL_HASH, VKEY_OEM_5           // 0x070032 IntlHash
+    {DomCode::INTL_HASH, VKEY_OEM_5},           // 0x070032 IntlHash
     {DomCode::SEMICOLON, VKEY_OEM_1},           // 0x070033 Semicolon
     {DomCode::QUOTE, VKEY_OEM_7},               // 0x070034 Quote
     {DomCode::BACKQUOTE, VKEY_OEM_3},           // 0x070035 Backquote
@@ -580,7 +585,6 @@ const struct DomCodeToKeyboardCodeEntry {
 const DomCodeToKeyboardCodeEntry kFallbackKeyboardCodeToDomCodeMap[] = {
     {DomCode::ALT_LEFT, VKEY_MENU},
     {DomCode::ALT_RIGHT, VKEY_ALTGR},
-    {DomCode::BACKQUOTE, VKEY_DBE_SBCSCHAR},
 #if defined(OS_POSIX)
     {DomCode::CONTEXT_MENU, VKEY_COMPOSE},
 #endif
@@ -589,34 +593,37 @@ const DomCodeToKeyboardCodeEntry kFallbackKeyboardCodeToDomCodeMap[] = {
     {DomCode::LANG2, VKEY_HANJA},
     {DomCode::LANG5, VKEY_DBE_DBCSCHAR},
     {DomCode::NUMPAD_CLEAR, VKEY_OEM_CLEAR},
+    {DomCode::NUMPAD_DECIMAL, VKEY_SEPARATOR},
     {DomCode::PROPS, VKEY_CRSEL},
     {DomCode::SHIFT_LEFT, VKEY_SHIFT},
     {DomCode::SUPER, VKEY_OEM_8},
     //
-    // VKEYs with no existing corresponding DomCode, but a USB usage code:
-    //  {DomCode::SYS_REQ, VKEY_ATTN},          // 0x07009A SysReq
-    //  {DomCode::SEPARATOR, VKEY_SEPARATOR},   // 0x07009F Separator
-    //  {DomCode::EX_SEL, VKEY_EXSEL},          // 0x0700A4 ExSel
-    //  {DomCode::PRINT, VKEY_PRINT},           // 0x0C0208 AC Print
-    //  {DomCode::MEDIA_PLAY, VKEY_PLAY},       // 0x0C00B0 MediaPlay
-    //  {DomCode::MEDIA_REWIND, VKEY_OEM_103},  // 0x0C00B4 MediaRewind
-    //  {DomCode::MEDIA_FAST_FORWARD, VKEY_OEM_104},
-    //                                          // 0x0C00B3 MediaFastForward
+    // VKEYs with no directly corresponding DomCode, but a USB usage code:
+    //  VKEY_ATTN                 // 0x07009A SysReq
+    //  VKEY_SEPARATOR            // 0x07009F Separator
+    //  VKEY_EXSEL                // 0x0700A4 ExSel
+    //  VKEY_PRINT                // 0x0C0208 AC Print
+    //  VKEY_PLAY                 // 0x0C00B0 MediaPlay
+    //  VKEY_OEM_103              // 0x0C00B4 MediaRewind
+    //  VKEY_OEM_104              // 0x0C00B3 MediaFastForward
+    //
+    // VKEYs with no corresponding DomCode, but a Linux evdev usage code:
+    //  VKEY_KBD_BRIGHTNESS_DOWN  //  evdev KEY_KBDILLUMDOWN
+    //  VKEY_KBD_BRIGHTNESS_UP    //  evdev KEY_KBDILLUMUP
+    //  VKEY_WLAN                 //  evdev KEY_WLAN
     //
     // VKEYs with no corresponding DomCode and no obvious USB usage code:
     //  VKEY_ACCEPT
     //  VKEY_BACKTAB
+    //  VKEY_DBE_SBCSCHAR
     //  VKEY_EREOF
     //  VKEY_FINAL
     //  VKEY_JUNJA
-    //  VKEY_KBD_BRIGHTNESS_DOWN
-    //  VKEY_KBD_BRIGHTNESS_UP
     //  VKEY_MODECHANGE
     //  VKEY_NONAME
     //  VKEY_PA1
     //  VKEY_PACKET
     //  VKEY_PROCESSKEY
-    //  VKEY_WLAN
 };
 
 }  // namespace ui
