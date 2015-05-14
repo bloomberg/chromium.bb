@@ -29,7 +29,6 @@ else
   unset LD_PRELOAD
 fi
 
-export CHROMEOS_ROOT="{source_root}"
 export CHOST="{chost}"
 export PORTAGE_CONFIGROOT="{sysroot}"
 export SYSROOT="{sysroot}"
@@ -212,8 +211,7 @@ class Sysroot(object):
     chost = self.GetStandardField('CHOST')
     for cmd in ('ebuild', 'eclean', 'emaint', 'equery', 'portageq', 'qcheck',
                 'qdepends', 'qfile', 'qlist', 'qmerge', 'qsize'):
-      args = {'sysroot': self.path, 'chost': chost, 'command': cmd,
-              'source_root': constants.SOURCE_ROOT}
+      args = {'sysroot': self.path, 'chost': chost, 'command': cmd}
       if friendly_name:
         _CreateWrapper(self._WrapperPath(cmd, friendly_name),
                        _PORTAGE_WRAPPER_TEMPLATE, **args)

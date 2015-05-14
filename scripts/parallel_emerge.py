@@ -301,11 +301,6 @@ class DepGraphGenerator(object):
       os.environ["PORTAGE_CONFIGROOT"] = self.sysroot
       os.environ["SYSROOT"] = self.sysroot
 
-      # Although CHROMEOS_ROOT isn't specific to boards, it's normally setup
-      # inside emerge-${BOARD}, so we set it up here for compatibility. It
-      # will be going away soon as we migrate to CROS_WORKON_SRCROOT.
-      os.environ.setdefault("CHROMEOS_ROOT", os.environ["HOME"] + "/trunk")
-
     # Turn off interactive delays
     os.environ["EBEEP_IGNORE"] = "1"
     os.environ["EPAUSE_IGNORE"] = "1"
