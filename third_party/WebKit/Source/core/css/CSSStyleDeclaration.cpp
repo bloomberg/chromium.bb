@@ -146,13 +146,4 @@ void CSSStyleDeclaration::namedPropertyEnumerator(Vector<String>& names, Excepti
     }
 }
 
-bool CSSStyleDeclaration::namedPropertyQuery(ScriptState* scriptState, const AtomicString& name, ExceptionState&)
-{
-    // NOTE: cssPropertyInfo lookups incur several mallocs.
-    // Successful lookups have the same cost the first time, but are cached.
-    if (cssPropertyInfo(name, scriptState->isolate()))
-        return true;
-    return false;
-}
-
 }

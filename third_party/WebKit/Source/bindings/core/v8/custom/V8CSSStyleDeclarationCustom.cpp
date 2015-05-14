@@ -151,6 +151,18 @@ static CSSPropertyID cssPropertyInfo(v8::Local<v8::String> v8PropertyName, v8::I
     return unresolvedProperty;
 }
 
+void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    if (!v8Name->IsString())
+        return;
+    // NOTE: cssPropertyInfo lookups incur several mallocs.
+    // Successful lookups have the same cost the first time, but are cached.
+    if (cssPropertyInfo(v8Name.As<v8::String>(), info.GetIsolate())) {
+        v8SetReturnValueInt(info, 0);
+        return;
+    }
+}
+
 void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // Search the style declaration.

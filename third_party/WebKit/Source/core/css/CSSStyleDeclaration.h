@@ -72,7 +72,6 @@ public:
     virtual CSSStyleSheet* parentStyleSheet() const { return 0; }
     virtual bool anonymousNamedSetter(ScriptState*, const String& name, const String& value, ExceptionState&);
     virtual void namedPropertyEnumerator(Vector<String>& names, ExceptionState&);
-    virtual bool namedPropertyQuery(ScriptState*, const AtomicString& name, ExceptionState&);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
