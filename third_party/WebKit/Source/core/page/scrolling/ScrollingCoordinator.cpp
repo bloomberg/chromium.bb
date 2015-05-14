@@ -101,7 +101,7 @@ ScrollingCoordinator::~ScrollingCoordinator()
 
 void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const Region& region)
 {
-    if (!m_page->mainFrame()->isLocalFrame())
+    if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
         return;
     if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
         Vector<IntRect> rects = region.rects();
@@ -121,11 +121,15 @@ void ScrollingCoordinator::notifyLayoutUpdated()
 
 void ScrollingCoordinator::scrollableAreasDidChange()
 {
+    ASSERT(m_page);
+    if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
+        return;
+
     // Layout may update scrollable area bounding boxes. It also sets the same dirty
     // flag making this one redundant (See |ScrollingCoordinator::notifyLayoutUpdated|).
     // So if layout is expected, ignore this call allowing scrolling coordinator
     // to be notified post-layout to recompute gesture regions.
-    if (!m_page->deprecatedLocalMainFrame()->view() || m_page->deprecatedLocalMainFrame()->view()->needsLayout())
+    if (m_page->deprecatedLocalMainFrame()->view()->needsLayout())
         return;
 
     m_scrollGestureRegionIsDirty = true;
@@ -627,8 +631,12 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange()
     if (!RuntimeEnabledFeatures::touchEnabled())
         return;
 
+    ASSERT(m_page);
+    if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
+        return;
+
     // Wait until after layout to update.
-    if (!m_page->deprecatedLocalMainFrame()->view() || m_page->deprecatedLocalMainFrame()->view()->needsLayout())
+    if (m_page->deprecatedLocalMainFrame()->view()->needsLayout())
         return;
 
     // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
@@ -694,7 +702,7 @@ void ScrollingCoordinator::updateHaveScrollEventHandlers()
 
 void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons reasons)
 {
-    if (!m_page->mainFrame()->isLocalFrame())
+    if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
         return;
     if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
         m_lastMainThreadScrollingReasons = reasons;
