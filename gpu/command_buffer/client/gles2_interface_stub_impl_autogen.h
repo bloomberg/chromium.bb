@@ -485,6 +485,14 @@ void GLES2InterfaceStub::GetVertexAttribiv(GLuint /* index */,
                                            GLenum /* pname */,
                                            GLint* /* params */) {
 }
+void GLES2InterfaceStub::GetVertexAttribIiv(GLuint /* index */,
+                                            GLenum /* pname */,
+                                            GLint* /* params */) {
+}
+void GLES2InterfaceStub::GetVertexAttribIuiv(GLuint /* index */,
+                                             GLenum /* pname */,
+                                             GLuint* /* params */) {
+}
 void GLES2InterfaceStub::GetVertexAttribPointerv(GLuint /* index */,
                                                  GLenum /* pname */,
                                                  void** /* pointer */) {

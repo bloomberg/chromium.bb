@@ -65,6 +65,10 @@ class GPU_EXPORT VertexAttrib {
     return divisor_;
   }
 
+  GLboolean integer() const {
+    return integer_;
+  }
+
   bool enabled() const {
     return enabled_;
   }
@@ -118,6 +122,10 @@ class GPU_EXPORT VertexAttrib {
     divisor_ = divisor;
   }
 
+  void SetInteger(GLboolean integer) {
+    integer_ = integer;
+  }
+
   void Unbind(Buffer* buffer);
 
   // The index of this attrib.
@@ -146,6 +154,8 @@ class GPU_EXPORT VertexAttrib {
   GLsizei real_stride_;
 
   GLsizei divisor_;
+
+  GLboolean integer_;
 
   // Will be true if this was assigned to a client side array.
   bool is_client_side_array_;
@@ -215,6 +225,13 @@ class GPU_EXPORT VertexAttribManager :
     VertexAttrib* attrib = GetVertexAttrib(index);
     if (attrib) {
       attrib->SetDivisor(divisor);
+    }
+  }
+
+  void SetInteger(GLuint index, GLboolean integer) {
+    VertexAttrib* attrib = GetVertexAttrib(index);
+    if (attrib) {
+      attrib->SetInteger(integer);
     }
   }
 

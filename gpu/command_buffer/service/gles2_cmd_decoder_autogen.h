@@ -2070,6 +2070,74 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetVertexAttribIiv(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetVertexAttribIiv& c =
+      *static_cast<const gles2::cmds::GetVertexAttribIiv*>(cmd_data);
+  (void)c;
+  GLuint index = static_cast<GLuint>(c.index);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  typedef cmds::GetVertexAttribIiv::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetVertexAttribIiv");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  DoGetVertexAttribIiv(index, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetVertexAttribIiv", "");
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetVertexAttribIuiv(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetVertexAttribIuiv& c =
+      *static_cast<const gles2::cmds::GetVertexAttribIuiv*>(cmd_data);
+  (void)c;
+  GLuint index = static_cast<GLuint>(c.index);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  typedef cmds::GetVertexAttribIuiv::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLuint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetVertexAttribIuiv");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  DoGetVertexAttribIuiv(index, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetVertexAttribIuiv", "");
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleHint(uint32_t immediate_data_size,
                                           const void* cmd_data) {
   const gles2::cmds::Hint& c = *static_cast<const gles2::cmds::Hint*>(cmd_data);

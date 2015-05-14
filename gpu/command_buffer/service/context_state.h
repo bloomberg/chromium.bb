@@ -101,15 +101,58 @@ struct GPU_EXPORT TextureUnit {
   }
 };
 
-struct Vec4 {
+class GPU_EXPORT Vec4 {
+ public:
+  enum DataType {
+    kFloat,
+    kInt,
+    kUInt,
+  };
+
   Vec4() {
-    v[0] = 0.0f;
-    v[1] = 0.0f;
-    v[2] = 0.0f;
-    v[3] = 1.0f;
+    v_[0].float_value = 0.0f;
+    v_[1].float_value = 0.0f;
+    v_[2].float_value = 0.0f;
+    v_[3].float_value = 1.0f;
+    type_ = kFloat;
   }
-  float v[4];
+
+  template <typename T>
+  void GetValues(T* values) const;
+
+  template <typename T>
+  void SetValues(const T* values);
+
+  DataType type() const {
+    return type_;
+  }
+
+  bool Equal(const Vec4& other) const;
+
+ private:
+  union ValueUnion {
+    GLfloat float_value;
+    GLint int_value;
+    GLuint uint_value;
+  };
+
+  ValueUnion v_[4];
+  DataType type_;
 };
+
+template <>
+GPU_EXPORT void Vec4::GetValues<GLfloat>(GLfloat* values) const;
+template <>
+GPU_EXPORT void Vec4::GetValues<GLint>(GLint* values) const;
+template <>
+GPU_EXPORT void Vec4::GetValues<GLuint>(GLuint* values) const;
+
+template <>
+GPU_EXPORT void Vec4::SetValues<GLfloat>(const GLfloat* values);
+template <>
+GPU_EXPORT void Vec4::SetValues<GLint>(const GLint* values);
+template <>
+GPU_EXPORT void Vec4::SetValues<GLuint>(const GLuint* values);
 
 struct GPU_EXPORT ContextState {
   ContextState(FeatureInfo* feature_info,

@@ -282,9 +282,11 @@ bool VertexArrayObject::GetVertexAttrib(
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
       *param = attrib->normalized();
       break;
+    case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
+      // TODO(zmo): cache this on the client side.
+      return false;
     default:
       return false;  // pass through to service side.
-      break;
   }
   return true;
 }

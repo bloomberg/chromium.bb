@@ -646,6 +646,16 @@ void MojoGLES2Impl::GetVertexAttribiv(GLuint index,
   MojoGLES2MakeCurrent(context_);
   glGetVertexAttribiv(index, pname, params);
 }
+void MojoGLES2Impl::GetVertexAttribIiv(GLuint index,
+                                       GLenum pname,
+                                       GLint* params) {
+  NOTREACHED() << "Unimplemented GetVertexAttribIiv.";
+}
+void MojoGLES2Impl::GetVertexAttribIuiv(GLuint index,
+                                        GLenum pname,
+                                        GLuint* params) {
+  NOTREACHED() << "Unimplemented GetVertexAttribIuiv.";
+}
 void MojoGLES2Impl::GetVertexAttribPointerv(GLuint index,
                                             GLenum pname,
                                             void** pointer) {

@@ -119,6 +119,8 @@ GL_APICALL void         GL_APIENTRY glGetUniformIndices (GLidProgram program, GL
 GL_APICALL GLint        GL_APIENTRY glGetUniformLocation (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenumVertexAttribute pname, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenumVertexAttribute pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribIiv (GLuint index, GLenumVertexAttribute pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribIuiv (GLuint index, GLenumVertexAttribute pname, GLuint* params);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLenumVertexPointer pname, void** pointer);
 GL_APICALL void         GL_APIENTRY glHint (GLenumHintTarget target, GLenumHintMode mode);
 GL_APICALL void         GL_APIENTRY glInvalidateFramebuffer (GLenumInvalidateFrameBufferTarget target, GLsizeiNotNegative count, const GLenum* attachments);

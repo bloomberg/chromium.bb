@@ -35,6 +35,7 @@ VertexAttrib::VertexAttrib()
       gl_stride_(0),
       real_stride_(16),
       divisor_(0),
+      integer_(GL_FALSE),
       is_client_side_array_(false),
       list_(NULL) {
 }

@@ -203,6 +203,7 @@
         'command_buffer/service/command_buffer_service_unittest.cc',
         'command_buffer/service/common_decoder_unittest.cc',
         'command_buffer/service/context_group_unittest.cc',
+        'command_buffer/service/context_state_unittest.cc',
         'command_buffer/service/feature_info_unittest.cc',
         'command_buffer/service/framebuffer_manager_unittest.cc',
         'command_buffer/service/gl_context_mock.cc',

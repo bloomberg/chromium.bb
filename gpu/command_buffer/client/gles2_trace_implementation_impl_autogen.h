@@ -822,6 +822,20 @@ void GLES2TraceImplementation::GetVertexAttribiv(GLuint index,
   gl_->GetVertexAttribiv(index, pname, params);
 }
 
+void GLES2TraceImplementation::GetVertexAttribIiv(GLuint index,
+                                                  GLenum pname,
+                                                  GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetVertexAttribIiv");
+  gl_->GetVertexAttribIiv(index, pname, params);
+}
+
+void GLES2TraceImplementation::GetVertexAttribIuiv(GLuint index,
+                                                   GLenum pname,
+                                                   GLuint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetVertexAttribIuiv");
+  gl_->GetVertexAttribIuiv(index, pname, params);
+}
+
 void GLES2TraceImplementation::GetVertexAttribPointerv(GLuint index,
                                                        GLenum pname,
                                                        void** pointer) {

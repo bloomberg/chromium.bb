@@ -456,12 +456,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix3fvImmediate, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_MAT3);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterf, 0>(
     bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -500,6 +494,32 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribiv, 0>(
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribfv, 0>(
+    bool valid) {
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
+  if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribIiv, 0>(
+    bool valid) {
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
+  if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribIuiv, 0>(
     bool valid) {
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);

@@ -173,6 +173,14 @@ static gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
   }
 }
 
+struct Vec4f {
+  explicit Vec4f(const Vec4& data) {
+    data.GetValues(v);
+  }
+
+  GLfloat v[4];
+};
+
 }  // namespace
 
 class GLES2DecoderImpl;
@@ -1472,8 +1480,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void InitTextureMaxAnisotropyIfNeeded(GLenum target, GLenum pname);
 
   // Wrappers for glGetVertexAttrib.
-  void DoGetVertexAttribfv(GLuint index, GLenum pname, GLfloat *params);
-  void DoGetVertexAttribiv(GLuint index, GLenum pname, GLint *params);
+  template <typename T>
+  void DoGetVertexAttribImpl(GLuint index, GLenum pname, T* params);
+  void DoGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
+  void DoGetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
+  void DoGetVertexAttribIiv(GLuint index, GLenum pname, GLint* params);
+  void DoGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params);
 
   // Wrappers for glIsXXX functions.
   bool DoIsEnabled(GLenum cap);
@@ -2465,11 +2477,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       validation_fbo_multisample_(0),
       validation_fbo_(0) {
   DCHECK(group);
-
-  attrib_0_value_.v[0] = 0.0f;
-  attrib_0_value_.v[1] = 0.0f;
-  attrib_0_value_.v[2] = 0.0f;
-  attrib_0_value_.v[3] = 1.0f;
 
   // The shader translator is used for WebGL even when running on EGL
   // because additional restrictions are needed (like only enabling
@@ -6852,7 +6859,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   uint32 size_needed = 0;
 
   if (num_vertices == 0 ||
-      !SafeMultiplyUint32(num_vertices, sizeof(Vec4), &size_needed) ||
+      !SafeMultiplyUint32(num_vertices, sizeof(Vec4f), &size_needed) ||
       size_needed > 0x7FFFFFFFU) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, function_name, "Simulating attrib 0");
     return false;
@@ -6878,12 +6885,12 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   const Vec4& value = state_.attrib_values[0];
   if (new_buffer ||
       (attrib_0_used &&
-       (!attrib_0_buffer_matches_value_ ||
-        (value.v[0] != attrib_0_value_.v[0] ||
-         value.v[1] != attrib_0_value_.v[1] ||
-         value.v[2] != attrib_0_value_.v[2] ||
-         value.v[3] != attrib_0_value_.v[3])))) {
-    std::vector<Vec4> temp(num_vertices, value);
+       (!attrib_0_buffer_matches_value_ || !value.Equal(attrib_0_value_)))){
+    // TODO(zmo): This is not 100% correct because we might lose data when
+    // casting to float type, but it is a corner case and once we migrate to
+    // core profiles on desktop GL, it is no longer relevant.
+    Vec4f fvalue(value);
+    std::vector<Vec4f> temp(num_vertices, fvalue);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size_needed, &temp[0].v[0]);
     attrib_0_buffer_matches_value_ = true;
     attrib_0_value_ = value;
@@ -7596,7 +7603,8 @@ void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
 void GLES2DecoderImpl::GetVertexAttribHelper(
     const VertexAttrib* attrib, GLenum pname, GLint* params) {
   switch (pname) {
-    case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: {
+    case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
+      {
         Buffer* buffer = attrib->buffer();
         if (buffer && !buffer->IsDeleted()) {
           GLuint client_id;
@@ -7620,8 +7628,11 @@ void GLES2DecoderImpl::GetVertexAttribHelper(
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
       *params = attrib->normalized();
       break;
-    case GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE:
+    case GL_VERTEX_ATTRIB_ARRAY_DIVISOR:
       *params = attrib->divisor();
+      break;
+    case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
+      *params = attrib->integer();
       break;
     default:
       NOTREACHED();
@@ -7662,53 +7673,46 @@ void GLES2DecoderImpl::InitTextureMaxAnisotropyIfNeeded(
   texture->InitTextureMaxAnisotropyIfNeeded(target);
 }
 
-void GLES2DecoderImpl::DoGetVertexAttribfv(
-    GLuint index, GLenum pname, GLfloat* params) {
+template <typename T>
+void GLES2DecoderImpl::DoGetVertexAttribImpl(
+    GLuint index, GLenum pname, T* params) {
   VertexAttrib* attrib = state_.vertex_attrib_manager->GetVertexAttrib(index);
   if (!attrib) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glGetVertexAttribfv", "index out of range");
+        GL_INVALID_VALUE, "glGetVertexAttrib", "index out of range");
     return;
   }
   switch (pname) {
-    case GL_CURRENT_VERTEX_ATTRIB: {
-      const Vec4& value = state_.attrib_values[index];
-      params[0] = value.v[0];
-      params[1] = value.v[1];
-      params[2] = value.v[2];
-      params[3] = value.v[3];
+    case GL_CURRENT_VERTEX_ATTRIB:
+      state_.attrib_values[index].GetValues(params);
       break;
-    }
     default: {
       GLint value = 0;
       GetVertexAttribHelper(attrib, pname, &value);
-      *params = static_cast<GLfloat>(value);
+      *params = static_cast<T>(value);
       break;
     }
   }
 }
 
+void GLES2DecoderImpl::DoGetVertexAttribfv(
+    GLuint index, GLenum pname, GLfloat* params) {
+  DoGetVertexAttribImpl<GLfloat>(index, pname, params);
+}
+
 void GLES2DecoderImpl::DoGetVertexAttribiv(
     GLuint index, GLenum pname, GLint* params) {
-  VertexAttrib* attrib = state_.vertex_attrib_manager->GetVertexAttrib(index);
-  if (!attrib) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glGetVertexAttribiv", "index out of range");
-    return;
-  }
-  switch (pname) {
-    case GL_CURRENT_VERTEX_ATTRIB: {
-      const Vec4& value = state_.attrib_values[index];
-      params[0] = static_cast<GLint>(value.v[0]);
-      params[1] = static_cast<GLint>(value.v[1]);
-      params[2] = static_cast<GLint>(value.v[2]);
-      params[3] = static_cast<GLint>(value.v[3]);
-      break;
-    }
-    default:
-      GetVertexAttribHelper(attrib, pname, params);
-      break;
-  }
+  DoGetVertexAttribImpl<GLint>(index, pname, params);
+}
+
+void GLES2DecoderImpl::DoGetVertexAttribIiv(
+    GLuint index, GLenum pname, GLint* params) {
+  DoGetVertexAttribImpl<GLint>(index, pname, params);
+}
+
+void GLES2DecoderImpl::DoGetVertexAttribIuiv(
+    GLuint index, GLenum pname, GLuint* params) {
+  DoGetVertexAttribImpl<GLuint>(index, pname, params);
 }
 
 bool GLES2DecoderImpl::SetVertexAttribValue(
@@ -7717,11 +7721,7 @@ bool GLES2DecoderImpl::SetVertexAttribValue(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "index out of range");
     return false;
   }
-  Vec4& v = state_.attrib_values[index];
-  v.v[0] = value[0];
-  v.v[1] = value[1];
-  v.v[2] = value[2];
-  v.v[3] = value[3];
+  state_.attrib_values[index].SetValues(value);
   return true;
 }
 

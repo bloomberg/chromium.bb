@@ -81,6 +81,113 @@ TextureUnit::TextureUnit()
 TextureUnit::~TextureUnit() {
 }
 
+bool Vec4::Equal(const Vec4& other) const {
+  if (type_ != other.type_)
+    return false;
+  switch (type_) {
+    case kFloat:
+      for (size_t ii = 0; ii < 4; ++ii) {
+        if (v_[ii].float_value != other.v_[ii].float_value)
+          return false;
+      }
+      break;
+    case kInt:
+      for (size_t ii = 0; ii < 4; ++ii) {
+        if (v_[ii].int_value != other.v_[ii].int_value)
+          return false;
+      }
+      break;
+    case kUInt:
+      for (size_t ii = 0; ii < 4; ++ii) {
+        if (v_[ii].uint_value != other.v_[ii].uint_value)
+          return false;
+      }
+      break;
+  }
+  return true;
+}
+
+template <>
+void Vec4::GetValues<GLfloat>(GLfloat* values) const {
+  DCHECK(values);
+  switch (type_) {
+    case kFloat:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = v_[ii].float_value;
+      break;
+    case kInt:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = static_cast<GLfloat>(v_[ii].int_value);
+      break;
+    case kUInt:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = static_cast<GLfloat>(v_[ii].uint_value);
+      break;
+  }
+}
+
+template <>
+void Vec4::GetValues<GLint>(GLint* values) const {
+  DCHECK(values);
+  switch (type_) {
+    case kFloat:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = static_cast<GLint>(v_[ii].float_value);
+      break;
+    case kInt:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = v_[ii].int_value;
+      break;
+    case kUInt:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = static_cast<GLint>(v_[ii].uint_value);
+      break;
+  }
+}
+
+template<>
+void Vec4::GetValues<GLuint>(GLuint* values) const {
+  DCHECK(values);
+  switch (type_) {
+    case kFloat:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = static_cast<GLuint>(v_[ii].float_value);
+      break;
+    case kInt:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = static_cast<GLuint>(v_[ii].int_value);
+      break;
+    case kUInt:
+      for (size_t ii = 0; ii < 4; ++ii)
+        values[ii] = v_[ii].uint_value;
+      break;
+  }
+}
+
+template <>
+void Vec4::SetValues<GLfloat>(const GLfloat* values) {
+  DCHECK(values);
+  for (size_t ii = 0; ii < 4; ++ii)
+    v_[ii].float_value = values[ii];
+  type_ = kFloat;
+}
+
+template <>
+void Vec4::SetValues<GLint>(const GLint* values) {
+  DCHECK(values);
+  for (size_t ii = 0; ii < 4; ++ii)
+    v_[ii].int_value = values[ii];
+  type_ = kInt;
+}
+
+template <>
+void Vec4::SetValues<GLuint>(const GLuint* values) {
+  DCHECK(values);
+  for (size_t ii = 0; ii < 4; ++ii)
+    v_[ii].uint_value = values[ii];
+  type_ = kUInt;
+}
+
 ContextState::ContextState(FeatureInfo* feature_info,
                            ErrorStateClient* error_state_client,
                            Logger* logger)
@@ -185,7 +292,29 @@ void ContextState::RestoreActiveTextureUnitBinding(unsigned int target) const {
 void ContextState::RestoreVertexAttribValues() const {
   for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
        ++attrib) {
-    glVertexAttrib4fv(attrib, attrib_values[attrib].v);
+    switch (attrib_values[attrib].type()) {
+      case Vec4::kFloat:
+        {
+          GLfloat v[4];
+          attrib_values[attrib].GetValues(v);
+          glVertexAttrib4fv(attrib, v);
+        }
+        break;
+      case Vec4::kInt:
+        {
+          GLint v[4];
+          attrib_values[attrib].GetValues(v);
+          glVertexAttribI4iv(attrib, v);
+        }
+        break;
+      case Vec4::kUInt:
+        {
+          GLuint v[4];
+          attrib_values[attrib].GetValues(v);
+          glVertexAttribI4uiv(attrib, v);
+        }
+        break;
+    }
   }
 }
 

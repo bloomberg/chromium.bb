@@ -1778,6 +1778,36 @@ TEST_F(GLES2FormatTest, GetVertexAttribiv) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, GetVertexAttribIiv) {
+  cmds::GetVertexAttribIiv& cmd = *GetBufferAs<cmds::GetVertexAttribIiv>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetVertexAttribIiv::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.index);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.params_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.params_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetVertexAttribIuiv) {
+  cmds::GetVertexAttribIuiv& cmd = *GetBufferAs<cmds::GetVertexAttribIuiv>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetVertexAttribIuiv::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.index);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.params_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.params_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetVertexAttribPointerv) {
   cmds::GetVertexAttribPointerv& cmd =
       *GetBufferAs<cmds::GetVertexAttribPointerv>();

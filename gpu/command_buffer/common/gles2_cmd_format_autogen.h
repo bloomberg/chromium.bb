@@ -5848,6 +5848,116 @@ static_assert(offsetof(GetVertexAttribiv, params_shm_id) == 12,
 static_assert(offsetof(GetVertexAttribiv, params_shm_offset) == 16,
               "offset of GetVertexAttribiv params_shm_offset should be 16");
 
+struct GetVertexAttribIiv {
+  typedef GetVertexAttribIiv ValueType;
+  static const CommandId kCmdId = kGetVertexAttribIiv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _index,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    index = _index;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _index,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_index, _pname, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t index;
+  uint32_t pname;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+static_assert(sizeof(GetVertexAttribIiv) == 20,
+              "size of GetVertexAttribIiv should be 20");
+static_assert(offsetof(GetVertexAttribIiv, header) == 0,
+              "offset of GetVertexAttribIiv header should be 0");
+static_assert(offsetof(GetVertexAttribIiv, index) == 4,
+              "offset of GetVertexAttribIiv index should be 4");
+static_assert(offsetof(GetVertexAttribIiv, pname) == 8,
+              "offset of GetVertexAttribIiv pname should be 8");
+static_assert(offsetof(GetVertexAttribIiv, params_shm_id) == 12,
+              "offset of GetVertexAttribIiv params_shm_id should be 12");
+static_assert(offsetof(GetVertexAttribIiv, params_shm_offset) == 16,
+              "offset of GetVertexAttribIiv params_shm_offset should be 16");
+
+struct GetVertexAttribIuiv {
+  typedef GetVertexAttribIuiv ValueType;
+  static const CommandId kCmdId = kGetVertexAttribIuiv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLuint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _index,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    index = _index;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _index,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_index, _pname, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t index;
+  uint32_t pname;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+static_assert(sizeof(GetVertexAttribIuiv) == 20,
+              "size of GetVertexAttribIuiv should be 20");
+static_assert(offsetof(GetVertexAttribIuiv, header) == 0,
+              "offset of GetVertexAttribIuiv header should be 0");
+static_assert(offsetof(GetVertexAttribIuiv, index) == 4,
+              "offset of GetVertexAttribIuiv index should be 4");
+static_assert(offsetof(GetVertexAttribIuiv, pname) == 8,
+              "offset of GetVertexAttribIuiv pname should be 8");
+static_assert(offsetof(GetVertexAttribIuiv, params_shm_id) == 12,
+              "offset of GetVertexAttribIuiv params_shm_id should be 12");
+static_assert(offsetof(GetVertexAttribIuiv, params_shm_offset) == 16,
+              "offset of GetVertexAttribIuiv params_shm_offset should be 16");
+
 struct GetVertexAttribPointerv {
   typedef GetVertexAttribPointerv ValueType;
   static const CommandId kCmdId = kGetVertexAttribPointerv;

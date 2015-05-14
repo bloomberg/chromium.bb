@@ -329,7 +329,7 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       return 1;
 
-    // -- glGetVertexAttribfv, glGetVertexAttribiv
+    // -- glGetVertexAttrib
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
       return 1;
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
@@ -344,6 +344,10 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_CURRENT_VERTEX_ATTRIB:
       return 4;
+    case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
+      return 1;
+    case GL_VERTEX_ATTRIB_ARRAY_DIVISOR:
+      return 1;
 
     // -- glGetSynciv
     case GL_OBJECT_TYPE:

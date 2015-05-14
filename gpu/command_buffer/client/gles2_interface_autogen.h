@@ -309,6 +309,10 @@ virtual void GetUniformIndices(GLuint program,
 virtual GLint GetUniformLocation(GLuint program, const char* name) = 0;
 virtual void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) = 0;
 virtual void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) = 0;
+virtual void GetVertexAttribIiv(GLuint index, GLenum pname, GLint* params) = 0;
+virtual void GetVertexAttribIuiv(GLuint index,
+                                 GLenum pname,
+                                 GLuint* params) = 0;
 virtual void GetVertexAttribPointerv(GLuint index,
                                      GLenum pname,
                                      void** pointer) = 0;

@@ -1176,6 +1176,28 @@ void GetVertexAttribiv(GLuint index,
   }
 }
 
+void GetVertexAttribIiv(GLuint index,
+                        GLenum pname,
+                        uint32_t params_shm_id,
+                        uint32_t params_shm_offset) {
+  gles2::cmds::GetVertexAttribIiv* c =
+      GetCmdSpace<gles2::cmds::GetVertexAttribIiv>();
+  if (c) {
+    c->Init(index, pname, params_shm_id, params_shm_offset);
+  }
+}
+
+void GetVertexAttribIuiv(GLuint index,
+                         GLenum pname,
+                         uint32_t params_shm_id,
+                         uint32_t params_shm_offset) {
+  gles2::cmds::GetVertexAttribIuiv* c =
+      GetCmdSpace<gles2::cmds::GetVertexAttribIuiv>();
+  if (c) {
+    c->Init(index, pname, params_shm_id, params_shm_offset);
+  }
+}
+
 void GetVertexAttribPointerv(GLuint index,
                              GLenum pname,
                              uint32_t pointer_shm_id,

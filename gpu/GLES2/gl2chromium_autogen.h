@@ -129,6 +129,8 @@
 #define glGetUniformLocation GLES2_GET_FUN(GetUniformLocation)
 #define glGetVertexAttribfv GLES2_GET_FUN(GetVertexAttribfv)
 #define glGetVertexAttribiv GLES2_GET_FUN(GetVertexAttribiv)
+#define glGetVertexAttribIiv GLES2_GET_FUN(GetVertexAttribIiv)
+#define glGetVertexAttribIuiv GLES2_GET_FUN(GetVertexAttribIuiv)
 #define glGetVertexAttribPointerv GLES2_GET_FUN(GetVertexAttribPointerv)
 #define glHint GLES2_GET_FUN(Hint)
 #define glInvalidateFramebuffer GLES2_GET_FUN(InvalidateFramebuffer)

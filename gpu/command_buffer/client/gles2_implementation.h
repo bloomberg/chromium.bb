@@ -198,6 +198,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void EnableVertexAttribArray(GLuint index) override;
   void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) override;
   void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) override;
+  void GetVertexAttribIiv(GLuint index, GLenum pname, GLint* params) override;
+  void GetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params) override;
 
   // ContextSupport implementation.
   void Swap() override;

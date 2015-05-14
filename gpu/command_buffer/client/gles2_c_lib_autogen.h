@@ -546,6 +546,12 @@ void GLES2GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
 void GLES2GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetVertexAttribiv(index, pname, params);
 }
+void GLES2GetVertexAttribIiv(GLuint index, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetVertexAttribIiv(index, pname, params);
+}
+void GLES2GetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params) {
+  gles2::GetGLContext()->GetVertexAttribIuiv(index, pname, params);
+}
 void GLES2GetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer) {
   gles2::GetGLContext()->GetVertexAttribPointerv(index, pname, pointer);
 }
@@ -1850,6 +1856,14 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetVertexAttribiv",
      reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribiv),
+    },
+    {
+     "glGetVertexAttribIiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribIiv),
+    },
+    {
+     "glGetVertexAttribIuiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribIuiv),
     },
     {
      "glGetVertexAttribPointerv",
