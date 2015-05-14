@@ -145,7 +145,7 @@ void PushMessagingServiceImpl::DecreasePushRegistrationCount(int subtract,
 }
 
 bool PushMessagingServiceImpl::CanHandle(const std::string& app_id) const {
-  return !PushMessagingAppIdentifier::Get(profile_, app_id).is_null();
+  return !PushMessagingAppIdentifier::FindByAppId(profile_, app_id).is_null();
 }
 
 void PushMessagingServiceImpl::ShutdownHandler() {
@@ -163,7 +163,7 @@ void PushMessagingServiceImpl::OnMessage(
       message_callback_for_testing_.is_null() ? base::Bind(&base::DoNothing)
                                               : message_callback_for_testing_;
   PushMessagingAppIdentifier app_identifier =
-      PushMessagingAppIdentifier::Get(profile_, app_id);
+      PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
   // Drop message and unregister if app_id was unknown (maybe recently deleted).
   if (app_identifier.is_null()) {
     DeliverMessageCallback(app_id, GURL::EmptyGURL(), -1, message,
@@ -473,8 +473,9 @@ void PushMessagingServiceImpl::Unregister(
     int64 service_worker_registration_id,
     const std::string& sender_id,
     const content::PushMessagingService::UnregisterCallback& callback) {
-  PushMessagingAppIdentifier app_identifier = PushMessagingAppIdentifier::Get(
-      profile_, requesting_origin, service_worker_registration_id);
+  PushMessagingAppIdentifier app_identifier =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          profile_, requesting_origin, service_worker_registration_id);
   if (app_identifier.is_null()) {
     if (!callback.is_null()) {
       callback.Run(
@@ -495,7 +496,7 @@ void PushMessagingServiceImpl::Unregister(
   // TODO(johnme): Instead of deleting these app ids, store them elsewhere, and
   // retry unregistration if it fails due to network errors (crbug.com/465399).
   PushMessagingAppIdentifier app_identifier =
-      PushMessagingAppIdentifier::Get(profile_, app_id);
+      PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
   bool was_registered = !app_identifier.is_null();
   if (was_registered)
     app_identifier.DeleteFromPrefs(profile_);
