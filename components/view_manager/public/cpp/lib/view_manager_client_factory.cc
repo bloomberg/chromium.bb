@@ -5,7 +5,7 @@
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 
 #include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 
 namespace mojo {
 

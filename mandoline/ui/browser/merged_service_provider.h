@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
+#include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mandoline {
 

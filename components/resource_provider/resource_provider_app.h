@@ -8,9 +8,9 @@
 #include <map>
 
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 

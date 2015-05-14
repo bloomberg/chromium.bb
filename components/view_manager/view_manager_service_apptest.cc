@@ -11,8 +11,8 @@
 #include "components/window_manager/public/interfaces/window_manager.mojom.h"
 #include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "mojo/application/application_test_base_chromium.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/application_impl.h"
 
 using mojo::ApplicationConnection;
 using mojo::ApplicationDelegate;

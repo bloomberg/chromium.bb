@@ -8,7 +8,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "mojo/public/interfaces/application/shell.mojom.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 

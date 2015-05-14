@@ -19,9 +19,9 @@
 #include "components/view_manager/view_manager_service_impl.h"
 #include "components/window_manager/public/interfaces/window_manager.mojom.h"
 #include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 using mojo::Array;

@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_WINDOW_MANAGER_WINDOW_MANAGER_DELEGATE_H_
 #define COMPONENTS_WINDOW_MANAGER_WINDOW_MANAGER_DELEGATE_H_
 
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 #include "ui/mojo/events/input_events.mojom.h"
 #include "ui/mojo/events/input_key_codes.mojom.h"
 

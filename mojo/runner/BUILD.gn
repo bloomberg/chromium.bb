@@ -122,12 +122,12 @@ source_set("lib") {
     "//base/third_party/dynamic_annotations",
     "//base:base_static",
     "//mojo/application",
+    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/common:tracing_impl",
     "//mojo/util:filename_util",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
     "//mojo/services/network/public/interfaces",
     "//mojo/shell",
     "//mojo/services/tracing:bindings",
@@ -359,7 +359,7 @@ mojom("child_process_bindings") {
   ]
 
   deps = [
-    "//third_party/mojo/src/mojo/public/interfaces/application",
+    "//mojo/application/public/interfaces",
   ]
 }
 

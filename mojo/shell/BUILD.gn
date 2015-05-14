@@ -32,9 +32,9 @@ source_set("shell") {
 
   public_deps = [
     "//base",
+    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/interfaces/application:application",
     "//mojo/services/network/public/interfaces",
     "//url",
   ]
@@ -61,10 +61,10 @@ test("tests") {
     ":test_bindings",
     "//base",
     "//mojo/application",
+    "//mojo/application/public/cpp:application",
     "//mojo/common",
-    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//testing/gtest",
     "//url",

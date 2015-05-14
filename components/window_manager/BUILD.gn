@@ -20,10 +20,10 @@ source_set("lib") {
     "//components/view_manager/public/cpp",
     "//components/window_manager/public/interfaces",
     "//mojo/application",
+    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/converters/geometry",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
   ]

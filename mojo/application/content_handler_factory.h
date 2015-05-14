@@ -6,8 +6,8 @@
 #define MOJO_APPLICATION_CONTENT_HANDLER_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/public/interfaces/application/shell.mojom.h"
+#include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
 

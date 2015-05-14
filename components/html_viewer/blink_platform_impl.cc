@@ -23,12 +23,12 @@
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/connect.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace html_viewer {

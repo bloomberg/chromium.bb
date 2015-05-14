@@ -91,9 +91,9 @@ if (!is_component_build) {
 
     deps = [
       "//base",
-      "//third_party/mojo/src/mojo/public/cpp/application",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
+      "//mojo/application/public/cpp:application",
       "//mojo/services/tracing:bindings",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }
 }

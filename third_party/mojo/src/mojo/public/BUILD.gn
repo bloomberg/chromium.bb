@@ -10,7 +10,6 @@ group("public") {
   deps = [
     ":libmojo_sdk",
     ":sdk",
-    "cpp/application:standalone",
     "cpp/bindings",
     "cpp/environment:standalone",
     "cpp/utility",
@@ -33,11 +32,9 @@ group("public") {
 group("sdk") {
   deps = [
     "c/system",
-    "cpp/application:standalone",
     "cpp/bindings",
     "cpp/environment:standalone",
     "cpp/utility",
-    "interfaces/application",
     "interfaces/bindings",
     "js",
   ]

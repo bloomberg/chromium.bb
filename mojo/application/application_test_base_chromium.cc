@@ -6,11 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/public/interfaces/application/application.mojom.h"
 
 namespace mojo {
 namespace test {

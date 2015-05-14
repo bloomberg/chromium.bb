@@ -11,12 +11,12 @@
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
+#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/converters/transform/transform_type_converters.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 
 using mojo::Rect;
 using mojo::Size;

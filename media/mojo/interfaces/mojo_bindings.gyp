@@ -17,8 +17,8 @@
       'type': 'static_library',
       'dependencies': [
         'platform_verification_mojo_bindings',
+        '../../../mojo/mojo_base.gyp:mojo_application_bindings',
         '../../../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../../../third_party/mojo/mojo_public.gyp:mojo_application_bindings',
         '../../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [

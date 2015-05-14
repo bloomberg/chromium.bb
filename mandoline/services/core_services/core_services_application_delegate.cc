@@ -10,10 +10,10 @@
 #include "components/surfaces/surfaces_service_application.h"
 #include "components/view_manager/view_manager_app.h"
 #include "mandoline/ui/browser/browser.h"
+#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/services/tracing/tracing_app.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/services/tracing/trace_data_sink.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 
 namespace tracing {
 

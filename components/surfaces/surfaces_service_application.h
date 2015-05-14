@@ -9,9 +9,9 @@
 #include "cc/surfaces/surface_manager.h"
 #include "components/surfaces/public/interfaces/display.mojom.h"
 #include "components/surfaces/public/interfaces/surfaces.mojom.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/tracing_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 
 namespace mojo {
 class ApplicationConnection;

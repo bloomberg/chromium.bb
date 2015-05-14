@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "components/gles2/gpu_state.h"
 #include "components/native_viewport/platform_viewport_headless.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 #include "ui/events/event.h"
 
 namespace native_viewport {

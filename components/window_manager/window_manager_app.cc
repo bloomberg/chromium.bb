@@ -9,10 +9,10 @@
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/window_manager/window_manager_delegate.h"
+#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
 
 using mojo::ApplicationConnection;
 using mojo::Id;

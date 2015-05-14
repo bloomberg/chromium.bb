@@ -11,11 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/common/message_pump_mojo.h"
-#include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {

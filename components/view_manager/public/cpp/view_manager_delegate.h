@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 
 namespace mojo {
 

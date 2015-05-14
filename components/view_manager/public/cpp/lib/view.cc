@@ -11,7 +11,7 @@
 #include "components/view_manager/public/cpp/lib/view_private.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tracker.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/application/public/cpp/service_provider_impl.h"
 
 namespace mojo {
 

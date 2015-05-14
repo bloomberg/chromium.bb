@@ -14,11 +14,10 @@ mojom("interfaces") {
 
   import_dirs = [ get_path_info("../../../..", "abspath") ]
 
-  mojo_sdk_deps = [ "mojo/public/interfaces/application" ]
-
   deps = [
     "//components/native_viewport/public/interfaces",
     "//components/surfaces/public/interfaces:surface_id",
+    "//mojo/application/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]

@@ -6,8 +6,8 @@
 #define MOJO_COMMON_TRACING_IMPL_H_
 
 #include "base/macros.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/tracing/tracing.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 
 namespace mojo {
 

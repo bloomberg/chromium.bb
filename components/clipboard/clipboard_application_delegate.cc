@@ -5,7 +5,7 @@
 #include "components/clipboard/clipboard_application_delegate.h"
 
 #include "components/clipboard/clipboard_standalone_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
+#include "mojo/application/public/cpp/application_connection.h"
 
 namespace clipboard {
 

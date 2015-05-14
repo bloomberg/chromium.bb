@@ -4,7 +4,7 @@
 
 #include "mojo/runner/android/background_application_loader.h"
 
-#include "mojo/public/interfaces/application/application.mojom.h"
+#include "mojo/application/public/interfaces/application.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

@@ -6,8 +6,8 @@
 
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "mandoline/ui/aura/surface_context_factory.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

@@ -8,11 +8,11 @@
 #include "components/view_manager/public/cpp/util.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/connect.h"
+#include "mojo/application/public/cpp/service_provider_impl.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 
 namespace mojo {
 

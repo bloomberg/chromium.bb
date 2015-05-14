@@ -41,8 +41,8 @@ source_set("gpu_sources") {
     "//base",
     "//content:export",
     "//content/public/child:child_sources",
+    "//mojo/application/public/interfaces",
     "//skia",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
     "//ui/gl",
   ]
 

@@ -6,7 +6,7 @@
 #define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CLIENT_FACTORY_H_
 
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 
 namespace mojo {
 

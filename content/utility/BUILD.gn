@@ -27,7 +27,7 @@ source_set("utility") {
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//courgette:courgette_lib",
+    "//mojo/application/public/interfaces",
     "//third_party/WebKit/public:blink_headers",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 }

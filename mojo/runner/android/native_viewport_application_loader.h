@@ -8,8 +8,8 @@
 #include "components/gles2/gpu_impl.h"
 #include "components/gpu/public/interfaces/gpu.mojom.h"
 #include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
-#include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/shell/application_loader.h"
 
 namespace gles2 {

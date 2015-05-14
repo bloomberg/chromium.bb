@@ -8,10 +8,10 @@
 #include "components/window_manager/window_manager_app.h"
 #include "components/window_manager/window_manager_delegate.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/common/tracing_impl.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
 
 // ApplicationDelegate implementation file for WindowManager users (e.g.
 // core window manager tests) that do not want to provide their own

@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
+#include "mojo/application/public/cpp/connect.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
 
 namespace resource_provider {
 

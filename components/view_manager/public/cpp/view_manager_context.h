@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/application/public/cpp/service_provider_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {

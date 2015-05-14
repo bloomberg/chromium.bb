@@ -13,10 +13,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/platform_handle/platform_handle.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace base {
 class File;

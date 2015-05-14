@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
+#include "mojo/application/public/cpp/application_connection.h"
 
 NetworkServiceDelegate::NetworkServiceDelegate() {}
 

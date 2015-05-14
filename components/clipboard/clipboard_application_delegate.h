@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 
 namespace mojo {
 class ApplicationConnection;

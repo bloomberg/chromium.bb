@@ -11,9 +11,8 @@ mojom("interfaces") {
     "window_manager_internal.mojom",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/interfaces/application" ]
-
   deps = [
+    "//mojo/application/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]

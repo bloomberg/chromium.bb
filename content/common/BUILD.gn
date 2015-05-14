@@ -179,12 +179,12 @@ source_set("common") {
       "//media",
       "//media/midi",
       "//media:shared_memory_support",
+      "//mojo/application/public/interfaces",
       "//mojo/environment:chromium",
       "//sandbox",
       "//storage/common",
       "//third_party/WebKit/public:blink",
       "//third_party/mojo/src/mojo/edk/system",
-      "//third_party/mojo/src/mojo/public/interfaces/application",
       "//ui/gl",
     ]
   }
@@ -491,6 +491,6 @@ mojom("mojo_bindings") {
 
   deps = [
     "//content/public/common:mojo_bindings",
-    "//third_party/mojo/src/mojo/public/interfaces/application:application",
+    "//mojo/application/public/interfaces",
   ]
 }

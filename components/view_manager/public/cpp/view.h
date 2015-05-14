@@ -13,9 +13,9 @@
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_constants.mojom.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace mojo {

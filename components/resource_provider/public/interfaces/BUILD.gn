@@ -10,5 +10,7 @@ mojom("interfaces") {
     "resource_provider.mojom",
   ]
 
-  mojo_sdk_deps = [ "mojo/public/interfaces/application" ]
+  deps = [
+    "//mojo/application/public/interfaces",
+  ]
 }

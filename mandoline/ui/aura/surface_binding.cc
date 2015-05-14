@@ -19,11 +19,11 @@
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "mandoline/ui/aura/window_tree_host_mojo.h"
+#include "mojo/application/public/cpp/connect.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/cc/context_provider_mojo.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/public/cpp/application/connect.h"
-#include "mojo/public/interfaces/application/shell.mojom.h"
 
 namespace mandoline {
 namespace {

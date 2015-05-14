@@ -20,6 +20,11 @@ sdk_dirs_to_clone = [
   "nacl_bindings",
 ]
 
+sdk_dirs_to_not_clone = [
+  "mojo/public/cpp/application",
+  "mojo/public/interfaces/application",
+]
+
 # Individual files to preserve within the target repository during roll. These
 # are relative to |sdk_prefix_in_chromium| but are not maintained in the mojo
 # repository.
@@ -50,6 +55,14 @@ def rev(source_dir, chromium_dir):
       # Don't copy presubmit files over since the code is read-only on the
       # chromium side.
       if os.path.basename(f) == "PRESUBMIT.py":
+        continue
+
+      exclude = False
+      for excluded in sdk_dirs_to_not_clone:
+        if f.startswith(excluded):
+          exclude = True
+          break
+      if exclude:
         continue
 
       # Clone |f| into Chromium under |dest_dir| at its location relative to

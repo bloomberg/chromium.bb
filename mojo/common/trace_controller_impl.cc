@@ -5,8 +5,8 @@
 #include "mojo/common/trace_controller_impl.h"
 
 #include "base/trace_event/trace_event.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
+#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
 
 namespace mojo {
 

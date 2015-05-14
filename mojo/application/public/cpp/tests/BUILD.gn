@@ -1,0 +1,19 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+test("mojo_public_application_unittests") {
+  sources = [
+    "service_registry_unittest.cc",
+  ]
+
+  deps = [
+    "//mojo/application/public/cpp:standalone",
+    "//testing/gtest",
+    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
+    "//third_party/mojo/src/mojo/public/cpp/environment:standalone",
+    "//third_party/mojo/src/mojo/public/cpp/utility",
+  ]
+}

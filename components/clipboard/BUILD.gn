@@ -14,7 +14,7 @@ source_set("lib") {
 
   deps = [
     "//components/clipboard/public/interfaces",
-    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//mojo/application/public/cpp:application",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

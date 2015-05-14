@@ -4,7 +4,7 @@
 
 module mojo;
 
-import "mojo/public/interfaces/application/application.mojom";
+import "mojo/application/public/interfaces/application.mojom";
 import "network/public/interfaces/url_loader.mojom";
 
 interface ContentHandler {

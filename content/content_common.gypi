@@ -597,16 +597,16 @@
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
         '../media/midi/midi.gyp:midi',
+        '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../storage/storage_common.gyp:storage_common',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../third_party/mojo/mojo_public.gyp:mojo_application_bindings',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../ui/gl/gl.gyp:gl',
       ],
       'export_dependent_settings' : [
-        '../third_party/mojo/mojo_public.gyp:mojo_application_bindings',
+        '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'actions': [

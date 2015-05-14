@@ -7,9 +7,9 @@
 
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "mandoline/ui/browser/omnibox.mojom.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/layout_manager.h"
 

@@ -5,11 +5,11 @@
 #ifndef MOJO_APPLICATION_APPLICATION_TEST_BASE_CHROMIUM_H_
 #define MOJO_APPLICATION_APPLICATION_TEST_BASE_CHROMIUM_H_
 
-#include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/interfaces/application/application.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

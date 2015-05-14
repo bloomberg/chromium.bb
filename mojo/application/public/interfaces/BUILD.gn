@@ -1,0 +1,14 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+
+# GYP version: mojo/mojo_base.gyp:mojo_application_bindings
+mojom("interfaces") {
+  sources = [
+    "application.mojom",
+    "service_provider.mojom",
+    "shell.mojom",
+  ]
+}

@@ -6,8 +6,8 @@
 #define SHELL_APPLICATION_MANAGER_APPLICATION_LOADER_H_
 
 #include "base/callback.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"
 

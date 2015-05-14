@@ -701,13 +701,13 @@ group("gn_mojo_targets") {
       "//media/mojo/interfaces:interfaces_python",
       "//media/mojo/services:cdm_service",
       "//media/mojo:tests",
+      "//mojo/application/public/cpp:test_support_standalone",
       "//mojo:tests",
       "//net/interfaces:interfaces_python",
       "//third_party/mojo/src/mojo/edk/js/test:js_integration_tests",
       "//third_party/mojo/src/mojo/edk/js/tests:js_to_cpp_bindings_python",
       "//third_party/mojo/src/mojo/public/python:packaged_application",
       "//third_party/mojo/src/mojo/public/python:packaged_bindings",
-      "//third_party/mojo/src/mojo/public/cpp/application:test_support_standalone",
       "//third_party/mojo_services/src/accessibility/public/interfaces:interfaces_python",
     ]
   }

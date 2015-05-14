@@ -10,7 +10,7 @@ source_set("application") {
   ]
 
   public_deps = [
-    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//mojo/application/public/cpp:application",
   ]
   deps = [
     "//base",
@@ -27,9 +27,9 @@ source_set("content_handler") {
   deps = [
     ":application",
     "//base",
+    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
     "//mojo/services/network/public/interfaces",
   ]
@@ -46,7 +46,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//third_party/mojo/src/mojo/public/cpp/application:application",
+    "//mojo/application/public/cpp:application",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",

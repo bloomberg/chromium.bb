@@ -14,11 +14,11 @@ source_set("cpp") {
   deps = [
     "../interfaces",
     "//base",
+    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/platform_handle",
-    "//third_party/mojo/src/mojo/public/cpp/application",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 }

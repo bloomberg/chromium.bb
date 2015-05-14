@@ -17,7 +17,6 @@
         # target on iOS due to the presence of the js targets, which cause v8
         # to be built.
         'mojo_message_pipe_perftests',
-        'mojo_public_application_unittests',
         'mojo_public_bindings_unittests',
         'mojo_public_environment_unittests',
         'mojo_public_system_perftests',
@@ -80,22 +79,6 @@
         'src/mojo/public/cpp/environment/tests/async_waiter_unittest.cc',
         'src/mojo/public/cpp/environment/tests/logger_unittest.cc',
         'src/mojo/public/cpp/environment/tests/logging_unittest.cc',
-      ],
-    },
-    {
-      # GN version: //mojo/edk/test:mojo_public_application_unittests
-      'target_name': 'mojo_public_application_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../../base/base.gyp:base',
-        '../../testing/gtest.gyp:gtest',
-        'mojo_edk.gyp:mojo_run_all_unittests',
-        'mojo_public.gyp:mojo_application_standalone',
-        'mojo_public.gyp:mojo_utility',
-        'mojo_public.gyp:mojo_environment_standalone',
-      ],
-      'sources': [
-        'src/mojo/public/cpp/application/tests/service_registry_unittest.cc',
       ],
     },
     {

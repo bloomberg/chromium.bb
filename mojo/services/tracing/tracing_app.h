@@ -6,12 +6,12 @@
 #define MOJO_SERVICES_TRACING_TRACING_APP_H_
 
 #include "base/memory/scoped_vector.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/common/weak_interface_ptr_set.h"
-#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/tracing/tracing.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 
 namespace tracing {
 

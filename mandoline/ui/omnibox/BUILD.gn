@@ -14,10 +14,10 @@ mojo_native_application("omnibox") {
     ":lib",
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/application",
+    "//mojo/application/public/interfaces",
     "//mojo/common:common",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/utility",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 }
 
@@ -34,11 +34,11 @@ source_set("lib") {
     "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/aura",
     "//mandoline/ui/browser:interfaces",
+    "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/utility",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
   ]

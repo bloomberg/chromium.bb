@@ -6,10 +6,10 @@
 #define MOJO_SHELL_SHELL_IMPL_H_
 
 #include "base/callback.h"
+#include "mojo/application/public/interfaces/application.mojom.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/interfaces/application/application.mojom.h"
-#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/shell/identity.h"
 #include "url/gurl.h"
 

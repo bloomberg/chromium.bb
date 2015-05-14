@@ -4,7 +4,7 @@
 
 module mojo.runner;
 
-import "mojo/public/interfaces/application/application.mojom";
+import "mojo/application/public/interfaces/application.mojom";
 
 interface ChildController {
   // Starts the app at the given path (deleting it if |clean_app_path| is true).

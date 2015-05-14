@@ -13,9 +13,9 @@
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "components/view_manager/view_manager_service_impl.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 
 using mojo::ConnectionSpecificId;
 

@@ -12,9 +12,9 @@
 #include "components/html_viewer/web_media_player_factory.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "gin/v8_initializer.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 

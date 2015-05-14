@@ -6,7 +6,7 @@
 
 #include "components/resource_provider/file_utils.h"
 #include "components/resource_provider/resource_provider_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
+#include "mojo/application/public/cpp/application_connection.h"
 #include "url/gurl.h"
 
 namespace resource_provider {

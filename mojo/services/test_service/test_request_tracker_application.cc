@@ -6,9 +6,9 @@
 
 #include <assert.h>
 
+#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/cpp/application/application_runner.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
 
 namespace mojo {

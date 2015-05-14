@@ -7,8 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/application/public/interfaces/application.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo/src/mojo/public/interfaces/application/application.mojom.h"
 
 #if defined(OS_WIN)
 #undef DELETE

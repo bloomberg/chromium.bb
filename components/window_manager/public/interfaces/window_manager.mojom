@@ -4,7 +4,7 @@
 
 module mojo;
 
-import "mojo/public/interfaces/application/service_provider.mojom";
+import "mojo/application/public/interfaces/service_provider.mojom";
 
 interface WindowManager {
   // Requests the WindowManager to embed the app for |url| at an appropriate

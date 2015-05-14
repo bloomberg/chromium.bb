@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "mojo/application/application_test_base_chromium.h"
-#include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"

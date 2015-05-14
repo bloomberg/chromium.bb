@@ -35,6 +35,8 @@ mojo_sdk_source_set("cpp") {
     "../interfaces",
     "//components/surfaces/public/interfaces:surface_id",
     "//components/window_manager/public/interfaces",
+    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
     "//base",
@@ -42,10 +44,8 @@ mojo_sdk_source_set("cpp") {
 
   mojo_sdk_deps = [
     "mojo/public/c/gles2:headers",
-    "mojo/public/cpp/application",
     "mojo/public/cpp/bindings:bindings",
     "mojo/public/cpp/system",
-    "mojo/public/interfaces/application",
   ]
 }
 

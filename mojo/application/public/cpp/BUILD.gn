@@ -1,0 +1,99 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo_sdk.gni")
+
+# GYP version: mojo/mojo_base.gyp:mojo_application_base
+mojo_sdk_source_set("application") {
+  restrict_external_deps = false
+  sources = [
+    "application_connection.h",
+    "application_delegate.h",
+    "application_impl.h",
+    "connect.h",
+    "interface_factory.h",
+    "interface_factory_impl.h",
+    "lib/application_connection.cc",
+    "lib/application_delegate.cc",
+    "lib/application_impl.cc",
+    "lib/interface_factory_connector.h",
+    "lib/service_connector_registry.cc",
+    "lib/service_connector_registry.h",
+    "lib/service_provider_impl.cc",
+    "lib/service_registry.cc",
+    "lib/service_registry.h",
+    "service_connector.h",
+    "service_provider_impl.h",
+  ]
+
+  deps = [
+    "//mojo/application/public/interfaces",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/cpp/bindings",
+    "mojo/public/cpp/environment",
+    "mojo/public/cpp/system",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_application_standalone
+mojo_sdk_source_set("standalone") {
+  sources = [
+    "lib/application_runner.cc",
+  ]
+
+  public_deps = [
+    ":application",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/cpp/environment:standalone",
+    "mojo/public/cpp/utility",
+  ]
+}
+
+mojo_sdk_source_set("test_support") {
+  testonly = true
+  restrict_external_deps = false
+  sources = [
+    "application_test_base.h",
+    "lib/application_test_base.cc",
+  ]
+
+  deps = [
+    ":application",
+    "//mojo/application/public/interfaces",
+    "//testing/gtest",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/cpp/bindings",
+    "mojo/public/cpp/environment",
+    "mojo/public/cpp/system",
+  ]
+}
+
+mojo_sdk_source_set("test_support_standalone") {
+  testonly = true
+  restrict_external_deps = false
+  sources = [
+    "lib/application_test_main.cc",
+  ]
+
+  public_deps = [
+    ":test_support",
+  ]
+
+  deps = [
+    ":application",
+    "//mojo/application/public/interfaces",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/cpp/environment:standalone",
+    "mojo/public/cpp/system",
+    "mojo/public/cpp/utility",
+  ]
+}

@@ -7,7 +7,7 @@ module mojo;
 import "components/native_viewport/public/interfaces/native_viewport.mojom";
 import "components/surfaces/public/interfaces/surface_id.mojom";
 import "components/view_manager/public/interfaces/view_manager_constants.mojom";
-import "mojo/public/interfaces/application/service_provider.mojom";
+import "mojo/application/public/interfaces/service_provider.mojom";
 import "ui/mojo/events/input_events.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 

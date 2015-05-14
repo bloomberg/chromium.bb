@@ -20,7 +20,6 @@ mojom("interfaces") {
 
   deps = [
     "$mojo_network_service_root/network/public/interfaces",
+    "//mojo/application/public/interfaces",
   ]
-
-  mojo_sdk_deps = [ "mojo/public/interfaces/application" ]
 }

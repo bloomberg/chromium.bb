@@ -161,6 +161,7 @@ test("extensions_unittests") {
     "//extensions/renderer",
     "//extensions/strings",
     "//extensions/utility",
+    "//mojo/application/public/interfaces",
     "//mojo/environment:chromium",
     "//testing/gmock",
     "//testing/gtest",
@@ -168,7 +169,6 @@ test("extensions_unittests") {
     "//third_party/mojo/src/mojo/edk/js",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 
   if (is_win) {

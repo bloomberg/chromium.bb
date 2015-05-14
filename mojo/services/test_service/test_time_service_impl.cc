@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-#include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/test_service/test_request_tracker.mojom.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
 #include "mojo/services/test_service/tracked_service.h"

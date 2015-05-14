@@ -9,9 +9,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/common/weak_binding_set.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory_impl.h"
 #include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
 
 namespace core_services {

@@ -5,11 +5,11 @@
 #ifndef MOJO_SERVICES_NETWORK_NETWORK_SERVICE_DELEGATE_H_
 #define MOJO_SERVICES_NETWORK_NETWORK_SERVICE_DELEGATE_H_
 
-#include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/network_service_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
-#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
 
 class NetworkServiceDelegate
