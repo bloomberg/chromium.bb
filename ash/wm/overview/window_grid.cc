@@ -137,7 +137,7 @@ WindowGrid::WindowGrid(aura::Window* root_window,
     (*iter)->AddObserver(this);
     observed_windows_.insert(*iter);
 
-    window_list_.push_back(new WindowSelectorItem(*iter));
+    window_list_.push_back(new WindowSelectorItem(*iter, window_selector_));
   }
 }
 

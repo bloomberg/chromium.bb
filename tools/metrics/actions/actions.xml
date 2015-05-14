@@ -12205,6 +12205,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="WindowSelector_ActiveWindowChanged">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>bruthig@chromium.org</owner>
+  <description>
+    Recorded when the user selects a window from Ash overview mode which is
+    different from the window that was active prior to entering overview mode.
+  </description>
+</action>
+
 <action name="WindowSelector_Overview">
   <owner>tdanderson@chromium.org</owner>
   <owner>flackr@chromium.org</owner>

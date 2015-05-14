@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/switchable_windows.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -393,6 +394,20 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
     CancelSelection();
 }
 
+void WindowSelector::SelectWindow(aura::Window* window) {
+  // Record UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED if the user is selecting
+  // a window other than the window that was active prior to entering overview
+  // mode (i.e., the window at the front of the MRU list).
+  MruWindowTracker::WindowList window_list =
+      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+  if (window_list.size() > 0 && window_list[0] != window) {
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);
+  }
+
+  wm::GetWindowState(window)->Activate();
+}
+
 bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
   if (key_event.type() != ui::ET_KEY_PRESSED)
@@ -430,8 +445,8 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
           (num_key_presses_ * 100) / num_items_, 1, 300, 30);
       Shell::GetInstance()->metrics()->RecordUserMetricsAction(
           UMA_WINDOW_OVERVIEW_ENTER_KEY);
-      wm::GetWindowState(grid_list_[selected_grid_index_]->
-                         SelectedWindow()->GetWindow())->Activate();
+      SelectWindow(
+          grid_list_[selected_grid_index_]->SelectedWindow()->GetWindow());
       break;
     default:
       // Not a key we are interested in, allow the textfield to handle it.

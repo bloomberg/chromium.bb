@@ -121,6 +121,10 @@ enum UserMetricsAction {
   // Thumbnail sized overview of windows triggered by pressing the overview key.
   UMA_WINDOW_OVERVIEW,
 
+  // User selected a window in overview mode different from the
+  // previously-active window.
+  UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED,
+
   // Selecting a window in overview mode by pressing the enter key.
   UMA_WINDOW_OVERVIEW_ENTER_KEY,
 

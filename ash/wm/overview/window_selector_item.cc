@@ -13,6 +13,7 @@
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
@@ -126,13 +127,15 @@ gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
   return bounds;
 }
 
-WindowSelectorItem::WindowSelectorItem(aura::Window* window)
+WindowSelectorItem::WindowSelectorItem(aura::Window* window,
+                                       WindowSelector* window_selector)
     : dimmed_(false),
       root_window_(window->GetRootWindow()),
       transform_window_(window),
       in_bounds_update_(false),
       window_label_button_view_(nullptr),
-      close_button_(new OverviewCloseButton(this)) {
+      close_button_(new OverviewCloseButton(this)),
+      window_selector_(window_selector) {
   CreateWindowLabel(window->title());
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -225,7 +228,7 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
     return;
   }
   CHECK(sender == window_label_button_view_);
-  wm::GetWindowState(transform_window_.window())->Activate();
+  window_selector_->SelectWindow(transform_window_.window());
 }
 
 void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {

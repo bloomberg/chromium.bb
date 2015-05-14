@@ -35,6 +35,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/user_action_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -57,6 +58,9 @@
 
 namespace ash {
 namespace {
+
+const char kActiveWindowChangedFromOverview[] =
+    "WindowSelector_ActiveWindowChanged";
 
 class NonActivatableActivationDelegate
     : public aura::client::ActivationDelegate {
@@ -372,6 +376,111 @@ TEST_F(WindowSelectorTest, BasicGesture) {
   generator.GestureTapAt(gfx::ToEnclosingRect(
       GetTransformedTargetBounds(window2.get())).CenterPoint());
   EXPECT_EQ(window2.get(), GetFocusedWindow());
+}
+
+// Tests that the user action WindowSelector_ActiveWindowChanged is
+// recorded when the mouse/touchscreen/keyboard are used to select a window
+// in overview mode which is different from the previously-active window.
+TEST_F(WindowSelectorTest, ActiveWindowChangedUserActionRecorded) {
+  base::UserActionTester user_action_tester;
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  // Tap on |window2| to activate it and exit overview.
+  wm::ActivateWindow(window1.get());
+  ToggleOverview();
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     window2.get());
+  generator.GestureTapAt(
+      gfx::ToEnclosingRect(GetTransformedTargetBounds(window2.get()))
+          .CenterPoint());
+  EXPECT_EQ(
+      1, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+
+  // Click on |window2| to activate it and exit overview.
+  wm::ActivateWindow(window1.get());
+  ToggleOverview();
+  ClickWindow(window2.get());
+  EXPECT_EQ(
+      2, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+
+  // Select |window2| using the arrow keys. Activate it (and exit overview) by
+  // pressing the return key.
+  wm::ActivateWindow(window1.get());
+  ToggleOverview();
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_EQ(
+      3, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+}
+
+// Tests that the user action WindowSelector_ActiveWindowChanged is not
+// recorded when the mouse/touchscreen/keyboard are used to select the
+// already-active window from overview mode. Also verifies that entering and
+// exiting overview without selecting a window does not record the action.
+TEST_F(WindowSelectorTest, ActiveWindowChangedUserActionNotRecorded) {
+  base::UserActionTester user_action_tester;
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  // Set |window1| to be initially active.
+  wm::ActivateWindow(window1.get());
+  ToggleOverview();
+
+  // Tap on |window1| to exit overview.
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     window1.get());
+  generator.GestureTapAt(
+      gfx::ToEnclosingRect(GetTransformedTargetBounds(window1.get()))
+          .CenterPoint());
+  EXPECT_EQ(
+      0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+
+  // |window1| remains active. Click on it to exit overview.
+  ASSERT_EQ(window1.get(), GetFocusedWindow());
+  ToggleOverview();
+  ClickWindow(window1.get());
+  EXPECT_EQ(
+      0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+
+  // |window1| remains active. Select using the keyboard.
+  ASSERT_EQ(window1.get(), GetFocusedWindow());
+  ToggleOverview();
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_EQ(
+      0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+
+  // Entering and exiting overview without user input should not record
+  // the action.
+  ToggleOverview();
+  ToggleOverview();
+  EXPECT_EQ(
+      0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
+}
+
+// Tests that the user action WindowSelector_ActiveWindowChanged is not
+// recorded when overview mode exits as a result of closing its only window.
+TEST_F(WindowSelectorTest, ActiveWindowChangedUserActionWindowClose) {
+  base::UserActionTester user_action_tester;
+  scoped_ptr<views::Widget> widget =
+      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
+
+  ToggleOverview();
+
+  aura::Window* window = widget->GetNativeWindow();
+  gfx::RectF bounds = GetTransformedBoundsInRootWindow(window);
+  gfx::Point point(bounds.top_right().x() - 1, bounds.top_right().y() - 1);
+  ui::test::EventGenerator event_generator(window->GetRootWindow(), point);
+
+  ASSERT_FALSE(widget->IsClosed());
+  event_generator.ClickLeftButton();
+  ASSERT_TRUE(widget->IsClosed());
+  EXPECT_EQ(
+      0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 }
 
 // Tests that we do not crash and overview mode remains engaged if the desktop

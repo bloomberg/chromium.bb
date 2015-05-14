@@ -581,6 +581,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("WindowSelector_Overview"));
       break;
+    case ash::UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED:
+      base::RecordAction(
+          base::UserMetricsAction("WindowSelector_ActiveWindowChanged"));
+      break;
     case ash::UMA_WINDOW_OVERVIEW_ENTER_KEY:
       base::RecordAction(
           base::UserMetricsAction("WindowSelector_OverviewEnterKey"));

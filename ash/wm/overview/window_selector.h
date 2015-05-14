@@ -84,6 +84,9 @@ class ASH_EXPORT WindowSelector
   // Called when the last window selector item from a grid is deleted.
   void OnGridEmpty(WindowGrid* grid);
 
+  // Activates |window|.
+  void SelectWindow(aura::Window* window);
+
   bool restoring_minimized_windows() const {
     return restoring_minimized_windows_;
   }

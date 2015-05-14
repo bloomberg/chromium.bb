@@ -27,6 +27,8 @@ class Widget;
 
 namespace ash {
 
+class WindowSelector;
+
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
                                       public aura::WindowObserver {
@@ -51,7 +53,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     DISALLOW_COPY_AND_ASSIGN(OverviewLabelButton);
   };
 
-  explicit WindowSelectorItem(aura::Window* window);
+  WindowSelectorItem(aura::Window* window, WindowSelector* window_selector);
   ~WindowSelectorItem() override;
 
   aura::Window* GetWindow();
@@ -157,6 +159,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // An easy to access close button for the window in this item. Owned by the
   // close_button_widget_.
   views::ImageButton* close_button_;
+
+  // Pointer to the WindowSelector that owns the WindowGrid containing |this|.
+  // Guaranteed to be non-null for the lifetime of |this|.
+  WindowSelector* window_selector_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };
