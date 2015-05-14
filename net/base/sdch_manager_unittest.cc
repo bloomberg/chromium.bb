@@ -29,10 +29,18 @@ static const char kTestVcdiffDictionary[] = "DictionaryFor"
 class MockSdchObserver : public SdchObserver {
  public:
   MockSdchObserver()
-      : dictionary_used_notifications_(0),
+      : dictionary_added_notifications_(0),
+        dictionary_removed_notifications_(0),
+        dictionary_used_notifications_(0),
         get_dictionary_notifications_(0),
         clear_dictionaries_notifications_(0) {}
 
+  int dictionary_added_notifications() const {
+    return dictionary_added_notifications_;
+  }
+  int dictionary_removed_notifications() const {
+    return dictionary_removed_notifications_;
+  }
   std::string last_server_hash() const { return last_server_hash_; }
   int dictionary_used_notifications() const {
     return dictionary_used_notifications_;
@@ -50,24 +58,34 @@ class MockSdchObserver : public SdchObserver {
   }
 
   // SdchObserver implementation
-  void OnDictionaryUsed(SdchManager* manager,
-                        const std::string& server_hash) override {
+  void OnDictionaryAdded(const GURL& dictionary_url,
+                         const std::string& server_hash) override {
+    last_server_hash_ = server_hash;
+    last_dictionary_url_ = dictionary_url;
+    ++dictionary_added_notifications_;
+  }
+  void OnDictionaryRemoved(const std::string& server_hash) override {
+    last_server_hash_ = server_hash;
+    ++dictionary_removed_notifications_;
+  }
+  void OnDictionaryUsed(const std::string& server_hash) override {
     last_server_hash_ = server_hash;
     ++dictionary_used_notifications_;
   }
 
-  void OnGetDictionary(SdchManager* manager,
-                       const GURL& request_url,
+  void OnGetDictionary(const GURL& request_url,
                        const GURL& dictionary_url) override {
     ++get_dictionary_notifications_;
     last_dictionary_request_url_ = request_url;
     last_dictionary_url_ = dictionary_url;
   }
-  void OnClearDictionaries(SdchManager* manager) override {
+  void OnClearDictionaries() override {
     ++clear_dictionaries_notifications_;
   }
 
  private:
+  int dictionary_added_notifications_;
+  int dictionary_removed_notifications_;
   int dictionary_used_notifications_;
   int get_dictionary_notifications_;
   int clear_dictionaries_notifications_;
@@ -628,19 +646,37 @@ TEST_F(SdchManagerTest, SdchDictionaryUsed) {
   std::string server_hash;
   SdchManager::GenerateHash(dictionary_text, &client_hash, &server_hash);
   EXPECT_TRUE(AddSdchDictionary(dictionary_text, target_gurl));
-  EXPECT_EQ("xyzzy", observer.last_server_hash());
   EXPECT_EQ(1, observer.dictionary_used_notifications());
 
   EXPECT_TRUE(sdch_manager()->GetDictionarySet(target_gurl));
-  EXPECT_EQ("xyzzy", observer.last_server_hash());
   EXPECT_EQ(1, observer.dictionary_used_notifications());
 
   sdch_manager()->RemoveObserver(&observer);
   EXPECT_EQ(1, observer.dictionary_used_notifications());
-  EXPECT_EQ("xyzzy", observer.last_server_hash());
   sdch_manager()->OnDictionaryUsed("plugh");
   EXPECT_EQ(1, observer.dictionary_used_notifications());
-  EXPECT_EQ("xyzzy", observer.last_server_hash());
+}
+
+TEST_F(SdchManagerTest, AddRemoveNotifications) {
+  MockSdchObserver observer;
+  sdch_manager()->AddObserver(&observer);
+
+  std::string dictionary_domain("x.y.z.google.com");
+  GURL target_gurl("http://" + dictionary_domain);
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+  std::string client_hash;
+  std::string server_hash;
+  SdchManager::GenerateHash(dictionary_text, &client_hash, &server_hash);
+  EXPECT_TRUE(AddSdchDictionary(dictionary_text, target_gurl));
+  EXPECT_EQ(1, observer.dictionary_added_notifications());
+  EXPECT_EQ(target_gurl, observer.last_dictionary_url());
+  EXPECT_EQ(server_hash, observer.last_server_hash());
+
+  EXPECT_EQ(SDCH_OK, sdch_manager()->RemoveSdchDictionary(server_hash));
+  EXPECT_EQ(1, observer.dictionary_removed_notifications());
+  EXPECT_EQ(server_hash, observer.last_server_hash());
+
+  sdch_manager()->RemoveObserver(&observer);
 }
 
 }  // namespace net

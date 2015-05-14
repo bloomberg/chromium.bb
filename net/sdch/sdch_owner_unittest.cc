@@ -299,7 +299,7 @@ class SdchOwnerTest : public testing::Test {
   }
 
   void SignalGetDictionaryAndClearJobs(GURL request_url, GURL dictionary_url) {
-    sdch_owner().OnGetDictionary(&sdch_manager_, request_url, dictionary_url);
+    sdch_owner().OnGetDictionary(request_url, dictionary_url);
     WaitForNoJobs();
   }
 
@@ -561,7 +561,7 @@ TEST_F(SdchOwnerTest, UseChangesEviction) {
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d3));
 
   // Use the oldest dictionary.
-  sdch_owner().OnDictionaryUsed(&sdch_manager(), server_hash_d3);
+  sdch_owner().OnDictionaryUsed(server_hash_d3);
 
   // The addition of a new dictionary should succeed, evicting only the
   // newer stale one.
@@ -600,8 +600,8 @@ TEST_F(SdchOwnerTest, UsePreventsAddition) {
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d3));
 
   // Use the older dictionaries.
-  sdch_owner().OnDictionaryUsed(&sdch_manager(), server_hash_d2);
-  sdch_owner().OnDictionaryUsed(&sdch_manager(), server_hash_d3);
+  sdch_owner().OnDictionaryUsed(server_hash_d2);
+  sdch_owner().OnDictionaryUsed(server_hash_d3);
 
   // The addition of a new dictionary should fail, not evicting anything.
   std::string server_hash_d4;
@@ -871,7 +871,7 @@ TEST_F(SdchOwnerPersistenceTest, UsingDictionaryUpdatesUseCount) {
 
   ResetOwner(false);
   ASSERT_TRUE(CompleteLoadFromURL(url, "0", true));
-  owner_->OnDictionaryUsed(manager_.get(), hash);
+  owner_->OnDictionaryUsed(hash);
 
   int new_count;
   {

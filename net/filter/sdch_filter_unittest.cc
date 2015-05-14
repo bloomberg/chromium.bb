@@ -1236,8 +1236,7 @@ class SimpleSdchObserver : public SdchObserver {
   ~SimpleSdchObserver() override { manager_->RemoveObserver(this); }
 
   // SdchObserver
-  void OnDictionaryUsed(SdchManager* manager,
-                        const std::string& server_hash) override {
+  void OnDictionaryUsed(const std::string& server_hash) override {
     dictionary_used_++;
     last_server_hash_ = server_hash;
   }
@@ -1245,10 +1244,12 @@ class SimpleSdchObserver : public SdchObserver {
   int dictionary_used_calls() const { return dictionary_used_; }
   std::string last_server_hash() const { return last_server_hash_; }
 
-  void OnGetDictionary(SdchManager* /* manager */,
-                       const GURL& /* request_url */,
+  void OnDictionaryAdded(const GURL& /* dictionary_url */,
+                         const std::string& /* server_hash */) override {}
+  void OnDictionaryRemoved(const std::string& /* server_hash */) override {}
+  void OnGetDictionary(const GURL& /* request_url */,
                        const GURL& /* dictionary_url */) override {}
-  void OnClearDictionaries(SdchManager* /* manager */) override {}
+  void OnClearDictionaries() override {}
 
  private:
   int dictionary_used_;

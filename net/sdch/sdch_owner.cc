@@ -484,8 +484,12 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   load_times_[server_hash] = clock_->Now();
 }
 
-void SdchOwner::OnDictionaryUsed(SdchManager* manager,
-                                 const std::string& server_hash) {
+void SdchOwner::OnDictionaryAdded(const GURL& dictionary_url,
+                                  const std::string& server_hash) { }
+
+void SdchOwner::OnDictionaryRemoved(const std::string& server_hash) { }
+
+void SdchOwner::OnDictionaryUsed(const std::string& server_hash) {
   base::Time now(clock_->Now());
   base::DictionaryValue* pref_dictionary_map =
       GetPersistentStoreDictionaryMap(pref_store_);
@@ -538,8 +542,7 @@ void SdchOwner::OnDictionaryUsed(SdchManager* manager,
   specific_dictionary_map->SetInteger(kDictionaryUseCountKey, use_count + 1);
 }
 
-void SdchOwner::OnGetDictionary(SdchManager* manager,
-                                const GURL& request_url,
+void SdchOwner::OnGetDictionary(const GURL& request_url,
                                 const GURL& dictionary_url) {
 #if defined(OS_CHROMEOS)
   // For debugging http://crbug.com/454198; remove when resolved.
@@ -581,7 +584,7 @@ void SdchOwner::OnGetDictionary(SdchManager* manager,
                                 base::Unretained(this), base::Time(), 0));
 }
 
-void SdchOwner::OnClearDictionaries(SdchManager* manager) {
+void SdchOwner::OnClearDictionaries() {
   total_dictionary_bytes_ = 0;
   fetcher_->Cancel();
 

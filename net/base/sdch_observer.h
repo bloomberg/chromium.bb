@@ -22,9 +22,14 @@ class NET_EXPORT SdchObserver {
  public:
   virtual ~SdchObserver();
 
-  // TODO(rdsmith): Add Added/Removed signals.  These are only needed if
-  // we end up with an implementation in which more than one observer
-  // generates Add/Removed events; otherwise, tracking can be done internally.
+  // A dictionary has been added to the observed manager.
+  virtual void OnDictionaryAdded(const GURL& dictionary_url,
+                                 const std::string& server_hash) = 0;
+
+  // A dictionary has been removed from the observed manager. Note that this is
+  // not called when dictionaries are cleared, so observers that want to track
+  // the loaded dictionary set need to observe OnClearDictionaries as well.
+  virtual void OnDictionaryRemoved(const std::string& server_hash) = 0;
 
   // TODO(rdsmith): Add signal that an Avail-Dictionary header was generated.
   // Should be added if/when an observer wants to use it to fine-tune
@@ -38,17 +43,15 @@ class NET_EXPORT SdchObserver {
   // references to deleted dictionaries.  Observers must handle this case.
   // TODO(rdsmith): Should this notification indicate how much
   // compression the dictionary provided?
-  virtual void OnDictionaryUsed(SdchManager* manager,
-                                const std::string& server_hash) = 0;
+  virtual void OnDictionaryUsed(const std::string& server_hash) = 0;
 
   // A "Get-Dictionary" header has been seen.
-  virtual void OnGetDictionary(SdchManager* manager,
-                               const GURL& request_url,
+  virtual void OnGetDictionary(const GURL& request_url,
                                const GURL& dictionary_url) = 0;
 
   // Notification that SDCH has received a request to clear all
   // its dictionaries.
-  virtual void OnClearDictionaries(SdchManager* manager) = 0;
+  virtual void OnClearDictionaries() = 0;
 };
 
 }  // namespace net

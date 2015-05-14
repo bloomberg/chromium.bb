@@ -56,12 +56,13 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
   void SetMinSpaceForDictionaryFetch(size_t min_space_for_dictionary_fetch);
 
   // SdchObserver implementation.
-  void OnDictionaryUsed(SdchManager* manager,
-                        const std::string& server_hash) override;
-  void OnGetDictionary(SdchManager* manager,
-                       const GURL& request_url,
+  void OnDictionaryAdded(const GURL& dictionary_url,
+                         const std::string& server_hash) override;
+  void OnDictionaryRemoved(const std::string& server_hash) override;
+  void OnDictionaryUsed(const std::string& server_hash) override;
+  void OnGetDictionary(const GURL& request_url,
                        const GURL& dictionary_url) override;
-  void OnClearDictionaries(SdchManager* manager) override;
+  void OnClearDictionaries() override;
 
   // PrefStore::Observer implementation.
   void OnPrefValueChanged(const std::string& key) override;
