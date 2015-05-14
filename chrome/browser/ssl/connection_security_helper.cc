@@ -16,12 +16,12 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/ssl_status.h"
 #include "net/base/net_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -73,7 +73,7 @@ ConnectionSecurityHelper::GetSecurityLevelForWebContents(
 
     case content::SECURITY_STYLE_UNAUTHENTICATED: {
       const GURL& url = entry->GetURL();
-      if (url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kFtpScheme))
+      if (!content::IsOriginSecure(url))
         return GetSecurityLevelForNonSecureFieldTrial();
       return NONE;
     }
