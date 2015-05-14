@@ -50,6 +50,13 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                    const blink::WebIDBKeyRange&,
                    bool keyOnly,
                    blink::WebIDBCallbacks*);
+  virtual void getAll(long long transactionId,
+                      long long objectStoreId,
+                      long long indexId,
+                      const blink::WebIDBKeyRange&,
+                      long long maxCount,
+                      bool keyOnly,
+                      blink::WebIDBCallbacks*);
   virtual void put(long long transactionId,
                    long long objectStoreId,
                    const blink::WebData& value,

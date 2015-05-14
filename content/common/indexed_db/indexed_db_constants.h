@@ -9,6 +9,8 @@ namespace content {
 
 const int32 kNoDatabase = -1;
 
+const size_t kMaxIDBMessageOverhead = 1024 * 1024;  // 1MB; arbitrarily chosen.
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_CONSTANTS_H_

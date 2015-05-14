@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
 
 using blink::WebBlobInfo;
 using blink::WebData;
@@ -30,6 +31,7 @@ using blink::WebIDBDatabaseCallbacks;
 using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
 using blink::WebIDBMetadata;
+using blink::WebIDBValue;
 using blink::WebString;
 using blink::WebVector;
 using base::ThreadLocalPointer;
@@ -45,7 +47,6 @@ IndexedDBDispatcher* const kHasBeenDeleted =
 
 }  // unnamed namespace
 
-const size_t kMaxIDBMessageOverhead = 1024 * 1024;  // 1MB; arbitrarily chosen.
 const size_t kMaxIDBValueSizeInBytes =
     IPC::Channel::kMaximumMessageSize - kMaxIDBMessageOverhead;
 
@@ -143,6 +144,7 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessIndexedDBKey)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessStringList,
                         OnSuccessStringList)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessArray, OnSuccessArray)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessValue, OnSuccessValue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessInteger, OnSuccessInteger)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessUndefined,
@@ -321,6 +323,24 @@ void IndexedDBDispatcher::RequestIDBDatabaseGet(
   params.key_range = key_range;
   params.key_only = key_only;
   Send(new IndexedDBHostMsg_DatabaseGet(params));
+}
+
+void IndexedDBDispatcher::RequestIDBDatabaseGetAll(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    const IndexedDBKeyRange& key_range,
+    int64 max_count,
+    WebIDBCallbacks* callbacks) {
+  ResetCursorPrefetchCaches(transaction_id, kAllCursors);
+  IndexedDBHostMsg_DatabaseGetAll_Params params;
+  init_params(&params, callbacks);
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+  params.key_range = key_range;
+  params.max_count = max_count;
+  Send(new IndexedDBHostMsg_DatabaseGetAll(params));
 }
 
 void IndexedDBDispatcher::RequestIDBDatabasePut(
@@ -522,6 +542,30 @@ void IndexedDBDispatcher::OnSuccessStringList(
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
+static void PrepareWebValue(const IndexedDBMsg_ReturnValue& value,
+                            WebIDBValue* web_value) {
+  if (value.bits.empty())
+    return;
+
+  web_value->data.assign(&*value.bits.begin(), value.bits.size());
+  blink::WebVector<WebBlobInfo> local_blob_info(value.blob_or_file_info.size());
+  for (size_t i = 0; i < value.blob_or_file_info.size(); ++i) {
+    const IndexedDBMsg_BlobOrFileInfo& info = value.blob_or_file_info[i];
+    if (info.is_file) {
+      local_blob_info[i] = WebBlobInfo(
+          WebString::fromUTF8(info.uuid.c_str()), info.file_path,
+          info.file_name, info.mime_type, info.last_modified, info.size);
+    } else {
+      local_blob_info[i] = WebBlobInfo(WebString::fromUTF8(info.uuid.c_str()),
+                                       info.mime_type, info.size);
+    }
+  }
+
+  web_value->webBlobInfo.swap(local_blob_info);
+  web_value->primaryKey = WebIDBKeyBuilder::Build(value.primary_key);
+  web_value->keyPath = WebIDBKeyPathBuilder::Build(value.key_path);
+}
+
 static void PrepareWebValueAndBlobInfo(
     const IndexedDBMsg_Value& value,
     WebData* web_value,
@@ -548,6 +592,19 @@ static void PrepareWebValueAndBlobInfo(
   web_blob_info->swap(local_blob_info);
 }
 
+void IndexedDBDispatcher::OnSuccessArray(
+    const IndexedDBMsg_CallbacksSuccessArray_Params& p) {
+  DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
+  int32 ipc_callbacks_id = p.ipc_callbacks_id;
+  blink::WebVector<WebIDBValue> web_values(p.values.size());
+  for (size_t i = 0; i < p.values.size(); ++i)
+    PrepareWebValue(p.values[i], &web_values[i]);
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
+  DCHECK(callbacks);
+  callbacks->onSuccess(web_values);
+  pending_callbacks_.Remove(ipc_callbacks_id);
+}
+
 void IndexedDBDispatcher::OnSuccessValue(
     const IndexedDBMsg_CallbacksSuccessValue_Params& params) {
   DCHECK_EQ(params.ipc_thread_id, CurrentWorkerId());
@@ -555,17 +612,14 @@ void IndexedDBDispatcher::OnSuccessValue(
       pending_callbacks_.Lookup(params.ipc_callbacks_id);
   if (!callbacks)
     return;
-  WebData web_value;
-  WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(params.value, &web_value, &web_blob_info);
+  WebIDBValue web_value;
+  PrepareWebValue(params.value, &web_value);
   if (params.value.primary_key.IsValid()) {
-    callbacks->onSuccess(web_value, web_blob_info,
-                         WebIDBKeyBuilder::Build(params.value.primary_key),
-                         WebIDBKeyPathBuilder::Build(params.value.key_path));
-  } else {
-    callbacks->onSuccess(web_value, web_blob_info);
-    cursor_transaction_ids_.erase(params.ipc_callbacks_id);
+    web_value.primaryKey = WebIDBKeyBuilder::Build(params.value.primary_key);
+    web_value.keyPath = WebIDBKeyPathBuilder::Build(params.value.key_path);
   }
+  callbacks->onSuccess(web_value);
+  cursor_transaction_ids_.erase(params.ipc_callbacks_id);
   pending_callbacks_.Remove(params.ipc_callbacks_id);
 }
 

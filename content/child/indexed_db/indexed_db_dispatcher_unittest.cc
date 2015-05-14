@@ -25,6 +25,7 @@ using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
+using blink::WebIDBValue;
 using blink::WebVector;
 
 namespace content {
@@ -141,7 +142,7 @@ class CursorCallbacks : public WebIDBCallbacks {
   explicit CursorCallbacks(scoped_ptr<WebIDBCursor>* cursor)
       : cursor_(cursor) {}
 
-  void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) override {}
+  void onSuccess(const WebIDBValue&) override {}
   void onSuccess(WebIDBCursor* cursor,
                  const WebIDBKey& key,
                  const WebIDBKey& primaryKey,

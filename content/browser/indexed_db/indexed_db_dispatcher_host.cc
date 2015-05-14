@@ -508,6 +508,7 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnVersionChangeIgnored)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGetAll, OnGetAll)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPutWrapper)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexKeys, OnSetIndexKeys)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexesReady,
@@ -644,6 +645,23 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
       make_scoped_ptr(new IndexedDBKeyRange(params.key_range)),
       params.key_only,
       callbacks);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGetAll(
+    const IndexedDBHostMsg_DatabaseGetAll_Params& params) {
+  DCHECK(
+      parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  IndexedDBConnection* connection =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
+  if (!connection || !connection->IsConnected())
+    return;
+
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
+      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
+  connection->database()->GetAll(
+      parent_->HostTransactionId(params.transaction_id), params.object_store_id,
+      make_scoped_ptr(new IndexedDBKeyRange(params.key_range)),
+      params.max_count, callbacks);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(

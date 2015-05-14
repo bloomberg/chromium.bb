@@ -32,8 +32,14 @@ IndexedDBKeyRange& IndexedDBKeyRange::operator=(
 bool IndexedDBKeyRange::IsOnlyKey() const {
   if (lower_open_ || upper_open_)
     return false;
+  if (IsEmpty())
+    return false;
 
   return lower_.Equals(upper_);
+}
+
+bool IndexedDBKeyRange::IsEmpty() const {
+  return !lower_.IsValid() && !upper_.IsValid();
 }
 
 }  // namespace content

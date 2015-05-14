@@ -126,6 +126,22 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGet_Params)
   IPC_STRUCT_MEMBER(bool, key_only)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGetAll_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  // The id any response should contain.
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
+  // The database the object store belongs to.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction its associated with.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The object store's id.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
+  // The max number of values to retrieve.
+  IPC_STRUCT_MEMBER(int64, max_count)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(IndexedDBMsg_BlobOrFileInfo)
 IPC_STRUCT_MEMBER(bool, is_file)
 IPC_STRUCT_MEMBER(std::string, uuid)
@@ -287,6 +303,12 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_Value>, values)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessArray_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_ReturnValue>, values)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessValue_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
@@ -348,6 +370,9 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorAdvance,
 
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
                      IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
+
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessArray,
+                     IndexedDBMsg_CallbacksSuccessArray_Params)
 
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                      int32 /* ipc_thread_id */,
@@ -483,6 +508,10 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDestroyed,
 // WebIDBDatabase::get() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseGet,
                      IndexedDBHostMsg_DatabaseGet_Params)
+
+// WebIDBDatabase::getAll() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseGetAll,
+                     IndexedDBHostMsg_DatabaseGetAll_Params)
 
 // WebIDBDatabase::put() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabasePut,

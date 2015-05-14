@@ -121,6 +121,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
   std::vector<IndexedDBValue> found_values;
 
   saved_cursor_.reset();
+  // TODO(cmumford): Use IPC::Channel::kMaximumMessageSize
   const size_t max_size_estimate = 10 * 1024 * 1024;
   size_t size_estimate = 0;
   leveldb::Status s;

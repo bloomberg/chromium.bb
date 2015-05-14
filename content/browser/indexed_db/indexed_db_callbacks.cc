@@ -285,6 +285,22 @@ static void BlobLookupForCursorPrefetch(
       new IndexedDBMsg_CallbacksSuccessCursorPrefetch(*params));
 }
 
+static void BlobLookupForGetAll(
+    IndexedDBMsg_CallbacksSuccessArray_Params* params,
+    scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
+    const std::vector<IndexedDBReturnValue>& values) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(values.size(), params->values.size());
+
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (!CreateAllBlobs(values[i].blob_info,
+                        &params->values[i].blob_or_file_info, dispatcher_host))
+      return;
+  }
+
+  dispatcher_host->Send(new IndexedDBMsg_CallbacksSuccessArray(*params));
+}
+
 static void FillInBlobData(
     const std::vector<IndexedDBBlobInfo>& blob_info,
     std::vector<IndexedDBMsg_BlobOrFileInfo>* blob_or_file_info) {
@@ -500,6 +516,51 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
                    base::Owned(params.release()), dispatcher_host_,
                    value->blob_info,
                    base::Unretained(&p->value.blob_or_file_info)));
+  }
+  dispatcher_host_ = NULL;
+}
+
+void IndexedDBCallbacks::OnSuccessArray(
+    std::vector<IndexedDBReturnValue>* values,
+    const IndexedDBKeyPath& key_path) {
+  DCHECK(dispatcher_host_.get());
+
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+
+  scoped_ptr<IndexedDBMsg_CallbacksSuccessArray_Params> params(
+      new IndexedDBMsg_CallbacksSuccessArray_Params());
+  params->ipc_thread_id = ipc_thread_id_;
+  params->ipc_callbacks_id = ipc_callbacks_id_;
+  params->values.resize(values->size());
+
+  bool found_blob_info = false;
+  for (size_t i = 0; i < values->size(); ++i) {
+    IndexedDBMsg_ReturnValue& pvalue = params->values[i];
+    IndexedDBReturnValue& value = (*values)[i];
+    pvalue.bits.swap(value.bits);
+    if (!value.blob_info.empty()) {
+      found_blob_info = true;
+      FillInBlobData(value.blob_info, &pvalue.blob_or_file_info);
+      for (const auto& blob_info : value.blob_info) {
+        if (!blob_info.mark_used_callback().is_null())
+          blob_info.mark_used_callback().Run();
+      }
+    }
+    pvalue.primary_key = value.primary_key;
+    pvalue.key_path = key_path;
+  }
+
+  if (found_blob_info) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(BlobLookupForGetAll, base::Owned(params.release()),
+                   dispatcher_host_, *values));
+  } else {
+    dispatcher_host_->Send(
+        new IndexedDBMsg_CallbacksSuccessArray(*params.get()));
   }
   dispatcher_host_ = NULL;
 }
