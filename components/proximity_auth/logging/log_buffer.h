@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 
 namespace proximity_auth {
@@ -33,11 +34,24 @@ class LogBuffer {
                logging::LogSeverity severity);
   };
 
+  class Observer {
+   public:
+    // Called when a new message is added to the log buffer.
+    virtual void OnLogMessageAdded(const LogMessage& log_message) = 0;
+
+    // Called when all messages in the log buffer are cleared.
+    virtual void OnLogBufferCleared() = 0;
+  };
+
   LogBuffer();
   ~LogBuffer();
 
   // Returns the global instance.
   static LogBuffer* GetInstance();
+
+  // Adds and removes log buffer observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Adds a new log message to the buffer. If the number of log messages exceeds
   // the maximum, then the earliest added log will be removed.
@@ -55,6 +69,9 @@ class LogBuffer {
  private:
   // The messages currently in the buffer.
   std::list<LogMessage> log_messages_;
+
+  // List of observers.
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LogBuffer);
 };

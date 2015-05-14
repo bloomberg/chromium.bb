@@ -2,6 +2,7 @@
 <link href="chrome://resources/polymer/core-toolbar/core-toolbar.html" rel="import">
 <link href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html" rel="import">
 <link href="chrome://resources/polymer/core-icons/communication-icons.html" rel="import">
+<link href="log-buffer.html" rel="import">
 
 <polymer-element name="log-panel" layout vertical>
   <template>
@@ -28,8 +29,18 @@
         padding: 15px 30px;
       }
 
+      .list-item[severity="1"] {
+        background-color: #fffcef;
+        color: #312200;
+      }
+
+      .list-item[severity="2"] {
+        background-color: #fff1f1;
+        color: #ef0000;
+      }
+
       .item-metadata {
-        color: rgb(153, 153, 153);
+        color: #888888;
         font-size: 10px;
       }
 
@@ -45,18 +56,19 @@
     </style>
 
     <core-toolbar layout horizontal end-justified center
-                  on-click="{{clearLogs}}">
+                  on-click="{{clearLogs_}}">
       <paper-icon-button icon="communication:clear-all"></paper-icon-button>
     </core-toolbar>
 
+    <log-buffer id='logBuffer' logs="{{logs}}"></log-buffer>
     <div id="list" flex>
       <template repeat="{{log in logs}}">
         <div class="list-item {{ {selected: log.selected} | tokenList }}"
-             on-click={{itemClick}}>
+             on-click={{itemClick}} severity="{{log.severity}}">
           <div class="item-metadata" layout horizontal>
-            <div>14:23:50</div>
+            <div>{{log.time}}</div>
             <div flex></div>
-            <div>proximity_auth_class.cc:123</div>
+            <div>{{stripPath_(log.file)}}:{{log.line}}</div>
           </div>
           <pre class="item-log" flex>{{log.text}}</pre>
         </div>

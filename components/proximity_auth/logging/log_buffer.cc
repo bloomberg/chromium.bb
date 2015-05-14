@@ -37,16 +37,26 @@ LogBuffer* LogBuffer::GetInstance() {
   return &g_log_buffer.Get();
 }
 
+void LogBuffer::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void LogBuffer::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void LogBuffer::AddLogMessage(const LogMessage& log_message) {
   // Note: We may want to sort the messages by timestamp if there are cases
   // where logs are not added chronologically.
   log_messages_.push_back(log_message);
   if (log_messages_.size() > MaxBufferSize())
     log_messages_.pop_front();
+  FOR_EACH_OBSERVER(Observer, observers_, OnLogMessageAdded(log_message));
 }
 
 void LogBuffer::Clear() {
   log_messages_.clear();
+  FOR_EACH_OBSERVER(Observer, observers_, OnLogBufferCleared());
 }
 
 size_t LogBuffer::MaxBufferSize() const {

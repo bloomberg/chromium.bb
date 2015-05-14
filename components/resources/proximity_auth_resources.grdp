@@ -18,4 +18,8 @@
            file="../proximity_auth/webui/resources/device-list.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
   <include name="IDR_PROXIMITY_AUTH_DEVICE_LIST_JS"
            file="../proximity_auth/webui/resources/device-list.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_LOG_BUFFER_HTML"
+           file="../proximity_auth/webui/resources/log-buffer.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_LOG_BUFFER_JS"
+           file="../proximity_auth/webui/resources/log-buffer.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
 </grit-part>

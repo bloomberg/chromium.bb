@@ -33,6 +33,9 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui)
   source->AddResourcePath("device-list.html",
                           IDR_PROXIMITY_AUTH_DEVICE_LIST_HTML);
   source->AddResourcePath("device-list.js", IDR_PROXIMITY_AUTH_DEVICE_LIST_JS);
+  source->AddResourcePath("log-buffer.html",
+                          IDR_PROXIMITY_AUTH_LOG_BUFFER_HTML);
+  source->AddResourcePath("log-buffer.js", IDR_PROXIMITY_AUTH_LOG_BUFFER_JS);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
