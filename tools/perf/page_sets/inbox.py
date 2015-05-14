@@ -24,7 +24,7 @@ class InboxPage(page_module.Page):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self, 180)
+    action_runner.Navigate(self.url, timeout_in_seconds=180)
 
   def RunPageInteractions(self, action_runner):
     self.OpenCloseConv(action_runner)
