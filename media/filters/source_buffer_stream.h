@@ -275,9 +275,12 @@ class MEDIA_EXPORT SourceBufferStream {
   // stream, and "TEXT" for a text stream.
   std::string GetStreamTypeName() const;
 
-  // Returns true if we don't have any ranges or the last range is selected
-  // or there is a pending seek beyond any existing ranges.
-  bool IsEndSelected() const;
+  // Returns true if end of stream has been reached, i.e. the
+  // following conditions are met:
+  // 1. end of stream is marked and there is nothing in the track_buffer.
+  // 2. We don't have any ranges, or the last or no range is selected,
+  //    or there is a pending seek beyond any existing ranges.
+  bool IsEndOfStreamReached() const;
 
   // Deletes the range pointed to by |*itr| and removes it from |ranges_|.
   // If |*itr| points to |selected_range_|, then |selected_range_| is set to

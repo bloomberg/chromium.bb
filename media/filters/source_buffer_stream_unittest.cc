@@ -349,6 +349,12 @@ class SourceBufferStreamTest : public testing::Test {
     EXPECT_EQ(SourceBufferStream::kNeedBuffer, stream_->GetNextBuffer(&buffer));
   }
 
+  void CheckEOSReached() {
+    scoped_refptr<StreamParserBuffer> buffer;
+    EXPECT_EQ(SourceBufferStream::kEndOfStream,
+              stream_->GetNextBuffer(&buffer));
+  }
+
   void CheckVideoConfig(const VideoDecoderConfig& config) {
     const VideoDecoderConfig& actual = stream_->GetCurrentVideoDecoderConfig();
     EXPECT_TRUE(actual.Matches(config))
@@ -3237,6 +3243,55 @@ TEST_F(SourceBufferStreamTest,
 
   // Verify that the buffered ranges are updated properly and we don't crash.
   CheckExpectedRangesByTimestamp("{ [0,90) }");
+}
+
+TEST_F(SourceBufferStreamTest, SetExplicitDuration_MarkEOS) {
+  // Append 1 buffer at positions 0 through 8.
+  NewSegmentAppend(0, 9);
+
+  // Check expected ranges.
+  CheckExpectedRanges("{ [0,8) }");
+
+  // Seek to 5.
+  Seek(5);
+
+  // Set duration to be before the seeked to position.
+  // This will result in truncation of the selected range and a reset
+  // of NextBufferPosition.
+  stream_->OnSetDuration(frame_duration() * 4);
+
+  // Check the expected ranges.
+  CheckExpectedRanges("{ [0,3) }");
+
+  // Mark EOS reached.
+  stream_->MarkEndOfStream();
+
+  // Expect EOS to be reached.
+  CheckEOSReached();
+}
+
+TEST_F(SourceBufferStreamTest, SetExplicitDuration_MarkEOS_IsSeekPending) {
+  // Append 1 buffer at positions 0 through 8.
+  NewSegmentAppend(0, 9);
+
+  // Check expected ranges.
+  CheckExpectedRanges("{ [0,8) }");
+
+  // Seek to 9 which will result in a pending seek.
+  Seek(9);
+
+  // Set duration to be before the seeked to position.
+  // This will result in truncation of the selected range and a reset
+  // of NextBufferPosition.
+  stream_->OnSetDuration(frame_duration() * 4);
+
+  // Check the expected ranges.
+  CheckExpectedRanges("{ [0,3) }");
+
+  EXPECT_TRUE(stream_->IsSeekPending());
+  // Mark EOS reached.
+  stream_->MarkEndOfStream();
+  EXPECT_FALSE(stream_->IsSeekPending());
 }
 
 // Test the case were the current playback position is at the end of the

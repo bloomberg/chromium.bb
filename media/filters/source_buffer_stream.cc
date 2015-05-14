@@ -928,7 +928,7 @@ void SourceBufferStream::Seek(base::TimeDelta timestamp) {
 }
 
 bool SourceBufferStream::IsSeekPending() const {
-  return !(end_of_stream_ && IsEndSelected()) && seek_pending_;
+  return seek_pending_ && !IsEndOfStreamReached();
 }
 
 void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
@@ -1098,9 +1098,11 @@ SourceBufferStream::Status SourceBufferStream::GetNextBufferInternal(
     return kSuccess;
   }
 
+  DCHECK(track_buffer_.empty());
   if (!selected_range_ || !selected_range_->HasNextBuffer()) {
-    if (end_of_stream_ && IsEndSelected())
+    if (IsEndOfStreamReached()) {
       return kEndOfStream;
+    }
     DVLOG(3) << __FUNCTION__ << " " << GetStreamTypeName()
              << ": returning kNeedBuffer "
              << (selected_range_ ? "(selected range has no next buffer)"
@@ -1205,7 +1207,10 @@ void SourceBufferStream::UnmarkEndOfStream() {
   end_of_stream_ = false;
 }
 
-bool SourceBufferStream::IsEndSelected() const {
+bool SourceBufferStream::IsEndOfStreamReached() const {
+  if (!end_of_stream_ || !track_buffer_.empty())
+    return false;
+
   if (ranges_.empty())
     return true;
 
@@ -1214,6 +1219,9 @@ bool SourceBufferStream::IsEndSelected() const {
         ranges_.back()->GetBufferedEndTimestamp().ToPresentationTime();
     return seek_buffer_timestamp_ >= last_range_end_time;
   }
+
+  if (!selected_range_)
+    return true;
 
   return selected_range_ == ranges_.back();
 }
