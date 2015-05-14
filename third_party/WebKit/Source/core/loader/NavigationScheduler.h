@@ -93,13 +93,13 @@ private:
     bool shouldScheduleNavigation(const String& url) const;
 
     void timerFired(Timer<NavigationScheduler>*);
-    void schedule(PassOwnPtr<ScheduledNavigation>);
+    void schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation>);
 
     static bool mustLockBackForwardList(LocalFrame* targetFrame);
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     Timer<NavigationScheduler> m_timer;
-    OwnPtr<ScheduledNavigation> m_redirect;
+    OwnPtrWillBeMember<ScheduledNavigation> m_redirect;
 };
 
 } // namespace blink

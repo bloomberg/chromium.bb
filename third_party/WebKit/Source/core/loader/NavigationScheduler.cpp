@@ -54,8 +54,8 @@ namespace blink {
 
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 
-class ScheduledNavigation {
-    WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED(ScheduledNavigation);
+class ScheduledNavigation : public NoBaseWillBeGarbageCollectedFinalized<ScheduledNavigation> {
+    WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScheduledNavigation);
 public:
     ScheduledNavigation(double delay, Document* originDocument, bool lockBackForwardList, bool isLocationChange)
         : m_delay(delay)
@@ -84,12 +84,17 @@ public:
         return adoptPtr(new UserGestureIndicator(DefinitelyNotProcessingUserGesture));
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_originDocument);
+    }
+
 protected:
     void clearUserGesture() { m_wasUserGesture = false; }
 
 private:
     double m_delay;
-    RefPtrWillBePersistent<Document> m_originDocument;
+    RefPtrWillBeMember<Document> m_originDocument;
     bool m_lockBackForwardList;
     bool m_isLocationChange;
     bool m_wasUserGesture;
@@ -125,10 +130,9 @@ private:
 
 class ScheduledRedirect final : public ScheduledURLNavigation {
 public:
-    ScheduledRedirect(double delay, Document* originDocument, const String& url, bool lockBackForwardList)
-        : ScheduledURLNavigation(delay, originDocument, url, lockBackForwardList, false)
+    static PassOwnPtrWillBeRawPtr<ScheduledRedirect> create(double delay, Document* originDocument, const String& url, bool lockBackForwardList)
     {
-        clearUserGesture();
+        return adoptPtrWillBeNoop(new ScheduledRedirect(delay, originDocument, url, lockBackForwardList));
     }
 
     virtual bool shouldStartTimer(LocalFrame* frame) override { return frame->document()->loadEventFinished(); }
@@ -143,19 +147,31 @@ public:
         request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
+private:
+    ScheduledRedirect(double delay, Document* originDocument, const String& url, bool lockBackForwardList)
+        : ScheduledURLNavigation(delay, originDocument, url, lockBackForwardList, false)
+    {
+        clearUserGesture();
+    }
 };
 
 class ScheduledLocationChange final : public ScheduledURLNavigation {
 public:
+    static PassOwnPtrWillBeRawPtr<ScheduledLocationChange> create(Document* originDocument, const String& url, bool lockBackForwardList)
+    {
+        return adoptPtrWillBeNoop(new ScheduledLocationChange(originDocument, url, lockBackForwardList));
+    }
+
+private:
     ScheduledLocationChange(Document* originDocument, const String& url, bool lockBackForwardList)
         : ScheduledURLNavigation(0.0, originDocument, url, lockBackForwardList, !protocolIsJavaScript(url)) { }
 };
 
 class ScheduledReload final : public ScheduledNavigation {
 public:
-    ScheduledReload()
-        : ScheduledNavigation(0.0, nullptr, true, true)
+    static PassOwnPtrWillBeRawPtr<ScheduledReload> create()
     {
+        return adoptPtrWillBeNoop(new ScheduledReload);
     }
 
     virtual void fire(LocalFrame* frame) override
@@ -163,13 +179,19 @@ public:
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         frame->loader().reload(NormalReload, KURL(), ClientRedirect);
     }
+
+private:
+    ScheduledReload()
+        : ScheduledNavigation(0.0, nullptr, true, true)
+    {
+    }
 };
 
 class ScheduledPageBlock final : public ScheduledURLNavigation {
 public:
-    ScheduledPageBlock(Document* originDocument, const String& url)
-        : ScheduledURLNavigation(0.0, originDocument, url, true, true)
+    static PassOwnPtrWillBeRawPtr<ScheduledPageBlock> create(Document* originDocument, const String& url)
     {
+        return adoptPtrWillBeNoop(new ScheduledPageBlock(originDocument, url));
     }
 
     virtual void fire(LocalFrame* frame) override
@@ -181,15 +203,19 @@ public:
         request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
+private:
+    ScheduledPageBlock(Document* originDocument, const String& url)
+        : ScheduledURLNavigation(0.0, originDocument, url, true, true)
+    {
+    }
+
 };
 
 class ScheduledFormSubmission final : public ScheduledNavigation {
 public:
-    ScheduledFormSubmission(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission, bool lockBackForwardList)
-        : ScheduledNavigation(0, document, lockBackForwardList, true)
-        , m_submission(submission)
+    static PassOwnPtrWillBeRawPtr<ScheduledFormSubmission> create(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission, bool lockBackForwardList)
     {
-        ASSERT(m_submission->form());
+        return adoptPtrWillBeNoop(new ScheduledFormSubmission(document, submission, lockBackForwardList));
     }
 
     virtual void fire(LocalFrame* frame) override
@@ -203,8 +229,21 @@ public:
         frame->loader().load(frameRequest);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_submission);
+        ScheduledNavigation::trace(visitor);
+    }
+
 private:
-    RefPtrWillBePersistent<FormSubmission> m_submission;
+    ScheduledFormSubmission(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission, bool lockBackForwardList)
+        : ScheduledNavigation(0, document, lockBackForwardList, true)
+        , m_submission(submission)
+    {
+        ASSERT(m_submission->form());
+    }
+
+    RefPtrWillBeMember<FormSubmission> m_submission;
 };
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
@@ -243,7 +282,7 @@ void NavigationScheduler::scheduleRedirect(double delay, const String& url)
 
     // We want a new back/forward list item if the refresh timeout is > 1 second.
     if (!m_redirect || delay <= m_redirect->delay())
-        schedule(adoptPtr(new ScheduledRedirect(delay, m_frame->document(), url, delay <= 1)));
+        schedule(ScheduledRedirect::create(delay, m_frame->document(), url, delay <= 1));
 }
 
 bool NavigationScheduler::mustLockBackForwardList(LocalFrame* targetFrame)
@@ -293,20 +332,20 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
         }
     }
 
-    schedule(adoptPtr(new ScheduledLocationChange(originDocument, url, lockBackForwardList)));
+    schedule(ScheduledLocationChange::create(originDocument, url, lockBackForwardList));
 }
 
 void NavigationScheduler::schedulePageBlock(Document* originDocument)
 {
     ASSERT(m_frame->page());
     const KURL& url = m_frame->document()->url();
-    schedule(adoptPtr(new ScheduledPageBlock(originDocument, url)));
+    schedule(ScheduledPageBlock::create(originDocument, url));
 }
 
 void NavigationScheduler::scheduleFormSubmission(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission)
 {
     ASSERT(m_frame->page());
-    schedule(adoptPtr(new ScheduledFormSubmission(document, submission, mustLockBackForwardList(m_frame))));
+    schedule(ScheduledFormSubmission::create(document, submission, mustLockBackForwardList(m_frame)));
 }
 
 void NavigationScheduler::scheduleReload()
@@ -315,7 +354,7 @@ void NavigationScheduler::scheduleReload()
         return;
     if (m_frame->document()->url().isEmpty())
         return;
-    schedule(adoptPtr(new ScheduledReload));
+    schedule(ScheduledReload::create());
 }
 
 void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
@@ -329,12 +368,12 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
 
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
-    OwnPtr<ScheduledNavigation> redirect(m_redirect.release());
+    OwnPtrWillBeRawPtr<ScheduledNavigation> redirect(m_redirect.release());
     redirect->fire(m_frame);
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
 }
 
-void NavigationScheduler::schedule(PassOwnPtr<ScheduledNavigation> redirect)
+void NavigationScheduler::schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation> redirect)
 {
     ASSERT(m_frame->page());
 
@@ -380,6 +419,7 @@ void NavigationScheduler::cancel()
 DEFINE_TRACE(NavigationScheduler)
 {
     visitor->trace(m_frame);
+    visitor->trace(m_redirect);
 }
 
 } // namespace blink
