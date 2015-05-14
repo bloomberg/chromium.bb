@@ -197,7 +197,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
       : random_generator_(0),
         clock_(new MockClock()),
         runner_(new TestTaskRunner(clock_)),
-        maker_(GetParam().version, 0, clock_),
+        maker_(GetParam().version, 0, clock_, kDefaultServerHostName),
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr),

@@ -18,15 +18,21 @@ namespace test {
 
 QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
                                          QuicConnectionId connection_id,
-                                         MockClock* clock)
+                                         MockClock* clock,
+                                         const std::string& host)
     : version_(version),
       connection_id_(connection_id),
       clock_(clock),
+      host_(host),
       spdy_request_framer_(SPDY4),
       spdy_response_framer_(SPDY4) {
 }
 
 QuicTestPacketMaker::~QuicTestPacketMaker() {
+}
+
+void QuicTestPacketMaker::set_hostname(const std::string& host) {
+  host_.assign(host);
 }
 
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
@@ -226,9 +232,9 @@ SpdyHeaderBlock QuicTestPacketMaker::GetRequestHeaders(
   SpdyHeaderBlock headers;
   headers[":method"] = method;
   if (version_ <= QUIC_VERSION_24) {
-    headers[":host"] = "www.google.com";
+    headers[":host"] = host_;
   } else {
-    headers[":authority"] = "www.google.com";
+    headers[":authority"] = host_;
   }
   headers[":path"] = path;
   headers[":scheme"] = scheme;

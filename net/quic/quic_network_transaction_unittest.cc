@@ -63,6 +63,8 @@ static const char kQuicAlternateProtocolDifferentPortHttpHeader[] =
 static const char kQuicAlternateProtocolHttpsHeader[] =
     "Alternate-Protocol: 443:quic\r\n\r\n";
 
+const char kDefaultServerHostName[] = "www.google.com";
+
 }  // namespace
 
 // Helper class to encapsulate MockReads and MockWrites for QUIC.
@@ -134,7 +136,7 @@ class QuicNetworkTransactionTest
  protected:
   QuicNetworkTransactionTest()
       : clock_(new MockClock),
-        maker_(GetParam(), 0, clock_),
+        maker_(GetParam(), 0, clock_, kDefaultServerHostName),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
         auth_handler_factory_(
@@ -142,7 +144,9 @@ class QuicNetworkTransactionTest
         random_generator_(0),
         hanging_data_(nullptr, 0, nullptr, 0) {
     request_.method = "GET";
-    request_.url = GURL("http://www.google.com/");
+    std::string url("http://");
+    url.append(kDefaultServerHostName);
+    request_.url = GURL(url);
     request_.load_flags = 0;
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
@@ -1205,6 +1209,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
 // the appropriate error code.  Note that this never happens in production,
 // because the handshake (which this test mocks) would fail in this scenario.
 TEST_P(QuicNetworkTransactionTest, SecureResourceOverInsecureQuic) {
+  maker_.set_hostname("www.example.org");
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -1217,7 +1222,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverInsecureQuic) {
   mock_quic_data.AddRead(SYNCHRONOUS, 0);
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
-  request_.url = GURL("https://www.google.com:443");
+  request_.url = GURL("https://www.example.org:443");
   AddHangingNonAlternateProtocolSocketData();
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -1230,6 +1235,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverInsecureQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
+  maker_.set_hostname("www.example.org");
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -1245,11 +1251,14 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
   scoped_refptr<X509Certificate> cert(
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
   ASSERT_TRUE(cert.get());
+  bool common_name_fallback_used;
+  EXPECT_TRUE(
+      cert->VerifyNameMatch("www.example.org", &common_name_fallback_used));
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = cert;
   crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
 
-  request_.url = GURL("https://www.google.com:443");
+  request_.url = GURL("https://www.example.org:443");
   AddHangingNonAlternateProtocolSocketData();
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
