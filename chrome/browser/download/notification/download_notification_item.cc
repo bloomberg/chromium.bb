@@ -149,6 +149,10 @@ void DownloadNotificationItem::OnNotificationButtonClick(int button_index) {
   }
 
   DownloadCommands(item_).ExecuteCommand(command);
+
+  // Shows the notification again after clicking "Keep" on dangerous download.
+  if (command == DownloadCommands::KEEP)
+    UpdateNotificationData(ADD_NEW);
 }
 
 // DownloadItem::Observer methods

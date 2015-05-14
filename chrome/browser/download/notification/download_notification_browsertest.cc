@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/test/download_test_observer.h"
 #include "grit/theme_resources.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -302,12 +304,12 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
   }
 
   void CreateDownload() {
-    return CreateDownloadForBrowser(browser());
+    return CreateDownloadForBrowserAndURL(
+        browser(),
+        GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
   }
 
-  void CreateDownloadForBrowser(Browser* browser) {
-    GURL url(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
-
+  void CreateDownloadForBrowserAndURL(Browser* browser, GURL url) {
     // Starts a download.
     NotificationAddObserver download_start_notification_observer;
     ui_test_utils::NavigateToURL(browser, url);
@@ -338,6 +340,10 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     return GetNotification(notification_id_);
   }
   Browser* incognito_browser() const { return incognito_browser_; }
+  base::FilePath GetDownloadPath() {
+    return DownloadPrefs::FromDownloadManager(GetDownloadManager(browser()))->
+      DownloadPath();
+  }
 
  private:
   content::DownloadItem* download_item_ = nullptr;
@@ -381,6 +387,103 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_TRUE(GetDownloadManagerDelegate()->opened());
 
   EXPECT_FALSE(GetNotification(notification_id()));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL download_url(
+      test_server()->GetURL("files/downloads/dangerous/dangerous.swf"));
+
+  content::DownloadTestObserverTerminal download_terminal_observer(
+      GetDownloadManager(browser()),
+      1u,  /* wait_count */
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
+
+  CreateDownloadForBrowserAndURL(browser(), download_url);
+
+  base::FilePath filename = download_item()->GetFileNameToReportUser();
+
+  // Checks the download status.
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+            download_item()->GetDangerType());
+  EXPECT_TRUE(download_item()->IsDangerous());
+
+  // Opens the message center.
+  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
+
+  NotificationRemoveObserver notification_close_observer;
+  NotificationAddObserver notification_add_observer;
+
+  // Cicks the "keep" button.
+  notification()->ButtonClick(1);  // 2nd button: "Keep"
+  // Clicking makes the message center closed.
+  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
+
+  // Confirms that the notification is closed and re-shown.
+  EXPECT_EQ(notification_id(), notification_close_observer.Wait());
+  notification_add_observer.Wait();
+  EXPECT_EQ(notification_id(), notification_add_observer.notification_id());
+  EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
+
+  // Checks the download status.
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
+            download_item()->GetDangerType());
+  EXPECT_FALSE(download_item()->IsDangerous());
+
+  // Wait for the download completion.
+  download_terminal_observer.WaitForFinished();
+
+  // Checks the download status.
+  EXPECT_FALSE(download_item()->IsDangerous());
+  EXPECT_EQ(content::DownloadItem::COMPLETE, download_item()->GetState());
+
+  // Checks the downloaded file.
+  EXPECT_TRUE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL download_url(
+      test_server()->GetURL("files/downloads/dangerous/dangerous.swf"));
+
+  content::DownloadTestObserverTerminal download_terminal_observer(
+      GetDownloadManager(browser()),
+      1u,  /* wait_count */
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
+
+  CreateDownloadForBrowserAndURL(browser(), download_url);
+
+  base::FilePath filename = download_item()->GetFileNameToReportUser();
+
+  // Checks the download status.
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+            download_item()->GetDangerType());
+  EXPECT_TRUE(download_item()->IsDangerous());
+
+  // Opens the message center.
+  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
+
+  NotificationRemoveObserver notification_close_observer;
+
+  // Clicks the "Discard" button.
+  notification()->ButtonClick(0);  // 1st button: "Discard"
+  // Clicking makes the message center closed.
+  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
+
+  // Confirms that the notification is closed.
+  EXPECT_EQ(notification_id(), notification_close_observer.Wait());
+
+  // Wait for the download completion.
+  download_terminal_observer.WaitForFinished();
+
+  // Checks there is neither any download nor any notification.
+  EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
+  std::vector<content::DownloadItem*> downloads;
+  GetDownloadManager(browser())->GetAllDownloads(&downloads);
+  EXPECT_EQ(0u, downloads.size());
+
+  // Checks the downloaded file doesn't exist.
+  EXPECT_FALSE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
@@ -567,7 +670,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
   PrepareIncognitoBrowser();
 
   // Starts an incognito download.
-  CreateDownloadForBrowser(incognito_browser());
+  CreateDownloadForBrowserAndURL(
+      incognito_browser(),
+      GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
 
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE,
