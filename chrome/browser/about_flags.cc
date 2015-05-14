@@ -215,18 +215,6 @@ const Experiment::Choice kMarkNonSecureAsChoices[] = {
         switches::kMarkNonSecureAs, switches::kMarkNonSecureAsDubious}
 };
 
-const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_SHORT,
-    cc::switches::kMaxTilesForInterestArea, "64"},
-  { IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_TALL,
-    cc::switches::kMaxTilesForInterestArea, "128"},
-  { IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_GRANDE,
-    cc::switches::kMaxTilesForInterestArea, "256"},
-  { IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_VENTI,
-    cc::switches::kMaxTilesForInterestArea, "512"}
-};
-
 const Experiment::Choice kShowSavedCopyChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY,
@@ -1315,13 +1303,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableDelegatedRenderer)
   },
 #endif
-  {
-    "max-tiles-for-interest-area",
-    IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_NAME,
-    IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kMaxTilesForInterestAreaChoices)
-  },
   {
     "enable-offer-store-unmasked-wallet-cards",
     IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS,

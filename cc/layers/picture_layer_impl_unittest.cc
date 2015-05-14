@@ -2562,8 +2562,8 @@ TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
 
   active_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
 
-  // High res tiling should have 64 tiles (4x16 tile grid).
-  EXPECT_EQ(64u, active_layer_->HighResTiling()->AllTilesForTesting().size());
+  // High res tiling should have 36 tiles (3X12 tile grid).
+  EXPECT_EQ(36u, active_layer_->HighResTiling()->AllTilesForTesting().size());
 
   // Visible viewport should be covered by 4 tiles.  No other
   // tiles should be required for activation.

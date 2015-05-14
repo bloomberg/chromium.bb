@@ -23,7 +23,7 @@ scoped_ptr<PictureLayerTilingSet> CreateTilingSet(
     PictureLayerTilingClient* client) {
   LayerTreeSettings defaults;
   return PictureLayerTilingSet::Create(
-      ACTIVE_TREE, client, defaults.max_tiles_for_interest_area,
+      ACTIVE_TREE, client, defaults.tiling_interest_area_viewport_multiplier,
       defaults.skewport_target_time_in_seconds,
       defaults.skewport_extrapolation_limit_in_content_pixels);
 }

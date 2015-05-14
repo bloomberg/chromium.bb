@@ -6531,24 +6531,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ZERO_COPY_DESCRIPTION" desc="Description of about:flags option for zero-copy rasterizer.">
         If enabled, raster threads write directly to GPU memory associated with tiles.
       </message>
-      <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_NAME" desc="Name of about:flags option for maximum tiles for interest area.">
-        Maximum tiles for interest area
-      </message>
-      <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_DESCRIPTION" desc="Description of about:flags option for maximum tiles for interest area.">
-        Specify the maximum tiles for interest area.
-      </message>
-      <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_SHORT" desc="">
-        64
-      </message>
-      <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_TALL" desc="">
-        128
-      </message>
-      <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_GRANDE" desc="">
-        256
-      </message>
-      <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_VENTI" desc="">
-        512
-      </message>
       <message name="IDS_FLAGS_TAB_CAPTURE_UPSCALE_QUALITY_NAME" desc="">
         Tab capture upscaling quality.
       </message>

@@ -35,9 +35,6 @@ const char kTopControlsShowThreshold[] = "top-controls-show-threshold";
 // complete, such as --slow-down-raster-scale-factor=25.
 const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 
-// Max tiles allowed for each tilings interest area.
-const char kMaxTilesForInterestArea[] = "max-tiles-for-interest-area";
-
 // The amount of unused resource memory compositor is allowed to keep around.
 const char kMaxUnusedResourceMemoryUsagePercentage[] =
     "max-unused-resource-memory-usage-percentage";

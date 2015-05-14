@@ -170,7 +170,8 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
   // really matter.
   const LayerTreeSettings& settings = layer->layer_tree_impl()->settings();
   scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
-      layer->GetTree(), &client, settings.max_tiles_for_interest_area,
+      layer->GetTree(), &client,
+      settings.tiling_interest_area_viewport_multiplier,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 

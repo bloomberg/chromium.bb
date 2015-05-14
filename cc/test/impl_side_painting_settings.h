@@ -15,9 +15,9 @@ class ImplSidePaintingSettings : public LayerTreeSettings {
     impl_side_painting = true;
   }
 
-  explicit ImplSidePaintingSettings(int interest_rect_tiles) {
+  explicit ImplSidePaintingSettings(float viewport_multiplier) {
     impl_side_painting = true;
-    max_tiles_for_interest_area = interest_rect_tiles;
+    tiling_interest_area_viewport_multiplier = viewport_multiplier;
   }
 };
 

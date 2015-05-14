@@ -48,7 +48,7 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
       const LayerTreeSettings& settings) {
     return make_scoped_ptr(new TestablePictureLayerTiling(
         tree, contents_scale, raster_source, client,
-        settings.max_tiles_for_interest_area,
+        settings.tiling_interest_area_viewport_multiplier,
         settings.skewport_target_time_in_seconds,
         settings.skewport_extrapolation_limit_in_content_pixels));
   }
@@ -63,14 +63,14 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
                              float contents_scale,
                              scoped_refptr<RasterSource> raster_source,
                              PictureLayerTilingClient* client,
-                             size_t max_tiles_for_interest_area,
+                             float tiling_interest_area_viewport_multiplier,
                              float skewport_target_time,
                              int skewport_extrapolation_limit)
       : PictureLayerTiling(tree,
                            contents_scale,
                            raster_source,
                            client,
-                           max_tiles_for_interest_area,
+                           tiling_interest_area_viewport_multiplier,
                            skewport_target_time,
                            skewport_extrapolation_limit) {}
 };
@@ -549,7 +549,6 @@ TEST(PictureLayerTilingTest, SkewportLimits) {
 
   client.SetTileSize(gfx::Size(100, 100));
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 10000;
   settings.skewport_extrapolation_limit_in_content_pixels = 75;
 
   scoped_refptr<FakePicturePileImpl> pile =
@@ -768,7 +767,7 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
 
   client.SetTileSize(gfx::Size(10, 10));
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 10000;
+  settings.tiling_interest_area_viewport_multiplier = 10000;
 
   // Tiling at 0.25 scale: this should create 47x47 tiles of size 10x10.
   // The reason is that each tile has a one pixel border, so tile at (1, 2)
@@ -1268,7 +1267,7 @@ TEST_F(PictureLayerTilingIteratorTest,
   gfx::Size layer_bounds(10000, 10000);
   client_.SetTileSize(gfx::Size(100, 100));
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 1;
+  settings.tiling_interest_area_viewport_multiplier = 1;
 
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
@@ -1725,7 +1724,7 @@ TEST(ComputeTilePriorityRectsTest, BasicMotion) {
 
   client.SetTileSize(gfx::Size(100, 100));
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 10000;
+  settings.tiling_interest_area_viewport_multiplier = 10000;
 
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
@@ -1855,7 +1854,6 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
 
   active_client.SetTileSize(gfx::Size(100, 100));
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 10;
 
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
@@ -1923,7 +1921,6 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
   recycle_client.set_twin_tiling(active_tiling.get());
 
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 10;
 
   pile = FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
       gfx::Size(100, 100));

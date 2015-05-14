@@ -350,15 +350,6 @@ void RenderWidgetCompositor::Initialize() {
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
-  if (cmd->HasSwitch(cc::switches::kMaxTilesForInterestArea)) {
-    int max_tiles_for_interest_area;
-    if (GetSwitchValueAsInt(*cmd,
-                            cc::switches::kMaxTilesForInterestArea,
-                            1, std::numeric_limits<int>::max(),
-                            &max_tiles_for_interest_area))
-      settings.max_tiles_for_interest_area = max_tiles_for_interest_area;
-  }
-
   if (cmd->HasSwitch(cc::switches::kMaxUnusedResourceMemoryUsagePercentage)) {
     int max_unused_resource_memory_percentage;
     if (GetSwitchValueAsInt(

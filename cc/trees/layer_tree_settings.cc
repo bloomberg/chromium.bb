@@ -53,8 +53,7 @@ LayerTreeSettings::LayerTreeSettings()
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
       use_pinch_zoom_scrollbars(false),
       use_pinch_virtual_viewport(false),
-      // At 256x256 tiles, 128 tiles cover an area of 2048x4096 pixels.
-      max_tiles_for_interest_area(128),
+      tiling_interest_area_viewport_multiplier(9.0f),
       skewport_target_time_in_seconds(1.0f),
       skewport_extrapolation_limit_in_content_pixels(2000),
       max_unused_resource_memory_percentage(100),

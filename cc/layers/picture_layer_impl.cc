@@ -1147,7 +1147,7 @@ scoped_ptr<PictureLayerTilingSet>
 PictureLayerImpl::CreatePictureLayerTilingSet() {
   const LayerTreeSettings& settings = layer_tree_impl()->settings();
   return PictureLayerTilingSet::Create(
-      GetTree(), this, settings.max_tiles_for_interest_area,
+      GetTree(), this, settings.tiling_interest_area_viewport_multiplier,
       layer_tree_impl()->use_gpu_rasterization()
           ? settings.gpu_rasterization_skewport_target_time_in_seconds
           : settings.skewport_target_time_in_seconds,

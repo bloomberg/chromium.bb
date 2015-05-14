@@ -30,7 +30,10 @@ namespace {
 
 class LowResTilingsSettings : public ImplSidePaintingSettings {
  public:
-  LowResTilingsSettings() { create_low_res_tiling = true; }
+  LowResTilingsSettings() {
+    tiling_interest_area_viewport_multiplier = 10000;
+    create_low_res_tiling = true;
+  }
 };
 
 class TileManagerTilePriorityQueueTest : public testing::Test {
@@ -1177,10 +1180,10 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   client.SetTileSize(gfx::Size(30, 30));
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 10000;
+  settings.tiling_interest_area_viewport_multiplier = 10000;
 
   scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
-      ACTIVE_TREE, &client, settings.max_tiles_for_interest_area,
+      ACTIVE_TREE, &client, settings.tiling_interest_area_viewport_multiplier,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 
@@ -1287,10 +1290,9 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   client.SetTileSize(gfx::Size(30, 30));
   LayerTreeSettings settings;
-  settings.max_tiles_for_interest_area = 10000;
 
   scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
-      ACTIVE_TREE, &client, settings.max_tiles_for_interest_area,
+      ACTIVE_TREE, &client, settings.tiling_interest_area_viewport_multiplier,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 
