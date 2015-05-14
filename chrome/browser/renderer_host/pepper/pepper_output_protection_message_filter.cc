@@ -66,7 +66,7 @@ static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP) ==
                "PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP value mismatch");
 
 bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64* display_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   gfx::NativeView native_view = rfh->GetNativeView();
   gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
   if (!screen)
@@ -144,11 +144,11 @@ PepperOutputProtectionMessageFilter::Delegate::Delegate(int render_process_id,
       client_id_(ui::DisplayConfigurator::kInvalidClientId),
       display_id_(0),
       weak_ptr_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ui::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
@@ -160,7 +160,7 @@ PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
 
 ui::DisplayConfigurator::ContentProtectionClientId
 PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (client_id_ == ui::DisplayConfigurator::kInvalidClientId) {
     content::RenderFrameHost* rfh =
         content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
@@ -183,7 +183,7 @@ PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
 
 void PepperOutputProtectionMessageFilter::Delegate::QueryStatus(
     const QueryStatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
@@ -205,7 +205,7 @@ void PepperOutputProtectionMessageFilter::Delegate::QueryStatus(
 void PepperOutputProtectionMessageFilter::Delegate::EnableProtection(
     uint32_t desired_method_mask,
     const EnableProtectionCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ui::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
@@ -294,7 +294,7 @@ PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter(
     PP_Instance instance)
     : weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   int render_process_id = 0;
   int render_frame_id = 0;
   host->GetRenderFrameIDsForInstance(

@@ -36,7 +36,7 @@ namespace {
 
 // Get the CookieSettings on the UI thread for the given render process ID.
 scoped_refptr<CookieSettings> GetCookieSettings(int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(render_process_id);
   if (render_process_host && render_process_host->GetBrowserContext()) {
@@ -136,7 +136,7 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
     const GURL& document_url,
     const GURL& plugin_url,
     scoped_refptr<CookieSettings> cookie_settings) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Lazily initialize |cookie_settings_|. The cookie settings are thread-safe
   // ref-counted so as long as we hold a reference to them we can safely access

@@ -56,13 +56,13 @@ void GetMachineIDAsync(
 
 DeviceIDFetcher::DeviceIDFetcher(int render_process_id)
     : in_progress_(false), render_process_id_(render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 DeviceIDFetcher::~DeviceIDFetcher() {}
 
 bool DeviceIDFetcher::Start(const IDCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (in_progress_)
     return false;
@@ -91,7 +91,7 @@ base::FilePath DeviceIDFetcher::GetLegacyDeviceIDPath(
 }
 
 void DeviceIDFetcher::CheckPrefsOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = NULL;
   RenderProcessHost* render_process_host =
@@ -135,7 +135,7 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
 
 void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
                                         const std::string& machine_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (machine_id.empty()) {
     LOG(ERROR) << "Empty machine id";

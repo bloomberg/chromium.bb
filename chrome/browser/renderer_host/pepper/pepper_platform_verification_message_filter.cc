@@ -40,7 +40,7 @@ PepperPlatformVerificationMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperPlatformVerificationMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   PPAPI_BEGIN_MESSAGE_MAP(PepperPlatformVerificationMessageFilter, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
@@ -55,7 +55,7 @@ int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
     ppapi::host::HostMessageContext* context,
     const std::string& service_id,
     const std::vector<uint8_t>& challenge) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Ensure the RenderFrameHost is still alive.
   content::RenderFrameHost* rfh =
@@ -92,7 +92,7 @@ void PepperPlatformVerificationMessageFilter::ChallengePlatformCallback(
     const std::string& signed_data,
     const std::string& signature,
     const std::string& platform_key_certificate) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (challenge_result == PlatformVerificationFlow::SUCCESS) {
     reply_context.params.set_result(PP_OK);

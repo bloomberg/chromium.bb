@@ -51,7 +51,7 @@ int32_t PepperBrokerMessageFilter::OnResourceMessageReceived(
 
 int32_t PepperBrokerMessageFilter::OnIsAllowed(
     ppapi::host::HostMessageContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!document_url_.is_valid())
     return PP_ERROR_FAILED;
   RenderProcessHost* render_process_host =

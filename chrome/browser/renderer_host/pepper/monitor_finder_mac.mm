@@ -42,7 +42,7 @@ bool MonitorFinder::IsMonitorBuiltIn(int64_t display_id) {
 }
 
 void MonitorFinder::FetchMonitorFromWidget() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(process_id_, render_frame_id_);
   if (!rfh)

@@ -92,7 +92,7 @@ int32_t PepperIsolatedFileSystemMessageFilter::OnResourceMessageReceived(
 }
 
 Profile* PepperIsolatedFileSystemMessageFilter::GetProfile() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetProfile(profile_directory_);
 }
