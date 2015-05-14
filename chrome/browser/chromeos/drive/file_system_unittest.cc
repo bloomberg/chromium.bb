@@ -12,9 +12,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
@@ -106,10 +107,11 @@ class FileSystemTest : public testing::Test {
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
-    scheduler_.reset(new JobScheduler(pref_service_.get(),
-                                      logger_.get(),
-                                      fake_drive_service_.get(),
-                                      base::MessageLoopProxy::current().get()));
+    scheduler_.reset(new JobScheduler(
+        pref_service_.get(),
+        logger_.get(),
+        fake_drive_service_.get(),
+        base::ThreadTaskRunnerHandle::Get().get()));
 
     mock_directory_observer_.reset(new MockDirectoryChangeObserver);
 
@@ -120,7 +122,7 @@ class FileSystemTest : public testing::Test {
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
     ASSERT_TRUE(base::CreateDirectory(metadata_dir));
     metadata_storage_.reset(new internal::ResourceMetadataStorage(
-        metadata_dir, base::MessageLoopProxy::current().get()));
+        metadata_dir, base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
@@ -128,13 +130,13 @@ class FileSystemTest : public testing::Test {
     cache_.reset(new internal::FileCache(
         metadata_storage_.get(),
         cache_dir,
-        base::MessageLoopProxy::current().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
         fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
 
     resource_metadata_.reset(new internal::ResourceMetadata(
         metadata_storage_.get(), cache_.get(),
-        base::MessageLoopProxy::current()));
+        base::ThreadTaskRunnerHandle::Get()));
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
     const base::FilePath temp_file_dir = temp_dir_.path().AppendASCII("tmp");
@@ -145,7 +147,7 @@ class FileSystemTest : public testing::Test {
         cache_.get(),
         scheduler_.get(),
         resource_metadata_.get(),
-        base::MessageLoopProxy::current().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
         temp_file_dir));
     file_system_->AddObserver(mock_directory_observer_.get());
 
@@ -224,19 +226,19 @@ class FileSystemTest : public testing::Test {
     scoped_ptr<internal::ResourceMetadataStorage,
                test_util::DestroyHelperForTests> metadata_storage(
         new internal::ResourceMetadataStorage(
-            metadata_dir, base::MessageLoopProxy::current().get()));
+            metadata_dir, base::ThreadTaskRunnerHandle::Get().get()));
 
     const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
     scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache(
         new internal::FileCache(metadata_storage.get(),
                                 cache_dir,
-                                base::MessageLoopProxy::current().get(),
+                                base::ThreadTaskRunnerHandle::Get().get(),
                                 fake_free_disk_space_getter_.get()));
 
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(
             metadata_storage_.get(), cache.get(),
-            base::MessageLoopProxy::current()));
+            base::ThreadTaskRunnerHandle::Get()));
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->Initialize());
 

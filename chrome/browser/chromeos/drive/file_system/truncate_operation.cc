@@ -9,9 +9,9 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -84,7 +84,7 @@ void TruncateOperation::Truncate(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   if (length < 0) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, FILE_ERROR_INVALID_OPERATION));
     return;

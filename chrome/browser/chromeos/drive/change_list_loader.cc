@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
@@ -226,7 +227,7 @@ void AboutResourceLoader::GetAboutResource(
   }
 
   if (cached_about_resource_) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
             callback,
@@ -461,7 +462,7 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
   }
 
   for (size_t i = 0; i < pending_load_callback_.size(); ++i) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(pending_load_callback_[i], error));
   }

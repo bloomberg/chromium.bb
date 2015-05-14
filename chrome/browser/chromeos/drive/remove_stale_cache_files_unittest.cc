@@ -8,6 +8,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -29,16 +31,16 @@ class RemoveStaleCacheFilesTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current().get()));
+        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
 
     cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
-                               base::MessageLoopProxy::current().get(),
+                               base::ThreadTaskRunnerHandle::Get().get(),
                                fake_free_disk_space_getter_.get()));
 
     resource_metadata_.reset(new ResourceMetadata(
         metadata_storage_.get(), cache_.get(),
-        base::MessageLoopProxy::current()));
+        base::ThreadTaskRunnerHandle::Get()));
 
     ASSERT_TRUE(metadata_storage_->Initialize());
     ASSERT_TRUE(cache_->Initialize());

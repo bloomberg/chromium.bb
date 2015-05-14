@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -791,7 +791,7 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
   // Wait when throttled.
   const base::Time now = base::Time::Now();
   if (now < wait_until_) {
-    base::MessageLoopProxy::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&JobScheduler::DoJobLoop,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -921,7 +921,8 @@ bool JobScheduler::OnJobDone(JobID job_id,
 
   // Post a task to continue the job loop.  This allows us to finish handling
   // the current job before starting the next one.
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
       base::Bind(&JobScheduler::DoJobLoop,
                  weak_ptr_factory_.GetWeakPtr(),
                  queue_type));
@@ -1152,8 +1153,8 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
   queue_[GetJobQueueType(job->job_info.job_type)]->Remove(job->job_info.job_id);
   NotifyJobDone(job->job_info, error);
   job_map_.Remove(job->job_info.job_id);
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                              base::Bind(callback, error));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, error));
 }
 
 void JobScheduler::NotifyJobAdded(const JobInfo& job_info) {

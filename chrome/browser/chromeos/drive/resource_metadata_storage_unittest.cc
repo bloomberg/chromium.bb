@@ -8,7 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -25,7 +27,7 @@ class ResourceMetadataStorageTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current().get()));
+        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(storage_->Initialize());
   }
 
@@ -264,7 +266,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
 
   // Close DB and reopen.
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
@@ -310,7 +312,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
   storage_.reset();
   EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Resource-ID-to-local-ID mapping is added.
@@ -362,7 +364,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
   storage_.reset();
   EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased, except cache and id mapping entries.
@@ -423,7 +425,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M33) {
   storage_.reset();
   EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // No data is lost.
@@ -461,7 +463,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   storage_.reset();
   EXPECT_FALSE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased because of the incompatible version.
@@ -494,7 +496,7 @@ TEST_F(ResourceMetadataStorageTest, DeleteUnusedIDEntries) {
   storage_.reset();
   EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Only the unused entry is deleted.
@@ -511,7 +513,7 @@ TEST_F(ResourceMetadataStorageTest, WrongPath) {
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &path));
 
   storage_.reset(new ResourceMetadataStorage(
-      path, base::MessageLoopProxy::current().get()));
+      path, base::ThreadTaskRunnerHandle::Get().get()));
   // Cannot initialize DB beacause the path does not point a directory.
   ASSERT_FALSE(storage_->Initialize());
 }
@@ -540,7 +542,7 @@ TEST_F(ResourceMetadataStorageTest, RecoverCacheEntriesFromTrashedResourceMap) {
 
   // Reopen. This should result in trashing the DB.
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Recover cache entries from the trashed DB.

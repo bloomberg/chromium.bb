@@ -13,6 +13,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -45,13 +47,13 @@ class FileCacheTest : public testing::Test {
 
     metadata_storage_.reset(new ResourceMetadataStorage(
         metadata_dir,
-        base::MessageLoopProxy::current().get()));
+        base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     cache_.reset(new FileCache(
         metadata_storage_.get(),
         cache_files_dir_,
-        base::MessageLoopProxy::current().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
         fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
   }

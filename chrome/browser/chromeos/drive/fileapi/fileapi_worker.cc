@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -340,7 +341,7 @@ void OpenFile(const base::FilePath& file_path,
                      base::File::FLAG_WRITE |
                      base::File::FLAG_WRITE_ATTRIBUTES |
                      base::File::FLAG_APPEND)) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback,
                    Passed(base::File(base::File::FILE_ERROR_FAILED)),

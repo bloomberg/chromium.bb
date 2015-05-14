@@ -9,7 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -131,8 +133,8 @@ TEST_F(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
       storage::ExternalMountPoints::CreateRefCounted();
   scoped_refptr<storage::FileSystemContext> context(
       new storage::FileSystemContext(
-          base::MessageLoopProxy::current().get(),
-          base::MessageLoopProxy::current().get(),
+          base::ThreadTaskRunnerHandle::Get().get(),
+          base::ThreadTaskRunnerHandle::Get().get(),
           mount_points.get(),
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,

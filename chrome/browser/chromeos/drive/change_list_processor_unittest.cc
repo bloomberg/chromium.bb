@@ -5,7 +5,8 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
@@ -102,19 +103,19 @@ class ChangeListProcessorTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current().get()));
+        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
     cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
-                               base::MessageLoopProxy::current().get(),
+                               base::ThreadTaskRunnerHandle::Get().get(),
                                fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
 
     metadata_.reset(new internal::ResourceMetadata(
         metadata_storage_.get(), cache_.get(),
-        base::MessageLoopProxy::current()));
+        base::ThreadTaskRunnerHandle::Get()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
   }
 

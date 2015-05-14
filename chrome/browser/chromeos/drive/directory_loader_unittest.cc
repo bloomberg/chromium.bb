@@ -9,6 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -75,30 +77,31 @@ class DirectoryLoaderTest : public testing::Test {
     drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(test_util::SetUpTestEntries(drive_service_.get()));
 
-    scheduler_.reset(new JobScheduler(pref_service_.get(),
-                                      logger_.get(),
-                                      drive_service_.get(),
-                                      base::MessageLoopProxy::current().get()));
+    scheduler_.reset(new JobScheduler(
+        pref_service_.get(),
+        logger_.get(),
+        drive_service_.get(),
+        base::ThreadTaskRunnerHandle::Get().get()));
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current().get()));
+        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
-                               base::MessageLoopProxy::current().get(),
+                               base::ThreadTaskRunnerHandle::Get().get(),
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
 
     metadata_.reset(new ResourceMetadata(
         metadata_storage_.get(), cache_.get(),
-        base::MessageLoopProxy::current().get()));
+        base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
     loader_controller_.reset(new LoaderController);
     directory_loader_.reset(
         new DirectoryLoader(logger_.get(),
-                             base::MessageLoopProxy::current().get(),
+                             base::ThreadTaskRunnerHandle::Get().get(),
                              metadata_.get(),
                              scheduler_.get(),
                              about_resource_loader_.get(),

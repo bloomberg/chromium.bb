@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
@@ -323,7 +323,7 @@ void SyncClient::AddTask(const SyncTasks::key_type& key,
     tasks_[key] = task;
   }
   DCHECK_EQ(PENDING, task.state);
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&SyncClient::StartTask, weak_ptr_factory_.GetWeakPtr(), key),
       delay);
@@ -454,7 +454,7 @@ void SyncClient::OnTaskComplete(SyncType type,
   }
 
   for (size_t i = 0; i < it->second.waiting_callbacks.size(); ++i) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(it->second.waiting_callbacks[i], error));
   }
   it->second.waiting_callbacks.clear();
@@ -463,7 +463,7 @@ void SyncClient::OnTaskComplete(SyncType type,
     DVLOG(1) << "Running again: type = " << type << ", id = " << local_id;
     it->second.state = PENDING;
     it->second.should_run_again = false;
-    base::MessageLoopProxy::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&SyncClient::StartTask, weak_ptr_factory_.GetWeakPtr(), key),
         retry_delay);

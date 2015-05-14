@@ -7,9 +7,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/string_search.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -45,19 +46,19 @@ class SearchMetadataTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current().get()));
+        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
-                               base::MessageLoopProxy::current().get(),
+                               base::ThreadTaskRunnerHandle::Get().get(),
                                fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
 
     resource_metadata_.reset(
         new ResourceMetadata(metadata_storage_.get(),
                              cache_.get(),
-                             base::MessageLoopProxy::current()));
+                             base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
     AddEntriesToMetadata();
@@ -163,7 +164,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(),
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
       "NonExistent", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -178,7 +179,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(),
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
       "SubDirectory File 1.txt", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -198,7 +199,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
 
   // The query is all in lower case.
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(),
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
       "subdirectory file 1.txt", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -215,7 +216,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(), "SubDir",
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), "SubDir",
       base::Bind(&MatchesType, SEARCH_METADATA_ALL), kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
   base::RunLoop().RunUntilIdle();
@@ -238,7 +239,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
   // There are two files matching "SubDir" but only one file should be
   // returned.
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(), "SubDir",
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), "SubDir",
       base::Bind(&MatchesType, SEARCH_METADATA_ALL),
       1,  // at_most_num_matches
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -255,7 +256,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(),
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
       "Directory 1", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -271,7 +272,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(), "Document",
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), "Document",
       base::Bind(&MatchesType, SEARCH_METADATA_ALL), kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
   base::RunLoop().RunUntilIdle();
@@ -288,7 +289,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(), "Document",
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), "Document",
       base::Bind(&MatchesType, SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -303,7 +304,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(), "",
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), "",
       base::Bind(&MatchesType, SEARCH_METADATA_SHARED_WITH_ME),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -320,7 +321,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(),
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
       "excludeDir-test", base::Bind(&MatchesType, SEARCH_METADATA_ALL),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));
@@ -341,7 +342,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(),
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(),
       "excludeDir-test",
       base::Bind(&MatchesType, SEARCH_METADATA_EXCLUDE_DIRECTORIES),
       kDefaultAtMostNumMatches,
@@ -365,7 +366,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
 
     const std::string query = kQueries[i];
     SearchMetadata(
-        base::MessageLoopProxy::current(), resource_metadata_.get(), query,
+        base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), query,
         base::Bind(&MatchesType, SEARCH_METADATA_ALL), kDefaultAtMostNumMatches,
         google_apis::test_util::CreateCopyResultCallback(&error, &result));
 
@@ -381,7 +382,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(
-      base::MessageLoopProxy::current(), resource_metadata_.get(), "",
+      base::ThreadTaskRunnerHandle::Get(), resource_metadata_.get(), "",
       base::Bind(&MatchesType, SEARCH_METADATA_OFFLINE),
       kDefaultAtMostNumMatches,
       google_apis::test_util::CreateCopyResultCallback(&error, &result));

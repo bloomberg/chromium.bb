@@ -11,8 +11,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -142,10 +144,11 @@ class JobSchedulerTest : public testing::Test {
     test_util::SetUpTestEntries(fake_drive_service_.get());
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    scheduler_.reset(new JobScheduler(pref_service_.get(),
-                                      logger_.get(),
-                                      fake_drive_service_.get(),
-                                      base::MessageLoopProxy::current().get()));
+    scheduler_.reset(new JobScheduler(
+        pref_service_.get(),
+        logger_.get(),
+        fake_drive_service_.get(),
+        base::ThreadTaskRunnerHandle::Get().get()));
     scheduler_->SetDisableThrottling(true);
   }
 

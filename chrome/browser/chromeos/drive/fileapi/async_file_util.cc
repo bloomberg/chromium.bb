@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -58,7 +60,7 @@ void PostFileSystemCallback(
                  on_error_callback.is_null() ?
                  base::Closure() :
                  base::Bind(&google_apis::RunTaskWithTaskRunner,
-                            base::MessageLoopProxy::current(),
+                            base::ThreadTaskRunnerHandle::Get(),
                             on_error_callback)));
 }
 
