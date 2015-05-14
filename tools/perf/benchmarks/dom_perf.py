@@ -39,8 +39,10 @@ SCORE_TRACE_NAME = 'score'
 
 
 class _DomPerfMeasurement(page_test.PageTest):
-  def __init__(self):
+  def __init__(self, expected_num_runs):
     super(_DomPerfMeasurement, self).__init__()
+    self._expected_num_runs = expected_num_runs
+    self._runs_count = 0
 
   def ValidateAndMeasurePage(self, page, tab, results):
     try:
@@ -55,10 +57,15 @@ class _DomPerfMeasurement(page_test.PageTest):
           results.AddValue(scalar.ScalarValue(
               results.current_page, '%s.%s' % (suite['name'], SCORE_TRACE_NAME),
               SCORE_UNIT, suite['score'], important=False))
+
     finally:
       tab.EvaluateJavaScript('document.cookie = "__domperf_finished=0"')
+    self._runs_count += 1
+    # Only compute total metric when we reach the number of expected run.
+    if self._runs_count == self._expected_num_runs:
+      self._ComputeTotalMetric(results)
 
-  def DidRunTest(self, browser, results):
+  def _ComputeTotalMetric(self, results):
     # Now give the geometric mean as the total for the combined runs.
     combined = merge_values.MergeLikeValuesFromDifferentPages(
         results.all_page_specific_values,
@@ -77,28 +84,32 @@ class DomPerf(benchmark.Benchmark):
   The final score is computed as the geometric mean of the individual results.
   Scores are not comparable across benchmark suite versions and higher scores
   means better performance: Bigger is better!"""
-  test = _DomPerfMeasurement
+
+  RUN_PARAMS = [
+    'Accessors',
+    'CloneNodes',
+    'CreateNodes',
+    'DOMDivWalk',
+    'DOMTable',
+    'DOMWalk',
+    'Events',
+    'Get+Elements',
+    'GridSort',
+    'Template'
+  ]
 
   @classmethod
   def Name(cls):
     return 'dom_perf'
 
+  def CreatePageTest(self, options):
+    del options
+    return _DomPerfMeasurement(len(self.RUN_PARAMS))
+
   def CreatePageSet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')
-    run_params = [
-      'Accessors',
-      'CloneNodes',
-      'CreateNodes',
-      'DOMDivWalk',
-      'DOMTable',
-      'DOMWalk',
-      'Events',
-      'Get+Elements',
-      'GridSort',
-      'Template'
-    ]
     ps = page_set.PageSet(file_path=dom_perf_dir)
-    for param in run_params:
+    for param in self.RUN_PARAMS:
       ps.AddUserStory(page_module.Page(
           'file://run.html?reportInJS=1&run=%s' % param, ps, ps.base_dir))
     return ps
