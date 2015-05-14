@@ -128,6 +128,11 @@ WebString WebElement::attributeValue(unsigned index) const
     return constUnwrap<Element>()->attributes().at(index).value();
 }
 
+WebString WebElement::textContent()
+{
+    return unwrap<Element>()->textContent();
+}
+
 WebString WebElement::innerText()
 {
     return unwrap<Element>()->innerText();

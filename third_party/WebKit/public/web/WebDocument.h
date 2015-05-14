@@ -101,6 +101,7 @@ public:
     BLINK_EXPORT WebElement body() const;
     BLINK_EXPORT WebElement head();
     BLINK_EXPORT WebString title() const;
+    BLINK_EXPORT WebString contentAsTextForTesting() const;
     BLINK_EXPORT WebElementCollection all();
     BLINK_EXPORT void forms(WebVector<WebFormElement>&) const;
     BLINK_EXPORT void images(WebVector<WebElement>&);

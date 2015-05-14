@@ -168,6 +168,13 @@ WebString WebDocument::title() const
     return WebString(constUnwrap<Document>()->title());
 }
 
+WebString WebDocument::contentAsTextForTesting() const
+{
+    if (Element* documentElement = constUnwrap<Document>()->documentElement())
+        return WebString(documentElement->innerText());
+    return WebString();
+}
+
 WebElementCollection WebDocument::all()
 {
     return WebElementCollection(unwrap<Document>()->all());

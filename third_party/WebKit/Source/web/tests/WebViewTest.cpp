@@ -1846,7 +1846,7 @@ TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus)
     webView->setFocus(true);
 
     WebElement element = webView->mainFrame()->document().getElementById("message");
-    EXPECT_STREQ("focusoutfocusin", element.innerText().utf8().data());
+    EXPECT_STREQ("focusoutfocusin", element.textContent().utf8().data());
 }
 
 TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus)
@@ -1859,7 +1859,7 @@ TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus)
     webView->setFocus(true);
 
     WebElement element = webView->mainFrame()->document().getElementById("message");
-    EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.innerText().utf8().data());
+    EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.textContent().utf8().data());
 }
 
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -1960,7 +1960,7 @@ TEST_F(WebViewTest, DispatchesFocusBlurOnViewToggle)
 
     WebElement element = webView->mainFrame()->document().getElementById("message");
     // Expect not to see duplication of events.
-    EXPECT_STREQ("blurfocus", element.innerText().utf8().data());
+    EXPECT_STREQ("blurfocus", element.textContent().utf8().data());
 }
 
 TEST_F(WebViewTest, SmartClipData)
