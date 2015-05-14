@@ -18,6 +18,8 @@ class DrmDeviceHandle {
   DrmDeviceHandle();
   ~DrmDeviceHandle();
 
+  int fd() const { return file_.get(); }
+
   bool Initialize(const base::FilePath& path);
 
   bool IsValid() const;

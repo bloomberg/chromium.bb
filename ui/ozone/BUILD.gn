@@ -175,7 +175,6 @@ action("generate_constructor_list") {
 
 test("ozone_unittests") {
   sources = [
-    "common/display_util_unittest.cc",
     "run_all_unittests.cc",
   ]
 
