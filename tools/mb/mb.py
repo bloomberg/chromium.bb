@@ -429,9 +429,7 @@ class MetaBuildWrapper(object):
     matching_targets = []
     try:
       cmd = self.GNCmd('refs', self.args.path[0]) + [
-          '@%s' % response_file.name,
-          '--type=executable', '--all', '--as=output'
-      ]
+          '@%s' % response_file.name, '--all', '--as=output']
       ret, out, _ = self.Run(cmd)
       if ret and not 'The input matches no targets' in out:
         self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
@@ -441,6 +439,22 @@ class MetaBuildWrapper(object):
         build_output = output.replace(build_dir, '')
         if build_output in inp['targets']:
           matching_targets.append(build_output)
+
+      cmd = self.GNCmd('refs', self.args.path[0]) + [
+          '@%s' % response_file.name, '--all']
+      ret, out, _ = self.Run(cmd)
+      if ret and not 'The input matches no targets' in out:
+        self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
+                                  output_path)
+      for label in out.splitlines():
+        build_target = label[2:]
+        # We want to accept 'chrome/android:chrome_shell_apk' and
+        # just 'chrome_shell_apk'. This may result in too many targets
+        # getting built, but we can adjust that later if need be.
+        for input_target in inp['targets']:
+          if (input_target == build_target or
+              build_target.endswith(':' + input_target)):
+            matching_targets.append(input_target)
     finally:
       self.RemoveFile(response_file.name)
 
