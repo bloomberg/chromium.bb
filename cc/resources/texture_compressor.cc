@@ -7,24 +7,12 @@
 #include "base/logging.h"
 #include "cc/resources/texture_compressor_etc1.h"
 
-#if defined(ARCH_CPU_X86_FAMILY)
-#include "base/cpu.h"
-#include "cc/resources/texture_compressor_etc1_sse.h"
-#endif
-
 namespace cc {
 
 scoped_ptr<TextureCompressor> TextureCompressor::Create(Format format) {
   switch (format) {
-    case kFormatETC1: {
-#if defined(ARCH_CPU_X86_FAMILY)
-      base::CPU cpu;
-      if (cpu.has_sse2()) {
-        return make_scoped_ptr(new TextureCompressorETC1SSE());
-      }
-#endif
+    case kFormatETC1:
       return make_scoped_ptr(new TextureCompressorETC1());
-    }
   }
 
   NOTREACHED();
