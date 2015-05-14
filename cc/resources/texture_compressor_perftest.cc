@@ -17,12 +17,8 @@ const int kTimeCheckInterval = 10;
 
 const int kImageWidth = 256;
 const int kImageHeight = 256;
-const int kImageSizeInBytes = kImageWidth * kImageHeight * 4;
-
-const TextureCompressor::Quality kQualities[] = {
-    TextureCompressor::kQualityLow,
-    TextureCompressor::kQualityMedium,
-    TextureCompressor::kQualityHigh};
+const int kImageChannels = 4;
+const int kImageSizeInBytes = kImageWidth * kImageHeight * kImageChannels;
 
 std::string FormatName(TextureCompressor::Format format) {
   switch (format) {
@@ -49,7 +45,9 @@ std::string QualityName(TextureCompressor::Quality quality) {
 }
 
 class TextureCompressorPerfTest
-    : public testing::TestWithParam<TextureCompressor::Format> {
+    : public testing::TestWithParam<
+          ::testing::tuple<TextureCompressor::Quality,
+                           TextureCompressor::Format>> {
  public:
   TextureCompressorPerfTest()
       : timer_(kWarmupRuns,
@@ -57,18 +55,20 @@ class TextureCompressorPerfTest
                kTimeCheckInterval) {}
 
   void SetUp() override {
-    TextureCompressor::Format format = GetParam();
+    TextureCompressor::Format format = ::testing::get<1>(GetParam());
     compressor_ = TextureCompressor::Create(format);
   }
 
-  void RunTest(const std::string& name, TextureCompressor::Quality quality) {
+  void RunTest(const std::string& name) {
+    TextureCompressor::Quality quality = ::testing::get<0>(GetParam());
     timer_.Reset();
     do {
       compressor_->Compress(src_, dst_, kImageWidth, kImageHeight, quality);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    std::string str = FormatName(GetParam()) + " " + QualityName(quality);
+    TextureCompressor::Format format = ::testing::get<1>(GetParam());
+    std::string str = FormatName(format) + " " + QualityName(quality);
     perf_test::PrintResult("Compress256x256", name, str, timer_.MsPerLap(),
                            "us", true);
   }
@@ -80,24 +80,42 @@ class TextureCompressorPerfTest
   uint8_t dst_[kImageSizeInBytes];
 };
 
-TEST_P(TextureCompressorPerfTest, Compress256x256Image) {
+TEST_P(TextureCompressorPerfTest, Compress256x256BlackAndWhiteGradientImage) {
   for (int i = 0; i < kImageSizeInBytes; ++i)
     src_[i] = i % 256;
 
-  for (auto& quality : kQualities)
-    RunTest("Image", quality);
+  RunTest("BlackAndWhiteGradientImage");
 }
 
-TEST_P(TextureCompressorPerfTest, Compress256x256SolidImage) {
+TEST_P(TextureCompressorPerfTest, Compress256x256SolidBlackImage) {
   memset(src_, 0, kImageSizeInBytes);
 
-  for (auto& quality : kQualities)
-    RunTest("SolidImage", quality);
+  RunTest("SolidBlackImage");
 }
 
-INSTANTIATE_TEST_CASE_P(TextureCompressorPerfTests,
-                        TextureCompressorPerfTest,
-                        ::testing::Values(TextureCompressor::kFormatETC1));
+TEST_P(TextureCompressorPerfTest, Compress256x256SolidColorImage) {
+  for (int i = 0; i < kImageSizeInBytes; ++i)
+    src_[i] = (4 - i % 4) * 50;
+
+  RunTest("SolidColorImage");
+}
+
+TEST_P(TextureCompressorPerfTest, Compress256x256RandomColorImage) {
+  unsigned int kImageSeed = 1234567890;
+  srand(kImageSeed);
+  for (int i = 0; i < kImageSizeInBytes; ++i)
+    src_[i] = rand() % 256;  // NOLINT
+
+  RunTest("RandomColorImage");
+}
+
+INSTANTIATE_TEST_CASE_P(
+    TextureCompressorPerfTests,
+    TextureCompressorPerfTest,
+    ::testing::Combine(::testing::Values(TextureCompressor::kQualityLow,
+                                         TextureCompressor::kQualityMedium,
+                                         TextureCompressor::kQualityHigh),
+                       ::testing::Values(TextureCompressor::kFormatETC1)));
 
 }  // namespace
 }  // namespace cc
