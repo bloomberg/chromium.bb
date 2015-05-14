@@ -225,27 +225,35 @@ TEST(EDIDParserTest, GetDisplayId) {
   // EDID of kLP2565A and B are slightly different but actually the same device.
   int64_t id1 = -1;
   int64_t id2 = -1;
+  int64_t product_id1 = -1;
+  int64_t product_id2 = -1;
   std::vector<uint8_t> edid(kLP2565A, kLP2565A + charsize(kLP2565A));
-  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id1));
+  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id1, &product_id1));
   edid.assign(kLP2565B, kLP2565B + charsize(kLP2565B));
-  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id2));
+  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id2, &product_id2));
   EXPECT_EQ(id1, id2);
+  EXPECT_EQ(product_id1, product_id2);
   EXPECT_NE(-1, id1);
+  EXPECT_NE(-1, product_id1);
 }
 
 TEST(EDIDParserTest, GetDisplayIdFromInternal) {
   int64_t id = -1;
+  int64_t product_id = -1;
   std::vector<uint8_t> edid(
       kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
-  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id));
+  EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id, &product_id));
   EXPECT_NE(-1, id);
+  EXPECT_NE(-1, product_id);
 }
 
 TEST(EDIDParserTest, GetDisplayIdFailure) {
   int64_t id = -1;
+  int64_t product_id = -1;
   std::vector<uint8_t> edid;
-  EXPECT_FALSE(GetDisplayIdFromEDID(edid, 0, &id));
+  EXPECT_FALSE(GetDisplayIdFromEDID(edid, 0, &id, &product_id));
   EXPECT_EQ(-1, id);
+  EXPECT_EQ(-1, product_id);
 }
 
 }   // namespace ui

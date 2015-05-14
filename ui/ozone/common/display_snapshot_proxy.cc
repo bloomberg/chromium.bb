@@ -41,6 +41,8 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
         SameModes(params.modes[i], params.native_mode))
       native_mode_ = modes_.back();
   }
+
+  product_id_ = params.product_id;
 }
 
 DisplaySnapshotProxy::~DisplaySnapshotProxy() {

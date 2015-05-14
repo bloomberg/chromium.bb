@@ -23,7 +23,9 @@ DisplaySnapshot_Params::DisplaySnapshot_Params()
       has_current_mode(false),
       current_mode(),
       has_native_mode(false),
-      native_mode() {}
+      native_mode(),
+      product_id(0) {
+}
 
 DisplaySnapshot_Params::~DisplaySnapshot_Params() {}
 

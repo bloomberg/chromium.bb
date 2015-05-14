@@ -44,6 +44,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   const DisplayMode* current_mode() const { return current_mode_; }
   const DisplayMode* native_mode() const { return native_mode_; }
+  int64_t product_id() const { return product_id_; }
 
   const std::vector<const DisplayMode*>& modes() const { return modes_; }
 
@@ -53,6 +54,9 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   // Returns a textual representation of this display state.
   virtual std::string ToString() const = 0;
+
+  // Used when no product id known.
+  static const int64_t kInvalidProductID = -1;
 
  protected:
   // Display id for this output.
@@ -78,6 +82,9 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   // "Best" mode supported by the output.
   const DisplayMode* native_mode_;
+
+  // Combination of manufacturer and product code.
+  int64_t product_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshot);
 };

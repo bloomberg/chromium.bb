@@ -44,6 +44,8 @@ enum {
                                               // device-local accounts.
                                               // Currently this is used for
                                               // policy for extensions.
+  DIR_DEVICE_COLOR_CALIBRATION_PROFILES, // Directory where system color
+                                         // calibration files can be found.
   PATH_END
 };
 

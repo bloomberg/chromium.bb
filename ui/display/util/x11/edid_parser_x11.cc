@@ -99,7 +99,8 @@ bool GetDisplayId(XID output_id,
   if (!GetEDIDProperty(output_id, &edid))
     return false;
 
-  bool result = GetDisplayIdFromEDID(edid, output_index, display_id_out);
+  bool result =
+      GetDisplayIdFromEDID(edid, output_index, display_id_out, nullptr);
   return result;
 }
 

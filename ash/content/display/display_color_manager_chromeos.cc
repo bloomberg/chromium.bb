@@ -8,7 +8,11 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/path_service.h"
+#include "base/strings/stringprintf.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/qcms/src/qcms.h"
@@ -58,12 +62,31 @@ bool ParseFile(const base::FilePath& path,
   return true;
 }
 
+base::FilePath PathForDisplaySnapshot(const ui::DisplaySnapshot* snapshot) {
+  if (snapshot->display_id() == gfx::Display::InternalDisplayId()) {
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(
+            chromeos::switches::kInternalDisplayColorProfileFile)) {
+      const base::FilePath& path = command_line->GetSwitchValuePath(
+          chromeos::switches::kInternalDisplayColorProfileFile);
+      return base::FilePath(path);
+    }
+  }
+
+  base::FilePath path;
+  CHECK(
+      PathService::Get(chromeos::DIR_DEVICE_COLOR_CALIBRATION_PROFILES, &path));
+  path = path.Append(
+      base::StringPrintf("%08" PRIx64 ".icc", snapshot->product_id()));
+  return path;
+}
+
 }  // namespace
 
 DisplayColorManager::DisplayColorManager(ui::DisplayConfigurator* configurator)
     : configurator_(configurator) {
   configurator_->AddObserver(this);
-  LoadInternalFromCommandLine();
 }
 
 DisplayColorManager::~DisplayColorManager() {
@@ -77,38 +100,36 @@ DisplayColorManager::~DisplayColorManager() {
 
 void DisplayColorManager::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& display_states) {
-  for (const ui::DisplaySnapshot* state : display_states)
-    ApplyDisplayColorCalibration(state->display_id());
+  for (const ui::DisplaySnapshot* state : display_states) {
+    if (calibration_map_[state->product_id()]) {
+      ApplyDisplayColorCalibration(state->display_id(), state->product_id());
+    } else {
+      if (state->product_id() != ui::DisplaySnapshot::kInvalidProductID)
+        LoadCalibrationForDisplay(state);
+    }
+  }
 }
 
-void DisplayColorManager::ApplyDisplayColorCalibration(uint64_t display_id) {
-  if (calibration_map_.find(display_id) != calibration_map_.end()) {
-    ColorCalibrationData* ramp = calibration_map_[display_id];
+void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
+                                                       int64_t product_id) {
+  if (calibration_map_.find(product_id) != calibration_map_.end()) {
+    ColorCalibrationData* ramp = calibration_map_[product_id];
     if (!configurator_->SetGammaRamp(display_id, ramp->lut))
       LOG(WARNING) << "Error applying gamma ramp";
   }
 }
 
-void DisplayColorManager::LoadInternalFromCommandLine() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(
-          chromeos::switches::kInternalDisplayColorProfileFile)) {
-    const base::FilePath& path = command_line->GetSwitchValuePath(
-        chromeos::switches::kInternalDisplayColorProfileFile);
-    VLOG(1) << "Loading ICC file : " << path.value()
-            << "for internal display id: " << gfx::Display::InternalDisplayId();
-    LoadCalibrationForDisplay(gfx::Display::InternalDisplayId(), path);
-  }
-}
-
 void DisplayColorManager::LoadCalibrationForDisplay(
-    int64_t display_id,
-    const base::FilePath& path) {
-  if (display_id == gfx::Display::kInvalidDisplayID) {
+    const ui::DisplaySnapshot* display) {
+  if (display->display_id() == gfx::Display::kInvalidDisplayID) {
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
     return;
   }
+
+  base::FilePath path = PathForDisplaySnapshot(display);
+  VLOG(1) << "Loading ICC file " << path.value()
+          << " for display id: " << display->display_id()
+          << " with product id: " << display->product_id();
 
   scoped_ptr<ColorCalibrationData> data(new ColorCalibrationData());
   base::Callback<bool(void)> request(
@@ -116,17 +137,20 @@ void DisplayColorManager::LoadCalibrationForDisplay(
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(), FROM_HERE, request,
       base::Bind(&DisplayColorManager::UpdateCalibrationData, AsWeakPtr(),
-                 display_id, base::Passed(data.Pass())));
+                 display->display_id(), display->product_id(),
+                 base::Passed(data.Pass())));
 }
 
 void DisplayColorManager::UpdateCalibrationData(
-    uint64_t display_id,
+    int64_t display_id,
+    int64_t product_id,
     scoped_ptr<ColorCalibrationData> data,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (success) {
     // The map takes over ownership of the underlying memory.
-    calibration_map_[display_id] = data.release();
+    calibration_map_[product_id] = data.release();
+    ApplyDisplayColorCalibration(display_id, product_id);
   }
 }
 

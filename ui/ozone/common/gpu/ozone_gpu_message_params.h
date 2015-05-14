@@ -40,6 +40,7 @@ struct OZONE_EXPORT DisplaySnapshot_Params {
   DisplayMode_Params current_mode;
   bool has_native_mode;
   DisplayMode_Params native_mode;
+  int64_t product_id;
   std::string string_representation;
 };
 

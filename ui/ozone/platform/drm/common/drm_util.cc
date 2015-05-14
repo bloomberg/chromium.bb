@@ -227,7 +227,8 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
         static_cast<uint8_t*>(edid_blob->data),
         static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 
-    if (!GetDisplayIdFromEDID(edid, display_index, &params.display_id))
+    if (!GetDisplayIdFromEDID(edid, display_index, &params.display_id,
+                              &params.product_id))
       params.display_id = display_index;
 
     ParseOutputDeviceData(edid, nullptr, &params.display_name, nullptr,

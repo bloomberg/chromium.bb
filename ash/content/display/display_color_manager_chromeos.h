@@ -46,17 +46,16 @@ class ASH_EXPORT DisplayColorManager
   };
 
  private:
-  void ApplyDisplayColorCalibration(uint64_t display_id);
-  void LoadInternalFromCommandLine();
-  void LoadCalibrationForDisplay(int64_t display_id,
-                                 const base::FilePath& path);
+  void ApplyDisplayColorCalibration(int64_t display_id, int64_t product_id);
+  void LoadCalibrationForDisplay(const ui::DisplaySnapshot* display);
   void UpdateCalibrationData(
-      uint64_t display_id,
+      int64_t display_id,
+      int64_t product_id,
       scoped_ptr<DisplayColorManager::ColorCalibrationData> data,
       bool success);
 
   ui::DisplayConfigurator* configurator_;
-  std::map<uint64_t, ColorCalibrationData*> calibration_map_;
+  std::map<int64_t, ColorCalibrationData*> calibration_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayColorManager);
 };

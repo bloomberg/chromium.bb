@@ -18,6 +18,7 @@ namespace ui {
 namespace {
 
 const int64_t kDummyDisplayId = 1;
+const int64_t kDummyProductId = 1;
 
 }  // namespace
 
@@ -58,6 +59,7 @@ DisplaySnapshot_Params GetDisplaySnapshotParams(
   if (params.has_native_mode)
     params.native_mode = GetDisplayModeParams(*display.native_mode());
 
+  params.product_id = display.product_id();
   params.string_representation = display.ToString();
 
   return params;
@@ -93,6 +95,7 @@ bool CreateSnapshotFromCommandLine(DisplaySnapshot_Params* snapshot_out) {
   snapshot_out->current_mode = mode_param;
   snapshot_out->has_native_mode = true;
   snapshot_out->native_mode = mode_param;
+  snapshot_out->product_id = kDummyProductId;
   return true;
 }
 

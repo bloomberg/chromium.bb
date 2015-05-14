@@ -25,7 +25,9 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       display_name_(display_name),
       modes_(modes),
       current_mode_(current_mode),
-      native_mode_(native_mode) {}
+      native_mode_(native_mode),
+      product_id_(kInvalidProductID) {
+}
 
 DisplaySnapshot::~DisplaySnapshot() {}
 

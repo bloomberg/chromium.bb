@@ -21,12 +21,13 @@ class Size;
 
 namespace ui {
 
-// Generates the display id for the pair of |edid| and |index|, and store in
-// |display_id_out|. Returns true if the display id is successfully generated,
-// or false otherwise.
+// Generates the display id and product id for the pair of |edid| and |index|,
+// and store in |display_id_out| and |product_id_out|. Returns true if the
+// display id is successfully generated, or false otherwise.
 DISPLAY_UTIL_EXPORT bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
                                               uint8_t index,
-                                              int64_t* display_id_out);
+                                              int64_t* display_id_out,
+                                              int64_t* product_id_out);
 
 // Parses |edid| as EDID data and stores extracted data into |manufacturer_id|,
 // |human_readable_name|, |active_pixel_out| and |physical_display_size_out|,

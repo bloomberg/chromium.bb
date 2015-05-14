@@ -29,11 +29,19 @@ int64_t GetID(uint16_t manufacturer_id,
           (static_cast<int64_t>(product_code_hash) << 8) | output_index);
 }
 
+// Returns a 64-bit identifier for this model of display, using
+// |manufacturer_id| and |product_code_hash|.
+int64_t GetProductID(uint16_t manufacturer_id, uint32_t product_code_hash) {
+  return ((static_cast<int64_t>(manufacturer_id) << 32) |
+          (static_cast<int64_t>(product_code_hash)));
+}
+
 }  // namespace
 
 bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
                           uint8_t output_index,
-                          int64_t* display_id_out) {
+                          int64_t* display_id_out,
+                          int64_t* product_id_out) {
   uint16_t manufacturer_id = 0;
   std::string product_name;
 
@@ -50,6 +58,8 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
     // fails.
     *display_id_out = GetID(
         manufacturer_id, product_code_hash, output_index);
+    if (product_id_out)
+      *product_id_out = GetProductID(manufacturer_id, product_code_hash);
     return true;
   }
   return false;
