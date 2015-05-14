@@ -20,11 +20,11 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/echo_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 
 namespace echo_api = extensions::api::echo_private;
@@ -240,6 +240,13 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
     return;
   }
 
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (!web_contents) {
+    error_ = "No web contents.";
+    SendResponse(false);
+    return;
+  }
+
   // Add ref to ensure the function stays around until the dialog listener is
   // called. The reference is release in |Finalize|.
   AddRef();
@@ -253,7 +260,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
   } else {
     dialog->InitForDisabledEcho();
   }
-  dialog->Show(GetCurrentBrowser()->window()->GetNativeWindow());
+  dialog->Show(web_contents->GetTopLevelNativeWindow());
 
   // If there is a dialog_shown_callback_, invoke it with the created dialog.
   if (!dialog_shown_callback_.is_null())
