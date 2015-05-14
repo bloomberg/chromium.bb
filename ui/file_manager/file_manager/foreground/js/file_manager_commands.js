@@ -1319,7 +1319,10 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
             fileManager.providersModel.requestMount(assert(itemId));
         });
   },
-  canExecute: CommandUtil.canExecuteAlways
+  canExecute: function(event, fileManager) {
+    event.canExecute = fileManager.dialogType === DialogType.FULL_PAGE;
+    event.command.setHidden(!event.canExecute);
+  }
 });
 
 /**

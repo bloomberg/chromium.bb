@@ -116,7 +116,7 @@ NavigationModelMenuItem.prototype = /** @struct */ {
  * @param {!VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
- * @param {!NavigationModelMenuItem} menuModel Menu button at the end of the
+ * @param {NavigationModelMenuItem} menuModel Menu button at the end of the
  *     list.
  * @constructor
  * @extends {cr.EventTarget}
@@ -137,7 +137,7 @@ function NavigationListModel(volumeManager, shortcutListModel, menuModel) {
   this.shortcutListModel_ = shortcutListModel;
 
   /**
-   * @private {!NavigationModelMenuItem}
+   * @private {NavigationModelMenuItem}
    * @const
    */
   this.menuModel_ = menuModel;
@@ -309,7 +309,7 @@ NavigationListModel.prototype.item = function(index) {
  */
 NavigationListModel.prototype.length_ = function() {
   return this.volumeList_.length + this.shortcutList_.length
-      + 1 /* for button menu */;
+      + (this.menuModel_ ? 1 : 0);
 };
 
 /**
