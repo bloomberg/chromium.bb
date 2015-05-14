@@ -200,6 +200,9 @@ char*
 screenshot_reference_filename(const char *basename, uint32_t seq);
 
 bool
+check_surfaces_geometry(const struct surface *a, const struct surface *b);
+
+bool
 check_surfaces_equal(const struct surface *a, const struct surface *b);
 
 bool

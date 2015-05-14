@@ -877,6 +877,31 @@ screenshot_reference_filename(const char *basename, uint32_t seq) {
 }
 
 /**
+ * check_surfaces_geometry() - verifies two surfaces are same size
+ *
+ * @returns true if surfaces have the same width and height, or false
+ * if not, or if there is no actual data.
+ */
+bool
+check_surfaces_geometry(const struct surface *a, const struct surface *b)
+{
+	if (a == NULL || b == NULL) {
+		printf("Undefined surfaces\n");
+		return false;
+	}
+	else if (a->data == NULL || b->data == NULL) {
+		printf("Undefined data\n");
+		return false;
+	}
+	else if (a->width != b->width || a->height != b->height) {
+		printf("Mismatched dimensions:  %d,%d != %d,%d\n",
+		       a->width, a->height, b->width, b->height);
+		return false;
+	}
+	return true;
+}
+
+/**
  * check_surfaces_equal() - tests if two surfaces are pixel-identical
  *
  * Returns true if surface buffers have all the same byte values,
@@ -888,9 +913,7 @@ check_surfaces_equal(const struct surface *a, const struct surface *b)
 {
 	int bpp = 4;  /* Assumes ARGB */
 
-	if (a == NULL || b == NULL)
-		return false;
-	if (a->width != b->width || a->height != b->height)
+	if (!check_surfaces_geometry(a, b))
 		return false;
 
 	return (memcmp(a->data, b->data, bpp * a->width * a->height) == 0);
@@ -912,18 +935,9 @@ check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, c
 	void *p, *q;
 	int bpp = 4;  /* Assumes ARGB */
 
-	if (a == NULL || b == NULL || clip_rect == NULL)
+	if (!check_surfaces_geometry(a, b) || clip_rect == NULL)
 		return false;
 
-	if (a->data == NULL || b->data == NULL) {
-		printf("Undefined data\n");
-		return false;
-	}
-	if (a->width != b->width || a->height != b->height) {
-		printf("Mismatched dimensions:  %d,%d != %d,%d\n",
-		       a->width, a->height, b->width, b->height);
-		return false;
-	}
 	if (clip_rect->x > a->width || clip_rect->y > a->height) {
 		printf("Clip outside image boundaries\n");
 		return true;
