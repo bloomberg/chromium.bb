@@ -530,6 +530,96 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testBackspaceKeycode() throws Throwable {
+        DOMUtils.focusNode(mWebContents, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // H
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // O
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, "o", 1);
+        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL, sent via dispatchKeyEvent like it is in Android WebView or a physical keyboard.
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.dispatchKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                mContentViewCore.dispatchKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+            }
+        });
+
+        // DEL
+        expectUpdateStateCall(mConnection);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testRepeatBackspaceKeycode() throws Throwable {
+        DOMUtils.focusNode(mWebContents, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // H
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // O
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, "o", 1);
+        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+
+        // Multiple keydowns should each delete one character (this is for physical keyboard
+        // key-repeat).
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.dispatchKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                mContentViewCore.dispatchKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                mContentViewCore.dispatchKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+            }
+        });
+
+        // DEL
+        expectUpdateStateCall(mConnection);
+        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
+    }
+
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testKeyCodesWhileTypingText() throws Throwable {
         DOMUtils.focusNode(mWebContents, "textarea");
         assertWaitForKeyboardStatus(true);

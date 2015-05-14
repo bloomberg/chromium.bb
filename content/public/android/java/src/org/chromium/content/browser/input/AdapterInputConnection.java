@@ -343,6 +343,11 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean deleteSurroundingText(int beforeLength, int afterLength) {
+        return deleteSurroundingTextImpl(beforeLength, afterLength, false);
+    }
+
+    private boolean deleteSurroundingTextImpl(
+            int beforeLength, int afterLength, boolean fromPhysicalKey) {
         if (DEBUG) {
             Log.w(TAG, "deleteSurroundingText [" + beforeLength + " " + afterLength + "]");
         }
@@ -354,6 +359,12 @@ public class AdapterInputConnection extends BaseInputConnection {
         afterLength = Math.min(afterLength, availableAfter);
         super.deleteSurroundingText(beforeLength, afterLength);
         updateSelectionIfRequired();
+
+        // If this was called due to a physical key, no need to generate a key event here as
+        // the caller will take care of forwarding the original.
+        if (fromPhysicalKey) {
+            return true;
+        }
 
         // For single-char deletion calls |ImeAdapter.sendKeyEventWithKeyCode| with the real key
         // code. For multi-character deletion, executes deletion by calling
@@ -387,43 +398,37 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (DEBUG) {
             Log.w(TAG, "sendKeyEvent [" + event.getAction() + "] [" + event.getKeyCode() + "]");
         }
-        // If this is a key-up, and backspace/del or if the key has a character representation,
+
+        int action = event.getAction();
+        int keycode = event.getKeyCode();
+        int unicodeChar = event.getUnicodeChar();
+
+        // If this is backspace/del or if the key has a character representation,
         // need to update the underlying Editable (i.e. the local representation of the text
-        // being edited).
-        if (event.getAction() == KeyEvent.ACTION_UP) {
-            if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
-                deleteSurroundingText(1, 0);
-                return true;
-            } else if (event.getKeyCode() == KeyEvent.KEYCODE_FORWARD_DEL) {
-                deleteSurroundingText(0, 1);
-                return true;
-            } else {
-                int unicodeChar = event.getUnicodeChar();
-                if (unicodeChar != 0) {
-                    int selectionStart = Selection.getSelectionStart(mEditable);
-                    int selectionEnd = Selection.getSelectionEnd(mEditable);
-                    if (selectionStart > selectionEnd) {
-                        int temp = selectionStart;
-                        selectionStart = selectionEnd;
-                        selectionEnd = temp;
-                    }
-                    mEditable.replace(selectionStart, selectionEnd,
-                            Character.toString((char) unicodeChar));
-                }
-            }
-        } else if (event.getAction() == KeyEvent.ACTION_DOWN) {
+        // being edited).  Some IMEs like Jellybean stock IME and Samsung IME mix in delete
+        // KeyPress events instead of calling deleteSurroundingText.
+        if (action == KeyEvent.ACTION_DOWN && keycode == KeyEvent.KEYCODE_DEL) {
+            deleteSurroundingTextImpl(1, 0, true);
+        } else if (action == KeyEvent.ACTION_DOWN && keycode == KeyEvent.KEYCODE_FORWARD_DEL) {
+            deleteSurroundingTextImpl(0, 1, true);
+        } else if (action == KeyEvent.ACTION_DOWN && keycode == KeyEvent.KEYCODE_ENTER) {
+            // Finish text composition when pressing enter, as that may submit a form field.
             // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
-            if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                beginBatchEdit();
-                finishComposingText();
-                mImeAdapter.translateAndSendNativeEvents(event);
-                endBatchEdit();
-                return true;
-            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
-                return true;
-            } else if (event.getKeyCode() == KeyEvent.KEYCODE_FORWARD_DEL) {
-                return true;
+            beginBatchEdit();
+            finishComposingText();
+            mImeAdapter.translateAndSendNativeEvents(event);
+            endBatchEdit();
+            return true;
+        } else if (action == KeyEvent.ACTION_UP && unicodeChar != 0) {
+            int selectionStart = Selection.getSelectionStart(mEditable);
+            int selectionEnd = Selection.getSelectionEnd(mEditable);
+            if (selectionStart > selectionEnd) {
+                int temp = selectionStart;
+                selectionStart = selectionEnd;
+                selectionEnd = temp;
             }
+            mEditable.replace(selectionStart, selectionEnd,
+                    Character.toString((char) unicodeChar));
         }
         mImeAdapter.translateAndSendNativeEvents(event);
         return true;

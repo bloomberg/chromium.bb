@@ -309,6 +309,9 @@ public class ImeAdapter {
     }
 
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if (mInputConnection != null) {
+            return mInputConnection.sendKeyEvent(event);
+        }
         return translateAndSendNativeEvents(event);
     }
 
