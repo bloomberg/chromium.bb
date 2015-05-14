@@ -908,12 +908,14 @@ def RunInsideChroot(command, auto_detect_brick=False,
           _AddCliCommandOption(argv, '--%s-locator-override' % option, locator)
 
   # Enter the chroot for the workspace, if we are in a workspace.
-  chroot_args = None
+  # Set log-level of cros_sdk to be same as log-level of command entering the
+  # chroot.
+  chroot_args = ['--log-level', command.options.log_level]
   if auto_detect_workspace:
     workspace_path = workspace_lib.WorkspacePath()
     if workspace_path:
-      chroot_args = ['--chroot', workspace_lib.ChrootPath(workspace_path),
-                     '--workspace', workspace_path]
+      chroot_args.extend(['--chroot', workspace_lib.ChrootPath(workspace_path),
+                          '--workspace', workspace_path])
 
   raise ChrootRequiredError(argv, chroot_args)
 

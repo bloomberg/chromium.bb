@@ -23,6 +23,7 @@ from chromite.lib import workspace_lib
 
 # pylint: disable=protected-access
 
+
 class TestShutDownException(cros_test_lib.TestCase):
   """Test that ShutDownException can be pickled."""
 
@@ -567,24 +568,42 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
 
     # Mocked CliCommand object to pass to RunInsideChroot.
     self.cmd = command.CliCommand(argparse.Namespace())
+    self.cmd.options.log_level = 'info'
 
   def teardown(self):
     sys.argv = self.orig_argv
 
   def _VerifyRunInsideChroot(self, expected_cmd, expected_chroot_args,
-                             **kwargs):
+                             log_level_args=None, **kwargs):
     """Run RunInsideChroot, and verify it raises with expected values.
 
     Args:
       expected_cmd: Command that should be executed inside the chroot.
       expected_chroot_args: Args that should be passed as chroot args.
+      log_level_args: Args that set the log level of cros_sdk.
       kwargs: Additional args to pass to RunInsideChroot().
     """
     with self.assertRaises(commandline.ChrootRequiredError) as cm:
       commandline.RunInsideChroot(self.cmd, **kwargs)
 
+    if log_level_args is None:
+      log_level_args = ['--log-level', self.cmd.options.log_level]
+
+    if expected_chroot_args is not None:
+      log_level_args.extend(expected_chroot_args)
+      expected_chroot_args = log_level_args
+    else:
+      expected_chroot_args = log_level_args
+
     self.assertEqual(expected_cmd, cm.exception.cmd)
     self.assertEqual(expected_chroot_args, cm.exception.chroot_args)
+
+  def testRunInsideChrootLogLevel(self):
+    self.cmd.options.log_level = 'notice'
+    self.mock_inside_chroot.return_value = False
+    self.mock_workspace_path.return_value = None
+    self._VerifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'], None,
+                                log_level_args=['--log-level', 'notice'])
 
   def testRunInsideChrootNoWorkspace(self):
     """Test we can restart inside the chroot, with no workspace."""
