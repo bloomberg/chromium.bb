@@ -69,6 +69,7 @@
     'has_java_resources%': 0,
     'res_extra_dirs': [],
     'res_extra_files': [],
+    'res_v14_skip%': 0,
     'res_v14_verify_only%': 0,
     'resource_input_paths': ['>@(res_extra_files)'],
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
@@ -157,6 +158,9 @@
             'inputs_list_file': '>|(java_resources.<(_target_name).gypcmd >@(resource_input_paths))',
             'process_resources_options': [],
             'conditions': [
+              ['res_v14_skip == 1', {
+                'process_resources_options': ['--v14-skip']
+              }],
               ['res_v14_verify_only == 1', {
                 'process_resources_options': ['--v14-verify-only']
               }],
