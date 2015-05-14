@@ -1,0 +1,28 @@
+{
+  "owners": [
+    "smut"
+  ],
+  "comments": [
+    "Tests for 32- and 64-bit iOS 8.2 iPhone simulators."
+  ],
+  "xcode version": "6.2",
+  "GYP_DEFINES": {
+    "chromium_ios_signing": "0",
+    "target_subarch": "both"
+  },
+  "compiler": "xcodebuild",
+  "configuration": "Debug",
+  "sdk": "iphonesimulator8.2",
+  "tests": [
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5",
+      "os": "8.2"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5s",
+      "os": "8.2"
+    }
+  ]
+}
