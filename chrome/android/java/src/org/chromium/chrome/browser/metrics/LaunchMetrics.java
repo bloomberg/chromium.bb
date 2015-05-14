@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.metrics;
 
 import org.chromium.base.JNINamespace;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,17 +38,19 @@ public class LaunchMetrics {
      * Calls out to native code to record URLs that have been launched via the Home screen.
      * This intermediate step is necessary because Activity.onCreate() may be called when
      * the native library has not yet been loaded.
+     * @param webContents WebContents for the current Tab.
      */
-    public static void commitLaunchMetrics() {
+    public static void commitLaunchMetrics(WebContents webContents) {
         for (String url : sActivityUrls) {
-            nativeRecordLaunch(true, url);
+            nativeRecordLaunch(true, url, webContents);
         }
         for (String url : sTabUrls) {
-            nativeRecordLaunch(false, url);
+            nativeRecordLaunch(false, url, webContents);
         }
         sActivityUrls.clear();
         sTabUrls.clear();
     }
 
-    private static native void nativeRecordLaunch(boolean standalone, String url);
+    private static native void nativeRecordLaunch(
+            boolean standalone, String url, WebContents webContents);
 }
