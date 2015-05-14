@@ -150,14 +150,6 @@ cr.define('ntp', function() {
     notificationContainer.addEventListener(
         'webkitTransitionEnd', onNotificationTransitionEnd);
 
-    if (loadTimeData.getBoolean('showRecentlyClosed')) {
-      cr.ui.decorate(getRequiredElement('recently-closed-menu-button'),
-          ntp.RecentMenuButton);
-      chrome.send('getRecentlyClosedTabs');
-    } else {
-      $('recently-closed-menu-button').hidden = true;
-    }
-
     if (loadTimeData.getBoolean('showOtherSessionsMenu')) {
       otherSessionsButton = /** @type {!ntp.OtherSessionsMenuButton} */(
           getRequiredElement('other-sessions-menu-button'));
@@ -546,11 +538,6 @@ cr.define('ntp', function() {
       notificationContainer.hidden = true;
   }
 
-  function setRecentlyClosedTabs(dataItems) {
-    $('recently-closed-menu-button').dataItems = dataItems;
-    layoutFooter();
-  }
-
   /**
    * @param {Array<PageData>} data
    * @param {boolean} hasBlacklistedUrls
@@ -773,7 +760,6 @@ cr.define('ntp', function() {
     setForeignSessions: setForeignSessions,
     setMostVisitedPages: setMostVisitedPages,
     setSuggestionsPages: setSuggestionsPages,
-    setRecentlyClosedTabs: setRecentlyClosedTabs,
     setFaviconDominantColor: setFaviconDominantColor,
     showNotification: showNotification,
     themeChanged: themeChanged,

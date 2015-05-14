@@ -169,7 +169,7 @@ bool UpdateJumpList(const wchar_t* app_id,
 
   // Update the "Recently Closed" category of the JumpList.
   if (!jumplist_updater.AddCustomCategory(
-          l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED),
+          l10n_util::GetStringUTF16(IDS_RECENTLY_CLOSED),
           recently_closed_pages, recently_closed_items)) {
     return false;
   }

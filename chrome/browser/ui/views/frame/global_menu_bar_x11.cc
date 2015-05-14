@@ -762,7 +762,7 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
       item->session_id = entry_win->id;
 
       std::string title = l10n_util::GetPluralStringFUTF8(
-          IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW, tabs.size());
+          IDS_RECENTLY_CLOSED_WINDOW, tabs.size());
       DbusmenuMenuitem* parent_item = BuildMenuItem(
           title, TAG_RECENTLY_CLOSED);
       menuitem_child_add_position(history_menu_, parent_item, index++);

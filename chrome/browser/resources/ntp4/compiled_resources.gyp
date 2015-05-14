@@ -41,7 +41,6 @@
           'other_sessions.js',
           'suggestions_page.js',
           'new_tab.js',
-          'recently_closed.js',
         ],
         'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
       },

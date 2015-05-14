@@ -101,7 +101,6 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
   NTPResourceCache* resource = AppResourceCacheFactory::GetForProfile(profile_);
   resource->set_should_show_most_visited_page(false);
   resource->set_should_show_other_devices_menu(false);
-  resource->set_should_show_recently_closed_menu(false);
 
   content::RenderProcessHost* render_host =
       content::RenderProcessHost::FromID(render_process_id);

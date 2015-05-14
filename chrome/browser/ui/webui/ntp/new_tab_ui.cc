@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
-#include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -97,7 +96,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new MostVisitedHandler());
-    web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
     web_ui->AddMessageHandler(new NewTabPageHandler());
     web_ui->AddMessageHandler(new CoreAppLauncherHandler());

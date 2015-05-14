@@ -11723,20 +11723,6 @@ Dead Jim feedback.
             Pages you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
           </message>
         </if>
-        <!-- TODO(estade): remove these two messages (_SINGLE and _MULTIPLE)
-             when dropping recently_closed.js. -->
-        <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
-                 desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">
-          1 Tab
-        </message>
-        <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE"
-                 desc="Title of recently closed windows in the recently closed section of the new tab page when the window has more than one tab. The % is replaced by the number of tabs">
-          <ph name="TAB_COUNT">$1<ex>3</ex></ph> Tabs
-        </message>
-        <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW"
-                 desc="Title of recently closed windows in Recent Tabs menu. [ICU_Syntax]">
-          {NUM_TABS, plural, =1 {1 Tab} other {# Tabs}}
-        </message>
         <message name="IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION"
                  desc="Help message for screenreader users, spoken when navigating to a tile grid for the first time.">
           Use left and right arrow keys to navigate.
@@ -11758,10 +11744,6 @@ Dead Jim feedback.
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK"
                desc="The link that restores previously removed thumbnails. Context is 'Thumbnail removed. Undo | Restore all'">
         Restore all
-      </message>
-      <message name="IDS_NEW_TAB_RECENTLY_CLOSED"
-               desc="The name for the 'Recently Closed' menu on the New Tab Page.">
-        Recently closed
       </message>
 
       <!-- chrome://history and chrome://ntp -->
@@ -12481,14 +12463,32 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Block
       </message>
 
-      <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
-        Recent Tabs
-      </message>
+      <if expr="use_title_case">
+        <message name="IDS_RECENT_TABS_MENU" desc="In Title Case: The title of the Recent Tabs menu in the wrench menu.">
+          Recent Tabs
+        </message>
+        <message name="IDS_RECENTLY_CLOSED" desc="In Title Case: The section header for the Recently Closed section of the Recent Tabs menu.">
+          Recently Closed
+        </message>
+        <message name="IDS_RECENTLY_CLOSED_WINDOW" desc="In Title Case: Title of recently closed windows in Recent Tabs menu. [ICU_Syntax]">
+          {NUM_TABS, plural, =1 {1 Tab} other {# Tabs}}
+        </message>
+      </if>
+      <if expr="not use_title_case">
+        <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
+          Recent tabs
+        </message>
+        <message name="IDS_RECENTLY_CLOSED" desc="The section header for the Recently Closed section of the Recent Tabs menu.">
+          Recently closed
+        </message>
+        <message name="IDS_RECENTLY_CLOSED_WINDOW" desc="Title of recently closed windows in Recent Tabs menu. [ICU_Syntax]">
+          {NUM_TABS, plural, =1 {1 tab} other {# tabs}}
+        </message>
+      </if>
 
       <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
         No tabs from other devices
       </message>
-
       <message name="IDS_RECENT_TABS_MORE" desc="The label in the Recent Tabs menu in the wrench menu to open the other devices and history page.">
         More...
       </message>

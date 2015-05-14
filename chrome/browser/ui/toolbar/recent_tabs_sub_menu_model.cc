@@ -395,11 +395,11 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
     // teach users about this command.
     InsertItemWithStringIdAt(++last_local_model_index_,
                              kDisabledRecentlyClosedHeaderCommandId,
-                             IDS_NEW_TAB_RECENTLY_CLOSED);
+                             IDS_RECENTLY_CLOSED);
   } else {
     InsertItemWithStringIdAt(++last_local_model_index_,
                              kRecentlyClosedHeaderCommandId,
-                             IDS_NEW_TAB_RECENTLY_CLOSED);
+                             IDS_RECENTLY_CLOSED);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     SetIcon(last_local_model_index_,
             rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
@@ -535,7 +535,7 @@ void RecentTabsSubMenuModel::BuildLocalWindowItem(
   int command_id = WindowVectorIndexToCommandId(local_window_items_.size());
   // See comments in BuildLocalEntries() about usage of InsertItem*At().
   InsertItemAt(curr_model_index, command_id, l10n_util::GetPluralStringFUTF16(
-      IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW, num_tabs));
+      IDS_RECENTLY_CLOSED_WINDOW, num_tabs));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(curr_model_index, rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
   local_window_items_.push_back(window_id);

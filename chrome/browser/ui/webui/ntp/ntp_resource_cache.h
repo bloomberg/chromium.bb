@@ -51,10 +51,6 @@ class NTPResourceCache : public content::NotificationObserver,
   void set_should_show_other_devices_menu(bool should_show_other_devices_menu) {
     should_show_other_devices_menu_ = should_show_other_devices_menu;
   }
-  void set_should_show_recently_closed_menu(
-      bool should_show_recently_closed_menu) {
-    should_show_recently_closed_menu_ = should_show_recently_closed_menu;
-  }
   // content::NotificationObserver interface.
   void Observe(int type,
                const content::NotificationSource& source,
@@ -111,7 +107,6 @@ class NTPResourceCache : public content::NotificationObserver,
   // chrome://apps page.
   bool should_show_most_visited_page_;
   bool should_show_other_devices_menu_;
-  bool should_show_recently_closed_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

@@ -1789,8 +1789,6 @@
       'browser/ui/webui/ntp/ntp_resource_cache_factory.cc',
       'browser/ui/webui/ntp/ntp_resource_cache_factory.h',
       'browser/ui/webui/ntp/ntp_stats.h',
-      'browser/ui/webui/ntp/recently_closed_tabs_handler.cc',
-      'browser/ui/webui/ntp/recently_closed_tabs_handler.h',
       'browser/ui/webui/ntp/suggestions_combiner.cc',
       'browser/ui/webui/ntp/suggestions_combiner.h',
       'browser/ui/webui/ntp/suggestions_page_handler.cc',

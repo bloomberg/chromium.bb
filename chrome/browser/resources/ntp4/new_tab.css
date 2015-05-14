@@ -143,8 +143,7 @@ body.bare-minimum #card-slider-frame {
 }
 
 /* For themes that right-align their images, we flip the attribution to the
- * left to avoid conflicts. We also do this for bare-minimum mode since there
- * can be conflicts with the recently closed menu. */
+ * left to avoid conflicts. */
 html[themegravity='right'] #attribution,
 body.bare-minimum #attribution,
 html[dir='rtl'] #attribution {
@@ -389,7 +388,6 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 #chrome-web-store-link {
   -webkit-order: 3;
   -webkit-padding-end: 12px;
-  /* Match transition delay of recently closed button. */
   -webkit-transition-delay: 100ms;
   color: inherit;
   cursor: pointer;
@@ -447,10 +445,6 @@ html[dir='rtl'] #chrome-web-store-title {
   height: 100%;
   margin: 0;
   min-width: -webkit-min-content;
-}
-
-#recently-closed-menu-button {
-  -webkit-order: 1;
 }
 
 #other-sessions-menu-button {
