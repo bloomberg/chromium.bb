@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
+#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -218,6 +219,9 @@ class UserSessionManager
 
   void ActiveUserChanged(const user_manager::User* active_user) override;
 
+  // This method will be called when user have obtained oauth2 tokens.
+  void OnOAuth2TokensFetched(UserContext context);
+
   // Returns default IME state for user session.
   scoped_refptr<input_method::InputMethodManager::State> GetDefaultIMEState(
       Profile* profile);
@@ -360,6 +364,13 @@ class UserSessionManager
       InputEventsBlocker* input_events_blocker,
       const locale_util::LanguageSwitchResult& result);
 
+  // Callback invoked when |token_handle_util_| has finished.
+  void OnTokenHandleObtained(const user_manager::UserID& id,
+                             TokenHandleUtil::TokenHandleStatus status);
+
+  // Returns |true| if token handles should be used on this device.
+  bool TokenHandlesEnabled();
+
   // Test API methods.
 
   // Injects |user_context| that will be used to create StubAuthenticator
@@ -443,6 +454,8 @@ class UserSessionManager
   scoped_ptr<EasyUnlockKeyManager> easy_unlock_key_manager_;
   bool running_easy_unlock_key_ops_;
   base::Closure easy_unlock_key_ops_finished_callback_;
+
+  scoped_ptr<TokenHandleUtil> token_handle_util_;
 
   // Whether should launch browser, tests may override this value.
   bool should_launch_browser_;

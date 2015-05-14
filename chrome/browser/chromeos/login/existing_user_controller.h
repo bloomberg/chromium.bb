@@ -18,7 +18,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -243,13 +242,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Callback invoked when |oauth2_token_initializer_| has finished.
   void OnOAuth2TokensFetched(bool success, const UserContext& user_context);
 
-  // Callback invoked when |token_handle_util_| has finished.
-  void OnTokenHandleObtained(const user_manager::UserID& id,
-                             TokenHandleUtil::TokenHandleStatus status);
-
-  // Returns |true| if token handles should be used on this device.
-  bool TokenHandlesEnabled();
-
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;
 
@@ -338,7 +330,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
       bootstrap_user_context_initializer_;
 
   scoped_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
-  scoped_ptr<TokenHandleUtil> token_handle_util_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 

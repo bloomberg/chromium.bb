@@ -1236,38 +1236,8 @@ void ExistingUserController::OnOAuth2TokensFetched(
     OnAuthFailure(AuthFailure(AuthFailure::FAILED_TO_INITIALIZE_TOKEN));
     return;
   }
-  if (StartupUtils::IsWebviewSigninEnabled() && TokenHandlesEnabled()) {
-    if (!token_handle_util_.get()) {
-      token_handle_util_.reset(
-          new TokenHandleUtil(user_manager::UserManager::Get()));
-    }
-    if (token_handle_util_->ShouldObtainHandle(user_context.GetUserID())) {
-      token_handle_util_->GetTokenHandle(
-          user_context.GetUserID(), user_context.GetAccessToken(),
-          base::Bind(&ExistingUserController::OnTokenHandleObtained,
-                     weak_factory_.GetWeakPtr()));
-    }
-  }
+  UserSessionManager::GetInstance()->OnOAuth2TokensFetched(user_context);
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
-}
-
-void ExistingUserController::OnTokenHandleObtained(
-    const user_manager::UserID& id,
-    TokenHandleUtil::TokenHandleStatus status) {
-  if (status != TokenHandleUtil::VALID) {
-    LOG(ERROR) << "OAuth2 token handle fetch failed.";
-    return;
-  }
-}
-
-bool ExistingUserController::TokenHandlesEnabled() {
-  bool ephemeral_users_enabled = false;
-  bool show_names_on_signin = true;
-  cros_settings_->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
-                             &ephemeral_users_enabled);
-  cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
-                             &show_names_on_signin);
-  return show_names_on_signin && !ephemeral_users_enabled;
 }
 
 }  // namespace chromeos
