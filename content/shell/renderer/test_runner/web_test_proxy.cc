@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "content/public/common/content_switches.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/mock_color_chooser.h"
@@ -390,10 +389,6 @@ WebTestProxyBase::WebTestProxyBase()
       web_widget_(NULL),
       spellcheck_(new SpellCheckClient(this)),
       chooser_count_(0) {
-  // TODO(enne): using the scheduler introduces additional composite steps
-  // that create flakiness.  This should go away eventually.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableSingleThreadProxyScheduler);
   Reset();
 }
 

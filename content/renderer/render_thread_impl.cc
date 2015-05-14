@@ -1415,8 +1415,9 @@ bool RenderThreadImpl::IsElasticOverscrollEnabled() {
 }
 
 bool RenderThreadImpl::UseSingleThreadScheduler() {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  return !cmd->HasSwitch(switches::kDisableSingleThreadProxyScheduler);
+  // TODO(enne): using the scheduler introduces additional composite steps
+  // that create flakiness.  This should go away eventually.
+  return !layout_test_mode_;
 }
 
 uint32 RenderThreadImpl::GetImageTextureTarget() {
