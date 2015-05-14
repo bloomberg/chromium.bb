@@ -30,7 +30,7 @@ struct WebURLError;
 namespace content {
 
 class DeviceLightData;
-class RendererGamepadProvider;
+class GamepadController;
 class WebTask;
 class WebTestProxyBase;
 struct TestPreferences;
@@ -44,8 +44,7 @@ class WebTestDelegate {
                               const std::string& value) = 0;
 
   // Sets gamepad provider to be used for tests.
-  virtual void SetGamepadProvider(
-      scoped_ptr<RendererGamepadProvider> provider) = 0;
+  virtual void SetGamepadProvider(GamepadController* controller) = 0;
 
   // Set data to return when registering via
   // Platform::setDeviceLightListener().

@@ -11,6 +11,7 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/event_sender.h"

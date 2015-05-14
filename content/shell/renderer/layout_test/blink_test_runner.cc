@@ -36,6 +36,7 @@
 #include "content/shell/renderer/layout_test/gc_controller.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/layout_test/leak_detector.h"
+#include "content/shell/renderer/test_runner/gamepad_controller.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/web_task.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
@@ -188,6 +189,31 @@ class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
   bool enable_;
 };
 
+class MockGamepadProvider : public RendererGamepadProvider {
+ public:
+  explicit MockGamepadProvider(GamepadController* controller)
+      : RendererGamepadProvider(nullptr), controller_(controller) {}
+  ~MockGamepadProvider() override {
+    StopIfObserving();
+  }
+
+  // RendererGamepadProvider implementation.
+  void SampleGamepads(blink::WebGamepads& gamepads) override {
+    controller_->SampleGamepads(gamepads);
+  }
+  void Start(blink::WebPlatformEventListener* listener) override {
+    controller_->SetListener(static_cast<blink::WebGamepadListener*>(listener));
+    RendererGamepadProvider::Start(listener);
+  }
+  void SendStartMessage() override {}
+  void SendStopMessage() override {}
+
+ private:
+  scoped_ptr<GamepadController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockGamepadProvider);
+};
+
 }  // namespace
 
 BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
@@ -215,7 +241,8 @@ void BlinkTestRunner::SetEditCommand(const std::string& name,
 }
 
 void BlinkTestRunner::SetGamepadProvider(
-    scoped_ptr<RendererGamepadProvider> provider) {
+    GamepadController* controller) {
+  scoped_ptr<MockGamepadProvider> provider(new MockGamepadProvider(controller));
   SetMockGamepadProvider(provider.Pass());
 }
 

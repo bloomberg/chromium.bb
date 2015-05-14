@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
-#include "content/public/renderer/renderer_gamepad_provider.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace blink {
@@ -20,21 +19,16 @@ namespace content {
 
 class WebTestDelegate;
 
-class GamepadController
-    : public base::SupportsWeakPtr<GamepadController>,
-      public RendererGamepadProvider {
+class GamepadController : public base::SupportsWeakPtr<GamepadController> {
  public:
   static base::WeakPtr<GamepadController> Create(WebTestDelegate* delegate);
-  ~GamepadController() override;
+  ~GamepadController();
 
   void Reset();
   void Install(blink::WebFrame* frame);
 
-  // RendererGamepadProvider implementation.
-  void SampleGamepads(blink::WebGamepads& gamepads) override;
-  bool OnControlMessageReceived(const IPC::Message& msg) override;
-  void SendStartMessage() override;
-  void SendStopMessage() override;
+  void SampleGamepads(blink::WebGamepads& gamepads);
+  void SetListener(blink::WebGamepadListener* listener);
 
  private:
   friend class GamepadControllerBindings;
@@ -55,6 +49,8 @@ class GamepadController
   void SetButtonData(int index, int button, double data);
   void SetAxisCount(int index, int axes);
   void SetAxisData(int index, int axis, double data);
+
+  blink::WebGamepadListener* listener_;
 
   blink::WebGamepads gamepads_;
 
