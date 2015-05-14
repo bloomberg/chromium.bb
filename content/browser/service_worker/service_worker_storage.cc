@@ -539,6 +539,11 @@ void ServiceWorkerStorage::StoreRegistration(
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
 
+  if (resources.empty()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    return;
+  }
+
   uint64 resources_total_size_bytes = 0;
   for (const auto& resource : resources) {
     resources_total_size_bytes += resource.size_bytes;
@@ -1094,6 +1099,7 @@ void ServiceWorkerStorage::ReturnFoundRegistration(
     const FindRegistrationCallback& callback,
     const ServiceWorkerDatabase::RegistrationData& data,
     const ResourceList& resources) {
+  DCHECK(!resources.empty());
   scoped_refptr<ServiceWorkerRegistration> registration =
       GetOrCreateRegistration(data, resources);
   CompleteFindNow(registration, SERVICE_WORKER_OK, callback);

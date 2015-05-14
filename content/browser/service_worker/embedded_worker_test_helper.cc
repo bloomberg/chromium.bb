@@ -91,11 +91,14 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
     const GURL& scope,
     const GURL& script_url,
     bool pause_after_download) {
+  embedded_worker_id_service_worker_version_id_map_[embedded_worker_id] =
+      service_worker_version_id;
   if (pause_after_download) {
     SimulatePausedAfterDownload(embedded_worker_id);
     return;
   }
   SimulateWorkerReadyForInspection(embedded_worker_id);
+  SimulateWorkerScriptCached(embedded_worker_id);
   SimulateWorkerScriptLoaded(next_thread_id_++, embedded_worker_id);
   SimulateWorkerScriptEvaluated(embedded_worker_id);
   SimulateWorkerStarted(embedded_worker_id);
@@ -103,6 +106,7 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownload(int embedded_worker_id) {
   SimulateWorkerReadyForInspection(embedded_worker_id);
+  SimulateWorkerScriptCached(embedded_worker_id);
   SimulateWorkerScriptLoaded(next_thread_id_++, embedded_worker_id);
   SimulateWorkerScriptEvaluated(embedded_worker_id);
   SimulateWorkerStarted(embedded_worker_id);
@@ -180,6 +184,22 @@ void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
   ASSERT_TRUE(worker != NULL);
   registry()->OnWorkerReadyForInspection(worker->process_id(),
                                          embedded_worker_id);
+}
+
+void EmbeddedWorkerTestHelper::SimulateWorkerScriptCached(
+    int embedded_worker_id) {
+  int64 version_id =
+      embedded_worker_id_service_worker_version_id_map_[embedded_worker_id];
+  ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+  if (!version || version->script_cache_map()->size())
+    return;
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+  // Add a dummy ResourceRecord for the main script to the script cache map of
+  // the ServiceWorkerVersion. We use embedded_worker_id for resource_id to
+  // avoid ID collision.
+  records.push_back(ServiceWorkerDatabase::ResourceRecord(
+      embedded_worker_id, version->script_url(), 100));
+  version->script_cache_map()->SetResources(records);
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptLoaded(

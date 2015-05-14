@@ -538,6 +538,10 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
   if (status != STATUS_OK)
     return status;
 
+  // ResourceRecord must contain the ServiceWorker's main script.
+  if (resources->empty())
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+
   *registration = value;
   return STATUS_OK;
 }
@@ -583,6 +587,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     std::vector<int64>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(old_registration);
+  DCHECK(!resources.empty());
   Status status = LazyOpen(true);
   old_registration->version_id = kInvalidServiceWorkerVersionId;
   if (status != STATUS_OK)

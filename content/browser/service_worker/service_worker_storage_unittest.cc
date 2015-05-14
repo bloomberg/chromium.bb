@@ -804,6 +804,10 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   scoped_refptr<ServiceWorkerVersion> live_version =
       new ServiceWorkerVersion(
           live_registration.get(), kScript, kVersionId, context_ptr_);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+  records.push_back(ServiceWorkerDatabase::ResourceRecord(
+      1, live_version->script_url(), 100));
+  live_version->script_cache_map()->SetResources(records);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration->SetWaitingVersion(live_version);
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -1257,6 +1261,10 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
       registration_.get(), script_, storage()->NewVersionId(), context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+  records.push_back(ServiceWorkerDatabase::ResourceRecord(
+      10, live_version->script_url(), 100));
+  live_version->script_cache_map()->SetResources(records);
 
   // Writing the registration should move the old version's resources to the
   // purgeable list but keep them available.
@@ -1309,6 +1317,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   scoped_refptr<ServiceWorkerVersion> live_version1 =
       new ServiceWorkerVersion(
           live_registration1.get(), kScript1, kVersionId1, context_ptr_);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records1;
+  records1.push_back(ServiceWorkerDatabase::ResourceRecord(
+      1, live_version1->script_url(), 100));
+  live_version1->script_cache_map()->SetResources(records1);
   live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration1->SetWaitingVersion(live_version1);
 
@@ -1323,6 +1335,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   scoped_refptr<ServiceWorkerVersion> live_version2 =
       new ServiceWorkerVersion(
           live_registration2.get(), kScript2, kVersionId2, context_ptr_);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records2;
+  records2.push_back(ServiceWorkerDatabase::ResourceRecord(
+      2, live_version2->script_url(), 100));
+  live_version2->script_cache_map()->SetResources(records2);
   live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration2->SetWaitingVersion(live_version2);
 
@@ -1337,6 +1353,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   scoped_refptr<ServiceWorkerVersion> live_version3 =
       new ServiceWorkerVersion(
           live_registration3.get(), kScript3, kVersionId3, context_ptr_);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records3;
+  records3.push_back(ServiceWorkerDatabase::ResourceRecord(
+      3, live_version3->script_url(), 100));
+  live_version3->script_cache_map()->SetResources(records3);
   live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration3->SetWaitingVersion(live_version3);
 

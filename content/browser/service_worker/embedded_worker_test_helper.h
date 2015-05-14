@@ -103,6 +103,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // browser.
   void SimulatePausedAfterDownload(int embedded_worker_id);
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
+  void SimulateWorkerScriptCached(int embedded_worker_id);
   void SimulateWorkerScriptLoaded(int thread_id, int embedded_worker_id);
   void SimulateWorkerScriptEvaluated(int embedded_worker_id);
   void SimulateWorkerStarted(int embedded_worker_id);
@@ -130,6 +131,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   int next_thread_id_;
   int mock_render_process_id_;
+
+  std::map<int, int64> embedded_worker_id_service_worker_version_id_map_;
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;

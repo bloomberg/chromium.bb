@@ -137,6 +137,10 @@ class ServiceWorkerVersionTest : public testing::Test {
         GURL("http://www.example.com/service_worker.js"),
         1L,
         helper_->context()->AsWeakPtr());
+    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    records.push_back(
+        ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
+    version_->script_cache_map()->SetResources(records);
 
     // Make the registration findable via storage functions.
     helper_->context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));

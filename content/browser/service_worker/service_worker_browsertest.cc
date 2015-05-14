@@ -846,17 +846,19 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, ReadResourceFailure) {
-  // Create and store a registration.
+  // Create a registration.
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
                            "/service_worker/worker.js"));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  StoreRegistration(version_->version_id(), SERVICE_WORKER_OK);
 
   // Add a non-existent resource to the version.
   std::vector<ServiceWorkerDatabase::ResourceRecord> records;
   records.push_back(
       ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100));
   version_->script_cache_map()->SetResources(records);
+
+  // Store the registration.
+  StoreRegistration(version_->version_id(), SERVICE_WORKER_OK);
 
   // Start the worker. We'll fail to read the resource.
   StartWorker(SERVICE_WORKER_ERROR_DISK_CACHE);
@@ -897,6 +899,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   // Make a waiting version and store it.
   RunOnIOThread(base::Bind(&self::AddWaitingWorkerOnIOThread, this,
                            "/service_worker/worker.js"));
+  registration_->waiting_version()->script_cache_map()->SetResources(records);
   StoreRegistration(registration_->waiting_version()->version_id(),
                     SERVICE_WORKER_OK);
 
