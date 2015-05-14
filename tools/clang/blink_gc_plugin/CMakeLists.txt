@@ -27,7 +27,8 @@ else()
   cr_install(TARGETS "lib${LIBRARYNAME}" LIBRARY DESTINATION lib)
 
   cr_add_test(blink_gc_plugin_test
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.sh
+    python
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.py
     ${CMAKE_BINARY_DIR}/bin/clang
     $<TARGET_FILE:lib${LIBRARYNAME}>
     )
