@@ -96,7 +96,7 @@ GL_APICALL void         GL_APIENTRY glGetInteger64v (GLenumGLState pname, GLint6
 GL_APICALL void         GL_APIENTRY glGetIntegeri_v (GLenumIndexedGLState pname, GLuint index, GLint* data);
 GL_APICALL void         GL_APIENTRY glGetInteger64i_v (GLenumIndexedGLState pname, GLuint index, GLint64* data);
 GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenumGLState pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetInternalformativ (GLenumRenderBufferTarget target, GLenumRenderBufferFormat format, GLenumRenderBufferParameter pname, GLsizeiNotNegative bufSize, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetInternalformativ (GLenumRenderBufferTarget target, GLenumRenderBufferFormat format, GLenumInternalFormatParameter pname, GLsizeiNotNegative bufSize, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramiv (GLidProgram program, GLenumProgramParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLidProgram program, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* infolog);
 GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenumRenderBufferTarget target, GLenumRenderBufferParameter pname, GLint* params);
@@ -121,8 +121,8 @@ GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenumVer
 GL_APICALL void         GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenumVertexAttribute pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLenumVertexPointer pname, void** pointer);
 GL_APICALL void         GL_APIENTRY glHint (GLenumHintTarget target, GLenumHintMode mode);
-GL_APICALL void         GL_APIENTRY glInvalidateFramebuffer (GLenumFrameBufferTarget target, GLsizeiNotNegative count, const GLenum* attachments);
-GL_APICALL void         GL_APIENTRY glInvalidateSubFramebuffer (GLenumFrameBufferTarget target, GLsizeiNotNegative count, const GLenum* attachments, GLint x, GLint y, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glInvalidateFramebuffer (GLenumInvalidateFrameBufferTarget target, GLsizeiNotNegative count, const GLenum* attachments);
+GL_APICALL void         GL_APIENTRY glInvalidateSubFramebuffer (GLenumInvalidateFrameBufferTarget target, GLsizeiNotNegative count, const GLenum* attachments, GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL GLboolean    GL_APIENTRY glIsBuffer (GLidBuffer buffer);
 GL_APICALL GLboolean    GL_APIENTRY glIsEnabled (GLenumCapability cap);
 GL_APICALL GLboolean    GL_APIENTRY glIsFramebuffer (GLidFramebuffer framebuffer);

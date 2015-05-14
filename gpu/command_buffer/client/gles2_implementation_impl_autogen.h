@@ -1113,9 +1113,9 @@ void GLES2Implementation::GetInternalformativ(GLenum target,
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetInternalformativ("
                      << GLES2Util::GetStringRenderBufferTarget(target) << ", "
                      << GLES2Util::GetStringRenderBufferFormat(format) << ", "
-                     << GLES2Util::GetStringRenderBufferParameter(pname) << ", "
-                     << bufSize << ", " << static_cast<const void*>(params)
-                     << ")");
+                     << GLES2Util::GetStringInternalFormatParameter(pname)
+                     << ", " << bufSize << ", "
+                     << static_cast<const void*>(params) << ")");
   if (bufSize < 0) {
     SetGLError(GL_INVALID_VALUE, "glGetInternalformativ", "bufSize < 0");
     return;
@@ -1480,9 +1480,9 @@ void GLES2Implementation::InvalidateFramebuffer(GLenum target,
                                                 const GLenum* attachments) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInvalidateFramebuffer("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
-                     << count << ", " << static_cast<const void*>(attachments)
-                     << ")");
+                     << GLES2Util::GetStringInvalidateFrameBufferTarget(target)
+                     << ", " << count << ", "
+                     << static_cast<const void*>(attachments) << ")");
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < count; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << attachments[0 + i * 1]);
@@ -1505,10 +1505,10 @@ void GLES2Implementation::InvalidateSubFramebuffer(GLenum target,
                                                    GLsizei height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInvalidateSubFramebuffer("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
-                     << count << ", " << static_cast<const void*>(attachments)
-                     << ", " << x << ", " << y << ", " << width << ", "
-                     << height << ")");
+                     << GLES2Util::GetStringInvalidateFrameBufferTarget(target)
+                     << ", " << count << ", "
+                     << static_cast<const void*>(attachments) << ", " << x
+                     << ", " << y << ", " << width << ", " << height << ")");
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < count; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << attachments[0 + i * 1]);

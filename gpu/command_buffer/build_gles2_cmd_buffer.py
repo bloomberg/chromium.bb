@@ -570,6 +570,19 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_FRAMEBUFFER',
     ],
+    'valid_es3': [
+      'GL_DRAW_FRAMEBUFFER' ,
+      'GL_READ_FRAMEBUFFER' ,
+    ],
+    'invalid': [
+      'GL_RENDERBUFFER',
+    ],
+  },
+  'InvalidateFrameBufferTarget': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_FRAMEBUFFER',
+    ],
     'invalid': [
       'GL_DRAW_FRAMEBUFFER' ,
       'GL_READ_FRAMEBUFFER' ,
@@ -671,8 +684,16 @@ _NAMED_TYPE_INFO = {
       'GL_STATIC_DRAW',
       'GL_DYNAMIC_DRAW',
     ],
-    'invalid': [
+    'valid_es3': [
+      'GL_STREAM_READ',
+      'GL_STREAM_COPY',
       'GL_STATIC_READ',
+      'GL_STATIC_COPY',
+      'GL_DYNAMIC_READ',
+      'GL_DYNAMIC_COPY',
+    ],
+    'invalid': [
+      'GL_NONE',
     ],
   },
   'CompressedTextureFormat': {
@@ -966,9 +987,12 @@ _NAMED_TYPE_INFO = {
       'GL_FUNC_SUBTRACT',
       'GL_FUNC_REVERSE_SUBTRACT',
     ],
-    'invalid': [
+    'valid_es3': [
       'GL_MIN',
       'GL_MAX',
+    ],
+    'invalid': [
+      'GL_NONE',
     ],
   },
   'SrcBlendFactor': {
@@ -1043,8 +1067,10 @@ _NAMED_TYPE_INFO = {
       'GL_UNSIGNED_BYTE',
       'GL_UNSIGNED_SHORT',
     ],
-    'invalid': [
+    'valid_es3': [
       'GL_UNSIGNED_INT',
+    ],
+    'invalid': [
       'GL_INT',
     ],
   },
@@ -1066,6 +1092,9 @@ _NAMED_TYPE_INFO = {
       'GL_DEPTH_ATTACHMENT',
       'GL_STENCIL_ATTACHMENT',
     ],
+    'valid_es3': [
+      'GL_DEPTH_STENCIL_ATTACHMENT',
+    ],
   },
   'BackbufferAttachment': {
     'type': 'GLenum',
@@ -1080,6 +1109,12 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_BUFFER_SIZE',
       'GL_BUFFER_USAGE',
+    ],
+    'valid_es3': [
+      'GL_BUFFER_ACCESS_FLAGS',
+      'GL_BUFFER_MAPPED',
+      'GL_BUFFER_MAP_LENGTH',
+      'GL_BUFFER_MAP_OFFSET',
     ],
     'invalid': [
       'GL_PIXEL_PACK_BUFFER',
@@ -1103,6 +1138,17 @@ _NAMED_TYPE_INFO = {
       'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL',
       'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE',
     ],
+    'valid_es3': [
+      'GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE',
+      'GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE',
+      'GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE',
+      'GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE',
+      'GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE',
+      'GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE',
+      'GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE',
+      'GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING',
+      'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER',
+    ],
   },
   'MatrixMode': {
     'type': 'GLenum',
@@ -1123,6 +1169,16 @@ _NAMED_TYPE_INFO = {
       'GL_ACTIVE_ATTRIBUTE_MAX_LENGTH',
       'GL_ACTIVE_UNIFORMS',
       'GL_ACTIVE_UNIFORM_MAX_LENGTH',
+    ],
+    'valid_es3': [
+      'GL_ACTIVE_UNIFORM_BLOCKS',
+      'GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH',
+      'GL_TRANSFORM_FEEDBACK_BUFFER_MODE',
+      'GL_TRANSFORM_FEEDBACK_VARYINGS',
+      'GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH',
+    ],
+    'invalid': [
+      'GL_PROGRAM_BINARY_RETRIEVABLE_HINT',  # not supported in Chromium.
     ],
   },
   'QueryObjectParameter': {
@@ -1162,6 +1218,16 @@ _NAMED_TYPE_INFO = {
       'GL_RENDERBUFFER_WIDTH',
       'GL_RENDERBUFFER_HEIGHT',
       'GL_RENDERBUFFER_INTERNAL_FORMAT',
+    ],
+    'valid_es3': [
+      'GL_RENDERBUFFER_SAMPLES',
+    ],
+  },
+  'InternalFormatParameter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NUM_SAMPLE_COUNTS',
+      'GL_SAMPLES',
     ],
   },
   'SamplerParameter': {
@@ -1310,6 +1376,10 @@ _NAMED_TYPE_INFO = {
       'GL_VERTEX_ATTRIB_ARRAY_TYPE',
       'GL_CURRENT_VERTEX_ATTRIB',
     ],
+    'valid_es3': [
+      'GL_VERTEX_ATTRIB_ARRAY_INTEGER',
+      'GL_VERTEX_ATTRIB_ARRAY_DIVISOR',
+    ],
   },
   'VertexPointer': {
     'type': 'GLenum',
@@ -1321,6 +1391,9 @@ _NAMED_TYPE_INFO = {
     'type': 'GLenum',
     'valid': [
       'GL_GENERATE_MIPMAP_HINT',
+    ],
+    'valid_es3': [
+      'GL_FRAGMENT_SHADER_DERIVATIVE_HINT',
     ],
     'invalid': [
       'GL_PERSPECTIVE_CORRECTION_HINT',
@@ -1342,6 +1415,16 @@ _NAMED_TYPE_INFO = {
       'GL_UNPACK_FLIP_Y_CHROMIUM',
       'GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM',
       'GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM',
+    ],
+    'valid_es3': [
+      'GL_PACK_ROW_LENGTH',
+      'GL_PACK_SKIP_PIXELS',
+      'GL_PACK_SKIP_ROWS',
+      'GL_UNPACK_ROW_LENGTH',
+      'GL_UNPACK_IMAGE_HEIGHT',
+      'GL_UNPACK_SKIP_PIXELS',
+      'GL_UNPACK_SKIP_ROWS',
+      'GL_UNPACK_SKIP_IMAGES',
     ],
     'invalid': [
       'GL_PACK_SWAP_BYTES',
@@ -1367,6 +1450,13 @@ _NAMED_TYPE_INFO = {
       'GL_ALPHA',
       'GL_RGB',
       'GL_RGBA',
+    ],
+    'valid_es3': [
+      'GL_RGBA_INTEGER',
+    ],
+    'deprecated_es3': [
+      'GL_ALPHA',
+      'GL_RGB',
     ],
   },
   'PixelType': {
@@ -1405,7 +1495,16 @@ _NAMED_TYPE_INFO = {
     ],
     'invalid': [
       'GL_SHORT',
+    ],
+    'valid_es3': [
+      'GL_UNSIGNED_INT',
       'GL_INT',
+      'GL_FLOAT',
+    ],
+    'deprecated_es3': [
+      'GL_UNSIGNED_SHORT_5_6_5',
+      'GL_UNSIGNED_SHORT_4_4_4_4',
+      'GL_UNSIGNED_SHORT_5_5_5_1',
     ],
   },
   'RenderBufferFormat': {
@@ -1416,6 +1515,37 @@ _NAMED_TYPE_INFO = {
       'GL_RGB5_A1',
       'GL_DEPTH_COMPONENT16',
       'GL_STENCIL_INDEX8',
+    ],
+    'valid_es3': [
+      'GL_R8',
+      'GL_R8UI',
+      'GL_R8I',
+      'GL_R16UI',
+      'GL_R16I',
+      'GL_R32UI',
+      'GL_R32I',
+      'GL_RG8',
+      'GL_RG8UI',
+      'GL_RG8I',
+      'GL_RG16UI',
+      'GL_RG16I',
+      'GL_RG32UI',
+      'GL_RG32I',
+      'GL_RGB8',
+      'GL_RGBA8',
+      'GL_SRGB8_ALPHA8',
+      'GL_RGB10_A2',
+      'GL_RGBA8UI',
+      'GL_RGBA8I',
+      'GL_RGB10_A2UI',
+      'GL_RGBA16UI',
+      'GL_RGBA16I',
+      'GL_RGBA32UI',
+      'GL_RGBA32I',
+      'GL_DEPTH_COMPONENT24',
+      'GL_DEPTH_COMPONENT32F',
+      'GL_DEPTH24_STENCIL8',
+      'GL_DEPTH32F_STENCIL8',
     ],
   },
   'ShaderBinaryFormat': {
@@ -1682,8 +1812,15 @@ _NAMED_TYPE_INFO = {
       'GL_UNSIGNED_BYTE',
       'GL_SHORT',
       'GL_UNSIGNED_SHORT',
-    #  'GL_FIXED',  // This is not available on Desktop GL.
+      # 'GL_FIXED',  // This is not available on Desktop GL.
       'GL_FLOAT',
+    ],
+    'valid_es3': [
+      'GL_INT',
+      'GL_UNSIGNED_INT',
+      'GL_HALF_FLOAT',
+      'GL_INT_2_10_10_10_REV',
+      'GL_UNSIGNED_INT_2_10_10_10_REV',
     ],
     'invalid': [
       'GL_DOUBLE',
