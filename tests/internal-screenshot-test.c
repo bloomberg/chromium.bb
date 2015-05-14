@@ -141,6 +141,39 @@ create_screenshot_surface(struct client *client) {
 	return screenshot;
 }
 
+/** capture_screenshot_of_output()
+ *
+ * Requests a screenshot from the server of the output that the
+ * client appears on.  The image data returned from the server
+ * can be accessed from the screenshot surface's data member.
+ *
+ * @returns a new surface object, which should be free'd when no
+ * longer needed.
+ */
+static struct surface *
+capture_screenshot_of_output(struct client *client) {
+	struct surface *screenshot;
+
+	/* Create a surface to hold the screenshot */
+	screenshot = create_screenshot_surface(client);
+
+	client->test->buffer_copy_done = 0;
+	weston_test_capture_screenshot(client->test->weston_test,
+				       client->output->wl_output,
+				       screenshot->wl_buffer);
+	while (client->test->buffer_copy_done == 0)
+		if (wl_display_dispatch(client->wl_display) < 0)
+			break;
+
+	/* FIXME: Document somewhere the orientation the screenshot is taken
+	 * and how the clip coords are interpreted, in case of scaling/transform.
+	 * If we're using read_pixels() just make sure it is documented somewhere.
+	 * Protocol docs in the XML, comparison function docs in Doxygen style.
+	 */
+
+	return screenshot;
+}
+
 TEST(internal_screenshot)
 {
 	struct client *client;
@@ -151,34 +184,15 @@ TEST(internal_screenshot)
 	bool match = false;
 	bool dump_all_images = true;
 
-	printf("Starting test\n");
-
 	/* Create the client */
+	printf("Creating client for test\n");
 	client = create_client_and_test_surface(100, 100, 100, 100);
 	assert(client);
-	printf("Client created\n");
-
-	/* Create a surface to hold the screenshot */
-	screenshot = create_screenshot_surface(client);
-	assert(screenshot);
-	printf("Screenshot buffer created and attached to surface\n");
 
 	/* Take a snapshot.  Result will be in screenshot->wl_buffer. */
-	client->test->buffer_copy_done = 0;
-	weston_test_capture_screenshot(client->test->weston_test,
-				       client->output->wl_output,
-				       screenshot->wl_buffer);
-	printf("Capture request sent\n");
-	while (client->test->buffer_copy_done == 0)
-		if (wl_display_dispatch(client->wl_display) < 0)
-			break;
-	printf("Roundtrip done\n");
-
-	/* FIXME: Document somewhere the orientation the screenshot is taken
-	 * and how the clip coords are interpreted, in case of scaling/transform.
-	 * If we're using read_pixels() just make sure it is documented somewhere.
-	 * Protocol docs in the XML, comparison function docs in Doxygen style.
-	 */
+	printf("Taking a screenshot\n");
+	screenshot = capture_screenshot_of_output(client);
+	assert(screenshot);
 
 	/* Load reference image */
 	fname = screenshot_reference_filename("internal-screenshot", 0);
