@@ -26,7 +26,7 @@ bool WalletIntegrationAvailable(
   // If the user is signed in and the feature is enabled, but no data is being
   // synced, hide the option. The user doesn't have a Wallet account. If the
   // feature is disabled, we can't know, so show the checkbox.
-  if (pref_service.GetBoolean(prefs::kAutofillWalletImportEnabled))
+  if (!pref_service.GetBoolean(prefs::kAutofillWalletImportEnabled))
     return true;
 
   // If wallet is preferred but we haven't gotten the sync data yet, we don't

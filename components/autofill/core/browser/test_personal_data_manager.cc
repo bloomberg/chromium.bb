@@ -13,6 +13,10 @@ TestPersonalDataManager::TestPersonalDataManager()
 
 TestPersonalDataManager::~TestPersonalDataManager() {}
 
+void TestPersonalDataManager::SetTestingPrefService(PrefService* pref_service) {
+  SetPrefService(pref_service);
+}
+
 void TestPersonalDataManager::AddTestingProfile(AutofillProfile* profile) {
   profiles_.push_back(profile);
   NotifyPersonalDataChanged();
@@ -21,6 +25,11 @@ void TestPersonalDataManager::AddTestingProfile(AutofillProfile* profile) {
 void TestPersonalDataManager::AddTestingCreditCard(CreditCard* credit_card) {
   credit_cards_.push_back(credit_card);
   NotifyPersonalDataChanged();
+}
+
+void TestPersonalDataManager::AddTestingServerCreditCard(
+    const CreditCard& credit_card) {
+  server_credit_cards_.push_back(new CreditCard(credit_card));
 }
 
 const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles()

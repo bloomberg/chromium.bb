@@ -19,12 +19,19 @@ class TestPersonalDataManager : public PersonalDataManager {
   TestPersonalDataManager();
   ~TestPersonalDataManager() override;
 
+  // Sets which PrefService to use and observe. |pref_service| is not owned by
+  // this class and must outlive |this|.
+  void SetTestingPrefService(PrefService* pref_service);
+
   // Adds |profile| to |profiles_|. This does not take ownership of |profile|.
   void AddTestingProfile(AutofillProfile* profile);
 
   // Adds |credit_card| to |credit_cards_|. This does not take ownership of
   // |credit_card|.
   void AddTestingCreditCard(CreditCard* credit_card);
+
+  // Adds |credit_card| to |server_credit_cards_| by copying.
+  void AddTestingServerCreditCard(const CreditCard& credit_card);
 
   const std::vector<AutofillProfile*>& GetProfiles() const override;
   const std::vector<AutofillProfile*>& web_profiles() const override;
