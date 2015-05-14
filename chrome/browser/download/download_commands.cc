@@ -40,7 +40,6 @@ int DownloadCommands::GetCommandIconId(Command command) const {
       return IDR_DOWNLOAD_NOTIFICATION_MENU_RESUME;
     case SHOW_IN_FOLDER:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_FOLDER;
-    case RETRY:
     case KEEP:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
     case DISCARD:
@@ -103,7 +102,6 @@ bool DownloadCommands::IsCommandEnabled(Command command) const {
     case KEEP:
     case LEARN_MORE_SCANNING:
     case LEARN_MORE_INTERRUPTED:
-    case RETRY:
       return true;
   }
   NOTREACHED();
@@ -133,7 +131,6 @@ bool DownloadCommands::IsCommandChecked(Command command) const {
     case CANCEL:
     case DISCARD:
     case KEEP:
-    case RETRY:
     case LEARN_MORE_SCANNING:
     case LEARN_MORE_INTERRUPTED:
       return false;
@@ -215,13 +212,6 @@ void DownloadCommands::ExecuteCommand(Command command) {
       break;
     case RESUME:
       download_item_->Resume();
-      break;
-    case RETRY:
-      if (download_item_->CanResume()) {
-        download_item_->Resume();
-      } else {
-        // TODO(yoshiki): Implement retry logic.
-      }
       break;
   }
 }

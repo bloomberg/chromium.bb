@@ -24,7 +24,6 @@ class DownloadCommands {
     RESUME,               // Resume a download.
     DISCARD,              // Discard the malicious download.
     KEEP,                 // Keep the malicious download.
-    RETRY,                // Retry the download.
     LEARN_MORE_SCANNING,  // Show information about download scanning.
     LEARN_MORE_INTERRUPTED,  // Show information about interrupted downloads.
   };

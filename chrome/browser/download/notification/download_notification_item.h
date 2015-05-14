@@ -99,6 +99,8 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
   // if IsDangerous() is true.
   base::string16 GetWarningText() const;
 
+  Browser* GetBrowser();
+
   scoped_ptr<std::vector<DownloadCommands::Command>> GetPossibleActions() const;
 
   bool openable_;

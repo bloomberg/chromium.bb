@@ -165,9 +165,6 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
       id = IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED;
       break;
-    case DownloadCommands::RETRY:
-      NOTREACHED();
-      return base::string16();
   }
   CHECK(id != -1);
   return l10n_util::GetStringUTF16(id);

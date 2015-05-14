@@ -11,12 +11,15 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/profile_notification.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -113,14 +116,22 @@ DownloadNotificationItem::~DownloadNotificationItem() {
 
 void DownloadNotificationItem::OnNotificationClick() {
   if (openable_) {
-    if (item_->IsDone())
+    if (item_->IsDone()) {
       item_->OpenDownload();
-    else
+      CloseNotificationByUser();
+    } else {
       item_->SetOpenWhenComplete(!item_->GetOpenWhenComplete());  // Toggle
-  }
-
-  if (item_->IsDone())
+    }
+  } else if (item_->GetState() == content::DownloadItem::INTERRUPTED ||
+             item_->GetState() == content::DownloadItem::CANCELLED) {
+    GetBrowser()->OpenURL(content::OpenURLParams(
+        GURL(chrome::kChromeUIDownloadsURL), content::Referrer(),
+        NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+        false /* is_renderer_initiated */));
     CloseNotificationByUser();
+  } else if (item_->IsDone()) {
+    CloseNotificationByUser();
+  }
 }
 
 void DownloadNotificationItem::OnNotificationButtonClick(int button_index) {
@@ -330,7 +341,8 @@ DownloadNotificationItem::GetPossibleActions() const {
       break;
     case content::DownloadItem::CANCELLED:
     case content::DownloadItem::INTERRUPTED:
-      actions->push_back(DownloadCommands::RETRY);
+      if (item_->CanResume())
+        actions->push_back(DownloadCommands::RESUME);
       break;
     case content::DownloadItem::COMPLETE:
       actions->push_back(DownloadCommands::OPEN_WHEN_COMPLETE);
@@ -388,10 +400,6 @@ base::string16 DownloadNotificationItem::GetCommandLabel(
       break;
     case DownloadCommands::SHOW_IN_FOLDER:
       id = IDS_DOWNLOAD_LINK_SHOW;
-      break;
-    case DownloadCommands::RETRY:
-      // Only for non menu.
-      id = IDS_DOWNLOAD_LINK_RETRY;
       break;
     case DownloadCommands::DISCARD:
       id = IDS_DISCARD_DOWNLOAD;
@@ -454,4 +462,11 @@ base::string16 DownloadNotificationItem::GetWarningText() const {
   }
   NOTREACHED();
   return base::string16();
+}
+
+Browser* DownloadNotificationItem::GetBrowser() {
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
+      profile_, chrome::GetActiveDesktop());
+  DCHECK(browser_displayer.browser());
+  return browser_displayer.browser();
 }
