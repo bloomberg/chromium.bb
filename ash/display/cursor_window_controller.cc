@@ -181,8 +181,6 @@ void CursorWindowController::SetCursorSet(ui::CursorSetType cursor_set) {
 }
 
 void CursorWindowController::SetVisibility(bool visible) {
-  if (!cursor_window_)
-    return;
   visible_ = visible;
   UpdateCursorVisibility();
 }

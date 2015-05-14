@@ -25,9 +25,7 @@ class CursorWindowControllerTest : public test::AshTestBase {
   // test::AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    cursor_window_controller_ =
-        Shell::GetInstance()->display_controller()->cursor_window_controller();
-    cursor_window_controller_->SetCursorCompositingEnabled(true);
+    SetCursorCompositionEnabled(true);
   }
 
   int GetCursorType() const { return cursor_window_controller_->cursor_type_; }
@@ -42,6 +40,12 @@ class CursorWindowControllerTest : public test::AshTestBase {
 
   int64 GetCursorDisplayId() const {
     return cursor_window_controller_->display_.id();
+  }
+
+  void SetCursorCompositionEnabled(bool enabled) {
+    cursor_window_controller_ =
+        Shell::GetInstance()->display_controller()->cursor_window_controller();
+    cursor_window_controller_->SetCursorCompositingEnabled(enabled);
   }
 
  private:
@@ -104,5 +108,40 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
   EXPECT_EQ(220, cursor_bounds.x() + hot_point.x());
   EXPECT_EQ(50, cursor_bounds.y() + hot_point.y());
 }
+
+// Windows doesn't support compositor based cursor.
+#if !defined(OS_WIN)
+// Make sure that composition cursor inherits the visibility state.
+TEST_F(CursorWindowControllerTest, VisibilityTest) {
+  ASSERT_TRUE(GetCursorWindow());
+  EXPECT_TRUE(GetCursorWindow()->IsVisible());
+  aura::client::CursorClient* client = Shell::GetInstance()->cursor_manager();
+  client->HideCursor();
+  ASSERT_TRUE(GetCursorWindow());
+  EXPECT_FALSE(GetCursorWindow()->IsVisible());
+
+  // Normal cursor should be in the correct state.
+  SetCursorCompositionEnabled(false);
+  ASSERT_FALSE(GetCursorWindow());
+  ASSERT_FALSE(client->IsCursorVisible());
+
+  // Cursor was hidden.
+  SetCursorCompositionEnabled(true);
+  ASSERT_TRUE(GetCursorWindow());
+  EXPECT_FALSE(GetCursorWindow()->IsVisible());
+
+  // Goback to normal cursor and show the cursor.
+  SetCursorCompositionEnabled(false);
+  ASSERT_FALSE(GetCursorWindow());
+  ASSERT_FALSE(client->IsCursorVisible());
+  client->ShowCursor();
+  ASSERT_TRUE(client->IsCursorVisible());
+
+  // Cursor was shown.
+  SetCursorCompositionEnabled(true);
+  ASSERT_TRUE(GetCursorWindow());
+  EXPECT_TRUE(GetCursorWindow()->IsVisible());
+}
+#endif
 
 }  // namespace ash
