@@ -10,6 +10,9 @@
 #include <map>
 #include <string>
 
+#include "base/mac/dispatch_source_mach.h"
+#include "base/mac/scoped_mach_port.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
@@ -79,11 +82,17 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
 
  private:
   friend class MachBrokerTest;
-  friend class MachListenerThreadDelegate;
   friend struct DefaultSingletonTraits<MachBroker>;
 
   MachBroker();
   ~MachBroker() override;
+
+  // Performs any initialization work.
+  bool Init();
+
+  // Message handler that is invoked on |dispatch_source_| when an
+  // incoming message needs to be received.
+  void HandleRequest();
 
   // Updates the mapping for |pid| to include the given |mach_info|.  Does
   // nothing if PlaceholderForPid() has not already been called for the given
@@ -97,15 +106,22 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   // Returns the Mach port name to use when sending or receiving messages.
   // Does the Right Thing in the browser and in child processes.
   static std::string GetMachPortName();
+
   // Callback used to register notifications on the UI thread.
   void RegisterNotifications();
 
-  // True if the listener thread has been started.
-  bool listener_thread_started_;
+  // Whether or not the class has been initialized.
+  bool initialized_;
 
   // Used to register for notifications received by NotificationObserver.
   // Accessed only on the UI thread.
   NotificationRegistrar registrar_;
+
+  // The Mach port on which the server listens.
+  base::mac::ScopedMachReceiveRight server_port_;
+
+  // The dispatch source and queue on which Mach messages will be received.
+  scoped_ptr<base::DispatchSourceMach> dispatch_source_;
 
   // Stores mach info for every process in the broker.
   typedef std::map<base::ProcessHandle, mach_port_t> MachMap;
