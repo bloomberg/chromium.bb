@@ -39,6 +39,7 @@
         type: Boolean,
         value: false,
         reflectToAttribute: true,
+        notify: true,
         observer: '_checkedChanged'
       },
 
