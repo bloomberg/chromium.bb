@@ -14,9 +14,11 @@
 #include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_backend_version.h"
@@ -216,6 +218,7 @@ void SimpleSynchronousEntry::OpenEntry(
     const uint64 entry_hash,
     bool had_index,
     SimpleEntryCreationResults *out_results) {
+  base::ElapsedTimer open_time;
   SimpleSynchronousEntry* sync_entry =
       new SimpleSynchronousEntry(cache_type, path, "", entry_hash);
   out_results->result =
@@ -230,6 +233,7 @@ void SimpleSynchronousEntry::OpenEntry(
     out_results->stream_0_data = NULL;
     return;
   }
+  UMA_HISTOGRAM_TIMES("SimpleCache.DiskOpenLatency", open_time.Elapsed());
   out_results->sync_entry = sync_entry;
 }
 

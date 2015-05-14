@@ -37425,6 +37425,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.DiskOpenLatency" units="milliseconds">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    The time to access (open and read headers from all files) the cache entry on
+    disk.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.EntryCreationResult" enum="BooleanSuccess">
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
