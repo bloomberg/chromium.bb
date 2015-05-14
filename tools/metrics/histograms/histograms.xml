@@ -12908,6 +12908,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.VirtualKeyboard.BackwardsMovesPerSwipe"
+    units="moves">
+  <owner>rsadam@chromium.org</owner>
+  <summary>
+    ChromeOS histogram that counts the number of times the cursor was moved to
+    the previous word by swiping backwards on the selection track. The count is
+    initialized when the user starts swiping from any side of the virtual
+    keyboard, incremented based on how far they swipe backwards on the selection
+    track, and recorded when they release their finger.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.VirtualKeyboard.CharactersBetweenBackspaces">
   <owner>rsadam@chromium.org</owner>
   <summary>
@@ -12953,6 +12965,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.VirtualKeyboard.MovesPerSwipe" units="moves">
+  <owner>rsadam@chromium.org</owner>
+  <summary>
+    ChromeOS histogram that counts the number of times the cursor was moved to
+    the next word by swiping forward on the selection track. The count is
+    initialized when the user starts swiping from any side of the virtual
+    keyboard, incremented based on how far they swipe forwards on the selection
+    track, and recorded when they release their finger.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.VirtualKeyboard.TapCount">
   <owner>stevet@chromium.org</owner>
   <summary>
@@ -12961,11 +12984,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.VirtualKeyboard.WordsDeletedPerSwipe"
+    units="words">
+  <owner>rsadam@chromium.org</owner>
+  <summary>
+    ChromeOS histogram that tracks the total number of words that were deleted
+    by swiping forward on the deletion track. The count is initialized when the
+    user starts swiping on the backspace key, incremented based on how far they
+    swipe forwards on the deletion track, and recorded when they release their
+    finger.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.VirtualKeyboard.WordsPerMinute">
   <owner>rsadam@chromium.org</owner>
   <summary>
     The number of words typed per minute. Recorded when the virtual keyboard is
     closed.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.VirtualKeyboard.WordsRestoredPerSwipe"
+    units="words">
+  <owner>rsadam@chromium.org</owner>
+  <summary>
+    ChromeOS histogram that tracks the total number of words that were restored
+    by swiping backwards on the deletion track. The count is initialized when
+    the user starts swiping on the backspace key, incremented based on how far
+    they swipe backwards on the deletion track, and recorded when they release
+    their finger.
   </summary>
 </histogram>
 
