@@ -55,6 +55,11 @@ size_t UTF8SizeFromLeadingByte(uint8 leading_byte) {
 
 namespace chromeos {
 
+// static
+bool ProcessOutputWatcher::VerifyFileDescriptor(int fd) {
+  return (fd >= 0) && (fd < FD_SETSIZE);
+}
+
 ProcessOutputWatcher::ProcessOutputWatcher(
     int out_fd,
     int stop_fd,
@@ -63,8 +68,8 @@ ProcessOutputWatcher::ProcessOutputWatcher(
       out_fd_(out_fd),
       stop_fd_(stop_fd),
       on_read_callback_(callback) {
-  VerifyFileDescriptor(out_fd_);
-  VerifyFileDescriptor(stop_fd_);
+  CHECK(VerifyFileDescriptor(out_fd_));
+  CHECK(VerifyFileDescriptor(stop_fd_));
   max_fd_ = std::max(out_fd_, stop_fd_);
   // We want to be sure we will be able to add 0 at the end of the input, so -1.
   read_buffer_capacity_ = arraysize(read_buffer_) - 1;
@@ -104,11 +109,6 @@ void ProcessOutputWatcher::WatchProcessOutput() {
       ReadFromFd(PROCESS_OUTPUT_TYPE_OUT, &out_fd_);
     }
   }
-}
-
-void ProcessOutputWatcher::VerifyFileDescriptor(int fd) {
-  CHECK_LE(0, fd);
-  CHECK_GT(FD_SETSIZE, fd);
 }
 
 void ProcessOutputWatcher::ReadFromFd(ProcessOutputType type, int* fd) {

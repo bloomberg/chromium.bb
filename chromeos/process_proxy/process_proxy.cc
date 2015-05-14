@@ -70,14 +70,17 @@ bool ProcessProxy::StartWatchingOnThread(
   DCHECK(process_launched_);
   if (watcher_started_)
     return false;
-  if (pipe(shutdown_pipe_))
+  if (pipe(shutdown_pipe_) ||
+      !ProcessOutputWatcher::VerifyFileDescriptor(
+          shutdown_pipe_[PIPE_END_READ])) {
     return false;
+  }
 
   // We give ProcessOutputWatcher a copy of master to make life easier during
   // tear down.
   // TODO(tbarzic): improve fd managment.
   int master_copy = HANDLE_EINTR(dup(pt_pair_[PT_MASTER_FD]));
-  if (master_copy == -1)
+  if (!ProcessOutputWatcher::VerifyFileDescriptor(master_copy))
     return false;
 
   callback_set_ = true;

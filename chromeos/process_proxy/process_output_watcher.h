@@ -28,6 +28,9 @@ typedef base::Callback<void(ProcessOutputType, const std::string&)>
 // underlying thread block. It deletes itself when watching is stopped.
 class CHROMEOS_EXPORT ProcessOutputWatcher {
  public:
+  // Verifies that fds that we got are properly set.
+  static bool VerifyFileDescriptor(int fd);
+
   ProcessOutputWatcher(int out_fd, int stop_fd,
                        const ProcessOutputCallback& callback);
 
@@ -42,9 +45,6 @@ class CHROMEOS_EXPORT ProcessOutputWatcher {
   // will be reported in order that it has been written (this is not true across
   // fds, it would be nicer if it was).
   void WatchProcessOutput();
-
-  // Verifies that fds that we got are properly set.
-  void VerifyFileDescriptor(int fd);
 
   // Reads data from fd, and when it's done, invokes callback function.
   void ReadFromFd(ProcessOutputType type, int* fd);
