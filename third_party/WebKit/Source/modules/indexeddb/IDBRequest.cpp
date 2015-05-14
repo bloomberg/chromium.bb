@@ -214,6 +214,12 @@ void IDBRequest::ackReceivedBlobs(const IDBValue* value)
         m_transaction->backendDB()->ackReceivedBlobs(uuids);
 }
 
+void IDBRequest::ackReceivedBlobs(const Vector<RefPtr<IDBValue>>& values)
+{
+    for (size_t i = 0; i < values.size(); ++i)
+        ackReceivedBlobs(values[i].get());
+}
+
 bool IDBRequest::shouldEnqueueEvent() const
 {
     if (m_contextStopped || !executionContext())
@@ -281,6 +287,16 @@ void IDBRequest::onSuccess(IDBKey* idbKey)
         onSuccessInternal(IDBAny::create(idbKey));
     else
         onSuccessInternal(IDBAny::createUndefined());
+}
+
+void IDBRequest::onSuccess(const Vector<RefPtr<IDBValue>>& values)
+{
+    IDB_TRACE("IDBRequest::onSuccess([IDBValue])");
+    if (!shouldEnqueueEvent())
+        return;
+
+    ackReceivedBlobs(values);
+    onSuccessInternal(IDBAny::create(values));
 }
 
 #if ENABLE(ASSERT)

@@ -111,6 +111,12 @@ IDBValue* IDBAny::value() const
     return m_idbValue.get();
 }
 
+const Vector<RefPtr<IDBValue>>* IDBAny::values() const
+{
+    ASSERT(m_type == IDBValueArrayType);
+    return &m_idbValues;
+}
+
 int64_t IDBAny::integer() const
 {
     ASSERT(m_type == IntegerType);
@@ -144,6 +150,12 @@ IDBAny::IDBAny(IDBIndex* value)
 IDBAny::IDBAny(IDBObjectStore* value)
     : m_type(IDBObjectStoreType)
     , m_idbObjectStore(value)
+{
+}
+
+IDBAny::IDBAny(const Vector<RefPtr<IDBValue>>& values)
+    : m_type(IDBValueArrayType)
+    , m_idbValues(values)
 {
 }
 

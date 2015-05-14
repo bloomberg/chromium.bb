@@ -71,6 +71,7 @@ public:
     IDBRequest* openCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
     IDBRequest* openKeyCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
     IDBRequest* get(ScriptState*, const ScriptValue& key, ExceptionState&);
+    IDBRequest* getAll(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&);
     IDBRequest* add(ScriptState*, const ScriptValue&, const ScriptValue& key, ExceptionState&);
     IDBRequest* put(ScriptState*, const ScriptValue&, const ScriptValue& key, ExceptionState&);
     IDBRequest* deleteFunction(ScriptState*, const ScriptValue& key, ExceptionState&);

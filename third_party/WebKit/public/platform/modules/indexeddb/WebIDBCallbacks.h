@@ -40,6 +40,7 @@ class WebIDBDatabaseError;
 class WebIDBKey;
 class WebIDBKeyPath;
 struct WebIDBMetadata;
+struct WebIDBValue;
 
 class WebIDBCallbacks {
 public:
@@ -52,6 +53,9 @@ public:
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(const WebIDBKey&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebIDBValue&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebVector<WebIDBValue>&) { BLINK_ASSERT_NOT_REACHED(); }
+    // TODO(cmumford): Eliminate redundant onSuccess overloads http://crbug.com/487711
     virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(long long) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess() { BLINK_ASSERT_NOT_REACHED(); }

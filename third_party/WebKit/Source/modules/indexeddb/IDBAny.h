@@ -72,6 +72,10 @@ public:
     {
         return new IDBAny(value);
     }
+    static IDBAny* create(const Vector<RefPtr<IDBValue>>& values)
+    {
+        return new IDBAny(values);
+    }
     ~IDBAny();
     DECLARE_TRACE();
     void contextWillBeDestroyed();
@@ -88,6 +92,7 @@ public:
         IntegerType,
         KeyType,
         IDBValueType,
+        IDBValueArrayType
     };
 
     Type type() const { return m_type; }
@@ -99,6 +104,7 @@ public:
     IDBIndex* idbIndex() const;
     IDBObjectStore* idbObjectStore() const;
     IDBValue* value() const;
+    const Vector<RefPtr<IDBValue>>* values() const;
     int64_t integer() const;
     const IDBKey* key() const;
 
@@ -110,7 +116,8 @@ private:
     explicit IDBAny(IDBIndex*);
     explicit IDBAny(IDBObjectStore*);
     explicit IDBAny(IDBKey*);
-    IDBAny(PassRefPtr<IDBValue>);
+    explicit IDBAny(const Vector<RefPtr<IDBValue>>&);
+    explicit IDBAny(PassRefPtr<IDBValue>);
     explicit IDBAny(int64_t);
 
     const Type m_type;
@@ -123,6 +130,7 @@ private:
     const Member<IDBObjectStore> m_idbObjectStore;
     const Member<IDBKey> m_idbKey;
     const RefPtr<IDBValue> m_idbValue;
+    const Vector<RefPtr<IDBValue>> m_idbValues;
     const int64_t m_integer = 0;
 };
 

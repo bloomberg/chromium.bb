@@ -45,6 +45,7 @@ class WebIDBDatabaseError;
 class WebIDBKey;
 class WebIDBKeyPath;
 struct WebIDBMetadata;
+struct WebIDBValue;
 
 class WebIDBCallbacksImpl final : public WebIDBCallbacks {
 public:
@@ -59,6 +60,8 @@ public:
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
     virtual void onSuccess(const WebIDBKey&) override;
     virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) override;
+    virtual void onSuccess(const WebIDBValue&) override;
+    virtual void onSuccess(const WebVector<WebIDBValue>&) override;
     virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) override;
     virtual void onSuccess(long long) override;
     virtual void onSuccess() override;

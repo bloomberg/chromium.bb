@@ -54,7 +54,9 @@
 
 namespace blink {
 
-static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate*, const IDBValue*);
+static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate*, const IDBValue*);
+static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate*, v8::Local<v8::Object> creationContext, const IDBValue*);
+static v8::Local<v8::Value> deserializeIDBValueArray(v8::Isolate*, v8::Local<v8::Object> creationContext, const Vector<RefPtr<IDBValue>>*);
 
 v8::Local<v8::Value> toV8(const IDBKeyPath& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -164,17 +166,10 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
         return toV8(impl->idbIndex(), creationContext, isolate);
     case IDBAny::IDBObjectStoreType:
         return toV8(impl->idbObjectStore(), creationContext, isolate);
-    case IDBAny::IDBValueType: {
-        v8::Local<v8::Value> value = deserializeIDBValue(isolate, impl->value());
-        if (impl->value()->primaryKey()) {
-            v8::Local<v8::Value> key = toV8(impl->value()->primaryKey(), creationContext, isolate);
-            if (key.IsEmpty())
-                return v8::Local<v8::Value>();
-            bool injected = injectV8KeyIntoV8Value(isolate, key, value, impl->value()->keyPath());
-            ASSERT_UNUSED(injected, injected);
-        }
-        return value;
-    }
+    case IDBAny::IDBValueType:
+        return deserializeIDBValue(isolate, creationContext, impl->value());
+    case IDBAny::IDBValueArrayType:
+        return deserializeIDBValueArray(isolate, creationContext, impl->values());
     case IDBAny::IntegerType:
         return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:
@@ -322,7 +317,9 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
     return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath.string(), allowExperimentalTypes);
 }
 
-static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate, const IDBValue* value)
+// Deserialize just the value data & blobInfo from the given IDBValue.
+// Does not deserialize the key & keypath.
+static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate, const IDBValue* value)
 {
     ASSERT(isolate->InContext());
     if (value->isNull())
@@ -331,6 +328,43 @@ static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate, const IDBV
     const SharedBuffer* valueData = value->data();
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(valueData->data(), valueData->size());
     return serializedValue->deserialize(isolate, nullptr, value->blobInfo());
+}
+
+// Deserialize the entire IDBValue (injecting key & keypath if present).
+static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const IDBValue* value)
+{
+    ASSERT(isolate->InContext());
+    if (value->isNull())
+        return v8::Null(isolate);
+
+    v8::Local<v8::Value> v8Value = deserializeIDBValueData(isolate, value);
+    if (value->primaryKey()) {
+        v8::Local<v8::Value> key = toV8(value->primaryKey(), creationContext, isolate);
+        if (key.IsEmpty())
+            return v8::Local<v8::Value>();
+        bool injected = injectV8KeyIntoV8Value(isolate, key, v8Value, value->keyPath());
+        ASSERT_UNUSED(injected, injected);
+    }
+
+    return v8Value;
+}
+
+static v8::Local<v8::Value> deserializeIDBValueArray(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const Vector<RefPtr<IDBValue>>* values)
+{
+    ASSERT(isolate->InContext());
+
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Array> array = v8::Array::New(isolate, values->size());
+    for (size_t i = 0; i < values->size(); ++i) {
+        v8::Local<v8::Value> v8Value = deserializeIDBValue(isolate, creationContext, values->at(i).get());
+        if (v8Value.IsEmpty())
+            v8Value = v8::Undefined(isolate);
+        // TODO(cmumford): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
+        if (!v8CallBoolean(array->ForceSet(context, v8::Integer::New(isolate, i), v8Value)))
+            return v8Undefined();
+    }
+
+    return array;
 }
 
 // This is only applied to deserialized values which were validated before
@@ -480,7 +514,7 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, const IDBValue*
     ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
     ScriptValue keyValue = ScriptValue::from(scriptState, value->primaryKey());
-    ScriptValue scriptValue(scriptState, deserializeIDBValue(isolate, value));
+    ScriptValue scriptValue(scriptState, deserializeIDBValueData(isolate, value));
 
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;

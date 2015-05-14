@@ -99,6 +99,7 @@ public:
     virtual void onSuccess(PassOwnPtr<WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
     virtual void onSuccess(IDBKey*);
     virtual void onSuccess(PassRefPtr<IDBValue>);
+    virtual void onSuccess(const Vector<RefPtr<IDBValue>>&);
     virtual void onSuccess(int64_t);
     virtual void onSuccess();
     virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
@@ -143,6 +144,7 @@ protected:
 private:
     void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
     void ackReceivedBlobs(const IDBValue*);
+    void ackReceivedBlobs(const Vector<RefPtr<IDBValue>>&);
 
     RefPtr<ScriptState> m_scriptState;
     Member<IDBAny> m_source;

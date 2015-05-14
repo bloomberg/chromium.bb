@@ -39,6 +39,7 @@
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "public/platform/modules/indexeddb/WebIDBValue.h"
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
@@ -46,6 +47,7 @@ using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
 using blink::WebIDBKeyPath;
 using blink::WebIDBMetadata;
+using blink::WebIDBValue;
 using blink::WebVector;
 
 namespace blink {
@@ -109,6 +111,25 @@ void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlo
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(IDBValue::create(value, webBlobInfo));
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
+}
+
+void WebIDBCallbacksImpl::onSuccess(const WebIDBValue& value)
+{
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
+    m_request->onSuccess(IDBValue::create(value.data, value.webBlobInfo, value.primaryKey, value.keyPath));
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
+}
+
+void WebIDBCallbacksImpl::onSuccess(const WebVector<WebIDBValue>& values)
+{
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
+    Vector<RefPtr<IDBValue>> idbValues(values.size());
+    for (size_t i = 0; i < values.size(); ++i) {
+        const WebIDBValue& value = values[i];
+        idbValues[i] = IDBValue::create(value.data, value.webBlobInfo, value.primaryKey, value.keyPath);
+    }
+    m_request->onSuccess(idbValues);
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
