@@ -38,10 +38,15 @@ void MessageReader::SetMessageReceivedCallback(
   message_received_callback_ = callback;
 }
 
-void MessageReader::StartReading(net::Socket* socket) {
+void MessageReader::StartReading(
+    net::Socket* socket,
+    const ReadFailedCallback& read_failed_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(socket);
+  DCHECK(!read_failed_callback.is_null());
+
   socket_ = socket;
+  read_failed_callback_ = read_failed_callback;
   DoRead();
 }
 
@@ -49,13 +54,16 @@ void MessageReader::DoRead() {
   DCHECK(CalledOnValidThread());
   // Don't try to read again if there is another read pending or we
   // have messages that we haven't finished processing yet.
-  while (!closed_ && !read_pending_ && pending_messages_ == 0) {
+  bool read_succeeded = true;
+  while (read_succeeded && !closed_ && !read_pending_ &&
+         pending_messages_ == 0) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result = socket_->Read(
         read_buffer_.get(),
         kReadBufferSize,
         base::Bind(&MessageReader::OnRead, weak_factory_.GetWeakPtr()));
-    HandleReadResult(result);
+
+    HandleReadResult(result, &read_succeeded);
   }
 }
 
@@ -65,26 +73,34 @@ void MessageReader::OnRead(int result) {
   read_pending_ = false;
 
   if (!closed_) {
-    HandleReadResult(result);
-    DoRead();
+    bool read_succeeded;
+    HandleReadResult(result, &read_succeeded);
+    if (read_succeeded)
+      DoRead();
   }
 }
 
-void MessageReader::HandleReadResult(int result) {
+void MessageReader::HandleReadResult(int result, bool* read_succeeded) {
   DCHECK(CalledOnValidThread());
   if (closed_)
     return;
 
+  *read_succeeded = true;
+
   if (result > 0) {
     OnDataReceived(read_buffer_.get(), result);
+    *read_succeeded = true;
   } else if (result == net::ERR_IO_PENDING) {
     read_pending_ = true;
   } else {
-    if (result != net::ERR_CONNECTION_CLOSED) {
-      LOG(ERROR) << "Read() returned error " << result;
-    }
+    DCHECK_LT(result, 0);
+
     // Stop reading after any error.
     closed_ = true;
+    *read_succeeded = false;
+
+    LOG(ERROR) << "Read() returned error " << result;
+    read_failed_callback_.Run(result);
   }
 }
 

@@ -76,7 +76,8 @@ class MessageReaderTest : public testing::Test {
   void InitReader() {
     reader_->SetMessageReceivedCallback(
         base::Bind(&MessageReaderTest::OnMessage, base::Unretained(this)));
-    reader_->StartReading(&socket_);
+    reader_->StartReading(&socket_, base::Bind(&MessageReaderTest::OnReadError,
+                                               base::Unretained(this)));
   }
 
   void AddMessage(const std::string& message) {
@@ -92,6 +93,11 @@ class MessageReaderTest : public testing::Test {
     return result == expected;
   }
 
+  void OnReadError(int error) {
+    read_error_ = error;
+    reader_.reset();
+  }
+
   void OnMessage(scoped_ptr<CompoundBuffer> buffer,
                  const base::Closure& done_callback) {
     messages_.push_back(buffer.release());
@@ -102,6 +108,7 @@ class MessageReaderTest : public testing::Test {
   scoped_ptr<MessageReader> reader_;
   FakeStreamSocket socket_;
   MockMessageReceivedCallback callback_;
+  int read_error_ = 0;
   std::vector<CompoundBuffer*> messages_;
   bool in_callback_;
 };
@@ -281,13 +288,12 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
 TEST_F(MessageReaderTest, ReadError) {
   socket_.AppendReadError(net::ERR_FAILED);
 
-  // Add a message. It should never be read after the error above.
-  AddMessage(kTestMessage1);
-
-  EXPECT_CALL(callback_, OnMessage(_))
-      .Times(0);
+  EXPECT_CALL(callback_, OnMessage(_)).Times(0);
 
   InitReader();
+
+  EXPECT_EQ(net::ERR_FAILED, read_error_);
+  EXPECT_FALSE(reader_);
 }
 
 // Verify that we the OnMessage callback is not reentered.

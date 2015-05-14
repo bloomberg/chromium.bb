@@ -44,11 +44,12 @@ class ChannelMultiplexer : public StreamChannelFactory {
   // Helper method used to create channels.
   MuxChannel* GetOrCreateChannel(const std::string& name);
 
-  // Error handling callback for |writer_|.
-  void OnWriteFailed(int error);
+  // Error handling callback for |reader_| and |writer_|.
+  void OnBaseChannelError(int error);
 
-  // Failed write notifier, queued asynchronously by OnWriteFailed().
-  void NotifyWriteFailed(const std::string& name);
+  // Propagates base channel error to channel |name|, queued asynchronously by
+  // OnBaseChannelError().
+  void NotifyBaseChannelError(const std::string& name, int error);
 
   // Callback for |reader_;
   void OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,

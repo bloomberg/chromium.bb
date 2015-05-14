@@ -67,7 +67,7 @@ class ChannelDispatcherBase {
 
  private:
   void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
-  void OnWriteFailed(int error);
+  void OnReadWriteFailed(int error);
 
   std::string channel_name_;
   StreamChannelFactory* channel_factory_;

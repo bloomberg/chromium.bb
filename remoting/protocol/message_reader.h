@@ -35,6 +35,7 @@ class MessageReader : public base::NonThreadSafe {
  public:
   typedef base::Callback<void(scoped_ptr<CompoundBuffer>, const base::Closure&)>
       MessageReceivedCallback;
+  typedef base::Callback<void(int)> ReadFailedCallback;
 
   MessageReader();
   virtual ~MessageReader();
@@ -43,15 +44,18 @@ class MessageReader : public base::NonThreadSafe {
   void SetMessageReceivedCallback(const MessageReceivedCallback& callback);
 
   // Starts reading from |socket|.
-  void StartReading(net::Socket* socket);
+  void StartReading(net::Socket* socket,
+                    const ReadFailedCallback& read_failed_callback);
 
  private:
   void DoRead();
   void OnRead(int result);
-  void HandleReadResult(int result);
+  void HandleReadResult(int result, bool* read_succeeded);
   void OnDataReceived(net::IOBuffer* data, int data_size);
   void RunCallback(scoped_ptr<CompoundBuffer> message);
   void OnMessageDone();
+
+  ReadFailedCallback read_failed_callback_;
 
   net::Socket* socket_;
 

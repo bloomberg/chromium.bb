@@ -36,6 +36,7 @@ class ClientVideoDispatcherTest : public testing::Test,
 
  protected:
   void OnVideoAck(scoped_ptr<VideoAck> ack, const base::Closure& done);
+  void OnReadError(int error);
 
   base::MessageLoop message_loop_;
 
@@ -72,7 +73,9 @@ ClientVideoDispatcherTest::ClientVideoDispatcherTest()
   DCHECK(initialized_);
   host_socket_.PairWith(
       session_.fake_channel_factory().GetFakeChannel(kVideoChannelName));
-  reader_.StartReading(&host_socket_);
+  reader_.StartReading(&host_socket_,
+                       base::Bind(&ClientVideoDispatcherTest::OnReadError,
+                                  base::Unretained(this)));
   writer_.Init(&host_socket_, BufferedSocketWriter::WriteFailedCallback());
 }
 
@@ -99,6 +102,10 @@ void ClientVideoDispatcherTest::OnVideoAck(scoped_ptr<VideoAck> ack,
                                            const base::Closure& done) {
   ack_messages_.push_back(ack.release());
   done.Run();
+}
+
+void ClientVideoDispatcherTest::OnReadError(int error) {
+  LOG(FATAL) << "Unexpected read error: " << error;
 }
 
 // Verify that the client can receive video packets and acks are not sent for

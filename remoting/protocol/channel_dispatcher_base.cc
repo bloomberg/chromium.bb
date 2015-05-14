@@ -57,14 +57,17 @@ void ChannelDispatcherBase::OnChannelReady(
 
   channel_factory_ = nullptr;
   channel_ = socket.Pass();
-  writer_.Init(channel_.get(), base::Bind(&ChannelDispatcherBase::OnWriteFailed,
-                                          base::Unretained(this)));
-  reader_.StartReading(channel_.get());
+  writer_.Init(channel_.get(),
+               base::Bind(&ChannelDispatcherBase::OnReadWriteFailed,
+                          base::Unretained(this)));
+  reader_.StartReading(channel_.get(),
+                       base::Bind(&ChannelDispatcherBase::OnReadWriteFailed,
+                                  base::Unretained(this)));
 
   event_handler_->OnChannelInitialized(this);
 }
 
-void ChannelDispatcherBase::OnWriteFailed(int error) {
+void ChannelDispatcherBase::OnReadWriteFailed(int error) {
   event_handler_->OnChannelError(this, CHANNEL_CONNECTION_ERROR);
 }
 
