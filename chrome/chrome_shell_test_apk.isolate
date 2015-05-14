@@ -10,6 +10,7 @@
           '<(DEPTH)/chrome/test/data/android/cookie.html',
           '<(DEPTH)/chrome/test/data/android/provider/',
           '<(DEPTH)/chrome/test/data/android/popup.html',
+          '<(DEPTH)/chrome/test/data/android/url_overriding/',
           '<(DEPTH)/chrome/test/data/geolocation/geolocation_on_load.html',
           '<(DEPTH)/chrome/test/data/popup_blocker/popup-window-open.html',
           '<(DEPTH)/chrome/test/data/translate/fr_test.html',
