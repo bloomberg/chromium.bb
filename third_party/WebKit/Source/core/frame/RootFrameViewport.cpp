@@ -278,6 +278,8 @@ GraphicsLayer* RootFrameViewport::layerForVerticalScrollbar() const
 
 bool RootFrameViewport::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
 {
+    ASSERT(!isLogical(direction));
+
     updateScrollAnimator();
 
     ScrollbarOrientation orientation;

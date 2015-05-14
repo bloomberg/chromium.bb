@@ -984,7 +984,7 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
         return true;
     LocalFrame* frame = m_frame;
     FrameView* view = frame->view();
-    if (view && view->scroll(direction, granularity)) {
+    if (view && view->scrollableArea()->scroll(direction, granularity)) {
         setFrameWasScrolledByUser();
         return true;
     }
@@ -3639,6 +3639,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
         return;
 
     ScrollDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
+
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (scroll(direction, ScrollByPage)) {
         event->setDefaultHandled();
@@ -3649,7 +3650,10 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     if (!view)
         return;
 
-    if (view->scroll(direction, ScrollByPage))
+    ScrollDirection physicalDirection =
+        toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
+
+    if (view->scrollableArea()->scroll(physicalDirection, ScrollByPage))
         event->setDefaultHandled();
 }
 

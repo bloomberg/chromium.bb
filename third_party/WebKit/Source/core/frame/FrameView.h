@@ -568,15 +568,19 @@ public:
 
     LayoutAnalyzer* layoutAnalyzer() { return m_analyzer.get(); }
 
+    // Returns true if the default scrolling direction is vertical. i.e. writing mode
+    // is horiziontal. In a vertical document, a spacebar scrolls down.
+    bool isVerticalDocument() const;
+
+    // Returns true if the document's writing mode is right-to-left or bottom-to-top.
+    bool isFlippedDocument() const;
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
 
     // Scroll the content by invalidating everything.
     void scrollContentsSlowPath(const IntRect& updateRect);
-
-    bool isVerticalDocument() const;
-    bool isFlippedDocument() const;
 
     // Prevents creation of scrollbars. Used to prevent drawing two sets of
     // overlay scrollbars in the case of the pinch viewport.
