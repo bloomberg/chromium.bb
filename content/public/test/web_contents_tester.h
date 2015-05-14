@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 #define CONTENT_PUBLIC_TEST_WEB_CONTENTS_TESTER_H_
 
+#include <string>
+
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -100,6 +102,10 @@ class WebContentsTester {
                                            const GURL& url,
                                            const Referrer& referrer,
                                            ui::PageTransition transition) = 0;
+
+  // Returns headers that were passed in the previous SaveFrameWithHeaders(...)
+  // call.
+  virtual const std::string& GetSaveFrameHeaders() = 0;
 };
 
 }  // namespace content

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -12,11 +15,19 @@
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
+
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -345,6 +356,43 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     return menu;
   }
 
+  void SetupDataReductionProxy(bool enable_data_reduction_proxy) {
+    drp_test_context_ =
+        data_reduction_proxy::DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(
+                 data_reduction_proxy::DataReductionProxyParams::kAllowed |
+                 data_reduction_proxy::DataReductionProxyParams::
+                     kFallbackAllowed |
+                 data_reduction_proxy::DataReductionProxyParams::kPromoAllowed)
+            .WithMockConfig()
+            .SkipSettingsInitialization()
+            .Build();
+
+    DataReductionProxyChromeSettings* settings =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+            profile());
+
+    // TODO(bengr): Remove prefs::kProxy registration after M46. See
+    // http://crbug.com/445599.
+    PrefRegistrySimple* registry =
+        drp_test_context_->pref_service()->registry();
+    registry->RegisterDictionaryPref(prefs::kProxy);
+
+    drp_test_context_->pref_service()->SetBoolean(
+        data_reduction_proxy::prefs::kDataReductionProxyEnabled,
+        enable_data_reduction_proxy);
+    drp_test_context_->InitSettings();
+
+    settings->InitDataReductionProxySettings(
+        drp_test_context_->io_data(), drp_test_context_->pref_service(),
+        drp_test_context_->request_context_getter(),
+        base::MessageLoopProxy::current());
+  }
+
+ protected:
+  scoped_ptr<data_reduction_proxy::DataReductionProxyTestContext>
+      drp_test_context_;
+
  private:
   scoped_ptr<ProtocolHandlerRegistry> registry_;
 };
@@ -377,4 +425,45 @@ TEST_F(RenderViewContextMenuPrefsTest,
   scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
 
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_CUSTOM_FIRST));
+}
+
+// Verify that request headers specify that data reduction proxy should return
+// the original non compressed resource when "Save Image As..." is used with
+// Data Saver enabled.
+TEST_F(RenderViewContextMenuPrefsTest, DataSaverEnabledSaveImageAs) {
+  SetupDataReductionProxy(true);
+
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.unfiltered_link_url = params.link_url;
+  content::WebContents* wc = web_contents();
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      new TestRenderViewContextMenu(wc->GetMainFrame(), params));
+
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
+
+  const std::string& headers =
+      content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
+  EXPECT_TRUE(headers.find("X-PSA-Client-Options: v=1,m=1") !=
+                  std::string::npos &&
+              headers.find("Cache-Control: no-cache") != std::string::npos);
+}
+
+// Verify that request headers do not specify pass through when "Save Image
+// As..." is used with Data Saver disabled.
+TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
+  SetupDataReductionProxy(false);
+
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.unfiltered_link_url = params.link_url;
+  content::WebContents* wc = web_contents();
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      new TestRenderViewContextMenu(wc->GetMainFrame(), params));
+
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
+
+  const std::string& headers =
+      content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
+  EXPECT_TRUE(headers.find("X-PSA-Client-Options: v=1,m=1") ==
+                  std::string::npos &&
+              headers.find("Cache-Control: no-cache") == std::string::npos);
 }

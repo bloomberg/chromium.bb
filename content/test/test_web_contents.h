@@ -5,12 +5,16 @@
 #ifndef CONTENT_TEST_TEST_WEB_CONTENTS_H_
 #define CONTENT_TEST_TEST_WEB_CONTENTS_H_
 
+#include <string>
+
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "ui/base/page_transition_types.h"
 
+class GURL;
+class Referrer;
 class SiteInstanceImpl;
 
 namespace content {
@@ -51,6 +55,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                    const GURL& url,
                                    const Referrer& referrer,
                                    ui::PageTransition transition) override;
+  const std::string& GetSaveFrameHeaders() override;
 
   // True if a cross-site navigation is pending.
   bool CrossProcessNavigationPending();
@@ -116,6 +121,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                          bool user_gesture) override;
   void ShowCreatedWidget(int route_id, const gfx::Rect& initial_rect) override;
   void ShowCreatedFullscreenWidget(int route_id) override;
+  void SaveFrameWithHeaders(const GURL& url,
+                            const Referrer& referrer,
+                            const std::string& headers) override;
 
   RenderViewHostDelegateView* delegate_view_override_;
 
@@ -123,6 +131,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   bool expect_set_history_offset_and_length_;
   int expect_set_history_offset_and_length_history_offset_;
   int expect_set_history_offset_and_length_history_length_;
+  std::string save_frame_headers_;
 };
 
 }  // namespace content

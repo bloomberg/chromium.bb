@@ -111,6 +111,10 @@ void TestWebContents::TestDidNavigateWithReferrer(
   rfhi->frame_tree_node()->navigator()->DidNavigate(rfhi, params);
 }
 
+const std::string& TestWebContents::GetSaveFrameHeaders() {
+  return save_frame_headers_;
+}
+
 bool TestWebContents::CrossProcessNavigationPending() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
@@ -283,6 +287,12 @@ void TestWebContents::ShowCreatedWidget(int route_id,
 }
 
 void TestWebContents::ShowCreatedFullscreenWidget(int route_id) {
+}
+
+void TestWebContents::SaveFrameWithHeaders(const GURL& url,
+                                           const Referrer& referrer,
+                                           const std::string& headers) {
+  save_frame_headers_ = headers;
 }
 
 }  // namespace content
