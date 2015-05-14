@@ -510,14 +510,13 @@ TEST_F(KernelWrapTest, readlink) {
   ASSERT_EQ(kDummyErrno, errno);
 }
 
-#ifdef __GLIBC__
-// Under newlib there is no remove syscall.  Instead it is implemented
-// in terms of unlink()/rmdir().
 TEST_F(KernelWrapTest, remove) {
-  EXPECT_CALL(mock, remove(kDummyConstChar)).WillOnce(Return(-1));
+  // The remove syscall is not directly intercepted. Instead it is implemented
+  // in terms of unlink()/rmdir().
+  EXPECT_CALL(mock, unlink(kDummyConstChar))
+       .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(-1, remove(kDummyConstChar));
 }
-#endif
 
 TEST_F(KernelWrapTest, rename) {
   EXPECT_CALL(mock, rename(kDummyConstChar, kDummyConstChar2))
