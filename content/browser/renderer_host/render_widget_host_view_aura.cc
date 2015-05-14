@@ -2779,6 +2779,10 @@ void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
   ui::GestureRecognizer::Get()->CancelActiveTouches(window_);
 }
 
+uint32_t RenderWidgetHostViewAura::GetSurfaceIdNamespace() {
+  return delegated_frame_host_->GetSurfaceIdNamespace();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewBase, public:
 

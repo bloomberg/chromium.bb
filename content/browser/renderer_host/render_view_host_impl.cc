@@ -336,6 +336,13 @@ bool RenderViewHostImpl::CreateRenderView(
     return false;
   SetInitialRenderSizeParams(params.initial_size);
 
+  // If the RWHV has not yet been set, the surface ID namespace will get
+  // passed down by the call to SetView().
+  if (view_) {
+    Send(new ViewMsg_SetSurfaceIdNamespace(GetRoutingID(),
+                                           view_->GetSurfaceIdNamespace()));
+  }
+
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
   if (GetProcess()->IsIsolatedGuest())

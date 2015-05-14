@@ -177,6 +177,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   virtual void DidStopFlinging() {}
 
+  // Returns the compositing surface ID namespace, or 0 if Surfaces are not
+  // enabled.
+  virtual uint32_t GetSurfaceIdNamespace();
+
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
 

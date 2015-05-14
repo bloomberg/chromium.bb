@@ -3453,4 +3453,22 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
   EXPECT_EQ(0.f, overscroll_delta_y());
 }
 
+// Tests the RenderWidgetHostImpl sends the correct surface ID namespace to
+// the renderer process.
+TEST_F(RenderWidgetHostViewAuraTest, SurfaceIdNamespaceInitialized) {
+  gfx::Size size(5, 5);
+
+  const IPC::Message* msg =
+      sink_->GetUniqueMessageMatching(ViewMsg_SetSurfaceIdNamespace::ID);
+  EXPECT_TRUE(msg);
+  ViewMsg_SetSurfaceIdNamespace::Param params;
+  ViewMsg_SetSurfaceIdNamespace::Read(msg, &params);
+  view_->InitAsChild(NULL);
+  view_->Show();
+  view_->SetSize(size);
+  view_->OnSwapCompositorFrame(0,
+                               MakeDelegatedFrame(1.f, size, gfx::Rect(size)));
+  EXPECT_EQ(view_->GetSurfaceIdNamespace(), get<0>(params));
+}
+
 }  // namespace content

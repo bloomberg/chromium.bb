@@ -1566,6 +1566,13 @@ void RenderWidgetHostViewMac::WheelEventAck(
     [cocoa_view_ processedWheelEvent:event consumed:consumed];
 }
 
+uint32_t RenderWidgetHostViewMac::GetSurfaceIdNamespace() {
+  if (delegated_frame_host_)
+    return delegated_frame_host_->GetSurfaceIdNamespace();
+
+  return 0;
+}
+
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
   if (render_widget_host_)
     return render_widget_host_->Send(message);
