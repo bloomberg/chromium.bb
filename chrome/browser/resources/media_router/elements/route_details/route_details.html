@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
 <polymer-element name="route-details">
 <template>
   <link rel="stylesheet" href="../../media_router_common.css">
@@ -18,9 +19,9 @@
     </div>
   </div>
   <div>
-    <button class="button" on-click="{{closeRoute}}"
+    <paper-button raised class="button" on-click="{{closeRoute}}"
         i18n-content="stopCastingButton">
-    </button>
+    </paper-button>
   </div>
 </template>
 <script src="route_details.js"></script>

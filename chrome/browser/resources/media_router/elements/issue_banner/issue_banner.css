@@ -2,20 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.button-secondary {
-  background: linear-gradient(to top, rgb(254, 254, 254), rgb(222, 222, 222));
-}
-
-.button-action {
-  background: linear-gradient(to top, rgb(89, 158, 244), rgb(75, 134, 241));
-  border: 1px solid rgb(55, 113, 206);
+.action {
+  /* TODO(apacible): Update to use Chromium paper color. */
+  background-color: rgb(82, 147, 242);
   color: white;
-}
-
-.issue-action {
-  color: black;
-  cursor: pointer;
-  text-decoration: underline;
 }
 
 .blocking-issue-header {
@@ -36,6 +26,16 @@
   font-weight: bold;
   line-height: 1.125em;
   vertical-align: top;
+}
+
+.issue-action {
+  color: black;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#issue-buttons {
+  display: flex;
 }
 
 .non-blocking-issue {

@@ -14,10 +14,6 @@
   text-decoration: underline;
 }
 
-button {
-  background: linear-gradient(to top, rgb(254, 254, 254), rgb(222, 222, 222));
-}
-
 hr {
   margin: 0;
 }

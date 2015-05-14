@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
 <polymer-element name="issue-banner">
 <template>
   <link rel="stylesheet" href="../../media_router_common.css">
@@ -11,17 +12,18 @@
         <div class="blocking-issue-message">{{issue.message}}</div>
       </div>
     </div>
-    <div>
+    <div id="issue-buttons">
       <template if="{{issue.optActionText}}">
-        <button class="button-secondary" title="{{issue.optActionType}}"
+        <paper-button raised class="button" title="{{issue.optActionType}}"
             on-click="{{onClickAction}}">
           {{issue.optActionText}}
-        </button>
+        </paper-button>
       </template>
-      <button class="button-action" title="{{issue.defaultActionType}}"
+      <paper-button raised class="button action"
+          title="{{issue.defaultActionType}}"
           on-click="{{onClickAction}}">
         {{issue.defaultActionText}}
-      </button>
+      </paper-button>
     </div>
   </template>
   <template if="{{!issue.isBlocking}}">

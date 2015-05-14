@@ -2,13 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-button {
-  border: 1px solid rgb(193, 193, 195);
+.button {
+  /* TODO(apacible): Update to use Chromium paper color. */
+  background-color: rgb(238, 238, 238);
   color: rgb(44, 44, 44);
   cursor: pointer;
   font-size: 1em;
   font-weight: bold;
-  height: 32px;
   overflow: hidden;
   text-align: center;
   width: 100%;
