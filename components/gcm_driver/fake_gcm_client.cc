@@ -148,6 +148,13 @@ std::string FakeGCMClient::GetInstanceIDData(const std::string& app_id) {
   return std::string();
 }
 
+void FakeGCMClient::AddHeartbeatInterval(const std::string& scope,
+                                         int interval_ms) {
+}
+
+void FakeGCMClient::RemoveHeartbeatInterval(const std::string& scope) {
+}
+
 void FakeGCMClient::PerformDelayedStart() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 

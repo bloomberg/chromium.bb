@@ -91,6 +91,8 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
                          const std::string& instance_id_data);
   void RemoveInstanceIDData(const std::string& app_id);
   void GetInstanceIDData(const std::string& app_id);
+  void AddHeartbeatInterval(const std::string& scope, int interval_ms);
+  void RemoveHeartbeatInterval(const std::string& scope);
 
   // For testing purpose. Can be called from UI thread. Use with care.
   GCMClient* gcm_client_for_testing() const { return gcm_client_.get(); }
@@ -390,6 +392,18 @@ void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
 
   gcm_client_->UpdateHeartbeatTimer(timer.Pass());
 #endif
+}
+
+void GCMDriverDesktop::IOWorker::AddHeartbeatInterval(const std::string& scope,
+                                                      int interval_ms) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+  gcm_client_->AddHeartbeatInterval(scope, interval_ms);
+}
+
+void GCMDriverDesktop::IOWorker::RemoveHeartbeatInterval(
+    const std::string& scope) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+  gcm_client_->RemoveHeartbeatInterval(scope);
 }
 
 GCMDriverDesktop::GCMDriverDesktop(
@@ -766,6 +780,49 @@ void GCMDriverDesktop::WakeFromSuspendForHeartbeat(bool wake) {
       base::Bind(&GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat,
                  base::Unretained(io_worker_.get()),
                  wake_from_suspend_enabled_));
+}
+
+void GCMDriverDesktop::AddHeartbeatInterval(const std::string& scope,
+                                            int interval_ms) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  // The GCM service has not been initialized.
+  if (!delayed_task_controller_)
+    return;
+
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    // The GCM service was initialized but has not started yet.
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::AddHeartbeatInterval,
+                   weak_ptr_factory_.GetWeakPtr(), scope, interval_ms));
+    return;
+  }
+
+  io_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMDriverDesktop::IOWorker::AddHeartbeatInterval,
+                 base::Unretained(io_worker_.get()), scope, interval_ms));
+}
+
+void GCMDriverDesktop::RemoveHeartbeatInterval(const std::string& scope) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  // The GCM service has not been initialized.
+  if (!delayed_task_controller_)
+    return;
+
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    // The GCM service was initialized but has not started yet.
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::RemoveHeartbeatInterval,
+                   weak_ptr_factory_.GetWeakPtr(), scope));
+    return;
+  }
+
+  io_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMDriverDesktop::IOWorker::RemoveHeartbeatInterval,
+                 base::Unretained(io_worker_.get()), scope));
 }
 
 void GCMDriverDesktop::SetAccountTokens(

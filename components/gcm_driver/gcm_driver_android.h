@@ -65,6 +65,8 @@ class GCMDriverAndroid : public GCMDriver {
   void SetLastTokenFetchTime(const base::Time& time) override;
   void WakeFromSuspendForHeartbeat(bool wake) override;
   InstanceIDStore* GetInstanceIDStore() override;
+  void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
+  void RemoveHeartbeatInterval(const std::string& scope) override;
 
  protected:
   // GCMDriver implementation:

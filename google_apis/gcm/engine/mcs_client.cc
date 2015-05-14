@@ -276,6 +276,12 @@ void MCSClient::Initialize(
         collapse_key_map_[collapse_key] = packet_info;
     }
   }
+
+  // Establish if there is any custom client interval persisted from the last
+  // run and set it on the heartbeat manager.
+  custom_heartbeat_intervals_.swap(load_result->heartbeat_intervals);
+  int min_interval_ms = GetMinHeartbeatIntervalMs();
+  heartbeat_manager_.SetClientHeartbeatIntervalMs(min_interval_ms);
 }
 
 void MCSClient::Login(uint64 android_id, uint64 security_token) {
@@ -380,19 +386,25 @@ void MCSClient::AddHeartbeatInterval(const std::string& scope,
     return;
 
   custom_heartbeat_intervals_[scope] = interval_ms;
-  // TODO(fgorski): Save in the gcm store as well.
+  gcm_store_->AddHeartbeatInterval(scope, interval_ms,
+                                   base::Bind(&MCSClient::OnGCMUpdateFinished,
+                                              weak_ptr_factory_.GetWeakPtr()));
 
-  int min_interval_ms = GetMinCustomHeartbeatInterval();
+  int min_interval_ms = GetMinHeartbeatIntervalMs();
   heartbeat_manager_.SetClientHeartbeatIntervalMs(min_interval_ms);
 }
 
 void MCSClient::RemoveHeartbeatInterval(const std::string& scope) {
   custom_heartbeat_intervals_.erase(scope);
-  int min_interval = GetMinCustomHeartbeatInterval();
+  gcm_store_->RemoveHeartbeatInterval(
+      scope, base::Bind(&MCSClient::OnGCMUpdateFinished,
+                        weak_ptr_factory_.GetWeakPtr()));
+
+  int min_interval = GetMinHeartbeatIntervalMs();
   heartbeat_manager_.SetClientHeartbeatIntervalMs(min_interval);
 }
 
-int MCSClient::GetMinCustomHeartbeatInterval() {
+int MCSClient::GetMinHeartbeatIntervalMs() {
   if (custom_heartbeat_intervals_.empty())
     return kNoCustomHeartbeat;
 

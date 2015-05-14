@@ -160,8 +160,8 @@ class GCM_EXPORT MCSClient {
   void AddHeartbeatInterval(const std::string& scope, int interval_ms);
   void RemoveHeartbeatInterval(const std::string& scope);
 
-  HeartbeatManager& GetHeartbeatManagerForTesting() {
-    return heartbeat_manager_;
+  HeartbeatManager* GetHeartbeatManagerForTesting() {
+    return &heartbeat_manager_;
   }
 
  private:
@@ -225,8 +225,9 @@ class GCM_EXPORT MCSClient {
   // any associated state).
   MCSPacketInternal PopMessageForSend();
 
-  // Gets the minimum interval from the map of scopes to intervals.
-  int GetMinCustomHeartbeatInterval();
+  // Gets the minimum interval from the map of scopes to intervals in
+  // milliseconds.
+  int GetMinHeartbeatIntervalMs();
 
   // Local version string. Sent on login.
   const std::string version_string_;

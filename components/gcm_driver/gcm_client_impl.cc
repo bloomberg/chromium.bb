@@ -556,6 +556,17 @@ std::string GCMClientImpl::GetInstanceIDData(const std::string& app_id) {
   return iter->second;
 }
 
+void GCMClientImpl::AddHeartbeatInterval(const std::string& scope,
+                                         int interval_ms) {
+  DCHECK(mcs_client_);
+  mcs_client_->AddHeartbeatInterval(scope, interval_ms);
+}
+
+void GCMClientImpl::RemoveHeartbeatInterval(const std::string& scope) {
+  DCHECK(mcs_client_);
+  mcs_client_->RemoveHeartbeatInterval(scope);
+}
+
 void GCMClientImpl::StartCheckin() {
   // Make sure no checkin is in progress.
   if (checkin_request_.get())
