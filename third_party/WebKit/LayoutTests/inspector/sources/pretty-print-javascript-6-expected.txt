@@ -55,3 +55,16 @@ Correct mapping for <comment>
 Correct mapping for <var>
 Correct mapping for <10>
 
+Running: lexicalScoping
+====== 8< ------
+for (var i = 0; i < names.length; ++i) {
+    let name = names[i];
+    let person = persons[i];
+}
+
+------ >8 ======
+Correct mapping for <for>
+Correct mapping for <person>
+Correct mapping for <name>
+Correct mapping for <}>
+

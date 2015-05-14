@@ -34,6 +34,12 @@ function test()
         {
             var mappingQueries = ["this", "is", "block", "comment", "var", "10"];
             testJSFormatter("/** this\n * is\n * block\n * comment\n */\nvar a=10;", mappingQueries, next);
+        },
+
+        function lexicalScoping(next)
+        {
+            var mappingQueries = ["for", "person", "name", "}"];
+            testJSFormatter("for(var i=0;i<names.length;++i){let name=names[i];let person=persons[i];}", mappingQueries, next);
         }
     ]);
 }
