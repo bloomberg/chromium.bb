@@ -73,25 +73,6 @@ def IsCanaryType(b_type):
   return b_type == constants.CANARY_TYPE
 
 
-_delete_key_sentinel = object()
-def delete_key():
-  """Used to remove the given key from inherited config.
-
-  Usage:
-    new_config = base_config.derive(foo=delete_key())
-  """
-  return _delete_key_sentinel
-
-
-def delete_keys(keys):
-  """Used to remove a set of keys from inherited config.
-
-  Usage:
-    new_config = base_config.derive(delete_keys(set_of_keys))
-  """
-  return {k: delete_key() for k in keys}
-
-
 class BuildConfig(dict):
   """Dictionary of explicit configuration settings for a cbuildbot config
 
@@ -99,6 +80,26 @@ class BuildConfig(dict):
 
   See _settings for details on known configurations, and their documentation.
   """
+
+  _delete_key_sentinel = object()
+
+  @classmethod
+  def delete_key(cls):
+    """Used to remove the given key from inherited config.
+
+    Usage:
+      new_config = base_config.derive(foo=delete_key())
+    """
+    return cls._delete_key_sentinel
+
+  @classmethod
+  def delete_keys(cls, keys):
+    """Used to remove a set of keys from inherited config.
+
+    Usage:
+      new_config = base_config.derive(delete_keys(set_of_keys))
+    """
+    return {k: cls._delete_key_sentinel for k in keys}
 
   def __getattr__(self, name):
     """Support attribute-like access to each dict entry."""
@@ -170,7 +171,7 @@ class BuildConfig(dict):
           new_config[k] = v
 
       keys_to_delete = [k for k in new_config if
-                        new_config[k] is _delete_key_sentinel]
+                        new_config[k] is self._delete_key_sentinel]
 
       for k in keys_to_delete:
         new_config.pop(k, None)

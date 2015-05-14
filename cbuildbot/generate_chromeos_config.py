@@ -1492,8 +1492,8 @@ _chromium_pfq_important_boards = frozenset([
 
 def _AddFullConfigs():
   """Add x86 and arm full configs."""
-  external_overrides = config_lib.delete_keys(internal)
-  external_overrides.update(manifest=config_lib.delete_key())
+  external_overrides = config_lib.BuildConfig.delete_keys(internal)
+  external_overrides.update(manifest=config_lib.BuildConfig.delete_key())
   external_overrides.update(
     useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]))
   _CreateConfigsForBoards(full_prebuilts, _all_full_boards,
@@ -1637,8 +1637,8 @@ add_config(incremental, 'x86-generic-incremental',
 
 add_config(incremental, 'daisy-incremental',
   _base_configs['daisy'],
-  config_lib.delete_keys(internal),
-  manifest=config_lib.delete_key(),
+  config_lib.BuildConfig.delete_keys(internal),
+  manifest=config_lib.BuildConfig.delete_key(),
   useflags=append_useflags(['-chrome_internal']),
 )
 

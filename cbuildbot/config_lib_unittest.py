@@ -62,7 +62,7 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
   def testDeleteKey(self):
     base_config = config_lib.BuildConfig(foo='bar')
     inherited_config = base_config.derive(
-        foo=config_lib.delete_key())
+        foo=config_lib.BuildConfig.delete_key())
     self.assertTrue('foo' in base_config)
     self.assertFalse('foo' in inherited_config)
 
@@ -70,7 +70,7 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
     base_config = config_lib.BuildConfig(foo='bar', baz='bak')
     inherited_config_1 = base_config.derive(qzr='flp')
     inherited_config_2 = inherited_config_1.derive(
-        config_lib.delete_keys(base_config))
+        config_lib.BuildConfig.delete_keys(base_config))
     self.assertEqual(inherited_config_2, {'qzr': 'flp'})
 
   def testCallableOverrides(self):
