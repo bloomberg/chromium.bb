@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.cbuildbot import constants
 from chromite.cli import command
@@ -37,6 +38,7 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
   BASE_STAGE = 'base'
   DEV_STAGE = 'dev'
   TEST_STAGE = 'test'
+  SUMMARIZE_STAGE = 'summarize'
 
   def __init__(self):
     super(BrilloImageOperation, self).__init__()
@@ -45,10 +47,12 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
 
   def _StageEnter(self, output):
     """Return stage's name if we are entering a stage, else False."""
-    events = ['operation: creating base image',
+    events = ['operation: summarize',
+              'operation: creating test image',
               'operation: creating developer image',
-              'operation: creating test image']
-    stages = [self.BASE_STAGE, self.DEV_STAGE, self.TEST_STAGE]
+              'operation: creating base image']
+    stages = [self.SUMMARIZE_STAGE, self.TEST_STAGE, self.DEV_STAGE,
+              self.BASE_STAGE]
     for event, stage in zip(events, stages):
       if event in output:
         return stage
@@ -58,7 +62,8 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
     """Determine if we are exiting a stage."""
     events = ['operation: done creating base image',
               'operation: done creating developer image',
-              'operation: done creating test image']
+              'operation: done creating test image',
+              'operation: done summarize']
     for event in events:
       if event in output:
         return True
@@ -100,8 +105,10 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
     output = stdout + stderr
     stage_name, stage_exit = self._StageStatus(output)
 
-    # If we are in a stage, then we update the progress bar accordingly.
-    if self._stage_name is not None and not self._done:
+    # If we are in a non-summarize stage, then we update the progress bar
+    # accordingly.
+    if (self._stage_name is not None and
+        self._stage_name != self.SUMMARIZE_STAGE and not self._done):
       progress = super(BrilloImageOperation, self).ParseOutput(output)
       # If we are done displaying a progress bar for a stage, then we display
       # progress bar operation (parallel emerge).
@@ -113,7 +120,7 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
         self._progress_bar_displayed = False
         self._PrintEndStageMessages()
 
-    # Perform cleanup when exiting a stage.
+     # Perform cleanup when exiting a stage.
     if stage_exit:
       self._stage_name = None
       self._total = None
@@ -128,6 +135,15 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
       self._stage_name = stage_name
       msg = self._PrintEnterStageMessages()
       self.SetProgressBarMessage(msg)
+      if self._stage_name == self.SUMMARIZE_STAGE:
+        sys.stdout.write('\n')
+
+    # If we are in a summarize stage, properly format and display the output.
+    if self._stage_name == self.SUMMARIZE_STAGE and not self._done:
+      for line in output.split('\n'):
+        if 'INFO    : ' in line:
+          line = line.replace('INFO    : ', '')
+          logging.notice(line)
 
 
 @command.CommandDecorator('image')
