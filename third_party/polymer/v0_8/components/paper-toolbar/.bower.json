@@ -1,0 +1,37 @@
+{
+  "name": "paper-toolbar",
+  "version": "0.8.2",
+  "private": true,
+  "main": [
+    "paper-toolbar.html"
+  ],
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-toolbar.git"
+  },
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7",
+    "paper-styles": "PolymerElements/paper-styles#^0.8.0"
+  },
+  "devDependencies": {
+    "iron-icon": "PolymerElements/iron-icon#^0.8.0",
+    "iron-icons": "PolymerElements/iron-icons#^0.8.0",
+    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
+    "web-component-tester": "~2.2.6",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0"
+  },
+  "homepage": "https://github.com/PolymerElements/paper-toolbar",
+  "_release": "0.8.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.2",
+    "commit": "2e7cdfa0606b7b5126f0b0def40e4ecb8cd64d2e"
+  },
+  "_source": "git://github.com/PolymerElements/paper-toolbar.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerElements/paper-toolbar"
+}

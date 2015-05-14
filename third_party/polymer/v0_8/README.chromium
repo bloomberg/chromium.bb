@@ -11,7 +11,8 @@ Description:
 This directory contains a copy of the following components which are a part of
 the Polymer project:
 -polymer
--Used Iron elements and their dependencies 
+-layout
+-Used Iron elements and their dependencies
 -Used Paper elements and their dependencies
 See bower.json for a full list of components.
 
