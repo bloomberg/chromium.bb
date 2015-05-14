@@ -185,14 +185,8 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
 
       // Now that the number of tabs that has been added is known, set the title
       // of the parent menu item.
-      if (item->tabs.size() == 1) {
-        item->title = l10n_util::GetStringUTF16(
-            IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE);
-      } else {
-        item->title =l10n_util::GetStringFUTF16(
-            IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE,
-                base::IntToString16(item->tabs.size()));
-      }
+      item->title = l10n_util::GetPluralStringFUTF16(
+          IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW, item->tabs.size());
 
       // Sometimes it is possible for there to not be any subitems for a given
       // window; if that is the case, do not add the entry to the main menu.

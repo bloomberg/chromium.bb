@@ -147,7 +147,7 @@ void PrivetNotificationsListener::OnPrivetInfoDone(
   DCHECK(!device->notification_may_be_active);
   device->notification_may_be_active = true;
   devices_active_++;
-  delegate_->PrivetNotify(devices_active_ > 1, true);
+  delegate_->PrivetNotify(devices_active_, true);
 }
 
 void PrivetNotificationsListener::DeviceRemoved(const std::string& name) {
@@ -183,7 +183,7 @@ void PrivetNotificationsListener::NotifyDeviceRemoved() {
   if (devices_active_ == 0) {
     delegate_->PrivetRemoveNotification();
   } else {
-    delegate_->PrivetNotify(devices_active_ > 1, false);
+    delegate_->PrivetNotify(devices_active_, false);
   }
 }
 
@@ -234,28 +234,22 @@ bool PrivetNotificationService::IsForced() {
   return command_line->HasSwitch(switches::kEnableDeviceDiscoveryNotifications);
 }
 
-void PrivetNotificationService::PrivetNotify(bool has_multiple,
+void PrivetNotificationService::PrivetNotify(int devices_active,
                                              bool added) {
   base::string16 product_name = l10n_util::GetStringUTF16(
-      IDS_LOCAL_DISOCVERY_SERVICE_NAME_PRINTER);
+      IDS_LOCAL_DISCOVERY_SERVICE_NAME_PRINTER);
 
-  int title_resource = has_multiple ?
-      IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER_MULTIPLE :
-      IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER;
-
-  int body_resource = has_multiple ?
-      IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER_MULTIPLE :
-      IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER;
-
-  base::string16 title = l10n_util::GetStringUTF16(title_resource);
-  base::string16 body = l10n_util::GetStringUTF16(body_resource);
+  base::string16 title = l10n_util::GetPluralStringFUTF16(
+      IDS_LOCAL_DISCOVERY_NOTIFICATION_TITLE_PRINTER, devices_active);
+  base::string16 body = l10n_util::GetPluralStringFUTF16(
+      IDS_LOCAL_DISCOVERY_NOTIFICATION_CONTENTS_PRINTER, devices_active);
 
   Profile* profile_object = Profile::FromBrowserContext(profile_);
   message_center::RichNotificationData rich_notification_data;
 
   rich_notification_data.buttons.push_back(
       message_center::ButtonInfo(l10n_util::GetStringUTF16(
-          IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER)));
+          IDS_LOCAL_DISCOVERY_NOTIFICATION_BUTTON_PRINTER)));
 
   rich_notification_data.buttons.push_back(
       message_center::ButtonInfo(l10n_util::GetStringUTF16(

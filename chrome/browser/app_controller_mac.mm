@@ -807,26 +807,18 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   NSString* exitTitle = nil;
 
   // Set the dialog text based on whether or not there are multiple downloads.
-  if (downloadCount == 1) {
-    // Dialog text: warning and explanation.
-    titleText = l10n_util::GetNSString(
-        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE);
-    explanationText = l10n_util::GetNSString(
-        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION);
-  } else {
-    // Dialog text: warning and explanation.
-    titleText = l10n_util::GetNSString(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE);
-    explanationText = l10n_util::GetNSString(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION);
-  }
+  // Dialog text: warning and explanation.
+  titleText = l10n_util::GetPluralNSStringF(
+      IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE, downloadCount);
+  explanationText = l10n_util::GetPluralNSStringF(
+      IDS_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION, downloadCount);
   // Cancel download and exit button text.
-  exitTitle = l10n_util::GetNSString(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
+  exitTitle = l10n_util::GetPluralNSStringF(
+      IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL, downloadCount);
 
   // Wait for download button text.
-  waitTitle = l10n_util::GetNSString(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
+  waitTitle = l10n_util::GetPluralNSStringF(
+      IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL, downloadCount);
 
   // 'waitButton' is the default choice.
   int choice = NSRunAlertPanel(titleText, @"%@",

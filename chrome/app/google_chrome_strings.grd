@@ -553,14 +553,10 @@ Google Chrome is unable to recover your settings.
       </message>
 
       <!-- Remove in-progress downloads confirmation dialog -->
-      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one download is in progress.">
-        A download is currently in progress. Do you want to exit Google Chrome and cancel the download?
-      </message>
-      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when multiple downloads are in progress.">
-        Downloads are currently in progress. Do you want to exit Google Chrome and cancel the downloads?
-      </message>
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for OKing to close the browser when one or more downloads are in progress.">
-        Yes, exit Chrome
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one or more downloads are in progress. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural,
+        =1 {A download is currently in progress. Do you want to cancel the download and exit Google Chrome?}
+        other {# downloads are currently in progress. Do you want to cancel the downloads and exit Google Chrome?}}
       </message>
 
       <!-- Quit all apps confirmation dialog -->

@@ -33,7 +33,7 @@ const char kInfoResponseNoUptime[] = "{}";
 class MockPrivetNotificationsListenerDeleagate
     : public PrivetNotificationsListener::Delegate {
  public:
-  MOCK_METHOD2(PrivetNotify, void(bool multiple, bool added));
+  MOCK_METHOD2(PrivetNotify, void(int devices_active, bool added));
   MOCK_METHOD0(PrivetRemoveNotification, void());
 };
 
@@ -123,7 +123,7 @@ class PrivetNotificationsListenerTest : public ::testing::Test {
 TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
 
   EXPECT_CALL(mock_delegate_, PrivetNotify(
-      false,
+      1,
       true));
 
   notification_listener_->DeviceChanged(
@@ -153,7 +153,7 @@ TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
 
 TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
   EXPECT_CALL(mock_delegate_, PrivetNotify(
-      false,
+      1,
       true));
 
   notification_listener_->DeviceChanged(

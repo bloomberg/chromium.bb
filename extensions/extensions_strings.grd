@@ -371,17 +371,14 @@
       <message name="IDS_DEVICE_PERMISSIONS_PROMPT_SINGLE" desc="Instructions asking the user to select one device for use with an app.">
         The application "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one of your devices.
       </message>
-      <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE" desc="Title of the HID device selection dialog when the app will accept one or more selected devices.">
+      <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the HID device selection dialog when the app will accept one or more selected devices. If a langugage has a generic plural (larger than one), use that for all sub-messages other than '=1'. [ICU Syntax]">
         Select HID devices
+      {NUM_DEVICE, plural,
+      =1 {Select a HID device} other {Select HID devices}}
       </message>
-      <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE" desc="Title of the HID device selection dialog when the app wants only one device selected.">
-        Select a HID device
-      </message>
-      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE" desc="Title of the USB device selection dialog when the app will accept one or more selected devices.">
-        Select USB devices
-      </message>
-      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE" desc="Title of the USB device selection dialog when the app wants only one device selected.">
-        Select a USB device
+      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the USB device selection dialog when the app will accept one or more selected devices. If a langugage has a generic plural (larger than one), use that for all sub-messages other than '=1'. [ICU Syntax]">
+      {NUM_DEVICE, plural,
+      =1 {Select a USB device} other {Select USB devices}}
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_CONFIG" desc="Permission string for Networking Config API.">
         Configure network connections

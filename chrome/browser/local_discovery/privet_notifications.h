@@ -40,7 +40,7 @@ class PrivetNotificationsListener  {
     virtual ~Delegate() {}
 
     // Notify user of the existence of device |device_name|.
-    virtual void PrivetNotify(bool multiple, bool added) = 0;
+    virtual void PrivetNotify(int devices_active, bool added) = 0;
 
     // Remove the noitification for |device_name| if it still exists.
     virtual void PrivetRemoveNotification() = 0;
@@ -104,7 +104,7 @@ class PrivetNotificationService
   void DeviceRemoved(const std::string& name) override;
 
   // PrivetNotificationListener::Delegate implementation:
-  void PrivetNotify(bool has_multiple, bool added) override;
+  void PrivetNotify(int devices_active, bool added) override;
 
   void PrivetRemoveNotification() override;
   void DeviceCacheFlushed() override;

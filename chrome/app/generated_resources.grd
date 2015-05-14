@@ -2208,29 +2208,37 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- Remove in-progress downloads confirmation dialog -->
-      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser when one download is in progress.">
-        Download in progress
+      <if expr="not is_macosx">
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural,
+       =1 {Download in progress} other {Downloads in progress}}
       </message>
-      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser when multiple downloads are in progress.">
-        Downloads in progress
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for canceling the downloads and closing the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural,
+        =1 {Cancel download} other {Cancel downloads}}
       </message>
-      <message name="IDS_SINGLE_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the last incognito window when one incognito download is in progress.">
-        Incognito download in progress
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural, =1 {Continue download} other {Continue downloads}}
       </message>
-      <message name="IDS_MULTIPLE_INCOGNITO_DOWNLOADS_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the last incognito window when multiple incognito downloads are in progress.">
-        Incognito downloads in progress
+      </if>
+      <if expr="is_macosx">
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="In Title Case: Title of the dialog asking for user confirmation to close the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural,
+       =1 {Download in Progress} other {Downloads in Progress}}
       </message>
-      <message name="IDS_SINGLE_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the last incognito window when one incognito download is in progress.">
-        An incognito download is currently in progress. Do you want to exit incognito mode and cancel the download?
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="In Title Case: Button text for canceling the downloads and closing the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural,
+        =1 {Cancel Download} other {Cancel Downloads}}
       </message>
-      <message name="IDS_MULTIPLE_INCOGNITO_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the last incognito window when multiple incognito downloads are in progress.">
-        Incognito downloads are currently in progress. Do you want to exit incognito mode and cancel the downloads?
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural,
+        =1 {Continue Download} other {Continue Downloads}}
       </message>
-      <message name="IDS_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for OKing to close the last incognito window when one or more incognito downloads are in progress.">
-        Yes, exit incognito mode
-      </message>
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser or the last incognito window when one or more downloads are in progress.">
-        No
+      </if>
+      <message name="IDS_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the last incognito window when one incognito download is in progress. [ICU Syntax]">
+      {NUM_DOWNLOAD, plural,
+        =1 {A download is currently in progress. Do you want to cancel the download and exit incognito mode?}
+        other {# downloads are currently in progress. Do you want to cancel the downloads and exit incognito mode?}}
       </message>
 
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
@@ -11727,6 +11735,8 @@ Dead Jim feedback.
             Pages you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
           </message>
         </if>
+        <!-- TODO(estade): remove these two messages (_SINGLE and _MULTIPLE)
+             when dropping recently_closed.js. -->
         <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
                  desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">
           1 Tab
@@ -11734,6 +11744,10 @@ Dead Jim feedback.
         <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE"
                  desc="Title of recently closed windows in the recently closed section of the new tab page when the window has more than one tab. The % is replaced by the number of tabs">
           <ph name="TAB_COUNT">$1<ex>3</ex></ph> Tabs
+        </message>
+        <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW"
+                 desc="Title of recently closed windows in Recent Tabs menu. [ICU_Syntax]">
+          {NUM_TABS, plural, =1 {1 Tab} other {# Tabs}}
         </message>
         <message name="IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION"
                  desc="Help message for screenreader users, spoken when navigating to a tile grid for the first time.">
@@ -14950,22 +14964,20 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_LOCAL_DISCOVERY_MANAGE_DEVICE" desc="Name for button to manage registered device">
           Manage
         </message>
-        <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER" desc="Title of notification for a new printer showing up on your network">
-          New printer on your network
+        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATION_TITLE_PRINTER" desc="Title of notification for one or more new printer showing up on your network. [ICU Syntax]">
+        {NUM_PRINTER, plural,
+         =1 {New printer on your network}
+         other {New printers on your network}}
         </message>
-        <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER" desc="Contents of notification for a new printer showing up on your network">
-          Add the printer to Google Cloud Print so you can print from anywhere.
+        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATION_CONTENTS_PRINTER" desc="Contents of notification for one or more new printers showing up on your network. [ICU Syntax]">
+        {NUM_PRINTER, plural,
+          =1 {Add the printer to Google Cloud Print so you can print from anywhere.}
+          other {Add # printers to Google Cloud Print so you can print from anywhere.}}
         </message>
-        <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER_MULTIPLE" desc="Title of notification for a new printer showing up on your network">
-        New printers on your network
-        </message>
-        <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER_MULTIPLE" desc="Contents of notification for a new printer showing up on your network">
-          Add the printers to Google Cloud Print so you can print from anywhere.
-        </message>
-        <message name="IDS_LOCAL_DISOCVERY_SERVICE_NAME_PRINTER" desc="Display name for notification for a new printer showing up on your network">
+        <message name="IDS_LOCAL_DISCOVERY_SERVICE_NAME_PRINTER" desc="Display name for notification for a new printer showing up on your network">
           Google Cloud Print
         </message>
-        <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER" desc="Message on registration button for printer">
+        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATION_BUTTON_PRINTER" desc="Message on registration button for printer">
           Add to Cloud Print
         </message>
         <message name="IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE" desc="Title for devices page">
