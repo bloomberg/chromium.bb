@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/proxy_overridden_bubble_controller.h"
 
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -126,8 +127,14 @@ base::string16 ProxyOverriddenBubbleDelegate::GetMessageBody(
     return l10n_util::GetStringUTF16(
         IDS_EXTENSIONS_PROXY_CONTROLLED_FIRST_LINE_EXTENSION_SPECIFIC);
   } else {
-    return l10n_util::GetStringUTF16(
-        IDS_EXTENSIONS_PROXY_CONTROLLED_FIRST_LINE);
+    const Extension* extension =
+        ExtensionRegistry::Get(profile())->GetExtensionById(
+            extension_id_, ExtensionRegistry::EVERYTHING);
+    // If the bubble is about to show, the extension should certainly exist.
+    CHECK(extension);
+    return l10n_util::GetStringFUTF16(
+        IDS_EXTENSIONS_PROXY_CONTROLLED_FIRST_LINE,
+        base::UTF8ToUTF16(extension->name()));
   }
 }
 

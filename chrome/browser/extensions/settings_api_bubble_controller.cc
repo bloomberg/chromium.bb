@@ -1,10 +1,11 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
 
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -163,54 +164,60 @@ base::string16 SettingsApiBubbleDelegate::GetMessageBody(
   bool startup_change = !settings->startup_pages.empty();
   bool search_change = settings->search_engine != NULL;
 
+  int first_line_id = 0;
+  int second_line_id = 0;
+
   base::string16 body;
   switch (type_) {
     case BUBBLE_TYPE_HOME_PAGE:
-      body = l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_HOME_PAGE);
+      first_line_id = anchored_to_browser_action ?
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_HOME_PAGE_SPECIFIC :
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_HOME_PAGE;
       if (startup_change && search_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_AND_SEARCH);
+        second_line_id =
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_AND_SEARCH;
       } else if (startup_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_PAGES);
+        second_line_id = IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_PAGES;
       } else if (search_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE);
+        second_line_id = IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE;
       }
       break;
     case BUBBLE_TYPE_STARTUP_PAGES:
-      body = l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_START_PAGES);
+      first_line_id = anchored_to_browser_action ?
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_START_PAGES_SPECIFIC :
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_START_PAGES;
       if (home_change && search_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_AND_SEARCH);
+        second_line_id =
+            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_AND_SEARCH;
       } else if (home_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_PAGE);
+        second_line_id = IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_PAGE;
       } else if (search_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE);
+        second_line_id = IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE;
       }
       break;
     case BUBBLE_TYPE_SEARCH_ENGINE:
-      body = l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE);
-      if (startup_change && home_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_AND_HOME);
-      } else if (startup_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_PAGES);
-      } else if (home_change) {
-        body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_PAGE);
-      }
+      first_line_id = anchored_to_browser_action ?
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE_SPECIFIC :
+          IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE;
+      if (startup_change && home_change)
+        second_line_id = IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_AND_HOME;
+      else if (startup_change)
+        second_line_id = IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_PAGES;
+      else if (home_change)
+        second_line_id = IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_PAGE;
       break;
   }
-  if (!body.empty())
-    body += l10n_util::GetStringUTF16(
-            IDS_EXTENSIONS_SETTINGS_API_THIRD_LINE_CONFIRMATION);
+  DCHECK_NE(0, first_line_id);
+  body = anchored_to_browser_action ?
+      l10n_util::GetStringUTF16(first_line_id) :
+      l10n_util::GetStringFUTF16(first_line_id,
+                                 base::UTF8ToUTF16(extension->name()));
+  if (second_line_id)
+    body += l10n_util::GetStringUTF16(second_line_id);
+
+  body += l10n_util::GetStringUTF16(
+      IDS_EXTENSIONS_SETTINGS_API_THIRD_LINE_CONFIRMATION);
+
   return body;
 }
 
