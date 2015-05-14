@@ -392,6 +392,17 @@ const CGFloat kAnimationDuration = 0.2;
     DCHECK_EQ([self currentEditor], [[self window] firstResponder]);
     return NO;
   }
+
+  // If the event is a left-mouse click, and it lands on a decoration, then the
+  // event should not cause the text field to become first responder.
+  NSEvent* event = [NSApp currentEvent];
+  if ([event type] == NSLeftMouseDown) {
+    LocationBarDecoration* decoration =
+        [[self cell] decorationForEvent:event inRect:[self bounds] ofView:self];
+    if (decoration && decoration->AcceptsMousePress())
+      return NO;
+  }
+
   return [super acceptsFirstResponder];
 }
 

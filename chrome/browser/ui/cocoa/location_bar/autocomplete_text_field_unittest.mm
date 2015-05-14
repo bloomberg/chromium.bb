@@ -39,22 +39,6 @@ class MockDecoration : public LocationBarDecoration {
   MOCK_METHOD0(GetMenu, NSMenu*());
 };
 
-class MockButtonDecoration : public ButtonDecoration {
- public:
-  // Note: It does not matter which images are used here - but ButtonDecoration
-  // needs _some_ images to work properly.
-  MockButtonDecoration()
-      : ButtonDecoration(IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE),
-                         IDR_OMNIBOX_EV_BUBBLE_CENTER,
-                         IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE),
-                         IDR_OMNIBOX_EV_BUBBLE_CENTER,
-                         IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE),
-                         IDR_OMNIBOX_EV_BUBBLE_CENTER,
-                         3) {}
-  void Hide() { SetVisible(false); }
-  MOCK_METHOD2(OnMousePressed, bool(NSRect frame, NSPoint location));
-};
-
 // Mock up an incrementing event number.
 NSUInteger eventNumber = 0;
 
@@ -168,6 +152,31 @@ class AutocompleteTextFieldObserverTest : public AutocompleteTextFieldTest {
     [field_ setObserver:NULL];
 
     AutocompleteTextFieldTest::TearDown();
+  }
+
+  // Returns the center point of the decoration.
+  NSPoint ClickLocationForDecoration(LocationBarDecoration* decoration) {
+    AutocompleteTextFieldCell* cell = [field_ cell];
+    NSRect decoration_rect =
+        [cell frameForDecoration:decoration inFrame:[field_ bounds]];
+    EXPECT_FALSE(NSIsEmptyRect(decoration_rect));
+    return NSMakePoint(NSMidX(decoration_rect), NSMidY(decoration_rect));
+  }
+
+  void SendMouseClickToDecoration(LocationBarDecoration* decoration) {
+    NSPoint point = ClickLocationForDecoration(decoration);
+    NSEvent* downEvent = Event(field_, point, NSLeftMouseDown);
+    NSEvent* upEvent = Event(field_, point, NSLeftMouseUp);
+
+    // Can't just use -sendEvent:, since that doesn't populate -currentEvent.
+    [NSApp postEvent:downEvent atStart:YES];
+    [NSApp postEvent:upEvent atStart:NO];
+
+    NSEvent* next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                             untilDate:nil
+                                                inMode:NSDefaultRunLoopMode
+                                               dequeue:YES];
+    [NSApp sendEvent:next_event];
   }
 
   StrictMock<MockAutocompleteTextFieldObserver> field_observer_;
@@ -789,61 +798,56 @@ TEST_F(AutocompleteTextFieldTest, HideFocusState) {
   EXPECT_TRUE([FieldEditor() shouldDrawInsertionPoint]);
 }
 
-// Verify that OnSetFocus for button decorations is only sent after the
-// decoration is picked as the target for the subsequent -mouseDown:. Otherwise
-// hiding a ButtonDecoration in OnSetFocus will prevent a call to
-// OnMousePressed, since it is already hidden at the time of mouseDown.
-TEST_F(AutocompleteTextFieldObserverTest, ButtonDecorationFocus) {
-  // Add the mock button.
-  MockButtonDecoration mock_button;
-  mock_button.SetVisible(true);
+// Verify that clicking a decoration that accepts mouse clicks does not focus
+// the Omnibox.
+TEST_F(AutocompleteTextFieldObserverTest,
+       ClickingDecorationDoesNotFocusOmnibox) {
   AutocompleteTextFieldCell* cell = [field_ cell];
-  [cell addLeftDecoration:&mock_button];
 
-  // Ensure button is hidden when OnSetFocus() is called.
-  EXPECT_CALL(field_observer_, OnSetFocus(false)).WillOnce(
-      testing::InvokeWithoutArgs(&mock_button, &MockButtonDecoration::Hide));
+  // Set up a non-interactive decoration.
+  MockDecoration noninteractive_decoration;
+  noninteractive_decoration.SetVisible(true);
+  EXPECT_CALL(noninteractive_decoration, AcceptsMousePress())
+      .WillRepeatedly(testing::Return(false));
+  [cell addLeftDecoration:&noninteractive_decoration];
 
-  // Ignore incidental calls.
+  // Set up an interactive decoration.
+  MockDecoration interactive_decoration;
+  EXPECT_CALL(interactive_decoration, AcceptsMousePress())
+      .WillRepeatedly(testing::Return(true));
+  interactive_decoration.SetVisible(true);
+  [cell addLeftDecoration:&interactive_decoration];
+  EXPECT_CALL(interactive_decoration, OnMousePressed(_, _))
+      .WillRepeatedly(testing::Return(true));
+
+  // Ignore incidental calls. The exact frequency of these calls doesn't matter
+  // as they are auxiliary.
   EXPECT_CALL(field_observer_, SelectionRangeForProposedRange(_))
       .WillRepeatedly(testing::Return(NSMakeRange(0, 0)));
-  EXPECT_CALL(field_observer_, OnMouseDown(_));
-
-  // Still expect an OnMousePressed on the button.
-  EXPECT_CALL(mock_button, OnMousePressed(_, _))
-      .WillOnce(testing::Return(true));
-
-  // Get click point for button decoration.
-  NSRect button_rect =
-      [cell frameForDecoration:&mock_button inFrame:[field_ bounds]];
-  EXPECT_FALSE(NSIsEmptyRect(button_rect));
-  NSPoint click_location =
-      NSMakePoint(NSMidX(button_rect), NSMidY(button_rect));
+  EXPECT_CALL(field_observer_, OnMouseDown(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(field_observer_, OnSetFocus(false)).Times(testing::AnyNumber());
+  EXPECT_CALL(field_observer_, OnKillFocus()).Times(testing::AnyNumber());
+  EXPECT_CALL(field_observer_, OnDidEndEditing()).Times(testing::AnyNumber());
 
   // Ensure the field is currently not first responder.
   [test_window() makePretendKeyWindowAndSetFirstResponder:nil];
-  EXPECT_NSNE([[field_ window] firstResponder], field_);
+  NSResponder* firstResponder = [[field_ window] firstResponder];
+  EXPECT_FALSE(
+      [base::mac::ObjCCast<NSView>(firstResponder) isDescendantOf:field_]);
 
-  // Execute button click event sequence.
-  NSEvent* downEvent = Event(field_, click_location, NSLeftMouseDown);
-  NSEvent* upEvent = Event(field_, click_location, NSLeftMouseUp);
+  // Clicking an interactive decoration doesn't change the first responder.
+  SendMouseClickToDecoration(&interactive_decoration);
+  EXPECT_NSEQ(firstResponder, [[field_ window] firstResponder]);
 
-  // Can't just use -sendEvent:, since that doesn't populate -currentEvent.
-  [NSApp postEvent:downEvent atStart:YES];
-  [NSApp postEvent:upEvent atStart:NO];
-  NSEvent* next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                                           untilDate:nil
-                                              inMode:NSDefaultRunLoopMode
-                                             dequeue:YES];
-  [NSApp sendEvent:next_event];
+  // Clicking a non-interactive decoration focuses the Omnibox.
+  SendMouseClickToDecoration(&noninteractive_decoration);
+  firstResponder = [[field_ window] firstResponder];
+  EXPECT_TRUE(
+      [base::mac::ObjCCast<NSView>(firstResponder) isDescendantOf:field_]);
 
-  // Expectations check that both OnSetFocus and OnMouseDown were called.
-  // Additionally, ensure button is hidden and field is firstResponder.
-  EXPECT_FALSE(mock_button.IsVisible());
-  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
-                                             inFrame:[field_ bounds]]));
-  EXPECT_TRUE([base::mac::ObjCCastStrict<NSView>(
-      [[field_ window] firstResponder]) isDescendantOf:field_]);
+  // Clicking an interactive decoration doesn't change the first responder.
+  SendMouseClickToDecoration(&interactive_decoration);
+  EXPECT_NSEQ(firstResponder, [[field_ window] firstResponder]);
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
