@@ -760,11 +760,11 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         parseReferrer(name, value);
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::UpgradeInsecureRequests)) {
         enableInsecureRequestsUpgrade(name, value);
+    } else if (equalIgnoringCase(name, ContentSecurityPolicy::BlockAllMixedContent)) {
+        enforceStrictMixedContentChecking(name, value);
     } else if (m_policy->experimentalFeaturesEnabled()) {
         if (equalIgnoringCase(name, ContentSecurityPolicy::ManifestSrc))
             setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
-        else if (equalIgnoringCase(name, ContentSecurityPolicy::BlockAllMixedContent))
-            enforceStrictMixedContentChecking(name, value);
         else
             m_policy->reportUnsupportedDirective(name);
     } else {
