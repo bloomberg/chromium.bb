@@ -257,6 +257,9 @@ class ExtensionAction {
   // extension manifest).
   const std::string extension_id_;
 
+  // The name of the extension.
+  const std::string extension_name_;
+
   const extensions::ActionInfo::Type action_type_;
 
   // Each of these data items can have both a global state (stored with the key

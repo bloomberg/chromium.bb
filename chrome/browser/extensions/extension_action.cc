@@ -11,8 +11,10 @@
 #include "chrome/common/badge_util.h"
 #include "chrome/common/icon_with_badge_image_source.h"
 #include "extensions/browser/extension_icon_image.h"
+#include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_icon_set.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -103,7 +105,9 @@ const int ExtensionAction::kPageActionIconMaxSize =
 ExtensionAction::ExtensionAction(const extensions::Extension& extension,
                                  extensions::ActionInfo::Type action_type,
                                  const extensions::ActionInfo& manifest_data)
-    : extension_id_(extension.id()), action_type_(action_type) {
+    : extension_id_(extension.id()),
+      extension_name_(extension.name()),
+      action_type_(action_type) {
   // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
   SetIsVisible(kDefaultTabId,
@@ -282,7 +286,18 @@ extensions::IconImage* ExtensionAction::LoadDefaultIconImage(
 gfx::Image ExtensionAction::GetDefaultIconImage() const {
   // If we have a default icon, it should be loaded before trying to use it.
   DCHECK(!default_icon_image_ == !default_icon_);
-  return default_icon_image_ ? default_icon_image_->image() : GetDefaultIcon();
+  if (default_icon_image_)
+    return default_icon_image_->image();
+
+  // If the extension action redesign is enabled, we use a special placeholder
+  // icon (with the first letter of the extension name) rather than the default
+  // (puzzle piece).
+  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+    return extensions::ExtensionIconPlaceholder::CreateImage(
+        extension_misc::EXTENSION_ICON_ACTION, extension_name_);
+  }
+
+  return GetDefaultIcon();
 }
 
 bool ExtensionAction::HasPopupUrl(int tab_id) const {

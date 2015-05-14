@@ -576,6 +576,8 @@
       'browser/extension_host_queue.h',
       'browser/extension_icon_image.cc',
       'browser/extension_icon_image.h',
+      'browser/extension_icon_placeholder.cc',
+      'browser/extension_icon_placeholder.h',
       'browser/extension_message_filter.cc',
       'browser/extension_message_filter.h',
       'browser/extension_pref_store.cc',
