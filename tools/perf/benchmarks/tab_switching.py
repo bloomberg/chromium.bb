@@ -66,7 +66,8 @@ class TabSwitchingFiveBlankTabs(benchmark.Benchmark):
 
 
 @benchmark.Enabled('has tabs')
-@benchmark.Disabled('android')  # http://crbug.com/460084
+# http://crbug.com/460084, http://crbug.com/488067
+@benchmark.Disabled('android', 'linux')
 class TabSwitchingToughEnergyCases(benchmark.Benchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
