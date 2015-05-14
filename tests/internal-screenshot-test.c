@@ -31,6 +31,36 @@
 
 char *server_parameters="--use-pixman --width=320 --height=240";
 
+/** write_surface_as_png()
+ *
+ * Writes out a given weston test surface to disk as a PNG image
+ * using the provided filename (with path).
+ *
+ * @returns true if successfully saved file; false otherwise.
+ */
+static bool
+write_surface_as_png(const struct surface* weston_surface, const char *fname) {
+	cairo_surface_t *cairo_surface;
+	cairo_status_t status;
+	int bpp = 4; /* Assume ARGB */
+	int stride = bpp * weston_surface->width;
+
+	cairo_surface = cairo_image_surface_create_for_data(weston_surface->data,
+							    CAIRO_FORMAT_ARGB32,
+							    weston_surface->width,
+							    weston_surface->height,
+							    stride);
+	printf("Writing PNG to disk\n");
+	status = cairo_surface_write_to_png(cairo_surface, fname);
+	if (status != CAIRO_STATUS_SUCCESS) {
+		printf("Failed to save screenshot: %s\n",
+		       cairo_status_to_string(status));
+		return false;
+	}
+	cairo_surface_destroy(cairo_surface);
+	return true;
+}
+
 TEST(internal_screenshot)
 {
 	struct client *client;
@@ -121,20 +151,8 @@ TEST(internal_screenshot)
 
 	/* Test dumping of non-matching images */
 	if (!match || dump_all_images) {
-		/* Write image to .png file */
-		cairo_surface_t *surface;
-		int bpp = 4; /* ARGB assumed */
-		int stride = bpp * screenshot->width;
-
-		surface = cairo_image_surface_create_for_data(screenshot->data,
-							      CAIRO_FORMAT_ARGB32,
-							      screenshot->width,
-							      screenshot->height,
-							      stride);
-
-		printf("Writing PNG to disk\n");
-		cairo_surface_write_to_png(surface, "clientside-screenshot.png");
-		cairo_surface_destroy(surface);
+		fname = screenshot_output_filename("internal-screenshot", 0);
+		write_surface_as_png(screenshot, fname);
 	}
 
 	free(screenshot);
