@@ -56,7 +56,7 @@ class MediaNetworkSimulation(benchmark.Benchmark):
     return 'media.media_cns_cases'
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled() # crbug.com/448092
 @benchmark.Disabled('l', 'android-webview') # WebView: crbug.com/419689
 class MediaAndroid(benchmark.Benchmark):
   """Obtains media metrics for key user scenarios on Android."""
