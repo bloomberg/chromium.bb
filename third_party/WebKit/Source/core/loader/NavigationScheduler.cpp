@@ -89,7 +89,7 @@ protected:
 
 private:
     double m_delay;
-    RefPtrWillBeMember<Document> m_originDocument;
+    RefPtrWillBePersistent<Document> m_originDocument;
     bool m_lockBackForwardList;
     bool m_isLocationChange;
     bool m_wasUserGesture;
