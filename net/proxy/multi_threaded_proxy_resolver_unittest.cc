@@ -555,6 +555,7 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
                                  callback[1].callback(), &request[1],
                                  BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
+  factory().resolvers()[0]->WaitUntilBlocked();
   rv = resolver().GetProxyForURL(GURL("http://request2"), &results[2],
                                  callback[2].callback(), &request[2],
                                  BoundNetLog());
@@ -569,6 +570,7 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
                                  callback[3].callback(), &request[3],
                                  BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
+  factory().resolvers()[1]->WaitUntilBlocked();
   rv = resolver().GetProxyForURL(GURL("http://request4"), &results[4],
                                  callback[4].callback(), &request[4],
                                  BoundNetLog());
