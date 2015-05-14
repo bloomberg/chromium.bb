@@ -246,6 +246,9 @@ class DisplayView : public ActionableView {
           IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL);
     }
 
+    if (display_manager->IsInUnifiedMode())
+      return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED);
+
     int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
     if (gfx::Display::HasInternalDisplay() &&
         !(gfx::Display::InternalDisplayId() == primary_id)) {

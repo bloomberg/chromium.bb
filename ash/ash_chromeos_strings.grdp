@@ -249,6 +249,9 @@
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270" desc="The value of display orientation option item: 270-degree rotated">
     270&#x00B0;
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED" desc="The title of the notification indicating that the system is in unified desktop mode.">
+    Unified desktop mode
+  </message>
   <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
     CAPS LOCK is on
   </message>

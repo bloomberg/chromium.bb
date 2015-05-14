@@ -79,8 +79,9 @@ class TrayDisplayTest : public ash::test::AshTestBase {
   void SetUp() override;
 
  protected:
-  SystemTray* tray() { return tray_; }
-  TrayDisplay* tray_display() { return tray_display_; }
+  SystemTray* GetTray();
+  TrayDisplay* GetTrayDisplay();
+  void CheckUpdate();
 
   void CloseNotification();
   bool IsDisplayVisibleInTray() const;
@@ -110,9 +111,28 @@ TrayDisplayTest::~TrayDisplayTest() {
 
 void TrayDisplayTest::SetUp() {
   ash::test::AshTestBase::SetUp();
-  tray_ = Shell::GetPrimaryRootWindowController()->GetSystemTray();
-  tray_display_ = new TrayDisplay(tray_);
-  tray_->AddTrayItem(tray_display_);
+  // Populate tray_ and tray_display_.
+  CheckUpdate();
+}
+
+SystemTray* TrayDisplayTest::GetTray() {
+  CheckUpdate();
+  return tray_;
+}
+
+TrayDisplay* TrayDisplayTest::GetTrayDisplay() {
+  CheckUpdate();
+  return tray_display_;
+}
+
+void TrayDisplayTest::CheckUpdate() {
+  SystemTray* current =
+      Shell::GetPrimaryRootWindowController()->GetSystemTray();
+  if (tray_ != current) {
+    tray_ = current;
+    tray_display_ = new TrayDisplay(tray_);
+    tray_->AddTrayItem(tray_display_);
+  }
 }
 
 void TrayDisplayTest::CloseNotification() {
@@ -174,11 +194,11 @@ const message_center::Notification* TrayDisplayTest::GetDisplayNotification()
 
 TEST_F(TrayDisplayTest, NoInternalDisplay) {
   UpdateDisplay("400x400");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_FALSE(IsDisplayVisibleInTray());
 
   UpdateDisplay("400x400,200x200");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 expected = l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL);
@@ -192,7 +212,7 @@ TEST_F(TrayDisplayTest, NoInternalDisplay) {
   // mirroring
   Shell::GetInstance()->display_manager()->SetSoftwareMirroring(true);
   UpdateDisplay("400x400,200x200");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   expected = l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL);
@@ -207,14 +227,14 @@ TEST_F(TrayDisplayTest, InternalDisplay) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
 
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_FALSE(IsDisplayVisibleInTray());
 
   // Extended
   UpdateDisplay("400x400,200x200");
   base::string16 expected = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetSecondDisplayName());
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   EXPECT_EQ(expected, GetTrayDisplayText());
   EXPECT_EQ(GetTooltipText(expected, GetFirstDisplayName(), "400x400",
@@ -225,7 +245,7 @@ TEST_F(TrayDisplayTest, InternalDisplay) {
   // Mirroring
   display_manager->SetSoftwareMirroring(true);
   UpdateDisplay("400x400,200x200");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
 
   expected = l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
@@ -242,7 +262,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
 
   // Shows the tray_display even though there's a single-display.
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 internal_info = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
@@ -255,7 +275,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
 
   // Extended
   UpdateDisplay("400x400@1.5,200x200");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 expected = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetSecondDisplayName());
@@ -268,7 +288,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   // Mirroring
   display_manager->SetSoftwareMirroring(true);
   UpdateDisplay("400x400@1.5,200x200");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   expected = l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
                                         GetMirroringDisplayName());
@@ -282,7 +302,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   UpdateDisplay("400x400@1.5,200x200");
   gfx::Display::SetInternalDisplayId(ScreenUtil::GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   expected = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED);
   EXPECT_EQ(expected, GetTrayDisplayText());
@@ -291,6 +311,16 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
           expected, GetFirstDisplayName(), "600x600", base::string16(), ""),
       GetTrayDisplayTooltipText());
   CheckAccessibleName();
+
+  // Unified mode
+  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
+  UpdateDisplay("300x200,400x500");
+  // Update the cache variables as the primary root window changed.
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  EXPECT_TRUE(IsDisplayVisibleInTray());
+  expected = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED);
+  EXPECT_EQ(expected, GetTrayDisplayText());
 }
 
 TEST_F(TrayDisplayTest, ExternalDisplayResized) {
@@ -299,14 +329,14 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
   gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
 
   // Shows the tray_display even though there's a single-display.
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_FALSE(IsDisplayVisibleInTray());
 
   // Extended
   UpdateDisplay("400x400,200x200@1.5");
   const gfx::Display& secondary_display = ScreenUtil::GetSecondaryDisplay();
 
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 expected = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
@@ -323,7 +353,7 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
   // Mirroring
   display_manager->SetSoftwareMirroring(true);
   UpdateDisplay("400x400,200x200@1.5");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
   expected = l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
                                         GetMirroringDisplayName());
@@ -338,7 +368,7 @@ TEST_F(TrayDisplayTest, OverscanDisplay) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
 
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
 
   // /o creates the default overscan, and if overscan is set, the annotation
@@ -374,11 +404,11 @@ TEST_F(TrayDisplayTest, OverscanDisplay) {
 }
 
 TEST_F(TrayDisplayTest, UpdateDuringDisplayConfigurationChange) {
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_FALSE(IsDisplayVisibleInTray());
 
   UpdateDisplay("400x400@1.5");
-  EXPECT_TRUE(tray()->HasSystemBubble());
+  EXPECT_TRUE(GetTray()->HasSystemBubble());
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 internal_info = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
@@ -390,7 +420,7 @@ TEST_F(TrayDisplayTest, UpdateDuringDisplayConfigurationChange) {
   CheckAccessibleName();
 
   UpdateDisplay("400x400,200x200");
-  EXPECT_TRUE(tray()->HasSystemBubble());
+  EXPECT_TRUE(GetTray()->HasSystemBubble());
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 expected = l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL);
@@ -402,11 +432,11 @@ TEST_F(TrayDisplayTest, UpdateDuringDisplayConfigurationChange) {
   CheckAccessibleName();
 
   UpdateDisplay("400x400@1.5");
-  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
 
   // Back to the default state, the display tray item should disappear.
   UpdateDisplay("400x400");
-  EXPECT_TRUE(tray()->HasSystemBubble());
+  EXPECT_TRUE(GetTray()->HasSystemBubble());
   EXPECT_FALSE(IsDisplayVisibleInTray());
 }
 
@@ -534,7 +564,7 @@ TEST_F(TrayDisplayTest, DisplayConfigurationChangedTwice) {
   // OnDisplayConfigurationChanged() may be called more than once for a single
   // update display in case of primary is swapped or recovered from dock mode.
   // Should not remove the notification in such case.
-  tray_display()->OnDisplayConfigurationChanged();
+  GetTrayDisplay()->OnDisplayConfigurationChanged();
   EXPECT_EQ(
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),
