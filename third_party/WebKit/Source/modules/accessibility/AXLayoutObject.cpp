@@ -244,9 +244,11 @@ bool AXLayoutObject::shouldNotifyActiveDescendant() const
 
 ScrollableArea* AXLayoutObject::getScrollableAreaIfScrollable() const
 {
-    // If the parent is a FrameView, then this object isn't really scrollable; the parent should handle the scrolling.
+    // FIXME(dmazzoni): the plan is to get rid of AXScrollView, but until
+    // this is done, a WebArea delegates its scrolling to its parent scroll view.
+    // http://crbug.com/484878
     if (parentObject() && parentObject()->isAXScrollView())
-        return 0;
+        return parentObject()->getScrollableAreaIfScrollable();
 
     if (!m_layoutObject || !m_layoutObject->isBox())
         return 0;
@@ -746,6 +748,9 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
         return false;
 
     if (!ariaAccessibilityDescription().isEmpty())
+        return false;
+
+    if (isScrollableContainer())
         return false;
 
     // By default, objects should be ignored so that the AX hierarchy is not
@@ -1861,19 +1866,6 @@ void AXLayoutObject::setValue(const String& string)
         toHTMLInputElement(*node()).setValue(string);
     else if (layoutObject->isTextArea() && isHTMLTextAreaElement(*node()))
         toHTMLTextAreaElement(*node()).setValue(string);
-}
-
-// FIXME: This function should use an IntSize to avoid the conversion below.
-void AXLayoutObject::scrollTo(const IntPoint& point) const
-{
-    if (!m_layoutObject || !m_layoutObject->isBox())
-        return;
-
-    LayoutBox* box = toLayoutBox(m_layoutObject);
-    if (!box->canBeScrolledAndHasScrollableArea())
-        return;
-
-    box->scrollToOffset(IntSize(point.x(), point.y()));
 }
 
 //

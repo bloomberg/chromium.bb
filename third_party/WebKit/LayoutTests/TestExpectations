@@ -1947,6 +1947,7 @@ crbug.com/487671 http/tests/security/cross-origin-worker-indexeddb-allowed.html 
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
+crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/487878 [ Linux ] compositing/video-frame-size-change.html [ Pass ImageOnlyFailure ]
 crbug.com/487878 [ Linux ] virtual/slimmingpaint/compositing/video-frame-size-change.html [ Pass ImageOnlyFailure ]

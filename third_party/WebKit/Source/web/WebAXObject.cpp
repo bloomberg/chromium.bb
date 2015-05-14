@@ -1523,6 +1523,46 @@ void WebAXObject::wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) c
     ends.swap(endsWebVector);
 }
 
+bool WebAXObject::isScrollableContainer() const
+{
+    if (isDetached())
+        return false;
+
+    return m_private->isScrollableContainer();
+}
+
+WebPoint WebAXObject::scrollOffset() const
+{
+    if (isDetached())
+        return WebPoint();
+
+    return m_private->scrollOffset();
+}
+
+WebPoint WebAXObject::minimumScrollOffset() const
+{
+    if (isDetached())
+        return WebPoint();
+
+    return m_private->minimumScrollOffset();
+}
+
+WebPoint WebAXObject::maximumScrollOffset() const
+{
+    if (isDetached())
+        return WebPoint();
+
+    return m_private->maximumScrollOffset();
+}
+
+void WebAXObject::setScrollOffset(const WebPoint& offset) const
+{
+    if (isDetached())
+        return;
+
+    m_private->setScrollOffset(offset);
+}
+
 void WebAXObject::scrollToMakeVisible() const
 {
     if (!isDetached())

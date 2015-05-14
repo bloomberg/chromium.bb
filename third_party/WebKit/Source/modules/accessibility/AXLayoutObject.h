@@ -188,7 +188,6 @@ protected:
     // Modify or take an action on an object.
     virtual void setSelectedTextRange(const PlainTextRange&) override;
     virtual void setValue(const String&) override;
-    virtual void scrollTo(const IntPoint&) const override;
 
     // Notifications that this object may have changed.
     virtual void handleActiveDescendantChanged() override;

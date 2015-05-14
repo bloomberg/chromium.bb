@@ -46,7 +46,6 @@ public:
 
 protected:
     virtual ScrollableArea* getScrollableAreaIfScrollable() const override;
-    virtual void scrollTo(const IntPoint&) const override;
 
 private:
     AXScrollView(FrameView*, AXObjectCacheImpl*);

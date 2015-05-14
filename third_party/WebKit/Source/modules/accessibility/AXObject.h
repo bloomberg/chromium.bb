@@ -700,6 +700,16 @@ public:
     // Selected text.
     virtual PlainTextRange selectedTextRange() const { return PlainTextRange(); }
 
+    // Scrollable containers.
+    bool isScrollableContainer() const;
+    IntPoint scrollOffset() const;
+    IntPoint minimumScrollOffset() const;
+    IntPoint maximumScrollOffset() const;
+    void setScrollOffset(const IntPoint&) const;
+
+    // If this object itself scrolls, return its ScrollableArea.
+    virtual ScrollableArea* getScrollableAreaIfScrollable() const { return 0; }
+
     // Modify or take an action on an object.
     virtual void increment() { }
     virtual void decrement() { }
@@ -751,10 +761,6 @@ protected:
     LayoutRect m_explicitElementRect;
 
     virtual const AXObject* inheritsPresentationalRoleFrom() const { return 0; }
-
-    // If this object itself scrolls, return its ScrollableArea.
-    virtual ScrollableArea* getScrollableAreaIfScrollable() const { return 0; }
-    virtual void scrollTo(const IntPoint&) const { }
 
     bool nameFromContents() const;
 

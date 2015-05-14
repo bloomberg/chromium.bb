@@ -32,6 +32,7 @@
 #define WebAXObject_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebPoint.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebVector.h"
 #include "WebAXEnums.h"
@@ -282,6 +283,13 @@ public:
     // For an inline text box.
     BLINK_EXPORT void characterOffsets(WebVector<int>&) const;
     BLINK_EXPORT void wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) const;
+
+    // Scrollable containers.
+    BLINK_EXPORT bool isScrollableContainer() const;
+    BLINK_EXPORT WebPoint scrollOffset() const;
+    BLINK_EXPORT WebPoint minimumScrollOffset() const;
+    BLINK_EXPORT WebPoint maximumScrollOffset() const;
+    BLINK_EXPORT void setScrollOffset(const WebPoint&) const;
 
     // Make this object visible by scrolling as many nested scrollable views as needed.
     BLINK_EXPORT void scrollToMakeVisible() const;

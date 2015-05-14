@@ -253,10 +253,4 @@ ScrollableArea* AXScrollView::getScrollableAreaIfScrollable() const
     return m_scrollView;
 }
 
-void AXScrollView::scrollTo(const IntPoint& point) const
-{
-    if (m_scrollView)
-        m_scrollView->setScrollPosition(point);
-}
-
 } // namespace blink
