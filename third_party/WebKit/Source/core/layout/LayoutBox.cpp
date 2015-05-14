@@ -4760,4 +4760,13 @@ bool LayoutBox::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
     return false;
 }
 
+bool LayoutBox::canRenderBorderImage() const
+{
+    if (!style()->hasBorder())
+        return false;
+
+    StyleImage* borderImage = style()->borderImage().image();
+    return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
+}
+
 } // namespace blink

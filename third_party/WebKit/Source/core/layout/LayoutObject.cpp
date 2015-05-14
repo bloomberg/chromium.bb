@@ -918,15 +918,6 @@ LayoutBlock* LayoutObject::containingBlock() const
     return toLayoutBlock(o);
 }
 
-bool LayoutObject::canRenderBorderImage() const
-{
-    if (!style()->hasBorder())
-        return false;
-
-    StyleImage* borderImage = style()->borderImage().image();
-    return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
-}
-
 bool LayoutObject::mustInvalidateFillLayersPaintOnHeightChange(const FillLayer& layer) const
 {
     // Nobody will use multiple layers without wanting fancy positioning.

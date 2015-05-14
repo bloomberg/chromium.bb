@@ -541,7 +541,6 @@ public:
     };
     bool hasBoxDecorationBackground() const { return m_bitfields.boxDecorationBackgroundState() != NoBoxDecorationBackground; }
     bool boxDecorationBackgroundIsKnownToBeObscured();
-    bool canRenderBorderImage() const;
     bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
 
