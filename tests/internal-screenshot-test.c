@@ -61,6 +61,60 @@ write_surface_as_png(const struct surface* weston_surface, const char *fname) {
 	return true;
 }
 
+/** load_surface_from_png()
+ *
+ * Reads a PNG image from disk using the given filename (and path)
+ * and returns as a freshly allocated weston test surface.
+ *
+ * @returns weston test surface with image, which should be free'd
+ * when no longer used; or, NULL in case of error.
+ */
+static struct surface*
+load_surface_from_png(const char *fname) {
+	struct surface *reference;
+	cairo_surface_t *reference_cairo_surface;
+	cairo_status_t status;
+	size_t source_data_size;
+	int stride;
+
+	printf("Loading reference image %s\n", fname);
+	reference_cairo_surface = cairo_image_surface_create_from_png(fname);
+	status = cairo_surface_status(reference_cairo_surface);
+	if (status != CAIRO_STATUS_SUCCESS) {
+		printf("Could not open %s: %s\n", fname, cairo_status_to_string(status));
+		cairo_surface_destroy(reference_cairo_surface);
+		return NULL;
+	}
+
+	/* Disguise the cairo surface in a weston test surface */
+	reference = xzalloc(sizeof *reference);
+	if (reference == NULL) {
+		perror("xzalloc reference");
+		cairo_surface_destroy(reference_cairo_surface);
+		return NULL;
+	}
+	reference->width = cairo_image_surface_get_width(reference_cairo_surface);
+	reference->height = cairo_image_surface_get_height(reference_cairo_surface);
+	stride = cairo_image_surface_get_stride(reference_cairo_surface);
+	source_data_size = stride * reference->height;
+
+	/* Allocate new buffer for our weston reference, and copy the data from
+	   the cairo surface so we can destroy it */
+	reference->data = xzalloc(source_data_size);
+	if (reference->data == NULL) {
+		perror("xzalloc reference data");
+		cairo_surface_destroy(reference_cairo_surface);
+		free(reference);
+		return NULL;
+	}
+	memcpy(reference->data,
+	       cairo_image_surface_get_data(reference_cairo_surface),
+	       source_data_size);
+
+	cairo_surface_destroy(reference_cairo_surface);
+	return reference;
+}
+
 /** create_screenshot_surface()
  *
  *  Allocates and initializes a weston test surface for use in
@@ -94,8 +148,6 @@ TEST(internal_screenshot)
 	struct surface *reference = NULL;
 	struct rectangle clip;
 	const char *fname;
-	cairo_surface_t *reference_cairo_surface;
-	cairo_status_t status;
 	bool match = false;
 	bool dump_all_images = true;
 
@@ -131,19 +183,8 @@ TEST(internal_screenshot)
 	/* Load reference image */
 	fname = screenshot_reference_filename("internal-screenshot", 0);
 	printf("Loading reference image %s\n", fname);
-	reference_cairo_surface = cairo_image_surface_create_from_png(fname);
-	status = cairo_surface_status(reference_cairo_surface);
-	if (status != CAIRO_STATUS_SUCCESS) {
-		printf("Could not open %s: %s\n", fname, cairo_status_to_string(status));
-		cairo_surface_destroy(reference_cairo_surface);
-		assert(status != CAIRO_STATUS_SUCCESS);
-	}
-
-	/* Disguise the cairo surface in a weston test surface */
-	reference =  xzalloc(sizeof *reference);
-	reference->width = cairo_image_surface_get_width(reference_cairo_surface);
-	reference->height = cairo_image_surface_get_height(reference_cairo_surface);
-	reference->data = cairo_image_surface_get_data(reference_cairo_surface);
+	reference = load_surface_from_png(fname);
+	assert(reference);
 
 	/* Test check_surfaces_equal()
 	 * We expect this to fail since the clock will differ from when we made the reference image
@@ -163,7 +204,6 @@ TEST(internal_screenshot)
 	printf("Clip: %d,%d %d x %d\n", clip.x, clip.y, clip.width, clip.height);
 	match = check_surfaces_match_in_clip(screenshot, reference, &clip);
 	printf("Screenshot %s reference image in clipped area\n", match? "matches" : "doesn't match");
-	cairo_surface_destroy(reference_cairo_surface);
 	free(reference);
 
 	/* Test dumping of non-matching images */
