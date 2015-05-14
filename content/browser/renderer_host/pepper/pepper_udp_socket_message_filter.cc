@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +61,8 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
     BrowserPpapiHostImpl* host,
     PP_Instance instance,
     bool private_api)
-    : socket_options_(0),
+    : host_(host),
+      socket_options_(0),
       rcvbuf_size_(0),
       sndbuf_size_(0),
       multicast_ttl_(0),
@@ -645,6 +647,10 @@ void PepperUDPSocketMessageFilter::SendBindReply(
     const ppapi::host::ReplyMessageContext& context,
     int32_t result,
     const PP_NetAddress_Private& addr) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "Pepper.PluginContextSecurity.UDPBind",
+      host_->IsPotentiallySecurePluginContext(resource_host()->pp_instance()));
+
   ppapi::host::ReplyMessageContext reply_context(context);
   reply_context.params.set_result(result);
   SendReply(reply_context, PpapiPluginMsg_UDPSocket_BindReply(addr));

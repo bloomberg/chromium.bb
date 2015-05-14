@@ -226,6 +226,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
   IPC_STRUCT_TRAITS_MEMBER(render_frame_id)
   IPC_STRUCT_TRAITS_MEMBER(document_url)
   IPC_STRUCT_TRAITS_MEMBER(plugin_url)
+  IPC_STRUCT_TRAITS_MEMBER(is_potentially_secure_plugin_context)
 IPC_STRUCT_TRAITS_END()
 #endif
 

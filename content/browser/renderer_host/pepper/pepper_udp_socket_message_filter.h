@@ -133,6 +133,8 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
 
   int32_t CanUseMulticastAPI(const PP_NetAddress_Private& addr);
 
+  BrowserPpapiHostImpl* host_;
+
   // Bitwise-or of SocketOption flags. This stores the state about whether
   // each option is set before Bind() is called.
   int socket_options_;

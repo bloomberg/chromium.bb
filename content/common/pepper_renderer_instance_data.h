@@ -22,12 +22,17 @@ struct PepperRendererInstanceData {
   PepperRendererInstanceData(int render_process,
                              int render_frame_id,
                              const GURL& document,
-                             const GURL& plugin);
+                             const GURL& plugin,
+                             bool secure);
   ~PepperRendererInstanceData();
   int render_process_id;
   int render_frame_id;
   GURL document_url;
   GURL plugin_url;
+  // Whether the plugin context is secure. That is, it is served from a secure
+  // origin and it is embedded within a hierarchy of secure frames. This value
+  // comes from the renderer so should not be trusted. It is used for metrics.
+  bool is_potentially_secure_plugin_context;
 };
 
 }  // namespace content

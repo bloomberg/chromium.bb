@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
@@ -1000,6 +1001,9 @@ void PepperTCPSocketMessageFilter::SendConnectReply(
     int32_t pp_result,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
+  UMA_HISTOGRAM_BOOLEAN("Pepper.PluginContextSecurity.TCPConnect",
+                        host_->IsPotentiallySecurePluginContext(instance_));
+
   ppapi::host::ReplyMessageContext reply_context(context);
   reply_context.params.set_result(pp_result);
   SendReply(reply_context,

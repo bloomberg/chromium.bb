@@ -42,11 +42,15 @@ void PepperBrowserConnection::DidCreateInProcessInstance(
     int render_frame_id,
     const GURL& document_url,
     const GURL& plugin_url) {
+  // We don't need to know if it's a privileged context for in-process plugins.
+  // In process plugins are deprecated and the only in-process plugin that
+  // exists is the "NaCl plugin" which will never need to know this.
+  bool is_privileged_context = false;
   Send(new ViewHostMsg_DidCreateInProcessInstance(
       instance,
       // Browser provides the render process id.
-      PepperRendererInstanceData(
-          0, render_frame_id, document_url, plugin_url)));
+      PepperRendererInstanceData(0, render_frame_id, document_url, plugin_url,
+                                 is_privileged_context)));
 }
 
 void PepperBrowserConnection::DidDeleteInProcessInstance(PP_Instance instance) {

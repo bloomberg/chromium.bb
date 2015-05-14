@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 
 #include "content/common/view_messages.h"
+#include "content/public/common/origin_util.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
@@ -12,6 +13,9 @@
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/renderer_restrict_dispatch_group.h"
 #include "content/renderer/render_frame_impl.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 namespace content {
 
@@ -85,14 +89,19 @@ void HostDispatcherWrapper::AddInstance(PP_Instance instance) {
   if (host) {
     RenderFrame* render_frame = host->GetRenderFrameForInstance(instance);
     PepperPluginInstance* plugin_instance = host->GetPluginInstance(instance);
+    blink::WebString unused;
+    bool is_privileged_context =
+        plugin_instance->GetContainer()
+            ->element()
+            .document()
+            .isPrivilegedContext(unused) &&
+        content::IsOriginSecure(plugin_instance->GetPluginURL());
     render_frame->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
-        plugin_child_id_,
-        instance,
+        plugin_child_id_, instance,
         PepperRendererInstanceData(
             0,  // The render process id will be supplied in the browser.
-            render_frame->GetRoutingID(),
-            host->GetDocumentURL(instance),
-            plugin_instance->GetPluginURL()),
+            render_frame->GetRoutingID(), host->GetDocumentURL(instance),
+            plugin_instance->GetPluginURL(), is_privileged_context),
         is_external_));
   }
 }

@@ -141,6 +141,14 @@ void BrowserPpapiHostImpl::SetOnKeepaliveCallback(
   on_keepalive_callback_ = callback;
 }
 
+bool BrowserPpapiHostImpl::IsPotentiallySecurePluginContext(
+    PP_Instance instance) {
+  auto* data = instance_map_.get(instance);
+  if (data == nullptr)
+    return false;
+  return data->renderer_data.is_potentially_secure_plugin_context;
+}
+
 void BrowserPpapiHostImpl::AddInstance(
     PP_Instance instance,
     const PepperRendererInstanceData& renderer_instance_data) {

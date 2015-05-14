@@ -26649,6 +26649,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Pepper.PluginContextSecurity.TCPConnect" enum="BooleanSecure">
+  <owner>raymes@chromium.org</owner>
+  <owner>jww@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Whether a Pepper TCP connect attempt comes from a plugin in a secure or an
+    insecure origin.
+  </summary>
+</histogram>
+
+<histogram name="Pepper.PluginContextSecurity.UDPBind" enum="BooleanSecure">
+  <owner>raymes@chromium.org</owner>
+  <owner>jww@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Whether a Pepper UDP bind attempt comes from a plugin in a secure or an
+    insecure origin.
+  </summary>
+</histogram>
+
 <histogram name="PerformanceMonitor.AverageCPU" units="PercentCPUUsage">
   <owner>oysteine@chromium.org</owner>
   <summary>
@@ -48180,6 +48200,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanRevoked" type="int">
   <int value="0" label="Not revoked"/>
   <int value="1" label="Revoked"/>
+</enum>
+
+<enum name="BooleanSecure" type="int">
+  <int value="0" label="Insecure"/>
+  <int value="1" label="Secure"/>
 </enum>
 
 <enum name="BooleanSelected" type="int">
