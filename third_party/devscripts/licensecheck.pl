@@ -342,10 +342,17 @@ sub remove_comments($) {
     $_ = $_[0];
     # Remove Fortran comments
     s/^[cC] //gm;
+    # Remove .ASM comments
+    s#^;\*?##gm;
+    # Remove .S comments
+    s#^@ ##gm;
+    # Remove new lines
     tr/\t\r\n/ /;
     # Remove C / C++ comments
     s#(\*/|/[/*])##g;
+    # Remove all characters not matching search
     tr% A-Za-z.,@;0-9\(\)/-%%cd;
+    # Collapse multiple spaces into single space
     tr/ //s;
     $_[0] = $_;
 }
