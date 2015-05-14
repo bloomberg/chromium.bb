@@ -45,8 +45,6 @@ public:
     ExecutionContextTask() { }
     virtual ~ExecutionContextTask() { }
     virtual void performTask(ExecutionContext*) = 0;
-    // Certain tasks get marked specially so that they aren't discarded, and are executed, when the context is shutting down its message queue.
-    virtual bool isCleanupTask() const { return false; }
     virtual String taskNameForInstrumentation() const { return String(); }
 };
 

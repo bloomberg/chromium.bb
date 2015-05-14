@@ -18,6 +18,10 @@ class BLINK_PLATFORM_EXPORT WebScheduler {
 public:
     virtual ~WebScheduler() { }
 
+    // Called to prevent any more pending tasks from running. Must be called on
+    // the associated WebThread.
+    virtual void shutdown() { }
+
     // Returns true if there is high priority work pending on the associated WebThread
     // and the caller should yield to let the scheduler service that work.
     // Must be called on the associated WebThread.
