@@ -209,6 +209,7 @@
     { "name": "login.corp.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "play.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "passwords.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "myaccount.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     // Other Google-related domains that must use HTTPS.
     { "name": "gmail.com", "mode": "force-https", "pins": "google" },
