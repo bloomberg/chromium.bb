@@ -34,7 +34,6 @@ class CSSStyleSheet;
 class CSSValue;
 class ExceptionState;
 class MutableStylePropertySet;
-class ScriptState;
 
 class CORE_EXPORT CSSStyleDeclaration : public NoBaseWillBeGarbageCollectedFinalized<CSSStyleDeclaration>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -70,7 +69,6 @@ public:
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
     virtual CSSStyleSheet* parentStyleSheet() const { return 0; }
-    virtual bool anonymousNamedSetter(ScriptState*, const String& name, const String& value, ExceptionState&);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 

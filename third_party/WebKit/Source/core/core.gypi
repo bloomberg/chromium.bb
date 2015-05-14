@@ -1109,7 +1109,6 @@
             'css/CSSSelectorList.h',
             'css/CSSShadowValue.cpp',
             'css/CSSShadowValue.h',
-            'css/CSSStyleDeclaration.cpp',
             'css/CSSStyleDeclaration.h',
             'css/CSSStyleRule.cpp',
             'css/CSSStyleRule.h',

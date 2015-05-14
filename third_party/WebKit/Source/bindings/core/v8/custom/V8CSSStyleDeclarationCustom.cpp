@@ -210,4 +210,23 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, 
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
+void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!name->IsString())
+        return;
+    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
+    CSSPropertyID unresolvedProperty = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
+    if (!unresolvedProperty)
+        return;
+
+    TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, propertyValue, value);
+    ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(resolveCSSPropertyID(unresolvedProperty)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
+    impl->setPropertyInternal(unresolvedProperty, propertyValue, false, exceptionState);
+
+    if (exceptionState.throwIfNeeded())
+        return;
+
+    v8SetReturnValue(info, value);
+}
+
 } // namespace blink
