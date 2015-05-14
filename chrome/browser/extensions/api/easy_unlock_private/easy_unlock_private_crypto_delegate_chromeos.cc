@@ -9,7 +9,8 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace extensions {
-namespace api {
+
+namespace easy_unlock_private = api::easy_unlock_private;
 
 namespace {
 
@@ -39,7 +40,7 @@ std::string SignatureTypeToString(easy_unlock_private::SignatureType type) {
 
 // ChromeOS specific EasyUnlockPrivateCryptoDelegate implementation.
 class EasyUnlockPrivateCryptoDelegateChromeOS
-    : public extensions::api::EasyUnlockPrivateCryptoDelegate {
+    : public extensions::EasyUnlockPrivateCryptoDelegate {
  public:
   EasyUnlockPrivateCryptoDelegateChromeOS()
       : dbus_client_(
@@ -128,5 +129,4 @@ scoped_ptr<EasyUnlockPrivateCryptoDelegate>
       new EasyUnlockPrivateCryptoDelegateChromeOS());
 }
 
-}  // namespace api
 }  // namespace extensions

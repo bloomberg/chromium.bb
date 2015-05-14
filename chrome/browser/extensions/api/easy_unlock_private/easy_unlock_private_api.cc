@@ -43,7 +43,8 @@
 using proximity_auth::ScreenlockState;
 
 namespace extensions {
-namespace api {
+
+namespace easy_unlock_private = api::easy_unlock_private;
 
 namespace {
 
@@ -54,7 +55,7 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI> >
 EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(
     content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>::Get(context)
-             ->crypto_delegate();
+      ->GetCryptoDelegate();
 }
 
 ScreenlockState ToScreenlockState(easy_unlock_private::State state) {
@@ -94,11 +95,16 @@ BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
   return g_factory.Pointer();
 }
 
-EasyUnlockPrivateAPI::EasyUnlockPrivateAPI(content::BrowserContext* context)
-    : crypto_delegate_(EasyUnlockPrivateCryptoDelegate::Create()) {
+EasyUnlockPrivateAPI::EasyUnlockPrivateAPI(content::BrowserContext* context) {
 }
 
 EasyUnlockPrivateAPI::~EasyUnlockPrivateAPI() {}
+
+EasyUnlockPrivateCryptoDelegate* EasyUnlockPrivateAPI::GetCryptoDelegate() {
+  if (!crypto_delegate_)
+    crypto_delegate_ = EasyUnlockPrivateCryptoDelegate::Create();
+  return crypto_delegate_.get();
+}
 
 EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {
 }
@@ -836,5 +842,4 @@ bool EasyUnlockPrivateSetAutoPairingResultFunction::RunSync() {
   return true;
 }
 
-}  // namespace api
 }  // namespace extensions

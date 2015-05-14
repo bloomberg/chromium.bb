@@ -5,13 +5,14 @@
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
 
 namespace extensions {
-namespace api {
+
+namespace easy_unlock_private = api::easy_unlock_private;
 
 namespace {
 
 // Stub EasyUnlockPrivateCryptoDelegate implementation.
 class EasyUnlockPrivateCryptoDelegateStub
-    : public extensions::api::EasyUnlockPrivateCryptoDelegate {
+    : public extensions::EasyUnlockPrivateCryptoDelegate {
  public:
   EasyUnlockPrivateCryptoDelegateStub() {}
 
@@ -52,5 +53,4 @@ scoped_ptr<EasyUnlockPrivateCryptoDelegate>
       new EasyUnlockPrivateCryptoDelegateStub());
 }
 
-}  // namespace api
 }  // namespace extensions

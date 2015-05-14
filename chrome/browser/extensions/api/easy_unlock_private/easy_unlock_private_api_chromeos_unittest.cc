@@ -29,11 +29,11 @@ namespace {
 
 namespace api = extensions::api::easy_unlock_private;
 
-using extensions::api::EasyUnlockPrivateGenerateEcP256KeyPairFunction;
-using extensions::api::EasyUnlockPrivatePerformECDHKeyAgreementFunction;
-using extensions::api::EasyUnlockPrivateCreateSecureMessageFunction;
-using extensions::api::EasyUnlockPrivateUnwrapSecureMessageFunction;
-using extensions::api::EasyUnlockPrivateSetAutoPairingResultFunction;
+using extensions::EasyUnlockPrivateGenerateEcP256KeyPairFunction;
+using extensions::EasyUnlockPrivatePerformECDHKeyAgreementFunction;
+using extensions::EasyUnlockPrivateCreateSecureMessageFunction;
+using extensions::EasyUnlockPrivateUnwrapSecureMessageFunction;
+using extensions::EasyUnlockPrivateSetAutoPairingResultFunction;
 
 // Converts a string to a base::BinaryValue value whose buffer contains the
 // string data without the trailing '\0'.

@@ -22,11 +22,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-namespace api {
-
-namespace easy_unlock {
-struct SeekDeviceResult;
-}  // easy_unlock
 
 class EasyUnlockPrivateCryptoDelegate;
 
@@ -40,9 +35,7 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   explicit EasyUnlockPrivateAPI(content::BrowserContext* context);
   ~EasyUnlockPrivateAPI() override;
 
-  EasyUnlockPrivateCryptoDelegate* crypto_delegate() {
-    return crypto_delegate_.get();
-  }
+  EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate();
 
  private:
   friend class BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>;
@@ -399,7 +392,6 @@ class EasyUnlockPrivateSetAutoPairingResultFunction
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetAutoPairingResultFunction);
 };
 
-}  // namespace api
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_
