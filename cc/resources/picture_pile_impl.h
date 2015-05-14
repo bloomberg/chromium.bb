@@ -124,6 +124,8 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   // threads with multi-threaded Ganesh.  Make this const or remove it.
   bool should_attempt_to_use_distance_field_text_;
 
+  size_t picture_memory_usage_;
+
  private:
   typedef std::map<const Picture*, Region> PictureRegionMap;
 

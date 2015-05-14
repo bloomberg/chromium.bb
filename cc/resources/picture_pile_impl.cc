@@ -34,7 +34,8 @@ PicturePileImpl::PicturePileImpl()
       clear_canvas_with_debug_color_(false),
       min_contents_scale_(0.f),
       slow_down_raster_scale_factor_for_debug_(0),
-      should_attempt_to_use_distance_field_text_(false) {
+      should_attempt_to_use_distance_field_text_(false),
+      picture_memory_usage_(0) {
 }
 
 PicturePileImpl::PicturePileImpl(const PicturePile* other,
@@ -52,7 +53,15 @@ PicturePileImpl::PicturePileImpl(const PicturePile* other,
       min_contents_scale_(other->min_contents_scale_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
-      should_attempt_to_use_distance_field_text_(false) {
+      should_attempt_to_use_distance_field_text_(false),
+      picture_memory_usage_(0) {
+  // Figure out the picture size upon construction.
+  base::hash_set<const Picture*> pictures_seen;
+  for (const auto& map_value : picture_map_) {
+    const Picture* picture = map_value.second.get();
+    if (pictures_seen.insert(picture).second)
+      picture_memory_usage_ += picture->ApproximateMemoryUsage();
+  }
 }
 
 PicturePileImpl::PicturePileImpl(const PicturePileImpl* other,
@@ -71,7 +80,8 @@ PicturePileImpl::PicturePileImpl(const PicturePileImpl* other,
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(
-          other->should_attempt_to_use_distance_field_text_) {
+          other->should_attempt_to_use_distance_field_text_),
+      picture_memory_usage_(other->picture_memory_usage_) {
 }
 
 PicturePileImpl::~PicturePileImpl() {
@@ -264,16 +274,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
 }
 
 size_t PicturePileImpl::GetPictureMemoryUsage() const {
-  // Place all pictures in a set to de-dupe.
-  size_t total_size = 0;
-  std::set<const Picture*> pictures_seen;
-  for (const auto& map_value : picture_map_) {
-    const Picture* picture = map_value.second.get();
-    if (pictures_seen.insert(picture).second)
-      total_size += picture->ApproximateMemoryUsage();
-  }
-
-  return total_size;
+  return picture_memory_usage_;
 }
 
 void PicturePileImpl::PerformSolidColorAnalysis(
