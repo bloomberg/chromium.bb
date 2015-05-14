@@ -98,11 +98,7 @@ P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
   net::UDPServerSocket* socket = new net::UDPServerSocket(
       GetContentClient()->browser()->GetNetLog(), net::NetLog::Source());
 #if defined(OS_WIN)
-  // If configured for finch experiment, use nonblocking IO.
-  if (base::FieldTrialList::FindFullName("WebRTC-UDPSocketNonBlockingIO") ==
-      "Enabled") {
-    socket->UseNonBlockingIO();
-  }
+  socket->UseNonBlockingIO();
 #endif
   socket_.reset(socket);
 }
