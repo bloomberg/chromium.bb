@@ -11,6 +11,7 @@ import os
 import sys
 
 from pylib import constants
+from pylib.device import device_errors
 from pylib.device import device_utils
 
 
@@ -73,14 +74,11 @@ def main(argv):
   devices = device_utils.DeviceUtils.HealthyDevices()
 
   if options.device:
-    device_serials = [d.adb.GetDeviceSerial() for d in devices]
-    if options.device not in device_serials:
-      raise Exception('Error: %s not in attached devices %s' % (options.device,
-                      ','.join(device_serials)))
-    devices = [options.device]
-
-  if not devices:
-    raise Exception('Error: no connected devices')
+    devices = [d for d in devices if d == options.device]
+    if not devices:
+      raise device_errors.DeviceUnreachableError(options.device)
+  elif not devices:
+    raise device_errors.NoDevicesError()
 
   device_utils.DeviceUtils.parallel(devices).Install(
       options.apk, reinstall=options.keep_data)

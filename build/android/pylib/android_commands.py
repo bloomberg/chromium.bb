@@ -5,7 +5,11 @@
 """Provides an interface to communicate with the device via the adb command.
 
 Assumes adb binary is currently on system path.
+
+Note that this module is deprecated.
 """
+# TODO(jbudorick): Delete this file once no clients use it.
+
 # pylint: skip-file
 
 import collections

@@ -19,6 +19,7 @@ import time
 from pylib import constants
 from pylib import forwarder
 from pylib.device import adb_wrapper
+from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
 
@@ -56,16 +57,15 @@ def main(argv):
   devices = device_utils.DeviceUtils.HealthyDevices()
 
   if options.device:
-    if options.device not in [str(d) for d in devices]:
-      raise Exception('Error: %s not in attached devices %s' % (options.device,
-                      ','.join(devices)))
-    devices = [options.device]
-  else:
-    if not devices:
-      raise Exception('Error: no connected devices')
+    device = next((d for d in devices if d == options.device), None)
+    if not device:
+      raise device_errors.DeviceUnreachableError(options.device)
+  elif devices:
+    device = devices[0]
     logging.info('No device specified. Defaulting to %s', devices[0])
+  else:
+    raise device_errors.NoDevicesError()
 
-  device = devices[0]
   constants.SetBuildType(options.build_type)
   try:
     forwarder.Forwarder.Map(port_pairs, device)

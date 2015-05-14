@@ -37,7 +37,6 @@ _TEST_DATA_DIR = os.path.join(chrome_paths.GetTestData(), 'chromedriver')
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
-  from pylib import android_commands
   from pylib import constants
   from pylib import forwarder
   from pylib import valgrind_tools
@@ -236,8 +235,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         chrome_paths.GetTestData())
     ChromeDriverTest._sync_server = webserver.SyncWebServer()
     if _ANDROID_PACKAGE_KEY:
-      ChromeDriverTest._device = device_utils.DeviceUtils(
-          android_commands.GetAttachedDevices()[0])
+      ChromeDriverTest._device = device_utils.DeviceUtils.HealthyDevices()[0]
       http_host_port = ChromeDriverTest._http_server._server.server_port
       sync_host_port = ChromeDriverTest._sync_server._server.server_port
       forwarder.Forwarder.Map(
@@ -1069,8 +1067,8 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
       print 'Unable to fetch current version info from omahaproxy (%s)' % e
 
   def testDeviceManagement(self):
-    self._drivers = [self.CreateDriver() for x in
-                     android_commands.GetAttachedDevices()]
+    self._drivers = [self.CreateDriver()
+                     for _ in device_utils.DeviceUtils.HealthyDevices()]
     self.assertRaises(chromedriver.UnknownError, self.CreateDriver)
     self._drivers[0].Quit()
     self._drivers[0] = self.CreateDriver()

@@ -6,19 +6,18 @@ import unittest
 
 from profile_chrome import profiler
 
-from pylib import android_commands
 from pylib.device import device_utils
 from pylib.device import intent
 
 
 class BaseControllerTest(unittest.TestCase):
   def setUp(self):
-    devices = android_commands.GetAttachedDevices()
+    devices = device_utils.DeviceUtils.HealthyDevices()
     self.browser = 'stable'
     self.package_info = profiler.GetSupportedBrowsers()[self.browser]
-    self.device = device_utils.DeviceUtils(devices[0])
+    self.device = devices[0]
 
-    self.device.old_interface.CloseApplication(self.package_info.package)
+    self.device.ForceStop(self.package_info.package)
     self.device.StartActivity(
         intent.Intent(activity=self.package_info.activity,
                       package=self.package_info.package),

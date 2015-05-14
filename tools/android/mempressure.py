@@ -15,7 +15,6 @@ BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__),
                                  'build',
                                  'android')
 sys.path.append(BUILD_ANDROID_DIR)
-from pylib import android_commands
 from pylib import constants
 from pylib import flag_changer
 from pylib.device import device_errors
@@ -88,12 +87,12 @@ def main(argv):
   package = package_info.package
   activity = package_info.activity
 
-  devices = android_commands.GetAttachedDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices()
   if not devices:
     raise device_errors.NoDevicesError()
   elif len(devices) > 1:
-    logging.warning('Multiple devices attached. Using %s.' % devices[0])
-  device = device_utils.DeviceUtils(devices[0])
+    logging.warning('Multiple devices attached. Using %s.', str(devices[0]))
+  device = devices[0]
 
   try:
     device.EnableRoot()

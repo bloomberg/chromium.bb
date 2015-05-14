@@ -18,7 +18,6 @@ import bb_annotations
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import provision_devices
-from pylib import android_commands
 from pylib import constants
 from pylib.device import device_utils
 from pylib.gtest import gtest_config
@@ -215,9 +214,9 @@ def RunChromeProxyTests(options):
   """
   InstallApk(options, INSTRUMENTATION_TESTS['ChromeShell'], False)
   args = ['--browser', 'android-chrome-shell']
-  devices = android_commands.GetAttachedDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices()
   if devices:
-    args = args + ['--device', devices[0]]
+    args = args + ['--device', devices[0].adb.GetDeviceSerial()]
   bb_annotations.PrintNamedStep('chrome_proxy')
   RunCmd(['tools/chrome_proxy/run_tests'] + args)
 
@@ -234,7 +233,7 @@ def RunTelemetryTests(options, step_name, run_tests_path):
   """
   InstallApk(options, INSTRUMENTATION_TESTS['ChromeShell'], False)
   args = ['--browser', 'android-chrome-shell']
-  devices = android_commands.GetAttachedDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices()
   if devices:
     args = args + ['--device', 'android']
   bb_annotations.PrintNamedStep(step_name)

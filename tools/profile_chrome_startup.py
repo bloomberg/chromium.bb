@@ -19,7 +19,6 @@ from profile_chrome import flags
 from profile_chrome import profiler
 from profile_chrome import systrace_controller
 from profile_chrome import ui
-from pylib import android_commands
 from pylib.device import device_utils
 
 
@@ -58,11 +57,11 @@ def main():
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-  devices = android_commands.GetAttachedDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices()
   if len(devices) != 1:
     logging.error('Exactly 1 device must be attached.')
     return 1
-  device = device_utils.DeviceUtils(devices[0])
+  device = devices[0]
   package_info = profiler.GetSupportedBrowsers()[options.browser]
 
   if options.systrace_categories in ['list', 'help']:

@@ -18,7 +18,6 @@ import tempfile
 import time
 
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'android'))
-from pylib import android_commands
 from pylib import constants
 from pylib import flag_changer
 from pylib import forwarder
@@ -201,8 +200,8 @@ class AndroidProfileTool(object):
 
 
   def __init__(self, output_directory):
-    devices = android_commands.GetAttachedDevices()
-    self._device = device_utils.DeviceUtils(devices[0])
+    devices = device_utils.DeviceUtils.HealthyDevices()
+    self._device = devices[0]
     self._cygprofile_tests = os.path.join(
         output_directory, 'cygprofile_unittests')
     self._host_cyglog_dir = os.path.join(

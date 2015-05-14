@@ -15,6 +15,7 @@ from profile_chrome import ui
 from pylib import android_commands
 from pylib import constants
 from pylib.perf import perf_control
+from pylib.utils import device_temp_file
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'tools',
@@ -47,8 +48,8 @@ _PERF_OPTIONS = [
 class _PerfProfiler(object):
   def __init__(self, device, perf_binary, categories):
     self._device = device
-    self._output_file = android_commands.DeviceTempFile(
-        self._device.old_interface, prefix='perf_output')
+    self._output_file = device_temp_file.DeviceTempFile(
+        self._device.adb, prefix='perf_output')
     self._log_file = tempfile.TemporaryFile()
 
     # TODO(jbudorick) Look at providing a way to unhandroll this once the

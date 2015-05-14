@@ -18,7 +18,6 @@ _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
-  from pylib import android_commands
   from pylib import forwarder
   from pylib import valgrind_tools
   from pylib.device import device_errors
@@ -96,12 +95,12 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
   def GlobalSetUp(self):
     os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
     os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
-    devices = android_commands.GetAttachedDevices()
+    devices = device_utils.DeviceUtils.HealthyDevices()
     if not devices:
       raise device_errors.NoDevicesError()
     elif len(devices) > 1:
       logging.warning('Multiple devices attached. Using %s.' % devices[0])
-    self._device = device_utils.DeviceUtils(devices[0])
+    self._device = devices[0]
     forwarder.Forwarder.Map(
         [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
          (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],

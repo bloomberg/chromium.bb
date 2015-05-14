@@ -50,10 +50,11 @@ class _PHASES(object):
 
 
 def ProvisionDevices(options):
-  if options.device is not None:
-    devices = [options.device]
-  else:
-    devices = device_utils.DeviceUtils.HealthyDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices()
+  if options.device:
+    devices = [d for d in devices if d == options.device]
+    if not devices:
+      raise device_errors.DeviceUnreachableError(options.device)
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
   parallel_devices.pMap(ProvisionDevice, options)

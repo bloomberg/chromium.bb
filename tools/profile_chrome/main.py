@@ -18,7 +18,6 @@ from profile_chrome import profiler
 from profile_chrome import systrace_controller
 from profile_chrome import ui
 
-from pylib import android_commands
 from pylib.device import device_utils
 
 
@@ -170,15 +169,15 @@ When in doubt, just try out --trace-frame-viewer.
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-  devices = android_commands.GetAttachedDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices()
   device = None
-  if options.device in devices:
-    device = options.device
-  elif not options.device and len(devices) == 1:
+  if options.device:
+    device = next((d for d in devices if d == options.device), None)
+  elif len(devices) == 1:
     device = devices[0]
+
   if not device:
     parser.error('Use -d/--device to select a device:\n' + '\n'.join(devices))
-  device = device_utils.DeviceUtils(device)
   package_info = profiler.GetSupportedBrowsers()[options.browser]
 
   if options.chrome_categories in ['list', 'help']:
