@@ -44641,6 +44641,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Variations.RequestCount">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Number of previous requests to the variations server in the same session,
+    logged each time a new request is attempted to the variations server. For
+    example, the value of the 0th bucket indicates the number of initial
+    requests to the server that took place.
+  </summary>
+</histogram>
+
 <histogram name="Variations.ResourceRequestsAllowed"
     enum="VariationsResourceRequestsAllowedState">
   <owner>asvitkine@chromium.org</owner>

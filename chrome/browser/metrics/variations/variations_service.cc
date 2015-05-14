@@ -244,6 +244,7 @@ VariationsService::VariationsService(
       create_trials_from_seed_called_(false),
       initial_request_completed_(false),
       resource_request_allowed_notifier_(notifier),
+      request_count_(0),
       weak_ptr_factory_(this) {
   resource_request_allowed_notifier_->Init(this);
 }
@@ -472,6 +473,8 @@ void VariationsService::DoActualFetch() {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.TimeSinceLastFetchAttempt",
                               time_since_last_fetch.InMinutes(), 0,
                               base::TimeDelta::FromDays(7).InMinutes(), 50);
+  UMA_HISTOGRAM_COUNTS_100("Variations.RequestCount", request_count_);
+  ++request_count_;
   last_request_started_time_ = now;
 }
 

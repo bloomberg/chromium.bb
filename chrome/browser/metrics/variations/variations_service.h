@@ -267,6 +267,9 @@ class VariationsService
   // latency of seed requests. Initially zero.
   base::TimeTicks last_request_started_time_;
 
+  // The number of requests to the variations server that have been performed.
+  int request_count_;
+
   // List of observers of the VariationsService.
   ObserverList<Observer> observer_list_;
 
