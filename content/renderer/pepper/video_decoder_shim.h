@@ -72,6 +72,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   struct PendingDecode;
   struct PendingFrame;
   class DecoderImpl;
+  class YUVConverter;
 
   void OnInitializeComplete(int32_t result, uint32_t texture_pool_size);
   void OnDecodeComplete(int32_t result, uint32_t decode_id);
@@ -109,8 +110,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   typedef std::queue<uint32_t> CompletedDecodeQueue;
   CompletedDecodeQueue completed_decodes_;
 
-  // Queue of decoded frames that have been converted to RGB and await upload to
-  // a GL texture.
+  // Queue of decoded frames that await rgb->yuv conversion.
   typedef std::queue<linked_ptr<PendingFrame> > PendingFrameQueue;
   PendingFrameQueue pending_frames_;
 
@@ -118,6 +118,8 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   uint32_t texture_pool_size_;
 
   uint32_t num_pending_decodes_;
+
+  scoped_ptr<YUVConverter> yuv_converter_;
 
   base::WeakPtrFactory<VideoDecoderShim> weak_ptr_factory_;
 

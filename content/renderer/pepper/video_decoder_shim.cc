@@ -9,6 +9,9 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/bind.h"
+#ifndef NDEBUG
+#include "base/logging.h"
+#endif
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/blink/context_provider_web_context.h"
@@ -25,8 +28,579 @@
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_errors.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 
 namespace content {
+
+static const uint32_t kGrInvalidateState =
+    kRenderTarget_GrGLBackendState | kTextureBinding_GrGLBackendState |
+    kView_GrGLBackendState | kVertex_GrGLBackendState |
+    kProgram_GrGLBackendState;
+
+// YUV->RGB converter class using a shader and FBO.
+class VideoDecoderShim::YUVConverter {
+ public:
+  YUVConverter(const scoped_refptr<cc_blink::ContextProviderWebContext>&);
+  ~YUVConverter();
+  bool Initialize();
+  void Convert(const scoped_refptr<media::VideoFrame>& frame, GLuint tex_out);
+
+ private:
+  GLuint CreateShader();
+  GLuint CompileShader(const char* name, GLuint type, const char* code);
+  GLuint CreateProgram(const char* name, GLuint vshader, GLuint fshader);
+  GLuint CreateTexture();
+  void SetTexcoordClamp(uint32_t stride, uint32_t width);
+
+  scoped_refptr<cc_blink::ContextProviderWebContext> context_provider_;
+  gpu::gles2::GLES2Interface* gl_;
+  GLuint frame_buffer_;
+  GLuint vertex_buffer_;
+  GLuint program_;
+
+  GLuint y_texture_;
+  GLuint u_texture_;
+  GLuint v_texture_;
+  GLuint a_texture_;
+
+  GLuint internal_format_;
+  GLuint format_;
+  media::VideoFrame::Format video_format_;
+
+  GLuint y_width_;
+  GLuint y_height_;
+
+  GLuint uv_width_;
+  GLuint uv_height_;
+  uint32_t uv_height_divisor_;
+
+  GLfloat clamp_value_;
+  GLuint clamp_width_;
+  GLint clamp_width_loc_;
+
+  GLint yuv_matrix_loc_;
+  GLint yuv_adjust_loc_;
+
+  DISALLOW_COPY_AND_ASSIGN(YUVConverter);
+};
+
+VideoDecoderShim::YUVConverter::YUVConverter(
+    const scoped_refptr<cc_blink::ContextProviderWebContext>& context_provider)
+    : context_provider_(context_provider),
+      gl_(context_provider_->ContextGL()),
+      frame_buffer_(0),
+      vertex_buffer_(0),
+      program_(0),
+      y_texture_(0),
+      u_texture_(0),
+      v_texture_(0),
+      a_texture_(0),
+      internal_format_(0),
+      format_(0),
+      video_format_(media::VideoFrame::UNKNOWN),
+      y_width_(2),
+      y_height_(2),
+      uv_width_(2),
+      uv_height_(2),
+      uv_height_divisor_(1),
+      clamp_value_(1.f),
+      clamp_width_(0),
+      clamp_width_loc_(0),
+      yuv_matrix_loc_(0),
+      yuv_adjust_loc_(0) {
+  DCHECK(gl_);
+}
+
+VideoDecoderShim::YUVConverter::~YUVConverter() {
+  if (y_texture_)
+    gl_->DeleteTextures(1, &y_texture_);
+
+  if (u_texture_)
+    gl_->DeleteTextures(1, &u_texture_);
+
+  if (v_texture_)
+    gl_->DeleteTextures(1, &v_texture_);
+
+  if (a_texture_)
+    gl_->DeleteTextures(1, &a_texture_);
+
+  if (frame_buffer_)
+    gl_->DeleteFramebuffers(1, &frame_buffer_);
+
+  if (vertex_buffer_)
+    gl_->DeleteBuffers(1, &vertex_buffer_);
+
+  if (program_)
+    gl_->DeleteProgram(program_);
+}
+
+GLuint VideoDecoderShim::YUVConverter::CreateTexture() {
+  GLuint tex = 0;
+
+  gl_->GenTextures(1, &tex);
+  gl_->BindTexture(GL_TEXTURE_2D, tex);
+
+  // Create texture with default size - will be resized upon first frame.
+  gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, 2, 2, 0, format_,
+                  GL_UNSIGNED_BYTE, NULL);
+
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
+  return tex;
+}
+
+GLuint VideoDecoderShim::YUVConverter::CompileShader(const char* name,
+                                                     GLuint type,
+                                                     const char* code) {
+  GLuint shader = gl_->CreateShader(type);
+
+  gl_->ShaderSource(shader, 1, (const GLchar**)&code, NULL);
+  gl_->CompileShader(shader);
+
+#ifndef NDEBUG
+  GLint status = 0;
+
+  gl_->GetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLint max_length = 0;
+    GLint actual_length = 0;
+    gl_->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
+
+    // The max_length includes the NULL character.
+    std::string error_log(max_length, 0);
+    gl_->GetShaderInfoLog(shader, max_length, &actual_length, &error_log[0]);
+
+    LOG(ERROR) << name << " shader compilation failed: " << error_log.c_str();
+    gl_->DeleteShader(shader);
+    return 0;
+  }
+#endif
+
+  return shader;
+}
+
+GLuint VideoDecoderShim::YUVConverter::CreateProgram(const char* name,
+                                                     GLuint vshader,
+                                                     GLuint fshader) {
+  GLuint program = gl_->CreateProgram();
+  gl_->AttachShader(program, vshader);
+  gl_->AttachShader(program, fshader);
+
+  gl_->BindAttribLocation(program, 0, "position");
+
+  gl_->LinkProgram(program);
+
+#ifndef NDEBUG
+  GLint status = 0;
+
+  gl_->GetProgramiv(program, GL_LINK_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLint max_length = 0;
+    GLint actual_length = 0;
+    gl_->GetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
+
+    // The max_length includes the NULL character.
+    std::string error_log(max_length, 0);
+    gl_->GetProgramInfoLog(program, max_length, &actual_length, &error_log[0]);
+
+    LOG(ERROR) << name << " program linking failed: " << error_log.c_str();
+    return 0;
+  }
+#endif
+
+  return program;
+}
+
+GLuint VideoDecoderShim::YUVConverter::CreateShader() {
+  const char* vert_shader =
+      "precision mediump float;\n"
+      "attribute vec2 position;\n"
+      "varying vec2 texcoord;\n"
+      "uniform float clamp_width;\n"
+      "void main()\n"
+      "{\n"
+      "    gl_Position = vec4( position.xy, 0, 1 );\n"
+      "    vec2 tmp = position*0.5+0.5;\n"
+      "    texcoord = vec2(min(tmp.x, clamp_width), tmp.y);\n"
+      "}";
+
+  const char* frag_shader =
+      "precision mediump float;\n"
+      "varying vec2 texcoord;\n"
+      "uniform sampler2D y_sampler;\n"
+      "uniform sampler2D u_sampler;\n"
+      "uniform sampler2D v_sampler;\n"
+      "uniform sampler2D a_sampler;\n"
+      "uniform mat3 yuv_matrix;\n"
+      "uniform vec3 yuv_adjust;\n"
+      "void main()\n"
+      "{\n"
+      "  vec3 yuv = vec3(texture2D(y_sampler, texcoord).x,\n"
+      "                  texture2D(u_sampler, texcoord).x,\n"
+      "                  texture2D(v_sampler, texcoord).x) +\n"
+      "                  yuv_adjust;\n"
+      "  gl_FragColor = vec4(yuv_matrix * yuv, texture2D(a_sampler, "
+      "texcoord).x);\n"
+      "}";
+
+  GLuint vertex_shader =
+      CompileShader("Vertex Shader", GL_VERTEX_SHADER, vert_shader);
+  if (!vertex_shader) {
+    return 0;
+  }
+
+  GLuint fragment_shader =
+      CompileShader("Fragment Shader", GL_FRAGMENT_SHADER, frag_shader);
+  if (!fragment_shader) {
+    gl_->DeleteShader(vertex_shader);
+    return 0;
+  }
+
+  GLuint program =
+      CreateProgram("YUVConverter Program", vertex_shader, fragment_shader);
+
+  gl_->DeleteShader(vertex_shader);
+  gl_->DeleteShader(fragment_shader);
+
+  if (!program) {
+    return 0;
+  }
+
+  gl_->UseProgram(program);
+
+  GLint uniform_location;
+  uniform_location = gl_->GetUniformLocation(program, "y_sampler");
+  DCHECK(uniform_location != -1);
+  gl_->Uniform1i(uniform_location, 0);
+
+  uniform_location = gl_->GetUniformLocation(program, "u_sampler");
+  DCHECK(uniform_location != -1);
+  gl_->Uniform1i(uniform_location, 1);
+
+  uniform_location = gl_->GetUniformLocation(program, "v_sampler");
+  DCHECK(uniform_location != -1);
+  gl_->Uniform1i(uniform_location, 2);
+
+  uniform_location = gl_->GetUniformLocation(program, "a_sampler");
+  DCHECK(uniform_location != -1);
+  gl_->Uniform1i(uniform_location, 3);
+
+  clamp_width_loc_ = gl_->GetUniformLocation(program, "clamp_width");
+  DCHECK(clamp_width_loc_ != -1);
+  gl_->Uniform1f(clamp_width_loc_, clamp_value_);
+
+  gl_->UseProgram(0);
+
+  yuv_matrix_loc_ = gl_->GetUniformLocation(program, "yuv_matrix");
+  DCHECK(yuv_matrix_loc_ != -1);
+
+  yuv_adjust_loc_ = gl_->GetUniformLocation(program, "yuv_adjust");
+  DCHECK(yuv_adjust_loc_ != -1);
+
+  return program;
+}
+
+bool VideoDecoderShim::YUVConverter::Initialize() {
+  // If texture_rg extension is not available, use slower GL_LUMINANCE.
+  if (context_provider_->ContextCapabilities().gpu.texture_rg) {
+    internal_format_ = GL_RED_EXT;
+    format_ = GL_RED_EXT;
+  } else {
+    internal_format_ = GL_LUMINANCE;
+    format_ = GL_LUMINANCE;
+  }
+
+  if (context_provider_->ContextCapabilities().gpu.max_texture_image_units <
+      4) {
+    // We support YUVA textures and require 4 texture units in the fragment
+    // stage.
+    return false;
+  }
+
+  gl_->PushGroupMarkerEXT(0, "YUVConverterContext");
+
+  gl_->GenFramebuffers(1, &frame_buffer_);
+
+  y_texture_ = CreateTexture();
+  u_texture_ = CreateTexture();
+  v_texture_ = CreateTexture();
+  a_texture_ = CreateTexture();
+
+  // Vertex positions.  Also converted to texcoords in vertex shader.
+  GLfloat vertex_positions[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
+
+  gl_->GenBuffers(1, &vertex_buffer_);
+  gl_->BindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  gl_->BufferData(GL_ARRAY_BUFFER, 2 * sizeof(GLfloat) * 4, vertex_positions,
+                  GL_STATIC_DRAW);
+  gl_->BindBuffer(GL_ARRAY_BUFFER, 0);
+
+  program_ = CreateShader();
+
+  gl_->PopGroupMarkerEXT();
+
+  context_provider_->InvalidateGrContext(kGrInvalidateState);
+
+  return (program_ != 0);
+}
+
+void VideoDecoderShim::YUVConverter::SetTexcoordClamp(uint32_t stride,
+                                                      uint32_t width) {
+  clamp_width_ = width;
+  if (width != stride) {
+    // Clamp texcoord width to avoid sampling padding pixels.
+    clamp_value_ = static_cast<float>(width) / static_cast<float>(stride);
+    // Further clamp to 1/2 pixel inside to avoid bilinear sampling errors.
+    clamp_value_ -= (1.f / (2.f * static_cast<float>(stride)));
+  } else {
+    // No clamping necessary if width and stride are equal.
+    clamp_value_ = 1.f;
+  }
+}
+
+void VideoDecoderShim::YUVConverter::Convert(
+    const scoped_refptr<media::VideoFrame>& frame,
+    GLuint tex_out) {
+  const float* yuv_matrix = 0;
+  const float* yuv_adjust = 0;
+
+  if (video_format_ != frame->format()) {
+    // The constants below were taken from cc/output/gl_renderer.cc.
+    // These values are magic numbers that are used in the transformation from
+    // YUV to RGB color values.  They are taken from the following webpage:
+    // http://www.fourcc.org/fccyvrgb.php
+    const float yuv_to_rgb_rec601[9] = {
+        1.164f, 1.164f, 1.164f, 0.0f, -.391f, 2.018f, 1.596f, -.813f, 0.0f,
+    };
+    const float yuv_to_rgb_jpeg[9] = {
+        1.f, 1.f, 1.f, 0.0f, -.34414f, 1.772f, 1.402f, -.71414f, 0.0f,
+    };
+    const float yuv_to_rgb_rec709[9] = {
+        1.164f, 1.164f, 1.164f, 0.0f, -0.213f, 2.112f, 1.793f, -0.533f, 0.0f,
+    };
+
+    // These values map to 16, 128, and 128 respectively, and are computed
+    // as a fraction over 256 (e.g. 16 / 256 = 0.0625).
+    // They are used in the YUV to RGBA conversion formula:
+    //   Y - 16   : Gives 16 values of head and footroom for overshooting
+    //   U - 128  : Turns unsigned U into signed U [-128,127]
+    //   V - 128  : Turns unsigned V into signed V [-128,127]
+    const float yuv_adjust_constrained[3] = {
+        -0.0625f, -0.5f, -0.5f,
+    };
+    // Same as above, but without the head and footroom.
+    const float yuv_adjust_full[3] = {
+        0.0f, -0.5f, -0.5f,
+    };
+
+    switch (frame->format()) {
+      case media::VideoFrame::YV12:  // 420
+      case media::VideoFrame::YV12A:
+      case media::VideoFrame::I420:
+        uv_height_divisor_ = 2;
+        yuv_matrix = yuv_to_rgb_rec601;
+        yuv_adjust = yuv_adjust_constrained;
+        break;
+
+      case media::VideoFrame::YV12HD:  // 420
+        uv_height_divisor_ = 2;
+        yuv_matrix = yuv_to_rgb_rec709;
+        yuv_adjust = yuv_adjust_constrained;
+        break;
+
+      case media::VideoFrame::YV12J:  // 420
+        uv_height_divisor_ = 2;
+        yuv_matrix = yuv_to_rgb_jpeg;
+        yuv_adjust = yuv_adjust_full;
+        break;
+
+      case media::VideoFrame::YV16:  // 422
+      case media::VideoFrame::YV24:  // 444
+        uv_height_divisor_ = 1;
+        yuv_matrix = yuv_to_rgb_rec601;
+        yuv_adjust = yuv_adjust_constrained;
+        break;
+
+      default:
+        NOTREACHED();
+    }
+
+    video_format_ = frame->format();
+
+    // Zero these so everything is reset below.
+    y_width_ = y_height_ = 0;
+  }
+
+  gl_->PushGroupMarkerEXT(0, "YUVConverterContext");
+
+  bool set_clamp = false;
+
+  uint32_t ywidth = frame->coded_size().width();
+  uint32_t yheight = frame->coded_size().height();
+
+  DCHECK_EQ(frame->stride(media::VideoFrame::kUPlane),
+            frame->stride(media::VideoFrame::kVPlane));
+
+  uint32_t ystride = frame->stride(media::VideoFrame::kYPlane);
+  uint32_t uvstride = frame->stride(media::VideoFrame::kUPlane);
+
+  // The following code assumes that extended GLES 2.0 state like
+  // UNPACK_SKIP* and UNPACK_ROW_LENGTH (if available) are set to defaults.
+  gl_->PixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  if (ystride != y_width_ || yheight != y_height_) {
+    // Choose width based on the stride.  Clamp texcoords below.
+    y_width_ = ystride;
+    y_height_ = yheight;
+
+    uv_width_ = uvstride;
+    uv_height_ = y_height_ / uv_height_divisor_;
+
+    SetTexcoordClamp(ystride, ywidth);
+    set_clamp = true;
+
+    // Re-create to resize the textures and upload data.
+    gl_->ActiveTexture(GL_TEXTURE0);
+    gl_->BindTexture(GL_TEXTURE_2D, y_texture_);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, y_width_, y_height_, 0,
+                    format_, GL_UNSIGNED_BYTE,
+                    frame->data(media::VideoFrame::kYPlane));
+
+    gl_->ActiveTexture(GL_TEXTURE1);
+    gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, uv_width_, uv_height_,
+                    0, format_, GL_UNSIGNED_BYTE,
+                    frame->data(media::VideoFrame::kUPlane));
+
+    gl_->ActiveTexture(GL_TEXTURE2);
+    gl_->BindTexture(GL_TEXTURE_2D, v_texture_);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, uv_width_, uv_height_,
+                    0, format_, GL_UNSIGNED_BYTE,
+                    frame->data(media::VideoFrame::kVPlane));
+
+    if (video_format_ == media::VideoFrame::YV12A) {
+      DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
+                frame->stride(media::VideoFrame::kAPlane));
+      gl_->ActiveTexture(GL_TEXTURE3);
+      gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, y_width_, y_height_,
+                      0, format_, GL_UNSIGNED_BYTE,
+                      frame->data(media::VideoFrame::kAPlane));
+    } else {
+      // if there is no alpha channel, then create a 2x2 texture with full
+      // alpha.
+      const uint8_t alpha[4] = {0xff, 0xff, 0xff, 0xff};
+      gl_->ActiveTexture(GL_TEXTURE3);
+      gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, 2, 2, 0, format_,
+                      GL_UNSIGNED_BYTE, alpha);
+    }
+  } else {
+    // Width may have changed even though stride remained the same.
+    if (clamp_width_ != ywidth) {
+      SetTexcoordClamp(ystride, ywidth);
+      set_clamp = true;
+    }
+
+    // Bind textures and upload texture data
+    gl_->ActiveTexture(GL_TEXTURE0);
+    gl_->BindTexture(GL_TEXTURE_2D, y_texture_);
+    gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, y_width_, y_height_, format_,
+                       GL_UNSIGNED_BYTE,
+                       frame->data(media::VideoFrame::kYPlane));
+
+    gl_->ActiveTexture(GL_TEXTURE1);
+    gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
+    gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, uv_width_, uv_height_, format_,
+                       GL_UNSIGNED_BYTE,
+                       frame->data(media::VideoFrame::kUPlane));
+
+    gl_->ActiveTexture(GL_TEXTURE2);
+    gl_->BindTexture(GL_TEXTURE_2D, v_texture_);
+    gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, uv_width_, uv_height_, format_,
+                       GL_UNSIGNED_BYTE,
+                       frame->data(media::VideoFrame::kVPlane));
+
+    if (video_format_ == media::VideoFrame::YV12A) {
+      DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
+                frame->stride(media::VideoFrame::kAPlane));
+      gl_->ActiveTexture(GL_TEXTURE3);
+      gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
+      gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, y_width_, y_height_, format_,
+                         GL_UNSIGNED_BYTE,
+                         frame->data(media::VideoFrame::kAPlane));
+    } else {
+      gl_->ActiveTexture(GL_TEXTURE3);
+      gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
+    }
+  }
+
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, frame_buffer_);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                            tex_out, 0);
+
+#ifndef NDEBUG
+  // We should probably check for framebuffer complete here, but that
+  // will slow this method down so check only in debug mode.
+  GLint status = gl_->CheckFramebufferStatus(GL_FRAMEBUFFER);
+  if (status != GL_FRAMEBUFFER_COMPLETE) {
+    return;
+  }
+#endif
+
+  gl_->Viewport(0, 0, ywidth, yheight);
+
+  gl_->UseProgram(program_);
+
+  if (set_clamp) {
+    gl_->Uniform1f(clamp_width_loc_, clamp_value_);
+  }
+
+  if (yuv_matrix) {
+    gl_->UniformMatrix3fv(yuv_matrix_loc_, 1, 0, yuv_matrix);
+    gl_->Uniform3fv(yuv_adjust_loc_, 1, yuv_adjust);
+  }
+
+  gl_->BindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  gl_->EnableVertexAttribArray(0);
+  gl_->VertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat),
+                           static_cast<const void*>(0));
+
+  gl_->DrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+  // The YUVConverter shares the context with Skia and possibly other modules
+  // that may make OpenGL calls.  To be a "good OpenGL citizen" for other
+  // (non-Skia) modules that may share this context we restore
+  // buffer/texture/state bindings to OpenGL defaults here.  If we were only
+  // sharing the context with Skia this may not be necessary as we also
+  // Invalidate the GrContext below so that Skia is aware that its state
+  // caches need to be reset.
+
+  gl_->BindBuffer(GL_ARRAY_BUFFER, 0);
+  gl_->DisableVertexAttribArray(0);
+  gl_->UseProgram(0);
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
+  gl_->ActiveTexture(GL_TEXTURE2);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
+  gl_->ActiveTexture(GL_TEXTURE1);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
+  gl_->ActiveTexture(GL_TEXTURE0);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
+  gl_->PopGroupMarkerEXT();
+
+  context_provider_->InvalidateGrContext(kGrInvalidateState);
+}
 
 struct VideoDecoderShim::PendingDecode {
   PendingDecode(uint32_t decode_id,
@@ -49,14 +623,11 @@ VideoDecoderShim::PendingDecode::~PendingDecode() {
 struct VideoDecoderShim::PendingFrame {
   explicit PendingFrame(uint32_t decode_id);
   PendingFrame(uint32_t decode_id,
-               const gfx::Size& coded_size,
-               const gfx::Rect& visible_rect);
+               const scoped_refptr<media::VideoFrame>& frame);
   ~PendingFrame();
 
   const uint32_t decode_id;
-  const gfx::Size coded_size;
-  const gfx::Rect visible_rect;
-  std::vector<uint8_t> argb_pixels;
+  scoped_refptr<media::VideoFrame> video_frame;
 
  private:
   // This could be expensive to copy, so guard against that.
@@ -67,13 +638,10 @@ VideoDecoderShim::PendingFrame::PendingFrame(uint32_t decode_id)
     : decode_id(decode_id) {
 }
 
-VideoDecoderShim::PendingFrame::PendingFrame(uint32_t decode_id,
-                                             const gfx::Size& coded_size,
-                                             const gfx::Rect& visible_rect)
-    : decode_id(decode_id),
-      coded_size(coded_size),
-      visible_rect(visible_rect),
-      argb_pixels(coded_size.width() * coded_size.height() * 4) {
+VideoDecoderShim::PendingFrame::PendingFrame(
+    uint32_t decode_id,
+    const scoped_refptr<media::VideoFrame>& frame)
+    : decode_id(decode_id), video_frame(frame) {
 }
 
 VideoDecoderShim::PendingFrame::~PendingFrame() {
@@ -269,13 +837,7 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
 
   scoped_ptr<PendingFrame> pending_frame;
   if (!frame->end_of_stream()) {
-    pending_frame.reset(new PendingFrame(
-        decode_id_, frame->coded_size(), frame->visible_rect()));
-    // Convert the VideoFrame pixels to ABGR to match VideoDecodeAccelerator.
-    media::SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
-        frame,
-        &pending_frame->argb_pixels.front(),
-        frame->coded_size().width() * 4);
+    pending_frame.reset(new PendingFrame(decode_id_, frame));
   } else {
     pending_frame.reset(new PendingFrame(decode_id_));
   }
@@ -300,6 +862,7 @@ VideoDecoderShim::VideoDecoderShim(PepperVideoDecoderHost* host)
           RenderThreadImpl::current()->SharedMainThreadContextProvider()),
       texture_pool_size_(0),
       num_pending_decodes_(0),
+      yuv_converter_(new YUVConverter(context_provider_)),
       weak_ptr_factory_(this) {
   DCHECK(host_);
   DCHECK(media_task_runner_.get());
@@ -342,6 +905,10 @@ bool VideoDecoderShim::Initialize(
   else if (profile <= media::VP9PROFILE_MAX)
     codec = media::kCodecVP9;
   DCHECK_NE(codec, media::kUnknownVideoCodec);
+
+  if (!yuv_converter_->Initialize()) {
+    return false;
+  }
 
   media::VideoDecoderConfig config(
       codec,
@@ -475,8 +1042,8 @@ void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
   DCHECK(RenderThreadImpl::current());
   DCHECK(host_);
 
-  if (!frame->argb_pixels.empty()) {
-    if (texture_size_ != frame->coded_size) {
+  if (frame->video_frame) {
+    if (texture_size_ != frame->video_frame->coded_size()) {
       // If the size has changed, all current textures must be dismissed. Add
       // all textures to |textures_to_dismiss_| and dismiss any that aren't in
       // use by the plugin. We will dismiss the rest as they are recycled.
@@ -498,10 +1065,9 @@ void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
         pending_texture_mailboxes_.push_back(gpu::Mailbox::Generate());
 
       host_->RequestTextures(texture_pool_size_,
-                             frame->coded_size,
-                             GL_TEXTURE_2D,
+                             frame->video_frame->coded_size(), GL_TEXTURE_2D,
                              pending_texture_mailboxes_);
-      texture_size_ = frame->coded_size;
+      texture_size_ = frame->video_frame->coded_size();
     }
 
     pending_frames_.push(linked_ptr<PendingFrame>(frame.release()));
@@ -520,27 +1086,12 @@ void VideoDecoderShim::SendPictures() {
     available_textures_.erase(it);
 
     uint32_t local_texture_id = texture_id_map_[texture_id];
-    gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
-    gles2->ActiveTexture(GL_TEXTURE0);
-    gles2->BindTexture(GL_TEXTURE_2D, local_texture_id);
-#if !defined(OS_ANDROID)
-    // BGRA is the native texture format, except on Android, where textures
-    // would be uploaded as GL_RGBA.
-    gles2->TexImage2D(GL_TEXTURE_2D,
-                      0,
-                      GL_BGRA_EXT,
-                      texture_size_.width(),
-                      texture_size_.height(),
-                      0,
-                      GL_BGRA_EXT,
-                      GL_UNSIGNED_BYTE,
-                      &frame->argb_pixels.front());
-#else
-#error Not implemented.
-#endif
+
+    yuv_converter_->Convert(frame->video_frame, local_texture_id);
 
     host_->PictureReady(media::Picture(texture_id, frame->decode_id,
-                                       frame->visible_rect, false));
+                                       frame->video_frame->visible_rect(),
+                                       false));
     pending_frames_.pop();
   }
 
