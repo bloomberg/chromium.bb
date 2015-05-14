@@ -3626,3 +3626,16 @@
    fun:_ZNK5blink14LayoutSVGShape26calculateStrokeBoundingBoxEv
    fun:_ZN5blink14LayoutSVGShape22updateShapeFromElementEv
 }
+{
+  bug_487706
+  Memcheck:Leak
+  fun:calloc
+  ...
+  fun:ssl3_HandleClientHello
+  fun:ssl3_HandleHandshakeMessage
+  fun:ssl3_HandleHandshake
+  fun:ssl3_HandleRecord
+  fun:ssl3_GatherCompleteHandshake
+  fun:SSL_ForceHandshake
+  fun:_ZN3net18SSLServerSocketNSS11DoHandshakeEv
+}
