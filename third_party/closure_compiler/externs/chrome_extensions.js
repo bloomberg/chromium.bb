@@ -8966,7 +8966,7 @@ chrome.networkingPrivate.onNetworksChanged;
 chrome.networkingPrivate.onNetworkListChanged;
 
 
-/** @type {!ChromeStringArrayEvent} */
+/** @type {!ChromeEvent} */
 chrome.networkingPrivate.onDeviceStateListChanged;
 
 
