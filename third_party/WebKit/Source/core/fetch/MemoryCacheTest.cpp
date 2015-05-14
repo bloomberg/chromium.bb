@@ -554,6 +554,7 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation)
     EXPECT_EQ(resource1.get(), memoryCache()->resourceForURL(url));
     EXPECT_EQ(resource1.get(), memoryCache()->resourceForURL(url, memoryCache()->defaultCacheIdentifier()));
     EXPECT_EQ(resource2.get(), memoryCache()->resourceForURL(url, "foo"));
+    EXPECT_EQ(0, memoryCache()->resourceForURL(KURL()));
 
     ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
     resource3->setCacheIdentifier("foo");

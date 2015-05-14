@@ -209,6 +209,9 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL)
 Resource* MemoryCache::resourceForURL(const KURL& resourceURL, const String& cacheIdentifier)
 {
     ASSERT(WTF::isMainThread());
+    if (!resourceURL.isValid() || resourceURL.isNull())
+        return nullptr;
+    ASSERT(!cacheIdentifier.isNull());
     ResourceMap* resources = m_resourceMaps.get(cacheIdentifier);
     if (!resources)
         return nullptr;
