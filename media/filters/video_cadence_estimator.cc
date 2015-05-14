@@ -5,7 +5,9 @@
 #include "media/filters/video_cadence_estimator.h"
 
 #include <algorithm>
+#include <iterator>
 #include <limits>
+#include <string>
 
 #include "base/metrics/histogram_macros.h"
 
@@ -24,10 +26,10 @@ static void HistogramCadenceChangeCount(int cadence_changes) {
 }
 
 VideoCadenceEstimator::VideoCadenceEstimator(
-    base::TimeDelta minimum_time_until_glitch)
+    base::TimeDelta minimum_time_until_max_drift)
     : cadence_hysteresis_threshold_(
           base::TimeDelta::FromMilliseconds(kMinimumCadenceDurationMs)),
-      minimum_time_until_glitch_(minimum_time_until_glitch) {
+      minimum_time_until_max_drift_(minimum_time_until_max_drift) {
   Reset();
 }
 
@@ -35,8 +37,8 @@ VideoCadenceEstimator::~VideoCadenceEstimator() {
 }
 
 void VideoCadenceEstimator::Reset() {
-  cadence_ = fractional_cadence_ = 0;
-  pending_cadence_ = pending_fractional_cadence_ = 0;
+  cadence_.clear();
+  pending_cadence_.clear();
   cadence_changes_ = render_intervals_cadence_held_ = 0;
   first_update_call_ = true;
 }
@@ -48,21 +50,12 @@ bool VideoCadenceEstimator::UpdateCadenceEstimate(
   DCHECK_GT(render_interval, base::TimeDelta());
   DCHECK_GT(frame_duration, base::TimeDelta());
 
-  base::TimeDelta time_until_cadence_glitch;
-  base::TimeDelta time_until_fractional_cadence_glitch;
+  base::TimeDelta time_until_max_drift;
 
-  // See if the clamped cadence fits acceptable thresholds for exhausting drift.
-  int new_cadence = 0, new_fractional_cadence = 0;
-  if (CalculateCadence(render_interval, frame_duration, max_acceptable_drift,
-                       false, &new_cadence, &time_until_cadence_glitch)) {
-    DCHECK(new_cadence);
-  } else if (CalculateCadence(render_interval, frame_duration,
-                              max_acceptable_drift, true,
-                              &new_fractional_cadence,
-                              &time_until_fractional_cadence_glitch)) {
-    new_cadence = 1;
-    DCHECK(new_fractional_cadence);
-  }
+  // See if we can find a cadence which fits the data.
+  Cadence new_cadence =
+      CalculateCadence(render_interval, frame_duration, max_acceptable_drift,
+                       &time_until_max_drift);
 
   // If this is the first time UpdateCadenceEstimate() has been called,
   // initialize the histogram with a zero count for cadence changes; this
@@ -73,9 +66,8 @@ bool VideoCadenceEstimator::UpdateCadenceEstimate(
     HistogramCadenceChangeCount(0);
   }
 
-  // Nothing changed, so do nothing.
-  if (new_cadence == cadence_ &&
-      new_fractional_cadence == fractional_cadence_) {
+  // If nothing changed, do nothing.
+  if (new_cadence == cadence_) {
     // Clear cadence hold to pending values from accumulating incorrectly.
     render_intervals_cadence_held_ = 0;
     return false;
@@ -84,18 +76,14 @@ bool VideoCadenceEstimator::UpdateCadenceEstimate(
   // Wait until enough render intervals have elapsed before accepting the
   // cadence change.  Prevents oscillation of the cadence selection.
   bool update_pending_cadence = true;
-  if ((new_cadence == pending_cadence_ &&
-       new_fractional_cadence == pending_fractional_cadence_) ||
+  if (new_cadence == pending_cadence_ ||
       cadence_hysteresis_threshold_ <= render_interval) {
     if (++render_intervals_cadence_held_ * render_interval >=
         cadence_hysteresis_threshold_) {
-      DVLOG(1) << "Cadence switch: (" << cadence_ << ", " << fractional_cadence_
-               << ") -> (" << new_cadence << ", " << new_fractional_cadence
-               << ") :: (" << time_until_cadence_glitch << ", "
-               << time_until_fractional_cadence_glitch << ")";
-
-      cadence_ = new_cadence;
-      fractional_cadence_ = new_fractional_cadence;
+      DVLOG(1) << "Cadence switch: " << CadenceToString(cadence_) << " -> "
+               << CadenceToString(new_cadence)
+               << " :: Time until drift exceeded: " << time_until_max_drift;
+      cadence_.swap(new_cadence);
 
       // Note: Because this class is transitively owned by a garbage collected
       // object, WebMediaPlayer, we log cadence changes as they are encountered.
@@ -106,86 +94,161 @@ bool VideoCadenceEstimator::UpdateCadenceEstimate(
     update_pending_cadence = false;
   }
 
-  DVLOG(2) << "Hysteresis prevented cadence switch: (" << cadence_ << ", "
-           << fractional_cadence_ << ") -> (" << new_cadence << ", "
-           << new_fractional_cadence << ") :: (" << time_until_cadence_glitch
-           << ", " << time_until_fractional_cadence_glitch << ")";
+  DVLOG(2) << "Hysteresis prevented cadence switch: "
+           << CadenceToString(cadence_) << " -> "
+           << CadenceToString(new_cadence);
 
   if (update_pending_cadence) {
-    pending_cadence_ = new_cadence;
-    pending_fractional_cadence_ = new_fractional_cadence;
+    pending_cadence_.swap(new_cadence);
     render_intervals_cadence_held_ = 1;
   }
 
   return false;
 }
 
-bool VideoCadenceEstimator::CalculateCadence(
+int VideoCadenceEstimator::GetCadenceForFrame(uint64_t frame_number) const {
+  DCHECK(has_cadence());
+  return cadence_[frame_number % cadence_.size()];
+}
+
+VideoCadenceEstimator::Cadence VideoCadenceEstimator::CalculateCadence(
     base::TimeDelta render_interval,
     base::TimeDelta frame_duration,
     base::TimeDelta max_acceptable_drift,
-    bool fractional,
-    int* cadence,
-    base::TimeDelta* time_until_glitch) {
+    base::TimeDelta* time_until_max_drift) const {
+  // See if we can find a cadence which fits the data.
+  Cadence result;
+  if (CalculateOneFrameCadence(render_interval, frame_duration,
+                               max_acceptable_drift, &result,
+                               time_until_max_drift)) {
+    DCHECK_EQ(1u, result.size());
+  } else if (CalculateFractionalCadence(render_interval, frame_duration,
+                                        max_acceptable_drift, &result,
+                                        time_until_max_drift)) {
+    DCHECK(!result.empty());
+  } else if (CalculateOneFrameCadence(render_interval, frame_duration * 2,
+                                      max_acceptable_drift, &result,
+                                      time_until_max_drift)) {
+    // By finding cadence for double the frame duration, we're saying there
+    // exist two integers a and b, where a > b and a + b = |result|; this
+    // matches all patterns which regularly have half a frame per render
+    // interval; i.e. 24fps in 60hz.
+    DCHECK_EQ(1u, result.size());
+
+    // Two pattern cadence is always an odd number.
+    DCHECK(result[0] & 1);
+
+    result[0] = std::ceil(result[0] / 2.0);
+    result.push_back(result[0] - 1);
+  }
+  return result;
+}
+
+bool VideoCadenceEstimator::CalculateOneFrameCadence(
+    base::TimeDelta render_interval,
+    base::TimeDelta frame_duration,
+    base::TimeDelta max_acceptable_drift,
+    Cadence* cadence,
+    base::TimeDelta* time_until_max_drift) const {
+  DCHECK(cadence->empty());
+
   // The perfect cadence is the number of render intervals per frame, while the
-  // clamped cadence is the nearest matching integer cadence.
-  //
-  // Fractional cadence is checked to see if we have a cadence which would look
-  // best if we consistently drop the same frames.
+  // clamped cadence is the nearest matching integer value.
   //
   // As mentioned in the introduction, |perfect_cadence| is the ratio of the
   // frame duration to render interval length; while |clamped_cadence| is the
-  // nearest integer value to |perfect_cadence|.  When computing a fractional
-  // cadence (1/|perfect_cadence|), |fractional| must be set to true to ensure
-  // the rendered and actual frame durations are computed correctly.
+  // nearest integer value to |perfect_cadence|.
   const double perfect_cadence =
-      fractional ? render_interval.InSecondsF() / frame_duration.InSecondsF()
-                 : frame_duration.InSecondsF() / render_interval.InSecondsF();
+      frame_duration.InSecondsF() / render_interval.InSecondsF();
   const int clamped_cadence = perfect_cadence + 0.5;
   if (!clamped_cadence)
     return false;
 
-  // Calculate the drift in microseconds for each frame we render at cadence
-  // instead of for its real duration.
+  // For cadence based rendering the actual frame duration is just the frame
+  // duration, while the |rendered_frame_duration| is how long the frame would
+  // be displayed for if we rendered it |clamped_cadence| times.
   const base::TimeDelta rendered_frame_duration =
-      fractional ? render_interval : clamped_cadence * render_interval;
-
-  // When computing a fractional drift, we render the first of |clamped_cadence|
-  // frames and drop |clamped_cadence| - 1 frames.  To make the calculations
-  // below work we need to project out the timestamp of the frame which would be
-  // rendered after accounting for those |clamped_cadence| frames.
-  const base::TimeDelta actual_frame_duration =
-      fractional ? clamped_cadence * frame_duration : frame_duration;
-  if (rendered_frame_duration == actual_frame_duration) {
-    *cadence = clamped_cadence;
-    return true;
+      clamped_cadence * render_interval;
+  if (!IsAcceptableCadence(rendered_frame_duration, frame_duration,
+                           max_acceptable_drift, time_until_max_drift)) {
+    return false;
   }
 
-  // Compute how long it'll take to exhaust the drift using |clamped_cadence|.
+  cadence->push_back(clamped_cadence);
+  return true;
+}
+
+bool VideoCadenceEstimator::CalculateFractionalCadence(
+    base::TimeDelta render_interval,
+    base::TimeDelta frame_duration,
+    base::TimeDelta max_acceptable_drift,
+    Cadence* cadence,
+    base::TimeDelta* time_until_max_drift) const {
+  DCHECK(cadence->empty());
+
+  // Fractional cadence allows us to see if we have a cadence which would look
+  // best if we consistently drop the same frames.
+  //
+  // In this case, the perfect cadence is the number of frames per render
+  // interval, while the clamped cadence is the nearest integer value.
+  const double perfect_cadence =
+      render_interval.InSecondsF() / frame_duration.InSecondsF();
+  const int clamped_cadence = perfect_cadence + 0.5;
+  if (!clamped_cadence)
+    return false;
+
+  // For fractional cadence, the rendered duration of each frame is just the
+  // render interval.  While the actual frame duration is the total duration of
+  // all the frames we would end up dropping during that time.
+  const base::TimeDelta actual_frame_duration =
+      clamped_cadence * frame_duration;
+  if (!IsAcceptableCadence(render_interval, actual_frame_duration,
+                           max_acceptable_drift, time_until_max_drift)) {
+    return false;
+  }
+
+  // Fractional cadence means we render the first of |clamped_cadence| frames
+  // and drop |clamped_cadence| - 1 frames.
+  cadence->insert(cadence->begin(), clamped_cadence, 0);
+  (*cadence)[0] = 1;
+  return true;
+}
+
+std::string VideoCadenceEstimator::CadenceToString(
+    const Cadence& cadence) const {
+  if (cadence.empty())
+    return std::string("[]");
+
+  std::ostringstream os;
+  os << "[";
+  std::copy(cadence.begin(), cadence.end() - 1,
+            std::ostream_iterator<int>(os, ":"));
+  os << cadence.back() << "]";
+  return os.str();
+}
+
+bool VideoCadenceEstimator::IsAcceptableCadence(
+    base::TimeDelta rendered_frame_duration,
+    base::TimeDelta actual_frame_duration,
+    base::TimeDelta max_acceptable_drift,
+    base::TimeDelta* time_until_max_drift) const {
+  if (rendered_frame_duration == actual_frame_duration)
+    return true;
+
+  // Compute how long it'll take to exhaust the drift if frames are rendered for
+  // |rendered_frame_duration| instead of |actual_frame_duration|.
   const double duration_delta =
       (rendered_frame_duration - actual_frame_duration)
           .magnitude()
           .InMicroseconds();
   const int64 frames_until_drift_exhausted =
       std::ceil(max_acceptable_drift.InMicroseconds() / duration_delta);
-  *time_until_glitch = rendered_frame_duration * frames_until_drift_exhausted;
 
-  if (*time_until_glitch >= minimum_time_until_glitch_) {
-    *cadence = clamped_cadence;
-    return true;
-  }
-
-  return false;
-}
-
-int VideoCadenceEstimator::GetCadenceForFrame(int index) const {
-  DCHECK(has_cadence());
-  DCHECK_GE(index, 0);
-
-  if (fractional_cadence_)
-    return index % fractional_cadence_ == 0 ? 1 : 0;
-
-  return cadence_;
+  // If the time until a frame would be repeated or dropped is greater than our
+  // limit of acceptability, the cadence is acceptable.
+  *time_until_max_drift =
+      rendered_frame_duration * frames_until_drift_exhausted;
+  return *time_until_max_drift >= minimum_time_until_max_drift_;
 }
 
 }  // namespace media

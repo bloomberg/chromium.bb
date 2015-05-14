@@ -189,7 +189,8 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   bool UpdateFrameStatistics();
 
   // Updates the ideal render count for all frames in |frame_queue_| based on
-  // the cadence returned by |cadence_estimator_|.
+  // the cadence returned by |cadence_estimator_|.  Cadence is assigned based
+  // on |frame_counter_|.
   void UpdateCadenceForFrames();
 
   // If |cadence_estimator_| has detected a valid cadence, attempts to find the
@@ -291,6 +292,13 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // When cadence is present, we don't want to start counting against cadence
   // until the first frame has reached its presentation time.
   bool first_frame_;
+
+  // The frame number of the last rendered frame; incremented for every frame
+  // rendered and every frame dropped or expired since the last rendered frame.
+  //
+  // Given to |cadence_estimator_| when assigning cadence values to the
+  // ReadyFrameQueue.  Cleared when a new cadence is detected.
+  uint64_t cadence_frame_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererAlgorithm);
 };

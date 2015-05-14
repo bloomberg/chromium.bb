@@ -94,10 +94,12 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   base::TimeDelta selected_frame_drift;
 
   // Step 4: Attempt to find the best frame by cadence.
+  bool was_frame_selected_by_cadence = false;
   int cadence_overage = 0;
   int frame_to_render =
       FindBestFrameByCadence(first_frame_ ? nullptr : &cadence_overage);
   if (frame_to_render >= 0) {
+    was_frame_selected_by_cadence = true;
     selected_frame_drift =
         CalculateAbsoluteDriftForFrame(deadline_min, frame_to_render);
   }
@@ -121,7 +123,12 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     }
 
     if (frame_to_render >= 0) {
-      cadence_overage = 0;
+      if (was_frame_selected_by_cadence) {
+        cadence_overage = 0;
+        was_frame_selected_by_cadence = false;
+        DVLOG(2) << "Overriding frame selected by cadence because of drift: "
+                 << selected_frame_drift;
+      }
       selected_frame_drift =
           CalculateAbsoluteDriftForFrame(deadline_min, frame_to_render);
     }
@@ -132,7 +139,10 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   // selection is going to be bad because it means no suitable frame has any
   // coverage of the deadline interval.
   if (frame_to_render < 0 || selected_frame_drift > max_acceptable_drift_) {
-    cadence_overage = 0;
+    if (was_frame_selected_by_cadence) {
+      cadence_overage = 0;
+      was_frame_selected_by_cadence = false;
+    }
     frame_to_render = FindBestFrameByDrift(deadline_min, &selected_frame_drift);
   }
 
@@ -189,11 +199,14 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
       }
     }
 
+    // Increment the frame counter for all frames removed after the last
+    // rendered frame.
+    cadence_frame_counter_ += frame_to_render - last_frame_index_;
     frame_queue_.erase(frame_queue_.begin(),
                        frame_queue_.begin() + frame_to_render);
   }
 
-  if (last_render_had_glitch_) {
+  if (last_render_had_glitch_ && !first_frame_) {
     DVLOG(2) << "Deadline: [" << deadline_min.ToInternalValue() << ", "
              << deadline_max.ToInternalValue()
              << "], Interval: " << render_interval_.InMicroseconds()
@@ -215,6 +228,14 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
       deadline_min >= frame_queue_.front().start_time - render_interval_ / 2) {
     frame_queue_.front().render_count += cadence_overage + 1;
     frame_queue_.front().drop_count += cadence_overage;
+
+    // Once we reach a glitch in our cadence sequence, reset the base frame
+    // number used for defining the cadence sequence.
+    if (!was_frame_selected_by_cadence && cadence_estimator_.has_cadence()) {
+      cadence_frame_counter_ = 0;
+      UpdateCadenceForFrames();
+    }
+
     first_frame_ = false;
   }
 
@@ -235,8 +256,9 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
 
   // Finds and removes all frames which are too old to be used; I.e., the end of
   // their render interval is further than |max_acceptable_drift_| from the
-  // given |deadline|.
-  size_t frames_to_expire = 0;
+  // given |deadline|.  We also always expire anything inserted before the last
+  // rendered frame.
+  size_t frames_to_expire = last_frame_index_;
   const base::TimeTicks minimum_start_time =
       deadline - max_acceptable_drift_ - average_frame_duration_;
   for (; frames_to_expire < frame_queue_.size() - 1; ++frames_to_expire) {
@@ -247,6 +269,7 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
   if (!frames_to_expire)
     return 0;
 
+  cadence_frame_counter_ += frames_to_expire - last_frame_index_;
   frame_queue_.erase(frame_queue_.begin(),
                      frame_queue_.begin() + frames_to_expire);
 
@@ -282,6 +305,7 @@ void VideoRendererAlgorithm::Reset() {
   cadence_estimator_.Reset();
   frame_duration_calculator_.Reset();
   first_frame_ = true;
+  cadence_frame_counter_ = 0;
 
   // Default to ATSC IS/191 recommendations for maximum acceptable drift before
   // we have enough frames to base the maximum on frame duration.
@@ -474,6 +498,7 @@ bool VideoRendererAlgorithm::UpdateFrameStatistics() {
   if (!cadence_changed)
     return true;
 
+  cadence_frame_counter_ = 0;
   UpdateCadenceForFrames();
 
   // Thus far there appears to be no need for special 3:2 considerations, the
@@ -489,7 +514,8 @@ void VideoRendererAlgorithm::UpdateCadenceForFrames() {
     // cadence selection.
     frame_queue_[i].ideal_render_count =
         cadence_estimator_.has_cadence()
-            ? cadence_estimator_.GetCadenceForFrame(i - last_frame_index_)
+            ? cadence_estimator_.GetCadenceForFrame(cadence_frame_counter_ +
+                                                    (i - last_frame_index_))
             : 0;
   }
 }

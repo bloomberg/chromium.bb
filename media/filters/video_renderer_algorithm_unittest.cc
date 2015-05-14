@@ -109,7 +109,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
 
   size_t frames_queued() const { return algorithm_.frame_queue_.size(); }
 
-  int GetCadence(double frame_rate, double display_rate) {
+  std::string GetCadence(double frame_rate, double display_rate) {
     TickGenerator display_tg(tick_clock_->NowTicks(), display_rate);
     TickGenerator frame_tg(base::TimeTicks(), frame_rate);
     time_source_.StartTicking();
@@ -122,7 +122,8 @@ class VideoRendererAlgorithmTest : public testing::Test {
     EXPECT_TRUE(RenderAndStep(&display_tg, &frames_dropped));
 
     // Store cadence before reseting the algorithm.
-    const int cadence = algorithm_.cadence_estimator_.get_cadence_for_testing();
+    const std::string cadence =
+        algorithm_.cadence_estimator_.GetCadenceForTesting();
     time_source_.StopTicking();
     algorithm_.Reset();
     return cadence;
@@ -230,7 +231,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
         // The frame estimate should be off by at most one frame.
         const size_t estimated_frames_queued =
             frames_queued() /
-            algorithm_.cadence_estimator_.get_cadence_for_testing();
+            algorithm_.cadence_estimator_.cadence_size_for_testing();
         ASSERT_NEAR(algorithm_.EffectiveFramesQueued(), estimated_frames_queued,
                     1);
       }
@@ -888,10 +889,10 @@ TEST_F(VideoRendererAlgorithmTest, BestFrameByFractionalCadence) {
   }
 }
 
-// Verify a 3:2 frame pattern for 23.974fps in 60Hz; doubles as a test for best
-// frame by coverage.
+// Verify a 3:2 frame pattern for 23.974fps and 24fps in 60Hz.
 TEST_F(VideoRendererAlgorithmTest, FilmCadence) {
   const double kTestRates[] = {NTSC(24), 24};
+  disable_cadence_hysteresis();
 
   for (double frame_rate : kTestRates) {
     scoped_refptr<VideoFrame> current_frame;
@@ -916,7 +917,7 @@ TEST_F(VideoRendererAlgorithmTest, FilmCadence) {
           }
 
           current_frame = frame;
-          ASSERT_FALSE(is_using_cadence());
+          ASSERT_TRUE(is_using_cadence());
         });
 
     if (HasFatalFailure())
@@ -926,28 +927,28 @@ TEST_F(VideoRendererAlgorithmTest, FilmCadence) {
 
 // Spot check common display and frame rate pairs for correctness.
 TEST_F(VideoRendererAlgorithmTest, CadenceCalculations) {
-  ASSERT_FALSE(GetCadence(24, 60));
-  ASSERT_FALSE(GetCadence(NTSC(24), 60));
-  ASSERT_FALSE(GetCadence(25, 60));
-  ASSERT_EQ(2, GetCadence(NTSC(30), 60));
-  ASSERT_EQ(2, GetCadence(30, 60));
-  ASSERT_FALSE(GetCadence(50, 60));
-  ASSERT_EQ(1, GetCadence(NTSC(60), 60));
-  ASSERT_EQ(2, GetCadence(120, 60));
+  ASSERT_EQ("[3:2]", GetCadence(24, 60));
+  ASSERT_EQ("[3:2]", GetCadence(NTSC(24), 60));
+  ASSERT_EQ("[]", GetCadence(25, 60));
+  ASSERT_EQ("[2]", GetCadence(NTSC(30), 60));
+  ASSERT_EQ("[2]", GetCadence(30, 60));
+  ASSERT_EQ("[]", GetCadence(50, 60));
+  ASSERT_EQ("[1]", GetCadence(NTSC(60), 60));
+  ASSERT_EQ("[1:0]", GetCadence(120, 60));
 
   // 50Hz is common in the EU.
-  ASSERT_FALSE(GetCadence(NTSC(24), 50));
-  ASSERT_FALSE(GetCadence(24, 50));
-  ASSERT_EQ(2, GetCadence(NTSC(25), 50));
-  ASSERT_EQ(2, GetCadence(25, 50));
-  ASSERT_FALSE(GetCadence(NTSC(30), 50));
-  ASSERT_FALSE(GetCadence(30, 50));
-  ASSERT_FALSE(GetCadence(NTSC(60), 50));
-  ASSERT_FALSE(GetCadence(60, 50));
+  ASSERT_EQ("[]", GetCadence(NTSC(24), 50));
+  ASSERT_EQ("[]", GetCadence(24, 50));
+  ASSERT_EQ("[2]", GetCadence(NTSC(25), 50));
+  ASSERT_EQ("[2]", GetCadence(25, 50));
+  ASSERT_EQ("[]", GetCadence(NTSC(30), 50));
+  ASSERT_EQ("[]", GetCadence(30, 50));
+  ASSERT_EQ("[]", GetCadence(NTSC(60), 50));
+  ASSERT_EQ("[]", GetCadence(60, 50));
 
-  ASSERT_FALSE(GetCadence(25, NTSC(60)));
-  ASSERT_EQ(2, GetCadence(120, NTSC(60)));
-  ASSERT_EQ(60, GetCadence(1, NTSC(60)));
+  ASSERT_EQ("[]", GetCadence(25, NTSC(60)));
+  ASSERT_EQ("[1:0]", GetCadence(120, NTSC(60)));
+  ASSERT_EQ("[60]", GetCadence(1, NTSC(60)));
 }
 
 TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFrames) {

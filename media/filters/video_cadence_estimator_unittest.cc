@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "media/filters/video_cadence_estimator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,33 +24,47 @@ static base::TimeDelta Interval(double hertz) {
   return base::TimeDelta::FromSecondsD(1.0 / hertz);
 }
 
-static void VerifyCadence(VideoCadenceEstimator* estimator,
-                          double frame_hertz,
-                          double render_hertz,
-                          int expected_cadence) {
+std::vector<int> CreateCadenceFromString(const std::string& cadence) {
+  std::vector<std::string> tokens;
+  CHECK_EQ('[', cadence[0]);
+  CHECK_EQ(']', cadence[cadence.length() - 1]);
+  base::SplitString(cadence.substr(1, cadence.length() - 2), ':', &tokens);
+
+  std::vector<int> result;
+  for (const auto& token : tokens) {
+    int cadence_value = 0;
+    CHECK(base::StringToInt(token, &cadence_value)) << token;
+    result.push_back(cadence_value);
+  }
+
+  return result;
+}
+
+static void VerifyCadenceVector(VideoCadenceEstimator* estimator,
+                                double frame_hertz,
+                                double render_hertz,
+                                const std::string& expected_cadence) {
   SCOPED_TRACE(base::StringPrintf("Checking %.03f fps into %0.03f", frame_hertz,
                                   render_hertz));
+
+  const std::vector<int> expected_cadence_vector =
+      CreateCadenceFromString(expected_cadence);
+
   estimator->Reset();
   const base::TimeDelta acceptable_drift = Interval(frame_hertz) / 2;
   const bool cadence_changed = estimator->UpdateCadenceEstimate(
       Interval(render_hertz), Interval(frame_hertz), acceptable_drift);
   EXPECT_EQ(cadence_changed, estimator->has_cadence());
-  EXPECT_EQ(!!expected_cadence, estimator->has_cadence());
+  EXPECT_EQ(expected_cadence_vector.empty(), !estimator->has_cadence());
 
   // Nothing further to test.
-  if (!expected_cadence)
+  if (expected_cadence_vector.empty())
     return;
 
-  // Spot check a few frame indices.
-  if (frame_hertz <= render_hertz) {
-    EXPECT_EQ(expected_cadence, estimator->GetCadenceForFrame(0));
-    EXPECT_EQ(expected_cadence, estimator->GetCadenceForFrame(1));
-    EXPECT_EQ(expected_cadence, estimator->GetCadenceForFrame(2));
-  } else {
-    EXPECT_EQ(1, estimator->GetCadenceForFrame(0));
-    EXPECT_EQ(0, estimator->GetCadenceForFrame(1));
-    EXPECT_EQ(1, estimator->GetCadenceForFrame(expected_cadence));
-    EXPECT_EQ(0, estimator->GetCadenceForFrame(expected_cadence + 1));
+  // Spot two cycles of the cadence.
+  for (size_t i = 0; i < expected_cadence_vector.size() * 2; ++i) {
+    ASSERT_EQ(expected_cadence_vector[i % expected_cadence_vector.size()],
+              estimator->GetCadenceForFrame(i));
   }
 }
 
@@ -58,28 +74,31 @@ TEST(VideoCadenceEstimatorTest, CadenceCalculations) {
       base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
   estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
-  VerifyCadence(&estimator, 24, 60, 0);
-  VerifyCadence(&estimator, NTSC(24), 60, 0);
-  VerifyCadence(&estimator, 25, 60, 0);
-  VerifyCadence(&estimator, NTSC(30), 60, 2);
-  VerifyCadence(&estimator, 30, 60, 2);
-  VerifyCadence(&estimator, 50, 60, 0);
-  VerifyCadence(&estimator, NTSC(60), 60, 1);
-  VerifyCadence(&estimator, 120, 60, 2);
+  const std::string kEmptyCadence = "[]";
+  VerifyCadenceVector(&estimator, 24, 60, "[3:2]");
+  VerifyCadenceVector(&estimator, NTSC(24), 60, "[3:2]");
+
+  VerifyCadenceVector(&estimator, 25, 60, kEmptyCadence);
+  VerifyCadenceVector(&estimator, NTSC(30), 60, "[2]");
+  VerifyCadenceVector(&estimator, 30, 60, "[2]");
+  VerifyCadenceVector(&estimator, 50, 60, kEmptyCadence);
+  VerifyCadenceVector(&estimator, NTSC(60), 60, "[1]");
+  VerifyCadenceVector(&estimator, 120, 60, "[1:0]");
+  VerifyCadenceVector(&estimator, 120, 24, "[1:0:0:0:0]");
 
   // 50Hz is common in the EU.
-  VerifyCadence(&estimator, NTSC(24), 50, 0);
-  VerifyCadence(&estimator, 24, 50, 0);
-  VerifyCadence(&estimator, NTSC(25), 50, 2);
-  VerifyCadence(&estimator, 25, 50, 2);
-  VerifyCadence(&estimator, NTSC(30), 50, 0);
-  VerifyCadence(&estimator, 30, 50, 0);
-  VerifyCadence(&estimator, NTSC(60), 50, 0);
-  VerifyCadence(&estimator, 60, 50, 0);
+  VerifyCadenceVector(&estimator, NTSC(24), 50, kEmptyCadence);
+  VerifyCadenceVector(&estimator, 24, 50, kEmptyCadence);
+  VerifyCadenceVector(&estimator, NTSC(25), 50, "[2]");
+  VerifyCadenceVector(&estimator, 25, 50, "[2]");
+  VerifyCadenceVector(&estimator, NTSC(30), 50, kEmptyCadence);
+  VerifyCadenceVector(&estimator, 30, 50, kEmptyCadence);
+  VerifyCadenceVector(&estimator, NTSC(60), 50, kEmptyCadence);
+  VerifyCadenceVector(&estimator, 60, 50, kEmptyCadence);
 
-  VerifyCadence(&estimator, 25, NTSC(60), 0);
-  VerifyCadence(&estimator, 120, NTSC(60), 0);
-  VerifyCadence(&estimator, 1, NTSC(60), 60);
+  VerifyCadenceVector(&estimator, 25, NTSC(60), kEmptyCadence);
+  VerifyCadenceVector(&estimator, 120, NTSC(60), kEmptyCadence);
+  VerifyCadenceVector(&estimator, 1, NTSC(60), "[60]");
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {
@@ -101,7 +120,7 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {
   EXPECT_TRUE(estimator.UpdateCadenceEstimate(render_interval, frame_interval,
                                               acceptable_drift));
   EXPECT_TRUE(estimator.has_cadence());
-  EXPECT_EQ(2, estimator.get_cadence_for_testing());
+  EXPECT_EQ("[1:0]", estimator.GetCadenceForTesting());
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
@@ -125,7 +144,7 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
   EXPECT_TRUE(estimator->UpdateCadenceEstimate(render_interval, frame_interval,
                                                acceptable_drift));
   EXPECT_TRUE(estimator->has_cadence());
-  EXPECT_EQ(2, estimator->get_cadence_for_testing());
+  EXPECT_EQ("[1:0]", estimator->GetCadenceForTesting());
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceHystersisPreventsOscillation) {
