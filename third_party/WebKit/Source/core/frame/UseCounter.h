@@ -563,6 +563,7 @@ public:
         AudioContextCreatePanner = 644,
         AudioContextCreatePeriodicWave = 645,
         AudioContextCreateScriptProcessor = 646,
+        AudioContextCreateStereoPanner = 647,
         AudioContextCreateWaveShaper = 648,
         AudioContextDecodeAudioData = 649,
         AudioContextResume = 650,
