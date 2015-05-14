@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/drive/test_util.h"
@@ -54,7 +55,7 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
 class FakeMultipartUploadRequest : public MultipartUploadRequestBase {
  public:
   FakeMultipartUploadRequest(
-      RequestSender* sender,
+      base::SequencedTaskRunner* blocking_task_runner,
       const std::string& metadata_json,
       const std::string& content_type,
       int64 content_length,
@@ -64,7 +65,7 @@ class FakeMultipartUploadRequest : public MultipartUploadRequestBase {
       const GURL& url,
       std::string* upload_content_type,
       std::string* upload_content_data)
-      : MultipartUploadRequestBase(sender,
+      : MultipartUploadRequestBase(blocking_task_runner,
                                    metadata_json,
                                    content_type,
                                    content_length,
@@ -77,6 +78,10 @@ class FakeMultipartUploadRequest : public MultipartUploadRequestBase {
 
   ~FakeMultipartUploadRequest() override {}
 
+  net::URLFetcher::RequestType GetRequestType() const override {
+    return net::URLFetcher::POST;
+  }
+
   bool GetContentData(std::string* content_type,
                       std::string* content_data) override {
     const bool result =
@@ -84,10 +89,6 @@ class FakeMultipartUploadRequest : public MultipartUploadRequestBase {
     *upload_content_type_ = *content_type;
     *upload_content_data_ = *content_data;
     return result;
-  }
-
-  base::SequencedTaskRunner* blocking_task_runner() const {
-    return MultipartUploadRequestBase::blocking_task_runner();
   }
 
  protected:
@@ -196,13 +197,18 @@ TEST_F(MultipartUploadRequestBaseTest, Basic) {
       google_apis::test_util::GetTestFilePath("chromeos/file_manager/text.txt");
   std::string upload_content_type;
   std::string upload_content_data;
-  scoped_ptr<FakeMultipartUploadRequest> request(new FakeMultipartUploadRequest(
-      sender_.get(), "{json:\"test\"}", "text/plain", 10, source_path,
-      test_util::CreateQuitCallback(
-          &run_loop, test_util::CreateCopyResultCallback(&error, &file)),
-      ProgressCallback(), test_server_.base_url(), &upload_content_type,
-      &upload_content_data));
-  request->SetBoundaryForTesting("TESTBOUNDARY");
+  FakeMultipartUploadRequest* const multipart_request =
+      new FakeMultipartUploadRequest(
+          sender_->blocking_task_runner(), "{json:\"test\"}", "text/plain", 10,
+          source_path,
+          test_util::CreateQuitCallback(
+              &run_loop, test_util::CreateCopyResultCallback(&error, &file)),
+          ProgressCallback(), test_server_.base_url(), &upload_content_type,
+          &upload_content_data);
+  multipart_request->SetBoundaryForTesting("TESTBOUNDARY");
+  scoped_ptr<drive::SingleBatchableDelegateRequest> request(
+      new drive::SingleBatchableDelegateRequest(
+          sender_.get(), multipart_request));
   sender_->StartRequestWithRetry(request.release());
   run_loop.Run();
   EXPECT_EQ("multipart/related; boundary=TESTBOUNDARY", upload_content_type);

@@ -260,25 +260,40 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   DISALLOW_COPY_AND_ASSIGN(UrlFetchRequestBase);
 };
 
-//============================ BatchableRequestBase ============================
+//============================ BatchableDelegate ============================
 
-class BatchableRequestBase : public UrlFetchRequestBase {
+// Delegate to be used by |SingleBatchableDelegateRequest| and
+// |BatchUploadRequest|.
+class BatchableDelegate {
  public:
-  explicit BatchableRequestBase(RequestSender* sender) :
-      UrlFetchRequestBase(sender) {}
+  virtual ~BatchableDelegate() {}
 
-  GURL GetURL() const override = 0;
-  net::URLFetcher::RequestType GetRequestType() const override;
-  std::vector<std::string> GetExtraRequestHeaders() const override;
-  void Prepare(const PrepareCallback& callback) override;
-  bool GetContentData(std::string* upload_content_type,
-                      std::string* upload_content) override;
-  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override = 0;
-  virtual void ProcessURLFetchResults(
-      DriveApiErrorCode code, const std::string& body) = 0;
+  // See UrlFetchRequestBase.
+  virtual GURL GetURL() const = 0;
+  virtual net::URLFetcher::RequestType GetRequestType() const = 0;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const = 0;
+  virtual void Prepare(const PrepareCallback& callback) = 0;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) = 0;
 
- private:
-  void ProcessURLFetchResults(const net::URLFetcher* source) final;
+  // Notifies result of the request. Usually, it parses the |code| and
+  // |response_body|, then notifies the parsed value to client code of the
+  // API.  |callback| must be called on completion. The instance must not
+  // do anything after calling |callback| since the instance may be deleted in
+  // |callback|.
+  virtual void NotifyResult(DriveApiErrorCode code,
+                            const std::string& response_body,
+                            const base::Closure& callback) = 0;
+
+  // Notifies error. Unlike |NotifyResult|, it must report error
+  // synchronously. The instance may be deleted just after calling
+  // NotifyError.
+  virtual void NotifyError(DriveApiErrorCode code) = 0;
+
+  // Notifies progress.
+  virtual void NotifyUploadProgress(const net::URLFetcher* source,
+                                    int64 current,
+                                    int64 total) = 0;
 };
 
 //============================ EntryActionRequest ============================
@@ -498,7 +513,7 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
 
 // This class provides base implementation for performing the request for
 // uploading a file by multipart body.
-class MultipartUploadRequestBase : public BatchableRequestBase {
+class MultipartUploadRequestBase : public BatchableDelegate {
  public:
   // Set boundary. Only tests can use this method.
   void SetBoundaryForTesting(const std::string& boundary);
@@ -508,7 +523,7 @@ class MultipartUploadRequestBase : public BatchableRequestBase {
   // |content_type| and |content_length| should be the attributes of the
   // uploading file. Other parameters are optional and can be empty or null
   // depending on Upload URL provided by the subclasses.
-  MultipartUploadRequestBase(RequestSender* sender,
+  MultipartUploadRequestBase(base::SequencedTaskRunner* blocking_task_runner,
                              const std::string& metadata_json,
                              const std::string& content_type,
                              int64 content_length,
@@ -517,21 +532,22 @@ class MultipartUploadRequestBase : public BatchableRequestBase {
                              const ProgressCallback& progress_callback);
   ~MultipartUploadRequestBase() override;
 
-  // Overridden from UrlFetchRequestBase.
+  // BatchableDelegate.
+  std::vector<std::string> GetExtraRequestHeaders() const override;
   void Prepare(const PrepareCallback& callback) override;
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override;
-  void ProcessURLFetchResults(
-      DriveApiErrorCode code, const std::string& body) override;
-  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
-
-  // content::UrlFetcherDelegate overrides.
-  void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64 current,
-                                int64 total) override;
-
+  void NotifyResult(DriveApiErrorCode code,
+                    const std::string& body,
+                    const base::Closure& callback) override;
+  void NotifyError(DriveApiErrorCode code) override;
+  void NotifyUploadProgress(const net::URLFetcher* source,
+                            int64 current,
+                            int64 total) override;
   // Parses the response value and invokes |callback_| with |FileResource|.
-  void OnDataParsed(DriveApiErrorCode code, scoped_ptr<base::Value> value);
+  void OnDataParsed(DriveApiErrorCode code,
+                    const base::Closure& callback,
+                    scoped_ptr<base::Value> value);
 
  private:
   // Continues to rest part of |Start| method after determining boundary string
@@ -541,6 +557,7 @@ class MultipartUploadRequestBase : public BatchableRequestBase {
                               std::string* upload_content_data,
                               bool result);
 
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   const std::string metadata_json_;
   const std::string content_type_;
   const base::FilePath local_path_;
@@ -553,6 +570,8 @@ class MultipartUploadRequestBase : public BatchableRequestBase {
   // Upload content of multipart body.
   std::string upload_content_type_;
   std::string upload_content_data_;
+
+  base::ThreadChecker thread_checker_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -163,6 +163,9 @@ base::StringPiece TrimTransportPadding(const base::StringPiece& piece) {
   return piece.substr(0, piece.size() - trim_size);
 }
 
+void EmptyClosure(scoped_ptr<BatchableDelegate>) {
+}
+
 }  // namespace
 
 MultipartHttpResponse::MultipartHttpResponse() : code(HTTP_SUCCESS) {
@@ -971,9 +974,9 @@ void GetUploadStatusRequest::OnRangeRequestComplete(
   ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
 }
 
-//======================= MultipartUploadNewFileRequest =======================
+//======================= MultipartUploadNewFileDelegate =======================
 
-MultipartUploadNewFileRequest::MultipartUploadNewFileRequest(
+MultipartUploadNewFileDelegate::MultipartUploadNewFileDelegate(
     RequestSender* sender,
     const std::string& title,
     const std::string& parent_resource_id,
@@ -987,7 +990,7 @@ MultipartUploadNewFileRequest::MultipartUploadNewFileRequest(
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
     : MultipartUploadRequestBase(
-          sender,
+          sender->blocking_task_runner(),
           CreateMultipartUploadMetadataJson(title,
                                             parent_resource_id,
                                             modified_date,
@@ -1002,21 +1005,21 @@ MultipartUploadNewFileRequest::MultipartUploadNewFileRequest(
       url_generator_(url_generator) {
 }
 
-MultipartUploadNewFileRequest::~MultipartUploadNewFileRequest() {
+MultipartUploadNewFileDelegate::~MultipartUploadNewFileDelegate() {
 }
 
-GURL MultipartUploadNewFileRequest::GetURL() const {
+GURL MultipartUploadNewFileDelegate::GetURL() const {
   return url_generator_.GetMultipartUploadNewFileUrl(has_modified_date_);
 }
 
-net::URLFetcher::RequestType MultipartUploadNewFileRequest::GetRequestType()
+net::URLFetcher::RequestType MultipartUploadNewFileDelegate::GetRequestType()
     const {
   return net::URLFetcher::POST;
 }
 
-//======================= MultipartUploadExistingFileRequest ===================
+//====================== MultipartUploadExistingFileDelegate ===================
 
-MultipartUploadExistingFileRequest::MultipartUploadExistingFileRequest(
+MultipartUploadExistingFileDelegate::MultipartUploadExistingFileDelegate(
     RequestSender* sender,
     const std::string& title,
     const std::string& resource_id,
@@ -1032,7 +1035,7 @@ MultipartUploadExistingFileRequest::MultipartUploadExistingFileRequest(
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
     : MultipartUploadRequestBase(
-          sender,
+          sender->blocking_task_runner(),
           CreateMultipartUploadMetadataJson(title,
                                             parent_resource_id,
                                             modified_date,
@@ -1049,24 +1052,24 @@ MultipartUploadExistingFileRequest::MultipartUploadExistingFileRequest(
       url_generator_(url_generator) {
 }
 
-MultipartUploadExistingFileRequest::~MultipartUploadExistingFileRequest() {
+MultipartUploadExistingFileDelegate::~MultipartUploadExistingFileDelegate() {
 }
 
 std::vector<std::string>
-MultipartUploadExistingFileRequest::GetExtraRequestHeaders() const {
+MultipartUploadExistingFileDelegate::GetExtraRequestHeaders() const {
   std::vector<std::string> headers(
       MultipartUploadRequestBase::GetExtraRequestHeaders());
   headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
 }
 
-GURL MultipartUploadExistingFileRequest::GetURL() const {
+GURL MultipartUploadExistingFileDelegate::GetURL() const {
   return url_generator_.GetMultipartUploadExistingFileUrl(resource_id_,
                                                           has_modified_date_);
 }
 
 net::URLFetcher::RequestType
-MultipartUploadExistingFileRequest::GetRequestType() const {
+MultipartUploadExistingFileDelegate::GetRequestType() const {
   return net::URLFetcher::PUT;
 }
 
@@ -1159,7 +1162,72 @@ bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+//======================= SingleBatchableDelegateRequest =======================
+
+SingleBatchableDelegateRequest::SingleBatchableDelegateRequest(
+    RequestSender* sender,
+    BatchableDelegate* delegate)
+    : UrlFetchRequestBase(sender),
+      delegate_(delegate),
+      weak_ptr_factory_(this) {
+}
+
+SingleBatchableDelegateRequest::~SingleBatchableDelegateRequest() {
+}
+
+GURL SingleBatchableDelegateRequest::GetURL() const {
+  return delegate_->GetURL();
+}
+
+net::URLFetcher::RequestType SingleBatchableDelegateRequest::GetRequestType()
+    const {
+  return delegate_->GetRequestType();
+}
+
+std::vector<std::string>
+SingleBatchableDelegateRequest::GetExtraRequestHeaders() const {
+  return delegate_->GetExtraRequestHeaders();
+}
+
+void SingleBatchableDelegateRequest::Prepare(const PrepareCallback& callback) {
+  delegate_->Prepare(callback);
+}
+
+bool SingleBatchableDelegateRequest::GetContentData(
+    std::string* upload_content_type,
+    std::string* upload_content) {
+  return delegate_->GetContentData(upload_content_type, upload_content);
+}
+
+void SingleBatchableDelegateRequest::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
+  delegate_->NotifyResult(
+      GetErrorCode(), response_writer()->data(),
+      base::Bind(
+          &SingleBatchableDelegateRequest::OnProcessURLFetchResultsComplete,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SingleBatchableDelegateRequest::RunCallbackOnPrematureFailure(
+    DriveApiErrorCode code) {
+  delegate_->NotifyError(code);
+}
+
+void SingleBatchableDelegateRequest::OnURLFetchUploadProgress(
+    const net::URLFetcher* source,
+    int64 current,
+    int64 total) {
+  delegate_->NotifyUploadProgress(source, current, total);
+}
+
 //========================== BatchUploadRequest ==========================
+
+BatchUploadChildEntry::BatchUploadChildEntry(BatchableDelegate* request)
+    : request(request), prepared(false), data_offset(0), data_size(0) {
+}
+
+BatchUploadChildEntry::~BatchUploadChildEntry() {
+}
 
 BatchUploadRequest::BatchUploadRequest(
     RequestSender* sender,
@@ -1173,22 +1241,18 @@ BatchUploadRequest::BatchUploadRequest(
 }
 
 BatchUploadRequest::~BatchUploadRequest() {
-  for (const auto& child : child_requests_) {
-    // Request will be deleted in |RequestFinished| method.
-    sender_->RequestFinished(child.request);
-  }
 }
 
 void BatchUploadRequest::SetBoundaryForTesting(const std::string& boundary) {
   boundary_ = boundary;
 }
 
-void BatchUploadRequest::AddRequest(BatchableRequestBase* request) {
+void BatchUploadRequest::AddRequest(BatchableDelegate* request) {
   DCHECK(CalledOnValidThread());
   DCHECK(request);
   DCHECK(GetChildEntry(request) == child_requests_.end());
   DCHECK(!committed_);
-  child_requests_.push_back(BatchUploadChildEntry(request));
+  child_requests_.push_back(new BatchUploadChildEntry(request));
   request->Prepare(base::Bind(&BatchUploadRequest::OnChildRequestPrepared,
                               weak_ptr_factory_.GetWeakPtr(), request));
 }
@@ -1199,10 +1263,9 @@ void BatchUploadRequest::OnChildRequestPrepared(RequestID request_id,
   auto const child = GetChildEntry(request_id);
   DCHECK(child != child_requests_.end());
   if (IsSuccessfulDriveApiErrorCode(result)) {
-    child->prepared = true;
+    (*child)->prepared = true;
   } else {
-    child->request->RunCallbackOnPrematureFailure(result);
-    sender_->RequestFinished(child->request);
+    (*child)->request->NotifyError(result);
     child_requests_.erase(child);
   }
   MayCompletePrepare();
@@ -1227,20 +1290,16 @@ void BatchUploadRequest::Prepare(const PrepareCallback& callback) {
 }
 
 void BatchUploadRequest::Cancel() {
-  for (auto& child : child_requests_) {
-    // Request cancel should delete the request instance.
-    child.request->Cancel();
-  }
   child_requests_.clear();
   UrlFetchRequestBase::Cancel();
 }
 
 // Obtains corresponding child entry of |request_id|. Returns NULL if the
 // entry is not found.
-std::vector<BatchUploadChildEntry>::iterator BatchUploadRequest::GetChildEntry(
+ScopedVector<BatchUploadChildEntry>::iterator BatchUploadRequest::GetChildEntry(
     RequestID request_id) {
   for (auto it = child_requests_.begin(); it != child_requests_.end(); ++it) {
-    if (it->request == request_id)
+    if ((*it)->request.get() == request_id)
       return it;
   }
   return child_requests_.end();
@@ -1250,7 +1309,7 @@ void BatchUploadRequest::MayCompletePrepare() {
   if (!committed_ || prepare_callback_.is_null())
     return;
   for (const auto& child : child_requests_) {
-    if (!child.prepared)
+    if (!child->prepared)
       return;
   }
 
@@ -1259,13 +1318,13 @@ void BatchUploadRequest::MayCompletePrepare() {
   for (auto& child : child_requests_) {
     std::string type;
     std::string data;
-    const bool result = child.request->GetContentData(&type, &data);
+    const bool result = child->request->GetContentData(&type, &data);
     // Upload request must have content data.
     DCHECK(result);
 
-    const GURL url = child.request->GetURL();
+    const GURL url = child->request->GetURL();
     std::string method;
-    switch (child.request->GetRequestType()) {
+    switch (child->request->GetRequestType()) {
       case net::URLFetcher::POST:
         method = "POST";
         break;
@@ -1280,8 +1339,8 @@ void BatchUploadRequest::MayCompletePrepare() {
         kBatchUploadRequestFormat, method.c_str(), url.path().c_str(),
         url_generator_.GetBatchUploadUrl().host().c_str(), type.c_str());
 
-    child.data_offset = header.size();
-    child.data_size = data.size();
+    child->data_offset = header.size();
+    child->data_size = data.size();
 
     parts.push_back(ContentTypeAndData());
     parts.back().type = kHttpContentType;
@@ -1294,7 +1353,7 @@ void BatchUploadRequest::MayCompletePrepare() {
                         &part_data_offset);
   DCHECK(part_data_offset.size() == child_requests_.size());
   for (size_t i = 0; i < child_requests_.size(); ++i) {
-    child_requests_[i].data_offset += part_data_offset[i];
+    child_requests_[i]->data_offset += part_data_offset[i];
   }
   prepare_callback_.Run(HTTP_SUCCESS);
 }
@@ -1346,18 +1405,21 @@ void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
   }
 
   for (size_t i = 0; i < parts.size(); ++i) {
-    child_requests_[i].request->ProcessURLFetchResults(parts[i].code,
-                                                       parts[i].body);
+    BatchableDelegate* const delegate = child_requests_[i]->request.get();
+    // Pass onwership of |delegate| so that child_requests_.clear() won't
+    // kill the delegate. It has to be deleted after the notification.
+    delegate->NotifyResult(
+        parts[i].code, parts[i].body,
+        base::Bind(&EmptyClosure, base::Passed(&child_requests_[i]->request)));
   }
-
   child_requests_.clear();
+
   sender_->RequestFinished(this);
 }
 
 void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
   for (auto child : child_requests_) {
-    child.request->RunCallbackOnPrematureFailure(code);
-    sender_->RequestFinished(child.request);
+    child->request->NotifyError(code);
   }
   child_requests_.clear();
 }
@@ -1366,14 +1428,14 @@ void BatchUploadRequest::OnURLFetchUploadProgress(const net::URLFetcher* source,
                                                   int64 current,
                                                   int64 total) {
   for (auto child : child_requests_) {
-    if (child.data_offset <= current &&
-        current <= child.data_offset + child.data_size) {
-      child.request->OnURLFetchUploadProgress(
-          source, current - child.data_offset, child.data_size);
-    } else if (last_progress_value_ < child.data_offset + child.data_size &&
-               child.data_offset + child.data_size < current) {
-      child.request->OnURLFetchUploadProgress(source, child.data_size,
-                                              child.data_size);
+    if (child->data_offset <= current &&
+        current <= child->data_offset + child->data_size) {
+      child->request->NotifyUploadProgress(source, current - child->data_offset,
+                                           child->data_size);
+    } else if (last_progress_value_ < child->data_offset + child->data_size &&
+               child->data_offset + child->data_size < current) {
+      child->request->NotifyUploadProgress(source, child->data_size,
+                                           child->data_size);
     }
   }
   last_progress_value_ = current;

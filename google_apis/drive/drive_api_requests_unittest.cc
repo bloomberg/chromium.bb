@@ -58,28 +58,25 @@ void AppendContent(std::string* out,
   out->append(*content);
 }
 
-class TestBatchableRequest : public BatchableRequestBase {
+class TestBatchableDelegate : public BatchableDelegate {
  public:
-  TestBatchableRequest(RequestSender* sender,
-                       const GURL url,
-                       const std::string& content_type,
-                       const std::string& content_data,
-                       const base::Closure& callback)
-      : BatchableRequestBase(sender),
-        url_(url),
+  TestBatchableDelegate(const GURL url,
+                        const std::string& content_type,
+                        const std::string& content_data,
+                        const base::Closure& callback)
+      : url_(url),
         content_type_(content_type),
         content_data_(content_data),
         callback_(callback) {}
   GURL GetURL() const override { return url_; }
-  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override {
-    callback_.Run();
-  }
-  void ProcessURLFetchResults(DriveApiErrorCode code,
-                              const std::string& body) override {
-    callback_.Run();
-  }
   net::URLFetcher::RequestType GetRequestType() const override {
     return net::URLFetcher::PUT;
+  }
+  std::vector<std::string> GetExtraRequestHeaders() const override {
+    return std::vector<std::string>();
+  }
+  void Prepare(const PrepareCallback& callback) override {
+    callback.Run(HTTP_SUCCESS);
   }
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override {
@@ -87,9 +84,16 @@ class TestBatchableRequest : public BatchableRequestBase {
     upload_content->assign(content_data_);
     return true;
   }
-  void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64 current,
-                                int64 total) override {
+  void NotifyError(DriveApiErrorCode code) override { callback_.Run(); }
+  void NotifyResult(DriveApiErrorCode code,
+                    const std::string& body,
+                    const base::Closure& closure) override {
+    callback_.Run();
+    closure.Run();
+  }
+  void NotifyUploadProgress(const net::URLFetcher* source,
+                            int64 current,
+                            int64 total) override {
     progress_values_.push_back(current);
   }
   const std::vector<int64>& progress_values() const { return progress_values_; }
@@ -2002,8 +2006,8 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
     const FileResourceCallback callback = test_util::CreateQuitCallback(
         &run_loop[i],
         test_util::CreateCopyResultCallback(&errors[i], &file_resources[i]));
-    drive::MultipartUploadNewFileRequest* const child_request =
-        new drive::MultipartUploadNewFileRequest(
+    drive::MultipartUploadNewFileDelegate* const child_request =
+        new drive::MultipartUploadNewFileDelegate(
             request_sender_.get(), base::StringPrintf("new file title %d", i),
             "parent_resource_id", kTestContentType, kTestContent.size(),
             base::Time(), base::Time(), kTestFilePath, drive::Properties(),
@@ -2062,7 +2066,7 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
   ASSERT_TRUE(file_resources[0]);
   EXPECT_EQ("file_id_1", file_resources[0]->file_id());
   ASSERT_FALSE(file_resources[1]);
-  EXPECT_EQ(DRIVE_PARSE_ERROR, errors[1]);
+  EXPECT_EQ(HTTP_SERVICE_UNAVAILABLE, errors[1]);
 }
 
 TEST_F(DriveApiRequestsTest, EmptyBatchUploadRequest) {
@@ -2084,10 +2088,9 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequestWithBodyIncludingZero) {
   // Create child request.
   {
     base::RunLoop loop;
-    TestBatchableRequest* child_request = new TestBatchableRequest(
-        request_sender_.get(), GURL("http://example.com/test"),
-        "application/binary", std::string("Apple\0Orange\0", 13),
-        loop.QuitClosure());
+    TestBatchableDelegate* const child_request = new TestBatchableDelegate(
+        GURL("http://example.com/test"), "application/binary",
+        std::string("Apple\0Orange\0", 13), loop.QuitClosure());
     request->AddRequest(child_request);
     request->Commit();
     loop.Run();
@@ -2116,19 +2119,16 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequestProgress) {
   // Create batch request.
   drive::BatchUploadRequest* const request =
       new drive::BatchUploadRequest(request_sender_.get(), *url_generator_);
-  TestBatchableRequest* requests[] = {
-      new TestBatchableRequest(request_sender_.get(),
-                               GURL("http://example.com/test"),
-                               "application/binary", std::string(100, 'a'),
-                               base::Bind(&EmptyClosure)),
-      new TestBatchableRequest(request_sender_.get(),
-                               GURL("http://example.com/test"),
-                               "application/binary", std::string(50, 'b'),
-                               base::Bind(&EmptyClosure)),
-      new TestBatchableRequest(request_sender_.get(),
-                               GURL("http://example.com/test"),
-                               "application/binary", std::string(0, 'c'),
-                               base::Bind(&EmptyClosure))};
+  TestBatchableDelegate* requests[] = {
+      new TestBatchableDelegate(GURL("http://example.com/test"),
+                                "application/binary", std::string(100, 'a'),
+                                base::Bind(&EmptyClosure)),
+      new TestBatchableDelegate(GURL("http://example.com/test"),
+                                "application/binary", std::string(50, 'b'),
+                                base::Bind(&EmptyClosure)),
+      new TestBatchableDelegate(GURL("http://example.com/test"),
+                                "application/binary", std::string(0, 'c'),
+                                base::Bind(&EmptyClosure))};
   const size_t kExpectedUploadDataPosition[] = {208, 517, 776};
   const size_t kExpectedUploadDataSize = 851;
   request->AddRequest(requests[0]);

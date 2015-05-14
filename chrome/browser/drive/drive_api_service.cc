@@ -186,7 +186,7 @@ google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
   DCHECK(batch_request_);
 
   batch_request_->AddRequest(
-      new google_apis::drive::MultipartUploadNewFileRequest(
+      new google_apis::drive::MultipartUploadNewFileDelegate(
           batch_request_->sender(), title, parent_resource_id, content_type,
           content_length, options.modified_date, options.last_viewed_by_me_date,
           local_file_path, options.properties, batch_request_->url_generator(),
@@ -208,7 +208,7 @@ BatchRequestConfigurator::MultipartUploadExistingFile(
   DCHECK(batch_request_);
 
   batch_request_->AddRequest(
-      new google_apis::drive::MultipartUploadExistingFileRequest(
+      new google_apis::drive::MultipartUploadExistingFileDelegate(
           batch_request_->sender(), options.title, resource_id,
           options.parent_resource_id, content_type, content_length,
           options.modified_date, options.last_viewed_by_me_date,
@@ -712,11 +712,14 @@ CancelCallback DriveAPIService::MultipartUploadNewFile(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new google_apis::drive::MultipartUploadNewFileRequest(
-          sender_.get(), title, parent_resource_id, content_type,
-          content_length, options.modified_date, options.last_viewed_by_me_date,
-          local_file_path, options.properties, url_generator_, callback,
-          progress_callback));
+      new google_apis::drive::SingleBatchableDelegateRequest(
+          sender_.get(),
+          new google_apis::drive::MultipartUploadNewFileDelegate(
+              sender_.get(), title, parent_resource_id, content_type,
+              content_length, options.modified_date,
+              options.last_viewed_by_me_date, local_file_path,
+              options.properties, url_generator_, callback,
+              progress_callback)));
 }
 
 CancelCallback DriveAPIService::MultipartUploadExistingFile(
@@ -731,11 +734,14 @@ CancelCallback DriveAPIService::MultipartUploadExistingFile(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new google_apis::drive::MultipartUploadExistingFileRequest(
-          sender_.get(), options.title, resource_id, options.parent_resource_id,
-          content_type, content_length, options.modified_date,
-          options.last_viewed_by_me_date, local_file_path, options.etag,
-          options.properties, url_generator_, callback, progress_callback));
+      new google_apis::drive::SingleBatchableDelegateRequest(
+          sender_.get(),
+          new google_apis::drive::MultipartUploadExistingFileDelegate(
+              sender_.get(), options.title, resource_id,
+              options.parent_resource_id, content_type, content_length,
+              options.modified_date, options.last_viewed_by_me_date,
+              local_file_path, options.etag, options.properties, url_generator_,
+              callback, progress_callback)));
 }
 
 CancelCallback DriveAPIService::AuthorizeApp(

@@ -561,31 +561,6 @@ UrlFetchRequestBase::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-//============================ BatchableRequestBase ============================
-
-net::URLFetcher::RequestType BatchableRequestBase::GetRequestType() const {
-  return UrlFetchRequestBase::GetRequestType();
-}
-
-std::vector<std::string> BatchableRequestBase::GetExtraRequestHeaders() const {
-  return UrlFetchRequestBase::GetExtraRequestHeaders();
-}
-
-void BatchableRequestBase::Prepare(const PrepareCallback& callback) {
-  return UrlFetchRequestBase::Prepare(callback);
-}
-
-bool BatchableRequestBase::GetContentData(
-    std::string* upload_content_type, std::string* upload_content) {
-  return UrlFetchRequestBase::GetContentData(
-      upload_content_type, upload_content);
-}
-
-void BatchableRequestBase::ProcessURLFetchResults(
-    const net::URLFetcher* source) {
-  ProcessURLFetchResults(GetErrorCode(), response_writer()->data());
-}
-
 //============================ EntryActionRequest ============================
 
 EntryActionRequest::EntryActionRequest(RequestSender* sender,
@@ -855,14 +830,14 @@ GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
 //========================= MultipartUploadRequestBase ========================
 
 MultipartUploadRequestBase::MultipartUploadRequestBase(
-    RequestSender* sender,
+    base::SequencedTaskRunner* blocking_task_runner,
     const std::string& metadata_json,
     const std::string& content_type,
     int64 content_length,
     const base::FilePath& local_file_path,
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
-    : BatchableRequestBase(sender),
+    : blocking_task_runner_(blocking_task_runner),
       metadata_json_(metadata_json),
       content_type_(content_type),
       local_path_(local_file_path),
@@ -878,13 +853,18 @@ MultipartUploadRequestBase::MultipartUploadRequestBase(
 MultipartUploadRequestBase::~MultipartUploadRequestBase() {
 }
 
+std::vector<std::string> MultipartUploadRequestBase::GetExtraRequestHeaders()
+    const {
+  return std::vector<std::string>();
+}
+
 void MultipartUploadRequestBase::Prepare(const PrepareCallback& callback) {
   // If the request is cancelled, the request instance will be deleted in
   // |UrlFetchRequestBase::Cancel| and OnPrepareUploadContent won't be called.
   std::string* const upload_content_type = new std::string();
   std::string* const upload_content_data = new std::string();
   PostTaskAndReplyWithResult(
-      blocking_task_runner(), FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&GetMultipartContent, boundary_, metadata_json_, content_type_,
                  local_path_, base::Unretained(upload_content_type),
                  base::Unretained(upload_content_data)),
@@ -922,26 +902,29 @@ bool MultipartUploadRequestBase::GetContentData(
   return true;
 }
 
-void MultipartUploadRequestBase::ProcessURLFetchResults(
-    DriveApiErrorCode code, const std::string& body) {
+void MultipartUploadRequestBase::NotifyResult(
+    DriveApiErrorCode code,
+    const std::string& body,
+    const base::Closure& notify_complete_callback) {
   // The upload is successfully done. Parse the response which should be
   // the entry's metadata.
   if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
     ParseJsonOnBlockingPool(
-        blocking_task_runner(), body,
+        blocking_task_runner_.get(), body,
         base::Bind(&MultipartUploadRequestBase::OnDataParsed,
-                   weak_ptr_factory_.GetWeakPtr(), code));
+                   weak_ptr_factory_.GetWeakPtr(), code,
+                   notify_complete_callback));
   } else {
-    OnDataParsed(code, scoped_ptr<base::Value>());
+    NotifyError(code);
+    notify_complete_callback.Run();
   }
 }
 
-void MultipartUploadRequestBase::RunCallbackOnPrematureFailure(
-    DriveApiErrorCode code) {
+void MultipartUploadRequestBase::NotifyError(DriveApiErrorCode code) {
   callback_.Run(code, scoped_ptr<FileResource>());
 }
 
-void MultipartUploadRequestBase::OnURLFetchUploadProgress(
+void MultipartUploadRequestBase::NotifyUploadProgress(
     const net::URLFetcher* source,
     int64 current,
     int64 total) {
@@ -949,14 +932,16 @@ void MultipartUploadRequestBase::OnURLFetchUploadProgress(
     progress_callback_.Run(current, total);
 }
 
-void MultipartUploadRequestBase::OnDataParsed(DriveApiErrorCode code,
-                                              scoped_ptr<base::Value> value) {
-  DCHECK(CalledOnValidThread());
+void MultipartUploadRequestBase::OnDataParsed(
+    DriveApiErrorCode code,
+    const base::Closure& notify_complete_callback,
+    scoped_ptr<base::Value> value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (value)
     callback_.Run(code, google_apis::FileResource::CreateFrom(*value));
   else
-    callback_.Run(DRIVE_PARSE_ERROR, scoped_ptr<FileResource>());
-  OnProcessURLFetchResultsComplete();
+    NotifyError(DRIVE_PARSE_ERROR);
+  notify_complete_callback.Run();
 }
 
 //============================ DownloadFileRequestBase =========================
