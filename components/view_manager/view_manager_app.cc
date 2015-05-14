@@ -17,8 +17,8 @@
 using mojo::ApplicationConnection;
 using mojo::ApplicationImpl;
 using mojo::InterfaceRequest;
+using mojo::ViewManagerRoot;
 using mojo::ViewManagerService;
-using mojo::WindowManagerInternalClient;
 
 namespace view_manager {
 
@@ -41,20 +41,15 @@ bool ViewManagerApp::ConfigureIncomingConnection(
   }
   wm_app_connection_ = connection;
   // |connection| originates from the WindowManager. Let it connect directly
-  // to the ViewManager and WindowManagerInternalClient.
+  // to the ViewManager.
   connection->AddService<ViewManagerService>(this);
-  connection->AddService<WindowManagerInternalClient>(this);
-  connection->ConnectToService(&wm_internal_);
-  // If no ServiceProvider has been sent, refuse the connection.
-  if (!wm_internal_)
-    return false;
-  wm_internal_.set_error_handler(this);
+  connection->AddService<ViewManagerRoot>(this);
 
   scoped_ptr<DefaultDisplayManager> display_manager(new DefaultDisplayManager(
       app_impl_, base::Bind(&ViewManagerApp::OnLostConnectionToWindowManager,
                             base::Unretained(this))));
   connection_manager_.reset(
-      new ConnectionManager(this, display_manager.Pass(), wm_internal_.get()));
+      new ConnectionManager(this, display_manager.Pass()));
   return true;
 }
 
@@ -94,16 +89,17 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
 
 void ViewManagerApp::Create(ApplicationConnection* connection,
                             InterfaceRequest<ViewManagerService> request) {
-  if (connection_manager_->has_window_manager_client_connection()) {
+  if (connection_manager_->has_window_manager_client_connection() ||
+      connection != wm_app_connection_) {
     VLOG(1) << "ViewManager interface requested more than once.";
     return;
   }
 
   scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
       connection_manager_.get(), kInvalidConnectionId, std::string(),
-      std::string("mojo:window_manager"), RootViewId()));
+      connection->GetRemoteApplicationURL(), RootViewId()));
   mojo::ViewManagerClientPtr client;
-  wm_internal_client_request_ = GetProxy(&client);
+  wm_app_connection_->ConnectToService(&client);
   scoped_ptr<ClientConnection> client_connection(
       new DefaultClientConnection(service.Pass(), connection_manager_.get(),
                                   request.Pass(), client.Pass()));
@@ -111,22 +107,18 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
       client_connection.Pass());
 }
 
-void ViewManagerApp::Create(
-    ApplicationConnection* connection,
-    InterfaceRequest<WindowManagerInternalClient> request) {
-  if (wm_internal_client_binding_.get()) {
-    VLOG(1) << "WindowManagerInternalClient requested more than once.";
+void ViewManagerApp::Create(ApplicationConnection* connection,
+                            InterfaceRequest<ViewManagerRoot> request) {
+  if (view_manager_root_binding_.get()) {
+    VLOG(1) << "ViewManagerRoot requested more than once.";
     return;
   }
 
   // ConfigureIncomingConnection() must have been called before getting here.
   DCHECK(connection_manager_.get());
-  wm_internal_client_binding_.reset(
-      new mojo::Binding<WindowManagerInternalClient>(connection_manager_.get(),
-                                                     request.Pass()));
-  wm_internal_client_binding_->set_error_handler(this);
-  wm_internal_->SetViewManagerClient(
-      wm_internal_client_request_.PassMessagePipe());
+  view_manager_root_binding_.reset(new mojo::Binding<ViewManagerRoot>(
+      connection_manager_.get(), request.Pass()));
+  view_manager_root_binding_->set_error_handler(this);
 }
 
 void ViewManagerApp::OnConnectionError() {

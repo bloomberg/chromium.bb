@@ -13,8 +13,8 @@
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
-#include "components/view_manager/public/cpp/view_manager_context.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mojo/application/application_test_base_chromium.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -227,8 +227,8 @@ class ViewManagerTest : public test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    view_manager_context_.reset(new ViewManagerContext(application_impl()));
-    view_manager_context_->Embed(application_impl()->url());
+    view_manager_init_.reset(
+        new ViewManagerInit(application_impl(), this, nullptr));
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_view_manager_);
   }
@@ -236,9 +236,9 @@ class ViewManagerTest : public test::ApplicationTestBase,
   // Overridden from testing::Test:
   void TearDown() override { ApplicationTestBase::TearDown(); }
 
-  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
+  scoped_ptr<ViewManagerInit> view_manager_init_;
 
-  scoped_ptr<ViewManagerContext> view_manager_context_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* most_recent_view_manager_;
@@ -252,7 +252,8 @@ class ViewManagerTest : public test::ApplicationTestBase,
 TEST_F(ViewManagerTest, RootView) {
   ASSERT_NE(nullptr, window_manager());
   EXPECT_NE(nullptr, window_manager()->GetRoot());
-  EXPECT_EQ("mojo:window_manager", window_manager()->GetEmbedderURL());
+  // No one embedded the window_manager(), so it has no url.
+  EXPECT_TRUE(window_manager()->GetEmbedderURL().empty());
 }
 
 TEST_F(ViewManagerTest, Embed) {

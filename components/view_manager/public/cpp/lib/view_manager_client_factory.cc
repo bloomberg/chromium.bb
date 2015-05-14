@@ -18,19 +18,6 @@ ViewManagerClientFactory::ViewManagerClientFactory(
 ViewManagerClientFactory::~ViewManagerClientFactory() {
 }
 
-// static
-ViewManagerClient* ViewManagerClientFactory::WeakBindViewManagerToPipe(
-    InterfaceRequest<ViewManagerClient> request,
-    ViewManagerServicePtr view_manager_service,
-    Shell* shell,
-    ViewManagerDelegate* delegate) {
-  const bool delete_on_error = false;
-  auto client = new ViewManagerClientImpl(delegate, shell, request.Pass(),
-                                          delete_on_error);
-  client->SetViewManagerService(view_manager_service.Pass());
-  return client;
-}
-
 // InterfaceFactory<ViewManagerClient> implementation.
 void ViewManagerClientFactory::Create(
     ApplicationConnection* connection,

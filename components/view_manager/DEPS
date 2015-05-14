@@ -3,7 +3,6 @@ include_rules = [
   "+components/gpu",
   "+components/native_viewport",
   "+components/surfaces",
-  "+components/window_manager",
   "+mojo/application",
   "+mojo/common",
   "+mojo/converters",

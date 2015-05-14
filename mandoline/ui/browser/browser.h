@@ -7,8 +7,7 @@
 
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
-#include "components/window_manager/window_manager_app.h"
-#include "components/window_manager/window_manager_delegate.h"
+#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/ui/browser/navigator_host_impl.h"
 #include "mandoline/ui/browser/omnibox.mojom.h"
@@ -19,6 +18,10 @@
 #include "ui/mojo/events/input_events.mojom.h"
 #include "url/gurl.h"
 
+namespace mojo {
+class ViewManagerInit;
+}
+
 namespace mandoline {
 
 class BrowserUI;
@@ -26,7 +29,7 @@ class MergedServiceProvider;
 
 class Browser : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
-                public window_manager::WindowManagerDelegate,
+                public mojo::ViewManagerRootClient,
                 public OmniboxClient,
                 public mojo::InterfaceFactory<mojo::NavigatorHost> {
  public:
@@ -54,13 +57,8 @@ class Browser : public mojo::ApplicationDelegate,
                mojo::ServiceProviderPtr exposed_services) override;
   void OnViewManagerDisconnected(mojo::ViewManager* view_manager) override;
 
-  // Overridden from WindowManagerDelegate:
-  void Embed(const mojo::String& url,
-             mojo::InterfaceRequest<mojo::ServiceProvider> services,
-             mojo::ServiceProviderPtr exposed_services) override;
-  void OnAcceleratorPressed(mojo::View* view,
-                            mojo::KeyboardCode keyboard_code,
-                            mojo::EventFlags flags) override;
+  // Overridden from ViewManagerRootClient:
+  void OnAccelerator(mojo::EventPtr event) override;
 
   // Overridden from OmniboxClient:
   void OpenURL(const mojo::String& url) override;
@@ -69,11 +67,15 @@ class Browser : public mojo::ApplicationDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
 
+  void Embed(const mojo::String& url,
+             mojo::InterfaceRequest<mojo::ServiceProvider> services,
+             mojo::ServiceProviderPtr exposed_services);
+
   void ShowOmnibox(const mojo::String& url,
                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
                    mojo::ServiceProviderPtr exposed_services);
 
-  scoped_ptr<window_manager::WindowManagerApp> window_manager_app_;
+  scoped_ptr<mojo::ViewManagerInit> view_manager_init_;
 
   // Only support being embedded once, so both application-level
   // and embedding-level state are shared on the same object.

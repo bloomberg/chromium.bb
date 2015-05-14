@@ -7,9 +7,8 @@
 #include "base/run_loop.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/test_change_tracker.h"
-#include "components/window_manager/public/interfaces/window_manager.mojom.h"
-#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "mojo/application/application_test_base_chromium.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -395,18 +394,15 @@ class ViewManagerClientFactory
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientFactory);
 };
 
-class ViewManagerServiceAppTest
-    : public mojo::test::ApplicationTestBase,
-      public ApplicationDelegate,
-      public mojo::InterfaceFactory<mojo::WindowManagerInternal>,
-      public mojo::WindowManagerInternal {
+class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
+                                  public ApplicationDelegate {
  public:
-  ViewManagerServiceAppTest() : wm_internal_binding_(this) {}
+  ViewManagerServiceAppTest() {}
   ~ViewManagerServiceAppTest() override {}
 
  protected:
   // Returns the changes from the various connections.
-  std::vector<Change>* changes1() { return vm_client1_.tracker()->changes(); }
+  std::vector<Change>* changes1() { return vm_client1_->tracker()->changes(); }
   std::vector<Change>* changes2() { return vm_client2_->tracker()->changes(); }
   std::vector<Change>* changes3() { return vm_client3_->tracker()->changes(); }
 
@@ -455,9 +451,7 @@ class ViewManagerServiceAppTest
     }
     client->WaitForOnEmbed();
 
-    const std::string expected_creator =
-        owner == vm1() ? "mojo:window_manager" : application_impl()->url();
-    EXPECT_EQ("OnEmbed creator=" + expected_creator,
+    EXPECT_EQ("OnEmbed creator=" + application_impl()->url(),
               SingleChangeToDescription(*client->tracker()->changes()));
     return client.Pass();
   }
@@ -468,16 +462,13 @@ class ViewManagerServiceAppTest
     ApplicationTestBase::SetUp();
     ApplicationConnection* vm_connection =
         application_impl()->ConnectToApplication("mojo:view_manager");
-    vm_connection->AddService(this);
     vm_connection->ConnectToService(&vm1_);
-    vm_connection->ConnectToService(&wm_internal_client_);
-    // Spin a run loop until the view manager service sends us the
-    // ViewManagerClient pipe to use for the "window manager" connection.
-    view_manager_setup_run_loop_.reset(new base::RunLoop);
-    view_manager_setup_run_loop_->Run();
-    view_manager_setup_run_loop_ = nullptr;
+    vm_connection->ConnectToService(&view_manager_root_);
+    vm_connection->AddService(&client_factory_);
+    vm_client1_ = client_factory_.WaitForInstance();
+    ASSERT_TRUE(vm_client1_);
     // Next we should get an embed call on the "window manager" client.
-    vm_client1_.WaitForIncomingMethodCall();
+    vm_client1_->WaitForIncomingMethodCall();
     ASSERT_EQ(1u, changes1()->size());
     EXPECT_EQ(CHANGE_TYPE_EMBED, (*changes1())[0].type);
     // All these tests assume 1 for the client id. The only real assertion here
@@ -493,34 +484,15 @@ class ViewManagerServiceAppTest
     return true;
   }
 
-  // mojo::InterfaceFactory<mojo::WindowManagerInternal> implementation.
-  void Create(
-      ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::WindowManagerInternal> request) override {
-    DCHECK(!wm_internal_binding_.is_bound());
-    wm_internal_binding_.Bind(request.Pass());
-  }
-
-  // mojo::WindowManagerInternal implementation.
-  void SetViewManagerClient(
-      mojo::ScopedMessagePipeHandle view_manager_client_request) override {
-    auto typed_request = mojo::MakeRequest<mojo::ViewManagerClient>(
-        view_manager_client_request.Pass());
-    vm_client1_.Bind(typed_request.Pass());
-    view_manager_setup_run_loop_->Quit();
-  }
-  void OnAccelerator(mojo::EventPtr event) override {}
-
-  mojo::Binding<mojo::WindowManagerInternal> wm_internal_binding_;
-  mojo::WindowManagerInternalClientPtr wm_internal_client_;
-  ViewManagerClientImpl vm_client1_;
+  scoped_ptr<ViewManagerClientImpl> vm_client1_;
   scoped_ptr<ViewManagerClientImpl> vm_client2_;
   scoped_ptr<ViewManagerClientImpl> vm_client3_;
+
+  mojo::ViewManagerRootPtr view_manager_root_;
 
  private:
   mojo::ViewManagerServicePtr vm1_;
   ViewManagerClientFactory client_factory_;
-  scoped_ptr<base::RunLoop> view_manager_setup_run_loop_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceAppTest);
 };
@@ -800,7 +772,7 @@ TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedAddingKnownToUnknown) {
     changes1()->clear();
     ASSERT_TRUE(RemoveViewFromParent(vm2(), BuildViewId(2, 11)));
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged view=2,11 new_parent=null old_parent=1,1",
               SingleChangeToDescription(*changes1()));
   }
@@ -810,7 +782,7 @@ TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedAddingKnownToUnknown) {
     changes1()->clear();
     ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged view=2,2 new_parent=1,1 old_parent=null",
               SingleChangeToDescription(*changes1()));
     EXPECT_EQ(
@@ -850,7 +822,7 @@ TEST_F(ViewManagerServiceAppTest, ReorderView) {
     changes1()->clear();
     ASSERT_TRUE(ReorderView(vm2(), view2_id, view3_id, ORDER_DIRECTION_ABOVE));
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered view=2,2 relative=2,3 direction=above",
               SingleChangeToDescription(*changes1()));
   }
@@ -859,7 +831,7 @@ TEST_F(ViewManagerServiceAppTest, ReorderView) {
     changes1()->clear();
     ASSERT_TRUE(ReorderView(vm2(), view2_id, view3_id, ORDER_DIRECTION_BELOW));
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered view=2,2 relative=2,3 direction=below",
               SingleChangeToDescription(*changes1()));
   }
@@ -890,7 +862,7 @@ TEST_F(ViewManagerServiceAppTest, DeleteView) {
   {
     changes1()->clear();
     ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged view=2,2 new_parent=1,1 old_parent=null",
               SingleChangeToDescription(*changes1()));
   }
@@ -902,7 +874,7 @@ TEST_F(ViewManagerServiceAppTest, DeleteView) {
     ASSERT_TRUE(DeleteView(vm2(), BuildViewId(2, 2)));
     EXPECT_TRUE(changes2()->empty());
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("ViewDeleted view=2,2", SingleChangeToDescription(*changes1()));
   }
 }
@@ -924,7 +896,7 @@ TEST_F(ViewManagerServiceAppTest, ReuseDeletedViewId) {
     changes1()->clear();
     ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged view=2,2 new_parent=1,1 old_parent=null",
               SingleChangeToDescription(*changes1()));
     EXPECT_EQ("[view=2,2 parent=1,1]", ChangeViewDescription(*changes1()));
@@ -935,7 +907,7 @@ TEST_F(ViewManagerServiceAppTest, ReuseDeletedViewId) {
     changes1()->clear();
     ASSERT_TRUE(DeleteView(vm2(), BuildViewId(2, 2)));
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("ViewDeleted view=2,2", SingleChangeToDescription(*changes1()));
   }
 
@@ -945,7 +917,7 @@ TEST_F(ViewManagerServiceAppTest, ReuseDeletedViewId) {
     changes1()->clear();
     ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
 
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged view=2,2 new_parent=1,1 old_parent=null",
               SingleChangeToDescription(*changes1()));
     EXPECT_EQ("[view=2,2 parent=1,1]", ChangeViewDescription(*changes1()));
@@ -1133,7 +1105,7 @@ TEST_F(ViewManagerServiceAppTest, EmbedWithSameViewId2) {
 
   // Connection 1 should have been told about the add (it owns the view).
   {
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged view=3,1 new_parent=1,1 old_parent=null",
               SingleChangeToDescription(*changes1()));
   }
@@ -1276,7 +1248,7 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibilityNotifications) {
   // Show 1,2 from connection 2, connection 1 should be notified.
   ASSERT_TRUE(SetViewVisibility(vm2(), BuildViewId(1, 2), true));
   {
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("VisibilityChanged view=1,2 visible=true",
               SingleChangeToDescription(*changes1()));
   }
@@ -1303,7 +1275,7 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibilityNotifications) {
   changes1()->clear();
   ASSERT_TRUE(SetViewVisibility(vm2(), BuildViewId(2, 3), false));
   {
-    vm_client1_.WaitForChangeCount(1);
+    vm_client1_->WaitForChangeCount(1);
     EXPECT_EQ("VisibilityChanged view=2,3 visible=false",
               SingleChangeToDescription(*changes1()));
   }
@@ -1415,7 +1387,7 @@ TEST_F(ViewManagerServiceAppTest, DontCleanMapOnDestroy) {
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 1)));
   changes1()->clear();
   vm_client2_.reset();
-  vm_client1_.WaitForChangeCount(1);
+  vm_client1_->WaitForChangeCount(1);
   EXPECT_EQ("OnEmbeddedAppDisconnected view=1,1",
             SingleChangeToDescription(*changes1()));
   std::vector<TestView> views;
@@ -1436,7 +1408,7 @@ TEST_F(ViewManagerServiceAppTest, CloneAndAnimate) {
   ASSERT_TRUE(WaitForAllMessages(vm1()));
   changes1()->clear();
 
-  wm_internal_client_->CloneAndAnimate(BuildViewId(2, 3));
+  view_manager_root_->CloneAndAnimate(BuildViewId(2, 3));
   ASSERT_TRUE(WaitForAllMessages(vm1()));
 
   ASSERT_TRUE(WaitForAllMessages(vm1()));
@@ -1465,7 +1437,7 @@ TEST_F(ViewManagerServiceAppTest, EmbedSupplyingViewManagerClient) {
   mojo::Binding<ViewManagerClient> client2_binding(&client2, &client2_ptr);
   ASSERT_TRUE(Embed(vm1(), BuildViewId(1, 1), client2_ptr.Pass()));
   client2.WaitForOnEmbed();
-  EXPECT_EQ("OnEmbed creator=mojo:window_manager",
+  EXPECT_EQ("OnEmbed creator=" + application_impl()->url(),
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 

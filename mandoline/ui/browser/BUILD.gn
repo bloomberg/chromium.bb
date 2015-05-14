@@ -53,7 +53,6 @@ source_set("kiosk_wm_lib") {
     ":interfaces",
     "//base",
     "//components/view_manager/public/cpp",
-    "//components/window_manager:lib",
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",

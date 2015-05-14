@@ -15,7 +15,6 @@ mojo_native_application("view_manager") {
     ":view_manager_lib",
     "//base",
     "//components/view_manager/public/interfaces",
-    "//components/window_manager/public/interfaces",
     "//mojo/application",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
@@ -80,7 +79,6 @@ source_set("view_manager_lib") {
     "//components/surfaces/public/interfaces",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
-    "//components/window_manager/public/interfaces",
     "//mojo/application",
     "//mojo/application/public/interfaces",
     "//mojo/common",
@@ -99,9 +97,6 @@ source_set("view_manager_lib") {
   data_deps = [
     "//components/native_viewport",
     "//components/surfaces",
-
-    # TODO(msw|sky): VM and WM connect to each other; avoid circular dependency.
-    #"//components/window_manager:lib",
   ]
 }
 
@@ -146,7 +141,6 @@ test("tests") {
     "//components/native_viewport/public/cpp:args",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
-    "//components/window_manager/public/interfaces",
     "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
@@ -181,7 +175,6 @@ mojo_native_application("apptests") {
     "//base/test:test_config",
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/interfaces",
-    "//components/window_manager/public/interfaces",
     "//mojo/application",
     "//mojo/application:test_support",
     "//mojo/common",
@@ -189,4 +182,6 @@ mojo_native_application("apptests") {
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
   ]
+
+  data_deps = [ ":view_manager" ]
 }

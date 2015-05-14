@@ -30,7 +30,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/view_manager/public/cpp",
-    "//components/window_manager:lib",
     "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/aura",
     "//mandoline/ui/browser:interfaces",

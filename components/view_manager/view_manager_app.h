@@ -8,12 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/connection_manager_delegate.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
-#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
+#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/tracing_impl.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -23,12 +21,11 @@ namespace view_manager {
 
 class ConnectionManager;
 
-class ViewManagerApp
-    : public mojo::ApplicationDelegate,
-      public ConnectionManagerDelegate,
-      public mojo::ErrorHandler,
-      public mojo::InterfaceFactory<mojo::ViewManagerService>,
-      public mojo::InterfaceFactory<mojo::WindowManagerInternalClient> {
+class ViewManagerApp : public mojo::ApplicationDelegate,
+                       public ConnectionManagerDelegate,
+                       public mojo::ErrorHandler,
+                       public mojo::InterfaceFactory<mojo::ViewManagerRoot>,
+                       public mojo::InterfaceFactory<mojo::ViewManagerService> {
  public:
   ViewManagerApp();
   ~ViewManagerApp() override;
@@ -61,20 +58,16 @@ class ViewManagerApp
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewManagerService> request) override;
 
-  // mojo::InterfaceFactory<mojo::WindowManagerInternalClient>:
+  // mojo::InterfaceFactory<mojo::ViewManagerRoot>:
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::WindowManagerInternalClient> request)
-      override;
+              mojo::InterfaceRequest<mojo::ViewManagerRoot> request) override;
 
   // ErrorHandler (for |wm_internal_| and |wm_internal_client_binding_|).
   void OnConnectionError() override;
 
   mojo::ApplicationImpl* app_impl_;
   mojo::ApplicationConnection* wm_app_connection_;
-  scoped_ptr<mojo::Binding<mojo::WindowManagerInternalClient>>
-      wm_internal_client_binding_;
-  mojo::InterfaceRequest<mojo::ViewManagerClient> wm_internal_client_request_;
-  mojo::WindowManagerInternalPtr wm_internal_;
+  scoped_ptr<mojo::Binding<mojo::ViewManagerRoot>> view_manager_root_binding_;
   scoped_ptr<ConnectionManager> connection_manager_;
   mojo::TracingImpl tracing_;
 

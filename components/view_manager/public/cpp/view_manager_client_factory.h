@@ -21,14 +21,6 @@ class ViewManagerClientFactory : public InterfaceFactory<ViewManagerClient> {
   ViewManagerClientFactory(Shell* shell, ViewManagerDelegate* delegate);
   ~ViewManagerClientFactory() override;
 
-  // Creates a ViewManagerClient from the supplied arguments. Returns ownership
-  // to the caller.
-  static ViewManagerClient* WeakBindViewManagerToPipe(
-      InterfaceRequest<ViewManagerClient> request,
-      ViewManagerServicePtr view_manager_service,
-      Shell* shell,
-      ViewManagerDelegate* delegate);
-
   // InterfaceFactory<ViewManagerClient> implementation.
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ViewManagerClient> request) override;

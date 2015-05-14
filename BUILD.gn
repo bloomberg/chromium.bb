@@ -690,7 +690,6 @@ group("gn_mojo_targets") {
     # and figure out how cross-platform they are
     deps = [
       "//chrome/browser/ui/webui/omnibox:mojo_bindings_python",
-      "//components/window_manager/public/interfaces:interfaces_python",
       "//content/public/common:mojo_bindings_python",
       "//content/common:mojo_bindings_python",
       "//content/test:web_ui_test_mojo_bindings_python",

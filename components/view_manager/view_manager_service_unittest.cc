@@ -17,8 +17,6 @@
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/test_change_tracker.h"
 #include "components/view_manager/view_manager_service_impl.h"
-#include "components/window_manager/public/interfaces/window_manager.mojom.h"
-#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -196,22 +194,6 @@ class TestDisplayManager : public DisplayManager {
   DISALLOW_COPY_AND_ASSIGN(TestDisplayManager);
 };
 
-// -----------------------------------------------------------------------------
-
-// Empty implementation of WindowManagerInternal.
-class TestWindowManagerInternal : public mojo::WindowManagerInternal {
- public:
-  TestWindowManagerInternal() {}
-  ~TestWindowManagerInternal() override {}
-
-  // WindowManagerInternal:
-  void SetViewManagerClient(mojo::ScopedMessagePipeHandle) override {}
-  void OnAccelerator(mojo::EventPtr event) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerInternal);
-};
-
 mojo::EventPtr CreatePointerDownEvent(int x, int y) {
   mojo::EventPtr event(mojo::Event::New());
   event->action = mojo::EVENT_TYPE_POINTER_DOWN;
@@ -262,8 +244,7 @@ class ViewManagerServiceTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     connection_manager_.reset(new ConnectionManager(
-        &delegate_, scoped_ptr<DisplayManager>(new TestDisplayManager),
-        &wm_internal_));
+        &delegate_, scoped_ptr<DisplayManager>(new TestDisplayManager)));
     scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
         connection_manager_.get(), kInvalidConnectionId, std::string(),
         std::string("mojo:window_manager"), RootViewId()));
@@ -281,7 +262,6 @@ class ViewManagerServiceTest : public testing::Test {
   // TestViewManagerClient that is used for the WM connection.
   TestViewManagerClient* wm_client_;
 
-  TestWindowManagerInternal wm_internal_;
   TestConnectionManagerDelegate delegate_;
   scoped_ptr<ConnectionManager> connection_manager_;
   base::MessageLoop message_loop_;

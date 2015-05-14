@@ -17,9 +17,9 @@
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/server_view_delegate.h"
 #include "components/view_manager/server_view_observer.h"
-#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
@@ -36,7 +36,7 @@ class ViewManagerServiceImpl;
 // ViewManagerServiceImpls) as well as providing the root of the hierarchy.
 class ConnectionManager : public ServerViewDelegate,
                           public ServerViewObserver,
-                          public mojo::WindowManagerInternalClient,
+                          public mojo::ViewManagerRoot,
                           public FocusControllerDelegate {
  public:
   // Create when a ViewManagerServiceImpl is about to make a change. Ensures
@@ -73,8 +73,7 @@ class ConnectionManager : public ServerViewDelegate,
   };
 
   ConnectionManager(ConnectionManagerDelegate* delegate,
-                    scoped_ptr<DisplayManager> display_manager,
-                    mojo::WindowManagerInternal* wm_internal);
+                    scoped_ptr<DisplayManager> display_manager);
   ~ConnectionManager() override;
 
   // Creates a new ServerView. The return value is owned by the caller, but must
@@ -131,7 +130,9 @@ class ConnectionManager : public ServerViewDelegate,
   }
   const ViewManagerServiceImpl* GetConnectionWithRoot(const ViewId& id) const;
 
-  mojo::WindowManagerInternal* wm_internal() { return wm_internal_; }
+  mojo::ViewManagerRootClient* view_manager_root_client() {
+    return view_manager_root_client_.get();
+  }
 
   void SetWindowManagerClientConnection(
       scoped_ptr<ClientConnection> connection);
@@ -141,7 +142,7 @@ class ConnectionManager : public ServerViewDelegate,
 
   mojo::ViewManagerClient* GetWindowManagerViewManagerClient();
 
-  // WindowManagerInternalClient implementation helper; see mojom for details.
+  // ViewManagerRoot implementation helper; see mojom for details.
   bool CloneAndAnimate(const ViewId& view_id);
 
   // Processes an event, potentially changing focus.
@@ -223,9 +224,8 @@ class ConnectionManager : public ServerViewDelegate,
       const std::string& name,
       const std::vector<uint8_t>* new_data) override;
 
-  // WindowManagerInternalClient:
-  void DispatchInputEventToViewDEPRECATED(mojo::Id transport_view_id,
-                                          mojo::EventPtr event) override;
+  // ViewManagerRoot:
+  void SetViewManagerRootClient(mojo::ViewManagerRootClientPtr client) override;
   void SetViewportSize(mojo::SizePtr size) override;
   void CloneAndAnimate(mojo::Id transport_view_id) override;
   void AddAccelerator(mojo::KeyboardCode keyboard_code,
@@ -254,8 +254,6 @@ class ConnectionManager : public ServerViewDelegate,
 
   scoped_ptr<ServerView> root_;
 
-  mojo::WindowManagerInternal* wm_internal_;
-
   // If non-null we're processing a change. The ScopedChange is not owned by us
   // (it's created on the stack by ViewManagerServiceImpl).
   ScopedChange* current_change_;
@@ -272,6 +270,8 @@ class ConnectionManager : public ServerViewDelegate,
   mojo::Binding<mojo::NativeViewportEventDispatcher> event_dispatcher_binding_;
 
   scoped_ptr<FocusController> focus_controller_;
+
+  mojo::ViewManagerRootClientPtr view_manager_root_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

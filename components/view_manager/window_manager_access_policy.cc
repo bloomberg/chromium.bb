@@ -57,7 +57,9 @@ bool WindowManagerAccessPolicy::CanEmbed(const ServerView* view) const {
 
 bool WindowManagerAccessPolicy::CanChangeViewVisibility(
     const ServerView* view) const {
-  return view->id().connection_id == connection_id_;
+  // The WindowManager can change the visibility of the root too.
+  return view->id().connection_id == connection_id_ ||
+         view->id() == RootViewId();
 }
 
 bool WindowManagerAccessPolicy::CanSetViewSurfaceId(

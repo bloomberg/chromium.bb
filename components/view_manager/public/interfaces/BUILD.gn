@@ -10,6 +10,7 @@ mojom("interfaces") {
     "animations.mojom",
     "view_manager.mojom",
     "view_manager_constants.mojom",
+    "view_manager_root.mojom",
   ]
 
   import_dirs = [ get_path_info("../../../..", "abspath") ]

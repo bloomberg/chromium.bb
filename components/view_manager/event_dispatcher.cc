@@ -53,7 +53,8 @@ void EventDispatcher::OnEvent(mojo::EventPtr event,
   } else if (event->action == mojo::EVENT_TYPE_KEY_PRESSED &&
              accelerators_.count(Accelerator(event->key_data->windows_key_code,
                                              event->flags))) {
-    connection_manager_->wm_internal()->OnAccelerator(event.Pass());
+    connection_manager_->view_manager_root_client()->OnAccelerator(
+        event.Pass());
   } else {
     ServerView* focused_view = connection_manager_->GetFocusedView();
     if (focused_view)

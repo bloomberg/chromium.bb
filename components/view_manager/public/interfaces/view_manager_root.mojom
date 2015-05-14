@@ -9,22 +9,10 @@ import "ui/mojo/events/input_events.mojom";
 import "ui/mojo/events/input_key_codes.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
-// WindowManagerInternal is an interface provided by the WindowManager
-// exclusively to the ViewManager.
-interface WindowManagerInternal {
-  SetViewManagerClient(handle<message_pipe> view_manager_client_request);
-
-  // An accelerator registered via AddAccelerator() has been triggered.
-  OnAccelerator(mojo.Event event);
-};
-
-// WindowManagerInternalClient is an interface provide by the ViewManager
-// exclusively to the WindowManager. It provides functionality only available
-// to the WindowManager.
-interface WindowManagerInternalClient {
-  // TODO(sky): this is only used by sky's testing harness. It should be
-  // removed.
-  DispatchInputEventToViewDEPRECATED(uint32 view_id, mojo.Event event);
+// ViewManagerRoot is an interface exposed to the first connection to the
+// ViewManager.
+interface ViewManagerRoot {
+  SetViewManagerRootClient(ViewManagerRootClient client);
 
   // Sets the native viewport size.
   SetViewportSize(mojo.Size size);
@@ -43,3 +31,9 @@ interface WindowManagerInternalClient {
   AddAccelerator(mojo.KeyboardCode keyboard_code, mojo.EventFlags flags);
   RemoveAccelerator(mojo.KeyboardCode keyboard_code, mojo.EventFlags flags);
 };
+
+interface ViewManagerRootClient {
+  // An accelerator registered via AddAccelerator() has been triggered.
+  OnAccelerator(mojo.Event event);
+};
+

@@ -6,7 +6,6 @@
 
 #include "base/strings/string16.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
-#include "components/window_manager/public/interfaces/window_manager.mojom.h"
 #include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -130,9 +129,7 @@ void OmniboxImpl::SetClient(OmniboxClientPtr client) {
 
 void OmniboxImpl::ShowForURL(const mojo::String& url) {
   url_ = url;
-  mojo::WindowManagerPtr window_manager;
-  app_impl_->ConnectToService("mojo:window_manager", &window_manager);
-  window_manager->Embed("mojo:omnibox", nullptr, nullptr);
+  // TODO: get embedding working.
 }
 
 }  // namespace mandoline
