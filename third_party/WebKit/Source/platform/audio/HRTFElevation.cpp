@@ -101,8 +101,7 @@ static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(const Stri
 }
 #endif
 
-bool HRTFElevation::calculateKernelsForAzimuthElevation(int azimuth, int elevation, float sampleRate, const String& subjectName,
-                                                        RefPtr<HRTFKernel>& kernelL, RefPtr<HRTFKernel>& kernelR)
+bool HRTFElevation::calculateKernelsForAzimuthElevation(int azimuth, int elevation, float sampleRate, const String& subjectName, OwnPtr<HRTFKernel>& kernelL, OwnPtr<HRTFKernel>& kernelR)
 {
     // Valid values for azimuth are 0 -> 345 in 15 degree increments.
     // Valid values for elevation are -45 -> +90 in 15 degree increments.

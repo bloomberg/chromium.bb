@@ -107,7 +107,7 @@ PassOwnPtr<AudioChannel> HRTFKernel::createImpulseResponse()
 }
 
 // Interpolates two kernels with x: 0 -> 1 and returns the result.
-PassRefPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x)
+PassOwnPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x)
 {
     ASSERT(kernel1 && kernel2);
     if (!kernel1 || !kernel2)

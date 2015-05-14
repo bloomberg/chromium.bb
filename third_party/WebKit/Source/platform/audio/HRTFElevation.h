@@ -83,8 +83,7 @@ public:
     // Valid values for azimuth are 0 -> 345 in 15 degree increments.
     // Valid values for elevation are -45 -> +90 in 15 degree increments.
     // Returns true on success.
-    static bool calculateKernelsForAzimuthElevation(int azimuth, int elevation, float sampleRate, const String& subjectName,
-                                                    RefPtr<HRTFKernel>& kernelL, RefPtr<HRTFKernel>& kernelR);
+    static bool calculateKernelsForAzimuthElevation(int azimuth, int elevation, float sampleRate, const String& subjectName, OwnPtr<HRTFKernel>& kernelL, OwnPtr<HRTFKernel>& kernelR);
 
 private:
     HRTFElevation(PassOwnPtr<HRTFKernelList> kernelListL, PassOwnPtr<HRTFKernelList> kernelListR, int elevation, float sampleRate)

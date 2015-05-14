@@ -47,22 +47,22 @@ class AudioChannel;
 // The leading delay (average group delay) for each impulse response is extracted:
 //      m_fftFrame is the frequency-domain representation of the impulse response with the delay removed
 //      m_frameDelay is the leading delay of the original impulse response.
-class PLATFORM_EXPORT HRTFKernel : public RefCounted<HRTFKernel> {
+class PLATFORM_EXPORT HRTFKernel {
 public:
     // Note: this is destructive on the passed in AudioChannel.
     // The length of channel must be a power of two.
-    static PassRefPtr<HRTFKernel> create(AudioChannel* channel, size_t fftSize, float sampleRate)
+    static PassOwnPtr<HRTFKernel> create(AudioChannel* channel, size_t fftSize, float sampleRate)
     {
-        return adoptRef(new HRTFKernel(channel, fftSize, sampleRate));
+        return adoptPtr(new HRTFKernel(channel, fftSize, sampleRate));
     }
 
-    static PassRefPtr<HRTFKernel> create(PassOwnPtr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
+    static PassOwnPtr<HRTFKernel> create(PassOwnPtr<FFTFrame> fftFrame, float frameDelay, float sampleRate)
     {
-        return adoptRef(new HRTFKernel(fftFrame, frameDelay, sampleRate));
+        return adoptPtr(new HRTFKernel(fftFrame, frameDelay, sampleRate));
     }
 
     // Given two HRTFKernels, and an interpolation factor x: 0 -> 1, returns an interpolated HRTFKernel.
-    static PassRefPtr<HRTFKernel> createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x);
+    static PassOwnPtr<HRTFKernel> createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x);
 
     FFTFrame* fftFrame() { return m_fftFrame.get(); }
 
@@ -91,7 +91,7 @@ private:
     float m_sampleRate;
 };
 
-typedef Vector<RefPtr<HRTFKernel>> HRTFKernelList;
+typedef Vector<OwnPtr<HRTFKernel>> HRTFKernelList;
 
 } // namespace blink
 
