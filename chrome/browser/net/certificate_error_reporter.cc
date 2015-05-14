@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/net/encrypted_cert_logger.pb.h"
 
 #if defined(USE_OPENSSL)
@@ -83,6 +84,12 @@ bool EncryptSerializedReport(
 }  // namespace
 
 namespace chrome_browser_net {
+
+// Constants for the Finch trial that controls whether the
+// CertificateErrorReporter supports HTTP uploads.
+const char kHttpCertificateUploadExperiment[] =
+    "ReportCertificateErrorsOverHttp";
+const char kHttpCertificateUploadGroup[] = "UploadReportsOverHttp";
 
 CertificateErrorReporter::CertificateErrorReporter(
     net::URLRequestContext* request_context,
@@ -174,7 +181,8 @@ scoped_ptr<net::URLRequest> CertificateErrorReporter::CreateURLRequest(
 
 bool CertificateErrorReporter::IsHttpUploadUrlSupported() {
 #if defined(USE_OPENSSL)
-  return true;
+  return base::FieldTrialList::FindFullName(kHttpCertificateUploadExperiment) ==
+         kHttpCertificateUploadGroup;
 #else
   return false;
 #endif

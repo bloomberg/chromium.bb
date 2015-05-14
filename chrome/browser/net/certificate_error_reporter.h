@@ -22,6 +22,11 @@ namespace chrome_browser_net {
 
 class EncryptedCertLoggerRequest;
 
+// Constants for the Finch trial that controls whether the
+// CertificateErrorReporter supports HTTP uploads.
+extern const char kHttpCertificateUploadExperiment[];
+extern const char kHttpCertificateUploadGroup[];
+
 // Provides functionality for sending reports about invalid SSL
 // certificate chains to a report collection server.
 class CertificateErrorReporter : public net::URLRequest::Delegate {

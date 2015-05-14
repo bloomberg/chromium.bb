@@ -11,7 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/net/encrypted_cert_logger.pb.h"
 #include "chrome/common/chrome_paths.h"
@@ -322,6 +324,30 @@ TEST_F(CertificateErrorReporterTest, ErroredRequestGetsDeleted) {
       context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
   SendReport(&reporter, network_delegate(), kDummyReport, url, 0,
              CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
+}
+
+// Test that the Finch config correctly controls whether the reporter
+// supports HTTP uploads.
+TEST_F(CertificateErrorReporterTest, FinchConfigDisablesHttpUploads) {
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      chrome_browser_net::kHttpCertificateUploadExperiment,
+      "not the right group"));
+
+  EXPECT_FALSE(CertificateErrorReporter::IsHttpUploadUrlSupported());
+}
+
+TEST_F(CertificateErrorReporterTest, FinchConfigPossiblyEnablesHttpUploads) {
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      chrome_browser_net::kHttpCertificateUploadExperiment,
+      chrome_browser_net::kHttpCertificateUploadGroup));
+
+#if defined(USE_OPENSSL)
+  EXPECT_TRUE(CertificateErrorReporter::IsHttpUploadUrlSupported());
+#else
+  EXPECT_FALSE(CertificateErrorReporter::IsHttpUploadUrlSupported());
+#endif
 }
 
 // Test that cookies are sent or not sent according to the error
