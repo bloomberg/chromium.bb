@@ -173,7 +173,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   typedef base::StringPairs HtmlAttributes;
   const HtmlAttributes& GetHtmlAttributes() const;
 
-
   // Returns true if this is a native platform-specific object, vs a
   // cross-platform generic object. Don't call ToBrowserAccessibilityXXX if
   // IsNative returns false.
@@ -261,6 +260,9 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // True if this is a web area, and its grandparent is a presentational iframe.
   bool IsWebAreaForPresentationalIframe() const;
+
+  // Is any control, like a button, text field, etc.
+  bool IsControl() const;
 
  protected:
   BrowserAccessibility();

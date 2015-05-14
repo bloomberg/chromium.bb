@@ -41,6 +41,9 @@
 // the manager.
 - (content::BrowserAccessibilityDelegate*)delegate;
 
+// Get the BrowserAccessibility that this object wraps.
+- (content::BrowserAccessibility*)browserAccessibility;
+
 // Convert the local objet's origin to a global point.
 - (NSPoint)pointInScreen:(NSPoint)origin
                     size:(NSSize)size;

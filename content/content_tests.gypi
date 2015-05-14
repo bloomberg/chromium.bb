@@ -315,6 +315,7 @@
       'browser/accessibility/browser_accessibility_mac_unittest.mm',
       'browser/accessibility/browser_accessibility_manager_unittest.cc',
       'browser/accessibility/browser_accessibility_win_unittest.cc',
+      'browser/accessibility/one_shot_accessibility_tree_search_unittest.cc',
       'browser/appcache/appcache_database_unittest.cc',
       'browser/appcache/appcache_disk_cache_unittest.cc',
       'browser/appcache/appcache_group_unittest.cc',

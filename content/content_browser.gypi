@@ -315,6 +315,8 @@
       'browser/accessibility/browser_accessibility_state_impl_win.cc',
       'browser/accessibility/browser_accessibility_win.cc',
       'browser/accessibility/browser_accessibility_win.h',
+      'browser/accessibility/one_shot_accessibility_tree_search.cc',
+      'browser/accessibility/one_shot_accessibility_tree_search.h',
       'browser/android/animation_utils.h',
       'browser/android/browser_jni_registrar.cc',
       'browser/android/browser_jni_registrar.h',
