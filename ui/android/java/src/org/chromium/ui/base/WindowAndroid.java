@@ -405,11 +405,20 @@ public class WindowAndroid {
         return mKeyboardAccessoryView;
     }
 
+    protected void registerKeyboardVisibilityCallbacks() {
+    }
+
+    protected void unregisterKeyboardVisibilityCallbacks() {
+    }
+
     /**
      * Adds a listener that is updated of keyboard visibility changes. This works as a best guess.
      * {@see UiUtils.isKeyboardShowing}
      */
     public void addKeyboardVisibilityListener(KeyboardVisibilityListener listener) {
+        if (mKeyboardVisibilityListeners.isEmpty()) {
+            registerKeyboardVisibilityCallbacks();
+        }
         mKeyboardVisibilityListeners.add(listener);
     }
 
@@ -418,6 +427,9 @@ public class WindowAndroid {
      */
     public void removeKeyboardVisibilityListener(KeyboardVisibilityListener listener) {
         mKeyboardVisibilityListeners.remove(listener);
+        if (mKeyboardVisibilityListeners.isEmpty()) {
+            unregisterKeyboardVisibilityCallbacks();
+        }
     }
 
     /**

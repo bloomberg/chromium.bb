@@ -51,10 +51,23 @@ public class ActivityWindowAndroid
     public ActivityWindowAndroid(Activity activity, boolean listenToActivityState) {
         super(activity.getApplicationContext());
         mActivityRef = new WeakReference<Activity>(activity);
-        activity.findViewById(android.R.id.content).addOnLayoutChangeListener(this);
         if (listenToActivityState) {
             ApplicationStatus.registerStateListenerForActivity(this, activity);
         }
+    }
+
+    @Override
+    protected void registerKeyboardVisibilityCallbacks() {
+        Activity activity = mActivityRef.get();
+        if (activity == null) return;
+        activity.findViewById(android.R.id.content).addOnLayoutChangeListener(this);
+    }
+
+    @Override
+    protected void unregisterKeyboardVisibilityCallbacks() {
+        Activity activity = mActivityRef.get();
+        if (activity == null) return;
+        activity.findViewById(android.R.id.content).removeOnLayoutChangeListener(this);
     }
 
     @Override
