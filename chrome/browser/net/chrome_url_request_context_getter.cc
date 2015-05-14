@@ -170,11 +170,15 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
 ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
     ChromeURLRequestContextFactory* factory)
     : factory_(factory),
-      url_request_context_(NULL) {
+      url_request_context_(nullptr) {
   DCHECK(factory);
 }
 
-ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {}
+ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {
+  // NotifyContextShuttingDown() must have been called.
+  DCHECK(!factory_.get());
+  DCHECK(!url_request_context_);
+}
 
 // Lazily create a URLRequestContext using our factory.
 net::URLRequestContext*
@@ -187,17 +191,15 @@ ChromeURLRequestContextGetter::GetURLRequestContext() {
     factory_.reset();
   }
 
-  // Context reference is valid, unless we're trying to use the
-  // URLRequestContextGetter after the Profile has already been deleted.
-  CHECK(url_request_context_);
-
   return url_request_context_;
 }
 
-void ChromeURLRequestContextGetter::Invalidate() {
+void ChromeURLRequestContextGetter::NotifyContextShuttingDown() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   factory_.reset();
-  url_request_context_ = NULL;
+  url_request_context_ = nullptr;
+  URLRequestContextGetter::NotifyContextShuttingDown();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

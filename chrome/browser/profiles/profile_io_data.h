@@ -328,7 +328,12 @@ class ProfileIOData {
       net::NetworkDelegate* network_delegate,
       net::FtpTransactionFactory* ftp_transaction_factory) const;
 
-  // Called when the profile is destroyed.
+  // Called when the Profile is destroyed. |context_getters| must include all
+  // URLRequestContextGetters that refer to the ProfileIOData's
+  // URLRequestContexts. Triggers destruction of the ProfileIOData and shuts
+  // down |context_getters| safely on the IO thread.
+  // TODO(mmenke):  Passing all those URLRequestContextGetters around like this
+  //     is really silly.  Can we do something cleaner?
   void ShutdownOnUIThread(
       scoped_ptr<ChromeURLRequestContextGetterVector> context_getters);
 

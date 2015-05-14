@@ -351,12 +351,13 @@ void InitializeAndPassKeygenHandler(
 }
 #endif  // defined(USE_NSS_CERTS)
 
-void InvalidateContextGettersOnIO(
+// For safe shutdown, must be called before the ProfileIOData is destroyed.
+void NotifyContextGettersOfShutdownOnIO(
     scoped_ptr<ProfileIOData::ChromeURLRequestContextGetterVector> getters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData::ChromeURLRequestContextGetterVector::iterator iter;
-  for (iter = getters->begin(); iter != getters->end(); ++iter)
-    (*iter)->Invalidate();
+  for (auto& chrome_context_getter : *getters)
+    chrome_context_getter->NotifyContextShuttingDown();
 }
 
 }  // namespace
@@ -1227,7 +1228,7 @@ void ProfileIOData::ShutdownOnUIThread(
     if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&InvalidateContextGettersOnIO,
+          base::Bind(&NotifyContextGettersOfShutdownOnIO,
               base::Passed(&context_getters)));
     }
   }
