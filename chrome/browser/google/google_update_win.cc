@@ -139,12 +139,12 @@ HRESULT CreateGoogleUpdate3WebClass(
     return google_update->CreateInstance(CLSID_GoogleUpdate3WebUserClass);
 
   // For a system-level install, update checks can be done by a normal user with
-  // the ServiceClass.
+  // the MachineClass.
   if (!install_update_if_possible)
     return google_update->CreateInstance(CLSID_GoogleUpdate3WebMachineClass);
 
   // For a system-level install, an update requires Admin privileges for writing
-  // to %ProgramFiles%. Elevate while instantiating the ServiceClass.
+  // to %ProgramFiles%. Elevate while instantiating the MachineClass.
   return CoCreateInstanceAsAdmin(CLSID_GoogleUpdate3WebMachineClass,
                                  IID_IGoogleUpdate3Web, elevation_window,
                                  google_update->ReceiveVoid());
