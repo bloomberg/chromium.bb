@@ -359,7 +359,11 @@ class AndroidShell(object):
       subprocess.check_call(self._CreateADBCommand(
           ['shell', 'rm', '-f', STDOUT_PIPE]))
       parameters.append('--fifo-path=%s' % STDOUT_PIPE)
-      self._ReadFifo(STDOUT_PIPE, stdout, on_application_stop)
+      max_attempts = 5
+      if '--wait-for-debugger' in arguments:
+        max_attempts = 200
+      self._ReadFifo(STDOUT_PIPE, stdout, on_application_stop,
+                     max_attempts=max_attempts)
 
     # Extract map-origin arguments.
     map_parameters, other_parameters = _Split(arguments, _IsMapOrigin)
