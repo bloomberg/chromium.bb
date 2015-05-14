@@ -1832,6 +1832,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The bitmap of the favicon scaled to 16x16dp. null if no favicon
      *         is specified or it requires the default favicon.
      */
+    @CalledByNative
     public Bitmap getFavicon() {
         // If we have no content or a native page, return null.
         if (getContentViewCore() == null) return null;

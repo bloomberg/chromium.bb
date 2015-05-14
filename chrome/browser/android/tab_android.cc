@@ -687,6 +687,16 @@ ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env,
   return bitmap;
 }
 
+SkBitmap TabAndroid::GetFaviconBitmap() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> javaBitmap =
+      Java_Tab_getFavicon(env, weak_java_tab_.get(env).obj());
+  if (!javaBitmap.obj())
+    return SkBitmap();
+
+  return gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(javaBitmap.obj()));
+}
+
 prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {
   Profile* profile = GetProfile();
   if (!profile)

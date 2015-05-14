@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/dev_tools_discovery_provider_android.h"
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -19,19 +20,13 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 using content::DevToolsAgentHost;
 using content::WebContents;
 
 namespace {
-
-GURL GetFaviconURLForContents(WebContents* web_contents) {
-  content::NavigationController& controller = web_contents->GetController();
-  content::NavigationEntry* entry = controller.GetActiveEntry();
-  if (entry != NULL && entry->GetURL().is_valid())
-    return entry->GetFavicon().url;
-  return GURL();
-}
 
 class TabDescriptor : public devtools_discovery::DevToolsTargetDescriptor {
  public:
@@ -138,14 +133,42 @@ class TabDescriptor : public devtools_discovery::DevToolsTargetDescriptor {
       : tab_id_(tab_id),
         title_(base::UTF16ToUTF8(web_contents->GetTitle())),
         url_(web_contents->GetURL()),
-        favicon_url_(GetFaviconURLForContents(web_contents)),
+        favicon_url_(CalculateFaviconURL()),
         last_activity_time_(web_contents->GetLastActiveTime()) {
   }
 
   TabDescriptor(int tab_id, const base::string16& title, const GURL& url)
       : tab_id_(tab_id),
         title_(base::UTF16ToUTF8(title)),
-        url_(url) {
+        url_(url),
+        favicon_url_(CalculateFaviconURL()) {
+  }
+
+  GURL CalculateFaviconURL() {
+    TabModel* model;
+    int index;
+    if (!FindTab(&model, &index))
+      return GURL();
+
+    TabAndroid* tab = model->GetTabAt(index);
+    if (!tab)
+      return GURL();
+
+    SkBitmap bitmap = tab->GetFaviconBitmap();
+    if (bitmap.empty())
+      return GURL();
+
+    std::vector<unsigned char> data;
+    SkAutoLockPixels lock_image(bitmap);
+    bool encoded = gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &data);
+    if (!encoded)
+      return GURL();
+
+    std::string base_64_data;
+    base::Base64Encode(
+        base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
+        &base_64_data);
+    return GURL("data:image/png;base64," + base_64_data);
   }
 
   bool FindTab(TabModel** model_result, int* index_result) const {
