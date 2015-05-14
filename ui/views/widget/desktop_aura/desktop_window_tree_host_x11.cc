@@ -379,7 +379,7 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
       Minimize();
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      SetFullscreen(TRUE);
+      SetFullscreen(true);
       break;
     default:
       break;
