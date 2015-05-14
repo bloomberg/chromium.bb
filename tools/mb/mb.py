@@ -20,6 +20,7 @@ import shlex
 import shutil
 import sys
 import subprocess
+import tempfile
 
 
 def main(args):
@@ -415,36 +416,41 @@ class MetaBuildWrapper(object):
       self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
       return 0
 
-    # TODO: Because of the --type=executable filter below, we don't detect
-    # when files will cause 'all' or 'gn_all' or similar targets to be
-    # dirty. We need to figure out how to handle that properly, but for
-    # now we can just bail out early.
-    if 'gn_all' in inp['targets'] or 'all' in inp['targets']:
+    # Bail out early if 'all' was asked for, since 'gn refs' won't recognize it.
+    if 'all' in inp['targets']:
       self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
       return 0
 
-    all_needed_targets = set()
     ret = 0
-    for f in inp['files']:
+    response_file = self.TempFile()
+    response_file.write('\n'.join(inp['files']) + '\n')
+    response_file.close()
+
+    matching_targets = []
+    try:
       cmd = self.GNCmd('refs', self.args.path[0]) + [
-             '//' + f, '--type=executable', '--all', '--as=output']
+          '@%s' % response_file.name,
+          '--type=executable', '--all', '--as=output'
+      ]
       ret, out, _ = self.Run(cmd)
       if ret and not 'The input matches no targets' in out:
         self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
                                   output_path)
+      build_dir = self.ToSrcRelPath(self.args.path[0]) + os.sep
+      for output in out.splitlines():
+        build_output = output.replace(build_dir, '')
+        if build_output in inp['targets']:
+          matching_targets.append(build_output)
+    finally:
+      self.RemoveFile(response_file.name)
 
-      rpath = self.ToSrcRelPath(self.args.path[0]) + os.sep
-      needed_targets = [t.replace(rpath, '') for t in out.splitlines()]
-      needed_targets = [nt for nt in needed_targets if nt in inp['targets']]
-      all_needed_targets.update(set(needed_targets))
-
-    if all_needed_targets:
+    if matching_targets:
       # TODO: it could be that a target X might depend on a target Y
       # and both would be listed in the input, but we would only need
       # to specify target X as a build_target (whereas both X and Y are
       # targets). I'm not sure if that optimization is generally worth it.
-      self.WriteJSON({'targets': sorted(all_needed_targets),
-                      'build_targets': sorted(all_needed_targets),
+      self.WriteJSON({'targets': sorted(matching_targets),
+                      'build_targets': sorted(matching_targets),
                       'status': 'Found dependency'}, output_path)
     else:
       self.WriteJSON({'targets': [],
@@ -536,10 +542,19 @@ class MetaBuildWrapper(object):
     with open(path) as fp:
       return fp.read()
 
+  def RemoveFile(self, path):
+    # This function largely exists so it can be overriden for testing.
+    os.remove(path)
+
+  def TempFile(self, mode='w'):
+    # This function largely exists so it can be overriden for testing.
+    return tempfile.NamedTemporaryFile(mode=mode, delete=False)
+
   def WriteFile(self, path, contents):
     # This function largely exists so it can be overriden for testing.
     with open(path, 'w') as fp:
       return fp.write(contents)
+
 
 class MBErr(Exception):
   pass

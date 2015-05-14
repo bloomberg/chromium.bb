@@ -47,6 +47,26 @@ class FakeMBW(mb.MetaBuildWrapper):
     else:
       self.out += sep.join(args) + end
 
+  def TempFile(self):
+    return FakeFile(self.files)
+
+  def RemoveFile(self, path):
+    del self.files[path]
+
+
+class FakeFile(object):
+  def __init__(self, files):
+    self.name = '/tmp/file'
+    self.buf = ''
+    self.files = files
+
+  def write(self, contents):
+    self.buf += contents
+
+  def close(self):
+     self.files[self.name] = self.buf
+
+
 class IntegrationTest(unittest.TestCase):
   def test_validate(self):
     # Note that this validates that the actual mb_config.pyl is valid.
@@ -126,6 +146,7 @@ class UnitTest(unittest.TestCase):
                "files": ["foo/foo_unittest.cc"],
                "targets": ["foo_unittests", "bar_unittests"]
              }"""}
+
     mbw = self.fake_mbw(files)
     mbw.Call = lambda cmd: (0, 'out/Default/foo_unittests\n', '')
 
