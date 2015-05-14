@@ -443,6 +443,8 @@ bool FrameLoader::allAncestorsAreComplete() const
 
 static bool shouldComplete(Document* document)
 {
+    if (!document->frame())
+        return false;
     if (document->parsing() || document->isInDOMContentLoaded())
         return false;
     if (!document->haveImportsLoaded())
