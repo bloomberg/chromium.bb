@@ -193,8 +193,8 @@ source_set("test_support") {
   sources = [
     "test_globals.cc",
     "test_globals.h",
-    "unittest_utils.cc",
-    "unittest_utils.h",
+    "test_utils.cc",
+    "test_utils.h",
   ]
 
   deps = [

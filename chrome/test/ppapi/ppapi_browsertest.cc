@@ -22,10 +22,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/javascript_test_observer.h"
-#include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "ppapi/shared_impl/test_utils.h"
 
 using content::RenderViewHost;
 

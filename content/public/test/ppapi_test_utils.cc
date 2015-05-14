@@ -38,12 +38,6 @@ bool RegisterPlugin(
 
 }  // namespace
 
-std::string StripTestPrefixes(const std::string& test_name) {
-  if (test_name.find("DISABLED_") == 0)
-    return test_name.substr(strlen("DISABLED_"));
-  return test_name;
-}
-
 bool RegisterTestPlugin(base::CommandLine* command_line) {
   return RegisterTestPluginWithExtraParameters(command_line,
                                                FILE_PATH_LITERAL(""));

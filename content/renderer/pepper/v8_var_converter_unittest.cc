@@ -22,7 +22,7 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/test_globals.h"
-#include "ppapi/shared_impl/unittest_utils.h"
+#include "ppapi/shared_impl/test_utils.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"

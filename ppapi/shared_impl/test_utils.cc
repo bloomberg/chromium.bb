@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/unittest_utils.h"
+#include "ppapi/shared_impl/test_utils.h"
 
 #include <cmath>
 
@@ -207,6 +207,12 @@ bool TestEqual(const PP_Var& expected,
                bool test_string_references) {
   base::hash_map<int64_t, int64_t> visited_map;
   return Equals(expected, actual, test_string_references, &visited_map);
+}
+
+std::string StripTestPrefixes(const std::string& test_name) {
+  if (test_name.find("DISABLED_") == 0)
+    return test_name.substr(strlen("DISABLED_"));
+  return test_name;
 }
 
 }  // namespace ppapi

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/ppapi_test_utils.h"
 #include "content/test/ppapi/ppapi_test.h"
+#include "ppapi/shared_impl/test_utils.h"
 
 // This file lists tests for Pepper APIs (without NaCl) against content_shell.
 // TODO(teravest): Move more tests here. http://crbug.com/371873

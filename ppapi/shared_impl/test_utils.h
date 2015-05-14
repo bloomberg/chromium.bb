@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_UNITTEST_UTILS_H_
-#define PPAPI_SHARED_IMPL_UNITTEST_UTILS_H_
+#ifndef PPAPI_SHARED_IMPL_TEST_UTILS_H_
+#define PPAPI_SHARED_IMPL_TEST_UTILS_H_
+
+#include <string>
 
 #include "ppapi/c/pp_var.h"
 
@@ -19,6 +21,8 @@ bool TestEqual(const PP_Var& expected,
                const PP_Var& actual,
                bool test_string_references);
 
+std::string StripTestPrefixes(const std::string& test_name);
+
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_UNITTEST_UTILS_H_
+#endif  // PPAPI_SHARED_IMPL_TEST_UTILS_H_
