@@ -27,6 +27,7 @@ component("touch_selection") {
   defines = [ "UI_TOUCH_SELECTION_IMPLEMENTATION" ]
 
   deps = [
+    "//skia:skia",
     "//base:base",
     "//ui/aura:aura",
     "//ui/aura_extra:aura_extra",
@@ -40,6 +41,7 @@ component("touch_selection") {
 
   if (!use_aura) {
     deps -= [
+      "//skia:skia",
       "//ui/aura:aura",
       "//ui/aura_extra:aura_extra",
       "//ui/compositor:compositor",

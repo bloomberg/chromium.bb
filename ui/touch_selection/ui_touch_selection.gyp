@@ -12,6 +12,7 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
         '../aura_extra/aura_extra.gyp:aura_extra',
         '../base/ui_base.gyp:ui_base',
@@ -41,6 +42,7 @@
       'conditions': [
         ['use_aura==0', {
           'dependencies!': [
+            '../../skia/skia.gyp:skia',
             '../aura/aura.gyp:aura',
             '../aura_extra/aura_extra.gyp:aura_extra',
             '../compositor/compositor.gyp:compositor',
