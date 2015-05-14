@@ -61,6 +61,21 @@ class ASH_EXPORT TouchTransformerController
       const DisplayInfo& touch_display,
       const ui::TouchscreenDevice& touch_device) const;
 
+  // For the provided |display| update the touch radius mapping.
+  void UpdateTouchRadius(const DisplayInfo& display) const;
+
+  // For a given |target_display| and |target_display_id| update the touch
+  // transformation based on the touchscreen associated with |touch_display|.
+  // |target_display_id| is the display id whose root window will receive the
+  // touch events.
+  // |touch_display| is the physical display that has the touchscreen
+  // from which the events arrive.
+  // |target_display| provides the dimensions to which the touch event will be
+  // transformed.
+  void UpdateTouchTransform(int64_t target_display_id,
+                            const DisplayInfo& touch_display,
+                            const DisplayInfo& target_display) const;
+
   DISALLOW_COPY_AND_ASSIGN(TouchTransformerController);
 };
 
