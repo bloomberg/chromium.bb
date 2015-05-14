@@ -48,6 +48,12 @@ TEST(ChromeElfUtilTest, SystemInstallTest) {
   EXPECT_FALSE(IsSystemInstall(kChromeUserExePath));
 }
 
+TEST(ChromeElfUtilTest, BrowserProcessTest) {
+  EXPECT_EQ(ProcessType::UNINITIALIZED, g_process_type);
+  InitializeProcessType();
+  EXPECT_FALSE(IsNonBrowserProcess());
+}
+
 // Parameterized test with paramters:
 // 1: product: "canary" or "google"
 // 2: install level: "user" or "system"

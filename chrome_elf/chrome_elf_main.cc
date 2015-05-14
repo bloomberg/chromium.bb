@@ -8,6 +8,7 @@
 
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/breakpad.h"
+#include "chrome_elf/chrome_elf_util.h"
 #include "chrome_elf/ntdll_cache.h"
 
 void SignalChromeElf() {
@@ -16,6 +17,7 @@ void SignalChromeElf() {
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
+    InitializeProcessType();
     InitializeCrashReporting();
 
     __try {
