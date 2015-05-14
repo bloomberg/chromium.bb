@@ -1,0 +1,12 @@
+{
+  "name": "Platform App Test: web view Indexed DB isolation",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

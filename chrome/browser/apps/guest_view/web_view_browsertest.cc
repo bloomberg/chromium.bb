@@ -1833,83 +1833,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
 // an app with multiple webview tags and each tag creates an IndexedDB record,
 // which the test checks to ensure proper storage isolation is enforced.
-// This test is flaky. See http://crbug.com/248500.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_IndexedDBIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  GURL regular_url = embedded_test_server()->GetURL("/title1.html");
-
-  content::WebContents* default_tag_contents1;
-  content::WebContents* default_tag_contents2;
-  content::WebContents* storage_contents1;
-  content::WebContents* storage_contents2;
-
-  NavigateAndOpenAppForIsolation(regular_url, &default_tag_contents1,
-                                 &default_tag_contents2, &storage_contents1,
-                                 &storage_contents2, NULL, NULL, NULL);
-
-  // Initialize the storage for the first of the two tags that share a storage
-  // partition.
-  ExecuteScriptWaitForTitle(storage_contents1, "initIDB()", "idb created");
-  ExecuteScriptWaitForTitle(storage_contents1, "addItemIDB(7, 'page1')",
-                            "addItemIDB complete");
-  ExecuteScriptWaitForTitle(storage_contents1, "readItemIDB(7)",
-                            "readItemIDB complete");
-
-  std::string output;
-  std::string get_value(
-      "window.domAutomationController.send(getValueIDB() || 'badval')");
-
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents1,
-                                            get_value.c_str(), &output));
-  EXPECT_STREQ("page1", output.c_str());
-
-  // Initialize the db in the second tag.
-  ExecuteScriptWaitForTitle(storage_contents2, "initIDB()", "idb open");
-
-  // Since we share a partition, reading the value should return the existing
-  // one.
-  ExecuteScriptWaitForTitle(storage_contents2, "readItemIDB(7)",
-                            "readItemIDB complete");
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents2,
-                                            get_value.c_str(), &output));
-  EXPECT_STREQ("page1", output.c_str());
-
-  // Now write through the second tag and read it back.
-  ExecuteScriptWaitForTitle(storage_contents2, "addItemIDB(7, 'page2')",
-                            "addItemIDB complete");
-  ExecuteScriptWaitForTitle(storage_contents2, "readItemIDB(7)",
-                            "readItemIDB complete");
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents2,
-                                            get_value.c_str(), &output));
-  EXPECT_STREQ("page2", output.c_str());
-
-  // Reset the document title, otherwise the next call will not see a change and
-  // will hang waiting for it.
-  EXPECT_TRUE(content::ExecuteScript(storage_contents1,
-                                     "document.title = 'foo'"));
-
-  // Read through the first tag to ensure we have the second value.
-  ExecuteScriptWaitForTitle(storage_contents1, "readItemIDB(7)",
-                            "readItemIDB complete");
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents1,
-                                            get_value.c_str(), &output));
-  EXPECT_STREQ("page2", output.c_str());
-
-  // Now, let's confirm there is no database in the main browser and another
-  // tag that doesn't share the same partition. Due to the IndexedDB API design,
-  // open will succeed, but the version will be 1, since it creates the database
-  // if it is not found. The two tags use database version 3, so we avoid
-  // ambiguity.
-  const char* script =
-      "indexedDB.open('isolation').onsuccess = function(e) {"
-      "  if (e.target.result.version == 1)"
-      "    document.title = 'db not found';"
-      "  else "
-      "    document.title = 'error';"
-      "}";
-  ExecuteScriptWaitForTitle(browser()->tab_strip_model()->GetWebContentsAt(0),
-                            script, "db not found");
-  ExecuteScriptWaitForTitle(default_tag_contents1, script, "db not found");
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/web_view/isolation_indexeddb")) << message_;
 }
 
 // This test ensures that closing app window on 'loadcommit' does not crash.
