@@ -102,6 +102,11 @@ public class TabTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"Tab"})
     public void testTabSecurityLevel() {
-        assertEquals(ConnectionSecurityHelperSecurityLevel.NONE, mTab.getSecurityLevel());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals(ConnectionSecurityHelperSecurityLevel.NONE, mTab.getSecurityLevel());
+            }
+        });
     }
 }
