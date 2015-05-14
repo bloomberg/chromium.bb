@@ -439,8 +439,11 @@ void WorkerThread::stopInternal()
     if (m_shutdownEvent)
         m_shutdownEvent->signal();
 
-    if (!m_workerGlobalScope)
+    // If the worker thread was never initialized, complete the termination immediately.
+    if (!m_workerGlobalScope) {
+        m_terminationEvent->signal();
         return;
+    }
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
     terminateV8Execution();
