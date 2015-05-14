@@ -2038,16 +2038,6 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
                               : proxy_->MainThreadTaskRunner();
   DCHECK(task_runner);
 
-  ContextProvider* context_provider = output_surface_->context_provider();
-  if (!context_provider) {
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
-
-    *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
-        task_runner, task_graph_runner_, resource_provider_.get());
-    return;
-  }
-
   // Pass the single-threaded synchronous task graph runner to the worker pool
   // if we're in synchronous single-threaded mode.
   TaskGraphRunner* task_graph_runner = task_graph_runner_;
@@ -2055,6 +2045,16 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     DCHECK(!single_thread_synchronous_task_graph_runner_);
     single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
+  }
+
+  ContextProvider* context_provider = output_surface_->context_provider();
+  if (!context_provider) {
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
+
+    *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
+        task_runner, task_graph_runner, resource_provider_.get());
+    return;
   }
 
   if (use_gpu_rasterization_) {
