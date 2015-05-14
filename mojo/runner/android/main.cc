@@ -99,8 +99,7 @@ void MojoShellRunner::Run() {
   Context* context = g_context.Pointer()->get();
   ConfigureAndroidServices(context);
   context->Init();
-
-  context->Run(GURL("mojo:window_manager"));
+  context->RunCommandLineApplication();
   loop.Run();
 
   g_java_message_loop.Pointer()->get()->PostTask(FROM_HERE,

@@ -76,23 +76,6 @@ void StopTracingAndFlushToDisk() {
   flush_complete_event.Wait();
 }
 
-void StartApp(mojo::runner::Context* context) {
-  // If a mojo app isn't specified (i.e. for an apptest), run the mojo shell's
-  // window manager.
-  GURL app_url(GURL("mojo:window_manager"));
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringVector args = command_line->GetArgs();
-  for (size_t i = 0; i < args.size(); ++i) {
-    GURL possible_app(args[i]);
-    if (possible_app.SchemeIs("mojo")) {
-      app_url = possible_app;
-      break;
-    }
-  }
-
-  context->Run(app_url);
-}
-
 }  // namespace
 
 int LauncherProcessMain(int argc, char** argv) {
@@ -122,7 +105,10 @@ int LauncherProcessMain(int argc, char** argv) {
                                    base::TimeDelta::FromSeconds(5));
     }
 
-    message_loop.PostTask(FROM_HERE, base::Bind(&StartApp, &shell_context));
+    message_loop.PostTask(FROM_HERE,
+                          base::Bind(&mojo::runner::Context::Run,
+                                     base::Unretained(&shell_context),
+                                     GURL("mojo:window_manager")));
     message_loop.Run();
 
     // Must be called before |message_loop| is destroyed.

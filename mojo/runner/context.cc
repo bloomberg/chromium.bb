@@ -318,6 +318,21 @@ void Context::Run(const GURL& url) {
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
 }
 
+void Context::RunCommandLineApplication() {
+  // If an app isn't specified (i.e. for an apptest), run the window manager.
+  GURL app_url("mojo:window_manager");
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = command_line->GetArgs();
+  for (size_t i = 0; i < args.size(); ++i) {
+    GURL possible_app(args[i]);
+    if (possible_app.SchemeIs("mojo")) {
+      app_url = possible_app;
+      break;
+    }
+  }
+  Run(app_url);
+}
+
 void Context::OnApplicationEnd(const GURL& url) {
   if (app_urls_.find(url) != app_urls_.end()) {
     app_urls_.erase(url);

@@ -55,6 +55,9 @@ class Context : public shell::ApplicationManager::Delegate,
 
   void Run(const GURL& url);
 
+  // Run the application specified on the commandline.
+  void RunCommandLineApplication();
+
   TaskRunners* task_runners() { return task_runners_.get(); }
   shell::ApplicationManager* application_manager() {
     return &application_manager_;
