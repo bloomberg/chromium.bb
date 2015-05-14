@@ -4,18 +4,20 @@
 # found in the LICENSE file.
 
 
+import argparse
 import glob
 import os
 import subprocess
 import sys
 
 
-def run_test(test_base_name, cmd):
+def run_test(test_base_name, cmd, reset_results):
   """Run a test case.
 
   Args:
     test_base_name: The name for the test C++ source file without the extension.
     cmd: The actual command to run for the test.
+    reset_results: True if the results should be overwritten in place.
 
   Returns:
     None on pass, or a str with the description of the failure.
@@ -47,31 +49,31 @@ def run_test(test_base_name, cmd):
       # from a previous run.
       os.remove('%s.graph.json' % test_base_name)
 
-  # TODO(dcheng): Remove the rstrip() and just rebaseline the tests to match.
-  actual = actual.rstrip()
-
   # On Windows, clang emits CRLF as the end of line marker. Normalize it to LF
   # to match posix systems.
   actual = actual.replace('\r\n', '\n')
 
+  result_file = '%s.txt%s' % (
+      test_base_name, '' if reset_results else '.actual')
   try:
-    expected = open('%s.txt' % test_base_name).read().rstrip()
+    expected = open('%s.txt' % test_base_name).read()
   except IOError:
-    open('%s.txt.actual' % test_base_name, 'w').write(actual)
+    open(result_file, 'w').write(actual)
     return 'no expected file found'
 
   if expected != actual:
-    open('%s.txt.actual' % test_base_name, 'w').write(actual)
+    open(result_file, 'w').write(actual)
     return 'expected and actual differed'
 
 
-def run_tests(clang_path, plugin_path):
+def run_tests(clang_path, plugin_path, reset_results):
   """Runs the tests.
 
   Args:
     clang_path: The path to the clang binary to be tested.
     plugin_path: An optional path to the plugin to test. This may be None, if
                  plugin is built directly into clang, like on Windows.
+    reset_results: True if the results should be overwritten in place.
 
   Returns:
     (passing, failing): Two lists containing the base names of the passing and
@@ -101,7 +103,7 @@ def run_tests(clang_path, plugin_path):
       pass
     cmd.append(test)
 
-    failure_message = run_test(test_base_name, cmd)
+    failure_message = run_test(test_base_name, cmd, reset_results)
     if failure_message:
       print 'failed: %s' % failure_message
       failing.append(test_base_name)
@@ -113,18 +115,23 @@ def run_tests(clang_path, plugin_path):
 
 
 def main():
-  if len(sys.argv) < 2:
-    print 'Usage: <path to clang>[ <path to plugin>]'
-    return -1
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
+      '--reset-results', action='store_true',
+      help='If specified, overwrites the expected results in place.')
+  parser.add_argument('clang_path', help='The path to the clang binary.')
+  parser.add_argument('plugin_path', nargs='?',
+                      help='The path to the plugin library, if any.')
+  args = parser.parse_args()
 
   os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-  clang_path = sys.argv[1]
-  plugin_path = sys.argv[2] if len(sys.argv) > 2 else None
-  print 'Using clang %s...' % clang_path
-  print 'Using plugin %s...' % plugin_path
+  print 'Using clang %s...' % args.clang_path
+  print 'Using plugin %s...' % args.plugin_path
 
-  passing, failing = run_tests(clang_path, plugin_path)
+  passing, failing = run_tests(args.clang_path,
+                               args.plugin_path,
+                               args.reset_results)
   print 'Ran %d tests: %d succeeded, %d failed' % (
       len(passing) + len(failing), len(passing), len(failing))
   for test in failing:
