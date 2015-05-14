@@ -254,6 +254,7 @@ void SVGPathElement::pathSegListChanged(ListModification listModification)
 
     invalidateSVGAttributes();
 
+    SVGElement::InvalidationGuard invalidationGuard(this);
     LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
     if (!layoutObject)
         return;
