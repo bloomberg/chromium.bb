@@ -39,7 +39,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
   ~InputMethodEngine() override;
 
   void Initialize(scoped_ptr<InputMethodEngineInterface::Observer> observer,
-                  const char* extension_id);
+                  const char* extension_id,
+                  Profile* profile);
 
   // InputMethodEngineInterface overrides.
   const std::string& GetActiveComponentId() const override;
@@ -96,6 +97,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
   bool IsInterestedInKeyEvent() const override;
 
  private:
+  bool CheckProfile() const;
   // Converts MenuItem to InputMethodMenuItem.
   void MenuItemToProperty(const MenuItem& item,
                           ui::ime::InputMethodMenuItem* property);
@@ -142,6 +144,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
   // Used with SendKeyEvents and ProcessKeyEvent to check if the key event
   // sent to ProcessKeyEvent is sent by SendKeyEvents.
   const ui::KeyEvent* sent_key_event_;
+
+  Profile* profile_;
 };
 
 }  // namespace chromeos

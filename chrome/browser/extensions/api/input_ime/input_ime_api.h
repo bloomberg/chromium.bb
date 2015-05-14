@@ -34,10 +34,10 @@ struct InputComponentInfo;
 
 class InputImeEventRouter {
  public:
-  static InputImeEventRouter* GetInstance();
+  explicit InputImeEventRouter(Profile* profile);
+  ~InputImeEventRouter();
 
   bool RegisterImeExtension(
-      Profile* profile,
       const std::string& extension_id,
       const std::vector<extensions::InputComponentInfo>& input_components);
   void UnregisterAllImes(const std::string& extension_id);
@@ -58,20 +58,32 @@ class InputImeEventRouter {
                          chromeos::input_method::KeyEventHandle* key_data);
 
  private:
-  friend struct DefaultSingletonTraits<InputImeEventRouter>;
   typedef std::map<std::string, std::pair<std::string,
           chromeos::input_method::KeyEventHandle*> > RequestMap;
-
-  InputImeEventRouter();
-  ~InputImeEventRouter();
 
   // The engine map from extension_id to an engine.
   std::map<std::string, chromeos::InputMethodEngineInterface*> engine_map_;
 
   unsigned int next_request_id_;
   RequestMap request_map_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
+};
+
+class InputImeEventRouterFactory {
+ public:
+  static InputImeEventRouterFactory* GetInstance();
+  InputImeEventRouter* GetRouter(Profile* profile);
+
+ private:
+  friend struct DefaultSingletonTraits<InputImeEventRouterFactory>;
+  InputImeEventRouterFactory();
+  ~InputImeEventRouterFactory();
+
+  std::map<Profile*, InputImeEventRouter*, ProfileCompare> router_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputImeEventRouterFactory);
 };
 
 class InputImeSetCompositionFunction : public SyncExtensionFunction {

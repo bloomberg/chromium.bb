@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
@@ -136,7 +137,8 @@ class InputMethodEngineTest :  public testing::Test {
     observer_ = new TestObserver();
     scoped_ptr<InputMethodEngineInterface::Observer> observer_ptr(observer_);
     engine_->Initialize(observer_ptr.Pass(),
-                        whitelisted ? kTestExtensionId : kTestExtensionId2);
+                        whitelisted ? kTestExtensionId : kTestExtensionId2,
+                        ProfileManager::GetActiveUserProfile());
   }
 
   void FocusIn(ui::TextInputType input_type) {

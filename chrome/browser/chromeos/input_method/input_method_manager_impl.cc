@@ -446,7 +446,7 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
 
   DCHECK(engine);
 
-  manager_->engine_map_[extension_id] = engine;
+  manager_->engine_map_[profile][extension_id] = engine;
 
   bool contain = false;
   for (size_t i = 0; i < descriptors.size(); i++) {
@@ -503,10 +503,10 @@ void InputMethodManagerImpl::StateImpl::RemoveInputMethodExtension(
 
   if (IsActive()) {
     if (IMEBridge::Get()->GetCurrentEngineHandler() ==
-        manager_->engine_map_[extension_id]) {
+        manager_->engine_map_[profile][extension_id]) {
       IMEBridge::Get()->SetCurrentEngineHandler(NULL);
     }
-    manager_->engine_map_.erase(extension_id);
+    manager_->engine_map_[profile].erase(extension_id);
   }
 
   // If |current_input_method| is no longer in |active_input_method_ids|,
@@ -1010,7 +1010,7 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
       extension_ime_util::GetExtensionIDFromInputMethodID(descriptor.id());
   const std::string& component_id =
       extension_ime_util::GetComponentIDByInputMethodID(descriptor.id());
-  engine = engine_map_[extension_id];
+  engine = engine_map_[profile][extension_id];
 
   IMEBridge::Get()->SetCurrentEngineHandler(engine);
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -171,7 +172,8 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
 
     // CreateNewState(NULL) returns state with non-empty current_input_method.
     // So SetState() triggers ChangeInputMethod().
-    manager_->SetState(manager_->CreateNewState(NULL));
+    manager_->SetState(
+        manager_->CreateNewState(ProfileManager::GetActiveUserProfile()));
 
     std::vector<std::string> layouts;
     layouts.push_back("us");
