@@ -368,9 +368,21 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
   if (!window_mapped_)
     MapWindow(show_state);
 
-  if (show_state == ui::SHOW_STATE_NORMAL ||
-      show_state == ui::SHOW_STATE_MAXIMIZED) {
-    Activate();
+  switch (show_state) {
+    case ui::SHOW_STATE_NORMAL:
+      Activate();
+      break;
+    case ui::SHOW_STATE_MAXIMIZED:
+      Maximize();
+      break;
+    case ui::SHOW_STATE_MINIMIZED:
+      Minimize();
+      break;
+    case ui::SHOW_STATE_FULLSCREEN:
+      SetFullscreen(TRUE);
+      break;
+    default:
+      break;
   }
 
   native_widget_delegate_->AsWidget()->SetInitialFocus(show_state);
