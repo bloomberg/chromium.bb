@@ -70,6 +70,8 @@ Polymer({
    * @private
    */
   getTopPageIcon_: function(pageStack) {
+    if (pageStack.length == 0)
+      return '';
     return pageStack[0].icon;
   },
 
@@ -88,17 +90,21 @@ Polymer({
    * @private
    */
   getCurrentPageTitle_: function(pageStack) {
+    if (pageStack.length == 0)
+      return '';
     return pageStack[0].pageTitle;
   },
 
   /** @private */
   selectedPageChanged_: function() {
-    if (this.selectedPage.subpage) {
+    if (this.selectedPage && this.selectedPage.subpage) {
       // NOTE: Must reassign pageStack rather than doing push() so that the
       // computed property (parentPages) will be notified of the update.
       this.pageStack = this.pageStack.concat(this.selectedPage);
-    } else {
+    } else if (this.selectedPage) {
       this.pageStack = [this.selectedPage];
+    } else {
+      this.pageStack = [];
     }
   },
 
