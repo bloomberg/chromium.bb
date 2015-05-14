@@ -291,11 +291,9 @@ bool DirectoryBackingStore::SaveChanges(
             SQL_FROM_HERE,
             "UPDATE share_info "
             "SET store_birthday = ?, "
-            "next_id = ?, "
             "bag_of_chips = ?"));
     s1.BindString(0, info.store_birthday);
-    s1.BindInt64(1, info.next_id);
-    s1.BindBlob(2, info.bag_of_chips.data(), info.bag_of_chips.size());
+    s1.BindBlob(1, info.bag_of_chips.data(), info.bag_of_chips.size());
 
     if (!s1.Run())
       return false;
@@ -646,17 +644,15 @@ bool DirectoryBackingStore::LoadDeleteJournals(
 
 bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
-    sql::Statement s(
-        db_->GetUniqueStatement(
-            "SELECT store_birthday, next_id, cache_guid, bag_of_chips "
-            "FROM share_info"));
+    sql::Statement s(db_->GetUniqueStatement(
+        "SELECT store_birthday, cache_guid, bag_of_chips "
+        "FROM share_info"));
     if (!s.Step())
       return false;
 
     info->kernel_info.store_birthday = s.ColumnString(0);
-    info->kernel_info.next_id = s.ColumnInt64(1);
-    info->cache_guid = s.ColumnString(2);
-    s.ColumnBlobAsString(3, &(info->kernel_info.bag_of_chips));
+    info->cache_guid = s.ColumnString(1);
+    s.ColumnBlobAsString(2, &(info->kernel_info.bag_of_chips));
 
     // Verify there was only one row returned.
     DCHECK(!s.Step());

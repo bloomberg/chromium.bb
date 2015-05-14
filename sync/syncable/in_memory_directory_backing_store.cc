@@ -9,8 +9,7 @@ namespace syncable {
 
 InMemoryDirectoryBackingStore::InMemoryDirectoryBackingStore(
     const std::string& dir_name)
-    : DirectoryBackingStore(dir_name),
-      consistent_cache_guid_requested_(false) {
+    : DirectoryBackingStore(dir_name) {
 }
 
 DirOpenResult InMemoryDirectoryBackingStore::Load(
@@ -25,14 +24,6 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
 
   if (!InitializeTables())
     return FAILED_OPEN_DATABASE;
-
-  if (consistent_cache_guid_requested_) {
-    if (!db()->Execute(
-            "UPDATE share_info "
-            "SET cache_guid = 'IrcjZ2jyzHDV9Io4+zKcXQ=='")) {
-      return FAILED_OPEN_DATABASE;
-    }
-  }
 
   if (!LoadEntries(handles_map, metahandles_to_purge))
     return FAILED_DATABASE_CORRUPT;

@@ -3205,17 +3205,9 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
-  const int kInitialNextId = -65542;
-
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion78Database(&connection);
-
-  // Double-check the original next_id is what we think it is.
-  sql::Statement s(connection.GetUniqueStatement(
-      "SELECT next_id FROM share_info"));
-  s.Step();
-  ASSERT_EQ(kInitialNextId, s.ColumnInt(0));
 
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
@@ -3223,18 +3215,6 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
   ASSERT_TRUE(dbs->MigrateVersion78To79());
   ASSERT_EQ(79, dbs->GetVersion());
   ASSERT_FALSE(dbs->needs_column_refresh());
-
-  // Ensure the next_id has been incremented.
-  Directory::MetahandlesMap handles_map;
-  JournalIndex delete_journals;
-  MetahandleSet metahandles_to_purge;
-  STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
-  Directory::KernelLoadInfo load_info;
-
-  s.Clear();
-  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
-                        &load_info));
-  EXPECT_LE(load_info.kernel_info.next_id, kInitialNextId - 65536);
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {

@@ -110,8 +110,6 @@ class SYNC_EXPORT Directory {
     // The store birthday we were given by the server. Contents are opaque to
     // the client.
     std::string store_birthday;
-    // The next local ID that has not been used with this cache-GUID.
-    int64 next_id;
     // The serialized bag of chips we were given by the server. Contents are
     // opaque to the client. This is the serialization of a message of type
     // ChipBag defined in sync.proto. It can contains NULL characters.
@@ -269,7 +267,7 @@ class SYNC_EXPORT Directory {
                          transaction_observer);
 
   int64 NextMetahandle();
-  // Returns a negative integer unique to this client.
+  // Generates next client ID based on a randomly generated GUID.
   syncable::Id NextId();
 
   bool good() const { return NULL != kernel_; }

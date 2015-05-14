@@ -34,7 +34,8 @@ bool ChildComparator::operator()(const EntryKernel* a,
     // Position doesn't matter.
     DCHECK(!a->ref(UNIQUE_POSITION).IsValid());
     DCHECK(!b->ref(UNIQUE_POSITION).IsValid());
-    return a->ref(ID) < b->ref(ID);
+    // Sort by META_HANDLE to ensure consistent order for testing.
+    return a->ref(META_HANDLE) < b->ref(META_HANDLE);
   }
 }
 

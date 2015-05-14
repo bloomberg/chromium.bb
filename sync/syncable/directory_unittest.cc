@@ -1625,36 +1625,6 @@ TEST_F(SyncableDirectoryTest, ToValue) {
   dir()->SaveChanges();
 }
 
-// Test that the bookmark tag generation algorithm remains unchanged.
-TEST_F(SyncableDirectoryTest, BookmarkTagTest) {
-  // This test needs its own InMemoryDirectoryBackingStore because it needs to
-  // call request_consistent_cache_guid().
-  InMemoryDirectoryBackingStore* store = new InMemoryDirectoryBackingStore("x");
-
-  // The two inputs that form the bookmark tag are the directory's cache_guid
-  // and its next_id value.  We don't need to take any action to ensure
-  // consistent next_id values, but we do need to explicitly request that our
-  // InMemoryDirectoryBackingStore always return the same cache_guid.
-  store->request_consistent_cache_guid();
-
-  Directory dir(store, unrecoverable_error_handler(), NULL, NULL, NULL);
-  ASSERT_EQ(
-      OPENED,
-      dir.Open("x", directory_change_delegate(), NullTransactionObserver()));
-
-  {
-    WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
-    MutableEntry bm(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), "bm");
-    bm.PutIsUnsynced(true);
-
-    // If this assertion fails, that might indicate that the algorithm used to
-    // generate bookmark tags has been modified.  This could have implications
-    // for bookmark ordering.  Please make sure you know what you're doing if
-    // you intend to make such a change.
-    ASSERT_EQ("6wHRAb3kbnXV5GHrejp4/c1y5tw=", bm.GetUniqueBookmarkTag());
-  }
-}
-
 // A thread that creates a bunch of directory entries.
 class StressTransactionsDelegate : public base::PlatformThread::Delegate {
  public:
