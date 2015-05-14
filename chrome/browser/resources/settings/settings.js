@@ -13,18 +13,4 @@
  * @group Chrome Settings Elements
  * @element cr-settings
  */
-Polymer({
-  is: 'cr-settings',
-
-  properties: {
-    /**
-     * The CrSettingsPrefsElement used throughout the app.
-     * @private {!CrSettingsPrefsElement}
-     */
-    prefs_: {
-      type: Object,
-      value: function() { return this.$.prefs; },
-      notify: true,
-    }
-  },
-});
+Polymer({is: 'cr-settings'});

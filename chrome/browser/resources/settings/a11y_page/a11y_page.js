@@ -23,9 +23,6 @@ Polymer({
   properties: {
     /**
      * Preferences state.
-     *
-     * @type {?CrSettingsPrefsElement}
-     * @default null
      */
     prefs: {
       type: Object,
@@ -71,15 +68,5 @@ Polymer({
       value: 'accessibility',
       readOnly: true,
     },
-  },
-
-  /**
-   * Called when the selected value of the autoclick dropdown changes.
-   * TODO(jlklein): Replace with binding when paper-dropdown lands.
-   * @private
-   */
-  autoclickSelectChanged_: function() {
-    this.prefs.settings.settings.a11y.autoclick_delay_ms =
-        this.$.autoclickDropdown.value;
   },
 });

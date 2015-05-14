@@ -26,7 +26,7 @@
       /**
        * Object containing all preferences.
        */
-      settings: {
+      prefStore: {
         type: Object,
         value: function() { return {}; },
         notify: true,
@@ -74,7 +74,7 @@
      */
     updatePrefs_: function(prefs, shouldObserve) {
       prefs.forEach(function(prefObj) {
-        let root = this.settings;
+        let root = this.prefStore;
         let tokens = prefObj.key.split('.');
 
         assert(tokens.length > 0);
@@ -83,7 +83,7 @@
           let token = tokens[i];
 
           if (!root.hasOwnProperty(token)) {
-            let path = 'settings.' + tokens.slice(0, i + 1).join('.');
+            let path = 'prefStore.' + tokens.slice(0, i + 1).join('.');
             this.setPathValue(path, {});
           }
           root = root[token];
@@ -92,7 +92,7 @@
         // NOTE: Do this copy rather than just a re-assignment, so that the
         // ObjectObserver fires.
         for (let objKey in prefObj) {
-          let path = 'settings.' + prefObj.key + '.' + objKey;
+          let path = 'prefStore.' + prefObj.key + '.' + objKey;
           this.setPathValue(path, prefObj[objKey]);
         }
 

@@ -21,7 +21,10 @@ Polymer({
      * The boolean preference object to control.
      * @type {?chrome.settingsPrivate.PrefObject}
      */
-    pref: Object,
+    pref: {
+      type: Object,
+      notify: true,
+    },
 
     label: {
       type: String,

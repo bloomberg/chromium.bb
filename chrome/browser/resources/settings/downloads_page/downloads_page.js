@@ -24,7 +24,6 @@ Polymer({
   properties: {
     /**
      * Preferences state.
-     * @type {?CrSettingsPrefsElement}
      */
     prefs: {
       type: Object,

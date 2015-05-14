@@ -21,15 +21,6 @@ Polymer({
 
   properties: {
     /**
-     * Preferences state.
-     * @type {?CrSettingsPrefsElement}
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * Route for the page.
      */
     route: String,

@@ -15,42 +15,43 @@
 
 <if expr="chromeos">
       <cr-settings-checkbox
-          pref="{{prefs.settings.settings.a11y.enable_menu}}"
+          pref="{{prefs.settings.a11y.enable_menu}}"
           i18n-values="label:accessibilityOptionsInMenuLabel">
       </cr-settings-checkbox>
       <cr-settings-checkbox
-          pref="{{prefs.settings.settings.a11y.large_cursor_enabled}}"
+          pref="{{prefs.settings.a11y.large_cursor_enabled}}"
           i18n-values="label:accessibilityLargeMouseCursorLabel">
       </cr-settings-checkbox>
       <cr-settings-checkbox
-          pref="{{prefs.settings.settings.a11y.high_contrast_enabled}}"
+          pref="{{prefs.settings.a11y.high_contrast_enabled}}"
           i18n-values="label:accessibilityHighContrastLabel">
       </cr-settings-checkbox>
       <cr-settings-checkbox
-          pref="{{prefs.settings.settings.a11y.sticky_keys_enabled}}"
+          pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
           i18n-values="label:accessibilityStickyKeysLabel;
                        subLabel:accessibilityStickyKeysSublabel">
       </cr-settings-checkbox>
-      <cr-settings-checkbox pref="{{prefs.settings.settings.accessibility}}"
+      <cr-settings-checkbox pref="{{prefs.settings.accessibility}}"
           i18n-values="label:accessibilityChromeVoxLabel;
                        subLabel:accessibilityChromeVoxSublabel">
       </cr-settings-checkbox>
       <cr-settings-checkbox
-          pref="{{prefs.settings.settings.a11y.screen_magnifier}}"
+          pref="{{prefs.settings.a11y.screen_magnifier}}"
           i18n-values="label:accessibilityScreenMagnifierLabel">
       </cr-settings-checkbox>
       <cr-settings-checkbox
-          pref="{{prefs.settings.settings.touchpad.enable_tap_dragging}}"
+          pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
           i18n-values="label:accessibilityTapDraggingLabel">
       </cr-settings-checkbox>
-      <cr-settings-checkbox pref="{{prefs.settings.settings.a11y.autoclick}}"
+      <cr-settings-checkbox pref="{{prefs.settings.a11y.autoclick}}"
           i18n-values="label:accessibilityClickOnStopLabel">
       </cr-settings-checkbox>
 
       <div class="autoclick-delay-label"
-          hidden$="{{!prefs.settings.settings.a11y.autoclick}}">
+          hidden$="{{!prefs.settings.a11y.autoclick}}">
         <span i18n-content="accessibilityDelayBeforeClickLabel"></span>
-        <select id="autoclickDropdown" on-change="autoclickSelectChanged_">
+        <select id="autoclickDropdown"
+            value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
           <option value="200"
               i18n-content="accessibilityDelayBeforeClickExtremelyShort">
           </option>
@@ -70,7 +71,7 @@
       </div>
 
       <cr-settings-checkbox
-          pref="{{prefs.settings.settings.a11y.virtual_keyboard}}"
+          pref="{{prefs.settings.a11y.virtual_keyboard}}"
           i18n-values="label:accessibilityOnScreenKeyboardLabel">
       </cr-settings-checkbox>
 </if>

@@ -22,23 +22,16 @@ Polymer({
   properties: {
     /**
      * Gets or sets the state. `true` is checked and `false` is unchecked.
-     *
-     * @attribute checked
-     * @type {boolean}
-     * @default false
      */
     checked: {
       type: Boolean,
       value: false,
+      notify: true,
       reflectToAttribute: true
     },
 
     /**
      * If true, the user cannot interact with this element.
-     *
-     * @attribute disabled
-     * @type {boolean}
-     * @default false
      */
     disabled: {
       type: Boolean,

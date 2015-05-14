@@ -15,7 +15,7 @@
         <div class="layout horizontal center">
           <div id="locationLabel" i18n-content="downloadsLocationLabel"></div>
           <cr-input id="downloadsPath" floating-label="false"
-                value="{{prefs.settings.download.default_directory.value}}"
+                value="{{prefs.download.default_directory.value}}"
                 readonly aria-labelledby="locationLabel">
           </cr-input>
         </div>
@@ -24,7 +24,7 @@
         </cr-button>
       </div>
       <cr-settings-checkbox
-          pref="{{prefs.settings.download.prompt_for_download}}"
+          pref="{{prefs.download.prompt_for_download}}"
           i18n-values="label:downloadsPromptForDownloadLabel">
       </cr-settings-checkbox>
     </paper-material>
