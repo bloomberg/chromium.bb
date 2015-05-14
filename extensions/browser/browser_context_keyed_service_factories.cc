@@ -24,6 +24,7 @@
 #include "extensions/browser/api/system_info/system_info_api.h"
 #include "extensions/browser/api/usb/usb_event_router.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
+#include "extensions/browser/api/webcam_private/webcam_private_api.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/process_manager_factory.h"
@@ -62,6 +63,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   StorageFrontend::GetFactoryInstance();
   SystemInfoAPI::GetFactoryInstance();
   UsbEventRouter::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  WebcamPrivateAPI::GetFactoryInstance();
+#endif
 }
 
 }  // namespace extensions
