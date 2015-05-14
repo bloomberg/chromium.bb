@@ -130,6 +130,7 @@ public:
         const WebFloatSize& elasticOverscrollDelta,
         float pageScaleDelta,
         float topControlsShownRatioDelta) override;
+    virtual void recordFrameTimingEvent(enum FrameTimingEventType, int64_t, const WebVector<WebFrameTimingEvent>&) override;
     virtual void mouseCaptureLost() override;
     virtual void setFocus(bool enable) override;
     virtual bool setComposition(

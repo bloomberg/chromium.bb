@@ -39,6 +39,7 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/WebDisplayMode.h"
+#include "public/platform/WebRect.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -724,6 +725,11 @@ private:
     LayoutObject* viewportLayoutObject();
 
     void collectAnnotatedRegions(LayoutObject&, Vector<AnnotatedRegionValue>&);
+
+    typedef WTF::HashMap <const GraphicsLayer*, Vector<std::pair<int64_t, WebRect>>> GraphicsLayerFrameTimingRequests;
+    void updateFrameTimingRequestsIfNeeded();
+    void collectFrameTimingRequests(GraphicsLayerFrameTimingRequests&);
+    void collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequests&);
 
     LayoutSize m_size;
 

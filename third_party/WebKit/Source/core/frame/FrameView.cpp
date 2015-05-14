@@ -2548,6 +2548,9 @@ void FrameView::updateLayoutAndStyleForPaintingInternal()
 
         updateCompositedSelectionIfNeeded();
 
+        if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
+            updateFrameTimingRequestsIfNeeded();
+
         scrollContentsIfNeededRecursive();
 
         invalidateTreeIfNeededRecursive();
@@ -2556,6 +2559,18 @@ void FrameView::updateLayoutAndStyleForPaintingInternal()
     }
 
     ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+}
+
+void FrameView::updateFrameTimingRequestsIfNeeded()
+{
+    GraphicsLayerFrameTimingRequests graphicsLayerTimingRequests;
+    // TODO(mpb) use a 'dirty' bit to not call this every time.
+    collectFrameTimingRequestsRecursive(graphicsLayerTimingRequests);
+
+    for (const auto& iter : graphicsLayerTimingRequests) {
+        const GraphicsLayer* graphicsLayer = iter.key;
+        graphicsLayer->platformLayer()->setFrameTimingRequests(iter.value);
+    }
 }
 
 void FrameView::updateLayoutAndStyleIfNeededRecursive()
@@ -4027,6 +4042,36 @@ void FrameView::collectAnnotatedRegions(LayoutObject& layoutObject, Vector<Annot
     layoutObject.addAnnotatedRegions(regions);
     for (LayoutObject* curr = layoutObject.slowFirstChild(); curr; curr = curr->nextSibling())
         collectAnnotatedRegions(*curr, regions);
+}
+
+void FrameView::collectFrameTimingRequestsRecursive(GraphicsLayerFrameTimingRequests& graphicsLayerTimingRequests)
+{
+    collectFrameTimingRequests(graphicsLayerTimingRequests);
+
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
+            continue;
+
+        toLocalFrame(child)->view()->collectFrameTimingRequestsRecursive(graphicsLayerTimingRequests);
+    }
+}
+
+void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& graphicsLayerTimingRequests)
+{
+    if (!m_frame->isLocalFrame())
+        return;
+    Frame* frame = m_frame.get();
+    LocalFrame* localFrame = toLocalFrame(frame);
+    LayoutRect viewRect = localFrame->contentLayoutObject()->viewRect();
+    const LayoutBoxModelObject* paintInvalidationContainer = localFrame->contentLayoutObject()->containerForPaintInvalidation();
+    const GraphicsLayer* graphicsLayer = paintInvalidationContainer->enclosingLayer()->graphicsLayerBacking();
+
+    if (!graphicsLayer)
+        return;
+
+    DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(localFrame->contentLayoutObject(), paintInvalidationContainer, viewRect);
+
+    graphicsLayerTimingRequests.add(graphicsLayer, Vector<std::pair<int64_t, WebRect>>()).storedValue->value.append(std::make_pair(m_frame->frameID(), enclosingIntRect(viewRect)));
 }
 
 } // namespace blink

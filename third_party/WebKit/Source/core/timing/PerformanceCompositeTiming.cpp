@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
- * Copyright (C) 2012 Intel Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Intel Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,48 +29,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PerformanceEntry_h
-#define PerformanceEntry_h
+#include "config.h"
+#include "core/timing/PerformanceCompositeTiming.h"
 
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
+#include "core/dom/Document.h"
+#include "core/loader/DocumentLoader.h"
 
 namespace blink {
 
-class PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    virtual ~PerformanceEntry();
+static double monotonicTimeToDocumentMilliseconds(Document* document, double seconds)
+{
+    ASSERT(seconds >= 0.0);
+    return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(seconds) * 1000.0;
+}
 
-    String name() const;
-    String entryType() const;
-    double startTime() const;
-    double duration() const;
+PerformanceCompositeTiming::PerformanceCompositeTiming(Document* requestingDocument, unsigned sourceFrame, double startTime)
+    : PerformanceEntry(requestingDocument->url().string(), "composite", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, startTime))
+    , m_sourceFrame(sourceFrame)
+    , m_requestingDocument(requestingDocument)
+{
+}
 
-    virtual bool isResource() { return false; }
-    virtual bool isRender() { return false; }
-    virtual bool isComposite() { return false; }
-    virtual bool isMark() { return false; }
-    virtual bool isMeasure() { return false; }
+PerformanceCompositeTiming::~PerformanceCompositeTiming()
+{
+}
 
-    static bool startTimeCompareLessThan(PerformanceEntry* a, PerformanceEntry* b)
-    {
-        return a->startTime() < b->startTime();
-    }
+unsigned PerformanceCompositeTiming::sourceFrame() const
+{
+    return m_sourceFrame;
+}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-
-protected:
-    PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime);
-
-private:
-    const String m_name;
-    const String m_entryType;
-    const double m_startTime;
-    const double m_duration;
-};
+DEFINE_TRACE(PerformanceCompositeTiming)
+{
+    visitor->trace(m_requestingDocument);
+    PerformanceEntry::trace(visitor);
+}
 
 } // namespace blink
-
-#endif // PerformanceEntry_h

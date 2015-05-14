@@ -94,6 +94,7 @@ finish
 focus
 focusin
 focusout
+frametimingbufferfull
 fullscreenchange
 fullscreenerror
 gamepadconnected

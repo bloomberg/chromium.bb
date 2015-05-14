@@ -36,9 +36,8 @@
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/timing/MemoryInfo.h"
-#include "core/timing/PerformanceEntry.h"
-#include "core/timing/PerformanceNavigation.h"
+#include "core/timing/PerformanceCompositeTiming.h"
+#include "core/timing/PerformanceRenderTiming.h"
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
@@ -49,9 +48,11 @@
 namespace blink {
 
 static const size_t defaultResourceTimingBufferSize = 150;
+static const size_t defaultFrameTimingBufferSize = 150;
 
 Performance::Performance(LocalFrame* frame)
     : DOMWindowProperty(frame)
+    , m_frameTimingBufferSize(defaultFrameTimingBufferSize)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
     , m_referenceTime(frame && frame->host() ? frame->document()->loader()->timing().referenceMonotonicTime() : 0.0)
     , m_userTiming(nullptr)
@@ -102,6 +103,7 @@ PerformanceEntryVector Performance::getEntries() const
     PerformanceEntryVector entries;
 
     entries.appendVector(m_resourceTimingBuffer);
+    entries.appendVector(m_frameTimingBuffer);
 
     if (m_userTiming) {
         entries.appendVector(m_userTiming->getMarks());
@@ -119,6 +121,15 @@ PerformanceEntryVector Performance::getEntriesByType(const String& entryType)
     if (equalIgnoringCase(entryType, "resource")) {
         for (const auto& resource : m_resourceTimingBuffer)
             entries.append(resource);
+    }
+
+    if (equalIgnoringCase(entryType, "composite")
+        || equalIgnoringCase(entryType, "render")) {
+        for (const auto& frame : m_frameTimingBuffer) {
+            if (equalIgnoringCase(entryType, frame->entryType())) {
+                entries.append(frame);
+            }
+        }
     }
 
     if (m_userTiming) {
@@ -143,6 +154,16 @@ PerformanceEntryVector Performance::getEntriesByName(const String& name, const S
         }
     }
 
+    if (entryType.isNull() || equalIgnoringCase(entryType, "composite")
+        || equalIgnoringCase(entryType, "render")) {
+        for (const auto& frame : m_frameTimingBuffer) {
+            if (frame->name() == name && (entryType.isNull()
+                || equalIgnoringCase(entryType, frame->entryType()))) {
+                entries.append(frame);
+            }
+        }
+    }
+
     if (m_userTiming) {
         if (entryType.isNull() || equalIgnoringCase(entryType, "mark"))
             entries.appendVector(m_userTiming->getMarks(name));
@@ -164,6 +185,18 @@ void Performance::webkitSetResourceTimingBufferSize(unsigned size)
     m_resourceTimingBufferSize = size;
     if (isResourceTimingBufferFull())
         dispatchEvent(Event::create(EventTypeNames::webkitresourcetimingbufferfull));
+}
+
+void Performance::clearFrameTimings()
+{
+    m_frameTimingBuffer.clear();
+}
+
+void Performance::setFrameTimingBufferSize(unsigned size)
+{
+    m_frameTimingBufferSize = size;
+    if (isFrameTimingBufferFull())
+        dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
 }
 
 static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument, const AtomicString& originalTimingAllowOrigin)
@@ -251,6 +284,37 @@ bool Performance::isResourceTimingBufferFull()
     return m_resourceTimingBuffer.size() >= m_resourceTimingBufferSize;
 }
 
+void Performance::addRenderTiming(Document* initiatorDocument, unsigned sourceFrame, double startTime, double finishTime)
+{
+    if (isFrameTimingBufferFull())
+        return;
+
+    PerformanceEntry* entry = PerformanceRenderTiming::create(initiatorDocument, sourceFrame, startTime, finishTime);
+    addFrameTimingBuffer(entry);
+}
+
+void Performance::addCompositeTiming(Document* initiatorDocument, unsigned sourceFrame, double startTime)
+{
+    if (isFrameTimingBufferFull())
+        return;
+
+    PerformanceEntry* entry = PerformanceCompositeTiming::create(initiatorDocument, sourceFrame, startTime);
+    addFrameTimingBuffer(entry);
+}
+
+void Performance::addFrameTimingBuffer(PerformanceEntry* entry)
+{
+    m_frameTimingBuffer.append(entry);
+
+    if (isFrameTimingBufferFull())
+        dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
+}
+
+bool Performance::isFrameTimingBufferFull()
+{
+    return m_frameTimingBuffer.size() >= m_frameTimingBufferSize;
+}
+
 void Performance::mark(const String& markName, ExceptionState& exceptionState)
 {
     if (!m_userTiming)
@@ -288,6 +352,7 @@ DEFINE_TRACE(Performance)
 {
     visitor->trace(m_navigation);
     visitor->trace(m_timing);
+    visitor->trace(m_frameTimingBuffer);
     visitor->trace(m_resourceTimingBuffer);
     visitor->trace(m_memoryInfo);
     visitor->trace(m_userTiming);

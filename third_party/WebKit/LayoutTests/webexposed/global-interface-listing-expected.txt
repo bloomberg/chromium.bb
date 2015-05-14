@@ -3652,8 +3652,10 @@ interface Path2D
 interface Performance
     getter memory
     getter navigation
+    getter onframetimingbufferfull
     getter onwebkitresourcetimingbufferfull
     getter timing
+    method clearFrameTimings
     method clearMarks
     method clearMeasures
     method constructor
@@ -3663,9 +3665,14 @@ interface Performance
     method mark
     method measure
     method now
+    method setFrameTimingBufferSize
     method webkitClearResourceTimings
     method webkitSetResourceTimingBufferSize
+    setter onframetimingbufferfull
     setter onwebkitresourcetimingbufferfull
+interface PerformanceCompositeTiming
+    getter sourceFrame
+    method constructor
 interface PerformanceEntry
     getter duration
     getter entryType
@@ -3683,6 +3690,9 @@ interface PerformanceNavigation
     attribute TYPE_RESERVED
     getter redirectCount
     getter type
+    method constructor
+interface PerformanceRenderTiming
+    getter sourceFrame
     method constructor
 interface PerformanceResourceTiming
     getter connectEnd

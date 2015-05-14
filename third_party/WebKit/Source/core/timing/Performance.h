@@ -81,7 +81,16 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitresourcetimingbufferfull);
 
+    void clearFrameTimings();
+    void setFrameTimingBufferSize(unsigned);
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(frametimingbufferfull);
+
     void addResourceTiming(const ResourceTimingInfo&, Document*);
+
+    void addRenderTiming(Document*, unsigned, double, double);
+
+    void addCompositeTiming(Document*, unsigned, double);
 
     void mark(const String& markName, ExceptionState&);
     void clearMarks(const String& markName);
@@ -100,6 +109,11 @@ private:
     mutable Member<PerformanceNavigation> m_navigation;
     mutable Member<PerformanceTiming> m_timing;
 
+    bool isFrameTimingBufferFull();
+    void addFrameTimingBuffer(PerformanceEntry*);
+
+    PerformanceEntryVector m_frameTimingBuffer;
+    unsigned m_frameTimingBufferSize;
     PerformanceEntryVector m_resourceTimingBuffer;
     unsigned m_resourceTimingBufferSize;
     double m_referenceTime;

@@ -102,6 +102,8 @@ public:
 
     LayoutPart* ownerLayoutObject() const; // LayoutObject for the element that contains this frame.
 
+    int64_t frameID() const { return m_frameID; }
+
     Settings* settings() const; // can be null
 
     // isLoading() is true when the embedder should think a load is in progress.
@@ -124,6 +126,8 @@ protected:
 
 private:
     FrameClient* m_client;
+    // Needed to identify Frame Timing requests.
+    int64_t m_frameID;
     bool m_isLoading;
 };
 

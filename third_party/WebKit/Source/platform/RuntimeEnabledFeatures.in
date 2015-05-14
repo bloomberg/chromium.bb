@@ -65,6 +65,7 @@ FileAPIBlobClose status=experimental
 FileSystem status=stable
 FormDataNewMethods status=experimental
 FullscreenUnprefixed status=test
+FrameTimingSupport status=experimental
 Geofencing status=experimental
 GeometryInterfaces status=test
 HTMLPopupMenu status=stable

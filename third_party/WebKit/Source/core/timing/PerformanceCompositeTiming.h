@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
- * Copyright (C) 2012 Intel Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Intel Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,48 +29,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PerformanceEntry_h
-#define PerformanceEntry_h
+#ifndef PerformanceCompositeTiming_h
+#define PerformanceCompositeTiming_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "core/timing/PerformanceEntry.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
+class Document;
+
+class PerformanceCompositeTiming final : public PerformanceEntry {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~PerformanceEntry();
-
-    String name() const;
-    String entryType() const;
-    double startTime() const;
-    double duration() const;
-
-    virtual bool isResource() { return false; }
-    virtual bool isRender() { return false; }
-    virtual bool isComposite() { return false; }
-    virtual bool isMark() { return false; }
-    virtual bool isMeasure() { return false; }
-
-    static bool startTimeCompareLessThan(PerformanceEntry* a, PerformanceEntry* b)
+    static PerformanceCompositeTiming* create(Document* requestingDocument, unsigned sourceFrame, double startTime)
     {
-        return a->startTime() < b->startTime();
+        return new PerformanceCompositeTiming(requestingDocument, sourceFrame, startTime);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    unsigned sourceFrame() const;
 
-protected:
-    PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime);
+    virtual bool isComposite() override { return true; }
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
-    const String m_name;
-    const String m_entryType;
-    const double m_startTime;
-    const double m_duration;
+    PerformanceCompositeTiming(Document* requestingDocument, unsigned sourceFrame, double startTime);
+    virtual ~PerformanceCompositeTiming();
+
+    unsigned m_sourceFrame;
+    RefPtr<Document> m_requestingDocument;
 };
 
 } // namespace blink
 
-#endif // PerformanceEntry_h
+#endif // PerformanceCompositeTiming_h

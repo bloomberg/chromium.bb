@@ -86,6 +86,9 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
+#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
@@ -126,6 +129,7 @@
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebBeginFrameArgs.h"
 #include "public/web/WebElement.h"
+#include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
@@ -4355,6 +4359,27 @@ void WebViewImpl::applyViewportDeltas(
 
     updateLayoutViewportScrollPosition(frameView->layoutViewportScrollableArea()->scrollPositionDouble() +
         DoubleSize(outerViewportDelta.width, outerViewportDelta.height), /* programmaticScroll */ false);
+}
+
+void WebViewImpl::recordFrameTimingEvent(FrameTimingEventType eventType, int64_t FrameId, const WebVector<WebFrameTimingEvent>& events)
+{
+    Frame* frame = m_page ? m_page->mainFrame() : 0;
+
+    while (frame && frame->frameID() != FrameId) {
+        frame = frame->tree().traverseNext();
+    }
+
+    if (!frame || !frame->domWindow() || !frame->domWindow()->document())
+        return; // Can't find frame, it may have been cleaned up from the DOM.
+
+    blink::DOMWindow* domWindow = frame->domWindow();
+    blink::Performance* performance = DOMWindowPerformance::performance(*domWindow);
+    for (size_t i = 0; i < events.size(); ++i) {
+        if (eventType == CompositeEvent)
+            performance->addCompositeTiming(domWindow->document(), events[i].sourceFrame, events[i].startTime);
+        else if (eventType == RenderEvent)
+            performance->addRenderTiming(domWindow->document(), events[i].sourceFrame, events[i].startTime, events[i].finishTime);
+    }
 }
 
 void WebViewImpl::updateLayerTreeViewport()
