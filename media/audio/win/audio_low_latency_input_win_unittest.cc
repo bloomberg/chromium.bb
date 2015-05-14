@@ -22,7 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::win::ScopedCOMInitializer;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
@@ -163,8 +162,7 @@ static bool HasCoreAudioAndInputDevices(AudioManager* audio_man) {
 class AudioInputStreamWrapper {
  public:
   explicit AudioInputStreamWrapper(AudioManager* audio_manager)
-      : com_init_(ScopedCOMInitializer::kMTA),
-        audio_man_(audio_manager),
+      : audio_man_(audio_manager),
         default_params_(
             audio_manager->GetInputStreamParameters(
                   AudioManagerBase::kDefaultDeviceId)) {
@@ -207,7 +205,6 @@ class AudioInputStreamWrapper {
     return ais;
   }
 
-  ScopedCOMInitializer com_init_;
   AudioManager* audio_man_;
   const AudioParameters default_params_;
   int frames_per_buffer_;
@@ -259,8 +256,6 @@ class ScopedAudioInputStream {
 TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
-
-  ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
 
   // Retrieve a list of all available input devices.
   media::AudioDeviceNames device_names;

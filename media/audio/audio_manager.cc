@@ -17,6 +17,10 @@
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media_switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
+
 namespace media {
 namespace {
 
@@ -119,6 +123,14 @@ class AudioManagerHelper : public base::PowerObserver {
 
   AudioLogFactory* fake_log_factory() { return &fake_log_factory_; }
 
+#if defined(OS_WIN)
+  // This should be called before creating an AudioManager in tests to ensure
+  // that the creating thread is COM initialized.
+  void InitializeCOMForTesting() {
+    com_initializer_for_testing_.reset(new base::win::ScopedCOMInitializer());
+  }
+#endif
+
  private:
   FakeAudioLogFactory fake_log_factory_;
 
@@ -129,6 +141,10 @@ class AudioManagerHelper : public base::PowerObserver {
   bool hang_detection_enabled_;
   base::TimeTicks last_audio_thread_timer_tick_;
   int hang_failures_;
+
+#if defined(OS_WIN)
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_for_testing_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerHelper);
 };
@@ -191,6 +207,9 @@ AudioManager* AudioManager::CreateWithHangTimer(
 
 // static
 AudioManager* AudioManager::CreateForTesting() {
+#if defined(OS_WIN)
+  g_helper.Pointer()->InitializeCOMForTesting();
+#endif
   return Create(g_helper.Pointer()->fake_log_factory());
 }
 

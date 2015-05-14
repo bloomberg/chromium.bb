@@ -37,7 +37,6 @@ using ::testing::Gt;
 using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 using ::testing::Return;
-using base::win::ScopedCOMInitializer;
 
 namespace media {
 
@@ -231,9 +230,10 @@ static AudioOutputStream* CreateDefaultAudioOutputStream(
 TEST(WASAPIAudioOutputStreamTest, HardwareSampleRate) {
   // Skip this test in exclusive mode since the resulting rate is only utilized
   // for shared mode streams.
+  if (ExclusiveModeIsEnabled())
+    return;
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
-                          ExclusiveModeIsEnabled());
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()));
 
   // Default device intended for games, system notification sounds,
   // and voice commands.
@@ -449,7 +449,8 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
 // certain set of audio parameters and a sample rate of 48kHz.
 // The expected outcomes of each setting in this test has been derived
 // manually using log outputs (--v=1).
-TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt48kHz) {
+// It's disabled by default because a flag is required to enable exclusive mode.
+TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeBufferSizesAt48kHz) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
                           ExclusiveModeIsEnabled());
@@ -497,7 +498,8 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt48kHz) {
 // certain set of audio parameters and a sample rate of 44.1kHz.
 // The expected outcomes of each setting in this test has been derived
 // manually using log outputs (--v=1).
-TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt44kHz) {
+// It's disabled by default because a flag is required to enable exclusive mode.
+TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeBufferSizesAt44kHz) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
                           ExclusiveModeIsEnabled());
@@ -552,7 +554,8 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeBufferSizesAt44kHz) {
 
 // Verify that we can open and start the output stream in exclusive mode at
 // the lowest possible delay at 48kHz.
-TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt48kHz) {
+// It's disabled by default because a flag is required to enable exclusive mode.
+TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt48kHz) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager.get()) &&
                           ExclusiveModeIsEnabled());
@@ -587,7 +590,8 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt48kHz) {
 
 // Verify that we can open and start the output stream in exclusive mode at
 // the lowest possible delay at 44.1kHz.
-TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt44kHz) {
+// It's disabled by default because a flag is required to enable exclusive mode.
+TEST(WASAPIAudioOutputStreamTest, DISABLED_ExclusiveModeMinBufferSizeAt44kHz) {
   ABORT_AUDIO_TEST_IF_NOT(ExclusiveModeIsEnabled());
   scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
 

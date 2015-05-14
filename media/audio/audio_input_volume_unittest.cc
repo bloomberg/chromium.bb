@@ -38,13 +38,7 @@ double GetVolumeAfterSetVolumeOnLinux(AudioInputStream* ais,
 
 class AudioInputVolumeTest : public ::testing::Test {
  protected:
-  AudioInputVolumeTest()
-      : audio_manager_(AudioManager::CreateForTesting())
-#if defined(OS_WIN)
-       , com_init_(base::win::ScopedCOMInitializer::kMTA)
-#endif
-  {
-  }
+  AudioInputVolumeTest() : audio_manager_(AudioManager::CreateForTesting()) {}
 
   bool HasCoreAudioAndInputDevices() {
 #if defined(OS_WIN)
@@ -87,10 +81,6 @@ class AudioInputVolumeTest : public ::testing::Test {
   }
 
   scoped_ptr<AudioManager> audio_manager_;
-
-#if defined(OS_WIN)
-  base::win::ScopedCOMInitializer com_init_;
-#endif
 };
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

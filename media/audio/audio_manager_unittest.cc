@@ -33,12 +33,7 @@ namespace media {
 // Windows.
 class AudioManagerTest : public ::testing::Test {
  protected:
-  AudioManagerTest()
-      : audio_manager_(AudioManager::CreateForTesting())
-#if defined(OS_WIN)
-      , com_init_(base::win::ScopedCOMInitializer::kMTA)
-#endif
-  {
+  AudioManagerTest() : audio_manager_(AudioManager::CreateForTesting()) {
     // Wait for audio thread initialization to complete.  Otherwise the
     // enumeration type may not have been set yet.
     base::WaitableEvent event(false, false);
@@ -155,11 +150,6 @@ class AudioManagerTest : public ::testing::Test {
 
   FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<AudioManager> audio_manager_;
-
-#if defined(OS_WIN)
-  // The MMDevice API requires COM to be initialized on the current thread.
-  base::win::ScopedCOMInitializer com_init_;
-#endif
 };
 
 // Test that devices can be enumerated.

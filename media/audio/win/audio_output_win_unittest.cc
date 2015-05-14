@@ -30,8 +30,6 @@ using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
 
-using base::win::ScopedCOMInitializer;
-
 namespace media {
 
 static const wchar_t kAudioFile1_16b_m_16K[]
@@ -421,9 +419,6 @@ TEST(WinAudioTest, PCMWaveStreamPlayTwice200HzTone44Kss) {
 TEST(WinAudioTest, PCMWaveStreamPlay200HzToneLowLatency) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
-
-  // The WASAPI API requires a correct COM environment.
-  ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
 
   // Use 10 ms buffer size for WASAPI and 50 ms buffer size for Wave.
   // Take the existing native sample rate into account.
