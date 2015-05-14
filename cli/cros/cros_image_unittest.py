@@ -344,3 +344,17 @@ class BrilloImageOperationTest(cros_test_lib.ProgressBarTestCase,
     self.AssertLogsContain(logs, 'Building base image', inverted=True)
     self.AssertLogsContain(logs, 'Building developer image')
     self.AssertLogsContain(logs, 'Building test image', inverted=True)
+
+  def testParseOutputSummarize(self):
+    """Test that the summary is logged correctly."""
+    events = ['operation: summarize',
+              'INFO    : foo',
+              'operation: done summarize']
+
+    queue = multiprocessing.Queue()
+    op = BrilloImageOperationFake(queue)
+    with cros_test_lib.LoggingCapturer() as logs:
+      op.Run(self.BrilloImageFake, events, queue)
+
+    # Check that the logs contain the INFO message in func.
+    self.AssertLogsContain(logs, 'foo')
