@@ -6,6 +6,7 @@
 #define ASH_METRICS_USER_METRICS_RECORDER_H_
 
 #include "ash/ash_export.h"
+#include "ash/metrics/task_switch_metrics_recorder.h"
 #include "base/timer/timer.h"
 
 namespace ash {
@@ -167,6 +168,8 @@ class ASH_EXPORT UserMetricsRecorder {
 
   // The periodic timer that triggers metrics to be recorded.
   base::RepeatingTimer<UserMetricsRecorder> timer_;
+
+  TaskSwitchMetricsRecorder task_switch_metrics_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorder);
 };

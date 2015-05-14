@@ -262,12 +262,16 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case ash::UMA_LAUNCHER_LAUNCH_TASK:
       base::RecordAction(base::UserMetricsAction("Launcher_LaunchTask"));
+      task_switch_metrics_recorder_.OnTaskSwitch(
+          TaskSwitchMetricsRecorder::kShelf);
       break;
     case ash::UMA_LAUNCHER_MINIMIZE_TASK:
       base::RecordAction(base::UserMetricsAction("Launcher_MinimizeTask"));
       break;
     case ash::UMA_LAUNCHER_SWITCH_TASK:
       base::RecordAction(base::UserMetricsAction("Launcher_SwitchTask"));
+      task_switch_metrics_recorder_.OnTaskSwitch(
+          TaskSwitchMetricsRecorder::kShelf);
       break;
     case UMA_MAXIMIZE_MODE_DISABLED:
       base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));

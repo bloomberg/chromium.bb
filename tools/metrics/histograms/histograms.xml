@@ -745,6 +745,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.Shelf.TimeBetweenNavigateToTaskSwitches" units="seconds">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    The number of seconds between contiguous task switch user actions triggered
+    by the Shelf buttons where the user activates a different user-predicatble
+    task. Task switches from other sources are ignored and do not affect this
+    metric. In other words, if a user performs the following steps (1) launch
+    task 'A' from the Shelf (2) Alt+Tab to task 'Z' (3) launch task 'B' from the
+    Shelf, then this will result in a sample recorded for the time delta between
+    launching tasks 'A' and 'B'.
+  </summary>
+</histogram>
+
 <histogram name="Ash.ShelfAlignmentOverTime" enum="ShelfAlignmentValue">
   <owner>kuscher@google.com</owner>
   <summary>
