@@ -9,8 +9,8 @@
 #	The latest version can be obtained from
 #		http://www.linux-usb.org/usb.ids
 #
-# Version: 2015.03.31
-# Date:    2015-03-31 20:34:09
+# Version: 2015.05.05
+# Date:    2015-05-05 20:34:11
 #
 
 # Vendors, devices and interfaces. Please keep sorted.
@@ -224,6 +224,7 @@
 	0701  ScanJet 5300c/5370c
 	0704  DeskJet 825c
 	0705  ScanJet 4400c
+	070c  Personal Media Drive
 	0711  OfficeJet K80
 	0712  DeskJet 1180c
 	0714  Printing Support
@@ -1483,6 +1484,7 @@
 	0600  Digital Pen SU-1B
 	0610  CS-15 (Internet Stick 3G modem)
 	0661  Lumia 920
+	0720  X (RM-980)
 	0800  Connectivity Cable DKU-5
 	0801  Data Cable DKU-6
 	0802  CA-42 Phone Parent
@@ -2258,7 +2260,7 @@
 	0006  LCD Tablet (12x9)
 	0008  Tablet (3x2.25)
 0461  Primax Electronics, Ltd
-	0010  HP Keyboard
+	0010  HP PR1101U / Primax PMX-KPR1101U Keyboard
 	0300  G2-300 Scanner
 	0301  G2E-300 Scanner
 	0302  G2-300 #2 Scanner
@@ -2490,7 +2492,7 @@
 	b305  BT Mini-Receiver
 	bfe4  Premium Optical Wheel Mouse
 	c000  N43 [Pilot Mouse]
-	c001  N48/M-BB48 [FirstMouse Plus]
+	c001  N48/M-BB48/M-UK96A [FirstMouse Plus]
 	c002  M-BA47 [MouseMan Plus]
 	c003  MouseMan
 	c004  WingMan Gaming Mouse
@@ -2973,8 +2975,9 @@
 	4254  BUA-100 Bluetooth Adapter
 	ac01  Savi 7xx
 	ad01  GameCom 777 5.1 Headset
+	c008  Audio 655 DSP
 	c00e  Blackwire C310 headset
-0480  Toshiba America Info. Systems, Inc.
+0480  Toshiba America Inc
 	0001  InTouch Module
 	0004  InTouch Module
 	0011  InTouch Module
@@ -4305,6 +4308,8 @@
 	004f  SK-9020 keyboard
 	1766  HID Monitor Controls
 	2004  Bluetooth 4.0 [Broadcom BCM20702A0]
+	300b  Atheros AR3012 Bluetooth
+	300d  Atheros AR3012 Bluetooth
 	7025  HP HD Webcam
 	9304  Hub
 	f01c  TT1280DA DVB-T TV Tuner
@@ -4712,6 +4717,7 @@
 	3296  ML-2580N Mono Laser Printer
 	3297  ML-191x/ML-252x Laser Printer
 	329f  CLP-325 Color Laser Printer
+	3301  ML-1660 Series
 	330c  ML-1865
 	3310  ML-331x Series Laser Printer
 	3315  ML-2540 Series Laser Printer
@@ -4851,7 +4857,7 @@
 	685c  GT-I9250 Phone [Galaxy Nexus] (Mass storage mode)
 	685d  GT-I9100 Phone [Galaxy S II] (Download mode)
 	685e  GT-I9100 / GT-C3350 Phones (USB Debugging mode)
-	6860  GT-I9100 Phone [Galaxy S II], GT-I9300 Phone [Galaxy S III], GT-P7500 [Galaxy Tab 10.1] , GT-I9500 [Galaxy S 4]
+	6860  Galaxy (MTP)
 	6863  GT-I9500 [Galaxy S4] / GT-I9250 [Galaxy Nexus] (network tethering)
 	6864  GT-I9070 (network tethering, USB debugging enabled)
 	6865  GT-I9300 Phone [Galaxy S III] (PTP mode)
@@ -4977,6 +4983,7 @@
 	b330  Asus 720p CMOS webcam
 	b354  UVC 1.00 device HD UVC WebCam
 	b394  Integrated Camera
+	b3f6  HD WebCam (Acer)
 04f3  Elan Microelectronics Corp.
 	000a  Touchscreen
 	0103  ActiveJet K-2024 Multimedia Keyboard
@@ -6611,6 +6618,7 @@
 	0829  BigDisk Extreme+
 	100c  Rugged Triple Interface Mobile Hard Drive
 	1010  Desktop Hard Drive
+	1018  Desktop Hard Drive
 	1019  Desktop Hard Drive
 	1021  Little Disk
 	1027  iamaKey V2
@@ -6806,10 +6814,10 @@
 	12a4  iPad 3 (wifi)
 	12a5  iPad 3 (CDMA)
 	12a6  iPad 3 (3G, 16 GB)
-	12a8  iPhone5/5C/5S
+	12a8  iPhone5/5C/5S/6
 	12a9  iPad 2
 	12aa  iPod Touch 5.Gen [A1421]
-	12ab  iPad 4 (WiFi, 32GB)
+	12ab  iPad 4/Mini1
 	1300  iPod Shuffle
 	1301  iPod Shuffle 2.Gen
 	1302  iPod Shuffle 3.Gen
@@ -7315,6 +7323,7 @@
 	0736  microSD Reader/Writer
 	0741  microSD Card Reader
 	0743  SDXC and microSDXC CardReader
+	0745  Logilink CR0012
 	0760  USB 2.0 Card Reader/Writer
 	0761  Genesys Mass Storage Device
 	0780  USBFS DFU Adapter
@@ -8694,6 +8703,7 @@
 	1221  CardMan 1221
 	1784  CardMan 6020
 	3021  CardMan 3121
+	3022  CardMan 3021
 	3610  CardMan 3620
 	3621  CardMan 3621
 	3821  CardMan 3821
@@ -9026,7 +9036,7 @@
 	0c0c  PL806 Scanner
 	0c26  OpticBook 4600 Scanner
 	0c2b  Mobile Office D428 Scanner
-	0e08  Plustek OpticBook A300 Scanner
+	0e08  OpticBook A300 Scanner
 	1300  OpticBook 3800 Scanner
 	1301  OpticBook 4800 Scanner
 07b4  Olympus Optical Co., Ltd
@@ -10180,6 +10190,7 @@
 	000c  Gigabeat F (mtp)
 	0010  Gigabeat S (mtp)
 	0200  Integrated Bluetooth (Taiyo Yuden)
+	021c  Atheros AR3012 Bluetooth
 	0301  PCX1100U Cable Modem (WDM)
 	0302  PCX2000 Cable Modem (WDM)
 	0305  Cable Modem PCX3000
@@ -10583,6 +10594,7 @@
 0a00  Liquid Audio
 0a01  ViA, Inc.
 0a05  Unknown Manufacturer
+	0001  Hub
 	7211  hub
 0a07  Ontrak Control Systems Inc.
 	0064  ADU100 Data Acquisition Interface
@@ -10776,6 +10788,7 @@
 	2150  BCM2046 Bluetooth Device
 	2151  Bluetooth
 	2154  BCM92046DG-CL1ROM Bluetooth 2.1 UHE Dongle
+	216c  BCM43142A0 Bluetooth Device
 	217d  HP Bluethunder
 	217f  BCM2045B (BDC-2.1)
 	2198  Bluetooth 3.0 Device
@@ -11133,6 +11146,7 @@
 	17ba  N10 Nano 802.11n Network Adapter [Realtek RTL8192CU]
 	17c7  WL-330NUL
 	17c9  USB-AC53 802.11a/b/g/n/ac Wireless Adapter [Broadcom BCM43526]
+	17cb  Broadcom BCM20702A0 Bluetooth
 	17d1  AC51 802.11a/b/g/n/ac Wireless Adapter [Mediatek MT7610/Ralink RT2870]
 	4c80  Transformer Pad TF300TG
 	4c90  Transformer Pad Infinity TF700
@@ -11291,7 +11305,7 @@
 0b7b  Taiko Denki Co., Ltd
 0b7c  ITRAN Communications, Ltd
 0b7d  Astrodesign, Inc.
-0b81  id3 Semiconductors
+0b81  id3 Technologies
 	0001  Biothentic II smartcard reader with fingerprint sensor
 	0002  DFU-Enabled Devices (DFU)
 	0012  BioPAD biometric module (DFU + CDC)
@@ -11554,6 +11568,7 @@
 	0ca5  Android Phone [Evo Shift 4G]
 	0cae  T-Mobile MyTouch 4G Slide [Doubleshot]
 	0dea  M7_UL [HTC One]
+	0f25  One M8
 	0f64  Desire 601
 	0ff8  Desire HD (Tethering Mode)
 	0ff9  Desire / Desire HD / Hero / Thunderbolt (Charge Mode)
@@ -13236,6 +13251,7 @@
 	0169  Xperia S
 	0172  Xperia P
 	0177  Xperia Ion [Mass Storage]
+	01bb  D5803 [Xperia Z3 Compact] (MTP mode)
 	0dde  Xperia Mini Pro Bootloader
 	1010  WMC Modem
 	10af  V640i Phone [PictBridge]
@@ -14082,6 +14098,28 @@
 	1003  IBSecureCam-P
 	1004  IBSecureCam-O
 	1005  IBSecureCam-N
+	1006  Mini IO-Board
+	2000  Zygmunt Krynicki Lantern Brightness Sensor
+	2048  Housedillon.com MRF49XA Transciever
+	2222  LabConnect Signalgenerator
+	2300  Keyboardio Keyboardio Model 01 Bootloader
+	2301  Keyboardio Keyboardio Model 01
+	2337  /Dev or SlashDev /Net
+	3000  lloyd3000
+	3333  LabConnect Digitalnetzteil
+	5222  telavivmakers attami
+	5a22  ikari_01 sd2snes
+	7bd0  pokey9000 Tiny Bit Dingus
+	abd0  tibounise ADB converter
+	beef  Modal MC-USB
+	c0f5  unethi PERswitch
+	ca1c  KnightOS Hub
+	ca1d  KnightOS MTP Device
+	cafe  ii iigadget
+	dada  Rebel Technology OWL
+	dead  chaosfield.at AVR-Ruler
+	fa11  moonglow OpenXHC
+	feed  ProgramGyar AVR-IR Sender
 120e  Hudson Soft Co., Ltd
 120f  Magellan
 	524e  RoadMate 1475T
@@ -14092,6 +14130,8 @@
 	001c  RP255 Guitar Multi-Effects Processor
 121e  Jungsoft Co., Ltd
 	3403  Muzio JM250 Audio Player
+1221  Unknown manufacturer
+	3234  Disk (Thumb drive)
 1223  SKYCABLE ENTERPRISE. CO., LTD.
 1228  Datapaq Limited
 	0012  Q18 Data Logger
@@ -14279,8 +14319,8 @@
 	140b  EC1260 Wireless Data Modem HSD USB Card
 	140c  E180v
 	1412  EC168c
-	1436  E173 3G Modem (modem-mode)
-	1446  E1552/E1800/E173 (HSPA modem)
+	1436  Broadband stick
+	1446  Broadband stick (modem on)
 	1465  K3765 HSPA
 	14c3  K5005 Vodafone LTE/UMTS/GSM Modem/Networkcard
 	14c8  K5005 Vodafone LTE/UMTS/GSM MOdem/Networkcard
@@ -14300,7 +14340,7 @@
 	1575  K5150 LTE modem
 	15ca  E3131 3G/UMTS/HSPA+ Modem (Mass Storage Mode)
 	1805  AT&T Go Phone U2800A phone
-	1c05  E173s 3G broadband stick (modem on)
+	1c05  Broadband stick (modem on)
 	1c0b  E173s 3G broadband stick (modem off)
 	1c20  R205 Mobile WiFi (Charging)
 	1d50  ET302s TD-SCDMA/TD-HSDPA Mobile Broadband
@@ -15221,6 +15261,8 @@
 	0404  WMA9109 UMTS Phone
 	0600  Vodafone VDA GPS / Toschiba Protege G710
 	0804  WP-S1 Phone
+1617  Sony Corp.
+	2002  NVX-P1 Personal Navigation System
 1619  L & K Precision Technology Co., Ltd.
 1621  Wionics Research
 1628  Stonestreet One, Inc.
@@ -15414,6 +15456,8 @@
 	05e4  Free shared USB VID/PID pair for MIDI devices
 	06b4  USB2LPT with 2 interfaces
 	06b5  USB2LPT with 3 interfaces (native, HID, printer)
+	074e  DSP-Weuffen USB-HPI-Programmer
+	074f  DSP-Weuffen USB2-HPI-Programmer
 	0762  Osmocom SIMtrace
 	076b  OpenPCD 13.56MHz RFID Reader
 	076c  OpenPICC 13.56MHz RFID Simulator (native)
@@ -15487,6 +15531,7 @@
 	0011  MIDI-USB 1x1
 170d  Avnera
 1711  Leica Microsystems
+	0101  DFC-365FX camera
 	3020  IC80 HD Camera
 1724  Meyer Instruments (MIS)
 	0115  PAXcam5
@@ -15540,9 +15585,12 @@
 1748  MQP Electronics
 	0101  Packet-Master USB12
 174c  ASMedia Technology Inc.
-	5106  Transcend StoreJet 25M3
+	1153  ASM2115 SATA 6Gb/s bridge
+	2074  ASM1074 High-Speed hub
+	3074  ASM1074 SuperSpeed hub
+	5106  ASM1051 SATA 3Gb/s bridge
 	5136  ASM1053 SATA 6Gb/s bridge
-	55aa  ASM1051 SATA 3Gb/s bridge
+	55aa  ASM1051E SATA 6Gb/s bridge, ASM1053E SATA 6Gb/s bridge, ASM1153 SATA 3Gb/s bridge
 174f  Syntek
 	1105  SM-MS/Pro-MMC-XD Card Reader
 	110b  HP Webcam
@@ -16796,6 +16844,16 @@
 	648b  TEW-648UBM 802.11n 150Mbps Micro Wireless N Adapter [Realtek RTL8188CUS]
 2101  ActionStar
 	0201  SIIG 4-to-2 Printer Switch
+2109  VIA Labs, Inc.
+	0700  VL700 SATA 3Gb/s bridge
+	0701  VL701 SATA 3Gb/s bridge
+	0810  VL81x Hub
+	0811  Hub
+	0812  VL812 Hub
+	2811  Hub
+	2812  VL812 Hub
+	3431  Hub
+	8110  Hub
 2149  Advanced Silicon S.A.
 	211b  Touchscreen Controller
 	2703  TS58xxA/TC56xxA [CoolTouch]
@@ -16990,6 +17048,9 @@
 2478  Tripp-Lite
 	2008  U209-000-R Serial Port
 249c  M2Tech s.r.l.
+24e1  Paratronic
+	3001  Adp-usb
+	3005  Radius
 2632  TwinMOS
 	3209  7-in-1 Card Reader
 2639  Xsens
@@ -17125,6 +17186,8 @@
 	803c  Arduino Explora (CDC ACM)
 	8041  Arduino Yun (CDC ACM)
 	804d  Arduino Zero Pro (CDC ACM)
+2a37  RTD Embedded Technologies, Inc.
+	5110  UPS35110/UPS25110
 2a45  Meizu Corp.
 	0001  MX Phone (BICR)
 	0c02  MX Phone (MTP & ADB)
