@@ -80,16 +80,18 @@ bool IOSurfaceLayerHelper::CanDraw() {
       [layer_ setAsynchronous:NO];
   }
 
-  // Add an instantaneous blip to the PendingSwapAck state to indicate
-  // that CoreAnimation asked if a frame is ready. A blip up to to 3 (usually
-  // from 2, indicating that a swap ack is pending) indicates that we
-  // requested a draw. A blip up to 1 (usually from 0, indicating there is no
-  // pending swap ack) indicates that we did not request a draw. This would
-  // be more natural to do with a tracing pseudo-thread
-  // http://crbug.com/366300
-  TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, needs_display_ ? 3 : 1);
-  TRACE_COUNTER_ID1("browser", "PendingSwapAck", this,
-                    has_pending_frame_ ? 2 : 0);
+  if (needs_display_) {
+    // If there is a draw pending then increase the signal from 2 to 3, to
+    // indicate that we are in the state where there is a swap pending and
+    // CoreAnimation has been committed to draw it.
+    TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 3);
+  } else {
+    // If there is not a draw pending, then give an instantaneous blip up from
+    // 0 to 1, indicating that CoreAnimation was ready to draw a frame but we
+    // were not (or didn't have new content to draw).
+    TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 1);
+    TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 0);
+  }
 
   return needs_display_;
 }

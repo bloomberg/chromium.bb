@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/image_transport_surface_fbo_mac.h"
 
+#include "base/trace_event/trace_event.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/image_transport_surface_calayer_mac.h"
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
@@ -169,6 +170,7 @@ void ImageTransportSurfaceFBO::AdjustBufferAllocation() {
 }
 
 bool ImageTransportSurfaceFBO::SwapBuffers() {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::SwapBuffers");
   return SwapBuffersInternal();
 }
 
@@ -191,6 +193,7 @@ bool ImageTransportSurfaceFBO::SwapBuffersInternal() {
 void ImageTransportSurfaceFBO::SendSwapBuffers(uint64 surface_handle,
                                                const gfx::Size pixel_size,
                                                float scale_factor) {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::SendSwapBuffers");
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_handle = surface_handle;
   params.size = pixel_size;
@@ -207,6 +210,7 @@ void ImageTransportSurfaceFBO::SetRendererID(int renderer_id) {
 
 bool ImageTransportSurfaceFBO::PostSubBuffer(
     int x, int y, int width, int height) {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::PostSubBuffer");
   return SwapBuffersInternal();
 }
 
@@ -228,6 +232,7 @@ void* ImageTransportSurfaceFBO::GetDisplay() {
 
 void ImageTransportSurfaceFBO::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::OnBufferPresented");
   SetRendererID(params.renderer_id);
   storage_provider_->SwapBuffersAckedByBrowser(params.disable_throttling);
 }
