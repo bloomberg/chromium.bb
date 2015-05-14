@@ -821,6 +821,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
+#if DCHECK_IS_ON()
   // For site-per-process, both ClassifyNavigation methods get it wrong (see
   // http://crbug.com/464014) so don't worry about a mismatch if that's the
   // case.
@@ -832,9 +833,10 @@ bool NavigationControllerImpl::RendererDidNavigate(
     // TODO(avi): Work this out.
     if (details->type != NAVIGATION_TYPE_SAME_PAGE &&
         new_type != NAVIGATION_TYPE_SAME_PAGE) {
-      CHECK_EQ(details->type, new_type);
+      DCHECK_EQ(details->type, new_type);
     }
   }
+#endif  // DCHECK_IS_ON()
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = AreURLsInPageNavigation(rfh->GetLastCommittedURL(),
