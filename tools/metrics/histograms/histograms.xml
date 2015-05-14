@@ -35298,6 +35298,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sdch3.AdvertisedWithSecureScheme" enum="BooleanHttps">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Whether an SDCH dictionary was advertised over a secure scheme or not. This
+    histogram is logged inside SdchManager at advertisement time.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.Advertisement_Count">
   <owner>rdsmith@chromium.org</owner>
   <summary>
