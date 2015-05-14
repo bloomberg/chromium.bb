@@ -33,7 +33,10 @@ class AppBannerDataFetcherUnitTest : public testing::Test {
   }
 
   static bool IsManifestValid(const content::Manifest& manifest) {
-    return AppBannerDataFetcher::IsManifestValidForWebApp(manifest);
+    // The second argument is the web_contents pointer, which is used for
+    // developer debug logging to the console. The logging is skipped inside the
+    // method if a null web_contents pointer is provided, so this is safe.
+    return AppBannerDataFetcher::IsManifestValidForWebApp(manifest, nullptr);
   }
 };
 

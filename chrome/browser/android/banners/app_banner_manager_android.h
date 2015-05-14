@@ -9,6 +9,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
+#include "chrome/browser/banners/app_banner_debug_log.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 
 namespace banners {
@@ -57,6 +58,10 @@ class AppBannerManagerAndroid : public AppBannerManager {
   bool HandleNonWebApp(const std::string& platform,
                        const GURL& url,
                        const std::string& id) override;
+
+  bool CheckPlatformAndId(const std::string& platform, const std::string& id);
+
+  bool CheckFetcherMatchesContents();
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;

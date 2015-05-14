@@ -51,7 +51,7 @@ void AppBannerManagerAndroid::ReplaceWebContents(JNIEnv* env,
 bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
                                               const GURL& url,
                                               const std::string& id) {
-  if (platform != kPlayPlatform || id.empty())
+  if (!CheckPlatformAndId(platform, id))
     return false;
 
   banners::TrackDisplayEvent(DISPLAY_EVENT_BANNER_REQUESTED);
@@ -71,6 +71,33 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
   return true;
 }
 
+bool AppBannerManagerAndroid::CheckPlatformAndId(const std::string& platform,
+                                                 const std::string& id) {
+  if (platform != kPlayPlatform) {
+    banners::OutputDeveloperDebugMessage(
+        web_contents(), platform + banners::kIgnoredNotSupportedOnAndroid);
+    return false;
+  }
+  if (id.empty()) {
+    banners::OutputDeveloperDebugMessage(web_contents(), banners::kIgnoredNoId);
+    return false;
+  }
+  return true;
+}
+
+bool AppBannerManagerAndroid::CheckFetcherMatchesContents() {
+  if (!web_contents()) {
+    return false;
+  }
+  if (!data_fetcher() ||
+      data_fetcher()->validated_url() != web_contents()->GetURL()) {
+    banners::OutputDeveloperNotShownMessage(
+        web_contents(), banners::kUserNavigatedBeforeBannerShown);
+    return false;
+  }
+  return true;
+}
+
 AppBannerDataFetcher* AppBannerManagerAndroid::CreateAppBannerDataFetcher(
     base::WeakPtr<Delegate> weak_delegate,
     const int ideal_icon_size) {
@@ -84,10 +111,8 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(JNIEnv* env,
                                                     jstring japp_title,
                                                     jstring japp_package,
                                                     jstring jicon_url) {
-  if (!data_fetcher() || !web_contents()
-      || data_fetcher()->validated_url() != web_contents()->GetURL()) {
+  if (!CheckFetcherMatchesContents())
     return false;
-  }
 
   base::android::ScopedJavaLocalRef<jobject> native_app_data;
   native_app_data.Reset(env, japp_data);

@@ -138,9 +138,14 @@ class AppBannerDataFetcher
   // Returns whether the banner should be shown.
   bool CheckIfShouldShowBanner();
 
+  // Returns whether the fetcher is active and web contents have not been
+  // closed.
+  bool CheckFetcherIsStillAlive(content::WebContents* web_contents);
+
   // Returns whether the given Manifest is following the requirements to show
   // a web app banner.
-  static bool IsManifestValidForWebApp(const content::Manifest& manifest);
+  static bool IsManifestValidForWebApp(const content::Manifest& manifest,
+                                       content::WebContents* web_contents);
 
   const int ideal_icon_size_;
   const base::WeakPtr<Delegate> weak_delegate_;

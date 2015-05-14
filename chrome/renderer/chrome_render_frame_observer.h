@@ -31,6 +31,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
       const gfx::Size& thumbnail_max_size_pixels);
   void OnPrintNodeUnderContextMenu();
   void OnAppBannerPromptRequest(int request_id, const std::string& platform);
+  void OnAppBannerDebugMessageRequest(const std::string& message);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderFrameObserver);
 };

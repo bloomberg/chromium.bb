@@ -210,6 +210,8 @@
       'browser/autofill/validation_rules_storage_factory.h',
       'browser/banners/app_banner_data_fetcher.cc',
       'browser/banners/app_banner_data_fetcher.h',
+      'browser/banners/app_banner_debug_log.cc',
+      'browser/banners/app_banner_debug_log.h',
       'browser/banners/app_banner_manager.cc',
       'browser/banners/app_banner_manager.h',
       'browser/banners/app_banner_metrics.cc',

@@ -462,6 +462,11 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_AppBannerAccepted,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_AppBannerDismissed,
                     int32_t /* request_id */)
 
+// Asks the renderer to log a debug message to console regarding an
+// app banner.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_AppBannerDebugMessageRequest,
+                    std::string /* message */)
+
 // Notification that the page has an OpenSearch description document
 // associated with it.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,
