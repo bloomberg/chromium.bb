@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "content/public/test/layouttest_support.h"
 #include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/binding_helpers.h"
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
@@ -2866,9 +2865,9 @@ void TestRunner::GetManifestThen(v8::Local<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
 
-  FetchManifest(web_view_, web_view_->mainFrame()->document().manifestURL(),
-      base::Bind(&TestRunner::GetManifestCallback,
-                 weak_factory_.GetWeakPtr(),
+  delegate_->FetchManifest(
+      web_view_, web_view_->mainFrame()->document().manifestURL(),
+      base::Bind(&TestRunner::GetManifestCallback, weak_factory_.GetWeakPtr(),
                  base::Passed(&task)));
 }
 

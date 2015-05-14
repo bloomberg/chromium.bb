@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -24,6 +25,8 @@ class WebGamepad;
 class WebGamepads;
 class WebHistoryItem;
 class WebLayer;
+class WebURLResponse;
+class WebView;
 struct WebRect;
 struct WebSize;
 struct WebURLError;
@@ -200,6 +203,13 @@ class WebTestDelegate {
   // Returns a text dump the back/forward history for the WebView associated
   // with the given WebTestProxyBase.
   virtual std::string DumpHistoryForWindow(WebTestProxyBase* proxy) = 0;
+
+  // Fetch the manifest for a given WebView from the given url.
+  virtual void FetchManifest(
+      blink::WebView* view,
+      const GURL& url,
+      const base::Callback<void(const blink::WebURLResponse& response,
+                                const std::string& data)>& callback) = 0;
 
   // Sends a message to the LayoutTestPermissionManager in order for it to
   // update its database.

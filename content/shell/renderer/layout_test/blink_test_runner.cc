@@ -604,6 +604,14 @@ std::string BlinkTestRunner::DumpHistoryForWindow(WebTestProxyBase* proxy) {
                              current_entry_indexes_[pos]);
 }
 
+void BlinkTestRunner::FetchManifest(
+      blink::WebView* view,
+      const GURL& url,
+      const base::Callback<void(const blink::WebURLResponse& response,
+                                const std::string& data)>& callback) {
+  ::content::FetchManifest(view, url, callback);
+}
+
 void BlinkTestRunner::SetPermission(const std::string& name,
                                     const std::string& value,
                                     const GURL& origin,
