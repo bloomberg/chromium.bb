@@ -18,6 +18,10 @@
 #include <sys/param.h>
 #endif
 
+#if defined(OS_CHROMEOS)
+#include <dlfcn.h>
+#endif
+
 #include <map>
 #include <vector>
 
@@ -267,6 +271,38 @@ class ChromeOSUserData {
       SlotReadyCallbackList;
   SlotReadyCallbackList tpm_ready_callback_list_;
 };
+
+class ScopedChapsLoadFixup {
+  public:
+    ScopedChapsLoadFixup();
+    ~ScopedChapsLoadFixup();
+
+  private:
+#if defined(COMPONENT_BUILD)
+    void *chaps_handle_;
+#endif
+};
+
+#if defined(COMPONENT_BUILD)
+
+ScopedChapsLoadFixup::ScopedChapsLoadFixup() {
+  // HACK: libchaps links the system protobuf and there are symbol conflicts
+  // with the bundled copy. Load chaps with RTLD_DEEPBIND to workaround.
+  chaps_handle_ = dlopen(kChapsPath, RTLD_LOCAL | RTLD_NOW | RTLD_DEEPBIND);
+}
+
+ScopedChapsLoadFixup::~ScopedChapsLoadFixup() {
+  // LoadModule() will have taken a 2nd reference.
+  if (chaps_handle_)
+    dlclose(chaps_handle_);
+}
+
+#else
+
+ScopedChapsLoadFixup::ScopedChapsLoadFixup() {}
+ScopedChapsLoadFixup::~ScopedChapsLoadFixup() {}
+
+#endif  // defined(COMPONENT_BUILD)
 #endif  // defined(OS_CHROMEOS)
 
 class NSSInitSingleton {
@@ -360,6 +396,8 @@ class NSSInitSingleton {
     // This tries to load the Chaps module so NSS can talk to the hardware
     // TPM.
     if (!tpm_args->chaps_module) {
+      ScopedChapsLoadFixup chaps_loader;
+
       DVLOG(3) << "Loading chaps...";
       tpm_args->chaps_module = LoadModule(
           kChapsModuleName,
