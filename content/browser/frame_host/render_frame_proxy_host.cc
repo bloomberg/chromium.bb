@@ -130,20 +130,31 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
 
 bool RenderFrameProxyHost::InitRenderFrameProxy() {
   DCHECK(!render_frame_proxy_created_);
-  // The process may (if we're sharing a process with another host that already
-  // initialized it) or may not (we have our own process or the old process
-  // crashed) have been initialized. Calling Init multiple times will be
-  // ignored, so this is safe.
-  if (!GetProcess()->Init())
-    return false;
 
-  DCHECK(GetProcess()->HasConnection());
+  // It is possible to reach this when the process is dead (in particular, when
+  // creating proxies from CreateProxiesForChildFrame).  In that case, don't
+  // create the proxy.  The process shouldn't be resurrected just to create
+  // RenderFrameProxies; it should be restored only if it needs to host a
+  // RenderFrame.  When that happens, the process will be reinitialized, and
+  // all necessary proxies, including any of the ones we skipped here, will be
+  // created by CreateProxiesForSiteInstance. See https://crbug.com/476846
+  if (!GetProcess()->HasConnection())
+    return false;
 
   int parent_routing_id = MSG_ROUTING_NONE;
   if (frame_tree_node_->parent()) {
-    parent_routing_id = frame_tree_node_->parent()
-                            ->render_manager()
-                            ->GetRoutingIdForSiteInstance(site_instance_.get());
+    // It is safe to use GetRenderFrameProxyHost to get the parent proxy, since
+    // new child frames always start out as local frames, so a new proxy should
+    // never have a RenderFrameHost as a parent.
+    RenderFrameProxyHost* parent_proxy =
+        frame_tree_node_->parent()->render_manager()->GetRenderFrameProxyHost(
+            site_instance_.get());
+    CHECK(parent_proxy);
+    // When this is called, the parent RenderFrameProxy should already exist.
+    // The FrameNew_NewFrameProxy will crash on the renderer side if there's no
+    // parent proxy.
+    CHECK(parent_proxy->is_render_frame_proxy_live());
+    parent_routing_id = parent_proxy->GetRoutingID();
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
   }
 

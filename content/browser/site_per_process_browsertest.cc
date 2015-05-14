@@ -889,6 +889,85 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                              "\"done-frame2\"");
 }
 
+// Verify that proxy creation doesn't recreate a crashed process if no frame
+// will be created in it.
+//
+//      1           A                    A          A
+//    / | \       / | \                / | \      / | \    .
+//   2  3  4 ->  B  A  A -> Kill B -> B* A  A -> B* A  A
+//                                                      \  .
+//                                                       A
+//
+// The test kills process B (node 2), creates a child frame of node 4 in
+// process A, and then checks that process B isn't resurrected to create a
+// proxy for the new child frame.  See https://crbug.com/476846.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CreateChildFrameAfterKillingProcess) {
+  // Navigate to a page with three frames: one cross-site and two same-site.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_three_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   |--Site A ------- proxies for B\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+  SiteInstance* b_site_instance =
+      root->child_at(0)->current_frame_host()->GetSiteInstance();
+
+  // Kill the first subframe's renderer (B).
+  RenderProcessHost* child_process =
+      root->child_at(0)->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  // Add a new child frame to the third subframe.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(
+      root->child_at(2)->current_frame_host(),
+      "document.body.appendChild(document.createElement('iframe'));"));
+  frame_observer.Wait();
+
+  // The new frame should have a RenderFrameProxyHost for B, but it should not
+  // be alive, and B should still not have a process (verified by last line of
+  // expected DepictFrameTree output).
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   |--Site A ------- proxies for B\n"
+      "   +--Site A ------- proxies for B\n"
+      "        +--Site A -- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/ (no process)",
+      DepictFrameTree(root));
+  FrameTreeNode* grandchild = root->child_at(2)->child_at(0);
+  RenderFrameProxyHost* grandchild_rfph =
+      grandchild->render_manager()->GetRenderFrameProxyHost(b_site_instance);
+  EXPECT_FALSE(grandchild_rfph->is_render_frame_proxy_live());
+
+  // Navigate the second subframe to b.com to recreate process B.
+  TestNavigationObserver observer(shell()->web_contents());
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/title1.html");
+  NavigateFrameToURL(root->child_at(1), b_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(b_url, observer.last_navigation_url());
+
+  // Ensure that the grandchild RenderFrameProxy in B was created when process
+  // B was restored.
+  EXPECT_TRUE(grandchild_rfph->is_render_frame_proxy_live());
+}
+
 // In A-embed-B-embed-C scenario, verify that killing process B clears proxies
 // of C from the tree.
 //

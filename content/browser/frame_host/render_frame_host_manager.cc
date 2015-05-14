@@ -1347,11 +1347,18 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
   if (delegate_->IsHidden())
     create_render_frame_flags |= CREATE_RF_HIDDEN;
 
-  int opener_route_id = CreateOpenerRenderViewsIfNeeded(
-      old_instance, new_instance, &create_render_frame_flags);
-
   if (pending_render_frame_host_)
     CancelPending();
+
+  // The process for the new SiteInstance may (if we're sharing a process with
+  // another host that already initialized it) or may not (we have our own
+  // process or the existing process crashed) have been initialized. Calling
+  // Init multiple times will be ignored, so this is safe.
+  if (!new_instance->GetProcess()->Init())
+    return;
+
+  int opener_route_id = CreateOpenerRenderViewsIfNeeded(
+      old_instance, new_instance, &create_render_frame_flags);
 
   // Create a non-swapped-out RFH with the given opener.
   pending_render_frame_host_ =
@@ -1435,6 +1442,13 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   // |speculative_render_frame_host_| creation steps otherwise the WebUI
   // won't be properly initialized.
   speculative_web_ui_ = CreateWebUI(url, bindings);
+
+  // The process for the new SiteInstance may (if we're sharing a process with
+  // another host that already initialized it) or may not (we have our own
+  // process or the existing process crashed) have been initialized. Calling
+  // Init multiple times will be ignored, so this is safe.
+  if (!new_instance->GetProcess()->Init())
+    return false;
 
   int create_render_frame_flags = 0;
   int opener_route_id =
