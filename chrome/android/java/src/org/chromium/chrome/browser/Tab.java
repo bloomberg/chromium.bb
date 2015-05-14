@@ -42,13 +42,13 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityHelper;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
 import org.chromium.chrome.browser.tab.SadTabViewFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.toolbar.ToolbarModel;
-import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
@@ -1144,11 +1144,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return The current {ToolbarModelSecurityLevel} for the tab.
+     * @return The current {@link ConnectionSecurityHelperSecurityLevel} for the tab.
      */
     // TODO(tedchoc): Remove this and transition all clients to use ToolbarModel directly.
     public int getSecurityLevel() {
-        return ToolbarModel.getSecurityLevelForWebContents(getWebContents());
+        return ConnectionSecurityHelper.getSecurityLevelForWebContents(getWebContents());
     }
 
     /**
@@ -2451,8 +2451,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 && !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
 
         int securityState = getSecurityLevel();
-        enableHidingTopControls &= (securityState != ToolbarModelSecurityLevel.SECURITY_ERROR
-                && securityState != ToolbarModelSecurityLevel.SECURITY_WARNING);
+        enableHidingTopControls &=
+                (securityState != ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
+                        && securityState != ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING);
 
         enableHidingTopControls &=
                 !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());

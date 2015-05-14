@@ -78,6 +78,7 @@
 #include "chrome/browser/search_engines/template_url_service_android.h"
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 #include "chrome/browser/speech/tts_android.h"
+#include "chrome/browser/ssl/connection_security_helper_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
@@ -179,6 +180,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
     {"ConnectionInfoPopupAndroid",
      ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
+    {"ConnectionSecurityHelper", RegisterConnectionSecurityHelperAndroid},
     {"ContentViewUtil", RegisterContentViewUtil},
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},

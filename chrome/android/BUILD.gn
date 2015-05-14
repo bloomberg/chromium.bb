@@ -128,22 +128,22 @@ android_library("chrome_java") {
 # GYP: //chrome/chrome_browser.gypi:activity_type_ids_java
 # GYP: //chrome/chrome_browser.gypi:profile_account_management_metrics_java
 # GYP: //chrome/chrome_browser.gypi:profile_sync_service_model_type_selection_java
+# GYP: //chrome/chrome_browser.gypi:connection_security_helper_security_levels_java
 # GYP: //chrome/chrome_browser.gypi:tab_load_status_java
-# GYP: //chrome/chrome_browser.gypi:toolbar_model_security_levels_java
 java_cpp_enum("chrome_android_java_enums_srcjar") {
   sources = [
     "//chrome/browser/android/activity_type_ids.h",
     "//chrome/browser/android/tab_android.h",
     "//chrome/browser/profiles/profile_metrics.h",
+    "//chrome/browser/ssl/connection_security_helper.h",
     "//chrome/browser/sync/profile_sync_service_android.cc",
-    "//chrome/browser/ui/toolbar/toolbar_model.h",
   ]
   outputs = [
     "org/chromium/chrome/browser/ActivityTypeIds.java",
     "org/chromium/chrome/browser/TabLoadStatus.java",
     "org/chromium/chrome/browser/profiles/ProfileAccountManagementMetrics.java",
+    "org/chromium/chrome/browser/ssl/ConnectionSecurityHelperSecurityLevel.java",
     "org/chromium/chrome/browser/sync/ModelTypeSelection.java",
-    "org/chromium/chrome/browser/ui/toolbar/ToolbarModelSecurityLevel.java",
   ]
 }
 

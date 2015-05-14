@@ -193,7 +193,7 @@ class OmniboxViewViews
 
   scoped_ptr<OmniboxPopupView> popup_view_;
 
-  ToolbarModel::SecurityLevel security_level_;
+  ConnectionSecurityHelper::SecurityLevel security_level_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   gfx::Range saved_temporary_selection_;
