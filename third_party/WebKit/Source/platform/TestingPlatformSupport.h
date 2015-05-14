@@ -68,6 +68,7 @@ public:
     virtual WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) override;
     virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override;
     virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override;
+    virtual WebString defaultLocale() override;
 
 private:
     const Config m_config;

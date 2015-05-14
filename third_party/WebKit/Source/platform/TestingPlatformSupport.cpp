@@ -90,4 +90,9 @@ const unsigned char* TestingPlatformSupport::getTraceCategoryEnabledFlag(const c
     return &tracingIsDisabled;
 }
 
+WebString TestingPlatformSupport::defaultLocale()
+{
+    return WebString::fromUTF8("en-US");
+}
+
 } // namespace blink

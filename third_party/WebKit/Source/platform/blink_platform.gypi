@@ -1013,5 +1013,28 @@
       'testing/UnitTestHelpers.cpp',
       'testing/UnitTestHelpers.h',
     ],
+    'conditions': [
+      ['OS=="win"',
+        {
+          'platform_test_files': [
+            'text/LocaleWinTest.cpp',
+          ],
+        }
+      ],
+      ['OS=="mac"',
+        {
+          'platform_test_files': [
+            'text/LocaleMacTest.cpp',
+          ]
+        }
+      ],
+      ['os_posix==1 and OS!="mac"',
+        {
+          'platform_test_files': [
+            'text/LocaleICUTest.cpp',
+          ],
+        }
+      ],
+    ],
   },
 }

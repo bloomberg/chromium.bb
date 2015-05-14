@@ -330,16 +330,8 @@
       ['OS=="win"',
         {
           'web_unittest_files': [
-            'tests/LocaleWinTest.cpp',
             'tests/WebPageNewSerializerTest.cpp',
             'tests/WebPageSerializerTest.cpp',
-          ],
-        }
-      ],
-      ['OS=="mac"',
-        {
-          'web_unittest_files': [
-            'tests/LocaleMacTest.cpp',
           ],
         }
       ],
@@ -348,13 +340,6 @@
           'web_unittest_files': [
             # Mac uses ScrollAnimatorMac instead of ScrollAnimatorNone.
             'tests/ScrollAnimatorNoneTest.cpp',
-          ],
-        }
-      ],
-      ['os_posix==1 and OS!="mac"',
-        {
-          'web_unittest_files': [
-            'tests/LocaleICUTest.cpp',
           ],
         }
       ],

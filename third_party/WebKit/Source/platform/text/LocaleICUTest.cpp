@@ -53,9 +53,10 @@ public:
         {
             if (m_labels.size() != other.m_labels.size())
                 return false;
-            for (unsigned index = 0; index < m_labels.size(); ++index)
+            for (unsigned index = 0; index < m_labels.size(); ++index) {
                 if (m_labels[index] != other.m_labels[index])
                     return false;
+            }
             return true;
         }
 

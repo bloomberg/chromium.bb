@@ -27,6 +27,8 @@
 #include "platform/text/LocaleMac.h"
 
 #include "platform/DateComponents.h"
+#include "platform/TestingPlatformSupport.h"
+#include "public/platform/Platform.h"
 #include "wtf/DateMath.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
@@ -34,6 +36,16 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
+
+class LocalePlatformSupport : public TestingPlatformSupport {
+public:
+    LocalePlatformSupport() : TestingPlatformSupport(TestingPlatformSupport::Config()) { }
+
+    WebString queryLocalizedString(WebLocalizedString::Name /*name*/) override
+    {
+        return WebString::fromUTF8("Week $2, $1");
+    }
+};
 
 class LocaleMacTest : public ::testing::Test {
 protected:
@@ -176,6 +188,7 @@ protected:
 
 TEST_F(LocaleMacTest, formatWeek)
 {
+    LocalePlatformSupport support;
     EXPECT_STREQ("Week 04, 2005", formatWeek("en_US", "2005-W04").utf8().data());
     EXPECT_STREQ("Week 52, 2005", formatWeek("en_US", "2005-W52").utf8().data());
 }
