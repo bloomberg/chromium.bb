@@ -120,8 +120,6 @@ Presentation status=test
 PushMessaging status=stable
 // Push messaging payloads are blocked on the Push API supporting encryption.
 PushMessagingData status=test
-// PushManager.permissionState() is currently disabled.
-PushMessagingHasPermission status=test
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 RegionBasedColumns status=experimental

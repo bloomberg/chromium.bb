@@ -11,5 +11,5 @@
 ] interface PushManager {
     [CallWith=ScriptState] Promise<PushSubscription> subscribe(optional PushSubscriptionOptions options);
     [CallWith=ScriptState] Promise<PushSubscription?> getSubscription();
-    [RuntimeEnabled=PushMessagingHasPermission,CallWith=ScriptState] Promise permissionState(optional PushSubscriptionOptions options);
+    [CallWith=ScriptState] Promise permissionState(optional PushSubscriptionOptions options);
 };

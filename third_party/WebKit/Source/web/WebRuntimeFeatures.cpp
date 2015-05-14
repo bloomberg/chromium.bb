@@ -315,7 +315,7 @@ void WebRuntimeFeatures::enablePushMessagingData(bool enable)
 
 void WebRuntimeFeatures::enablePushMessagingHasPermission(bool enable)
 {
-    RuntimeEnabledFeatures::setPushMessagingHasPermissionEnabled(enable);
+    // TODO(miguelg): Remove this method once chrome stops dependind on it.
 }
 
 void WebRuntimeFeatures::enableStaleWhileRevalidateCacheControl(bool enable)
