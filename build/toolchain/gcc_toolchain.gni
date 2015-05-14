@@ -13,6 +13,8 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #  - cxx
 #  - ar
 #  - ld
+#  - readelf
+#  - nm
 # and the following which is used in the toolchain_args
 #  - toolchain_cpu  (What "current_cpu" should be set to when invoking a
 #                    build using this toolchain.)
@@ -40,6 +42,9 @@ template("gcc_toolchain") {
     assert(defined(invoker.cxx), "gcc_toolchain() must specify a \"cxx\" value")
     assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ar\" value")
     assert(defined(invoker.ld), "gcc_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.readelf),
+           "gcc_toolchain() must specify a \"readelf\" value")
+    assert(defined(invoker.nm), "gcc_toolchain() must specify a \"nm\" value")
     assert(defined(invoker.toolchain_cpu),
            "gcc_toolchain() must specify a \"toolchain_cpu\"")
     assert(defined(invoker.toolchain_os),
@@ -52,6 +57,8 @@ template("gcc_toolchain") {
     cxx = invoker.cxx
     ar = invoker.ar
     ld = invoker.ld
+    readelf = invoker.readelf
+    nm = invoker.nm
 
     # Bring these into our scope for string interpolation with default values.
     if (defined(invoker.libs_section_prefix)) {
@@ -138,7 +145,7 @@ template("gcc_toolchain") {
       temporary_tocname = sofile + ".tmp"
       link_command =
           "$ld -shared {{ldflags}} -o $sofile -Wl,-soname=$soname @$rspfile"
-      toc_command = "{ readelf -d $sofile | grep SONAME ; nm -gD -f p $sofile | cut -f1-2 -d' '; } > $temporary_tocname"
+      toc_command = "{ $readelf -d $sofile | grep SONAME ; $nm -gD -f p $sofile | cut -f1-2 -d' '; } > $temporary_tocname"
       replace_command = "if ! cmp -s $temporary_tocname $tocfile; then mv $temporary_tocname $tocfile; fi"
 
       command = "$link_command && $toc_command && $replace_command"

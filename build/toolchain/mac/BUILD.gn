@@ -8,8 +8,7 @@
 
 import("../goma.gni")
 
-# Should only be running on Mac.
-assert(is_mac || is_ios)
+assert(host_os == "mac")
 
 import("//build/toolchain/clang.gni")
 import("//build/toolchain/goma.gni")
@@ -20,19 +19,6 @@ if (use_goma) {
   goma_prefix = ""
 }
 
-if (is_clang) {
-  cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang",
-                   root_build_dir)
-  cxx = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang++",
-                    root_build_dir)
-} else {
-  cc = "gcc"
-  cxx = "g++"
-}
-cc = goma_prefix + cc
-cxx = goma_prefix + cxx
-ld = cxx
-
 # This will copy the gyp-mac-tool to the build directory. We pass in the source
 # file of the win tool.
 gyp_mac_tool_source =
@@ -41,16 +27,15 @@ exec_script("setup_toolchain.py", [ gyp_mac_tool_source ])
 
 # Shared toolchain definition. Invocations should set toolchain_os to set the
 # build args in this definition.
-template("mac_clang_toolchain") {
+template("mac_toolchain") {
   toolchain(target_name) {
-    assert(defined(invoker.cc),
-           "mac_clang_toolchain() must specify a \"cc\" value")
-    assert(defined(invoker.cxx),
-           "mac_clang_toolchain() must specify a \"cxx\" value")
-    assert(defined(invoker.ld),
-           "mac_clang_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.cc), "mac_toolchain() must specify a \"cc\" value")
+    assert(defined(invoker.cxx), "mac_toolchain() must specify a \"cxx\" value")
+    assert(defined(invoker.ld), "mac_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.toolchain_cpu),
+           "mac_toolchain() must specify a \"toolchain_cpu\"")
     assert(defined(invoker.toolchain_os),
-           "mac_clang_toolchain() must specify a \"toolchain_os\"")
+           "mac_toolchain() must specify a \"toolchain_os\"")
 
     # We can't do string interpolation ($ in strings) on things with dots in
     # them. To allow us to use $cc below, for example, we create copies of
@@ -194,18 +179,56 @@ template("mac_clang_toolchain") {
     }
 
     toolchain_args() {
+      current_cpu = invoker.toolchain_cpu
       current_os = invoker.toolchain_os
+
+      # These values need to be passed through unchanged.
+      target_os = target_os
+      target_cpu = target_cpu
+
+      if (defined(invoker.is_clang)) {
+        is_clang = invoker.is_clang
+      }
     }
   }
 }
 
-# Toolchain representing the target build (either mac or iOS).
-mac_clang_toolchain("clang") {
-  toolchain_os = current_os
+mac_toolchain("clang_arm") {
+  toolchain_cpu = "arm"
+  toolchain_os = "mac"
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cc = "${goma_prefix}$prefix/clang"
+  cxx = "${goma_prefix}$prefix/clang++"
+  ld = cxx
+  is_clang = true
 }
 
-# This toolchain provides a way for iOS target compiles to reference targets
-# compiled for the host system. It just overrides the OS back to "mac".
-mac_clang_toolchain("host_clang") {
+mac_toolchain("arm") {
+  toolchain_cpu = "arm"
   toolchain_os = "mac"
+  cc = "${goma_prefix}/gcc"
+  cxx = "${goma_prefix}/g++"
+  ld = cxx
+  is_clang = false
+}
+
+mac_toolchain("clang_x64") {
+  toolchain_cpu = "x64"
+  toolchain_os = "mac"
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cc = "${goma_prefix}$prefix/clang"
+  cxx = "${goma_prefix}$prefix/clang++"
+  ld = cxx
+  is_clang = true
+}
+
+mac_toolchain("x64") {
+  toolchain_cpu = "x64"
+  toolchain_os = "mac"
+  cc = "${goma_prefix}/gcc"
+  cxx = "${goma_prefix}/g++"
+  ld = cxx
+  is_clang = false
 }

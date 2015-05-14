@@ -1582,9 +1582,11 @@ template("unittest_apk") {
       deps += invoker.deps
     }
     datadeps = [
-      "//tools/android/forwarder2",
       "//tools/android/md5sum",
     ]
+    if (host_os == "linux") {
+      datadeps += [ "//tools/android/forwarder2" ]
+    }
     if (defined(invoker.datadeps)) {
       datadeps += invoker.datadeps
     }

@@ -60,6 +60,8 @@ if (is_android) {
   # architecture, which is different than the names GN uses.
   if (host_os == "linux") {
     android_host_os = "linux"
+  } else if (host_os == "mac") {
+    android_host_os = "darwin"
   } else {
     assert(false, "Need Android toolchain support for your build OS.")
   }

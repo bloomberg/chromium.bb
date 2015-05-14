@@ -49,6 +49,8 @@ template("android_gcc_toolchain") {
     cxx = compiler_prefix + tool_prefix + "g++"
     ar = tool_prefix + "ar"
     ld = cxx
+    readelf = compiler_prefix + tool_prefix + "readelf"
+    nm = compiler_prefix + tool_prefix + "nm"
 
     toolchain_os = "android"
     toolchain_cpu = invoker.toolchain_cpu
