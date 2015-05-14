@@ -33,9 +33,6 @@ public:
     // Called if for some reason the status of the push permission cannot be checked.
     void onError(WebPushError*) override;
 
-    // TODO(miguelg): Remove this once blinks rolls into chrome
-    void onError() override;
-
 private:
     static WTF::String permissionString(WebPushPermissionStatus);
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;

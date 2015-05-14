@@ -35,11 +35,6 @@ void PushPermissionStatusCallbacks::onError(WebPushError* error)
     m_resolver->reject(PushError::take(m_resolver.get(), error));
 }
 
-void PushPermissionStatusCallbacks::onError()
-{
-    m_resolver->reject();
-}
-
 // static
 String PushPermissionStatusCallbacks::permissionString(WebPushPermissionStatus status)
 {
