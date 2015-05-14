@@ -319,10 +319,14 @@
         '../ui/base/ui_base_tests.gyp:ui_base_unittests',
         '../ui/display/display.gyp:display_unittests',
         '../ui/gfx/gfx_tests.gyp:gfx_unittests',
-        '../ui/gl/gl_tests.gyp:gl_unittests',
         '../url/url.gyp:url_unittests',
       ],
       'conditions': [
+        ['OS!="ios"', {
+          'dependencies': [
+            '../ui/gl/gl_tests.gyp:gl_unittests',
+          ],
+        }],
         ['OS!="ios" and OS!="mac"', {
           'dependencies': [
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',

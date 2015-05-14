@@ -77,6 +77,7 @@ static const char* const kSwitchNames[] = {
   switches::kDisableBreakpad,
   switches::kDisableGpuSandbox,
   switches::kDisableGpuWatchdog,
+  switches::kDisableGLExtensions,
   switches::kDisableLogging,
   switches::kDisableSeccompFilterSandbox,
 #if defined(ENABLE_WEBRTC)

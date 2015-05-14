@@ -5,10 +5,15 @@
 #ifndef UI_GL_GL_GL_API_IMPLEMENTATION_H_
 #define UI_GL_GL_GL_API_IMPLEMENTATION_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
+namespace base {
+class CommandLine;
+}
 namespace gpu {
 namespace gles2 {
 class GLES2Decoder;
@@ -33,7 +38,7 @@ void SetGLApi(GLApi* api);
 void SetGLApiToNoContext();
 const GLVersionInfo* GetGLVersionInfo();
 
-class GLApiBase : public GLApi {
+class GL_EXPORT GLApiBase : public GLApi {
  public:
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -49,15 +54,25 @@ class GLApiBase : public GLApi {
 };
 
 // Implemenents the GL API by calling directly into the driver.
-class RealGLApi : public GLApiBase {
+class GL_EXPORT RealGLApi : public GLApiBase {
  public:
   RealGLApi();
   ~RealGLApi() override;
   void Initialize(DriverGL* driver);
+  void InitializeWithCommandLine(DriverGL* driver,
+                                 base::CommandLine* command_line);
+
+  void glGetIntegervFn(GLenum pname, GLint* params) override;
+  const GLubyte* glGetStringFn(GLenum name) override;
+  const GLubyte* glGetStringiFn(GLenum name, GLuint index) override;
 
  private:
   void glFinishFn() override;
   void glFlushFn() override;
+
+  // Filtered GL_EXTENSIONS we return to glGetString(i) calls.
+  std::vector<std::string> filtered_exts_;
+  std::string filtered_exts_str_;
 };
 
 // Inserts a TRACE for every GL call.

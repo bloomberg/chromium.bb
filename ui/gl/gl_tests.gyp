@@ -12,11 +12,13 @@
       'type': '<(gtest_target_type)',
       'sources': [
         'test/run_all_unittests.cc',
+        'gl_api_unittest.cc',
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        'gl.gyp:gl',
       ],
       'conditions': [
         ['OS == "android"', {

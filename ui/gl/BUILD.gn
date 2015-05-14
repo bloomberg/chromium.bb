@@ -280,6 +280,7 @@ source_set("gl_unittest_utils") {
 
 test("gl_unittests") {
   sources = [
+    "gl_api_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

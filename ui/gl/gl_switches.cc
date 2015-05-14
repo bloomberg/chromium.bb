@@ -83,6 +83,9 @@ const char kDisableGLDrawingForTests[] = "disable-gl-drawing-for-tests";
 const char kOverrideUseGLWithOSMesaForTests[] =
     "override-use-gl-with-osmesa-for-tests";
 
+// Disables specified comma separated GL Extensions if found.
+const char kDisableGLExtensions[] = "disable-gl-extensions";
+
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.
