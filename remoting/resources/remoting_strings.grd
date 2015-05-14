@@ -497,8 +497,32 @@
       <message desc="Title for the dialog prompting the user to consent to their email address being included as part of their feedback." name="IDS_FEEDBACK_CONSENT_TITLE">
         Report an issue
       </message>
-      <message desc="Text asking the user for consent to their email address being included as part of their feedback." name="IDS_FEEDBACK_CONSENT">
+      <message desc="Text asking the user for consent to their email address being included as part of their feedback." name="IDS_FEEDBACK_CONSENT_EMAIL">
         To allow us to contact you for further information, your email address will be included in any feedback you submit.
+      </message>
+      <message desc="Text asking the user to choose a category for their feedback." name="IDS_FEEDBACK_CATEGORY_INSTRUCTIONS">
+        To help us solve your problem, please tell us what went wrong:
+      </message>
+      <message desc="The initial 'category', indicating that the user must select something to continue." name="IDS_FEEDBACK_CATEGORY_SELECT">
+        Select…
+      </message>
+      <message desc="Category indicating that the user is having problems launching the application." name="IDS_FEEDBACK_CATEGORY_APP_LAUNCH">
+        I can't open the application.
+      </message>
+      <message desc="Category indicating that the application is running too slowly." name="IDS_FEEDBACK_CATEGORY_APP_PERFORMANCE">
+        The application is too slow.
+      </message>
+      <message desc="Category indicating that the user is having keyboard or mouse issues." name="IDS_FEEDBACK_CATEGORY_INPUT">
+        I'm having problems with my keyboard or mouse.
+      </message>
+      <message desc="Category indicating that the user is having problems with Google Drive not uploading their files." name="IDS_FEEDBACK_CATEGORY_DRIVE_UPLOAD">
+        I can't see my saved files on-line in Google Drive.
+      </message>
+      <message desc="Category indicating that the user is having problems with Google Drive not downloading their files." name="IDS_FEEDBACK_CATEGORY_DRIVE_DOWNLOAD">
+        I can't open my Google Drive files.
+      </message>
+      <message desc="Category indicating that the user is having a problem not covered by any of the common categories." name="IDS_FEEDBACK_CATEGORY_OTHER">
+        Something else.
       </message>
       <message desc="Title for the submenu item containing a list of windows opened by the remote app." name="IDS_WINDOWS_SUBMENU_TITLE">
         Windows

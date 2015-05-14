@@ -20,3 +20,7 @@ a.disabled {
 .information-box > p:first-child {
   margin-top: 0;
 }
+
+select {
+  margin-top: 12px;
+}

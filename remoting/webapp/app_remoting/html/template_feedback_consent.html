@@ -20,9 +20,19 @@ found in the LICENSE file.
   </head>
   <body>
     <h2 i18n-content="FEEDBACK_CONSENT_TITLE"></h2>
-    <p i18n-content="FEEDBACK_CONSENT"
+    <p i18n-content="FEEDBACK_CONSENT_EMAIL"
        class="message"></p>
-    <div id="form-body">
+    <p i18n-content="FEEDBACK_CATEGORY_INSTRUCTIONS"></p>
+    <select id="feedback-category">
+      <option i18n-content="FEEDBACK_CATEGORY_SELECT"></option>
+      <option i18n-content="FEEDBACK_CATEGORY_APP_LAUNCH"></option>
+      <option i18n-content="FEEDBACK_CATEGORY_APP_PERFORMANCE"></option>
+      <option i18n-content="FEEDBACK_CATEGORY_INPUT"></option>
+      <option i18n-content="FEEDBACK_CATEGORY_DRIVE_UPLOAD"></option>
+      <option i18n-content="FEEDBACK_CATEGORY_DRIVE_DOWNLOAD"></option>
+      <option i18n-content="FEEDBACK_CATEGORY_OTHER"></option>
+    </select>
+    <div id="form-body" hidden>
       <label class="checkbox-label"
              id="abandon-host-label">
         <input id="abandon-host"
@@ -57,7 +67,8 @@ found in the LICENSE file.
             hidden></span>
       <button id="feedback-consent-ok"
               i18n-content="OK"
-              autofocus="autofocus"></button>
+              autofocus="autofocus"
+              disabled></button>
       <button id="feedback-consent-cancel"
               i18n-content="CANCEL"></button>
     </div>
