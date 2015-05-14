@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/content_browser_sanity_checker.h"
+#include "content/test/content_browser_sanity_checker.h"
 
 #include "base/bind.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/test/web_contents_observer_sanity_checker.h"
+#include "content/test/web_contents_observer_sanity_checker.h"
 
 namespace content {
 

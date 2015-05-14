@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
-#define CONTENT_PUBLIC_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
+#ifndef CONTENT_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
+#define CONTENT_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
 
 #include <set>
 #include <string>
@@ -98,4 +98,4 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
+#endif  // CONTENT_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
