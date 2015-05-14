@@ -701,11 +701,6 @@ ImageView.prototype.setTransform_ = function(
   element.style.transitionDuration = opt_duration + 'ms';
   element.style.transitionTimingFunction = opt_effect.getTiming();
   element.style.transform = opt_effect.transform(element, viewport);
-  var imageBounds = viewport.getImageElementBoundsOnScreen();
-  element.style.left = imageBounds.left + 'px';
-  element.style.top = imageBounds.top + 'px';
-  element.style.width = imageBounds.width + 'px';
-  element.style.height = imageBounds.height + 'px';
 };
 
 /**
@@ -878,7 +873,7 @@ ImageView.Effect.None.prototype = { __proto__: ImageView.Effect.prototype };
  * @override
  */
 ImageView.Effect.None.prototype.transform = function(element, viewport) {
-  return viewport.getTransformation();
+  return viewport.getTransformation(element.width, element.height);
 };
 
 /**
@@ -912,7 +907,8 @@ ImageView.Effect.Slide.prototype.getReverse = function() {
  * @override
  */
 ImageView.Effect.Slide.prototype.transform = function(element, viewport) {
-  return viewport.getShiftTransformation(this.shift_);
+  return viewport.getTransformation(
+      element.width, element.height, this.shift_);
 };
 
 /**
@@ -944,8 +940,12 @@ ImageView.Effect.Zoom.prototype = { __proto__: ImageView.Effect.prototype };
  * @override
  */
 ImageView.Effect.Zoom.prototype.transform = function(element, viewport) {
-  return viewport.getInverseTransformForCroppedImage(
-      this.previousImageWidth_, this.previousImageHeight_, this.imageCropRect_);
+  return viewport.getCroppingTransformation(
+      element.width,
+      element.height,
+      this.previousImageWidth_,
+      this.previousImageHeight_,
+      this.imageCropRect_);
 };
 
 /**
@@ -973,7 +973,10 @@ ImageView.Effect.ZoomToScreen.prototype = {
  */
 ImageView.Effect.ZoomToScreen.prototype.transform = function(
     element, viewport) {
-  return viewport.getScreenRectTransformForImage(this.screenRect_);
+  return viewport.getScreenRectTransformation(
+      element.width,
+      element.height,
+      this.screenRect_);
 };
 
 /**
@@ -996,5 +999,6 @@ ImageView.Effect.Rotate.prototype = { __proto__: ImageView.Effect.prototype };
  * @override
  */
 ImageView.Effect.Rotate.prototype.transform = function(element, viewport) {
-  return viewport.getInverseTransformForRotatedImage(this.orientation_);
+  return viewport.getRotatingTransformation(
+      element.width, element.height, this.orientation_ ? -1 : 1);
 };

@@ -3,6 +3,19 @@
 // found in the LICENSE file.
 
 /**
+ * Formats string by replacing place holder with actual values.
+ * @param {string} str String includes placeholder '$n'. n starts from 1.
+ * @param {...*} var_args Values inserted into the place holders.
+ * @return {string}
+ */
+function formatString(str, var_args) {
+  var args = arguments;
+  return str.replace(/\$[1-9]/g, function(placeHolder) {
+    return args[placeHolder[1]];
+  });
+}
+
+/**
  * Viewport class controls the way the image is displayed (scale, offset etc).
  * @constructor
  * @struct
@@ -192,18 +205,24 @@ Viewport.prototype.getRotation = function() {
 };
 
 /**
- * Obtains the scale for the specified image size.
+ * Returns image scale so that it matches screen size as long as it does not
+ * exceed maximum size.
  *
- * @param {number} width Width of the full resolution image.
- * @param {number} height Height of the full resolution image.
+ * @param {number} width Width of image.
+ * @param {number} height Height of image.
+ * @param {number} maxWidth Max width of image.
+ * @param {number} maxHeight Max height of image.
  * @return {number} The ratio of the full resotion image size and the calculated
  * displayed image size.
  * @private
  */
-Viewport.prototype.getFittingScaleForImageSize_ = function(width, height) {
-  var scaleX = this.screenBounds_.width / width;
-  var scaleY = this.screenBounds_.height / height;
-  return Math.min(scaleX, scaleY, 1);
+Viewport.prototype.getFittingScaleForImageSize_ = function(
+    width, height, maxWidth, maxHeight) {
+  return Math.min(
+      maxWidth / width,
+      maxHeight / height,
+      this.screenBounds_.width / width,
+      this.screenBounds_.height / height);
 };
 
 /**
@@ -248,10 +267,9 @@ Viewport.prototype.getScreenBounds = function() { return this.screenBounds_; };
  * @return {!ImageRect} The size of screen cache canvas.
  */
 Viewport.prototype.getDeviceBounds = function() {
-  var size = this.getImageElementBoundsOnScreen();
   return ImageRect.createFromWidthAndHeight(
-      size.width * window.devicePixelRatio,
-      size.height * window.devicePixelRatio);
+      this.imageElementBoundsOnScreen_.width * window.devicePixelRatio,
+      this.imageElementBoundsOnScreen_.height * window.devicePixelRatio);
 };
 
 /**
@@ -269,16 +287,6 @@ Viewport.prototype.getCacheGeneration = function() { return this.generation_; };
 Viewport.prototype.getImageBoundsOnScreen = function() {
   assert(this.imageBoundsOnScreen_);
   return this.imageBoundsOnScreen_;
-};
-
-/**
- * The image bounds in screen coordinates.
- * This returns the bounds of element before applying zoom and offset.
- * @return {!ImageRect}
- */
-Viewport.prototype.getImageElementBoundsOnScreen = function() {
-  assert(this.imageElementBoundsOnScreen_);
-  return this.imageElementBoundsOnScreen_;
 };
 
 /**
@@ -406,6 +414,7 @@ Viewport.prototype.resetView = function() {
 Viewport.prototype.update_ = function() {
   // Update scale.
   this.scale_ = this.getFittingScaleForImageSize_(
+      this.imageBounds_.width, this.imageBounds_.height,
       this.imageBounds_.width, this.imageBounds_.height);
 
   // Limit offset values.
@@ -416,6 +425,7 @@ Viewport.prototype.update_ = function() {
     zoomedHeight = ~~(this.imageBounds_.height * this.scale_ * this.zoom_);
   } else {
     var scale = this.getFittingScaleForImageSize_(
+        this.imageBounds_.height, this.imageBounds_.width,
         this.imageBounds_.height, this.imageBounds_.width);
     zoomedWidht = ~~(this.imageBounds_.height * scale * this.zoom_);
     zoomedHeight = ~~(this.imageBounds_.width * scale * this.zoom_);
@@ -472,31 +482,72 @@ Viewport.prototype.clone = function() {
 };
 
 /**
- * Obtains CSS transformation for the screen image.
- * @return {string} Transformation description.
+ * Obtains CSS transformation string that matches the image dimension with
+ * |screenRect|.
+ * @param {number} width Width of image.
+ * @param {number} height Height of image.
+ * @param {!ImageRect} screenRect Rectangle in window coordinate system. The
+ *     origin of the coordinate system at the left upper of the window.
  */
-Viewport.prototype.getTransformation = function() {
-  var rotationScaleAdjustment;
-  if (this.rotation_ % 2) {
-    rotationScaleAdjustment = this.getFittingScaleForImageSize_(
-        this.imageBounds_.height, this.imageBounds_.width) / this.scale_;
-  } else {
-    rotationScaleAdjustment = 1;
-  }
-  return [
-    'translate(' + this.offsetX_ + 'px, ' + this.offsetY_ + 'px) ',
-    'rotate(' + (this.rotation_ * 90) + 'deg)',
-    'scale(' + (this.zoom_ * rotationScaleAdjustment) + ')'
-  ].join(' ');
+Viewport.prototype.getScreenRectTransformation = function(
+    width, height, screenRect) {
+  var dx = screenRect.left + (screenRect.width - width) / 2;
+  var dy = screenRect.top + (screenRect.height - height) / 2;
+
+  return formatString(
+      'translate($1px,$2px) scale($3,$4)',
+      dx, dy, screenRect.width / width, screenRect.height / height);
 };
 
 /**
- * Obtains shift CSS transformation for the screen image.
- * @param {number} dx Amount of shift.
+ * Obtains CSS transformation string that places the cropped image at the
+ * original position in the whole image.
+ * @param {number} width Width of cropped image.
+ * @param {number} height Width of cropped image.
+ * @param {number} wholeWidthMax Max width value that is used for layouting
+ *     whole image.
+ * @param {number} wholeHeightMax Max height value that is used for layouting
+ *     whole image.
+ * @param {!ImageRect} cropRect Crop rectangle in the whole image. The origin is
+ *     left upper of the whole image.
+ */
+Viewport.prototype.getCroppingTransformation = function(
+    width,
+    height,
+    wholeWidthMax,
+    wholeHeightMax,
+    cropRect) {
+  var fittingScale = this.getFittingScaleForImageSize_(
+      wholeWidthMax, wholeHeightMax, wholeWidthMax, wholeHeightMax);
+  var wholeWidth = wholeWidthMax * fittingScale;
+  var wholeHeight = wholeHeightMax * fittingScale;
+  var wholeLeft = (this.screenBounds_.width - wholeWidth) / 2;
+  var wholeTop = (this.screenBounds_.height - wholeHeight) / 2;
+  return this.getScreenRectTransformation(
+      width,
+      height,
+      new ImageRect(
+          wholeLeft + cropRect.left * fittingScale,
+          wholeTop + cropRect.top * fittingScale,
+          cropRect.width * fittingScale,
+          cropRect.height * fittingScale));
+};
+
+/**
+ * Obtains CSS transformation for the screen image.
+ * @param {number} width Width of image.
+ * @param {number} height Height of image.
+ * @param {number=} opt_dx Amount of horizontal shift.
  * @return {string} Transformation description.
  */
-Viewport.prototype.getShiftTransformation = function(dx) {
-  return 'translateX(' + dx + 'px) ' + this.getTransformation();
+Viewport.prototype.getTransformation = function(width, height, opt_dx) {
+  return this.getTransformationInternal_(
+      width,
+      height,
+      this.rotation_,
+      this.zoom_,
+      this.offsetX_ + (opt_dx || 0),
+      this.offsetY_);
 };
 
 /**
@@ -504,72 +555,55 @@ Viewport.prototype.getShiftTransformation = function(dx) {
  * image. The new rotated image that the transformation is applied to looks the
  * same with original image.
  *
- * @param {boolean} orientation Orientation of the rotation from the original
- *     image to the rotated image. True is for clockwise and false is for
- *     counterclockwise.
+ * @param {number} width Width of image.
+ * @param {number} height Height of image.
+ * @param {number} rotation Number of clockwise 90 degree rotation. The rotation
+ *     angle of the image is rotation * 90.
  * @return {string} Transformation description.
  */
-Viewport.prototype.getInverseTransformForRotatedImage = function(orientation) {
-  var previousImageWidth = this.imageBounds_.height;
-  var previousImageHeight = this.imageBounds_.width;
-  var oldScale = this.getFittingScaleForImageSize_(
-      previousImageWidth, previousImageHeight);
-  var scaleRatio = oldScale / this.scale_;
-  var degree = orientation ? '-90deg' : '90deg';
-  return [
-    'scale(' + scaleRatio + ')',
-    'rotate(' + degree + ')',
-    this.getTransformation()
-  ].join(' ');
+Viewport.prototype.getRotatingTransformation = function(
+    width, height, rotation) {
+  return this.getTransformationInternal_(
+      width, height, rotation, 1, 0, 0);
 };
 
 /**
- * Obtains CSS transformation that makes the cropped image fit the original
- * image. The new cropped image that the transformation is applied to fits to
- * the cropped rectangle in the original image.
- *
- * @param {number} imageWidth Width of the original image.
- * @param {number} imageHeight Height of the original image.
- * @param {!ImageRect} imageCropRect Crop rectangle in the image's coordinate
- *     system.
- * @return {string} Transformation description.
+ * Obtains CSS transformation that placed the image in the application window.
+ * @param {number} width Width of image.
+ * @param {number} height Height of image.
+ * @param {number} rotation Number of clockwise 90 degree rotation. The rotation
+ *     angle of the image is rotation * 90.
+ * @param {number} zoom Zoom rate.
+ * @param {number} offsetX Horizontal offset.
+ * @param {number} offsetY Vertical offset.
+ * @private
  */
-Viewport.prototype.getInverseTransformForCroppedImage =
-    function(imageWidth, imageHeight, imageCropRect) {
-  var wholeScale = this.getFittingScaleForImageSize_(
-      imageWidth, imageHeight);
-  var croppedScale = this.getFittingScaleForImageSize_(
-      imageCropRect.width, imageCropRect.height);
-  var dx =
-      (imageCropRect.left + imageCropRect.width / 2 - imageWidth / 2) *
-      wholeScale;
-  var dy =
-      (imageCropRect.top + imageCropRect.height / 2 - imageHeight / 2) *
-      wholeScale;
-  return [
-    'translate(' + dx + 'px,' + dy + 'px)',
-    'scale(' + wholeScale / croppedScale + ')',
-    this.getTransformation()
-  ].join(' ');
-};
+Viewport.prototype.getTransformationInternal_ = function(
+    width,
+    height,
+    rotation,
+    zoom,
+    offsetX,
+    offsetY) {
+  var rotatedWidth = rotation % 2 ? height : width;
+  var rotatedHeight = rotation % 2 ? width : height;
+  var rotatedMaxWidth = rotation % 2 ?
+      this.imageBounds_.height : this.imageBounds_.width;
+  var rotatedMaxHeight = rotation % 2 ?
+      this.imageBounds_.width : this.imageBounds_.height;
 
-/**
- * Obtains CSS transformation that makes the image fit to the screen rectangle.
- *
- * @param {!ImageRect} screenRect Screen rectangle.
- * @return {string} Transformation description.
- */
-Viewport.prototype.getScreenRectTransformForImage = function(screenRect) {
-  var imageBounds = this.getImageElementBoundsOnScreen();
-  var scaleX = screenRect.width / imageBounds.width;
-  var scaleY = screenRect.height / imageBounds.height;
-  var screenWidth = this.screenBounds_.width;
-  var screenHeight = this.screenBounds_.height;
-  var dx = screenRect.left + screenRect.width / 2 - screenWidth / 2;
-  var dy = screenRect.top + screenRect.height / 2 - screenHeight / 2;
-  return [
-    'translate(' + dx + 'px,' + dy + 'px)',
-    'scale(' + scaleX + ',' + scaleY + ')',
-    this.getTransformation()
-  ].join(' ');
+  // Scale.
+  var fittingScale = this.getFittingScaleForImageSize_(
+      rotatedWidth, rotatedHeight, rotatedMaxWidth, rotatedMaxHeight);
+
+  // Offset for centering.
+  var dx = (this.screenBounds_.width - width) / 2;
+  var dy = (this.screenBounds_.height - height) / 2;
+
+  return formatString(
+      'translate($1px,$2px) scale($3) rotate($4deg)',
+      dx + offsetX,
+      dy + offsetY,
+      fittingScale * zoom,
+      rotation * 90);
 };
