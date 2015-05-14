@@ -121,7 +121,8 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
-    : restricted_by_carrier_(false),
+    : secure_proxy_allowed_(
+          DataReductionProxyParams::ShouldUseSecureProxyByDefault()),
       disabled_on_vpn_(false),
       unreachable_(false),
       enabled_by_user_(false),
@@ -155,7 +156,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(const scoped_refptr<
 void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
-                     restricted_by_carrier_, false /* at_startup */);
+                     secure_proxy_allowed_, false /* at_startup */);
 }
 
 bool DataReductionProxyConfig::WasDataReductionProxyUsed(
@@ -349,7 +350,7 @@ void DataReductionProxyConfig::SetProxyConfig(
   enabled_by_user_ = enabled;
   alternative_enabled_by_user_ = alternative_enabled;
   UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
-                     restricted_by_carrier_, at_startup);
+                     secure_proxy_allowed_, at_startup);
 
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled &&
@@ -367,10 +368,10 @@ void DataReductionProxyConfig::SetProxyConfig(
 
 void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
                                                   bool alternative_enabled,
-                                                  bool restricted,
+                                                  bool secure_proxy_allowed,
                                                   bool at_startup) {
   DCHECK(configurator_);
-  LogProxyState(enabled, restricted, at_startup);
+  LogProxyState(enabled, secure_proxy_allowed, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.
   std::string origin;
@@ -396,7 +397,7 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
   // TODO(jeremyim): Enable should take std::vector<net::ProxyServer> as its
   // parameters.
   if (!origin.empty() || !fallback_origin.empty() || !ssl_origin.empty()) {
-    configurator_->Enable(restricted, !fallback_allowed, origin,
+    configurator_->Enable(!secure_proxy_allowed, !fallback_allowed, origin,
                           fallback_origin, ssl_origin);
   } else {
     configurator_->Disable();
@@ -404,10 +405,8 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
 }
 
 void DataReductionProxyConfig::LogProxyState(bool enabled,
-                                             bool restricted,
+                                             bool secure_proxy_allowed,
                                              bool at_startup) {
-  // This must stay a LOG(WARNING); the output is used in processing customer
-  // feedback.
   const char kAtStartup[] = "at startup";
   const char kByUser[] = "by user action";
   const char kOn[] = "ON";
@@ -416,8 +415,11 @@ void DataReductionProxyConfig::LogProxyState(bool enabled,
   const char kUnrestricted[] = "(Unrestricted)";
 
   std::string annotated_on =
-      kOn + std::string(" ") + (restricted ? kRestricted : kUnrestricted);
+      kOn + std::string(" ") +
+      (secure_proxy_allowed ? kUnrestricted : kRestricted);
 
+  // This must stay a LOG(WARNING); the output is used in processing customer
+  // feedback.
   LOG(WARNING) << "SPDY proxy " << (enabled ? annotated_on : kOff) << " "
                << (at_startup ? kAtStartup : kByUser);
 }
@@ -447,34 +449,34 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     DVLOG(1) << "The data reduction proxy is unrestricted.";
 
     if (enabled_by_user_) {
-      if (restricted_by_carrier_) {
+      if (!secure_proxy_allowed_) {
+        secure_proxy_allowed_ = true;
         // The user enabled the proxy, but sometime previously in the session,
         // the network operator had blocked the secure proxy check and
         // restricted the user. The current network doesn't block the secure
         // proxy check, so don't restrict the proxy configurations.
-        UpdateConfigurator(true /* enabled */, false /* alternative_enabled */,
-                           false /* restricted */, false /* at_startup */);
+        ReloadConfig();
         RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ENABLED);
       } else {
         RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ALREADY_ENABLED);
       }
     }
-    restricted_by_carrier_ = false;
+    secure_proxy_allowed_ = true;
     return;
   }
   DVLOG(1) << "The data reduction proxy is restricted to the configured "
            << "fallback proxy.";
   if (enabled_by_user_) {
-    if (!restricted_by_carrier_) {
+    if (secure_proxy_allowed_) {
       // Restrict the proxy.
-      UpdateConfigurator(true /* enabled */, false /* alternative_enabled */,
-                         true /* restricted */, false /* at_startup */);
+      secure_proxy_allowed_ = false;
+      ReloadConfig();
       RecordSecureProxyCheckFetchResult(FAILED_PROXY_DISABLED);
     } else {
       RecordSecureProxyCheckFetchResult(FAILED_PROXY_ALREADY_DISABLED);
     }
   }
-  restricted_by_carrier_ = true;
+  secure_proxy_allowed_ = false;
 }
 
 void DataReductionProxyConfig::OnIPAddressChanged() {
@@ -486,6 +488,14 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     if (alternative_enabled_by_user_ &&
         !config_values_->alternative_fallback_allowed()) {
       return;
+    }
+
+    bool should_use_secure_proxy =
+        DataReductionProxyParams::ShouldUseSecureProxyByDefault();
+    if (!should_use_secure_proxy && secure_proxy_allowed_) {
+      secure_proxy_allowed_ = false;
+      RecordSecureProxyCheckFetchResult(PROXY_DISABLED_BEFORE_CHECK);
+      ReloadConfig();
     }
 
     // It is safe to use base::Unretained here, since it gets executed
@@ -564,16 +574,14 @@ bool DataReductionProxyConfig::DisableIfVPN() {
             interface_name.begin() + vpn_interface_name_prefix.size(),
             vpn_interface_name_prefix.c_str())) {
       disabled_on_vpn_ = true;
-      UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
-                         restricted_by_carrier_, false);
+      ReloadConfig();
       RecordNetworkChangeEvent(DISABLED_ON_VPN);
       return true;
     }
   }
   if (disabled_on_vpn_) {
     disabled_on_vpn_ = false;
-    UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
-                       restricted_by_carrier_, false);
+    ReloadConfig();
   }
   return false;
 }

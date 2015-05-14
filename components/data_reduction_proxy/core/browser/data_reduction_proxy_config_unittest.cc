@@ -23,13 +23,6 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Return;
 
-namespace {
-
-const char kSecureProxyCheckWithOKResponse[] = "http://ok.org/";
-const char kSecureProxyCheckWithBadResponse[] = "http://bad.org/";
-
-}  // namespace
-
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigTest : public testing::Test {
@@ -77,17 +70,8 @@ class DataReductionProxyConfigTest : public testing::Test {
     EXPECT_CALL(*config(), LogProxyState(_, _, _)).Times(0);
   }
 
-  void SetSecureProxyCheckResult(const std::string& test_url,
-                                 const std::string& response,
-                                 SecureProxyCheckFetchResult result,
-                                 bool success,
-                                 int expected_calls) {
-    if (0 == expected_calls) {
-      EXPECT_CALL(*config(), RecordSecureProxyCheckFetchResult(_)).Times(0);
-    } else {
-      EXPECT_CALL(*config(), RecordSecureProxyCheckFetchResult(result))
-          .Times(1);
-    }
+  void ExpectSecureProxyCheckResult(SecureProxyCheckFetchResult result) {
+    EXPECT_CALL(*config(), RecordSecureProxyCheckFetchResult(result)).Times(1);
   }
 
   void CheckProxyConfigs(bool expected_enabled,
@@ -110,17 +94,11 @@ class DataReductionProxyConfigTest : public testing::Test {
     int http_response_code;
   };
 
-  void CheckSecureProxyCheckOnIPChange(
-      const std::string& secure_proxy_check_url,
-      const std::string& response,
-      bool request_succeeded,
-      bool expected_restricted,
-      bool expected_fallback_restricted) {
-    SetSecureProxyCheckResult(
-        secure_proxy_check_url, response, FetchResult(
-            !config()->restricted_by_carrier_,
-            request_succeeded && (response == "OK")),
-        request_succeeded, 1);
+  void CheckSecureProxyCheckOnIPChange(const std::string& response,
+                                       SecureProxyCheckFetchResult fetch_result,
+                                       bool expected_restricted,
+                                       bool expected_fallback_restricted) {
+    ExpectSecureProxyCheckResult(fetch_result);
     TestResponder responder;
     responder.response = response;
     responder.status =
@@ -133,17 +111,6 @@ class DataReductionProxyConfigTest : public testing::Test {
     config()->OnIPAddressChanged();
     test_context_->RunUntilIdle();
     CheckProxyConfigs(true, expected_restricted, expected_fallback_restricted);
-  }
-
-  SecureProxyCheckFetchResult FetchResult(bool enabled, bool success) {
-    if (enabled) {
-      if (success)
-        return SUCCEEDED_PROXY_ALREADY_ENABLED;
-      return FAILED_PROXY_DISABLED;
-    }
-    if (success)
-      return SUCCEEDED_PROXY_ENABLED;
-    return FAILED_PROXY_ALREADY_DISABLED;
   }
 
   void RunUntilIdle() {
@@ -240,24 +207,22 @@ TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {
 TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
-  config()->restricted_by_carrier_ = false;
-  config()->UpdateConfigurator(true, false, false, true);
+  config()->secure_proxy_allowed_ = true;
+  config()->UpdateConfigurator(true, false, true, true);
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
-  CheckSecureProxyCheckOnIPChange(
-      kSecureProxyCheckWithOKResponse, "OK", true, false, false);
+  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ALREADY_ENABLED, false,
+                                  false);
   // IP address change triggers a secure proxy check that fails. Proxy is
   // restricted.
-  CheckSecureProxyCheckOnIPChange(
-      kSecureProxyCheckWithBadResponse, "Bad", true, true, false);
+  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_DISABLED, true, false);
   // IP address change triggers a secure proxy check that fails. Proxy remains
   // restricted.
-  CheckSecureProxyCheckOnIPChange(
-      kSecureProxyCheckWithBadResponse, "Bad", true, true, false);
+  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_ALREADY_DISABLED, true,
+                                  false);
   // IP address change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange(
-      kSecureProxyCheckWithOKResponse, "OK", true, false, false);
+  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
   // Simulate a VPN connection. The proxy should be disabled.
   config()->interfaces()->clear();
   config()->interfaces()->push_back(net::NetworkInterface(
@@ -283,8 +248,63 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
       0,                             /* network prefix */
       net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
       ));
-  CheckSecureProxyCheckOnIPChange(
-      kSecureProxyCheckWithOKResponse, "OK", true, false, false);
+  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ALREADY_ENABLED, false,
+                                  false);
+}
+
+TEST_F(DataReductionProxyConfigTest,
+       TestOnIPAddressChanged_SecureProxyDisabledByDefault) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(
+      data_reduction_proxy::switches::kDataReductionProxyStartSecureDisabled);
+
+  // The proxy is enabled initially.
+  config()->enabled_by_user_ = true;
+  config()->secure_proxy_allowed_ = false;
+  config()->UpdateConfigurator(true, false, false, true);
+
+  // IP address change triggers a secure proxy check that succeeds. Proxy
+  // becomes unrestricted.
+  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
+  // IP address change triggers a secure proxy check that fails. Proxy is
+  // restricted before the check starts, and remains disabled.
+  ExpectSecureProxyCheckResult(PROXY_DISABLED_BEFORE_CHECK);
+  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_ALREADY_DISABLED, true,
+                                  false);
+  // IP address change triggers a secure proxy check that fails. Proxy remains
+  // restricted.
+  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_ALREADY_DISABLED, true,
+                                  false);
+  // IP address change triggers a secure proxy check that succeeds. Proxy is
+  // unrestricted.
+  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
+  // Simulate a VPN connection. The proxy should be disabled.
+  config()->interfaces()->clear();
+  config()->interfaces()->push_back(net::NetworkInterface(
+      "tun0", /* network interface name */
+      "tun0", /* network interface friendly name */
+      0,      /* interface index */
+      net::NetworkChangeNotifier::CONNECTION_WIFI,
+      net::IPAddressNumber(),        /* IP address */
+      0,                             /* network prefix */
+      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
+      ));
+  config()->OnIPAddressChanged();
+  RunUntilIdle();
+  CheckProxyConfigs(false, false, false);
+
+  // Check that the proxy is re-enabled if a non-VPN connection is later used.
+  config()->interfaces()->clear();
+  config()->interfaces()->push_back(net::NetworkInterface(
+      "eth0", /* network interface name */
+      "eth0", /* network interface friendly name */
+      0,      /* interface index */
+      net::NetworkChangeNotifier::CONNECTION_WIFI, net::IPAddressNumber(),
+      0,                             /* network prefix */
+      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
+      ));
+  ExpectSecureProxyCheckResult(PROXY_DISABLED_BEFORE_CHECK);
+  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
 }
 
 std::string GetRetryMapKeyFromOrigin(std::string origin) {

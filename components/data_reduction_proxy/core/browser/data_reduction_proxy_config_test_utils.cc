@@ -77,10 +77,10 @@ DataReductionProxyConfigValues* TestDataReductionProxyConfig::config_values() {
 void TestDataReductionProxyConfig::SetStateForTest(
     bool enabled_by_user,
     bool alternative_enabled_by_user,
-    bool restricted_by_carrier) {
+    bool secure_proxy_allowed) {
   enabled_by_user_ = enabled_by_user;
   alternative_enabled_by_user_ = alternative_enabled_by_user;
-  restricted_by_carrier_ = restricted_by_carrier;
+  secure_proxy_allowed_ = secure_proxy_allowed;
 }
 
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
@@ -99,11 +99,12 @@ MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
 
 void MockDataReductionProxyConfig::UpdateConfigurator(bool enabled,
                                                       bool alternative_enabled,
-                                                      bool restricted,
+                                                      bool secure_proxy_allowed,
                                                       bool at_startup) {
-  EXPECT_CALL(*this, LogProxyState(enabled, restricted, at_startup)).Times(1);
-  DataReductionProxyConfig::UpdateConfigurator(enabled, alternative_enabled,
-                                               restricted, at_startup);
+  EXPECT_CALL(*this, LogProxyState(enabled, secure_proxy_allowed, at_startup))
+      .Times(1);
+  DataReductionProxyConfig::UpdateConfigurator(
+      enabled, alternative_enabled, secure_proxy_allowed, at_startup);
 }
 
 }  // namespace data_reduction_proxy

@@ -65,7 +65,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Allows tests to set the internal state.
   void SetStateForTest(bool enabled_by_user,
                        bool alternative_enabled_by_user,
-                       bool restricted_by_carrier);
+                       bool secure_proxy_enabled);
 
   net::NetworkInterfaceList* interfaces() {
     return network_interfaces_.get();

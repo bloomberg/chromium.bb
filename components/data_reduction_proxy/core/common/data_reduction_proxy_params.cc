@@ -141,6 +141,16 @@ bool DataReductionProxyParams::ShouldForceEnableDataReductionProxy() {
       data_reduction_proxy::switches::kEnableDataReductionProxy);
 }
 
+// static
+bool DataReductionProxyParams::ShouldUseSecureProxyByDefault() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          data_reduction_proxy::switches::
+              kDataReductionProxyStartSecureDisabled))
+    return false;
+
+  return true;
+}
+
 void DataReductionProxyParams::EnableQuic(bool enable) {
   quic_enabled_ = enable;
   DCHECK(!quic_enabled_ || IsIncludedInQuicFieldTrial());

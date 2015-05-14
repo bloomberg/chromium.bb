@@ -4484,16 +4484,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="DataReductionProxy.SecureProxyCheck.Latency"
-    units="milliseconds">
-  <owner>jeremyim@chromium.org</owner>
-  <owner>bengr@chromium.org</owner>
-  <summary>
-    Time from when the Data Reduction Proxy secure proxy check starts until it
-    completes.
-  </summary>
-</histogram>
-
 <histogram name="DataReductionProxy.ResponseProxyServerStatus"
     enum="DataReductionProxyResponseProxyServerStatus">
   <owner>sclittle@chromium.org</owner>
@@ -4501,6 +4491,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Reports the state of the proxy server field in the response seen by the Data
     Reduction Proxy bypass logic.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.SecureProxyCheck.Latency"
+    units="milliseconds">
+  <owner>jeremyim@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Time from when the Data Reduction Proxy secure proxy check starts until it
+    completes.
   </summary>
 </histogram>
 
@@ -49449,6 +49449,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Probe failed, proxy already disabled"/>
   <int value="3" label="Probe succeeded, proxy enabled"/>
   <int value="4" label="Probe succeeded, proxy already enabled"/>
+  <int value="5" label="Probe started, proxy disabled"/>
 </enum>
 
 <enum name="DataReductionProxyPromoAction" type="int">

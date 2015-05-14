@@ -89,7 +89,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   }
 
   void SetDataReductionProxyEnabled(bool enabled) {
-    test_context_->config()->SetStateForTest(enabled, false, false);
+    test_context_->config()->SetStateForTest(enabled, false, true);
   }
 
   scoped_ptr<DataReductionProxyConfigServiceClient> BuildConfigClient() {

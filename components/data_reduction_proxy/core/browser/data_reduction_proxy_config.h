@@ -70,6 +70,10 @@ enum SecureProxyCheckFetchResult {
   // The secure proxy check succeeded, but the proxy was already restricted.
   SUCCEEDED_PROXY_ALREADY_ENABLED,
 
+  // The secure proxy has been disabled on a network change until the check
+  // succeeds.
+  PROXY_DISABLED_BEFORE_CHECK,
+
   // This must always be last.
   SECURE_PROXY_CHECK_FETCH_RESULT_COUNT
 };
@@ -231,6 +235,8 @@ class DataReductionProxyConfig
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestOnIPAddressChanged);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           TestOnIPAddressChanged_SecureProxyDisabledByDefault);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestSetProxyConfigsHoldback);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            AreProxiesBypassed);
@@ -293,7 +299,9 @@ class DataReductionProxyConfig
 
   scoped_ptr<SecureProxyChecker> secure_proxy_checker_;
 
-  bool restricted_by_carrier_;
+  // Indicates if the secure Data Reduction Proxy can be used or not.
+  bool secure_proxy_allowed_;
+
   bool disabled_on_vpn_;
   bool unreachable_;
   bool enabled_by_user_;

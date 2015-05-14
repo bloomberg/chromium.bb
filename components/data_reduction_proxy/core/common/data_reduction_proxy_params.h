@@ -120,6 +120,10 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // command line.
   static bool ShouldForceEnableDataReductionProxy();
 
+  // Returns true if the secure Data Reduction Proxy should be used until the
+  // secure proxy check fails.
+  static bool ShouldUseSecureProxyByDefault();
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is
