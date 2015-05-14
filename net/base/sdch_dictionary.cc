@@ -128,7 +128,7 @@ SdchProblemCode SdchDictionary::CanUse(const GURL& target_url) const {
   if (path_.size() && !PathMatch(target_url.path(), path_))
     return SDCH_DICTIONARY_FOUND_HAS_WRONG_PATH;
 
-  if (target_url.SchemeIsSecure() != url_.SchemeIsSecure())
+  if (target_url.SchemeIsCryptographic() != url_.SchemeIsCryptographic())
     return SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
 
   // TODO(jar): Remove overly restrictive failsafe test (added per security

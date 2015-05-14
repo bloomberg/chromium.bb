@@ -65,7 +65,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
       NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
       session_->net_log().source().ToEventParametersCallback());
 
-  if (request_info->url.SchemeIsSecure()) {
+  if (request_info->url.SchemeIsCryptographic()) {
     SSLInfo ssl_info;
     bool secure_session =
         session_->GetSSLInfo(&ssl_info) && ssl_info.cert.get();

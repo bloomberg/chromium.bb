@@ -186,7 +186,7 @@ std::string CanonicalCookie::GetCookieSourceFromURL(const GURL& url) {
 
   url::Replacements<char> replacements;
   replacements.ClearPort();
-  if (url.SchemeIsSecure())
+  if (url.SchemeIsCryptographic())
     replacements.SetScheme("http", url::Component(0, 4));
 
   return url.GetOrigin().ReplaceComponents(replacements).spec();
@@ -394,7 +394,7 @@ bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
     return false;
   // Secure cookies should not be included in requests for URLs with an
   // insecure scheme.
-  if (IsSecure() && !url.SchemeIsSecure())
+  if (IsSecure() && !url.SchemeIsCryptographic())
     return false;
   // Don't include cookies for requests that don't apply to the cookie domain.
   if (!IsDomainMatch(url.host()))

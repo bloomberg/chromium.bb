@@ -186,7 +186,7 @@ SdchProblemCode SdchManager::IsInSupportedDomain(const GURL& url) {
   if (!g_sdch_enabled_ )
     return SDCH_DISABLED;
 
-  if (!secure_scheme_supported() && url.SchemeIsSecure())
+  if (!secure_scheme_supported() && url.SchemeIsCryptographic())
     return SDCH_SECURE_SCHEME_NOT_SUPPORTED;
 
   if (blacklisted_domains_.empty())
@@ -268,7 +268,7 @@ SdchManager::GetDictionarySet(const GURL& target_url) {
   int count = 0;
   scoped_ptr<SdchManager::DictionarySet> result(new DictionarySet);
   for (const auto& entry: dictionaries_) {
-    if (!secure_scheme_supported() && target_url.SchemeIsSecure())
+    if (!secure_scheme_supported() && target_url.SchemeIsCryptographic())
       continue;
     if (entry.second->data.CanUse(target_url) != SDCH_OK)
       continue;
@@ -301,7 +301,7 @@ SdchManager::GetDictionarySetByHash(
     return result.Pass();
 
   if (!SdchManager::secure_scheme_supported() &&
-      target_url.SchemeIsSecure()) {
+      target_url.SchemeIsCryptographic()) {
     *problem_code = SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
     return result.Pass();
   }

@@ -70,12 +70,12 @@ enum AuthTarget {
 AuthTarget DetermineAuthTarget(const HttpAuthHandler* handler) {
   switch (handler->target()) {
     case HttpAuth::AUTH_PROXY:
-      if (handler->origin().SchemeIsSecure())
+      if (handler->origin().SchemeIsCryptographic())
         return AUTH_TARGET_SECURE_PROXY;
       else
         return AUTH_TARGET_PROXY;
     case HttpAuth::AUTH_SERVER:
-      if (handler->origin().SchemeIsSecure())
+      if (handler->origin().SchemeIsCryptographic())
         return AUTH_TARGET_SECURE_SERVER;
       else
         return AUTH_TARGET_SERVER;

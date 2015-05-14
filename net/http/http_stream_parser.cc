@@ -792,7 +792,7 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
       // rather than empty HTTP/0.9 response.
       io_state_ = STATE_DONE;
       return ERR_EMPTY_RESPONSE;
-    } else if (request_->url.SchemeIsSecure()) {
+    } else if (request_->url.SchemeIsCryptographic()) {
       // The connection was closed in the middle of the headers. For HTTPS we
       // don't parse partial headers. Return a different error code so that we
       // know that we shouldn't attempt to retry the request.
@@ -1039,7 +1039,7 @@ bool HttpStreamParser::IsConnectionReusable() const {
 }
 
 void HttpStreamParser::GetSSLInfo(SSLInfo* ssl_info) {
-  if (request_->url.SchemeIsSecure() && connection_->socket()) {
+  if (request_->url.SchemeIsCryptographic() && connection_->socket()) {
     SSLClientSocket* ssl_socket =
         static_cast<SSLClientSocket*>(connection_->socket());
     ssl_socket->GetSSLInfo(ssl_info);
@@ -1048,7 +1048,7 @@ void HttpStreamParser::GetSSLInfo(SSLInfo* ssl_info) {
 
 void HttpStreamParser::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
-  if (request_->url.SchemeIsSecure() && connection_->socket()) {
+  if (request_->url.SchemeIsCryptographic() && connection_->socket()) {
     SSLClientSocket* ssl_socket =
         static_cast<SSLClientSocket*>(connection_->socket());
     ssl_socket->GetSSLCertRequestInfo(cert_request_info);

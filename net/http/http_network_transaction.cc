@@ -590,7 +590,7 @@ void HttpNetworkTransaction::GetConnectionAttempts(
 }
 
 bool HttpNetworkTransaction::IsSecureRequest() const {
-  return request_->url.SchemeIsSecure();
+  return request_->url.SchemeIsCryptographic();
 }
 
 bool HttpNetworkTransaction::UsingHttpProxyWithoutTunnel() const {
