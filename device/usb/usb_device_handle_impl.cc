@@ -485,7 +485,7 @@ void UsbDeviceHandleImpl::Transfer::TransferComplete(UsbTransferStatus status,
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UsbDeviceHandleImpl::TransferComplete, device_handle_,
-                 base::Owned(this),
+                 base::Unretained(this),
                  base::Bind(callback_, status, buffer_, bytes_transferred)));
 }
 
@@ -970,6 +970,10 @@ void UsbDeviceHandleImpl::TransferComplete(Transfer* transfer,
   } else {
     transfer->callback_task_runner()->PostTask(FROM_HERE, callback);
   }
+
+  // libusb_free_transfer races with libusb_submit_transfer and only work-
+  // around is to make sure to call them on the same thread.
+  blocking_task_runner_->DeleteSoon(FROM_HERE, transfer);
 }
 
 void UsbDeviceHandleImpl::InternalClose() {
