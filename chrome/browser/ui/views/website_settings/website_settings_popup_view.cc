@@ -836,7 +836,8 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
 
-    new CollectedCookiesViews(web_contents_);
+    if (web_contents_ != NULL)
+      new CollectedCookiesViews(web_contents_);
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent = GetAnchorView() ?
         GetAnchorView()->GetWidget()->GetNativeWindow() : nullptr;
