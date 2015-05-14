@@ -74,10 +74,7 @@ std::string DownloadNotificationItem::NotificationWatcher::id() const {
 DownloadNotificationItem::DownloadNotificationItem(content::DownloadItem* item,
                                                    Profile* profile,
                                                    Delegate* delegate)
-    : openable_(false),
-      downloading_(false),
-      image_resource_id_(0),
-      profile_(profile),
+    : profile_(profile),
       watcher_(new NotificationWatcher(this)),
       item_(item),
       delegate_(delegate) {

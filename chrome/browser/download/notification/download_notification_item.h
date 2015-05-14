@@ -103,17 +103,14 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
 
   scoped_ptr<std::vector<DownloadCommands::Command>> GetPossibleActions() const;
 
-  bool openable_;
-  bool downloading_;
-  int image_resource_id_;
+  bool openable_ = false;
+  bool downloading_ = false;
+  int image_resource_id_ = 0;
   Profile* profile_;
   scoped_refptr<NotificationWatcher> watcher_;
-
   scoped_ptr<Notification> notification_;
-
   content::DownloadItem* item_;
   scoped_ptr<std::vector<DownloadCommands::Command>> button_actions_;
-
   Delegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationItem);
