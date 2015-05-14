@@ -6,7 +6,7 @@
 
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/lib/service_connector.h"
+#include "mojo/public/cpp/application/service_connector.h"
 
 namespace mojo {
 namespace internal {
@@ -31,38 +31,24 @@ ServiceRegistry::ServiceRegistry()
 }
 
 ServiceRegistry::~ServiceRegistry() {
-  for (NameToServiceConnectorMap::iterator i =
-           name_to_service_connector_.begin();
-       i != name_to_service_connector_.end();
-       ++i) {
-    delete i->second;
-  }
-  name_to_service_connector_.clear();
 }
 
-void ServiceRegistry::AddServiceConnector(
-    ServiceConnectorBase* service_connector) {
-  RemoveServiceConnectorInternal(service_connector);
-  name_to_service_connector_[service_connector->name()] = service_connector;
-  service_connector->set_application_connection(this);
+void ServiceRegistry::SetServiceConnector(ServiceConnector* connector) {
+  service_connector_registry_.set_service_connector(connector);
 }
 
-void ServiceRegistry::RemoveServiceConnector(
-    ServiceConnectorBase* service_connector) {
-  RemoveServiceConnectorInternal(service_connector);
-  if (name_to_service_connector_.empty())
+void ServiceRegistry::SetServiceConnectorForName(
+    ServiceConnector* service_connector,
+    const std::string& interface_name) {
+  service_connector_registry_.SetServiceConnectorForName(service_connector,
+                                                         interface_name);
+}
+
+void ServiceRegistry::RemoveServiceConnectorForName(
+    const std::string& interface_name) {
+  service_connector_registry_.RemoveServiceConnectorForName(interface_name);
+  if (service_connector_registry_.empty())
     remote_service_provider_.reset();
-}
-
-bool ServiceRegistry::RemoveServiceConnectorInternal(
-    ServiceConnectorBase* service_connector) {
-  NameToServiceConnectorMap::iterator it =
-      name_to_service_connector_.find(service_connector->name());
-  if (it == name_to_service_connector_.end())
-    return false;
-  delete it->second;
-  name_to_service_connector_.erase(it);
-  return true;
 }
 
 const std::string& ServiceRegistry::GetConnectionURL() {
@@ -79,15 +65,8 @@ ServiceProvider* ServiceRegistry::GetServiceProvider() {
 
 void ServiceRegistry::ConnectToService(const mojo::String& service_name,
                                        ScopedMessagePipeHandle client_handle) {
-  if (name_to_service_connector_.find(service_name) ==
-      name_to_service_connector_.end()) {
-    client_handle.reset();
-    return;
-  }
-  internal::ServiceConnectorBase* service_connector =
-      name_to_service_connector_[service_name];
-  return service_connector->ConnectToService(service_name,
-                                             client_handle.Pass());
+  service_connector_registry_.ConnectToService(this, service_name,
+                                               client_handle.Pass());
 }
 
 }  // namespace internal

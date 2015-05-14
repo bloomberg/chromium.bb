@@ -13,6 +13,8 @@
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/lib/control_message_handler.h"
+#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/no_interface.h"
@@ -27,14 +29,20 @@
 namespace {{namespace}} {
 {%- endfor %}
 
-{#--- Constants #}
-{%  for constant in module.constants %}
-extern const {{constant.kind|cpp_pod_type}} {{constant.name}};
-{%- endfor %}
-
 {#--- Enums #}
 {%  for enum in enums %}
 {%    include "enum_declaration.tmpl" %}
+{%- endfor %}
+
+{#--- Constants #}
+{%- for constant in module.constants %}
+{#-   To be consistent with constants defined inside interfaces, only make
+      integral types compile-time constants. #}
+{%-   if constant.kind|is_integral_kind %}
+const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant|constant_value}};
+{%-   else %}
+extern const {{constant.kind|cpp_pod_type}} {{constant.name}};
+{%-   endif %}
 {%- endfor %}
 
 {#--- Interface Forward Declarations -#}
@@ -63,29 +71,6 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    endif %}
 {%- endfor %}
 
-{#--- Unions must be declared first because they can be members of structs #}
-{#--- Unions #}
-{%  for union in unions %}
-{%    include "wrapper_union_class_declaration.tmpl" %}
-{%- endfor %}
-
-{#--- NOTE: Non-inlined structs may have pointers to inlined structs, so we  #}
-{#---       need to fully define inlined structs ahead of the others.        #}
-
-{#--- Inlined structs #}
-{%  for struct in structs %}
-{%    if struct|should_inline %}
-{%      include "wrapper_class_declaration.tmpl" %}
-{%    endif %}
-{%- endfor %}
-
-{#--- Non-inlined structs #}
-{%  for struct in structs %}
-{%    if not struct|should_inline %}
-{%      include "wrapper_class_declaration.tmpl" %}
-{%    endif %}
-{%- endfor %}
-
 {#--- Interfaces -#}
 {%  for interface in interfaces %}
 {%    include "interface_declaration.tmpl" %}
@@ -109,6 +94,29 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {#--- Interface Response Validators -#}
 {%  for interface in interfaces if interface|has_callbacks %}
 {%    include "interface_response_validator_declaration.tmpl" %}
+{%- endfor %}
+
+{#--- Unions must be declared first because they can be members of structs #}
+{#--- Unions #}
+{%  for union in unions %}
+{%    include "wrapper_union_class_declaration.tmpl" %}
+{%- endfor %}
+
+{#--- NOTE: Non-inlined structs may have pointers to inlined structs, so we  #}
+{#---       need to fully define inlined structs ahead of the others.        #}
+
+{#--- Inlined structs #}
+{%  for struct in structs %}
+{%    if struct|should_inline %}
+{%      include "wrapper_class_declaration.tmpl" %}
+{%    endif %}
+{%- endfor %}
+
+{#--- Non-inlined structs #}
+{%  for struct in structs %}
+{%    if not struct|should_inline %}
+{%      include "wrapper_class_declaration.tmpl" %}
+{%    endif %}
 {%- endfor %}
 
 {#--- Struct Serialization Helpers -#}

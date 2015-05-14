@@ -45,7 +45,8 @@ class ApplicationManager::ContentHandlerConnection : public ErrorHandler {
         content_handler_url, qualifier, requestor_url, GetProxy(&services),
         nullptr, base::Closure(), std::vector<std::string>());
     MessagePipe pipe;
-    content_handler_.Bind(pipe.handle0.Pass());
+    content_handler_.Bind(
+        InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));
     services->ConnectToService(ContentHandler::Name_, pipe.handle1.Pass());
     content_handler_.set_error_handler(this);
   }

@@ -43,7 +43,7 @@ bool {{union.name}}::Equals(const {{union.name}}& other) const {
   switch (tag_) {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%    if field.kind|is_object_kind %}
+{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind %}
       return mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(*(data_.{{field.name}}), *(other.data_.{{field.name}}));
 {%-   else %}
       return mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(data_.{{field.name}}, other.data_.{{field.name}});
@@ -61,7 +61,7 @@ bool {{union.name}}::is_{{field.name}}() const {
 
 {{field.kind|cpp_union_getter_return_type}} {{union.name}}::get_{{field.name}}() const {
   MOJO_DCHECK(tag_ == Tag::{{field.name|upper}});
-{%    if field.kind|is_object_kind %}
+{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind %}
   return *(data_.{{field.name}});
 {%-   else %}
   return data_.{{field.name}};
@@ -74,6 +74,8 @@ void {{union.name}}::set_{{field.name}}({{field.kind|cpp_const_wrapper_type}} {{
   *(data_.{{field.name}}) = {{field.name}};
 {%    elif field.kind|is_object_kind %}
   *(data_.{{field.name}}) = {{field.name}}.Pass();
+{%    elif field.kind|is_any_handle_kind %}
+  data_.{{field.name}}->reset({{field.name}}.release());
 {%-   else %}
   data_.{{field.name}} = {{field.name}};
 {%-   endif %}
@@ -93,7 +95,7 @@ void {{union.name}}::SetActive(Tag new_active) {
   switch (new_active) {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%    if field.kind|is_object_kind %}
+{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind %}
       data_.{{field.name}} = new {{field.kind|cpp_wrapper_type}}();
 {%-   endif %}
       break;
@@ -107,7 +109,7 @@ void {{union.name}}::DestroyActive() {
   switch (tag_) {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%    if field.kind|is_object_kind %}
+{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind %}
       delete data_.{{field.name}};
 {%-   endif %}
       break;

@@ -7,10 +7,12 @@
 
 #include <string>
 
-#include "mojo/public/cpp/application/lib/service_connector.h"
+#include "mojo/public/cpp/application/lib/interface_factory_connector.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
+
+class ServiceConnector;
 
 // Represents a connection to another application. An instance of this class is
 // passed to ApplicationDelegate's ConfigureIncomingConnection() method each
@@ -31,16 +33,27 @@ namespace mojo {
 //   connection->AddService<Bar>(&my_foo_and_bar_factory_);
 //
 // The InterfaceFactory must outlive the ApplicationConnection.
+//
+// Additionally you specify a ServiceConnector. If a ServiceConnector has
+// been set and an InterfaceFactory has not been registered for the interface
+// request, than the interface request is sent to the ServiceConnector.
+//
+// Just as with InterfaceFactory, ServiceConnector must outlive
+// ApplicationConnection.
 class ApplicationConnection {
  public:
   virtual ~ApplicationConnection();
+
+  // See class description for details.
+  virtual void SetServiceConnector(ServiceConnector* connector) = 0;
 
   // Makes Interface available as a service to the remote application.
   // |factory| will create implementations of Interface on demand.
   template <typename Interface>
   void AddService(InterfaceFactory<Interface>* factory) {
-    AddServiceConnector(
-        new internal::InterfaceFactoryConnector<Interface>(factory));
+    SetServiceConnectorForName(
+        new internal::InterfaceFactoryConnector<Interface>(factory),
+        Interface::Name_);
   }
 
   // Binds |ptr| to an implemention of Interface in the remote application.
@@ -50,7 +63,7 @@ class ApplicationConnection {
   void ConnectToService(InterfacePtr<Interface>* ptr) {
     if (ServiceProvider* sp = GetServiceProvider()) {
       MessagePipe pipe;
-      ptr->Bind(pipe.handle0.Pass());
+      ptr->Bind(InterfacePtrInfo<Interface>(pipe.handle0.Pass(), 0u));
       sp->ConnectToService(Interface::Name_, pipe.handle1.Pass());
     }
   }
@@ -76,8 +89,8 @@ class ApplicationConnection {
   virtual ServiceProvider* GetServiceProvider() = 0;
 
  private:
-  virtual void AddServiceConnector(
-      internal::ServiceConnectorBase* service_connector) = 0;
+  virtual void SetServiceConnectorForName(ServiceConnector* service_connector,
+                                          const std::string& name) = 0;
 };
 
 }  // namespace mojo

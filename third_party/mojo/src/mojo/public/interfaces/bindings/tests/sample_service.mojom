@@ -9,15 +9,6 @@ import "sample_import.mojom";
 import "sample_import2.mojom";
 
 const uint8 kTwelve = 12;
-const uint64 kTooBigForSignedInt64 = 9999999999999999999;
-
-const double kDoubleInfinity = double.INFINITY;
-const double kDoubleNegativeInfinity = double.NEGATIVE_INFINITY;
-const double kDoubleNaN = double.NAN;
-
-const float kFloatInfinity = float.INFINITY;
-const float kFloatNegativeInfinity = float.NEGATIVE_INFINITY;
-const float kFloatNaN = float.NAN;
 
 struct Bar {
   enum Type {
@@ -32,7 +23,6 @@ struct Bar {
   Type type@3 = sample.Bar.Type.VERTICAL;
 };
 
-[RequiredFields=7]
 struct Foo {
   const string kFooby = "Fooby";
   string name@8 = kFooby;

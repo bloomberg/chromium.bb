@@ -54,7 +54,7 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
     mojo::CommandBufferPtr cb;
     gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
     scoped_refptr<cc::ContextProvider> context_provider(
-        new mojo::ContextProviderMojo(cb.PassMessagePipe()));
+        new mojo::ContextProviderMojo(cb.PassInterface().PassHandle()));
     output_surface_.reset(
         new mojo::OutputSurfaceMojo(this, context_provider, surface.Pass()));
   }

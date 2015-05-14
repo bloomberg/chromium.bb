@@ -53,7 +53,7 @@ struct MapSerializer<ScopedHandleBase<H>, H, true, false> {
   static size_t GetBaseArraySize(size_t count) {
     return Align(count * sizeof(H));
   }
-  static size_t GetItemSize(const H& item) { return 0; }
+  static size_t GetItemSize(const ScopedHandleBase<H>& item) { return 0; }
 };
 
 // This template must only apply to pointer mojo entity (structs and arrays).

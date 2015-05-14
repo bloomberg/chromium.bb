@@ -211,7 +211,7 @@ def AddImport(module, element):
     AddImport(module, element.key_kind)
     AddImport(module, element.value_kind)
     return
-  if mojom.IsNonInterfaceHandleKind(element):
+  if mojom.IsAnyHandleKind(element):
     _imports['mojo/public/go/system'] = 'system'
     return
 

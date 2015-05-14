@@ -100,6 +100,10 @@
         'src/mojo/public/cpp/bindings/lib/callback_internal.h',
         'src/mojo/public/cpp/bindings/lib/connector.cc',
         'src/mojo/public/cpp/bindings/lib/connector.h',
+        'src/mojo/public/cpp/bindings/lib/control_message_handler.cc',
+        'src/mojo/public/cpp/bindings/lib/control_message_handler.h',
+        'src/mojo/public/cpp/bindings/lib/control_message_proxy.cc',
+        'src/mojo/public/cpp/bindings/lib/control_message_proxy.h',
         'src/mojo/public/cpp/bindings/lib/filter_chain.cc',
         'src/mojo/public/cpp/bindings/lib/filter_chain.h',
         'src/mojo/public/cpp/bindings/lib/fixed_buffer.cc',
@@ -129,6 +133,11 @@
         'src/mojo/public/cpp/bindings/lib/validation_errors.h',
         'src/mojo/public/cpp/bindings/lib/validation_util.cc',
         'src/mojo/public/cpp/bindings/lib/validation_util.h',
+        # This comes from the mojo_interface_bindings_cpp_sources dependency.
+        '>@(mojom_generated_sources)',
+      ],
+      'dependencies': [
+        'mojo_interface_bindings_cpp_sources',
       ],
     },
     {
@@ -239,11 +248,13 @@
         'src/mojo/public/cpp/application/lib/application_connection.cc',
         'src/mojo/public/cpp/application/lib/application_delegate.cc',
         'src/mojo/public/cpp/application/lib/application_impl.cc',
+        'src/mojo/public/cpp/application/lib/interface_factory_connector.h',
+        'src/mojo/public/cpp/application/lib/service_connector_registry.cc',
+        'src/mojo/public/cpp/application/lib/service_connector_registry.h',
         'src/mojo/public/cpp/application/lib/service_provider_impl.cc',
-        'src/mojo/public/cpp/application/lib/service_connector.cc',
-        'src/mojo/public/cpp/application/lib/service_connector.h',
         'src/mojo/public/cpp/application/lib/service_registry.cc',
         'src/mojo/public/cpp/application/lib/service_registry.h',
+        'src/mojo/public/cpp/application/service_connector.h',
         'src/mojo/public/cpp/application/service_provider_impl.h',
       ],
       'dependencies': [
@@ -254,7 +265,7 @@
       ],
     },
     {
-      # GN version: //mojo/public/cpp/application:standalone"
+      # GN version: //mojo/public/cpp/application:standalone
       'target_name': 'mojo_application_standalone',
       'type': 'static_library',
       'sources': [
@@ -267,6 +278,34 @@
       ],
       'export_dependent_settings': [
         'mojo_application_base',
+      ],
+    },
+    {
+      'target_name': 'mojo_interface_bindings_mojom',
+      'type': 'none',
+      'variables': {
+        'require_interface_bindings': 0,
+        'mojom_files': [
+          'src/mojo/public/interfaces/bindings/interface_control_messages.mojom',
+        ],
+      },
+      'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      'target_name': 'mojo_interface_bindings_cpp_sources',
+      'type': 'none',
+      'dependencies': [
+        'mojo_interface_bindings_mojom',
+      ],
+    },
+    {
+      # This target can be used to introduce a dependency on interface bindings
+      # generation without introducing any side-effects in the dependent
+      # target's configuration.
+      'target_name': 'mojo_interface_bindings_generation',
+      'type': 'none',
+      'dependencies': [
+        'mojo_interface_bindings_cpp_sources',
       ],
     },
     {
@@ -369,7 +408,7 @@
     ['OS == "android"', {
       'targets': [
         {
-          # GN version: //mojo/public/java_system
+          # GN version: //mojo/public/java:system
           'target_name': 'mojo_public_java',
           'type': 'none',
           'variables': {
@@ -378,13 +417,21 @@
           'includes': [ '../../build/java.gypi' ],
         },
         {
-        # GN version: //mojo/public/java_bindings
+          'target_name': 'mojo_interface_bindings_java_sources',
+          'type': 'none',
+          'dependencies': [
+            'mojo_interface_bindings_mojom',
+          ],
+        },
+        {
+          # GN version: //mojo/public/java:bindings
           'target_name': 'mojo_bindings_java',
           'type': 'none',
           'variables': {
             'java_in_dir': 'src/mojo/public/java/bindings',
            },
            'dependencies': [
+             'mojo_interface_bindings_java_sources',
              'mojo_public_java',
            ],
            'includes': [ '../../build/java.gypi' ],

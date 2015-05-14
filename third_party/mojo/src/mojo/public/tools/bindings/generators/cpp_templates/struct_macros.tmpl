@@ -71,7 +71,7 @@
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
       "null {{name}} in {{struct_display_name}}");
 {%-     endif %}
-{%-   elif kind|is_any_handle_kind %}
+{%-   elif kind|is_any_handle_kind or kind|is_interface_kind %}
 {%-     if kind|is_interface_kind %}
   mojo::internal::InterfacePointerToData({{input_field}}.Pass(), &{{output}}->{{name}});
 {%-     elif kind|is_interface_request_kind %}

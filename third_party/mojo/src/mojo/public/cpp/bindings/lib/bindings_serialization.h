@@ -46,9 +46,11 @@ inline void DecodePointer(const uint64_t* offset, T** ptr) {
 
 void EncodeHandle(Handle* handle, std::vector<Handle>* handles);
 void EncodeHandle(Interface_Data* data, std::vector<Handle>* handles);
-// Note: The following two functions don't validate the encoded handle value.
+void EncodeHandle(MojoHandle* handle, std::vector<Handle>* handles);
+// Note: The following three functions don't validate the encoded handle value.
 void DecodeHandle(Handle* handle, std::vector<Handle>* handles);
 void DecodeHandle(Interface_Data* data, std::vector<Handle>* handles);
+void DecodeHandle(MojoHandle* handle, std::vector<Handle>* handles);
 
 // The following 2 functions are used to encode/decode all objects (structs and
 // arrays) in a consistent manner.

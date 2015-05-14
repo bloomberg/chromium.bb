@@ -73,16 +73,6 @@ class InterfacePtr {
       internal_state_.Bind(info.Pass(), waiter);
   }
 
-  // Similar to the previous method, but takes a message pipe handle as input.
-  //
-  // TODO(yzshen): Remove this method and change call sites to use the other
-  // Bind().
-  void Bind(
-      ScopedMessagePipeHandle handle,
-      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-    Bind(InterfacePtrInfo<Interface>(handle.Pass(), 0u), waiter);
-  }
-
   // Returns a raw pointer to the local proxy. Caller does not take ownership.
   // Note that the local proxy is thread hostile, as stated above.
   Interface* get() const { return internal_state_.instance(); }
@@ -93,6 +83,24 @@ class InterfacePtr {
 
   // Returns the version number of the interface that the remote side supports.
   uint32_t version() const { return internal_state_.version(); }
+
+  // Queries the max version that the remote side supports. On completion, the
+  // result will be returned as the input of |callback|. The version number of
+  // this interface pointer will also be updated.
+  void QueryVersion(const Callback<void(uint32_t)>& callback) {
+    internal_state_.QueryVersion(callback);
+  }
+
+  // If the remote side doesn't support the specified version, it will close its
+  // end of the message pipe asynchronously. This does nothing if it's already
+  // known that the remote side supports the specified version, i.e., if
+  // |version <= this->version()|.
+  //
+  // After calling RequireVersion() with a version not supported by the remote
+  // side, all subsequent calls to interface methods will be ignored.
+  void RequireVersion(uint32_t version) {
+    internal_state_.RequireVersion(version);
+  }
 
   // Closes the bound message pipe (if any) and returns the pointer to the
   // unbound state.
@@ -137,15 +145,6 @@ class InterfacePtr {
     return state.PassInterface();
   }
 
-  // Similar to the previous method but returns the previously bound message
-  // pipe (if any).
-  //
-  // TODO(yzshen): Remove this method and change call sites to use
-  // PassInterface().
-  ScopedMessagePipeHandle PassMessagePipe() {
-    return PassInterface().PassHandle();
-  }
-
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::InterfacePtrState<Interface>* internal_state() {
     return &internal_state_;
@@ -167,19 +166,16 @@ class InterfacePtr {
   mutable State internal_state_;
 };
 
-// If the specified message pipe handle is valid, returns an InterfacePtr bound
-// to it. Otherwise, returns an unbound InterfacePtr. The specified |waiter|
-// will be used as in the InterfacePtr::Bind() method.
-//
-// TODO(yzshen): Either remove it or change to use InterfacePtrInfo as the first
-// parameter.
+// If |info| is valid (containing a valid message pipe handle), returns an
+// InterfacePtr bound to it. Otherwise, returns an unbound InterfacePtr. The
+// specified |waiter| will be used as in the InterfacePtr::Bind() method.
 template <typename Interface>
 InterfacePtr<Interface> MakeProxy(
-    ScopedMessagePipeHandle handle,
+    InterfacePtrInfo<Interface> info,
     const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
   InterfacePtr<Interface> ptr;
-  if (handle.is_valid())
-    ptr.Bind(handle.Pass(), waiter);
+  if (info.is_valid())
+    ptr.Bind(info.Pass(), waiter);
   return ptr.Pass();
 }
 

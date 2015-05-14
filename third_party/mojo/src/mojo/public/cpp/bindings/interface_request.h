@@ -109,7 +109,7 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
 template <typename Interface>
 InterfaceRequest<Interface> GetProxy(InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
-  ptr->Bind(pipe.handle0.Pass());
+  ptr->Bind(InterfacePtrInfo<Interface>(pipe.handle0.Pass(), 0u));
   return MakeRequest<Interface>(pipe.handle1.Pass());
 }
 

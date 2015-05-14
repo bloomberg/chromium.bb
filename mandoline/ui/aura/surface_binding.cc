@@ -174,7 +174,7 @@ SurfaceBinding::PerViewManagerState::CreateOutputSurface(mojo::View* view) {
   mojo::CommandBufferPtr cb;
   gpu_->CreateOffscreenGLES2Context(GetProxy(&cb));
   scoped_refptr<cc::ContextProvider> context_provider(
-      new mojo::ContextProviderMojo(cb.PassMessagePipe()));
+      new mojo::ContextProviderMojo(cb.PassInterface().PassHandle()));
   return make_scoped_ptr(new OutputSurfaceImpl(
       view, context_provider, surface_.get(), id_namespace_, &next_local_id_));
 }

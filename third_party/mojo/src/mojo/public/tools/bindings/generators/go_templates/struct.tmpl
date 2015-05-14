@@ -158,7 +158,7 @@ if pointer{{level}} == 0 {
 	{{decodePointerValue(value, kind, level)|tab_indent()}}
 }
 {%   endif %}
-{% elif kind|is_handle %}
+{% elif kind|is_handle or kind|is_interface %}
 handle{{level}}, err := decoder.Read{{kind|decode_suffix}}()
 if err != nil {
 	return err

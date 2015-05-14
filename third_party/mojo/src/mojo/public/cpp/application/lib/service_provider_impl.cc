@@ -4,7 +4,7 @@
 
 #include "mojo/public/cpp/application/service_provider_impl.h"
 
-#include "mojo/public/cpp/application/lib/service_connector.h"
+#include "mojo/public/cpp/application/service_connector.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
@@ -32,33 +32,17 @@ void ServiceProviderImpl::Close() {
 void ServiceProviderImpl::ConnectToService(
     const String& service_name,
     ScopedMessagePipeHandle client_handle) {
-  if (service_connectors_.find(service_name) == service_connectors_.end()) {
-    client_handle.reset();
-    return;
-  }
-
-  internal::ServiceConnectorBase* service_connector =
-      service_connectors_[service_name];
-  return service_connector->ConnectToService(service_name,
-                                             client_handle.Pass());
+  // TODO(beng): perhaps take app connection thru ctor so that we can pass
+  // ApplicationConnection through?
+  service_connector_registry_.ConnectToService(nullptr, service_name,
+                                               client_handle.Pass());
 }
 
-void ServiceProviderImpl::AddServiceConnector(
-    internal::ServiceConnectorBase* service_connector) {
-  RemoveServiceConnector(service_connector);
-  service_connectors_[service_connector->name()] = service_connector;
-  // TODO(beng): perhaps take app connection thru ctor??
-  service_connector->set_application_connection(nullptr);
-}
-
-void ServiceProviderImpl::RemoveServiceConnector(
-    internal::ServiceConnectorBase* service_connector) {
-  NameToServiceConnectorMap::iterator it =
-      service_connectors_.find(service_connector->name());
-  if (it == service_connectors_.end())
-    return;
-  delete it->second;
-  service_connectors_.erase(it);
+void ServiceProviderImpl::SetServiceConnectorForName(
+    ServiceConnector* service_connector,
+    const std::string& interface_name) {
+  service_connector_registry_.SetServiceConnectorForName(service_connector,
+                                                         interface_name);
 }
 
 }  // namespace mojo

@@ -92,7 +92,7 @@ void ApplicationImpl::UnbindConnections(
     InterfaceRequest<Application>* application_request,
     ShellPtr* shell) {
   *application_request = binding_.Unbind();
-  shell->Bind(shell_.PassMessagePipe());
+  shell->Bind(shell_.PassInterface());
 }
 
 void ApplicationImpl::AcceptConnection(

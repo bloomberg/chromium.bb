@@ -63,6 +63,9 @@
       'process_outputs_as_sources': 1,
     }
   ],
+  'dependencies': [
+    '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_interface_bindings_generation',
+  ],
   'include_dirs': [
     '<(DEPTH)',
     '<(DEPTH)/third_party/mojo/src',

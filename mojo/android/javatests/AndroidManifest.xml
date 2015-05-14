@@ -5,11 +5,13 @@
   <!-- package name must be unique so suffix with "tests" so package loader
        doesn't ignore this. -->
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
       package="org.chromium.mojo.tests">
 
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="21" />
 
-    <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name="android.permission.INJECT_EVENTS"
+        tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
 

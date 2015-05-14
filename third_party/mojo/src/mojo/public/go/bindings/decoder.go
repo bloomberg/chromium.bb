@@ -123,7 +123,7 @@ func (d *Decoder) StartMap() error {
 			fmt.Sprintf("invalid map header: %v", header),
 		}
 	}
-	if err := d.pushState(header, pointerBitSize); err != nil {
+	if err := d.pushState(header, 0); err != nil {
 		return err
 	}
 	return nil

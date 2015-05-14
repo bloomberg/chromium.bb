@@ -11,4 +11,5 @@ class {{interface.name}}Stub : public mojo::MessageReceiverWithResponderStatus {
 
  private:
   {{interface.name}}* sink_;
+  mojo::internal::ControlMessageHandler control_message_handler_;
 };

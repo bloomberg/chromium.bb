@@ -4,6 +4,8 @@
 
 package org.chromium.mojo.bindings;
 
+import org.chromium.mojo.bindings.Callbacks.Callback1;
+import org.chromium.mojo.bindings.Interface.AbstractProxy.HandlerImpl;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoException;
@@ -38,6 +40,29 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
              * Sets the {@link ConnectionErrorHandler} that will be notified of errors.
              */
             public void setErrorHandler(ConnectionErrorHandler errorHandler);
+
+            /**
+             * Returns the version number of the interface that the remote side supports.
+             */
+            public int getVersion();
+
+            /**
+             * Queries the max version that the remote side supports. On completion, the result will
+             * be returned as the input of |callback|. The version number of this interface pointer
+             * will also be updated.
+             */
+            public void queryVersion(Callback1<Integer> callback);
+
+            /**
+             * If the remote side doesn't support the specified version, it will close its end of
+             * the message pipe asynchronously. The call does nothing if |version| is no greater
+             * than getVersion().
+             * <p>
+             * If you make a call to requireVersion() with a version number X which is not supported
+             * by the remote side, it is guaranteed that all calls to the interface methods after
+             * requireVersion(X) will be ignored.
+             */
+            public void requireVersion(int version);
         }
 
         /**
@@ -71,6 +96,11 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
             private ConnectionErrorHandler mErrorHandler = null;
 
             /**
+             * The currently known version of the interface.
+             */
+            private int mVersion = 0;
+
+            /**
              * Constructor.
              *
              * @param core the Core implementation used to create pipes and access the async waiter.
@@ -79,6 +109,10 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
             protected HandlerImpl(Core core, MessageReceiverWithResponder messageReceiver) {
                 this.mCore = core;
                 this.mMessageReceiver = messageReceiver;
+            }
+
+            void setVersion(int version) {
+                mVersion = version;
             }
 
             /**
@@ -119,6 +153,52 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
             @Override
             public void close() {
                 mMessageReceiver.close();
+            }
+
+            /**
+             * @see Handler#getVersion()
+             */
+            @Override
+            public int getVersion() {
+                return mVersion;
+            }
+
+            /**
+             * @see Handler#queryVersion(org.chromium.mojo.bindings.Callbacks.Callback1)
+             */
+            @Override
+            public void queryVersion(final Callback1<Integer> callback) {
+                RunMessageParams message = new RunMessageParams();
+                message.reserved0 = 16;
+                message.reserved1 = 0;
+                message.queryVersion = new QueryVersion();
+
+                InterfaceControlMessagesHelper.sendRunMessage(getCore(), getMessageReceiver(),
+                        message, new Callback1<RunResponseMessageParams>() {
+                            @Override
+                            public void call(RunResponseMessageParams response) {
+                                mVersion = response.queryVersionResult.version;
+                                callback.call(mVersion);
+                            }
+                        });
+            }
+
+            /**
+             * @see Handler#requireVersion(int)
+             */
+            @Override
+            public void requireVersion(int version) {
+                if (mVersion >= version) {
+                    return;
+                }
+                mVersion = version;
+                RunOrClosePipeMessageParams message = new RunOrClosePipeMessageParams();
+                message.reserved0 = 16;
+                message.reserved1 = 0;
+                message.requireVersion = new RequireVersion();
+                message.requireVersion.version = version;
+                InterfaceControlMessagesHelper.sendRunOrClosePipeMessage(
+                        getCore(), getMessageReceiver(), message);
             }
         }
 
@@ -225,6 +305,11 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
         public abstract String getName();
 
         /**
+         * Returns the version of the managed interface.
+         */
+        public abstract int getVersion();
+
+        /**
          * Binds the given implementation to the handle.
          */
         public void bind(I impl, MessagePipeHandle handle) {
@@ -245,15 +330,16 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
 
         /**
          * Returns a Proxy that will send messages to the given |handle|. This implies that the
-         * other end of the handle must be binded to an implementation of the interface.
+         * other end of the handle must be bound to an implementation of the interface.
          */
-        public final P attachProxy(MessagePipeHandle handle) {
+        public final P attachProxy(MessagePipeHandle handle, int version) {
             RouterImpl router = new RouterImpl(handle);
             P proxy = attachProxy(handle.getCore(), router);
             DelegatingConnectionErrorHandler handlers = new DelegatingConnectionErrorHandler();
             handlers.addConnectionErrorHandler(proxy);
             router.setErrorHandler(handlers);
             router.start();
+            ((HandlerImpl) proxy.getProxyHandler()).setVersion(version);
             return proxy;
         }
 
@@ -264,7 +350,7 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
          */
         public final Pair<P, InterfaceRequest<I>> getInterfaceRequest(Core core) {
             Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
-            P proxy = attachProxy(handles.first);
+            P proxy = attachProxy(handles.first, 0);
             return Pair.create(proxy, new InterfaceRequest<I>(handles.second));
         }
 

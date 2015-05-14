@@ -314,12 +314,19 @@ class InterfaceType(BaseHandleType):
   def Serialize(self, value, data_offset, data, handle_offset):
     (encoded_handle, handles) = super(InterfaceType, self).Serialize(
         value, data_offset, data, handle_offset)
-    # Set the version field to 0 for now.
-    return ((encoded_handle, 0), handles)
+    if encoded_handle == -1:
+      version = 0
+    else:
+      version = self.interface.manager.version
+      if value and isinstance(value, reflection.InterfaceProxy):
+        version = value.manager.version
+    return ((encoded_handle, version), handles)
 
   def Deserialize(self, value, context):
-    # Ignore the version field for now.
-    return super(InterfaceType, self).Deserialize(value[0], context)
+    proxy = super(InterfaceType, self).Deserialize(value[0], context)
+    if proxy:
+      proxy.manager.version = value[1]
+    return proxy
 
   def FromHandle(self, handle):
     if handle.IsValid():
@@ -534,8 +541,8 @@ class MapType(SerializableType):
       '__module__': __name__,
       'DESCRIPTOR': {
         'fields': [
-          SingleFieldGroup('keys', MapType._GetArrayType(key_type), 0, 1),
-          SingleFieldGroup('values', MapType._GetArrayType(value_type), 1, 2),
+          SingleFieldGroup('keys', MapType._GetArrayType(key_type), 0, 0),
+          SingleFieldGroup('values', MapType._GetArrayType(value_type), 1, 0),
         ],
       }
     }

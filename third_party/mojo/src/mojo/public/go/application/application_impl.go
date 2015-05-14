@@ -47,6 +47,9 @@ type Context interface {
 	// should pass a list of services you want to provide to the requested
 	// application.
 	ConnectToApplication(remoteURL string, providedServices ...ServiceFactory) *OutgoingConnection
+
+	// Close closes the main run loop for this application.
+	Close()
 }
 
 // ApplicationImpl is an utility class for communicating with the Shell, and
@@ -78,8 +81,10 @@ func Run(delegate Delegate, applicationRequest system.MojoHandle) {
 	impl.runner = stub
 	for {
 		if err := stub.ServeRequest(); err != nil {
-			// TODO(rogulenko): don't log in case message pipe was closed
-			log.Println(err)
+			connectionError, ok := err.(*bindings.ConnectionError)
+			if !ok || !connectionError.Closed() {
+				log.Println(err)
+			}
 			impl.RequestQuit()
 			break
 		}
@@ -143,6 +148,10 @@ func (impl *ApplicationImpl) ConnectToApplication(remoteURL string, providedServ
 	connection := newConnection(impl.url, &exposedServicesRequest, &servicesPointer, remoteURL)
 	impl.addConnection(connection)
 	return connection.ProvideServices(providedServices...)
+}
+
+func (impl *ApplicationImpl) Close() {
+	impl.RequestQuit()
 }
 
 // addConnection appends connections slice by a provided connection, removing

@@ -250,10 +250,9 @@ public class Encoder {
      */
     public <T extends Interface> void encode(T v, int offset, boolean nullable,
             Interface.Manager<T, ?> manager) {
-        // Set the version field to 0 for now.
-        encode(0, offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
         if (v == null) {
             encodeInvalidHandle(offset, nullable);
+            encode(0, offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
             return;
         }
         if (mEncoderState.core == null) {
@@ -266,6 +265,7 @@ public class Encoder {
             if (handler.getMessageReceiver() instanceof HandleOwner) {
                 encode(((HandleOwner<?>) handler.getMessageReceiver()).passHandle(), offset,
                         nullable);
+                encode(handler.getVersion(), offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
                 return;
             }
             // If the proxy is not over a message pipe, the default case applies.
@@ -274,6 +274,7 @@ public class Encoder {
                 mEncoderState.core.createMessagePipe(null);
         manager.bind(v, handles.first);
         encode(handles.second, offset, nullable);
+        encode(manager.getVersion(), offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
     }
 
     /**

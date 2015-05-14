@@ -24,12 +24,10 @@ public interface ApplicationDelegate {
      * This method is used to configure what services a connection supports when being connected to.
      * Return false to reject the connection entirely.
      *
-     * @param requestorUrl URL of the application requesting service.
      * @param connection A handle to the connection.
      * @return If this application accepts any incoming connection.
      */
-    public boolean configureIncomingConnection(
-            String requestorUrl, ApplicationConnection connection);
+    public boolean configureIncomingConnection(ApplicationConnection connection);
 
     /**
      * Called before exiting. After returning from this call, the delegate cannot expect RunLoop to

@@ -43,7 +43,7 @@ class Message {
   bool has_flag(uint32_t flag) const { return !!(data_->header.flags & flag); }
 
   // Access the request_id field (if present).
-  bool has_request_id() const { return data_->header.version >= 3; }
+  bool has_request_id() const { return data_->header.version >= 1; }
   uint64_t request_id() const {
     MOJO_DCHECK(has_request_id());
     return static_cast<const internal::MessageHeaderWithRequestID*>(

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
@@ -85,7 +86,7 @@ class ApplicationManager {
                                InterfacePtr<Interface>* ptr) {
     ScopedMessagePipeHandle service_handle =
         ConnectToServiceByName(application_url, Interface::Name_);
-    ptr->Bind(service_handle.Pass());
+    ptr->Bind(InterfacePtrInfo<Interface>(service_handle.Pass(), 0u));
   }
 
   ScopedMessagePipeHandle ConnectToServiceByName(

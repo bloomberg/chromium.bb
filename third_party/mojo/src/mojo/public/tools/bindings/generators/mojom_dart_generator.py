@@ -371,7 +371,6 @@ class Generator(generator.Generator):
     'default_value': DartDefaultValue,
     'encode_method': EncodeMethod,
     'expression_to_text': ExpressionToText,
-    'is_handle': mojom.IsNonInterfaceHandleKind,
     'is_map_kind': mojom.IsMapKind,
     'is_nullable_kind': mojom.IsNullableKind,
     'is_pointer_array_kind': IsPointerArrayKind,

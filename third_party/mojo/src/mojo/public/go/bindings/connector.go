@@ -11,6 +11,23 @@ import (
 	"mojo/public/go/system"
 )
 
+var errConnectionClosed = &ConnectionError{system.MOJO_RESULT_FAILED_PRECONDITION}
+
+// ConnectionError represents a error caused by an operation on a message pipe.
+type ConnectionError struct {
+	Result system.MojoResult
+}
+
+func (e *ConnectionError) Error() string {
+	return fmt.Sprintf("message pipe error: %v", e.Result)
+}
+
+// Closed returnes true iff the error was caused by an operation on a closed
+// message pipe.
+func (e *ConnectionError) Closed() bool {
+	return e.Result == system.MOJO_RESULT_FAILED_PRECONDITION
+}
+
 // Connector owns a message pipe handle. It can read and write messages
 // from the message pipe waiting on it if necessary. The operation are
 // thread-safe.
@@ -51,7 +68,7 @@ func (c *Connector) ReadMessage() (*Message, error) {
 	defer c.mu.RUnlock()
 
 	if !c.pipe.IsValid() {
-		return nil, fmt.Errorf("message pipe is closed")
+		return nil, errConnectionClosed
 	}
 	// Check if we already have a message.
 	result, bytes, handles := c.pipe.ReadMessage(system.MOJO_READ_MESSAGE_FLAG_NONE)
@@ -61,14 +78,14 @@ func (c *Connector) ReadMessage() (*Message, error) {
 		case <-c.waitChan:
 			result, bytes, handles = c.pipe.ReadMessage(system.MOJO_READ_MESSAGE_FLAG_NONE)
 			if result != system.MOJO_RESULT_OK {
-				return nil, fmt.Errorf("error reading message: %v", result)
+				return nil, &ConnectionError{result}
 			}
 		case <-c.done:
 			c.waiter.CancelWait(waitId)
-			return nil, fmt.Errorf("server stub is closed")
+			return nil, errConnectionClosed
 		}
 	} else if result != system.MOJO_RESULT_OK {
-		return nil, fmt.Errorf("error reading message: %v", result)
+		return nil, &ConnectionError{result}
 	}
 	return ParseMessage(bytes, handles)
 }
@@ -79,7 +96,7 @@ func (c *Connector) WriteMessage(message *Message) error {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if !c.pipe.IsValid() {
-		return fmt.Errorf("message pipe is closed")
+		return errConnectionClosed
 	}
 	return WriteMessage(c.pipe, message)
 }

@@ -132,15 +132,19 @@ if (decoder{{level+1}} == null) {
 {%   endfor %}
 {% endif %}
 
-    public {{struct|name}}() {
-        super(STRUCT_SIZE);
+    private {{struct|name}}(int version) {
+        super(STRUCT_SIZE, version);
 {% for field in struct.fields %}
 {%   if field.default %}
         {{field|name}} = {{field|default_value}};
-{%   elif field.kind|is_handle %}
+{%   elif field.kind|is_any_handle_kind and not field.kind|is_interface_request_kind %}
         {{field|name}} = org.chromium.mojo.system.InvalidHandle.INSTANCE;
 {%   endif %}
 {% endfor %}
+    }
+
+    public {{struct|name}}() {
+        this({{struct.versions[-1].version}});
     }
 
     public static {{struct|name}} deserialize(org.chromium.mojo.bindings.Message message) {
@@ -152,12 +156,8 @@ if (decoder{{level+1}} == null) {
         if (decoder0 == null) {
             return null;
         }
-        {{struct|name}} result = new {{struct|name}}();
-{% if not struct.bytes %}
-        decoder0.readAndValidateDataHeader(VERSION_ARRAY);
-{% else %}
         DataHeader mainDataHeader = decoder0.readAndValidateDataHeader(VERSION_ARRAY);
-{% endif %}
+        {{struct|name}} result = new {{struct|name}}(mainDataHeader.elementsOrVersion);
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
         if (mainDataHeader.elementsOrVersion >= {{packed_field.min_version}}) {

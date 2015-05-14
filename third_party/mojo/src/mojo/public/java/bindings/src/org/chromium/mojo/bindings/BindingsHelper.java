@@ -38,7 +38,7 @@ public class BindingsHelper {
     /**
      * The header for a serialized map element.
      */
-    public static final DataHeader MAP_STRUCT_HEADER = new DataHeader(24, 2);
+    public static final DataHeader MAP_STRUCT_HEADER = new DataHeader(24, 0);
 
     /**
      * The value used for the expected length of a non-fixed size array.

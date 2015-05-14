@@ -108,7 +108,7 @@ def GetCppArrayArgWrapperType(kind):
     raise Exception("Arrays of interface requests not yet supported!")
   if mojom.IsStringKind(kind):
     return "mojo::String"
-  if mojom.IsHandleKind(kind):
+  if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
@@ -123,7 +123,7 @@ def GetCppArrayArgWrapperType(kind):
 def GetCppResultWrapperType(kind):
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if mojom.IsStructKind(kind):
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
@@ -136,7 +136,7 @@ def GetCppResultWrapperType(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
     return "mojo::String"
-  if mojom.IsHandleKind(kind):
+  if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
@@ -164,7 +164,7 @@ def GetCppWrapperType(kind):
     raise Exception("InterfaceRequest fields not supported!")
   if mojom.IsStringKind(kind):
     return "mojo::String"
-  if mojom.IsHandleKind(kind):
+  if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
@@ -177,7 +177,7 @@ def GetCppWrapperType(kind):
   return _kind_to_cpp_type[kind]
 
 def GetCppConstWrapperType(kind):
-  if mojom.IsStructKind(kind):
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
@@ -192,7 +192,7 @@ def GetCppConstWrapperType(kind):
     return GetNameForKind(kind)
   if mojom.IsStringKind(kind):
     return "const mojo::String&"
-  if mojom.IsHandleKind(kind):
+  if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
@@ -227,17 +227,22 @@ def GetCppFieldType(kind):
     return "mojo::internal::StringPointer"
   return _kind_to_cpp_type[kind]
 
+def GetCppUnionFieldType(kind):
+  if mojom.IsAnyHandleKind(kind):
+    return "MojoHandle"
+  if mojom.IsEnumKind(kind):
+    return "int32_t"
+  if mojom.IsUnionKind(kind):
+    return ("mojo::internal::UnionPointer<%s_Data>" %
+        GetNameForKind(kind, internal=True))
+  return GetCppFieldType(kind)
+
 def GetUnionGetterReturnType(kind):
-  if (mojom.IsStructKind(kind) or mojom.IsArrayKind(kind) or
-      mojom.IsMapKind(kind)):
+  if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
+      mojom.IsArrayKind(kind) or mojom.IsMapKind(kind) or
+      mojom.IsAnyHandleKind(kind)):
     return "%s&" % GetCppWrapperType(kind)
   return GetCppResultWrapperType(kind)
-
-def IsStructWithHandles(struct):
-  for pf in struct.packed.packed_fields:
-    if mojom.IsAnyHandleKind(pf.field.kind):
-      return True
-  return False
 
 def TranslateConstants(token, kind):
   if isinstance(token, mojom.NamedValue):
@@ -338,6 +343,7 @@ class Generator(generator.Generator):
     "constant_value": ConstantValue,
     "cpp_const_wrapper_type": GetCppConstWrapperType,
     "cpp_field_type": GetCppFieldType,
+    "cpp_union_field_type": GetCppUnionFieldType,
     "cpp_pod_type": GetCppPodType,
     "cpp_result_type": GetCppResultWrapperType,
     "cpp_type": GetCppType,
@@ -355,6 +361,7 @@ class Generator(generator.Generator):
     "is_array_kind": mojom.IsArrayKind,
     "is_cloneable_kind": mojom.IsCloneableKind,
     "is_enum_kind": mojom.IsEnumKind,
+    "is_integral_kind": mojom.IsIntegralKind,
     "is_move_only_kind": mojom.IsMoveOnlyKind,
     "is_any_handle_kind": mojom.IsAnyHandleKind,
     "is_interface_kind": mojom.IsInterfaceKind,
@@ -364,7 +371,6 @@ class Generator(generator.Generator):
     "is_object_kind": mojom.IsObjectKind,
     "is_string_kind": mojom.IsStringKind,
     "is_struct_kind": mojom.IsStructKind,
-    "is_struct_with_handles": IsStructWithHandles,
     "is_union_kind": mojom.IsUnionKind,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "stylize_method": generator.StudlyCapsToCamel,

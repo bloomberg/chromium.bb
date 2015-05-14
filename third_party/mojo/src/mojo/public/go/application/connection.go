@@ -111,8 +111,10 @@ func (c *Connection) ProvideServices(services ...ServiceFactory) *OutgoingConnec
 	go func() {
 		for {
 			if err := c.localServices.ServeRequest(); err != nil {
-				// TODO(rogulenko): don't log in case message pipe was closed
-				log.Println(err)
+				connectionError, ok := err.(*bindings.ConnectionError)
+				if !ok || !connectionError.Closed() {
+					log.Println(err)
+				}
 				break
 			}
 		}

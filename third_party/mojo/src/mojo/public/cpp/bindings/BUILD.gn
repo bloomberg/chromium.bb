@@ -23,6 +23,10 @@ mojo_sdk_source_set("bindings") {
     "lib/buffer.h",
     "lib/connector.cc",
     "lib/connector.h",
+    "lib/control_message_handler.cc",
+    "lib/control_message_handler.h",
+    "lib/control_message_proxy.cc",
+    "lib/control_message_proxy.h",
     "lib/filter_chain.cc",
     "lib/filter_chain.h",
     "lib/fixed_buffer.cc",
@@ -68,6 +72,7 @@ mojo_sdk_source_set("bindings") {
   mojo_sdk_deps = [
     "mojo/public/cpp/environment",
     "mojo/public/cpp/system",
+    "mojo/public/interfaces/bindings:bindings_cpp_sources",
   ]
 }
 

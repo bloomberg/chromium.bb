@@ -17,21 +17,17 @@ bool IsValidMessageHeader(const MessageHeader* header) {
   // header. If we encounter fields we do not understand, we must ignore them.
 
   // Extra validation of the struct header:
-  if (header->version < 2) {
-    ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
-    return false;
-  }
-  if (header->version == 2) {
+  if (header->version == 0) {
     if (header->num_bytes != sizeof(MessageHeader)) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
     }
-  } else if (header->version == 3) {
+  } else if (header->version == 1) {
     if (header->num_bytes != sizeof(MessageHeaderWithRequestID)) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
     }
-  } else if (header->version > 3) {
+  } else if (header->version > 1) {
     if (header->num_bytes < sizeof(MessageHeaderWithRequestID)) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
@@ -41,7 +37,7 @@ bool IsValidMessageHeader(const MessageHeader* header) {
   // Validate flags (allow unknown bits):
 
   // These flags require a RequestID.
-  if (header->version < 3 && ((header->flags & kMessageExpectsResponse) ||
+  if (header->version < 1 && ((header->flags & kMessageExpectsResponse) ||
                               (header->flags & kMessageIsResponse))) {
     ReportValidationError(VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID);
     return false;

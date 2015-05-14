@@ -11,17 +11,19 @@ mojo_sdk_source_set("application") {
     "application_delegate.h",
     "application_impl.h",
     "connect.h",
-    "service_provider_impl.h",
     "interface_factory.h",
     "interface_factory_impl.h",
     "lib/application_connection.cc",
     "lib/application_delegate.cc",
     "lib/application_impl.cc",
+    "lib/interface_factory_connector.h",
+    "lib/service_connector_registry.cc",
+    "lib/service_connector_registry.h",
     "lib/service_provider_impl.cc",
-    "lib/service_connector.cc",
-    "lib/service_connector.h",
     "lib/service_registry.cc",
     "lib/service_registry.h",
+    "service_connector.h",
+    "service_provider_impl.h",
   ]
 
   mojo_sdk_deps = [

@@ -4,6 +4,10 @@
 
 module mojo.test;
 
+enum AnEnum {
+  FIRST, SECOND
+};
+
 union PodUnion {
   int8   f_int8;
   int8   f_int8_other;
@@ -17,6 +21,7 @@ union PodUnion {
   float  f_float;
   double f_double;
   bool   f_bool;
+  AnEnum f_enum;
 };
 
 union ObjectUnion {
@@ -26,6 +31,15 @@ union ObjectUnion {
   DummyStruct? f_nullable;
   array<int8> f_array_int8;
   map<string, int8> f_map_int8;
+  PodUnion f_pod_union;
+};
+
+union HandleUnion {
+  handle f_handle;
+  handle<message_pipe> f_message_pipe;
+  handle<data_pipe_consumer> f_data_pipe_consumer;
+  handle<data_pipe_producer> f_data_pipe_producer;
+  handle<shared_buffer> f_shared_buffer;
 };
 
 struct DummyStruct {

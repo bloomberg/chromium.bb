@@ -62,6 +62,13 @@ struct Interface_Data {
 };
 static_assert(sizeof(Interface_Data) == 8, "Bad_sizeof(Interface_Data)");
 
+template <typename T>
+union UnionPointer {
+  uint64_t offset;
+  T* ptr;
+};
+static_assert(sizeof(UnionPointer<char>) == 8, "Bad_sizeof(UnionPointer)");
+
 #pragma pack(pop)
 
 template <typename T>

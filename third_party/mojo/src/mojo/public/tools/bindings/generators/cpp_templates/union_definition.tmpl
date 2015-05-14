@@ -60,11 +60,9 @@ void {{class_name}}::EncodePointersAndHandles(
   switch (tag) {
 {%- for field in union.fields %}
     case {{enum_name}}::{{field.name|upper}}: {
-{%-   if field.kind|is_object_kind and not field.kind|is_union_kind %}
-      mojo::internal::Encode(
-          reinterpret_cast<{{field.kind|cpp_field_type}}*>(&data.f_{{field.name}}),
-          handles);
-{%-   elif field.kind|is_any_handle_kind %}
+{%-   if field.kind|is_object_kind %}
+      mojo::internal::Encode(&data.f_{{field.name}}, handles);
+{%-   elif field.kind|is_any_handle_kind or field.kind|is_interface_kind %}
       mojo::internal::EncodeHandle(&data.f_{{field.name}}, handles);
 {%-   endif %}
       return;
@@ -78,11 +76,9 @@ void {{class_name}}::DecodePointersAndHandles(
   switch (tag) {
 {%- for field in union.fields %}
     case {{enum_name}}::{{field.name|upper}}: {
-{%-   if field.kind|is_object_kind and not field.kind|is_union_kind %}
-      mojo::internal::Decode(
-          reinterpret_cast<{{field.kind|cpp_field_type}}*>(&data.f_{{field.name}}),
-          handles);
-{%-   elif field.kind|is_any_handle_kind %}
+{%-   if field.kind|is_object_kind %}
+      mojo::internal::Decode(&data.f_{{field.name}}, handles);
+{%-   elif field.kind|is_any_handle_kind or field.kind|is_interface_kind %}
       mojo::internal::DecodeHandle(&data.f_{{field.name}}, handles);
 {%-   endif %}
       return;

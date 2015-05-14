@@ -56,6 +56,8 @@ public class BindingsVersioningTest extends TestCase {
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v0.serialize(null));
             assertEquals(expected, output);
+            assertEquals(0, v0.getVersion());
+            assertEquals(0, output.getVersion());
         }
 
         {
@@ -68,6 +70,8 @@ public class BindingsVersioningTest extends TestCase {
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v1.serialize(null));
             assertEquals(expected, output);
+            assertEquals(1, v1.getVersion());
+            assertEquals(1, output.getVersion());
         }
 
         {
@@ -82,6 +86,8 @@ public class BindingsVersioningTest extends TestCase {
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v3.serialize(null));
             assertEquals(expected, output);
+            assertEquals(3, v3.getVersion());
+            assertEquals(3, output.getVersion());
         }
 
         {
@@ -98,6 +104,8 @@ public class BindingsVersioningTest extends TestCase {
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v5.serialize(null));
             assertEquals(expected, output);
+            assertEquals(5, v5.getVersion());
+            assertEquals(5, output.getVersion());
         }
 
         {
@@ -125,6 +133,8 @@ public class BindingsVersioningTest extends TestCase {
             output.fMessagePipe = expected.fMessagePipe;
 
             assertEquals(expected, output);
+            assertEquals(7, v7.getVersion());
+            assertEquals(7, output.getVersion());
         }
     }
 
@@ -133,13 +143,14 @@ public class BindingsVersioningTest extends TestCase {
      */
     @SmallTest
     public void testNewToOld() {
+        MultiVersionStruct struct = newStruct();
         {
             MultiVersionStructV0 expected = new MultiVersionStructV0();
             expected.fInt32 = 123;
 
-            MultiVersionStructV0 output =
-                    MultiVersionStructV0.deserialize(newStruct().serialize(null));
+            MultiVersionStructV0 output = MultiVersionStructV0.deserialize(struct.serialize(null));
             assertEquals(expected, output);
+            assertEquals(9, output.getVersion());
         }
 
         {
@@ -147,9 +158,9 @@ public class BindingsVersioningTest extends TestCase {
             expected.fInt32 = 123;
             expected.fRect = newRect(5);
 
-            MultiVersionStructV1 output =
-                    MultiVersionStructV1.deserialize(newStruct().serialize(null));
+            MultiVersionStructV1 output = MultiVersionStructV1.deserialize(struct.serialize(null));
             assertEquals(expected, output);
+            assertEquals(9, output.getVersion());
         }
 
         {
@@ -158,9 +169,9 @@ public class BindingsVersioningTest extends TestCase {
             expected.fRect = newRect(5);
             expected.fString = "hello";
 
-            MultiVersionStructV3 output =
-                    MultiVersionStructV3.deserialize(newStruct().serialize(null));
+            MultiVersionStructV3 output = MultiVersionStructV3.deserialize(struct.serialize(null));
             assertEquals(expected, output);
+            assertEquals(9, output.getVersion());
         }
 
         {
@@ -170,9 +181,9 @@ public class BindingsVersioningTest extends TestCase {
             expected.fString = "hello";
             expected.fArray = new byte[] {10, 9, 8};
 
-            MultiVersionStructV5 output =
-                    MultiVersionStructV5.deserialize(newStruct().serialize(null));
+            MultiVersionStructV5 output = MultiVersionStructV5.deserialize(struct.serialize(null));
             assertEquals(expected, output);
+            assertEquals(9, output.getVersion());
         }
 
         {
@@ -184,7 +195,7 @@ public class BindingsVersioningTest extends TestCase {
             expected.fArray = new byte[] {10, 9, 8};
             expected.fBool = true;
 
-            MultiVersionStruct input = newStruct();
+            MultiVersionStruct input = struct;
             input.fMessagePipe = CoreImpl.getInstance()
                                          .acquireNativeHandle(expectedHandle)
                                          .toMessagePipeHandle();
@@ -195,6 +206,7 @@ public class BindingsVersioningTest extends TestCase {
             output.fMessagePipe = expected.fMessagePipe;
 
             assertEquals(expected, output);
+            assertEquals(9, output.getVersion());
         }
     }
 }

@@ -10,9 +10,7 @@ const int kAlignment = 8;
 const int kSerializedHandleSize = 4;
 const int kSerializedInterfaceSize = 8; // 4-byte handle + 4-byte version
 const int kPointerSize = 8;
-// TODO(yzshen): In order to work with other bindings which still interprets
-// the |version| field as |num_fields|, set it to version 2 for now.
-const StructDataHeader kMapStructHeader = const StructDataHeader(24, 2);
+const StructDataHeader kMapStructHeader = const StructDataHeader(24, 0);
 const int kUnspecifiedArrayLength = -1;
 const int kNothingNullable = 0;
 const int kArrayNullable = (1 << 0);

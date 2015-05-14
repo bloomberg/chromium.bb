@@ -8,7 +8,6 @@
 
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/lib/service_connector.h"
 #include "mojo/public/cpp/application/lib/service_registry.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/application/application.mojom.h"

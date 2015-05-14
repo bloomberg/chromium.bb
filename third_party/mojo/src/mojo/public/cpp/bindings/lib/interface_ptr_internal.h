@@ -8,6 +8,7 @@
 #include <algorithm>  // For |std::swap()|.
 
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
@@ -40,6 +41,33 @@ class InterfacePtrState {
   }
 
   uint32_t version() const { return version_; }
+
+  void QueryVersion(const Callback<void(uint32_t)>& callback) {
+    ConfigureProxyIfNecessary();
+
+    // It is safe to capture |this| because the callback won't be run after this
+    // object goes away.
+    auto callback_wrapper = [this, callback](uint32_t version) {
+      this->version_ = version;
+      callback.Run(version);
+    };
+
+    // Do a static cast in case the interface contains methods with the same
+    // name.
+    static_cast<ControlMessageProxy*>(proxy_)->QueryVersion(callback_wrapper);
+  }
+
+  void RequireVersion(uint32_t version) {
+    ConfigureProxyIfNecessary();
+
+    if (version <= version_)
+      return;
+
+    version_ = version;
+    // Do a static cast in case the interface contains methods with the same
+    // name.
+    static_cast<ControlMessageProxy*>(proxy_)->RequireVersion(version);
+  }
 
   void Swap(InterfacePtrState* other) {
     using std::swap;

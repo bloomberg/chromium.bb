@@ -175,16 +175,6 @@ public class InterfacesTest extends MojoTestCase {
         super.tearDown();
     }
 
-    private <I extends Interface, P extends Interface.Proxy> P newProxyOverPipe(
-            Interface.Manager<I, P> manager, I impl) {
-        Pair<MessagePipeHandle, MessagePipeHandle> handles =
-                CoreImpl.getInstance().createMessagePipe(null);
-        P proxy = manager.attachProxy(handles.first);
-        mCloseablesToClose.add(proxy);
-        manager.bind(impl, handles.second);
-        return proxy;
-    }
-
     /**
      * Check that the given proxy receives the calls. If |impl| is not null, also check that the
      * calls are forwared to |impl|.
@@ -241,14 +231,16 @@ public class InterfacesTest extends MojoTestCase {
     @SmallTest
     public void testProxyAndStubOverPipe() {
         MockNamedObjectImpl impl = new MockNamedObjectImpl();
-        NamedObject.Proxy proxy = newProxyOverPipe(NamedObject.MANAGER, impl);
+        NamedObject.Proxy proxy =
+                BindingsTestUtils.newProxyOverPipe(NamedObject.MANAGER, impl, mCloseablesToClose);
 
         checkProxy(proxy, impl);
     }
 
     @SmallTest
     public void testFactoryOverPipe() {
-        Factory.Proxy proxy = newProxyOverPipe(Factory.MANAGER, new MockFactoryImpl());
+        Factory.Proxy proxy = BindingsTestUtils.newProxyOverPipe(
+                Factory.MANAGER, new MockFactoryImpl(), mCloseablesToClose);
         Pair<NamedObject.Proxy, InterfaceRequest<NamedObject>> request =
                 NamedObject.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
         mCloseablesToClose.add(request.first);
@@ -260,7 +252,8 @@ public class InterfacesTest extends MojoTestCase {
     @SmallTest
     public void testInterfaceClosing() {
         MockFactoryImpl impl = new MockFactoryImpl();
-        Factory.Proxy proxy = newProxyOverPipe(Factory.MANAGER, impl);
+        Factory.Proxy proxy =
+                BindingsTestUtils.newProxyOverPipe(Factory.MANAGER, impl, mCloseablesToClose);
 
         assertFalse(impl.isClosed());
 
@@ -273,7 +266,8 @@ public class InterfacesTest extends MojoTestCase {
     @SmallTest
     public void testResponse() {
         MockFactoryImpl impl = new MockFactoryImpl();
-        Factory.Proxy proxy = newProxyOverPipe(Factory.MANAGER, impl);
+        Factory.Proxy proxy =
+                BindingsTestUtils.newProxyOverPipe(Factory.MANAGER, impl, mCloseablesToClose);
         Request request = new Request();
         request.x = 42;
         Pair<MessagePipeHandle, MessagePipeHandle> handles =

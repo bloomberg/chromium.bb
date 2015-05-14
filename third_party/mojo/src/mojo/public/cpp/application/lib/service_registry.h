@@ -5,7 +5,10 @@
 #ifndef MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_REGISTRY_H_
 #define MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_REGISTRY_H_
 
+#include <string>
+
 #include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/lib/service_connector_registry.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
@@ -14,8 +17,6 @@ class Application;
 class ApplicationImpl;
 
 namespace internal {
-
-class ServiceConnectorBase;
 
 // A ServiceRegistry represents each half of a connection between two
 // applications, allowing customization of which services are published to the
@@ -31,12 +32,14 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ~ServiceRegistry() override;
 
   // ApplicationConnection overrides.
-  void AddServiceConnector(ServiceConnectorBase* service_connector) override;
+  void SetServiceConnector(ServiceConnector* service_connector) override;
+  void SetServiceConnectorForName(ServiceConnector* service_connector,
+                                  const std::string& interface_name) override;
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
   ServiceProvider* GetServiceProvider() override;
 
-  virtual void RemoveServiceConnector(ServiceConnectorBase* service_connector);
+  void RemoveServiceConnectorForName(const std::string& interface_name);
 
  private:
   // ServiceProvider method.
@@ -48,14 +51,12 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   const std::string remote_url_;
 
  private:
-  bool RemoveServiceConnectorInternal(ServiceConnectorBase* service_connector);
+  void RemoveServiceConnectorForNameInternal(const std::string& interface_name);
 
   Application* application_;
-  typedef std::map<std::string, ServiceConnectorBase*>
-      NameToServiceConnectorMap;
-  NameToServiceConnectorMap name_to_service_connector_;
   Binding<ServiceProvider> local_binding_;
   ServiceProviderPtr remote_service_provider_;
+  ServiceConnectorRegistry service_connector_registry_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceRegistry);
 };

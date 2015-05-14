@@ -12,7 +12,11 @@ size_t GetSerializedSize_(const {{union.name}}Ptr& input, bool inlined) {
 {%  for field in union.fields %}
 {%    if field.kind|is_object_kind %}
     case {{union.name}}::Tag::{{field.name|upper}}:
+{%      if field.kind|is_union_kind %}
+      size += GetSerializedSize_(*(input_acc.data()->{{field.name}}), false);
+{%      else %}
       size += GetSerializedSize_(*(input_acc.data()->{{field.name}}));
+{%      endif %}
       break;
 {%-   endif %}
 {%- endfor %}
@@ -38,24 +42,34 @@ void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
 {%  for field in union.fields %}
       case {{union.name}}::Tag::{{field.name|upper}}: {
 {%    if field.kind|is_object_kind %}
-        {{field.kind|cpp_field_type}}* {{field.name}}_ptr = reinterpret_cast<{{field.kind|cpp_field_type}}*>(&result->data.f_{{field.name}});
 {%      if field.kind|is_string_kind %}
-        Serialize_(*(input_acc.data()->{{field.name}}), buf, &{{field.name}}_ptr->ptr);
+        Serialize_(
+            *(input_acc.data()->{{field.name}}),
+            buf, &result->data.f_{{field.name}}.ptr);
 {%      elif field.kind|is_struct_kind %}
-        Serialize_(mojo::internal::Forward(*(input_acc.data()->{{field.name}})), buf, &{{field.name}}_ptr->ptr);
+        Serialize_(
+            mojo::internal::Forward(*(input_acc.data()->{{field.name}})),
+            buf, &result->data.f_{{field.name}}.ptr);
+{%      elif field.kind|is_union_kind %}
+        SerializeUnion_(
+            mojo::internal::Forward(*(input_acc.data()->{{field.name}})),
+            buf, &result->data.f_{{field.name}}.ptr, false);
 {%      elif field.kind|is_array_kind %}
         const mojo::internal::ArrayValidateParams {{field.name}}_validate_params =
             {{field.kind|get_array_validate_params|indent(16)}};
         SerializeArray_(
             mojo::internal::Forward(*(input_acc.data()->{{field.name}})),
-            buf, &{{field.name}}_ptr->ptr, &{{field.name}}_validate_params);
+            buf, &result->data.f_{{field.name}}.ptr, &{{field.name}}_validate_params);
 {%      elif field.kind|is_map_kind %}
         const mojo::internal::ArrayValidateParams {{field.name}}_validate_params =
             {{field.kind.value_kind|get_map_validate_params|indent(16)}};
         SerializeMap_(
             mojo::internal::Forward(*(input_acc.data()->{{field.name}})),
-            buf, &{{field.name}}_ptr->ptr, &{{field.name}}_validate_params);
+            buf, &result->data.f_{{field.name}}.ptr, &{{field.name}}_validate_params);
 {%-     endif %}
+{%    elif field.kind|is_any_handle_kind %}
+        result->data.f_{{field.name}} =
+            input_acc.data()->{{field.name}}->release().value();
 {%    else %}
         result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}
@@ -81,8 +95,13 @@ void Deserialize_(internal::{{union.name}}_Data* input,
       case {{union.name}}::Tag::{{field.name|upper}}: {
 {%    if field.kind|is_object_kind %}
         result_acc.SwitchActive({{union.name}}::Tag::{{field.name|upper}});
-        {{field.kind|cpp_field_type}}* {{field.name}}_ptr = reinterpret_cast<{{field.kind|cpp_field_type}}*>(&input->data.f_{{field.name}});
-        Deserialize_({{field.name}}_ptr->ptr, result_acc.data()->{{field.name}});
+        Deserialize_(input->data.f_{{field.name}}.ptr, result_acc.data()->{{field.name}});
+{%    elif field.kind|is_any_handle_kind %}
+        {{field.kind|cpp_wrapper_type}}* {{field.name}} =
+            reinterpret_cast<{{field.kind|cpp_wrapper_type}}*>(&input->data.f_{{field.name}});
+        result->set_{{field.name}}({{field.name}}->Pass());
+{%    elif field.kind|is_enum_kind %}
+        result->set_{{field.name}}(static_cast<{{field.kind|cpp_wrapper_type}}>(input->data.f_{{field.name}}));
 {%    else %}
         result->set_{{field.name}}(input->data.f_{{field.name}});
 {%-   endif %}

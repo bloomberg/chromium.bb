@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/runner/context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +37,8 @@ class ShellTestBase : public testing::Test {
   template <typename Interface>
   void ConnectToService(const GURL& application_url,
                         InterfacePtr<Interface>* ptr) {
-    ptr->Bind(ConnectToService(application_url, Interface::Name_).Pass());
+    ptr->Bind(InterfacePtrInfo<Interface>(
+        ConnectToService(application_url, Interface::Name_).Pass(), 0u));
   }
 
   base::MessageLoop* message_loop() { return &message_loop_; }

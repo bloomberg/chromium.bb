@@ -28,7 +28,7 @@ const (
 var mapHeader DataHeader
 
 func init() {
-	mapHeader = DataHeader{24, 2}
+	mapHeader = DataHeader{24, 0}
 }
 
 const (
@@ -77,7 +77,7 @@ type MessageHeader struct {
 }
 
 func (h *MessageHeader) Encode(encoder *Encoder) error {
-	encoder.StartStruct(h.dataSize(), h.numFields())
+	encoder.StartStruct(h.dataSize(), h.version())
 	if err := encoder.WriteUint32(h.Type); err != nil {
 		return err
 	}
@@ -97,14 +97,14 @@ func (h *MessageHeader) Decode(decoder *Decoder) error {
 	if err != nil {
 		return err
 	}
-	numFields := header.ElementsOrVersion
-	if numFields < 2 || numFields > 3 {
+	version := header.ElementsOrVersion
+	if version > 1 {
 		return &ValidationError{UnexpectedStructHeader,
-			fmt.Sprintf("invalid message header: it should have 2 or 3 fileds, but has %d", numFields),
+			fmt.Sprintf("invalid message header: it should be of version 0 or 1, but has %d", version),
 		}
 	}
 	expectedSize := uint32(dataHeaderSize + 2*4)
-	if numFields == 3 {
+	if version == 1 {
 		expectedSize += 8
 	}
 	if expectedSize != header.Size {
@@ -119,7 +119,7 @@ func (h *MessageHeader) Decode(decoder *Decoder) error {
 	if h.Flags, err = decoder.ReadUint32(); err != nil {
 		return err
 	}
-	if numFields == 3 {
+	if version == 1 {
 		if h.Flags != MessageExpectsResponseFlag && h.Flags != MessageIsResponseFlag {
 			return &ValidationError{MessageHeaderInvalidFlags,
 				fmt.Sprintf("message header flags(%v) should be MessageExpectsResponseFlag or MessageIsResponseFlag", h.Flags),
@@ -145,11 +145,11 @@ func (h *MessageHeader) dataSize() uint32 {
 	return size
 }
 
-func (h *MessageHeader) numFields() uint32 {
+func (h *MessageHeader) version() uint32 {
 	if h.RequestId != 0 {
-		return 3
+		return 1
 	} else {
-		return 2
+		return 0
 	}
 }
 

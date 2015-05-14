@@ -5,14 +5,14 @@
 #ifndef MOJO_PUBLIC_APPLICATION_SERVICE_PROVIDER_IMPL_H_
 #define MOJO_PUBLIC_APPLICATION_SERVICE_PROVIDER_IMPL_H_
 
-#include "mojo/public/cpp/application/lib/service_connector.h"
+#include <string>
+
+#include "mojo/public/cpp/application/lib/interface_factory_connector.h"
+#include "mojo/public/cpp/application/lib/service_connector_registry.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
-namespace internal {
-class ServiceConnectorBase;
-}
 
 // Implements a registry that can be used to expose services to another app.
 class ServiceProviderImpl : public ServiceProvider {
@@ -28,25 +28,22 @@ class ServiceProviderImpl : public ServiceProvider {
 
   template <typename Interface>
   void AddService(InterfaceFactory<Interface>* factory) {
-    AddServiceConnector(
-        new internal::InterfaceFactoryConnector<Interface>(factory));
+    SetServiceConnectorForName(
+        new internal::InterfaceFactoryConnector<Interface>(factory),
+        Interface::Name_);
   }
 
  private:
-  typedef std::map<std::string, internal::ServiceConnectorBase*>
-      NameToServiceConnectorMap;
-
   // Overridden from ServiceProvider:
   void ConnectToService(const String& service_name,
                         ScopedMessagePipeHandle client_handle) override;
 
-  void AddServiceConnector(internal::ServiceConnectorBase* service_connector);
-  void RemoveServiceConnector(
-      internal::ServiceConnectorBase* service_connector);
-
-  NameToServiceConnectorMap service_connectors_;
+  void SetServiceConnectorForName(ServiceConnector* service_connector,
+                                  const std::string& interface_name);
 
   Binding<ServiceProvider> binding_;
+
+  internal::ServiceConnectorRegistry service_connector_registry_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceProviderImpl);
 };

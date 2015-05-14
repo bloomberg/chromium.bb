@@ -390,9 +390,7 @@ define("mojo/public/js/codec", [
       keys[i++] = key;
     });
     this.writeUint32(kStructHeaderSize + kMapStructPayloadSize);
-    // TODO(yzshen): In order to work with other bindings which still interprets
-    // the |version| field as |num_fields|, set it to version 2 for now.
-    this.writeUint32(2);  // version
+    this.writeUint32(0);  // version
     this.encodeArrayPointer(keyClass, keys);
     this.encodeArrayPointer(valueClass, values);
   }
@@ -465,9 +463,7 @@ define("mojo/public/js/codec", [
     this.handles = [];
     var encoder = this.createEncoder(kMessageHeaderSize);
     encoder.writeUint32(kMessageHeaderSize);
-    // TODO(yzshen): In order to work with other bindings which still interprets
-    // the |version| field as |num_fields|, set it to version 2 for now.
-    encoder.writeUint32(2);  // version.
+    encoder.writeUint32(0);  // version.
     encoder.writeUint32(messageName);
     encoder.writeUint32(0);  // flags.
   }
@@ -503,9 +499,7 @@ define("mojo/public/js/codec", [
     this.handles = [];
     var encoder = this.createEncoder(kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(kMessageWithRequestIDHeaderSize);
-    // TODO(yzshen): In order to work with other bindings which still interprets
-    // the |version| field as |num_fields|, set it to version 3 for now.
-    encoder.writeUint32(3);  // version.
+    encoder.writeUint32(1);  // version.
     encoder.writeUint32(messageName);
     encoder.writeUint32(flags);
     encoder.writeUint64(requestID);
@@ -526,7 +520,7 @@ define("mojo/public/js/codec", [
     var version = this.decoder.readUint32();
     this.messageName = this.decoder.readUint32();
     this.flags = this.decoder.readUint32();
-    if (version >= 3)
+    if (version >= 1)
       this.requestID = this.decoder.readUint64();
     this.decoder.skip(messageHeaderSize - this.decoder.next);
   }

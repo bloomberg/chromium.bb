@@ -64,6 +64,10 @@ void EncodeHandle(Interface_Data* data, std::vector<Handle>* handles) {
   EncodeHandle(&data->handle, handles);
 }
 
+void EncodeHandle(MojoHandle* handle, std::vector<Handle>* handles) {
+  EncodeHandle(reinterpret_cast<Handle*>(handle), handles);
+}
+
 void DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
   if (handle->value() == kEncodedInvalidHandleValue) {
     *handle = Handle();
@@ -76,6 +80,10 @@ void DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
 
 void DecodeHandle(Interface_Data* data, std::vector<Handle>* handles) {
   DecodeHandle(&data->handle, handles);
+}
+
+void DecodeHandle(MojoHandle* handle, std::vector<Handle>* handles) {
+  DecodeHandle(reinterpret_cast<Handle*>(handle), handles);
 }
 
 }  // namespace internal

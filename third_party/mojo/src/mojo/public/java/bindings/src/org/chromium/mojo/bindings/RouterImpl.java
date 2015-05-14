@@ -5,10 +5,12 @@
 package org.chromium.mojo.bindings;
 
 import org.chromium.mojo.system.AsyncWaiter;
+import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Implementation of {@link Router}.
@@ -29,13 +31,50 @@ public class RouterImpl implements Router {
         }
 
         /**
-         * @see org.chromium.mojo.bindings.MessageReceiver#close()
+         * @see MessageReceiver#close()
          */
         @Override
         public void close() {
             handleConnectorClose();
         }
 
+    }
+
+    /**
+     *
+     * {@link MessageReceiver} used to return responses to the caller.
+     */
+    class ResponderThunk implements MessageReceiver {
+        private boolean mAcceptWasInvoked = false;
+
+        /**
+         * @see
+         * MessageReceiver#accept(Message)
+         */
+        @Override
+        public boolean accept(Message message) {
+            mAcceptWasInvoked = true;
+            return RouterImpl.this.accept(message);
+        }
+
+        /**
+         * @see MessageReceiver#close()
+         */
+        @Override
+        public void close() {
+            RouterImpl.this.close();
+        }
+
+        @Override
+        protected void finalize() throws Throwable {
+            if (!mAcceptWasInvoked) {
+                // We close the pipe here as a way of signaling to the calling application that an
+                // error condition occurred. Without this the calling application would have no
+                // way of knowing it should stop waiting for a response.
+                RouterImpl.this.closeOnHandleThread();
+            }
+            super.finalize();
+        }
     }
 
     /**
@@ -60,6 +99,13 @@ public class RouterImpl implements Router {
     private Map<Long, MessageReceiver> mResponders = new HashMap<Long, MessageReceiver>();
 
     /**
+     * An Executor that will run on the thread associated with the MessagePipe to which
+     * this Router is bound. This may be {@code Null} if the MessagePipeHandle passed
+     * in to the constructor is not valid.
+     */
+    private final Executor mExecutor;
+
+    /**
      * Constructor that will use the default {@link AsyncWaiter}.
      *
      * @param messagePipeHandle The {@link MessagePipeHandle} to route message for.
@@ -78,6 +124,12 @@ public class RouterImpl implements Router {
     public RouterImpl(MessagePipeHandle messagePipeHandle, AsyncWaiter asyncWaiter) {
         mConnector = new Connector(messagePipeHandle, asyncWaiter);
         mConnector.setIncomingMessageReceiver(new HandleIncomingMessageThunk());
+        Core core = messagePipeHandle.getCore();
+        if (core != null) {
+            mExecutor = ExecutorFactory.getExecutorForCurrentThread(core);
+        } else {
+            mExecutor = null;
+        }
     }
 
     /**
@@ -164,7 +216,7 @@ public class RouterImpl implements Router {
         MessageHeader header = message.asServiceMessage().getHeader();
         if (header.hasFlag(MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG)) {
             if (mIncomingMessageReceiver != null) {
-                return mIncomingMessageReceiver.acceptWithResponder(message, this);
+                return mIncomingMessageReceiver.acceptWithResponder(message, new ResponderThunk());
             }
             // If we receive a request expecting a response when the client is not
             // listening, then we have no choice but to tear down the pipe.
@@ -190,6 +242,23 @@ public class RouterImpl implements Router {
     private void handleConnectorClose() {
         if (mIncomingMessageReceiver != null) {
             mIncomingMessageReceiver.close();
+        }
+    }
+
+    /**
+     * Invokes {@link #close()} asynchronously on the thread associated with
+     * this Router's Handle. If this Router was constructed with an invalid
+     * handle then this method does nothing.
+     */
+    private void closeOnHandleThread() {
+        if (mExecutor != null) {
+            mExecutor.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    close();
+                }
+            });
         }
     }
 }

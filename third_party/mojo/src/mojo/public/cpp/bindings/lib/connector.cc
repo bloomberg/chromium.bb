@@ -62,11 +62,10 @@ bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
 }
 
 bool Connector::Accept(Message* message) {
-  MOJO_CHECK(message_pipe_.is_valid());
-
   if (error_)
     return false;
 
+  MOJO_CHECK(message_pipe_.is_valid());
   if (drop_writes_)
     return true;
 
@@ -198,7 +197,7 @@ void Connector::CancelWait() {
 
 void Connector::NotifyError() {
   error_ = true;
-  CancelWait();
+  CloseMessagePipe();
   if (error_handler_)
     error_handler_->OnConnectionError();
 }

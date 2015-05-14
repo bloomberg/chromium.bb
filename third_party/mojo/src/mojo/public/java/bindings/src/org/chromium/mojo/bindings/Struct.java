@@ -85,16 +85,25 @@ public abstract class Struct {
     protected final int mEncodedBaseSize;
 
     /**
+     * The version of the struct.
+     */
+    private final int mVersion;
+
+    /**
      * Constructor.
      */
-    protected Struct(int encodedBaseSize) {
-        this.mEncodedBaseSize = encodedBaseSize;
+    protected Struct(int encodedBaseSize, int version) {
+        mEncodedBaseSize = encodedBaseSize;
+        mVersion = version;
     }
 
     /**
-     * Use the given encoder to serialized this struct.
+     * Returns the version of the struct. It is the max version of the struct in the mojom if it has
+     * been created locally, and the version of the received struct if it has been deserialized.
      */
-    protected abstract void encode(Encoder encoder);
+    public int getVersion() {
+        return mVersion;
+    }
 
     /**
      * Returns the serialization of the struct. This method can close Handles.
@@ -122,4 +131,8 @@ public abstract class Struct {
         return new ServiceMessage(encoder.getMessage(), header);
     }
 
+    /**
+     * Use the given encoder to serialize this struct.
+     */
+    protected abstract void encode(Encoder encoder);
 }

@@ -134,7 +134,7 @@ define("mojo/public/js/validator", [
   }
 
   Validator.prototype.validateMessageHeader = function() {
-    var err = this.validateStructHeader(0, codec.kMessageHeaderSize, 2);
+    var err = this.validateStructHeader(0, codec.kMessageHeaderSize, 0);
     if (err != validationError.NONE)
       return err;
 
@@ -142,10 +142,10 @@ define("mojo/public/js/validator", [
     var version = this.message.getHeaderVersion();
 
     var validVersionAndNumBytes =
-        (version == 2 && numBytes == codec.kMessageHeaderSize) ||
-        (version == 3 &&
+        (version == 0 && numBytes == codec.kMessageHeaderSize) ||
+        (version == 1 &&
          numBytes == codec.kMessageWithRequestIDHeaderSize) ||
-        (version > 3 &&
+        (version > 1 &&
          numBytes >= codec.kMessageWithRequestIDHeaderSize);
     if (!validVersionAndNumBytes)
       return validationError.UNEXPECTED_STRUCT_HEADER;
@@ -153,7 +153,7 @@ define("mojo/public/js/validator", [
     var expectsResponse = this.message.expectsResponse();
     var isResponse = this.message.isResponse();
 
-    if (version == 2 && (expectsResponse || isResponse))
+    if (version == 0 && (expectsResponse || isResponse))
       return validationError.MESSAGE_HEADER_MISSING_REQUEST_ID;
 
     if (isResponse && expectsResponse)
@@ -222,7 +222,7 @@ define("mojo/public/js/validator", [
           validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
 
     var mapEncodedSize = codec.kStructHeaderSize + codec.kMapStructPayloadSize;
-    var err = this.validateStructHeader(structOffset, mapEncodedSize, 2);
+    var err = this.validateStructHeader(structOffset, mapEncodedSize, 0);
     if (err !== validationError.NONE)
         return err;
 

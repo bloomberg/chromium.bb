@@ -6,9 +6,12 @@ package org.chromium.mojo.bindings;
 
 import org.chromium.mojo.TestUtils;
 import org.chromium.mojo.system.Handle;
+import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.impl.CoreImpl;
 
+import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,11 +88,21 @@ public class BindingsTestUtils {
     public static Message newRandomMessage(int size) {
         assert size > 16;
         ByteBuffer message = TestUtils.newRandomBuffer(size);
-        int[] headerAsInts = { 16, 2, 0, 0 };
+        int[] headerAsInts = {16, 2, 0, 0};
         for (int i = 0; i < 4; ++i) {
             message.putInt(4 * i, headerAsInts[i]);
         }
         message.position(0);
         return new Message(message, new ArrayList<Handle>());
+    }
+
+    public static <I extends Interface, P extends Interface.Proxy> P newProxyOverPipe(
+            Interface.Manager<I, P> manager, I impl, List<Closeable> toClose) {
+        Pair<MessagePipeHandle, MessagePipeHandle> handles =
+                CoreImpl.getInstance().createMessagePipe(null);
+        P proxy = manager.attachProxy(handles.first, 0);
+        toClose.add(proxy);
+        manager.bind(impl, handles.second);
+        return proxy;
     }
 }

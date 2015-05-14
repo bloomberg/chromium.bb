@@ -14,12 +14,12 @@ import java.nio.ByteBuffer;
 public class MessageHeader {
 
     private static final int SIMPLE_MESSAGE_SIZE = 16;
-    private static final int SIMPLE_MESSAGE_VERSION = 2;
+    private static final int SIMPLE_MESSAGE_VERSION = 0;
     private static final DataHeader SIMPLE_MESSAGE_STRUCT_INFO =
             new DataHeader(SIMPLE_MESSAGE_SIZE, SIMPLE_MESSAGE_VERSION);
 
     private static final int MESSAGE_WITH_REQUEST_ID_SIZE = 24;
-    private static final int MESSAGE_WITH_REQUEST_ID_VERSION = 3;
+    private static final int MESSAGE_WITH_REQUEST_ID_VERSION = 1;
     private static final DataHeader MESSAGE_WITH_REQUEST_ID_STRUCT_INFO =
             new DataHeader(MESSAGE_WITH_REQUEST_ID_SIZE, MESSAGE_WITH_REQUEST_ID_VERSION);
 

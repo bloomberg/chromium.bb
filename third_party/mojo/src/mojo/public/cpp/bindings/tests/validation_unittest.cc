@@ -408,8 +408,8 @@ TEST_F(ValidationTest, ResponseBoundsCheck) {
 //   - MessageHeaderValidator
 //   - X::ResponseValidator_
 TEST_F(ValidationIntegrationTest, InterfacePtr) {
-  IntegrationTestInterfacePtr interface_ptr =
-      MakeProxy<IntegrationTestInterface>(testee_endpoint().Pass());
+  IntegrationTestInterfacePtr interface_ptr = MakeProxy(
+      InterfacePtrInfo<IntegrationTestInterface>(testee_endpoint().Pass(), 0u));
   interface_ptr.internal_state()->router_for_testing()->EnableTestingMode();
 
   RunValidationTests("integration_intf_resp", test_message_receiver());

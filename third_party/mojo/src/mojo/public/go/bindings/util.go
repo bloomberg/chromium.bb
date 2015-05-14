@@ -5,7 +5,6 @@
 package bindings
 
 import (
-	"fmt"
 	"sync/atomic"
 
 	"mojo/public/go/system"
@@ -25,7 +24,7 @@ func bytesForBits(bits uint64) int {
 func WriteMessage(handle system.MessagePipeHandle, message *Message) error {
 	result := handle.WriteMessage(message.Bytes, message.Handles, system.MOJO_WRITE_MESSAGE_FLAG_NONE)
 	if result != system.MOJO_RESULT_OK {
-		return fmt.Errorf("error writing message: %v", result)
+		return &ConnectionError{result}
 	}
 	return nil
 }

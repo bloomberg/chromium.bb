@@ -36,7 +36,7 @@ define([
 
     var expectedMemory = new Uint8Array([
       16, 0, 0, 0,
-       2, 0, 0, 0,
+       0, 0, 0, 0,
       42, 0, 0, 0,
        0, 0, 0, 0,
 
@@ -105,7 +105,7 @@ define([
     var message = builder.finish();
 
     var expectedMemory = new Uint8Array([
-      /*  0: */   16,    0,    0,    0,    2,    0,    0,    0,
+      /*  0: */   16,    0,    0,    0,    0,    0,    0,    0,
       /*  8: */   31,    0,    0,    0,    0,    0,    0,    0,
       /* 16: */   96,    0,    0,    0,    0,    0,    0,    0,
       /* 24: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
@@ -240,7 +240,7 @@ define([
     encoder.encodeStringPointer(str);
     var message = builder.finish();
     var expectedMemory = new Uint8Array([
-      /*  0: */   16,    0,    0,    0,    2,    0,    0,    0,
+      /*  0: */   16,    0,    0,    0,    0,    0,    0,    0,
       /*  8: */   42,    0,    0,    0,    0,    0,    0,    0,
       /* 16: */    8,    0,    0,    0,    0,    0,    0,    0,
       /* 24: */   14,    0,    0,    0,    6,    0,    0,    0,

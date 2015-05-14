@@ -151,7 +151,7 @@ func (e *Encoder) StartArray(length, elementBitSize uint32) {
 // Note: it doesn't write a pointer to the encoded map.
 // Call |Finish()| after writing keys array and values array.
 func (e *Encoder) StartMap() {
-	e.pushState(mapHeader, pointerBitSize)
+	e.pushState(mapHeader, 0)
 }
 
 // StartStruct starts encoding a struct and writes its data header.

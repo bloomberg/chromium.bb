@@ -56,7 +56,8 @@
   }
 {%- endmacro %}
 
-{#- Validates the specified struct field, which is supposed to be a handle.
+{#- Validates the specified struct field, which is supposed to be a handle or
+    contain a handle (in the case of interfaces).
     This macro is expanded by the Validate() method. #}
 {%- macro _validate_handle(struct, packed_field) %}
 {%-   set name = packed_field.field.name %}
@@ -134,7 +135,7 @@ bool {{class_name}}::Validate(const void* data,
 {%- set last_checked_version = 0 %}
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set kind = packed_field.field.kind %}
-{%-   if kind|is_object_kind or kind|is_any_handle_kind %}
+{%-   if kind|is_object_kind or kind|is_any_handle_kind or kind|is_interface_kind %}
 {%-     if packed_field.min_version > last_checked_version %}
 {%-       set last_checked_version = packed_field.min_version %}
   if (object->header_.version < {{packed_field.min_version}})
@@ -142,7 +143,7 @@ bool {{class_name}}::Validate(const void* data,
 {%-     endif %}
 {%-     if kind|is_object_kind %}
 {{_validate_object(struct, packed_field)}}
-{%-     elif kind|is_any_handle_kind %}
+{%-     else %}
 {{_validate_handle(struct, packed_field)}}
 {%-     endif %}
 {%-   endif %}
@@ -155,9 +156,11 @@ void {{class_name}}::EncodePointersAndHandles(
     std::vector<mojo::Handle>* handles) {
   MOJO_CHECK(header_.version == {{struct.versions[-1].version}});
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
-{%-   if pf.field.kind|is_object_kind and not pf.field.kind|is_union_kind %}
+{%-   if pf.field.kind|is_union_kind %}
+  {{pf.field.name}}.EncodePointersAndHandles(handles);
+{%-   elif pf.field.kind|is_object_kind %}
   mojo::internal::Encode(&{{pf.field.name}}, handles);
-{%-   elif pf.field.kind|is_any_handle_kind %}
+{%-   elif pf.field.kind|is_any_handle_kind or pf.field.kind|is_interface_kind %}
   mojo::internal::EncodeHandle(&{{pf.field.name}}, handles);
 {%-   endif %}
 {%- endfor %}
@@ -175,14 +178,14 @@ void {{class_name}}::DecodePointersAndHandles(
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set name = pf.field.name %}
 {%-   set kind = pf.field.kind %}
-{%-   if kind|is_object_kind or kind|is_any_handle_kind %}
+{%-   if kind|is_object_kind or kind|is_any_handle_kind or kind|is_interface_kind %}
 {%-     if pf.min_version > last_checked_version %}
 {%-       set last_checked_version = pf.min_version %}
   if (header_.version < {{pf.min_version}})
     return;
 {%-     endif %}
 {%-     if kind|is_union_kind %}
-  // TODO(azani): Decode handles in union.
+  {{name}}.DecodePointersAndHandles(handles);
 {%-     elif kind|is_object_kind %}
   mojo::internal::Decode(&{{name}}, handles);
 {%-     else %}

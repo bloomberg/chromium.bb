@@ -68,8 +68,8 @@ public class ReadAndDispatchMessageTest extends MojoTestCase {
     @SmallTest
     public void testReadAndDispatchMessage() {
         mHandles.first.writeMessage(mData, mHandlesToSend, MessagePipeHandle.WriteFlags.NONE);
-        assertEquals(MojoResult.OK,
-                Connector.readAndDispatchMessage(mHandles.second, mMessageReceiver));
+        assertEquals(MojoResult.OK, Connector.readAndDispatchMessage(mHandles.second,
+                                                      mMessageReceiver).getMojoResult());
         assertEquals(1, mMessageReceiver.messages.size());
         Message message = mMessageReceiver.messages.get(0);
         mHandlesToClose.addAll(message.getHandles());
@@ -86,8 +86,8 @@ public class ReadAndDispatchMessageTest extends MojoTestCase {
      */
     @SmallTest
     public void testReadAndDispatchMessageOnEmptyHandle() {
-        assertEquals(MojoResult.SHOULD_WAIT,
-                Connector.readAndDispatchMessage(mHandles.second, mMessageReceiver));
+        assertEquals(MojoResult.SHOULD_WAIT, Connector.readAndDispatchMessage(mHandles.second,
+                                                               mMessageReceiver).getMojoResult());
         assertEquals(0, mMessageReceiver.messages.size());
     }
 

@@ -143,7 +143,7 @@ template("mojom") {
         [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
   }
   generator_dart_zip_output = "$target_out_dir/$target_name.dartzip"
-  generator_python_zip_output = "$target_out_dir/$target_name.pyzip"
+  generator_python_zip_output = "$target_out_dir/${target_name}_python.pyzip"
 
   rebased_mojo_sdk_public_deps = []
   if (defined(invoker.mojo_sdk_public_deps)) {
@@ -163,20 +163,9 @@ template("mojom") {
     }
   }
 
-  if (defined(invoker.visibility)) {
-    # Need to save this because the the target_name is overwritten inside the
-    # action to be that of the action itself. Only define this in the case the
-    # var is used to avoid unused var error.
-    target_visibility = [ ":$target_name" ]
-  }
-
   if (defined(invoker.sources)) {
     generator_target_name = target_name + "__generator"
     action_foreach(generator_target_name) {
-      if (defined(invoker.visibility)) {
-        visibility = target_visibility + invoker.visibility +
-                     [ ":${cpp_sources_target_name}" ]
-      }
       script = generator_script
       inputs = generator_sources
       sources = invoker.sources
@@ -238,10 +227,7 @@ template("mojom") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    data_deps = [
-      ":${target_name}_python",
-      ":${target_name}_dart",
-    ]
+    data_deps = [ ":${target_name}_dart" ]
     if (defined(invoker.mojo_sdk_deps)) {
       foreach(sdk_dep, invoker.mojo_sdk_deps) {
         # Check that the SDK dep was not mistakenly given as an absolute path.
@@ -291,7 +277,7 @@ template("mojom") {
       dep_name = get_label_info(d, "name")
       dep_target_out_dir = get_label_info(d, "target_out_dir")
       deps += [ "${full_name}_python" ]
-      zip_inputs += [ "$dep_target_out_dir/$dep_name.pyzip" ]
+      zip_inputs += [ "$dep_target_out_dir/${dep_name}_python.pyzip" ]
     }
 
     output = generator_python_zip_output
@@ -366,9 +352,6 @@ template("mojom") {
     # this target *except* mojo/public/cpp/bindings and other *_cpp_sources
     # targets.
     source_set(cpp_sources_target_name) {
-      if (defined(invoker.visibility)) {
-        visibility = target_visibility + invoker.visibility
-      }
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
       }
@@ -377,6 +360,9 @@ template("mojom") {
           rebase_path([ "mojo/public/build/config:mojo_sdk" ], ".", mojo_root)
       deps = [
         ":$generator_target_name",
+        rebase_path("mojo/public/interfaces/bindings:bindings__generator",
+                    ".",
+                    mojo_root),
       ]
       foreach(d, all_deps) {
         # Resolve the name, so that a target //mojo/something becomes
@@ -390,6 +376,22 @@ template("mojom") {
 
   if (is_android) {
     import("//build/config/android/rules.gni")
+
+    java_srcjar_target_name = target_name + "_java_sources"
+    action(java_srcjar_target_name) {
+      script = rebase_path("mojo/public/tools/gn/zip.py", ".", mojo_root)
+      inputs = process_file_template(invoker.sources, generator_java_outputs)
+      output = "$target_gen_dir/$target_name.srcjar"
+      outputs = [
+        output,
+      ]
+      rebase_inputs = rebase_path(inputs, root_build_dir)
+      rebase_output = rebase_path(output, root_build_dir)
+      args = [
+        "--zip-inputs=$rebase_inputs",
+        "--output=$rebase_output",
+      ]
+    }
 
     java_target_name = target_name + "_java"
     android_library(java_target_name) {
@@ -408,9 +410,7 @@ template("mojom") {
         deps += [ "${full_name}_java" ]
       }
 
-      if (defined(invoker.sources)) {
-        srcjars = process_file_template(invoker.sources, generator_java_outputs)
-      }
+      srcjar_deps = [ ":$java_srcjar_target_name" ]
     }
   }
 }

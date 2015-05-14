@@ -19,9 +19,7 @@ MessageBuilder::MessageBuilder(uint32_t name, size_t payload_size)
     : buf_(sizeof(MessageHeader) + payload_size) {
   MessageHeader* header;
   Allocate(&buf_, &header);
-  // TODO(yzshen): In order to work with other bindings which still interprets
-  // the |version| field as |num_fields|, set it to version 2 for now.
-  header->version = 2;
+  header->version = 0;
   header->name = name;
 }
 
@@ -43,9 +41,7 @@ MessageWithRequestIDBuilder::MessageWithRequestIDBuilder(uint32_t name,
     : MessageBuilder(sizeof(MessageHeaderWithRequestID) + payload_size) {
   MessageHeaderWithRequestID* header;
   Allocate(&buf_, &header);
-  // TODO(yzshen): In order to work with other bindings which still interprets
-  // the |version| field as |num_fields|, set it to version 3 for now.
-  header->version = 3;
+  header->version = 1;
   header->name = name;
   header->flags = flags;
   header->request_id = request_id;

@@ -143,17 +143,17 @@ define([
 
   function testMapValueTypes() {
     var mapFieldsStruct = new testStructs.MapValueTypes({
-      // array<string>>
+      // map<string, array<string>>
       f0: new Map([["a", ["b", "c"]], ["d", ["e"]]]),
-      // array<string>?>
+      // map<string, array<string>?>
       f1: new Map([["a", null], ["b", ["c", "d"]]]),
-      // array<string?>>
+      // map<string, array<string?>>
       f2: new Map([["a", [null]], ["b", [null, "d"]]]),
-      // array<string,2>>
+      // map<string, array<string,2>>
       f3: new Map([["a", ["1", "2"]], ["b", ["1", "2"]]]),
-      // array<array<string, 1>?>
-      f4: new Map([["a", [["1"]]], ["b", [null]]]),
-      // array<array<string, 2>, 1>>
+      // map<string, array<array<string, 2>?>>
+      f4: new Map([["a", [["1", "2"]]], ["b", [null]]]),
+      // map<string, array<array<string, 2>, 1>>
       f5: new Map([["a", [["1", "2"]]]]),
       // map<string, Rect?>
       f6: new Map([["a", null]]),
@@ -161,6 +161,12 @@ define([
       f7: new Map([["a", new Map([["b", "c"]])]]),
       // map<string, array<map<string, string>>>
       f8: new Map([["a", [new Map([["b", "c"]])]]]),
+      // map<string, handle>
+      f9: new Map([["a", 1234]]),
+      // map<string, array<handle>>
+      f10: new Map([["a", [1234, 5678]]]),
+      // map<string, map<string, handle>>
+      f11: new Map([["a", new Map([["b", 1234]])]]),
     });
     var decodedStruct = structEncodeDecode(mapFieldsStruct);
     expect(decodedStruct.f0).toEqual(mapFieldsStruct.f0);
@@ -172,6 +178,9 @@ define([
     expect(decodedStruct.f6).toEqual(mapFieldsStruct.f6);
     expect(decodedStruct.f7).toEqual(mapFieldsStruct.f7);
     expect(decodedStruct.f8).toEqual(mapFieldsStruct.f8);
+    expect(decodedStruct.f9).toEqual(mapFieldsStruct.f9);
+    expect(decodedStruct.f10).toEqual(mapFieldsStruct.f10);
+    expect(decodedStruct.f11).toEqual(mapFieldsStruct.f11);
   }
 
   function testFloatNumberValues() {

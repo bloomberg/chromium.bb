@@ -138,6 +138,9 @@ struct MapValueTypes {
   map<string, Rect?> f6;
   map<string, map<string, string>> f7;
   map<string, array<map<string, string>>> f8;
+  map<string, handle> f9;
+  map<string, array<handle>> f10;
+  map<string, map<string, handle>> f11;
 };
 
 // Used to verify that various array types can be encoded and decoded
@@ -348,4 +351,15 @@ struct MultiVersionStructV7 {
   handle<message_pipe>? f_message_pipe;
   [MinVersion=7]
   bool f_bool;
+};
+
+// Used to verify that interfaces that are struct members can be defined in the
+// same file.
+
+interface SomeInterface {
+  SomeMethod(RectPair pair) => (RectPair other_pair);
+};
+
+struct ContainsInterface {
+  SomeInterface some_interface;
 };

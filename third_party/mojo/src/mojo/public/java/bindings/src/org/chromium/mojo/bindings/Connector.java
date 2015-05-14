@@ -196,7 +196,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
      * Read all available messages on the owned message pipe.
      */
     private void readOutstandingMessages() {
-        int result;
+        ResultAnd<Boolean> result;
         do {
             try {
                 result = readAndDispatchMessage(mMessagePipeHandle, mIncomingMessageReceiver);
@@ -204,11 +204,11 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
                 onError(e);
                 return;
             }
-        } while (result == MojoResult.OK);
-        if (result == MojoResult.SHOULD_WAIT) {
+        } while (result.getValue());
+        if (result.getMojoResult() == MojoResult.SHOULD_WAIT) {
             registerAsyncWaiterForRead();
         } else {
-            onError(new MojoException(result));
+            onError(new MojoException(result.getMojoResult()));
         }
     }
 
@@ -226,12 +226,13 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
      * @param receiver The {@link MessageReceiver} that will receive the read {@link Message}. Can
      *            be <code>null</code>, in which case the message is discarded.
      */
-    static int readAndDispatchMessage(MessagePipeHandle handle, MessageReceiver receiver) {
+    static ResultAnd<Boolean> readAndDispatchMessage(
+            MessagePipeHandle handle, MessageReceiver receiver) {
         // TODO(qsr) Allow usage of a pool of pre-allocated buffer for performance.
         ResultAnd<ReadMessageResult> result =
                 handle.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
         if (result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED) {
-            return result.getMojoResult();
+            return new ResultAnd<Boolean>(result.getMojoResult(), false);
         }
         ReadMessageResult readResult = result.getValue();
         assert readResult != null;
@@ -239,8 +240,9 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
         result = handle.readMessage(
                 buffer, readResult.getHandlesCount(), MessagePipeHandle.ReadFlags.NONE);
         if (receiver != null && result.getMojoResult() == MojoResult.OK) {
-            receiver.accept(new Message(buffer, result.getValue().getHandles()));
+            boolean accepted = receiver.accept(new Message(buffer, result.getValue().getHandles()));
+            return new ResultAnd<Boolean>(result.getMojoResult(), accepted);
         }
-        return result.getMojoResult();
+        return new ResultAnd<Boolean>(result.getMojoResult(), false);
     }
 }

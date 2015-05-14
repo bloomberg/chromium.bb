@@ -6,13 +6,9 @@ part of bindings;
 
 class MessageHeader {
   static const int kSimpleMessageSize = 16;
-  // TODO(yzshen): In order to work with other bindings which still interprets
-  // the |version| field as |num_fields|, set it to version 2 for now.
-  static const int kSimpleMessageVersion = 2;
+  static const int kSimpleMessageVersion = 0;
   static const int kMessageWithRequestIdSize = 24;
-  // TODO(yzshen): In order to work with other bindings which still interprets
-  // the |version| field as |num_fields|, set it to version 3 for now.
-  static const int kMessageWithRequestIdVersion = 3;
+  static const int kMessageWithRequestIdVersion = 1;
   static const int kMessageTypeOffset = StructDataHeader.kHeaderSize;
   static const int kMessageFlagsOffset = kMessageTypeOffset + 4;
   static const int kMessageRequestIdOffset = kMessageFlagsOffset + 4;

@@ -62,6 +62,10 @@ public static final {{manager_class(interface, True)}} MANAGER =
         return "{{namespace|replace(".","::")}}::{{interface.name}}";
     }
 
+    public int getVersion() {
+      return {{interface.version}};
+    }
+
     public Proxy buildProxy(org.chromium.mojo.system.Core core,
                             org.chromium.mojo.bindings.MessageReceiverWithResponder messageReceiver) {
         return new Proxy(core, messageReceiver);
@@ -78,8 +82,6 @@ public static final {{manager_class(interface, True)}} MANAGER =
 {%- endmacro -%}
 
 {%- macro accept_body(interface, with_response) -%}
-{% if (interface|has_method_with_response and with_response) or
-      (interface|has_method_without_response and not with_response) %}
 try {
     org.chromium.mojo.bindings.ServiceMessage messageWithHeader =
             message.asServiceMessage();
@@ -88,6 +90,15 @@ try {
         return false;
     }
     switch(header.getType()) {
+{%   if with_response %}
+        case org.chromium.mojo.bindings.InterfaceControlMessagesConstants.RUN_MESSAGE_ID:
+            return org.chromium.mojo.bindings.InterfaceControlMessagesHelper.handleRun(
+                    getCore(), {{interface|name}}_Internal.MANAGER, messageWithHeader, receiver);
+{%   else %}
+        case org.chromium.mojo.bindings.InterfaceControlMessagesConstants.RUN_OR_CLOSE_PIPE_MESSAGE_ID:
+            return org.chromium.mojo.bindings.InterfaceControlMessagesHelper.handleRunOrClosePipe(
+                    {{interface|name}}_Internal.MANAGER, messageWithHeader);
+{%   endif %}
 {%   for method in interface.methods %}
 {%     if (with_response and method.response_parameters != None) or
         (not with_response and method.response_parameters == None) %}
@@ -113,9 +124,6 @@ try {
 } catch (org.chromium.mojo.bindings.DeserializationException e) {
     return false;
 }
-{% else %}
-return false;
-{% endif %}
 {%- endmacro -%}
 
 {% macro interface_def(interface) %}

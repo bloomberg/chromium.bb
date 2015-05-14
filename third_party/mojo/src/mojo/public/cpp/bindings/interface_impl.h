@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -141,7 +142,7 @@ Impl* WeakBindToProxy(
     InterfacePtr<Interface>* ptr,
     const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
   MessagePipe pipe;
-  ptr->Bind(pipe.handle0.Pass(), waiter);
+  ptr->Bind(InterfacePtrInfo<Interface>(pipe.handle0.Pass(), 0u), waiter);
   instance->BindToHandle(pipe.handle1.Pass(), waiter);
   return instance;
 }

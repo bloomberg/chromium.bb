@@ -59,7 +59,7 @@ func (w *routerWorker) readAndDispatchOutstandingMessages() error {
 			return nil
 		}
 		if result != system.MOJO_RESULT_OK {
-			return fmt.Errorf("error reading message: %v", result)
+			return &ConnectionError{result}
 		}
 		message, err := ParseMessage(bytes, handles)
 		if err != nil {
@@ -88,7 +88,7 @@ func (w *routerWorker) runLoop() error {
 		case waitResponse := <-w.waitChan:
 			w.waitId = 0
 			if waitResponse.Result != system.MOJO_RESULT_OK {
-				return fmt.Errorf("error waiting for message: %v", waitResponse.Result)
+				return &ConnectionError{waitResponse.Result}
 			}
 		case request := <-w.requestChan:
 			if err := WriteMessage(w.handle, request.message); err != nil {
@@ -98,7 +98,7 @@ func (w *routerWorker) runLoop() error {
 				w.responders[request.message.Header.RequestId] = request.responseChan
 			}
 		case <-w.done:
-			return fmt.Errorf("message pipe is closed")
+			return errConnectionClosed
 		}
 		// Returns immediately without an error if still waiting for
 		// a new message.
@@ -164,9 +164,8 @@ func (r *Router) Accept(message *Message) error {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	// This can also mean that the router is closed.
 	if !r.handle.IsValid() {
-		return fmt.Errorf("can't write a message to an invalid handle")
+		return errConnectionClosed
 	}
 	r.requestChan <- routeRequest{message, nil}
 	return nil
@@ -221,7 +220,7 @@ func (r *Router) AcceptWithResponse(message *Message) <-chan MessageReadResult {
 	// is closed so that we can safely close responseChan once we close the
 	// router.
 	if !r.handle.IsValid() {
-		responseChan <- MessageReadResult{nil, fmt.Errorf("can't write a message to an invalid handle")}
+		responseChan <- MessageReadResult{nil, errConnectionClosed}
 		return responseChan
 	}
 	r.requestChan <- routeRequest{message, responseChan}

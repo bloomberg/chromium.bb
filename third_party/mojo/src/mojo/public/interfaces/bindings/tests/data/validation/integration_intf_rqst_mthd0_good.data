@@ -1,5 +1,5 @@
 [dist4]message_header  // num_bytes
-[u4]3                  // version
+[u4]1                  // version
 [u4]0                  // name
 [u4]1                  // flags kMessageExpectsResponse
 [u8]7                  // request_id

@@ -30,13 +30,13 @@ class MessagingException(Exception):
 class MessageHeader(object):
   """The header of a mojo message."""
 
-  _SIMPLE_MESSAGE_VERSION = 2
+  _SIMPLE_MESSAGE_VERSION = 0
   _SIMPLE_MESSAGE_STRUCT = struct.Struct("<IIII")
 
   _REQUEST_ID_STRUCT = struct.Struct("<Q")
   _REQUEST_ID_OFFSET = _SIMPLE_MESSAGE_STRUCT.size
 
-  _MESSAGE_WITH_REQUEST_ID_VERSION = 3
+  _MESSAGE_WITH_REQUEST_ID_VERSION = 1
   _MESSAGE_WITH_REQUEST_ID_SIZE = (
       _SIMPLE_MESSAGE_STRUCT.size + _REQUEST_ID_STRUCT.size)
 
@@ -276,10 +276,11 @@ class Connector(MessageReceiver):
         _WeakCallback(self._OnAsyncWaiterResult))
 
   def _ReadOutstandingMessages(self):
-    result = system.RESULT_OK
-    while result == system.RESULT_OK:
-      result = _ReadAndDispatchMessage(self._handle,
-                                       self._incoming_message_receiver)
+    result = None
+    dispatched = True
+    while dispatched:
+      result, dispatched = _ReadAndDispatchMessage(
+          self._handle, self._incoming_message_receiver)
     if result == system.RESULT_SHOULD_WAIT:
       self._RegisterAsyncWaiterForRead()
       return
@@ -393,15 +394,16 @@ def _WeakCallback(callback):
 
 
 def _ReadAndDispatchMessage(handle, message_receiver):
+  dispatched = False
   (result, _, sizes) = handle.ReadMessage()
   if result == system.RESULT_OK and message_receiver:
-    message_receiver.Accept(Message(bytearray(), []))
+    dispatched = message_receiver.Accept(Message(bytearray(), []))
   if result != system.RESULT_RESOURCE_EXHAUSTED:
-    return result
+    return (result, dispatched)
   (result, data, _) = handle.ReadMessage(bytearray(sizes[0]), sizes[1])
   if result == system.RESULT_OK and message_receiver:
-    message_receiver.Accept(Message(data[0], data[1]))
-  return result
+    dispatched = message_receiver.Accept(Message(data[0], data[1]))
+  return (result, dispatched)
 
 def _HasRequestId(flags):
   return flags & (MESSAGE_EXPECTS_RESPONSE_FLAG|MESSAGE_IS_RESPONSE_FLAG) != 0

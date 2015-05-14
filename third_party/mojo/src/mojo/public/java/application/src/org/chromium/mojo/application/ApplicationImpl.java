@@ -42,8 +42,7 @@ class ApplicationImpl implements Application {
             ServiceProvider exposedServices, String connectionUrl) {
         ApplicationConnection connection =
                 new ApplicationConnection(requestorUrl, exposedServices, connectionUrl);
-        if (services != null
-                && mApplicationDelegate.configureIncomingConnection(requestorUrl, connection)) {
+        if (services != null && mApplicationDelegate.configureIncomingConnection(connection)) {
             ServiceProvider.MANAGER.bind(connection.getLocalServiceProvider(), services);
             mIncomingConnections.add(connection);
         } else {

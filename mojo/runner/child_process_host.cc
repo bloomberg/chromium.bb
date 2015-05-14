@@ -16,6 +16,7 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
@@ -48,7 +49,7 @@ void ChildProcessHost::Start() {
       base::Bind(&ChildProcessHost::DidCreateChannel, base::Unretained(this)),
       base::MessageLoop::current()->message_loop_proxy()));
 
-  controller_.Bind(handle.Pass());
+  controller_.Bind(InterfacePtrInfo<ChildController>(handle.Pass(), 0u));
 
   CHECK(base::PostTaskAndReplyWithResult(
       context_->task_runners()->blocking_pool(), FROM_HERE,

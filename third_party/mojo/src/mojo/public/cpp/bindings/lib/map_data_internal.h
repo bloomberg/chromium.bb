@@ -66,10 +66,8 @@ class Map_Data {
       return false;
 
     const Map_Data* object = static_cast<const Map_Data*>(data);
-    // TODO(yzshen): In order to work with other bindings which still interprets
-    // the |version| field as |num_fields|, |version| is set to 2.
     if (object->header_.num_bytes != sizeof(Map_Data) ||
-        object->header_.version != 2) {
+        object->header_.version != 0) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
     }
@@ -134,9 +132,7 @@ class Map_Data {
  private:
   Map_Data() {
     header_.num_bytes = sizeof(*this);
-    // TODO(yzshen): In order to work with other bindings which still interprets
-    // the |version| field as |num_fields|, set it to version 2 for now.
-    header_.version = 2;
+    header_.version = 0;
   }
   ~Map_Data() = delete;
 };

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../mojo_sdk.gni")
 import("//third_party/cython/rules.gni")
 import("rules.gni")
 
@@ -88,11 +89,37 @@ python_package("packaged_application") {
   ]
 }
 
-# GYP version: mojo.gyp:mojo_python_bindings
+action("import_interface_bindings") {
+  visibility = [ ":bindings" ]
+  script = rebase_path("mojo/public/tools/gn/unzip.py", ".", mojo_root)
+  timestamp = "$target_gen_dir/${target_name}.outputstamp"
+  mojom_deps = [ "../interfaces/bindings:bindings_python" ]
+  inputs = []
+  foreach(d, mojom_deps) {
+    dep_name = get_label_info(d, "name")
+    dep_target_out_dir = get_label_info(d, "target_out_dir")
+    inputs += [ "$dep_target_out_dir/$dep_name.pyzip" ]
+  }
+  outputs = [
+    timestamp,
+  ]
+  rebase_inputs = rebase_path(inputs, root_build_dir)
+  rabase_output = rebase_path("$root_out_dir/python", root_build_dir)
+  rebase_timestamp = rebase_path(timestamp, root_build_dir)
+  args = [
+    "--inputs=${rebase_inputs}",
+    "--output=${rabase_output}",
+    "--timestamp=${rebase_timestamp}",
+  ]
+
+  deps = mojom_deps
+}
+
 copy("bindings") {
   sources = [
     "mojo_bindings/__init__.py",
     "mojo_bindings/descriptor.py",
+    "mojo_bindings/interface_reflection.py",
     "mojo_bindings/messaging.py",
     "mojo_bindings/promise.py",
     "mojo_bindings/reflection.py",
@@ -102,6 +129,7 @@ copy("bindings") {
     "$root_out_dir/python/mojo_bindings/{{source_file_part}}",
   ]
   deps = [
+    ":import_interface_bindings",
     ":mojo_system",
   ]
 }
@@ -110,9 +138,14 @@ python_package("packaged_bindings") {
   sources = [
     "mojo_bindings/__init__.py",
     "mojo_bindings/descriptor.py",
+    "mojo_bindings/interface_reflection.py",
     "mojo_bindings/messaging.py",
     "mojo_bindings/promise.py",
     "mojo_bindings/reflection.py",
     "mojo_bindings/serialization.py",
+  ]
+
+  deps = [
+    "../interfaces/bindings:bindings_python",
   ]
 }

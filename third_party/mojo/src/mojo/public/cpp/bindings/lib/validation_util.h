@@ -42,6 +42,11 @@ bool ValidateMessagePayload(const Message* message) {
   return ParamsType::Validate(message->payload(), &bounds_checker);
 }
 
+// The following methods validate control messages defined in
+// interface_control_messages.mojom.
+bool ValidateControlRequest(const Message* message);
+bool ValidateControlResponse(const Message* message);
+
 }  // namespace internal
 }  // namespace mojo
 

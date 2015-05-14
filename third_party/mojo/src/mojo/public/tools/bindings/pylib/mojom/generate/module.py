@@ -278,6 +278,8 @@ class Map(ReferenceKind):
         raise Exception("Structs cannot be keys in maps.")
       if IsAnyHandleKind(key_kind):
         raise Exception("Handles cannot be keys in maps.")
+      if IsInterfaceKind(key_kind):
+        raise Exception("Interfaces cannot be keys in maps.")
       if IsArrayKind(key_kind):
         raise Exception("Arrays cannot be keys in maps.")
     else:
@@ -436,11 +438,23 @@ def IsFloatKind(kind):
   return kind.spec == FLOAT.spec
 
 
+def IsIntegralKind(kind):
+  return (kind.spec == BOOL.spec or
+          kind.spec == INT8.spec or
+          kind.spec == INT16.spec or
+          kind.spec == INT32.spec or
+          kind.spec == INT64.spec or
+          kind.spec == UINT8.spec or
+          kind.spec == UINT16.spec or
+          kind.spec == UINT32.spec or
+          kind.spec == UINT64.spec)
+
+
 def IsStringKind(kind):
   return kind.spec == STRING.spec or kind.spec == NULLABLE_STRING.spec
 
 
-def IsHandleKind(kind):
+def IsGenericHandleKind(kind):
   return kind.spec == HANDLE.spec or kind.spec == NULLABLE_HANDLE.spec
 
 
@@ -502,27 +516,20 @@ def IsObjectKind(kind):
           IsMapKind(kind) or IsUnionKind(kind))
 
 
-def IsNonInterfaceHandleKind(kind):
-  return (IsHandleKind(kind) or
+# Please note that interface is not considered as handle kind, since it is an
+# aggregate type consisting of a handle and a version number.
+def IsAnyHandleKind(kind):
+  return (IsGenericHandleKind(kind) or
           IsDataPipeConsumerKind(kind) or
           IsDataPipeProducerKind(kind) or
           IsMessagePipeKind(kind) or
-          IsSharedBufferKind(kind))
-
-
-# TODO(yzshen): consider to make the handle-related type checks more clear:
-# - rename IsHandleKind to IsGenericHandleKind.
-# - change IsAnyHandleKind to exclude interface.
-# - remove IsNonInterfaceHandleKind.
-def IsAnyHandleKind(kind):
-  return (IsNonInterfaceHandleKind(kind) or
-          IsInterfaceKind(kind) or
+          IsSharedBufferKind(kind) or
           IsInterfaceRequestKind(kind))
 
 
 def IsMoveOnlyKind(kind):
   return (not IsStringKind(kind) and IsObjectKind(kind)) or \
-      IsAnyHandleKind(kind)
+      IsAnyHandleKind(kind) or IsInterfaceKind(kind)
 
 
 def IsCloneableKind(kind):
@@ -531,7 +538,7 @@ def IsCloneableKind(kind):
       # No need to examine the kind again.
       return False
     visited_kinds.add(kind)
-    if IsAnyHandleKind(kind):
+    if IsAnyHandleKind(kind) or IsInterfaceKind(kind):
       return True
     if IsArrayKind(kind):
       return ContainsHandles(kind.kind, visited_kinds)
@@ -539,6 +546,10 @@ def IsCloneableKind(kind):
       for field in kind.fields:
         if ContainsHandles(field.kind, visited_kinds):
           return True
+    if IsMapKind(kind):
+      # No need to examine the key kind, only primitive kinds and non-nullable
+      # string are allowed to be key kinds.
+      return ContainsHandles(kind.value_kind, visited_kinds)
     return False
 
   return not ContainsHandles(kind, set())

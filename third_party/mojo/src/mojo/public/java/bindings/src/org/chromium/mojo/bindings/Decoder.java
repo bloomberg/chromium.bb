@@ -432,12 +432,12 @@ public class Decoder {
      */
     public <P extends Proxy> P readServiceInterface(int offset, boolean nullable,
             Interface.Manager<?, P> manager) {
-        // Ignore the version field for now. Only read the handle field.
         MessagePipeHandle handle = readMessagePipeHandle(offset, nullable);
         if (!handle.isValid()) {
             return null;
         }
-        return manager.attachProxy(handle);
+        int version = readInt(offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
+        return manager.attachProxy(handle, version);
     }
 
     /**
@@ -589,8 +589,8 @@ public class Decoder {
         if (d == null) {
             return null;
         }
-        DataHeader si = d.readDataHeaderForArray(BindingsHelper.SERIALIZED_INTERFACE_SIZE,
-                                                 expectedLength);
+        DataHeader si =
+                d.readDataHeaderForArray(BindingsHelper.SERIALIZED_INTERFACE_SIZE, expectedLength);
         S[] result = manager.buildArray(si.elementsOrVersion);
         for (int i = 0; i < result.length; ++i) {
             // This cast is necessary because java 6 doesn't handle wildcard correctly when using
