@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include <set>
+#include <array>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -21,6 +21,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/events/event.h"
+#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/sequential_id_generator.h"
 #include "ui/gfx/win/window_impl.h"
@@ -206,7 +207,26 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void SizeConstraintsChanged();
 
  private:
-  typedef std::set<DWORD> TouchIDs;
+  FRIEND_TEST_ALL_PREFIXES(HWNDMessageHandler, TestCorrectTouchInputList);
+  FRIEND_TEST_ALL_PREFIXES(HWNDMessageHandler, TestCombineTouchMoveAndUp);
+  FRIEND_TEST_ALL_PREFIXES(HWNDMessageHandler, TestMissingTouchRelease);
+
+  // We use InTouchList self-defined type to specify if the touch point from
+  // last message is in the current message or not.
+  enum class InTouchList { NotPresent, InPreviousMessage, InCurrentMessage };
+
+  // We need the touch location to release a touch point which is not in the
+  // current message.
+  struct TouchPoint {
+    gfx::Point location;
+    InTouchList in_touch_list;
+
+    TouchPoint() : in_touch_list(InTouchList::NotPresent) {}
+  };
+
+  using TouchEvents = std::vector<ui::TouchEvent>;
+  using TouchPointArray =
+      std::array<TouchPoint, ui::MotionEvent::MAX_TOUCH_POINT_COUNT>;
 
   // Overridden from internal::InputMethodDelegate:
   void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
@@ -453,7 +473,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Receives Windows Session Change notifications.
   void OnSessionChange(WPARAM status_code);
 
-  typedef std::vector<ui::TouchEvent> TouchEvents;
   // Helper to handle the list of touch events passed in. We need this because
   // touch events on windows don't fire if we enter a modal loop in the context
   // of a touch event.
@@ -461,7 +480,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Resets the flag which indicates that we are in the context of a touch down
   // event.
-  void ResetTouchDownContext();
+  void DecrementTouchDownContext(int decrement);
 
   // Helper to handle mouse events.
   // The |message|, |w_param|, |l_param| parameters identify the Windows mouse
@@ -483,6 +502,23 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Provides functionality to transition a frame to DWM.
   void PerformDwmTransition();
+
+  void PrepareTouchEventList(TOUCHINPUT input[],
+                             int num_points,
+                             TouchEvents* touch_events);
+
+  // From one WM_TOUCH message, we will generate corresponding touch events.
+  void GenerateTouchEvent(DWORD input_dwID,
+                          const gfx::Point& point_location,
+                          ui::EventType touch_event_type,
+                          TouchEvents* touch_events);
+
+  // It will release the touch points which are no longer in the current message
+  // because the messages are sent inconsistently, and also set the touch points
+  // we have seen in the current message to be InPreviousMessage.
+  void UpdateTouchPointStates(TouchEvents* touch_events);
+
+  const TouchPointArray& touch_id_list() const { return touch_id_list_; }
 
   HWNDMessageHandlerDelegate* delegate_;
 
@@ -516,9 +552,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Set to true when the user presses the right mouse button on the caption
   // area. We need this so we can correctly show the context menu on mouse-up.
   bool is_right_mouse_pressed_on_caption_;
-
-  // The set of touch devices currently down.
-  TouchIDs touch_ids_;
 
   // ScopedRedrawLock ----------------------------------------------------------
 
@@ -587,6 +620,16 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Manages observation of Windows Session Change messages.
   scoped_ptr<WindowsSessionChangeObserver> windows_session_change_observer_;
+
+  // HWND Message sometimes sends inconsistent number of touch pointers, so we
+  // keep the IDs of touch pointers we have seen from last message, and compare
+  // with the current message in order to release the ones which are not in the
+  // current list, or send a touchpress when we see a new touch point. The
+  // index of the array is the touch_ID.
+  TouchPointArray touch_id_list_;
+
+  // Keep the count of the current active touch points.
+  int active_touch_point_count_;
 
   // The WeakPtrFactories below must occur last in the class definition so they
   // get destroyed last.

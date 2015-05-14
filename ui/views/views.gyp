@@ -567,6 +567,7 @@
       'widget/root_view_unittest.cc',
       'widget/widget_unittest.cc',
       'widget/window_reorderer_unittest.cc',
+      'win/hwnd_message_handler_unittest.cc',
       'window/custom_frame_view_unittest.cc',
       'window/dialog_client_view_unittest.cc',
       'window/dialog_delegate_unittest.cc',

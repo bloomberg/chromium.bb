@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
@@ -328,6 +329,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       last_mouse_hwheel_time_(0),
       msg_handled_(FALSE),
       dwm_transition_desired_(false),
+      active_touch_point_count_(0),
       autohide_factory_(this),
       weak_factory_(this) {
 }
@@ -2297,8 +2299,6 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
   if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
                                    num_points, input.get(),
                                    sizeof(TOUCHINPUT))) {
-    int flags = ui::GetModifiersFromKeyState();
-    TouchEvents touch_events;
     for (int i = 0; i < num_points; ++i) {
       POINT point;
       point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
@@ -2314,50 +2314,18 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         if (hittest != HTCLIENT)
           return 0;
       }
-
-      ScreenToClient(hwnd(), &point);
-
-      last_touch_message_time_ = ::GetMessageTime();
-
-      ui::EventType touch_event_type = ui::ET_UNKNOWN;
-
-      if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
-        touch_ids_.insert(input[i].dwID);
-        touch_event_type = ui::ET_TOUCH_PRESSED;
-        touch_down_contexts_++;
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&HWNDMessageHandler::ResetTouchDownContext,
-                       weak_factory_.GetWeakPtr()),
-            base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
-      } else if (input[i].dwFlags & TOUCHEVENTF_UP) {
-        touch_ids_.erase(input[i].dwID);
-        touch_event_type = ui::ET_TOUCH_RELEASED;
-      } else if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
-        touch_event_type = ui::ET_TOUCH_MOVED;
-      }
-      if (touch_event_type != ui::ET_UNKNOWN) {
-        // input[i].dwTime doesn't necessarily relate to the system time at all,
-        // so use base::TimeTicks::Now()
-        const base::TimeTicks now = base::TimeTicks::Now();
-        ui::TouchEvent event(touch_event_type,
-                             gfx::Point(point.x, point.y),
-                             id_generator_.GetGeneratedID(input[i].dwID),
-                             now - base::TimeTicks());
-        event.set_flags(flags);
-        event.latency()->AddLatencyNumberWithTimestamp(
-            ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-            0,
-            0,
-            base::TimeTicks::FromInternalValue(
-                event.time_stamp().ToInternalValue()),
-            1);
-
-        touch_events.push_back(event);
-        if (touch_event_type == ui::ET_TOUCH_RELEASED)
-          id_generator_.ReleaseNumber(input[i].dwID);
-      }
     }
+    TouchEvents touch_events;
+    int old_touch_down_contexts = touch_down_contexts_;
+    PrepareTouchEventList(input.get(), num_points, &touch_events);
+    int new_touch_presses = touch_down_contexts_ - old_touch_down_contexts;
+    if (new_touch_presses > 0) {
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&HWNDMessageHandler::DecrementTouchDownContext,
+                                weak_factory_.GetWeakPtr(), new_touch_presses),
+          base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
+    }
+
     // Handle the touch events asynchronously. We need this because touch
     // events on windows don't fire if we enter a modal loop in the context of
     // a touch event.
@@ -2369,6 +2337,103 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
   CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(l_param));
   SetMsgHandled(FALSE);
   return 0;
+}
+
+void HWNDMessageHandler::PrepareTouchEventList(TOUCHINPUT input[],
+                                               int num_points,
+                                               TouchEvents* touch_events) {
+  for (int i = 0; i < num_points; ++i) {
+    POINT point;
+    point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
+    point.y = TOUCH_COORD_TO_PIXEL(input[i].y);
+    gfx::Point point_location(point.x, point.y);
+
+    ScreenToClient(hwnd(), &point);
+
+    // TOUCHEVENTF_DOWN cannot be combined with TOUCHEVENTF_MOVE or
+    // TOUCHEVENTF_UP, but TOUCHEVENTF_MOVE and TOUCHEVENTF_UP can be combined
+    // in one input.
+    if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
+      touch_down_contexts_++;
+      active_touch_point_count_++;
+      GenerateTouchEvent(input[i].dwID, point_location, ui::ET_TOUCH_PRESSED,
+                         touch_events);
+    } else {
+      if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
+        GenerateTouchEvent(input[i].dwID, point_location, ui::ET_TOUCH_MOVED,
+                           touch_events);
+      }
+      if (input[i].dwFlags & TOUCHEVENTF_UP) {
+        active_touch_point_count_--;
+        GenerateTouchEvent(input[i].dwID, point_location, ui::ET_TOUCH_RELEASED,
+                           touch_events);
+      }
+    }
+  }
+  last_touch_message_time_ = ::GetMessageTime();
+
+  UpdateTouchPointStates(touch_events);
+}
+
+void HWNDMessageHandler::GenerateTouchEvent(DWORD input_dwID,
+                                            const gfx::Point& point_location,
+                                            ui::EventType touch_event_type,
+                                            TouchEvents* touch_events) {
+  int touch_id = static_cast<int>(id_generator_.GetGeneratedID(input_dwID));
+  if (touch_id < 0 || touch_id >= static_cast<int>(touch_id_list_.size())) {
+    return;
+  }
+
+  TouchPoint& touch_point = touch_id_list_[touch_id];
+  int flags = ui::GetModifiersFromKeyState();
+
+  // The dwTime of every input in the WM_TOUCH message doesn't necessarily
+  // relate to the system time at all, so use base::TimeTicks::Now() for
+  // touchevent time.
+  base::TimeDelta now = ui::EventTimeForNow();
+
+  // We set a check to assert that we do not have missing touch presses in
+  // every message.
+  bool has_missing_touch_press = touch_event_type != ui::ET_TOUCH_PRESSED &&
+      touch_point.in_touch_list == InTouchList::NotPresent;
+  CHECK(!has_missing_touch_press) << "There are missing touch presses";
+
+  ui::TouchEvent event(touch_event_type, point_location, touch_id, now);
+  event.set_flags(flags);
+  event.latency()->AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, base::TimeTicks::Now(),
+      1);
+  touch_events->push_back(event);
+
+  // Mark the active touch pointers in the touch_id_list_ to be
+  // InCurrentMessage, so we can track the ones which are missed in the
+  // current message and release them.
+  if (touch_event_type == ui::ET_TOUCH_RELEASED) {
+    id_generator_.ReleaseNumber(input_dwID);
+    touch_point.in_touch_list = InTouchList::NotPresent;
+  } else {
+    touch_point.in_touch_list = InTouchList::InCurrentMessage;
+    touch_point.location = point_location;
+  }
+}
+
+void HWNDMessageHandler::UpdateTouchPointStates(TouchEvents* touch_events) {
+  for (size_t i = 0; i != touch_id_list_.size(); ++i) {
+    // Loop through the touch pointers list, if we see any which is only in
+    // the previous message, we will send a touch release event for this ID.
+    TouchPoint& touch_point = touch_id_list_[i];
+    if (touch_point.in_touch_list == InTouchList::InPreviousMessage) {
+      base::TimeDelta now = base::TimeTicks::Now() - base::TimeTicks();
+      ui::TouchEvent event(ui::ET_TOUCH_RELEASED, touch_point.location,
+                           static_cast<int>(i), now);
+      touch_events->push_back(event);
+      touch_point.in_touch_list = InTouchList::NotPresent;
+      id_generator_.ReleaseGeneratedID(i);
+      active_touch_point_count_--;
+    } else if (touch_point.in_touch_list == InTouchList::InCurrentMessage) {
+      touch_point.in_touch_list = InTouchList::InPreviousMessage;
+    }
+  }
 }
 
 void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
@@ -2505,15 +2570,15 @@ void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {
     delegate_->HandleTouchEvent(touch_events[i]);
 }
 
-void HWNDMessageHandler::ResetTouchDownContext() {
-  touch_down_contexts_--;
+void HWNDMessageHandler::DecrementTouchDownContext(int decrement) {
+  touch_down_contexts_ -= decrement;
 }
 
 LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
                                                      WPARAM w_param,
                                                      LPARAM l_param,
                                                      bool track_mouse) {
-  if (!touch_ids_.empty())
+  if (active_touch_point_count_)
     return 0;
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
