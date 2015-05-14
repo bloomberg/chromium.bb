@@ -166,8 +166,8 @@ bool ComponentExtensionIMEManager::IsWhitelistedExtension(
 input_method::InputMethodDescriptors
     ComponentExtensionIMEManager::GetAllIMEAsInputMethodDescriptor() {
   bool enable_new_korean_ime =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewKoreanIme);
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewKoreanIme);
   input_method::InputMethodDescriptors result;
   for (std::map<std::string, ComponentExtensionIME>::const_iterator it =
           component_extension_imes_.begin();

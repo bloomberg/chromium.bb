@@ -1410,11 +1410,11 @@ const Experiment kExperiments[] = {
                               keyboard::switches::kDisableInputView)
   },
   {
-    "enable-new-korean-ime",
-    IDS_FLAGS_ENABLE_NEW_KOREAN_IME_NAME,
-    IDS_FLAGS_ENABLE_NEW_KOREAN_IME_DESCRIPTION,
+    "disable-new-korean-ime",
+    IDS_FLAGS_DISABLE_NEW_KOREAN_IME_NAME,
+    IDS_FLAGS_DISABLE_NEW_KOREAN_IME_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewKoreanIme)
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableNewKoreanIme)
   },
   {
     "disable-new-md-input-view",

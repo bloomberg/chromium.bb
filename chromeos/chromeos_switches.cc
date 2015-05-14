@@ -111,9 +111,9 @@ const char kEnableConsumerManagement[] = "enable-consumer-management";
 // If this switch is set, the device cannot be remotely disabled by its owner.
 const char kDisableDeviceDisabling[] = "disable-device-disabling";
 
-// If this switch is set, the new Korean IME will be available in
+// If this switch is set, the new Korean IME will not be available in
 // chrome://settings/languages.
-const char kEnableNewKoreanIme[] = "enable-new-korean-ime";
+const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
 
 // Disables mtp write support.
 const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";

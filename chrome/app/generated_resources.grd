@@ -14473,11 +14473,11 @@ After you create a new supervised user, you can manage their settings at any tim
           Disable input view keyboards in material design.
         </message>
 
-        <message name="IDS_FLAGS_ENABLE_NEW_KOREAN_IME_NAME" desc="Name of about::flags option to enable the new Korean IME">
-          Enable new Korean IME.
+        <message name="IDS_FLAGS_DISABLE_NEW_KOREAN_IME_NAME" desc="Name of about::flags option to disable the new Korean IME">
+          Disable new Korean IME.
         </message>
-        <message name="IDS_FLAGS_ENABLE_NEW_KOREAN_IME_DESCRIPTION" desc="Description of about::flags option to enable the new Korean IME">
-          Enable new Korean IME, which is based on Google Input Tools' HMM engine.
+        <message name="IDS_FLAGS_DISABLE_NEW_KOREAN_IME_DESCRIPTION" desc="Description of about::flags option to disable the new Korean IME">
+          Disable new Korean IME, which is based on Google Input Tools' HMM engine.
         </message>
 
         <message name="IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME" desc="Name of about::flags option to enable physical keyboard autocorrect for US keyboard">

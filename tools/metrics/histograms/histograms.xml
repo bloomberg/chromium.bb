@@ -56630,6 +56630,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="834326277" label="enable-answers-in-suggest"/>
   <int value="835018878" label="disable-quic"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
+  <int value="841343322" label="disable-new-korean-ime"/>
   <int value="851085848" label="enable-settings-window"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
