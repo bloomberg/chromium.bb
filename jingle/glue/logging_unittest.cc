@@ -76,7 +76,7 @@ static bool Initialize(int verbosity_level) {
 TEST(LibjingleLogTest, DefaultConfiguration) {
   ASSERT_TRUE(Initialize(kDefaultVerbosity));
 
-  // In the default configuration nothing should be logged.
+  // In the default configuration only warnings and errors should be logged.
   LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
   LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
   LOG_V(rtc::LS_INFO) << AsString(rtc::LS_INFO);
@@ -89,9 +89,8 @@ TEST(LibjingleLogTest, DefaultConfiguration) {
   base::ReadFileToString(file_path, &contents_of_file);
 
   // Make sure string contains the expected values.
-  EXPECT_FALSE(ContainsString(contents_of_file, AsString(rtc::LS_ERROR)));
-  EXPECT_FALSE(ContainsString(contents_of_file,
-                              AsString(rtc::LS_WARNING)));
+  EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_ERROR)));
+  EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_WARNING)));
   EXPECT_FALSE(ContainsString(contents_of_file, AsString(rtc::LS_INFO)));
   EXPECT_FALSE(ContainsString(contents_of_file,
                               AsString(rtc::LS_VERBOSE)));
@@ -100,7 +99,7 @@ TEST(LibjingleLogTest, DefaultConfiguration) {
 }
 
 TEST(LibjingleLogTest, InfoConfiguration) {
-  ASSERT_TRUE(Initialize(rtc::LS_INFO));
+  ASSERT_TRUE(Initialize(0));  // 0 == Chrome's 'info' level.
 
   // In this configuration everything lower or equal to LS_INFO should be
   // logged.
@@ -119,7 +118,7 @@ TEST(LibjingleLogTest, InfoConfiguration) {
   EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_ERROR)));
   EXPECT_TRUE(ContainsString(contents_of_file,
                              AsString(rtc::LS_WARNING)));
-  EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_INFO)));
+  EXPECT_FALSE(ContainsString(contents_of_file, AsString(rtc::LS_INFO)));
   EXPECT_FALSE(ContainsString(contents_of_file,
                               AsString(rtc::LS_VERBOSE)));
   EXPECT_FALSE(ContainsString(contents_of_file,
@@ -132,7 +131,7 @@ TEST(LibjingleLogTest, InfoConfiguration) {
 }
 
 TEST(LibjingleLogTest, LogEverythingConfiguration) {
-  ASSERT_TRUE(Initialize(rtc::LS_SENSITIVE));
+  ASSERT_TRUE(Initialize(2));  // verbosity at level 2 allows LS_SENSITIVE.
 
   // In this configuration everything should be logged.
   LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
