@@ -1461,8 +1461,11 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     // We can't check the path since that may change (https://crbug.com/373041).
     if (GetLastCommittedEntry()->GetURL().GetOrigin() !=
         GetEntryAtIndex(entry_index)->GetURL().GetOrigin()) {
-      bad_message::ReceivedBadMessage(rfh->GetProcess(),
-                                      bad_message::NC_AUTO_SUBFRAME);
+      // TODO(creis): This is unexpectedly being encountered in practice.  If
+      // you encounter this in practice, please post details to
+      // https://crbug.com/486916.  Once that's resolved, we'll change this to
+      // kill the renderer process with bad_message::NC_AUTO_SUBFRAME.
+      NOTREACHED() << "Unexpected main frame origin change on AUTO_SUBFRAME.";
     }
     last_committed_entry_index_ = entry_index;
     DiscardNonCommittedEntriesInternal();
