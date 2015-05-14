@@ -10,7 +10,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "content/public/renderer/render_thread.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -223,7 +222,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
     return false;
 
   layer_ = cc::TextureLayer::CreateForMailbox(this);
-  web_layer_ = make_scoped_ptr(InstantiateWebLayer(layer_));
+  web_layer_ = make_scoped_ptr(delegate_->InstantiateWebLayer(layer_));
   container_ = container;
   container_->setWebLayer(web_layer_.get());
   if (re_request_touch_events_) {
@@ -312,7 +311,7 @@ void TestPlugin::updateGeometry(
     texture_mailbox_ = cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point);
   } else {
     scoped_ptr<cc::SharedBitmap> bitmap =
-        RenderThread::Get()->GetSharedBitmapManager()->AllocateSharedBitmap(
+        delegate_->GetSharedBitmapManager()->AllocateSharedBitmap(
             gfx::Rect(rect_).size());
     if (!bitmap) {
       texture_mailbox_ = cc::TextureMailbox();

@@ -114,6 +114,9 @@ class BlinkTestRunner : public RenderViewObserver,
                      const GURL& origin,
                      const GURL& embedding_origin) override;
   void ResetPermissions() override;
+  blink::WebLayer* InstantiateWebLayer(
+      scoped_refptr<cc::TextureLayer> layer) override;
+  cc::SharedBitmapManager* GetSharedBitmapManager() override;
 
   void Reset();
 

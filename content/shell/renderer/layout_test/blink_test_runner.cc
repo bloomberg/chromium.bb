@@ -628,6 +628,15 @@ void BlinkTestRunner::ResetPermissions() {
   Send(new LayoutTestHostMsg_ResetPermissions(routing_id()));
 }
 
+blink::WebLayer* BlinkTestRunner::InstantiateWebLayer(
+    scoped_refptr<cc::TextureLayer> layer) {
+  return ::content::InstantiateWebLayer(layer);
+}
+
+cc::SharedBitmapManager* BlinkTestRunner::GetSharedBitmapManager() {
+  return RenderThread::Get()->GetSharedBitmapManager();
+}
+
 // RenderViewObserver  --------------------------------------------------------
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {

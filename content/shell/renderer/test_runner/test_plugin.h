@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/layers/texture_layer_client.h"
-#include "content/public/test/layouttest_support.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"

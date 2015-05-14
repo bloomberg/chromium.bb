@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -22,9 +23,15 @@ class WebFrame;
 class WebGamepad;
 class WebGamepads;
 class WebHistoryItem;
+class WebLayer;
 struct WebRect;
 struct WebSize;
 struct WebURLError;
+}
+
+namespace cc {
+class TextureLayer;
+class SharedBitmapManager;
 }
 
 namespace content {
@@ -203,6 +210,12 @@ class WebTestDelegate {
 
   // Clear all the permissions set via SetPermission().
   virtual void ResetPermissions() = 0;
+
+  // Instantiates WebLayerImpl for TestPlugin.
+  virtual blink::WebLayer* InstantiateWebLayer(
+      scoped_refptr<cc::TextureLayer> layer) = 0;
+
+  virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 };
 
 }  // namespace content
