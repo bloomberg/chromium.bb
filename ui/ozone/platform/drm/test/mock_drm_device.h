@@ -111,6 +111,7 @@ class MockDrmDevice : public ui::DrmDevice {
                         const PageFlipCallback& callback) override;
   bool SetGammaRamp(uint32_t crtc_id,
                     const std::vector<GammaRampRGBEntry>& lut) override;
+  bool SetCapability(uint64_t capability, uint64_t value) override;
 
  private:
   ~MockDrmDevice() override;

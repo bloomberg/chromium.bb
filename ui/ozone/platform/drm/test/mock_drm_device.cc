@@ -245,6 +245,10 @@ bool MockDrmDevice::SetGammaRamp(uint32_t crtc_id,
   return true;
 }
 
+bool MockDrmDevice::SetCapability(uint64_t capability, uint64_t value) {
+  return false;
+}
+
 void MockDrmDevice::RunCallbacks() {
   while (!callbacks_.empty()) {
     PageFlipCallback callback = callbacks_.front();

@@ -575,6 +575,11 @@ bool DrmDevice::CommitProperties(drmModePropertySet* properties,
 #endif  // defined(USE_DRM_ATOMIC)
 }
 
+bool DrmDevice::SetCapability(uint64_t capability, uint64_t value) {
+  DCHECK(file_.IsValid());
+  return !drmSetClientCap(file_.GetPlatformFile(), capability, value);
+}
+
 bool DrmDevice::SetMaster() {
   DCHECK(file_.IsValid());
   return (drmSetMaster(file_.GetPlatformFile()) == 0);

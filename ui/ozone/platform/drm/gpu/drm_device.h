@@ -165,6 +165,8 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   virtual bool SetGammaRamp(uint32_t crtc_id,
                             const std::vector<GammaRampRGBEntry>& lut);
 
+  virtual bool SetCapability(uint64_t capability, uint64_t value);
+
   // Drm master related
   virtual bool SetMaster();
   virtual bool DropMaster();

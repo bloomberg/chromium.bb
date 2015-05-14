@@ -67,6 +67,14 @@ HardwareDisplayPlaneManager::~HardwareDisplayPlaneManager() {
 
 bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   drm_ = drm;
+
+  // Try to get all of the planes if possible, so we don't have to try to
+  // discover hidden primary planes.
+  bool has_universal_planes = false;
+#if defined(DRM_CLIENT_CAP_UNIVERSAL_PLANES)
+  has_universal_planes = drm->SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+#endif  // defined(DRM_CLIENT_CAP_UNIVERSAL_PLANES)
+
   ScopedDrmResourcesPtr resources(drmModeGetResources(drm->get_fd()));
   if (!resources) {
     PLOG(ERROR) << "Failed to get resources";
@@ -104,13 +112,15 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   // dummy plane for which we can assign exactly one overlay.
   // TODO(dnicoara): refactor this to simplify AssignOverlayPlanes and move
   // this workaround into HardwareDisplayPlaneLegacy.
-  for (int i = 0; i < resources->count_crtcs; ++i) {
-    if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
-      scoped_ptr<HardwareDisplayPlane> dummy_plane(
-          CreatePlane(resources->crtcs[i] - 1, (1 << i)));
-      dummy_plane->set_is_dummy(true);
-      if (dummy_plane->Initialize(drm))
-        planes_.push_back(dummy_plane.release());
+  if (!has_universal_planes) {
+    for (int i = 0; i < resources->count_crtcs; ++i) {
+      if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
+        scoped_ptr<HardwareDisplayPlane> dummy_plane(
+            CreatePlane(resources->crtcs[i] - 1, (1 << i)));
+        dummy_plane->set_is_dummy(true);
+        if (dummy_plane->Initialize(drm))
+          planes_.push_back(dummy_plane.release());
+      }
     }
   }
 
