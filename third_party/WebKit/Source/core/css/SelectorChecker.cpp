@@ -964,7 +964,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
             else
                 value = element.computeInheritedLanguage();
             const AtomicString& argument = selector.argument();
-            if (value.isEmpty() || !value.startsWith(argument, TextCaseInsensitive))
+            if (value.isEmpty() || !startsWithIgnoringASCIICase(value, argument))
                 break;
             if (value.length() != argument.length() && value[argument.length()] != '-')
                 break;

@@ -504,6 +504,33 @@ WTF_EXPORT bool equalIgnoringCaseNonNull(const StringImpl*, const StringImpl*);
 
 WTF_EXPORT bool equalIgnoringNullity(StringImpl*, StringImpl*);
 
+template<typename CharacterTypeA, typename CharacterTypeB>
+inline bool equalIgnoringASCIICase(const CharacterTypeA* a, const CharacterTypeB* b, unsigned length)
+{
+    for (unsigned i = 0; i < length; ++i) {
+        if (toASCIILower(a[i]) != toASCIILower(b[i]))
+            return false;
+    }
+    return true;
+}
+
+template<typename CharacterTypeA, typename CharacterTypeB>
+bool startsWithIgnoringASCIICase(const CharacterTypeA& reference, const CharacterTypeB& prefix)
+{
+    unsigned prefixLength = prefix.length();
+    if (prefixLength > reference.length())
+        return false;
+
+    if (reference.is8Bit()) {
+        if (prefix.is8Bit())
+            return equalIgnoringASCIICase(reference.characters8(), prefix.characters8(), prefixLength);
+        return equalIgnoringASCIICase(reference.characters8(), prefix.characters16(), prefixLength);
+    }
+    if (prefix.is8Bit())
+        return equalIgnoringASCIICase(reference.characters16(), prefix.characters8(), prefixLength);
+    return equalIgnoringASCIICase(reference.characters16(), prefix.characters16(), prefixLength);
+}
+
 template<typename CharacterType>
 inline size_t find(const CharacterType* characters, unsigned length, CharacterType matchCharacter, unsigned index = 0)
 {

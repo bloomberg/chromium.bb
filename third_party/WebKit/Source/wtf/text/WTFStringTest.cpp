@@ -316,4 +316,23 @@ TEST(WTF, StringToLowerLocale)
     }
 }
 
+TEST(WTF, StartsWithIgnoringASCIICase)
+{
+    String allASCII("LINK");
+    String allASCIILowerCase("link");
+    EXPECT_TRUE(startsWithIgnoringASCIICase(allASCII, allASCIILowerCase));
+    String allASCIIMixedCase("lInK");
+    EXPECT_TRUE(startsWithIgnoringASCIICase(allASCII, allASCIIMixedCase));
+    String allASCIIDifferent("foo");
+    EXPECT_FALSE(startsWithIgnoringASCIICase(allASCII, allASCIIDifferent));
+    String nonASCII = String::fromUTF8("LIN\xE2\x84\xAA");
+    EXPECT_FALSE(startsWithIgnoringASCIICase(allASCII, nonASCII));
+    EXPECT_TRUE(startsWithIgnoringASCIICase(allASCII, nonASCII.lower()));
+
+    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCII));
+    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIILowerCase));
+    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIIMixedCase));
+    EXPECT_FALSE(startsWithIgnoringASCIICase(nonASCII, allASCIIDifferent));
+}
+
 } // namespace
