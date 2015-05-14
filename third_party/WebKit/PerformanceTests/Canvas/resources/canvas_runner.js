@@ -4,13 +4,12 @@
     var MAX_MEASURE_DRAW_TIMES = 1000;
     var MAX_MEASURE_TIME_PER_FRAME = 1000; // 1 sec
     var currentTest = null;
-    var isTestDone = false;
 
     var CanvasRunner = {};
 
     CanvasRunner.start = function (test) {
         PerfTestRunner.prepareToMeasureValuesAsync({unit: 'runs/s',
-            description: test.description, done: testDone});
+            description: test.description});
         if (!test.doRun) {
             CanvasRunner.logFatalError("\ndoRun must be set.\n");
             return;
@@ -20,36 +19,26 @@
     }
 
     function runTest() {
-        try {
-            if (currentTest.preRun)
-                currentTest.preRun();
+        if (currentTest.preRun)
+            currentTest.preRun();
 
-            var start = PerfTestRunner.now();
-            var count = 0;
-            while ((PerfTestRunner.now() - start <= MAX_MEASURE_TIME_PER_FRAME) && (count * MEASURE_DRAW_TIMES < MAX_MEASURE_DRAW_TIMES)) {
-                for (var i = 0; i < MEASURE_DRAW_TIMES; i++) {
-                    currentTest.doRun();
-                }
-                count++;
+        var start = PerfTestRunner.now();
+        var count = 0;
+        while ((PerfTestRunner.now() - start <= MAX_MEASURE_TIME_PER_FRAME) && (count * MEASURE_DRAW_TIMES < MAX_MEASURE_DRAW_TIMES)) {
+            for (var i = 0; i < MEASURE_DRAW_TIMES; i++) {
+                currentTest.doRun();
             }
-            if (currentTest.ensureComplete)
-                currentTest.ensureComplete();
-            var elapsedTime = PerfTestRunner.now() - start;
-            if (currentTest.postRun)
-                currentTest.postRun();
-
-            PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * count * 1000 / elapsedTime);
-        } catch(err) {
-            CanvasRunner.logFatalError("\ntest fails due to GPU issue. " + err + "\n");
-            return;
+            count++;
         }
+        if (currentTest.ensureComplete)
+            currentTest.ensureComplete();
+        var elapsedTime = PerfTestRunner.now() - start;
+        if (currentTest.postRun)
+            currentTest.postRun();
 
-        if (!isTestDone)
-            requestAnimationFrame(runTest);
-    }
+        PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * count * 1000 / elapsedTime);
 
-    function testDone() {
-        isTestDone = true;
+        requestAnimationFrame(runTest);
     }
 
     CanvasRunner.logFatalError = function (text) {
