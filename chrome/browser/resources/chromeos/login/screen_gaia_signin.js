@@ -415,7 +415,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         $('progress-dots').hidden = true;
         params.chromeType = data.chromeType;
         params.isNewGaiaFlowChromeOS = true;
-        $('login-header-bar').showGuestButton = true;
       }
 
       if (data.gaiaEndpoint)
@@ -472,6 +471,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (this.isNewGaiaFlow) {
         $('login-header-bar').showCreateSupervisedButton =
             data.supervisedUsersCanCreate;
+        $('login-header-bar').showGuestButton = data.guestSignin;
       } else {
         $('createAccount').hidden = !data.createAccount;
         $('guestSignin').hidden = !data.guestSignin;
