@@ -638,89 +638,6 @@ class _JSONEncoder(json.JSONEncoder):
     return self.encode(obj.__dict__)
 
 
-class HWTestConfig(object):
-  """Config object for hardware tests suites.
-
-  Members:
-    suite: Name of the test suite to run.
-    timeout: Number of seconds to wait before timing out waiting for
-             results.
-    pool: Pool to use for hw testing.
-    blocking: Suites that set this true run sequentially; each must pass
-              before the next begins.  Tests that set this false run in
-              parallel after all blocking tests have passed.
-    async: Fire-and-forget suite.
-    warn_only: Failure on HW tests warns only (does not generate error).
-    critical: Usually we consider structural failures here as OK.
-    priority:  Priority at which tests in the suite will be scheduled in
-               the hw lab.
-    file_bugs: Should we file bugs if a test fails in a suite run.
-    num: Maximum number of DUTs to use when scheduling tests in the hw lab.
-    minimum_duts: minimum number of DUTs required for testing in the hw lab.
-    retry: Whether we should retry tests that fail in a suite run.
-    max_retries: Integer, maximum job retries allowed at suite level.
-                 None for no max.
-    suite_min_duts: Preferred minimum duts. Lab will prioritize on getting such
-                    number of duts even if the suite is competing with
-                    other suites that have higher priority.
-
-  Some combinations of member settings are invalid:
-    * A suite config may not specify both blocking and async.
-    * A suite config may not specify both retry and async.
-    * A suite config may not specify both warn_only and critical.
-  """
-
-  # This timeout is larger than it needs to be because of autotest overhead.
-  # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
-  DEFAULT_HW_TEST_TIMEOUT = 60 * 220
-  BRANCHED_HW_TEST_TIMEOUT = 10 * 60 * 60
-
-  def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
-               pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
-               async=False, warn_only=False, critical=False, blocking=False,
-               file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
-               retry=True, max_retries=10, minimum_duts=0, suite_min_duts=0):
-    """Constructor -- see members above."""
-    assert not async or (not blocking and not retry)
-    assert not warn_only or not critical
-    self.suite = suite
-    self.num = num
-    self.pool = pool
-    self.timeout = timeout
-    self.blocking = blocking
-    self.async = async
-    self.warn_only = warn_only
-    self.critical = critical
-    self.file_bugs = file_bugs
-    self.priority = priority
-    self.retry = retry
-    self.max_retries = max_retries
-    self.minimum_duts = minimum_duts
-    self.suite_min_duts = suite_min_duts
-
-  def SetBranchedValues(self):
-    """Changes the HW Test timeout/priority values to branched values."""
-    self.timeout = max(HWTestConfig.BRANCHED_HW_TEST_TIMEOUT, self.timeout)
-
-    # Set minimum_duts default to 0, which means that lab will not check the
-    # number of available duts to meet the minimum requirement before creating
-    # a suite job for branched build.
-    self.minimum_duts = 0
-
-    # Only reduce priority if it's lower.
-    new_priority = constants.HWTEST_DEFAULT_PRIORITY
-    if (constants.HWTEST_PRIORITIES_MAP[self.priority] >
-        constants.HWTEST_PRIORITIES_MAP[new_priority]):
-      self.priority = new_priority
-
-  @property
-  def timeout_mins(self):
-    return int(self.timeout / 60)
-
-  def __eq__(self, other):
-    return self.__dict__ == other.__dict__
-
-
 def HWTestDefaultList(**kwargs):
   """Returns a default list of HWTestConfig's for a build
 
@@ -755,14 +672,18 @@ def HWTestDefaultList(**kwargs):
   async_kwargs['suite_min_duts'] = 1
 
   # BVT + AU suite.
-  return [HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
-          HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True, **au_kwargs),
-          HWTestConfig(constants.HWTEST_COMMIT_SUITE, **async_kwargs),
-          HWTestConfig(constants.HWTEST_CANARY_SUITE, **async_kwargs)]
+  return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                  blocking=True, **kwargs),
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
+                                  blocking=True, **au_kwargs),
+          config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                  **async_kwargs),
+          config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
+                                  **async_kwargs)]
 
 
 def HWTestDefaultListCanary(**kwargs):
-  """Returns a default list of HWTestConfig's for a canary build.
+  """Returns a default list of config_lib.HWTestConfig's for a canary build.
 
   Args:
     *kwargs: overrides for the configs
@@ -785,7 +706,7 @@ def HWTestAFDOList(**kwargs):
                    timeout=120 * 60, num=1, async=True, retry=False,
                    max_retries=None)
   afdo_dict.update(kwargs)
-  return [HWTestConfig('perf_v2', **afdo_dict)]
+  return [config_lib.HWTestConfig('perf_v2', **afdo_dict)]
 
 
 def HWTestDefaultListNonCanary(**kwargs):
@@ -794,8 +715,8 @@ def HWTestDefaultListNonCanary(**kwargs):
   Optional arguments may be overridden in `kwargs`, except that
   the `blocking` setting cannot be provided.
   """
-  return [HWTestConfig(constants.HWTEST_BVT_SUITE, **kwargs),
-          HWTestConfig(constants.HWTEST_COMMIT_SUITE, **kwargs)]
+  return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, **kwargs),
+          config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE, **kwargs)]
 
 
 def HWTestDefaultListCQ(**kwargs):
@@ -842,7 +763,8 @@ def HWTestSharedPoolPFQ(**kwargs):
   default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                       suite_min_duts=3)
   default_dict.update(kwargs)
-  suite_list = [HWTestConfig(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+  suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
+                                        **sanity_dict)]
   suite_list.extend(HWTestDefaultListPFQ(**default_dict))
   return suite_list
 
@@ -862,7 +784,8 @@ def HWTestSharedPoolCQ(**kwargs):
   default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                       suite_min_duts=10)
   default_dict.update(kwargs)
-  suite_list = [HWTestConfig(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+  suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
+                                        **sanity_dict)]
   suite_list.extend(HWTestDefaultListCQ(**default_dict))
   return suite_list
 
@@ -881,7 +804,8 @@ def HWTestSharedPoolCanary(**kwargs):
   default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                       suite_min_duts=6)
   default_dict.update(kwargs)
-  suite_list = [HWTestConfig(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
+  suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
+                                        **sanity_dict)]
   suite_list.extend(HWTestDefaultListCanary(**default_dict))
   return suite_list
 
@@ -892,26 +816,7 @@ def HWTestAFDORecordTest(**kwargs):
                       timeout=constants.AFDO_GENERATE_TIMEOUT)
   # Allows kwargs overrides to default_dict for cq.
   default_dict.update(kwargs)
-  return HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
-
-
-_delete_key_sentinel = object()
-def delete_key():
-  """Used to remove the given key from inherited config.
-
-  Usage:
-    new_config = base_config.derive(foo=delete_key())
-  """
-  return _delete_key_sentinel
-
-
-def delete_keys(keys):
-  """Used to remove a set of keys from inherited config.
-
-  Usage:
-    new_config = base_config.derive(delete_keys(set_of_keys))
-  """
-  return {k: delete_key() for k in keys}
+  return config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
 
 
 def append_useflags(useflags):
@@ -940,91 +845,6 @@ def append_useflags(useflags):
   return handler
 
 
-class BuildConfig(dict):
-  """Dictionary of explicit configuration settings for a cbuildbot config
-
-  Each dictionary entry is in turn a dictionary of config_param->value.
-
-  See _settings for details on known configurations, and their documentation.
-  """
-
-  def __getattr__(self, name):
-    """Support attribute-like access to each dict entry."""
-    if name in self:
-      return self[name]
-
-    # Super class (dict) has no __getattr__ method, so use __getattribute__.
-    return super(BuildConfig, self).__getattribute__(name)
-
-  def GetBotId(self, remote_trybot=False):
-    """Get the 'bot id' of a particular bot.
-
-    The bot id is used to specify the subdirectory where artifacts are stored
-    in Google Storage. To avoid conflicts between remote trybots and regular
-    bots, we add a 'trybot-' prefix to any remote trybot runs.
-
-    Args:
-      remote_trybot: Whether this run is a remote trybot run.
-    """
-    return 'trybot-%s' % self.name if remote_trybot else self.name
-
-  def deepcopy(self):
-    """Create a deep copy of this object.
-
-    This is a specialized version of copy.deepcopy() for BuildConfig objects. It
-    speeds up deep copies by 10x because we know in advance what is stored
-    inside a BuildConfig object and don't have to do as much introspection. This
-    function is called a lot during setup of the config objects so optimizing it
-    makes a big difference. (It saves seconds off the load time of the
-    cbuildbot_config module!)
-    """
-    new_config = BuildConfig(self)
-    for k, v in self.iteritems():
-      # type(v) is faster than isinstance.
-      if type(v) is list:
-        new_config[k] = v[:]
-
-    if new_config.get('child_configs'):
-      new_config['child_configs'] = [
-          x.deepcopy() for x in new_config['child_configs']]
-
-    if new_config.get('hw_tests'):
-      new_config['hw_tests'] = [copy.copy(x) for x in new_config['hw_tests']]
-
-    return new_config
-
-  def derive(self, *args, **kwargs):
-    """Create a new config derived from this one.
-
-    Note: If an override is callable, it will be called and passed the prior
-    value for the given key (or None) to compute the new value.
-
-    Args:
-      args: Mapping instances to mixin.
-      kwargs: Settings to inject; see _settings for valid values.
-
-    Returns:
-      A new _config instance.
-    """
-    inherits = list(args)
-    inherits.append(kwargs)
-    new_config = self.deepcopy()
-
-    for update_config in inherits:
-      for k, v in update_config.iteritems():
-        if callable(v):
-          new_config[k] = v(new_config.get(k))
-        else:
-          new_config[k] = v
-
-      keys_to_delete = [k for k in new_config if
-                        new_config[k] is _delete_key_sentinel]
-
-      for k in keys_to_delete:
-        new_config.pop(k, None)
-
-    return new_config
-
 def add_config(config, name, *args, **kwargs):
   """Derive and add the config to cbuildbot's usable config targets
 
@@ -1050,7 +870,7 @@ def add_config(config, name, *args, **kwargs):
   return new_config
 
 def add_raw_config(name, *args, **kwargs):
-  return add_config(BuildConfig(), name, *args, **kwargs)
+  return add_config(config_lib.BuildConfig(), name, *args, **kwargs)
 
 def add_group(name, *args, **kwargs):
   """Create a new group of build configurations.
@@ -1071,7 +891,7 @@ def add_group(name, *args, **kwargs):
 
 def GetDefault():
   """Create the cannonical default build configuration."""
-  return BuildConfig(**_settings)
+  return config_lib.BuildConfig(**_settings)
 
 _default = GetDefault()
 
@@ -1079,7 +899,7 @@ _default = GetDefault()
 
 # Config parameters for builders that do not run tests on the builder. Anything
 # non-x86 tests will fall under this category.
-non_testable_builder = BuildConfig(
+non_testable_builder = config_lib.BuildConfig(
   tests_supported=False,
   unittests=False,
   vm_tests=[],
@@ -1088,7 +908,7 @@ non_testable_builder = BuildConfig(
 
 # Builder-specific mixins
 
-binary = BuildConfig(
+binary = config_lib.BuildConfig(
   # Full builds that build fully from binaries.
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
   archive_build_debug=True,
@@ -1096,7 +916,7 @@ binary = BuildConfig(
   git_sync=True,
 )
 
-full = BuildConfig(
+full = config_lib.BuildConfig(
   # Full builds are test builds to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
 
@@ -1120,7 +940,7 @@ full_prebuilts = full.derive(
   prebuilts=constants.PUBLIC,
 )
 
-pfq = BuildConfig(
+pfq = config_lib.BuildConfig(
   build_type=constants.PFQ_TYPE,
   important=True,
   uprev=True,
@@ -1131,7 +951,7 @@ pfq = BuildConfig(
       'TOC-Chrome-PFQ',
 )
 
-paladin = BuildConfig(
+paladin = config_lib.BuildConfig(
   important=True,
   build_type=constants.PALADIN_TYPE,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -1148,7 +968,7 @@ paladin = BuildConfig(
 
 # Incremental builders are intended to test the developer workflow.
 # For that reason, they don't uprev.
-incremental = BuildConfig(
+incremental = config_lib.BuildConfig(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -1158,13 +978,13 @@ incremental = BuildConfig(
 )
 
 # This builds with more source available.
-internal = BuildConfig(
+internal = config_lib.BuildConfig(
   internal=True,
   overlays=constants.BOTH_OVERLAYS,
   manifest_repo_url=constants.MANIFEST_INT_URL,
 )
 
-brillo = BuildConfig(
+brillo = config_lib.BuildConfig(
   sync_chrome=False,
   chrome_sdk=False,
   afdo_use=False,
@@ -1174,12 +994,12 @@ brillo = BuildConfig(
   hw_tests=[],
 )
 
-moblab = BuildConfig(
+moblab = config_lib.BuildConfig(
   vm_tests=[],
 )
 
 # Builds for the Project SDK.
-project_sdk = BuildConfig(
+project_sdk = config_lib.BuildConfig(
   build_type=constants.PROJECT_SDK_TYPE,
   description='Produce Project SDK build artifacts.',
 
@@ -1216,7 +1036,7 @@ _project_sdk_boards = frozenset([
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
 
 # This adds Chrome branding.
-official_chrome = BuildConfig(
+official_chrome = config_lib.BuildConfig(
   useflags=[constants.USE_CHROME_INTERNAL],
 )
 
@@ -1238,7 +1058,7 @@ _cros_sdk = add_config(full_prebuilts, 'chromiumos-sdk',
       'TOC-Continuous',
 )
 
-asan = BuildConfig(
+asan = config_lib.BuildConfig(
   chroot_replace=True,
   profile='asan',
   disk_layout='2gb-rootfs',
@@ -1250,7 +1070,7 @@ asan = BuildConfig(
       'TOC-ChromiumOS-SDK',
 )
 
-telemetry = BuildConfig(
+telemetry = config_lib.BuildConfig(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -1258,7 +1078,7 @@ telemetry = BuildConfig(
   description='Telemetry Builds',
 )
 
-chromium_pfq = BuildConfig(
+chromium_pfq = config_lib.BuildConfig(
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
   uprev=False,
@@ -1296,7 +1116,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   prebuilts=constants.PRIVATE,
 )
 
-chrome_try = BuildConfig(
+chrome_try = config_lib.BuildConfig(
   build_type=constants.CHROME_PFQ_TYPE,
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
@@ -1324,8 +1144,9 @@ chrome_perf = chrome_info.derive(
   description='Chrome Performance test bot',
   vm_tests=[],
   unittests=False,
-  hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
-                         timeout=90 * 60, critical=True, num=1)],
+  hw_tests=[config_lib.HWTestConfig(
+      'perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
+      timeout=90 * 60, critical=True, num=1)],
   use_chrome_lkgm=True,
   use_lkgm=False,
   useflags=append_useflags(['-cros-debug']),
@@ -1592,7 +1413,7 @@ _base_configs = dict()
 
 def _CreateBaseConfigs():
   for board in _all_boards:
-    base = BuildConfig()
+    base = config_lib.BuildConfig()
     if board in _internal_boards:
       base.update(internal)
       base.update(official_chrome)
@@ -1658,7 +1479,7 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
   for board in boards:
     config_name = '%s-%s' % (board, name_suffix)
     if config_name not in _CONFIG:
-      base = BuildConfig()
+      base = config_lib.BuildConfig()
       add_config(config_base, config_name, base, _base_configs[board], **kwargs)
 
 _chromium_pfq_important_boards = frozenset([
@@ -1671,8 +1492,8 @@ _chromium_pfq_important_boards = frozenset([
 
 def _AddFullConfigs():
   """Add x86 and arm full configs."""
-  external_overrides = delete_keys(internal)
-  external_overrides.update(manifest=delete_key())
+  external_overrides = config_lib.delete_keys(internal)
+  external_overrides.update(manifest=config_lib.delete_key())
   external_overrides.update(
     useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]))
   _CreateConfigsForBoards(full_prebuilts, _all_full_boards,
@@ -1816,8 +1637,8 @@ add_config(incremental, 'x86-generic-incremental',
 
 add_config(incremental, 'daisy-incremental',
   _base_configs['daisy'],
-  delete_keys(internal),
-  manifest=delete_key(),
+  config_lib.delete_keys(internal),
+  manifest=config_lib.delete_key(),
   useflags=append_useflags(['-chrome_internal']),
 )
 
@@ -2192,15 +2013,16 @@ def _CreatePaladinConfigs():
   for board in _paladin_boards:
     assert board in _base_configs, '%s not in _base_configs' % board
     config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
-    customizations = BuildConfig()
+    customizations = config_lib.BuildConfig()
     base_config = _base_configs[board]
     if board in _paladin_hwtest_boards:
       customizations.update(hw_tests=HWTestDefaultListCQ())
     if board in _paladin_moblab_hwtest_boards:
       customizations.update(
-          hw_tests=[HWTestConfig(constants.HWTEST_MOBLAB_QUICK_SUITE,
-                                 blocking=True, num=1, timeout=120*60,
-                                 pool=constants.HWTEST_PALADIN_POOL)])
+          hw_tests=[config_lib.HWTestConfig(
+                        constants.HWTEST_MOBLAB_QUICK_SUITE,
+                        blocking=True, num=1, timeout=120*60,
+                        pool=constants.HWTEST_PALADIN_POOL)])
     if board not in _paladin_important_boards:
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
@@ -2443,7 +2265,7 @@ _release = full.derive(official, internal,
   doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries',
 )
 
-_grouped_config = BuildConfig(
+_grouped_config = config_lib.BuildConfig(
   build_packages_in_background=True,
   chrome_sdk_build_chrome=False,
   unittests=None,
@@ -2516,14 +2338,14 @@ def _AddAFDOConfigs():
       base = {}
     else:
       base = non_testable_builder
-    generate_config = BuildConfig(
+    generate_config = config_lib.BuildConfig(
         base,
         boards=[board],
         afdo_generate_min=True,
         afdo_use=False,
         afdo_update_ebuild=True,
     )
-    use_config = BuildConfig(
+    use_config = config_lib.BuildConfig(
         base,
         boards=[board],
         afdo_use=True,
@@ -2697,12 +2519,13 @@ add_config(_release, 'stumpy_moblab-release',
   important=True,
   afdo_use=False,
   signer_tests=False,
-  hw_tests=[HWTestConfig(constants.HWTEST_MOBLAB_SUITE, blocking=True, num=1,
-                         timeout=120*60),
-            HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
-                         warn_only=True, num=1),
-            HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
-                         warn_only=True, num=1)],
+  hw_tests=[
+      config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE, blocking=True,
+                              num=1, timeout=120*60),
+      config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
+                              warn_only=True, num=1),
+      config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+                              warn_only=True, num=1)],
 )
 
 add_config(_release, 'panther_moblab-release',
@@ -2714,10 +2537,10 @@ add_config(_release, 'panther_moblab-release',
   important=False,
   afdo_use=False,
   signer_tests=False,
-  hw_tests=[HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
-                         warn_only=True, num=1),
-            HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
-                         warn_only=True, num=1)],
+  hw_tests=[config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
+                                    warn_only=True, num=1),
+            config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+                                    warn_only=True, num=1)],
 )
 
 add_config(_release, 'rush-release',
@@ -2977,7 +2800,7 @@ _factory_release = _release.derive(
   afdo_use=False,
 )
 
-_firmware = BuildConfig(
+_firmware = config_lib.BuildConfig(
   images=[],
   factory_toolkit=False,
   packages=['virtual/chromeos-firmware'],

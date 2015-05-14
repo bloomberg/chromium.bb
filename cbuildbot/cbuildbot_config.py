@@ -29,10 +29,6 @@ from chromite.lib import factory
 DEFAULT_BUILD_CONFIG = '_default'
 
 from chromite.cbuildbot.generate_chromeos_config import (
-    # Classes used to generate build configs.
-    BuildConfig,
-    HWTestConfig,
-
     # Exported method for searching/modifying config information.
     FindCanonicalConfigForBoard,
     FindFullConfigsForBoard,
