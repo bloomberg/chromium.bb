@@ -27,7 +27,7 @@ class DispatchSourceMachTest : public testing::Test {
     send_right_.reset(port);
   }
 
-  mach_port_t port() { return receive_right_.get(); }
+  mach_port_t GetPort() { return receive_right_.get(); }
 
   void WaitForSemaphore(dispatch_semaphore_t semaphore) {
     dispatch_semaphore_wait(semaphore, dispatch_time(
@@ -42,13 +42,14 @@ class DispatchSourceMachTest : public testing::Test {
 
 TEST_F(DispatchSourceMachTest, ReceiveAfterResume) {
   dispatch_semaphore_t signal = dispatch_semaphore_create(0);
+  mach_port_t port = GetPort();
 
   bool __block did_receive = false;
   DispatchSourceMach source("org.chromium.base.test.ReceiveAfterResume",
-      port(), ^{
+      port, ^{
           mach_msg_empty_rcv_t msg = {{0}};
           msg.header.msgh_size = sizeof(msg);
-          msg.header.msgh_local_port = port();
+          msg.header.msgh_local_port = port;
           mach_msg_receive(&msg.header);
           did_receive = true;
 
@@ -57,7 +58,7 @@ TEST_F(DispatchSourceMachTest, ReceiveAfterResume) {
 
   mach_msg_empty_send_t msg = {{0}};
   msg.header.msgh_size = sizeof(msg);
-  msg.header.msgh_remote_port = port();
+  msg.header.msgh_remote_port = port;
   msg.header.msgh_bits = MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_COPY_SEND);
   ASSERT_EQ(KERN_SUCCESS, mach_msg_send(&msg.header));
 
@@ -66,20 +67,23 @@ TEST_F(DispatchSourceMachTest, ReceiveAfterResume) {
   source.Resume();
 
   WaitForSemaphore(signal);
+  dispatch_release(signal);
 
   EXPECT_TRUE(did_receive);
 }
 
 TEST_F(DispatchSourceMachTest, NoMessagesAfterDestruction) {
+  mach_port_t port = GetPort();
+
   scoped_ptr<int> count(new int(0));
   int* __block count_ptr = count.get();
 
   scoped_ptr<DispatchSourceMach> source(new DispatchSourceMach(
       "org.chromium.base.test.NoMessagesAfterDestruction",
-      port(), ^{
+      port, ^{
           mach_msg_empty_rcv_t msg = {{0}};
           msg.header.msgh_size = sizeof(msg);
-          msg.header.msgh_local_port = port();
+          msg.header.msgh_local_port = port;
           mach_msg_receive(&msg.header);
           LOG(INFO) << "Receieve " << *count_ptr;
           ++(*count_ptr);
@@ -93,7 +97,7 @@ TEST_F(DispatchSourceMachTest, NoMessagesAfterDestruction) {
     dispatch_async(queue, ^{
         mach_msg_empty_send_t msg = {{0}};
         msg.header.msgh_size = sizeof(msg);
-        msg.header.msgh_remote_port = port();
+        msg.header.msgh_remote_port = port;
         msg.header.msgh_bits =
             MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_COPY_SEND);
         mach_msg_send(&msg.header);
@@ -113,6 +117,8 @@ TEST_F(DispatchSourceMachTest, NoMessagesAfterDestruction) {
   }
 
   WaitForSemaphore(signal);
+  dispatch_release(signal);
+
   dispatch_release(queue);
 }
 
