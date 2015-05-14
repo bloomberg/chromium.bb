@@ -249,7 +249,11 @@ void GIFImageDecoder::clearFrameBuffer(size_t frameIndex)
 size_t GIFImageDecoder::decodeFrameCount()
 {
     parse(GIFFrameCountQuery);
-    return m_reader->imagesCount();
+    // If decoding fails, |m_reader| will have been destroyed.  Instead of
+    // returning 0 in this case, return the existing number of frames.  This way
+    // if we get halfway through the image before decoding fails, we won't
+    // suddenly start reporting that the image has zero frames.
+    return failed() ? m_frameBufferCache.size() : m_reader->imagesCount();
 }
 
 void GIFImageDecoder::initializeNewFrame(size_t index)
