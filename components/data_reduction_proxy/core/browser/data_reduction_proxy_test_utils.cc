@@ -203,8 +203,13 @@ TestDataReductionProxyIOData::~TestDataReductionProxyIOData() {
 }
 
 DataReductionProxyTestContext::Builder::Builder()
-    : params_flags_(0),
-      params_definitions_(0),
+    : params_flags_(DataReductionProxyParams::kAllowed |
+                    DataReductionProxyParams::kFallbackAllowed |
+                    DataReductionProxyParams::kPromoAllowed),
+      params_definitions_(
+          TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN),
       client_(Client::UNKNOWN),
       request_context_(nullptr),
       mock_socket_factory_(nullptr),

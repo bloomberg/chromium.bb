@@ -9,8 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,16 +17,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyConfiguratorTest : public testing::Test {
  public:
   void SetUp() override {
-    test_context_ =
-        DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                             DataReductionProxyParams::kFallbackAllowed |
-                             DataReductionProxyParams::kPromoAllowed)
-            .WithParamsDefinitions(
-                 TestDataReductionProxyParams::HAS_EVERYTHING &
-                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
-            .Build();
+    test_context_ = DataReductionProxyTestContext::Builder().Build();
     config_.reset(new DataReductionProxyConfigurator(
         test_context_->net_log(), test_context_->event_creator()));
   }

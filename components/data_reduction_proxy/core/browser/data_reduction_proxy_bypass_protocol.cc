@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
@@ -23,6 +24,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
+
+namespace data_reduction_proxy {
 
 namespace {
 
@@ -66,9 +69,14 @@ void MarkProxiesAsBadUntil(
       proxy_info, bypass_duration, additional_bad_proxies, request->net_log());
 }
 
-}  // namespace
+void ReportResponseProxyServerStatusHistogram(
+    DataReductionProxyBypassProtocol::ResponseProxyServerStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "DataReductionProxy.ResponseProxyServerStatus", status,
+      DataReductionProxyBypassProtocol::RESPONSE_PROXY_SERVER_STATUS_MAX);
+}
 
-namespace data_reduction_proxy {
+}  // namespace
 
 DataReductionProxyBypassProtocol::DataReductionProxyBypassProtocol(
     DataReductionProxyConfig* config)
@@ -93,22 +101,28 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
 
   // Empty implies either that the request was served from cache or that
   // request was served directly from the origin.
-  // TODO(sclittle): Add UMA to confirm that the |proxy_server| is never empty
-  // when the response has the Data Reduction Proxy via header.
-  if (request->proxy_server().IsEmpty())
+  if (request->proxy_server().IsEmpty()) {
+    ReportResponseProxyServerStatusHistogram(
+        RESPONSE_PROXY_SERVER_STATUS_EMPTY);
     return false;
+  }
 
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (!config_->WasDataReductionProxyUsed(request,
                                           &data_reduction_proxy_type_info)) {
-    if (!HasDataReductionProxyViaHeader(response_headers, nullptr))
+    if (!HasDataReductionProxyViaHeader(response_headers, nullptr)) {
+      ReportResponseProxyServerStatusHistogram(
+          RESPONSE_PROXY_SERVER_STATUS_NON_DRP_NO_VIA);
       return false;
+    }
+    ReportResponseProxyServerStatusHistogram(
+        RESPONSE_PROXY_SERVER_STATUS_NON_DRP_WITH_VIA);
 
     // If the |proxy_server| doesn't match any of the currently configured Data
     // Reduction Proxies, but it still has the Data Reduction Proxy via header,
     // then apply the bypass logic regardless.
-    // TODO(sclittle): Add UMA to record how often this occurs, and remove this
-    // workaround once http://crbug.com/476610 is fixed.
+    // TODO(sclittle): Remove this workaround once http://crbug.com/476610 is
+    // fixed.
     data_reduction_proxy_type_info.proxy_servers.first = net::ProxyServer(
         net::ProxyServer::SCHEME_HTTPS, request->proxy_server());
     data_reduction_proxy_type_info.proxy_servers.second = net::ProxyServer(
@@ -117,7 +131,10 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
     data_reduction_proxy_type_info.is_fallback = false;
     data_reduction_proxy_type_info.is_ssl =
         request->url().SchemeIsCryptographic();
+  } else {
+    ReportResponseProxyServerStatusHistogram(RESPONSE_PROXY_SERVER_STATUS_DRP);
   }
+
   // TODO(bengr): Implement bypass for CONNECT tunnel.
   if (data_reduction_proxy_type_info.is_ssl)
     return false;

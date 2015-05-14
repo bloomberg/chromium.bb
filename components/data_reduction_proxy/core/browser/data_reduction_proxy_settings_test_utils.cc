@@ -16,7 +16,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 
@@ -42,13 +41,6 @@ DataReductionProxySettingsTestBase::~DataReductionProxySettingsTestBase() {}
 void DataReductionProxySettingsTestBase::SetUp() {
   test_context_ =
       DataReductionProxyTestContext::Builder()
-          .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                           DataReductionProxyParams::kFallbackAllowed |
-                           DataReductionProxyParams::kPromoAllowed)
-          .WithParamsDefinitions(
-              TestDataReductionProxyParams::HAS_EVERYTHING &
-                  ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                  ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
           .WithMockConfig()
           .WithMockDataReductionProxyService()
           .SkipSettingsInitialization()

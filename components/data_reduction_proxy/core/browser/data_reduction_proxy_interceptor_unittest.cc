@@ -200,10 +200,6 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     test_context_ =
         DataReductionProxyTestContext::Builder()
             .WithParamsFlags(DataReductionProxyParams::kAllowed)
-            .WithParamsDefinitions(
-                TestDataReductionProxyParams::HAS_EVERYTHING &
-                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
             .WithURLRequestContext(&context_)
             .Build();
     std::string spec;
@@ -288,12 +284,6 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
   void SetUp() override {
     drp_test_context_ =
         DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                             DataReductionProxyParams::kFallbackAllowed)
-            .WithParamsDefinitions(
-                 TestDataReductionProxyParams::HAS_EVERYTHING &
-                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
             .WithURLRequestContext(&context_)
             .WithMockClientSocketFactory(&mock_socket_factory_)
             .Build();

@@ -25,6 +25,18 @@ class DataReductionProxyConfig;
 class DataReductionProxyBypassProtocol
     : public net::NetworkChangeNotifier::IPAddressObserver {
  public:
+  // Enum values that can be reported for the
+  // DataReductionProxy.ResponseProxyServerStatus histogram. These values must
+  // be kept in sync with their counterparts in histograms.xml. Visible here for
+  // testing purposes.
+  enum ResponseProxyServerStatus {
+    RESPONSE_PROXY_SERVER_STATUS_EMPTY = 0,
+    RESPONSE_PROXY_SERVER_STATUS_DRP,
+    RESPONSE_PROXY_SERVER_STATUS_NON_DRP_NO_VIA,
+    RESPONSE_PROXY_SERVER_STATUS_NON_DRP_WITH_VIA,
+    RESPONSE_PROXY_SERVER_STATUS_MAX
+  };
+
   // Constructs a DataReductionProxyBypassProtocol object. |config| must be
   // non-NULL and outlive |this|.
   DataReductionProxyBypassProtocol(DataReductionProxyConfig* config);

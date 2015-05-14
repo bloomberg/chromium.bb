@@ -40,19 +40,11 @@ class DataReductionProxyConfigTest : public testing::Test {
   ~DataReductionProxyConfigTest() override {}
 
   void SetUp() override {
-    test_context_ =
-        DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                             DataReductionProxyParams::kFallbackAllowed |
-                             DataReductionProxyParams::kPromoAllowed)
-            .WithParamsDefinitions(
-                TestDataReductionProxyParams::HAS_EVERYTHING &
-                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
-            .WithMockConfig()
-            .WithTestConfigurator()
-            .WithMockDataReductionProxyService()
-            .Build();
+    test_context_ = DataReductionProxyTestContext::Builder()
+                        .WithMockConfig()
+                        .WithTestConfigurator()
+                        .WithMockDataReductionProxyService()
+                        .Build();
 
     ResetSettings(true, true, false, true, false);
 

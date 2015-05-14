@@ -174,13 +174,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 
     scoped_ptr<DataReductionProxyTestContext> drp_test_context =
         DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                             DataReductionProxyParams::kFallbackAllowed |
-                             DataReductionProxyParams::kPromoAllowed)
-            .WithParamsDefinitions(
-                TestDataReductionProxyParams::HAS_EVERYTHING &
-                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
             .WithURLRequestContext(&context)
             .WithTestConfigurator()
             .SkipSettingsInitialization()
@@ -219,13 +212,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
   base::MessageLoopForIO message_loop;
   scoped_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
-          .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                           DataReductionProxyParams::kFallbackAllowed |
-                           DataReductionProxyParams::kPromoAllowed)
-          .WithParamsDefinitions(
-              TestDataReductionProxyParams::HAS_EVERYTHING &
-                  ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                  ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
           .WithMockConfig()
           .WithTestConfigurator()
           .WithMockDataReductionProxyService()

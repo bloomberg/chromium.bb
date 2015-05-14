@@ -73,18 +73,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                                      test_job_interceptor_));
     context_.set_job_factory(&test_job_factory_);
 
-    test_context_ =
-        DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                                 DataReductionProxyParams::kFallbackAllowed |
-                                 DataReductionProxyParams::kPromoAllowed)
-            .WithParamsDefinitions(
-                TestDataReductionProxyParams::HAS_EVERYTHING &
-                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)\
-            .WithClient(kClient)
-            .WithURLRequestContext(&context_)
-            .Build();
+    test_context_ = DataReductionProxyTestContext::Builder()
+                        .WithClient(kClient)
+                        .WithURLRequestContext(&context_)
+                        .Build();
 
     data_reduction_proxy_network_delegate_.reset(
         new DataReductionProxyNetworkDelegate(

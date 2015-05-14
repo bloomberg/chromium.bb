@@ -75,9 +75,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   void SetUp() override {
     test_context_ =
         DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                             DataReductionProxyParams::kFallbackAllowed |
-                             DataReductionProxyParams::kPromoAllowed)
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
             .WithURLRequestContext(&context_)
             .WithMockClientSocketFactory(&mock_socket_factory_)

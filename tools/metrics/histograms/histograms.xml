@@ -4494,6 +4494,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.ResponseProxyServerStatus"
+    enum="DataReductionProxyResponseProxyServerStatus">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Reports the state of the proxy server field in the response seen by the Data
+    Reduction Proxy bypass logic.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.SettingsConversion"
     enum="DataReductionProxySettingsConversion">
   <obsolete>
@@ -49446,6 +49456,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Dismissed from second screen"/>
   <int value="2" label="Enabled from first screen"/>
   <int value="3" label="Enabled from second screen"/>
+</enum>
+
+<enum name="DataReductionProxyResponseProxyServerStatus" type="int">
+  <int value="0" label="Empty proxy server"/>
+  <int value="1" label="DRP proxy server"/>
+  <int value="2" label="Non-DRP proxy server without DRP via header"/>
+  <int value="3" label="Non-DRP proxy server with DRP via header"/>
 </enum>
 
 <enum name="DataReductionProxySettingsConversion" type="int">

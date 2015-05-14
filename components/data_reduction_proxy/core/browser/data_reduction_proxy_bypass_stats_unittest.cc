@@ -70,16 +70,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
     context_.set_job_factory(&test_job_factory_);
 
     test_context_ =
-        DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed |
-                             DataReductionProxyParams::kFallbackAllowed |
-                             DataReductionProxyParams::kPromoAllowed)
-            .WithParamsDefinitions(
-                TestDataReductionProxyParams::HAS_EVERYTHING &
-                    ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                    ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
-            .WithMockConfig()
-            .Build();
+        DataReductionProxyTestContext::Builder().WithMockConfig().Build();
     mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_);
   }
 
@@ -565,10 +556,6 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     drp_test_context_ =
         DataReductionProxyTestContext::Builder()
             .WithParamsFlags(DataReductionProxyParams::kAllowed)
-            .WithParamsDefinitions(
-                 TestDataReductionProxyParams::HAS_EVERYTHING &
-                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
             .WithURLRequestContext(&context_)
             .WithMockClientSocketFactory(&mock_socket_factory_)
             .Build();
