@@ -35,9 +35,13 @@ template <>
 struct BindState<void(void), void(void), void(FakeInvoker)>
     : public BindStateBase {
  public:
+  BindState() : BindStateBase(&Destroy) {}
   typedef FakeInvoker InvokerType;
  private:
-  ~BindState() override {}
+  ~BindState() {}
+  static void Destroy(BindStateBase* self) {
+    delete static_cast<BindState*>(self);
+  }
 };
 
 template <>
@@ -45,9 +49,13 @@ struct BindState<void(void), void(void),
                            void(FakeInvoker, FakeInvoker)>
     : public BindStateBase {
  public:
+  BindState() : BindStateBase(&Destroy) {}
   typedef FakeInvoker InvokerType;
  private:
-  ~BindState() override {}
+  ~BindState() {}
+  static void Destroy(BindStateBase* self) {
+    delete static_cast<BindState*>(self);
+  }
 };
 }  // namespace internal
 
