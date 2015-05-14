@@ -34,6 +34,7 @@ source_set("browser") {
     "//device/vibration",
     "//google_apis",
     "//net",
+    "//net:extras",
     "//skia",
     "//sql",
     "//third_party/npapi",

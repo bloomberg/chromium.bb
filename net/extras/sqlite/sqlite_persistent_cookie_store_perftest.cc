@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/net/sqlite_persistent_cookie_store.h"
+#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
+
+#include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -19,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace net {
 
 namespace {
 
@@ -32,22 +35,21 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   SQLitePersistentCookieStorePerfTest()
       : pool_owner_(new base::SequencedWorkerPoolOwner(1, "Background Pool")),
         loaded_event_(false, false),
-        key_loaded_event_(false, false) {
-  }
+        key_loaded_event_(false, false) {}
 
-  void OnLoaded(const std::vector<net::CanonicalCookie*>& cookies) {
+  void OnLoaded(const std::vector<CanonicalCookie*>& cookies) {
     cookies_ = cookies;
     loaded_event_.Signal();
   }
 
-  void OnKeyLoaded(const std::vector<net::CanonicalCookie*>& cookies) {
+  void OnKeyLoaded(const std::vector<CanonicalCookie*>& cookies) {
     cookies_ = cookies;
     key_loaded_event_.Signal();
   }
 
   void Load() {
     store_->Load(base::Bind(&SQLitePersistentCookieStorePerfTest::OnLoaded,
-                                base::Unretained(this)));
+                            base::Unretained(this)));
     loaded_event_.Wait();
   }
 
@@ -64,11 +66,9 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(cookie_filename),
-        client_task_runner(),
-        background_task_runner(),
-        false, NULL, NULL);
-    std::vector<net::CanonicalCookie*> cookies;
+        temp_dir_.path().Append(cookie_filename), client_task_runner(),
+        background_task_runner(), false, NULL);
+    std::vector<CanonicalCookie*> cookies;
     Load();
     ASSERT_EQ(0u, cookies_.size());
     // Creates 15000 cookies from 300 eTLD+1s.
@@ -78,9 +78,9 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
       GURL gurl("www" + domain_name);
       for (int cookie_num = 0; cookie_num < 50; ++cookie_num) {
         t += base::TimeDelta::FromInternalValue(10);
-        store_->AddCookie(net::CanonicalCookie(
+        store_->AddCookie(CanonicalCookie(
             gurl, base::StringPrintf("Cookie_%d", cookie_num), "1", domain_name,
-            "/", t, t, t, false, false, false, net::COOKIE_PRIORITY_DEFAULT));
+            "/", t, t, t, false, false, false, COOKIE_PRIORITY_DEFAULT));
       }
     }
     // Replace the store effectively destroying the current one and forcing it
@@ -93,10 +93,8 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     pool_owner_.reset(new base::SequencedWorkerPoolOwner(1, "pool"));
 
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(cookie_filename),
-        client_task_runner(),
-        background_task_runner(),
-        false, NULL, NULL);
+        temp_dir_.path().Append(cookie_filename), client_task_runner(),
+        background_task_runner(), false, NULL);
   }
 
   void TearDown() override {
@@ -105,10 +103,11 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   }
 
  protected:
+  base::MessageLoop main_loop_;
   scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
-  std::vector<net::CanonicalCookie*> cookies_;
+  std::vector<CanonicalCookie*> cookies_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
 };
@@ -118,10 +117,11 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadForKeyPerformance) {
   for (int domain_num = 0; domain_num < 3; ++domain_num) {
     std::string domain_name(base::StringPrintf("domain_%d.com", domain_num));
     base::PerfTimeLogger timer(
-      ("Load cookies for the eTLD+1 " + domain_name).c_str());
-    store_->LoadCookiesForKey(domain_name,
-      base::Bind(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
-                 base::Unretained(this)));
+        ("Load cookies for the eTLD+1 " + domain_name).c_str());
+    store_->LoadCookiesForKey(
+        domain_name,
+        base::Bind(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
+                   base::Unretained(this)));
     key_loaded_event_.Wait();
     timer.Done();
 
@@ -138,4 +138,4 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadPerformance) {
   ASSERT_EQ(15000U, cookies_.size());
 }
 
-}  // namespace content
+}  // namespace net
