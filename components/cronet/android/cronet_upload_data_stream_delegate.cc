@@ -29,17 +29,17 @@ CronetUploadDataStreamDelegate::~CronetUploadDataStreamDelegate() {
 }
 
 void CronetUploadDataStreamDelegate::InitializeOnNetworkThread(
-    base::WeakPtr<CronetUploadDataStreamAdapter> adapter) {
-  DCHECK(!adapter_);
+    base::WeakPtr<CronetUploadDataStream> upload_data_stream) {
+  DCHECK(!upload_data_stream_);
   DCHECK(!network_task_runner_.get());
 
-  adapter_ = adapter;
+  upload_data_stream_ = upload_data_stream;
   network_task_runner_ = base::MessageLoopProxy::current();
   DCHECK(network_task_runner_);
 }
 
 void CronetUploadDataStreamDelegate::Read(net::IOBuffer* buffer, int buf_len) {
-  DCHECK(adapter_);
+  DCHECK(upload_data_stream_);
   DCHECK(network_task_runner_);
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK_GT(buf_len, 0);
@@ -56,22 +56,22 @@ void CronetUploadDataStreamDelegate::Read(net::IOBuffer* buffer, int buf_len) {
 }
 
 void CronetUploadDataStreamDelegate::Rewind() {
-  DCHECK(adapter_);
+  DCHECK(upload_data_stream_);
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_CronetUploadDataStream_rewind(env, jupload_data_stream_.obj());
 }
 
-void CronetUploadDataStreamDelegate::OnAdapterDestroyed() {
-  // If the CronetUploadDataStreamAdapter was never initialized, |adapter_|
-  // and |network_task_runner_| will be NULL.
+void CronetUploadDataStreamDelegate::OnUploadDataStreamDestroyed() {
+  // If CronetUploadDataStream::InitInternal was never called,
+  // |upload_data_stream_| and |network_task_runner_| will be NULL.
   DCHECK(!network_task_runner_ ||
          network_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CronetUploadDataStream_onAdapterDestroyed(env,
-                                                 jupload_data_stream_.obj());
+  Java_CronetUploadDataStream_onUploadDataStreamDestroyed(
+      env, jupload_data_stream_.obj());
 }
 
 void CronetUploadDataStreamDelegate::OnReadSucceeded(JNIEnv* env,
@@ -83,8 +83,8 @@ void CronetUploadDataStreamDelegate::OnReadSucceeded(JNIEnv* env,
 
   buffer_ = nullptr;
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&CronetUploadDataStreamAdapter::OnReadSuccess,
-                            adapter_, bytes_read, final_chunk));
+      FROM_HERE, base::Bind(&CronetUploadDataStream::OnReadSuccess,
+                            upload_data_stream_, bytes_read, final_chunk));
 }
 
 void CronetUploadDataStreamDelegate::OnRewindSucceeded(JNIEnv* env,
@@ -93,7 +93,8 @@ void CronetUploadDataStreamDelegate::OnRewindSucceeded(JNIEnv* env,
 
   network_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CronetUploadDataStreamAdapter::OnRewindSuccess, adapter_));
+      base::Bind(&CronetUploadDataStream::OnRewindSuccess,
+                 upload_data_stream_));
 }
 
 bool CronetUploadDataStreamDelegateRegisterJni(JNIEnv* env) {
@@ -111,10 +112,10 @@ static jlong AttachUploadDataToRequest(JNIEnv* env,
   CronetUploadDataStreamDelegate* delegate =
       new CronetUploadDataStreamDelegate(env, jupload_data_stream);
 
-  scoped_ptr<CronetUploadDataStreamAdapter> upload_adapter(
-      new CronetUploadDataStreamAdapter(delegate, jlength));
+  scoped_ptr<CronetUploadDataStream> upload_data_stream(
+      new CronetUploadDataStream(delegate, jlength));
 
-  request_adapter->SetUpload(upload_adapter.Pass());
+  request_adapter->SetUpload(upload_data_stream.Pass());
 
   return reinterpret_cast<jlong>(delegate);
 }
@@ -126,15 +127,15 @@ static jlong CreateDelegateForTesting(JNIEnv* env,
   return reinterpret_cast<jlong>(delegate);
 }
 
-static jlong CreateAdapterForTesting(JNIEnv* env,
-                                     jobject jupload_data_stream,
-                                     jlong jlength,
-                                     jlong jdelegate) {
+static jlong CreateUploadDataStreamForTesting(JNIEnv* env,
+                                              jobject jupload_data_stream,
+                                              jlong jlength,
+                                              jlong jdelegate) {
   CronetUploadDataStreamDelegate* delegate =
       reinterpret_cast<CronetUploadDataStreamDelegate*>(jdelegate);
-  CronetUploadDataStreamAdapter* upload_adapter =
-      new CronetUploadDataStreamAdapter(delegate, jlength);
-  return reinterpret_cast<jlong>(upload_adapter);
+  CronetUploadDataStream* upload_data_stream =
+      new CronetUploadDataStream(delegate, jlength);
+  return reinterpret_cast<jlong>(upload_data_stream);
 }
 
 static void DestroyDelegate(JNIEnv* env,

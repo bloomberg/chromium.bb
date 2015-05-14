@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_ADAPTER_H_
-#define COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_ADAPTER_H_
+#ifndef COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_
+#define COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_
 
 #include "base/basictypes.h"
 #include "base/macros.h"
@@ -17,19 +17,19 @@ class IOBuffer;
 
 namespace cronet {
 
-// The CronetUploadDataStreamAdapter is created on a Java thread, but
-// afterwards, lives and is deleted on the network thread. It's responsible for
-// invoking UploadDataStream's callbacks, and ensuring only one read/rewind
-// request sent to Java is outstanding at a time. The main complexity is around
-// Reset/Initialize calls while there's a pending read or rewind.
-class CronetUploadDataStreamAdapter : public net::UploadDataStream {
+// The CronetUploadDataStream is created on a Java thread, but afterwards, lives
+// and is deleted on the network thread. It's responsible for ensuring only one
+// read/rewind request sent to Java is outstanding at a time. The main
+// complexity is around Reset/Initialize calls while there's a pending read or
+// rewind.
+class CronetUploadDataStream : public net::UploadDataStream {
  public:
   class Delegate {
    public:
     // Called once during initial setup on the network thread, called before
     // all other methods.
     virtual void InitializeOnNetworkThread(
-        base::WeakPtr<CronetUploadDataStreamAdapter> adapter) = 0;
+        base::WeakPtr<CronetUploadDataStream> upload_data_stream) = 0;
 
     // Called for each read request. Delegate must respond by calling
     // OnReadSuccess on the network thread asynchronous, or failing the request.
@@ -42,10 +42,10 @@ class CronetUploadDataStreamAdapter : public net::UploadDataStream {
     // when there's no other pending read or rewind operation.
     virtual void Rewind() = 0;
 
-    // Called when the adapter is destroyed. May be called when there's a
-    // pending read or rewind operation. The Delegate is then responsible for
-    // destroying itself.
-    virtual void OnAdapterDestroyed() = 0;
+    // Called when the CronetUploadDataStream is destroyed. The Delegate is then
+    // responsible for destroying itself. May be called when there's a pending
+    // read or rewind operation.
+    virtual void OnUploadDataStreamDestroyed() = 0;
 
    protected:
     Delegate() {}
@@ -55,8 +55,8 @@ class CronetUploadDataStreamAdapter : public net::UploadDataStream {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  CronetUploadDataStreamAdapter(Delegate* delegate, int64 size);
-  ~CronetUploadDataStreamAdapter() override;
+  CronetUploadDataStream(Delegate* delegate, int64 size);
+  ~CronetUploadDataStream() override;
 
   // Failure is handled at the Java layer. These two success callbacks are
   // invoked by Java UploadDataSink upon completion of the operation.
@@ -101,11 +101,11 @@ class CronetUploadDataStreamAdapter : public net::UploadDataStream {
   Delegate* const delegate_;
 
   // Vends pointers on the network thread, though created on a Java thread.
-  base::WeakPtrFactory<CronetUploadDataStreamAdapter> weak_factory_;
+  base::WeakPtrFactory<CronetUploadDataStream> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStreamAdapter);
+  DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStream);
 };
 
 }  // namespace cronet
 
-#endif  // COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_ADAPTER_H_
+#endif  // COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_

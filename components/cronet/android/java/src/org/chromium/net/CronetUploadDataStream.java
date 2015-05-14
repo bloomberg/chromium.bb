@@ -52,9 +52,9 @@ final class CronetUploadDataStream implements UploadDataSink {
     // to robustly detect getting read/rewind results more often than expected.
     private final Object mLock = new Object();
 
-    // Native adapter delegate object, owned by the CronetUploadDataStream.
-    // It's only deleted after the native UploadDataStream object is destroyed.
-    // All access to the delegate is synchronized, for safe usage and cleanup.
+    // Native delegate object, owned by the CronetUploadDataStream. It's only
+    // deleted after the native UploadDataStream object is destroyed. All access
+    // to the delegate is synchronized, for safe usage and cleanup.
     private long mUploadDataStreamDelegate = 0;
 
     private boolean mReading = false;
@@ -115,12 +115,13 @@ final class CronetUploadDataStream implements UploadDataSink {
     }
 
     /**
-     * Called by native code to destroy the native adapter delegate, when the
-     * adapter is destroyed.
+     * Called when the native UploadDataStream is destroyed.  At this point,
+     * the native delegate needs to be destroyed, but only after any pending
+     * read operation completes, as the delegate owns the read buffer.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    void onAdapterDestroyed() {
+    void onUploadDataStreamDestroyed() {
         Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -149,8 +150,8 @@ final class CronetUploadDataStream implements UploadDataSink {
 
         // Just fail the request - simpler to fail directly, and
         // UploadDataStream only supports failing during initialization, not
-        // while reading. This should be safe, even if we deleted the adapter,
-        // because in that case, the request has already been cancelled.
+        // while reading. The request is smart enough to handle the case where
+        // it was already cancelled by the embedder.
         mRequest.onUploadException(exception);
     }
 
@@ -266,23 +267,24 @@ final class CronetUploadDataStream implements UploadDataSink {
     }
 
     /**
-     * Creates a native UploadDataStreamDelegate and UploadDataStreamAdapter
-     * for testing.
-     * @return the address of the native CronetUploadDataStreamAdapter object.
+     * Creates a native CronetUploadDataStreamDelegate and
+     * CronetUploadDataStream for testing.
+     * @return the address of the native CronetUploadDataStream object.
      */
-    public long createAdapterForTesting() {
+    public long createUploadDataStreamForTesting() {
         mUploadDataStreamDelegate = nativeCreateDelegateForTesting();
-        return nativeCreateAdapterForTesting(mLength, mUploadDataStreamDelegate);
+        return nativeCreateUploadDataStreamForTesting(mLength,
+                mUploadDataStreamDelegate);
     }
 
-    // Native methods are implemented in upload_data_stream_adapter.cc.
+    // Native methods are implemented in upload_data_stream.cc.
 
     private native long nativeAttachUploadDataToRequest(long urlRequestAdapter,
             long length);
 
     private native long nativeCreateDelegateForTesting();
 
-    private native long nativeCreateAdapterForTesting(long length,
+    private native long nativeCreateUploadDataStreamForTesting(long length,
             long delegate);
 
     @NativeClassQualifiedName("CronetUploadDataStreamDelegate")

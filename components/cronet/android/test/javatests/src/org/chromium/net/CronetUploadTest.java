@@ -32,7 +32,7 @@ public class CronetUploadTest extends CronetTestBase {
         mDataProvider = new TestDrivenDataProvider(executor, reads);
         mUploadDataStream = new CronetUploadDataStream(mDataProvider, executor);
         mHandler = new TestUploadDataStreamHandler(
-            mUploadDataStream.createAdapterForTesting());
+                mUploadDataStream.createUploadDataStreamForTesting());
     }
 
     @Override
@@ -223,15 +223,15 @@ public class CronetUploadTest extends CronetTestBase {
     }
 
     /**
-     * Tests that there is no crash when native CronetUploadDataStreamAdapter is
-     * destroyed while read is pending. The test is racy since read could
-     * complete either before or after onDestroyAdapter() is called in
-     * CronetUploadDataStream. However, the test should pass either way, though
-     * we are interested in the latter case.
+     * Tests that there is no crash when native CronetUploadDataStream is
+     * destroyed while read is pending. The test is racy since the read could
+     * complete either before or after the Java CronetUploadDataStream's
+     * onDestroyUploadDataStream() method is invoked. However, the test should
+     * pass either way, though we are interested in the latter case.
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testDestroyAdapterBeforeReadComplete()
+    public void testDestroyNativeStreamBeforeReadComplete()
             throws Exception {
         // Start a read and wait for it to be pending.
         assertTrue(mHandler.init());
@@ -239,12 +239,11 @@ public class CronetUploadTest extends CronetTestBase {
         mDataProvider.waitForReadRequest();
         mHandler.checkReadCallbackNotInvoked();
 
-        // Destroy the C++ TestUploadDataStreamHandler.  The handler owns the
-        // CronetUploadDataStreamAdapter, which this will cause it to destroy on
-        // the network thread.  Destroying the adapter will result in calling
-        // the CronetUploadDataSteam's onAdapterDestroyed() method on its
-        // executor thread, which will then destroy the
-        // CronetUploadDataStreamDelegate.
+        // Destroy the C++ TestUploadDataStreamHandler. The handler will then
+        // destroy the C++ CronetUploadDataStream it owns on the network thread.
+        // That will result in calling the Java CronetUploadDataSteam's
+        // onCanceled() method on its executor thread, which will then destroy
+        // the CronetUploadDataStreamDelegate.
         mHandler.destroyNativeObjects();
 
         // Make the read complete should not encounter a crash.
@@ -255,15 +254,15 @@ public class CronetUploadTest extends CronetTestBase {
     }
 
     /**
-     * Tests that there is no crash when native CronetUploadDataStreamAdapter is
+     * Tests that there is no crash when native CronetUploadDataStream is
      * destroyed while rewind is pending. The test is racy since rewind could
-     * complete either before or after onDestroyAdapter() is called in
-     * CronetUploadDataStream. However, the test should pass either way, though
-     * we are interested in the latter case.
+     * complete either before or after the Java CronetUploadDataStream's
+     * onDestroyUploadDataStream() method is invoked. However, the test should
+     * pass either way, though we are interested in the latter case.
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testDestroyAdapterBeforeRewindComplete()
+    public void testDestroyNativeStreamBeforeRewindComplete()
             throws Exception {
         // Start a read and wait for it to complete.
         assertTrue(mHandler.init());
@@ -284,12 +283,11 @@ public class CronetUploadTest extends CronetTestBase {
         mDataProvider.waitForRewindRequest();
         mHandler.checkInitCallbackNotInvoked();
 
-        // Destroy the C++ TestUploadDataStreamHandler.  The handler owns the
-        // CronetUploadDataStreamAdapter, which this will cause it to destroy on
-        // the network thread.  Destroying the adapter will result in calling
-        // the CronetUploadDataSteam's onAdapterDestroyed() method on its
-        // executor thread, which will then destroy the
-        // CronetUploadDataStreamDelegate.
+        // Destroy the C++ TestUploadDataStreamHandler. The handler will then
+        // destroy the C++ CronetUploadDataStream it owns on the network thread.
+        // That will result in calling the Java CronetUploadDataSteam's
+        // onCanceled() method on its executor thread, which will then destroy
+        // the CronetUploadDataStreamDelegate.
         mHandler.destroyNativeObjects();
 
         // Signal rewind completes, and wait for init to complete.

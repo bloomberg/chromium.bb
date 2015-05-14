@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/android/cronet_upload_data_stream_adapter.h"
+#include "components/cronet/android/cronet_upload_data_stream.h"
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 namespace cronet {
 
-CronetUploadDataStreamAdapter::CronetUploadDataStreamAdapter(Delegate* delegate,
-                                                             int64 size)
+CronetUploadDataStream::CronetUploadDataStream(Delegate* delegate, int64 size)
     : UploadDataStream(size < 0, 0),
       size_(size),
       waiting_on_read_(false),
@@ -22,12 +21,12 @@ CronetUploadDataStreamAdapter::CronetUploadDataStreamAdapter(Delegate* delegate,
       weak_factory_(this) {
 }
 
-CronetUploadDataStreamAdapter::~CronetUploadDataStreamAdapter() {
-  delegate_->OnAdapterDestroyed();
+CronetUploadDataStream::~CronetUploadDataStream() {
+  delegate_->OnUploadDataStreamDestroyed();
 }
 
-int CronetUploadDataStreamAdapter::InitInternal() {
-  // ResetInternal should have been called before init, if the adapter was in
+int CronetUploadDataStream::InitInternal() {
+  // ResetInternal should have been called before init, if the stream was in
   // use.
   DCHECK(!waiting_on_read_);
   DCHECK(!waiting_on_rewind_);
@@ -57,8 +56,7 @@ int CronetUploadDataStreamAdapter::InitInternal() {
   return net::ERR_IO_PENDING;
 }
 
-int CronetUploadDataStreamAdapter::ReadInternal(net::IOBuffer* buf,
-                                                int buf_len) {
+int CronetUploadDataStream::ReadInternal(net::IOBuffer* buf, int buf_len) {
   // All pending operations should have completed before a read can start.
   DCHECK(!waiting_on_read_);
   DCHECK(!read_in_progress_);
@@ -75,15 +73,14 @@ int CronetUploadDataStreamAdapter::ReadInternal(net::IOBuffer* buf,
   return net::ERR_IO_PENDING;
 }
 
-void CronetUploadDataStreamAdapter::ResetInternal() {
+void CronetUploadDataStream::ResetInternal() {
   // Consumer is not waiting on any operation.  Note that the active operation,
   // if any, will continue.
   waiting_on_read_ = false;
   waiting_on_rewind_ = false;
 }
 
-void CronetUploadDataStreamAdapter::OnReadSuccess(int bytes_read,
-                                                  bool final_chunk) {
+void CronetUploadDataStream::OnReadSuccess(int bytes_read, bool final_chunk) {
   DCHECK(read_in_progress_);
   DCHECK(!rewind_in_progress_);
   DCHECK(bytes_read > 0 || (final_chunk && bytes_read == 0));
@@ -109,7 +106,7 @@ void CronetUploadDataStreamAdapter::OnReadSuccess(int bytes_read,
   OnReadCompleted(bytes_read);
 }
 
-void CronetUploadDataStreamAdapter::OnRewindSuccess() {
+void CronetUploadDataStream::OnRewindSuccess() {
   DCHECK(!waiting_on_read_);
   DCHECK(!read_in_progress_);
   DCHECK(rewind_in_progress_);
@@ -127,7 +124,7 @@ void CronetUploadDataStreamAdapter::OnRewindSuccess() {
   OnInitCompleted(net::OK);
 }
 
-void CronetUploadDataStreamAdapter::StartRewind() {
+void CronetUploadDataStream::StartRewind() {
   DCHECK(!waiting_on_read_);
   DCHECK(!read_in_progress_);
   DCHECK(waiting_on_rewind_);
