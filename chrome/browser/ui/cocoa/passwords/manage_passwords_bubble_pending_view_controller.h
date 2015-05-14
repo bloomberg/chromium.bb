@@ -10,6 +10,8 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 
+@class HyperlinkTextView;
+
 namespace ui {
 class ComboboxModel;
 }  // namespace ui
@@ -30,11 +32,12 @@ class ManagePasswordsBubbleModel;
 
 // Manages the view that offers to save the user's password.
 @interface ManagePasswordsBubblePendingViewController
-    : ManagePasswordsBubbleContentViewController {
+    : ManagePasswordsBubbleContentViewController<NSTextViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;  // weak
   base::scoped_nsobject<NSButton> saveButton_;
   base::scoped_nsobject<BubbleCombobox> nopeButton_;
+  base::scoped_nsobject<HyperlinkTextView> titleView_;
   base::scoped_nsobject<ManagePasswordItemViewController> passwordItem_;
 }
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
