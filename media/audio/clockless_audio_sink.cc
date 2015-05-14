@@ -5,8 +5,6 @@
 #include "media/audio/clockless_audio_sink.h"
 
 #include "base/threading/simple_thread.h"
-#include "base/time/time.h"
-#include "media/base/audio_renderer_sink.h"
 
 namespace media {
 

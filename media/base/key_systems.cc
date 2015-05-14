@@ -4,7 +4,6 @@
 
 #include "media/base/key_systems.h"
 
-#include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
@@ -12,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "media/base/eme_constants.h"
 #include "media/base/key_system_info.h"
 #include "media/base/key_systems_support_uma.h"
 #include "media/base/media_client.h"

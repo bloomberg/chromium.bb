@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -28,11 +26,8 @@
 #include "media/base/cdm_context.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
-#include "media/base/pipeline.h"
 #include "media/base/text_renderer.h"
 #include "media/base/video_frame.h"
-#include "media/blink/buffered_data_source.h"
-#include "media/blink/encrypted_media_player_support.h"
 #include "media/blink/texttrack_impl.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"

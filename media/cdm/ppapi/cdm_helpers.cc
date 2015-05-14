@@ -5,18 +5,8 @@
 #include "media/cdm/ppapi/cdm_helpers.h"
 
 #include <algorithm>
-#include <utility>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "build/build_config.h"
-#include "media/cdm/ppapi/api/content_decryption_module.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/core.h"
-#include "ppapi/cpp/dev/buffer_dev.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 
 namespace media {

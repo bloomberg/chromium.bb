@@ -4,7 +4,6 @@
 
 #include "media/formats/common/offset_byte_queue.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace media {

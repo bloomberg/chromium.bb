@@ -4,9 +4,6 @@
 
 #include "media/base/decoder_buffer.h"
 
-#include "base/logging.h"
-#include "media/base/buffers.h"
-#include "media/base/decrypt_config.h"
 
 namespace media {
 

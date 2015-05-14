@@ -9,7 +9,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"

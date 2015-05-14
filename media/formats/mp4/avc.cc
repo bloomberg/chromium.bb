@@ -5,7 +5,6 @@
 #include "media/formats/mp4/avc.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"

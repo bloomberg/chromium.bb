@@ -12,7 +12,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer.h"
-#include "media/base/demuxer_stream.h"
 #include "media/base/text_cue.h"
 
 namespace media {

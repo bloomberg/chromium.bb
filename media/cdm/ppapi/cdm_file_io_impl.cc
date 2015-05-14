@@ -4,7 +4,6 @@
 
 #include "media/cdm/ppapi/cdm_file_io_impl.h"
 
-#include <algorithm>
 #include <sstream>
 
 #include "media/cdm/ppapi/cdm_logging.h"

@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/audio_decoder_job.h"
-#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/video_decoder_job.h"
 

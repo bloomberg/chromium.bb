@@ -10,8 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/rtcp/rtcp_defines.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 
 namespace media {

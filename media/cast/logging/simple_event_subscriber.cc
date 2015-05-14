@@ -4,7 +4,6 @@
 
 #include "media/cast/logging/simple_event_subscriber.h"
 
-#include <vector>
 
 #include "base/logging.h"
 

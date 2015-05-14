@@ -12,9 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/decryptor.h"
 #include "media/base/pipeline.h"
-#include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
 namespace media {

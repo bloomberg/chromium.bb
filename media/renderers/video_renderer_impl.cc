@@ -12,7 +12,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
@@ -20,7 +19,6 @@
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
-#include "media/base/video_frame.h"
 
 namespace media {
 

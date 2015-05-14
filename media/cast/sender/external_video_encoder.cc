@@ -15,7 +15,6 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/video/video_encode_accelerator.h"
 
 namespace {
 

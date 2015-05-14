@@ -4,10 +4,8 @@
 
 #include "media/video/capture/android/video_capture_device_android.h"
 
-#include <string>
 
 #include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/strings/string_number_conversions.h"
 #include "jni/VideoCapture_jni.h"
 #include "media/video/capture/android/video_capture_device_factory_android.h"

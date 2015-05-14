@@ -4,7 +4,6 @@
 
 #include "media/audio/audio_input_device.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_restrictions.h"

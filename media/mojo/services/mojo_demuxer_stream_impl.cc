@@ -5,13 +5,10 @@
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
-#include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 namespace media {

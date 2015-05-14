@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "media/base/audio_buffer.h"
-#include "media/base/buffers.h"
 
 namespace media {
 

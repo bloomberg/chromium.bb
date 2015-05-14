@@ -11,7 +11,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 
 using base::TimeDelta;
 

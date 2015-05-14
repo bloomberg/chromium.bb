@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <cstring>
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"

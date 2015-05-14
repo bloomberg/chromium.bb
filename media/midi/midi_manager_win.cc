@@ -25,10 +25,8 @@
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -36,12 +34,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system_monitor/system_monitor.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "base/win/message_window.h"
 #include "device/usb/usb_ids.h"
-#include "media/midi/midi_manager.h"
 #include "media/midi/midi_message_queue.h"
 #include "media/midi/midi_message_util.h"
 #include "media/midi/midi_port_info.h"

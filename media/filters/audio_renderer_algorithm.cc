@@ -8,8 +8,6 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 #include "media/filters/wsola_internals.h"

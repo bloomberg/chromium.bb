@@ -6,10 +6,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/time/time.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/limits.h"
-#include "media/base/sample_format.h"
 
 namespace media {
 

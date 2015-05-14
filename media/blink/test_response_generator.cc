@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 using blink::WebString;
 using blink::WebURLError;

@@ -6,13 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "media/base/audio_decoder_config.h"
 #include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
-#include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/es_parser.h"
 #include "media/formats/mp2t/es_parser_adts.h"
 #include "media/formats/mp2t/es_parser_h264.h"

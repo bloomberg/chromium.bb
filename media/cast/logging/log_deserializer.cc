@@ -4,7 +4,6 @@
 
 #include "media/cast/logging/log_deserializer.h"
 
-#include <map>
 #include <utility>
 
 #include "base/big_endian.h"

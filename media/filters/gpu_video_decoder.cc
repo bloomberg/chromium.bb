@@ -19,7 +19,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
-#include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"

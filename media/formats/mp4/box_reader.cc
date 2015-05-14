@@ -6,13 +6,10 @@
 
 #include <string.h>
 #include <algorithm>
-#include <map>
 #include <set>
 
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/formats/mp4/box_definitions.h"
-#include "media/formats/mp4/rcheck.h"
 
 namespace media {
 namespace mp4 {

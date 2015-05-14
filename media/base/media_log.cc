@@ -4,11 +4,9 @@
 
 #include "media/base/media_log.h"
 
-#include <string>
 
 #include "base/atomic_sequence_num.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/values.h"
 
 namespace media {

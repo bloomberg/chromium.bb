@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/time/time.h"
 #include "media/audio/alsa/alsa_output.h"
 #include "media/audio/alsa/alsa_util.h"
 #include "media/audio/alsa/alsa_wrapper.h"

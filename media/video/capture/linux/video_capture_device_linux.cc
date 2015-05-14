@@ -11,7 +11,6 @@
 #endif
 
 #include <list>
-#include <string>
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"

@@ -4,8 +4,6 @@
 
 #include "media/audio/win/waveout_output_win.h"
 
-#include <windows.h>
-#include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 
 #include "base/atomicops.h"

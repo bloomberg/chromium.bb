@@ -14,9 +14,7 @@
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
-#include "media/base/audio_bus.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/cast_environment.h"
 
 #if !defined(OS_IOS)
 #include "third_party/opus/src/include/opus.h"

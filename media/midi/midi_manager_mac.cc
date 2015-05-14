@@ -5,7 +5,6 @@
 #include "media/midi/midi_manager_mac.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"

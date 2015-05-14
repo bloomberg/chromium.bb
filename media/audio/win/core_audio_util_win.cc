@@ -4,7 +4,6 @@
 
 #include "media/audio/win/core_audio_util_win.h"
 
-#include <audioclient.h>
 #include <devicetopology.h>
 #include <functiondiscoverykeys_devpkey.h>
 

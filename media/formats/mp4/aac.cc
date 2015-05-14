@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "media/base/bit_reader.h"
-#include "media/base/media_log.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mpeg/adts_constants.h"
 

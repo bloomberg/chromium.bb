@@ -4,7 +4,6 @@
 
 #include "media/formats/mp2t/es_parser_h264.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/buffers.h"
@@ -12,7 +11,6 @@
 #include "media/base/video_frame.h"
 #include "media/filters/h264_parser.h"
 #include "media/formats/common/offset_byte_queue.h"
-#include "media/formats/mp2t/es_adapter_video.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

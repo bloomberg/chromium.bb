@@ -4,12 +4,10 @@
 
 #include "media/cast/test/fake_media_source.h"
 
-#include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
@@ -22,8 +20,6 @@
 #include "media/cast/test/utility/video_utility.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
-#include "media/filters/audio_renderer_algorithm.h"
-#include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_glue.h"
 #include "media/filters/in_memory_url_protocol.h"
 #include "ui/gfx/geometry/size.h"

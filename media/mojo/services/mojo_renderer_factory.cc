@@ -5,7 +5,6 @@
 #include "media/mojo/services/mojo_renderer_factory.h"
 
 #include "base/single_thread_task_runner.h"
-#include "media/mojo/interfaces/media_renderer.mojom.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
 
 namespace media {

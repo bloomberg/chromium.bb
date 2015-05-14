@@ -4,7 +4,6 @@
 
 #include "media/midi/midi_manager_alsa.h"
 
-#include <alsa/asoundlib.h>
 #include <poll.h>
 #include <stdlib.h>
 #include <algorithm>
@@ -13,16 +12,12 @@
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "crypto/sha2.h"
 #include "media/midi/midi_port_info.h"
 

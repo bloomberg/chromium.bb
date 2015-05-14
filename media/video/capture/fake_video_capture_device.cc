@@ -4,10 +4,8 @@
 
 #include "media/video/capture/fake_video_capture_device.h"
 
-#include <string>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/video_frame.h"

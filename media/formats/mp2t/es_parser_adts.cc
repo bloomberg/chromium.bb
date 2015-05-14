@@ -4,7 +4,6 @@
 
 #include "media/formats/mp2t/es_parser_adts.h"
 
-#include <list>
 
 #include "base/basictypes.h"
 #include "base/logging.h"

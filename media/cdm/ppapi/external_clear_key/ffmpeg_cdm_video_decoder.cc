@@ -5,7 +5,6 @@
 #include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
 #include "media/ffmpeg/ffmpeg_common.h"

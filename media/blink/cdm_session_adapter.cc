@@ -6,13 +6,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
-#include "media/base/media_keys.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmodulesession_impl.h"
 #include "url/gurl.h"

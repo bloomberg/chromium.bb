@@ -10,10 +10,8 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/audio_decoder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 

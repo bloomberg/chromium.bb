@@ -12,7 +12,6 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
-#include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 

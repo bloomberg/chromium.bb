@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "media/audio/audio_io.h"
 #include "media/audio/audio_output_proxy.h"
 
 namespace media {

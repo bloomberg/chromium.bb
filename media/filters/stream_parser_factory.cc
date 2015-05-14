@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/formats/mpeg/adts_stream_parser.h"
 #include "media/formats/mpeg/mpeg1_audio_stream_parser.h"

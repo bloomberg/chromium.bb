@@ -5,11 +5,9 @@
 #include "media/filters/ffmpeg_demuxer.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/sparse_histogram.h"
@@ -21,13 +19,10 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
-#include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_aac_bitstream_converter.h"
 #include "media/filters/ffmpeg_bitstream_converter.h"

@@ -18,7 +18,6 @@
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
-#include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"

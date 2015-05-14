@@ -5,12 +5,9 @@
 #include "media/midi/usb_midi_input_stream.h"
 
 #include <string.h>
-#include <map>
-#include <vector>
 
 #include "base/logging.h"
 #include "media/midi/usb_midi_device.h"
-#include "media/midi/usb_midi_jack.h"
 
 namespace media {
 namespace midi {

@@ -4,8 +4,6 @@
 
 #include "media/audio/mac/audio_manager_mac.h"
 
-#include <CoreAudio/AudioHardware.h>
-#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"

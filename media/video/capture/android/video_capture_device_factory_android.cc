@@ -5,7 +5,6 @@
 #include "media/video/capture/android/video_capture_device_factory_android.h"
 
 #include "base/android/jni_string.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "jni/VideoCaptureFactory_jni.h"

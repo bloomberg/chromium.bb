@@ -4,7 +4,6 @@
 
 #include "media/cdm/key_system_names.h"
 
-#include <string>
 
 namespace media {
 

@@ -4,7 +4,6 @@
 
 #include "media/audio/audio_output_device.h"
 
-#include "base/basictypes.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"

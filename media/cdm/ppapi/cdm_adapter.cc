@@ -6,7 +6,6 @@
 
 #include "media/base/limits.h"
 #include "media/cdm/ppapi/cdm_file_io_impl.h"
-#include "media/cdm/ppapi/cdm_helpers.h"
 #include "media/cdm/ppapi/cdm_logging.h"
 #include "media/cdm/ppapi/supported_cdm_versions.h"
 #include "ppapi/c/ppb_console.h"

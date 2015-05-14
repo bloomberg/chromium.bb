@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/filters/ffmpeg_glue.h"
 
 namespace media {
 

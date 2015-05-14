@@ -4,7 +4,6 @@
 
 #include "media/base/data_buffer.h"
 
-#include "base/logging.h"
 
 namespace media {
 

@@ -5,7 +5,6 @@
 #include "media/formats/mp2t/es_adapter_video.h"
 
 #include "media/base/buffers.h"
-#include "media/base/stream_parser_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/mp2t_common.h"
 

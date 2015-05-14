@@ -4,8 +4,6 @@
 
 #include "media/midi/usb_midi_device_android.h"
 
-#include <jni.h>
-#include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/i18n/icu_string_conversions.h"

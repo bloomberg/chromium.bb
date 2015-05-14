@@ -12,7 +12,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/user_input_monitor.h"
 
 using base::TimeDelta;
