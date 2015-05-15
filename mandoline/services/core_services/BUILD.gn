@@ -76,9 +76,6 @@ source_set("sources") {
   ]
 
   if (!is_android) {
-    deps += [
-      "//mandoline/ui/omnibox:lib",
-      "//mojo/services/network:lib",
-    ]
+    deps += [ "//mandoline/ui/omnibox:lib" ]
   }
 }

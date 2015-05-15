@@ -13,12 +13,12 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/message_pump_mojo.h"
+#include "mojo/services/network/network_service_delegate.h"
 #include "mojo/services/tracing/tracing_app.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
 #include "mandoline/ui/omnibox/omnibox_impl.h"
-#include "mojo/services/network/network_service_delegate.h"
 #endif
 
 namespace core_services {
@@ -128,9 +128,9 @@ void CoreServicesApplicationDelegate::StartApplication(
   scoped_ptr<mojo::ApplicationDelegate> delegate;
   if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
-#if !defined(OS_ANDROID)
   else if (url == "mojo://network_service/")
     delegate.reset(new NetworkServiceDelegate);
+#if !defined(OS_ANDROID)
   else if (url == "mojo://omnibox/")
     delegate.reset(new mandoline::OmniboxImpl);
 #endif
