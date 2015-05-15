@@ -181,7 +181,7 @@ void PermissionContextBase::PermissionDecided(
     if (persist) {
       DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
              content_setting == CONTENT_SETTING_BLOCK);
-      if (CONTENT_SETTING_ALLOW)
+      if (content_setting == CONTENT_SETTING_ALLOW)
         PermissionContextUmaUtil::PermissionGranted(permission_type_,
                                                     requesting_origin);
       else
