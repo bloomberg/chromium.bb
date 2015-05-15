@@ -42,7 +42,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
                         const base::string16& exp_month,
                         const base::string16& exp_year,
                         bool should_store_pan) override;
-
+  void NewCardLinkClicked() override;
   content::WebContents* GetWebContents() override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;
@@ -74,6 +74,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   content::WebContents* web_contents_;
   RiskDataCallback risk_data_callback_;
   PrefService* pref_service_;
+  bool new_card_link_clicked_;
   bool is_off_the_record_;
   CreditCard card_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;

@@ -25,6 +25,7 @@ class CardUnmaskPromptController {
                                 const base::string16& exp_month,
                                 const base::string16& exp_year,
                                 bool should_store_pan) = 0;
+  virtual void NewCardLinkClicked() = 0;
 
   // State.
   virtual content::WebContents* GetWebContents() = 0;

@@ -28,6 +28,7 @@ CardUnmaskPromptControllerImpl::CardUnmaskPromptControllerImpl(
     : web_contents_(web_contents),
       risk_data_callback_(risk_data_callback),
       pref_service_(pref_service),
+      new_card_link_clicked_(false),
       is_off_the_record_(is_off_the_record),
       card_unmask_view_(nullptr),
       unmasking_result_(AutofillClient::NONE),
@@ -209,6 +210,10 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
     delegate_->OnUnmaskResponse(pending_response_);
 }
 
+void CardUnmaskPromptControllerImpl::NewCardLinkClicked() {
+  new_card_link_clicked_ = true;
+}
+
 content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
   return web_contents_;
 }
@@ -240,7 +245,8 @@ int CardUnmaskPromptControllerImpl::GetCvcImageRid() const {
 }
 
 bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
-  return card_.GetServerStatus() == CreditCard::EXPIRED;
+  return card_.GetServerStatus() == CreditCard::EXPIRED ||
+         new_card_link_clicked_;
 }
 
 bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {

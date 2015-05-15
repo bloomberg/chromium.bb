@@ -10,6 +10,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -17,6 +18,7 @@ namespace views {
 class Checkbox;
 class ImageView;
 class Label;
+class Link;
 class Throbber;
 }
 
@@ -28,6 +30,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               views::ComboboxListener,
                               views::DialogDelegateView,
                               views::TextfieldController,
+                              views::LinkListener,
                               gfx::AnimationDelegate {
  public:
   explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller);
@@ -65,8 +68,12 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::TextfieldController
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
+
   // views::ComboboxListener
   void OnPerformAction(views::Combobox* combobox) override;
+
+  // views::LinkListener
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // gfx::AnimationDelegate
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -106,6 +113,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void SetRetriableErrorMessage(const base::string16& message);
   bool ExpirationDateIsValid() const;
   void SetInputsEnabled(bool enabled);
+  void ShowNewCardLink();
   void ClosePrompt();
 
   CardUnmaskPromptController* controller_;
@@ -120,12 +128,13 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   DecoratedTextfield* cvc_input_;
 
-  // These will be null when expiration date is not required.
   views::Combobox* month_input_;
   views::Combobox* year_input_;
 
   MonthComboboxModel month_combobox_model_;
   YearComboboxModel year_combobox_model_;
+
+  views::Link* new_card_link_;
 
   // The error icon and label for most errors, which live beneath the inputs.
   views::ImageView* error_icon_;
