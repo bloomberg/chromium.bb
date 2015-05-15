@@ -9,6 +9,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/extensions_renderer_client.h"
@@ -86,7 +87,8 @@ void UserScriptSet::GetInjections(
 }
 
 bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
-                                      const std::set<HostID>& changed_hosts) {
+                                      const std::set<HostID>& changed_hosts,
+                                      bool whitelisted_only) {
   bool only_inject_incognito =
       ExtensionsRendererClient::Get()->IsIncognitoProcess();
 
@@ -139,6 +141,13 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
 
     if (only_inject_incognito && !script->is_incognito_enabled())
       continue;  // This script shouldn't run in an incognito tab.
+
+    const Extension* extension = extensions_->GetByID(script->extension_id());
+    if (whitelisted_only &&
+        (!extension ||
+         !PermissionsData::CanExecuteScriptEverywhere(extension))) {
+      continue;
+    }
 
     scripts_.push_back(script.release());
   }

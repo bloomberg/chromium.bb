@@ -2139,16 +2139,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ChromeVoxInjection) {
   EXPECT_FALSE(
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
+  chromeos::SpeechMonitor monitor;
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ui::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* guest_web_contents = LoadGuest(
       "/extensions/platform_apps/web_view/chromevox_injection/guest.html",
       "web_view/chromevox_injection");
   ASSERT_TRUE(guest_web_contents);
-
-  chromeos::SpeechMonitor monitor;
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ui::A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
 
   EXPECT_EQ("chrome vox test title", monitor.GetNextUtterance());
 }

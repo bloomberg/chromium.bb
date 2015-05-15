@@ -91,7 +91,8 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   // Handle the UpdateUserScripts extension message.
   void OnUpdateUserScripts(base::SharedMemoryHandle shared_memory,
                            const HostID& host_id,
-                           const std::set<HostID>& changed_hosts);
+                           const std::set<HostID>& changed_hosts,
+                           bool whitelisted_only);
 
   // Scripts statically defined in extension manifests.
   UserScriptSet static_scripts_;

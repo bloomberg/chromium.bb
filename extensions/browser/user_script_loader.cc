@@ -378,9 +378,9 @@ void UserScriptLoader::OnScriptsLoaded(
 void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
                                   base::SharedMemory* shared_memory,
                                   const std::set<HostID>& changed_hosts) {
-  // Don't allow injection of extensions' content scripts into <webview>.
-  if (process->IsIsolatedGuest() && host_id().id().empty())
-    return;
+  // Don't allow injection of non-whitelisted extensions' content scripts
+  // into <webview>.
+  bool whitelisted_only = process->IsIsolatedGuest() && host_id().id().empty();
 
   // Make sure we only send user scripts to processes in our browser_context.
   if (!ExtensionsBrowserClient::Get()->IsSameContext(
@@ -398,8 +398,8 @@ void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
     return;  // This can legitimately fail if the renderer asserts at startup.
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    process->Send(new ExtensionMsg_UpdateUserScripts(handle_for_process,
-                                                     host_id(), changed_hosts));
+    process->Send(new ExtensionMsg_UpdateUserScripts(
+        handle_for_process, host_id(), changed_hosts, whitelisted_only));
   }
 }
 

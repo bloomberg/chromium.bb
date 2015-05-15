@@ -295,8 +295,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void UserAgentOverrideSet(const std::string& user_agent) override;
   void FrameNameChanged(content::RenderFrameHost* render_frame_host,

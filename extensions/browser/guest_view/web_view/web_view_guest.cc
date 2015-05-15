@@ -330,8 +330,6 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
                               content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                               content::Source<WebContents>(web_contents()));
 
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnDidInitialize();
   AttachWebViewHelpers(web_contents());
 
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
@@ -786,11 +784,6 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
       new GuestViewEvent(webview::kEventLoadCommit, args.Pass()));
 
   find_helper_.CancelAllFindSessions();
-
-  if (web_view_guest_delegate_) {
-    web_view_guest_delegate_->OnDidCommitProvisionalLoadForFrame(
-        !render_frame_host->GetParent());
-  }
 }
 
 void WebViewGuest::DidFailProvisionalLoad(
@@ -812,12 +805,6 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
   args->SetBoolean(guest_view::kIsTopLevel, !render_frame_host->GetParent());
   DispatchEventToView(
       new GuestViewEvent(webview::kEventLoadStart, args.Pass()));
-}
-
-void WebViewGuest::DocumentLoadedInFrame(
-    content::RenderFrameHost* render_frame_host) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnDocumentLoadedInFrame(render_frame_host);
 }
 
 void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {

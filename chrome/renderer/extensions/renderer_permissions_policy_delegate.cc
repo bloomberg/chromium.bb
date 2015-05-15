@@ -30,12 +30,8 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     int tab_id,
     int process_id,
     std::string* error) {
-  const ExtensionsClient::ScriptingWhitelist& whitelist =
-      ExtensionsClient::Get()->GetScriptingWhitelist();
-  if (std::find(whitelist.begin(), whitelist.end(), extension->id()) !=
-      whitelist.end()) {
+  if (PermissionsData::CanExecuteScriptEverywhere(extension))
     return true;
-  }
 
   if (dispatcher_->IsExtensionActive(kWebStoreAppId)) {
     if (error)

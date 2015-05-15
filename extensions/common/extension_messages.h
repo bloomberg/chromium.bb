@@ -457,10 +457,13 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
 // region will be updated. Note that the empty set => all hosts case is not
 // supported for per-extension programmatically-defined script regions; in such
 // regions, the owner is expected to list itself as the only changed host.
-IPC_MESSAGE_CONTROL3(ExtensionMsg_UpdateUserScripts,
+// If |whitelisted_only| is true, this process should only run whitelisted
+// scripts and not all user scripts.
+IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateUserScripts,
                      base::SharedMemoryHandle,
                      HostID /* owner */,
-                     std::set<HostID> /* changed hosts */)
+                     std::set<HostID> /* changed hosts */,
+                     bool /* whitelisted_only */)
 
 // Trigger to execute declarative content script under browser control.
 IPC_MESSAGE_ROUTED4(ExtensionMsg_ExecuteDeclarativeScript,

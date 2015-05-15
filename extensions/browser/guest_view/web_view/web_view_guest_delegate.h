@@ -38,15 +38,6 @@ class WebViewGuestDelegate {
   // Called to attach helpers just after additional initialization is performed.
   virtual void OnAttachWebViewHelpers(content::WebContents* contents) = 0;
 
-  // Called when the guest WebContents commits a provisional load in any frame.
-  virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) = 0;
-
-  // Called just after additional initialization is performed.
-  virtual void OnDidInitialize() = 0;
-
-  virtual void OnDocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) = 0;
-
   // Called immediately after the guest WebContents has been destroyed.
   virtual void OnGuestDestroyed() = 0;
 

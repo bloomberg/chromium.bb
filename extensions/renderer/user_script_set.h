@@ -68,7 +68,8 @@ class UserScriptSet {
   // Updates scripts given the shared memory region containing user scripts.
   // Returns true if the scripts were successfully updated.
   bool UpdateUserScripts(base::SharedMemoryHandle shared_memory,
-                         const std::set<HostID>& changed_hosts);
+                         const std::set<HostID>& changed_hosts,
+                         bool whitelisted_only);
 
   const std::vector<UserScript*>& scripts() const { return scripts_.get(); }
 

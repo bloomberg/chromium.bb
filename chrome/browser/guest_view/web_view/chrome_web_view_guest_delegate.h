@@ -29,10 +29,6 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
   // WebViewGuestDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void OnAttachWebViewHelpers(content::WebContents* contents) override;
-  void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) override;
-  void OnDidInitialize() override;
-  void OnDocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
   void OnGuestDestroyed() override;
   void OnShowContextMenu(int request_id, const MenuItemVector* items) override;
 
@@ -47,30 +43,13 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
   static scoped_ptr<base::ListValue> MenuModelToValue(
       const ui::SimpleMenuModel& menu_model);
 
-  void InjectChromeVoxIfNeeded(content::RenderViewHost* render_view_host);
-
-#if defined(OS_CHROMEOS)
-  // Notification of a change in the state of an accessibility setting.
-  void OnAccessibilityStatusChanged(
-      const chromeos::AccessibilityStatusEventDetails& details);
-#endif
-
   // A counter to generate a unique request id for a context menu request.
   // We only need the ids to be unique for a given WebViewGuest.
   int pending_context_menu_request_id_;
 
-  // Set to |true| if ChromeVox was already injected in main frame.
-  bool chromevox_injected_;
-
   // Holds the RenderViewContextMenuBase that has been built but yet to be
   // shown. This is .reset() after ShowContextMenu().
   scoped_ptr<RenderViewContextMenuBase> pending_menu_;
-
-#if defined(OS_CHROMEOS)
-  // Subscription to receive notifications on changes to a11y settings.
-  scoped_ptr<chromeos::AccessibilityStatusSubscription>
-      accessibility_subscription_;
-#endif
 
   WebViewGuest* const web_view_guest_;
 
@@ -84,4 +63,3 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
-

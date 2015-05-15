@@ -96,7 +96,8 @@ UserScriptSet* UserScriptSetManager::GetProgrammaticScriptsByHostID(
 void UserScriptSetManager::OnUpdateUserScripts(
     base::SharedMemoryHandle shared_memory,
     const HostID& host_id,
-    const std::set<HostID>& changed_hosts) {
+    const std::set<HostID>& changed_hosts,
+    bool whitelisted_only) {
   if (!base::SharedMemory::IsHandleValid(shared_memory)) {
     NOTREACHED() << "Bad scripts handle";
     return;
@@ -147,7 +148,9 @@ void UserScriptSetManager::OnUpdateUserScripts(
     effective_hosts = &all_hosts;
   }
 
-  if (scripts->UpdateUserScripts(shared_memory, *effective_hosts)) {
+  if (scripts->UpdateUserScripts(shared_memory,
+                                 *effective_hosts,
+                                 whitelisted_only)) {
     FOR_EACH_OBSERVER(
         Observer,
         observers_,
