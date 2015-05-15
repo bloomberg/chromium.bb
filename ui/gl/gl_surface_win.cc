@@ -76,6 +76,19 @@ class WinVSyncProvider : public VSyncProvider {
       HRESULT result = DwmGetCompositionTimingInfo(NULL, &timing_info);
       if (result == S_OK) {
         dwm_active = true;
+
+        // Calculate an interval value using the rateRefresh numerator and
+        // denominator.
+        base::TimeDelta rate_interval;
+        if (timing_info.rateRefresh.uiDenominator > 0 &&
+            timing_info.rateRefresh.uiNumerator > 0) {
+          // Swap the numerator/denominator to convert frequency to period.
+          rate_interval = base::TimeDelta::FromMicroseconds(
+              timing_info.rateRefresh.uiDenominator *
+              base::Time::kMicrosecondsPerSecond /
+              timing_info.rateRefresh.uiNumerator);
+        }
+
         if (gfx::FrameTime::TimestampsAreHighRes()) {
           // qpcRefreshPeriod is very accurate but noisy, and must be used with
           // a high resolution timebase to avoid frequently missing Vsync.
@@ -83,8 +96,18 @@ class WinVSyncProvider : public VSyncProvider {
               static_cast<LONGLONG>(timing_info.qpcVBlank));
           interval = base::TimeDelta::FromQPCValue(
               static_cast<LONGLONG>(timing_info.qpcRefreshPeriod));
-        } else if (timing_info.rateRefresh.uiDenominator > 0 &&
-            timing_info.rateRefresh.uiNumerator > 0) {
+          // Check for interval values that are impossibly low. A 29 microsecond
+          // interval was seen (from a qpcRefreshPeriod of 60).
+          if (interval < base::TimeDelta::FromMilliseconds(1)) {
+            interval = rate_interval;
+          }
+          // Check for the qpcRefreshPeriod interval being improbably small
+          // compared to the rateRefresh calculated interval, as another
+          // attempt at detecting driver bugs.
+          if (!rate_interval.is_zero() && interval < rate_interval / 2) {
+            interval = rate_interval;
+          }
+        } else {
           // If FrameTime is not high resolution, we do not want to translate
           // the QPC value provided by DWM into the low-resolution timebase,
           // which would be error prone and jittery. As a fallback, we assume
@@ -92,12 +115,7 @@ class WinVSyncProvider : public VSyncProvider {
           // isn't noisy like qpcRefreshPeriod, instead. The fact that we don't
           // have a timebase here may lead to brief periods of jank when our
           // scheduling becomes offset from the hardware vsync.
-
-          // Swap the numerator/denominator to convert frequency to period.
-          interval = base::TimeDelta::FromMicroseconds(
-              timing_info.rateRefresh.uiDenominator *
-              base::Time::kMicrosecondsPerSecond /
-              timing_info.rateRefresh.uiNumerator);
+          interval = rate_interval;
         }
       }
     }
