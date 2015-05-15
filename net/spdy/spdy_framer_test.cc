@@ -5755,6 +5755,32 @@ TEST_P(SpdyFramerTest, OnAltSvcNoOrigin) {
       << SpdyFramer::ErrorCodeToString(framer.error_code());
 }
 
+TEST_P(SpdyFramerTest, OnAltSvcEmptyProtocolId) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+
+  SpdyAltSvcIR altsvc_ir(1);
+  altsvc_ir.set_max_age(10);
+  altsvc_ir.set_port(443);
+  altsvc_ir.set_host("h1");
+  altsvc_ir.set_origin("o1");
+  scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(altsvc_ir));
+  framer.ProcessInput(frame->data(), framer.GetAltSvcMinimumSize() +
+                      altsvc_ir.protocol_id().length() +
+                      altsvc_ir.host().length());
+
+  EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
 TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
   if (spdy_version_ <= SPDY3) {
     return;

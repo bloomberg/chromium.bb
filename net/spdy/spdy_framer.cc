@@ -2057,8 +2057,9 @@ size_t SpdyFramer::ProcessAltSvcFramePayload(const char* data, size_t len) {
                           reader.ReadUInt8(&altsvc_scratch_.pid_len);
         DCHECK(successful_read);
         // Sanity check length value.
-        if (GetAltSvcMinimumSize() + altsvc_scratch_.pid_len >=
-            current_frame_length_) {
+        if (altsvc_scratch_.pid_len == 0 ||
+            GetAltSvcMinimumSize() + altsvc_scratch_.pid_len >=
+                current_frame_length_) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
           return 0;
         }
