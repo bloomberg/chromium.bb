@@ -159,8 +159,6 @@ InspectorTest.TestFileSystem = function(fileSystemPath)
     this.fileSystemPath = fileSystemPath;
 }
 
-InspectorTest.TestFileSystem._modificationTimeDelta = 1000;
-
 InspectorTest.TestFileSystem._instances = {};
 
 InspectorTest.TestFileSystem.prototype = {
@@ -212,7 +210,6 @@ InspectorTest.TestFileSystem.Entry.prototype = {
         this._children.push(child);
         child.parent = this;
         child.content = new Blob([content], {type: 'text/plain'});
-        return child;
     },
 
     createReader: function()
@@ -230,85 +227,28 @@ InspectorTest.TestFileSystem.Entry.prototype = {
         callback(this.content);
     },
 
-    moveTo: function(newDir, newName, success, failure)
+    getDirectory: function(path, noop, callback)
     {
-        if (!newDir.isDirectory) {
-            failure(new Error("TestFileSystem.moveTo accepts only directory as its first entry"));
-            return;
-        }
-        if (this.isDirectory) {
-            failure(new Error("TestFileSystem.moveTo cannot move directories."));
-            return;
-        }
-        this.remove(onRemoved.bind(this), failure);
-
-        function onRemoved()
-        {
-            var entry = newDir.addFile(newName, this.content);
-            entry._timestamp = this._timestamp;
-            success();
-        }
+        this.getEntry(path, noop, callback);
     },
 
-    remove: function(success, failure)
+    getFile: function(path, noop, callback)
     {
-        if (this._children.length) {
-            failure(new Error("TestFileSystem.remove cannot remove non-empty directories."));
-            return;
-        }
-        var index = this.parent._children.indexOf(this);
-        this.parent._children.splice(index, 1);
-        delete this.parent._childrenMap[this.name];
-        delete this.parent;
-        success();
+        this.getEntry(path, noop, callback);
     },
 
-    getDirectory: function(path, options, success, failure)
+    getEntry: function(path, noop, callback)
     {
-        this._getEntry(path, options, true, success, failure);
-    },
-
-    getFile: function(path, options, success, failure)
-    {
-        this._getEntry(path, options, false, success, failure);
-    },
-
-    _getEntry: function(path, options, isDirectory, success, failure)
-    {
-        options = options || {};
         if (path.startsWith("/"))
             path = path.substring(1);
         if (!path) {
-            success(this);
+            callback(this);
             return;
         }
         var entry = this;
-        var pathTokens = path.split("/");
-        while (pathTokens.length && entry._childrenMap[pathTokens[0]])
-            entry = entry._childrenMap[pathTokens.shift()];
-        if (pathTokens.length > 1) {
-            failure(new Error("Some subdirectories in path do not exist"));
-            return;
-        }
-        if (pathTokens.length === 1) {
-            if (!options.create) {
-                failure(new Error("Entry does not exist"));
-                return;
-            }
-            success(isDirectory ? entry.mkdir(pathTokens.shift()) : entry.addFile(pathTokens.shift(), ""));
-            return;
-        }
-        // pathTokens.length === 0
-        if (options.create && !options.exclusive) {
-            failure(new Error("Cannot re-create existing entry"));
-            return;
-        }
-        success(entry);
-    },
-
-    getParent: function(callback)
-    {
-        callback(this.parent);
+        for (var token of path.split("/"))
+            entry = entry._childrenMap[token];
+        callback(entry);
     },
 
     getMetadata: function(success, failure)
@@ -343,7 +283,7 @@ InspectorTest.TestFileSystem.Writer = function(entry)
 InspectorTest.TestFileSystem.Writer.prototype = {
     write: function(blob)
     {
-        this._entry._timestamp += InspectorTest.TestFileSystem._modificationTimeDelta;
+        this._entry._timestamp += this._modificationTimesDelta;
         this._entry.content = blob;
         if (this.onwriteend)
             this.onwriteend();
@@ -351,7 +291,7 @@ InspectorTest.TestFileSystem.Writer.prototype = {
 
     truncate: function(num)
     {
-        this._entry._timestamp += InspectorTest.TestFileSystem._modificationTimeDelta;
+        this._entry._timestamp += this._modificationTimesDelta;
         this._entry.content = this._entry.content.slice(0, num);
         if (this.onwriteend)
             this.onwriteend();
