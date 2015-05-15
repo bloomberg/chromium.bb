@@ -590,6 +590,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
       const char* data,
       size_t len);
 
+  // Updates the maximum size of header compression table.
+  void UpdateHeaderTableSizeSetting(uint32 value);
+
+  // Returns bound of header compression table size.
+  size_t header_table_size_bound() const;
+
  protected:
   // TODO(jgraettinger): Switch to test peer pattern.
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, BasicCompression);
@@ -805,6 +811,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // we know to terminate the stream when the entire header block has been
   // processed.
   bool end_stream_when_done_;
+
+  // Last acknowledged value for SETTINGS_HEADER_TABLE_SIZE.
+  size_t header_table_size_bound_;
 };
 
 }  // namespace net

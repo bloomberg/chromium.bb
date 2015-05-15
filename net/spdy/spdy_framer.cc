@@ -161,7 +161,8 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version)
       enable_compression_(true),
       syn_frame_processed_(false),
       probable_http_response_(false),
-      end_stream_when_done_(false) {
+      end_stream_when_done_(false),
+      header_table_size_bound_(4096) {
   DCHECK_GE(protocol_version_, SPDY_MIN_VERSION);
   DCHECK_LE(protocol_version_, SPDY_MAX_VERSION);
   DCHECK_LE(kMaxControlFrameSize,
@@ -3199,6 +3200,17 @@ bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
     }
   }
   return read_successfully;
+}
+
+void SpdyFramer::UpdateHeaderTableSizeSetting(uint32 value) {
+  header_table_size_bound_ = value;
+  GetHpackEncoder()->ApplyHeaderTableSizeSetting(value);
+  GetHpackDecoder()->ApplyHeaderTableSizeSetting(value);
+}
+
+// Return size bound of the header compression table.
+size_t SpdyFramer::header_table_size_bound() const {
+  return header_table_size_bound_;
 }
 
 void SpdyFramer::SerializeNameValueBlockWithoutCompression(
