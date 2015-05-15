@@ -321,14 +321,16 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
   TileManager* tile_manager() { return tile_manager_.get(); }
 
-  void set_has_gpu_rasterization_trigger(bool flag) {
+  void SetHasGpuRasterizationTrigger(bool flag) {
     has_gpu_rasterization_trigger_ = flag;
+    UpdateGpuRasterizationStatus();
   }
-  void set_content_is_suitable_for_gpu_rasterization(bool flag) {
+  void SetContentIsSuitableForGpuRasterization(bool flag) {
     content_is_suitable_for_gpu_rasterization_ = flag;
+    UpdateGpuRasterizationStatus();
   }
   bool CanUseGpuRasterization();
-  void UpdateGpuRasterizationStatus();
+  void UpdateTreeResourcesForGpuRasterizationIfNeeded();
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
   bool use_msaa() const { return use_msaa_; }
 
@@ -572,6 +574,8 @@ class CC_EXPORT LayerTreeHostImpl
   void ReleaseTreeResources();
   void RecreateTreeResources();
 
+  void UpdateGpuRasterizationStatus();
+
   bool IsSynchronousSingleThreaded() const;
 
   Viewport* viewport() { return viewport_.get(); }
@@ -647,6 +651,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool use_gpu_rasterization_;
   bool use_msaa_;
   GpuRasterizationStatus gpu_rasterization_status_;
+  bool tree_resources_for_gpu_rasterization_dirty_;
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<ResourcePool> staging_resource_pool_;

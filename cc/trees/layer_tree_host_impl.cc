@@ -195,6 +195,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       use_gpu_rasterization_(false),
       use_msaa_(false),
       gpu_rasterization_status_(GpuRasterizationStatus::OFF_DEVICE),
+      tree_resources_for_gpu_rasterization_dirty_(false),
       input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
@@ -308,7 +309,9 @@ void LayerTreeHostImpl::BeginCommit() {
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
-  UpdateGpuRasterizationStatus();
+  // LayerTreeHost may have changed the GPU rasterization flags state, which
+  // may require an update of the tree resources.
+  UpdateTreeResourcesForGpuRasterizationIfNeeded();
   sync_tree()->set_needs_update_draw_properties();
 
   if (settings_.impl_side_painting) {
@@ -1646,6 +1649,13 @@ void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   use_gpu_rasterization_ = use_gpu;
   use_msaa_ = use_msaa;
 
+  tree_resources_for_gpu_rasterization_dirty_ = true;
+}
+
+void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
+  if (!tree_resources_for_gpu_rasterization_dirty_)
+    return;
+
   // Clean up and replace existing tile manager with another one that uses
   // appropriate rasterizer.
   ReleaseTreeResources();
@@ -1659,6 +1669,8 @@ void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   // We would not have any content to draw until the pending tree is activated.
   // Prevent the active tree from drawing until activation.
   SetRequiresHighResToDraw();
+
+  tree_resources_for_gpu_rasterization_dirty_ = false;
 }
 
 const RendererCapabilitiesImpl&
@@ -2015,8 +2027,6 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   }
   DCHECK(renderer_);
 
-  // Since the new renderer may be capable of MSAA, update status here.
-  UpdateGpuRasterizationStatus();
   renderer_->SetVisible(visible_);
   SetFullRootLayerDamage();
 
@@ -2200,6 +2210,9 @@ bool LayerTreeHostImpl::InitializeRenderer(
       settings_.renderer_settings.texture_id_allocation_chunk_size);
 
   CreateAndSetRenderer();
+
+  // Since the new renderer may be capable of MSAA, update status here.
+  UpdateGpuRasterizationStatus();
 
   if (settings_.impl_side_painting && settings_.raster_enabled)
     CreateAndSetTileManager();
