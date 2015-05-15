@@ -147,8 +147,7 @@ node = env.CommandSelLdrTestNacl(
     mutex_timedlock_test_nexe
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_mutex_timedlock_test',
-                       is_broken=env.IsRunningUnderValgrind() or
-                                 env.UsingEmulator())
+                       is_broken=env.IsRunningUnderValgrind())
 
 rwlock_test_nexe = env.ComponentProgram(
     'rwlock_test',
@@ -160,8 +159,7 @@ node = env.CommandSelLdrTestNacl(
     rwlock_test_nexe
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_rwlock_test',
-                       is_broken=env.IsRunningUnderValgrind() or
-                                 env.UsingEmulator())
+                       is_broken=env.IsRunningUnderValgrind())
 
 thread_stack_test_nexe = env.ComponentProgram('thread_stack_test',
                                               'thread_stack_test.c',

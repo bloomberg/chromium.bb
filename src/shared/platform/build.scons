@@ -198,8 +198,7 @@ node = env.CommandTest('nacl_host_desc_mmap_test.out',
                        [nacl_host_desc_mmap_test_exe, '-t',
                         env.MakeTempDir(prefix='tmp_platform')])
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_desc_mmap_test',
-                       is_broken=env.UsingEmulator())
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_desc_mmap_test')
 
 if env.Bit('windows'):
   nacl_host_desc_mmap_win_test_exe = env.ComponentProgram(

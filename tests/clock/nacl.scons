@@ -76,9 +76,6 @@ elif env.Bit('host_linux'):
   kernel_version = map(int, platform.release().split('.', 2)[:2])
   if kernel_version < [3, 0]:
     cputime_test_enabled = False
-if env.UsingEmulator():
-  # The CPU time test uses threads and fences, which are flaky under QEMU.
-  cputime_test_enabled = False
 # This test is flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
 if env.Bit('asan') and env.Bit('host_mac'):

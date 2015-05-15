@@ -831,31 +831,14 @@ tests_to_disable_qemu = set([
     # You should use the is_broken argument in preference to adding
     # tests to this list.
     #
-    # TODO(dschuff) some of these tests appear to work with the new QEMU.
-    # find out which
-    # http://code.google.com/p/nativeclient/issues/detail?id=2437
+    # See: http://code.google.com/p/nativeclient/issues/detail?id=2437
     # Note, for now these tests disable both the irt and non-irt variants
-    'run_atomic_ops_test',    # still broken with qemu 2012/06/12
-    'run_atomic_ops_nexe_test',
-    'run_egyptian_cotton_test',  # still broken with qemu 2012/06/12
+    'run_egyptian_cotton_test',
     'run_many_threads_sequential_test',
-    'run_mmap_atomicity_test',   # still broken with qemu 2012/06/12
-    # http://code.google.com/p/nativeclient/issues/detail?id=2142
-    'run_nacl_semaphore_test',
-    'run_nacl_tls_unittest',
     # subprocess needs to also have qemu prefix, which isn't supported
     'run_subprocess_test',
-    # The next 2 tests seem flaky on QEMU
-    'run_srpc_manifest_file_test',
-    'run_srpc_message_untrusted_test',
-    'run_thread_stack_alloc_test',
     'run_thread_suspension_test',
-    'run_thread_test',
     'run_dynamic_modify_test',
-    # qemu has bugs that make TestCatchingFault flaky (see
-    # http://code.google.com/p/nativeclient/issues/detail?id=3239), and
-    # we don't particularly need to measure performance under qemu.
-    'run_performance_test',
 ])
 
 tests_to_disable = set()

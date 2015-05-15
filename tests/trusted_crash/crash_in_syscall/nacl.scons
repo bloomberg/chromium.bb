@@ -38,11 +38,6 @@ crash_types = [
     ('run_jump_into_sandbox_in_syscall_crash_test',
      'NACL_TEST_CRASH_JUMP_INTO_SANDBOX'),
     ]
-# qemu-user hangs on the following tests:
-broken_in_qemu = [
-    'run_jump_to_zero_in_syscall_test',
-    'run_jump_into_sandbox_in_syscall_crash_test',
-    ]
 for name, arg in crash_types:
   node = env.CommandTest(
       '%s.out' % name, env.AddBootstrap(runner, [test_prog, arg]),
@@ -52,5 +47,4 @@ for name, arg in crash_types:
   env.AddNodeToTestSuite(
       node, ['small_tests', 'exception_tests'], name,
       is_broken=(not env.Bit('nacl_static_link') or
-                 trusted_env.Bit('coverage_enabled') or
-                 (name in broken_in_qemu and env.UsingEmulator())))
+                 trusted_env.Bit('coverage_enabled')))
