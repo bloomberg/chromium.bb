@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MAC_MEMORY_PRESSURE_MONITOR_MAC_H_
-#define BASE_MAC_MEMORY_PRESSURE_MONITOR_MAC_H_
+#ifndef BASE_MAC_MEMORY_PRESSURE_MONITOR_H_
+#define BASE_MAC_MEMORY_PRESSURE_MONITOR_H_
 
 #include <dispatch/dispatch.h>
 
@@ -23,8 +23,9 @@
 #endif  // DISPATCH_MEMORYPRESSURE_NORMAL
 
 namespace base {
+namespace mac {
 
-class TestMemoryPressureMonitorMac;
+class TestMemoryPressureMonitor;
 
 struct DispatchSourceSDeleter {
   void operator()(dispatch_source_s* ptr) {
@@ -35,17 +36,16 @@ struct DispatchSourceSDeleter {
 
 // Declares the interface for the Mac MemoryPressureMonitor, which reports
 // memory pressure events and status.
-class BASE_EXPORT MemoryPressureMonitorMac : public MemoryPressureMonitor {
+class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
  public:
-  using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
-  MemoryPressureMonitorMac();
-  ~MemoryPressureMonitorMac() override;
+  MemoryPressureMonitor();
+  ~MemoryPressureMonitor() override;
 
   // Returns the currently-observed memory pressure.
   MemoryPressureLevel GetCurrentPressureLevel() const override;
 
  private:
-  friend TestMemoryPressureMonitorMac;
+  friend TestMemoryPressureMonitor;
 
   static MemoryPressureLevel
       MemoryPressureLevelForMacMemoryPressure(int mac_memory_pressure);
@@ -54,9 +54,10 @@ class BASE_EXPORT MemoryPressureMonitorMac : public MemoryPressureMonitor {
   scoped_ptr<dispatch_source_s, DispatchSourceSDeleter>
       memory_level_event_source_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitorMac);
+  DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);
 };
 
+}  // namespace mac
 }  // namespace base
 
-#endif  // BASE_MAC_MEMORY_PRESSURE_MONITOR_MAC_H_
+#endif  // BASE_MAC_MEMORY_PRESSURE_MONITOR_H_

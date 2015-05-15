@@ -20,11 +20,7 @@ class HighResolutionTimerManager;
 class MessageLoop;
 class PowerMonitor;
 class SystemMonitor;
-#if defined(OS_CHROMEOS)
-class MemoryPressureMonitorChromeOS;
-#elif (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 class MemoryPressureMonitor;
-#endif
 namespace trace_event {
 class TraceMemoryController;
 class TraceEventSystemStatsMonitor;
@@ -182,11 +178,11 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Android implementation of ScreenOrientationDelegate
   scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
-#if defined(OS_CHROMEOS)
-  scoped_ptr<base::MemoryPressureMonitorChromeOS> memory_pressure_monitor_;
-#elif (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
+
+  // Memory pressure monitor. Created in PreCreateThreads and torn down in
+  // ShutdownThreadsAndCleanUp.
   scoped_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
-#endif
+
   // The startup task runner is created by CreateStartupTasks()
   scoped_ptr<StartupTaskRunner> startup_task_runner_;
 

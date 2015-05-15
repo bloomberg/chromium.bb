@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/memory_pressure_monitor_mac.h"
+#include "base/mac/memory_pressure_monitor.h"
 
 #include <dlfcn.h>
 #include <sys/sysctl.h>
@@ -10,9 +10,10 @@
 #include "base/mac/mac_util.h"
 
 namespace base {
+namespace mac {
 
 MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitorMac::MemoryPressureLevelForMacMemoryPressure(
+MemoryPressureMonitor::MemoryPressureLevelForMacMemoryPressure(
     int mac_memory_pressure) {
   switch (mac_memory_pressure) {
     case DISPATCH_MEMORYPRESSURE_NORMAL:
@@ -25,7 +26,7 @@ MemoryPressureMonitorMac::MemoryPressureLevelForMacMemoryPressure(
   return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 }
 
-void MemoryPressureMonitorMac::NotifyMemoryPressureChanged(
+void MemoryPressureMonitor::NotifyMemoryPressureChanged(
     dispatch_source_s* event_source) {
   int mac_memory_pressure = dispatch_source_get_data(event_source);
   MemoryPressureListener::MemoryPressureLevel memory_pressure_level =
@@ -33,7 +34,7 @@ void MemoryPressureMonitorMac::NotifyMemoryPressureChanged(
   MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);
 }
 
-MemoryPressureMonitorMac::MemoryPressureMonitorMac()
+MemoryPressureMonitor::MemoryPressureMonitor()
   : memory_level_event_source_(nullptr) {
   // _dispatch_source_type_memorypressure is not available prior to 10.9.
   dispatch_source_type_t dispatch_source_memorypressure =
@@ -58,11 +59,11 @@ MemoryPressureMonitorMac::MemoryPressureMonitorMac()
   }
 }
 
-MemoryPressureMonitorMac::~MemoryPressureMonitorMac() {
+MemoryPressureMonitor::~MemoryPressureMonitor() {
 }
 
 MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitorMac::GetCurrentPressureLevel() const {
+MemoryPressureMonitor::GetCurrentPressureLevel() const {
   if (base::mac::IsOSMountainLionOrEarlier()) {
     return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
   }
@@ -73,4 +74,5 @@ MemoryPressureMonitorMac::GetCurrentPressureLevel() const {
   return MemoryPressureLevelForMacMemoryPressure(mac_memory_pressure);
 }
 
+}  // namespace mac
 }  // namespace base

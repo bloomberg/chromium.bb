@@ -10,6 +10,9 @@
 
 namespace base {
 
+// TODO(chrisha): Make this a concrete class with per-OS implementations rather
+// than an abstract base class.
+
 // Declares the interface for a MemoryPressureMonitor. There are multiple
 // OS specific implementations of this class. An instance of the memory
 // pressure observer is created at the process level, tracks memory usage, and

@@ -512,9 +512,8 @@ void OomPriorityManager::Observe(int type,
         // driven MemoryPressureMonitor will continue to produce timed events
         // on top. So the longer the cleanup phase takes, the more tabs will
         // get discarded in parallel.
-        base::MemoryPressureMonitorChromeOS* monitor =
-            static_cast<base::MemoryPressureMonitorChromeOS*>(
-                base::MemoryPressureMonitor::Get());
+        base::chromeos::MemoryPressureMonitor* monitor =
+            base::chromeos::MemoryPressureMonitor::Get();
         if (monitor)
           monitor->ScheduleEarlyCheck();
       }

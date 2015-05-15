@@ -2,50 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/memory_pressure_monitor_mac.h"
+#include "base/mac/memory_pressure_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+namespace mac {
 
-class TestMemoryPressureMonitorMac : public MemoryPressureMonitorMac {
+class TestMemoryPressureMonitor : public MemoryPressureMonitor {
  public:
-  using MemoryPressureMonitorMac::MemoryPressureLevelForMacMemoryPressure;
+  using MemoryPressureMonitor::MemoryPressureLevelForMacMemoryPressure;
 
-  TestMemoryPressureMonitorMac() { }
+  TestMemoryPressureMonitor() { }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestMemoryPressureMonitorMac);
+  DISALLOW_COPY_AND_ASSIGN(TestMemoryPressureMonitor);
 };
 
-TEST(TestMemoryPressureMonitorMac, MemoryPressureFromMacMemoryPressure) {
+TEST(MacMemoryPressureMonitorTest, MemoryPressureFromMacMemoryPressure) {
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            TestMemoryPressureMonitorMac::
+            TestMemoryPressureMonitor::
                 MemoryPressureLevelForMacMemoryPressure(
                     DISPATCH_MEMORYPRESSURE_NORMAL));
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            TestMemoryPressureMonitorMac::
+            TestMemoryPressureMonitor::
                 MemoryPressureLevelForMacMemoryPressure(
                     DISPATCH_MEMORYPRESSURE_WARN));
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
-            TestMemoryPressureMonitorMac::
+            TestMemoryPressureMonitor::
                 MemoryPressureLevelForMacMemoryPressure(
                     DISPATCH_MEMORYPRESSURE_CRITICAL));
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            TestMemoryPressureMonitorMac::
+            TestMemoryPressureMonitor::
                 MemoryPressureLevelForMacMemoryPressure(0));
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            TestMemoryPressureMonitorMac::
+            TestMemoryPressureMonitor::
                 MemoryPressureLevelForMacMemoryPressure(3));
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            TestMemoryPressureMonitorMac::
+            TestMemoryPressureMonitor::
                 MemoryPressureLevelForMacMemoryPressure(5));
   EXPECT_EQ(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            TestMemoryPressureMonitorMac::
+            TestMemoryPressureMonitor::
                 MemoryPressureLevelForMacMemoryPressure(-1));
 }
 
-TEST(TestMemoryPressureMonitorMac, CurrentMemoryPressure) {
-  TestMemoryPressureMonitorMac monitor;
+TEST(MacMemoryPressureMonitorTest, CurrentMemoryPressure) {
+  TestMemoryPressureMonitor monitor;
   MemoryPressureListener::MemoryPressureLevel memory_pressure =
       monitor.GetCurrentPressureLevel();
   EXPECT_TRUE(memory_pressure ==
@@ -56,4 +57,5 @@ TEST(TestMemoryPressureMonitorMac, CurrentMemoryPressure) {
                   MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
 }
 
+}  // namespace mac
 }  // namespace base

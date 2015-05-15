@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/chromeos/memory_pressure_monitor_chromeos.h"
+#include "base/chromeos/memory_pressure_monitor.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+namespace chromeos {
 
 namespace {
 
@@ -40,12 +41,11 @@ bool WasOnMemoryPressureCalled() {
 
 }  // namespace
 
-class TestMemoryPressureMonitor : public MemoryPressureMonitorChromeOS {
+class TestMemoryPressureMonitor : public MemoryPressureMonitor {
  public:
-  TestMemoryPressureMonitor() :
-    MemoryPressureMonitorChromeOS(
-        MemoryPressureMonitorChromeOS::THRESHOLD_DEFAULT),
-    memory_in_percent_override_(0) {
+  TestMemoryPressureMonitor()
+      : MemoryPressureMonitor(THRESHOLD_DEFAULT),
+        memory_in_percent_override_(0) {
     // Disable any timers which are going on and set a special memory reporting
     // function.
     StopObserving();
@@ -71,7 +71,7 @@ class TestMemoryPressureMonitor : public MemoryPressureMonitorChromeOS {
 
 // This test tests the various transition states from memory pressure, looking
 // for the correct behavior on event reposting as well as state updates.
-TEST(MemoryPressureMonitorChromeOSTest, CheckMemoryPressure) {
+TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
   base::MessageLoopForUI message_loop;
   scoped_ptr<TestMemoryPressureMonitor> monitor(
       new TestMemoryPressureMonitor);
@@ -161,4 +161,5 @@ TEST(MemoryPressureMonitorChromeOSTest, CheckMemoryPressure) {
   EXPECT_EQ(j, i);
 }
 
+}  // namespace chromeos
 }  // namespace base
