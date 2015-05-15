@@ -1875,6 +1875,7 @@ _paladin_important_boards = frozenset([
   'mipsel-o32-generic',
   'monroe',
   'nyan',
+  'oak',
   'panther',
   'panther_moblab',
   'parrot',
@@ -2678,9 +2679,7 @@ _AddGroupConfig('auron', 'auron', (
 _AddGroupConfig('auron-b', 'lulu', (
     'cid',
     'gandof',
-    ),
-    important=False,
-)
+))
 
 # veyron-based boards
 _AddGroupConfig('veyron', 'veyron_pinky', (
@@ -2710,13 +2709,17 @@ _AddGroupConfig('jecht', 'jecht', (
     'guado',
     'tidus',
     'rikku',
-    ),
-    important=False,
-)
+))
 
 # strago-based boards
 _AddGroupConfig('strago', 'strago', (
     'cyan',
+    ),
+    important=False,
+)
+
+# oak-based boards
+_AddGroupConfig('oak', 'oak', (
     ),
     important=False,
 )
@@ -3004,15 +3007,12 @@ _waterfall_config_map = {
       # Experimental Paladins
       'daisy_freon-paladin',
       'nyan_freon-paladin',
-      'oak-paladin',
       'tricky-paladin',
       'whirlwind-paladin',
       'x86-alex_freon-paladin',
 
       # Experimental Canaries (Group)
-      'auron-b-release-group',
       'daisy-freon-release-group',
-      'jecht-release-group',
       'peach-freon-release-group',
       'pineview-freon-release-group',
       'rambi-d-release-group',
@@ -3027,7 +3027,7 @@ _waterfall_config_map = {
       'daisy_winter-release',
       'kayle-release',
       'nyan_freon-release',
-      'oak-release',
+      'oak-release-group',
       'panther_moblab-release',
       'rush_ryu-release',
       'smaug-release',
