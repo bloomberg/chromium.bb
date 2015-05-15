@@ -389,7 +389,7 @@ def main(argv):
                     env.getone('CXX_EH_MODE') != 'zerocost' and
                     not env.getbool('ALLOW_NEXE_BUILD_ID') and
                     IsPortable())
-    still_need_expand_byval = IsPortable()
+    still_need_expand_byval = IsPortable() and env.getbool('STATIC')
     still_need_expand_varargs = (still_need_expand_byval and
                                  len(native_objects) == 0)
 
@@ -403,15 +403,18 @@ def main(argv):
       else:
         assert env.getone('CXX_EH_MODE') == 'none'
       opt_args.append(pre_simplify)
-    elif env.getone('CXX_EH_MODE') != 'zerocost':
-      # '-lowerinvoke' prevents use of C++ exception handling, which
-      # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
-      # landingpad blocks made unreachable by '-lowerinvoke'.
-      #
-      # We run this in order to remove 'resume' instructions,
-      # otherwise these are translated to calls to _Unwind_Resume(),
-      # which will not be available at native link time.
-      opt_args.append(['-lowerinvoke', '-simplifycfg'])
+    else:
+      if env.getone('CXX_EH_MODE') != 'zerocost':
+        # '-lowerinvoke' prevents use of C++ exception handling, which
+        # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
+        # landingpad blocks made unreachable by '-lowerinvoke'.
+        #
+        # We run this in order to remove 'resume' instructions,
+        # otherwise these are translated to calls to _Unwind_Resume(),
+        # which will not be available at native link time.
+        opt_args.append(['-lowerinvoke', '-simplifycfg'])
+      if still_need_expand_varargs:
+        opt_args.append(['-expand-varargs'])
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
       opt_args.append(env.get('OPT_FLAGS'))
@@ -431,8 +434,6 @@ def main(argv):
       # We may still need -expand-byval to match the PPAPI shim
       # calling convention.
       opt_args.append(['-expand-byval'])
-      if still_need_expand_varargs:
-        opt_args.append(['-expand-varargs'])
     if len(opt_args) != 0:
       if env.getbool('RUN_PASSES_SEPARATELY'):
         for i, group in enumerate(opt_args):
