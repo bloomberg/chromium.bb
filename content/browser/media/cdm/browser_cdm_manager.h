@@ -31,8 +31,6 @@ class BrowserCdm;
 
 namespace content {
 
-struct InitializeCdmParameters;
-
 // This class manages all CDM objects. It receives control operations from the
 // the render process, and forwards them to corresponding CDM object. Callbacks
 // from CDM objects are converted to IPCs and then sent to the render process.
