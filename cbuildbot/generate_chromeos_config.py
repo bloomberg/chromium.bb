@@ -336,7 +336,7 @@ _settings = dict(
     # Boolean that enables parameter --git-sync for upload_prebuilts.
     git_sync=False,
 
-    # A list of the child config groups, if applicable. See the add_group
+    # A list of the child config groups, if applicable. See the AddGroup
     # method.
     child_configs=[],
 
@@ -977,7 +977,7 @@ official = official_chrome.derive(
   chromeos_official=True,
 )
 
-_cros_sdk = _CONFIG.add_config(full_prebuilts, 'chromiumos-sdk',
+_cros_sdk = _CONFIG.AddConfig(full_prebuilts, 'chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
   boards=['x86-generic', 'arm-generic', 'amd64-generic', 'mipsel-o32-generic'],
@@ -1031,7 +1031,7 @@ internal_chromium_pfq = internal.derive(
   prebuilts=constants.PUBLIC,
 )
 
-_CONFIG.add_config(internal_chromium_pfq, 'master-chromium-pfq',
+_CONFIG.AddConfig(internal_chromium_pfq, 'master-chromium-pfq',
   boards=[],
   master=True,
   binhost_test=True,
@@ -1406,13 +1406,13 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
     boards: A set of boards to create configs for.
     name_suffix: A naming suffix. Configs will have names of the form
                  board-name_suffix.
-    **kwargs: Additional keyword arguments to be used in add_config.
+    **kwargs: Additional keyword arguments to be used in AddConfig.
   """
   for board in boards:
     config_name = '%s-%s' % (board, name_suffix)
     if config_name not in _CONFIG:
       base = config_lib.BuildConfig()
-      _CONFIG.add_config(config_base, config_name, base, _base_configs[board],
+      _CONFIG.AddConfig(config_base, config_name, base, _base_configs[board],
                          **kwargs)
 
 _chromium_pfq_important_boards = frozenset([
@@ -1448,12 +1448,12 @@ _AddFullConfigs()
 # These remaining chromium pfq configs have eccentricities that are easier to
 # create manually.
 
-_CONFIG.add_config(internal_chromium_pfq, 'amd64-generic-chromium-pfq',
+_CONFIG.AddConfig(internal_chromium_pfq, 'amd64-generic-chromium-pfq',
   _base_configs['amd64-generic'],
   disk_layout='2gb-rootfs',
 )
 
-_CONFIG.add_config(internal_chromium_pfq, 'amd64-generic_freon-chromium-pfq',
+_CONFIG.AddConfig(internal_chromium_pfq, 'amd64-generic_freon-chromium-pfq',
   _base_configs['amd64-generic_freon'],
   disk_layout='2gb-rootfs',
   vm_tests=[],
@@ -1469,33 +1469,33 @@ _chrome_pfq_important_boards = frozenset([
 
 
 # TODO(akeshet): Replace this with a config named x86-alex-chrome-pfq.
-_CONFIG.add_config(chrome_pfq, 'alex-chrome-pfq',
+_CONFIG.AddConfig(chrome_pfq, 'alex-chrome-pfq',
   _base_configs['x86-alex'],
 )
 
-_CONFIG.add_config(chrome_pfq, 'lumpy-chrome-pfq',
+_CONFIG.AddConfig(chrome_pfq, 'lumpy-chrome-pfq',
   _base_configs['lumpy'],
   afdo_generate=True,
   hw_tests=[HWTestAFDORecordTest()] + HWTestSharedPoolPFQ(),
 )
 
-_CONFIG.add_config(chrome_pfq, 'daisy_skate-chrome-pfq',
+_CONFIG.AddConfig(chrome_pfq, 'daisy_skate-chrome-pfq',
   _base_configs['daisy_skate'],
   hw_tests=HWTestSharedPoolPFQ(),
 )
 
-_CONFIG.add_config(chrome_pfq, 'falco-chrome-pfq',
+_CONFIG.AddConfig(chrome_pfq, 'falco-chrome-pfq',
   _base_configs['falco'],
   hw_tests=HWTestSharedPoolPFQ(),
 )
 
-_CONFIG.add_config(chrome_pfq, 'peach_pit-chrome-pfq',
+_CONFIG.AddConfig(chrome_pfq, 'peach_pit-chrome-pfq',
   _base_configs['peach_pit'],
   hw_tests=HWTestSharedPoolPFQ(),
   important=False,
 )
 
-_CONFIG.add_config(chrome_pfq, 'tricky-chrome-pfq',
+_CONFIG.AddConfig(chrome_pfq, 'tricky-chrome-pfq',
   _base_configs['tricky'],
   hw_tests=HWTestSharedPoolPFQ(),
   important=False,
@@ -1509,7 +1509,7 @@ _telemetry_boards = frozenset([
 
 _CreateConfigsForBoards(telemetry, _telemetry_boards, 'telemetry')
 
-_toolchain_major = _CONFIG.add_config(_cros_sdk, 'toolchain-major',
+_toolchain_major = _CONFIG.AddConfig(_cros_sdk, 'toolchain-major',
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
@@ -1517,7 +1517,7 @@ _toolchain_major = _CONFIG.add_config(_cros_sdk, 'toolchain-major',
   description='Test next major toolchain revision',
 )
 
-_toolchain_minor = _CONFIG.add_config(_cros_sdk, 'toolchain-minor',
+_toolchain_minor = _CONFIG.AddConfig(_cros_sdk, 'toolchain-minor',
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
@@ -1525,76 +1525,76 @@ _toolchain_minor = _CONFIG.add_config(_cros_sdk, 'toolchain-minor',
   description='Test next minor toolchain revision',
 )
 
-_CONFIG.add_config(incremental, 'x86-generic-asan',
+_CONFIG.AddConfig(incremental, 'x86-generic-asan',
   asan,
   boards=['x86-generic'],
   description='Build with Address Sanitizer (Clang)',
   trybot_list=True,
 )
 
-_CONFIG.add_config(chromium_info, 'x86-generic-tot-asan-informational',
+_CONFIG.AddConfig(chromium_info, 'x86-generic-tot-asan-informational',
   asan,
   boards=['x86-generic'],
   description='Full build with Address Sanitizer (Clang) on TOT',
 )
 
-_CONFIG.add_config(incremental, 'amd64-generic-asan',
+_CONFIG.AddConfig(incremental, 'amd64-generic-asan',
   asan,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang)',
   trybot_list=True,
 )
 
-_CONFIG.add_config(chromium_info, 'amd64-generic-tot-asan-informational',
+_CONFIG.AddConfig(chromium_info, 'amd64-generic-tot-asan-informational',
   asan,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang) on TOT',
 )
 
 incremental_beaglebone = incremental.derive(beaglebone)
-_CONFIG.add_config(incremental_beaglebone, 'beaglebone-incremental',
+_CONFIG.AddConfig(incremental_beaglebone, 'beaglebone-incremental',
   boards=['beaglebone'],
   trybot_list=True,
   description='Incremental Beaglebone Builder',
 )
 
-_CONFIG.add_raw_config('refresh-packages',
+_CONFIG.AddRawConfig('refresh-packages',
   boards=['x86-generic', 'arm-generic'],
   builder_class_name='misc_builders.RefreshPackagesBuilder',
   description='Check upstream Gentoo for package updates',
 )
 
-_CONFIG.add_config(incremental, 'x86-generic-incremental',
+_CONFIG.AddConfig(incremental, 'x86-generic-incremental',
   _base_configs['x86-generic'],
 )
 
-_CONFIG.add_config(incremental, 'daisy-incremental',
+_CONFIG.AddConfig(incremental, 'daisy-incremental',
   _base_configs['daisy'],
   config_lib.BuildConfig.delete_keys(internal),
   manifest=config_lib.BuildConfig.delete_key(),
   useflags=append_useflags(['-chrome_internal']),
 )
 
-_CONFIG.add_config(incremental, 'amd64-generic-incremental',
+_CONFIG.AddConfig(incremental, 'amd64-generic-incremental',
   _base_configs['amd64-generic'],
   # This builder runs on a VM, so it can't run VM tests.
   vm_tests=[],
 )
 
-_CONFIG.add_config(incremental, 'x32-generic-incremental',
+_CONFIG.AddConfig(incremental, 'x32-generic-incremental',
   _base_configs['x32-generic'],
   # This builder runs on a VM, so it can't run VM tests.
   vm_tests=[],
 )
 
-_CONFIG.add_config(paladin, 'x86-generic-asan-paladin',
+_CONFIG.AddConfig(paladin, 'x86-generic-asan-paladin',
   _base_configs['x86-generic'],
   asan,
   description='Paladin build with Address Sanitizer (Clang)',
   important=False,
 )
 
-_CONFIG.add_config(incremental, 'amd64-generic-asan-paladin',
+_CONFIG.AddConfig(incremental, 'amd64-generic-asan-paladin',
   _base_configs['amd64-generic'],
   asan,
   description='Paladin build with Address Sanitizer (Clang)',
@@ -1611,55 +1611,55 @@ _CreateConfigsForBoards(chrome_perf, _chrome_perf_boards, 'chrome-perf',
                         trybot_list=True)
 
 chromium_info_x86 = \
-_CONFIG.add_config(chromium_info, 'x86-generic-tot-chrome-pfq-informational',
+_CONFIG.AddConfig(chromium_info, 'x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
 )
 
 chromium_info_daisy = \
-_CONFIG.add_config(chromium_info, 'daisy-tot-chrome-pfq-informational',
+_CONFIG.AddConfig(chromium_info, 'daisy-tot-chrome-pfq-informational',
   non_testable_builder,
   boards=['daisy'],
 )
 
 chromium_info_amd64 = \
-_CONFIG.add_config(chromium_info, 'amd64-generic-tot-chrome-pfq-informational',
+_CONFIG.AddConfig(chromium_info, 'amd64-generic-tot-chrome-pfq-informational',
   boards=['amd64-generic'],
 )
 
-_CONFIG.add_config(chromium_info, 'x32-generic-tot-chrome-pfq-informational',
+_CONFIG.AddConfig(chromium_info, 'x32-generic-tot-chrome-pfq-informational',
   boards=['x32-generic'],
 )
 
 _CreateConfigsForBoards(telemetry_info, ['x86-generic', 'amd64-generic'],
                         'telem-chrome-pfq-informational')
 
-_CONFIG.add_config(chrome_info, 'alex-tot-chrome-pfq-informational',
+_CONFIG.AddConfig(chrome_info, 'alex-tot-chrome-pfq-informational',
   boards=['x86-alex'],
 )
 
-_CONFIG.add_config(chrome_info, 'lumpy-tot-chrome-pfq-informational',
+_CONFIG.AddConfig(chrome_info, 'lumpy-tot-chrome-pfq-informational',
   boards=['lumpy'],
 )
 
 # WebRTC configurations.
-_CONFIG.add_config(chrome_info, 'alex-webrtc-chrome-pfq-informational',
+_CONFIG.AddConfig(chrome_info, 'alex-webrtc-chrome-pfq-informational',
   boards=['x86-alex'],
 )
-_CONFIG.add_config(chrome_info, 'lumpy-webrtc-chrome-pfq-informational',
+_CONFIG.AddConfig(chrome_info, 'lumpy-webrtc-chrome-pfq-informational',
   boards=['lumpy'],
 )
-_CONFIG.add_config(chrome_info, 'daisy-webrtc-chrome-pfq-informational',
+_CONFIG.AddConfig(chrome_info, 'daisy-webrtc-chrome-pfq-informational',
   non_testable_builder,
   boards=['daisy'],
 )
-_CONFIG.add_config(chromium_info_x86, 'x86-webrtc-chromium-pfq-informational',
+_CONFIG.AddConfig(chromium_info_x86, 'x86-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
-_CONFIG.add_config(chromium_info_amd64,
+_CONFIG.AddConfig(chromium_info_amd64,
                    'amd64-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
-_CONFIG.add_config(chromium_info_daisy,
+_CONFIG.AddConfig(chromium_info_daisy,
                    'daisy-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
@@ -1701,7 +1701,7 @@ _CreateConfigsForBoards(internal_nowithdebug_paladin,
   important=False,
 )
 
-_CONFIG.add_config(internal_nowithdebug_paladin,
+_CONFIG.AddConfig(internal_nowithdebug_paladin,
                    'x86-mario-nowithdebug-paladin',
                    boards=['x86-mario'])
 
@@ -1761,7 +1761,7 @@ compile_only_pre_cq = unittest_only_pre_cq.derive(
   unittests=False,
 )
 
-_CONFIG.add_config(internal_paladin, constants.BRANCH_UTIL_CONFIG,
+_CONFIG.AddConfig(internal_paladin, constants.BRANCH_UTIL_CONFIG,
   boards=[],
   # Disable postsync_patch to prevent conflicting patches from being applied -
   # e.g., patches from 'master' branch being applied to a branch.
@@ -1783,7 +1783,7 @@ internal_incremental = internal.derive(
   description='Incremental Builds (internal)',
 )
 
-_CONFIG.add_config(internal_pfq_branch, 'lumpy-pre-flight-branch',
+_CONFIG.AddConfig(internal_pfq_branch, 'lumpy-pre-flight-branch',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   boards=['lumpy'],
@@ -1801,14 +1801,14 @@ _test_ap = internal.derive(
   vm_tests=[],
 )
 
-_CONFIG.add_group('test-ap-group',
-  _CONFIG.add_config(_test_ap, 'stumpy-test-ap', boards=['stumpy']),
-  _CONFIG.add_config(_test_ap, 'panther-test-ap', boards=['panther']),
+_CONFIG.AddGroup('test-ap-group',
+  _CONFIG.AddConfig(_test_ap, 'stumpy-test-ap', boards=['stumpy']),
+  _CONFIG.AddConfig(_test_ap, 'panther-test-ap', boards=['panther']),
 )
 
 ### Master paladin (CQ builder).
 
-_CONFIG.add_config(internal_paladin, 'master-paladin',
+_CONFIG.AddConfig(internal_paladin, 'master-paladin',
   boards=[],
   master=True,
   binhost_test=True,
@@ -1833,12 +1833,12 @@ _CONFIG.add_config(internal_paladin, 'master-paladin',
 # TODO(mtennant): This master-slave relationship should be specified
 # here in the configuration, rather than GetSlavesForMaster().
 # Something like the following:
-# master_paladin = _CONFIG.add_config(internal_paladin, ...)
-# master_paladin.AddSlave(_CONFIG.add_config(internal_paladin, ...))
+# master_paladin = _CONFIG.AddConfig(internal_paladin, ...)
+# master_paladin.AddSlave(_CONFIG.AddConfig(internal_paladin, ...))
 
 # Old sanity check builder. This has been replaced by wolf-tot-paladin.
 # TODO(dnj): Remove this once wolf-tot-paladin is removed from the waterfall.
-_CONFIG.add_config(internal_paladin, 'link-tot-paladin',
+_CONFIG.AddConfig(internal_paladin, 'link-tot-paladin',
   boards=['link'],
   do_not_apply_cq_patches=True,
   prebuilts=False,
@@ -1847,7 +1847,7 @@ _CONFIG.add_config(internal_paladin, 'link-tot-paladin',
 
 # Sanity check builder, part of the CQ but builds without the patches
 # under test.
-_CONFIG.add_config(internal_paladin, 'wolf-tot-paladin',
+_CONFIG.AddConfig(internal_paladin, 'wolf-tot-paladin',
   boards=['wolf'],
   do_not_apply_cq_patches=True,
   prebuilts=False,
@@ -1986,14 +1986,14 @@ def _CreatePaladinConfigs():
                             description=paladin['description'] + ' (internal)')
     else:
       customizations.update(prebuilts=constants.PUBLIC)
-    _CONFIG.add_config(paladin, config_name,
-                       customizations,
-                       base_config)
+    _CONFIG.AddConfig(paladin, config_name,
+                      customizations,
+                      base_config)
 
 _CreatePaladinConfigs()
 
 
-_CONFIG.add_config(internal_paladin, 'lumpy-incremental-paladin',
+_CONFIG.AddConfig(internal_paladin, 'lumpy-incremental-paladin',
   boards=['lumpy'],
   build_before_patching=True,
   chroot_replace=False,
@@ -2006,7 +2006,7 @@ _CONFIG.add_config(internal_paladin, 'lumpy-incremental-paladin',
 ### itself.
 external_brillo_paladin = paladin.derive(brillo)
 
-_CONFIG.add_config(external_brillo_paladin, 'panther_embedded-minimal-paladin',
+_CONFIG.AddConfig(external_brillo_paladin, 'panther_embedded-minimal-paladin',
   boards=['panther_embedded'],
   profile='minimal',
   trybot_list=True,
@@ -2014,12 +2014,12 @@ _CONFIG.add_config(external_brillo_paladin, 'panther_embedded-minimal-paladin',
 
 internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
 
-_CONFIG.add_config(internal_beaglebone_paladin, 'beaglebone-paladin',
+_CONFIG.AddConfig(internal_beaglebone_paladin, 'beaglebone-paladin',
   boards=['beaglebone'],
   trybot_list=True,
 )
 
-_CONFIG.add_config(internal_beaglebone_paladin, 'beaglebone_servo-paladin',
+_CONFIG.AddConfig(internal_beaglebone_paladin, 'beaglebone_servo-paladin',
   boards=['beaglebone_servo'],
   important=False,
 )
@@ -2063,7 +2063,7 @@ _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
 _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
 _CreateConfigsForBoards(compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
 
-_CONFIG.add_config(no_vmtest_pre_cq, constants.BINHOST_PRE_CQ,
+_CONFIG.AddConfig(no_vmtest_pre_cq, constants.BINHOST_PRE_CQ,
   internal,
   boards=[],
   binhost_test=True,
@@ -2071,40 +2071,40 @@ _CONFIG.add_config(no_vmtest_pre_cq, constants.BINHOST_PRE_CQ,
 
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 # TODO(davidjames): Update daisy_spring to build images again.
-_CONFIG.add_group('mixed-a-pre-cq',
+_CONFIG.AddGroup('mixed-a-pre-cq',
   # daisy_spring w/kernel 3.8.
   _CONFIG['daisy_spring-compile-only-pre-cq'],
   # lumpy w/kernel 3.8.
   _CONFIG['lumpy-compile-only-pre-cq'],
 )
 
-_CONFIG.add_group('mixed-b-pre-cq',
+_CONFIG.AddGroup('mixed-b-pre-cq',
   # arm64 w/kernel 3.14.
   _CONFIG['rush_ryu-compile-only-pre-cq'],
   # samus w/kernel 3.14.
   _CONFIG['samus-compile-only-pre-cq'],
 )
 
-_CONFIG.add_group('mixed-c-pre-cq',
+_CONFIG.AddGroup('mixed-c-pre-cq',
   # brillo
   _CONFIG['storm-compile-only-pre-cq'],
 )
 
-_CONFIG.add_group('external-mixed-pre-cq',
+_CONFIG.AddGroup('external-mixed-pre-cq',
   _CONFIG['x86-generic-no-vmtest-pre-cq'],
   _CONFIG['amd64-generic-no-vmtest-pre-cq'],
 )
 
-_CONFIG.add_group('kernel-3_14-a-pre-cq',
+_CONFIG.AddGroup('kernel-3_14-a-pre-cq',
   _CONFIG['x86-generic-no-vmtest-pre-cq'],
   _CONFIG['arm-generic-no-vmtest-pre-cq']
 )
 
-_CONFIG.add_group('kernel-3_14-b-pre-cq',
+_CONFIG.AddGroup('kernel-3_14-b-pre-cq',
   _CONFIG['storm-no-vmtest-pre-cq'],
 )
 
-_CONFIG.add_group('kernel-3_14-c-pre-cq',
+_CONFIG.AddGroup('kernel-3_14-c-pre-cq',
   _CONFIG['veyron_pinky-no-vmtest-pre-cq'],
   _CONFIG['rush_ryu-no-vmtest-pre-cq']
 )
@@ -2112,7 +2112,7 @@ _CONFIG.add_group('kernel-3_14-c-pre-cq',
 # TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
 # configs. Remove this config when no active CL has been screened
 # with this config.
-_CONFIG.add_group(constants.PRE_CQ_GROUP_CONFIG,
+_CONFIG.AddGroup(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
   _CONFIG['rambi-pre-cq'],
@@ -2123,9 +2123,9 @@ _CONFIG.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
   # after duck finishes BuildPackages.
-  _CONFIG.add_config(unittest_only_pre_cq, 'storm-pre-cq',
-                                  _base_configs['storm'],
-                                  build_packages_in_background=False),
+  _CONFIG.AddConfig(unittest_only_pre_cq, 'storm-pre-cq',
+                    _base_configs['storm'],
+                    build_packages_in_background=False),
 
   # samus w/kernel 3.14.
   _CONFIG['samus-compile-only-pre-cq'],
@@ -2137,7 +2137,7 @@ _CONFIG.add_group(constants.PRE_CQ_GROUP_CONFIG,
   _CONFIG['rush_ryu-compile-only-pre-cq'],
 )
 
-_CONFIG.add_config(internal_paladin, 'pre-cq-launcher',
+_CONFIG.AddConfig(internal_paladin, 'pre-cq-launcher',
   boards=[],
   build_type=constants.PRE_CQ_LAUNCHER_TYPE,
   description='Launcher for Pre-CQ builders',
@@ -2151,22 +2151,22 @@ _CONFIG.add_config(internal_paladin, 'pre-cq-launcher',
 )
 
 
-_CONFIG.add_config(internal_incremental, 'mario-incremental',
+_CONFIG.AddConfig(internal_incremental, 'mario-incremental',
   boards=['x86-mario'],
 )
 
-_CONFIG.add_config(internal_incremental, 'lakitu-incremental',
+_CONFIG.AddConfig(internal_incremental, 'lakitu-incremental',
   _base_configs['lakitu'],
 )
 
-_CONFIG.add_config(
+_CONFIG.AddConfig(
   _toolchain_major, 'internal-toolchain-major', internal, official,
   boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
   description=_toolchain_major['description'] + ' (internal)',
 )
 
-_CONFIG.add_config(
+_CONFIG.AddConfig(
   _toolchain_minor, 'internal-toolchain-minor', internal, official,
   boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
@@ -2217,7 +2217,7 @@ _grouped_variant_release = _release.derive(_grouped_variant_config)
 
 ### Master release config.
 
-_CONFIG.add_config(_release, 'master-release',
+_CONFIG.AddConfig(_release, 'master-release',
   boards=[],
   master=True,
   sync_chrome=False,
@@ -2229,11 +2229,11 @@ _CONFIG.add_config(_release, 'master-release',
 
 ### Release config groups.
 
-_CONFIG.add_group('x86-alex-release-group',
-  _CONFIG.add_config(_release, 'x86-alex-release',
+_CONFIG.AddGroup('x86-alex-release-group',
+  _CONFIG.AddConfig(_release, 'x86-alex-release',
     boards=['x86-alex'],
   ),
-  _CONFIG.add_config(_grouped_variant_release, 'x86-alex_he-release',
+  _CONFIG.AddConfig(_grouped_variant_release, 'x86-alex_he-release',
     boards=['x86-alex_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -2241,11 +2241,11 @@ _CONFIG.add_group('x86-alex-release-group',
   ),
 )
 
-_CONFIG.add_group('x86-zgb-release-group',
-  _CONFIG.add_config(_release, 'x86-zgb-release',
+_CONFIG.AddGroup('x86-zgb-release-group',
+  _CONFIG.AddConfig(_release, 'x86-zgb-release',
     boards=['x86-zgb'],
   ),
-  _CONFIG.add_config(_grouped_variant_release, 'x86-zgb_he-release',
+  _CONFIG.AddConfig(_grouped_variant_release, 'x86-zgb_he-release',
     boards=['x86-zgb_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -2296,11 +2296,11 @@ def _AddAFDOConfigs():
       use_config_name = '%s-%s-%s' % (board,
                                       config_lib.CONFIG_TYPE_RELEASE_AFDO,
                                       'use')
-      _CONFIG.add_group(
+      _CONFIG.AddGroup(
           config_name,
-          _CONFIG.add_config(release_afdo, generate_config_name,
-                             generate_config),
-          _CONFIG.add_config(release_afdo, use_config_name, use_config))
+          _CONFIG.AddConfig(release_afdo, generate_config_name,
+                            generate_config),
+          _CONFIG.AddConfig(release_afdo, use_config_name, use_config))
 
 _AddAFDOConfigs()
 
@@ -2314,14 +2314,14 @@ _critical_for_chrome_boards = frozenset([
 
 # bayleybay-release does not enable vm_tests or unittests due to the compiler
 # flags enabled for baytrail.
-_CONFIG.add_config(_release, 'bayleybay-release',
+_CONFIG.AddConfig(_release, 'bayleybay-release',
   boards=['bayleybay'],
   hw_tests=[],
   vm_tests=[],
   unittests=False,
 )
 
-_CONFIG.add_config(_release, 'beltino-release',
+_CONFIG.AddConfig(_release, 'beltino-release',
   boards=['beltino'],
   hw_tests=[],
   vm_tests=[],
@@ -2329,7 +2329,7 @@ _CONFIG.add_config(_release, 'beltino-release',
 
 # bayleybay-release does not enable vm_tests or unittests due to the compiler
 # flags enabled for baytrail.
-_CONFIG.add_config(_release, 'bobcat-release',
+_CONFIG.AddConfig(_release, 'bobcat-release',
   boards=['bobcat'],
   hw_tests=[],
   profile='minimal',
@@ -2338,33 +2338,33 @@ _CONFIG.add_config(_release, 'bobcat-release',
   signer_tests=False,
 )
 
-_CONFIG.add_config(_release, 'gizmo-release',
+_CONFIG.AddConfig(_release, 'gizmo-release',
   _base_configs['gizmo'],
   important=True,
   paygen=False,
   signer_tests=False,
 )
 
-_CONFIG.add_config(_release, 'samus-release',
+_CONFIG.AddConfig(_release, 'samus-release',
   _base_configs['samus'],
   important=True,
 )
 
 # Builder for non-freon 'stout' for test coverage (crbug.com/474713).
-_CONFIG.add_config(_release, 'stout-release',
+_CONFIG.AddConfig(_release, 'stout-release',
   _base_configs['stout'],
   important=True,
 )
 
 # Builder for non-freon 'quawks' for test coverage.
-_CONFIG.add_config(_release, 'quawks-release',
+_CONFIG.AddConfig(_release, 'quawks-release',
   _base_configs['quawks'],
   important=True,
 )
 
 ### Arm release configs.
 
-_CONFIG.add_config(_release, 'veyron_rialto-release',
+_CONFIG.AddConfig(_release, 'veyron_rialto-release',
   _base_configs['veyron_rialto'],
   # rialto does not use Chrome.
   sync_chrome=False,
@@ -2394,7 +2394,7 @@ def _AddReleaseConfigs():
 
 _AddReleaseConfigs()
 
-_CONFIG.add_config(_release, 'panther_embedded-minimal-release',
+_CONFIG.AddConfig(_release, 'panther_embedded-minimal-release',
   _base_configs['panther_embedded'],
   profile='minimal',
   important=True,
@@ -2407,24 +2407,24 @@ _beaglebone_release = _release.derive(beaglebone, paygen=False,
                                       signer_tests=False,
                                       images=['base', 'test'])
 
-_CONFIG.add_group('beaglebone-release-group',
-  _CONFIG.add_config(_beaglebone_release, 'beaglebone-release',
+_CONFIG.AddGroup('beaglebone-release-group',
+  _CONFIG.AddConfig(_beaglebone_release, 'beaglebone-release',
     boards=['beaglebone'],
   ),
-  _CONFIG.add_config(_beaglebone_release, 'beaglebone_servo-release',
+  _CONFIG.AddConfig(_beaglebone_release, 'beaglebone_servo-release',
     boards=['beaglebone_servo'],
     payload_image='base'
   ).derive(_grouped_variant_config),
   important=True,
 )
 
-_CONFIG.add_config(_release, 'kayle-release',
+_CONFIG.AddConfig(_release, 'kayle-release',
   _base_configs['kayle'],
   paygen=False,
   signer_tests=False,
 )
 
-_CONFIG.add_config(_release, 'cosmos-release',
+_CONFIG.AddConfig(_release, 'cosmos-release',
   _base_configs['cosmos'],
 
   paygen_skip_testing=True,
@@ -2432,7 +2432,7 @@ _CONFIG.add_config(_release, 'cosmos-release',
   signer_tests=False,
 )
 
-_CONFIG.add_config(_release, 'storm-release',
+_CONFIG.AddConfig(_release, 'storm-release',
   _base_configs['storm'],
 
   # Hw Lab can't test storm, yet.
@@ -2441,14 +2441,14 @@ _CONFIG.add_config(_release, 'storm-release',
   signer_tests=False
 )
 
-_CONFIG.add_config(_release, 'mipsel-o32-generic-release',
+_CONFIG.AddConfig(_release, 'mipsel-o32-generic-release',
   _base_configs['mipsel-o32-generic'],
   paygen_skip_delta_payloads=True,
   afdo_use=False,
   hw_tests=[],
 )
 
-_CONFIG.add_config(_release, 'stumpy_moblab-release',
+_CONFIG.AddConfig(_release, 'stumpy_moblab-release',
   _base_configs['stumpy_moblab'],
   images=['base', 'recovery', 'test'],
   paygen_skip_delta_payloads=True,
@@ -2466,7 +2466,7 @@ _CONFIG.add_config(_release, 'stumpy_moblab-release',
                               warn_only=True, num=1)],
 )
 
-_CONFIG.add_config(_release, 'panther_moblab-release',
+_CONFIG.AddConfig(_release, 'panther_moblab-release',
   _base_configs['panther_moblab'],
   images=['base', 'recovery', 'test'],
   paygen_skip_delta_payloads=True,
@@ -2481,7 +2481,7 @@ _CONFIG.add_config(_release, 'panther_moblab-release',
                                     warn_only=True, num=1)],
 )
 
-_CONFIG.add_config(_release, 'rush-release',
+_CONFIG.AddConfig(_release, 'rush-release',
   _base_configs['rush'],
   hw_tests=[],
   # This build doesn't generate signed images, so don't try to release them.
@@ -2489,12 +2489,12 @@ _CONFIG.add_config(_release, 'rush-release',
   signer_tests=False,
 )
 
-_CONFIG.add_config(_release, 'rush_ryu-release',
+_CONFIG.AddConfig(_release, 'rush_ryu-release',
   _base_configs['rush_ryu'],
   hw_tests=[],
 )
 
-_CONFIG.add_config(_release, 'whirlwind-release',
+_CONFIG.AddConfig(_release, 'whirlwind-release',
   _base_configs['whirlwind'],
   important=True,
   afdo_use=True,
@@ -2533,8 +2533,8 @@ def _AddGroupConfig(name, base_board, group_boards=None,
 
       config_name = '%s-%s-group' % (name, group)
       important = group == 'release' and kwargs.get('important', True)
-    _CONFIG.add_group(config_name, *configs, description=desc,
-                      important=important)
+    _CONFIG.AddGroup(config_name, *configs, description=desc,
+                     important=important)
 
 # pineview chipset boards
 _AddGroupConfig('pineview', 'x86-mario', (
@@ -2858,17 +2858,17 @@ _x86_depthcharge_firmware_boards = frozenset([
 def _AddFirmwareConfigs():
   """Add x86 and arm firmware configs."""
   for board in _firmware_boards:
-    _CONFIG.add_config(_firmware_release, '%s-%s' % (board,
-                                             config_lib.CONFIG_TYPE_FIRMWARE),
+    _CONFIG.AddConfig(_firmware_release,
+        '%s-%s' % (board, config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
     )
 
   for board in _x86_depthcharge_firmware_boards:
-    _CONFIG.add_config(_depthcharge_release,
+    _CONFIG.AddConfig(_depthcharge_release,
         '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
     )
-    _CONFIG.add_config(_depthcharge_full_internal,
+    _CONFIG.AddConfig(_depthcharge_full_internal,
         '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
                          config_lib.CONFIG_TYPE_FIRMWARE),
         _base_configs[board],
@@ -2879,13 +2879,13 @@ _AddFirmwareConfigs()
 
 # This is an example factory branch configuration for x86.
 # Modify it to match your factory branch.
-_CONFIG.add_config(_factory_release, 'x86-mario-factory',
+_CONFIG.AddConfig(_factory_release, 'x86-mario-factory',
   boards=['x86-mario'],
 )
 
 # This is an example factory branch configuration for arm.
 # Modify it to match your factory branch.
-_CONFIG.add_config(_factory_release, 'daisy-factory',
+_CONFIG.AddConfig(_factory_release, 'daisy-factory',
   non_testable_builder,
   boards=['daisy'],
 )
@@ -2931,19 +2931,19 @@ def _AddPayloadConfigs():
   # Generate a payloads trybot config for every board that generates payloads.
   for board in payload_boards:
     name = '%s-payloads' % board
-    _CONFIG.add_config(_payloads, name, boards=[board])
+    _CONFIG.AddConfig(_payloads, name, boards=[board])
 
 _AddPayloadConfigs()
 
 def _AddProjectSdkConfigs():
   for board in _project_sdk_boards:
     name = '%s-project-sdk' % board
-    _CONFIG.add_config(project_sdk, name, boards=[board])
+    _CONFIG.AddConfig(project_sdk, name, boards=[board])
 
 _AddProjectSdkConfigs()
 
 # LKGM builds don't work for tryjobs. Add this as a workaround, for now.
-_CONFIG.add_config(project_sdk,
+_CONFIG.AddConfig(project_sdk,
   'trybot-project-sdk',
   boards=['panther_embedded'],
 

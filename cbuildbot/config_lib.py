@@ -273,7 +273,7 @@ class Config(dict):
     # All settings must be documented.
     return BuildConfig(**self._defaults)
 
-  def add_config(self, config, name, *args, **kwargs):
+  def AddConfig(self, config, name, *args, **kwargs):
     """Derive and add the config to cbuildbot's usable config targets
 
     Args:
@@ -297,11 +297,11 @@ class Config(dict):
     # can derive from us without inheriting the defaults.
     return new_config
 
-  def add_raw_config(self, name, *args, **kwargs):
+  def AddRawConfig(self, name, *args, **kwargs):
     """Add a config containing only explicitly listed values (no defaults)."""
-    return self.add_config(BuildConfig(), name, *args, **kwargs)
+    return self.AddConfig(BuildConfig(), name, *args, **kwargs)
 
-  def add_group(self, name, *args, **kwargs):
+  def AddGroup(self, name, *args, **kwargs):
     """Create a new group of build configurations.
 
     Args:
@@ -316,4 +316,4 @@ class Config(dict):
       A new BuildConfig instance.
     """
     child_configs = [self.GetDefault().derive(x, grouped=True) for x in args]
-    return self.add_config(args[0], name, child_configs=child_configs, **kwargs)
+    return self.AddConfig(args[0], name, child_configs=child_configs, **kwargs)
