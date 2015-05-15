@@ -24,10 +24,11 @@ class URLRequestContextGetter;
 
 namespace policy {
 
+class AffiliatedCloudPolicyInvalidator;
 class AffiliatedInvalidationServiceProvider;
+class AffiliatedRemoteCommandsInvalidator;
 class ConsumerManagementService;
 class DeviceCloudPolicyInitializer;
-class AffiliatedCloudPolicyInvalidator;
 class DeviceLocalAccountPolicyService;
 class DeviceManagementService;
 struct EnrollmentConfig;
@@ -164,6 +165,8 @@ class BrowserPolicyConnectorChromeOS
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
   scoped_ptr<AffiliatedCloudPolicyInvalidator> device_cloud_policy_invalidator_;
+  scoped_ptr<AffiliatedRemoteCommandsInvalidator>
+      device_remote_commands_invalidator_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

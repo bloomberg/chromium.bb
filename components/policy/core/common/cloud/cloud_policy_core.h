@@ -50,6 +50,10 @@ class POLICY_EXPORT CloudPolicyCore {
 
     // Called before the core is disconnected.
     virtual void OnCoreDisconnecting(CloudPolicyCore* core) = 0;
+
+    // Called after the remote commands service is started. Defaults to be
+    // empty.
+    virtual void OnRemoteCommandsServiceStarted(CloudPolicyCore* core);
   };
 
   // |task_runner| is the runner for policy refresh tasks.

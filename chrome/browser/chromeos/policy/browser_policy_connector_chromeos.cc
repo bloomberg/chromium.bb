@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -198,6 +199,10 @@ void BrowserPolicyConnectorChromeOS::Init(
         enterprise_management::DeviceRegisterRequest::DEVICE,
         device_cloud_policy_manager_->core(),
         affiliated_invalidation_service_provider_.get()));
+    device_remote_commands_invalidator_.reset(
+        new AffiliatedRemoteCommandsInvalidator(
+            device_cloud_policy_manager_->core(),
+            affiliated_invalidation_service_provider_.get()));
   }
 
   SetTimezoneIfPolicyAvailable();

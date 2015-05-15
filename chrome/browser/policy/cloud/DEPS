@@ -38,7 +38,9 @@ specific_include_rules = {
     "+content/public/test",
   ],
 
-  r"cloud_policy_invalidator_unittest\.cc": [
+  r"(cloud_policy_invalidator_unittest|"
+  r"remote_commands_invalidator_unittest)"
+  r"\.cc": [
     "+chrome/browser/invalidation/fake_invalidation_service.h",
   ],
 }

@@ -855,6 +855,8 @@
         'browser/chromeos/policy/remote_commands/device_command_screenshot_job.h',
         'browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.cc',
         'browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h',
+        'browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.cc',
+        'browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.h',
         'browser/chromeos/policy/remote_commands/screenshot_delegate.cc',
         'browser/chromeos/policy/remote_commands/screenshot_delegate.h',
         'browser/chromeos/policy/server_backed_device_state.cc',

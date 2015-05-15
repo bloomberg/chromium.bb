@@ -970,6 +970,7 @@
     'chrome_unit_tests_configuration_policy_sources': [
       'browser/net/proxy_policy_handler_unittest.cc',
       'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
+      'browser/policy/cloud/remote_commands_invalidator_unittest.cc',
       'browser/policy/cloud/user_policy_signin_service_unittest.cc',
       'browser/policy/file_selection_dialogs_policy_handler_unittest.cc',
       'browser/policy/javascript_policy_handler_unittest.cc',
