@@ -292,6 +292,16 @@ void FileSelectHelper::DeleteTemporaryFiles() {
   temporary_files_.clear();
 }
 
+void FileSelectHelper::CleanUpOnRenderViewHostChange() {
+  if (!temporary_files_.empty()) {
+    DeleteTemporaryFiles();
+
+    // Now that the temporary files have been scheduled for deletion, there
+    // is no longer any reason to keep this instance around.
+    Release();
+  }
+}
+
 scoped_ptr<ui::SelectFileDialog::FileTypeInfo>
 FileSelectHelper::GetFileTypesFromAcceptType(
     const std::vector<base::string16>& accept_types) {
@@ -390,16 +400,11 @@ void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
   render_view_host_ = render_view_host;
   web_contents_ = web_contents;
   notification_registrar_.RemoveAll();
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                              content::Source<WebContents>(web_contents_));
+  content::WebContentsObserver::Observe(web_contents_);
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       content::Source<RenderWidgetHost>(render_view_host_));
-  notification_registrar_.Add(
-      this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<WebContents>(web_contents_));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -534,27 +539,19 @@ void FileSelectHelper::Observe(int type,
       render_view_host_ = NULL;
       break;
     }
-
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
-      DCHECK(content::Source<WebContents>(source).ptr() == web_contents_);
-      web_contents_ = NULL;
-    }
-
-    // Intentional fall through.
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED:
-      if (!temporary_files_.empty()) {
-        DeleteTemporaryFiles();
-
-        // Now that the temporary files have been scheduled for deletion, there
-        // is no longer any reason to keep this instance around.
-        Release();
-      }
-
-      break;
-
     default:
       NOTREACHED();
   }
+}
+
+void FileSelectHelper::RenderViewHostChanged(RenderViewHost* old_host,
+                                             RenderViewHost* new_host) {
+  CleanUpOnRenderViewHostChange();
+}
+
+void FileSelectHelper::WebContentsDestroyed() {
+  web_contents_ = nullptr;
+  CleanUpOnRenderViewHostChange();
 }
 
 // static

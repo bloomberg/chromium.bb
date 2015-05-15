@@ -112,13 +112,6 @@ enum NotificationType {
   // DEPRECATED: Use WebContentsObserver::RenderViewReady()
   NOTIFICATION_WEB_CONTENTS_CONNECTED,
 
-  // This notification is sent when a WebContents swaps its render view host
-  // with another one, possibly changing processes. The source is a
-  // Source<WebContents> with a pointer to the WebContents, details is a
-  // std::pair::<old RenderViewHost, new RenderViewHost>.
-  // DEPRECATED: Use WebContentsObserver::RenderViewHostChanged()
-  NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-
   // This message is sent after a WebContents is disconnected from the
   // renderer process.  The source is a Source<WebContents> with a pointer to
   // the WebContents (the pointer is usable).  No details are expected.

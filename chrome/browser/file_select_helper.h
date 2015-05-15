@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/file_chooser_params.h"
 #include "net/base/directory_lister.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -31,10 +32,10 @@ struct SelectedFileInfo;
 // This class handles file-selection requests coming from WebUI elements
 // (via the extensions::ExtensionHost class). It implements both the
 // initialisation and listener functions for file-selection dialogs.
-class FileSelectHelper
-    : public base::RefCountedThreadSafe<FileSelectHelper>,
-      public ui::SelectFileDialog::Listener,
-      public content::NotificationObserver {
+class FileSelectHelper : public base::RefCountedThreadSafe<FileSelectHelper>,
+                         public ui::SelectFileDialog::Listener,
+                         public content::WebContentsObserver,
+                         public content::NotificationObserver {
  public:
 
   // Show the file chooser dialog.
@@ -105,6 +106,11 @@ class FileSelectHelper
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // content::WebContentsObserver overrides.
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
+  void WebContentsDestroyed() override;
+
   void EnumerateDirectory(int request_id,
                           content::RenderViewHost* render_view_host,
                           const base::FilePath& path);
@@ -154,6 +160,9 @@ class FileSelectHelper
   // Schedules the deletion of the files in |temporary_files_| and clears the
   // vector.
   void DeleteTemporaryFiles();
+
+  // Cleans up when the RenderViewHost of our WebContents changes.
+  void CleanUpOnRenderViewHostChange();
 
   // Helper method to get allowed extensions for select file dialog from
   // the specified accept types as defined in the spec:

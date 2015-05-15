@@ -202,6 +202,31 @@ class RenderFrameHostDeletedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostDeletedObserver);
 };
 
+// This WebContents observer keep track of its RVH change.
+class RenderViewHostChangedObserver : public WebContentsObserver {
+ public:
+  RenderViewHostChangedObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents), host_changed_(false) {}
+
+  // WebContentsObserver.
+  void RenderViewHostChanged(RenderViewHost* old_host,
+                             RenderViewHost* new_host) override {
+    host_changed_ = true;
+  }
+
+  bool DidHostChange() {
+    bool host_changed = host_changed_;
+    Reset();
+    return host_changed;
+  }
+
+  void Reset() { host_changed_ = false; }
+
+ private:
+  bool host_changed_;
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostChangedObserver);
+};
+
 // This observer is used to check whether IPC messages are being filtered for
 // swapped out RenderFrameHost objects. It observes the plugin crash and favicon
 // update events, which the FilterMessagesWhileSwappedOut test simulates being
@@ -932,14 +957,11 @@ TEST_F(RenderFrameHostManagerTest, Init) {
 // Tests the Navigate function. We navigate three sites consecutively and check
 // how the pending/committed RenderViewHost are modified.
 TEST_F(RenderFrameHostManagerTest, Navigate) {
-  TestNotificationTracker notifications;
-
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                          Source<WebContents>(web_contents.get()));
+  RenderViewHostChangedObserver change_observer(web_contents.get());
 
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
   RenderFrameHostImpl* host = NULL;
@@ -996,7 +1018,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   EXPECT_TRUE(GetPendingFrameHost(manager));
   ASSERT_EQ(host, GetPendingFrameHost(manager));
 
-  notifications.Reset();
+  change_observer.Reset();
 
   // Commit.
   manager->DidNavigateFrame(GetPendingFrameHost(manager), true);
@@ -1006,9 +1028,8 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   // Check the pending RenderFrameHost has been committed.
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
-  // We should observe a notification.
-  EXPECT_TRUE(
-      notifications.Check1AndReset(NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+  // We should observe RVH changed event.
+  EXPECT_TRUE(change_observer.DidHostChange());
 }
 
 // Tests WebUI creation.
@@ -1612,8 +1633,6 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
 
 // Test that we reuse the same guest SiteInstance if we navigate across sites.
 TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
-  TestNotificationTracker notifications;
-
   GURL guest_url(std::string(kGuestScheme).append("://abc123"));
   SiteInstance* instance =
       SiteInstance::CreateForURL(browser_context(), guest_url);
@@ -1675,9 +1694,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   BeforeUnloadFiredWebContentsDelegate delegate;
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
+  RenderViewHostChangedObserver change_observer(web_contents.get());
   web_contents->SetDelegate(&delegate);
-  notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                          Source<WebContents>(web_contents.get()));
 
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 
@@ -1693,10 +1711,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   EXPECT_EQ(host, manager->current_frame_host());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
-  // We should observe a notification.
-  EXPECT_TRUE(
-      notifications.Check1AndReset(NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
-  notifications.Reset();
+  // We should observe RVH changed event.
+  EXPECT_TRUE(change_observer.DidHostChange());
 
   // Commit.
   manager->DidNavigateFrame(host, true);

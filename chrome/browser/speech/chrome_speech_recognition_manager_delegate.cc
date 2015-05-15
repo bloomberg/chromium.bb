@@ -18,9 +18,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -28,6 +25,7 @@
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -137,8 +135,7 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
 // There is no restriction on the constructor, however this class must be
 // destroyed on the UI thread, due to the NotificationRegistrar dependency.
 class ChromeSpeechRecognitionManagerDelegate::TabWatcher
-    : public base::RefCountedThreadSafe<TabWatcher>,
-      public content::NotificationObserver {
+    : public base::RefCountedThreadSafe<TabWatcher> {
  public:
   typedef base::Callback<void(int render_process_id, int render_view_id)>
       TabClosedCallback;
@@ -168,96 +165,91 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
     if (!web_contents)
       return;
 
-    // Avoid multiple registrations on |registrar_| for the same |web_contents|.
+    // Avoid multiple registrations for the same |web_contents|.
     if (FindWebContents(web_contents) !=  registered_web_contents_.end()) {
       return;
     }
-    registered_web_contents_.push_back(
-        WebContentsInfo(web_contents, render_process_id, render_view_id));
-
-    // Lazy initialize the registrar.
-    if (!registrar_.get())
-      registrar_.reset(new content::NotificationRegistrar());
-
-    registrar_->Add(this,
-                    content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                    content::Source<WebContents>(web_contents));
-    registrar_->Add(this,
-                    content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                    content::Source<WebContents>(web_contents));
+    registered_web_contents_.push_back(new WebContentsTracker(
+        web_contents, base::Bind(&TabWatcher::OnTabClosed,
+                                 // |this| outlives WebContentsTracker.
+                                 base::Unretained(this), web_contents),
+        render_process_id, render_view_id));
   }
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED ||
-           type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED);
-
-    WebContents* web_contents = content::Source<WebContents>(source).ptr();
-    std::vector<WebContentsInfo>::iterator iter = FindWebContents(web_contents);
+  void OnTabClosed(content::WebContents* web_contents) {
+    ScopedVector<WebContentsTracker>::iterator iter =
+        FindWebContents(web_contents);
     DCHECK(iter != registered_web_contents_.end());
-    int render_process_id = iter->render_process_id;
-    int render_view_id = iter->render_view_id;
+    int render_process_id = (*iter)->render_process_id();
+    int render_view_id = (*iter)->render_view_id();
     registered_web_contents_.erase(iter);
-
-    registrar_->Remove(this,
-                       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                       content::Source<WebContents>(web_contents));
-    registrar_->Remove(this,
-                       content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                       content::Source<WebContents>(web_contents));
 
     tab_closed_callback_.Run(render_process_id, render_view_id);
   }
 
  private:
-  struct WebContentsInfo {
-    WebContentsInfo(content::WebContents* web_contents,
-                    int render_process_id,
-                    int render_view_id)
-        : web_contents(web_contents),
-          render_process_id(render_process_id),
-          render_view_id(render_view_id) {}
+  class WebContentsTracker : public content::WebContentsObserver {
+   public:
+    WebContentsTracker(content::WebContents* web_contents,
+                       const base::Closure& finished_callback,
+                       int render_process_id,
+                       int render_view_id)
+        : content::WebContentsObserver(web_contents),
+          finished_callback_(finished_callback),
+          render_process_id_(render_process_id),
+          render_view_id_(render_view_id) {}
 
-    ~WebContentsInfo() {}
+    ~WebContentsTracker() override {}
 
-    content::WebContents* web_contents;
-    int render_process_id;
-    int render_view_id;
+    int render_process_id() const { return render_process_id_; }
+    int render_view_id() const { return render_view_id_; }
+
+   private:
+    // content::WebContentsObserver overrides.
+    void WebContentsDestroyed() override {
+      Observe(nullptr);
+      finished_callback_.Run();
+      // NOTE: We are deleted now.
+    }
+    void RenderViewHostChanged(content::RenderViewHost* old_host,
+                               content::RenderViewHost* new_host) override {
+      Observe(nullptr);
+      finished_callback_.Run();
+      // NOTE: We are deleted now.
+    }
+
+    const base::Closure finished_callback_;
+    const int render_process_id_;
+    const int render_view_id_;
   };
 
   friend class base::RefCountedThreadSafe<TabWatcher>;
 
-  ~TabWatcher() override {
+  ~TabWatcher() {
     // Must be destroyed on the UI thread due to |registrar_| non thread-safety.
+    // TODO(lazyboy): Do we still need this?
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
   // Helper function to find the iterator in |registered_web_contents_| which
   // contains |web_contents|.
-  std::vector<WebContentsInfo>::iterator FindWebContents(
+  ScopedVector<WebContentsTracker>::iterator FindWebContents(
       content::WebContents* web_contents) {
-    for (std::vector<WebContentsInfo>::iterator i(
-         registered_web_contents_.begin());
+    for (ScopedVector<WebContentsTracker>::iterator i(
+             registered_web_contents_.begin());
          i != registered_web_contents_.end(); ++i) {
-      if (i->web_contents == web_contents)
+      if ((*i)->web_contents() == web_contents)
         return i;
     }
 
     return registered_web_contents_.end();
   }
 
-  // Lazy-initialized and used on the UI thread to handle web contents
-  // notifications (tab closing).
-  scoped_ptr<content::NotificationRegistrar> registrar_;
-
   // Keeps track of which WebContent(s) have been registered, in order to avoid
-  // double registrations on |registrar_| and to pass the correct render
+  // double registrations on WebContentsObserver and to pass the correct render
   // process id and render view id to |tab_closed_callback_| after the process
   // has gone away.
-  std::vector<WebContentsInfo> registered_web_contents_;
+  ScopedVector<WebContentsTracker> registered_web_contents_;
 
   // Callback used to notify, on the thread specified by |callback_thread_| the
   // closure of a registered tab.

@@ -3347,14 +3347,6 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     RenderViewHostChanged(old_host, new_host));
 
-  // TODO(avi): Remove. http://crbug.com/170921
-  std::pair<RenderViewHost*, RenderViewHost*> details =
-      std::make_pair(old_host, new_host);
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<WebContents>(this),
-      Details<std::pair<RenderViewHost*, RenderViewHost*> >(&details));
-
   // Ensure that the associated embedder gets cleared after a RenderViewHost
   // gets swapped, so we don't reuse the same embedder next time a
   // RenderViewHost is attached to this WebContents.
