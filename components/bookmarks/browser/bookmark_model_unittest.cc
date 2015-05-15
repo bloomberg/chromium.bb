@@ -103,6 +103,110 @@ void SwapDateAdded(BookmarkNode* n1, BookmarkNode* n2) {
   n2->set_date_added(tmp);
 }
 
+// See comment in PopulateNodeFromString.
+using TestNode = ui::TreeNodeWithValue<BookmarkNode::Type>;
+
+// Does the work of PopulateNodeFromString. index gives the index of the current
+// element in description to process.
+void PopulateNodeImpl(const std::vector<std::string>& description,
+                      size_t* index,
+                      TestNode* parent) {
+  while (*index < description.size()) {
+    const std::string& element = description[*index];
+    (*index)++;
+    if (element == "[") {
+      // Create a new folder and recurse to add all the children.
+      // Folders are given a unique named by way of an ever increasing integer
+      // value. The folders need not have a name, but one is assigned to help
+      // in debugging.
+      static int next_folder_id = 1;
+      TestNode* new_node = new TestNode(base::IntToString16(next_folder_id++),
+                                        BookmarkNode::FOLDER);
+      parent->Add(new_node, parent->child_count());
+      PopulateNodeImpl(description, index, new_node);
+    } else if (element == "]") {
+      // End the current folder.
+      return;
+    } else {
+      // Add a new URL.
+
+      // All tokens must be space separated. If there is a [ or ] in the name it
+      // likely means a space was forgotten.
+      DCHECK(element.find('[') == std::string::npos);
+      DCHECK(element.find(']') == std::string::npos);
+      parent->Add(new TestNode(base::UTF8ToUTF16(element), BookmarkNode::URL),
+                  parent->child_count());
+    }
+  }
+}
+
+// Creates and adds nodes to parent based on description. description consists
+// of the following tokens (all space separated):
+//   [ : creates a new USER_FOLDER node. All elements following the [ until the
+//       next balanced ] is encountered are added as children to the node.
+//   ] : closes the last folder created by [ so that any further nodes are added
+//       to the current folders parent.
+//   text: creates a new URL node.
+// For example, "a [b] c" creates the following nodes:
+//   a 1 c
+//     |
+//     b
+// In words: a node of type URL with the title a, followed by a folder node with
+// the title 1 having the single child of type url with name b, followed by
+// the url node with the title c.
+//
+// NOTE: each name must be unique, and folders are assigned a unique title by
+// way of an increasing integer.
+void PopulateNodeFromString(const std::string& description, TestNode* parent) {
+  std::vector<std::string> elements;
+  base::SplitStringAlongWhitespace(description, &elements);
+  size_t index = 0;
+  PopulateNodeImpl(elements, &index, parent);
+}
+
+// Populates the BookmarkNode with the children of parent.
+void PopulateBookmarkNode(TestNode* parent,
+                          BookmarkModel* model,
+                          const BookmarkNode* bb_node) {
+  for (int i = 0; i < parent->child_count(); ++i) {
+    TestNode* child = parent->GetChild(i);
+    if (child->value == BookmarkNode::FOLDER) {
+      const BookmarkNode* new_bb_node =
+          model->AddFolder(bb_node, i, child->GetTitle());
+      PopulateBookmarkNode(child, model, new_bb_node);
+    } else {
+      model->AddURL(bb_node, i, child->GetTitle(),
+                    GURL("http://" + base::UTF16ToASCII(child->GetTitle())));
+    }
+  }
+}
+
+// Verifies the contents of the bookmark bar node match the contents of the
+// TestNode.
+void VerifyModelMatchesNode(TestNode* expected, const BookmarkNode* actual) {
+  ASSERT_EQ(expected->child_count(), actual->child_count());
+  for (int i = 0; i < expected->child_count(); ++i) {
+    TestNode* expected_child = expected->GetChild(i);
+    const BookmarkNode* actual_child = actual->GetChild(i);
+    ASSERT_EQ(expected_child->GetTitle(), actual_child->GetTitle());
+    if (expected_child->value == BookmarkNode::FOLDER) {
+      ASSERT_TRUE(actual_child->type() == BookmarkNode::FOLDER);
+      // Recurse throught children.
+      VerifyModelMatchesNode(expected_child, actual_child);
+    } else {
+      // No need to check the URL, just the title is enough.
+      ASSERT_TRUE(actual_child->is_url());
+    }
+  }
+}
+
+void VerifyNoDuplicateIDs(BookmarkModel* model) {
+  ui::TreeNodeIterator<const BookmarkNode> it(model->root_node());
+  base::hash_set<int64> ids;
+  while (it.has_next())
+    ASSERT_TRUE(ids.insert(it.Next()->id()).second);
+}
+
 class BookmarkModelTest : public testing::Test,
                           public BookmarkModelObserver {
  public:
@@ -826,165 +930,6 @@ TEST_F(BookmarkModelTest, HasBookmarks) {
   EXPECT_TRUE(model_->HasBookmarks());
 }
 
-// See comment in PopulateNodeFromString.
-typedef ui::TreeNodeWithValue<BookmarkNode::Type> TestNode;
-
-// Does the work of PopulateNodeFromString. index gives the index of the current
-// element in description to process.
-void PopulateNodeImpl(const std::vector<std::string>& description,
-                      size_t* index,
-                      TestNode* parent) {
-  while (*index < description.size()) {
-    const std::string& element = description[*index];
-    (*index)++;
-    if (element == "[") {
-      // Create a new folder and recurse to add all the children.
-      // Folders are given a unique named by way of an ever increasing integer
-      // value. The folders need not have a name, but one is assigned to help
-      // in debugging.
-      static int next_folder_id = 1;
-      TestNode* new_node =
-          new TestNode(base::IntToString16(next_folder_id++),
-                       BookmarkNode::FOLDER);
-      parent->Add(new_node, parent->child_count());
-      PopulateNodeImpl(description, index, new_node);
-    } else if (element == "]") {
-      // End the current folder.
-      return;
-    } else {
-      // Add a new URL.
-
-      // All tokens must be space separated. If there is a [ or ] in the name it
-      // likely means a space was forgotten.
-      DCHECK(element.find('[') == std::string::npos);
-      DCHECK(element.find(']') == std::string::npos);
-      parent->Add(new TestNode(base::UTF8ToUTF16(element), BookmarkNode::URL),
-                  parent->child_count());
-    }
-  }
-}
-
-// Creates and adds nodes to parent based on description. description consists
-// of the following tokens (all space separated):
-//   [ : creates a new USER_FOLDER node. All elements following the [ until the
-//       next balanced ] is encountered are added as children to the node.
-//   ] : closes the last folder created by [ so that any further nodes are added
-//       to the current folders parent.
-//   text: creates a new URL node.
-// For example, "a [b] c" creates the following nodes:
-//   a 1 c
-//     |
-//     b
-// In words: a node of type URL with the title a, followed by a folder node with
-// the title 1 having the single child of type url with name b, followed by
-// the url node with the title c.
-//
-// NOTE: each name must be unique, and folders are assigned a unique title by
-// way of an increasing integer.
-void PopulateNodeFromString(const std::string& description, TestNode* parent) {
-  std::vector<std::string> elements;
-  base::SplitStringAlongWhitespace(description, &elements);
-  size_t index = 0;
-  PopulateNodeImpl(elements, &index, parent);
-}
-
-// Populates the BookmarkNode with the children of parent.
-void PopulateBookmarkNode(TestNode* parent,
-                          BookmarkModel* model,
-                          const BookmarkNode* bb_node) {
-  for (int i = 0; i < parent->child_count(); ++i) {
-    TestNode* child = parent->GetChild(i);
-    if (child->value == BookmarkNode::FOLDER) {
-      const BookmarkNode* new_bb_node =
-          model->AddFolder(bb_node, i, child->GetTitle());
-      PopulateBookmarkNode(child, model, new_bb_node);
-    } else {
-      model->AddURL(bb_node, i, child->GetTitle(),
-          GURL("http://" + base::UTF16ToASCII(child->GetTitle())));
-    }
-  }
-}
-
-// Test class that creates a BookmarkModel with a real history backend.
-class BookmarkModelTestWithProfile : public testing::Test {
- public:
-  BookmarkModelTestWithProfile() {}
-
- protected:
-  // Verifies the contents of the bookmark bar node match the contents of the
-  // TestNode.
-  void VerifyModelMatchesNode(TestNode* expected, const BookmarkNode* actual) {
-    ASSERT_EQ(expected->child_count(), actual->child_count());
-    for (int i = 0; i < expected->child_count(); ++i) {
-      TestNode* expected_child = expected->GetChild(i);
-      const BookmarkNode* actual_child = actual->GetChild(i);
-      ASSERT_EQ(expected_child->GetTitle(), actual_child->GetTitle());
-      if (expected_child->value == BookmarkNode::FOLDER) {
-        ASSERT_TRUE(actual_child->type() == BookmarkNode::FOLDER);
-        // Recurse throught children.
-        VerifyModelMatchesNode(expected_child, actual_child);
-        if (HasFatalFailure())
-          return;
-      } else {
-        // No need to check the URL, just the title is enough.
-        ASSERT_TRUE(actual_child->is_url());
-      }
-    }
-  }
-
-  void VerifyNoDuplicateIDs(BookmarkModel* model) {
-    ui::TreeNodeIterator<const BookmarkNode> it(model->root_node());
-    base::hash_set<int64> ids;
-    while (it.has_next())
-      ASSERT_TRUE(ids.insert(it.Next()->id()).second);
-  }
-
-  TestBookmarkClient client_;
-  scoped_ptr<BookmarkModel> model_;
-};
-
-// Creates a set of nodes in the bookmark bar model, then recreates the
-// bookmark bar model which triggers loading from the db and checks the loaded
-// structure to make sure it is what we first created.
-TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
-  struct TestData {
-    // Structure of the children of the bookmark bar model node.
-    const std::string bbn_contents;
-    // Structure of the children of the other node.
-    const std::string other_contents;
-    // Structure of the children of the synced node.
-    const std::string mobile_contents;
-  } data[] = {
-    // See PopulateNodeFromString for a description of these strings.
-    { "", "" },
-    { "a", "b" },
-    { "a [ b ]", "" },
-    { "", "[ b ] a [ c [ d e [ f ] ] ]" },
-    { "a [ b ]", "" },
-    { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
-  };
-  for (size_t i = 0; i < arraysize(data); ++i) {
-    model_ = client_.CreateModel();
-
-    TestNode bbn;
-    PopulateNodeFromString(data[i].bbn_contents, &bbn);
-    PopulateBookmarkNode(&bbn, model_.get(), model_->bookmark_bar_node());
-
-    TestNode other;
-    PopulateNodeFromString(data[i].other_contents, &other);
-    PopulateBookmarkNode(&other, model_.get(), model_->other_node());
-
-    TestNode mobile;
-    PopulateNodeFromString(data[i].mobile_contents, &mobile);
-    PopulateBookmarkNode(&mobile, model_.get(), model_->mobile_node());
-
-    VerifyModelMatchesNode(&bbn, model_->bookmark_bar_node());
-    VerifyModelMatchesNode(&other, model_->other_node());
-    VerifyModelMatchesNode(&mobile, model_->mobile_node());
-    VerifyNoDuplicateIDs(model_.get());
-  }
-}
-
 // http://crbug.com/450464
 TEST_F(BookmarkModelTest, DISABLED_Sort) {
   // Populate the bookmark bar node with nodes for 'B', 'a', 'd' and 'C'.
@@ -1191,6 +1136,49 @@ TEST(BookmarkNodeTest, NodeMetaInfo) {
   EXPECT_FALSE(node.GetMetaInfo("key2.subkey2", &out_value));
   EXPECT_FALSE(node.GetMetaInfo("key2.subkey2.leaf", &out_value));
   EXPECT_FALSE(node.GetMetaInfoMap());
+}
+
+// Creates a set of nodes in the bookmark model, and checks that the loaded
+// structure is what we first created.
+TEST(BookmarkModelTest2, CreateAndRestore) {
+  struct TestData {
+    // Structure of the children of the bookmark model node.
+    const std::string bbn_contents;
+    // Structure of the children of the other node.
+    const std::string other_contents;
+    // Structure of the children of the synced node.
+    const std::string mobile_contents;
+  } data[] = {
+    // See PopulateNodeFromString for a description of these strings.
+    { "", "" },
+    { "a", "b" },
+    { "a [ b ]", "" },
+    { "", "[ b ] a [ c [ d e [ f ] ] ]" },
+    { "a [ b ]", "" },
+    { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
+  };
+  TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> model;
+  for (size_t i = 0; i < arraysize(data); ++i) {
+    model = client.CreateModel();
+
+    TestNode bbn;
+    PopulateNodeFromString(data[i].bbn_contents, &bbn);
+    PopulateBookmarkNode(&bbn, model.get(), model->bookmark_bar_node());
+
+    TestNode other;
+    PopulateNodeFromString(data[i].other_contents, &other);
+    PopulateBookmarkNode(&other, model.get(), model->other_node());
+
+    TestNode mobile;
+    PopulateNodeFromString(data[i].mobile_contents, &mobile);
+    PopulateBookmarkNode(&mobile, model.get(), model->mobile_node());
+
+    VerifyModelMatchesNode(&bbn, model->bookmark_bar_node());
+    VerifyModelMatchesNode(&other, model->other_node());
+    VerifyModelMatchesNode(&mobile, model->mobile_node());
+    VerifyNoDuplicateIDs(model.get());
+  }
 }
 
 }  // namespace
