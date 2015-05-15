@@ -31,11 +31,38 @@
 #include "config.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPublicSuffixList.h"
+#include <url/third_party/mozilla/url_parse.h>
+#include <url/url_canon.h>
 
 namespace blink {
+
+namespace {
+
+// TODO(mkwst): This basically replicates GURL::HostIsIPAddress. If/when
+// we re-evaluate everything after merging the Blink and Chromium
+// repositories, perhaps we can just use that directly.
+bool HostIsIPAddress(const String& host)
+{
+    if (host.isEmpty())
+        return false;
+
+    String protocol("https://");
+    KURL url(KURL(), protocol + host + "/");
+    if (!url.isValid())
+        return false;
+
+    url::RawCanonOutputT<char, 128> ignoredOutput;
+    url::CanonHostInfo hostInfo;
+    url::Component hostComponent(protocol.length(), host.length());
+    url::CanonicalizeIPAddress(url.string().utf8().data(), hostComponent, &ignoredOutput, &hostInfo);
+    return hostInfo.IsIPAddress();
+}
+
+}
 
 OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting subdomainSetting, IPAddressSetting ipAddressSetting)
     : m_protocol(protocol.lower())
@@ -46,8 +73,7 @@ OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host,
 {
     ASSERT(subdomainSetting == AllowSubdomains || subdomainSetting == DisallowSubdomains);
 
-    // Assume that any host that ends with a digit is trying to be an IP address.
-    m_hostIsIPAddress = !m_host.isEmpty() && isASCIIDigit(m_host[m_host.length() - 1]);
+    m_hostIsIPAddress = HostIsIPAddress(host);
 
     // Look for top-level domains, either with or without an additional dot.
     if (!m_hostIsIPAddress) {

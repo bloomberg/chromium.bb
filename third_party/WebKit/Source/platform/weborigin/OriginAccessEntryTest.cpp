@@ -80,5 +80,171 @@ TEST(OriginAccessEntryTest, PublicSuffixListTest)
     blink::Platform::shutdown();
 }
 
+TEST(OriginAccessEntryTest, AllowSubdomainsTest)
+{
+    struct TestCase {
+        const char* protocol;
+        const char* host;
+        const char* origin;
+        OriginAccessEntry::MatchResult expected;
+    } inputs[] = {
+        { "http", "example.com", "http://example.com/", OriginAccessEntry::MatchesOrigin },
+        { "http", "example.com", "http://www.example.com/", OriginAccessEntry::MatchesOrigin },
+        { "http", "example.com", "http://www.www.example.com/", OriginAccessEntry::MatchesOrigin },
+        { "http", "com", "http://example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix },
+        { "http", "com", "http://www.example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix },
+        { "http", "com", "http://www.www.example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix },
+        { "https", "example.com", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "https", "example.com", "http://www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "https", "example.com", "http://www.www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "example.com", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "", "http://example.com/", OriginAccessEntry::MatchesOrigin },
+        { "http", "", "http://beispiel.de/", OriginAccessEntry::MatchesOrigin },
+        { "https", "", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin },
+    };
+
+    // Initialize a PSL mock that whitelists any three-letter label as a TLD ('com', 'org', 'net', etc).
+    OriginAccessEntryTestPlatform platform;
+    blink::Platform::initialize(&platform);
+
+    for (const auto& test : inputs) {
+        SCOPED_TRACE(testing::Message() << "Host: " << test.host << ", Origin: " << test.origin);
+        RefPtr<SecurityOrigin> originToTest = SecurityOrigin::createFromString(test.origin);
+        OriginAccessEntry entry1(test.protocol, test.host, OriginAccessEntry::AllowSubdomains, OriginAccessEntry::TreatIPAddressAsIPAddress);
+        EXPECT_EQ(test.expected, entry1.matchesOrigin(*originToTest));
+
+        OriginAccessEntry entry2(test.protocol, test.host, OriginAccessEntry::AllowSubdomains, OriginAccessEntry::TreatIPAddressAsDomain);
+        EXPECT_EQ(test.expected, entry2.matchesOrigin(*originToTest));
+    }
+
+    blink::Platform::shutdown();
+}
+
+TEST(OriginAccessEntryTest, DisallowSubdomainsTest)
+{
+    struct TestCase {
+        const char* protocol;
+        const char* host;
+        const char* origin;
+        OriginAccessEntry::MatchResult expected;
+    } inputs[] = {
+        { "http", "example.com", "http://example.com/", OriginAccessEntry::MatchesOrigin },
+        { "http", "example.com", "http://www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "example.com", "http://www.www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "com", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "com", "http://www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "com", "http://www.www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "https", "example.com", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "https", "example.com", "http://www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "https", "example.com", "http://www.www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "example.com", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "https", "", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin },
+    };
+
+    // Initialize a PSL mock that whitelists any three-letter label as a TLD ('com', 'org', 'net', etc).
+    OriginAccessEntryTestPlatform platform;
+    blink::Platform::initialize(&platform);
+
+    for (const auto& test : inputs) {
+        SCOPED_TRACE(testing::Message() << "Host: " << test.host << ", Origin: " << test.origin);
+        RefPtr<SecurityOrigin> originToTest = SecurityOrigin::createFromString(test.origin);
+        OriginAccessEntry entry1(test.protocol, test.host, OriginAccessEntry::DisallowSubdomains, OriginAccessEntry::TreatIPAddressAsIPAddress);
+        EXPECT_EQ(test.expected, entry1.matchesOrigin(*originToTest));
+
+        OriginAccessEntry entry2(test.protocol, test.host, OriginAccessEntry::DisallowSubdomains, OriginAccessEntry::TreatIPAddressAsDomain);
+        EXPECT_EQ(test.expected, entry2.matchesOrigin(*originToTest));
+    }
+
+    blink::Platform::shutdown();
+}
+
+TEST(OriginAccessEntryTest, IPAddressTest)
+{
+    struct TestCase {
+        const char* protocol;
+        const char* host;
+        bool isIPAddress;
+    } inputs[] = {
+        { "http", "1.1.1.1", true },
+        { "http", "1.1.1.1.1", false },
+        { "http", "example.com", false },
+        { "http", "hostname.that.ends.with.a.number1", false },
+        { "http", "2001:db8::1", false },
+        { "http", "[2001:db8::1]", true },
+        { "http", "2001:db8::a", false },
+        { "http", "[2001:db8::a]", true },
+        { "http", "", false },
+    };
+
+    // Initialize a PSL mock that whitelists any three-letter label as a TLD ('com', 'org', 'net', etc).
+    OriginAccessEntryTestPlatform platform;
+    blink::Platform::initialize(&platform);
+
+    for (const auto& test : inputs) {
+        SCOPED_TRACE(testing::Message() << "Host: " << test.host);
+        OriginAccessEntry entry(test.protocol, test.host, OriginAccessEntry::DisallowSubdomains, OriginAccessEntry::TreatIPAddressAsDomain);
+        EXPECT_EQ(test.isIPAddress, entry.hostIsIPAddress()) << test.host;
+    }
+
+    blink::Platform::shutdown();
+}
+
+TEST(OriginAccessEntryTest, IPAddressAsDomainTest)
+{
+    struct TestCase {
+        const char* protocol;
+        const char* host;
+        const char* origin;
+        OriginAccessEntry::MatchResult expected;
+    } inputs[] = {
+        { "http", "192.0.0.123", "http://192.0.0.123/", OriginAccessEntry::MatchesOrigin },
+        { "http", "0.0.123", "http://192.0.0.123/", OriginAccessEntry::MatchesOrigin },
+        { "http", "0.123", "http://192.0.0.123/", OriginAccessEntry::MatchesOrigin },
+        { "http", "1.123", "http://192.0.0.123/", OriginAccessEntry::DoesNotMatchOrigin },
+    };
+
+    // Initialize a PSL mock that whitelists any three-letter label as a TLD ('.123', etc).
+    OriginAccessEntryTestPlatform platform;
+    blink::Platform::initialize(&platform);
+
+    for (const auto& test : inputs) {
+        SCOPED_TRACE(testing::Message() << "Host: " << test.host << ", Origin: " << test.origin);
+        RefPtr<SecurityOrigin> originToTest = SecurityOrigin::createFromString(test.origin);
+        OriginAccessEntry entry(test.protocol, test.host, OriginAccessEntry::AllowSubdomains, OriginAccessEntry::TreatIPAddressAsDomain);
+        EXPECT_EQ(test.expected, entry.matchesOrigin(*originToTest));
+    }
+
+    blink::Platform::shutdown();
+}
+
+TEST(OriginAccessEntryTest, IPAddressAsIPAddressTest)
+{
+    struct TestCase {
+        const char* protocol;
+        const char* host;
+        const char* origin;
+        OriginAccessEntry::MatchResult expected;
+    } inputs[] = {
+        { "http", "192.0.0.123", "http://192.0.0.123/", OriginAccessEntry::MatchesOrigin },
+        { "http", "0.0.123", "http://192.0.0.123/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "0.123", "http://192.0.0.123/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "1.123", "http://192.0.0.123/", OriginAccessEntry::DoesNotMatchOrigin },
+    };
+
+    // Initialize a PSL mock that whitelists any three-letter label as a TLD ('.123', etc).
+    OriginAccessEntryTestPlatform platform;
+    blink::Platform::initialize(&platform);
+
+    for (const auto& test : inputs) {
+        SCOPED_TRACE(testing::Message() << "Host: " << test.host << ", Origin: " << test.origin);
+        RefPtr<SecurityOrigin> originToTest = SecurityOrigin::createFromString(test.origin);
+        OriginAccessEntry entry(test.protocol, test.host, OriginAccessEntry::AllowSubdomains, OriginAccessEntry::TreatIPAddressAsIPAddress);
+        EXPECT_EQ(test.expected, entry.matchesOrigin(*originToTest));
+    }
+
+    blink::Platform::shutdown();
+}
 } // namespace
 
