@@ -87,8 +87,8 @@ const char ContentSecurityPolicy::PluginTypes[] = "plugin-types";
 const char ContentSecurityPolicy::ReflectedXSS[] = "reflected-xss";
 const char ContentSecurityPolicy::Referrer[] = "referrer";
 
-// Manifest Directives
-// https://w3c.github.io/manifest/#content-security-policy
+// CSP Editor's Draft:
+// https://w3c.github.io/webappsec/specs/content-security-policy
 const char ContentSecurityPolicy::ManifestSrc[] = "manifest-src";
 
 // Mixed Content Directive

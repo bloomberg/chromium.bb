@@ -762,11 +762,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         enableInsecureRequestsUpgrade(name, value);
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::BlockAllMixedContent)) {
         enforceStrictMixedContentChecking(name, value);
-    } else if (m_policy->experimentalFeaturesEnabled()) {
-        if (equalIgnoringCase(name, ContentSecurityPolicy::ManifestSrc))
-            setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
-        else
-            m_policy->reportUnsupportedDirective(name);
+    } else if (equalIgnoringCase(name, ContentSecurityPolicy::ManifestSrc)) {
+        setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
     } else {
         m_policy->reportUnsupportedDirective(name);
     }
