@@ -24,7 +24,6 @@
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface.h"
-#include "ui/ozone/platform/drm/gpu/gpu_lock.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
@@ -170,9 +169,6 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
   void InitializeGPU() override {
-#if defined(OS_CHROMEOS)
-    gpu_lock_.reset(new GpuLock());
-#endif
     gl_api_loader_.reset(new GlApiLoader());
     drm_device_manager_.reset(new DrmDeviceManager(
         scoped_ptr<DrmDeviceGenerator>(new GbmDeviceGenerator())));
@@ -195,7 +191,6 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<GbmSurfaceFactory> surface_factory_ozone_;
 
   // Objects in the GPU process.
-  scoped_ptr<GpuLock> gpu_lock_;
   scoped_ptr<GlApiLoader> gl_api_loader_;
   scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<GbmBufferGenerator> buffer_generator_;

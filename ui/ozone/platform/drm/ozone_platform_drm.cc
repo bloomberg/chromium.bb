@@ -20,7 +20,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_platform_support.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
-#include "ui/ozone/platform/drm/gpu/gpu_lock.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
@@ -88,9 +87,6 @@ class OzonePlatformDrm : public OzonePlatform {
         new DrmNativeDisplayDelegate(display_manager_.get()));
   }
   void InitializeUI() override {
-#if defined(OS_CHROMEOS)
-    gpu_lock_.reset(new GpuLock());
-#endif
     drm_device_manager_.reset(new DrmDeviceManager(
         scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
     window_manager_.reset(new DrmWindowHostManager());
@@ -125,7 +121,6 @@ class OzonePlatformDrm : public OzonePlatform {
 
  private:
   // Objects in the "GPU" process.
-  scoped_ptr<GpuLock> gpu_lock_;
   scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<DrmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;

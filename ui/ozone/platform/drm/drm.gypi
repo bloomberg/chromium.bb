@@ -69,8 +69,6 @@
         'gpu/drm_vsync_provider.h',
         'gpu/drm_window.cc',
         'gpu/drm_window.h',
-        'gpu/gpu_lock.cc',
-        'gpu/gpu_lock.h',
         'gpu/hardware_display_controller.cc',
         'gpu/hardware_display_controller.h',
         'gpu/hardware_display_plane.cc',
