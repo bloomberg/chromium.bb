@@ -248,6 +248,14 @@ void StaticSocketDataProvider::Reset() {
   helper_.Reset();
 }
 
+bool StaticSocketDataProvider::AllReadDataConsumed() const {
+  return helper_.at_read_eof();
+}
+
+bool StaticSocketDataProvider::AllWriteDataConsumed() const {
+  return helper_.at_write_eof();
+}
+
 DynamicSocketDataProvider::DynamicSocketDataProvider()
     : short_read_limit_(0),
       allow_unconsumed_reads_(false) {
@@ -598,6 +606,14 @@ void SequencedSocketData::Reset() {
   read_state_ = IDLE;
   write_state_ = IDLE;
   weak_factory_.InvalidateWeakPtrs();
+}
+
+bool SequencedSocketData::AllReadDataConsumed() const {
+  return helper_.at_read_eof();
+}
+
+bool SequencedSocketData::AllWriteDataConsumed() const {
+  return helper_.at_write_eof();
 }
 
 bool SequencedSocketData::at_read_eof() const {
