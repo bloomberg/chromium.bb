@@ -573,10 +573,7 @@ const HttpResponseInfo* HttpCache::Transaction::GetResponseInfo() const {
   // Null headers means we encountered an error or haven't a response yet
   if (auth_response_.headers.get())
     return &auth_response_;
-  return (response_.headers.get() || response_.ssl_info.cert.get() ||
-          response_.cert_request_info.get())
-             ? &response_
-             : NULL;
+  return &response_;
 }
 
 LoadState HttpCache::Transaction::GetLoadState() const {
@@ -1092,21 +1089,23 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
     return OK;
   }
 
+  const HttpResponseInfo* response = network_trans_->GetResponseInfo();
+  response_.network_accessed = response->network_accessed;
+
   // Do not record requests that have network errors or restarts.
   UpdateTransactionPattern(PATTERN_NOT_COVERED);
   if (IsCertificateError(result)) {
-    const HttpResponseInfo* response = network_trans_->GetResponseInfo();
     // If we get a certificate error, then there is a certificate in ssl_info,
     // so GetResponseInfo() should never return NULL here.
     DCHECK(response);
     response_.ssl_info = response->ssl_info;
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    const HttpResponseInfo* response = network_trans_->GetResponseInfo();
     DCHECK(response);
     response_.cert_request_info = response->cert_request_info;
   } else if (response_.was_cached) {
     DoneWritingToEntry(true);
   }
+
   return result;
 }
 

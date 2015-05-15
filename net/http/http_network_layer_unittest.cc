@@ -395,9 +395,8 @@ TEST_F(HttpNetworkLayerTest, NetworkUnVerified) {
   rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
   ASSERT_EQ(ERR_CONNECTION_RESET, callback.GetResult(rv));
 
-  // If the response info is null, that means that any consumer won't
-  // see the network accessed bit set.
-  EXPECT_EQ(NULL, trans->GetResponseInfo());
+  // network_accessed is true; the HTTP stack did try to make a connection.
+  EXPECT_TRUE(trans->GetResponseInfo()->network_accessed);
 }
 
 }  // namespace

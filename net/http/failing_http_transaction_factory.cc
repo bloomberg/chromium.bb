@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/upload_progress.h"
+#include "net/http/http_response_info.h"
 #include "net/socket/connection_attempts.h"
 
 namespace net {
@@ -19,8 +20,6 @@ class BoundNetLog;
 class HttpRequestHeaders;
 class IOBuffer;
 class X509Certificate;
-
-struct HttpRequestInfo;
 
 namespace {
 
@@ -66,6 +65,7 @@ class FailingHttpTransaction : public HttpTransaction {
 
  private:
   Error error_;
+  HttpResponseInfo response_;
 };
 
 FailingHttpTransaction::FailingHttpTransaction(Error error) : error_(error) {
@@ -125,7 +125,7 @@ void FailingHttpTransaction::DoneReading()  {
 }
 
 const HttpResponseInfo* FailingHttpTransaction::GetResponseInfo() const  {
-  return NULL;
+  return &response_;
 }
 
 LoadState FailingHttpTransaction::GetLoadState() const  {

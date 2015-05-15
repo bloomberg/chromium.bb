@@ -133,8 +133,8 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // entire response body is to be ignored (e.g., in a redirect).
   virtual void DoneReading() = 0;
 
-  // Returns the response info for this transaction or NULL if the response
-  // info is not available.
+  // Returns the response info for this transaction. Must not be called until
+  // |Start| completes.
   virtual const HttpResponseInfo* GetResponseInfo() const = 0;
 
   // Returns the load state for this transaction.

@@ -6823,6 +6823,59 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTestNoCache) {
   EXPECT_EQ(ERR_NETWORK_IO_SUSPENDED, req->status().error());
 }
 
+TEST_F(URLRequestTestHTTP, NetworkAccessedSetOnNetworkRequest) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  GURL test_url(test_server_.GetURL(std::string()));
+  scoped_ptr<URLRequest> req(
+      default_context_.CreateRequest(test_url, DEFAULT_PRIORITY, &d));
+
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(req->response_info().network_accessed);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkAccessedClearOnCachedResponse) {
+  ASSERT_TRUE(test_server_.Start());
+
+  // Populate the cache.
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(default_context_.CreateRequest(
+      test_server_.GetURL("cachetime"), DEFAULT_PRIORITY, &d));
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(URLRequestStatus::SUCCESS, req->status().status());
+  EXPECT_TRUE(req->response_info().network_accessed);
+  EXPECT_FALSE(req->response_info().was_cached);
+
+  req = default_context_.CreateRequest(test_server_.GetURL("cachetime"),
+                                       DEFAULT_PRIORITY, &d);
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(URLRequestStatus::SUCCESS, req->status().status());
+  EXPECT_FALSE(req->response_info().network_accessed);
+  EXPECT_TRUE(req->response_info().was_cached);
+}
+
+TEST_F(URLRequestTestHTTP, NetworkAccessedClearOnLoadOnlyFromCache) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  GURL test_url(test_server_.GetURL(std::string()));
+  scoped_ptr<URLRequest> req(
+      default_context_.CreateRequest(test_url, DEFAULT_PRIORITY, &d));
+  req->SetLoadFlags(LOAD_ONLY_FROM_CACHE);
+
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_FALSE(req->response_info().network_accessed);
+}
+
 class URLRequestInterceptorTestHTTP : public URLRequestTestHTTP {
  public:
   // TODO(bengr): Merge this with the URLRequestInterceptorHTTPTest fixture,
@@ -9088,5 +9141,58 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCacheLoginBoxCredentials) {
   }
 }
 #endif  // !defined(DISABLE_FTP_SUPPORT)
+
+TEST_F(URLRequestTest, NetworkAccessedClearBeforeNetworkStart) {
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(default_context_.CreateRequest(
+      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d));
+  d.set_quit_on_network_start(true);
+
+  EXPECT_FALSE(req->response_info().network_accessed);
+
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1, d.received_before_network_start_count());
+  EXPECT_EQ(0, d.response_started_count());
+  EXPECT_FALSE(req->response_info().network_accessed);
+
+  req->ResumeNetworkStart();
+  base::RunLoop().Run();
+}
+
+TEST_F(URLRequestTest, NetworkAccessedClearOnDataRequest) {
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(
+      default_context_.CreateRequest(GURL("data:,"), DEFAULT_PRIORITY, &d));
+
+  EXPECT_FALSE(req->response_info().network_accessed);
+
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1, default_network_delegate_.completed_requests());
+  EXPECT_FALSE(req->response_info().network_accessed);
+}
+
+TEST_F(URLRequestTest, NetworkAccessedSetOnHostResolutionFailure) {
+  MockHostResolver host_resolver;
+  TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_host_resolver(&host_resolver);
+  host_resolver.rules()->AddSimulatedFailure("*");
+  context.Init();
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d));
+
+  EXPECT_FALSE(req->response_info().network_accessed);
+
+  req->Start();
+  base::RunLoop().Run();
+  EXPECT_TRUE(req->response_info().network_accessed);
+}
 
 }  // namespace net

@@ -1584,9 +1584,6 @@ TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionReset) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_TRUE(response == NULL);
 }
 
 // What do various browsers do when the server closes a non-keepalive
@@ -1645,7 +1642,6 @@ TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
   // Should have deferred for network start.
   EXPECT_TRUE(net_start_handler.observed_before_network_start());
   EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
-  EXPECT_TRUE(trans->GetResponseInfo() == NULL);
 
   trans->ResumeNetworkStart();
   rv = callback.WaitForResult();
@@ -1686,7 +1682,6 @@ TEST_P(HttpNetworkTransactionTest, ThrottleAndCancelBeforeNetworkStart) {
   // Should have deferred for network start.
   EXPECT_TRUE(net_start_handler.observed_before_network_start());
   EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
-  EXPECT_TRUE(trans->GetResponseInfo() == NULL);
 }
 
 // Next 2 cases (KeepAliveEarlyClose and KeepAliveEarlyClose2) are regression
@@ -5003,9 +4998,6 @@ TEST_P(HttpNetworkTransactionTest, LargeHeadersNoBody) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_RESPONSE_HEADERS_TOO_BIG, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_TRUE(response == NULL);
 }
 
 // Make sure that we don't try to reuse a TCPClientSocket when failing to
@@ -5054,9 +5046,6 @@ TEST_P(HttpNetworkTransactionTest,
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_TRUE(response == NULL);
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
@@ -8534,9 +8523,6 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_ACCESS_DENIED, rv);
 
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_FALSE(response);
-
   base::DeleteFile(temp_file, false);
 }
 
@@ -10186,10 +10172,7 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
       // Compare results with expected data.
       EXPECT_EQ(read_write_round.expected_rv, rv);
       const HttpResponseInfo* response = trans.GetResponseInfo();
-      if (read_write_round.expected_rv == OK) {
-        ASSERT_TRUE(response != NULL);
-      } else {
-        EXPECT_TRUE(response == NULL);
+      if (read_write_round.expected_rv != OK) {
         EXPECT_EQ(round + 1, test_config.num_auth_rounds);
         continue;
       }
@@ -12736,8 +12719,6 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_REFUSED, rv);
 
-  EXPECT_EQ(NULL, trans->GetResponseInfo());
-
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
   trans->GetFullRequestHeaders(&request_headers);
@@ -12770,8 +12751,6 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_REFUSED, rv);
-
-  EXPECT_EQ(NULL, trans->GetResponseInfo());
 
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
@@ -12812,8 +12791,6 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncWriteError) {
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
 
-  EXPECT_EQ(NULL, trans->GetResponseInfo());
-
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
   EXPECT_TRUE(request_headers.HasHeader("Host"));
@@ -12847,8 +12824,6 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncWriteError) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-
-  EXPECT_EQ(NULL, trans->GetResponseInfo());
 
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
@@ -12887,8 +12862,6 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncReadError) {
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
 
-  EXPECT_EQ(NULL, trans->GetResponseInfo());
-
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
   EXPECT_TRUE(request_headers.HasHeader("Host"));
@@ -12925,8 +12898,6 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncReadError) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-
-  EXPECT_EQ(NULL, trans->GetResponseInfo());
 
   HttpRequestHeaders request_headers;
   EXPECT_TRUE(trans->GetFullRequestHeaders(&request_headers));
@@ -13956,9 +13927,6 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_TRUE(response == NULL);
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -14003,9 +13971,6 @@ TEST_P(HttpNetworkTransactionTest,
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_TRUE(response == NULL);
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
@@ -14046,9 +14011,6 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_TRUE(response == NULL);
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
@@ -14089,9 +14051,6 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  EXPECT_TRUE(response == NULL);
 }
 
 // Verify that proxy headers are not sent to the destination server when

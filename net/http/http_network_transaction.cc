@@ -395,10 +395,7 @@ int64 HttpNetworkTransaction::GetTotalReceivedBytes() const {
 void HttpNetworkTransaction::DoneReading() {}
 
 const HttpResponseInfo* HttpNetworkTransaction::GetResponseInfo() const {
-  return ((headers_valid_ && response_.headers.get()) ||
-          response_.ssl_info.cert.get() || response_.cert_request_info.get())
-             ? &response_
-             : NULL;
+  return &response_;
 }
 
 LoadState HttpNetworkTransaction::GetLoadState() const {
@@ -736,6 +733,8 @@ int HttpNetworkTransaction::DoCreateStream() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424359 HttpNetworkTransaction::DoCreateStream"));
 
+  response_.network_accessed = true;
+
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
   if (ForWebSocketHandshake()) {
     stream_request_.reset(
@@ -974,7 +973,6 @@ int HttpNetworkTransaction::DoSendRequestComplete(int result) {
   send_end_time_ = base::TimeTicks::Now();
   if (result < 0)
     return HandleIOError(result);
-  response_.network_accessed = true;
   next_state_ = STATE_READ_HEADERS;
   return OK;
 }

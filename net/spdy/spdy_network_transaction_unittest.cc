@@ -5505,7 +5505,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   // Verify the SYN_REPLY.
   // Copy the response info, because trans goes away.
   HttpResponseInfo response = *trans->GetResponseInfo();
-  ASSERT_TRUE(trans2->GetResponseInfo() == NULL);
 
   VerifyStreamsClosed(helper);
 
