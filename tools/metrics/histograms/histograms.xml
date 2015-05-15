@@ -26417,6 +26417,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.EmptyUsernames.TextAndPasswordFieldCount">
+  <owner>msramek@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The total number of text and password fields for password forms that do not
+    have a username field. This is recorded every time such a password form is
+    successfully parsed. Note that the parsing is attempted when the form is
+    encountered (i.e when the document is loaded) and also when it is submitted.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty">
   <owner>msramek@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>

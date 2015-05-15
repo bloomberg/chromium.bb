@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -402,6 +403,14 @@ void GetPasswordForm(
     password_form->new_password_value = new_password.value();
     if (HasAutocompleteAttributeValue(new_password, "new-password"))
       password_form->new_password_marked_by_site = true;
+  }
+
+  if (username_element.isNull()) {
+    // To get a better idea on how password forms without a username field
+    // look like, report the total number of text and password fields.
+    UMA_HISTOGRAM_COUNTS_100(
+        "PasswordManager.EmptyUsernames.TextAndPasswordFieldCount",
+        layout_sequence.size());
   }
 
   password_form->scheme = PasswordForm::SCHEME_HTML;
