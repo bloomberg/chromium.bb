@@ -381,7 +381,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
 
         SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
         OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
-                mSecurityLevel, mIsInternalPage, true);
+                mSecurityLevel, mIsInternalPage, true, true);
         mUrlTitle.setText(urlBuilder);
 
         // Set the URL connection message now, and the URL after layout (so it

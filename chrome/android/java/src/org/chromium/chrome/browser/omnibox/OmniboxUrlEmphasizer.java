@@ -140,9 +140,15 @@ public class OmniboxUrlEmphasizer {
      * @param isInternalPage Whether this page is an internal Chrome page.
      * @param useDarkColors Whether the text colors should be dark (i.e.
      *                      appropriate for use on a light background).
+     * @param emphasizeHttpsScheme Whether the https scheme should be emphasized.
      */
     public static void emphasizeUrl(Spannable url, Resources resources, Profile profile,
-            int securityLevel, boolean isInternalPage, boolean useDarkColors) {
+            int securityLevel, boolean isInternalPage,
+            boolean useDarkColors, boolean emphasizeHttpsScheme) {
+        assert (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING)
+                ? emphasizeHttpsScheme : true;
+
         String urlString = url.toString();
 
         EmphasizeComponentsResponse emphasizeResponse =
@@ -163,10 +169,7 @@ public class OmniboxUrlEmphasizer {
         ForegroundColorSpan span;
         if (emphasizeResponse.hasScheme()) {
             int colorId = nonEmphasizedColorId;
-            if (!isInternalPage
-                    && (useDarkColors
-                               || securityLevel
-                                       == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR)) {
+            if (!isInternalPage && emphasizeHttpsScheme) {
                 switch (securityLevel) {
                     case ConnectionSecurityHelperSecurityLevel.NONE:
                         colorId = nonEmphasizedColorId;
