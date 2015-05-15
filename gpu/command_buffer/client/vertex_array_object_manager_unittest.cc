@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 
 #include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -79,13 +80,13 @@ TEST_F(VertexArrayObjectManagerTest, UnbindBuffer) {
   for (size_t ii = 0; ii < arraysize(ids); ++ii) {
     EXPECT_TRUE(manager_->BindVertexArray(ids[ii], &changed));
     EXPECT_TRUE(manager_->SetAttribPointer(
-        kBufferToUnbind, 0, 4, GL_FLOAT, false, 0, 0));
+        kBufferToUnbind, 0, 4, GL_FLOAT, false, 0, 0, GL_FALSE));
     EXPECT_TRUE(manager_->SetAttribPointer(
-        kBufferToRemain, 1, 4, GL_FLOAT, false, 0, 0));
+        kBufferToRemain, 1, 4, GL_FLOAT, false, 0, 0, GL_FALSE));
     EXPECT_TRUE(manager_->SetAttribPointer(
-        kBufferToUnbind, 2, 4, GL_FLOAT, false, 0, 0));
+        kBufferToUnbind, 2, 4, GL_FLOAT, false, 0, 0, GL_FALSE));
     EXPECT_TRUE(manager_->SetAttribPointer(
-        kBufferToRemain, 3, 4, GL_FLOAT, false, 0, 0));
+        kBufferToRemain, 3, 4, GL_FLOAT, false, 0, 0, GL_FALSE));
     for (size_t jj = 0; jj < 4u; ++jj) {
       manager_->SetAttribEnable(jj, true);
     }
@@ -135,7 +136,7 @@ TEST_F(VertexArrayObjectManagerTest, GetSet) {
   const char* dummy = "dummy";
   const void* p = reinterpret_cast<const void*>(dummy);
   manager_->SetAttribEnable(1, true);
-  manager_->SetAttribPointer(123, 1, 3, GL_BYTE, true, 3, p);
+  manager_->SetAttribPointer(123, 1, 3, GL_BYTE, true, 3, p, GL_TRUE);
   uint32 param;
   void* ptr;
   EXPECT_TRUE(manager_->GetVertexAttrib(
@@ -153,6 +154,9 @@ TEST_F(VertexArrayObjectManagerTest, GetSet) {
   EXPECT_TRUE(manager_->GetVertexAttrib(
       1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &param));
   EXPECT_NE(0u, param);
+  EXPECT_TRUE(manager_->GetVertexAttrib(
+      1, GL_VERTEX_ATTRIB_ARRAY_INTEGER, &param));
+  EXPECT_EQ(1u, param);
   EXPECT_TRUE(manager_->GetAttribPointer(
       1, GL_VERTEX_ATTRIB_ARRAY_POINTER, &ptr));
   EXPECT_EQ(p, ptr);
@@ -173,10 +177,10 @@ TEST_F(VertexArrayObjectManagerTest, HaveEnabledClientSideArrays) {
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
   // Check turning on an array and assigning a buffer.
   manager_->SetAttribEnable(1, true);
-  manager_->SetAttribPointer(123, 1, 3, GL_BYTE, true, 3, NULL);
+  manager_->SetAttribPointer(123, 1, 3, GL_BYTE, true, 3, NULL, GL_FALSE);
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
   // Check unassigning a buffer.
-  manager_->SetAttribPointer(0, 1, 3, GL_BYTE, true, 3, NULL);
+  manager_->SetAttribPointer(0, 1, 3, GL_BYTE, true, 3, NULL, GL_FALSE);
   EXPECT_TRUE(manager_->HaveEnabledClientSideBuffers());
   // Check disabling the array.
   manager_->SetAttribEnable(1, false);

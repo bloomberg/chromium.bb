@@ -3948,7 +3948,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribI4i(
   GLint y = static_cast<GLint>(c.y);
   GLint z = static_cast<GLint>(c.z);
   GLint w = static_cast<GLint>(c.w);
-  glVertexAttribI4i(indx, x, y, z, w);
+  DoVertexAttribI4i(indx, x, y, z, w);
   return error::kNoError;
 }
 
@@ -3973,7 +3973,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribI4ivImmediate(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttribI4iv(indx, values);
+  DoVertexAttribI4iv(indx, values);
   return error::kNoError;
 }
 
@@ -3990,7 +3990,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribI4ui(
   GLuint y = static_cast<GLuint>(c.y);
   GLuint z = static_cast<GLuint>(c.z);
   GLuint w = static_cast<GLuint>(c.w);
-  glVertexAttribI4ui(indx, x, y, z, w);
+  DoVertexAttribI4ui(indx, x, y, z, w);
   return error::kNoError;
 }
 
@@ -4015,7 +4015,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribI4uivImmediate(
   if (values == NULL) {
     return error::kOutOfBounds;
   }
-  glVertexAttribI4uiv(indx, values);
+  DoVertexAttribI4uiv(indx, values);
   return error::kNoError;
 }
 

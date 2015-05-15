@@ -88,7 +88,8 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
       GLenum type,
       GLboolean normalized,
       GLsizei stride,
-      const void* ptr);
+      const void* ptr,
+      GLboolean integer);
 
   void SetAttribDivisor(GLuint index, GLuint divisor);
 

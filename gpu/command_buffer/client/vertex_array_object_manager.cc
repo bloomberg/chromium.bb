@@ -47,7 +47,8 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
           normalized_(GL_FALSE),
           pointer_(NULL),
           gl_stride_(0),
-          divisor_(0) {
+          divisor_(0),
+          integer_(GL_FALSE) {
     }
 
     bool enabled() const {
@@ -94,19 +95,25 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
       return divisor_;
     }
 
+    GLboolean integer() const {
+      return integer_;
+    }
+
     void SetInfo(
         GLuint buffer_id,
         GLint size,
         GLenum type,
         GLboolean normalized,
         GLsizei gl_stride,
-        const GLvoid* pointer) {
+        const GLvoid* pointer,
+        GLboolean integer) {
       buffer_id_ = buffer_id;
       size_ = size;
       type_ = type;
       normalized_ = normalized;
       gl_stride_ = gl_stride;
       pointer_ = pointer;
+      integer_ = integer;
     }
 
     void SetDivisor(GLuint divisor) {
@@ -138,6 +145,8 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
 
     // Divisor, for geometry instancing.
     GLuint divisor_;
+
+    GLboolean integer_;
   };
 
   typedef std::vector<VertexAttrib> VertexAttribs;
@@ -155,7 +164,7 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
   void SetAttribPointer(
     GLuint buffer_id,
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
-    const void* ptr);
+    const void* ptr, GLboolean integer);
 
   bool GetVertexAttrib(
       GLuint index, GLenum pname, uint32* param) const;
@@ -240,7 +249,8 @@ void VertexArrayObject::SetAttribPointer(
     GLenum type,
     GLboolean normalized,
     GLsizei stride,
-    const void* ptr) {
+    const void* ptr,
+    GLboolean integer) {
   if (index < vertex_attribs_.size()) {
     VertexAttrib& attrib = vertex_attribs_[index];
     if (attrib.IsClientSide() && attrib.enabled()) {
@@ -248,7 +258,7 @@ void VertexArrayObject::SetAttribPointer(
       DCHECK_GE(num_client_side_pointers_enabled_, 0);
     }
 
-    attrib.SetInfo(buffer_id, size, type, normalized, stride, ptr);
+    attrib.SetInfo(buffer_id, size, type, normalized, stride, ptr, integer);
 
     if (attrib.IsClientSide() && attrib.enabled()) {
       ++num_client_side_pointers_enabled_;
@@ -283,8 +293,8 @@ bool VertexArrayObject::GetVertexAttrib(
       *param = attrib->normalized();
       break;
     case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
-      // TODO(zmo): cache this on the client side.
-      return false;
+      *param = attrib->integer();
+      break;
     default:
       return false;  // pass through to service side.
   }
@@ -431,13 +441,14 @@ bool VertexArrayObjectManager::SetAttribPointer(
     GLenum type,
     GLboolean normalized,
     GLsizei stride,
-    const void* ptr) {
+    const void* ptr,
+    GLboolean integer) {
   // Client side arrays are not allowed in vaos.
   if (buffer_id == 0 && !IsDefaultVAOBound()) {
     return false;
   }
   bound_vertex_array_object_->SetAttribPointer(
-      buffer_id, index, size, type, normalized, stride, ptr);
+      buffer_id, index, size, type, normalized, stride, ptr, integer);
   return true;
 }
 

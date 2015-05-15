@@ -1566,8 +1566,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLint fake_location, GLsizei count, GLboolean transpose,
       const GLfloat* value);
 
+  template <typename T>
   bool SetVertexAttribValue(
-    const char* function_name, GLuint index, const GLfloat* value);
+    const char* function_name, GLuint index, const T* value);
 
   // Wrappers for glVertexAttrib??
   void DoVertexAttrib1f(GLuint index, GLfloat v0);
@@ -1575,10 +1576,15 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoVertexAttrib3f(GLuint index, GLfloat v0, GLfloat v1, GLfloat v2);
   void DoVertexAttrib4f(
       GLuint index, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-  void DoVertexAttrib1fv(GLuint index, const GLfloat *v);
-  void DoVertexAttrib2fv(GLuint index, const GLfloat *v);
-  void DoVertexAttrib3fv(GLuint index, const GLfloat *v);
-  void DoVertexAttrib4fv(GLuint index, const GLfloat *v);
+  void DoVertexAttrib1fv(GLuint index, const GLfloat* v);
+  void DoVertexAttrib2fv(GLuint index, const GLfloat* v);
+  void DoVertexAttrib3fv(GLuint index, const GLfloat* v);
+  void DoVertexAttrib4fv(GLuint index, const GLfloat* v);
+  void DoVertexAttribI4i(GLuint index, GLint v0, GLint v1, GLint v2, GLint v3);
+  void DoVertexAttribI4iv(GLuint index, const GLint* v);
+  void DoVertexAttribI4ui(
+      GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
+  void DoVertexAttribI4uiv(GLuint index, const GLuint* v);
 
   // Wrapper for glViewport
   void DoViewport(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -7715,8 +7721,9 @@ void GLES2DecoderImpl::DoGetVertexAttribIuiv(
   DoGetVertexAttribImpl<GLuint>(index, pname, params);
 }
 
+template <typename T>
 bool GLES2DecoderImpl::SetVertexAttribValue(
-    const char* function_name, GLuint index, const GLfloat* value) {
+    const char* function_name, GLuint index, const T* value) {
   if (index >= state_.attrib_values.size()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "index out of range");
     return false;
@@ -7779,6 +7786,34 @@ void GLES2DecoderImpl::DoVertexAttrib3fv(GLuint index, const GLfloat* v) {
 void GLES2DecoderImpl::DoVertexAttrib4fv(GLuint index, const GLfloat* v) {
   if (SetVertexAttribValue("glVertexAttrib4fv", index, v)) {
     glVertexAttrib4fv(index, v);
+  }
+}
+
+void GLES2DecoderImpl::DoVertexAttribI4i(
+    GLuint index, GLint v0, GLint v1, GLint v2, GLint v3) {
+  GLint v[4] = { v0, v1, v2, v3 };
+  if (SetVertexAttribValue("glVertexAttribI4i", index, v)) {
+    glVertexAttribI4i(index, v0, v1, v2, v3);
+  }
+}
+
+void GLES2DecoderImpl::DoVertexAttribI4iv(GLuint index, const GLint* v) {
+  if (SetVertexAttribValue("glVertexAttribI4iv", index, v)) {
+    glVertexAttribI4iv(index, v);
+  }
+}
+
+void GLES2DecoderImpl::DoVertexAttribI4ui(
+    GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3) {
+  GLuint v[4] = { v0, v1, v2, v3 };
+  if (SetVertexAttribValue("glVertexAttribI4ui", index, v)) {
+    glVertexAttribI4ui(index, v0, v1, v2, v3);
+  }
+}
+
+void GLES2DecoderImpl::DoVertexAttribI4uiv(GLuint index, const GLuint* v) {
+  if (SetVertexAttribValue("glVertexAttribI4uiv", index, v)) {
+    glVertexAttribI4uiv(index, v);
   }
 }
 
@@ -7864,7 +7899,8 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
                       GL_FALSE,
                       stride,
                       stride != 0 ? stride : component_size * size,
-                      offset);
+                      offset,
+                      GL_TRUE);
   glVertexAttribIPointer(indx, size, type, stride, ptr);
   return error::kNoError;
 }
@@ -7950,7 +7986,8 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                       normalized,
                       stride,
                       stride != 0 ? stride : component_size * size,
-                      offset);
+                      offset,
+                      GL_FALSE);
   // We support GL_FIXED natively on EGL/GLES2 implementations
   if (type != GL_FIXED || feature_info_->gl_version_info().is_es) {
     glVertexAttribPointer(indx, size, type, normalized, stride, ptr);

@@ -116,14 +116,11 @@ class GPU_EXPORT VertexAttrib {
       GLboolean normalized,
       GLsizei gl_stride,
       GLsizei real_stride,
-      GLsizei offset);
+      GLsizei offset,
+      GLboolean integer);
 
   void SetDivisor(GLsizei divisor) {
     divisor_ = divisor;
-  }
-
-  void SetInteger(GLboolean integer) {
-    integer_ = integer;
   }
 
   void Unbind(Buffer* buffer);
@@ -207,7 +204,8 @@ class GPU_EXPORT VertexAttribManager :
       GLboolean normalized,
       GLsizei gl_stride,
       GLsizei real_stride,
-      GLsizei offset) {
+      GLsizei offset,
+      GLboolean integer) {
     VertexAttrib* attrib = GetVertexAttrib(index);
     if (attrib) {
       if (attrib->type() == GL_FIXED) {
@@ -216,8 +214,8 @@ class GPU_EXPORT VertexAttribManager :
       if (type == GL_FIXED) {
         ++num_fixed_attribs_;
       }
-      attrib->SetInfo(
-          buffer, size, type, normalized, gl_stride, real_stride, offset);
+      attrib->SetInfo(buffer, size, type, normalized, gl_stride, real_stride,
+                      offset, integer);
     }
   }
 
@@ -225,13 +223,6 @@ class GPU_EXPORT VertexAttribManager :
     VertexAttrib* attrib = GetVertexAttrib(index);
     if (attrib) {
       attrib->SetDivisor(divisor);
-    }
-  }
-
-  void SetInteger(GLuint index, GLboolean integer) {
-    VertexAttrib* attrib = GetVertexAttrib(index);
-    if (attrib) {
-      attrib->SetInteger(integer);
     }
   }
 

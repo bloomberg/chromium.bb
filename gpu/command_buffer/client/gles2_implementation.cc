@@ -1558,8 +1558,14 @@ void GLES2Implementation::VertexAttribIPointer(
       << stride << ", "
       << ptr << ")");
   // Record the info on the client side.
-  if (!vertex_array_object_manager_->SetAttribPointer(
-      bound_array_buffer_id_, index, size, type, GL_FALSE, stride, ptr)) {
+  if (!vertex_array_object_manager_->SetAttribPointer(bound_array_buffer_id_,
+                                                      index,
+                                                      size,
+                                                      type,
+                                                      GL_FALSE,
+                                                      stride,
+                                                      ptr,
+                                                      GL_TRUE)) {
     SetGLError(GL_INVALID_OPERATION, "glVertexAttribIPointer",
                "client side arrays are not allowed in vertex array objects.");
     return;
@@ -1587,8 +1593,14 @@ void GLES2Implementation::VertexAttribPointer(
       << stride << ", "
       << ptr << ")");
   // Record the info on the client side.
-  if (!vertex_array_object_manager_->SetAttribPointer(
-      bound_array_buffer_id_, index, size, type, normalized, stride, ptr)) {
+  if (!vertex_array_object_manager_->SetAttribPointer(bound_array_buffer_id_,
+                                                      index,
+                                                      size,
+                                                      type,
+                                                      normalized,
+                                                      stride,
+                                                      ptr,
+                                                      GL_FALSE)) {
     SetGLError(GL_INVALID_OPERATION, "glVertexAttribPointer",
                "client side arrays are not allowed in vertex array objects.");
     return;

@@ -50,7 +50,8 @@ void VertexAttrib::SetInfo(
     GLboolean normalized,
     GLsizei gl_stride,
     GLsizei real_stride,
-    GLsizei offset) {
+    GLsizei offset,
+    GLboolean integer) {
   DCHECK_GT(real_stride, 0);
   buffer_ = buffer;
   size_ = size;
@@ -59,6 +60,7 @@ void VertexAttrib::SetInfo(
   gl_stride_ = gl_stride;
   real_stride_ = real_stride;
   offset_ = offset;
+  integer_ = integer;
 }
 
 void VertexAttrib::Unbind(Buffer* buffer) {

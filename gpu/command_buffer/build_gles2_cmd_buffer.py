@@ -3473,19 +3473,23 @@ _FUNCTION_INFO = {
   },
   'VertexAttribI4i': {
     'unsafe': True,
+    'decoder_func': 'DoVertexAttribI4i',
   },
   'VertexAttribI4iv': {
     'type': 'PUT',
     'count': 4,
     'unsafe': True,
+    'decoder_func': 'DoVertexAttribI4iv',
   },
   'VertexAttribI4ui': {
     'unsafe': True,
+    'decoder_func': 'DoVertexAttribI4ui',
   },
   'VertexAttribI4uiv': {
     'type': 'PUT',
     'count': 4,
     'unsafe': True,
+    'decoder_func': 'DoVertexAttribI4uiv',
   },
   'VertexAttribIPointer': {
     'type': 'Manual',
