@@ -182,13 +182,6 @@ bool ScreenManager::DisableDisplayController(
       controllers_.push_back(controller);
     }
 
-    if (!controller->IsDisabled()) {
-      // Workaround for driver bug that does not release the buffer on null
-      // modeset.
-      ModesetDisplayController(controller, controller->origin(),
-                               controller->get_mode(), false);
-    }
-
     controller->Disable();
     UpdateControllerToWindowMapping();
     return true;
