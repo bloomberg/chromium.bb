@@ -1254,7 +1254,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
       cert->VerifyNameMatch("www.example.org", &common_name_fallback_used));
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = cert;
-  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   request_.url = GURL("https://www.example.org:443");
   AddHangingNonAlternateProtocolSocketData();

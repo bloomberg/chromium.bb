@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_TEST_TOOLS_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
 #define NET_QUIC_TEST_TOOLS_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
 
+#include <queue>
 #include <string>
 
 #include "net/quic/quic_crypto_client_stream.h"
@@ -18,7 +19,7 @@ class QuicServerId;
 class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
  public:
   MockCryptoClientStreamFactory();
-  ~MockCryptoClientStreamFactory() override {}
+  ~MockCryptoClientStreamFactory() override;
 
   QuicCryptoClientStream* CreateQuicCryptoClientStream(
       const QuicServerId& server_id,
@@ -30,9 +31,9 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
     handshake_mode_ = handshake_mode;
   }
 
-  void set_proof_verify_details(
-      const ProofVerifyDetails* proof_verify_details) {
-    proof_verify_details_ = proof_verify_details;
+  // The caller keeps ownership of |proof_verify_details|.
+  void AddProofVerifyDetails(const ProofVerifyDetails* proof_verify_details) {
+    proof_verify_details_queue_.push(proof_verify_details);
   }
 
   MockCryptoClientStream* last_stream() const {
@@ -42,7 +43,7 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
  private:
   MockCryptoClientStream::HandshakeMode handshake_mode_;
   MockCryptoClientStream* last_stream_;
-  const ProofVerifyDetails* proof_verify_details_;
+  std::queue<const ProofVerifyDetails*> proof_verify_details_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCryptoClientStreamFactory);
 };

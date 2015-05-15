@@ -682,7 +682,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
-  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
@@ -746,7 +746,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
-  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
@@ -815,8 +815,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
-  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
-
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
@@ -884,8 +883,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   verify_details.cert_verify_result.is_issued_by_known_root = true;
   verify_details.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(primary_pin));
-  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
-
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
@@ -954,8 +952,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
   verify_details.cert_verify_result.is_issued_by_known_root = true;
   verify_details.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(primary_pin));
-  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
-
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
@@ -1025,13 +1022,20 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-  ProofVerifyDetailsChromium verify_details;
-  verify_details.cert_verify_result.verified_cert = test_cert;
-  verify_details.cert_verify_result.is_issued_by_known_root = true;
-  verify_details.cert_verify_result.public_key_hashes.push_back(
-      test::GetTestHashValue(bad_pin));
-  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
 
+  ProofVerifyDetailsChromium verify_details1;
+  verify_details1.cert_verify_result.verified_cert = test_cert;
+  verify_details1.cert_verify_result.is_issued_by_known_root = true;
+  verify_details1.cert_verify_result.public_key_hashes.push_back(
+      test::GetTestHashValue(bad_pin));
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details1);
+
+  ProofVerifyDetailsChromium verify_details2;
+  verify_details2.cert_verify_result.verified_cert = test_cert;
+  verify_details2.cert_verify_result.is_issued_by_known_root = true;
+  verify_details2.cert_verify_result.public_key_hashes.push_back(
+      test::GetTestHashValue(primary_pin));
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
