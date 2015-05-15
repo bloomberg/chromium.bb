@@ -159,7 +159,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // This must be done after calculating |interstitial_reason_| above.
   // Use same prefix for UMA as for Rappor.
   set_metrics_helper(new SecurityInterstitialMetricsHelper(
-      web_contents, request_url(), GetMetricPrefix(), GetMetricPrefix(),
+      web_contents, request_url(), GetMetricPrefix(), GetRapporPrefix(),
       SecurityInterstitialMetricsHelper::REPORT_RAPPOR,
       GetSamplingEventName()));
   metrics_helper()->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
@@ -493,6 +493,20 @@ bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
 }
 
 std::string SafeBrowsingBlockingPage::GetMetricPrefix() const {
+  bool primary_subresource = unsafe_resources_[0].is_subresource;
+  switch (interstitial_reason_) {
+    case SB_REASON_MALWARE:
+      return primary_subresource ? "malware_subresource" : "malware";
+    case SB_REASON_HARMFUL:
+      return primary_subresource ? "harmful_subresource" : "harmful";
+    case SB_REASON_PHISHING:
+      return primary_subresource ? "phishing_subresource" : "phishing";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string SafeBrowsingBlockingPage::GetRapporPrefix() const {
   switch (interstitial_reason_) {
     case SB_REASON_MALWARE:
       return "malware";
