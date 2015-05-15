@@ -391,10 +391,6 @@ const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 // Enables payloads for received push messages when using the W3C Push API.
 const char kEnablePushMessagePayload[] = "enable-push-message-payload";
 
-// Enable hasPermission() method of the W3C Push API.
-const char kEnablePushMessagingHasPermission[] =
-        "enable-push-messaging-has-permission";
-
 // Set options to cache V8 data. (off, preparse data, or code)
 const char kV8CacheOptions[] = "v8-cache-options";
 

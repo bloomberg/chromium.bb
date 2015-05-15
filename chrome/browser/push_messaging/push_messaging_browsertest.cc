@@ -77,7 +77,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnablePushMessagePayload);
-    command_line->AppendSwitch(switches::kEnablePushMessagingHasPermission);
 
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
