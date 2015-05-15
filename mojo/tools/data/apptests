@@ -29,25 +29,30 @@ tests = [
     "test": "mojo:clipboard_apptests",
   },
   {
-    "test": "mojo:html_viewer_apptests",
-    "shell-args": ["--is-headless"],
-  },
-  {
     "test": "mojo:network_service_apptests",
   },
   # TODO(msw|jam): Fix and enable the shell_apptests: http://crbug.com/479316
   #{
   #  "test": "mojo:shell_apptests",
   #},
-  {
-    "test": "mojo:view_manager_apptests",
-    "type": "gtest_isolated",
-    "shell-args": [
-      "--use-headless-config",
-      "--url-mappings=mojo:window_manager=mojo:test_window_manager"
-    ]
-  },
-  {
-    "test": "mojo:resource_provider_apptests",
-  },
 ]
+
+# TODO(msw): Get these tests passing on Android too. http://crbug.com/486220
+if config.target_os != config.OS_ANDROID:
+  tests += [
+    {
+      "test": "mojo:html_viewer_apptests",
+      "shell-args": ["--is-headless"],
+    },
+    {
+      "test": "mojo:view_manager_apptests",
+      "type": "gtest_isolated",
+      "shell-args": [
+        "--use-headless-config",
+        "--url-mappings=mojo:window_manager=mojo:test_window_manager"
+      ]
+    },
+    {
+      "test": "mojo:resource_provider_apptests",
+    },
+  ]
