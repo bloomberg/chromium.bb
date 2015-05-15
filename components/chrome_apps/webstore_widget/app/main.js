@@ -40,7 +40,8 @@ var defaultStrings = {
   'LINK_TO_WEBSTORE': '[LOCALIZE ME] Learn more...',
   'INSTALLATION_FAILED_MESSAGE': '[LOCALIZE ME] Installation failed!',
   'OK_BUTTON': '[LOCALIZE ME] OK',
-  'TITLE_PRINTER_PROVIDERS': '[LOCALIZE ME] Select app for your printer'
+  'TITLE_PRINTER_PROVIDERS': '[LOCALIZE ME] Select app for your printer',
+  'DEFAULT_ERROR_MESSAGE': '[LOCALIZE ME] Failure'
 };
 
 /**
@@ -121,7 +122,7 @@ function createPlatformDelegate(strings) {
 function initializeTopbarButtons() {
   $('close-button').addEventListener('click', function(e) {
     e.preventDefault();
-    chrome.app.window.current().close();
+    closeAppWindow();
   });
 
   $('close-button').addEventListener('mousedown', function(e) {
@@ -136,6 +137,27 @@ function initializeTopbarButtons() {
   $('minimize-button').addEventListener('mousedown', function(e) {
     e.preventDefault();
   });
+}
+
+/**
+ * @param {!CWSWidgetContainer.Result} result The result reported by the widget.
+ */
+function showWidgetResult(result) {
+  // TODO(tbarzic): Add some UI to show on success.
+  if (result != CWSWidgetContainer.Result.FAILED) {
+    closeAppWindow();
+    return;
+  }
+
+  var dialog = new CWSWidgetContainerErrorDialog($('widget-container-root'));
+  dialog.show(getString('DEFAULT_ERROR_MESSAGE'),
+              closeAppWindow,
+              closeAppWindow);
+}
+
+/** Closes the current app window. */
+function closeAppWindow() {
+  chrome.app.window.current().close();
 }
 
 window.addEventListener('DOMContentLoaded', function() {
@@ -176,12 +198,15 @@ window.addEventListener('DOMContentLoaded', function() {
         })
         /** @param {!CWSWidgetContainer.ResolveReason} reason */
         .then(function(reason) {
-          chrome.app.window.current().close();
+          if (reason != CWSWidgetContainer.ResolveReason.DONE)
+            return;
+
+          var result = widgetContainer.finalizeAndGetResult();
+          showWidgetResult(result.result);
         })
         /** @param {*} error */
         .catch(function(error) {
-          // TODO(tbarzic): Add error UI.
-          console.error(error);
+          showWidgetResult(CWSWidgetContainer.Result.FAILED);
         });
   });
 });

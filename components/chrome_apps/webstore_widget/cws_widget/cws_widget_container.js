@@ -369,6 +369,8 @@ CWSWidgetContainer.prototype.ready = function() {
       return;
     }
 
+    this.spinnerLayerController_.setVisible(true);
+
     this.metricsRecorder_.recordShowDialog();
     this.metricsRecorder_.startLoad();
 
@@ -379,6 +381,7 @@ CWSWidgetContainer.prototype.ready = function() {
       this.accessToken_ = accessToken;
       resolve();
     }.bind(this), function(error) {
+      this.spinnerLayerController_.setVisible(false);
       this.state_ = CWSWidgetContainer.State.UNINITIALIZED;
       reject('Failed to get Web Store access token: ' + error);
     }.bind(this));
@@ -823,8 +826,7 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setVisible =
   this.visible_ = visible;
 
   // Spinner should be shown during transition.
-  if (!this.spinnerLayer_.classList.contains('cws-widget-show-spinner'))
-    this.spinnerLayer_.classList.add('cws-widget-show-spinner');
+  this.spinnerLayer_.classList.toggle('cws-widget-show-spinner', true);
 
   if (this.visible_) {
     this.spinnerLayer_.focus();
