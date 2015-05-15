@@ -76,9 +76,9 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner));
 #endif
 
-  scoped_ptr<VideoRenderer> video_renderer(
-      new VideoRendererImpl(media_task_runner, video_renderer_sink,
-                            video_decoders.Pass(), true, media_log_));
+  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
+      media_task_runner, video_renderer_sink, video_decoders.Pass(), true,
+      gpu_factories_, media_log_));
 
   // Create renderer.
   return scoped_ptr<Renderer>(new RendererImpl(

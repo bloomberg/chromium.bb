@@ -44,6 +44,14 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD0(GetVideoEncodeAcceleratorSupportedProfiles,
                VideoEncodeAccelerator::SupportedProfiles());
 
+  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+      const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage) override;
+
+  MOCK_METHOD0(IsTextureRGSupported, bool());
+  MOCK_METHOD0(GetGLES2Interface, gpu::gles2::GLES2Interface*());
+
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
 
   scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator() override;

@@ -242,6 +242,8 @@ component("media") {
     "video/capture/win/video_capture_device_win.h",
     "video/fake_video_encode_accelerator.cc",
     "video/fake_video_encode_accelerator.h",
+    "video/gpu_memory_buffer_video_frame_pool.cc",
+    "video/gpu_memory_buffer_video_frame_pool.h",
     "video/h264_poc.cc",
     "video/h264_poc.h",
     "video/picture.cc",

@@ -9,10 +9,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -58,6 +60,15 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
   virtual void DeleteTexture(uint32 texture_id) = 0;
 
   virtual void WaitSyncPoint(uint32 sync_point) = 0;
+
+  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+      const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage) = 0;
+
+  virtual bool IsTextureRGSupported() = 0;
+
+  virtual gpu::gles2::GLES2Interface* GetGLES2Interface() = 0;
 
   // Allocate & return a shared memory segment.
   virtual scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) = 0;

@@ -8,6 +8,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "base/bind.h"
+#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -16,6 +17,7 @@
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -46,7 +48,10 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     : task_runner_(task_runner),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
-      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {}
+      gpu_memory_buffer_manager_(
+          ChildThreadImpl::current()->gpu_memory_buffer_manager()),
+      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
+}
 
 RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 
@@ -183,6 +188,37 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
   // Callers expect the WaitSyncPoint to affect the next IPCs. Make sure to
   // flush the command buffers to ensure that.
   gles2->ShallowFlushCHROMIUM();
+}
+
+scoped_ptr<gfx::GpuMemoryBuffer>
+RendererGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
+    const gfx::Size& size,
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer =
+      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage);
+  return buffer.Pass();
+}
+
+bool RendererGpuVideoAcceleratorFactories::IsTextureRGSupported() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (!context)
+    return false;
+  return context->GetImplementation()->capabilities().texture_rg;
+}
+
+gpu::gles2::GLES2Interface*
+RendererGpuVideoAcceleratorFactories::GetGLES2Interface() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (!context)
+    return nullptr;
+  gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
+  return gles2;
 }
 
 scoped_ptr<base::SharedMemory>

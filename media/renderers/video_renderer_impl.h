@@ -25,6 +25,8 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/filters/decoder_stream.h"
 #include "media/filters/video_renderer_algorithm.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_memory_buffer_video_frame_pool.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -54,6 +56,7 @@ class MEDIA_EXPORT VideoRendererImpl
       VideoRendererSink* sink,
       ScopedVector<VideoDecoder> decoders,
       bool drop_frames,
+      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
       const scoped_refptr<MediaLog>& media_log);
   ~VideoRendererImpl() override;
 
@@ -169,6 +172,9 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Provides video frames to VideoRendererImpl.
   scoped_ptr<VideoFrameStream> video_frame_stream_;
+
+  // Pool of GpuMemoryBuffers and resources used to create hardware frames.
+  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
 
   // Flag indicating low-delay mode.
   bool low_delay_;

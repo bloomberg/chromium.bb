@@ -587,6 +587,8 @@
         'video/capture/win/video_capture_device_win.h',
         'video/fake_video_encode_accelerator.cc',
         'video/fake_video_encode_accelerator.h',
+        'video/gpu_memory_buffer_video_frame_pool.cc',
+        'video/gpu_memory_buffer_video_frame_pool.h',
         'video/h264_poc.cc',
         'video/h264_poc.h',
         'video/picture.cc',
@@ -1092,6 +1094,7 @@
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../gpu/gpu.gyp:command_buffer_common',
+        '../gpu/gpu.gyp:gpu_unittest_utils',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -1213,6 +1216,7 @@
         'video/capture/fake_video_capture_device_unittest.cc',
         'video/capture/video_capture_device_unittest.cc',
         'video/h264_poc_unittest.cc',
+        'video/gpu_memory_buffer_video_frame_pool_unittest.cc',
       ],
       'include_dirs': [
         # Needed by media_drm_bridge.cc.

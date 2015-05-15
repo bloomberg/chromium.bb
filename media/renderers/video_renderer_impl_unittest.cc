@@ -60,9 +60,11 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
         base::Bind(&MockCB::FrameReceived, base::Unretained(&mock_cb_)),
         message_loop_.task_runner()));
 
-    renderer_.reset(new VideoRendererImpl(
-        message_loop_.message_loop_proxy(), null_video_sink_.get(),
-        decoders.Pass(), true, new MediaLog()));
+    renderer_.reset(new VideoRendererImpl(message_loop_.message_loop_proxy(),
+                                          null_video_sink_.get(),
+                                          decoders.Pass(), true,
+                                          nullptr,  // gpu_factories
+                                          new MediaLog()));
     if (!GetParam())
       renderer_->disable_new_video_renderer_for_testing();
     renderer_->SetTickClockForTesting(scoped_ptr<base::TickClock>(tick_clock_));

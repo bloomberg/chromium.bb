@@ -19,6 +19,9 @@
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
+#include "media/base/video_frame.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_memory_buffer_video_frame_pool.h"
 
 namespace media {
 
@@ -41,6 +44,7 @@ VideoRendererImpl::VideoRendererImpl(
     VideoRendererSink* sink,
     ScopedVector<VideoDecoder> decoders,
     bool drop_frames,
+    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       use_new_video_renderering_path_(ShouldUseVideoRenderingPath()),
@@ -48,6 +52,8 @@ VideoRendererImpl::VideoRendererImpl(
       sink_started_(false),
       video_frame_stream_(
           new VideoFrameStream(task_runner, decoders.Pass(), media_log)),
+      gpu_memory_buffer_pool_(
+          new GpuMemoryBufferVideoFramePool(task_runner, gpu_factories)),
       low_delay_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),

@@ -52,7 +52,7 @@ MojoRendererService::MojoRendererService()
       renderer_config->GetVideoDecoders(task_runner,
                                         base::Bind(&MediaLog::AddLogEvent,
                                                    media_log)).Pass(),
-      true, media_log));
+      true, nullptr, media_log));
 
   // Create renderer.
   renderer_.reset(new RendererImpl(
