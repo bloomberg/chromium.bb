@@ -107,4 +107,13 @@ void ServiceWorkerMetrics::RecordInstallEventStatus(
                             SERVICE_WORKER_ERROR_MAX_VALUE);
 }
 
+void ServiceWorkerMetrics::RecordEventStatus(size_t fired_events,
+                                             size_t handled_events) {
+  if (!fired_events)
+    return;
+  int unhandled_ratio = (fired_events - handled_events) * 100 / fired_events;
+  UMA_HISTOGRAM_PERCENTAGE("ServiceWorker.UnhandledEventRatio",
+                           unhandled_ratio);
+}
+
 }  // namespace content

@@ -329,6 +329,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutWorkerInEvent);
 
+  class ServiceWorkerEventMetrics;
+
   typedef ServiceWorkerVersion self;
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
 
@@ -552,6 +554,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // If not OK, the reason that StartWorker failed. Used for
   // running |start_callbacks_|.
   ServiceWorkerStatusCode start_worker_status_ = SERVICE_WORKER_OK;
+
+  scoped_ptr<ServiceWorkerEventMetrics> metrics_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

@@ -366,6 +366,25 @@ bool IsInstalled(ServiceWorkerVersion::Status status) {
 const int ServiceWorkerVersion::kStartWorkerTimeoutMinutes = 5;
 const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
 
+class ServiceWorkerVersion::ServiceWorkerEventMetrics {
+ public:
+  ServiceWorkerEventMetrics() {}
+  ~ServiceWorkerEventMetrics() {
+    ServiceWorkerMetrics::RecordEventStatus(fired_events, handled_events);
+  }
+
+  void RecordEventStatus(bool handled) {
+    ++fired_events;
+    if (handled)
+      ++handled_events;
+  }
+
+ private:
+  size_t fired_events = 0;
+  size_t handled_events = 0;
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerEventMetrics);
+};
+
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
     const GURL& script_url,
@@ -379,6 +398,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       context_(context),
       script_cache_map_(this, context),
       ping_state_(NOT_PINGING),
+      metrics_(new ServiceWorkerEventMetrics),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
@@ -1184,6 +1204,10 @@ void ServiceWorkerVersion::OnFetchEventFinished(
     NOTREACHED() << "Got unexpected message: " << request_id;
     return;
   }
+
+  // TODO(kinuko): Record other event statuses too.
+  const bool handled = (result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
+  metrics_->RecordEventStatus(handled);
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK, result, response);

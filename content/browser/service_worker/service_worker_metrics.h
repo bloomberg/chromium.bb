@@ -65,6 +65,10 @@ class ServiceWorkerMetrics {
   static void RecordActivateEventStatus(ServiceWorkerStatusCode status);
   static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
 
+  // Records the ratio of unhandled events to the all events fired during
+  // the lifetime of ServiceWorker.
+  static void RecordEventStatus(size_t fired_events, size_t handled_events);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

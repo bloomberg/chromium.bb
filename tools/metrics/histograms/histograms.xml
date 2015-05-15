@@ -36178,6 +36178,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.UnhandledEventRatio" units="percent">
+  <owner>kinuko@chromium.org</owner>
+  <summary>
+    Records the ratio of unhandled events to all events that are dispatched to
+    each ServiceWorker.  Recorded when each ServiceWorkerVersion is destructed.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorkerCache.Cache" units="milliseconds">
   <owner>dmurph@chromium.org</owner>
   <summary>
