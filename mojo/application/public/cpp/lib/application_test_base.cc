@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/application/application_test_base.h"
+#include "mojo/application/public/cpp/application_test_base.h"
 
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
-#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
