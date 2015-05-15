@@ -12,12 +12,10 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
@@ -75,16 +73,7 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   // someone unloads the history backend, we'll get inconsistent inline
   // autocomplete behavior here.
   if (in_memory_url_index_) {
-    base::TimeTicks start_time = base::TimeTicks::Now();
     DoAutocomplete();
-    if (input.text().length() < 6) {
-      base::TimeTicks end_time = base::TimeTicks::Now();
-      std::string name = "HistoryQuickProvider.QueryIndexTime." +
-          base::IntToString(input.text().length());
-      base::HistogramBase* counter = base::Histogram::FactoryGet(
-          name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
-      counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
-    }
   }
 }
 
