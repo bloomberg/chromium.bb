@@ -687,6 +687,7 @@ public:
         EncryptedMediaSecureOrigin = 770,
         EncryptedMediaInsecureOrigin = 771,
         PerformanceFrameTiming = 772,
+        V8Element_Animate_Method = 773,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
