@@ -80,6 +80,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=896) # angle bug ID
     self.Skip('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win', 'd3d9'], bug=896) # angle bug ID
+    self.Fail('conformance/glsl/bugs/conditional-discard-optimization.html',
+        ['win', 'd3d9'], bug=488552)
 
     # Mac failures
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
