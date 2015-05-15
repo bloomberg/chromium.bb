@@ -6,13 +6,13 @@ package org.chromium.net;
 
 import android.util.Log;
 
-import org.apache.http.conn.ConnectTimeoutException;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -186,7 +186,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             case ChromiumUrlRequestError.MALFORMED_URL:
                 return new MalformedURLException("Malformed URL: " + mUrl);
             case ChromiumUrlRequestError.CONNECTION_TIMED_OUT:
-                return new ConnectTimeoutException("Connection timed out");
+                return new SocketTimeoutException("Connection timed out");
             case ChromiumUrlRequestError.UNKNOWN_HOST:
                 String host;
                 try {

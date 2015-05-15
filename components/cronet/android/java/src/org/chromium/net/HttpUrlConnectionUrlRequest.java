@@ -7,8 +7,6 @@ package org.chromium.net;
 import android.content.Context;
 import android.text.TextUtils;
 
-import org.apache.http.HttpStatus;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -283,7 +281,7 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
 
             if (mOffset != 0) {
                 // The server may ignore the request for a byte range.
-                if (mHttpStatusCode == HttpStatus.SC_OK) {
+                if (mHttpStatusCode == HttpURLConnection.HTTP_OK) {
                     if (mContentLength != -1) {
                         mContentLength -= mOffset;
                     }
@@ -447,8 +445,8 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
         // the status code will be 206, not 200. Since the rest of the
         // application is
         // expecting 200 to indicate success, we need to fake it.
-        if (httpStatusCode == HttpStatus.SC_PARTIAL_CONTENT) {
-            httpStatusCode = HttpStatus.SC_OK;
+        if (httpStatusCode == HttpURLConnection.HTTP_PARTIAL) {
+            httpStatusCode = HttpURLConnection.HTTP_OK;
         }
         return httpStatusCode;
     }
