@@ -20,6 +20,12 @@ TEST(URLSchemesTest, IsOriginSecure) {
   EXPECT_FALSE(IsOriginSecure(GURL("ws://example.com/fun.html")));
 
   EXPECT_TRUE(IsOriginSecure(GURL("http://localhost/fun.html")));
+  EXPECT_TRUE(IsOriginSecure(GURL("http://pumpkin.localhost/fun.html")));
+  EXPECT_TRUE(
+      IsOriginSecure(GURL("http://crumpet.pumpkin.localhost/fun.html")));
+  EXPECT_TRUE(IsOriginSecure(GURL("http://pumpkin.localhost:8080/fun.html")));
+  EXPECT_TRUE(
+      IsOriginSecure(GURL("http://crumpet.pumpkin.localhost:3000/fun.html")));
   EXPECT_FALSE(IsOriginSecure(GURL("http://localhost.com/fun.html")));
   EXPECT_TRUE(IsOriginSecure(GURL("https://localhost.com/fun.html")));
 
