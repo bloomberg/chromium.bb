@@ -65,9 +65,7 @@ class TabDescriptor : public devtools_discovery::DevToolsTargetDescriptor {
     return favicon_url_;
   }
 
-  base::TimeTicks GetLastActivityTime() const override {
-    return last_activity_time_;
-  }
+  base::Time GetLastActiveTime() const override { return last_active_time_; }
 
   std::string GetId() const override {
     return base::IntToString(tab_id_);
@@ -134,8 +132,7 @@ class TabDescriptor : public devtools_discovery::DevToolsTargetDescriptor {
         title_(base::UTF16ToUTF8(web_contents->GetTitle())),
         url_(web_contents->GetURL()),
         favicon_url_(CalculateFaviconURL()),
-        last_activity_time_(web_contents->GetLastActiveTime()) {
-  }
+        last_active_time_(web_contents->GetLastActiveTime()) {}
 
   TabDescriptor(int tab_id, const base::string16& title, const GURL& url)
       : tab_id_(tab_id),
@@ -191,7 +188,7 @@ class TabDescriptor : public devtools_discovery::DevToolsTargetDescriptor {
   const std::string title_;
   const GURL url_;
   const GURL favicon_url_;
-  const base::TimeTicks last_activity_time_;
+  const base::Time last_active_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TabDescriptor);
 };

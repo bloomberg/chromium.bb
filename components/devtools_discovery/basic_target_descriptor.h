@@ -28,7 +28,7 @@ class BasicTargetDescriptor : public DevToolsTargetDescriptor {
   std::string GetDescription() const override;
   GURL GetURL() const override;
   GURL GetFaviconURL() const override;
-  base::TimeTicks GetLastActivityTime() const override;
+  base::Time GetLastActiveTime() const override;
   bool IsAttached() const override;
   scoped_refptr<content::DevToolsAgentHost> GetAgentHost() const override;
   bool Activate() const override;
@@ -50,7 +50,7 @@ class BasicTargetDescriptor : public DevToolsTargetDescriptor {
   std::string description_;
   GURL url_;
   GURL favicon_url_;
-  base::TimeTicks last_activity_time_;
+  base::Time last_active_time_;
 };
 
 }  // namespace devtools_discovery

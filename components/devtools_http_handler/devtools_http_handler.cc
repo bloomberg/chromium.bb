@@ -320,7 +320,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
 
 static bool TimeComparator(const DevToolsTargetDescriptor* desc1,
                            const DevToolsTargetDescriptor* desc2) {
-  return desc1->GetLastActivityTime() > desc2->GetLastActivityTime();
+  return desc1->GetLastActiveTime() > desc2->GetLastActiveTime();
 }
 
 // DevToolsHttpHandler::ServerSocketFactory ----------------------------------

@@ -32,7 +32,7 @@
 
 namespace base {
 class DictionaryValue;
-class TimeTicks;
+class Time;
 }
 
 namespace blink {
@@ -353,7 +353,7 @@ class WebContents : public PageNavigator,
 
   // Get the last time that the WebContents was made active (either when it was
   // created or shown with WasShown()).
-  virtual base::TimeTicks GetLastActiveTime() const = 0;
+  virtual base::Time GetLastActiveTime() const = 0;
 
   // Invoked when the WebContents becomes shown/hidden.
   virtual void WasShown() = 0;

@@ -275,7 +275,7 @@ class CONTENT_EXPORT WebContentsImpl
   base::TerminationStatus GetCrashedStatus() const override;
   bool IsBeingDestroyed() const override;
   void NotifyNavigationStateChanged(InvalidateTypes changed_flags) override;
-  base::TimeTicks GetLastActiveTime() const override;
+  base::Time GetLastActiveTime() const override;
   void WasShown() override;
   void WasHidden() override;
   bool NeedToFireBeforeUnload() override;
@@ -1149,7 +1149,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The time that this WebContents was last made active. The initial value is
   // the WebContents creation time.
-  base::TimeTicks last_active_time_;
+  base::Time last_active_time_;
 
   // See description above setter.
   bool closed_by_user_gesture_;

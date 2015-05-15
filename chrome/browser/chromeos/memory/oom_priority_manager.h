@@ -79,7 +79,7 @@ class OomPriorityManager : public content::NotificationObserver {
     bool is_pinned;
     bool is_selected;  // selected in the currently active browser window
     bool is_discarded;
-    base::TimeTicks last_active;
+    base::Time last_active;
     base::ProcessHandle renderer_handle;
     int child_process_host_id;
     base::string16 title;

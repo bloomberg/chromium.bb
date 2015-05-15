@@ -2570,7 +2570,7 @@ TEST_F(WebContentsImplTest, GetLastActiveTime) {
   EXPECT_FALSE(contents()->GetLastActiveTime().is_null());
 
   // Reset the last active time to a known-bad value.
-  contents()->last_active_time_ = base::TimeTicks();
+  contents()->last_active_time_ = base::Time();
   ASSERT_TRUE(contents()->GetLastActiveTime().is_null());
 
   // Simulate activating the WebContents. The active time should update.

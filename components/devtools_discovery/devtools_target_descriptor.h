@@ -50,7 +50,7 @@ class DevToolsTargetDescriptor {
   virtual GURL GetFaviconURL() const = 0;
 
   // Returns the time when the target was last active.
-  virtual base::TimeTicks GetLastActivityTime() const = 0;
+  virtual base::Time GetLastActiveTime() const = 0;
 
   // Returns true if the debugger is attached to the target.
   virtual bool IsAttached() const = 0;

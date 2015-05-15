@@ -35,12 +35,13 @@ enum TestIndicies {
 // desired order.
 TEST_F(OomPriorityManagerTest, Comparator) {
   chromeos::OomPriorityManager::TabStatsList test_list;
-  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::Time now = base::Time::Now();
 
   // Add kSelected last to verify we are sorting the array.
 
   {
     OomPriorityManager::TabStats stats;
+    stats.last_active = now;
     stats.is_pinned = true;
     stats.renderer_handle = kPinned;
     stats.child_process_host_id = kPinned;
@@ -49,6 +50,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     OomPriorityManager::TabStats stats;
+    stats.last_active = now;
     stats.is_app = true;
     stats.renderer_handle = kApp;
     stats.child_process_host_id = kApp;
@@ -57,6 +59,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     OomPriorityManager::TabStats stats;
+    stats.last_active = now;
     stats.is_playing_audio = true;
     stats.renderer_handle = kPlayingAudio;
     stats.child_process_host_id = kPlayingAudio;
@@ -98,6 +101,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     OomPriorityManager::TabStats stats;
+    stats.last_active = now;
     stats.is_reloadable_ui = true;
     stats.renderer_handle = kReloadableUI;
     stats.child_process_host_id = kReloadableUI;
@@ -108,6 +112,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
   // we are actually sorting the array.
   {
     OomPriorityManager::TabStats stats;
+    stats.last_active = now;
     stats.is_selected = true;
     stats.renderer_handle = kSelected;
     stats.child_process_host_id = kSelected;

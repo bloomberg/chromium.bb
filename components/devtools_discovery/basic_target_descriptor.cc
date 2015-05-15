@@ -47,7 +47,7 @@ BasicTargetDescriptor::BasicTargetDescriptor(
     content::NavigationEntry* entry = controller.GetActiveEntry();
     if (entry != NULL && entry->GetURL().is_valid())
       favicon_url_ = entry->GetFavicon().url;
-    last_activity_time_ = web_contents->GetLastActiveTime();
+    last_active_time_ = web_contents->GetLastActiveTime();
   }
 }
 
@@ -82,8 +82,8 @@ GURL BasicTargetDescriptor::GetFaviconURL() const {
   return favicon_url_;
 }
 
-base::TimeTicks BasicTargetDescriptor::GetLastActivityTime() const {
-  return last_activity_time_;
+base::Time BasicTargetDescriptor::GetLastActiveTime() const {
+  return last_active_time_;
 }
 
 bool BasicTargetDescriptor::IsAttached() const {
