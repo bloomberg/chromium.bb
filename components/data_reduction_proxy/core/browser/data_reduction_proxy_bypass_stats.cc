@@ -223,6 +223,21 @@ void DataReductionProxyBypassStats::OnConnectComplete(
   }
 }
 
+void DataReductionProxyBypassStats::ClearRequestCounts() {
+  successful_requests_through_proxy_count_ = 0;
+  proxy_net_errors_count_ = 0;
+}
+
+void DataReductionProxyBypassStats::NotifyUnavailabilityIfChanged() {
+  bool prev_unavailable = unavailable_;
+  unavailable_ =
+      (proxy_net_errors_count_ >= kMinFailedRequestsWhenUnavailable &&
+       successful_requests_through_proxy_count_ <=
+           kMaxSuccessfulRequestsWhenUnavailable);
+  if (prev_unavailable != unavailable_)
+    unreachable_callback_.Run(unavailable_);
+}
+
 void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
     const net::URLRequest& request,
     bool data_reduction_proxy_enabled,
@@ -363,21 +378,6 @@ void DataReductionProxyBypassStats::RecordMissingViaHeaderBytes(
 void DataReductionProxyBypassStats::OnNetworkChanged(
     NetworkChangeNotifier::ConnectionType type) {
   ClearRequestCounts();
-}
-
-void DataReductionProxyBypassStats::ClearRequestCounts() {
-  successful_requests_through_proxy_count_ = 0;
-  proxy_net_errors_count_ = 0;
-}
-
-void DataReductionProxyBypassStats::NotifyUnavailabilityIfChanged() {
-  bool prev_unavailable = unavailable_;
-  unavailable_ =
-      (proxy_net_errors_count_ >= kMinFailedRequestsWhenUnavailable &&
-       successful_requests_through_proxy_count_ <=
-           kMaxSuccessfulRequestsWhenUnavailable);
-  if (prev_unavailable != unavailable_)
-    unreachable_callback_.Run(unavailable_);
 }
 
 void DataReductionProxyBypassStats::RecordBypassedBytes(

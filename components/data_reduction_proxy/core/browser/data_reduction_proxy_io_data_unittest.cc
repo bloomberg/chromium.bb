@@ -8,14 +8,21 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -142,6 +149,50 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   EXPECT_NE(nullptr, io_data->bypass_stats());
 
   io_data->ShutdownOnUIThread();
+}
+
+TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
+  net::TestURLRequestContext context(false);
+  scoped_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithParamsFlags(DataReductionProxyParams::kAllowed |
+                           DataReductionProxyParams::kFallbackAllowed |
+                           DataReductionProxyParams::kPromoAllowed)
+          .WithURLRequestContext(&context)
+          .WithTestConfigurator()
+          .SkipSettingsInitialization()
+          .Build();
+
+  drp_test_context->pref_service()->SetBoolean(
+      prefs::kDataReductionProxyEnabled, true);
+  drp_test_context->InitSettings();
+  DataReductionProxyIOData* io_data = drp_test_context->io_data();
+  std::vector<net::ProxyServer> proxies;
+  proxies.push_back(net::ProxyServer::FromURI("http://foo1.com",
+                                              net::ProxyServer::SCHEME_HTTP));
+  net::ProxyService* proxy_service =
+      io_data->url_request_context_getter_->GetURLRequestContext()
+          ->proxy_service();
+  net::ProxyInfo proxy_info;
+  proxy_info.UseNamedProxy("http://foo2.com");
+  net::BoundNetLog bound_net_log;
+  const net::ProxyRetryInfoMap& bad_proxy_list =
+      proxy_service->proxy_retry_info();
+
+  // Simulate network error to add proxies to the bad proxy list.
+  proxy_service->MarkProxiesAsBadUntil(proxy_info, base::TimeDelta::FromDays(1),
+                                       proxies, bound_net_log);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that there are 2 proxies in the bad proxies list.
+  EXPECT_EQ(2UL, bad_proxy_list.size());
+
+  // Turn Data Saver off.
+  drp_test_context->settings()->SetDataReductionProxyEnabled(false);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that bad proxy list is empty.
+  EXPECT_EQ(0UL, bad_proxy_list.size());
 }
 
 }  // namespace data_reduction_proxy

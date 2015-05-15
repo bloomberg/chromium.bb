@@ -80,6 +80,14 @@ class DataReductionProxyBypassStats
   void OnConnectComplete(const net::HostPortPair& proxy_server,
                          int net_error);
 
+  // Unconditionally clears counts of successful requests and net errors when
+  // using the Data Reduction Proxy.
+  void ClearRequestCounts();
+
+  // Checks if the availability status of the Data Reduction Proxy has changed,
+  // and calls |unreachable_callback_| if so.
+  void NotifyUnavailabilityIfChanged();
+
  private:
   friend class DataReductionProxyBypassStatsTest;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyBypassStatsTest,
@@ -114,17 +122,6 @@ class DataReductionProxyBypassStats
   // NetworkChangeNotifier::NetworkChangeObserver:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
-
-  // Clears request counts unconditionally.
-  void ClearRequestCounts();
-
-  // Checks if the availability status of the data reduction proxy has changed,
-  // and notifies the UIThread via NotifyUnavailabilityOnUIThread if so. The
-  // data reduction proxy is considered unavailable if and only if no requests
-  // went through the proxy but some eligible requests were service by other
-  // routes.
-  void NotifyUnavailabilityIfChanged();
-  void NotifyUnavailabilityOnUIThread(bool unavailable);
 
   void RecordBypassedBytes(
       DataReductionProxyBypassType bypass_type,

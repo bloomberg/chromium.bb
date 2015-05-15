@@ -83,9 +83,7 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // configuration should be set. Use the alternative configuration only if
   // |enabled| and |alternative_enabled| are true. |at_startup| is true only
   // when DataReductionProxySettings is initialized.
-  void SetProxyPrefs(bool enabled,
-                     bool alternative_enabled,
-                     bool at_startup);
+  void SetProxyPrefs(bool enabled, bool alternative_enabled, bool at_startup);
 
   // Bridge methods to safely call to the UI thread objects.
   void UpdateContentLengths(int64 received_content_length,
@@ -159,6 +157,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
  private:
   friend class TestDataReductionProxyIOData;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyIODataTest, TestConstruction);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyIODataTest,
+                           TestResetBadProxyListOnDisableDataSaver);
 
   // Used for testing.
   DataReductionProxyIOData();
