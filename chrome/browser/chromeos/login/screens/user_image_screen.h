@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_model.h"
@@ -75,6 +76,15 @@ class UserImageScreen : public UserImageModel,
   bool user_selected_image() const { return user_has_selected_image_; }
 
  private:
+  // Must be kept synced with |NewUserPriorityPrefsSyncResult| enum from
+  // histograms.xml.
+  enum class SyncResult {
+    SUCCEEDED,
+    TIMED_OUT,
+    // Keeps a number of different sync results. Should be the last in the list.
+    COUNT
+  };
+
   // Called when whaiting for sync timed out.
   void OnSyncTimeout();
 
@@ -101,6 +111,9 @@ class UserImageScreen : public UserImageModel,
   // Closes the screen.
   void ExitScreen();
 
+  // Reports sync duration and result to UMA.
+  void ReportSyncResult(SyncResult timed_out) const;
+
   content::NotificationRegistrar notification_registrar_;
 
   scoped_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
@@ -126,6 +139,9 @@ class UserImageScreen : public UserImageModel,
 
   // True if user has explicitly selected some image.
   bool user_has_selected_image_;
+
+  // The time when we started wait for user image sync.
+  base::Time sync_waiting_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreen);
 };

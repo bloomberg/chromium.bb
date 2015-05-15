@@ -4118,14 +4118,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="CrosFirstRun.DialogShown">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dzhioev@chromium.org</owner>
   <summary>
     Records the number of times when first-run dialog was shown.
   </summary>
 </histogram>
 
 <histogram name="CrosFirstRun.FurthestStep">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dzhioev@chromium.org</owner>
   <summary>
     Index of furthest step that was reached during tutorial. Since order of
     steps could change eventially and new steps could apear we use index here
@@ -4134,23 +4134,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="CrosFirstRun.TimeSpent" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dzhioev@chromium.org</owner>
   <summary>The total time that user spent on first-run tutorial.</summary>
 </histogram>
 
 <histogram name="CrosFirstRun.TimeSpentOnStep" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dzhioev@chromium.org</owner>
   <summary>The time that user spent on some step of tutorial.</summary>
 </histogram>
 
 <histogram name="CrosFirstRun.TutorialCompletion"
     enum="CrosFirstRunTutorialCompletionType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dzhioev@chromium.org</owner>
   <summary>Tracks the way how user left tutorial.</summary>
 </histogram>
 
 <histogram name="CrosFirstRun.TutorialLaunched">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dzhioev@chromium.org</owner>
   <summary>
     Records the number of times when first-run tutorial has been launched.
   </summary>
@@ -14421,6 +14421,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Chrome OS histogram that keeps track of the days since the least frequently
     used account signed in. Reported on every boot and once a day after that.
+  </summary>
+</histogram>
+
+<histogram name="Login.NewUserPriorityPrefsSyncResult"
+    enum="NewUserPriorityPrefsSyncResult">
+  <owner>dzhioev@chromeos.org</owner>
+  <summary>Records whether a new user's priority prefs sync timed out.</summary>
+</histogram>
+
+<histogram name="Login.NewUserPriorityPrefsSyncTime" units="milliseconds">
+  <owner>dzhioev@chromeos.org</owner>
+  <summary>
+    Time spent waiting for priority preferences to sync after new user sign in.
+    The operation will time out after 10s.
   </summary>
 </histogram>
 
@@ -58932,6 +58946,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Insecure URL"/>
   <int value="5" label="Suggest is disabled"/>
   <int value="6" label="URL blocked for supervised user"/>
+</enum>
+
+<enum name="NewUserPriorityPrefsSyncResult" type="int">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Timed out"/>
 </enum>
 
 <enum name="NotificationActionType" type="int">
