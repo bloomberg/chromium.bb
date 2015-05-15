@@ -124,10 +124,7 @@ void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState
         // 1 or 2 channels.
         exceptionState.throwDOMException(
             NotSupportedError,
-            ExceptionMessages::failedToSet(
-                "channelCountMode",
-                "StereoPannerNode",
-                "'max' is not allowed"));
+                "StereoPanner: 'max' is not allowed");
         m_newChannelCountMode = oldMode;
     } else {
         // Do nothing for other invalid values.

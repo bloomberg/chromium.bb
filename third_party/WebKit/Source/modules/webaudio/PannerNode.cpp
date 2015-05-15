@@ -566,10 +566,7 @@ void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exce
         // This is not supported for a PannerNode, which can only handle 1 or 2 channels.
         exceptionState.throwDOMException(
             NotSupportedError,
-            ExceptionMessages::failedToSet(
-                "channelCountMode",
-                "PannerNode",
-                "'max' is not allowed"));
+                "Panner: 'max' is not allowed");
         m_newChannelCountMode = oldMode;
     } else {
         // Do nothing for other invalid values.

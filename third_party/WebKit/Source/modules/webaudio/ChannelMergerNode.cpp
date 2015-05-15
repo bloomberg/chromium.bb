@@ -103,10 +103,7 @@ void ChannelMergerHandler::setChannelCount(unsigned long channelCount, Exception
     if (channelCount != 1) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            ExceptionMessages::failedToSet(
-                "channelCount",
-                "ChannelMergerNode",
-                "channelCount cannot be changed"));
+            "ChannelMerger: channelCount cannot be changed from 1");
     }
 }
 
@@ -119,10 +116,7 @@ void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionStat
     if (mode != "explicit") {
         exceptionState.throwDOMException(
             InvalidStateError,
-            ExceptionMessages::failedToSet(
-                "channelCountMode",
-                "ChannelMergerNode",
-                "channelCountMode cannot be changed"));
+            "ChannelMerger: channelCountMode cannot be changed from 'explicit'");
     }
 }
 

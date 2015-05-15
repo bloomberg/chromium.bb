@@ -25,8 +25,8 @@ PASS context.createScriptProcessor() did not throw exception.
 PASS context.createScriptProcessor(0) did not throw exception.
 PASS context.createChannelSplitter(0) threw exception IndexSizeError: Failed to execute 'createChannelSplitter' on 'AudioContext': number of outputs (0) must be between 1 and 32..
 PASS context.createChannelSplitter(99) threw exception IndexSizeError: Failed to execute 'createChannelSplitter' on 'AudioContext': number of outputs (99) must be between 1 and 32..
-PASS context.createChannelMerger(0) threw exception IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': number of inputs (0) must be between 1 and 32..
-PASS context.createChannelMerger(99) threw exception IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': number of inputs (99) must be between 1 and 32..
+PASS context.createChannelMerger(0) threw exception IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': The number of inputs provided (0) is outside the range [1, 32]..
+PASS context.createChannelMerger(99) threw exception IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': The number of inputs provided (99) is outside the range [1, 32]..
 PASS context.createPeriodicWave(null, null) threw exception SyntaxError: Failed to execute 'createPeriodicWave' on 'AudioContext': invalid real array.
 PASS context.createPeriodicWave(new Float32Array(10), null) threw exception SyntaxError: Failed to execute 'createPeriodicWave' on 'AudioContext': invalid imaginary array.
 PASS context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100)) threw exception IndexSizeError: Failed to execute 'createPeriodicWave' on 'AudioContext': The length of the real part array provided (4100) is outside the range [1, 2048]..
@@ -58,7 +58,7 @@ PASS node.connect(null, 0, 0) threw exception TypeError: Failed to execute 'conn
 PASS node.connect(context.destination, 100, 0) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (100) exceeds number of outputs (1)..
 PASS node.connect(context.destination, 0, 100) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': input index (100) exceeds number of inputs (1)..
 PASS node.connect(node2.gain, 100) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (100) exceeds number of outputs (1)..
-PASS node.disconnect(99) threw exception IndexSizeError: Failed to execute 'disconnect' on 'AudioNode': The output index provided (99) is outside the range [0, 1]..
+PASS node.disconnect(99) threw exception IndexSizeError: Failed to execute 'disconnect' on 'AudioNode': The output index provided (99) is outside the range [0, 0]..
 PASS node.connect(otherContext.destination) threw exception SyntaxError: Failed to execute 'connect' on 'AudioNode': cannot connect to a destination belonging to a different audio context..
 PASS node.channelCount = 99 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, 32]..
 PASS node.channelCount is not 99
@@ -150,7 +150,7 @@ PASS panner.channelCount = 0 threw exception NotSupportedError: Failed to set th
 PASS panner.channelCount is not 0
 PASS panner.channelCount = 3 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channelCount provided (3) is outside the range [1, 2]..
 PASS panner.channelCount is not 3
-PASS panner.channelCountMode = 'max' threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': Failed to set the 'channelCountMode' property on 'PannerNode': 'max' is not allowed.
+PASS panner.channelCountMode = 'max' threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': Panner: 'max' is not allowed.
 PASS panner.channelCountMode is not 'max'
 PASS panner.channelCountMode = 'explicit' did not throw exception.
 PASS panner.channelCountMode = 'clamped-max' did not throw exception.

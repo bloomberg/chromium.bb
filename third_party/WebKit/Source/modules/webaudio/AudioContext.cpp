@@ -590,9 +590,13 @@ ChannelMergerNode* AudioContext::createChannelMerger(size_t numberOfInputs, Exce
     if (!node) {
         exceptionState.throwDOMException(
             IndexSizeError,
-            "number of inputs (" + String::number(numberOfInputs)
-            + ") must be between 1 and "
-            + String::number(AudioContext::maxNumberOfChannels()) + ".");
+            ExceptionMessages::indexOutsideRange<size_t>(
+                "number of inputs",
+                numberOfInputs,
+                1,
+                ExceptionMessages::InclusiveBound,
+                AudioContext::maxNumberOfChannels(),
+                ExceptionMessages::InclusiveBound));
         return nullptr;
     }
 

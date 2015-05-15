@@ -705,7 +705,7 @@ void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
                 outputIndex,
                 0u,
                 ExceptionMessages::InclusiveBound,
-                numberOfOutputs(),
+                numberOfOutputs() - 1,
                 ExceptionMessages::InclusiveBound));
         return;
     }
@@ -752,7 +752,7 @@ void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, Excepti
                 outputIndex,
                 0u,
                 ExceptionMessages::InclusiveBound,
-                numberOfOutputs(),
+                numberOfOutputs() - 1,
                 ExceptionMessages::InclusiveBound));
         return;
     }
@@ -786,7 +786,7 @@ void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, unsigne
                 outputIndex,
                 0u,
                 ExceptionMessages::InclusiveBound,
-                numberOfOutputs(),
+                numberOfOutputs() - 1,
                 ExceptionMessages::InclusiveBound));
         return;
     }
@@ -799,7 +799,7 @@ void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, unsigne
                 inputIndex,
                 0u,
                 ExceptionMessages::InclusiveBound,
-                destination->numberOfInputs(),
+                destination->numberOfInputs() - 1,
                 ExceptionMessages::InclusiveBound));
         return;
     }
@@ -851,7 +851,7 @@ void AudioNode::disconnect(AudioParam* destinationParam, unsigned outputIndex, E
                 outputIndex,
                 0u,
                 ExceptionMessages::InclusiveBound,
-                numberOfOutputs(),
+                numberOfOutputs() - 1,
                 ExceptionMessages::InclusiveBound));
         return;
     }
