@@ -77,6 +77,10 @@ class BrowserCdmCast : public ::media::BrowserCdm {
  private:
   friend class BrowserCdmCastUi;
 
+  // Allow subclasses to override to provide key sysytem specific
+  // initialization.
+  virtual void InitializeInternal();
+
   ::media::SessionMessageCB session_message_cb_;
   ::media::SessionClosedCB session_closed_cb_;
   ::media::LegacySessionErrorCB legacy_session_error_cb_;

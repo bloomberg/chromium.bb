@@ -39,6 +39,8 @@ void BrowserCdmCast::Initialize(
   legacy_session_error_cb_ = legacy_session_error_cb;
   session_keys_change_cb_ = session_keys_change_cb;
   session_expiration_update_cb_ = session_expiration_update_cb;
+
+  InitializeInternal();
 }
 
 int BrowserCdmCast::RegisterPlayer(const base::Closure& new_key_cb,
@@ -196,6 +198,11 @@ void BrowserCdmCastUi::RemoveSession(
 ::media::CdmContext* BrowserCdmCastUi::GetCdmContext() {
   NOTREACHED();
   return nullptr;
+}
+
+// A default empty implementation for subclasses that don't need to provide
+// any key system specific initialization.
+void BrowserCdmCast::InitializeInternal() {
 }
 
 }  // namespace media
