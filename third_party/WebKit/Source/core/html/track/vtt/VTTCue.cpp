@@ -569,7 +569,7 @@ static TextDirection determineDirectionality(const String& value, bool& hasStron
     BidiResolver<VTTTextRunIterator, BidiCharacterRun> bidiResolver;
     bidiResolver.setStatus(BidiStatus(LTR, false));
     bidiResolver.setPositionIgnoringNestedIsolates(VTTTextRunIterator(&run, 0));
-    return bidiResolver.determineParagraphDirectionality(&hasStrongDirectionality);
+    return bidiResolver.determineDirectionality(&hasStrongDirectionality);
 }
 
 static CSSValueID determineTextDirection(DocumentFragment* vttRoot)
