@@ -10,8 +10,8 @@ declare_args() {
 
   compile_credentials = is_linux
 
-  compile_seccomp_bpf_demo =
-      is_linux && (current_cpu == "x86" || current_cpu == "x64")
+  # On Android, use plain GTest.
+  use_base_test_suite = is_linux
 }
 
 # We have two principal targets: sandbox and sandbox_linux_unittests
@@ -61,6 +61,11 @@ source_set("sandbox_linux_test_utils") {
     ]
     deps += [ ":seccomp_bpf" ]
   }
+
+  if (use_base_test_suite) {
+    deps += [ "//base/test:test_support" ]
+    defines = [ "SANDBOX_USES_BASE_TEST_SUITE" ]
+  }
 }
 
 # Sources shared by sandbox_linux_unittests and sandbox_linux_jni_unittests.
@@ -88,9 +93,13 @@ source_set("sandbox_linux_unittests_sources") {
     ":sandbox",
     ":sandbox_linux_test_utils",
     "//base",
-    "//base/test:test_support",
     "//testing/gtest",
   ]
+
+  if (use_base_test_suite) {
+    deps += [ "//base/test:test_support" ]
+    defines = [ "SANDBOX_USES_BASE_TEST_SUITE" ]
+  }
 
   if (is_linux) {
     # Don't use this on Android.
@@ -124,9 +133,13 @@ source_set("sandbox_linux_unittests_sources") {
     sources += [
       "integration_tests/namespace_unix_domain_socket_unittest.cc",
       "services/credentials_unittest.cc",
-      "services/namespace_sandbox_unittest.cc",
       "services/namespace_utils_unittest.cc",
     ]
+
+    if (use_base_test_suite) {
+      # Tests that use advanced features not available in stock GTest.
+      sources += [ "services/namespace_sandbox_unittest.cc" ]
+    }
 
     # For credentials_unittest.cc
     configs += [ "//build/config/linux:libcap" ]

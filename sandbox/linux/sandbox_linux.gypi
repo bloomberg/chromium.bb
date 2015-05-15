@@ -8,9 +8,11 @@
       ['OS=="linux"', {
         'compile_suid_client': 1,
         'compile_credentials': 1,
+        'use_base_test_suite': 1,
       }, {
         'compile_suid_client': 0,
         'compile_credentials': 0,
+        'use_base_test_suite': 0,
       }],
       ['OS=="linux" and (target_arch=="ia32" or target_arch=="x64" or '
          'target_arch=="mipsel")', {
@@ -87,6 +89,14 @@
           'dependencies': [
             'seccomp_bpf',
           ]
+        }],
+        [ 'use_base_test_suite==1', {
+          'dependencies': [
+            '../base/base.gyp:test_support_base',
+          ],
+          'defines': [
+            'SANDBOX_USES_BASE_TEST_SUITE',
+          ],
         }],
       ],
     },

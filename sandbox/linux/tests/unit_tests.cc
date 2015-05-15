@@ -69,7 +69,7 @@ static const int kIgnoreThisTest = 43;
 static const int kExitWithAssertionFailure = 1;
 static const int kExitForTimeout = 2;
 
-#if !defined(OS_ANDROID)
+#if defined(SANDBOX_USES_BASE_TEST_SUITE)
 // This is due to StackDumpSignalHandler() performing _exit(1).
 // TODO(jln): get rid of the collision with kExitWithAssertionFailure.
 const int kExitAfterSIGSEGV = 1;
@@ -282,10 +282,12 @@ void UnitTests::DeathSEGVMessage(int status,
   std::string details(TestFailedMessage(msg));
   const char* expected_msg = static_cast<const char*>(aux);
 
-#if defined(OS_ANDROID)
+#if !defined(SANDBOX_USES_BASE_TEST_SUITE)
   const bool subprocess_got_sigsegv =
       WIFSIGNALED(status) && (SIGSEGV == WTERMSIG(status));
 #else
+  // This hack is required when a signal handler is installed
+  // for SEGV that will _exit(1).
   const bool subprocess_got_sigsegv =
       WIFEXITED(status) && (kExitAfterSIGSEGV == WEXITSTATUS(status));
 #endif

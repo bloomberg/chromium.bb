@@ -10,7 +10,6 @@
     'sandbox_linux_test_utils',
     'sandbox_services',
     '../base/base.gyp:base',
-    '../base/base.gyp:test_support_base',
     '../testing/gtest.gyp:gtest',
   ],
   'include_dirs': [
@@ -60,11 +59,25 @@
       'sources': [
         'integration_tests/namespace_unix_domain_socket_unittest.cc',
         'services/credentials_unittest.cc',
-        'services/namespace_sandbox_unittest.cc',
         'services/namespace_utils_unittest.cc',
       ],
       'dependencies': [
         '../build/linux/system.gyp:libcap'
+      ],
+      'conditions': [
+        [ 'use_base_test_suite==1', {
+          'sources': [
+            'services/namespace_sandbox_unittest.cc',
+          ]
+        }]
+      ],
+    }],
+    [ 'use_base_test_suite==1', {
+      'dependencies': [
+        '../base/base.gyp:test_support_base',
+      ],
+      'defines': [
+        'SANDBOX_USES_BASE_TEST_SUITE',
       ],
     }],
   ],
