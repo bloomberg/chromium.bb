@@ -44,6 +44,7 @@ void PpapiDecryptor::Create(
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr,
                               "Plugin instance creation failed."));
+    return;
   }
 
   scoped_ptr<PpapiDecryptor> ppapi_decryptor(
