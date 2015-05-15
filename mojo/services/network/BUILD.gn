@@ -115,6 +115,7 @@ mojo_native_application("apptests") {
   testonly = true
 
   sources = [
+    "http_server_apptest.cc",
     "udp_socket_apptest.cc",
     "url_loader_impl_apptest.cc",
   ]

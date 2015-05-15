@@ -5,10 +5,13 @@
 #ifndef MOJO_SERVICES_NETWORK_HTTP_CONNECTION_IMPL_H_
 #define MOJO_SERVICES_NETWORK_HTTP_CONNECTION_IMPL_H_
 
+#include <set>
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/http_connection.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
@@ -36,6 +39,8 @@ class HttpConnectionImpl : public HttpConnection,
   void OnReceivedWebSocketMessage(const std::string& data);
 
  private:
+  class SimpleDataPipeReader;
+
   // HttpConnection implementation.
   void SetSendBufferSize(uint32_t size,
                          const SetSendBufferSizeCallback& callback) override;
@@ -46,10 +51,20 @@ class HttpConnectionImpl : public HttpConnection,
   // ErrorHandler implementation.
   void OnConnectionError() override;
 
+  void OnFinishedReadingResponseBody(URLResponsePtr response_ptr,
+                                     SimpleDataPipeReader* reader,
+                                     scoped_ptr<std::string> body);
+
+  bool EncounteredConnectionError() const {
+    return !binding_.is_bound() || !delegate_;
+  }
+
   const int connection_id_;
   HttpServerImpl* const owner_;
   HttpConnectionDelegatePtr delegate_;
   Binding<HttpConnection> binding_;
+  // Owns its elements.
+  std::set<SimpleDataPipeReader*> response_body_readers_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpConnectionImpl);
 };
