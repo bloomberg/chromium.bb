@@ -226,6 +226,18 @@ Polymer('media-router-container', {
   },
 
   /**
+   * Filter that returns the arrow-drop-* icon to show.
+   *
+   * @param {{castModeHidden: boolean}} value The parameters passed into this
+   *   filter.
+   * Parameters in |value|:
+   *   castModeHidden - Whether or not the cast mode is currently hidden.
+   */
+  getDropDownIcon: function(value) {
+    return value['castModeHidden'] ? 'arrow-drop-down' : 'arrow-drop-up';
+  },
+
+  /**
    * Hides cast-mode-picker.
    */
   hideCastMode: function() {

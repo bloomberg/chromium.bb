@@ -10,18 +10,6 @@
 namespace {
 
 void AddIcons(content::WebUIDataSource* html_source) {
-  html_source->AddResourcePath("elements/icon/drop-down-arrow.png",
-                              IDR_DROP_DOWN_ARROW_ICON);
-  html_source->AddResourcePath("elements/icon/drop-down-arrow2x.png",
-                              IDR_DROP_DOWN_ARROW_2X_ICON);
-  html_source->AddResourcePath("elements/icon/drop-down-arrow-hover.png",
-                              IDR_DROP_DOWN_ARROW_HOVER_ICON);
-  html_source->AddResourcePath("elements/icon/drop-down-arrow-hover2x.png",
-                              IDR_DROP_DOWN_ARROW_HOVER_2X_ICON);
-  html_source->AddResourcePath("elements/icon/drop-down-arrow-showing.png",
-                              IDR_DROP_DOWN_ARROW_SHOWING_ICON);
-  html_source->AddResourcePath("elements/icon/drop-down-arrow-showing2x.png",
-                              IDR_DROP_DOWN_ARROW_SHOWING_2X_ICON);
   html_source->AddResourcePath("elements/icon/sad-face.png",
                               IDR_SAD_FACE_ICON);
   html_source->AddResourcePath("elements/icon/sad-face2x.png",
@@ -50,15 +38,6 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
       "elements/cast_mode_picker/cast_mode_picker.js",
       IDR_CAST_MODE_PICKER_JS);
-  html_source->AddResourcePath(
-      "elements/drop_down_button/drop_down_button.css",
-      IDR_DROP_DOWN_BUTTON_CSS);
-  html_source->AddResourcePath(
-      "elements/drop_down_button/drop_down_button.html",
-      IDR_DROP_DOWN_BUTTON_HTML);
-  html_source->AddResourcePath(
-      "elements/drop_down_button/drop_down_button.js",
-      IDR_DROP_DOWN_BUTTON_JS);
   html_source->AddResourcePath(
       "elements/issue_banner/issue_banner.css",
       IDR_ISSUE_BANNER_CSS);

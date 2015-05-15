@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #cast-modes {
-  margin: 40px 0;
+  margin: 40px 2px;
   position: absolute;
   z-index: 1;
 }
@@ -18,11 +18,6 @@
 
 #container-header {
   background-color: rgb(214, 214, 214);
-}
-
-#drop-down-button {
-  margin-top: 10px;
-  z-index: 1;
 }
 
 .hide {

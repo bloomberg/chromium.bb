@@ -12,9 +12,6 @@
   <include name="IDR_CAST_MODE_PICKER_HTML" file="resources\media_router\elements\cast_mode_picker\cast_mode_picker.html" type="BINDATA" />
   <include name="IDR_CAST_MODE_PICKER_CSS" file="resources\media_router\elements\cast_mode_picker\cast_mode_picker.css" type="BINDATA" />
   <include name="IDR_CAST_MODE_PICKER_JS" file="resources\media_router\elements\cast_mode_picker\cast_mode_picker.js" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_BUTTON_HTML" file="resources\media_router\elements\drop_down_button\drop_down_button.html" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_BUTTON_CSS" file="resources\media_router\elements\drop_down_button\drop_down_button.css" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_BUTTON_JS" file="resources\media_router\elements\drop_down_button\drop_down_button.js" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_HTML" file="resources\media_router\elements\issue_banner\issue_banner.html" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_JS" file="resources\media_router\elements\issue_banner\issue_banner.js" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_CSS" file="resources\media_router\elements\issue_banner\issue_banner.css" type="BINDATA" />
@@ -26,12 +23,6 @@
   <include name="IDR_ROUTE_DETAILS_JS" file="resources\media_router\elements\route_details\route_details.js" type="BINDATA" />
 
   <!-- Icons -->
-  <include name="IDR_DROP_DOWN_ARROW_ICON" file="resources\media_router\elements\icon\drop-down-arrow.png" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_ARROW_2X_ICON" file="resources\media_router\elements\icon\drop-down-arrow2x.png" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_ARROW_HOVER_ICON" file="resources\media_router\elements\icon\drop-down-arrow-hover.png" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_ARROW_HOVER_2X_ICON" file="resources\media_router\elements\icon\drop-down-arrow-hover2x.png" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_ARROW_SHOWING_ICON" file="resources\media_router\elements\icon\drop-down-arrow-showing.png" type="BINDATA" />
-  <include name="IDR_DROP_DOWN_ARROW_SHOWING_2X_ICON" file="resources\media_router\elements\icon\drop-down-arrow-showing2x.png" type="BINDATA" />
   <include name="IDR_SAD_FACE_ICON" file="resources\media_router\elements\icon\sad-face.png" type="BINDATA" />
   <include name="IDR_SAD_FACE_2X_ICON" file="resources\media_router\elements\icon\sad-face2x.png" type="BINDATA" />
 </grit-part>

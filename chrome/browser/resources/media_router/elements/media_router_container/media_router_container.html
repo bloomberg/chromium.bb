@@ -3,10 +3,9 @@
 <link rel="import" href="chrome://resources/polymer/core-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
 <link rel="import" href="chrome://resources/polymer/core-toolbar/core-toolbar.html">
-<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
 <link rel="import" href="../cast_mode_picker/cast_mode_picker.html">
-<link rel="import" href="../drop_down_button/drop_down_button.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
 <link rel="import" href="../route_details/route_details.html">
 <polymer-element name="media-router-container">
@@ -19,9 +18,9 @@
   <core-toolbar id="container-header"
       class="{{ {state: currentView_} | isSinkPickerHidden}}">
     <div id="router-header-text">{{headerText}}</div>
-    <drop-down-button id="drop-down-button"
-        on-click="{{toggleCastMode}}">
-    </drop-down-button>
+    <paper-icon-button on-click="{{toggleCastMode}}"
+        icon="{{ {castModeHidden: castModeHidden_} | getDropDownIcon}}">
+    </paper-icon-button>
     <cast-mode-picker id="cast-modes"
         class="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}"
         castModeList="{{castModeList}}"
