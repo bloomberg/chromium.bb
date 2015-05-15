@@ -6,9 +6,11 @@ package org.chromium.mojo.shell;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.JsonReader;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -25,6 +27,22 @@ public class MojoShellActivity extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        String[] parameters = getParametersFromIntent(getIntent());
+        if (Intent.ACTION_VIEW.equals(getIntent().getAction())) {
+            Uri uri = getIntent().getData();
+            if (uri != null) {
+                Log.i(TAG, "MojoShellActivity opening " + uri);
+                if (parameters == null) {
+                    parameters = new String[] {uri.toString()};
+                } else {
+                    String[] newParameters = new String[parameters.length + 1];
+                    System.arraycopy(parameters, 0, newParameters, 0, parameters.length);
+                    newParameters[parameters.length] = uri.toString();
+                    parameters = newParameters;
+                }
+            }
+        }
+
         // TODO(ppi): Gotcha - the call below will work only once per process lifetime, but the OS
         // has no obligation to kill the application process between destroying and restarting the
         // activity. If the application process is kept alive, initialization parameters sent with
@@ -32,7 +50,7 @@ public class MojoShellActivity extends Activity {
         // TODO(qsr): We should be passing application context here as required by
         // InitApplicationContext on the native side. Currently we can't, as PlatformViewportAndroid
         // relies on this being the activity context.
-        ShellMain.ensureInitialized(this, getParametersFromIntent(getIntent()));
+        ShellMain.ensureInitialized(this, parameters);
 
         // TODO(eseidel): ShellMain can fail, but we're ignoring the return.
         ShellMain.start();
