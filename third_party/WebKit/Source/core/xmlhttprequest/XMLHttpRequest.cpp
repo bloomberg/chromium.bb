@@ -322,12 +322,9 @@ private:
 
 PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ScriptState* scriptState)
 {
-    RefPtr<SecurityOrigin> securityOrigin;
     ExecutionContext* context = scriptState->executionContext();
-    if (context->isDocument()) {
-        DOMWrapperWorld& world = scriptState->world();
-        securityOrigin = world.isIsolatedWorld() ? world.isolatedWorldSecurityOrigin() : nullptr;
-    }
+    DOMWrapperWorld& world = scriptState->world();
+    RefPtr<SecurityOrigin> securityOrigin = world.isIsolatedWorld() ? world.isolatedWorldSecurityOrigin() : nullptr;
     RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefWillBeNoop(new XMLHttpRequest(context, securityOrigin));
     xmlHttpRequest->suspendIfNeeded();
 
