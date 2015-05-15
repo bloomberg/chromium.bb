@@ -247,12 +247,12 @@ void AwRenderViewExt::FocusedNodeChanged(const blink::WebNode& node) {
   if (node.isNull() || !node.isElementNode() || !render_view())
     return;
 
-  // Note: element is not const due to innerText() is not const.
+  // Note: element is not const due to textContent() is not const.
   blink::WebElement element = node.toConst<blink::WebElement>();
   AwHitTestData data;
 
   data.href = GetHref(element);
-  data.anchor_text = element.innerText();
+  data.anchor_text = element.textContent();
 
   GURL absolute_link_url;
   if (node.isLink())
@@ -280,7 +280,7 @@ void AwRenderViewExt::OnDoHitTest(const gfx::PointF& touch_center,
 
   GURL absolute_image_url = result.absoluteImageURL();
   if (!result.urlElement().isNull()) {
-    data.anchor_text = result.urlElement().innerText();
+    data.anchor_text = result.urlElement().textContent();
     data.href = GetHref(result.urlElement());
     // If we hit an image that failed to load, Blink won't give us its URL.
     // Fall back to walking the DOM in this case.
