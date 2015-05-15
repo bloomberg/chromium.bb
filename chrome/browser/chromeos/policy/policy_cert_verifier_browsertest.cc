@@ -66,14 +66,12 @@ class PolicyCertVerifierTest : public testing::Test {
   }
 
  protected:
-  int VerifyTestServerCert(
-      const net::TestCompletionCallback& test_callback,
-      net::CertVerifyResult* verify_result,
-      scoped_ptr<net::CertVerifier::Request>* request_handle) {
-    return cert_verifier_->Verify(test_server_cert_.get(), "127.0.0.1",
-                                  std::string(), 0, NULL, verify_result,
-                                  test_callback.callback(), request_handle,
-                                  net::BoundNetLog());
+  int VerifyTestServerCert(const net::TestCompletionCallback& test_callback,
+                           net::CertVerifyResult* verify_result,
+                           scoped_ptr<net::CertVerifier::Request>* request) {
+    return cert_verifier_->Verify(
+        test_server_cert_.get(), "127.0.0.1", std::string(), 0, NULL,
+        verify_result, test_callback.callback(), request, net::BoundNetLog());
   }
 
   bool SupportsAdditionalTrustAnchors() {
@@ -127,10 +125,10 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
-    scoped_ptr<net::CertVerifier::Request> request_handle;
-    int error = VerifyTestServerCert(callback, &verify_result, &request_handle);
+    scoped_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
-    EXPECT_TRUE(request_handle);
+    EXPECT_TRUE(request);
     error = callback.WaitForResult();
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
   }
@@ -140,8 +138,8 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
-    scoped_ptr<net::CertVerifier::Request> request_handle;
-    int error = VerifyTestServerCert(callback, &verify_result, &request_handle);
+    scoped_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
   }
 
@@ -163,10 +161,10 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   // Verify() successfully verifies |test_server_cert_| after it was imported.
   net::CertVerifyResult verify_result;
   net::TestCompletionCallback callback;
-  scoped_ptr<net::CertVerifier::Request> request_handle;
-  int error = VerifyTestServerCert(callback, &verify_result, &request_handle);
+  scoped_ptr<net::CertVerifier::Request> request;
+  int error = VerifyTestServerCert(callback, &verify_result, &request);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle);
+  EXPECT_TRUE(request);
   error = callback.WaitForResult();
   EXPECT_EQ(net::OK, error);
 
@@ -182,10 +180,10 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
-    scoped_ptr<net::CertVerifier::Request> request_handle;
-    int error = VerifyTestServerCert(callback, &verify_result, &request_handle);
+    scoped_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
-    EXPECT_TRUE(request_handle);
+    EXPECT_TRUE(request);
     error = callback.WaitForResult();
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
   }
@@ -196,10 +194,10 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
-    scoped_ptr<net::CertVerifier::Request> request_handle;
-    int error = VerifyTestServerCert(callback, &verify_result, &request_handle);
+    scoped_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     ASSERT_EQ(net::ERR_IO_PENDING, error);
-    EXPECT_TRUE(request_handle);
+    EXPECT_TRUE(request);
     error = callback.WaitForResult();
     EXPECT_EQ(net::OK, error);
   }
@@ -210,8 +208,8 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
-    scoped_ptr<net::CertVerifier::Request> request_handle;
-    int error = VerifyTestServerCert(callback, &verify_result, &request_handle);
+    scoped_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     EXPECT_EQ(net::OK, error);
   }
   EXPECT_TRUE(WasTrustAnchorUsedAndReset());
@@ -221,8 +219,8 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
-    scoped_ptr<net::CertVerifier::Request> request_handle;
-    int error = VerifyTestServerCert(callback, &verify_result, &request_handle);
+    scoped_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
     // Note: this hits the cached result from the first Verify() in this test.
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
   }
