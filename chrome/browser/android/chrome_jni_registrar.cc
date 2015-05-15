@@ -27,6 +27,7 @@
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/feature_utilities.h"
+#include "chrome/browser/android/feedback/connectivity_checker.h"
 #include "chrome/browser/android/find_in_page/find_in_page_bridge.h"
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/fullscreen/fullscreen_infobar_delegate.h"
@@ -181,6 +182,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ConnectionInfoPopupAndroid",
      ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
     {"ConnectionSecurityHelper", RegisterConnectionSecurityHelperAndroid},
+    {"ConnectivityChecker", RegisterConnectivityChecker},
     {"ContentViewUtil", RegisterContentViewUtil},
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},

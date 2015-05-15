@@ -178,6 +178,8 @@ class ScopedJavaGlobalRef : public JavaRef<T> {
     this->Reset(other);
   }
 
+  ScopedJavaGlobalRef(JNIEnv* env, T obj) { this->Reset(env, obj); }
+
   template<typename U>
   explicit ScopedJavaGlobalRef(const U& other) {
     this->Reset(other);
