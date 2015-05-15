@@ -999,10 +999,10 @@ class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
         parent_stream_id_(0),
         weight_(1),
         exclusive_(false) {}
-  explicit SpdyPriorityIR(SpdyStreamId stream_id,
-                          SpdyStreamId parent_stream_id,
-                          uint8 weight,
-                          bool exclusive)
+  SpdyPriorityIR(SpdyStreamId stream_id,
+                 SpdyStreamId parent_stream_id,
+                 uint8 weight,
+                 bool exclusive)
       : SpdyFrameWithStreamIdIR(stream_id),
         parent_stream_id_(parent_stream_id),
         weight_(weight),
