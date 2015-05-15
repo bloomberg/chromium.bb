@@ -247,18 +247,27 @@ public class MultiFieldTimePickerDialog
     }
 
     private void notifyDateSet() {
-        int hour = mHourSpinner.getValue();
-        int minute = mMinuteSpinner.getValue();
-        int sec = mSecSpinner.getValue();
-        int milli = mMilliSpinner.getValue() * mStep + mBaseMilli;
+        int hour = getPickerValue(mHourSpinner);
+        int minute = getPickerValue(mMinuteSpinner);
+        int sec = getPickerValue(mSecSpinner);
+        int milli = getPickerValue(mMilliSpinner) * mStep + mBaseMilli;
         if (!mIs24hourFormat) {
-            int ampm = mAmPmSpinner.getValue();
+            int ampm = getPickerValue(mAmPmSpinner);
             if (hour == 12) {
                 hour = 0;
             }
             hour += ampm * 12;
         }
         mListener.onTimeSet(hour, minute, sec, milli);
+    }
+
+    /**
+     * Clear focus before retrieving so that values inserted with
+     * keyboard are taken into account.
+    */
+    private int getPickerValue(NumberPicker picker) {
+        picker.clearFocus();
+        return picker.getValue();
     }
 
     private static class NumberFormatter implements NumberPicker.Formatter {

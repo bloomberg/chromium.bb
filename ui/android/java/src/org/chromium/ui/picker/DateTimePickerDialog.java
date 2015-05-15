@@ -99,6 +99,7 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
     private void tryNotifyDateTimeSet() {
         if (mCallBack != null) {
             mDatePicker.clearFocus();
+            mTimePicker.clearFocus();
             mCallBack.onDateTimeSet(mDatePicker, mTimePicker, mDatePicker.getYear(),
                     mDatePicker.getMonth(), mDatePicker.getDayOfMonth(),
                     mTimePicker.getCurrentHour(), mTimePicker.getCurrentMinute());
