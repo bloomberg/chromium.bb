@@ -1473,6 +1473,8 @@
       'browser/ui/webui/media_router/media_router_ui.h',
       'browser/ui/webui/media_router/media_router_webui_message_handler.cc',
       'browser/ui/webui/media_router/media_router_webui_message_handler.h',
+      'browser/ui/webui/media_router/query_result_manager.cc',
+      'browser/ui/webui/media_router/query_result_manager.h',
     ],
     'chrome_browser_ui_non_mac_sources': [
       'browser/ui/web_contents_sizer.cc',
