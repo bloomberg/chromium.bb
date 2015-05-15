@@ -5931,8 +5931,7 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   // when visible.
   LayerTreeSettings settings;
   settings.gpu_rasterization_enabled = true;
-  host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_, NULL, NULL, NULL, 0);
+  CreateHostImpl(settings, CreateOutputSurface());
   host_impl_->set_content_is_suitable_for_gpu_rasterization(true);
   host_impl_->set_has_gpu_rasterization_trigger(true);
   host_impl_->UpdateGpuRasterizationStatus();

@@ -1584,6 +1584,20 @@ void LayerTreeHostImpl::FinishAllRendering() {
     renderer_->Finish();
 }
 
+bool LayerTreeHostImpl::CanUseGpuRasterization() {
+  if (!(output_surface_ && output_surface_->context_provider() &&
+        output_surface_->worker_context_provider()))
+    return false;
+
+  ContextProvider* context_provider =
+      output_surface_->worker_context_provider();
+  base::AutoLock context_lock(*context_provider->GetLock());
+  if (!context_provider->GrContext())
+    return false;
+
+  return true;
+}
+
 void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   bool use_gpu = false;
   bool use_msaa = false;
@@ -1611,6 +1625,17 @@ void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
     gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
   } else {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_CONTENT;
+  }
+
+  if (use_gpu && !use_gpu_rasterization_) {
+    if (!CanUseGpuRasterization()) {
+      // If GPU rasterization is unusable, e.g. if GlContext could not
+      // be created due to losing the GL context, force use of software
+      // raster.
+      use_gpu = false;
+      use_msaa = false;
+      gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
+    }
   }
 
   if (use_gpu == use_gpu_rasterization_ && use_msaa == use_msaa_)

@@ -327,6 +327,7 @@ class CC_EXPORT LayerTreeHostImpl
   void set_content_is_suitable_for_gpu_rasterization(bool flag) {
     content_is_suitable_for_gpu_rasterization_ = flag;
   }
+  bool CanUseGpuRasterization();
   void UpdateGpuRasterizationStatus();
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
   bool use_msaa() const { return use_msaa_; }

@@ -29,7 +29,8 @@ class FakeOutputSurface : public OutputSurface {
 
   static scoped_ptr<FakeOutputSurface> Create3d(
       scoped_refptr<ContextProvider> context_provider) {
-    return make_scoped_ptr(new FakeOutputSurface(context_provider, false));
+    return make_scoped_ptr(new FakeOutputSurface(
+        context_provider, TestContextProvider::Create(), false));
   }
 
   static scoped_ptr<FakeOutputSurface> Create3d(
@@ -41,8 +42,9 @@ class FakeOutputSurface : public OutputSurface {
 
   static scoped_ptr<FakeOutputSurface> Create3d(
       scoped_ptr<TestWebGraphicsContext3D> context) {
-    return make_scoped_ptr(new FakeOutputSurface(
-        TestContextProvider::Create(context.Pass()), false));
+    return make_scoped_ptr(
+        new FakeOutputSurface(TestContextProvider::Create(context.Pass()),
+                              TestContextProvider::Create(), false));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateSoftware(

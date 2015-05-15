@@ -163,7 +163,13 @@ class GLRenderer::ScopedUseGrContext {
  public:
   static scoped_ptr<ScopedUseGrContext> Create(GLRenderer* renderer,
                                                DrawingFrame* frame) {
-    return make_scoped_ptr(new ScopedUseGrContext(renderer, frame));
+    // GrContext for filters is created lazily, and may fail if the context
+    // is lost.
+    // TODO(vmiura,bsalomon): crbug.com/487850 Ensure that
+    // ContextProvider::GrContext() does not return NULL.
+    if (renderer->output_surface_->context_provider()->GrContext())
+      return make_scoped_ptr(new ScopedUseGrContext(renderer, frame));
+    return nullptr;
   }
 
   ~ScopedUseGrContext() {
