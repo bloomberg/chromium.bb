@@ -248,7 +248,7 @@
         Never saved
       </message>
       <message name="IDS_MANAGE_PASSWORDS_TEXT" desc="Text for link to manage passwords on Account Central.">
-        Manage saved passwords in your <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Account<ph name="END_LINK">&lt;/link&gt;</ph>
+        View and manage saved passwords at <ph name="BEGIN_LINK">&lt;link&gt;</ph>passwords.google.com<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_SAVED_PASSWORDS_NONE_TEXT" desc="Text when there are no saved passwords/exceptions.">
         Saved passwords will appear here.
