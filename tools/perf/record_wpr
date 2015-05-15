@@ -11,7 +11,7 @@ _perf_dir = os.path.dirname(__file__)
 _telemetry_path = os.path.join(_perf_dir, os.pardir, 'telemetry')
 sys.path.append(_telemetry_path)
 
-from telemetry.page import record_wpr
+from telemetry import record_wpr
 
 if __name__ == '__main__':
   sys.exit(record_wpr.Main(_perf_dir))
