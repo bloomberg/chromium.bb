@@ -64,6 +64,17 @@ void ServiceWorkerDevToolsManager::AddAllAgentHosts(
   }
 }
 
+void ServiceWorkerDevToolsManager::AddAllAgentHostsForBrowserContext(
+    BrowserContext* browser_context,
+    ServiceWorkerDevToolsAgentHost::List* result) {
+  for (auto& worker : workers_) {
+    if (!worker.second->IsTerminated() &&
+        worker.second->GetBrowserContext() == browser_context) {
+      result->push_back(worker.second);
+    }
+  }
+}
+
 bool ServiceWorkerDevToolsManager::WorkerCreated(
     int worker_process_id,
     int worker_route_id,

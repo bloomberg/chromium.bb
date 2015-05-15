@@ -15,6 +15,7 @@
 
 namespace content {
 
+class BrowserContext;
 class DevToolsAgentHostImpl;
 class ServiceWorkerDevToolsAgentHost;
 class ServiceWorkerContextCore;
@@ -70,6 +71,9 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   DevToolsAgentHostImpl* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                        int worker_route_id);
   void AddAllAgentHosts(
+      std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>* result);
+  void AddAllAgentHostsForBrowserContext(
+      BrowserContext* browser_context,
       std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>* result);
 
   // Returns true when the worker must be paused on start because a DevTool

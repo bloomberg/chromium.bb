@@ -129,11 +129,14 @@ scoped_refptr<ServiceWorkerDevToolsAgentHost> GetMatchingServiceWorker(
 }
 
 ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
+    BrowserContext* browser_context,
     const std::set<GURL>& urls) {
-  ServiceWorkerDevToolsAgentHost::List agent_hosts;
-  ServiceWorkerDevToolsManager::GetInstance()->
-      AddAllAgentHosts(&agent_hosts);
   ServiceWorkerDevToolsAgentHost::Map result;
+  if (!browser_context)
+    return result;
+  ServiceWorkerDevToolsAgentHost::List agent_hosts;
+  ServiceWorkerDevToolsManager::GetInstance()
+      ->AddAllAgentHostsForBrowserContext(browser_context, &agent_hosts);
   for (const GURL& url : urls) {
     scoped_refptr<ServiceWorkerDevToolsAgentHost> host =
         GetMatchingServiceWorker(agent_hosts, url);
@@ -213,14 +216,16 @@ void ServiceWorkerHandler::UpdateHosts() {
     return;
 
   urls_.clear();
+  BrowserContext* browser_context = nullptr;
   if (render_frame_host_) {
     render_frame_host_->frame_tree_node()->frame_tree()->ForEach(
         base::Bind(&CollectURLs, &urls_));
+    browser_context = render_frame_host_->GetProcess()->GetBrowserContext();
   }
 
   ServiceWorkerDevToolsAgentHost::Map old_hosts = attached_hosts_;
   ServiceWorkerDevToolsAgentHost::Map new_hosts =
-      GetMatchingServiceWorkers(urls_);
+      GetMatchingServiceWorkers(browser_context, urls_);
 
   for (auto pair : old_hosts) {
     if (new_hosts.find(pair.first) == new_hosts.end())
@@ -463,7 +468,11 @@ void ServiceWorkerHandler::AgentHostClosed(
 
 void ServiceWorkerHandler::WorkerCreated(
     ServiceWorkerDevToolsAgentHost* host) {
-  auto hosts = GetMatchingServiceWorkers(urls_);
+  BrowserContext* browser_context = nullptr;
+  if (render_frame_host_)
+    browser_context = render_frame_host_->GetProcess()->GetBrowserContext();
+
+  auto hosts = GetMatchingServiceWorkers(browser_context, urls_);
   if (hosts.find(host->GetId()) != hosts.end() && !host->IsAttached() &&
       !host->IsPausedForDebugOnStart())
     host->PauseForDebugOnStart();
