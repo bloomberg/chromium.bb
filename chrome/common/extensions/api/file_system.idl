@@ -105,6 +105,11 @@ namespace fileSystem {
     ChildChangeType type;
   };
 
+  // Event notifying about an inserted or a removed volume from the system.
+  dictionary VolumeListChangedEvent {
+    Volume[] volumes;
+  };
+
   // Event notifying about a change in a file or a directory, including its
   // contents.
   [nodoc] dictionary EntryChangedEvent {
@@ -217,6 +222,9 @@ namespace fileSystem {
   };
 
   interface Events {
+    // Called when a list of available volumes is changed.
+    static void onVolumeListChanged(VolumeListChangedEvent event);
+
     // Called when an observed entry is changed.
     [nodoc] static void onEntryChanged(EntryChangedEvent event);
 
