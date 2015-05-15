@@ -139,6 +139,7 @@
       'surfaces/surface_aggregator_test_helpers.cc',
       'surfaces/surface_aggregator_test_helpers.h',
       'surfaces/surface_aggregator_unittest.cc',
+      'surfaces/surface_display_output_surface_unittest.cc',
       'surfaces/surface_factory_unittest.cc',
       'surfaces/surface_unittest.cc',
       'surfaces/surfaces_pixeltest.cc',

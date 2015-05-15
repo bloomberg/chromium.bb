@@ -78,6 +78,7 @@ void TestOrderablePendingTask::AsValueInto(
 OrderedSimpleTaskRunner::OrderedSimpleTaskRunner()
     : advance_now_(true),
       now_src_(TestNowSource::Create(0)),
+      max_tasks_(kAbsoluteMaxTasks),
       inside_run_tasks_until_(false) {
 }
 
@@ -286,6 +287,10 @@ void OrderedSimpleTaskRunner::AsValueInto(
   state->BeginDictionary("now_src");
   now_src_->AsValueInto(state);
   state->EndDictionary();
+
+  state->SetBoolean("advance_now", advance_now_);
+  state->SetBoolean("inside_run_tasks_until", inside_run_tasks_until_);
+  state->SetString("max_tasks", base::SizeTToString(max_tasks_));
 }
 
 base::Callback<bool(void)> OrderedSimpleTaskRunner::TaskRunCountBelow(

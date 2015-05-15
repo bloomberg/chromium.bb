@@ -54,6 +54,7 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
   void ScheduleDraw();
   void Draw();
 
+ protected:
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<Display> display_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
