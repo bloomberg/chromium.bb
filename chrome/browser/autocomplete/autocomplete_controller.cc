@@ -258,8 +258,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   in_start_ = true;
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i) {
-    // TODO(mpearson): Remove timing code once bugs 178705 / 237703 / 168933
-    // are resolved.
+    // TODO(mpearson): Remove timing code once bug 178705 is resolved.
     base::TimeTicks provider_start_time = base::TimeTicks::Now();
     (*i)->Start(input_, minimal_changes, false);
     if (!input.want_asynchronous_matches())
