@@ -62,6 +62,10 @@ class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
   // that syncing passwords has just started or ended for |profile|.
   static void OnPasswordsSyncedStatePotentiallyChanged(Profile* profile);
 
+  // Trims the affiliation cache for |profile| if affiliation-based matching is
+  // enabled, and completely deletes it otherwise.
+  static void TrimOrDeleteAffiliationCache(Profile* profile);
+
  private:
   friend struct DefaultSingletonTraits<PasswordStoreFactory>;
 

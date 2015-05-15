@@ -79,6 +79,10 @@ class AffiliationBackend : public FacetManagerHost,
                       const base::Time& keep_fresh_until);
   void TrimCache();
 
+  // Deletes the cache database file at |db_path|, and all auxiliary files. The
+  // database must be closed before calling this.
+  static void DeleteCache(const base::FilePath& db_path);
+
  private:
   friend class AffiliationBackendTest;
 

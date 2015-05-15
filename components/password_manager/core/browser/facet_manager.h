@@ -58,6 +58,10 @@ class FacetManager {
   // more meaningful state than a newly created instance would have.
   bool CanBeDiscarded() const;
 
+  // Returns whether or not cached data for this facet can be discarded without
+  // harm when trimming the database.
+  bool CanCachedDataBeDiscarded() const;
+
   // Returns whether or not affiliation information relating to this facet needs
   // to be fetched right now.
   bool DoesRequireFetch() const;

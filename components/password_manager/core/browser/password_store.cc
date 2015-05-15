@@ -116,6 +116,11 @@ void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
                           this, delete_begin, delete_end));
 }
 
+void PasswordStore::TrimAffiliationCache() {
+  if (affiliated_match_helper_)
+    affiliated_match_helper_->TrimAffiliationCache();
+}
+
 void PasswordStore::GetLogins(const PasswordForm& form,
                               AuthorizationPromptPolicy prompt_policy,
                               PasswordStoreConsumer* consumer) {

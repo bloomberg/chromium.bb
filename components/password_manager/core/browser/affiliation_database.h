@@ -70,6 +70,10 @@ class AffiliationDatabase {
       const AffiliatedFacetsWithUpdateTime& affiliated_facets,
       std::vector<AffiliatedFacetsWithUpdateTime>* removed_affiliations);
 
+  // Deletes the database file at |path| along with all its auxiliary files. The
+  // database must be closed before calling this.
+  static void Delete(const base::FilePath& path);
+
  private:
   // Creates any tables and indices that do not already exist in the database.
   bool CreateTablesAndIndicesIfNeeded();

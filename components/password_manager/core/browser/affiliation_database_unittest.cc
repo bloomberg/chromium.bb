@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/affiliation_database.h"
 
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,7 +70,7 @@ class AffiliationDatabaseTest : public testing::Test {
   ~AffiliationDatabaseTest() override {}
 
   void SetUp() override {
-    ASSERT_TRUE(CreateTemporaryFile(&db_path_));
+    ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
     OpenDatabase();
   }
 
@@ -88,10 +89,13 @@ class AffiliationDatabaseTest : public testing::Test {
 
   AffiliationDatabase& db() { return *db_; }
 
-  const base::FilePath& db_path() { return db_path_; }
+  base::FilePath db_path() {
+    return temp_directory_.path().Append(
+        FILE_PATH_LITERAL("Test Affiliation Database"));
+  }
 
  private:
-  base::FilePath db_path_;
+  base::ScopedTempDir temp_directory_;
   scoped_ptr<AffiliationDatabase> db_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationDatabaseTest);
@@ -288,6 +292,15 @@ TEST_F(AffiliationDatabaseTest, CorruptDBGetsPoisoned) {
   std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
   db().GetAllAffiliations(&affiliations);
   EXPECT_EQ(0u, affiliations.size());
+}
+
+// Verify that all files get deleted.
+TEST_F(AffiliationDatabaseTest, Delete) {
+  ASSERT_NO_FATAL_FAILURE(StoreInitialTestData());
+  CloseDatabase();
+
+  AffiliationDatabase::Delete(db_path());
+  EXPECT_TRUE(base::IsDirectoryEmpty(db_path().DirName()));
 }
 
 }  // namespace password_manager

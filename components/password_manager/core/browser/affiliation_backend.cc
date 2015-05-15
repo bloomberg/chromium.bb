@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/affiliation_backend.h"
 
 #include <stdint.h>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -98,8 +99,30 @@ void AffiliationBackend::CancelPrefetch(const FacetURI& facet_uri,
 void AffiliationBackend::TrimCache() {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
-  // TODO(engedy): Implement this. crbug.com/437865.
-  NOTIMPLEMENTED();
+  // Discard all equivalence classes except those that contain >= 1 facet for
+  // which there is a FacetManager claiming that it needs to keep the data.
+  std::vector<AffiliatedFacetsWithUpdateTime> all_affiliations;
+  cache_->GetAllAffiliations(&all_affiliations);
+  for (const auto& affiliation : all_affiliations) {
+    bool can_discard = true;
+    for (const auto& facet_uri : affiliation.facets) {
+      FacetManager* facet_manager = facet_managers_.get(facet_uri);
+      if (facet_manager && !facet_manager->CanCachedDataBeDiscarded()) {
+        can_discard = false;
+        break;
+      }
+    }
+    if (can_discard) {
+      // The database should not be serving empty equivalence classes.
+      CHECK(affiliation.facets.size());
+      cache_->DeleteAffiliationsForFacet(affiliation.facets[0]);
+    }
+  }
+}
+
+// static
+void AffiliationBackend::DeleteCache(const base::FilePath& db_path) {
+  AffiliationDatabase::Delete(db_path);
 }
 
 FacetManager* AffiliationBackend::GetOrCreateFacetManager(

@@ -214,6 +214,12 @@ void AffiliationDatabase::StoreAndRemoveConflicting(
   transaction.Commit();
 }
 
+// static
+void AffiliationDatabase::Delete(const base::FilePath& path) {
+  bool success = sql::Connection::Delete(path);
+  DCHECK(success);
+}
+
 bool AffiliationDatabase::CreateTablesAndIndicesIfNeeded() {
   if (!sql_connection_->Execute(
           "CREATE TABLE IF NOT EXISTS eq_classes("

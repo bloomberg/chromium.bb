@@ -193,6 +193,21 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
   }
 }
 
+// static
+void PasswordStoreFactory::TrimOrDeleteAffiliationCache(Profile* profile) {
+  scoped_refptr<PasswordStore> password_store =
+      GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
+  if (password_store && password_store->HasAffiliatedMatchHelper()) {
+    password_store->TrimAffiliationCache();
+  } else {
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::DB));
+    password_manager::AffiliationService::DeleteCache(
+        GetAffiliationDatabasePath(profile), db_thread_runner.get());
+  }
+}
+
 PasswordStoreFactory::PasswordStoreFactory()
     : BrowserContextKeyedServiceFactory(
         "PasswordStore",

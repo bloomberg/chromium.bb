@@ -187,6 +187,11 @@ bool FacetManager::CanBeDiscarded() const {
          GetMaximumKeepFreshUntilThreshold() <= clock_->Now();
 }
 
+bool FacetManager::CanCachedDataBeDiscarded() const {
+  return GetMaximumKeepFreshUntilThreshold() <= clock_->Now() ||
+         !IsCachedDataFresh();
+}
+
 bool FacetManager::DoesRequireFetch() const {
   return (!pending_requests_.empty() && !IsCachedDataFresh()) ||
          GetNextRequiredFetchTimeDueToPrefetch() <= clock_->Now();

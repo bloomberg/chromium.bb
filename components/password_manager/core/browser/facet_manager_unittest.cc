@@ -288,6 +288,7 @@ class FacetManagerTest : public testing::Test {
     for (base::TimeDelta step : SamplingPoints(until_time - Now())) {
       SCOPED_TRACE(testing::Message() << "dT: " << DeltaNow());
       EXPECT_FALSE(facet_manager()->CanBeDiscarded());
+      EXPECT_FALSE(facet_manager()->CanCachedDataBeDiscarded());
       ExpectRequestsServedFromCache();
       ExpectNoFetchNeeded();
       AdvanceTime(step);
@@ -411,6 +412,7 @@ class FacetManagerTest : public testing::Test {
 TEST_F(FacetManagerTest, NewInstanceCanBeDiscarded) {
   CreateFacetManager();
   EXPECT_TRUE(facet_manager()->CanBeDiscarded());
+  EXPECT_TRUE(facet_manager()->CanCachedDataBeDiscarded());
   EXPECT_FALSE(facet_manager()->DoesRequireFetch());
   EXPECT_FALSE(main_task_runner()->HasPendingTask());
 }
@@ -1300,6 +1302,34 @@ TEST_F(FacetManagerTest, CancelingNonexistentPrefetchesIsSilentlyIgnored) {
   DestroyFacetManager();
 }
 
+TEST_F(FacetManagerTest, CachedDataCannotBeDiscarded) {
+  CreateFacetManager();
+
+  const base::TimeDelta kPrefetchLength =
+      2 * GetCacheSoftExpiryPeriod() + GetCacheHardExpiryPeriod();
+
+  facet_manager_notifier()->set_accuracy(NotificationAccuracy::NEVER_CALLED);
+
+  const base::Time prefetch_end = Now() + kPrefetchLength;
+  std::vector<ExpectedFetchDetails> expected_fetches(1);
+  expected_fetches[0].time = Now();
+
+  Prefetch(prefetch_end);
+  ASSERT_NO_FATAL_FAILURE(AdvanceTimeAndVerifyPrefetchWithFetchesAt(
+      Now() + GetCacheSoftExpiryPeriod(), expected_fetches));
+  for (base::TimeDelta step : SamplingPoints(prefetch_end - Now())) {
+    SCOPED_TRACE(testing::Message() << "dT: " << DeltaNow());
+    EXPECT_FALSE(facet_manager()->CanBeDiscarded());
+    ASSERT_TRUE(facet_manager()->DoesRequireFetch());
+    if (DeltaNow() < GetCacheHardExpiryPeriod())
+      ExpectRequestsServedFromCache();
+    AdvanceTime(step);
+  }
+  EXPECT_TRUE(facet_manager()->CanBeDiscarded());
+  EXPECT_FALSE(main_task_runner()->HasPendingTask());
+  DestroyFacetManager();
+}
+
 // RequestNotificationAtTime() ends up calling NotifyAtRequestedTime() always
 // a bit earlier than needed. This should result in NotifyAtRequestedTime()
 // being called repeatedly until the callback is finally on time, but should
@@ -1400,6 +1430,89 @@ TEST_F(FacetManagerTest, RequestedNotificationsNeverCome) {
   EXPECT_TRUE(facet_manager()->CanBeDiscarded());
   EXPECT_FALSE(main_task_runner()->HasPendingTask());
   DestroyFacetManager();
+}
+
+TEST_F(FacetManagerTest, StaleCachedDataBeCanDiscardedWhilePendingFetch) {
+  CreateFacetManager();
+  ASSERT_FALSE(facet_manager()->IsCachedDataFresh());
+
+  GetAffiliations(StrategyOnCacheMiss::FETCH_OVER_NETWORK);
+  ASSERT_NO_FATAL_FAILURE(ExpectFetchNeeded());
+  EXPECT_FALSE(facet_manager()->CanBeDiscarded());
+  EXPECT_TRUE(facet_manager()->CanCachedDataBeDiscarded());
+
+  fake_facet_manager_host()->reset_need_network_request();
+}
+
+TEST_F(FacetManagerTest, CachedDataBeCanDiscardedAfterOnDemandGetAffiliatons) {
+  CreateFacetManager();
+  ASSERT_FALSE(facet_manager()->IsCachedDataFresh());
+
+  GetAffiliations(StrategyOnCacheMiss::FETCH_OVER_NETWORK);
+  ASSERT_NO_FATAL_FAILURE(ExpectFetchNeeded());
+  ASSERT_NO_FATAL_FAILURE(CompleteFetch());
+  ExpectConsumerSuccessCallback();
+
+  EXPECT_TRUE(facet_manager()->IsCachedDataFresh());
+  EXPECT_TRUE(facet_manager()->CanBeDiscarded());
+  EXPECT_TRUE(facet_manager()->CanCachedDataBeDiscarded());
+}
+
+// The cached data can be discarded (indicated by 'd') if and only if it is no
+// longer needed to be kept fresh, or if it already stale.
+//
+//      t=0                        S       H                  F2+S   F2+H
+//      /                          /       /                  /      /
+//  ---o--------------------------o-------o------------------o-------o------> t
+//     :                          :       :
+//     [F-------------------------NNNNNNNNNNNF---)
+//                                        ddd    ddd...
+//
+TEST_F(FacetManagerTest,
+       CachedDataCanBeDiscardedAfterAndSometimesDuringPrefetch) {
+  CreateFacetManager();
+  Prefetch(Now() + GetCacheHardExpiryPeriod() + 2 * GetShortTestPeriod());
+  ASSERT_NO_FATAL_FAILURE(ExpectFetchNeeded());
+  ASSERT_NO_FATAL_FAILURE(CompleteFetch());
+
+  for (base::TimeDelta step : SamplingPoints(GetCacheHardExpiryPeriod())) {
+    SCOPED_TRACE(testing::Message() << "dT: " << DeltaNow());
+    EXPECT_FALSE(facet_manager()->CanCachedDataBeDiscarded());
+    AdvanceTime(step);
+  }
+
+  for (base::TimeDelta step : SamplingPoints(GetShortTestPeriod())) {
+    SCOPED_TRACE(testing::Message() << "dT: " << DeltaNow());
+    EXPECT_TRUE(facet_manager()->CanCachedDataBeDiscarded());
+    AdvanceTime(step);
+  }
+
+  ASSERT_NO_FATAL_FAILURE(ExpectFetchNeeded());
+  ASSERT_NO_FATAL_FAILURE(CompleteFetch());
+
+  for (base::TimeDelta step : SamplingPoints(GetShortTestPeriod())) {
+    SCOPED_TRACE(testing::Message() << "dT: " << DeltaNow());
+    EXPECT_FALSE(facet_manager()->CanCachedDataBeDiscarded());
+    AdvanceTime(step);
+  }
+
+  EXPECT_TRUE(facet_manager()->CanBeDiscarded());
+  EXPECT_TRUE(facet_manager()->CanCachedDataBeDiscarded());
+}
+
+TEST_F(FacetManagerTest, CachedDataBeCanDiscardedAfterCancelledPrefetch) {
+  CreateFacetManager();
+  Prefetch(base::Time::Max());
+  ASSERT_NO_FATAL_FAILURE(ExpectFetchNeeded());
+  ASSERT_NO_FATAL_FAILURE(CompleteFetch());
+
+  EXPECT_FALSE(facet_manager()->CanCachedDataBeDiscarded());
+
+  AdvanceTime(GetShortTestPeriod());
+  CancelPrefetch(base::Time::Max());
+
+  EXPECT_TRUE(facet_manager()->CanBeDiscarded());
+  EXPECT_TRUE(facet_manager()->CanCachedDataBeDiscarded());
 }
 
 }  // namespace password_manager

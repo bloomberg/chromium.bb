@@ -102,6 +102,10 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void RemoveLoginsSyncedBetween(base::Time delete_begin,
                                          base::Time delete_end);
 
+  // Removes cached affiliation data that is no longer needed; provided that
+  // affiliation-based matching is enabled.
+  void TrimAffiliationCache();
+
   // Searches for a matching PasswordForm, and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
   // |prompt_policy| indicates whether it's permissible to prompt the user to

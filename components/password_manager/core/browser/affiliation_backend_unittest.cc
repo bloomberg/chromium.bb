@@ -13,6 +13,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
+#include "components/password_manager/core/browser/affiliation_database.h"
 #include "components/password_manager/core/browser/affiliation_fetch_throttler.h"
 #include "components/password_manager/core/browser/affiliation_fetch_throttler_delegate.h"
 #include "components/password_manager/core/browser/facet_manager.h"
@@ -262,6 +263,16 @@ class AffiliationBackendTest : public testing::Test {
     backend_task_runner_->FastForwardBy(delta);
   }
 
+  // Directly opens the database and returns the number of equivalence classes
+  // stored therein.
+  size_t GetNumOfEquivalenceClassInDatabase() {
+    AffiliationDatabase database;
+    EXPECT_TRUE(database.Init(db_path()));
+    std::vector<AffiliatedFacetsWithUpdateTime> all_affiliations;
+    database.GetAllAffiliations(&all_affiliations);
+    return all_affiliations.size();
+  }
+
   size_t backend_facet_manager_count() {
     return backend()->facet_manager_count_for_testing();
   }
@@ -278,6 +289,8 @@ class AffiliationBackendTest : public testing::Test {
   }
 
   AffiliationBackend* backend() { return backend_.get(); }
+
+  const base::FilePath& db_path() const { return db_path_; }
 
   base::TestMockTimeTaskRunner* backend_task_runner() {
     return backend_task_runner_.get();
@@ -300,12 +313,11 @@ class AffiliationBackendTest : public testing::Test {
  private:
   // testing::Test:
   void SetUp() override {
-    base::FilePath database_path;
-    ASSERT_TRUE(CreateTemporaryFile(&database_path));
+    ASSERT_TRUE(CreateTemporaryFile(&db_path_));
     backend_.reset(new AffiliationBackend(
         NULL, backend_task_runner_, backend_task_runner_->GetMockClock(),
         backend_task_runner_->GetMockTickClock()));
-    backend_->Initialize(database_path);
+    backend_->Initialize(db_path());
     mock_fetch_throttler_ = new MockAffiliationFetchThrottler(backend_.get());
     backend_->SetThrottlerForTesting(
         make_scoped_ptr<AffiliationFetchThrottler>(mock_fetch_throttler_));
@@ -321,6 +333,7 @@ class AffiliationBackendTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> backend_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> consumer_task_runner_;
 
+  base::FilePath db_path_;
   ScopedFakeAffiliationAPI fake_affiliation_api_;
   MockAffiliationConsumer mock_consumer_;
   scoped_ptr<AffiliationBackend> backend_;
@@ -773,6 +786,76 @@ TEST_F(AffiliationBackendTest, CancelingNonExistingPrefetchIsSilentlyIgnored) {
   EXPECT_FALSE(backend_task_runner()->HasPendingTask());
 }
 
+// Verify removal of equivalence classes that contain only facets for which
+// there are no FacetManagers.
+TEST_F(AffiliationBackendTest, TrimCacheDiscardsDataWithoutFacetManagers) {
+  ASSERT_NO_FATAL_FAILURE(GetAffiliationsAndExpectFetchAndThenResult(
+      FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
+      GetTestEquivalenceClassAlpha()));
+  ASSERT_NO_FATAL_FAILURE(PrefetchAndExpectFetch(
+      FacetURI::FromCanonicalSpec(kTestFacetURIBeta1),
+      backend_task_runner()->Now() + GetShortTestPeriod()));
+  Prefetch(FacetURI::FromCanonicalSpec(kTestFacetURIBeta2), base::Time::Max());
+  ASSERT_NO_FATAL_FAILURE(ExpectNoFetchNeeded());
+  EXPECT_EQ(2u, GetNumOfEquivalenceClassInDatabase());
+
+  AdvanceTime(GetShortTestPeriod());
+
+  // Worst-case scenario: the first prefetch has just expired, the other has
+  // just been canceled when TrimCache() is called; plus immediately afterwards
+  // the backend is destroyed.
+  ASSERT_NO_FATAL_FAILURE(CancelPrefetch(
+      FacetURI::FromCanonicalSpec(kTestFacetURIBeta2), base::Time::Max()));
+  backend()->TrimCache();
+  DestroyBackend();
+  EXPECT_EQ(0u, GetNumOfEquivalenceClassInDatabase());
+}
+
+// Verify removal of equivalence classes that contain only facets for which
+// there are either no FacetManagers, or only such that do not need the data.
+TEST_F(AffiliationBackendTest,
+       TrimCacheDiscardsDataNoLongerNeededByFacetManagers) {
+  FacetURI facet_uri(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1));
+
+  // Set up some stale data in the database.
+  ASSERT_NO_FATAL_FAILURE(GetAffiliationsAndExpectFetchAndThenResult(
+      facet_uri, GetTestEquivalenceClassAlpha()));
+  AdvanceTime(GetCacheHardExpiryPeriod());
+  EXPECT_FALSE(IsCachedDataFreshForFacet(facet_uri));
+
+  // Now start prefetching the same facet, but keep the network fetch hanging.
+  Prefetch(facet_uri, base::Time::Max());
+  ASSERT_TRUE(mock_fetch_throttler()->has_signaled_network_request_needed());
+  EXPECT_EQ(1u, GetNumOfEquivalenceClassInDatabase());
+
+  // The already stale data should be removed regardless of the active prefetch.
+  backend()->TrimCache();
+  EXPECT_EQ(0u, GetNumOfEquivalenceClassInDatabase());
+
+  mock_fetch_throttler()->reset_signaled_network_request_needed();
+}
+
+// Verify preservation of equivalence classes that contain >= 1 facet for which
+// there is a FacetManager claiming that it needs to keep the data.
+TEST_F(AffiliationBackendTest, TrimCacheRetainsDataThatNeededByFacetManagers) {
+  FacetURI facet_uri(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1));
+
+  ASSERT_NO_FATAL_FAILURE(PrefetchAndExpectFetch(
+      facet_uri, backend_task_runner()->Now() + GetCacheHardExpiryPeriod()));
+  backend()->TrimCache();
+
+  // Also verify that the last update time of the affiliation data is preserved,
+  // i.e., that it expires when it would normally have expired.
+  AdvanceTime(GetCacheHardExpiryPeriod() - Epsilon());
+  EXPECT_TRUE(IsCachedDataFreshForFacet(facet_uri));
+  ASSERT_NO_FATAL_FAILURE(ExpectThatEquivalenceClassIsServedFromCache(
+      GetTestEquivalenceClassAlpha()));
+  AdvanceTime(Epsilon());
+  EXPECT_FALSE(IsCachedDataFreshForFacet(facet_uri));
+  ASSERT_NO_FATAL_FAILURE(
+      GetAffiliationsAndExpectFailureWithoutFetch(facet_uri));
+}
+
 TEST_F(AffiliationBackendTest, NothingExplodesWhenShutDownDuringFetch) {
   GetAffiliations(mock_consumer(),
                   FacetURI::FromCanonicalSpec(kTestFacetURIAlpha2),
@@ -795,6 +878,13 @@ TEST_F(AffiliationBackendTest,
   mock_consumer()->ExpectFailure();
   consumer_task_runner()->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
+}
+
+TEST_F(AffiliationBackendTest, DeleteCache) {
+  DestroyBackend();
+  ASSERT_TRUE(base::PathExists(db_path()));
+  AffiliationBackend::DeleteCache(db_path());
+  ASSERT_FALSE(base::PathExists(db_path()));
 }
 
 }  // namespace password_manager

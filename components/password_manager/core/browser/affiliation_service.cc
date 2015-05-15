@@ -89,4 +89,12 @@ void AffiliationService::TrimCache() {
       base::Bind(&AffiliationBackend::TrimCache, base::Unretained(backend_)));
 }
 
+// static
+void AffiliationService::DeleteCache(
+    const base::FilePath& db_path,
+    base::SingleThreadTaskRunner* backend_task_runner) {
+  backend_task_runner->PostTask(
+      FROM_HERE, base::Bind(&AffiliationBackend::DeleteCache, db_path));
+}
+
 }  // namespace password_manager

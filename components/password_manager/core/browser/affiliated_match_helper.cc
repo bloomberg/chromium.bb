@@ -114,6 +114,10 @@ void AffiliatedMatchHelper::GetAffiliatedWebRealms(
   }
 }
 
+void AffiliatedMatchHelper::TrimAffiliationCache() {
+  affiliation_service_->TrimCache();
+}
+
 // static
 bool AffiliatedMatchHelper::IsValidAndroidCredential(
     const autofill::PasswordForm& form) {

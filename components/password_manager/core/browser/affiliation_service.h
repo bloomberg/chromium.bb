@@ -142,6 +142,12 @@ class AffiliationService : public KeyedService {
   // triggered by this call.
   void TrimCache();
 
+  // Posts a task to the |backend_task_runner| to delete the cache database file
+  // at |db_path|, and all auxiliary files. The database must be closed before
+  // calling this.
+  static void DeleteCache(const base::FilePath& db_path,
+                          base::SingleThreadTaskRunner* backend_task_runner);
+
  private:
   // The backend, owned by this AffiliationService instance, but living on the
   // DB thread. It will be deleted asynchronously during shutdown on the DB
