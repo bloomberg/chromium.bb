@@ -78,6 +78,16 @@ void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
     overlay_candidate_validator_->SetSoftwareMirrorMode(reflector != nullptr);
   }
   reflector_ = reflector;
+
+  OnReflectorChanged();
+}
+
+void BrowserCompositorOutputSurface::OnReflectorChanged() {
+}
+
+base::Closure
+BrowserCompositorOutputSurface::CreateCompositionStartedCallback() {
+  return base::Closure();
 }
 
 cc::OverlayCandidateValidator*

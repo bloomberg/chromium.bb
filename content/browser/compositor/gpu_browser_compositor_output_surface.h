@@ -15,6 +15,7 @@ class CompositorVSyncManager;
 namespace content {
 class CommandBufferProxyImpl;
 class BrowserCompositorOverlayCandidateValidator;
+class ReflectorTexture;
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // cc::OutputSurface that also handles vsync parameter updates
@@ -31,6 +32,9 @@ class GpuBrowserCompositorOutputSurface
   ~GpuBrowserCompositorOutputSurface() override;
 
  protected:
+  // BrowserCompositorOutputSurface:
+  void OnReflectorChanged() override;
+
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
@@ -61,6 +65,8 @@ class GpuBrowserCompositorOutputSurface
   base::CancelableCallback<void(base::TimeTicks timebase,
                                 base::TimeDelta interval)>
       update_vsync_parameters_callback_;
+
+  scoped_ptr<ReflectorTexture> reflector_texture_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);
 };

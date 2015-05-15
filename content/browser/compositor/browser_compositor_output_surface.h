@@ -39,6 +39,13 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   void SetReflector(ReflectorImpl* reflector);
 
+  // Called when |reflector_| was updated.
+  virtual void OnReflectorChanged();
+
+  // Returns a callback that will be called when all mirroring
+  // compositors have started composition.
+  virtual base::Closure CreateCompositionStartedCallback();
+
 #if defined(OS_MACOSX)
   virtual void OnSurfaceDisplayed() = 0;
   virtual void SetSurfaceSuspendedForRecycle(bool suspended) = 0;

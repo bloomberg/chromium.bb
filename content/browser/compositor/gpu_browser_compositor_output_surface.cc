@@ -8,11 +8,10 @@
 #include "cc/output/output_surface_client.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
+#include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace content {
 
@@ -60,6 +59,15 @@ bool GpuBrowserCompositorOutputSurface::BindToClient(
   return true;
 }
 
+void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {
+  if (!reflector_) {
+    reflector_texture_.reset();
+  } else {
+    reflector_texture_.reset(new ReflectorTexture(context_provider()));
+    reflector_->OnSourceTextureMailboxUpdated(reflector_texture_->mailbox());
+  }
+}
+
 void GpuBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(frame->gl_frame_data);
@@ -68,10 +76,14 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 
   if (reflector_) {
     if (frame->gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame->gl_frame_data->size))
+        gfx::Rect(frame->gl_frame_data->size)) {
+      reflector_texture_->CopyTextureFullImage(SurfaceSize());
       reflector_->OnSourceSwapBuffers();
-    else
-      reflector_->OnSourcePostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
+    } else {
+      const gfx::Rect& rect = frame->gl_frame_data->sub_buffer_rect;
+      reflector_texture_->CopyTextureSubImage(rect);
+      reflector_->OnSourcePostSubBuffer(rect);
+    }
   }
 
   if (frame->gl_frame_data->sub_buffer_rect ==

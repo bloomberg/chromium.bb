@@ -12,6 +12,7 @@
 #include "cc/resources/resource_provider.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
+#include "content/browser/compositor/reflector_texture.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -37,7 +38,6 @@ OffscreenBrowserCompositorOutputSurface::
                                      overlay_candidate_validator.Pass()),
       fbo_(0),
       is_backbuffer_discarded_(false),
-      backing_texture_id_(0),
       weak_ptr_factory_(this) {
   capabilities_.max_frames_pending = 1;
   capabilities_.uses_default_gl_framebuffer = false;
@@ -51,12 +51,12 @@ OffscreenBrowserCompositorOutputSurface::
 void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
 
-  if (!backing_texture_id_) {
+  if (!reflector_texture_.get()) {
+    reflector_texture_.reset(new ReflectorTexture(context_provider()));
+
     GLES2Interface* gl = context_provider_->ContextGL();
     cc::ResourceFormat format = cc::RGBA_8888;
-
-    gl->GenTextures(1, &backing_texture_id_);
-    gl->BindTexture(GL_TEXTURE_2D, backing_texture_id_);
+    gl->BindTexture(GL_TEXTURE_2D, reflector_texture_->texture_id());
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -64,6 +64,15 @@ void OffscreenBrowserCompositorOutputSurface::EnsureBackbuffer() {
     gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format),
                    surface_size_.width(), surface_size_.height(), 0,
                    GLDataFormat(format), GLDataType(format), nullptr);
+    if (!fbo_)
+      gl->GenFramebuffers(1, &fbo_);
+
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             GL_TEXTURE_2D, reflector_texture_->texture_id(),
+                             0);
+    reflector_->OnSourceTextureMailboxUpdated(
+        reflector_texture_->mailbox());
   }
 }
 
@@ -72,9 +81,10 @@ void OffscreenBrowserCompositorOutputSurface::DiscardBackbuffer() {
 
   GLES2Interface* gl = context_provider_->ContextGL();
 
-  if (backing_texture_id_) {
-    gl->DeleteTextures(1, &backing_texture_id_);
-    backing_texture_id_ = 0;
+  if (reflector_texture_) {
+    reflector_texture_.reset();
+    if (reflector_)
+      reflector_->OnSourceTextureMailboxUpdated(nullptr);
   }
 
   if (fbo_) {
@@ -96,23 +106,18 @@ void OffscreenBrowserCompositorOutputSurface::Reshape(const gfx::Size& size,
 }
 
 void OffscreenBrowserCompositorOutputSurface::BindFramebuffer() {
+  bool need_to_bind = !!reflector_texture_.get();
   EnsureBackbuffer();
-  DCHECK(backing_texture_id_);
+  DCHECK(reflector_texture_.get());
 
-  GLES2Interface* gl = context_provider_->ContextGL();
-
-  if (!fbo_)
-    gl->GenFramebuffers(1, &fbo_);
-  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                           backing_texture_id_, 0);
+  if (need_to_bind) {
+    GLES2Interface* gl = context_provider_->ContextGL();
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  }
 }
 
 void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
-  // TODO(oshima): Pass the texture to the reflector so that the
-  // reflector can simply use and draw it on their surface instead of
-  // copying the texture.
   if (reflector_) {
     if (frame->gl_frame_data->sub_buffer_rect ==
         gfx::Rect(frame->gl_frame_data->size))
@@ -122,13 +127,17 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
   }
 
   client_->DidSwapBuffers();
+}
 
-  // TODO(oshima): sync with the reflector's SwapBuffersComplete.
-  uint32_t sync_point =
-      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
-  context_provider_->ContextSupport()->SignalSyncPoint(
-      sync_point, base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                             weak_ptr_factory_.GetWeakPtr()));
+void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
+  if (reflector_)
+    EnsureBackbuffer();
+}
+
+base::Closure
+OffscreenBrowserCompositorOutputSurface::CreateCompositionStartedCallback() {
+  return base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                    weak_ptr_factory_.GetWeakPtr());
 }
 
 #if defined(OS_MACOSX)

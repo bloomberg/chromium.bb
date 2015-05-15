@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_COMPOSITOR_OFFSCREEN_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include "base/cancelable_callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 
@@ -15,6 +16,7 @@ class CompositorVSyncManager;
 
 namespace content {
 class CommandBufferProxyImpl;
+class ReflectorTexture;
 
 class OffscreenBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
@@ -35,6 +37,9 @@ class OffscreenBrowserCompositorOutputSurface
   void BindFramebuffer() override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
 
+  // BrowserCompositorOutputSurface
+  void OnReflectorChanged() override;
+  base::Closure CreateCompositionStartedCallback() override;
 #if defined(OS_MACOSX)
   void OnSurfaceDisplayed() override {};
   void SetSurfaceSuspendedForRecycle(bool suspended) override {};
@@ -43,7 +48,7 @@ class OffscreenBrowserCompositorOutputSurface
 
   uint32 fbo_;
   bool is_backbuffer_discarded_;
-  uint32 backing_texture_id_;
+  scoped_ptr<ReflectorTexture> reflector_texture_;
 
   base::WeakPtrFactory<OffscreenBrowserCompositorOutputSurface>
       weak_ptr_factory_;

@@ -1589,6 +1589,8 @@
       'browser/compositor/owned_mailbox.h',
       'browser/compositor/reflector_impl.cc',
       'browser/compositor/reflector_impl.h',
+      'browser/compositor/reflector_texture.cc',
+      'browser/compositor/reflector_texture.h',
       'browser/compositor/resize_lock.cc',
       'browser/compositor/resize_lock.h',
       'browser/compositor/software_browser_compositor_output_surface.cc',
