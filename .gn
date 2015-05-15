@@ -45,6 +45,8 @@ check_targets = [
   "//google_update/*",
 
   #"//gpu/*",  # Lots of errors.
+  "//gpu:*",
+
   #"//ios/*",
   "//ipc/*",
 
