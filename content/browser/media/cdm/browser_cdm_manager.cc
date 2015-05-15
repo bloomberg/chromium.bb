@@ -35,6 +35,11 @@ using media::MediaKeys;
 
 namespace {
 
+#if defined(OS_ANDROID)
+// Android only supports 128-bit key IDs.
+const size_t kAndroidKeyIdBytes = 128 / 8;
+#endif
+
 // The ID used in this class is a concatenation of |render_frame_id| and
 // |cdm_id|, i.e. (render_frame_id << 32) + cdm_id.
 
@@ -345,6 +350,15 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
     promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0, "Init data too long.");
     return;
   }
+#if defined(OS_ANDROID)
+  // 'webm' initData is a single key ID. On Android the length is restricted.
+  if (init_data_type == INIT_DATA_TYPE_WEBM &&
+      init_data.size() != kAndroidKeyIdBytes) {
+    promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0,
+                    "'webm' initData is not the correct length.");
+    return;
+  }
+#endif
 
   media::EmeInitDataType eme_init_data_type;
   switch (init_data_type) {
