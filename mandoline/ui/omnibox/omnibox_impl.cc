@@ -59,9 +59,11 @@ void OmniboxImpl::OnEmbed(mojo::View* root,
     edit_->set_controller(this);
   }
 
+  const int kOpacity = 0xC0;
   views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
   widget_delegate->GetContentsView()->set_background(
-    views::Background::CreateSolidBackground(0xFFDDDDDD));
+      views::Background::CreateSolidBackground(
+          SkColorSetA(0xDDDDDD, kOpacity)));
   widget_delegate->GetContentsView()->AddChildView(edit_);
   widget_delegate->GetContentsView()->SetLayoutManager(this);
 
@@ -74,8 +76,11 @@ void OmniboxImpl::OnEmbed(mojo::View* root,
       new NativeWidgetViewManager(widget, app_impl_->shell(), root);
   params.delegate = widget_delegate;
   params.bounds = root->bounds().To<gfx::Rect>();
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   widget->Init(params);
   widget->Show();
+  widget->GetCompositor()->SetBackgroundColor(
+      SkColorSetA(SK_ColorBLACK, kOpacity));
   root->SetFocus();
   edit_->SetText(url_.To<base::string16>());
   edit_->SelectAll(false);
