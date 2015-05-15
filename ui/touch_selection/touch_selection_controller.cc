@@ -491,8 +491,14 @@ void TouchSelectionController::DeactivateSelection() {
 }
 
 void TouchSelectionController::ForceNextUpdateIfInactive() {
-  if (active_status_ == INACTIVE)
+  // Only force the update if the reported selection is non-empty but still
+  // considered "inactive", i.e., it wasn't preceded by a user gesture or
+  // the handles have since been explicitly hidden.
+  if (active_status_ == INACTIVE &&
+      start_.type() != SelectionBound::EMPTY &&
+      end_.type() != SelectionBound::EMPTY) {
     force_next_update_ = true;
+  }
 }
 
 gfx::Vector2dF TouchSelectionController::GetStartLineOffset() const {

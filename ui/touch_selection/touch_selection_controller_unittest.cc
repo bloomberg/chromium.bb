@@ -575,6 +575,27 @@ TEST_F(TouchSelectionControllerTest, SelectionBasic) {
   EXPECT_EQ(gfx::PointF(), GetLastEventStart());
 }
 
+TEST_F(TouchSelectionControllerTest, SelectionAllowsEmptyUpdateAfterLongPress) {
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
+  bool visible = true;
+
+  OnLongPressEvent();
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  // There may be several empty updates after a longpress due to the
+  // asynchronous response. These empty updates should not prevent the selection
+  // handles from (eventually) activating.
+  ClearSelection();
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  ClearSelection();
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+}
+
 TEST_F(TouchSelectionControllerTest, SelectionRepeatedLongPress) {
   gfx::RectF start_rect(5, 5, 0, 10);
   gfx::RectF end_rect(50, 5, 0, 10);
