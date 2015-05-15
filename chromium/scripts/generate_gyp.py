@@ -644,7 +644,9 @@ IGNORED_INCLUDE_FILES = [
   os.path.join('libavutil', 'avconfig.h'),
   os.path.join('libavutil', 'ffversion.h'),
 
-  # Unused un-generated files (includes that get ifdef'ed out)
+  # Current configure values are set such that we don't include these (because
+  # of various defines) and we also don't generate them at all, so we will fail
+  # to find these because they don't exist in our repository.
   os.path.join('libavcodec', 'aacps_tables.h'),
   os.path.join('libavcodec', 'aacsbr_tables.h'),
   os.path.join('libavcodec', 'aac_tables.h'),
@@ -657,6 +659,8 @@ IGNORED_INCLUDE_FILES = [
 
 
 # Known licenses that are acceptable for static linking
+# DO NOT ADD TO THIS LIST without first confirming with lawyers that the
+# licenses are okay to add.
 LICENSE_WHITELIST = [
   'BSD (3 clause) LGPL (v2.1 or later)',
   'ISC GENERATED FILE',
@@ -667,18 +671,29 @@ LICENSE_WHITELIST = [
 ]
 
 
-# Files permitted to report an UNKNOWN license.
+# Files permitted to report an UNKNOWN license. All files mentioned here should
+# give the full path from the source_dir to avoid ambiguity.
+# DO NOT ADD TO THIS LIST without first confirming with lawyers that the files
+# you're adding have acceptable licenses.
 UNKNOWN_WHITELIST = [
   # From of Independent JPEG group. No named license, but usage is allowed.
-  'jrevdct.c',
-  'jfdctfst.c',
-  'jfdctint_template.c',
+  os.path.join('libavcodec', 'jrevdct.c'),
+  os.path.join('libavcodec', 'jfdctfst.c'),
+  os.path.join('libavcodec', 'jfdctint_template.c'),
 ]
 
 
-def GetIncludedSources(file_path, source_dir, include_set):
+# Regex to find lines matching #include "some_dir\some_file.h".
+INCLUDE_REGEX = re.compile('#\s*include\s+"([^"]+)"')
+
+# Regex to find whacky includes that we might be overlooking (e.g. using macros
+# or defines).
+EXOTIC_INCLUDE_REGEX = re.compile('#\s*include\s+[^"<\s].+')
+
+
+def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
   """ Recurse over include tree, accumulating absolute paths to all included
-  files (including the seed file) in included_set.
+  files (including the seed file) in include_set.
 
   Pass in the set returned from previous calls to avoid re-walking parts of the
   tree. Given file_path may be relative (to options.src_dir) or absolute.
@@ -691,46 +706,63 @@ def GetIncludedSources(file_path, source_dir, include_set):
   1. Directory of the file containing the #include directive
   2. Directory specified by source_dir
 
-  NOTE: Files listed in IGNORED_INCLUDE_FILES will be ignored if not found. See reasons
-  at definition for IGNORED_INCLUDE_FILES.
+  NOTE: Files listed in IGNORED_INCLUDE_FILES will be ignored if not found. See
+  reasons at definition for IGNORED_INCLUDE_FILES.
   """
   # Use options.source_dir to correctly resolve relative file path. Use only
   # absolute paths in the set to avoid same-name-errors.
-  if (not os.path.isabs(file_path)):
+  if not os.path.isabs(file_path):
     file_path = os.path.abspath(os.path.join(source_dir, file_path))
 
   current_dir = os.path.dirname(file_path)
 
   # Already processed this file, bail out.
-  if (file_path in include_set):
+  if file_path in include_set:
     return include_set
 
   include_set.add(file_path)
 
   for line in open(file_path):
-    include_match = re.search('#\s*include\s+"([^"]+)"', line)
-    if (include_match is not None):
-      include_file_path = include_match.group(1)
-      resolved_include_path = '';
-      # Check if file is in current directory
-      if (os.path.isfile(os.path.join(current_dir, include_file_path))):
-        resolved_include_path = os.path.join(current_dir, include_file_path);
-      # Else, check source_dir (should be FFmpeg root)
-      elif (os.path.isfile(os.path.join(source_dir, include_file_path))):
-        resolved_include_path = os.path.join(source_dir, include_file_path)
-      # Else, we couldn't find it :(
-      elif (include_file_path in IGNORED_INCLUDE_FILES):
-        continue
-      else:
-        exit('Failed to find file', include_file_path)
+    include_match = INCLUDE_REGEX.search(line)
 
-      GetIncludedSources(resolved_include_path, source_dir, include_set)
+    if not include_match:
+      if EXOTIC_INCLUDE_REGEX.search(line):
+        print 'WARNING: Investigate whacky include line:', line
+      continue;
+
+    include_file_path = include_match.group(1)
+
+    # These may or may not be where the file lives. Just storing temps here
+    # and we'll checking their validity below.
+    include_path_in_current_dir = os.path.join(current_dir, include_file_path)
+    include_path_in_source_dir = os.path.join(source_dir, include_file_path)
+    resolved_include_path = '';
+
+    # Check if file is in current directory.
+    if os.path.isfile(include_path_in_current_dir):
+      resolved_include_path = include_path_in_current_dir;
+    # Else, check source_dir (should be FFmpeg root).
+    elif os.path.isfile(include_path_in_source_dir):
+      resolved_include_path = include_path_in_source_dir
+    # Else, we couldn't find it :(.
+    elif include_file_path in IGNORED_INCLUDE_FILES:
+      continue
+    else:
+      exit('Failed to find file', include_file_path)
+
+    # At this point we've found the file. Check if its in our ignore list which
+    # means that the list should be updated to no longer mention this file.
+    if include_file_path in IGNORED_INCLUDE_FILES:
+      print('Found %s in IGNORED_INCLUDE_FILES. Consider updating the list '
+            'to remove this file.' % str(include_file_path))
+
+    GetIncludedSources(resolved_include_path, source_dir, include_set, depth + 1)
 
 
 def CheckLicenseForSource(source, source_dir, print_licenses):
-  # Assumed to be two back from source_dir (e.g. third_party/ffmpeg/../..)
+  # Assumed to be two back from source_dir (e.g. third_party/ffmpeg/../..).
   source_root = os.path.abspath(
-    os.path.join(source_dir, os.path.pardir, os.path.pardir))
+      os.path.join(source_dir, os.path.pardir, os.path.pardir))
 
   licensecheck_path = os.path.abspath(os.path.join(
       source_root, 'third_party', 'devscripts', 'licensecheck.pl'));
@@ -742,21 +774,22 @@ def CheckLicenseForSource(source, source_dir, print_licenses):
                                     os.path.abspath(source)],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-  check_process.wait()
   stdout, stderr = check_process.communicate()
 
+  # Get the filename and license out of the stdout. stdout is expected to be
+  # "/abspath/to/file: *No copyright* SOME LICENSE".
   filename, license = stdout.split(':', 1)
-  basename = os.path.basename(filename)
   license = license.replace('*No copyright*', '').strip()
+  rel_file_path = os.path.relpath(filename, os.path.abspath(source_dir))
 
   if (license in LICENSE_WHITELIST or
-     (license == 'UNKNOWN' and basename in UNKNOWN_WHITELIST)):
-    if (print_licenses):
+     (license == 'UNKNOWN' and rel_file_path in UNKNOWN_WHITELIST)):
+    if print_licenses:
       print filename, ':', license
     return True
-  else:
-    print 'Unexpected license. {0}:..{1}..'.format(filename, license)
-    return False
+
+  print 'UNEXPECTED LICENSE: %s: %s' % (filename, license)
+  return False
 
 
 def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
@@ -766,7 +799,7 @@ def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
     for source in source_set.sources:
       GetIncludedSources(source, source_dir, sources_to_check)
 
-  # Check licenses for all included sources
+  # Check licenses for all included sources.
   all_checks_passed = True
   for source in sources_to_check:
     if not CheckLicenseForSource(source, source_dir, print_licenses):
@@ -782,7 +815,6 @@ def main():
   object_to_sources = GetObjectToSourceMapping(source_files)
 
   sets = []
-  skipped_dirs = []
 
   for arch in SUPPORTED_ARCHITECTURES:
     for target in SUPPORTED_TARGETS:
@@ -791,7 +823,6 @@ def main():
         name = ''.join(['build.', arch, '.', platform])
         build_dir = os.path.join(options.build_dir, name, target)
         if not os.path.exists(build_dir):
-          skipped_dirs.append(build_dir)
           continue
         print 'Processing build directory: %s' % name
 
@@ -801,38 +832,32 @@ def main():
         s = GetSourceFileSet(object_to_sources, object_files)
         sets.append(SourceSet(s, set([arch]), set([target]), set([platform])))
 
-  if (skipped_dirs):
-    print
-    print 'DIRECTORIES WERE SKIPPED (NOT FOUND):'
-    print skipped_dirs
-    print
-
   sets = CreatePairwiseDisjointSets(sets)
 
-  if len(sets) is 0:
+  if not sets:
     exit('ERROR: failed to find any source sets. ' +
-         'Are build_dir ({0}) and/or source_dir ({1}) options correct?'.format(
-              options.build_dir, options.source_dir))
+         'Are build_dir (%s) and/or source_dir (%s) options correct?' %
+              (options.build_dir, options.source_dir))
 
+  if not CheckLicensesForStaticLinking(sets, source_dir,
+                                       options.print_licenses):
+    exit ('GENERATE FAILED: invalid licenses detected.')
 
-  if (CheckLicensesForStaticLinking(sets, source_dir, options.print_licenses)):
-    print 'License checks passed.'
+  print 'License checks passed.'
 
-    # Open for writing.
-    if options.output_gn:
-      outfile = 'ffmpeg_generated.gni'
-    else:
-      outfile = 'ffmpeg_generated.gypi'
-    output_name = os.path.join(options.source_dir, outfile)
-    print 'Output:', output_name
-
-    with open(output_name, 'w') as fd:
-      if options.output_gn:
-        WriteGn(fd, options.build_dir, sets)
-      else:
-        WriteGyp(fd, options.build_dir, sets)
+  # Open for writing.
+  if options.output_gn:
+    outfile = 'ffmpeg_generated.gni'
   else:
-    print 'Generate failed, invalid licenses detected.'
+    outfile = 'ffmpeg_generated.gypi'
+  output_name = os.path.join(options.source_dir, outfile)
+  print 'Output:', output_name
+
+  with open(output_name, 'w') as fd:
+    if options.output_gn:
+      WriteGn(fd, options.build_dir, sets)
+    else:
+      WriteGyp(fd, options.build_dir, sets)
 
 if __name__ == '__main__':
   main()
