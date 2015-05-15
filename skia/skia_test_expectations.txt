@@ -48,9 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# The Skia CL https://codereview.chromium.org/1138893002
-# (Plus xfermode using Sk4px) fixed two images:
-crbug.com/487587 fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
-crbug.com/487587 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
