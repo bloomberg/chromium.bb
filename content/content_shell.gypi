@@ -1119,6 +1119,7 @@
     ['OS=="win"', {
       'targets': [
         {
+          # GN version: //content/shell:crash_service
           'target_name': 'content_shell_crash_service',
           'type': 'executable',
           'dependencies': [

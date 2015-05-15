@@ -750,8 +750,8 @@ if (!is_ios) {
 
     if (is_win) {
       deps += [
+        "//content/shell:crash_service",
         "//content/shell:layout_test_helper",
-        #'../content/content_shell_and_tests.gyp:content_shell_crash_service', TODO(GYP)
       ]
     }
 

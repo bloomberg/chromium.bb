@@ -555,3 +555,20 @@ if (is_mac || is_win) {
     }
   }
 }
+
+if (is_win) {
+  # GYP version: content/content_shell_and_tests.gyp:content_shell_crash_service
+  executable("crash_service") {
+    sources = [
+      "tools/content_shell_crash_service.cc",
+    ]
+
+    deps = [
+      "//base",
+      "//components/crash/tools:crash_service",
+    ]
+
+    configs -= [ "//build/config/win:console" ]
+    configs += [ "//build/config/win:windowed" ]
+  }
+}
