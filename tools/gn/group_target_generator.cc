@@ -4,6 +4,7 @@
 
 #include "tools/gn/group_target_generator.h"
 
+#include "tools/gn/target.h"
 #include "tools/gn/variables.h"
 
 GroupTargetGenerator::GroupTargetGenerator(

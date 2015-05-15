@@ -12,9 +12,9 @@
 class GroupTargetGenerator : public TargetGenerator {
  public:
   GroupTargetGenerator(Target* target,
-                        Scope* scope,
-                        const FunctionCallNode* function_call,
-                        Err* err);
+                       Scope* scope,
+                       const FunctionCallNode* function_call,
+                       Err* err);
   ~GroupTargetGenerator() override;
 
  protected:
@@ -25,4 +25,3 @@ class GroupTargetGenerator : public TargetGenerator {
 };
 
 #endif  // TOOLS_GN_GROUP_TARGET_GENERATOR_H_
-
