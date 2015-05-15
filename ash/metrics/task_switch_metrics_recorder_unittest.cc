@@ -92,4 +92,19 @@ TEST_F(TaskSwitchMetricsRecorderTest,
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
+// Verifies that the TaskSwitchMetricsRecorder::kTabStrip source adds data to
+// the Ash.Tab.TimeBetweenSwitchToExistingTabUserActions histogram.
+TEST_F(TaskSwitchMetricsRecorderTest,
+       VerifyTaskSwitchesFromTheTabStripAreRecorded) {
+  const std::string kHistogramName =
+      "Ash.Tab.TimeBetweenSwitchToExistingTabUserActions";
+
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kTabStrip);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kTabStrip);
+  histogram_tester_->ExpectTotalCount(kHistogramName, 1);
+
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kTabStrip);
+  histogram_tester_->ExpectTotalCount(kHistogramName, 2);
+}
+
 }  // namespace ash

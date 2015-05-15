@@ -13,6 +13,9 @@ namespace {
 const char kShelfHistogramName[] =
     "Ash.Shelf.TimeBetweenNavigateToTaskSwitches";
 
+const char kTabStripHistogramName[] =
+    "Ash.Tab.TimeBetweenSwitchToExistingTabUserActions";
+
 const char kAcceleratorWindowCycleHistogramName[] =
     "Ash.WindowCycleController.TimeBetweenTaskSwitches";
 
@@ -22,6 +25,8 @@ const char* GetHistogramName(
   switch (task_switch_source) {
     case TaskSwitchMetricsRecorder::kShelf:
       return kShelfHistogramName;
+    case TaskSwitchMetricsRecorder::kTabStrip:
+      return kTabStripHistogramName;
     case TaskSwitchMetricsRecorder::kWindowCycleController:
       return kAcceleratorWindowCycleHistogramName;
   }

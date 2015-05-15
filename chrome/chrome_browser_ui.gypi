@@ -599,6 +599,8 @@
       'browser/ui/ash/launcher/multi_profile_browser_status_monitor.h',
       'browser/ui/ash/media_delegate_chromeos.cc',
       'browser/ui/ash/media_delegate_chromeos.h',
+      'browser/ui/ash/metrics/chrome_user_metrics_recorder.cc',
+      'browser/ui/ash/metrics/chrome_user_metrics_recorder.h',
       'browser/ui/ash/multi_user/multi_user_context_menu_chromeos.cc',
       'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.cc',
       'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h',

@@ -785,6 +785,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The duration of mostly stationary long-duration touches.</summary>
 </histogram>
 
+<histogram name="Ash.Tab.TimeBetweenSwitchToExistingTabUserActions"
+    units="seconds">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The number of seconds between tab switches triggered by a user gesture (e.g.
+    Ctrl+T, Ctrl+1, tapping or clicking the tab strip, etc).
+  </summary>
+</histogram>
+
 <histogram name="Ash.TouchDuration" units="milliseconds">
   <obsolete>
     Deprecated 12/2013 in r239809, and replaced by Ash.TouchDuration2.
