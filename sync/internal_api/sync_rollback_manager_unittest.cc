@@ -202,7 +202,7 @@ TEST_F(SyncRollbackManagerTest, RollbackBasic) {
 
   ModelSafeRoutingInfo routing_info;
   routing_info[PREFERENCES] = GROUP_UI;
-  rollback_manager.StartSyncingNormally(routing_info);
+  rollback_manager.StartSyncingNormally(routing_info, base::Time());
 }
 
 TEST_F(SyncRollbackManagerTest, NoRollbackOfTypesNotBackedUp) {
@@ -226,7 +226,7 @@ TEST_F(SyncRollbackManagerTest, NoRollbackOfTypesNotBackedUp) {
 
   ModelSafeRoutingInfo routing_info;
   routing_info[PREFERENCES] = GROUP_UI;
-  rollback_manager.StartSyncingNormally(routing_info);
+  rollback_manager.StartSyncingNormally(routing_info, base::Time());
 
   // APP entry is still valid.
   EXPECT_TRUE(VerifyEntry(rollback_manager.GetUserShare(), APPS, "app1"));

@@ -187,7 +187,7 @@ void SyncBackendHostImpl::StartSyncingWithServer() {
 
   registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoStartSyncing,
-                 core_.get(), routing_info));
+                 core_.get(), routing_info, sync_prefs_->GetLastPollTime()));
 }
 
 void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
@@ -718,6 +718,9 @@ void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
   last_snapshot_ = snapshot;
 
   SDVLOG(1) << "Got snapshot " << snapshot.ToString();
+
+  if (!snapshot.poll_finish_time().is_null())
+    sync_prefs_->SetLastPollTime(snapshot.poll_finish_time());
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.

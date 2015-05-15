@@ -10,7 +10,7 @@ FakeSyncScheduler::FakeSyncScheduler() {}
 
 FakeSyncScheduler::~FakeSyncScheduler() {}
 
-void FakeSyncScheduler::Start(Mode mode) {
+void FakeSyncScheduler::Start(Mode mode, base::Time last_poll_time) {
 }
 
 void FakeSyncScheduler::Stop() {

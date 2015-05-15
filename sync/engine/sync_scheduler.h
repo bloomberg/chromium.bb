@@ -68,8 +68,9 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
 
   // Start the scheduler with the given mode.  If the scheduler is
   // already started, switch to the given mode, although some
-  // scheduled tasks from the old mode may still run.
-  virtual void Start(Mode mode) = 0;
+  // scheduled tasks from the old mode may still run. |last_poll_time| will
+  // be used to decide what the poll timer should be initialized with.
+  virtual void Start(Mode mode, base::Time last_poll_time) = 0;
 
   // Schedules the configuration task specified by |params|. Returns true if
   // the configuration task executed immediately, false if it had to be

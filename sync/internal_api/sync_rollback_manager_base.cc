@@ -86,7 +86,7 @@ void SyncRollbackManagerBase::UpdateCredentials(
 }
 
 void SyncRollbackManagerBase::StartSyncingNormally(
-    const ModelSafeRoutingInfo& routing_info){
+    const ModelSafeRoutingInfo& routing_info, base::Time last_poll_time){
 }
 
 void SyncRollbackManagerBase::ConfigureSyncer(
