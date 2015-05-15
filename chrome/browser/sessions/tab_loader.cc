@@ -117,7 +117,7 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
     delegate_ = TabLoaderDelegate::Create(this);
     // There is already at least one tab loading (the active tab). As such we
     // only have to start the timeout timer here.
-    StartTimer();
+    StartFirstTimer();
   }
 }
 
@@ -150,6 +150,13 @@ void TabLoader::LoadNextTab() {
 
   if (!tabs_to_load_.empty())
     StartTimer();
+}
+
+void TabLoader::StartFirstTimer() {
+  force_load_timer_.Stop();
+  force_load_timer_.Start(FROM_HERE,
+                          delegate_->GetFirstTabLoadingTimeout(),
+                          this, &TabLoader::ForceLoadTimerFired);
 }
 
 void TabLoader::StartTimer() {

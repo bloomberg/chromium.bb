@@ -68,8 +68,14 @@ class TabLoader : public content::NotificationObserver,
   // otherwise |force_load_timer_| is restarted.
   void LoadNextTab();
 
-  // Starts a timer to load load the next tab once expired before the current
-  // tab loading is finished.
+  // Starts |force_load_timer_| to load the first non-visible tab if the timer
+  // expires before a visible tab has finished loading. This uses the same
+  // timer but a different timeout value than StartTimer.
+  void StartFirstTimer();
+
+  // Starts |force_load_timer_| to load the next tab if the timer expires
+  // before the current tab loading is finished. This uses the same timer but a
+  // different timeout value than StartFirstTimer.
   void StartTimer();
 
   // Removes the listeners from the specified tab and removes the tab from

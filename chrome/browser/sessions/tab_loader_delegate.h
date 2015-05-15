@@ -27,8 +27,12 @@ class TabLoaderDelegate {
   // The callback object is valid as long as this object exists.
   static scoped_ptr<TabLoaderDelegate> Create(TabLoaderCallback* callback);
 
+  // Returns the default timeout time after which the first non-visible tab
+  // gets loaded if the first (visible) tab did not finish loading.
+  virtual base::TimeDelta GetFirstTabLoadingTimeout() const = 0;
+
   // Returns the default timeout time after which the next tab gets loaded if
-  // the previous tab did not finish to load.
+  // the previous tab did not finish loading.
   virtual base::TimeDelta GetTimeoutBeforeLoadingNextTab() const = 0;
 };
 

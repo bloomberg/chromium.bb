@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sessions/tab_loader_delegate.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {
@@ -22,8 +24,13 @@ class TabLoaderDelegateImpl
   ~TabLoaderDelegateImpl() override;
 
   // TabLoaderDelegate:
+  base::TimeDelta GetFirstTabLoadingTimeout() const override {
+    return first_timeout_;
+  }
+
+  // TabLoaderDelegate:
   base::TimeDelta GetTimeoutBeforeLoadingNextTab() const override {
-    return base::TimeDelta::FromMilliseconds(kInitialDelayTimerMS);
+    return timeout_;
   }
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver:
@@ -33,6 +40,10 @@ class TabLoaderDelegateImpl
  private:
   // The function to call when the connection type changes.
   TabLoaderCallback* callback_;
+
+  // The timeouts to use in tab loading.
+  base::TimeDelta first_timeout_;
+  base::TimeDelta timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLoaderDelegateImpl);
 };
@@ -47,6 +58,28 @@ TabLoaderDelegateImpl::TabLoaderDelegateImpl(TabLoaderCallback* callback)
     // distributes network access, we can remove this.
     callback->SetTabLoadingEnabled(false);
   }
+
+  // Initialize the timeouts to use from the session restore field trial.
+  // Default to the usual value if none is specified.
+
+  static const char kIntelligentSessionRestore[] = "IntelligentSessionRestore";
+  std::string timeout = variations::GetVariationParamValue(
+      kIntelligentSessionRestore, "FirstTabLoadTimeoutMs");
+  int timeout_ms = 0;
+  if (timeout.empty() || !base::StringToInt(timeout, &timeout_ms) ||
+      timeout_ms <= 0) {
+    timeout_ms = kInitialDelayTimerMS;
+  }
+  first_timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
+
+  timeout = variations::GetVariationParamValue(
+      kIntelligentSessionRestore, "TabLoadTimeoutMs");
+  timeout_ms = 0;
+  if (timeout.empty() || !base::StringToInt(timeout, &timeout_ms) ||
+      timeout_ms <= 0) {
+    timeout_ms = kInitialDelayTimerMS;
+  }
+  timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
 }
 
 TabLoaderDelegateImpl::~TabLoaderDelegateImpl() {
