@@ -43,6 +43,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/resources/grit/webui_resources.h"
 
@@ -445,7 +446,8 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
                               bool shift,
                               bool alt,
                               bool command) {
-  int native_key_code = ui::KeycodeConverter::CodeToNativeKeycode(code);
+  int native_key_code = ui::KeycodeConverter::DomCodeToNativeKeycode(
+      ui::KeycodeConverter::CodeStringToDomCode(code));
 
   int modifiers = 0;
 
@@ -453,96 +455,75 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
   // For our simulation we can use either the left keys or the right keys.
   if (control) {
     modifiers |= blink::WebInputEvent::ControlKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::RawKeyDown,
-                      ui::VKEY_CONTROL,
-                      ui::KeycodeConverter::CodeToNativeKeycode("ControlLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_CONTROL,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
+        modifiers);
   }
 
   if (shift) {
     modifiers |= blink::WebInputEvent::ShiftKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::RawKeyDown,
-                      ui::VKEY_SHIFT,
-                      ui::KeycodeConverter::CodeToNativeKeycode("ShiftLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_SHIFT,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::SHIFT_LEFT),
+        modifiers);
   }
 
   if (alt) {
     modifiers |= blink::WebInputEvent::AltKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::RawKeyDown,
-                      ui::VKEY_MENU,
-                      ui::KeycodeConverter::CodeToNativeKeycode("AltLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_MENU,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ALT_LEFT),
+        modifiers);
   }
 
   if (command) {
     modifiers |= blink::WebInputEvent::MetaKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::RawKeyDown,
-                      ui::VKEY_COMMAND,
-                      ui::KeycodeConverter::CodeToNativeKeycode("OSLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_COMMAND,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::OS_LEFT),
+        modifiers);
   }
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown, key_code,
+                    native_key_code, modifiers);
 
-  InjectRawKeyEvent(
-      web_contents,
-      blink::WebInputEvent::RawKeyDown,
-      key_code,
-      native_key_code,
-      modifiers);
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::Char, key_code,
+                    native_key_code, modifiers);
 
-  InjectRawKeyEvent(
-      web_contents,
-      blink::WebInputEvent::Char,
-      key_code,
-      native_key_code,
-      modifiers);
-
-  InjectRawKeyEvent(
-      web_contents,
-      blink::WebInputEvent::KeyUp,
-      key_code,
-      native_key_code,
-      modifiers);
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp, key_code,
+                    native_key_code, modifiers);
 
   // The order of these key releases shouldn't matter for our simulation.
   if (control) {
     modifiers &= ~blink::WebInputEvent::ControlKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::KeyUp,
-                      ui::VKEY_CONTROL,
-                      ui::KeycodeConverter::CodeToNativeKeycode("ControlLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_CONTROL,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
+        modifiers);
   }
 
   if (shift) {
     modifiers &= ~blink::WebInputEvent::ShiftKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::KeyUp,
-                      ui::VKEY_SHIFT,
-                      ui::KeycodeConverter::CodeToNativeKeycode("ShiftLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_SHIFT,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::SHIFT_LEFT),
+        modifiers);
   }
 
   if (alt) {
     modifiers &= ~blink::WebInputEvent::AltKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::KeyUp,
-                      ui::VKEY_MENU,
-                      ui::KeycodeConverter::CodeToNativeKeycode("AltLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_MENU,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ALT_LEFT),
+        modifiers);
   }
 
   if (command) {
     modifiers &= ~blink::WebInputEvent::MetaKey;
-    InjectRawKeyEvent(web_contents,
-                      blink::WebInputEvent::KeyUp,
-                      ui::VKEY_COMMAND,
-                      ui::KeycodeConverter::CodeToNativeKeycode("OSLeft"),
-                      modifiers);
+    InjectRawKeyEvent(
+        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_COMMAND,
+        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::OS_LEFT),
+        modifiers);
   }
 
   ASSERT_EQ(modifiers, 0);

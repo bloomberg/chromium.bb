@@ -351,7 +351,7 @@ TEST(EventTest, KeyEventCode) {
   ASSERT_EQ(kDomCodeForSpace,
             ui::KeycodeConverter::CodeStringToDomCode(kCodeForSpace));
   const uint16 kNativeCodeSpace =
-      ui::KeycodeConverter::CodeToNativeKeycode(kCodeForSpace);
+      ui::KeycodeConverter::DomCodeToNativeKeycode(kDomCodeForSpace);
   ASSERT_NE(ui::KeycodeConverter::InvalidNativeKeycode(), kNativeCodeSpace);
   ASSERT_EQ(kNativeCodeSpace,
             ui::KeycodeConverter::DomCodeToNativeKeycode(kDomCodeForSpace));
@@ -433,8 +433,10 @@ void AdvanceKeyEventTimestamp(MSG& msg) {
 
 #if defined(USE_X11) || defined(OS_WIN)
 TEST(EventTest, AutoRepeat) {
-  const uint16 kNativeCodeA = ui::KeycodeConverter::CodeToNativeKeycode("KeyA");
-  const uint16 kNativeCodeB = ui::KeycodeConverter::CodeToNativeKeycode("KeyB");
+  const uint16 kNativeCodeA =
+      ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::KEY_A);
+  const uint16 kNativeCodeB =
+      ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::KEY_B);
 #if defined(USE_X11)
   ScopedXI2Event native_event_a_pressed;
   native_event_a_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, kNativeCodeA);

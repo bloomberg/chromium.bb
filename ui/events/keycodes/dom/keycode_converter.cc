@@ -69,18 +69,6 @@ int KeycodeConverter::InvalidNativeKeycode() {
 }
 
 // static
-const char* KeycodeConverter::NativeKeycodeToCode(int native_keycode) {
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].native_keycode == native_keycode) {
-      if (usb_keycode_map[i].code != NULL)
-        return usb_keycode_map[i].code;
-      break;
-    }
-  }
-  return "";
-}
-
-// static
 DomCode KeycodeConverter::NativeKeycodeToDomCode(int native_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].native_keycode == native_keycode) {
@@ -90,20 +78,6 @@ DomCode KeycodeConverter::NativeKeycodeToDomCode(int native_keycode) {
     }
   }
   return DomCode::NONE;
-}
-
-// static
-int KeycodeConverter::CodeToNativeKeycode(const char* code) {
-  if (!code || !*code)
-    return InvalidNativeKeycode();
-
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].code &&
-        strcmp(usb_keycode_map[i].code, code) == 0) {
-      return usb_keycode_map[i].native_keycode;
-    }
-  }
-  return InvalidNativeKeycode();
 }
 
 // static
@@ -129,7 +103,14 @@ DomCode KeycodeConverter::CodeStringToDomCode(const char* code) {
 
 // static
 const char* KeycodeConverter::DomCodeToCodeString(DomCode dom_code) {
-  return UsbKeycodeToCode(static_cast<uint32_t>(dom_code));
+  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
+    if (usb_keycode_map[i].usb_keycode == static_cast<uint32_t>(dom_code)) {
+      if (usb_keycode_map[i].code)
+        return usb_keycode_map[i].code;
+      break;
+    }
+  }
+  return "";
 }
 
 // static
@@ -239,24 +220,21 @@ uint32_t KeycodeConverter::NativeKeycodeToUsbKeycode(int native_keycode) {
 }
 
 // static
-const char* KeycodeConverter::UsbKeycodeToCode(uint32_t usb_keycode) {
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].usb_keycode == usb_keycode) {
-      if (usb_keycode_map[i].code)
-        return usb_keycode_map[i].code;
-      break;
-    }
-  }
-  return "";
-}
-
-// static
 DomCode KeycodeConverter::UsbKeycodeToDomCode(uint32_t usb_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].usb_keycode == usb_keycode)
       return static_cast<DomCode>(usb_keycode);
   }
   return DomCode::NONE;
+}
+
+// static
+uint32_t KeycodeConverter::DomCodeToUsbKeycode(DomCode dom_code) {
+  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
+    if (usb_keycode_map[i].usb_keycode == static_cast<uint32_t>(dom_code))
+      return usb_keycode_map[i].usb_keycode;
+  }
+  return InvalidUsbKeycode();
 }
 
 // static

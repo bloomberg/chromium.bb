@@ -22,7 +22,8 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
 }
 
 const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
-  return ui::KeycodeConverter::NativeKeycodeToCode(key_event.nativeKeyCode);
+  return ui::KeycodeConverter::DomCodeToCodeString(
+      ui::KeycodeConverter::NativeKeycodeToDomCode(key_event.nativeKeyCode));
 }
 
 }  // namespace content

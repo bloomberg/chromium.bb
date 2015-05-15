@@ -45,6 +45,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 using content::WebContents;
@@ -637,35 +638,38 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
 
 #if defined(OS_MACOSX)
   int modifiers = blink::WebInputEvent::MetaKey;
-  InjectRawKeyEvent(tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_COMMAND,
-                    ui::KeycodeConverter::CodeToNativeKeycode("OSLeft"),
-                    modifiers);
+  InjectRawKeyEvent(
+      tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_COMMAND,
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::OS_LEFT),
+      modifiers);
 #else
   int modifiers = blink::WebInputEvent::ControlKey;
-  InjectRawKeyEvent(tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_CONTROL,
-                    ui::KeycodeConverter::CodeToNativeKeycode("ControlLeft"),
-                    modifiers);
+  InjectRawKeyEvent(
+      tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_CONTROL,
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
+      modifiers);
 #endif
 
   InjectRawKeyEvent(tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_RETURN,
-                    ui::KeycodeConverter::CodeToNativeKeycode(NULL), modifiers);
+                    ui::KeycodeConverter::InvalidNativeKeycode(), modifiers);
 
   InjectRawKeyEvent(tab, blink::WebInputEvent::Char, ui::VKEY_RETURN,
-                    ui::KeycodeConverter::CodeToNativeKeycode(NULL), modifiers);
+                    ui::KeycodeConverter::InvalidNativeKeycode(), modifiers);
 
   InjectRawKeyEvent(tab, blink::WebInputEvent::KeyUp, ui::VKEY_RETURN,
-                    ui::KeycodeConverter::CodeToNativeKeycode(NULL), modifiers);
+                    ui::KeycodeConverter::InvalidNativeKeycode(), modifiers);
 
 #if defined(OS_MACOSX)
-  InjectRawKeyEvent(tab, blink::WebInputEvent::KeyUp, ui::VKEY_COMMAND,
-                    ui::KeycodeConverter::CodeToNativeKeycode("OSLeft"),
-                    modifiers);
+  InjectRawKeyEvent(
+      tab, blink::WebInputEvent::KeyUp, ui::VKEY_COMMAND,
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::OS_LEFT),
+      modifiers);
 #else
-  InjectRawKeyEvent(tab, blink::WebInputEvent::KeyUp, ui::VKEY_CONTROL,
-                    ui::KeycodeConverter::CodeToNativeKeycode("ControlLeft"),
-                    modifiers);
+  InjectRawKeyEvent(
+      tab, blink::WebInputEvent::KeyUp, ui::VKEY_CONTROL,
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
+      modifiers);
 #endif
-
   wait_for_new_tab.Wait();
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),

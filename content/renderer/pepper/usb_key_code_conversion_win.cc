@@ -27,7 +27,8 @@ const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   if ((key_event.nativeKeyCode & (1 << 24)) != 0)
     scancode |= 0xe000;
 
-  return ui::KeycodeConverter::NativeKeycodeToCode(scancode);
+  return ui::KeycodeConverter::DomCodeToCodeString(
+      ui::KeycodeConverter::NativeKeycodeToDomCode(scancode));
 }
 
 }  // namespace content

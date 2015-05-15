@@ -38,7 +38,7 @@ TEST(UsbKeycodeMap, Basic) {
   EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
             keycode_map[0].native_keycode);
   EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
-            ui::KeycodeConverter::CodeToNativeKeycode("Unidentified"));
+            ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::NONE));
 
   // Verify that there are no duplicate entries in the mapping.
   std::map<uint32_t, uint16_t> usb_to_native;
@@ -55,17 +55,14 @@ TEST(UsbKeycodeMap, Basic) {
         entry->native_keycode,
         ui::KeycodeConverter::UsbKeycodeToNativeKeycode(entry->usb_keycode));
 
-    // Verify CodeToNativeKeycode and NativeKeycodeToCode work correctly.
+    // Verify DomCodeToNativeKeycode works correctly.
+    ui::DomCode dom_code =
+        ui::KeycodeConverter::CodeStringToDomCode(entry->code);
     if (entry->code) {
       EXPECT_EQ(entry->native_keycode,
-                ui::KeycodeConverter::CodeToNativeKeycode(entry->code));
-      EXPECT_STREQ(
-          entry->code,
-          ui::KeycodeConverter::NativeKeycodeToCode(entry->native_keycode));
-    }
-    else {
-      EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
-                ui::KeycodeConverter::CodeToNativeKeycode(entry->code));
+                ui::KeycodeConverter::DomCodeToNativeKeycode(dom_code));
+    } else {
+      EXPECT_EQ(ui::DomCode::NONE, dom_code);
     }
 
     // Verify that the USB or native codes aren't duplicated.

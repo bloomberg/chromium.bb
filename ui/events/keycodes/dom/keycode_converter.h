@@ -45,15 +45,8 @@ class KeycodeConverter {
   // Return the value that identifies an invalid native keycode.
   static int InvalidNativeKeycode();
 
-  // Convert a native (Mac/Win/Linux) keycode into the |code| string.
-  // The returned pointer references a static global string.
-  static const char* NativeKeycodeToCode(int native_keycode);
-
   // Convert a native (Mac/Win/Linux) keycode into a DomCode.
   static DomCode NativeKeycodeToDomCode(int native_keycode);
-
-  // Convert a UI Events |code| string value into a native keycode.
-  static int CodeToNativeKeycode(const char* code);
 
   // Convert a DomCode into a native keycode.
   static int DomCodeToNativeKeycode(DomCode code);
@@ -88,12 +81,11 @@ class KeycodeConverter {
   // Convert a platform native keycode into an equivalent USB keycode.
   static uint32_t NativeKeycodeToUsbKeycode(int native_keycode);
 
-  // Convert a USB keycode into the string with the DOM3 |code| value.
-  // The returned pointer references a static global string.
-  static const char* UsbKeycodeToCode(uint32_t usb_keycode);
-
   // Convert a USB keycode into a DomCode.
   static DomCode UsbKeycodeToDomCode(uint32_t usb_keycode);
+
+  // Convert a DomCode into a USB keycode.
+  static uint32_t DomCodeToUsbKeycode(DomCode dom_code);
 
   // Convert a DOM3 Event |code| string into a USB keycode value.
   static uint32_t CodeToUsbKeycode(const char* code);

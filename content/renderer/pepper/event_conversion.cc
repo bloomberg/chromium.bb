@@ -13,13 +13,13 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/input/web_touch_event_traits.h"
-#include "content/renderer/pepper/usb_key_code_conversion.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 using ppapi::EventTimeToPPTimeTicks;
 using ppapi::InputEventData;
@@ -135,7 +135,8 @@ void AppendKeyEvent(const WebInputEvent& event,
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = key_event.modifiers;
   result.key_code = key_event.windowsKeyCode;
-  result.code = CodeForKeyboardEvent(key_event);
+  result.code = ui::KeycodeConverter::DomCodeToCodeString(
+      static_cast<ui::DomCode>(key_event.domCode));
   result_events->push_back(result);
 }
 
