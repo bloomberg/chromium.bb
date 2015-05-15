@@ -159,14 +159,26 @@ void ManagePasswordsUIController::OnLoginsChanged(
     UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsUIController::
-    NavigateToPasswordManagerSettingsPage() {
+void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
 #if defined(OS_ANDROID)
   chrome::android::ChromiumApplication::ShowPasswordSettings();
 #else
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),
       chrome::kPasswordManagerSubPage);
+#endif
+}
+
+void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  chrome::NavigateParams params(
+      chrome::FindBrowserWithWebContents(web_contents()),
+      GURL(chrome::kPasswordManagerAccountDashboardURL),
+      ui::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
 #endif
 }
 

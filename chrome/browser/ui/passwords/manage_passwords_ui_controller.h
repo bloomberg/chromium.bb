@@ -104,6 +104,9 @@ class ManagePasswordsUIController
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage();
 
+  // Open a new tab, pointing to passwords.google.com.
+  void NavigateToExternalPasswordManager();
+
   // Open a new tab, pointing to the Smart Lock help article.
   void NavigateToSmartLockHelpArticle();
 
