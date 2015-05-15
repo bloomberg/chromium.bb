@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -177,9 +178,9 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_RootPath) {
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
   const ProvidedFileSystemInfo file_system_info(
-      kExtensionId,
-      MountOptions(kFileSystemId, kDisplayName),
-      GetMountPath(profile_, kExtensionId, kFileSystemId));
+      kExtensionId, MountOptions(kFileSystemId, kDisplayName),
+      GetMountPath(profile_, kExtensionId, kFileSystemId),
+      false /* configurable */, extensions::SOURCE_FILE);
 
   const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("/hello"));
   const storage::FileSystemURL url =

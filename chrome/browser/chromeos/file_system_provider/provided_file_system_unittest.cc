@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -231,8 +232,9 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
     mount_options.display_name = kDisplayName;
     mount_options.supports_notify_tag = true;
     mount_options.writable = true;
-    file_system_info_.reset(
-        new ProvidedFileSystemInfo(kExtensionId, mount_options, mount_path));
+    file_system_info_.reset(new ProvidedFileSystemInfo(
+        kExtensionId, mount_options, mount_path, false /* configurable */,
+        extensions::SOURCE_FILE));
     provided_file_system_.reset(
         new ProvidedFileSystem(profile_.get(), *file_system_info_.get()));
     event_router_.reset(
@@ -411,7 +413,8 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_PersistentIllegal) {
     mount_options.display_name = kDisplayName;
     mount_options.supports_notify_tag = false;
     ProvidedFileSystemInfo file_system_info(
-        kExtensionId, mount_options, mount_path);
+        kExtensionId, mount_options, mount_path, false /* configurable */,
+        extensions::SOURCE_FILE);
     ProvidedFileSystem simple_provided_file_system(profile_.get(),
                                                    file_system_info);
     simple_provided_file_system.SetEventRouterForTesting(event_router_.get());

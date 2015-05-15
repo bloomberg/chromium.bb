@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -34,7 +35,9 @@ class ProvidedFileSystemInfo {
 
   ProvidedFileSystemInfo(const std::string& extension_id,
                          const MountOptions& mount_options,
-                         const base::FilePath& mount_path);
+                         const base::FilePath& mount_path,
+                         bool configurable,
+                         extensions::FileSystemProviderSource source);
 
   ~ProvidedFileSystemInfo();
 
@@ -45,6 +48,8 @@ class ProvidedFileSystemInfo {
   bool supports_notify_tag() const { return supports_notify_tag_; }
   int opened_files_limit() const { return opened_files_limit_; }
   const base::FilePath& mount_path() const { return mount_path_; }
+  const bool configurable() const { return configurable_; }
+  extensions::FileSystemProviderSource source() const { return source_; }
 
  private:
   // ID of the extension providing this file system.
@@ -67,6 +72,12 @@ class ProvidedFileSystemInfo {
 
   // Mount path of the underlying file system.
   base::FilePath mount_path_;
+
+  // Whether the file system is configurable.
+  bool configurable_;
+
+  // Source of the file system's data.
+  extensions::FileSystemProviderSource source_;
 };
 
 }  // namespace file_system_provider

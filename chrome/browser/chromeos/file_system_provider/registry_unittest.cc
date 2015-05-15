@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -157,7 +158,8 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   options.opened_files_limit = kOpenedFilesLimit;
 
   ProvidedFileSystemInfo file_system_info(
-      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
+      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
+      false /* configurable */, extensions::SOURCE_FILE);
 
   Watchers watchers;
   watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
@@ -272,7 +274,8 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   options.supports_notify_tag = true;
 
   ProvidedFileSystemInfo file_system_info(
-      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
+      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
+      false /* configurable */, extensions::SOURCE_FILE);
 
   Watchers watchers;
   watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =

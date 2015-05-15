@@ -160,6 +160,9 @@ base::File::Error Service::MountFileSystemInternal(
     return base::File::FILE_ERROR_INVALID_OPERATION;
   }
 
+  ProvidingExtensionInfo provider_info;
+  // TODO(mtomasz): Set up a testing extension in unit tests.
+  GetProvidingExtensionInfo(extension_id, &provider_info);
   // Store the file system descriptor. Use the mount point name as the file
   // system provider file system id.
   // Examples:
@@ -168,7 +171,12 @@ base::File::Error Service::MountFileSystemInternal(
   //   writable = false
   //   supports_notify_tag = false
   //   mount_path = /provided/b33f1337-hello_world-5aa5
-  ProvidedFileSystemInfo file_system_info(extension_id, options, mount_path);
+  //   configurable = true
+  //   source = SOURCE_FILE
+  ProvidedFileSystemInfo file_system_info(
+      extension_id, options, mount_path,
+      provider_info.capabilities.configurable(),
+      provider_info.capabilities.source());
 
   ProvidedFileSystemInterface* file_system =
       file_system_factory_.Run(profile_, file_system_info);
@@ -310,22 +318,37 @@ std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
 
   std::vector<ProvidingExtensionInfo> result;
   for (const auto& extension : registry->enabled_extensions()) {
-    if (!extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kFileSystemProvider)) {
-      continue;
-    }
-
     ProvidingExtensionInfo info;
-    info.extension_id = extension->id();
-    info.name = extension->name();
-    const extensions::FileSystemProviderCapabilities* const capabilities =
-        extensions::FileSystemProviderCapabilities::Get(extension.get());
-    DCHECK(capabilities);
-    info.capabilities = *capabilities;
-    result.push_back(info);
+    if (GetProvidingExtensionInfo(extension->id(), &info))
+      result.push_back(info);
   }
 
   return result;
+}
+
+bool Service::GetProvidingExtensionInfo(const std::string& extension_id,
+                                        ProvidingExtensionInfo* result) const {
+  DCHECK(result);
+  extensions::ExtensionRegistry* const registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+
+  const extensions::Extension* const extension = registry->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+  if (!extension ||
+      !extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kFileSystemProvider)) {
+    return false;
+  }
+
+  result->extension_id = extension->id();
+  result->name = extension->name();
+  const extensions::FileSystemProviderCapabilities* const capabilities =
+      extensions::FileSystemProviderCapabilities::Get(extension);
+  DCHECK(capabilities);
+  result->capabilities = *capabilities;
+
+  return true;
 }
 
 void Service::OnExtensionUnloaded(

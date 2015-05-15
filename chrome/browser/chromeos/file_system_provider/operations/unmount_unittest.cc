@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 #include "extensions/browser/event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,9 +36,8 @@ class FileSystemProviderOperationsUnmountTest : public testing::Test {
 
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
-        kExtensionId,
-        MountOptions(kFileSystemId, "" /* display_name */),
-        base::FilePath());
+        kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
+        base::FilePath(), false /* configurable */, extensions::SOURCE_FILE);
   }
 
   ProvidedFileSystemInfo file_system_info_;

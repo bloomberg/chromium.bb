@@ -13,7 +13,9 @@ var expectedVolume1 = {
   isParentDevice: false,
   isReadOnly: false,
   hasMedia: false,
-  profile: {profileId: "", displayName: "", isCurrentProfile: true}
+  configurable: false,
+  source: 'device',
+  profile: {profileId: '', displayName: '', isCurrentProfile: true},
 };
 
 var expectedVolume2 = {
@@ -26,7 +28,9 @@ var expectedVolume2 = {
   isParentDevice: true,
   isReadOnly: true,
   hasMedia: true,
-  profile: {profileId: "", displayName: "", isCurrentProfile: true}
+  configurable: false,
+  source: 'device',
+  profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
 
 var expectedVolume3 = {
@@ -39,7 +43,9 @@ var expectedVolume3 = {
   isParentDevice: true,
   isReadOnly: false,
   hasMedia: false,
-  profile: {profileId: "", displayName: "", isCurrentProfile: true}
+  configurable: false,
+  source: 'device',
+  profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
 
 var expectedDownloadsVolume = {
@@ -48,7 +54,9 @@ var expectedDownloadsVolume = {
   volumeType: 'downloads',
   isReadOnly: false,
   hasMedia: false,
-  profile: {profileId: "", displayName: "", isCurrentProfile: true}
+  configurable: false,
+  source: 'system',
+  profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
 
 var expectedDriveVolume = {
@@ -58,7 +66,9 @@ var expectedDriveVolume = {
   volumeType: 'drive',
   isReadOnly: false,
   hasMedia: false,
-  profile: {profileId: "", displayName: "", isCurrentProfile: true}
+  configurable: false,
+  source: 'network',
+  profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
 
 var expectedArchiveVolume = {
@@ -68,7 +78,23 @@ var expectedArchiveVolume = {
   volumeType: 'archive',
   isReadOnly: true,
   hasMedia: false,
-  profile: {profileId: "", displayName: "", isCurrentProfile: true}
+  configurable: false,
+  source: 'file',
+  profile: {profileId: '', displayName: '', isCurrentProfile: true}
+};
+
+var expectedProvidedVolume = {
+  volumeId: 'provided:',
+  volumeLabel: '',
+  volumeType: 'provided',
+  isReadOnly: true,
+  hasMedia: false,
+  configurable: true,
+  extensionId: 'testing-extension-id',
+  source: 'network',
+  mountContext: 'auto',
+  fileSystemId: '',
+  profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
 
 // List of expected mount points.
@@ -78,9 +104,10 @@ var expectedVolumeList = [
   expectedArchiveVolume,
   expectedDownloadsVolume,
   expectedDriveVolume,
+  expectedProvidedVolume,
   expectedVolume1,
   expectedVolume2,
-  expectedVolume3,
+  expectedVolume3
 ];
 
 function validateObject(received, expected, name) {

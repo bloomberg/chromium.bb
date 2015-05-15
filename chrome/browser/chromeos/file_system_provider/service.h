@@ -133,6 +133,12 @@ class Service : public KeyedService,
   // extensions.
   std::vector<ProvidingExtensionInfo> GetProvidingExtensionInfoList() const;
 
+  // Fills information of the specified providing extension and returns true.
+  // If the extension is not a provider, or it doesn't exist, then false is
+  // returned.
+  bool GetProvidingExtensionInfo(const std::string& extension_id,
+                                 ProvidingExtensionInfo* result) const;
+
   // Adds and removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

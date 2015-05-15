@@ -27,6 +27,7 @@
  * @param {boolean} hasMedia When true the volume has been identified
  *     as containing media such as photos or videos.
  * @param {boolean} configurable When true, then the volume can be configured.
+ * @param {VolumeManagerCommon.Source} source Source of the volume's data.
  */
 function VolumeInfo(
     volumeType,
@@ -40,7 +41,8 @@ function VolumeInfo(
     label,
     extensionId,
     hasMedia,
-    configurable) {
+    configurable,
+    source) {
   this.volumeType_ = volumeType;
   this.volumeId_ = volumeId;
   this.fileSystem_ = fileSystem;
@@ -83,6 +85,7 @@ function VolumeInfo(
   this.extensionId_ = extensionId;
   this.hasMedia_ = hasMedia;
   this.configurable_ = configurable;
+  this.source_ = source;
 }
 
 VolumeInfo.prototype = /** @struct */ {
@@ -170,6 +173,12 @@ VolumeInfo.prototype = /** @struct */ {
    */
   get configurable() {
     return this.configurable_;
+  },
+  /**
+   * @return {VolumeManagerCommon.Source} Source of the volume's data.
+   */
+  get source() {
+    return this.source_;
   }
 };
 
@@ -254,124 +263,104 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
   }
 
   console.debug('Requesting file system.');
-  var configurable = false;
-
   return new Promise(
       function(resolve, reject) {
-        if (volumeMetadata.volumeType !==
-            VolumeManagerCommon.VolumeType.PROVIDED) {
-          resolve();
-        }
-
-        chrome.fileManagerPrivate.getProvidingExtensions(
-            function(extensions) {
-              if (chrome.runtime.lastError) {
+        chrome.fileSystem.requestFileSystem(
+            {
+              volumeId: volumeMetadata.volumeId,
+              writable: !volumeMetadata.isReadOnly
+            },
+            function(isolatedFileSystem) {
+              if (chrome.runtime.lastError)
                 reject(chrome.runtime.lastError.message);
-                return;
-              }
-              configurable = extensions.some(function(extension) {
-                return extension.extensionId === volumeMetadata.extensionId &&
-                    extension.configurable;
-              });
-              resolve();
+              else
+                resolve(isolatedFileSystem);
             });
       })
-      .then(
-          function() {
-            return new Promise(function(resolve, reject) {
-              chrome.fileSystem.requestFileSystem(
-                  {
-                    volumeId: volumeMetadata.volumeId,
-                    writable: !volumeMetadata.isReadOnly
-                  },
-                  function(isolatedFileSystem) {
-                    if (chrome.runtime.lastError)
-                      reject(chrome.runtime.lastError.message);
-                    else
-                      resolve(isolatedFileSystem);
-                  });
-            });
-          })
-      .then(
-          /**
-           * @param {!FileSystem} isolatedFileSystem
-           */
-          function(isolatedFileSystem) {
-            // Since File System API works on isolated entries only, we need to
-            // convert it back to external one.
-            // TODO(mtomasz): Make Files app work on isolated entries.
-            return new Promise(function(resolve, reject) {
-              chrome.fileManagerPrivate.resolveIsolatedEntries(
-                  [isolatedFileSystem.root],
-                  function(entries) {
-                    if (chrome.runtime.lastError)
-                      reject(chrome.runtime.lastError.message);
-                    else if (!entries[0])
-                      reject('Resolving for external context failed.');
-                    else
-                      resolve(entries[0].filesystem);
-                  });
+  .then(
+      /**
+       * @param {!FileSystem} isolatedFileSystem
+       */
+      function(isolatedFileSystem) {
+        // Since File System API works on isolated entries only, we need to
+        // convert it back to external one.
+        // TODO(mtomasz): Make Files app work on isolated entries.
+        return new Promise(function(resolve, reject) {
+          chrome.fileManagerPrivate.resolveIsolatedEntries(
+              [isolatedFileSystem.root],
+              function(entries) {
+                if (chrome.runtime.lastError)
+                  reject(chrome.runtime.lastError.message);
+                else if (!entries[0])
+                  reject('Resolving for external context failed.');
+                else
+                  resolve(entries[0].filesystem);
               });
-           })
-      .then(
-          /**
-           * @param {!FileSystem} fileSystem
-           */
-          function(fileSystem) {
-            console.debug('File system obtained: ' + volumeMetadata.volumeId);
-              if (volumeMetadata.volumeType ===
-                  VolumeManagerCommon.VolumeType.DRIVE) {
-                // After file system is mounted, we "read" drive grand root
-                // entry at first. This triggers full feed fetch on background.
-                // Note: we don't need to handle errors here, because even if
-                // it fails, accessing to some path later will just become
-                // a fast-fetch and it re-triggers full-feed fetch.
-                fileSystem.root.createReader().readEntries(
-                    function() { /* do nothing */ },
-                    function(error) {
-                      console.error(
-                          'Triggering full feed fetch is failed: ' +
-                          error.name);
-                    });
-              }
-              return new VolumeInfo(
-                  /** @type {VolumeManagerCommon.VolumeType} */
-                  (volumeMetadata.volumeType),
-                  volumeMetadata.volumeId,
-                  fileSystem,
-                  volumeMetadata.mountCondition,
-                  volumeMetadata.deviceType,
-                  volumeMetadata.devicePath,
-                  volumeMetadata.isReadOnly,
-                  volumeMetadata.profile,
-                  localizedLabel,
-                  volumeMetadata.extensionId,
-                  volumeMetadata.hasMedia,
-                  configurable);
-      })
-      .catch(
-          /**
-           * @param {*} error
-           */
-          function(error) {
-            console.error('Failed to mount a file system: ' +
-                volumeMetadata.volumeId + ' because of: ' +
-                (error.stack || error));
-            return new VolumeInfo(
-                /** @type {VolumeManagerCommon.VolumeType} */
-                (volumeMetadata.volumeType),
-                volumeMetadata.volumeId,
-                null,  // File system is not found.
-                volumeMetadata.mountCondition,
-                volumeMetadata.deviceType,
-                volumeMetadata.devicePath,
-                volumeMetadata.isReadOnly,
-                volumeMetadata.profile,
-                localizedLabel,
-                volumeMetadata.extensionId,
-                volumeMetadata.hasMedia,
-                configurable);
           });
+       })
+  .then(
+      /**
+       * @param {!FileSystem} fileSystem
+       */
+      function(fileSystem) {
+        console.debug('File system obtained: ' + volumeMetadata.volumeId);
+        if (volumeMetadata.volumeType ===
+            VolumeManagerCommon.VolumeType.DRIVE) {
+          // After file system is mounted, we "read" drive grand root
+          // entry at first. This triggers full feed fetch on background.
+          // Note: we don't need to handle errors here, because even if
+          // it fails, accessing to some path later will just become
+          // a fast-fetch and it re-triggers full-feed fetch.
+          fileSystem.root.createReader().readEntries(
+              function() { /* do nothing */ },
+              function(error) {
+                console.error(
+                    'Triggering full feed fetch is failed: ' +
+                    error.name);
+              });
+        }
+        return new VolumeInfo(
+            /** @type {VolumeManagerCommon.VolumeType} */
+            (volumeMetadata.volumeType),
+            volumeMetadata.volumeId,
+            fileSystem,
+            volumeMetadata.mountCondition,
+            volumeMetadata.deviceType,
+            volumeMetadata.devicePath,
+            volumeMetadata.isReadOnly,
+            volumeMetadata.profile,
+            localizedLabel,
+            volumeMetadata.extensionId,
+            volumeMetadata.hasMedia,
+            volumeMetadata.configurable,
+            /** @type {VolumeManagerCommon.Source} */
+            (volumeMetadata.source));
+  })
+  .catch(
+      /**
+       * @param {*} error
+       */
+      function(error) {
+        console.error('Failed to mount a file system: ' +
+            volumeMetadata.volumeId + ' because of: ' +
+            (error.stack || error));
+        return new VolumeInfo(
+            /** @type {VolumeManagerCommon.VolumeType} */
+            (volumeMetadata.volumeType),
+            volumeMetadata.volumeId,
+            null,  // File system is not found.
+            volumeMetadata.mountCondition,
+            volumeMetadata.deviceType,
+            volumeMetadata.devicePath,
+            volumeMetadata.isReadOnly,
+            volumeMetadata.profile,
+            localizedLabel,
+            volumeMetadata.extensionId,
+            volumeMetadata.hasMedia,
+            volumeMetadata.configurable,
+            /** @type {VolumeManagerCommon.Source} */
+            (volumeMetadata.source));
+      });
 };
 
 /**

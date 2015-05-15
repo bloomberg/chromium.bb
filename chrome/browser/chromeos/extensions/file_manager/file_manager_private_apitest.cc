@@ -8,7 +8,9 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -310,6 +312,17 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
   file_manager::test_util::WaitUntilDriveMountPointIsAdded(
       browser()->profile());
+
+  // Add a provided file system, to test passing the |configurable| and
+  // |source| flags properly down to Files app.
+  chromeos::file_system_provider::ProvidedFileSystemInfo info(
+      "testing-extension-id", chromeos::file_system_provider::MountOptions(),
+      base::FilePath(), true /* configurable */, extensions::SOURCE_NETWORK);
+
+  file_manager::VolumeManager::Get(browser()->profile())
+      ->AddVolumeForTesting(
+          make_linked_ptr(file_manager::Volume::CreateForProvidedFileSystem(
+              info, file_manager::MOUNT_CONTEXT_AUTO)));
 
   // We will call fileManagerPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.

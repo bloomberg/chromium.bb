@@ -369,11 +369,11 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
 
   // Sets up context menu of the item.
   if (tree.contextMenuForSubitems)
-    item.setContextMenu(tree.contextMenuForSubitems);
+    item.setContextMenu_(tree.contextMenuForSubitems);
   // Adds handler for future change.
   tree.addEventListener(
       'contextMenuForSubitemsChange',
-      function(e) { item.setContextMenu(e.newValue); });
+      function(e) { item.setContextMenu_(e.newValue); });
 
   // Populates children now if needed.
   if (parentDirItem.expanded)
@@ -393,8 +393,9 @@ SubDirectoryItem.prototype = {
 /**
  * Sets the context menu for directory tree.
  * @param {!cr.ui.Menu} menu Menu to be set.
+ * @private
  */
-SubDirectoryItem.prototype.setContextMenu = function(menu) {
+SubDirectoryItem.prototype.setContextMenu_ = function(menu) {
   var tree = this.parentTree_ || this;  // If no parent, 'this' itself is tree.
   var locationInfo = tree.volumeManager_.getLocationInfo(this.entry);
   if (locationInfo && locationInfo.isEligibleForFolderShortcut)
@@ -433,14 +434,17 @@ function VolumeItem(modelItem, tree) {
 
   item.modelItem_ = modelItem;
   item.volumeInfo_ = modelItem.volumeInfo;
-
-  // Sets up icons of the item.
   item.setupIcon_(item.querySelector('.icon'), item.volumeInfo_);
-  item.setupEjectButton_(item.rowElement);
+
+  // Attach the "eject" icon if the volume is ejectable.
+  if (modelItem.volumeInfo_.source === VolumeManagerCommon.Source.DEVICE ||
+      modelItem.volumeInfo_.source === VolumeManagerCommon.Source.FILE) {
+    item.setupEjectButton_(item.rowElement);
+  }
 
   // Sets up context menu of the item.
   if (tree.contextMenuForRootItems)
-    item.setContextMenu(tree.contextMenuForRootItems);
+    item.setContextMenu_(tree.contextMenuForRootItems);
 
   // Populate children of this volume using resolved display root.
   item.volumeInfo_.resolveDisplayRoot(function(displayRoot) {
@@ -477,10 +481,10 @@ VolumeItem.prototype = {
 /**
  * Sets the context menu for volume items.
  * @param {!cr.ui.Menu} menu Menu to be set.
+ * @private
  */
-VolumeItem.prototype.setContextMenu = function(menu) {
-  if (this.isRemovable_())
-    cr.ui.contextMenuHandler.setContextMenu(this, menu);
+VolumeItem.prototype.setContextMenu_ = function(menu) {
+  cr.ui.contextMenuHandler.setContextMenu(this, menu);
 };
 
 /**
@@ -506,17 +510,6 @@ VolumeItem.prototype.activate = function() {
         // Error, the display root is not available. It may happen on Drive.
         this.parentTree_.dataModel.onItemNotFoundError(this.modelItem);
       }.bind(this));
-};
-
-/**
- * @return {boolean} True if this volume can be removed by user operation.
- * @private
- */
-VolumeItem.prototype.isRemovable_ = function() {
-  var volumeType = this.volumeInfo_.volumeType;
-  return volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
-         volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
-         volumeType === VolumeManagerCommon.VolumeType.PROVIDED;
 };
 
 /**
@@ -548,31 +541,29 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
  * @private
  */
 VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
-  if (this.isRemovable_()) {
-    var ejectButton = cr.doc.createElement('div');
-    // Block other mouse handlers.
-    ejectButton.addEventListener(
-        'mouseup', function(event) { event.stopPropagation() });
-    ejectButton.addEventListener(
-        'mousedown', function(event) { event.stopPropagation() });
-    ejectButton.className = 'root-eject';
-    ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
-    ejectButton.addEventListener('click', function(event) {
-      event.stopPropagation();
-      var unmountCommand = cr.doc.querySelector('command#unmount');
-      // Let's make sure 'canExecute' state of the command is properly set for
-      // the root before executing it.
-      unmountCommand.canExecuteChange(this);
-      unmountCommand.execute(this);
-    }.bind(this));
-    rowElement.appendChild(ejectButton);
+  var ejectButton = cr.doc.createElement('div');
+  // Block other mouse handlers.
+  ejectButton.addEventListener(
+      'mouseup', function(event) { event.stopPropagation() });
+  ejectButton.addEventListener(
+      'mousedown', function(event) { event.stopPropagation() });
+  ejectButton.className = 'root-eject';
+  ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
+  ejectButton.addEventListener('click', function(event) {
+    event.stopPropagation();
+    var unmountCommand = cr.doc.querySelector('command#unmount');
+    // Let's make sure 'canExecute' state of the command is properly set for
+    // the root before executing it.
+    unmountCommand.canExecuteChange(this);
+    unmountCommand.execute(this);
+  }.bind(this));
+  rowElement.appendChild(ejectButton);
 
-    // Add paper-ripple effect on the eject button.
-    var ripple = cr.doc.createElement('paper-ripple');
-    ripple.setAttribute('fit', '');
-    ripple.className = 'circle recenteringTouch';
-    ejectButton.appendChild(ripple);
-  }
+  // Add paper-ripple effect on the eject button.
+  var ripple = cr.doc.createElement('paper-ripple');
+  ripple.setAttribute('fit', '');
+  ripple.className = 'circle recenteringTouch';
+  ejectButton.appendChild(ripple);
 };
 
 
@@ -716,7 +707,7 @@ function ShortcutItem(modelItem, tree) {
   icon.setAttribute('volume-type-icon', VolumeManagerCommon.VolumeType.DRIVE);
 
   if (tree.contextMenuForRootItems)
-    item.setContextMenu(tree.contextMenuForRootItems);
+    item.setContextMenu_(tree.contextMenuForRootItems);
 
   item.label = modelItem.entry.name;
   return item;
@@ -773,8 +764,9 @@ ShortcutItem.prototype.selectByEntry = function(entry) {
 /**
  * Sets the context menu for shortcut items.
  * @param {!cr.ui.Menu} menu Menu to be set.
+ * @private
  */
-ShortcutItem.prototype.setContextMenu = function(menu) {
+ShortcutItem.prototype.setContextMenu_ = function(menu) {
   cr.ui.contextMenuHandler.setContextMenu(this, menu);
 };
 

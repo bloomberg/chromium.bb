@@ -66,6 +66,9 @@ enum MountContext {
   MOUNT_CONTEXT_UNKNOWN
 };
 
+// Source of a volume's data.
+enum Source { SOURCE_FILE, SOURCE_DEVICE, SOURCE_NETWORK, SOURCE_SYSTEM };
+
 // Represents a volume (mount point) in the volume manager. Validity of the data
 // is guaranteed by the weak pointer. Simply saying, the weak pointer should be
 // valid as long as the volume is mounted.
@@ -97,6 +100,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   const std::string& volume_id() const { return volume_id_; }
   const std::string& file_system_id() const { return file_system_id_; }
   const std::string& extension_id() const { return extension_id_; }
+  Source source() const { return source_; }
   VolumeType type() const { return type_; }
   chromeos::DeviceType device_type() const { return device_type_; }
   const base::FilePath& source_path() const { return source_path_; }
@@ -112,6 +116,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   bool is_parent() const { return is_parent_; }
   bool is_read_only() const { return is_read_only_; }
   bool has_media() const { return has_media_; }
+  bool configurable() const { return configurable_; }
 
  private:
   Volume();
@@ -126,6 +131,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   // The ID of an extension providing the file system. If other type, then equal
   // to an empty string.
   std::string extension_id_;
+
+  // The source of the volume's data.
+  Source source_;
 
   // The type of mounted volume.
   VolumeType type_;
@@ -169,6 +177,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 
   // True if the volume contains media.
   bool has_media_;
+
+  // True if the volume is configurable.
+  bool configurable_;
 
   DISALLOW_COPY_AND_ASSIGN(Volume);
 };
@@ -228,6 +239,9 @@ class VolumeManager : public KeyedService,
                            chromeos::DeviceType device_type,
                            bool read_only);
 
+  // For testing purpose, adds the volume info to the volume manager.
+  void AddVolumeForTesting(const linked_ptr<Volume>& volume);
+
   // drive::DriveIntegrationServiceObserver overrides.
   void OnFileSystemMounted() override;
   void OnFileSystemBeingUnmounted() override;
@@ -271,9 +285,10 @@ class VolumeManager : public KeyedService,
  private:
   void OnDiskMountManagerRefreshed(bool success);
   void OnStorageMonitorInitialized();
-  void DoMountEvent(chromeos::MountError error_code, linked_ptr<Volume> volume);
+  void DoMountEvent(chromeos::MountError error_code,
+                    const linked_ptr<Volume>& volume);
   void DoUnmountEvent(chromeos::MountError error_code,
-                      linked_ptr<Volume> volume);
+                      const linked_ptr<Volume>& volume);
 
   Profile* profile_;
   drive::DriveIntegrationService* drive_integration_service_;  // Not owned.

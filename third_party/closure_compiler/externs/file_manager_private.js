@@ -60,6 +60,7 @@ var ProfileInfo;
  *   volumeId: string,
  *   fileSystemId: (string|undefined),
  *   extensionId: (string|undefined),
+ *   source: string,
  *   volumeLabel: (string|undefined),
  *   profile: ProfileInfo,
  *   sourcePath: (string|undefined),
@@ -69,6 +70,7 @@ var ProfileInfo;
  *   isParentDevice: (boolean|undefined),
  *   isReadOnly: boolean,
  *   hasMedia: boolean,
+ *   configurable: boolean,
  *   mountCondition: (string|undefined),
  *   mountContext: (string|undefined)
  * }}

@@ -125,6 +125,18 @@ VolumeManagerCommon.VolumeType = {
 };
 
 /**
+ * Source of each volume's data.
+ * @enum {string}
+ * @const
+ */
+VolumeManagerCommon.Source = {
+  FILE: 'file',
+  DEVICE: 'device',
+  NETWORK: 'network',
+  SYSTEM: 'system'
+};
+
+/**
  * Returns if the volume is linux native file system or not. Non-native file
  * system does not support few operations (e.g. load unpacked extension).
  * @param {VolumeManagerCommon.VolumeType} type
