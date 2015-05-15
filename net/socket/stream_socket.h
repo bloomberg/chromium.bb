@@ -6,6 +6,7 @@
 #define NET_SOCKET_STREAM_SOCKET_H_
 
 #include "net/log/net_log.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket.h"
 
@@ -94,6 +95,16 @@ class NET_EXPORT_PRIVATE StreamSocket : public Socket {
   // Gets the SSL connection information of the socket.  Returns false if
   // SSL was not used by this socket.
   virtual bool GetSSLInfo(SSLInfo* ssl_info) = 0;
+
+  // Overwrites |out| with the connection attempts made in the process of
+  // connecting this socket.
+  virtual void GetConnectionAttempts(ConnectionAttempts* out) const = 0;
+
+  // Clears the socket's list of connection attempts.
+  virtual void ClearConnectionAttempts() = 0;
+
+  // Adds |attempts| to the socket's list of connection attempts.
+  virtual void AddConnectionAttempts(const ConnectionAttempts& attempts) = 0;
 
  protected:
   // The following class is only used to gather statistics about the history of

@@ -12,6 +12,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_socket.h"
 
@@ -69,6 +70,10 @@ class NET_EXPORT TCPClientSocket : public StreamSocket {
   virtual bool SetKeepAlive(bool enable, int delay);
   virtual bool SetNoDelay(bool no_delay);
 
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  void ClearConnectionAttempts() override;
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override;
+
  private:
   // State machine for connecting the socket.
   enum ConnectState {
@@ -115,6 +120,9 @@ class NET_EXPORT TCPClientSocket : public StreamSocket {
   // Record of connectivity and transmissions, for use in speculative connection
   // histograms.
   UseHistory use_history_;
+
+  // Failed connection attempts made while trying to connect this socket.
+  ConnectionAttempts connection_attempts_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };

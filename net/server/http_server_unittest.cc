@@ -497,6 +497,11 @@ class MockStreamSocket : public StreamSocket {
   bool WasNpnNegotiated() const override { return false; }
   NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
+  void GetConnectionAttempts(ConnectionAttempts* out) const override {
+    out->clear();
+  }
+  void ClearConnectionAttempts() override {}
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
 
   // Socket
   int Read(IOBuffer* buf,

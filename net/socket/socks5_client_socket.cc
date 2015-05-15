@@ -144,7 +144,10 @@ bool SOCKS5ClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   }
   NOTREACHED();
   return false;
+}
 
+void SOCKS5ClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
+  out->clear();
 }
 
 // Read is called by the transport layer above to read. This can only be done

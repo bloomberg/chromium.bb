@@ -150,6 +150,11 @@ bool UnixDomainClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   return false;
 }
 
+void UnixDomainClientSocket::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  out->clear();
+}
+
 int UnixDomainClientSocket::Read(IOBuffer* buf, int buf_len,
                                  const CompletionCallback& callback) {
   DCHECK(socket_);

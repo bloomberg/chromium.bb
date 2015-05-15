@@ -280,7 +280,7 @@ class HttpStreamFactoryImpl::Job {
 
   ClientSocketPoolManager::SocketGroupType GetSocketGroup() const;
 
-  void MaybeCopyConnectionAttemptsFromClientSocketHandleToRequest();
+  void MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
   // Record histograms of latency until Connect() completes.
   static void LogHttpConnectedMetrics(const ClientSocketHandle& handle);

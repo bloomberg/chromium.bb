@@ -208,8 +208,7 @@ TransportConnectJob::TransportConnectJob(
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       helper_(params, client_socket_factory, host_resolver, &connect_timing_),
       interval_between_connects_(CONNECT_INTERVAL_GT_20MS),
-      resolve_result_(OK),
-      connect_result_(OK) {
+      resolve_result_(OK) {
   helper_.SetOnIOComplete(this);
 }
 
@@ -235,18 +234,16 @@ LoadState TransportConnectJob::GetLoadState() const {
 
 void TransportConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   // If hostname resolution failed, record an empty endpoint and the result.
-  // If the actual socket Connect call failed, record the result and the last
-  // address attempted.
-  // TODO(ttuttle): Plumb into the socket layer and record *all* attempts.
+  // Also record any attempts made on either of the sockets.
   ConnectionAttempts attempts;
   if (resolve_result_ != OK) {
     DCHECK_EQ(0u, helper_.addresses().size());
     attempts.push_back(ConnectionAttempt(IPEndPoint(), resolve_result_));
-  } else if (connect_result_ != OK) {
-    DCHECK_LT(0u, helper_.addresses().size());
-    attempts.push_back(
-        ConnectionAttempt(helper_.addresses().back(), connect_result_));
   }
+  attempts.insert(attempts.begin(), connection_attempts_.begin(),
+                  connection_attempts_.end());
+  attempts.insert(attempts.begin(), fallback_connection_attempts_.begin(),
+                  fallback_connection_attempts_.end());
   handle->set_connection_attempts(attempts);
 }
 
@@ -330,6 +327,16 @@ int TransportConnectJob::DoTransportConnect() {
 
 int TransportConnectJob::DoTransportConnectComplete(int result) {
   if (result == OK) {
+    // Success will be returned via the main socket, so also include connection
+    // attempts made on the fallback socket up to this point. (Unfortunately,
+    // the only simple way to return information in the success case is through
+    // the successfully-connected socket.)
+    if (fallback_transport_socket_) {
+      ConnectionAttempts fallback_attempts;
+      fallback_transport_socket_->GetConnectionAttempts(&fallback_attempts);
+      transport_socket_->AddConnectionAttempts(fallback_attempts);
+    }
+
     bool is_ipv4 =
         helper_.addresses().front().GetFamily() == ADDRESS_FAMILY_IPV4;
     TransportConnectJobHelper::ConnectionLatencyHistogram race_result =
@@ -378,12 +385,17 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
     SetSocket(transport_socket_.Pass());
     fallback_timer_.Stop();
   } else {
+    // Failure will be returned via |GetAdditionalErrorState|, so save
+    // connection attempts from both sockets for use there.
+    CopyConnectionAttemptsFromSockets();
+
     // Be a bit paranoid and kill off the fallback members to prevent reuse.
     fallback_transport_socket_.reset();
     fallback_addresses_.reset();
   }
 
-  connect_result_ = result;
+  // N.B.: The owner of the ConnectJob will delete it after the callback is
+  // called, so the fallback socket, if any, won't stick around for long.
 
   return result;
 }
@@ -428,6 +440,17 @@ void TransportConnectJob::DoIPv6FallbackTransportConnectComplete(int result) {
 
   if (result == OK) {
     DCHECK(!fallback_connect_start_time_.is_null());
+
+    // Success will be returned via the fallback socket, so also include
+    // connection attempts made on the main socket up to this point.
+    // (Unfortunately, the only simple way to return information in the success
+    // case is through the successfully-connected socket.)
+    if (transport_socket_) {
+      ConnectionAttempts attempts;
+      transport_socket_->GetConnectionAttempts(&attempts);
+      fallback_transport_socket_->AddConnectionAttempts(attempts);
+    }
+
     connect_timing_.connect_start = fallback_connect_start_time_;
     helper_.HistogramDuration(
         TransportConnectJobHelper::CONNECTION_LATENCY_IPV4_WINS_RACE);
@@ -435,15 +458,32 @@ void TransportConnectJob::DoIPv6FallbackTransportConnectComplete(int result) {
     helper_.set_next_state(TransportConnectJobHelper::STATE_NONE);
     transport_socket_.reset();
   } else {
+    // Failure will be returned via |GetAdditionalErrorState|, so save
+    // connection attempts from both sockets for use there.
+    CopyConnectionAttemptsFromSockets();
+
     // Be a bit paranoid and kill off the fallback members to prevent reuse.
     fallback_transport_socket_.reset();
     fallback_addresses_.reset();
   }
+
+  // N.B.: The owner of the ConnectJob will delete it after the callback is
+  // called, so the main socket, if any, won't stick around for long.
+
   NotifyDelegateOfCompletion(result);  // Deletes |this|
 }
 
 int TransportConnectJob::ConnectInternal() {
   return helper_.DoConnectInternal(this);
+}
+
+void TransportConnectJob::CopyConnectionAttemptsFromSockets() {
+  if (transport_socket_)
+    transport_socket_->GetConnectionAttempts(&connection_attempts_);
+  if (fallback_transport_socket_) {
+    fallback_transport_socket_->GetConnectionAttempts(
+        &fallback_connection_attempts_);
+  }
 }
 
 scoped_ptr<ConnectJob>

@@ -22,6 +22,8 @@ struct ConnectionAttempt {
   int result;
 };
 
+// Multiple connection attempts, as might be tracked in an HttpTransaction or a
+// URLRequest. Order is insignificant.
 typedef std::vector<ConnectionAttempt> ConnectionAttempts;
 
 }  // namespace net

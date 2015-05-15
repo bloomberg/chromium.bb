@@ -248,6 +248,11 @@ bool SSLServerSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   return false;
 }
 
+void SSLServerSocketOpenSSL::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  out->clear();
+}
+
 void SSLServerSocketOpenSSL::OnSendComplete(int result) {
   if (next_handshake_state_ == STATE_HANDSHAKE) {
     // In handshake phase.

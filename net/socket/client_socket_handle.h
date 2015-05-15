@@ -156,6 +156,9 @@ class NET_EXPORT ClientSocketHandle {
   ClientSocketHandle* release_pending_http_proxy_connection() {
     return pending_http_proxy_connection_.release();
   }
+  // If the connection failed, returns the connection attempts made. (If it
+  // succeeded, they will be returned through the socket instead; see
+  // |StreamSocket::GetConnectionAttempts|.)
   const ConnectionAttempts& connection_attempts() {
     return connection_attempts_;
   }

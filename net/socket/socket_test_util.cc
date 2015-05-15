@@ -1006,6 +1006,10 @@ const BoundNetLog& MockClientSocket::NetLog() const {
   return net_log_;
 }
 
+void MockClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
+  out->clear();
+}
+
 void MockClientSocket::GetSSLCertRequestInfo(
   SSLCertRequestInfo* cert_request_info) {
 }
@@ -1146,6 +1150,22 @@ int MockTCPClientSocket::Write(IOBuffer* buf, int buf_len,
   }
 
   return write_result.result;
+}
+
+void MockTCPClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
+  int connect_result = data_->connect_data().result;
+
+  out->clear();
+  if (connected_ && connect_result != OK)
+    out->push_back(ConnectionAttempt(addresses_[0], connect_result));
+}
+
+void MockTCPClientSocket::ClearConnectionAttempts() {
+  NOTIMPLEMENTED();
+}
+
+void MockTCPClientSocket::AddConnectionAttempts(const ConnectionAttempts& in) {
+  NOTIMPLEMENTED();
 }
 
 int MockTCPClientSocket::Connect(const CompletionCallback& callback) {

@@ -213,6 +213,11 @@ bool HttpProxyClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   return false;
 }
 
+void HttpProxyClientSocket::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  out->clear();
+}
+
 int HttpProxyClientSocket::Read(IOBuffer* buf, int buf_len,
                                 const CompletionCallback& callback) {
   DCHECK(user_callback_.is_null());

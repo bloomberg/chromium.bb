@@ -244,6 +244,12 @@ bool FakeStreamSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
   return false;
 }
 
+void FakeStreamSocket::GetConnectionAttempts(
+    net::ConnectionAttempts* out) const {
+  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+  out->clear();
+}
+
 FakeStreamChannelFactory::FakeStreamChannelFactory()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       asynchronous_create_(false),

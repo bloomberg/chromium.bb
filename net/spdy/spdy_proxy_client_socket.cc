@@ -190,6 +190,11 @@ bool SpdyProxyClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
                                   &protocol_negotiated);
 }
 
+void SpdyProxyClientSocket::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  out->clear();
+}
+
 int SpdyProxyClientSocket::Read(IOBuffer* buf, int buf_len,
                                 const CompletionCallback& callback) {
   DCHECK(read_callback_.is_null());

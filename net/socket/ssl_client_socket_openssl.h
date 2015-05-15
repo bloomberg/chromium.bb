@@ -85,6 +85,9 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   bool WasEverUsed() const override;
   bool UsingTCPFastOpen() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  void ClearConnectionAttempts() override {}
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
 
   // Socket implementation.
   int Read(IOBuffer* buf,

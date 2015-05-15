@@ -307,6 +307,10 @@ bool SSLServerSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
   return false;
 }
 
+void SSLServerSocketNSS::GetConnectionAttempts(ConnectionAttempts* out) const {
+  out->clear();
+}
+
 int SSLServerSocketNSS::InitializeSSLOptions() {
   // Transport connected, now hook it up to nss
   nss_fd_ = memio_CreateIOLayer(kRecvBufferSize, kSendBufferSize);

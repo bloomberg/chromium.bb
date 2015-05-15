@@ -165,6 +165,12 @@ class ChannelMultiplexer::MuxSocket : public net::StreamSocket,
     NOTIMPLEMENTED();
     return false;
   }
+  void GetConnectionAttempts(net::ConnectionAttempts* out) const override {
+    out->clear();
+  }
+  void ClearConnectionAttempts() override {}
+  void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
+  }
 
  private:
   MuxChannel* channel_;

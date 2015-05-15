@@ -53,6 +53,9 @@ class MockSSLClientSocket : public net::SSLClientSocket {
   MOCK_CONST_METHOD0(WasEverUsed, bool());
   MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
   MOCK_METHOD1(GetSSLInfo, bool(net::SSLInfo*));
+  MOCK_CONST_METHOD1(GetConnectionAttempts, void(net::ConnectionAttempts*));
+  MOCK_METHOD0(ClearConnectionAttempts, void());
+  MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
   MOCK_METHOD5(ExportKeyingMaterial,
                int(const StringPiece&,
                    bool,

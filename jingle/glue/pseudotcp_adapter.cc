@@ -582,6 +582,12 @@ bool PseudoTcpAdapter::GetSSLInfo(net::SSLInfo* ssl_info) {
   return false;
 }
 
+void PseudoTcpAdapter::GetConnectionAttempts(
+    net::ConnectionAttempts* out) const {
+  DCHECK(CalledOnValidThread());
+  out->clear();
+}
+
 void PseudoTcpAdapter::SetAckDelay(int delay_ms) {
   DCHECK(CalledOnValidThread());
   core_->SetAckDelay(delay_ms);

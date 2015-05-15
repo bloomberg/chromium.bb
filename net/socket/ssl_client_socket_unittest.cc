@@ -108,6 +108,15 @@ class WrappedStreamSocket : public StreamSocket {
   bool GetSSLInfo(SSLInfo* ssl_info) override {
     return transport_->GetSSLInfo(ssl_info);
   }
+  void GetConnectionAttempts(ConnectionAttempts* out) const override {
+    transport_->GetConnectionAttempts(out);
+  }
+  void ClearConnectionAttempts() override {
+    transport_->ClearConnectionAttempts();
+  }
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {
+    transport_->AddConnectionAttempts(attempts);
+  }
 
   // Socket implementation:
   int Read(IOBuffer* buf,

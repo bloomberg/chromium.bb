@@ -234,6 +234,11 @@ bool AndroidUsbSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
   return false;
 }
 
+void AndroidUsbSocket::GetConnectionAttempts(
+    net::ConnectionAttempts* out) const {
+  out->clear();
+}
+
 void AndroidUsbSocket::RespondToReader(bool disconnect) {
   if (read_callback_.is_null() || (read_buffer_.empty() && !disconnect))
     return;

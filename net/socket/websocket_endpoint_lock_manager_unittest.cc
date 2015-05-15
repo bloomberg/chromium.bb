@@ -54,6 +54,14 @@ class FakeStreamSocket : public StreamSocket {
 
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
 
+  void GetConnectionAttempts(ConnectionAttempts* out) const override {
+    out->clear();
+  }
+
+  void ClearConnectionAttempts() override {}
+
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
+
   // Socket implementation
   int Read(IOBuffer* buf,
            int buf_len,

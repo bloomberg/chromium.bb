@@ -489,6 +489,12 @@ bool ClientSocketPoolBaseHelper::AssignIdleSocketToRequest(
         idle_socket.socket->WasEverUsed() ?
             ClientSocketHandle::REUSED_IDLE :
             ClientSocketHandle::UNUSED_IDLE;
+
+    // If this socket took multiple attempts to obtain, don't report those
+    // every time it's reused, just to the first user.
+    if (idle_socket.socket->WasEverUsed())
+      idle_socket.socket->ClearConnectionAttempts();
+
     HandOutSocket(
         scoped_ptr<StreamSocket>(idle_socket.socket),
         reuse_type,

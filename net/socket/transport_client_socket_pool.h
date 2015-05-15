@@ -17,6 +17,7 @@
 #include "net/dns/single_request_host_resolver.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/connection_attempts.h"
 
 namespace net {
 
@@ -196,6 +197,8 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   // Otherwise, it returns a net error code.
   int ConnectInternal() override;
 
+  void CopyConnectionAttemptsFromSockets();
+
   TransportConnectJobHelper helper_;
 
   scoped_ptr<StreamSocket> transport_socket_;
@@ -209,7 +212,14 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   ConnectInterval interval_between_connects_;
 
   int resolve_result_;
-  int connect_result_;
+
+  // Used in the failure case to save connection attempts made on the main and
+  // fallback sockets and pass them on in |GetAdditionalErrorState|. (In the
+  // success case, connection attempts are passed through the returned socket;
+  // attempts are copied from the other socket, if one exists, into it before
+  // it is returned.)
+  ConnectionAttempts connection_attempts_;
+  ConnectionAttempts fallback_connection_attempts_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportConnectJob);
 };

@@ -420,6 +420,11 @@ bool ProxyResolvingClientSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
   return false;
 }
 
+void ProxyResolvingClientSocket::GetConnectionAttempts(
+    net::ConnectionAttempts* out) const {
+  out->clear();
+}
+
 void ProxyResolvingClientSocket::CloseTransportSocket() {
   if (transport_.get() && transport_->socket())
     transport_->socket()->Disconnect();

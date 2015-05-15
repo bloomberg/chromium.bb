@@ -779,6 +779,9 @@ class MockClientSocket : public SSLClientSocket {
   const BoundNetLog& NetLog() const override;
   void SetSubresourceSpeculation() override {}
   void SetOmniboxSpeculation() override {}
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  void ClearConnectionAttempts() override {}
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
@@ -841,6 +844,9 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   bool UsingTCPFastOpen() const override;
   bool WasNpnNegotiated() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
+  void ClearConnectionAttempts() override;
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override;
 
   // AsyncSocket:
   void OnReadComplete(const MockRead& data) override;

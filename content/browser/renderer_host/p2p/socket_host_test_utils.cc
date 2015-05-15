@@ -172,6 +172,10 @@ bool FakeSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
   return false;
 }
 
+void FakeSocket::GetConnectionAttempts(net::ConnectionAttempts* out) const {
+  out->clear();
+}
+
 void CreateRandomPacket(std::vector<char>* packet) {
   size_t size = kStunHeaderSize + rand() % 1000;
   packet->resize(size);

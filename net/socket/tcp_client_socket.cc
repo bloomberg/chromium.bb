@@ -124,6 +124,7 @@ int TCPClientSocket::DoConnect() {
 
     if (previously_disconnected_) {
       use_history_.Reset();
+      connection_attempts_.clear();
       previously_disconnected_ = false;
     }
 
@@ -158,6 +159,9 @@ int TCPClientSocket::DoConnectComplete(int result) {
     use_history_.set_was_ever_connected();
     return OK;  // Done!
   }
+
+  connection_attempts_.push_back(
+      ConnectionAttempt(addresses_[current_address_index_], result));
 
   // Close whatever partially connected socket we currently have.
   DoDisconnect();
@@ -294,6 +298,20 @@ bool TCPClientSocket::SetKeepAlive(bool enable, int delay) {
 
 bool TCPClientSocket::SetNoDelay(bool no_delay) {
   return socket_->SetNoDelay(no_delay);
+}
+
+void TCPClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {
+  *out = connection_attempts_;
+}
+
+void TCPClientSocket::ClearConnectionAttempts() {
+  connection_attempts_.clear();
+}
+
+void TCPClientSocket::AddConnectionAttempts(
+    const ConnectionAttempts& attempts) {
+  connection_attempts_.insert(connection_attempts_.begin(), attempts.begin(),
+                              attempts.end());
 }
 
 void TCPClientSocket::DidCompleteConnect(int result) {

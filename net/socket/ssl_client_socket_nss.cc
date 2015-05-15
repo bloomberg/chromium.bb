@@ -2491,6 +2491,10 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
   return true;
 }
 
+void SSLClientSocketNSS::GetConnectionAttempts(ConnectionAttempts* out) const {
+  out->clear();
+}
+
 void SSLClientSocketNSS::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   EnterFunction("");
