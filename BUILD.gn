@@ -194,10 +194,6 @@ if (build_ffmpegsumo) {
         "-fno-tree-vectorize",
         "-fomit-frame-pointer",
       ]
-      # Ensure the symbols are exported.
-      #
-      # TODO(ajwong): Manually tag the API that we use to be
-      # exported.
       ldflags = [
         "-L", rebase_path(target_gen_dir, root_build_dir),
       ]
@@ -334,11 +330,10 @@ if (is_win) {
       ".",
     ]
   }
-  component("ffmpeg") {
+  group("ffmpeg") {
     public_configs = [ ":ffmpeg_posix_dependent_config" ]
     deps = [
       ":ffmpegsumo",
-      "//base",  # ffmpeg_stubs use base's logging functionality
     ]
   }
 }

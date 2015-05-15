@@ -678,7 +678,7 @@ BRANCH_INSTR jz, je, jnz, jne, jl, jle, jnl, jnle, jg, jge, jng, jnge, ja, jae, 
         CAT_XDEFINE cglobaled_, %2, 1
     %endif
     %xdefine current_function %2
-    %ifidn __OUTPUT_FORMAT__,elf
+    %ifidn __OUTPUT_FORMAT__,elf64
         global %2:function %%VISIBILITY
     %else
         global %2
