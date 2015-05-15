@@ -37,7 +37,12 @@
 
 // Draw using ancestorView's drawRect function into this view's rect. Do any
 // required translating or flipping to transform between the two coordinate
-// systems.
+// systems, and optionally clip to the ancestor view's bounds.
+- (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)dirtyRect
+     clippedToAncestorBounds:(BOOL)clipToAncestorBounds;
+
+// Same as cr_drawUsingAncestor:inRect:clippedToAncestorBounds: except always
+// clips to the ancestor view's bounds.
 - (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)dirtyRect;
 
 // Used by ancestorView in the above draw call, to look up the child view that

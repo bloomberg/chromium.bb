@@ -44,7 +44,18 @@
 
 - (void)drawRect:(NSRect)rect {
   NSView* downloadShelfView = [self ancestorWithViewID:VIEW_ID_DOWNLOAD_SHELF];
-  [self cr_drawUsingAncestor:downloadShelfView inRect:rect];
+  // Previously the show all button used cr_drawUsingAncestor:inRect: to use
+  // the download shelf to draw its background. However when the download
+  // shelf has zero height, the shelf's drawing methods don't work as expected
+  // because they constrain their drawing to the shelf's bounds rect. This
+  // situation occurs sometimes when the shelf is about to become visible,
+  // and the result is a very dark show all button
+  //
+  // To work around this problem, we'll call a variant of that method which
+  // does restrict drawing to the ancestor view's bounds.
+  [self cr_drawUsingAncestor:downloadShelfView
+                      inRect:rect
+     clippedToAncestorBounds:NO];
   [super drawRect:rect];
 }
 

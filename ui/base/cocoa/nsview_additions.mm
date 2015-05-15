@@ -75,7 +75,8 @@
 static NSView* g_ancestorBeingDrawnFrom = nil;
 static NSView* g_childBeingDrawnTo = nil;
 
-- (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)dirtyRect {
+- (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)dirtyRect
+     clippedToAncestorBounds:(BOOL)clipToAncestorBounds {
   gfx::ScopedNSGraphicsContextSaveGState scopedGSState;
   NSRect frame = [self convertRect:[self bounds] toView:ancestorView];
   NSAffineTransform* transform = [NSAffineTransform transform];
@@ -91,11 +92,19 @@ static NSView* g_childBeingDrawnTo = nil;
   DCHECK(!g_ancestorBeingDrawnFrom && !g_childBeingDrawnTo);
   g_ancestorBeingDrawnFrom = ancestorView;
   g_childBeingDrawnTo = self;
-  [ancestorView drawRect:NSIntersectionRect(
-                             [ancestorView bounds],
-                             [self convertRect:dirtyRect toView:ancestorView])];
+  NSRect drawRect = [self convertRect:dirtyRect toView:ancestorView];
+  if (clipToAncestorBounds) {
+    drawRect = NSIntersectionRect([ancestorView bounds], drawRect);
+  }
+  [ancestorView drawRect:drawRect];
   g_childBeingDrawnTo = nil;
   g_ancestorBeingDrawnFrom = nil;
+}
+
+- (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)dirtyRect {
+  [self cr_drawUsingAncestor:ancestorView
+                      inRect:dirtyRect
+     clippedToAncestorBounds:YES];
 }
 
 - (NSView*)cr_viewBeingDrawnTo {
