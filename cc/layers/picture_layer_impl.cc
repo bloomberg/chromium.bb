@@ -211,7 +211,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
          iter; ++iter) {
       SkColor color;
       float width;
-      if (*iter && iter->IsReadyToDraw()) {
+      if (*iter && iter->draw_info().IsReadyToDraw()) {
         TileDrawInfo::Mode mode = iter->draw_info().mode();
         if (mode == TileDrawInfo::SOLID_COLOR_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
@@ -277,7 +277,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         visible_geometry_rect.width() * visible_geometry_rect.height();
 
     bool has_draw_quad = false;
-    if (*iter && iter->IsReadyToDraw()) {
+    if (*iter && iter->draw_info().IsReadyToDraw()) {
       const TileDrawInfo& draw_info = iter->draw_info();
       switch (draw_info.mode()) {
         case TileDrawInfo::RESOURCE_MODE: {

@@ -2095,7 +2095,7 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
   // Verify active tree not ready.
   Tile* some_active_tile =
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
-  EXPECT_FALSE(some_active_tile->IsReadyToDraw());
+  EXPECT_FALSE(some_active_tile->draw_info().IsReadyToDraw());
 
   // When high res are required, all tiles in active high res tiling should be
   // required for activation.
@@ -2120,7 +2120,7 @@ TEST_F(PictureLayerImplTest, AllHighResRequiredEvenIfNotChanged) {
 
   Tile* some_active_tile =
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
-  EXPECT_FALSE(some_active_tile->IsReadyToDraw());
+  EXPECT_FALSE(some_active_tile->draw_info().IsReadyToDraw());
 
   // Since there are no invalidations, pending tree should have no tiles.
   EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
@@ -2141,7 +2141,7 @@ TEST_F(PictureLayerImplTest, DisallowRequiredForActivation) {
 
   Tile* some_active_tile =
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
-  EXPECT_FALSE(some_active_tile->IsReadyToDraw());
+  EXPECT_FALSE(some_active_tile->draw_info().IsReadyToDraw());
 
   EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
   EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
@@ -2979,7 +2979,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   while (!required_queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = required_queue->Top();
     EXPECT_TRUE(prioritized_tile.tile()->required_for_activation());
-    EXPECT_FALSE(prioritized_tile.tile()->IsReadyToDraw());
+    EXPECT_FALSE(prioritized_tile.tile()->draw_info().IsReadyToDraw());
     ++required_for_activation_count;
     required_queue->Pop();
   }
@@ -3087,7 +3087,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueueActiveTree) {
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
     EXPECT_TRUE(prioritized_tile.tile()->required_for_draw());
-    EXPECT_FALSE(prioritized_tile.tile()->IsReadyToDraw());
+    EXPECT_FALSE(prioritized_tile.tile()->draw_info().IsReadyToDraw());
     queue->Pop();
   }
 
@@ -3575,7 +3575,7 @@ TEST_F(NoLowResPictureLayerImplTest, AllHighResRequiredEvenIfNotChanged) {
 
   Tile* some_active_tile =
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
-  EXPECT_FALSE(some_active_tile->IsReadyToDraw());
+  EXPECT_FALSE(some_active_tile->draw_info().IsReadyToDraw());
 
   // Since there is no invalidation, pending tree should have no tiles.
   EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());

@@ -580,7 +580,10 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     } else {
       FakePictureLayerImpl* picture_impl = static_cast<FakePictureLayerImpl*>(
           host_impl->active_tree()->root_layer()->children()[0]);
-      EXPECT_TRUE(picture_impl->HighResTiling()->TileAt(0, 0)->IsReadyToDraw());
+      EXPECT_TRUE(picture_impl->HighResTiling()
+                      ->TileAt(0, 0)
+                      ->draw_info()
+                      .IsReadyToDraw());
     }
   }
 
@@ -697,7 +700,10 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
     if (impl->settings().impl_side_painting) {
       FakePictureLayerImpl* picture_impl =
           static_cast<FakePictureLayerImpl*>(impl->active_tree()->root_layer());
-      EXPECT_TRUE(picture_impl->HighResTiling()->TileAt(0, 0)->IsReadyToDraw());
+      EXPECT_TRUE(picture_impl->HighResTiling()
+                      ->TileAt(0, 0)
+                      ->draw_info()
+                      .IsReadyToDraw());
     } else {
       FakeContentLayerImpl* content_impl =
           static_cast<FakeContentLayerImpl*>(impl->active_tree()->root_layer());

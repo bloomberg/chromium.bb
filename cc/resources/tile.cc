@@ -56,13 +56,11 @@ void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
   draw_info_.AsValueInto(value);
   value->EndDictionary();
 
-  value->SetBoolean("has_resource", HasResource());
-  value->SetBoolean("is_using_gpu_memory", HasResource() || HasRasterTask());
-
+  value->SetBoolean("has_resource", draw_info().has_resource());
+  value->SetBoolean("is_using_gpu_memory",
+                    draw_info().has_resource() || HasRasterTask());
   value->SetInteger("scheduled_priority", scheduled_priority_);
-
   value->SetBoolean("use_picture_analysis", use_picture_analysis());
-
   value->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
 }
 

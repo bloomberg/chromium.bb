@@ -16,18 +16,6 @@ TileDrawInfo::~TileDrawInfo() {
   DCHECK(!resource_);
 }
 
-bool TileDrawInfo::IsReadyToDraw() const {
-  switch (mode_) {
-    case RESOURCE_MODE:
-      return !!resource_;
-    case SOLID_COLOR_MODE:
-    case OOM_MODE:
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
 void TileDrawInfo::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("is_solid_color", mode_ == SOLID_COLOR_MODE);
   state->SetBoolean("is_transparent",

@@ -685,7 +685,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     PrioritizedTile prioritized_tile = queue->Top();
     EXPECT_TRUE(prioritized_tile.tile());
     EXPECT_EQ(TilePriority::NOW, prioritized_tile.priority().priority_bin);
-    EXPECT_TRUE(prioritized_tile.tile()->HasResource());
+    EXPECT_TRUE(prioritized_tile.tile()->draw_info().has_resource());
     smoothness_tiles.insert(prioritized_tile.tile());
     queue->Pop();
   }
@@ -750,7 +750,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     PrioritizedTile prioritized_tile = queue->Top();
     Tile* tile = prioritized_tile.tile();
     EXPECT_TRUE(tile);
-    EXPECT_TRUE(tile->HasResource());
+    EXPECT_TRUE(tile->draw_info().has_resource());
 
     if (!last_tile.tile())
       last_tile = prioritized_tile;

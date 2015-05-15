@@ -167,7 +167,7 @@ void FakePictureLayerImpl::SetAllTilesReadyInTiling(
 void FakePictureLayerImpl::SetTileReady(Tile* tile) {
   TileDrawInfo& draw_info = tile->draw_info();
   draw_info.SetSolidColorForTesting(true);
-  DCHECK(tile->IsReadyToDraw());
+  DCHECK(draw_info.IsReadyToDraw());
 }
 
 void FakePictureLayerImpl::DidBecomeActive() {

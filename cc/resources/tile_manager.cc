@@ -275,7 +275,7 @@ void TileManager::CleanUpReleasedTiles() {
       continue;
     }
 
-    DCHECK(!tile->HasResource());
+    DCHECK(!tile->draw_info().has_resource());
     DCHECK(tiles_.find(tile->id()) != tiles_.end());
     tiles_.erase(tile->id());
 
@@ -582,7 +582,7 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 
 void TileManager::FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(
     Tile* tile) {
-  bool was_ready_to_draw = tile->IsReadyToDraw();
+  bool was_ready_to_draw = tile->draw_info().IsReadyToDraw();
   FreeResourcesForTile(tile);
   if (was_ready_to_draw)
     client_->NotifyTileStateChanged(tile);
@@ -783,7 +783,7 @@ bool TileManager::AreRequiredTilesReadyToDraw(
   // have to iterate the queue to check whether the required tiles are ready to
   // draw.
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
-    if (!raster_priority_queue->Top().tile()->IsReadyToDraw())
+    if (!raster_priority_queue->Top().tile()->draw_info().IsReadyToDraw())
       return false;
   }
 
@@ -792,7 +792,8 @@ bool TileManager::AreRequiredTilesReadyToDraw(
       client_->BuildRasterQueue(global_state_.tree_priority, type));
   for (; !all_queue->IsEmpty(); all_queue->Pop()) {
     Tile* tile = all_queue->Top().tile();
-    DCHECK_IMPLIES(tile->required_for_activation(), tile->IsReadyToDraw());
+    DCHECK_IMPLIES(tile->required_for_activation(),
+                   tile->draw_info().IsReadyToDraw());
   }
 #endif
   return true;

@@ -45,18 +45,9 @@ class CC_EXPORT Tile {
     return !!(flags_ & USE_PICTURE_ANALYSIS);
   }
 
-  bool HasResource() const { return draw_info_.has_resource(); }
-  bool NeedsRaster() const {
-    return draw_info_.mode() == TileDrawInfo::OOM_MODE ||
-           !draw_info_.IsReadyToDraw();
-  }
-
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
-  inline bool IsReadyToDraw() const { return draw_info_.IsReadyToDraw(); }
-
   const TileDrawInfo& draw_info() const { return draw_info_; }
-
   TileDrawInfo& draw_info() { return draw_info_; }
 
   float contents_scale() const { return contents_scale_; }

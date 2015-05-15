@@ -101,7 +101,8 @@ TilingSetRasterQueueRequired::TilingIterator::TilingIterator(
       tiling_->TileAt(visible_iterator_.index_x(), visible_iterator_.index_y());
   // If this is a valid tile, return it. Note that we have to use a tiling check
   // for occlusion, since the tile's internal state has not yet been updated.
-  if (tile && tile->NeedsRaster() && !tiling_->IsTileOccluded(tile)) {
+  if (tile && tile->draw_info().NeedsRaster() &&
+      !tiling_->IsTileOccluded(tile)) {
     tiling_->UpdateRequiredStatesOnTile(tile);
     current_tile_ = tiling_->MakePrioritizedTile(tile);
     return;
@@ -126,7 +127,7 @@ TilingSetRasterQueueRequired::TilingIterator&
     tile = tiling_->TileAt(next_index.first, next_index.second);
     // If the tile doesn't exist or if it exists but doesn't need raster work,
     // we can move on to the next tile.
-    if (!tile || !tile->NeedsRaster())
+    if (!tile || !tile->draw_info().NeedsRaster())
       continue;
 
     // If the tile is occluded, we also can skip it. Note that we use the tiling

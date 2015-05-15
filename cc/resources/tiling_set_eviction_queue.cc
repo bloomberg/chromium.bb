@@ -217,7 +217,7 @@ bool TilingSetEvictionQueue::EvictionRectIterator::GetFirstTileAndCheckIfValid(
   Tile* tile = tiling->TileAt(iterator->index_x(), iterator->index_y());
   prioritized_tile_ = PrioritizedTile();
   // If there's nothing to evict, return false.
-  if (!tile || !tile->HasResource())
+  if (!tile || !tile->draw_info().has_resource())
     return false;
   if (skip_pending_visible_rect_ &&
       tiling->pending_visible_rect().Intersects(tile->content_rect())) {

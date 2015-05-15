@@ -24,7 +24,29 @@ class CC_EXPORT TileDrawInfo {
 
   Mode mode() const { return mode_; }
 
-  bool IsReadyToDraw() const;
+  bool IsReadyToDraw() const {
+    switch (mode_) {
+      case RESOURCE_MODE:
+        return !!resource_;
+      case SOLID_COLOR_MODE:
+      case OOM_MODE:
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+  bool NeedsRaster() const {
+    switch (mode_) {
+      case RESOURCE_MODE:
+        return !resource_;
+      case SOLID_COLOR_MODE:
+        return false;
+      case OOM_MODE:
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
 
   ResourceProvider::ResourceId resource_id() const {
     DCHECK(mode_ == RESOURCE_MODE);
