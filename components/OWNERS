@@ -63,9 +63,6 @@ per-file data_reduction_proxy*=bolian@chromium.org
 per-file data_reduction_proxy*=sclittle@chromium.org
 per-file data_reduction_proxy*=jeremyim@chromium.org
 
-per-file devtools_bridge.gyp=mnaganov@chromium.org
-per-file devtools_bridge.gyp=serya@chromium.org
-
 per-file devtools_discovery.gyp*=dgozman@chromium.org
 per-file devtools_discovery.gyp*=pfeldman@chromium.org
 

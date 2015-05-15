@@ -1,8 +1,0 @@
-include_rules = [
-  "+google_apis",
-  "+net",
-  "+third_party/libjingle",
-  "+third_party/webrtc",
-  "-chrome",
-  "-content",
-]
