@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
+#include "device/bluetooth/test/mock_bluetooth_advertisement.h"
+
 namespace device {
 
 MockBluetoothAdapter::Observer::Observer() {}
@@ -50,6 +52,7 @@ void MockBluetoothAdapter::RegisterAdvertisement(
     scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
     const CreateAdvertisementErrorCallback& error_callback) {
+  callback.Run(new MockBluetoothAdvertisement);
 }
 
 }  // namespace device

@@ -211,6 +211,8 @@
         # Note: file list duplicated in GN build.
         'test/mock_bluetooth_adapter.cc',
         'test/mock_bluetooth_adapter.h',
+        'test/mock_bluetooth_advertisement.cc',
+        'test/mock_bluetooth_advertisement.h',
         'test/mock_bluetooth_device.cc',
         'test/mock_bluetooth_device.h',
         'test/mock_bluetooth_discovery_session.cc',

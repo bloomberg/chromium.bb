@@ -4,10 +4,13 @@
 
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
 #include "extensions/browser/api/bluetooth_low_energy/utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
@@ -44,6 +47,11 @@ const char kErrorPlatformNotSupported[] =
 const char kErrorTimeout[] = "Operation timed out";
 const char kErrorUnsupportedDevice[] =
     "This device is not supported on the current platform";
+const char kErrorInvalidAdvertisementLength[] = "Invalid advertisement length";
+const char kStatusAdvertisementAlreadyExists[] =
+    "An advertisement is already advertising";
+const char kStatusAdvertisementDoesNotExist[] =
+    "This advertisement does not exist";
 
 // Returns the correct error string based on error status |status|. This is used
 // to set the value of |chrome.runtime.lastError.message| and should not be
@@ -98,6 +106,31 @@ extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
 void DoWorkCallback(const base::Callback<bool()>& callback) {
   DCHECK(!callback.is_null());
   callback.Run();
+}
+
+scoped_ptr<device::BluetoothAdvertisement::ManufacturerData>
+CreateManufacturerData(
+    std::vector<linked_ptr<apibtle::ManufacturerData>>* manufacturer_data) {
+  scoped_ptr<device::BluetoothAdvertisement::ManufacturerData> created_data(
+      new device::BluetoothAdvertisement::ManufacturerData());
+  for (const auto& it : *manufacturer_data) {
+    std::vector<uint8_t> data(it->data.size());
+    std::copy(it->data.begin(), it->data.end(), data.begin());
+    (*created_data)[it->id] = data;
+  }
+  return created_data;
+}
+
+scoped_ptr<device::BluetoothAdvertisement::ServiceData> CreateServiceData(
+    std::vector<linked_ptr<apibtle::ServiceData>>* service_data) {
+  scoped_ptr<device::BluetoothAdvertisement::ServiceData> created_data(
+      new device::BluetoothAdvertisement::ServiceData());
+  for (const auto& it : *service_data) {
+    std::vector<uint8_t> data(it->data.size());
+    std::copy(it->data.begin(), it->data.end(), data.begin());
+    (*created_data)[it->uuid] = data;
+  }
+  return created_data;
 }
 
 }  // namespace
@@ -793,6 +826,44 @@ void BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback(
   SendResponse(false);
 }
 
+BluetoothLowEnergyAdvertisementFunction::
+    BluetoothLowEnergyAdvertisementFunction()
+    : advertisements_manager_(nullptr) {
+}
+
+BluetoothLowEnergyAdvertisementFunction::
+    ~BluetoothLowEnergyAdvertisementFunction() {
+}
+
+int BluetoothLowEnergyAdvertisementFunction::AddAdvertisement(
+    BluetoothApiAdvertisement* advertisement) {
+  DCHECK(advertisements_manager_);
+  return advertisements_manager_->Add(advertisement);
+}
+
+BluetoothApiAdvertisement*
+BluetoothLowEnergyAdvertisementFunction::GetAdvertisement(
+    int advertisement_id) {
+  DCHECK(advertisements_manager_);
+  return advertisements_manager_->Get(extension_id(), advertisement_id);
+}
+
+void BluetoothLowEnergyAdvertisementFunction::RemoveAdvertisement(
+    int advertisement_id) {
+  DCHECK(advertisements_manager_);
+  advertisements_manager_->Remove(extension_id(), advertisement_id);
+}
+
+bool BluetoothLowEnergyAdvertisementFunction::RunAsync() {
+  Initialize();
+  return BluetoothLowEnergyExtensionFunction::RunAsync();
+}
+
+void BluetoothLowEnergyAdvertisementFunction::Initialize() {
+  advertisements_manager_ =
+      ApiResourceManager<BluetoothApiAdvertisement>::Get(browser_context());
+}
+
 // RegisterAdvertisement:
 
 bool BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
@@ -819,9 +890,63 @@ bool BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
       apibtle::RegisterAdvertisement::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  // TODO(rkc): Implement this function.
+  scoped_ptr<device::BluetoothAdvertisement::Data> advertisement_data(
+      new device::BluetoothAdvertisement::Data(
+          params->advertisement.type ==
+                  apibtle::AdvertisementType::ADVERTISEMENT_TYPE_BROADCAST
+              ? device::BluetoothAdvertisement::AdvertisementType::
+                    ADVERTISEMENT_TYPE_BROADCAST
+              : device::BluetoothAdvertisement::AdvertisementType::
+                    ADVERTISEMENT_TYPE_PERIPHERAL));
+
+  advertisement_data->set_service_uuids(
+      params->advertisement.service_uuids.Pass());
+  advertisement_data->set_solicit_uuids(
+      params->advertisement.solicit_uuids.Pass());
+  if (params->advertisement.manufacturer_data) {
+    advertisement_data->set_manufacturer_data(
+        CreateManufacturerData(params->advertisement.manufacturer_data.get())
+            .Pass());
+  }
+  if (params->advertisement.service_data) {
+    advertisement_data->set_service_data(
+        CreateServiceData(params->advertisement.service_data.get()).Pass());
+  }
+
+  event_router->adapter()->RegisterAdvertisement(
+      advertisement_data.Pass(),
+      base::Bind(
+          &BluetoothLowEnergyRegisterAdvertisementFunction::SuccessCallback,
+          this),
+      base::Bind(
+          &BluetoothLowEnergyRegisterAdvertisementFunction::ErrorCallback,
+          this));
 
   return true;
+}
+
+void BluetoothLowEnergyRegisterAdvertisementFunction::SuccessCallback(
+    scoped_refptr<device::BluetoothAdvertisement> advertisement) {
+  results_ = apibtle::RegisterAdvertisement::Results::Create(AddAdvertisement(
+      new BluetoothApiAdvertisement(extension_id(), advertisement)));
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyRegisterAdvertisementFunction::ErrorCallback(
+    device::BluetoothAdvertisement::ErrorCode status) {
+  switch (status) {
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_ALREADY_EXISTS:
+      SetError(kStatusAdvertisementAlreadyExists);
+      break;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_INVALID_LENGTH:
+      SetError(kErrorInvalidAdvertisementLength);
+      break;
+    default:
+      SetError(kErrorOperationFailed);
+  }
+  SendResponse(false);
 }
 
 // UnregisterAdvertisement:
@@ -846,9 +971,44 @@ bool BluetoothLowEnergyUnregisterAdvertisementFunction::DoWork() {
       apibtle::UnregisterAdvertisement::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  // TODO(rkc): Implement this function.
+  BluetoothApiAdvertisement* advertisement =
+      GetAdvertisement(params->advertisement_id);
+  if (!advertisement) {
+    error_ = kStatusAdvertisementDoesNotExist;
+    SendResponse(false);
+    return false;
+  }
+
+  advertisement->advertisement()->Unregister(
+      base::Bind(
+          &BluetoothLowEnergyUnregisterAdvertisementFunction::SuccessCallback,
+          this, params->advertisement_id),
+      base::Bind(
+          &BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback,
+          this, params->advertisement_id));
 
   return true;
+}
+
+void BluetoothLowEnergyUnregisterAdvertisementFunction::SuccessCallback(
+    int advertisement_id) {
+  RemoveAdvertisement(advertisement_id);
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback(
+    int advertisement_id,
+    device::BluetoothAdvertisement::ErrorCode status) {
+  RemoveAdvertisement(advertisement_id);
+  switch (status) {
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_DOES_NOT_EXIST:
+      SetError(kStatusAdvertisementDoesNotExist);
+      break;
+    default:
+      SetError(kErrorOperationFailed);
+  }
+  SendResponse(false);
 }
 
 }  // namespace core_api

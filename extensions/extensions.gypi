@@ -264,6 +264,8 @@
       'browser/api/bluetooth/bluetooth_extension_function.h',
       'browser/api/bluetooth/bluetooth_private_api.cc',
       'browser/api/bluetooth/bluetooth_private_api.h',
+      'browser/api/bluetooth_low_energy/bluetooth_api_advertisement.cc',
+      'browser/api/bluetooth_low_energy/bluetooth_api_advertisement.h',
       'browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc',
       'browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h',
       'browser/api/bluetooth_low_energy/bluetooth_low_energy_connection.cc',

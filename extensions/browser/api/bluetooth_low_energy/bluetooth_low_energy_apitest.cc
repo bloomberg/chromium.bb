@@ -1320,4 +1320,21 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
       mock_adapter_, device0_.get(), service0_.get());
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_RegisterAdvertisement RegisterAdvertisement
+#else
+#define MAYBE_RegisterAdvertisement DISABLED_RegisterAdvertisement
+#endif
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, MAYBE_RegisterAdvertisement) {
+  ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
+
+  // Run the test.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/register_advertisement")));
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 }  // namespace
