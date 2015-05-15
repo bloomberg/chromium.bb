@@ -195,7 +195,17 @@
         '../../base/base.gyp:base',
         '../../crypto/crypto.gyp:crypto',
         '../../media/media.gyp:media',
-        '../../third_party/boringssl/boringssl.gyp:boringssl',
+      ],
+      'conditions': [
+        ['chromecast_branding=="Chrome"', {
+          'dependencies': [
+            '../internal/cast_system.gyp:openssl',
+          ],
+        }, {
+          'dependencies': [
+            '../../third_party/boringssl/boringssl.gyp:boringssl',
+          ],
+        }],
       ],
       'sources': [
         'cma/pipeline/audio_pipeline.cc',
