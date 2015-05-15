@@ -235,7 +235,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         if (data.hasImageContents && isHTMLImageElement(r.innerNodeOrImageMapImage())) {
             HTMLImageElement* imageElement = toHTMLImageElement(r.innerNodeOrImageMapImage());
             if (imageElement && imageElement->cachedImage())
-                data.imageResponseExtraData = WrappedResourceResponse(imageElement->cachedImage()->response()).extraData();
+                data.imageResponse = WrappedResourceResponse(imageElement->cachedImage()->response());
         }
     } else if (!r.absoluteMediaURL().isEmpty()) {
         data.srcURL = r.absoluteMediaURL();

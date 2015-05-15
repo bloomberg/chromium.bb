@@ -80,8 +80,8 @@ struct WebContextMenuData {
     bool hasImageContents;
 
     // If |media_type| is MediaTypeImage and |has_image_contents| is true, then
-    // this contains the image's WebURLResponse::ExtraData.
-    WebURLResponse::ExtraData* imageResponseExtraData;
+    // this contains the image's WebURLResponse.
+    WebURLResponse imageResponse;
 
     // The absolute URL of the page in context.
     WebURL pageURL;
@@ -179,7 +179,6 @@ struct WebContextMenuData {
     WebContextMenuData()
         : mediaType(MediaTypeNone)
         , hasImageContents(true)
-        , imageResponseExtraData(nullptr)
         , mediaFlags(MediaNone)
         , isSpellCheckingEnabled(false)
         , misspellingHash(0)
