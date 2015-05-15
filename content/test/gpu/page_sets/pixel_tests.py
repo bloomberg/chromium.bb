@@ -30,19 +30,19 @@ class PixelTestsPageSet(page_set_module.PageSet):
       url='file://../../data/gpu/pixel_canvas2d.html',
       name=base_name + '.Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
-      revision=4,
+      revision=5,
       page_set=self))
 
     self.AddUserStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_css3d.html',
       name=base_name + '.CSS3DBlueBox',
       test_rect=[0, 0, 300, 300],
-      revision=12,
+      revision=13,
       page_set=self))
 
     self.AddUserStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_webgl.html',
       name=base_name + '.WebGLGreenTriangle',
       test_rect=[0, 0, 300, 300],
-      revision=9,
+      revision=10,
       page_set=self))
