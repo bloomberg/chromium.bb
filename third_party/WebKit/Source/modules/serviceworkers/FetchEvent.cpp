@@ -72,8 +72,9 @@ FetchEvent::FetchEvent(const AtomicString& type, const FetchEventInit& initializ
 
 DEFINE_TRACE(FetchEvent)
 {
-    visitor->trace(m_request);
     visitor->trace(m_observer);
+    visitor->trace(m_request);
+    visitor->trace(m_client);
     ExtendableEvent::trace(visitor);
 }
 
