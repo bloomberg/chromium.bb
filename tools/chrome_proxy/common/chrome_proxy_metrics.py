@@ -78,12 +78,16 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
         return kvp[1].strip()
     return None
 
-  def HasChromeProxyLoFi(self):
+  def HasChromeProxyLoFiRequest(self):
     if 'Chrome-Proxy' not in self.response.request_headers:
       return False
     chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
     values = [v.strip() for v in chrome_proxy_request_header.split(',')]
-    for value in values:
-      if len(value) == 5 and value == 'q=low':
-        return True
-    return False
+    return any(v == "q=low" for v in values)
+
+  def HasChromeProxyLoFiResponse(self):
+    chrome_proxy_response_header = self.response.GetHeader('Chrome-Proxy')
+    if not chrome_proxy_response_header:
+      return False
+    values = [v.strip() for v in chrome_proxy_response_header.split(',')]
+    return any(v == "q=low" for v in values)
