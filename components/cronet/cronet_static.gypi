@@ -21,8 +21,6 @@
     'android/chromium_url_request_context.h',
     'android/chromium_url_request_error_list.h',
     'android/chromium_url_request_priority_list.h',
-    'android/cronet_data_reduction_proxy.cc',
-    'android/cronet_data_reduction_proxy.h',
     'android/cronet_histogram_manager.cc',
     'android/cronet_histogram_manager.h',
     'android/cronet_in_memory_pref_store.cc',
@@ -64,5 +62,21 @@
     '-landroid',
     '-Wl,--gc-sections',
     '-Wl,--exclude-libs,ALL'
+  ],
+  'conditions': [
+    # If Data Reduction Proxy support is enabled, add the following
+    # defines and sources. Dependencies are target-specific and are
+    # not included here.
+    ['enable_data_reduction_proxy_support==1',
+      {
+        'defines' : [
+          'DATA_REDUCTION_PROXY_SUPPORT'
+        ],
+        'sources': [
+          'android/cronet_data_reduction_proxy.cc',
+          'android/cronet_data_reduction_proxy.h',
+        ],
+       }
+     ],
   ],
 }

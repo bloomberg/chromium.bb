@@ -95,6 +95,10 @@ public final class NativeTestServer {
         return nativeGetHostPort();
     }
 
+    public static boolean isDataReductionProxySupported() {
+        return nativeIsDataReductionProxySupported();
+    }
+
     @CalledByNative
     private static void onHostResolverProcRegistered() {
         sHostResolverBlock.open();
@@ -112,4 +116,5 @@ public final class NativeTestServer {
     private static native String nativeGetFileURL(String filePath);
     private static native String nativeGetSdchURL();
     private static native String nativeGetHostPort();
+    private static native boolean nativeIsDataReductionProxySupported();
 }

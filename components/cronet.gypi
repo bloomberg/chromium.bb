@@ -108,20 +108,36 @@
             'DISABLE_FTP_SUPPORT=1',
           ],
           'dependencies': [
-            '../components/components.gyp:data_reduction_proxy_core_browser_small',
             '../net/net.gyp:net_small',
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],
+          'conditions': [
+            ['enable_data_reduction_proxy_support==1',
+              {
+                'dependencies': [
+                  '../components/components.gyp:data_reduction_proxy_core_browser_small',
+                ],
+              },
+            ],
+          ],
         },
         {
           # cronet_static target depends on ICU and includes file and ftp support.
           'target_name': 'cronet_static',
           'dependencies': [
             '../base/base.gyp:base_i18n',
-            '../components/components.gyp:data_reduction_proxy_core_browser',
             '../net/net.gyp:net',
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],
+          'conditions': [
+            ['enable_data_reduction_proxy_support==1',
+              {
+                'dependencies': [
+                  '../components/components.gyp:data_reduction_proxy_core_browser',
+                ],
+              },
+            ],
+          ],
         },
         {
           'target_name': 'libcronet',
@@ -303,6 +319,15 @@
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
           ],
+          'conditions' : [
+            ['enable_data_reduction_proxy_support==1',
+              {
+                'defines' : [
+                  'DATA_REDUCTION_PROXY_SUPPORT'
+                ],
+              },
+            ],
+          ],
         },
         {
           'target_name': 'cronet_test_apk',
@@ -473,6 +498,9 @@
           ],
         },
       ],
+      'variables': {
+        'enable_data_reduction_proxy_support%': 0,
+      },
     }],  # OS=="android"
   ],
 }

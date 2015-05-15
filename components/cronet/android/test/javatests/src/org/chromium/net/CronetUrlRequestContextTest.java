@@ -116,7 +116,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
         assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
-
+        if (!NativeTestServer.isDataReductionProxySupported()) {
+            return;
+        }
         String serverHostPort = NativeTestServer.getHostPort();
 
         // Enable the Data Reduction Proxy and configure it to use the test

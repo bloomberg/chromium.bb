@@ -13,7 +13,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
-#include "components/cronet/android/cronet_data_reduction_proxy.h"
 #include "components/cronet/url_request_context_config.h"
 #include "jni/CronetUrlRequestContext_jni.h"
 #include "net/base/load_flags.h"
@@ -26,6 +25,10 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_interceptor.h"
+
+#if defined(DATA_REDUCTION_PROXY_SUPPORT)
+#include "components/cronet/android/cronet_data_reduction_proxy.h"
+#endif
 
 namespace {
 
@@ -157,6 +160,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 
   scoped_ptr<net::NetLog> net_log(new net::NetLog);
   scoped_ptr<net::NetworkDelegate> network_delegate(new BasicNetworkDelegate());
+#if defined(DATA_REDUCTION_PROXY_SUPPORT)
   DCHECK(!data_reduction_proxy_);
   // For now, the choice to enable the data reduction proxy happens once,
   // at initialization. It cannot be disabled thereafter.
@@ -176,6 +180,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     interceptors.push_back(data_reduction_proxy_->CreateInterceptor());
     context_builder.SetInterceptors(interceptors.Pass());
   }
+#endif  // defined(DATA_REDUCTION_PROXY_SUPPORT)
   context_builder.set_network_delegate(network_delegate.release());
   context_builder.set_net_log(net_log.release());
   context_builder.set_proxy_config_service(proxy_config_service_.release());
@@ -241,8 +246,10 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   Java_CronetUrlRequestContext_initNetworkThread(
       env, jcronet_url_request_context.obj());
 
+#if defined(DATA_REDUCTION_PROXY_SUPPORT)
   if (data_reduction_proxy_)
     data_reduction_proxy_->Init(true, GetURLRequestContext());
+#endif
   is_context_initialized_ = true;
   while (!tasks_waiting_for_context_.empty()) {
     tasks_waiting_for_context_.front().Run();
