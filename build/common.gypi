@@ -3606,6 +3606,13 @@
         ],
       },
     }],
+    ['os_posix==1 and OS=="linux"', {
+      'defines': [
+        '_LARGEFILE_SOURCE',
+        '_LARGEFILE64_SOURCE',
+        '_FILE_OFFSET_BITS=64',
+      ],
+    }],
     ['os_posix==1 and OS!="mac" and OS!="ios"', {
       'target_defaults': {
         # Enable -Werror by default, but put it in a variable so it can
@@ -3691,12 +3698,6 @@
                 # function frames (crbug.com/391706).
                 'cflags': [
                   '-fomit-frame-pointer',
-                ],
-              }],
-              ['OS!="android"', {
-                'defines': [
-                  '_LARGEFILE_SOURCE',
-                  '_LARGEFILE64_SOURCE',
                 ],
               }],
               ['OS=="linux" and target_arch=="ia32"', {
