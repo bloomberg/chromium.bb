@@ -1587,8 +1587,6 @@ void Document::updateStyleInvalidationIfNeeded()
     if (!childNeedsStyleInvalidation())
         return;
     TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
-    ASSERT(styleResolver());
-
     styleEngine().styleInvalidator().invalidate(*this);
 }
 

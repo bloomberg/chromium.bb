@@ -494,8 +494,6 @@ void StyleEngine::clearResolver()
     for (UnorderedTreeScopeSet::iterator it = m_activeTreeScopes.beginUnordered(); it != m_activeTreeScopes.endUnordered(); ++it)
         (*it)->clearScopedStyleResolver();
 
-    if (m_resolver)
-        document().updateStyleInvalidationIfNeeded();
     m_resolver.clear();
 }
 
