@@ -123,7 +123,8 @@ void ExtensionMessageBubbleView::Init() {
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetText(delegate->GetMessageBody(
-      anchor_view_->id() == VIEW_ID_BROWSER_ACTION));
+      anchor_view_->id() == VIEW_ID_BROWSER_ACTION,
+      controller_->GetExtensionIdList().size()));
   message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
       IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS));
   layout->AddView(message);

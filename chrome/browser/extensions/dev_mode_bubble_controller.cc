@@ -41,7 +41,8 @@ class DevModeBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction user_action) override;
   void PerformAction(const ExtensionIdList& list) override;
   base::string16 GetTitle() const override;
-  base::string16 GetMessageBody(bool anchored_to_browser_action) const override;
+  base::string16 GetMessageBody(bool anchored_to_browser_action,
+                                int extension_count) const override;
   base::string16 GetOverflowText(
       const base::string16& overflow_count) const override;
   GURL GetLearnMoreUrl() const override;
@@ -92,7 +93,8 @@ base::string16 DevModeBubbleDelegate::GetTitle() const {
 }
 
 base::string16 DevModeBubbleDelegate::GetMessageBody(
-    bool anchored_to_browser_action) const {
+    bool anchored_to_browser_action,
+    int extension_count) const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_BODY);
 }
 

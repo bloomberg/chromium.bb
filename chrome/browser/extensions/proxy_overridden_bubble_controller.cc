@@ -44,7 +44,8 @@ class ProxyOverriddenBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction user_action) override;
   void PerformAction(const ExtensionIdList& list) override;
   base::string16 GetTitle() const override;
-  base::string16 GetMessageBody(bool anchored_to_browser_action) const override;
+  base::string16 GetMessageBody(bool anchored_to_browser_action,
+                                int extension_count) const override;
   base::string16 GetOverflowText(
       const base::string16& overflow_count) const override;
   GURL GetLearnMoreUrl() const override;
@@ -122,7 +123,8 @@ base::string16 ProxyOverriddenBubbleDelegate::GetTitle() const {
 }
 
 base::string16 ProxyOverriddenBubbleDelegate::GetMessageBody(
-    bool anchored_to_browser_action) const {
+    bool anchored_to_browser_action,
+    int extension_count) const {
   if (anchored_to_browser_action) {
     return l10n_util::GetStringUTF16(
         IDS_EXTENSIONS_PROXY_CONTROLLED_FIRST_LINE_EXTENSION_SPECIFIC);

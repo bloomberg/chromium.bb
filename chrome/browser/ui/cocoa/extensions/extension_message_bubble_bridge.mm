@@ -34,7 +34,9 @@ base::string16 ExtensionMessageBubbleBridge::GetHeadingText() {
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetBodyText() {
-  return controller_->delegate()->GetMessageBody(anchored_to_extension_);
+  return controller_->delegate()->GetMessageBody(
+      anchored_to_extension_,
+      controller_->GetExtensionIdList().size());
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetItemListText() {

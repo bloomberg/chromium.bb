@@ -573,8 +573,7 @@ const char kLearnMoreEnterpriseURL[] =
 #endif
 
 const char kRemoveNonCWSExtensionURL[] =
-    "https://support.google.com/chrome/answer/2811969?"
-    "p=ui_remove_non_cws_extensions&rd=1";
+    "https://support.google.com/chrome/?p=ui_remove_non_cws_extensions";
 
 #if defined(OS_WIN)
 const char kNotificationsHelpURL[] =

@@ -46,8 +46,10 @@ class ExtensionMessageBubbleController {
     // icon, allowing the bubble to show a different message than when it is
     // anchored against something else (e.g. show "This extension has..."
     // instead of "An extension has...").
+    // |extension_count| is the number of extensions being referenced.
     virtual base::string16 GetMessageBody(
-        bool anchored_to_browser_action) const = 0;
+        bool anchored_to_browser_action,
+        int extension_count) const = 0;
     virtual base::string16 GetOverflowText(
         const base::string16& overflow_count) const = 0;
     virtual base::string16 GetLearnMoreLabel() const;

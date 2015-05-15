@@ -707,8 +707,11 @@ For Google Chrome, processes used to display diagnostics information (such as th
       </message>
 
       <if expr="enable_extensions">
-        <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BODY" desc="Body of the dialog shown when unsupported extensions have been disabled">
+        <message name="IDS_EXTENSIONS_MULTIPLE_UNSUPPORTED_DISABLED_BODY" desc="Body of the dialog shown when multiple unsupported extensions have been disabled.">
           To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
+        </message>
+        <message name="IDS_EXTENSIONS_SINGLE_UNSUPPORTED_DISABLED_BODY" desc="Body of the dialog shown when a single unsupported extension has been disabled.">
+          To make Chrome safer, we disabled the following extension that isn't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
         </message>
       </if>
 

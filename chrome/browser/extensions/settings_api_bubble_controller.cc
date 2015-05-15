@@ -46,7 +46,8 @@ class SettingsApiBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction user_action) override;
   void PerformAction(const ExtensionIdList& list) override;
   base::string16 GetTitle() const override;
-  base::string16 GetMessageBody(bool anchored_to_browser_action) const override;
+  base::string16 GetMessageBody(bool anchored_to_browser_action,
+                                int extension_count) const override;
   base::string16 GetOverflowText(
       const base::string16& overflow_count) const override;
   GURL GetLearnMoreUrl() const override;
@@ -149,7 +150,8 @@ base::string16 SettingsApiBubbleDelegate::GetTitle() const {
 }
 
 base::string16 SettingsApiBubbleDelegate::GetMessageBody(
-    bool anchored_to_browser_action) const {
+    bool anchored_to_browser_action,
+    int extension_count) const {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const Extension* extension =
       registry->GetExtensionById(extension_id_, ExtensionRegistry::ENABLED);
