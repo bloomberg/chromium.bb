@@ -33,12 +33,17 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/delay_network_call.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
 #endif
+
+namespace {
+const char kEphemeralUserDeviceIDPrefix[] = "t_";
+}
 
 ChromeSigninClient::ChromeSigninClient(
     Profile* profile, SigninErrorController* signin_error_controller)
@@ -47,6 +52,33 @@ ChromeSigninClient::ChromeSigninClient(
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+#else
+  // UserManager may not exist in unit_tests.
+  if (!user_manager::UserManager::IsInitialized())
+    return;
+
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (!user)
+    return;
+  auto* user_manager = user_manager::UserManager::Get();
+  const std::string& user_id = user->GetUserID();
+  if (user_manager->GetKnownUserDeviceId(user_id).empty()) {
+    const std::string legacy_device_id =
+        GetPrefs()->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
+    if (!legacy_device_id.empty()) {
+      // Need to move device ID from the old location to the new one, if it has
+      // not been done yet.
+      user_manager->SetKnownUserDeviceId(user_id, legacy_device_id);
+    } else {
+      user_manager->SetKnownUserDeviceId(
+          user_id,
+          GenerateSigninScopedDeviceID(
+              user_manager->IsUserNonCryptohomeDataEphemeral(user_id)));
+    }
+  }
+  GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
+                        std::string());
 #endif
 }
 
@@ -75,6 +107,13 @@ bool ChromeSigninClient::SettingsAllowSigninCookies(
   return cookie_settings &&
          cookie_settings->IsSettingCookieAllowed(gaia_url, gaia_url) &&
          cookie_settings->IsSettingCookieAllowed(google_url, google_url);
+}
+
+// static
+std::string ChromeSigninClient::GenerateSigninScopedDeviceID(
+    bool for_ephemeral) {
+  std::string guid = base::GenerateGUID();
+  return for_ephemeral ? kEphemeralUserDeviceIDPrefix + guid : guid;
 }
 
 PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
@@ -113,16 +152,33 @@ std::string ChromeSigninClient::GetSigninScopedDeviceId() {
     return std::string();
   }
 
+#if !defined(OS_CHROMEOS)
   std::string signin_scoped_device_id =
       GetPrefs()->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
   if (signin_scoped_device_id.empty()) {
     // If device_id doesn't exist then generate new and save in prefs.
-    signin_scoped_device_id = base::GenerateGUID();
+    signin_scoped_device_id = GenerateSigninScopedDeviceID(false);
     DCHECK(!signin_scoped_device_id.empty());
     GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
                           signin_scoped_device_id);
   }
   return signin_scoped_device_id;
+#else
+  // UserManager may not exist in unit_tests.
+  if (!user_manager::UserManager::IsInitialized())
+    return std::string();
+
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (!user)
+    return std::string();
+
+  const std::string signin_scoped_device_id =
+      user_manager::UserManager::Get()->GetKnownUserDeviceId(user->GetUserID());
+  LOG_IF(ERROR, signin_scoped_device_id.empty())
+      << "Device ID is not set for user.";
+  return signin_scoped_device_id;
+#endif
 }
 
 void ChromeSigninClient::OnSignedOut() {

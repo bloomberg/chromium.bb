@@ -25,7 +25,8 @@ UserContext::UserContext(const UserContext& other)
       auth_flow_(other.auth_flow_),
       user_type_(other.user_type_),
       public_session_locale_(other.public_session_locale_),
-      public_session_input_method_(other.public_session_input_method_) {
+      public_session_input_method_(other.public_session_input_method_),
+      device_id_(other.device_id_) {
 }
 
 UserContext::UserContext(const std::string& user_id)

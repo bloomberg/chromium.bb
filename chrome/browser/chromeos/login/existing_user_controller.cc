@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
+#include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -1119,7 +1120,20 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
   continuation.Run();
 }
 
-void ExistingUserController::DoCompleteLogin(const UserContext& user_context) {
+void ExistingUserController::DoCompleteLogin(
+    const UserContext& user_context_wo_device_id) {
+  UserContext user_context = user_context_wo_device_id;
+  std::string device_id =
+      user_manager::UserManager::Get()->GetKnownUserDeviceId(
+          user_context.GetUserID());
+  if (device_id.empty()) {
+    bool is_ephemeral =
+        ChromeUserManager::Get()->AreEphemeralUsersEnabled() &&
+        user_context.GetUserID() != ChromeUserManager::Get()->GetOwnerEmail();
+    device_id = ChromeSigninClient::GenerateSigninScopedDeviceID(is_ephemeral);
+  }
+  user_context.SetDeviceId(device_id);
+
   PerformPreLoginActions(user_context);
 
   if (!time_init_.is_null()) {

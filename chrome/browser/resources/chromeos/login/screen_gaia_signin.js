@@ -33,7 +33,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'onFrameError',
       'updateCancelButtonState',
       'showWhitelistCheckFailedError',
-      'updateDeviceId',
     ],
 
     /**
@@ -153,8 +152,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'backButton', this.onBackButton_.bind(this));
       this.gaiaAuthHost_.addEventListener(
           'showView', this.onShowView_.bind(this));
-      this.gaiaAuthHost_.addEventListener('attemptLogin',
-                                          this.onAttemptLogin_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
@@ -630,16 +627,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host emits 'attemptLogin' event.
-     * @param {Object} Message object with |detail| field keeping email:
-     * like {detail: 'user@gmail.com'} .
-     * @private
-     */
-    onAttemptLogin_: function(e) {
-      chrome.send('attemptLogin', [e.detail]);
-    },
-
-    /**
      * Invoked when the user has successfully authenticated via SAML, the
      * principals API was not used and the auth host needs the user to confirm
      * the scraped password.
@@ -747,8 +734,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             credentials.email,
             credentials.password,
             credentials.authCode,
-            credentials.usingSAML,
-            credentials.deviceId
+            credentials.usingSAML
           ]);
         }
       } else {
@@ -953,18 +939,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (!show)
         Oobe.showSigninUI();
-    },
-
-    /**
-     * Inform Gaia of new deviceId.
-     * @param {data} Object like {'deviceId': 'test-device-id'}
-     */
-    updateDeviceId: function(data) {
-      if (!this.isNewGaiaFlow)
-        return;
-
-      if (data && data.deviceId)
-        this.gaiaAuthHost_.updateDeviceId(data.deviceId);
-    },
+    }
   };
 });

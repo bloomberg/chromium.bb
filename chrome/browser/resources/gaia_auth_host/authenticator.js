@@ -29,8 +29,6 @@ cr.define('cr.login', function() {
   var OAUTH_CODE_COOKIE = 'oauth_code';
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
-  var X_DEVICE_ID_HEADER = 'X-Device-ID';
-  var EPHEMERAL_DEVICE_ID_PREFIX = 't_';
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -85,8 +83,6 @@ cr.define('cr.login', function() {
     'enterpriseDomain',    // Domain in which hosting device is (or should be)
                            // enrolled.
     'emailDomain',         // Value used to prefill domain for email.
-    'deviceId',            // User device ID (sync Id).
-    'sessionIsEphemeral',  // User session would be ephemeral.
     'clientVersion',       // Version of the Chrome build.
     'platformVersion',     // Version of the OS build.
     'releaseChannel',      // Installation channel.
@@ -119,9 +115,6 @@ cr.define('cr.login', function() {
     this.reloadUrl_ = null;
     this.trusted_ = true;
     this.oauth_code_ = null;
-    this.deviceId_ = null;
-    this.sessionIsEphemeral_ = null;
-    this.onBeforeSetHeadersSet_ = false;
 
     this.useEafe_ = false;
     this.clientId_ = null;
@@ -216,14 +209,6 @@ cr.define('cr.login', function() {
       this.webview_.contextMenus.onShow.addListener(function(e) {
         e.preventDefault();
       });
-      if (!this.onBeforeSetHeadersSet_) {
-        this.onBeforeSetHeadersSet_ = true;
-        var filterPrefix = this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
-        this.webview_.request.onBeforeSendHeaders.addListener(
-            this.onBeforeSendHeaders_.bind(this),
-            {urls: [filterPrefix + '?*', filterPrefix + '/*']},
-            ['requestHeaders', 'blocking']);
-      }
     }
 
     this.webview_.src = this.reloadUrl_;
@@ -261,8 +246,6 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'release_channel', data.releaseChannel);
       if (data.endpointGen)
         url = appendParam(url, 'endpoint_gen', data.endpointGen);
-      this.deviceId_ = data.deviceId;
-      this.sessionIsEphemeral_ = data.sessionIsEphemeral;
     } else {
       url = appendParam(url, 'continue', this.continueUrl_);
       url = appendParam(url, 'service', data.service || SERVICE_ID);
@@ -394,36 +377,6 @@ cr.define('cr.login', function() {
         }
       }
     }
-  };
-
-  /**
-   * Handler for webView.request.onBeforeSendHeaders .
-   * @return {!Object} Modified request headers.
-   * @private
-   */
-  Authenticator.prototype.onBeforeSendHeaders_ = function(details) {
-    // deviceId_ is empty when we do not need to send it. For example,
-    // in case of device enrollment.
-    if (this.isNewGaiaFlowChromeOS && this.deviceId_) {
-      var headers = details.requestHeaders;
-      var found = false;
-      var deviceId = this.getGAIADeviceId_();
-
-      for (var i = 0, l = headers.length; i < l; ++i) {
-        if (headers[i].name == X_DEVICE_ID_HEADER) {
-          headers[i].value = deviceId;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        details.requestHeaders.push(
-            {name: X_DEVICE_ID_HEADER, value: deviceId});
-      }
-    }
-    return {
-      requestHeaders: details.requestHeaders
-    };
   };
 
   /**
@@ -582,8 +535,7 @@ cr.define('cr.login', function() {
                             chooseWhatToSync: this.chooseWhatToSync_,
                             skipForNow: this.skipForNow_,
                             sessionIndex: this.sessionIndex_ || '',
-                            trusted: this.trusted_,
-                            deviceId: this.deviceId_ || ''
+                            trusted: this.trusted_
                           }
                         }));
     this.clearCredentials_();
@@ -647,7 +599,6 @@ cr.define('cr.login', function() {
     if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
       var msg = {
         'method': 'handshake',
-        'deviceId': this.getGAIADeviceId_(),
       };
 
       this.webview_.contentWindow.postMessage(msg, currentUrl);
@@ -713,37 +664,6 @@ cr.define('cr.login', function() {
     // TODO(dzhioev): remove the message. http://crbug.com/469522
     var webviewWindow = this.webview_.contentWindow;
     return !!webviewWindow && webviewWindow === e.source;
-  };
-
-  /**
-   * Format deviceId for GAIA .
-   * @return {string} deviceId.
-   * @private
-   */
-  Authenticator.prototype.getGAIADeviceId_ = function() {
-    // deviceId_ is empty when we do not need to send it. For example,
-    // in case of device enrollment.
-    if (!(this.isNewGaiaFlowChromeOS && this.deviceId_))
-      return;
-
-    if (this.sessionIsEphemeral_)
-      return EPHEMERAL_DEVICE_ID_PREFIX + this.deviceId_;
-    else
-      return this.deviceId_;
-  };
-
-  /**
-   * Informs Gaia of new deviceId to be used.
-   */
-  Authenticator.prototype.updateDeviceId = function(deviceId) {
-    this.deviceId_ = deviceId;
-    var msg = {
-      'method': 'updateDeviceId',
-      'deviceId': this.getGAIADeviceId_(),
-    };
-
-    var currentUrl = this.webview_.src;
-    this.webview_.contentWindow.postMessage(msg, currentUrl);
   };
 
   /**

@@ -53,14 +53,8 @@ struct GaiaContext {
   // GAIA ID of the current user.
   std::string gaia_id;
 
-  // Device Id of the current user.
-  std::string device_id;
-
   // Whether consumer management enrollment is in progress.
   bool is_enrolling_consumer_management;
-
-  // If user session would be ephemeral.
-  bool session_is_ephemeral;
 };
 
 // A class that handles WebUI hooks in Gaia screen.
@@ -121,8 +115,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
                                     const std::string& email,
                                     const std::string& password,
                                     const std::string& auth_code,
-                                    bool using_saml,
-                                    const std::string& device_id);
+                                    bool using_saml);
   void HandleCompleteAuthenticationAuthCodeOnly(const std::string& auth_code);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
@@ -136,8 +129,6 @@ class GaiaScreenHandler : public BaseScreenHandler {
   void HandleGaiaUIReady();
 
   void HandleToggleEasyBootstrap();
-
-  void HandleAttemptLogin(const std::string& email);
 
   void HandleToggleWebviewSignin();
 
@@ -276,10 +267,6 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // GAIA extension loader.
   scoped_ptr<ScopedGaiaAuthExtension> auth_extension_;
-
-  // Temporary DeviceId to be used for new users.
-  // If it's empty, new deviceId should be generated.
-  std::string temporary_device_id_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

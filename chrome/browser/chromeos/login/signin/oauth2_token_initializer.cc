@@ -21,7 +21,10 @@ void OAuth2TokenInitializer::Start(const UserContext& user_context,
   user_context_ = user_context;
   oauth2_token_fetcher_.reset(new OAuth2TokenFetcher(
       this, g_browser_process->system_request_context()));
-  oauth2_token_fetcher_->StartExchangeFromAuthCode(user_context.GetAuthCode());
+  if (user_context.GetDeviceId().empty())
+    NOTREACHED() << "Device ID is not set";
+  oauth2_token_fetcher_->StartExchangeFromAuthCode(user_context.GetAuthCode(),
+                                                   user_context.GetDeviceId());
 }
 
 void OAuth2TokenInitializer::OnOAuth2TokensAvailable(

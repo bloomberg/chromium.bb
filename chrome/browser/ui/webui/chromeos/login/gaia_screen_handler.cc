@@ -153,8 +153,7 @@ GaiaContext::GaiaContext()
       password_changed(false),
       show_users(false),
       use_offline(false),
-      has_users(false),
-      session_is_ephemeral(false) {
+      has_users(false) {
 }
 
 GaiaScreenHandler::GaiaScreenHandler(
@@ -218,10 +217,6 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
   params.SetString("email", context.email);
   params.SetBoolean("isEnrollingConsumerManagement",
                     is_enrolling_consumer_management);
-  if (StartupUtils::IsWebviewSigninEnabled()) {
-    params.SetString("deviceId", context.device_id);
-    params.SetBoolean("sessionIsEphemeral", context.session_is_ephemeral);
-  }
 
   UpdateAuthParams(&params,
                    context.has_users,
@@ -338,9 +333,6 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
 
 void GaiaScreenHandler::UpdateGaia(const GaiaContext& context) {
   base::DictionaryValue params;
-  if (StartupUtils::IsWebviewSigninEnabled()) {
-    params.SetString("deviceId", context.device_id);
-  }
   UpdateAuthParams(&params, context.has_users,
                    context.is_enrolling_consumer_management);
   CallJS("updateAuthExtension", params);
@@ -438,7 +430,6 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleToggleWebviewSignin);
   AddCallback("toggleEasyBootstrap",
               &GaiaScreenHandler::HandleToggleEasyBootstrap);
-  AddCallback("attemptLogin", &GaiaScreenHandler::HandleAttemptLogin);
 }
 
 void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
@@ -503,8 +494,7 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& email,
     const std::string& password,
     const std::string& auth_code,
-    bool using_saml,
-    const std::string& device_id) {
+    bool using_saml) {
   if (!Delegate())
     return;
 
@@ -521,7 +511,6 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
-  user_context.SetDeviceId(device_id);
   Delegate()->CompleteLogin(user_context);
 }
 
@@ -599,21 +588,6 @@ void GaiaScreenHandler::HandleToggleEasyBootstrap() {
   const bool kSilentLoad = true;
   const bool kNoOfflineUI = false;
   LoadAuthExtension(kForceReload, kSilentLoad, kNoOfflineUI);
-}
-
-void GaiaScreenHandler::HandleAttemptLogin(const std::string& email) {
-  std::string device_id =
-      user_manager::UserManager::Get()->GetKnownUserDeviceId(
-          gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)));
-
-  if (!device_id.empty() && StartupUtils::IsWebviewSigninEnabled()) {
-    base::DictionaryValue params;
-    params.SetString("deviceId", device_id);
-    CallJS("updateDeviceId", params);
-  } else {
-    // Mark current temporary device Id as used.
-    temporary_device_id_ = std::string();
-  }
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {
@@ -958,17 +932,6 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
     context.has_users = !Delegate()->GetUsers().empty();
   }
 
-  if (!context.email.empty()) {
-    context.device_id = user_manager::UserManager::Get()->GetKnownUserDeviceId(
-        gaia::CanonicalizeEmail(context.email));
-  }
-
-  if (context.device_id.empty())
-    context.device_id = GetTemporaryDeviceId();
-
-  context.session_is_ephemeral =
-      ChromeUserManager::Get()->AreEphemeralUsersEnabled();
-
   populated_email_.clear();
 
   LoadGaia(context);
@@ -986,14 +949,6 @@ SigninScreenHandlerDelegate* GaiaScreenHandler::Delegate() {
 
 void GaiaScreenHandler::SetSigninScreenHandler(SigninScreenHandler* handler) {
   signin_screen_handler_ = handler;
-}
-
-std::string GaiaScreenHandler::GetTemporaryDeviceId() {
-  if (temporary_device_id_.empty())
-    temporary_device_id_ = base::GenerateGUID();
-
-  DCHECK(!temporary_device_id_.empty());
-  return temporary_device_id_;
 }
 
 }  // namespace chromeos

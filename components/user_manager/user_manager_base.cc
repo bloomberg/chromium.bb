@@ -1148,6 +1148,10 @@ bool UserManagerBase::FindGaiaID(const UserID& user_id,
 
 void UserManagerBase::SetKnownUserDeviceId(const UserID& user_id,
                                            const std::string& device_id) {
+  const std::string known_device_id = GetKnownUserDeviceId(user_id);
+  if (!known_device_id.empty() && device_id != known_device_id) {
+    NOTREACHED() << "Trying to change device ID for known user.";
+  }
   SetKnownUserStringPref(user_id, kDeviceId, device_id);
 }
 

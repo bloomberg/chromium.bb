@@ -139,6 +139,17 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // called on the consumer on the original thread.
   void StartAuthCodeForOAuth2TokenExchange(const std::string& auth_code);
 
+  // Start a request to exchange the authorization code for an OAuthLogin-scoped
+  // oauth2 token.
+  // Resulting refresh token is annotated on the server with |device_id|. Format
+  // of device_id on the server is at most 64 unicode characters.
+  //
+  // Either OnClientOAuthSuccess or OnClientOAuthFailure will be
+  // called on the consumer on the original thread.
+  void StartAuthCodeForOAuth2TokenExchangeWithDeviceId(
+      const std::string& auth_code,
+      const std::string& device_id);
+
   // Start a request to get user info for the account identified by |lsid|.
   //
   // Either OnGetUserInfoSuccess or OnGetUserInfoFailure will be
@@ -238,6 +249,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static const char kClientLoginToOAuth2WithDeviceTypeBodyFormat[];
   // The format of the POST body to get OAuth2 token pair from auth code.
   static const char kOAuth2CodeToTokenPairBodyFormat[];
+  // Additional param for the POST body to get OAuth2 token pair from auth code.
+  static const char kOAuth2CodeToTokenPairDeviceIdParam[];
   // The format of the POST body to revoke an OAuth2 token.
   static const char kOAuth2RevokeTokenBodyFormat[];
   // The format of the POST body for GetUserInfo.
@@ -379,8 +392,10 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                                             const char* const service);
   // Create body to get OAuth2 auth code.
   static std::string MakeGetAuthCodeBody(bool include_device_type);
-  // Given auth code, create body to get OAuth2 token pair.
-  static std::string MakeGetTokenPairBody(const std::string& auth_code);
+  // Given auth code and device ID (optional), create body to get OAuth2 token
+  // pair.
+  static std::string MakeGetTokenPairBody(const std::string& auth_code,
+                                          const std::string& device_id);
   // Given an OAuth2 token, create body to revoke the token.
   std::string MakeRevokeTokenBody(const std::string& auth_token);
   // Supply the lsid returned from ClientLogin in order to fetch
