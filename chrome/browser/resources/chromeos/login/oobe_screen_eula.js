@@ -96,6 +96,7 @@ login.createScreen('EulaScreen', 'eula', function() {
       acceptButton.textContent = loadTimeData.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
         $('eula').classList.add('loading');  // Mark EULA screen busy.
+        Oobe.clearErrors();
         e.stopPropagation();
       });
       buttons.push(acceptButton);
