@@ -610,7 +610,8 @@ message DeviceHeartbeatSettingsProto {
 }
 
 message ExtensionCacheSizeProto {
-  // Specifies the maximum extension cache size, in bytes.
+  // Specifies the maximum extension cache size, in bytes. The default is 256
+  // MiB. The minimum allowed value is 1 MiB, smaller values will get ignored.
   optional int64 extension_cache_size = 1;
 }
 
