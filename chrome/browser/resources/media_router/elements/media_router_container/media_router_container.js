@@ -155,57 +155,73 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Filter that returns 'hide' if |value|.castModeHidden is true.
+   * Filter that returns whether or not the cast modes should be hidden.
    *
    * @param {{castModeHidden: boolean}} value The parameters passed into this
-   *   filter.
+   *     filter.
    * Parameters in |value|:
-   *   castModeHidden - Whether or not the cast mode is currently hidden.
+   *   castModeHidden - Whether or not the cast modes are currently hidden.
    */
   isCastModeHidden: function(value) {
-    return value['castModeHidden'] ? 'hide' : '';
+    return value['castModeHidden'];
   },
 
   /**
-   * Filter that returns 'hide' if |issue| is null and |value|.state is not
-   * MediaRouterContainerView.BLOCKING_ISSUE.
+   * Filter that returns whether or not the header should be hidden.
    *
-   * @param {{state: !MediaRouterContainerView}} value The parameters passed
-   *   into this filter.
+   * @param {{state: !MediaRouterContainerView, castModeHidden: boolean}} value
+   *     The parameters passed into this filter.
+   * Parameters in |value|:
+   *   state - The current state of media-router-container.
+   *   castModeHidden - Whether or not the cast modes are currently hidden.
+   */
+  isHeaderHidden: function(value) {
+    return value['state'] != MediaRouterContainerView.SINK_PICKER &&
+        value['castModeHidden'];
+  },
+
+  /**
+   * Filter that returns whether or not the issue banner should be hidden.
+   *
+   * @param {{state: !MediaRouterContainerView,
+   *          issue: !media_router.Issue,
+   *          castModeHidden: boolean}}
+   *     value The parameters passed into this filter.
    * Parameters in |value|:
    *   state - The current state of media-router-container.
    *   issue - The current value of |issue|.
+   *   castModeHidden - Whether or not the cast modes are currently hidden.
    */
   isIssueBannerHidden: function(value) {
-    return value['issue'] ||
-        value['state'] == MediaRouterContainerView.BLOCKING_ISSUE ? '' : 'hide';
+    return (!value['issue'] &&
+        value['state'] != MediaRouterContainerView.BLOCKING_ISSUE) ||
+        !value['castModeHidden'];
   },
 
   /**
-   * Filter that returns 'hide' if |value|.state is not
-   * MediaRouterContainerView.ROUTE_DETAILS.
+   * Filter that returns whether or not the route details should be hidden.
    *
    * @param {{state: !MediaRouterContainerView}} value The parameters passed
-   *   into this filter.
+   *     into this filter.
    * Parameters in |value|:
    *   state - The current state of media-router-container.
    */
   isRouteDetailsHidden: function(value) {
-    return value['state'] ==
-      MediaRouterContainerView.ROUTE_DETAILS ? '' : 'hide';
+    return value['state'] != MediaRouterContainerView.ROUTE_DETAILS;
   },
 
   /**
-   * Filter that returns 'hide' if |value|.state is not
-   * MediaRouterContainerView.SINK_PICKER.
+   * Filter that returns whether or not the sink picker should be hidden.
    *
-   * @param {{state: !MediaRouterContainerView}} value The parameters passed
-   *   into this filter.
+   * @param {{state: !MediaRouterContainerView, castModeHidden: boolean}} value
+   *     The parameters passed into this filter.
    * Parameters in |value|:
    *   state - The current state of media-router-container.
+   *   castModeHidden - Whether or not the cast modes are currently hidden.
    */
   isSinkPickerHidden: function(value) {
-    return value['state'] == MediaRouterContainerView.SINK_PICKER ? '' : 'hide';
+    return value['state'] != MediaRouterContainerView.SINK_PICKER ||
+        !value['castModeHidden'];
   },
 
   /**
@@ -270,6 +286,20 @@ Polymer('media-router-container', {
    */
   closeButtonClicked: function() {
     this.fire('close-button-click');
+  },
+
+  /**
+   * Updates |headerText| and |selectedCastModeValue_|. This is called when one
+   * of the cast modes has been selected.
+   *
+   * @param {!Event} event The event object.
+   * @param {!Object} detail The details of the event.
+   * @param {!Element} sender Reference to clicked node.
+   */
+  onCastModeSelected: function(event, detail, sender) {
+    var clickedMode = event.target.templateInstance.model.mode;
+    this.headerText = clickedMode.title;
+    this.selectedCastModeValue_ = clickedMode.type;
   },
 
   /**

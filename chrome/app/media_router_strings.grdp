@@ -32,6 +32,11 @@
     Cast this tab to...
   </message>
 
+  <!-- Cast Mode Picker -->
+  <message name="IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER" desc="Header for select cast mode view.">
+   Select cast mode
+  </message>
+
   <!-- Route Details -->
   <message name="IDS_MEDIA_ROUTER_BACK_TO_SINK_PICKER" desc="Label of back to sink picker button.">
     Back to device list

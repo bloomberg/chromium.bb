@@ -30,15 +30,6 @@ void AddMainWebResources(content::WebUIDataSource* html_source) {
 
 void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
-      "elements/cast_mode_picker/cast_mode_picker.css",
-      IDR_CAST_MODE_PICKER_CSS);
-  html_source->AddResourcePath(
-      "elements/cast_mode_picker/cast_mode_picker.html",
-      IDR_CAST_MODE_PICKER_HTML);
-  html_source->AddResourcePath(
-      "elements/cast_mode_picker/cast_mode_picker.js",
-      IDR_CAST_MODE_PICKER_JS);
-  html_source->AddResourcePath(
       "elements/issue_banner/issue_banner.css",
       IDR_ISSUE_BANNER_CSS);
   html_source->AddResourcePath(

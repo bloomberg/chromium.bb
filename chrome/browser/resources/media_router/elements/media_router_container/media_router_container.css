@@ -2,33 +2,32 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#cast-modes {
-  margin: 40px 2px;
-  position: absolute;
-  z-index: 1;
+.cast-mode {
+  -webkit-padding-start: 5px;
+  cursor: pointer;
+  font-size: 1.0em;
 }
 
-:host-context(html[dir='ltr']) #cast-modes {
-  right: 72px;
+.cast-mode:hover {
+  background-color: rgb(187, 206, 236);
+  border: 0;
 }
 
-:host-context(html[dir='rtl']) #cast-modes {
-  left: 72px;
+#cast-mode-list {
+  -webkit-user-select: none;
+  color: rgb(44, 44, 44);
+  margin: 0;
 }
 
 #container-header {
   background-color: rgb(214, 214, 214);
 }
 
-.hide {
-  display: none;
-}
-
 .route {
   color: rgb(119, 119, 119);
 }
 
-#router-header-text {
+#header-text {
   -webkit-padding-start: 20px;
   flex-grow: 1;
   font-size: 1.25em;
@@ -54,12 +53,4 @@
   margin: 0;
   max-height: 275px;
   overflow-y: scroll;
-}
-
-#transparent-overlay {
-  background-color: rgba(255, 255, 255, 0.5);
-  height: 100%;
-  position: absolute;
-  width: 100%;
-  z-index: 1;
 }

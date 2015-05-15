@@ -23,25 +23,10 @@ cr.define('media_router', function() {
     container = $('media-router-container');
     media_router.ui.setContainer(container);
 
-    container.addEventListener('cast-mode-click', onCastModeClick);
     container.addEventListener('close-button-click', onCloseDialogClick);
     container.addEventListener('close-route-click', onCloseRouteClick);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
-  }
-
-  /**
-   * Changes the UI, such as the the header text, in response to a cast mode
-   * change.
-   * Called when the user selects a cast mode.
-   *
-   * @param {{detail: {headerText: string}}} data
-   * Parameters in |data|.detail:
-   *   headerText - the new header text corresponding to the selected
-   *                cast mode.
-   */
-  function onCastModeClick(data) {
-    container.headerText = data.detail.headerText;
   }
 
   /**

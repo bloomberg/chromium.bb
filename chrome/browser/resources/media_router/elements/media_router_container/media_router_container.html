@@ -5,44 +5,49 @@
 <link rel="import" href="chrome://resources/polymer/core-toolbar/core-toolbar.html">
 <link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
-<link rel="import" href="../cast_mode_picker/cast_mode_picker.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
 <link rel="import" href="../route_details/route_details.html">
 <polymer-element name="media-router-container">
 <template>
   <link rel="stylesheet" href="media_router_container.css">
-  <div id="transparent-overlay"
-      class="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}"
-      on-click="{{hideCastMode}}">
-  </div>
   <core-toolbar id="container-header"
-      class="{{ {state: currentView_} | isSinkPickerHidden}}">
-    <div id="router-header-text">{{headerText}}</div>
+      hidden?="{{ {state: currentView_, castModeHidden: castModeHidden_} | isHeaderHidden}}">
+    <div id="header-text">
+      <span hidden?="{{ {state: currentView_, castModeHidden: castModeHidden_} | isSinkPickerHidden}}">
+        {{headerText}}
+      </span>
+      <span i18n-content="selectCastModeHeader"
+          hidden?="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}">
+      </span>
+    </div>
     <paper-icon-button on-click="{{toggleCastMode}}"
         icon="{{ {castModeHidden: castModeHidden_} | getDropDownIcon}}">
     </paper-icon-button>
-    <cast-mode-picker id="cast-modes"
-        class="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}"
-        castModeList="{{castModeList}}"
-        selectedCastModeValue="{{selectedCastModeValue_}}">
-    </cast-mode-picker>
     <paper-icon-button icon="close" on-click="{{closeButtonClicked}}">
     </paper-icon-button>
   </core-toolbar>
   <issue-banner id="issue-banner" issue="{{issue}}"
-      class="{{ {state: currentView_, issue: issue} | isIssueBannerHidden}}">
+      hidden?="{{ {state: currentView_, issue: issue, castModeHidden: castModeHidden_ } | isIssueBannerHidden}}">
   </issue-banner>
+  <!-- TODO(apacible): selectedAttribute here is a workaround for
+  https://github.com/Polymer/polymer/issues/946. Remove here and elsewhere when
+  core-menu is updated. -->
+  <core-menu id="cast-mode-list" selectedAttribute=""
+      hidden?="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}">
+    <template repeat="{{mode in castModeList}}">
+      <paper-item class="cast-mode" on-click="{{onCastModeSelected}}">
+        {{mode.description}}
+      </paper-item>
+    </template>
+  </core-menu>
   <route-details id="route-details"
-      class="{{ {state: currentView_} | isRouteDetailsHidden}}"
+      hidden?="{{ {state: currentView_} | isRouteDetailsHidden}}"
       route="{{currentRoute_}}" sink="{{sinkMap_[[currentRoute_.sinkId]]}}"
       on-back-click="{{showSinkPickerView}}"
       on-close-route-click="{{showSinkPickerView}}">
   </route-details>
-  <!-- TODO(apacible): selectedAttribute here is a workaround for
-     https://github.com/Polymer/polymer/issues/946. Remove when core-menu
-     is updated. -->
   <core-menu id="sink-list" selectedAttribute=""
-      class="{{ {state: currentView_} | isSinkPickerHidden}}">
+      hidden?="{{ {state: currentView_, castModeHidden: castModeHidden_} | isSinkPickerHidden}}">
     <template repeat="{{sink in sinkList}}">
       <paper-item class="sink" on-click="{{onSinkClick}}">
         <!-- TODO(apacible): Show device icon based on device type. -->
