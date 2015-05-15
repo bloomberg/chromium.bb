@@ -176,7 +176,7 @@ content::RenderFrame* ScriptContext::GetRenderFrame() const {
 }
 
 v8::Local<v8::Value> ScriptContext::CallFunction(
-    v8::Local<v8::Function> function,
+    const v8::Local<v8::Function>& function,
     int argc,
     v8::Local<v8::Value> argv[]) const {
   v8::EscapableHandleScope handle_scope(isolate());
@@ -194,6 +194,11 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
   return handle_scope.Escape(
       v8::Local<v8::Value>(web_frame_->callFunctionEvenIfScriptDisabled(
           function, global, argc, argv)));
+}
+
+v8::Local<v8::Value> ScriptContext::CallFunction(
+    const v8::Local<v8::Function>& function) const {
+  return CallFunction(function, 0, nullptr);
 }
 
 Feature::Availability ScriptContext::GetAvailability(

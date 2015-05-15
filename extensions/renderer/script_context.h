@@ -108,9 +108,11 @@ class ScriptContext : public RequestSender::Source {
   // must do that if they want.
   //
   // USE THIS METHOD RATHER THAN v8::Function::Call WHEREVER POSSIBLE.
-  v8::Local<v8::Value> CallFunction(v8::Local<v8::Function> function,
+  v8::Local<v8::Value> CallFunction(const v8::Local<v8::Function>& function,
                                     int argc,
                                     v8::Local<v8::Value> argv[]) const;
+  v8::Local<v8::Value> CallFunction(
+      const v8::Local<v8::Function>& function) const;
 
   void DispatchEvent(const char* event_name, v8::Local<v8::Array> args) const;
 

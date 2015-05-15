@@ -179,12 +179,18 @@
       // doesn't keep a reference to it, we need to clean up the port. Do
       // so by attaching to the garbage collection of the responseCallback
       // using some native hackery.
+      //
+      // If the context is destroyed before this has a chance to execute,
+      // BindToGC knows to release |portId| (important for updating C++ state
+      // both in this renderer and on the other end). We don't need to clear
+      // any JavaScript state, as calling destroy_() would usually do - but
+      // the context has been destroyed, so there isn't any JS state to clear.
       messagingNatives.BindToGC(responseCallback, function() {
         if (port) {
           privates(port).impl.destroy_();
           port = null;
         }
-      });
+      }, portId);
       var rv = requestEvent.dispatch(request, sender, responseCallback);
       if (isSendMessage) {
         responseCallbackPreserved =

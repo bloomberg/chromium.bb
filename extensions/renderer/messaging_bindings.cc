@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "components/guest_view/common/guest_view_constants.h"
@@ -51,6 +53,72 @@ namespace extensions {
 
 namespace {
 
+// Binds |callback| to run when |object| is garbage collected. So as to not
+// re-entrantly call into v8, we execute this function asynchronously, at
+// which point |context| may have been invalidated. If so, |callback| is not
+// run, and |fallback| will be called instead.
+//
+// Deletes itself when the object args[0] is garbage collected or when the
+// context is invalidated.
+class GCCallback : public base::SupportsWeakPtr<GCCallback> {
+ public:
+  GCCallback(ScriptContext* context,
+             const v8::Local<v8::Object>& object,
+             const v8::Local<v8::Function>& callback,
+             const base::Closure& fallback)
+      : context_(context),
+        object_(context->isolate(), object),
+        callback_(context->isolate(), callback),
+        fallback_(fallback) {
+    object_.SetWeak(this, FirstWeakCallback, v8::WeakCallbackType::kParameter);
+    context->AddInvalidationObserver(
+        base::Bind(&GCCallback::OnContextInvalidated, AsWeakPtr()));
+  }
+
+ private:
+  static void FirstWeakCallback(const v8::WeakCallbackInfo<GCCallback>& data) {
+    // v8 says we need to explicitly reset weak handles from their callbacks.
+    // It's not implicit as one might expect.
+    data.GetParameter()->object_.Reset();
+    data.SetSecondPassCallback(SecondWeakCallback);
+  }
+
+  static void SecondWeakCallback(const v8::WeakCallbackInfo<GCCallback>& data) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&GCCallback::RunCallback, data.GetParameter()->AsWeakPtr()));
+  }
+
+  void RunCallback() {
+    CHECK(context_);
+    v8::Isolate* isolate = context_->isolate();
+    v8::HandleScope handle_scope(isolate);
+    context_->CallFunction(v8::Local<v8::Function>::New(isolate, callback_));
+    delete this;
+  }
+
+  void OnContextInvalidated() {
+    fallback_.Run();
+    context_ = NULL;
+    delete this;
+  }
+
+  // ScriptContext which owns this GCCallback.
+  ScriptContext* context_;
+
+  // Holds a global handle to the object this GCCallback is bound to.
+  v8::Global<v8::Object> object_;
+
+  // Function to run when |object_| bound to this GCCallback is GC'd.
+  v8::Global<v8::Function> callback_;
+
+  // Function to run if context is invalidated before we have a chance
+  // to execute |callback_|.
+  base::Closure fallback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GCCallback);
+};
+
 struct ExtensionData {
   struct PortData {
     int ref_count;  // how many contexts have a handle to this port
@@ -81,7 +149,9 @@ const char kReceivingEndDoesntExistError[] =
 class ExtensionImpl : public ObjectBackedNativeHandler {
  public:
   ExtensionImpl(Dispatcher* dispatcher, ScriptContext* context)
-      : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
+      : ObjectBackedNativeHandler(context),
+        dispatcher_(dispatcher),
+        weak_ptr_factory_(this) {
     RouteFunction(
         "CloseChannel",
         base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
@@ -166,10 +236,13 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   // the other end of the channel.
   void PortRelease(const v8::FunctionCallbackInfo<v8::Value>& args) {
     // Arguments are (int32 port_id).
-    CHECK_EQ(1, args.Length());
-    CHECK(args[0]->IsInt32());
+    CHECK(args.Length() == 1 && args[0]->IsInt32());
+    ReleasePort(args[0]->Int32Value());
+  }
 
-    int port_id = args[0]->Int32Value();
+  // Implementation of both the PortRelease native handler call, and callback
+  // when contexts are invalidated to release their ports.
+  void ReleasePort(int port_id) {
     if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
       // Send via the RenderThread because the RenderFrame might be closing.
       content::RenderThread::Get()->Send(
@@ -178,75 +251,33 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     }
   }
 
-  // Holds a |callback| to run sometime after |object| is GC'ed. |callback| will
-  // not be executed re-entrantly to avoid running JS in an unexpected state.
-  class GCCallback {
-   public:
-    static void Bind(v8::Local<v8::Object> object,
-                     v8::Local<v8::Function> callback,
-                     v8::Isolate* isolate) {
-      GCCallback* cb = new GCCallback(object, callback, isolate);
-      cb->object_.SetWeak(cb, FirstWeakCallback,
-                          v8::WeakCallbackType::kParameter);
-    }
-
-   private:
-    static void FirstWeakCallback(
-        const v8::WeakCallbackInfo<GCCallback>& data) {
-      // v8 says we need to explicitly reset weak handles from their callbacks.
-      // It's not implicit as one might expect.
-      data.GetParameter()->object_.Reset();
-      data.SetSecondPassCallback(SecondWeakCallback);
-    }
-
-    static void SecondWeakCallback(
-        const v8::WeakCallbackInfo<GCCallback>& data) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&GCCallback::RunCallback,
-                     base::Owned(data.GetParameter())));
-    }
-
-    GCCallback(v8::Local<v8::Object> object,
-               v8::Local<v8::Function> callback,
-               v8::Isolate* isolate)
-        : object_(isolate, object),
-          callback_(isolate, callback),
-          isolate_(isolate) {}
-
-    void RunCallback() {
-      v8::HandleScope handle_scope(isolate_);
-      v8::Local<v8::Function> callback =
-          v8::Local<v8::Function>::New(isolate_, callback_);
-      v8::Local<v8::Context> context = callback->CreationContext();
-      if (context.IsEmpty())
-        return;
-      v8::Context::Scope context_scope(context);
-      blink::WebScopedMicrotaskSuppression suppression;
-      callback->Call(context->Global(), 0, NULL);
-    }
-
-    v8::Global<v8::Object> object_;
-    v8::Global<v8::Function> callback_;
-    v8::Isolate* isolate_;
-
-    DISALLOW_COPY_AND_ASSIGN(GCCallback);
-  };
-
-  // void BindToGC(object, callback)
+  // void BindToGC(object, callback, port_id)
   //
   // Binds |callback| to be invoked *sometime after* |object| is garbage
   // collected. We don't call the method re-entrantly so as to avoid executing
-  // JS in some bizarro undefined mid-GC state.
+  // JS in some bizarro undefined mid-GC state, nor do we then call into the
+  // script context if it's been invalidated.
+  //
+  // If the script context *is* invalidated in the meantime, as a slight hack,
+  // release the port with ID |port_id| if it's >= 0.
   void BindToGC(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    CHECK(args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction());
-    GCCallback::Bind(args[0].As<v8::Object>(),
-                     args[1].As<v8::Function>(),
-                     args.GetIsolate());
+    CHECK(args.Length() == 3 && args[0]->IsObject() && args[1]->IsFunction() &&
+          args[2]->IsInt32());
+    int port_id = args[2]->Int32Value();
+    base::Closure fallback = base::Bind(&base::DoNothing);
+    if (port_id >= 0) {
+      fallback = base::Bind(&ExtensionImpl::ReleasePort,
+                            weak_ptr_factory_.GetWeakPtr(), port_id);
+    }
+    // Destroys itself when the object is GC'd or context is invalidated.
+    new GCCallback(context(), args[0].As<v8::Object>(),
+                   args[1].As<v8::Function>(), fallback);
   }
 
   // Dispatcher handle. Not owned.
   Dispatcher* dispatcher_;
+
+  base::WeakPtrFactory<ExtensionImpl> weak_ptr_factory_;
 };
 
 void DispatchOnConnectToScriptContext(
