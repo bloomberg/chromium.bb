@@ -34,7 +34,7 @@ android_java_prebuilt("android_support_v13_java") {
 }
 
 android_resources("android_support_v7_appcompat_resources") {
-  v14_verify_only = true
+  v14_skip = true
   resource_dirs =
       [ "$android_sdk_root/extras/android/support/v7/appcompat/res" ]
   custom_package = "android.support.v7.appcompat"
@@ -48,7 +48,7 @@ android_java_prebuilt("android_support_v7_appcompat_java") {
 }
 
 android_resources("android_support_v7_mediarouter_resources") {
-  v14_verify_only = true
+  v14_skip = true
   resource_dirs =
       [ "$android_sdk_root/extras/android/support/v7/mediarouter/res" ]
   deps = [
@@ -73,7 +73,7 @@ android_java_prebuilt("android_support_v7_recyclerview_java") {
 }
 
 android_resources("google_play_services_default_resources") {
-  v14_verify_only = true
+  v14_skip = true
   resource_dirs = [ "$android_sdk_root/extras/google/google_play_services/libproject/google-play-services_lib/res" ]
   custom_package = "com.google.android.gms"
 }

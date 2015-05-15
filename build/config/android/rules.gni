@@ -583,6 +583,10 @@ template("android_resources") {
       v14_verify_only = invoker.v14_verify_only
     }
 
+    if (defined(invoker.v14_skip)) {
+      v14_skip = invoker.v14_skip
+    }
+
     if (defined(invoker.shared_resources)) {
       shared_resources = invoker.shared_resources
     }

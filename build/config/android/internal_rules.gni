@@ -1104,6 +1104,10 @@ template("process_resources") {
       args += [ "--v14-verify-only" ]
     }
 
+    if (defined(invoker.v14_skip) && invoker.v14_skip) {
+      args += [ "--v14-skip" ]
+    }
+
     if (defined(invoker.shared_resources) && invoker.shared_resources) {
       args += [ "--shared-resources" ]
     }
