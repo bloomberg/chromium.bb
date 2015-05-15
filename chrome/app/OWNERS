@@ -12,3 +12,5 @@ per-file chromeos_strings.grdp=*
 per-file chromium_strings.grd=*
 per-file generated_resources.grd=*
 per-file google_chrome_strings.grd=*
+per-file media_router_strings.grdp*=mfoltz@chromium.org
+per-file media_router_strings.grdp*=wez@chromium.org
