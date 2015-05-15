@@ -198,9 +198,7 @@ if (build_ffmpegsumo) {
       #
       # TODO(ajwong): Manually tag the API that we use to be
       # exported.
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
       ldflags = [
-        "-Wl,-Bsymbolic",
         "-L", rebase_path(target_gen_dir, root_build_dir),
       ]
       libs = [
@@ -337,15 +335,6 @@ if (is_win) {
     ]
   }
   component("ffmpeg") {
-    defines = [
-      "__STDC_CONSTANT_MACROS",  # FFmpeg uses INT64_C.
-    ]
-
-    include_dirs = [
-      platform_config_root,
-      ".",
-    ]
-
     public_configs = [ ":ffmpeg_posix_dependent_config" ]
     deps = [
       ":ffmpegsumo",

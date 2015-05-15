@@ -34,7 +34,6 @@
           # Setting the optimizations to 'speed' or to 'max' results in a lot of
           # unresolved symbols. The only supported mode is 'size' (see
           # crbug.com/264459).
-          # NOTE: THIS BUG IS FIXED NOW, SHOULD WE SET MAX?
           'optimize' :'size',
         }],
       ],
@@ -269,7 +268,7 @@
                 '_LARGEFILE_SOURCE',
                 # BUG(ihf): ffmpeg compiles with this define. But according to
                 # ajwong: I wouldn't change _FILE_OFFSET_BITS.  That's a scary change
-                # beccause it affects the default length of off_t, and fpos_t,
+                # because it affects the default length of off_t, and fpos_t,
                 # which can cause strange problems if the loading code doesn't
                 # have it set and you start passing FILE*s or file descriptors
                 # between symbol contexts.
@@ -287,11 +286,9 @@
                 #
                 # TODO(ajwong): Manually tag the API that we use to be
                 # exported.
-                #'-fvisibility=hidden', # nothing needs to be exported for static link -- is VISIBILITY HIDDEN coming from somewhere else though? ALSO, Dont forget about the xcode case below (search hidden)
               ],
               'link_settings': {
                 'ldflags': [
-                  '-Wl,-Bsymbolic', #This can maybe go. Bsymbolic can go (its just for shared libs), but WL?
                   '-L<(shared_generated_dir)',
                 ],
                 'libraries': [
@@ -346,7 +343,6 @@
                 ],
               },
               'xcode_settings': {
-                'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # No -fvisibility=hidden
                 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
                 'LIBRARY_SEARCH_PATHS': [
                   '<(shared_generated_dir)'
@@ -405,12 +401,6 @@
     {
       'target_name': 'ffmpeg',
       'type': 'none',
-      'defines': [
-        '__STDC_CONSTANT_MACROS',  # FFmpeg uses INT64_C. maybe this can go.....
-      ],
-      #TODO: Is this still needed? https://code.google.com/p/gyp/wiki/InputFormatReference
-      'hard_dependency': 1,
-
       'conditions': [
         ['build_ffmpegsumo == 1', {
           'dependencies': [
