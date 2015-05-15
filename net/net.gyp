@@ -5,7 +5,9 @@
 {
   'variables': {
     'chromium_code': 1,
-
+    # Defines an extra set of libs with an alternate copy of org.apache.http.
+    # TODO(yfriedman): Remove this when crbug.com/488192 is fixed.
+    'net_test_extra_libs': [],
     'linux_link_kerberos%': 0,
     'conditions': [
       ['chromeos==1 or embedded==1 or OS=="android" or OS=="ios"', {
@@ -1403,7 +1405,8 @@
           },
           'dependencies': [
             'url_request_failed_job_java',
-            '../base/base.gyp:base_java'
+            '../base/base.gyp:base_java',
+            '<@(net_test_extra_libs)',
           ],
           'includes': [ '../build/java.gypi' ],
         },
