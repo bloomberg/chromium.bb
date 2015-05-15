@@ -25,6 +25,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_response_info.h"
+#include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_status.h"
 
 namespace base {
@@ -137,13 +138,14 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
     explicit RequestInfo(const net::URLRequest& request);
     ~RequestInfo();
 
-    bool AccessedNetwork() const;
+    static bool ShouldReportRequest(const RequestInfo& request);
 
     GURL url;
     net::URLRequestStatus status;
     net::HttpResponseInfo response_info;
     int load_flags;
     net::LoadTimingInfo load_timing_info;
+    net::ConnectionAttempts connection_attempts;
     bool is_upload;
   };
 

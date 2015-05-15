@@ -11,13 +11,65 @@
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/baked_in_configs.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace domain_reliability {
+
+namespace {
+
+int URLRequestStatusToNetError(const net::URLRequestStatus& status) {
+  switch (status.status()) {
+    case net::URLRequestStatus::SUCCESS:
+      return net::OK;
+    case net::URLRequestStatus::IO_PENDING:
+      return net::ERR_IO_PENDING;
+    case net::URLRequestStatus::CANCELED:
+      return net::ERR_ABORTED;
+    case net::URLRequestStatus::FAILED:
+      return status.error();
+    default:
+      NOTREACHED();
+      return net::ERR_UNEXPECTED;
+  }
+}
+
+// Updates the status, chrome_error, and server_ip fields of |beacon| from
+// the endpoint and result of |attempt|. If there is no matching status for
+// the result, returns false (which means the attempt should not result in a
+// beacon being reported).
+bool UpdateBeaconFromAttempt(DomainReliabilityBeacon* beacon,
+                             const net::ConnectionAttempt& attempt) {
+  if (!GetDomainReliabilityBeaconStatus(
+          attempt.result, beacon->http_response_code, &beacon->status)) {
+    return false;
+  }
+  beacon->chrome_error = attempt.result;
+  if (!attempt.endpoint.address().empty())
+    beacon->server_ip = attempt.endpoint.ToString();
+  else
+    beacon->server_ip = "";
+  return true;
+}
+
+// TODO(ttuttle): This function is absurd. See if |socket_address| in
+// HttpResponseInfo can become an IPEndPoint.
+bool ConvertHostPortPairToIPEndPoint(const net::HostPortPair& host_port_pair,
+                                     net::IPEndPoint* ip_endpoint_out) {
+  net::IPAddressNumber ip_address_number;
+  if (!net::ParseIPLiteralToNumber(host_port_pair.host(), &ip_address_number))
+    return false;
+  *ip_endpoint_out = net::IPEndPoint(ip_address_number, host_port_pair.port());
+  return true;
+}
+
+}  // namespace
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string,
@@ -150,8 +202,9 @@ void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
   if (!started)
     return;
   RequestInfo request_info(*request);
-  if (request_info.AccessedNetwork()) {
-    OnRequestLegComplete(request_info);
+  OnRequestLegComplete(request_info);
+
+  if (request_info.response_info.network_accessed) {
     // A request was just using the network, so now is a good time to run any
     // pending and eligible uploads.
     dispatcher_.RunEligibleTasks();
@@ -221,13 +274,27 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
       load_flags(request.load_flags()),
       is_upload(DomainReliabilityUploader::URLRequestIsUpload(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
+  request.GetConnectionAttempts(&connection_attempts);
 }
 
 DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 
-bool DomainReliabilityMonitor::RequestInfo::AccessedNetwork() const {
-  return status.status() != net::URLRequestStatus::CANCELED &&
-     response_info.network_accessed;
+// static
+bool DomainReliabilityMonitor::RequestInfo::ShouldReportRequest(
+    const DomainReliabilityMonitor::RequestInfo& request) {
+  // Don't report requests for Domain Reliability uploads or that weren't
+  // supposed to send cookies.
+  if (request.is_upload)
+    return false;
+  if (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES)
+    return false;
+  // Report requests that accessed the network or failed with an error code
+  // that Domain Reliability is interested in.
+  if (request.response_info.network_accessed)
+    return true;
+  if (URLRequestStatusToNetError(request.status) != net::OK)
+    return true;
+  return false;
 }
 
 void DomainReliabilityMonitor::OnRequestLegComplete(
@@ -236,44 +303,30 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   DCHECK(OnNetworkThread());
   DCHECK(discard_uploads_set_);
 
+  if (!RequestInfo::ShouldReportRequest(request))
+    return;
+
   int response_code;
   if (request.response_info.headers.get())
     response_code = request.response_info.headers->response_code();
   else
     response_code = -1;
-  std::string beacon_status;
 
-  int error_code = net::OK;
-  if (request.status.status() == net::URLRequestStatus::FAILED)
-    error_code = request.status.error();
-
-  // Ignore requests where:
-  // 1. The request did not access the network.
-  // 2. The request is not supposed to send cookies (to avoid associating the
-  //    request with any potentially unique data in the config).
-  // 3. The request was itself a Domain Reliability upload (to avoid loops).
-  // 4. There is no matching beacon status for the error or HTTP response code
-  //    (to avoid leaking network-local errors).
-  if (!request.AccessedNetwork() ||
-      (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES) ||
-      request.is_upload ||
-      !GetDomainReliabilityBeaconStatus(
-          error_code, response_code, &beacon_status)) {
-    return;
-  }
-
-  DomainReliabilityBeacon beacon;
-  beacon.status = beacon_status;
-  beacon.chrome_error = error_code;
-  // If the response was cached, the socket address was the address that the
-  // response was originally received from, so it shouldn't be copied into the
-  // beacon.
-  //
-  // TODO(ttuttle): Wire up a way to get the real socket address in that case.
+  net::IPEndPoint url_request_endpoint;
+  // If response was cached, socket address will be from the serialized
+  // response info in the cache, so don't report it.
+  // TODO(ttuttle): Plumb out the "current" socket address so we can always
+  // report it.
   if (!request.response_info.was_cached &&
       !request.response_info.was_fetched_via_proxy) {
-    beacon.server_ip = request.response_info.socket_address.host();
+    ConvertHostPortPairToIPEndPoint(request.response_info.socket_address,
+                                    &url_request_endpoint);
   }
+
+  net::ConnectionAttempt url_request_attempt(
+      url_request_endpoint, URLRequestStatusToNetError(request.status));
+
+  DomainReliabilityBeacon beacon;
   beacon.protocol = GetDomainReliabilityProtocol(
       request.response_info.connection_info,
       request.response_info.ssl_info.is_valid());
@@ -282,6 +335,25 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon.elapsed = time_->NowTicks() - beacon.start_time;
   beacon.was_proxied = request.response_info.was_fetched_via_proxy;
   beacon.domain = request.url.host();
+
+  // This is not foolproof -- it's possible that we'll see the same error twice
+  // (e.g. an SSL error during connection on one attempt, and then an error
+  // that maps to the same code during a read).
+  // TODO(ttuttle): Find a way for this code to reliably tell whether we
+  // eventually established a connection or not.
+  bool url_request_attempt_is_duplicate = false;
+  for (const auto& attempt : request.connection_attempts) {
+    if (attempt.result == url_request_attempt.result)
+      url_request_attempt_is_duplicate = true;
+    if (!UpdateBeaconFromAttempt(&beacon, attempt))
+      continue;
+    context_manager_.RouteBeacon(request.url, beacon);
+  }
+
+  if (url_request_attempt_is_duplicate)
+    return;
+  if (!UpdateBeaconFromAttempt(&beacon, url_request_attempt))
+    return;
   context_manager_.RouteBeacon(request.url, beacon);
 }
 
