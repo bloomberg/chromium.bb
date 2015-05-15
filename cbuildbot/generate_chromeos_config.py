@@ -1926,7 +1926,6 @@ _paladin_hwtest_boards = frozenset([
   'stumpy',
   'wolf',
   'x86-alex',
-  'x86-alex_freon',
   'x86-zgb',
 ])
 
