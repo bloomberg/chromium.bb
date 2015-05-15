@@ -34,7 +34,7 @@ mojo_sdk_source_set("cpp") {
   deps = [
     "../interfaces",
     "//components/surfaces/public/interfaces:surface_id",
-    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",

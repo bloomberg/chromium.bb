@@ -61,7 +61,7 @@ test("tests") {
     ":test_bindings",
     "//base",
     "//mojo/application",
-    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",

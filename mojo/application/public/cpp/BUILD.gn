@@ -5,7 +5,7 @@
 import("//third_party/mojo/src/mojo/public/mojo_sdk.gni")
 
 # GYP version: mojo/mojo_base.gyp:mojo_application_base
-mojo_sdk_source_set("application") {
+mojo_sdk_source_set("cpp") {
   restrict_external_deps = false
   sources = [
     "application_connection.h",
@@ -45,7 +45,7 @@ mojo_sdk_source_set("standalone") {
   ]
 
   public_deps = [
-    ":application",
+    ":cpp",
   ]
 
   mojo_sdk_deps = [
@@ -63,7 +63,7 @@ mojo_sdk_source_set("test_support") {
   ]
 
   deps = [
-    ":application",
+    ":cpp",
     "//mojo/application/public/interfaces",
     "//testing/gtest",
   ]
@@ -87,7 +87,7 @@ mojo_sdk_source_set("test_support_standalone") {
   ]
 
   deps = [
-    ":application",
+    ":cpp",
     "//mojo/application/public/interfaces",
   ]
 

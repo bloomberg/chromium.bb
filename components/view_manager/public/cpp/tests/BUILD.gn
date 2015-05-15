@@ -20,7 +20,7 @@ test("mojo_view_manager_lib_unittests") {
     # TODO(vtl): These non-public deps are illegal here. This should be
     # converted to an apptest.
     "//mojo/application",
-    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/cpp",
     "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/system",

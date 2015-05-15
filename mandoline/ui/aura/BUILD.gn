@@ -35,7 +35,7 @@ source_set("aura") {
     "//components/surfaces/public/interfaces",
     "//components/view_manager/public/cpp",
     "//skia",
-    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/cc",
     "//mojo/converters/geometry",

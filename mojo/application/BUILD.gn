@@ -10,7 +10,7 @@ source_set("application") {
   ]
 
   public_deps = [
-    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/cpp",
   ]
   deps = [
     "//base",
@@ -46,7 +46,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/application/public/cpp:application",
+    "//mojo/application/public/cpp",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",
