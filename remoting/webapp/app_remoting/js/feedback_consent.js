@@ -18,6 +18,12 @@ var hostId = '@pending';
 var connectionStats = '';
 
 /**
+ * @type {string} The most recent id for the session (unless the session is
+ *     longer than 24hrs, this will be the only session id).
+ */
+var sessionId = '';
+
+/**
  * @type {string} "no" => user did not request a VM reset; "yes" => VM was
  *     successfully reset; "failed" => user requested a reset, but it failed.
  */
@@ -66,7 +72,8 @@ function onUserInfo(email, realName) {
               '&psd_abandonHost=' + escape(abandonHost) +
               '&psd_crashServiceReportId=' + escape(crashServiceReportId) +
               '&psd_connectionStats=' + escape(connectionStats) +
-              '&psd_category=' + escape(selectedCategory));
+              '&psd_category=' + escape(selectedCategory) +
+              '&psd_sessionId=' + escape(sessionId));
   window.close();
 
   // If the VM was successfully abandoned, close the application.
@@ -242,6 +249,7 @@ function onWindowMessage(event) {
       hostId = /** @type {string} */ (event.data['hostId']);
     }
     connectionStats = /** @type {string} */ (event.data['connectionStats']);
+    sessionId = /** @type {string} */ (event.data['sessionId']);
   }
 };
 

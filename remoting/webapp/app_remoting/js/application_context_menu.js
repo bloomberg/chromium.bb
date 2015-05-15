@@ -15,12 +15,17 @@ var remoting = remoting || {};
 /**
  * @param {remoting.ContextMenuAdapter} adapter
  * @param {remoting.ClientPlugin} plugin
+ * @param {remoting.ClientSession} clientSession
+ *
  * @constructor
  * @implements {base.Disposable}
  */
-remoting.ApplicationContextMenu = function(adapter, plugin) {
-  /** @private {remoting.ContextMenuAdapter} */
+remoting.ApplicationContextMenu = function(adapter, plugin, clientSession) {
+  /** @private */
   this.adapter_ = adapter;
+
+  /** @private */
+  this.clientSession_ = clientSession;
 
   this.adapter_.create(
       remoting.ApplicationContextMenu.kSendFeedbackId,
@@ -94,7 +99,8 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
           var message = {
             method: 'init',
             hostId: that.hostId_,
-            connectionStats: JSON.stringify(that.stats_.mostRecent())
+            connectionStats: JSON.stringify(that.stats_.mostRecent()),
+            sessionId: that.clientSession_.getLogger().getSessionId()
           };
           consentWindow.contentWindow.postMessage(message, '*');
         };

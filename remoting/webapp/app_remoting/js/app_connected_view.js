@@ -50,8 +50,8 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
         new remoting.ContextMenuDom(document.getElementById('context-menu'));
   }
 
-  this.contextMenu_ =
-      new remoting.ApplicationContextMenu(menuAdapter, this.plugin_);
+  this.contextMenu_ = new remoting.ApplicationContextMenu(
+      menuAdapter, this.plugin_, connectionInfo.session());
   this.contextMenu_.setHostId(connectionInfo.host().hostId);
 
   /** @private */

@@ -604,4 +604,3 @@ remoting.ClientSession.prototype.reportStatistics = function() {
 remoting.ClientSession.prototype.logHostOfflineErrors = function(enable) {
   this.logHostOfflineErrors_ = enable;
 };
-

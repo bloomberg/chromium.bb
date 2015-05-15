@@ -110,6 +110,14 @@ remoting.LogToServer.prototype.logSignalStrategyProgress =
 };
 
 /**
+ * @return {string} The current session id. This is random GUID, refreshed
+ *     every 24hrs.
+ */
+remoting.LogToServer.prototype.getSessionId = function() {
+  return this.sessionId_;
+};
+
+/**
  * Whether a session state is one of the states that occurs at the start of
  * a session.
  *
@@ -286,4 +294,3 @@ remoting.LogToServer.prototype.setAuthTotalTime = function(totalTime) {
 remoting.LogToServer.prototype.setHostVersion = function(hostVersion) {
   this.hostVersion_ = hostVersion;
 };
-
