@@ -22180,6 +22180,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time to complete a certificate verification (error case).</summary>
 </histogram>
 
+<histogram name="Net.SSLFallbackErrorCode" enum="NetErrorCodes">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    For each successful HTTPS request which used the TLS version fallback, the
+    error code of the last failed attempt.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSLFallbackFailureState" enum="SSLFailureState">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    For each successful HTTPS request which used the TLS version fallback, the
+    type of handshake failure of the last failed attempt.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLHostInfoDNSLookup" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time to complete a DNS lookup for a DNS CAA record.</summary>
@@ -64164,6 +64180,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
   <int value="8" label="CERT_WEAK_KEY"/>
   <int value="9" label="UNKNOWN"/>
+</enum>
+
+<enum name="SSLFailureState" type="int">
+  <int value="0" label="No failure"/>
+  <int value="1" label="Unknown failure"/>
+  <int value="2" label="Failed to process ClientHello"/>
+  <int value="3" label="Buggy AES-GCM"/>
+  <int value="4" label="Failed with client authentication"/>
+  <int value="5" label="Session version mismatch"/>
+  <int value="6" label="Failed with Next Proto Negotiation"/>
 </enum>
 
 <enum name="SSLGoodCertSeenEvent" type="int">

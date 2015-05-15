@@ -21,6 +21,7 @@
 #include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_failure_state.h"
 
 // Avoid including misc OpenSSL headers, i.e.:
 // <openssl/bio.h>
@@ -63,6 +64,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
+  SSLFailureState GetSSLFailureState() const override;
 
   // SSLSocket implementation.
   int ExportKeyingMaterial(const base::StringPiece& label,
@@ -303,6 +305,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   bool certificate_verified_;
   // The request handle for |channel_id_service_|.
   ChannelIDService::RequestHandle channel_id_request_handle_;
+  SSLFailureState ssl_failure_state_;
 
   TransportSecurityState* transport_security_state_;
 

@@ -170,6 +170,7 @@
       'ssl/ssl_config.h',
       'ssl/ssl_config_service.cc',
       'ssl/ssl_config_service.h',
+      'ssl/ssl_failure_state.h',
       'ssl/ssl_info.cc',
       'ssl/ssl_info.h',
     ],

@@ -106,6 +106,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_failure_state.h"
 #include "net/ssl/ssl_info.h"
 
 #if defined(USE_NSS_CERTS)
@@ -3206,6 +3207,12 @@ SSLClientSocketNSS::GetUnverifiedServerCertificateChain() const {
 
 ChannelIDService* SSLClientSocketNSS::GetChannelIDService() const {
   return channel_id_service_;
+}
+
+SSLFailureState SSLClientSocketNSS::GetSSLFailureState() const {
+  if (completed_handshake_)
+    return SSL_FAILURE_NONE;
+  return SSL_FAILURE_UNKNOWN;
 }
 
 }  // namespace net

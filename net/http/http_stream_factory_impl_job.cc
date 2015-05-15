@@ -40,6 +40,7 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_failure_state.h"
 
 namespace net {
 
@@ -364,10 +365,14 @@ void HttpStreamFactoryImpl::Job::OnStreamFailedCallback(int result) {
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
-  if (IsOrphaned())
+  if (IsOrphaned()) {
     stream_factory_->OnOrphanedJobComplete(this);
-  else
-    request_->OnStreamFailed(this, result, server_ssl_config_);
+  } else {
+    SSLFailureState ssl_failure_state =
+        connection_ ? connection_->ssl_failure_state() : SSL_FAILURE_NONE;
+    request_->OnStreamFailed(this, result, server_ssl_config_,
+                             ssl_failure_state);
+  }
   // |this| may be deleted after this call.
 }
 

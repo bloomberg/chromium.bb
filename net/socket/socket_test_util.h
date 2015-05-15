@@ -799,6 +799,7 @@ class MockClientSocket : public SSLClientSocket {
   int GetTLSUniqueChannelBinding(std::string* out) override;
   NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
+  SSLFailureState GetSSLFailureState() const override;
 
  protected:
   ~MockClientSocket() override;

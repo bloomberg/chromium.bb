@@ -105,7 +105,10 @@ class SSLClientSocketNSS : public SSLClientSocket {
             const CompletionCallback& callback) override;
   int SetReceiveBufferSize(int32 size) override;
   int SetSendBufferSize(int32 size) override;
+
+  // SSLClientSocket implementation.
   ChannelIDService* GetChannelIDService() const override;
+  SSLFailureState GetSSLFailureState() const override;
 
  protected:
   // SSLClientSocket implementation.

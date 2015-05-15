@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -95,12 +96,14 @@ void ProcessAlternateProtocol(
 base::Value* NetLogSSLVersionFallbackCallback(
     const GURL* url,
     int net_error,
+    SSLFailureState ssl_failure_state,
     uint16 version_before,
     uint16 version_after,
     NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
+  dict->SetInteger("ssl_failure_state", ssl_failure_state);
   dict->SetInteger("version_before", version_before);
   dict->SetInteger("version_after", version_after);
   return dict;
@@ -129,7 +132,9 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       request_(NULL),
       priority_(priority),
       headers_valid_(false),
+      server_ssl_failure_state_(SSL_FAILURE_NONE),
       fallback_error_code_(ERR_SSL_INAPPROPRIATE_FALLBACK),
+      fallback_failure_state_(SSL_FAILURE_NONE),
       request_headers_(),
       read_buf_len_(0),
       total_received_bytes_(0),
@@ -499,12 +504,14 @@ void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
 }
 
 void HttpNetworkTransaction::OnStreamFailed(int result,
-                                            const SSLConfig& used_ssl_config) {
+                                            const SSLConfig& used_ssl_config,
+                                            SSLFailureState ssl_failure_state) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
   DCHECK_NE(OK, result);
   DCHECK(stream_request_.get());
   DCHECK(!stream_.get());
   server_ssl_config_ = used_ssl_config;
+  server_ssl_failure_state_ = ssl_failure_state;
 
   OnIOComplete(result);
 }
@@ -1349,10 +1356,11 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
   if (should_fallback) {
     net_log_.AddEvent(
         NetLog::TYPE_SSL_VERSION_FALLBACK,
-        base::Bind(&NetLogSSLVersionFallbackCallback,
-                   &request_->url, error, server_ssl_config_.version_max,
+        base::Bind(&NetLogSSLVersionFallbackCallback, &request_->url, error,
+                   server_ssl_failure_state_, server_ssl_config_.version_max,
                    version_max));
     fallback_error_code_ = error;
+    fallback_failure_state_ = server_ssl_failure_state_;
     server_ssl_config_.version_max = version_max;
     server_ssl_config_.version_fallback = true;
     ResetConnectionAndRequestForResend();
@@ -1468,6 +1476,15 @@ void HttpNetworkTransaction::RecordSSLFallbackMetrics() {
 
   UMA_HISTOGRAM_BOOLEAN("Net.ConnectionUsedSSLDeprecatedCipherFallback2",
                         server_ssl_config_.enable_deprecated_cipher_suites);
+
+  if (server_ssl_config_.version_fallback) {
+    // Record the error code which triggered the fallback and the state the
+    // handshake was in.
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLFallbackErrorCode",
+                                -fallback_error_code_);
+    UMA_HISTOGRAM_ENUMERATION("Net.SSLFallbackFailureState",
+                              fallback_failure_state_, SSL_FAILURE_MAX);
+  }
 }
 
 HttpResponseHeaders* HttpNetworkTransaction::GetResponseHeaders() const {

@@ -26,6 +26,7 @@
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_failure_state.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1047,6 +1048,10 @@ int MockClientSocket::GetTLSUniqueChannelBinding(std::string* out) {
 ChannelIDService* MockClientSocket::GetChannelIDService() const {
   NOTREACHED();
   return NULL;
+}
+
+SSLFailureState MockClientSocket::GetSSLFailureState() const {
+  return IsConnected() ? SSL_FAILURE_NONE : SSL_FAILURE_UNKNOWN;
 }
 
 SSLClientSocket::NextProtoStatus MockClientSocket::GetNextProto(

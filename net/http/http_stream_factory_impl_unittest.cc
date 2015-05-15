@@ -165,7 +165,9 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     used_proxy_info_ = used_proxy_info;
   }
 
-  void OnStreamFailed(int status, const SSLConfig& used_ssl_config) override {}
+  void OnStreamFailed(int status,
+                      const SSLConfig& used_ssl_config,
+                      SSLFailureState ssl_failure_state) override {}
 
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,

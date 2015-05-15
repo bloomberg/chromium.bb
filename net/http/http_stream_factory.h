@@ -17,6 +17,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
 #include "net/socket/connection_attempts.h"
+#include "net/ssl/ssl_failure_state.h"
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
@@ -86,9 +87,11 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     // This is the failure to create a stream case.
     // |used_ssl_config| indicates the actual SSL configuration used for this
     // stream, since the HttpStreamRequest may have modified the configuration
-    // during stream processing.
+    // during stream processing. If an SSL handshake failed, |ssl_failure_state|
+    // is the state the SSLClientSocket was in.
     virtual void OnStreamFailed(int status,
-                                const SSLConfig& used_ssl_config) = 0;
+                                const SSLConfig& used_ssl_config,
+                                SSLFailureState ssl_failure_state) = 0;
 
     // Called when we have a certificate error for the request.
     // |used_ssl_config| indicates the actual SSL configuration used for this

@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/ssl_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/ssl/ssl_failure_state.h"
 
 namespace net {
 
@@ -128,6 +129,11 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Returns the ChannelIDService used by this socket, or NULL if
   // channel ids are not supported.
   virtual ChannelIDService* GetChannelIDService() const = 0;
+
+  // Returns the state of the handshake when it failed, or |SSL_FAILURE_NONE| if
+  // the handshake succeeded. This is used to classify causes of the TLS version
+  // fallback.
+  virtual SSLFailureState GetSSLFailureState() const = 0;
 
  protected:
   void set_negotiation_extension(

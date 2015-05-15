@@ -38,6 +38,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_session_cache_openssl.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_failure_state.h"
 #include "net/ssl/ssl_info.h"
 
 #if defined(OS_WIN)
@@ -368,6 +369,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       channel_id_sent_(false),
       handshake_completed_(false),
       certificate_verified_(false),
+      ssl_failure_state_(SSL_FAILURE_NONE),
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.cert_policy_enforcer),
       net_log_(transport_->socket()->NetLog()),
@@ -395,6 +397,10 @@ SSLClientSocket::NextProtoStatus SSLClientSocketOpenSSL::GetNextProto(
 ChannelIDService*
 SSLClientSocketOpenSSL::GetChannelIDService() const {
   return channel_id_service_;
+}
+
+SSLFailureState SSLClientSocketOpenSSL::GetSSLFailureState() const {
+  return ssl_failure_state_;
 }
 
 int SSLClientSocketOpenSSL::ExportKeyingMaterial(
@@ -504,7 +510,10 @@ void SSLClientSocketOpenSSL::Disconnect() {
   npn_proto_.clear();
 
   channel_id_sent_ = false;
+  handshake_completed_ = false;
+  certificate_verified_ = false;
   channel_id_request_handle_.Cancel();
+  ssl_failure_state_ = SSL_FAILURE_NONE;
 }
 
 bool SSLClientSocketOpenSSL::IsConnected() const {
@@ -932,6 +941,31 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     net_log_.AddEvent(
         NetLog::TYPE_SSL_HANDSHAKE_ERROR,
         CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+
+    // Classify the handshake failure. This is used to determine causes of the
+    // TLS version fallback.
+
+    // |cipher| is the current outgoing cipher suite, so it is non-null iff
+    // ChangeCipherSpec was sent.
+    const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
+    if (SSL_get_state(ssl_) == SSL3_ST_CR_SRVR_HELLO_A) {
+      ssl_failure_state_ = SSL_FAILURE_CLIENT_HELLO;
+    } else if (cipher && (SSL_CIPHER_get_id(cipher) ==
+                              TLS1_CK_DHE_RSA_WITH_AES_128_GCM_SHA256 ||
+                          SSL_CIPHER_get_id(cipher) ==
+                              TLS1_CK_RSA_WITH_AES_128_GCM_SHA256)) {
+      ssl_failure_state_ = SSL_FAILURE_BUGGY_GCM;
+    } else if (cipher && ssl_config_.send_client_cert) {
+      ssl_failure_state_ = SSL_FAILURE_CLIENT_AUTH;
+    } else if (ERR_GET_LIB(error_info.error_code) == ERR_LIB_SSL &&
+               ERR_GET_REASON(error_info.error_code) ==
+                   SSL_R_OLD_SESSION_VERSION_NOT_RETURNED) {
+      ssl_failure_state_ = SSL_FAILURE_SESSION_MISMATCH;
+    } else if (cipher && npn_status_ != kNextProtoUnsupported) {
+      ssl_failure_state_ = SSL_FAILURE_NEXT_PROTO;
+    } else {
+      ssl_failure_state_ = SSL_FAILURE_UNKNOWN;
+    }
   }
 
   GotoState(STATE_HANDSHAKE_COMPLETE);

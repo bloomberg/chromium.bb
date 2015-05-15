@@ -116,7 +116,8 @@ void HttpStreamFactoryImpl::Request::OnWebSocketHandshakeStreamReady(
 void HttpStreamFactoryImpl::Request::OnStreamFailed(
     Job* job,
     int status,
-    const SSLConfig& used_ssl_config) {
+    const SSLConfig& used_ssl_config,
+    SSLFailureState ssl_failure_state) {
   DCHECK_NE(OK, status);
   DCHECK(job);
   if (!bound_job_.get()) {
@@ -139,7 +140,7 @@ void HttpStreamFactoryImpl::Request::OnStreamFailed(
   } else {
     DCHECK(jobs_.empty());
   }
-  delegate_->OnStreamFailed(status, used_ssl_config);
+  delegate_->OnStreamFailed(status, used_ssl_config, ssl_failure_state);
 }
 
 void HttpStreamFactoryImpl::Request::OnCertificateError(

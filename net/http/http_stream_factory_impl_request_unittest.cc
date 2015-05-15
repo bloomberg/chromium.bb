@@ -8,6 +8,7 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/ssl/ssl_failure_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -38,7 +39,9 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
       WebSocketHandshakeStreamBase* stream) override {}
-  void OnStreamFailed(int status, const SSLConfig& used_ssl_config) override {}
+  void OnStreamFailed(int status,
+                      const SSLConfig& used_ssl_config,
+                      SSLFailureState ssl_failure_state) override {}
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info) override {}
@@ -85,7 +88,7 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
   EXPECT_EQ(MEDIUM, job->priority());
 
   // Make |job| the bound job.
-  request.OnStreamFailed(job, ERR_FAILED, SSLConfig());
+  request.OnStreamFailed(job, ERR_FAILED, SSLConfig(), SSL_FAILURE_NONE);
 
   request.SetPriority(IDLE);
   EXPECT_EQ(IDLE, job->priority());
