@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/fake_demuxer_stream.h"
+#include "media/base/fake_demuxer_stream.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -192,5 +192,23 @@ void FakeDemuxerStream::DoRead() {
   num_buffers_returned_++;
   base::ResetAndReturn(&read_cb_).Run(kOk, buffer);
 }
+
+FakeDemuxerStreamProvider::FakeDemuxerStreamProvider(
+    int num_video_configs,
+    int num_video_buffers_in_one_config,
+    bool is_video_encrypted)
+    : fake_video_stream_(num_video_configs,
+                         num_video_buffers_in_one_config,
+                         is_video_encrypted) {
+}
+
+FakeDemuxerStreamProvider::~FakeDemuxerStreamProvider() {
+}
+
+DemuxerStream* FakeDemuxerStreamProvider::GetStream(DemuxerStream::Type type) {
+  if (type == DemuxerStream::Type::AUDIO)
+    return nullptr;
+  return &fake_video_stream_;
+};
 
 }  // namespace media

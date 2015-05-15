@@ -112,6 +112,7 @@
         ['OS!="android"', {
           'dependencies': [
             'cast_shell_browser_test',
+            'cast_shell_media_unittests',
             'media/media.gyp:cast_media_unittests',
           ],
           'variables': {
@@ -227,6 +228,26 @@
       ],  # end of targets
     }, {  # OS!="android"
       'targets': [
+        {
+          'target_name': 'cast_shell_media_unittests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'cast_metrics_test_support',
+            'cast_shell_media',
+            'media/media.gyp:cast_media',
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../ipc/ipc.gyp:test_support_ipc',
+            '../media/media.gyp:media_test_support',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
+            '../testing/gtest.gyp:gtest_main',
+          ],
+          'sources': [
+            'renderer/media/cma_renderer_unittest.cc',
+            'media/cma/test/run_all_unittests.cc',
+          ],
+        },
         {
           'target_name': 'cast_shell_test_support',
           'type': '<(component)',

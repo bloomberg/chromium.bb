@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_FAKE_DEMUXER_STREAM_H_
-#define MEDIA_FILTERS_FAKE_DEMUXER_STREAM_H_
+#ifndef MEDIA_BASE_FAKE_DEMUXER_STREAM_H_
+#define MEDIA_BASE_FAKE_DEMUXER_STREAM_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/demuxer_stream_provider.h"
 #include "media/base/video_decoder_config.h"
 
 namespace base {
@@ -102,6 +103,23 @@ class FakeDemuxerStream : public DemuxerStream {
   DISALLOW_COPY_AND_ASSIGN(FakeDemuxerStream);
 };
 
+class FakeDemuxerStreamProvider : public DemuxerStreamProvider {
+ public:
+  // Note: FakeDemuxerStream currently only supports a fake video DemuxerStream.
+  FakeDemuxerStreamProvider(int num_video_configs,
+                            int num_video_buffers_in_one_config,
+                            bool is_video_encrypted);
+  ~FakeDemuxerStreamProvider() override;
+
+  // DemuxerStreamProvider implementation.
+  DemuxerStream* GetStream(DemuxerStream::Type type) override;
+
+ private:
+  FakeDemuxerStream fake_video_stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDemuxerStreamProvider);
+};
+
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_FAKE_DEMUXER_STREAM_H_
+#endif  // MEDIA_BASE_FAKE_DEMUXER_STREAM_H_

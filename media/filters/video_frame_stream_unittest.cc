@@ -5,11 +5,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "media/base/fake_demuxer_stream.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/decoder_stream.h"
-#include "media/filters/fake_demuxer_stream.h"
 #include "media/filters/fake_video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

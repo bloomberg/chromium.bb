@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
-#include "media/filters/fake_demuxer_stream.h"
+#include "media/base/fake_demuxer_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

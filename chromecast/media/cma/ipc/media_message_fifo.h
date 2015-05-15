@@ -82,7 +82,19 @@ class MediaMessageFlag;
 //
 //
 class MediaMessageFifo {
+ private:
+  struct Descriptor {
+    size_t size;
+    size_t rd_offset;
+    size_t wr_offset;
+
+    // Ensure the first item has the same alignment as an int64.
+    int64 first_item;
+  };
+
  public:
+  static const int kDescriptorSize = sizeof(Descriptor);
+
   // Creates a media message fifo using |mem| as the underlying serialized
   // structure.
   // If |init| is true, the underlying fifo structure is initialized.
@@ -108,15 +120,6 @@ class MediaMessageFifo {
   void Flush();
 
  private:
-  struct Descriptor {
-    size_t size;
-    size_t rd_offset;
-    size_t wr_offset;
-
-    // Ensure the first item has the same alignment as an int64.
-    int64 first_item;
-  };
-
   // Add some accessors to ensure security on the browser process side.
   size_t current_rd_offset() const;
   size_t current_wr_offset() const;
