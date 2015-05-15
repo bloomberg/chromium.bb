@@ -12,8 +12,8 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'chromecast.gyp:cast_base',
+        '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
-        '../testing/gtest.gyp:gtest_main',
       ],
       'sources': [
         'base/serializers_unittest.cc',

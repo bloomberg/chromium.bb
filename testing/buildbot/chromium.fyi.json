@@ -17,64 +17,6 @@
       }
     ]
   },
-  "Cast Linux": {
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      },
-      {
-        "test": "cacheinvalidation_unittests"
-      },
-      {
-        "test": "cast_base_unittests"
-      },
-      {
-        "test": "cast_media_unittests"
-      },
-      {
-        "test": "cast_shell_browser_test"
-      },
-      {
-        "test": "content_unittests"
-      },
-      {
-        "test": "crypto_unittests"
-      },
-      {
-        "test": "gpu_unittests"
-      },
-      {
-        "test": "ipc_tests"
-      },
-      {
-        "test": "jingle_unittests"
-      },
-      {
-        "test": "media_unittests"
-      },
-      {
-        "test": "midi_unittests"
-      },
-      {
-        "test": "net_unittests"
-      },
-      {
-        "test": "sandbox_linux_unittests"
-      },
-      {
-        "test": "sql_unittests"
-      },
-      {
-        "test": "sync_unit_tests"
-      },
-      {
-        "test": "ui_base_unittests"
-      },
-      {
-        "test": "url_unittests"
-      }
-    ]
-  },
   "Chromium Mac 10.10": {
     "gtest_tests": [
       {
