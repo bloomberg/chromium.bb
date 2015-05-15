@@ -118,7 +118,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     base::string16 save_confirmation_link =
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_LINK);
+        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
     size_t offset;
     save_confirmation_text_ =
         l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT,
@@ -313,7 +313,7 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   if (never_save_passwords_) {
     title_ = l10n_util::GetStringUTF16(
         IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE);
-  } else if (password_bubble_experiment::IsEnabledSmartLockBranding(
+  } else if (password_bubble_experiment::IsSmartLockBrandingEnabled(
                  GetProfile())) {
     // "Google Smart Lock" should be a hyperlink.
     base::string16 brand_link =

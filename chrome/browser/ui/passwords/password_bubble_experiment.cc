@@ -12,7 +12,7 @@
 namespace password_bubble_experiment {
 namespace {
 
-const char kBrandingExperimentName[] = "PasswordBubbleBranding";
+const char kBrandingExperimentName[] = "PasswordBranding";
 const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
 
 } // namespace
@@ -23,7 +23,7 @@ void RecordBubbleClosed(
   // TODO(vasilii): store the statistics.
 }
 
-bool IsEnabledSmartLockBranding(Profile* profile) {
+bool IsSmartLockBrandingEnabled(Profile* profile) {
   const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_manager_util::GetPasswordSyncState(sync_service) ==
@@ -31,6 +31,5 @@ bool IsEnabledSmartLockBranding(Profile* profile) {
          base::FieldTrialList::FindFullName(kBrandingExperimentName) ==
              kSmartLockBrandingGroupName;
 }
-
 
 }  // namespace password_bubble_experiment

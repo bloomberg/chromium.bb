@@ -11,11 +11,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_observer.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_view.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -87,15 +89,18 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       base::Bind(&PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
                  base::Unretained(this)));
 
-  std::vector<base::string16> pieces;
-  base::SplitStringDontTrim(
-      l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT),
-      '|',  // separator
-      &pieces);
-  DCHECK_EQ(3u, pieces.size());
-  link_range_ = gfx::Range(pieces[0].size(),
-                           pieces[0].size() + pieces[1].size());
-  help_text_ = JoinString(pieces, base::string16());
+  int link_id = IDS_MANAGE_PASSWORDS_LINK;
+  int help_text_id = IDS_PASSWORD_GENERATION_PROMPT;
+  if (password_bubble_experiment::IsSmartLockBrandingEnabled(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+    help_text_id = IDS_PASSWORD_GENERATION_SMART_LOCK_PROMPT;
+    link_id = IDS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS;
+  }
+
+  base::string16 link = l10n_util::GetStringUTF16(link_id);
+  size_t offset;
+  help_text_ = l10n_util::GetStringFUTF16(help_text_id, link, &offset);
+  link_range_ = gfx::Range(offset, offset + link.length());
 }
 
 PasswordGenerationPopupControllerImpl::~PasswordGenerationPopupControllerImpl()

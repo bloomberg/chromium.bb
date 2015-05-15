@@ -44,7 +44,7 @@ void SavePasswordInfoBarDelegate::Create(
   SavePasswordInfoBarDelegate* infobar_delegate =
       new SavePasswordInfoBarDelegate(
           form_to_save.Pass(), uma_histogram_suffix, source_type,
-          password_bubble_experiment::IsEnabledSmartLockBranding(profile));
+          password_bubble_experiment::IsSmartLockBrandingEnabled(profile));
 #if defined(OS_ANDROID)
   // For Android in case of smart lock we need different appearance of infobar.
   scoped_ptr<infobars::InfoBar> infobar =

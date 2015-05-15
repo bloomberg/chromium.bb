@@ -22,7 +22,7 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
     GeneratedPasswordSavedInfoBarDelegateAndroid()
     : button_label_(l10n_util::GetStringUTF16(IDS_OK)) {
   base::string16 link = l10n_util::GetStringUTF16(
-      IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_LINK);
+      IDS_MANAGE_PASSWORDS_LINK);
   size_t offset;
   message_text_ = l10n_util::GetStringFUTF16(
       IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT_INFOBAR, link, &offset);

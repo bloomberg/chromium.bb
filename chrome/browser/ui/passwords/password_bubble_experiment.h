@@ -18,9 +18,9 @@ void RecordBubbleClosed(
     PrefService* prefs,
     password_manager::metrics_util::UIDismissalReason reason);
 
-// Returns true if the Save bubble should mention Smart Lock instead of Chrome.
+// Returns true if the password manager should be referred to as Smart Lock.
 // This is only true for signed-in users.
-bool IsEnabledSmartLockBranding(Profile* profile);
+bool IsSmartLockBrandingEnabled(Profile* profile);
 
 }  // namespace password_bubble_experiment
 
