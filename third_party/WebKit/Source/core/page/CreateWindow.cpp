@@ -28,6 +28,7 @@
 #include "core/page/CreateWindow.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameClient.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -47,7 +48,7 @@
 
 namespace blink {
 
-static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
+static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
     ASSERT(request.resourceRequest().requestorOrigin() || openerFrame.document()->url().isEmpty());
@@ -63,9 +64,7 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
                         host->chrome().focus();
                 }
             }
-            created = false;
-            // FIXME: Make this work with RemoteFrames.
-            return frame->isLocalFrame() ? toLocalFrame(frame) : nullptr;
+            return frame;
         }
     }
 
@@ -76,24 +75,20 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
         return nullptr;
     }
 
-    if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows()) {
-        created = false;
-        if (!openerFrame.tree().top()->isLocalFrame())
-            return nullptr;
-        return toLocalFrame(openerFrame.tree().top());
-    }
+    if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows())
+        return openerFrame.tree().top();
 
-    Page* oldPage = openerFrame.page();
-    if (!oldPage)
+    FrameHost* oldHost = openerFrame.host();
+    if (!oldHost)
         return nullptr;
 
-    Page* page = oldPage->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
-    if (!page || !page->mainFrame()->isLocalFrame())
+    Page* page = oldHost->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
+    if (!page)
         return nullptr;
     FrameHost* host = &page->frameHost();
 
     ASSERT(page->mainFrame());
-    LocalFrame& frame = *page->deprecatedLocalMainFrame();
+    Frame& frame = *page->mainFrame();
 
     if (request.frameName() != "_blank")
         frame.tree().setName(request.frameName());
@@ -119,14 +114,15 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
     host->chrome().setWindowRect(windowRect);
     host->chrome().show(policy);
 
-    if (openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
-        frame.loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
+    // TODO(japhet): There's currently no way to set sandbox flags on a RemoteFrame and have it propagate
+    // to the real frame in a different process. See crbug.com/483584.
+    if (frame.isLocalFrame() && openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
+        toLocalFrame(&frame)->loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
 
-    created = true;
     return &frame;
 }
 
-LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
+DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
     LocalDOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame)
 {
     LocalFrame* activeFrame = callingWindow.frame();
@@ -150,28 +146,17 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     // so we need to ensure the proper referrer is set now.
     frameRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(activeFrame->document()->referrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()));
 
-    bool hasUserGesture = UserGestureIndicator::processingUserGesture();
-
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
-    bool created;
-    LocalFrame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
+    Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer);
     if (!newFrame)
         return nullptr;
 
-    newFrame->loader().setOpener(&openerFrame);
+    newFrame->client()->setOpener(&openerFrame);
 
-    if (newFrame->localDOMWindow()->isInsecureScriptAccess(callingWindow, completedURL))
-        return newFrame;
-
-    if (created) {
-        FrameLoadRequest request(callingWindow.document(), completedURL);
-        request.resourceRequest().setHasUserGesture(hasUserGesture);
-        newFrame->loader().load(request);
-    } else if (!urlString.isEmpty()) {
+    if (!newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         newFrame->navigate(*callingWindow.document(), completedURL, false);
-    }
-    return newFrame;
+    return newFrame->domWindow();
 }
 
 void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
@@ -191,17 +176,21 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
         policy = NavigationPolicyNewForegroundTab;
 
     WindowFeatures features;
-    bool created;
-    LocalFrame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, created);
+    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer);
     if (!newFrame)
         return;
     if (shouldSendReferrer == MaybeSendReferrer) {
-        newFrame->loader().setOpener(&openerFrame);
-        newFrame->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());
+        newFrame->client()->setOpener(&openerFrame);
+        // TODO(japhet): Does ReferrerPolicy need to be proagated for RemoteFrames?
+        if (newFrame->isLocalFrame())
+            toLocalFrame(newFrame)->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());
     }
+
+    // TODO(japhet): Form submissions on RemoteFrames don't work yet.
     FrameLoadRequest newRequest(0, request.resourceRequest());
     newRequest.setForm(request.form());
-    newFrame->loader().load(newRequest);
+    if (newFrame->isLocalFrame())
+        toLocalFrame(newFrame)->loader().load(newRequest);
 }
 
 } // namespace blink

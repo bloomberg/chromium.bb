@@ -67,6 +67,7 @@ protected:
         V8DOMActivityLogger::setActivityLogger(isolatedWorldId, String(), adoptPtr(m_activityLogger));
         m_webViewHelper.initialize(true);
         m_scriptController = &m_webViewHelper.webViewImpl()->mainFrameImpl()->frame()->script();
+        FrameTestHelpers::loadFrame(m_webViewHelper.webViewImpl()->mainFrame(), "about:blank");
     }
 
     void executeScriptInMainWorld(const String& script) const

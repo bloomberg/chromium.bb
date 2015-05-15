@@ -55,6 +55,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
@@ -235,7 +236,17 @@ WindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world)
 
 void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
 {
-    m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), lockBackForwardList);
+    // TODO(dcheng): Special case for window.open("about:blank") to ensure it loads synchronously into
+    // a new window. This is our historical behavior, and it's consistent with the creation of
+    // a new iframe with src="about:blank". Perhaps we could get rid of this if we started reporting
+    // the initial empty document's url as about:blank? See crbug.com/471239.
+    // TODO(japhet): This special case is also necessary for behavior asserted by some extensions tests.
+    // Using NavigationScheduler::scheduleNavigationChange causes the navigation to be flagged as a
+    // client redirect, which is observable via the webNavigation extension api.
+    if (isMainFrame() && !m_loader.stateMachine()->committedFirstRealDocumentLoad())
+        m_loader.load(FrameLoadRequest(&originDocument, url));
+    else
+        m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), lockBackForwardList);
 }
 
 void LocalFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)

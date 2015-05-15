@@ -1479,9 +1479,7 @@ PassRefPtrWillBeRawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, 
         return targetFrame->domWindow();
     }
 
-    WindowFeatures windowFeatures(windowFeaturesString);
-    LocalFrame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *frame());
-    return result ? result->domWindow() : nullptr;
+    return createWindow(urlString, frameName, WindowFeatures(windowFeaturesString), *callingWindow, *firstFrame, *frame());
 }
 
 DEFINE_TRACE(LocalDOMWindow)

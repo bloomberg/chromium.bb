@@ -7171,6 +7171,24 @@ TEST_F(WebFrameSwapTest, NavigateRemoteFrameViaLocation)
     reset();
 }
 
+TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame)
+{
+    RemoteNavigationClient remoteClient;
+    WebRemoteFrame* remoteFrame = remoteClient.frame();
+    mainFrame()->firstChild()->swap(remoteFrame);
+    remoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://127.0.0.1"));
+
+    KURL destination = toKURL("data:text/html:destination");
+    ASSERT_TRUE(mainFrame()->isWebLocalFrame());
+    ASSERT_TRUE(mainFrame()->firstChild()->isWebRemoteFrame());
+    LocalDOMWindow* mainWindow = toWebLocalFrameImpl(mainFrame())->frame()->localDOMWindow();
+    mainWindow->open(destination.string(), "frame1", "", mainWindow, mainWindow);
+    ASSERT_FALSE(remoteClient.lastRequest().isNull());
+    EXPECT_EQ(remoteClient.lastRequest().url(), WebURL(destination));
+
+    reset();
+}
+
 class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit CommitTypeWebFrameClient()
