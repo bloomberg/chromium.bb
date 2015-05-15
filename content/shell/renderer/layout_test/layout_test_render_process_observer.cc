@@ -13,6 +13,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -70,6 +71,11 @@ void LayoutTestRenderProcessObserver::WebKitInitialized() {
 
   test_interfaces_.reset(new WebTestInterfaces);
   test_interfaces_->ResetAll();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFontAntialiasing)) {
+    blink::setFontAntialiasingEnabledForTest(true);
+  }
+
 }
 
 void LayoutTestRenderProcessObserver::OnRenderProcessShutdown() {
