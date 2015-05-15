@@ -296,7 +296,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
       }
 
       TRACE_EVENT_COPY_ASYNC_BEGIN_WITH_TIMESTAMP0(
-          "benchmark",
+          "benchmark,latencyInfo",
           trace_name.c_str(),
           TRACE_ID_DONT_MANGLE(trace_id),
           ts);
@@ -332,7 +332,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     terminated = true;
 
     if (*benchmark_enabled) {
-      TRACE_EVENT_COPY_ASYNC_END1("benchmark",
+      TRACE_EVENT_COPY_ASYNC_END1("benchmark,latencyInfo",
                                   trace_name.c_str(),
                                   TRACE_ID_DONT_MANGLE(trace_id),
                                   "data", AsTraceableData(*this));
