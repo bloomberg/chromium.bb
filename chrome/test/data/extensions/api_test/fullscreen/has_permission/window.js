@@ -6,7 +6,9 @@ window.onload = function () {
   function requestFullscreen() {
     document.onwebkitfullscreenchange = chrome.test.succeed;
     document.onwebkitfullscreenerror = chrome.test.fail;
-    document.body.webkitRequestFullscreen();
+    chrome.test.runWithUserGesture(function() {
+      document.body.webkitRequestFullscreen();
+    });
   };
   document.body.onclick = requestFullscreen;  // enables manual testing.
   chrome.test.runTests([requestFullscreen]);

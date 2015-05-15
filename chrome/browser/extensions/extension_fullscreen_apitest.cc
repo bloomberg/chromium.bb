@@ -7,13 +7,19 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        ExtensionFullscreenAccessFail) {
-  // Test that fullscreen can be accessed from an extension without permission.
+  // Test that fullscreen cannot be accessed from an extension without
+  // permission.
   ASSERT_TRUE(RunPlatformAppTest("fullscreen/no_permission")) << message_;
 }
 
-// Disabled, a user gesture is required for fullscreen. http://crbug.com/174178
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DISABLED_ExtensionFullscreenAccessPass) {
+#if defined(OS_MACOSX)
+// Fails on MAC: http://crbug.com/480370
+#define MAYBE_ExtensionFullscreenAccessPass \
+    DISABLED_ExtensionFullscreenAccessPass
+#else
+#define MAYBE_ExtensionFullscreenAccessPass ExtensionFullscreenAccessPass
+#endif  // defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ExtensionFullscreenAccessPass) {
   // Test that fullscreen can be accessed from an extension with permission.
   ASSERT_TRUE(RunPlatformAppTest("fullscreen/has_permission")) << message_;
 }
