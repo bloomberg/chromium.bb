@@ -43,9 +43,9 @@ class BrowserContextKeyedAPI : public KeyedService {
   static const bool kServiceIsNULLWhileTesting = false;
 
   // Users of this factory template must define a GetFactoryInstance()
-  // and manage their own instances (typically using LazyInstance or
-  // Singleton), because those cannot be included in more than one
-  // translation unit (and thus cannot be initialized in a header file).
+  // and manage their own instances (using LazyInstance), because those cannot
+  // be included in more than one translation unit (and thus cannot be
+  // initialized in a header file).
   //
   // In the header file, declare GetFactoryInstance(), e.g.:
   //   class HistoryAPI {
