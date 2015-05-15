@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
@@ -88,7 +88,7 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
   thread.Start();
   TestNetworkDelegate network_delegate;
   NetworkDelegateErrorObserver observer(
-      &network_delegate, base::MessageLoopProxy::current().get());
+      &network_delegate, base::ThreadTaskRunnerHandle::Get().get());
   thread.message_loop()
       ->PostTask(FROM_HERE,
                  base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
@@ -105,7 +105,7 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   base::Thread thread("test_thread");
   thread.Start();
   NetworkDelegateErrorObserver observer(
-      NULL, base::MessageLoopProxy::current().get());
+      NULL, base::ThreadTaskRunnerHandle::Get().get());
   thread.message_loop()
       ->PostTask(FROM_HERE,
                  base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,

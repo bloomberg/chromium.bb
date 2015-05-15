@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
@@ -287,8 +288,7 @@ class SynchConfigGetter {
   void SetupAndInitialFetch() {
     // We pass the mock IO thread as both the IO and file threads.
     config_service_->SetupAndFetchInitialConfig(
-        base::MessageLoopProxy::current(),
-        io_thread_.message_loop_proxy(),
+        base::ThreadTaskRunnerHandle::Get(), io_thread_.message_loop_proxy(),
         io_thread_.message_loop_proxy());
   }
   // Synchronously gets the proxy config.

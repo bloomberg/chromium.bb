@@ -9,10 +9,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -201,8 +202,9 @@ class Job : public base::RefCountedThreadSafe<Job> {
 
   // This method is called on the worker thread to do the job's work. On
   // completion, implementors are expected to call OnJobCompleted() on
-  // |origin_loop|.
-  virtual void Run(scoped_refptr<base::MessageLoopProxy> origin_loop) = 0;
+  // |origin_runner|.
+  virtual void Run(
+      scoped_refptr<base::SingleThreadTaskRunner> origin_runner) = 0;
 
  protected:
   void OnJobCompleted() {
@@ -242,13 +244,13 @@ class CreateResolverJob : public Job {
         factory_(factory) {}
 
   // Runs on the worker thread.
-  void Run(scoped_refptr<base::MessageLoopProxy> origin_loop) override {
+  void Run(scoped_refptr<base::SingleThreadTaskRunner> origin_runner) override {
     scoped_ptr<ProxyResolverFactory::Request> request;
     int rv = factory_->CreateProxyResolver(script_data_, &resolver_,
                                            CompletionCallback(), &request);
 
     DCHECK_NE(rv, ERR_IO_PENDING);
-    origin_loop->PostTask(
+    origin_runner->PostTask(
         FROM_HERE, base::Bind(&CreateResolverJob::RequestComplete, this, rv));
   }
 
@@ -309,16 +311,15 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
   }
 
   // Runs on the worker thread.
-  void Run(scoped_refptr<base::MessageLoopProxy> origin_loop) override {
+  void Run(scoped_refptr<base::SingleThreadTaskRunner> origin_runner) override {
     ProxyResolver* resolver = executor()->resolver();
     DCHECK(resolver);
     int rv = resolver->GetProxyForURL(
         url_, &results_buf_, CompletionCallback(), NULL, net_log_);
     DCHECK_NE(rv, ERR_IO_PENDING);
 
-    origin_loop->PostTask(
-        FROM_HERE,
-        base::Bind(&GetProxyForURLJob::QueryComplete, this, rv));
+    origin_runner->PostTask(
+        FROM_HERE, base::Bind(&GetProxyForURLJob::QueryComplete, this, rv));
   }
 
  protected:
@@ -371,7 +372,7 @@ void Executor::StartJob(Job* job) {
   job->FinishedWaitingForThread();
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&Job::Run, job, base::MessageLoopProxy::current()));
+      base::Bind(&Job::Run, job, base::ThreadTaskRunnerHandle::Get()));
 }
 
 void Executor::OnJobCompleted(Job* job) {

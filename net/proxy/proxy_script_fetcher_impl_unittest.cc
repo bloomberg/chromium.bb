@@ -9,7 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_delegate_impl.h"
@@ -80,7 +82,7 @@ class RequestContext : public URLRequestContext {
     URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl();
 #if !defined(DISABLE_FILE_SUPPORT)
     job_factory->SetProtocolHandler(
-        "file", new FileProtocolHandler(base::MessageLoopProxy::current()));
+        "file", new FileProtocolHandler(base::ThreadTaskRunnerHandle::Get()));
 #endif
     storage_.set_job_factory(job_factory);
   }

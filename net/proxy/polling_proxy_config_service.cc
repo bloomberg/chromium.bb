@@ -7,9 +7,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "net/proxy/proxy_config.h"
 
@@ -21,26 +22,24 @@ namespace net {
 class PollingProxyConfigService::Core
     : public base::RefCountedThreadSafe<PollingProxyConfigService::Core> {
  public:
-  Core(base::TimeDelta poll_interval,
-       GetConfigFunction get_config_func)
+  Core(base::TimeDelta poll_interval, GetConfigFunction get_config_func)
       : get_config_func_(get_config_func),
         poll_interval_(poll_interval),
-        have_initialized_origin_loop_(false),
+        have_initialized_origin_runner_(false),
         has_config_(false),
         poll_task_outstanding_(false),
-        poll_task_queued_(false) {
-  }
+        poll_task_queued_(false) {}
 
   // Called when the parent PollingProxyConfigService is destroyed
   // (observers should not be called past this point).
   void Orphan() {
     base::AutoLock l(lock_);
-    origin_loop_proxy_ = NULL;
+    origin_task_runner_ = NULL;
   }
 
   bool GetLatestProxyConfig(ProxyConfig* config) {
     LazyInitializeOriginLoop();
-    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
     OnLazyPoll();
 
@@ -55,19 +54,19 @@ class PollingProxyConfigService::Core
 
   void AddObserver(Observer* observer) {
     LazyInitializeOriginLoop();
-    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
     observers_.AddObserver(observer);
   }
 
   void RemoveObserver(Observer* observer) {
-    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
     observers_.RemoveObserver(observer);
   }
 
   // Check for a new configuration if enough time has elapsed.
   void OnLazyPoll() {
     LazyInitializeOriginLoop();
-    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
     if (last_poll_time_.is_null() ||
         (base::TimeTicks::Now() - last_poll_time_) > poll_interval_) {
@@ -77,7 +76,7 @@ class PollingProxyConfigService::Core
 
   void CheckForChangesNow() {
     LazyInitializeOriginLoop();
-    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
     if (poll_task_outstanding_) {
       // Only allow one task to be outstanding at a time. If we get a poll
@@ -105,8 +104,8 @@ class PollingProxyConfigService::Core
     func(&config);
 
     base::AutoLock l(lock_);
-    if (origin_loop_proxy_.get()) {
-      origin_loop_proxy_->PostTask(
+    if (origin_task_runner_.get()) {
+      origin_task_runner_->PostTask(
           FROM_HERE, base::Bind(&Core::GetConfigCompleted, this, config));
     }
   }
@@ -116,10 +115,10 @@ class PollingProxyConfigService::Core
     DCHECK(poll_task_outstanding_);
     poll_task_outstanding_ = false;
 
-    if (!origin_loop_proxy_.get())
+    if (!origin_task_runner_.get())
       return;  // Was orphaned (parent has already been destroyed).
 
-    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
     if (!has_config_ || !last_config_.Equals(config)) {
       // If the configuration has changed, notify the observers.
@@ -139,9 +138,9 @@ class PollingProxyConfigService::Core
     //               now chrome is constructing the ProxyConfigService on the
     //               UI thread so we can't cache the IO thread for the purpose
     //               of DCHECKs until the first call is made.
-    if (!have_initialized_origin_loop_) {
-      origin_loop_proxy_ = base::MessageLoopProxy::current();
-      have_initialized_origin_loop_ = true;
+    if (!have_initialized_origin_runner_) {
+      origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+      have_initialized_origin_runner_ = true;
     }
   }
 
@@ -152,9 +151,9 @@ class PollingProxyConfigService::Core
   base::TimeDelta poll_interval_;
 
   base::Lock lock_;
-  scoped_refptr<base::MessageLoopProxy> origin_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
 
-  bool have_initialized_origin_loop_;
+  bool have_initialized_origin_runner_;
   bool has_config_;
   bool poll_task_outstanding_;
   bool poll_task_queued_;

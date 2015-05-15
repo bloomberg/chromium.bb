@@ -10,7 +10,7 @@
 #include "net/proxy/proxy_resolver_error_observer.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -23,7 +23,7 @@ class NET_EXPORT_PRIVATE NetworkDelegateErrorObserver
     : public ProxyResolverErrorObserver {
  public:
   NetworkDelegateErrorObserver(NetworkDelegate* network_delegate,
-                               base::MessageLoopProxy* origin_loop);
+                               base::SingleThreadTaskRunner* origin_runner);
   ~NetworkDelegateErrorObserver() override;
 
   // ProxyResolverErrorObserver implementation.

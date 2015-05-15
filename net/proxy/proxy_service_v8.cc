@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_service_v8.h"
 
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "net/proxy/network_delegate_error_observer.h"
 #include "net/proxy/proxy_resolver.h"
@@ -30,7 +31,7 @@ class ProxyResolverFactoryForV8Resolver : public LegacyProxyResolverFactory {
     DCHECK(thread_checker_.CalledOnValidThread());
     ProxyResolverErrorObserver* error_observer =
         new NetworkDelegateErrorObserver(
-            network_delegate_, base::MessageLoopProxy::current().get());
+            network_delegate_, base::ThreadTaskRunnerHandle::Get().get());
     return make_scoped_ptr(
         new ProxyResolverV8Tracing(host_resolver_, error_observer, net_log_));
   }

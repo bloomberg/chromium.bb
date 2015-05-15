@@ -5,10 +5,11 @@
 #include "net/proxy/proxy_resolver_v8_tracing.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -200,7 +201,7 @@ class ProxyResolverV8Tracing::Job
 
   // The thread which called into ProxyResolverV8Tracing, and on which the
   // completion callback is expected to run.
-  scoped_refptr<base::MessageLoopProxy> origin_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_runner_;
 
   // The ProxyResolverV8Tracing which spawned this Job.
   // Initialized on origin thread and then accessed from both threads.
@@ -295,7 +296,7 @@ class ProxyResolverV8Tracing::Job
 };
 
 ProxyResolverV8Tracing::Job::Job(ProxyResolverV8Tracing* parent)
-    : origin_loop_(base::MessageLoopProxy::current()),
+    : origin_runner_(base::ThreadTaskRunnerHandle::Get()),
       parent_(parent),
       event_(true, false),
       last_num_dns_(0),
@@ -385,7 +386,7 @@ void ProxyResolverV8Tracing::Job::CheckIsOnWorkerThread() const {
 }
 
 void ProxyResolverV8Tracing::Job::CheckIsOnOriginThread() const {
-  DCHECK(origin_loop_->BelongsToCurrentThread());
+  DCHECK(origin_runner_->BelongsToCurrentThread());
 }
 
 void ProxyResolverV8Tracing::Job::SetCallback(
@@ -430,9 +431,8 @@ NetLog* ProxyResolverV8Tracing::Job::net_log() {
 void ProxyResolverV8Tracing::Job::NotifyCaller(int result) {
   CheckIsOnWorkerThread();
 
-  origin_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&Job::NotifyCallerOnOriginLoop, this, result));
+  origin_runner_->PostTask(
+      FROM_HERE, base::Bind(&Job::NotifyCallerOnOriginLoop, this, result));
 }
 
 void ProxyResolverV8Tracing::Job::NotifyCallerOnOriginLoop(int result) {
@@ -662,7 +662,7 @@ bool ProxyResolverV8Tracing::Job::PostDnsOperationAndWait(
   DCHECK(!pending_dns_);
   pending_dns_host_ = host;
   pending_dns_op_ = op;
-  origin_loop_->PostTask(FROM_HERE, base::Bind(&Job::DoDnsOperation, this));
+  origin_runner_->PostTask(FROM_HERE, base::Bind(&Job::DoDnsOperation, this));
 
   event_.Wait();
   event_.Reset();

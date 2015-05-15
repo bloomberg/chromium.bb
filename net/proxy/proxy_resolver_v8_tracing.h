@@ -14,7 +14,7 @@
 
 namespace base {
 class Thread;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
