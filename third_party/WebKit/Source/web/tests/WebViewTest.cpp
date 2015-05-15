@@ -2930,7 +2930,12 @@ TEST_F(WebViewTest, TestPushFrameTimingRequestRectsToGraphicsLayer3)
 }
 
 // Test 3 frames, all on the same layer (i.e. [1 2 3])
+// Fails on android, see crbug.com/488381.
+#if OS(ANDROID)
+TEST_F(WebViewTest, DISABLED_TestRecordFrameTimingEvents)
+#else
 TEST_F(WebViewTest, TestRecordFrameTimingEvents)
+#endif
 {
     std::string url = m_baseURL + "frame_timing_inner.html?100px:100px";
     registerMockedURLLoad(toKURL(url), "frame_timing_inner.html");
