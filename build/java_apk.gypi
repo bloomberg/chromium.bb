@@ -924,52 +924,16 @@
       ],
     },
     {
-      'action_name': 'ant_package_<(_target_name)',
-      'message': 'Packaging <(_target_name)',
       'variables': {
-        # Write the inputs list to a file, so that its mtime is updated when
-        # the list of inputs changes.
-        'inputs_list_file': '>|(apk_package.<(_target_name).gypcmd >@(package_input_paths))'
+        'apk_path': '<(unsigned_apk_path)',
+        'native_libs_dir': '<(apk_package_native_libs_dir)',
+        'conditions': [
+          ['native_lib_target != ""', {
+            'extra_inputs': ['<(native_lib_placeholder_stamp)'],
+          }],
+        ],
       },
-      'inputs': [
-        '<(DEPTH)/build/android/ant/apk-package.xml',
-        '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/ant.py',
-        '<(dex_path)',
-        '<(codegen_stamp)',
-        '<(obfuscate_stamp)',
-        '<(resource_packaged_apk_path)',
-        '>@(package_input_paths)',
-        '>(inputs_list_file)',
-      ],
-      'outputs': [
-        '<(unsigned_apk_path)',
-      ],
-      'conditions': [
-        ['native_lib_target != ""', {
-          'inputs': ['<(native_lib_placeholder_stamp)'],
-        }],
-      ],
-      'action': [
-        'python', '<(DEPTH)/build/android/gyp/ant.py',
-        '--',
-        '-quiet',
-        '-DDEX_FILE_PATH=<(intermediate_dir)/classes.dex',
-        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-        '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-        '-DRESOURCE_PACKAGED_APK_NAME=<(resource_packaged_apk_name)',
-        '-DAPK_NAME=<(apk_name)',
-        '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-        '-DNATIVE_LIBS_DIR=<(apk_package_native_libs_dir)',
-        '-DOUT_DIR=<(intermediate_dir)',
-        '-DUNSIGNED_APK_PATH=<(unsigned_apk_path)',
-        '-DEMMA_INSTRUMENT=<(emma_instrument)',
-        '-DEMMA_DEVICE_JAR=<(emma_device_jar)',
-
-        '-Dbasedir=.',
-        '-buildfile',
-        '<(DEPTH)/build/android/ant/apk-package.xml',
-      ]
+      'includes': ['android/apkbuilder_action.gypi'],
     },
   ],
 }

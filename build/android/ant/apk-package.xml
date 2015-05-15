@@ -67,7 +67,7 @@
           debugpackaging="${build.is.packaging.debug}"
           debugsigning="${build.is.signing.debug}"
           verbose="${verbose}"
-          hascode="true"
+          hascode="${HAS_CODE}"
           previousBuildType="/"
           buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
         <dex path="${intermediate.dex.file}"/>

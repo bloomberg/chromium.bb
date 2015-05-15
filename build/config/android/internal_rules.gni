@@ -534,10 +534,12 @@ template("create_apk") {
     depfile = "$target_gen_dir/$target_name.d"
 
     inputs = [
-      _dex_path,
       _resource_packaged_apk_path,
       _ant_script,
     ]
+    if (defined(_dex_path)) {
+      inputs += [ _dex_path ]
+    }
 
     outputs = [
       depfile,
@@ -549,7 +551,6 @@ template("create_apk") {
         rebase_path(_resource_packaged_apk_path, root_build_dir)
     _rebased_packaged_apk_path = rebase_path(_packaged_apk_path, root_build_dir)
     _rebased_native_libs_dir = rebase_path(_native_libs_dir, root_build_dir)
-    _rebased_dex_path = rebase_path(_dex_path, root_build_dir)
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
@@ -564,11 +565,19 @@ template("create_apk") {
       "-DUNSIGNED_APK_PATH=$_rebased_packaged_apk_path",
       "-DEMMA_INSTRUMENT=0",
       "-DEMMA_DEVICE_JAR=$_rebased_emma_jar",
-      "-DDEX_FILE_PATH=$_rebased_dex_path",
       "-Dbasedir=.",
       "-buildfile",
       rebase_path(_ant_script, root_build_dir),
     ]
+    if (defined(_dex_path)) {
+      _rebased_dex_path = rebase_path(_dex_path, root_build_dir)
+      args += [
+        "-DDEX_FILE_PATH=$_rebased_dex_path",
+        "-DHAS_CODE=true",
+      ]
+    } else {
+      args += [ "-DHAS_CODE=false" ]
+    }
   }
 
   action("${target_name}__finalize") {
