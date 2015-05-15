@@ -1398,7 +1398,7 @@ drm_compositor_create_gl_renderer(struct drm_compositor *ec)
 
 	format = ec->format;
 	if (gl_renderer->create(&ec->base, EGL_PLATFORM_GBM_KHR, (void *) ec->gbm,
-			       gl_renderer->opaque_attribs, &format) < 0) {
+			       gl_renderer->opaque_attribs, &format, 1) < 0) {
 		return -1;
 	}
 
@@ -1620,7 +1620,8 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 				       (EGLNativeDisplayType)output->surface,
 				       output->surface,
 				       gl_renderer->opaque_attribs,
-				       &format) < 0) {
+				       &format,
+				       1) < 0) {
 		weston_log("failed to create gl renderer output state\n");
 		gbm_surface_destroy(output->surface);
 		return -1;

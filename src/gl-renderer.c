@@ -1898,14 +1898,38 @@ log_egl_config_info(EGLDisplay egldpy, EGLConfig eglconfig)
 }
 
 static int
+match_config_to_visual(EGLDisplay egl_display,
+		       EGLint visual_id,
+		       EGLConfig *configs,
+		       int count)
+{
+	int i;
+
+	for (i = 0; i < count; ++i) {
+		EGLint id;
+
+		if (!eglGetConfigAttrib(egl_display,
+				configs[i], EGL_NATIVE_VISUAL_ID,
+				&id))
+			continue;
+
+		if (id == visual_id)
+			return i;
+	}
+
+	weston_log("Unable to find an appropriate EGL config.\n");
+	return -1;
+}
+
+static int
 egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
-		  const EGLint *visual_id,
+		  const EGLint *visual_id, const int n_ids,
 		  EGLConfig *config_out)
 {
 	EGLint count = 0;
 	EGLint matched = 0;
 	EGLConfig *configs;
-	int i;
+	int i, config_index = -1;
 
 	if (!eglGetConfigs(gr->egl_display, NULL, 0, &count) || count < 1)
 		return -1;
@@ -1915,31 +1939,27 @@ egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
 		return -1;
 
 	if (!eglChooseConfig(gr->egl_display, attribs, configs,
-			      count, &matched))
+			      count, &matched) || !matched)
 		goto out;
 
-	for (i = 0; i < matched; ++i) {
-		EGLint id;
+	if (!visual_id)
+		config_index = 0;
 
-		if (visual_id) {
-			if (!eglGetConfigAttrib(gr->egl_display,
-					configs[i], EGL_NATIVE_VISUAL_ID,
-					&id))
-				continue;
+	for (i = 0; config_index == -1 && i < n_ids; i++)
+		config_index = match_config_to_visual(gr->egl_display,
+						      visual_id[i],
+						      configs,
+						      matched);
 
-			if (id != 0 && id != *visual_id)
-				continue;
-		}
-
-		*config_out = configs[i];
-
-		free(configs);
-		return 0;
-	}
+	if (config_index != -1)
+		*config_out = configs[config_index];
 
 out:
 	free(configs);
-	return -1;
+	if (config_index == -1)
+		return -1;
+
+	return 0;
 }
 
 static void
@@ -1976,7 +1996,8 @@ gl_renderer_output_create(struct weston_output *output,
 			  EGLNativeWindowType window_for_legacy,
 			  void *window_for_platform,
 			  const EGLint *attribs,
-			  const EGLint *visual_id)
+			  const EGLint *visual_id,
+			  int n_ids)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
@@ -1984,7 +2005,8 @@ gl_renderer_output_create(struct weston_output *output,
 	EGLConfig egl_config;
 	int i;
 
-	if (egl_choose_config(gr, attribs, visual_id, &egl_config) == -1) {
+	if (egl_choose_config(gr, attribs, visual_id,
+			      n_ids, &egl_config) == -1) {
 		weston_log("failed to choose EGL config for output\n");
 		return -1;
 	}
@@ -2260,7 +2282,7 @@ platform_to_extension(EGLenum platform)
 static int
 gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	void *native_window, const EGLint *attribs,
-	const EGLint *visual_id)
+	const EGLint *visual_id, int n_ids)
 {
 	struct gl_renderer *gr;
 	EGLint major, minor;
@@ -2323,7 +2345,8 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 		goto err_egl;
 	}
 
-	if (egl_choose_config(gr, attribs, visual_id, &gr->egl_config) < 0) {
+	if (egl_choose_config(gr, attribs, visual_id,
+			      n_ids, &gr->egl_config) < 0) {
 		weston_log("failed to choose EGL config\n");
 		goto err_egl;
 	}

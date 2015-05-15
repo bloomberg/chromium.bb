@@ -648,7 +648,8 @@ wayland_output_init_gl_renderer(struct wayland_output *output)
 				       output->gl.egl_window,
 				       output->gl.egl_window,
 				       gl_renderer->alpha_attribs,
-				       NULL) < 0)
+				       NULL,
+				       0) < 0)
 		goto cleanup_window;
 
 	return 0;
@@ -1970,10 +1971,11 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 
 	if (!c->use_pixman) {
 		if (gl_renderer->create(&c->base,
-					       EGL_PLATFORM_WAYLAND_KHR,
-					       c->parent.wl_display,
-					       gl_renderer->alpha_attribs,
-					       NULL) < 0) {
+					EGL_PLATFORM_WAYLAND_KHR,
+					c->parent.wl_display,
+					gl_renderer->alpha_attribs,
+					NULL,
+					0) < 0) {
 			weston_log("Failed to initialize the GL renderer; "
 				   "falling back to pixman.\n");
 			c->use_pixman = 1;

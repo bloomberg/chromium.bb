@@ -570,7 +570,7 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 		if (gl_renderer->output_create(&output->base,
 					       (EGLNativeWindowType)NULL, NULL,
 					       gl_renderer->opaque_attribs,
-					       NULL) < 0) {
+					       NULL, 0) < 0) {
 			weston_log("gl_renderer_output_create failed.\n");
 			goto out_shadow_surface;
 		}
@@ -871,7 +871,7 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		if (gl_renderer->create(&compositor->base, NO_EGL_PLATFORM,
 					EGL_DEFAULT_DISPLAY,
 					gl_renderer->opaque_attribs,
-					NULL) < 0) {
+					NULL, 0) < 0) {
 			weston_log("gl_renderer_create failed.\n");
 			goto out_launcher;
 		}

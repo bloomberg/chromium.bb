@@ -906,7 +906,8 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 						 (EGLNativeWindowType) output->window,
 						 &xid,
 						 gl_renderer->opaque_attribs,
-						 NULL);
+						 NULL,
+						 0);
 		if (ret < 0)
 			return NULL;
 	}
@@ -1493,7 +1494,7 @@ init_gl_renderer(struct x11_compositor *c)
 		return -1;
 
 	ret = gl_renderer->create(&c->base, EGL_PLATFORM_X11_KHR, (void *) c->dpy,
-				  gl_renderer->opaque_attribs, NULL);
+				  gl_renderer->opaque_attribs, NULL, 0);
 
 	return ret;
 }
