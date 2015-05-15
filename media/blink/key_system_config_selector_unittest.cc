@@ -210,7 +210,7 @@ class KeySystemConfigSelectorTest : public testing::Test {
   }
 
   void OnSucceeded(const blink::WebMediaKeySystemConfiguration& result,
-                   bool are_secure_codecs_required) {
+                   const CdmConfig& cdm_config) {
     succeeded_count_++;
     config_ = result;
   }

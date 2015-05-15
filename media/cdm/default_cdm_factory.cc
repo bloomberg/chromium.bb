@@ -23,9 +23,8 @@ DefaultCdmFactory::~DefaultCdmFactory() {
 
 void DefaultCdmFactory::Create(
     const std::string& key_system,
-    bool allow_distinctive_identifier,
-    bool allow_persistent_state,
     const GURL& security_origin,
+    const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,

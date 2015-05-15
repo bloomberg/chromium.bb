@@ -38,7 +38,8 @@ class RendererCdmManager : public RenderFrameObserver {
                      uint32_t promise_id,
                      ProxyMediaKeys* media_keys,
                      const std::string& key_system,
-                     const GURL& security_origin);
+                     const GURL& security_origin,
+                     bool use_hw_secure_codecs);
   void SetServerCertificate(int cdm_id,
                             uint32_t promise_id,
                             const std::vector<uint8>& certificate);

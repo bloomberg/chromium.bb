@@ -21,6 +21,7 @@ class WebSecurityOrigin;
 
 namespace media {
 
+struct CdmConfig;
 class CdmContext;
 class CdmFactory;
 class CdmSessionAdapter;
@@ -31,9 +32,8 @@ class MEDIA_EXPORT WebContentDecryptionModuleImpl
  public:
   static void Create(CdmFactory* cdm_factory,
                      const base::string16& key_system,
-                     bool allow_distinctive_identifier,
-                     bool allow_persistent_state,
                      const blink::WebSecurityOrigin& security_origin,
+                     const CdmConfig& cdm_config,
                      blink::WebContentDecryptionModuleResult result);
 
   virtual ~WebContentDecryptionModuleImpl();

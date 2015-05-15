@@ -29,6 +29,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::MessageType,
 IPC_ENUM_TRAITS_MAX_VALUE(CdmHostMsg_CreateSession_InitDataType,
                           INIT_DATA_TYPE_MAX)
 
+IPC_STRUCT_BEGIN(CdmHostMsg_InitializeCdm_Params)
+  IPC_STRUCT_MEMBER(std::string, key_system)
+  IPC_STRUCT_MEMBER(GURL, security_origin)
+  IPC_STRUCT_MEMBER(bool, use_hw_secure_codecs)
+IPC_STRUCT_END()
+
 IPC_STRUCT_TRAITS_BEGIN(media::CdmKeyInformation)
   IPC_STRUCT_TRAITS_MEMBER(key_id)
   IPC_STRUCT_TRAITS_MEMBER(status)
@@ -37,12 +43,11 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages from render to browser.
 
-IPC_MESSAGE_CONTROL5(CdmHostMsg_InitializeCdm,
+IPC_MESSAGE_CONTROL4(CdmHostMsg_InitializeCdm,
                      int /* render_frame_id */,
                      int /* cdm_id */,
                      uint32_t /* promise_id */,
-                     std::string /* key_system */,
-                     GURL /* security_origin */)
+                     CdmHostMsg_InitializeCdm_Params /* params */)
 
 IPC_MESSAGE_CONTROL4(CdmHostMsg_SetServerCertificate,
                      int /* render_frame_id */,

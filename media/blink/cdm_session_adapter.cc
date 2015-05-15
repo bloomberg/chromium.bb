@@ -28,17 +28,15 @@ CdmSessionAdapter::~CdmSessionAdapter() {}
 void CdmSessionAdapter::CreateCdm(
     CdmFactory* cdm_factory,
     const std::string& key_system,
-    bool allow_distinctive_identifier,
-    bool allow_persistent_state,
     const GURL& security_origin,
+    const CdmConfig& cdm_config,
     blink::WebContentDecryptionModuleResult result) {
   // Note: WebContentDecryptionModuleImpl::Create() calls this method without
   // holding a reference to the CdmSessionAdapter. Bind OnCdmCreated() with
   // |this| instead of |weak_this| to prevent |this| from being destructed.
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   cdm_factory->Create(
-      key_system, allow_distinctive_identifier, allow_persistent_state,
-      security_origin,
+      key_system, security_origin, cdm_config,
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
       base::Bind(&CdmSessionAdapter::OnLegacySessionError, weak_this),
