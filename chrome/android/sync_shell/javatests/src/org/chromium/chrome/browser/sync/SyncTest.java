@@ -130,6 +130,22 @@ public class SyncTest extends SyncTestBase {
 
     @LargeTest
     @Feature({"Sync"})
+    public void testSignInAndOut() throws InterruptedException {
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        Account account =
+                AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
+
+        // Signing out should disable sync.
+        signOut();
+        SyncTestUtil.verifySyncIsSignedOut(mContext);
+
+        // Signing back in should re-enable sync.
+        signIn(account);
+        SyncTestUtil.verifySyncIsSignedIn(mContext, account);
+    }
+
+    @LargeTest
+    @Feature({"Sync"})
     public void testDisableAndEnableSyncThroughAndroid() throws InterruptedException {
         setupTestAccountAndSignInToSync(CLIENT_ID);
         SyncTestUtil.ensureSyncInitialized(mContext);

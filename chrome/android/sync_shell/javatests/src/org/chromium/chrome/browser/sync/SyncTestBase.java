@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
-import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.ThreadUtils;
@@ -13,6 +12,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
@@ -131,15 +131,7 @@ public class SyncTestBase extends ChromeShellTestBase {
                 }, true);
 
         SyncTestUtil.verifySyncIsSignedOut(getActivity());
-
-        final Activity activity = launchChromeShellWithBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSyncController.signIn(activity, SyncTestUtil.DEFAULT_TEST_ACCOUNT);
-            }
-        });
-
+        signIn(defaultTestAccount);
         SyncTestUtil.verifySyncIsSignedIn(mContext, defaultTestAccount);
         assertTrue("Sync everything should be enabled",
                 SyncTestUtil.isSyncEverythingEnabled(mContext));
@@ -163,6 +155,24 @@ public class SyncTestBase extends ChromeShellTestBase {
             }
         });
         getInstrumentation().waitForIdleSync();
+    }
+
+    protected void signIn(final Account account) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mSyncController.signIn(getActivity(), account.name);
+            }
+        });
+    }
+
+    protected void signOut() throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SigninManager.get(mContext).signOut(getActivity(), null);
+            }
+        });
     }
 
     protected void waitForSyncInitialized() throws InterruptedException {
