@@ -48,14 +48,6 @@ void OpenDeviceOnWorkerThread(
       FROM_HERE, base::Bind(callback, path, base::Passed(handle.Pass())));
 }
 
-void CloseDeviceOnWorkerThread(
-    scoped_ptr<DrmDeviceHandle> handle,
-    const scoped_refptr<base::TaskRunner>& reply_runner,
-    const base::Closure& callback) {
-  handle.reset();
-  reply_runner->PostTask(FROM_HERE, callback);
-}
-
 base::FilePath GetPrimaryDisplayCardPath() {
   struct drm_mode_card_res res;
   for (int i = 0; /* end on first card# that does not exist */; i++) {
@@ -111,39 +103,29 @@ DrmDisplayHostManager::DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
     // synchronously since the GPU process will need it to initialize the
     // graphics state.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    scoped_ptr<DrmDeviceHandle> handle(new DrmDeviceHandle());
-    if (!handle->Initialize(primary_graphics_card_path_)) {
+    primary_drm_device_handle_.reset(new DrmDeviceHandle());
+    if (!primary_drm_device_handle_->Initialize(primary_graphics_card_path_)) {
       LOG(FATAL) << "Failed to open primary graphics card";
       return;
     }
-    drm_devices_.add(primary_graphics_card_path_, handle.Pass());
+    drm_devices_.insert(primary_graphics_card_path_);
   }
 
   device_manager_->AddObserver(this);
   proxy_->RegisterHandler(this);
 
-  DrmDeviceHandle* handle = drm_devices_.get(primary_graphics_card_path_);
   ScopedVector<HardwareDisplayControllerInfo> display_infos =
-      GetAvailableDisplayControllerInfos(handle->fd());
+      GetAvailableDisplayControllerInfos(primary_drm_device_handle_->fd());
   has_dummy_display_ = !display_infos.empty();
   for (size_t i = 0; i < display_infos.size(); ++i) {
     displays_.push_back(new DisplaySnapshotProxy(CreateDisplaySnapshotParams(
-        display_infos[i], handle->fd(), i, gfx::Point())));
+        display_infos[i], primary_drm_device_handle_->fd(), i, gfx::Point())));
   }
 }
 
 DrmDisplayHostManager::~DrmDisplayHostManager() {
   device_manager_->RemoveObserver(this);
   proxy_->UnregisterHandler(this);
-
-  for (auto it = drm_devices_.begin(); it != drm_devices_.end(); ++it) {
-    base::WorkerPool::PostTask(FROM_HERE,
-                               base::Bind(&CloseDeviceOnWorkerThread,
-                                          base::Passed(drm_devices_.take(it)),
-                                          base::ThreadTaskRunnerHandle::Get(),
-                                          base::Bind(&base::DoNothing)),
-                               false /* task_is_slow */);
-  }
 }
 
 DisplaySnapshot* DrmDisplayHostManager::GetDisplay(int64_t display_id) {
@@ -268,16 +250,11 @@ void DrmDisplayHostManager::ProcessEvent() {
             << "Removing primary graphics card";
         auto it = drm_devices_.find(event.path);
         if (it != drm_devices_.end()) {
-          task_pending_ = base::WorkerPool::PostTask(
+          task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(
-                  &CloseDeviceOnWorkerThread,
-                  base::Passed(drm_devices_.take_and_erase(it)),
-                  base::ThreadTaskRunnerHandle::Get(),
-                  base::Bind(&DrmDisplayHostManager::OnRemoveGraphicsDevice,
-                             weak_ptr_factory_.GetWeakPtr(), event.path)),
-              false /* task_is_slow */);
-          return;
+              base::Bind(&DrmDisplayHostManager::OnRemoveGraphicsDevice,
+                         weak_ptr_factory_.GetWeakPtr(), event.path));
+          drm_devices_.erase(it);
         }
         break;
     }
@@ -288,10 +265,9 @@ void DrmDisplayHostManager::OnAddGraphicsDevice(
     const base::FilePath& path,
     scoped_ptr<DrmDeviceHandle> handle) {
   if (handle->IsValid()) {
-    base::ScopedFD file = handle->Duplicate();
-    drm_devices_.add(path, handle.Pass());
+    drm_devices_.insert(path);
     proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
-        path, base::FileDescriptor(file.Pass())));
+        path, base::FileDescriptor(handle->PassFD())));
     NotifyDisplayDelegate();
   }
 
@@ -316,19 +292,20 @@ void DrmDisplayHostManager::OnChannelEstablished(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
     const base::Callback<void(IPC::Message*)>& send_callback) {
-  auto it = drm_devices_.find(primary_graphics_card_path_);
-  DCHECK(it != drm_devices_.end());
+  drm_devices_.clear();
+  drm_devices_.insert(primary_graphics_card_path_);
+  scoped_ptr<DrmDeviceHandle> handle = primary_drm_device_handle_.Pass();
+  if (!handle) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    handle.reset(new DrmDeviceHandle());
+    if (!handle->Initialize(primary_graphics_card_path_))
+      LOG(FATAL) << "Failed to open primary graphics card";
+  }
+
   // Send the primary device first since this is used to initialize graphics
   // state.
   proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
-      it->first, base::FileDescriptor(it->second->Duplicate())));
-
-  for (auto pair : drm_devices_) {
-    if (pair.second->IsValid() && pair.first != primary_graphics_card_path_) {
-      proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
-          pair.first, base::FileDescriptor(pair.second->Duplicate())));
-    }
-  }
+      primary_graphics_card_path_, base::FileDescriptor(handle->PassFD())));
 
   device_manager_->ScanDevices(this);
   NotifyDisplayDelegate();

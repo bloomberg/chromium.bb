@@ -23,7 +23,7 @@ class DrmDeviceHandle {
   bool Initialize(const base::FilePath& path);
 
   bool IsValid() const;
-  base::ScopedFD Duplicate();
+  base::ScopedFD PassFD();
 
  private:
   base::ScopedFD file_;

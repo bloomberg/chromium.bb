@@ -30,7 +30,8 @@ DrmDeviceHandle::DrmDeviceHandle() {
 }
 
 DrmDeviceHandle::~DrmDeviceHandle() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  if (file_.is_valid())
+    base::ThreadRestrictions::AssertIOAllowed();
 }
 
 bool DrmDeviceHandle::Initialize(const base::FilePath& path) {
@@ -63,15 +64,8 @@ bool DrmDeviceHandle::IsValid() const {
   return file_.is_valid();
 }
 
-base::ScopedFD DrmDeviceHandle::Duplicate() {
-  DCHECK(file_.is_valid());
-  int fd = dup(file_.get());
-  if (fd < 0) {
-    PLOG(ERROR) << "Failed to dup";
-    return base::ScopedFD();
-  }
-
-  return base::ScopedFD(fd);
+base::ScopedFD DrmDeviceHandle::PassFD() {
+  return file_.Pass();
 }
 
 }  // namespace ui

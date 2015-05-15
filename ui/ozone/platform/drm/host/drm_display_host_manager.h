@@ -7,8 +7,8 @@
 
 #include <map>
 #include <queue>
+#include <set>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -132,8 +132,11 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   bool task_pending_;
 
   // Keeps track of all the active DRM devices.
-  base::ScopedPtrHashMap<base::FilePath, scoped_ptr<DrmDeviceHandle>>
-      drm_devices_;
+  std::set<base::FilePath> drm_devices_;
+
+  // This is used to cache the primary DRM device until the channel is
+  // established.
+  scoped_ptr<DrmDeviceHandle> primary_drm_device_handle_;
 
   base::WeakPtrFactory<DrmDisplayHostManager> weak_ptr_factory_;
 
