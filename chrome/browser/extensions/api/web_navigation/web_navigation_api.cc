@@ -122,11 +122,8 @@ void WebNavigationEventRouter::TabReplacedAt(
     DCHECK(GetViewType(old_contents) != VIEW_TYPE_TAB_CONTENTS);
     return;
   }
-  const FrameNavigationState& frame_navigation_state =
-      tab_observer->frame_navigation_state();
-
-  if (!frame_navigation_state.IsValidUrl(old_contents->GetURL()) ||
-      !frame_navigation_state.IsValidUrl(new_contents->GetURL()))
+  if (!FrameNavigationState::IsValidUrl(old_contents->GetURL()) ||
+      !FrameNavigationState::IsValidUrl(new_contents->GetURL()))
     return;
 
   helpers::DispatchOnTabReplaced(old_contents, profile_, new_contents);
@@ -322,31 +319,21 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   if (!navigation_state_.CanSendEvents(render_frame_host))
     return;
 
+  std::string event_name;
   if (is_reference_fragment_navigation) {
-    helpers::DispatchOnCommitted(
-        web_navigation::OnReferenceFragmentUpdated::kEventName,
-        web_contents(),
-        render_frame_host,
-        navigation_state_.GetUrl(render_frame_host),
-        transition_type);
+    event_name = web_navigation::OnReferenceFragmentUpdated::kEventName;
   } else if (is_history_state_modification) {
-    helpers::DispatchOnCommitted(
-        web_navigation::OnHistoryStateUpdated::kEventName,
-        web_contents(),
-        render_frame_host,
-        navigation_state_.GetUrl(render_frame_host),
-        transition_type);
+    event_name = web_navigation::OnHistoryStateUpdated::kEventName;
   } else {
     if (navigation_state_.GetIsServerRedirected(render_frame_host)) {
       transition_type = ui::PageTransitionFromInt(
           transition_type | ui::PAGE_TRANSITION_SERVER_REDIRECT);
     }
-    helpers::DispatchOnCommitted(web_navigation::OnCommitted::kEventName,
-                                 web_contents(),
-                                 render_frame_host,
-                                 navigation_state_.GetUrl(render_frame_host),
-                                 transition_type);
+    event_name = web_navigation::OnCommitted::kEventName;
   }
+  helpers::DispatchOnCommitted(event_name, web_contents(), render_frame_host,
+                               navigation_state_.GetUrl(render_frame_host),
+                               transition_type);
 }
 
 void WebNavigationTabObserver::DidFailProvisionalLoad(

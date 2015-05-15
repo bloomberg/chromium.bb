@@ -37,17 +37,8 @@ FrameNavigationState::FrameNavigationState() {
 
 FrameNavigationState::~FrameNavigationState() {}
 
-bool FrameNavigationState::CanSendEvents(
-    content::RenderFrameHost* frame_host) const {
-  FrameHostToStateMap::const_iterator it =
-      frame_host_state_map_.find(frame_host);
-  if (it == frame_host_state_map_.end() || it->second.error_occurred) {
-    return false;
-  }
-  return IsValidUrl(it->second.url);
-}
-
-bool FrameNavigationState::IsValidUrl(const GURL& url) const {
+// static
+bool FrameNavigationState::IsValidUrl(const GURL& url) {
   for (unsigned i = 0; i < arraysize(kValidSchemes); ++i) {
     if (url.scheme() == kValidSchemes[i])
       return true;
@@ -58,6 +49,16 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
     return true;
   }
   return allow_extension_scheme_ && url.scheme() == kExtensionScheme;
+}
+
+bool FrameNavigationState::CanSendEvents(
+    content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end() || it->second.error_occurred) {
+    return false;
+  }
+  return IsValidUrl(it->second.url);
 }
 
 void FrameNavigationState::StartTrackingNavigation(

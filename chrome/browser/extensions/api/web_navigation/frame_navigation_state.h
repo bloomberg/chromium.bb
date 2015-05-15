@@ -28,16 +28,15 @@ class FrameNavigationState {
   FrameNavigationState();
   ~FrameNavigationState();
 
+  // True if in general webNavigation events may be sent for the given URL.
+  static bool IsValidUrl(const GURL& url);
+
   // Use these to iterate over all frame hosts known by this object.
   const_iterator begin() const { return frame_hosts_.begin(); }
   const_iterator end() const { return frame_hosts_.end(); }
 
   // True if navigation events for the given frame can be sent.
   bool CanSendEvents(content::RenderFrameHost* frame_host) const;
-
-  // TODO(dcheng): This should be static.
-  // True if in general webNavigation events may be sent for the given URL.
-  bool IsValidUrl(const GURL& url) const;
 
   // Starts to track a navigation in |frame_host| to |url|.
   void StartTrackingNavigation(content::RenderFrameHost* frame_host,
