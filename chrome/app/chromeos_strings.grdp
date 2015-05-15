@@ -6362,5 +6362,11 @@ All users must sign out to continue.
   <message name="IDS_WEBSTORE_WIDGET_DEFAULT_ERROR" desc="Default message shown when Chrome Web Store Widget app window content fails to load (e.g. if it fails to load Chrome Web Store Gallery in a webview).">
     Could not connect to the Chrome Web Store.
   </message>
+  <message name="IDS_FLAGS_PRINTER_PROVIDER_SEARCH_APP_NAME" desc="Name of the flag used to enable launching Chrome Web Store Gallery widget app for searching for printer provider apps.">
+    Chrome Web Store Gallery app for printer drivers
+  </message>
+  <message name="IDS_FLAGS_PRINTER_PROVIDER_SEARCH_APP_DESCRIPTION" desc="Description of a flag in chrome://flags that enables launching Chrome Web Store Gallery widget app for searching for printer provider apps.">
+    Enables Chrome Web Store Gallery app for printer drivers. The app searches Chrome Web Store for extensions that support printing to a USB printer with specific USB ID.
+  </message>
 
 </grit-part>

@@ -2404,6 +2404,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableNewVideoRenderer)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-printer-app-search",
+    IDS_FLAGS_PRINTER_PROVIDER_SEARCH_APP_NAME,
+    IDS_FLAGS_PRINTER_PROVIDER_SEARCH_APP_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnablePrinterAppSearch)
+  },
+#endif  // OS_CHROMEOS
   // Temporary flag to ease the transition to standard-compliant scrollTop
   // behavior.  Will be removed shortly after http://crbug.com/157855 ships.
   {
