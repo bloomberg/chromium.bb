@@ -661,17 +661,11 @@ PDFiumEngine::~PDFiumEngine() {
     pages_[i]->Unload();
 
   if (doc_) {
-    if (form_) {
-      FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WC);
-    }
+    FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WC);
     FPDF_CloseDocument(doc_);
-    if (form_) {
-      FPDFDOC_ExitFormFillEnvironment(form_);
-    }
+    FPDFDOC_ExitFormFillEnvironment(form_);
   }
-
-  if (fpdf_availability_)
-    FPDFAvail_Destroy(fpdf_availability_);
+  FPDFAvail_Destroy(fpdf_availability_);
 
   STLDeleteElements(&pages_);
 }
