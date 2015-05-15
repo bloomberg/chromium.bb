@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/policy/remote_commands/screenshot_delegate.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
@@ -18,6 +21,18 @@ ScreenshotDelegate::ScreenshotDelegate(
 }
 
 ScreenshotDelegate::~ScreenshotDelegate() {
+}
+
+bool ScreenshotDelegate::IsScreenshotAllowed() {
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DeviceCloudPolicyManagerChromeOS* manager =
+      connector->GetDeviceCloudPolicyManager();
+  // DeviceCloudPolicyManagerChromeOS and StatusUploader can be null during
+  // shutdown (and unit tests) - don't allow screenshots unless we have a
+  // StatusUploader that can confirm that screenshots are allowed.
+  return manager && manager->GetStatusUploader() &&
+         manager->GetStatusUploader()->IsSessionDataUploadAllowed();
 }
 
 void ScreenshotDelegate::TakeSnapshot(

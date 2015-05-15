@@ -137,10 +137,11 @@ scoped_refptr<base::RefCountedBytes> GenerateTestPNG(const int& width,
 
 class MockScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
  public:
-  MockScreenshotDelegate(
-      scoped_ptr<UploadJob::ErrorCode> upload_job_error_code);
+  MockScreenshotDelegate(scoped_ptr<UploadJob::ErrorCode> upload_job_error_code,
+                         bool screenshot_allowed);
   ~MockScreenshotDelegate() override;
 
+  bool IsScreenshotAllowed() override;
   void TakeSnapshot(
       gfx::NativeWindow window,
       const gfx::Rect& source_rect,
@@ -150,14 +151,21 @@ class MockScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
 
  private:
   scoped_ptr<UploadJob::ErrorCode> upload_job_error_code_;
+  bool screenshot_allowed_;
 };
 
 MockScreenshotDelegate::MockScreenshotDelegate(
-    scoped_ptr<UploadJob::ErrorCode> upload_job_error_code)
-    : upload_job_error_code_(upload_job_error_code.Pass()) {
+    scoped_ptr<UploadJob::ErrorCode> upload_job_error_code,
+    bool screenshot_allowed)
+    : upload_job_error_code_(upload_job_error_code.Pass()),
+      screenshot_allowed_(screenshot_allowed) {
 }
 
 MockScreenshotDelegate::~MockScreenshotDelegate() {
+}
+
+bool MockScreenshotDelegate::IsScreenshotAllowed() {
+  return screenshot_allowed_;
 }
 
 void MockScreenshotDelegate::TakeSnapshot(
@@ -257,7 +265,7 @@ void DeviceCommandScreenshotTest::VerifyResults(
 
 TEST_F(DeviceCommandScreenshotTest, Success) {
   scoped_ptr<RemoteCommandJob> job(new DeviceCommandScreenshotJob(
-      make_scoped_ptr(new MockScreenshotDelegate(nullptr))));
+      make_scoped_ptr(new MockScreenshotDelegate(nullptr, true))));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success = job->Run(
@@ -270,12 +278,28 @@ TEST_F(DeviceCommandScreenshotTest, Success) {
   run_loop_.Run();
 }
 
+TEST_F(DeviceCommandScreenshotTest, FailureUserInput) {
+  scoped_ptr<RemoteCommandJob> job(new DeviceCommandScreenshotJob(
+      make_scoped_ptr(new MockScreenshotDelegate(nullptr, false))));
+  InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
+                          kMockUploadUrl);
+  bool success =
+      job->Run(base::TimeTicks::Now(),
+               base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
+                          base::Unretained(this), base::Unretained(job.get()),
+                          RemoteCommandJob::FAILED,
+                          CreatePayloadFromResultCode(
+                              DeviceCommandScreenshotJob::FAILURE_USER_INPUT)));
+  EXPECT_TRUE(success);
+  run_loop_.Run();
+}
+
 TEST_F(DeviceCommandScreenshotTest, Failure) {
   using ErrorCode = UploadJob::ErrorCode;
   scoped_ptr<ErrorCode> error_code(
       new ErrorCode(UploadJob::AUTHENTICATION_ERROR));
   scoped_ptr<RemoteCommandJob> job(new DeviceCommandScreenshotJob(
-      make_scoped_ptr(new MockScreenshotDelegate(error_code.Pass()))));
+      make_scoped_ptr(new MockScreenshotDelegate(error_code.Pass(), true))));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success = job->Run(

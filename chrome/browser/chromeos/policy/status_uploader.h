@@ -44,6 +44,11 @@ class StatusUploader {
   // has ever happened.
   base::Time last_upload() const { return last_upload_; }
 
+  // Returns true if session data upload (screenshots, logs, etc) is allowed.
+  // This checks to ensure that the current session is a kiosk session, and
+  // that no user input (keyboard, mouse, touch, audio/video) has been received.
+  bool IsSessionDataUploadAllowed();
+
  private:
   // Callback invoked periodically to upload the device status from the
   // DeviceStatusCollector.

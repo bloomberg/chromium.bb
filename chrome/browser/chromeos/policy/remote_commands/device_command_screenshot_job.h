@@ -65,6 +65,12 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
    public:
     virtual ~Delegate() {}
 
+    // Returns true if screenshots are allowed in this session. Returns false
+    // if the current session is not an auto-launched kiosk session, or there
+    // have been certain types of user input that may result in leaking private
+    // information.
+    virtual bool IsScreenshotAllowed() = 0;
+
     // Acquires a snapshot of |source_rect| in |window| and invokes |callback|
     // with the PNG data. The passed-in callback will not be invoked after the
     // delegate has been destroyed. See e.g. ScreenshotDelegate.

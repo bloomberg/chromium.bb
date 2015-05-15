@@ -105,7 +105,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
     return device_store_.get();
   }
 
-  bool HasStatusUploaderForTest() { return status_uploader_; }
+  // Return the StatusUploader used to communicate device status to the
+  // policy server.
+  StatusUploader* GetStatusUploader() const { return status_uploader_.get(); }
 
  private:
   // Saves the state keys received from |session_manager_client_|.

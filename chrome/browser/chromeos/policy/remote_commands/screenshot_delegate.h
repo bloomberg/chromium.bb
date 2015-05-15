@@ -28,6 +28,7 @@ class ScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
   ~ScreenshotDelegate() override;
 
   // DeviceCommandScreenshotJob::Delegate:
+  bool IsScreenshotAllowed() override;
   void TakeSnapshot(
       gfx::NativeWindow window,
       const gfx::Rect& source_rect,

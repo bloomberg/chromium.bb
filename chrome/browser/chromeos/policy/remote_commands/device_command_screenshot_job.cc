@@ -189,8 +189,13 @@ void DeviceCommandScreenshotJob::RunImpl(
   succeeded_callback_ = succeeded_callback;
   failed_callback_ = failed_callback;
 
-  upload_job_ = screenshot_delegate_->CreateUploadJob(upload_url_, this);
-  DCHECK(upload_job_);
+  // Fail if the delegate says screenshots are not allowed in this session.
+  if (!screenshot_delegate_->IsScreenshotAllowed()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(failed_callback_, base::Passed(make_scoped_ptr(
+                                         new Payload(FAILURE_USER_INPUT)))));
+  }
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
@@ -212,6 +217,9 @@ void DeviceCommandScreenshotJob::RunImpl(
                                          FAILURE_SCREENSHOT_ACQUISITION)))));
     return;
   }
+
+  upload_job_ = screenshot_delegate_->CreateUploadJob(upload_url_, this);
+  DCHECK(upload_job_);
 
   // Post tasks to the sequenced worker pool for taking screenshots on each
   // attached screen.

@@ -262,7 +262,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
   Mock::VerifyAndClearExpectations(&device_management_service_);
   ASSERT_TRUE(policy_fetch_job);
   // Should create a status uploader for reporting on enrolled devices.
-  EXPECT_TRUE(manager_->HasStatusUploaderForTest());
+  EXPECT_TRUE(manager_->GetStatusUploader());
   VerifyPolicyPopulated();
 
   manager_->Shutdown();
@@ -301,7 +301,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   ASSERT_TRUE(policy_fetch_job);
   // Should create a status provider for reporting on enrolled devices, even
   // those that aren't managed.
-  EXPECT_TRUE(manager_->HasStatusUploaderForTest());
+  EXPECT_TRUE(manager_->GetStatusUploader());
 
   // Switch back to ACTIVE, service the policy fetch and let it propagate.
   device_policy_.policy_data().set_state(em::PolicyData::ACTIVE);
@@ -329,7 +329,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
   ConnectManager();
   EXPECT_TRUE(manager_->policies().Equals(bundle));
   // Should not create a status provider for reporting on consumer devices.
-  EXPECT_FALSE(manager_->HasStatusUploaderForTest());
+  EXPECT_FALSE(manager_->GetStatusUploader());
 
   manager_->Shutdown();
   EXPECT_TRUE(manager_->policies().Equals(bundle));

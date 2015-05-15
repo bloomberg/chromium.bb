@@ -10,11 +10,13 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace {
 const int kMinUploadDelayMs = 60 * 1000;  // 60 seconds
@@ -101,6 +103,22 @@ void StatusUploader::RefreshUploadFrequency() {
   // to happen immediately on startup and not get cancelled by settings changes.
   if (!last_upload_.is_null())
     ScheduleNextStatusUpload();
+}
+
+bool StatusUploader::IsSessionDataUploadAllowed() {
+  // Check if we're in an auto-launched kiosk session.
+  scoped_ptr<DeviceLocalAccount> account =
+      collector_->GetAutoLaunchedKioskSessionInfo();
+  if (!account)
+    return false;
+
+  // Check if there has been any user input.
+  if (!ui::UserActivityDetector::Get()->last_activity_time().is_null())
+    return false;
+
+  // TODO(atwilson): Check if we've captured any audio/video data
+  // (http://crbug.com/487261).
+  return true;
 }
 
 void StatusUploader::UploadStatus() {

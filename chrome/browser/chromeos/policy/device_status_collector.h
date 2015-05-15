@@ -95,6 +95,12 @@ class DeviceStatusCollector {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns the DeviceLocalAccount associated with the currently active
+  // kiosk session, if the session was auto-launched with zero delay
+  // (this enables functionality such as network reporting).
+  // Virtual to allow mocking.
+  virtual scoped_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
+
   // How often, in seconds, to poll to see if the user is idle.
   static const unsigned int kIdlePollIntervalSeconds = 30;
 
@@ -110,12 +116,6 @@ class DeviceStatusCollector {
 
   // Callback which receives the results of the idle state check.
   void IdleStateCallback(ui::IdleState state);
-
-  // Returns the DeviceLocalAccount associated with the currently active
-  // kiosk session, if the session was auto-launched with zero delay
-  // (this enables functionality such as network reporting).
-  // Virtual to allow mocking.
-  virtual scoped_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
 
   // Gets the version of the passed app. Virtual to allow mocking.
   virtual std::string GetAppVersion(const std::string& app_id);
