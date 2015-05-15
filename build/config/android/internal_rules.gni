@@ -616,6 +616,7 @@ template("create_apk") {
   group(target_name) {
     deps = [
       ":${target_name}__finalize",
+      ":${target_name}__package_resources",
     ]
   }
 }
