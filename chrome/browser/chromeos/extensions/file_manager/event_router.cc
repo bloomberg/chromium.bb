@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -869,11 +868,6 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
   DispatchMountCompletedEvent(
       file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT, error_code,
       volume);
-
-  // TODO(mtomasz): Move VolumeManager and part of the event router outside of
-  // file_manager, so there is no dependency between File System API and the
-  // file_manager code.
-  extensions::file_system_api::DispatchVolumeListChangeEvent(profile_);
 }
 
 void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,

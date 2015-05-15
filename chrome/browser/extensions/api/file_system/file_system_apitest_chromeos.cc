@@ -4,12 +4,9 @@
 
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 
-#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
 #include "base/path_service.h"
-#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -21,9 +18,7 @@
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/file_system.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/event_router.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -40,9 +35,6 @@ const char kReadOnlyMountPointName[] = "read-only";
 
 // Child directory created in each of the mount points.
 const char kChildDirectory[] = "child-dir";
-
-// ID of a testing extension.
-const char kTestingExtensionId[] = "pkplfbidichfdicaijlchgnapepdginl";
 
 }  // namespace
 
@@ -61,41 +53,6 @@ class ScopedSkipRequestFileSystemDialog {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedSkipRequestFileSystemDialog);
-};
-
-// Observers adding a listener to the |event_name| event by |extension|, and
-// then fires the |callback|.
-class ScopedAddListenerObserver : public EventRouter::Observer {
- public:
-  ScopedAddListenerObserver(Profile* profile,
-                            const std::string& event_name,
-                            const std::string& extension_id,
-                            const base::Closure& callback)
-      : extension_id_(extension_id),
-        callback_(callback),
-        event_router_(EventRouter::EventRouter::Get(profile)) {
-    DCHECK(profile);
-    DCHECK(event_router_);
-    event_router_->RegisterObserver(this, event_name);
-  }
-
-  ~ScopedAddListenerObserver() { event_router_->UnregisterObserver(this); }
-
-  // EventRouter::Observer overrides.
-  void OnListenerAdded(const EventListenerInfo& details) override {
-    // Call the callback only once, as the listener may be added multiple times.
-    if (details.extension_id == extension_id_ && !callback_.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback_);
-      callback_ = base::Closure();
-    }
-  }
-
- private:
-  const std::string extension_id_;
-  base::Closure callback_;
-  EventRouter* const event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAddListenerObserver);
 };
 
 // This class contains chrome.filesystem API test specific to Chrome OS, namely,
@@ -224,16 +181,6 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
     fake_user_manager_ = nullptr;
   }
 
-  // Simulates mounting a removable volume.
-  void MountFakeVolume() {
-    VolumeManager* const volume_manager =
-        VolumeManager::Get(browser()->profile());
-    ASSERT_TRUE(volume_manager);
-    volume_manager->AddVolumeForTesting(
-        base::FilePath("/a/b/c"), file_manager::VOLUME_TYPE_TESTING,
-        chromeos::DEVICE_TYPE_UNKNOWN, false /* read_only */);
-  }
-
  protected:
   base::ScopedTempDir temp_dir_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
@@ -244,6 +191,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
                                bool read_only) {
     const base::FilePath mount_point_path =
         temp_dir_.path().Append(mount_point_name);
+    LOG(ERROR) << mount_point_path.value();
     ASSERT_TRUE(base::CreateDirectory(mount_point_path));
     ASSERT_TRUE(
         base::CreateDirectory(mount_point_path.Append(kChildDirectory)));
@@ -472,20 +420,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
                        GetVolumeList_NotKioskSession) {
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/get_volume_list_not_kiosk_session"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
-                       OnVolumeListChanged) {
-  EnterKioskSession();
-
-  ScopedAddListenerObserver observer(
-      profile(), extensions::api::file_system::OnVolumeListChanged::kEventName,
-      kTestingExtensionId,
-      base::Bind(&FileSystemApiTestForRequestFileSystem::MountFakeVolume,
-                 this));
-
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/on_volume_list_changed"))
       << message_;
 }
 
