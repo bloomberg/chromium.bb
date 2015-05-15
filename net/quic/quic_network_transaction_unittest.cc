@@ -242,7 +242,7 @@ class QuicNetworkTransactionTest
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
-    params_.http_server_properties = http_server_properties.GetWeakPtr();
+    params_.http_server_properties = http_server_properties_.GetWeakPtr();
     params_.quic_supported_versions = SupportedVersions(GetParam());
 
     if (use_next_protos) {
@@ -325,22 +325,22 @@ class QuicNetworkTransactionTest
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
     HostPortPair host_port_pair = HostPortPair::FromURL(request_.url);
     AlternativeService alternative_service(QUIC, host_port_pair.host(), 80);
-    session_->http_server_properties()->SetAlternativeService(
-        host_port_pair, alternative_service, 1.0);
+    http_server_properties_.SetAlternativeService(host_port_pair,
+                                                  alternative_service, 1.0);
   }
 
   void ExpectBrokenAlternateProtocolMapping() {
     const HostPortPair origin = HostPortPair::FromURL(request_.url);
     const AlternativeService alternative_service =
-        session_->http_server_properties()->GetAlternativeService(origin);
+        http_server_properties_.GetAlternativeService(origin);
     EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternative_service.protocol);
-    EXPECT_TRUE(session_->http_server_properties()->IsAlternativeServiceBroken(
+    EXPECT_TRUE(http_server_properties_.IsAlternativeServiceBroken(
         alternative_service));
   }
 
   void ExpectQuicAlternateProtocolMapping() {
     const AlternativeService alternative_service =
-        session_->http_server_properties()->GetAlternativeService(
+        http_server_properties_.GetAlternativeService(
             HostPortPair::FromURL(request_.url));
     EXPECT_EQ(QUIC, alternative_service.protocol);
   }
@@ -363,7 +363,7 @@ class QuicNetworkTransactionTest
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   MockRandom random_generator_;
-  HttpServerPropertiesImpl http_server_properties;
+  HttpServerPropertiesImpl http_server_properties_;
   HttpNetworkSession::Params params_;
   HttpRequestInfo request_;
   BoundTestNetLog net_log_;
@@ -623,18 +623,16 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
 
   AlternativeService alternative_service(QUIC,
                                          HostPortPair::FromURL(request_.url));
-  session_->http_server_properties()->MarkAlternativeServiceRecentlyBroken(
+  http_server_properties_.MarkAlternativeServiceRecentlyBroken(
       alternative_service);
-  EXPECT_TRUE(
-      session_->http_server_properties()->WasAlternativeServiceRecentlyBroken(
-          alternative_service));
+  EXPECT_TRUE(http_server_properties_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
 
-  EXPECT_FALSE(
-      session_->http_server_properties()->WasAlternativeServiceRecentlyBroken(
-          alternative_service));
+  EXPECT_FALSE(http_server_properties_.WasAlternativeServiceRecentlyBroken(
+      alternative_service));
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
