@@ -252,8 +252,8 @@ IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, MAYBE_ShowAppListFlag) {
 
 // ChromeOS does not support ShowForProfile(), or profile switching within the
 // app list. Profile switching on CrOS goes through a different code path. Also
-// these tests are flaky on Linux. See http://crbug.com/483615.
-#if defined(OS_LINUX)
+// these tests are flaky on Linux and Windows. See http://crbug.com/483615.
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_ShowAppListNonDefaultProfile \
     DISABLED_ShowAppListNonDefaultProfile
 #define MAYBE_DeleteShowingAppList DISABLED_DeleteShowingAppList
