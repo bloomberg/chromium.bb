@@ -197,10 +197,20 @@ public class CaptioningChangeDelegate {
      * Describes a font available for Closed Captioning
      */
     public static enum ClosedCaptionFont {
+        // The list of fonts are obtained from apps/Settings/res/values/arrays.xml
+        // in Android settings app.
+        // Fonts in Lollipop and above
         DEFAULT (""),
-        MONOSPACE ("monospace"),
         SANS_SERIF ("sans-serif"),
-        SERIF ("serif");
+        SANS_SERIF_CONDENSED ("sans-serif-condensed"),
+        SANS_SERIF_MONOSPACE ("sans-serif-monospace"),
+        SERIF ("serif"),
+        SERIF_MONOSPACE ("serif-monospace"),
+        CASUAL ("casual"),
+        CURSIVE ("cursive"),
+        SANS_SERIF_SMALLCAPS ("sans-serif-smallcaps"),
+        // Fronts in Kitkat
+        MONOSPACE("monospace");
 
         private final String mFontFamily;
 
@@ -215,19 +225,26 @@ public class CaptioningChangeDelegate {
          * @return a string representation of the typeface
          */
         public static ClosedCaptionFont fromSystemFont(Typeface typeFace) {
-            if (typeFace == null || typeFace.equals(Typeface.DEFAULT)) {
-                return DEFAULT;
-            } else if (typeFace.equals(Typeface.MONOSPACE)) {
-                return MONOSPACE;
-            } else if (typeFace.equals(Typeface.SANS_SERIF)) {
-                return SANS_SERIF;
-            } else if (typeFace.equals(Typeface.SERIF)) {
-                return SERIF;
-            } else {
-                // This includes Typeface.DEFAULT_BOLD since font-weight
-                // is not yet supported as a WebKit setting for a VTTCue.
-                return DEFAULT;
+            if (typeFace == null) return DEFAULT;
+            for (ClosedCaptionFont font : ClosedCaptionFont.values()) {
+                if (belongsToFontFamily(typeFace, font)) {
+                    return font;
+                }
             }
+            // This includes Typeface.DEFAULT_BOLD since font-weight
+            // is not yet supported as a WebKit setting for a VTTCue.
+            return DEFAULT;
+        }
+
+        /**
+         * Check if the a Typeface belongs to the given font family.
+         *
+         * @param typeFace a Typeface object
+         * @param font Font family to be matched
+         * @return true if the Typeface belongs to the font family, or false otherwise.
+         */
+        private static boolean belongsToFontFamily(Typeface typeFace, ClosedCaptionFont font) {
+            return Typeface.create(font.getFontFamily(), typeFace.getStyle()).equals(typeFace);
         }
 
         /**
