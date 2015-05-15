@@ -743,37 +743,6 @@ static_library("test_support_sync_testserver") {
   ]
 }
 
-# GYP version: sync/sync_tests.gypi:test_support_accounts_client
-static_library("test_support_accounts_client") {
-  testonly = true
-  sources = [
-    "test/accounts_client/test_accounts_client.cc",
-    "test/accounts_client/test_accounts_client.h",
-    "test/accounts_client/url_request_context_getter.cc",
-    "test/accounts_client/url_request_context_getter.h",
-  ]
-  deps = [
-    "//base",
-    "//net",
-    "//url",
-  ]
-}
-
-# GYP version: sync/sync_tests.gypi:sync_endtoend_tests
-test("sync_endtoend_tests") {
-  sources = [
-    "test/accounts_client/test_accounts_client_unittest.cc",
-  ]
-  deps = [
-    "//base",
-    "//base/test:run_all_unittests",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//url",
-    ":test_support_accounts_client",
-  ]
-}
-
 if (!is_ios) {
   # GYP version: sync/sync_tests.gypi:run_sync_testserver
   executable("run_sync_testserver") {

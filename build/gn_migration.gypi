@@ -168,7 +168,6 @@
         '../skia/skia.gyp:image_operations_bench',
         '../sql/sql.gyp:sql_unittests',
         '../sync/sync.gyp:run_sync_testserver',
-        '../sync/sync.gyp:sync_endtoend_tests',
         '../sync/sync.gyp:sync_unit_tests',
         '../sync/tools/sync_tools.gyp:sync_client',
         '../sync/tools/sync_tools.gyp:sync_listen_notifications',
