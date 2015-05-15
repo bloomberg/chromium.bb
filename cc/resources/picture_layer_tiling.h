@@ -212,6 +212,19 @@ class CC_EXPORT PictureLayerTiling {
   friend class TilingSetRasterQueueRequired;
   friend class TilingSetEvictionQueue;
 
+  // PENDING VISIBLE RECT refers to the visible rect that will become current
+  // upon activation (ie, the pending tree's visible rect). Tiles in this
+  // region that are not part of the current visible rect are all handled
+  // here. Note that when processing a pending tree, this rect is the same as
+  // the visible rect so no tiles are processed in this case.
+  enum PriorityRectType {
+    VISIBLE_RECT,
+    PENDING_VISIBLE_RECT,
+    SKEWPORT_RECT,
+    SOON_BORDER_RECT,
+    EVENTUALLY_RECT
+  };
+
   using TileMapKey = std::pair<int, int>;
   using TileMap = base::ScopedPtrHashMap<TileMapKey, ScopedTilePtr>;
 
@@ -272,8 +285,13 @@ class CC_EXPORT PictureLayerTiling {
   bool ShouldCreateTileAt(int i, int j) const;
   bool IsTileOccluded(const Tile* tile) const;
   void UpdateRequiredStatesOnTile(Tile* tile) const;
-  PrioritizedTile MakePrioritizedTile(Tile* tile) const;
-  TilePriority ComputePriorityForTile(const Tile* tile) const;
+  PrioritizedTile MakePrioritizedTile(
+      Tile* tile,
+      PriorityRectType priority_rect_type) const;
+  TilePriority ComputePriorityForTile(
+      const Tile* tile,
+      PriorityRectType priority_rect_type) const;
+  PriorityRectType ComputePriorityRectTypeForTile(const Tile* tile) const;
   bool has_visible_rect_tiles() const { return has_visible_rect_tiles_; }
   bool has_skewport_rect_tiles() const { return has_skewport_rect_tiles_; }
   bool has_soon_border_rect_tiles() const {

@@ -806,7 +806,9 @@ void PictureLayerTiling::UpdateRequiredStatesOnTile(Tile* tile) const {
   tile->set_required_for_draw(IsTileRequiredForDraw(tile));
 }
 
-PrioritizedTile PictureLayerTiling::MakePrioritizedTile(Tile* tile) const {
+PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
+    Tile* tile,
+    PriorityRectType priority_rect_type) const {
   DCHECK(tile);
   DCHECK(
       raster_source()->CoversRect(tile->content_rect(), tile->contents_scale()))
@@ -814,7 +816,8 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(Tile* tile) const {
       << gfx::ScaleToEnclosingRect(tile->content_rect(),
                                    1.f / tile->contents_scale()).ToString();
 
-  return PrioritizedTile(tile, raster_source(), ComputePriorityForTile(tile),
+  return PrioritizedTile(tile, raster_source(),
+                         ComputePriorityForTile(tile, priority_rect_type),
                          IsTileOccluded(tile));
 }
 
@@ -822,53 +825,83 @@ std::map<const Tile*, PrioritizedTile>
 PictureLayerTiling::UpdateAndGetAllPrioritizedTilesForTesting() const {
   std::map<const Tile*, PrioritizedTile> result;
   for (const auto& key_tile_pair : tiles_) {
-    UpdateRequiredStatesOnTile(key_tile_pair.second);
+    Tile* tile = key_tile_pair.second;
+    UpdateRequiredStatesOnTile(tile);
     PrioritizedTile prioritized_tile =
-        MakePrioritizedTile(key_tile_pair.second);
+        MakePrioritizedTile(tile, ComputePriorityRectTypeForTile(tile));
     result.insert(std::make_pair(prioritized_tile.tile(), prioritized_tile));
   }
   return result;
 }
 
 TilePriority PictureLayerTiling::ComputePriorityForTile(
-    const Tile* tile) const {
+    const Tile* tile,
+    PriorityRectType priority_rect_type) const {
   // TODO(vmpstr): See if this can be moved to iterators.
   TilePriority::PriorityBin max_tile_priority_bin =
       client_->GetMaxTilePriorityBin();
 
+  DCHECK_EQ(ComputePriorityRectTypeForTile(tile), priority_rect_type);
   DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
+
+  TilePriority::PriorityBin priority_bin = max_tile_priority_bin;
+
+  switch (priority_rect_type) {
+    case VISIBLE_RECT:
+      return TilePriority(resolution_, priority_bin, 0);
+    case PENDING_VISIBLE_RECT:
+      if (max_tile_priority_bin <= TilePriority::SOON)
+        return TilePriority(resolution_, TilePriority::SOON, 0);
+      priority_bin = TilePriority::EVENTUALLY;
+      break;
+    case SKEWPORT_RECT:
+    case SOON_BORDER_RECT:
+      if (max_tile_priority_bin <= TilePriority::SOON)
+        priority_bin = TilePriority::SOON;
+      break;
+    case EVENTUALLY_RECT:
+      priority_bin = TilePriority::EVENTUALLY;
+      break;
+  }
+
   gfx::Rect tile_bounds =
       tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
-
-  if (max_tile_priority_bin <= TilePriority::NOW &&
-      current_visible_rect_.Intersects(tile_bounds)) {
-    return TilePriority(resolution_, TilePriority::NOW, 0);
-  }
-
-  if (max_tile_priority_bin <= TilePriority::SOON &&
-      pending_visible_rect().Intersects(tile_bounds)) {
-    return TilePriority(resolution_, TilePriority::SOON, 0);
-  }
-
   DCHECK_GT(current_content_to_screen_scale_, 0.f);
   float distance_to_visible =
       current_visible_rect_.ManhattanInternalDistance(tile_bounds) *
       current_content_to_screen_scale_;
 
-  if (max_tile_priority_bin <= TilePriority::SOON &&
-      (current_soon_border_rect_.Intersects(tile_bounds) ||
-       current_skewport_rect_.Intersects(tile_bounds))) {
-    return TilePriority(resolution_, TilePriority::SOON, distance_to_visible);
-  }
+  return TilePriority(resolution_, priority_bin, distance_to_visible);
+}
 
-  return TilePriority(resolution_, TilePriority::EVENTUALLY,
-                      distance_to_visible);
+PictureLayerTiling::PriorityRectType
+PictureLayerTiling::ComputePriorityRectTypeForTile(const Tile* tile) const {
+  DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
+  gfx::Rect tile_bounds =
+      tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
+
+  if (current_visible_rect_.Intersects(tile_bounds))
+    return VISIBLE_RECT;
+
+  if (pending_visible_rect().Intersects(tile_bounds))
+    return PENDING_VISIBLE_RECT;
+
+  if (current_skewport_rect_.Intersects(tile_bounds))
+    return SKEWPORT_RECT;
+
+  if (current_soon_border_rect_.Intersects(tile_bounds))
+    return SOON_BORDER_RECT;
+
+  DCHECK(current_eventually_rect_.Intersects(tile_bounds));
+  return EVENTUALLY_RECT;
 }
 
 void PictureLayerTiling::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
   for (const auto& tile_pair : tiles_) {
-    prioritized_tiles->push_back(MakePrioritizedTile(tile_pair.second));
+    Tile* tile = tile_pair.second;
+    prioritized_tiles->push_back(
+        MakePrioritizedTile(tile, ComputePriorityRectTypeForTile(tile)));
   }
 }
 

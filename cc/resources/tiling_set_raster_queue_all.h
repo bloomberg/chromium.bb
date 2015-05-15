@@ -31,8 +31,10 @@ class CC_EXPORT TilingSetRasterQueueAll {
   class OnePriorityRectIterator {
    public:
     OnePriorityRectIterator();
-    OnePriorityRectIterator(PictureLayerTiling* tiling,
-                            TilingData* tiling_data);
+    OnePriorityRectIterator(
+        PictureLayerTiling* tiling,
+        TilingData* tiling_data,
+        PictureLayerTiling::PriorityRectType priority_rect_type);
 
     bool done() const { return !current_tile_.tile(); }
     const PrioritizedTile& operator*() const { return current_tile_; }
@@ -51,6 +53,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
     PrioritizedTile current_tile_;
     PictureLayerTiling* tiling_;
     TilingData* tiling_data_;
+    PictureLayerTiling::PriorityRectType priority_rect_type_;
   };
 
   // Iterates over visible rect only, left to right top to bottom order.
@@ -131,13 +134,13 @@ class CC_EXPORT TilingSetRasterQueueAll {
     const PrioritizedTile& operator*() const { return current_tile_; }
     TilePriority::PriorityBin type() const {
       switch (phase_) {
-        case VISIBLE_RECT:
+        case Phase::VISIBLE_RECT:
           return TilePriority::NOW;
-        case PENDING_VISIBLE_RECT:
-        case SKEWPORT_RECT:
-        case SOON_BORDER_RECT:
+        case Phase::PENDING_VISIBLE_RECT:
+        case Phase::SKEWPORT_RECT:
+        case Phase::SOON_BORDER_RECT:
           return TilePriority::SOON;
-        case EVENTUALLY_RECT:
+        case Phase::EVENTUALLY_RECT:
           return TilePriority::EVENTUALLY;
       }
       NOTREACHED();
@@ -147,18 +150,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
     TilingIterator& operator++();
 
    private:
-    // PENDING VISIBLE RECT refers to the visible rect that will become current
-    // upon activation (ie, the pending tree's visible rect). Tiles in this
-    // region that are not part of the current visible rect are all handled
-    // here. Note that when processing a pending tree, this rect is the same as
-    // the visible rect so no tiles are processed in this case.
-    enum Phase {
-      VISIBLE_RECT,
-      PENDING_VISIBLE_RECT,
-      SKEWPORT_RECT,
-      SOON_BORDER_RECT,
-      EVENTUALLY_RECT
-    };
+    using Phase = PictureLayerTiling::PriorityRectType;
 
     void AdvancePhase();
 

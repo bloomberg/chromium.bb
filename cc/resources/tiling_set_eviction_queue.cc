@@ -188,10 +188,10 @@ TilingSetEvictionQueue::EvictionRectIterator::EvictionRectIterator()
 TilingSetEvictionQueue::EvictionRectIterator::EvictionRectIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree,
-    bool skip_pending_visible_rect)
+    PictureLayerTiling::PriorityRectType priority_rect_type)
     : tilings_(tilings),
       tree_(tree),
-      skip_pending_visible_rect_(skip_pending_visible_rect),
+      priority_rect_type_(priority_rect_type),
       tiling_index_(0) {
 }
 
@@ -219,12 +219,16 @@ bool TilingSetEvictionQueue::EvictionRectIterator::GetFirstTileAndCheckIfValid(
   // If there's nothing to evict, return false.
   if (!tile || !tile->draw_info().has_resource())
     return false;
-  if (skip_pending_visible_rect_ &&
+  // After the pending visible rect has been processed, we must return false
+  // for pending visible rect tiles as tiling iterators do not ignore those
+  // tiles.
+  if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT &&
       tiling->pending_visible_rect().Intersects(tile->content_rect())) {
     return false;
   }
   (*tilings_)[tiling_index_]->UpdateRequiredStatesOnTile(tile);
-  prioritized_tile_ = (*tilings_)[tiling_index_]->MakePrioritizedTile(tile);
+  prioritized_tile_ = (*tilings_)[tiling_index_]->MakePrioritizedTile(
+      tile, priority_rect_type_);
   // In other cases, the tile we got is a viable candidate, return true.
   return true;
 }
@@ -233,9 +237,7 @@ bool TilingSetEvictionQueue::EvictionRectIterator::GetFirstTileAndCheckIfValid(
 TilingSetEvictionQueue::EventuallyTilingIterator::EventuallyTilingIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree)
-    : EvictionRectIterator(tilings,
-                           tree,
-                           true /* skip_pending_visible_rect */) {
+    : EvictionRectIterator(tilings, tree, PictureLayerTiling::EVENTUALLY_RECT) {
   // Find the first tiling with a tile.
   while (tiling_index_ < tilings_->size()) {
     if (!(*tilings_)[tiling_index_]->has_eventually_rect_tiles()) {
@@ -287,7 +289,7 @@ TilingSetEvictionQueue::SoonBorderTilingIterator::SoonBorderTilingIterator(
     WhichTree tree)
     : EvictionRectIterator(tilings,
                            tree,
-                           true /* skip_pending_visible_rect */) {
+                           PictureLayerTiling::SOON_BORDER_RECT) {
   // Find the first tiling with a tile.
   while (tiling_index_ < tilings_->size()) {
     if (!(*tilings_)[tiling_index_]->has_soon_border_rect_tiles()) {
@@ -337,9 +339,7 @@ TilingSetEvictionQueue::SoonBorderTilingIterator&
 TilingSetEvictionQueue::SkewportTilingIterator::SkewportTilingIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree)
-    : EvictionRectIterator(tilings,
-                           tree,
-                           true /* skip_pending_visible_rect */) {
+    : EvictionRectIterator(tilings, tree, PictureLayerTiling::SKEWPORT_RECT) {
   // Find the first tiling with a tile.
   while (tiling_index_ < tilings_->size()) {
     if (!(*tilings_)[tiling_index_]->has_skewport_rect_tiles()) {
@@ -392,7 +392,7 @@ TilingSetEvictionQueue::PendingVisibleTilingIterator::
                                  bool return_required_for_activation_tiles)
     : EvictionRectIterator(tilings,
                            tree,
-                           false /* skip_pending_visible_rect */),
+                           PictureLayerTiling::PENDING_VISIBLE_RECT),
       return_required_for_activation_tiles_(
           return_required_for_activation_tiles) {
   // Find the first tiling with a tile.
@@ -456,9 +456,7 @@ TilingSetEvictionQueue::VisibleTilingIterator::VisibleTilingIterator(
     WhichTree tree,
     bool return_occluded_tiles,
     bool return_required_for_activation_tiles)
-    : EvictionRectIterator(tilings,
-                           tree,
-                           false /* skip_pending_visible_rect */),
+    : EvictionRectIterator(tilings, tree, PictureLayerTiling::VISIBLE_RECT),
       return_occluded_tiles_(return_occluded_tiles),
       return_required_for_activation_tiles_(
           return_required_for_activation_tiles) {

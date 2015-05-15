@@ -91,9 +91,10 @@ class CC_EXPORT TilingSetEvictionQueue {
   class EvictionRectIterator {
    public:
     EvictionRectIterator();
-    EvictionRectIterator(std::vector<PictureLayerTiling*>* tilings,
-                         WhichTree tree,
-                         bool skip_pending_visible_rect);
+    EvictionRectIterator(
+        std::vector<PictureLayerTiling*>* tilings,
+        WhichTree tree,
+        PictureLayerTiling::PriorityRectType priority_rect_type);
 
     bool done() const { return !prioritized_tile_.tile(); }
     const PrioritizedTile& operator*() const { return prioritized_tile_; }
@@ -109,7 +110,7 @@ class CC_EXPORT TilingSetEvictionQueue {
     PrioritizedTile prioritized_tile_;
     std::vector<PictureLayerTiling*>* tilings_;
     WhichTree tree_;
-    bool skip_pending_visible_rect_;
+    PictureLayerTiling::PriorityRectType priority_rect_type_;
     size_t tiling_index_;
   };
 
