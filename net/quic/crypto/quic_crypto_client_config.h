@@ -221,9 +221,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // about a future handshake (i.e. an nonce value from the server), then it
   // will be saved in |out_params|. |now| is used to judge whether the server
   // config in the rejection message has expired. |is_https| is used to track
-  // reject reason for secure vs insecure QUIC.  If the rejection message
-  // indicates that the reject is a stateless-reject, returns error code
-  // QUIC_CRYPTO_HANDSHAKE_RECEIVED_STATELESS_REJECT.
+  // reject reason for secure vs insecure QUIC.
   QuicErrorCode ProcessRejection(const CryptoHandshakeMessage& rej,
                                  QuicWallTime now,
                                  CachedState* cached,

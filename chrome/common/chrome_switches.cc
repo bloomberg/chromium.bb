@@ -319,10 +319,6 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 // Disables support for the QUIC protocol.
 const char kDisableQuic[]                   = "disable-quic";
 
-// Disable use of pacing of QUIC packets.
-// This only has an effect if QUIC protocol is enabled.
-const char kDisableQuicPacing[]             = "disable-quic-pacing";
-
 // Disable use of Chromium's port selection for the ephemeral port via bind().
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
@@ -510,10 +506,6 @@ const char kEnableQueryExtraction[]         = "enable-query-extraction";
 
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";
-
-// Disable use of pacing of QUIC packets.
-// This only has an effect if QUIC protocol is enabled.
-const char kEnableQuicPacing[]              = "enable-quic-pacing";
 
 // Enable use of Chromium's port selection for the ephemeral port via bind().
 // This only has an effect if QUIC protocol is enabled.

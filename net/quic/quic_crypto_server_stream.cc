@@ -9,8 +9,10 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
+#include "net/quic/crypto/quic_random.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_config.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
@@ -32,7 +34,9 @@ QuicCryptoServerStream::QuicCryptoServerStream(
       crypto_config_(crypto_config),
       validate_client_hello_cb_(nullptr),
       num_handshake_messages_(0),
-      num_server_config_update_messages_sent_(0) {
+      num_server_config_update_messages_sent_(0),
+      use_stateless_rejects_if_peer_supported_(false),
+      peer_supports_stateless_rejects_(false) {
   DCHECK_EQ(Perspective::IS_SERVER, session->connection()->perspective());
 }
 
@@ -84,10 +88,14 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
   DCHECK(validate_client_hello_cb_ != nullptr);
   validate_client_hello_cb_ = nullptr;
 
-  string error_details;
+  if (FLAGS_enable_quic_stateless_reject_support) {
+    peer_supports_stateless_rejects_ = DoesPeerSupportStatelessRejects(message);
+  }
+
   CryptoHandshakeMessage reply;
-  QuicErrorCode error = ProcessClientHello(
-      message, result, &reply, &error_details);
+  string error_details;
+  QuicErrorCode error =
+      ProcessClientHello(message, result, &reply, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
@@ -99,7 +107,9 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
     return;
   }
 
-  // If we are returning a SHLO then we accepted the handshake.
+  // If we are returning a SHLO then we accepted the handshake.  Now
+  // process the negotiated configuration options as part of the
+  // session config.
   QuicConfig* config = session()->config();
   OverrideQuicConfigDefaults(config);
   error = config->ProcessPeerHello(message, CLIENT, &error_details);
@@ -107,6 +117,7 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
     CloseConnectionWithDetails(error, error_details);
     return;
   }
+
   session()->OnConfigNegotiated();
 
   config->ToHandshakeMessage(&reply);
@@ -223,14 +234,21 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
   }
   previous_source_address_tokens_ = result.info.source_address_tokens;
 
+  const bool use_stateless_rejects_in_crypto_config =
+      FLAGS_enable_quic_stateless_reject_support &&
+      use_stateless_rejects_if_peer_supported_ &&
+      peer_supports_stateless_rejects_;
   QuicConnection* connection = session()->connection();
+  const QuicConnectionId server_designated_connection_id =
+      use_stateless_rejects_in_crypto_config
+          ? GenerateConnectionIdForReject(connection->connection_id())
+          : 0;
   return crypto_config_->ProcessClientHello(
       result, connection->connection_id(), connection->self_address().address(),
       connection->peer_address(), version(), connection->supported_versions(),
-      /* use_stateless_rejects= */ false,
-      /* server_designated_connection_id= */ 0, connection->clock(),
-      connection->random_generator(), &crypto_negotiated_params_, reply,
-      error_details);
+      use_stateless_rejects_in_crypto_config, server_designated_connection_id,
+      connection->clock(), connection->random_generator(),
+      &crypto_negotiated_params_, reply, error_details);
 }
 
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {
@@ -253,6 +271,31 @@ void QuicCryptoServerStream::ValidateCallback::RunImpl(
   if (parent_ != nullptr) {
     parent_->FinishProcessingHandshakeMessage(client_hello, result);
   }
+}
+
+QuicConnectionId QuicCryptoServerStream::GenerateConnectionIdForReject(
+    QuicConnectionId connection_id) {
+  return session()->connection()->random_generator()->RandUint64();
+}
+
+// TODO(jokulik): Once stateless rejects support is inherent in the version
+// number, this function will likely go away entirely.
+// static
+bool QuicCryptoServerStream::DoesPeerSupportStatelessRejects(
+    const CryptoHandshakeMessage& message) {
+  const QuicTag* received_tags;
+  size_t received_tags_length;
+  QuicErrorCode error =
+      message.GetTaglist(kCOPT, &received_tags, &received_tags_length);
+  if (error != QUIC_NO_ERROR) {
+    return false;
+  }
+  for (size_t i = 0; i < received_tags_length; ++i) {
+    if (received_tags[i] == kSREJ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace net

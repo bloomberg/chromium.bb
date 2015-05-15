@@ -370,11 +370,10 @@ TEST(QuicCryptoClientConfigTest, ProcessStatelessReject) {
   QuicCryptoNegotiatedParameters out_params;
   string error;
   QuicCryptoClientConfig config;
-  EXPECT_EQ(
-      QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT,
-      config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0), &cached,
-                              true,  // is_https
-                              &out_params, &error));
+  EXPECT_EQ(QUIC_NO_ERROR, config.ProcessRejection(
+                               rej, QuicWallTime::FromUNIXSeconds(0), &cached,
+                               true,  // is_https
+                               &out_params, &error));
   EXPECT_TRUE(cached.has_server_designated_connection_id());
   EXPECT_EQ(kConnectionId, cached.GetNextServerDesignatedConnectionId());
 }

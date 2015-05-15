@@ -9,6 +9,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
@@ -19,6 +20,12 @@ namespace tools {
 
 using std::make_pair;
 using base::StringPiece;
+
+// The threshold size for the session map, over which the dispatcher will start
+// sending stateless rejects (SREJ), rather than stateful rejects (REJ) to
+// clients who support them.  If -1, stateless rejects will not be sent.  If 0,
+// the server will only send stateless rejects to clients who support them.
+int32 FLAGS_quic_session_map_threshold_for_stateless_rejects = -1;
 
 namespace {
 
@@ -290,6 +297,17 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
       session_map_.insert(make_pair(connection_id, session));
       session->connection()->ProcessUdpPacket(
           current_server_address_, current_client_address_, *current_packet_);
+
+      if (FLAGS_enable_quic_stateless_reject_support &&
+          session->UsingStatelessRejectsIfPeerSupported() &&
+          session->PeerSupportsStatelessRejects() &&
+          !session->IsCryptoHandshakeConfirmed()) {
+        DVLOG(1) << "Removing new session for " << connection_id
+                 << " because the session is in stateless reject mode and"
+                 << " encryption has not been established.";
+        session->connection()->CloseConnection(
+            QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, /* from_peer */ false);
+      }
       break;
     }
     case kFateTimeWait:
@@ -298,7 +316,8 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
       DVLOG(1) << "Adding connection ID " << connection_id
                << "to time-wait list.";
       time_wait_list_manager_->AddConnectionIdToTimeWait(
-          connection_id, framer_.version(), nullptr);
+          connection_id, framer_.version(),
+          /*connection_rejected_statelessly=*/false, nullptr);
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(
           header.public_header.connection_id));
       time_wait_list_manager_->ProcessPacket(
@@ -343,14 +362,16 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
   return kFateProcess;
 }
 
-void QuicDispatcher::CleanUpSession(SessionMap::iterator it) {
+void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
+                                    bool should_close_statelessly) {
   QuicConnection* connection = it->second->connection();
   QuicEncryptedPacket* connection_close_packet =
       connection->ReleaseConnectionClosePacket();
   write_blocked_list_.erase(connection);
-  time_wait_list_manager_->AddConnectionIdToTimeWait(it->first,
-                                                     connection->version(),
-                                                     connection_close_packet);
+  DCHECK(!should_close_statelessly || !connection_close_packet);
+  time_wait_list_manager_->AddConnectionIdToTimeWait(
+      it->first, connection->version(), should_close_statelessly,
+      connection_close_packet);
   session_map_.erase(it);
 }
 
@@ -407,7 +428,9 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
     delete_sessions_alarm_->Set(helper()->GetClock()->ApproximateNow());
   }
   closed_session_list_.push_back(it->second);
-  CleanUpSession(it);
+  const bool should_close_statelessly =
+      (error == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT);
+  CleanUpSession(it, should_close_statelessly);
 }
 
 void QuicDispatcher::OnWriteBlocked(
@@ -444,6 +467,12 @@ QuicServerSession* QuicDispatcher::CreateQuicSession(
 
   QuicServerSession* session = new QuicServerSession(config_, connection, this);
   session->InitializeSession(crypto_config_);
+  if (FLAGS_quic_session_map_threshold_for_stateless_rejects != -1 &&
+      session_map_.size() >=
+          static_cast<size_t>(
+              FLAGS_quic_session_map_threshold_for_stateless_rejects)) {
+    session->set_use_stateless_rejects_if_peer_supported(true);
+  }
   return session;
 }
 

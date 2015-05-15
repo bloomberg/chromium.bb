@@ -1342,9 +1342,6 @@ void IOThread::ConfigureQuicGlobals(
         ShouldEnableQuicPortSelection(command_line));
     globals->quic_connection_options =
         GetQuicConnectionOptions(command_line, quic_trial_params);
-    if (ShouldEnableQuicPacing(command_line, quic_trial_params)) {
-      globals->quic_connection_options.push_back(net::kPACE);
-    }
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
@@ -1437,20 +1434,6 @@ bool IOThread::ShouldEnableQuicPortSelection(
     return true;
 
   return false;  // Default to disabling port selection on all channels.
-}
-
-bool IOThread::ShouldEnableQuicPacing(
-    const base::CommandLine& command_line,
-    const VariationParameters& quic_trial_params) {
-  if (command_line.HasSwitch(switches::kEnableQuicPacing))
-    return true;
-
-  if (command_line.HasSwitch(switches::kDisableQuicPacing))
-    return false;
-
-  return LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_pacing"),
-      "true");
 }
 
 net::QuicTagVector IOThread::GetQuicConnectionOptions(

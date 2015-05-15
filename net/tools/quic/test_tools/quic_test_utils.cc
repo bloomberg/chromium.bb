@@ -123,8 +123,8 @@ MockTimeWaitListManager::MockTimeWaitListManager(
                               QuicSupportedVersions()) {
   // Though AddConnectionIdToTimeWait is mocked, we want to retain its
   // functionality.
-  EXPECT_CALL(*this, AddConnectionIdToTimeWait(_, _, _)).Times(AnyNumber());
-  ON_CALL(*this, AddConnectionIdToTimeWait(_, _, _))
+  EXPECT_CALL(*this, AddConnectionIdToTimeWait(_, _, _, _)).Times(AnyNumber());
+  ON_CALL(*this, AddConnectionIdToTimeWait(_, _, _, _))
       .WillByDefault(
           Invoke(this, &MockTimeWaitListManager::
                            QuicTimeWaitListManager_AddConnectionIdToTimeWait));

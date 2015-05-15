@@ -226,9 +226,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // of a data packet that is destined for the time wait manager.
   void OnUnauthenticatedHeader(const QuicPacketHeader& header);
 
-  // Removes the session from the session map and write blocked list, and
-  // adds the ConnectionId to the time-wait list.
-  void CleanUpSession(SessionMap::iterator it);
+  // Removes the session from the session map and write blocked list, and adds
+  // the ConnectionId to the time-wait list.  If |session_closed_statelessly| is
+  // true, any future packets for the ConnectionId will be black-holed.
+  void CleanUpSession(SessionMap::iterator it, bool session_closed_statelessly);
 
   bool HandlePacketForTimeWait(const QuicPacketPublicHeader& header);
 

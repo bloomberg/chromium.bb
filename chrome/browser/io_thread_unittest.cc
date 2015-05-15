@@ -80,7 +80,6 @@ class IOThreadTest : public testing::Test {
 };
 
 TEST_F(IOThreadTest, InitializeNetworkSessionParamsFromGlobals) {
-  globals_.quic_connection_options.push_back(net::kPACE);
   globals_.quic_connection_options.push_back(net::kTBBR);
   globals_.quic_connection_options.push_back(net::kTIME);
 
@@ -220,17 +219,6 @@ TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
-TEST_F(IOThreadTest, EnablePacingFromCommandLine) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitch("enable-quic-pacing");
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  net::QuicTagVector options;
-  options.push_back(net::kPACE);
-  EXPECT_EQ(options, params.quic_connection_options);
-}
 TEST_F(IOThreadTest, DisableInsecureQuicFromFieldTrialParams) {
   field_trial_group_ = "Enabled";
   field_trial_params_["disable_insecure_quic"] = "true";
@@ -239,18 +227,6 @@ TEST_F(IOThreadTest, DisableInsecureQuicFromFieldTrialParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.disable_insecure_quic);
-}
-
-TEST_F(IOThreadTest, EnablePacingFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["enable_pacing"] = "true";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  net::QuicTagVector options;
-  options.push_back(net::kPACE);
-  EXPECT_EQ(options, params.quic_connection_options);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromCommandLine) {
@@ -303,14 +279,13 @@ TEST_F(IOThreadTest, QuicVersionFromFieldTrialParams) {
 TEST_F(IOThreadTest, QuicConnectionOptionsFromCommandLine) {
   command_line_.AppendSwitch("enable-quic");
   command_line_.AppendSwitchASCII("quic-connection-options",
-                                  "PACE,TIME,TBBR,REJ");
+                                  "TIME,TBBR,REJ");
 
   ConfigureQuicGlobals();
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
 
   net::QuicTagVector options;
-  options.push_back(net::kPACE);
   options.push_back(net::kTIME);
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
@@ -319,14 +294,13 @@ TEST_F(IOThreadTest, QuicConnectionOptionsFromCommandLine) {
 
 TEST_F(IOThreadTest, QuicConnectionOptionsFromFieldTrialParams) {
   field_trial_group_ = "Enabled";
-  field_trial_params_["connection_options"] = "PACE,TIME,TBBR,REJ";
+  field_trial_params_["connection_options"] = "TIME,TBBR,REJ";
 
   ConfigureQuicGlobals();
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
 
   net::QuicTagVector options;
-  options.push_back(net::kPACE);
   options.push_back(net::kTIME);
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);

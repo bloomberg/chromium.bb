@@ -46,8 +46,10 @@ class DelayAlarm : public QuicAlarm::Delegate {
 PacketDroppingTestWriter::PacketDroppingTestWriter()
     : clock_(nullptr),
       cur_buffer_size_(0),
+      num_calls_to_write_(0),
       config_mutex_(),
       fake_packet_loss_percentage_(0),
+      fake_drop_first_n_packets_(0),
       fake_blocked_socket_percentage_(0),
       fake_packet_reorder_percentage_(0),
       fake_packet_delay_(QuicTime::Delta::Zero()),
@@ -76,9 +78,16 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     size_t buf_len,
     const net::IPAddressNumber& self_address,
     const net::IPEndPoint& peer_address) {
+  ++num_calls_to_write_;
   ReleaseOldPackets();
 
   base::AutoLock locked(config_mutex_);
+  if (fake_drop_first_n_packets_ > 0 &&
+      num_calls_to_write_ <= static_cast<uint64>(fake_drop_first_n_packets_)) {
+    DVLOG(1) << "Dropping first " << fake_drop_first_n_packets_
+             << " packets (packet number " << num_calls_to_write_ << ")";
+    return WriteResult(WRITE_STATUS_OK, buf_len);
+  }
   if (fake_packet_loss_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64>(fake_packet_loss_percentage_)) {

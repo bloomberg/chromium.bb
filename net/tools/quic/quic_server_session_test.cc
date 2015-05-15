@@ -18,6 +18,7 @@
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_sustained_bandwidth_recorder_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/test/gtest_util.h"
 #include "net/tools/quic/quic_spdy_server_stream.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -260,6 +261,13 @@ TEST_P(QuicServerSessionTest, GetEvenIncomingError) {
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
   EXPECT_EQ(nullptr,
             QuicServerSessionPeer::GetIncomingDataStream(session_.get(), 4));
+}
+
+TEST_P(QuicServerSessionTest, GetStreamDisconnected) {
+  // Don't create new streams if the connection is disconnected.
+  QuicConnectionPeer::CloseConnection(connection_);
+  EXPECT_DFATAL(QuicServerSessionPeer::GetIncomingDataStream(session_.get(), 4),
+                "ShouldCreateIncomingDataStream called when disconnected");
 }
 
 TEST_P(QuicServerSessionTest, SetFecProtectionFromConfig) {

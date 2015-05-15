@@ -727,7 +727,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
     }
     cached->add_server_designated_connection_id(connection_id);
-    return QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT;
+    return QUIC_NO_ERROR;
   }
 
   return QUIC_NO_ERROR;

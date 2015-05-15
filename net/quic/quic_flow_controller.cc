@@ -92,16 +92,16 @@ void QuicFlowController::MaybeSendWindowUpdate() {
   // (receive window offset - consumed bytes) < (max window / 2).
   // This is behaviour copied from SPDY.
   DCHECK_LT(bytes_consumed_, receive_window_offset_);
-  QuicStreamOffset consumed_window = receive_window_offset_ - bytes_consumed_;
+  QuicStreamOffset available_window = receive_window_offset_ - bytes_consumed_;
   QuicByteCount threshold = (max_receive_window_ / 2);
 
-  if (consumed_window < threshold) {
+  if (available_window < threshold) {
     // Update our receive window.
-    receive_window_offset_ += (max_receive_window_ - consumed_window);
+    receive_window_offset_ += (max_receive_window_ - available_window);
 
     DVLOG(1) << ENDPOINT << "Sending WindowUpdate frame for stream " << id_
              << ", consumed bytes: " << bytes_consumed_
-             << ", consumed window: " << consumed_window
+             << ", available window: " << available_window
              << ", and threshold: " << threshold
              << ", and max recvw: " << max_receive_window_
              << ". New receive window offset is: " << receive_window_offset_;

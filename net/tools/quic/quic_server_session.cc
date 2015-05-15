@@ -175,6 +175,11 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
 }
 
 bool QuicServerSession::ShouldCreateIncomingDataStream(QuicStreamId id) {
+  if (!connection()->connected()) {
+    LOG(DFATAL) << "ShouldCreateIncomingDataStream called when disconnected";
+    return false;
+  }
+
   if (id % 2 == 0) {
     DVLOG(1) << "Invalid incoming even stream_id:" << id;
     connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);

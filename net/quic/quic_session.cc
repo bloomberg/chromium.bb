@@ -134,7 +134,7 @@ QuicSession::~QuicSession() {
 }
 
 void QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
-  for (size_t i = 0; i < frames.size(); ++i) {
+  for (size_t i = 0; i < frames.size() && connection_->connected(); ++i) {
     // TODO(rch) deal with the error case of stream id 0.
     const QuicStreamFrame& frame = frames[i];
     QuicStreamId stream_id = frame.stream_id;
@@ -153,6 +153,9 @@ void QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
       continue;
     }
     stream->OnStreamFrame(frames[i]);
+    if (!connection_->connected()) {
+      return;
+    }
   }
 }
 

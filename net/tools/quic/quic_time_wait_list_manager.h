@@ -55,9 +55,16 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // and sends it again when packets are received for added connection_ids. If
   // nullptr, a public reset packet is sent with the specified |version|.
   // DCHECKs that connection_id is not already on the list. "virtual" to
-  // override in tests.
+  // override in tests.  If "connection_rejected_statelessly" is true, it means
+  // that the connection was closed due to a stateless reject, and no close
+  // packet is expected.  Any packets that are received for connection_id will
+  // be black-holed.
+  // TODO(jokulik): In the future, we plan send (redundant) SREJ packets back to
+  // the client in response to stray data-packets that arrive after the first
+  // SREJ.  This requires some new plumbing, so we black-hole for now.
   virtual void AddConnectionIdToTimeWait(QuicConnectionId connection_id,
                                          QuicVersion version,
+                                         bool connection_rejected_statelessly,
                                          QuicEncryptedPacket* close_packet);
 
   // Returns true if the connection_id is in time wait state, false otherwise.
@@ -145,15 +152,18 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
     ConnectionIdData(int num_packets_,
                      QuicVersion version_,
                      QuicTime time_added_,
-                     QuicEncryptedPacket* close_packet)
+                     QuicEncryptedPacket* close_packet,
+                     bool connection_rejected_statelessly)
         : num_packets(num_packets_),
           version(version_),
           time_added(time_added_),
-          close_packet(close_packet) {}
+          close_packet(close_packet),
+          connection_rejected_statelessly(connection_rejected_statelessly) {}
     int num_packets;
     QuicVersion version;
     QuicTime time_added;
     QuicEncryptedPacket* close_packet;
+    bool connection_rejected_statelessly;
   };
 
   // linked_hash_map allows lookup by ConnectionId and traversal in add order.

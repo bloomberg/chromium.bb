@@ -27,10 +27,6 @@
 
 // TODO(rtenneti): Add support for MMSG_MORE.
 #define MMSG_MORE 0
-// If true, QuicListener uses the QuicPacketReader to read packets instead of
-// QuicServer.
-// TODO(rtenneti): Enable this flag after MMSG_MORE is set to 1.
-#define FLAGS_quic_use_optimized_packet_reader false
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -221,32 +217,13 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
     bool read = true;
     while (read) {
       if (use_recvmmsg_) {
-        if (FLAGS_quic_use_optimized_packet_reader) {
-          read = packet_reader_->ReadAndDispatchPackets(
-              fd_, port_, dispatcher_.get(),
-              overflow_supported_ ? &packets_dropped_ : nullptr);
-        } else {
-// TODO(rtenneti): Add support for ReadAndDispatchPackets.
-#if 0
-          read = ReadAndDispatchPackets(
-              fd_, port_, dispatcher_.get(),
-              overflow_supported_ ? &packets_dropped_ : nullptr);
-#else
-          read = ReadAndDispatchSinglePacket(
-              fd_, port_, dispatcher_.get(),
-              overflow_supported_ ? &packets_dropped_ : nullptr);
-#endif
-        }
+        read = packet_reader_->ReadAndDispatchPackets(
+            fd_, port_, dispatcher_.get(),
+            overflow_supported_ ? &packets_dropped_ : nullptr);
       } else {
-        if (FLAGS_quic_use_optimized_packet_reader) {
-          read = QuicPacketReader::ReadAndDispatchSinglePacket(
-              fd_, port_, dispatcher_.get(),
-              overflow_supported_ ? &packets_dropped_ : nullptr);
-        } else {
-          read = ReadAndDispatchSinglePacket(
-              fd_, port_, dispatcher_.get(),
-              overflow_supported_ ? &packets_dropped_ : nullptr);
-        }
+        read = QuicPacketReader::ReadAndDispatchSinglePacket(
+            fd_, port_, dispatcher_.get(),
+            overflow_supported_ ? &packets_dropped_ : nullptr);
       }
     }
   }
@@ -258,36 +235,6 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
   }
   if (event->in_events & EPOLLERR) {
   }
-}
-
-/* static */
-bool QuicServer::ReadAndDispatchSinglePacket(int fd,
-                                             int port,
-                                             ProcessPacketInterface* processor,
-                                             QuicPacketCount* packets_dropped) {
-  // Allocate some extra space so we can send an error if the client goes over
-  // the limit.
-  char buf[2 * kMaxPacketSize];
-
-  IPEndPoint client_address;
-  IPAddressNumber server_ip;
-  int bytes_read =
-      QuicSocketUtils::ReadPacket(fd, buf, arraysize(buf),
-                                  packets_dropped,
-                                  &server_ip, &client_address);
-
-  if (bytes_read < 0) {
-    return false;  // We failed to read.
-  }
-
-  QuicEncryptedPacket packet(buf, bytes_read, false);
-
-  IPEndPoint server_address(server_ip, port);
-  processor->ProcessPacket(server_address, client_address, packet);
-
-  // The socket read was successful, so return true even if packet dispatch
-  // failed.
-  return true;
 }
 
 }  // namespace tools

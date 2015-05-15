@@ -346,12 +346,6 @@ class IOThread : public content::BrowserThreadDelegate {
   static bool ShouldEnableQuicPortSelection(
       const base::CommandLine& command_line);
 
-  // Returns true if QUIC packet pacing should be negotiated during the
-  // QUIC handshake.
-  static bool ShouldEnableQuicPacing(
-      const base::CommandLine& command_line,
-      const VariationParameters& quic_trial_params);
-
   // Returns true if QUIC should always require handshake confirmation during
   // the QUIC handshake.
   static bool ShouldQuicAlwaysRequireHandshakeConfirmation(

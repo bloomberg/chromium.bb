@@ -106,7 +106,11 @@ QuicTimeWaitListManager::~QuicTimeWaitListManager() {
 void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
     QuicVersion version,
+    bool connection_rejected_statelessly,
     QuicEncryptedPacket* close_packet) {
+  DCHECK(!connection_rejected_statelessly || !close_packet)
+      << "Connections that were rejected statelessly should not "
+      << "have a close packet.  connection_id = " << connection_id;
   int num_packets = 0;
   ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
   const bool new_connection_id = it == connection_id_map_.end();
@@ -118,10 +122,8 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
   TrimTimeWaitListIfNeeded();
   DCHECK_LT(num_connections(),
             static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
-  ConnectionIdData data(num_packets,
-                        version,
-                        clock_->ApproximateNow(),
-                        close_packet);
+  ConnectionIdData data(num_packets, version, clock_->ApproximateNow(),
+                        close_packet, connection_rejected_statelessly);
   connection_id_map_.insert(std::make_pair(connection_id, data));
   if (new_connection_id) {
     visitor_->OnConnectionAddedToTimeWaitList(connection_id);
@@ -164,22 +166,24 @@ void QuicTimeWaitListManager::ProcessPacket(
   ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
   DCHECK(it != connection_id_map_.end());
   // Increment the received packet count.
-  ++((it->second).num_packets);
-  if (!ShouldSendResponse((it->second).num_packets)) {
+  ConnectionIdData* connection_data = &it->second;
+  ++(connection_data->num_packets);
+  if (!ShouldSendResponse(connection_data->num_packets)) {
     return;
   }
-  if (it->second.close_packet) {
-    QueuedPacket* queued_packet =
-        new QueuedPacket(server_address,
-                         client_address,
-                         it->second.close_packet->Clone());
+  if (connection_data->close_packet) {
+    QueuedPacket* queued_packet = new QueuedPacket(
+        server_address, client_address, connection_data->close_packet->Clone());
     // Takes ownership of the packet.
     SendOrQueuePacket(queued_packet);
-  } else {
+  } else if (!connection_data->connection_rejected_statelessly) {
     SendPublicReset(server_address,
                     client_address,
                     connection_id,
                     sequence_number);
+  } else {
+    DVLOG(3) << "Time wait list not sending response for connection "
+             << connection_id << " due to previous stateless reject.";
   }
 }
 

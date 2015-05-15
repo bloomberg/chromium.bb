@@ -381,6 +381,14 @@ QuicCryptoStream* TestClientSession::GetCryptoStream() {
   return crypto_stream_;
 }
 
+TestServerSession::TestServerSession(const QuicConfig& config,
+                                     QuicConnection* connection)
+    : QuicServerSession(config, connection, nullptr) {
+}
+
+TestServerSession::~TestServerSession() {
+}
+
 MockPacketWriter::MockPacketWriter() {
 }
 
@@ -711,6 +719,14 @@ QuicConfig DefaultQuicConfig() {
   return config;
 }
 
+QuicConfig DefaultQuicConfigStatelessRejects() {
+  QuicConfig config = DefaultQuicConfig();
+  QuicTagVector copt;
+  copt.push_back(kSREJ);
+  config.SetConnectionOptionsToSend(copt);
+  return config;
+}
+
 QuicVersionVector SupportedVersions(QuicVersion version) {
   QuicVersionVector versions;
   versions.push_back(version);
@@ -760,16 +776,69 @@ WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
   // in a different way, so TestWriterFactory::OnPacketSent might never be
   // called.
   factory_->current_writer_ = this;
-  return tools::QuicPerConnectionPacketWriter::WritePacket(buffer,
-                                                    buf_len,
-                                                    self_address,
-                                                    peer_address);
+  return tools::QuicPerConnectionPacketWriter::WritePacket(
+      buffer, buf_len, self_address, peer_address);
 }
 
 MockQuicConnectionDebugVisitor::MockQuicConnectionDebugVisitor() {
 }
 
 MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {
+}
+
+void SetupCryptoClientStreamForTest(
+    QuicServerId server_id,
+    bool supports_stateless_rejects,
+    QuicTime::Delta connection_start_time,
+    QuicCryptoClientConfig* crypto_client_config,
+    PacketSavingConnection** client_connection,
+    TestClientSession** client_session,
+    QuicCryptoClientStream** client_stream) {
+  CHECK(crypto_client_config);
+  CHECK(client_connection);
+  CHECK(client_session);
+  CHECK(client_stream);
+  CHECK(!connection_start_time.IsZero())
+      << "Connections must start at non-zero times, otherwise the "
+      << "strike-register will be unhappy.";
+
+  QuicConfig config = supports_stateless_rejects
+                          ? DefaultQuicConfigStatelessRejects()
+                          : DefaultQuicConfig();
+  *client_connection = new PacketSavingConnection(Perspective::IS_CLIENT);
+  *client_session = new TestClientSession(*client_connection, config);
+  *client_stream = new QuicCryptoClientStream(server_id, *client_session,
+                                              nullptr, crypto_client_config);
+  (*client_session)->SetCryptoStream(*client_stream);
+  (*client_connection)->AdvanceTime(connection_start_time);
+}
+
+// Setup or create?
+void SetupCryptoServerStreamForTest(
+    QuicServerId server_id,
+    QuicTime::Delta connection_start_time,
+    QuicCryptoServerConfig* server_crypto_config,
+    PacketSavingConnection** server_connection,
+    TestServerSession** server_session,
+    QuicCryptoServerStream** server_stream) {
+  CHECK(server_crypto_config);
+  CHECK(server_connection);
+  CHECK(server_session);
+  CHECK(server_stream);
+  CHECK(!connection_start_time.IsZero())
+      << "Connections must start at non-zero times, otherwise the "
+      << "strike-register will be unhappy.";
+
+  *server_connection = new PacketSavingConnection(Perspective::IS_SERVER);
+  *server_session =
+      new TestServerSession(DefaultQuicConfig(), *server_connection);
+  *server_stream =
+      new QuicCryptoServerStream(server_crypto_config, *server_session);
+  (*server_session)->InitializeSession(server_crypto_config);
+
+  // We advance the clock initially because the default time is zero and the
+  // strike register worries that we've just overflowed a uint32 time.
+  (*server_connection)->AdvanceTime(connection_start_time);
 }
 
 }  // namespace test

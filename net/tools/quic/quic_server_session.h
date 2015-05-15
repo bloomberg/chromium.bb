@@ -76,8 +76,29 @@ class QuicServerSession : public QuicSession {
   // Override base class to process FEC config received from client.
   void OnConfigNegotiated() override;
 
+  bool UsingStatelessRejectsIfPeerSupported() {
+    if (GetCryptoStream() == nullptr) {
+      return false;
+    }
+    return GetCryptoStream()->use_stateless_rejects_if_peer_supported();
+  }
+
+  bool PeerSupportsStatelessRejects() {
+    if (GetCryptoStream() == nullptr) {
+      return false;
+    }
+    return GetCryptoStream()->peer_supports_stateless_rejects();
+  }
+
   void set_serving_region(std::string serving_region) {
     serving_region_ = serving_region;
+  }
+
+  void set_use_stateless_rejects_if_peer_supported(
+      bool use_stateless_rejects_if_peer_supported) {
+    DCHECK(GetCryptoStream() != nullptr);
+    GetCryptoStream()->set_use_stateless_rejects_if_peer_supported(
+        use_stateless_rejects_if_peer_supported);
   }
 
  protected:

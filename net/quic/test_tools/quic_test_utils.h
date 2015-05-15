@@ -26,6 +26,7 @@
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
+#include "net/tools/quic/quic_server_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
@@ -128,6 +129,9 @@ size_t GetPacketLengthForOneStream(
 
 // Returns QuicConfig set to default values.
 QuicConfig DefaultQuicConfig();
+
+// Returns a QuicConfig set to default values that supports stateless rejects.
+QuicConfig DefaultQuicConfigStatelessRejects();
 
 // Returns a version vector consisting of |version|.
 QuicVersionVector SupportedVersions(QuicVersion version);
@@ -705,6 +709,65 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
   MOCK_METHOD2(OnRevivedPacket,
                void(const QuicPacketHeader&, StringPiece payload));
 };
+
+class TestServerSession : public tools::QuicServerSession {
+ public:
+  TestServerSession(const QuicConfig& config, QuicConnection* connection);
+  ~TestServerSession() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestServerSession);
+};
+
+// Creates and sets up a QuicCryptoClientStream for testing, and all
+// its associated state.
+//
+// server_id: The server id associated with this stream.
+// supports_stateless_rejects:  Does this client support stateless rejects.
+// connection_start_time: The time to set for the connection clock.
+//   Needed for strike-register nonce verification.  The client
+//   connection_start_time should be synchronized witht the server
+//   start time, otherwise nonce verification will fail.
+// crypto_client_config: Pointer to the crypto client config.
+// client_connection: Pointer reference for newly created
+//   connection.  This object will be owned by the
+//   client_session.
+// client_session: Pointer reference for the newly created client
+//   session.  The new object will be owned by the caller.
+// client_stream: Pointer reference for the newly created crypto
+//   client stream.  The new object will be owned by the caller.
+void SetupCryptoClientStreamForTest(
+    QuicServerId server_id,
+    bool supports_stateless_rejects,
+    QuicTime::Delta connection_start_time,
+    QuicCryptoClientConfig* crypto_client_config,
+    PacketSavingConnection** client_connection,
+    TestClientSession** client_session,
+    QuicCryptoClientStream** client_stream);
+
+// Creates and sets up a QuicCryptoServerStream for testing, and all
+// its associated state.
+//
+// server_id: The server id associated with this stream.
+// connection_start_time: The time to set for the connection clock.
+//   Needed for strike-register nonce verification.  The server
+//   connection_start_time should be synchronized witht the client
+//   start time, otherwise nonce verification will fail.
+// crypto_server_config: Pointer to the crypto server config.
+// server_connection: Pointer reference for newly created
+//   connection.  This object will be owned by the
+//   server_session.
+// server_session: Pointer reference for the newly created server
+//   session.  The new object will be owned by the caller.
+// server_stream: Pointer reference for the newly created crypto
+//   server stream.  The new object will be owned by the caller.
+void SetupCryptoServerStreamForTest(
+    QuicServerId server_id,
+    QuicTime::Delta connection_start_time,
+    QuicCryptoServerConfig* crypto_server_config,
+    PacketSavingConnection** server_connection,
+    TestServerSession** server_session,
+    QuicCryptoServerStream** server_stream);
 
 }  // namespace test
 }  // namespace net

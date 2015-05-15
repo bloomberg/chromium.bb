@@ -200,6 +200,92 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
   stream_->ProcessRawData(data->data(), data->length());
 }
 
+class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
+ public:
+  QuicCryptoClientStreamStatelessTest()
+      : server_crypto_config_(QuicCryptoServerConfig::TESTING,
+                              QuicRandom::GetInstance()),
+        server_id_(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED) {
+    TestClientSession* client_session = nullptr;
+    QuicCryptoClientStream* client_stream = nullptr;
+    SetupCryptoClientStreamForTest(server_id_,
+                                   /* supports_stateless_rejects= */ true,
+                                   QuicTime::Delta::FromSeconds(100000),
+                                   &client_crypto_config_, &client_connection_,
+                                   &client_session, &client_stream);
+    CHECK(client_session);
+    CHECK(client_stream);
+    client_session_.reset(client_session);
+    client_stream_.reset(client_stream);
+  }
+
+  void AdvanceHandshakeWithFakeServer() {
+    client_stream_->CryptoConnect();
+    CryptoTestUtils::AdvanceHandshake(client_connection_, client_stream_.get(),
+                                      0, server_connection_,
+                                      server_stream_.get(), 0);
+  }
+
+  // Initializes the server_stream_ for stateless rejects.
+  void InitializeFakeStatelessRejectServer() {
+    TestServerSession* server_session = nullptr;
+    QuicCryptoServerStream* server_stream = nullptr;
+    SetupCryptoServerStreamForTest(server_id_,
+                                   QuicTime::Delta::FromSeconds(100000),
+                                   &server_crypto_config_, &server_connection_,
+                                   &server_session, &server_stream);
+    CHECK(server_session);
+    CHECK(server_stream);
+    server_session_.reset(server_session);
+    server_stream_.reset(server_stream);
+    CryptoTestUtils::SetupCryptoServerConfigForTest(
+        server_connection_->clock(), server_connection_->random_generator(),
+        server_session_->config(), &server_crypto_config_);
+    server_stream_->set_use_stateless_rejects_if_peer_supported(true);
+  }
+
+  // Client crypto stream state
+  PacketSavingConnection* client_connection_;
+  scoped_ptr<TestClientSession> client_session_;
+  scoped_ptr<QuicCryptoClientStream> client_stream_;
+  QuicCryptoClientConfig client_crypto_config_;
+
+  // Server crypto stream state
+  PacketSavingConnection* server_connection_;
+  scoped_ptr<TestServerSession> server_session_;
+  QuicCryptoServerConfig server_crypto_config_;
+  scoped_ptr<QuicCryptoServerStream> server_stream_;
+  QuicServerId server_id_;
+};
+
+TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
+                              true);
+
+  QuicCryptoClientConfig::CachedState* client_state =
+      client_crypto_config_.LookupOrCreate(server_id_);
+
+  EXPECT_FALSE(client_state->has_server_designated_connection_id());
+  EXPECT_CALL(*client_session_, OnProofValid(testing::_));
+
+  InitializeFakeStatelessRejectServer();
+  AdvanceHandshakeWithFakeServer();
+
+  EXPECT_FALSE(client_stream_->encryption_established());
+  EXPECT_FALSE(client_stream_->handshake_confirmed());
+  // Even though the handshake was not complete, the cached client_state is
+  // complete, and can be used for a subsequent successful handshake.
+  EXPECT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
+
+  ASSERT_TRUE(client_state->has_server_designated_connection_id());
+  QuicConnectionId server_designated_id =
+      client_state->GetNextServerDesignatedConnectionId();
+  QuicConnectionId expected_id =
+      server_session_->connection()->random_generator()->RandUint64();
+  EXPECT_EQ(expected_id, server_designated_id);
+  EXPECT_FALSE(client_state->has_server_designated_connection_id());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net
