@@ -1098,6 +1098,7 @@ enum HistogramValue {
   PASSWORDSPRIVATE_REMOVESAVEDPASSWORD,
   PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTION,
   PASSWORDSPRIVATE_GETPLAINTEXTPASSWORD,
+  LAUNCHERPAGE_HIDE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -51,6 +51,7 @@ class AppListServiceMac : public AppListServiceImpl,
   void Init(Profile* initial_profile) override;
   void DismissAppList() override;
   void ShowForCustomLauncherPage(Profile* profile) override;
+  void HideCustomLauncherPage() override;
   bool IsAppListVisible() const override;
   void EnableAppList(Profile* initial_profile,
                      AppListEnableSource enable_source) override;

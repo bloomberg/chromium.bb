@@ -31,6 +31,12 @@ function enableCustomLauncherPage() {
   });
 }
 
+function hideCustomLauncherPage() {
+  chrome.launcherPage.hide(function() {
+      chrome.test.sendMessage('launcherPageHidden');
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   chrome.test.sendMessage('Launched');
 });

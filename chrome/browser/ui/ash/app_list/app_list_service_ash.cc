@@ -91,6 +91,20 @@ void AppListServiceAsh::ShowForCustomLauncherPage(Profile* /*profile*/) {
   ShowAndSwitchToState(app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
 }
 
+void AppListServiceAsh::HideCustomLauncherPage() {
+  app_list::AppListView* app_list_view =
+      ash::Shell::GetInstance()->GetAppListView();
+  if (!app_list_view)
+    return;
+
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+  if (contents_view->IsStateActive(
+          app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
+    contents_view->SetActiveState(app_list::AppListModel::STATE_START, true);
+  }
+}
+
 bool AppListServiceAsh::IsAppListVisible() const {
   return ash::Shell::GetInstance()->GetAppListTargetVisibility();
 }

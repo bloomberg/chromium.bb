@@ -65,6 +65,19 @@ ExtensionFunction::ResponseAction LauncherPageShowFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+LauncherPageHideFunction::LauncherPageHideFunction() {
+}
+
+ExtensionFunction::ResponseAction LauncherPageHideFunction::Run() {
+  chrome::HostDesktopType host_desktop =
+      chrome::GetHostDesktopTypeForNativeWindow(
+          GetAssociatedWebContents()->GetTopLevelNativeWindow());
+
+  AppListService::Get(host_desktop)->HideCustomLauncherPage();
+
+  return RespondNow(NoArguments());
+}
+
 LauncherPageSetEnabledFunction::LauncherPageSetEnabledFunction() {
 }
 

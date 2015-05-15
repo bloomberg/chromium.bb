@@ -44,6 +44,7 @@ class AppListServiceAsh : public AppListServiceImpl {
                          const std::string& extension_id,
                          bool start_discovery_tracking) override;
   void ShowForCustomLauncherPage(Profile* profile) override;
+  void HideCustomLauncherPage() override;
   bool IsAppListVisible() const override;
   void DismissAppList() override;
   void EnableAppList(Profile* initial_profile,

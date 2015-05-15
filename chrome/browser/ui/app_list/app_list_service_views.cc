@@ -49,6 +49,19 @@ void AppListServiceViews::ShowForCustomLauncherPage(Profile* profile) {
                          app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
 }
 
+void AppListServiceViews::HideCustomLauncherPage() {
+  if (!shower_.IsAppListVisible())
+    return;
+
+  app_list::ContentsView* contents_view =
+      shower_.app_list()->app_list_main_view()->contents_view();
+
+  if (contents_view->IsStateActive(
+          app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
+    contents_view->SetActiveState(app_list::AppListModel::STATE_START, true);
+  }
+}
+
 void AppListServiceViews::DismissAppList() {
   if (!can_dismiss_)
     return;

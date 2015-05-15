@@ -315,10 +315,11 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSubpages) {
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
 }
 
-IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
-                       LauncherPageShow) {
+IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageShowAndHide) {
   const base::string16 kLauncherPageShowScript =
       base::ASCIIToUTF16("chrome.launcherPage.show();");
+  const base::string16 kLauncherPageHideScript =
+      base::ASCIIToUTF16("hideCustomLauncherPage()");
 
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
@@ -361,6 +362,29 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
     contents_view = app_list_view->app_list_main_view()->contents_view();
     EXPECT_TRUE(contents_view->IsStateActive(
         app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+  }
+
+  // Ensure launcherPage.hide() hides the launcher page when it's showing.
+  {
+    ExtensionTestMessageListener listener("onPageProgressAt0", false);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageHideScript);
+
+    listener.WaitUntilSatisfied();
+
+    EXPECT_TRUE(
+        contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+  }
+
+  // Nothing should happen if hide() is called from the apps page.
+  {
+    contents_view->SetActiveState(app_list::AppListModel::STATE_APPS, false);
+
+    ExtensionTestMessageListener listener("launcherPageHidden", false);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageHideScript);
+    listener.WaitUntilSatisfied();
+
+    EXPECT_TRUE(
+        contents_view->IsStateActive(app_list::AppListModel::STATE_APPS));
   }
 }
 

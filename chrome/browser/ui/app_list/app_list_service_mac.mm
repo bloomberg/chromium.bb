@@ -425,6 +425,10 @@ void AppListServiceMac::ShowForCustomLauncherPage(Profile* profile) {
   NOTIMPLEMENTED();
 }
 
+void AppListServiceMac::HideCustomLauncherPage() {
+  NOTIMPLEMENTED();
+}
+
 bool AppListServiceMac::IsAppListVisible() const {
   return [GetNativeWindow() isVisible] &&
       ![animation_controller_ isClosing];

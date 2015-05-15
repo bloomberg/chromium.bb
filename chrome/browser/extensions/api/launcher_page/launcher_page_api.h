@@ -65,6 +65,21 @@ class LauncherPageShowFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(LauncherPageShowFunction);
 };
 
+class LauncherPageHideFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("launcherPage.hide", LAUNCHERPAGE_HIDE);
+
+  LauncherPageHideFunction();
+
+ protected:
+  ~LauncherPageHideFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LauncherPageHideFunction);
+};
+
 class LauncherPageSetEnabledFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("launcherPage.setEnabled",

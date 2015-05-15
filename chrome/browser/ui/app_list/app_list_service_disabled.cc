@@ -35,6 +35,7 @@ class AppListServiceDisabled : public AppListService {
       Profile* profile,
       const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
       override {}
+  void HideCustomLauncherPage() override {}
   void ShowForAppInstall(Profile* profile,
                          const std::string& extension_id,
                          bool start_discovery_tracking) override {}

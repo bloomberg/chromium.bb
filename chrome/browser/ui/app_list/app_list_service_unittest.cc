@@ -56,6 +56,7 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
   }
 
   void ShowForCustomLauncherPage(Profile* profile) override {}
+  void HideCustomLauncherPage() override {}
 
   void DismissAppList() override { showing_for_profile_ = NULL; }
 

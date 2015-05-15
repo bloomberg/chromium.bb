@@ -7,6 +7,7 @@
 namespace launcherPage {
   callback PushSubpageCallback = void();
   callback ShowCallback = void();
+  callback HideCallback = void();
   callback SetEnabledCallback = void();
 
   interface Functions {
@@ -23,6 +24,9 @@ namespace launcherPage {
     // Opens the launcher if it isn't currently open and shows the launcher
     // page.
     static void show(optional ShowCallback callback);
+
+    // Returns the launcher to the start page if the launcher page is showing.
+    static void hide(optional HideCallback callback);
 
     // Sets whether the launcher page is enabled in the launcher. If disabled,
     // the launcher page will not be shown when the area at the bottom of the

@@ -38,6 +38,7 @@ class AppListServiceViews : public AppListServiceImpl,
                          const std::string& extension_id,
                          bool start_discovery_tracking) override;
   void ShowForCustomLauncherPage(Profile* profile) override;
+  void HideCustomLauncherPage() override;
   void DismissAppList() override;
   bool IsAppListVisible() const override;
   gfx::NativeWindow GetAppListWindow() override;

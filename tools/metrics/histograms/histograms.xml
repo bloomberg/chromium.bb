@@ -52345,6 +52345,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1037" label="PASSWORDSPRIVATE_REMOVESAVEDPASSWORD"/>
   <int value="1038" label="PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTION"/>
   <int value="1039" label="PASSWORDSPRIVATE_GETPLAINTEXTPASSWORD"/>
+  <int value="1040" label="LAUNCHERPAGE_HIDE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
