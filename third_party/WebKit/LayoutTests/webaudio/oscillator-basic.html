@@ -39,38 +39,31 @@ function runTest()
     // Here we're setting the type using WebIDL enum values which are strings.
     for (var k = 0; k < oscTypes.length - 1; ++k) {
         osc.type = oscTypes[k];
-        if (osc.type == oscTypes[k])
-            testPassed('Oscillator correctly set to "' + oscTypes[k] + '" type.');
-        else
-            testFailed('Oscillator set to "' + oscTypes[k] + '" type, but returns "' + osc.type + '" type.');
+        Should("osc.type = '" + oscTypes[k] + "'", osc.type).beEqualTo(oscTypes[k]);
     }
 
     // Verify that setting a custom type directly does not set the custom type. This test has to be
     // done before using setPeriodicWave.
       
-    osc.type = "custom";
-    if (osc.type == "custom") 
-        testFailed('Directly setting oscillator type to "custom" incorrectly succeeded.');
-    else
-        testPassed('Directly setting oscillator type to "custom" correctly failed.');
+    Should("osc.type = 'custom'", function () {
+      osc.type = "custom";
+    }).throw('InvalidStateError');
 
     // Now set a custom oscillator
     var coeffA = new Float32Array([0, 1, 0.5]);
     var coeffB = new Float32Array([0, 0, 0]);        
     var wave = context.createPeriodicWave(coeffA, coeffB);
-    osc.setPeriodicWave(wave);
-    if (osc.type == "custom")
-        testPassed('Oscillator correctly set to "custom" type using setPeriodicWave.');
-    else
-        testFailed('Oscillator set to "custom" type, but returns "' + osc.type + '" type.');
 
+    Should("osc.setPeriodicWave(wave)", function () {
+      osc.setPeriodicWave(wave);
+    }).notThrow();
+    Should("osc.type", osc.type).beEqualTo("custom");
      
     // Check that numerical values are no longer supported
+    var oldType = osc.type;
     osc.type = 0;
-    if (osc.type == 0)
-        testFailed("Oscillator incorrectly set to 0.")
-    else
-        testPassed("Oscillator correctly not set to 0.");
+    Should("osc.type = 0", osc.type).notBeEqualTo(0);
+    Should("osc.type", osc.type).beEqualTo(oldType);
 
     finishJSTest();
 }

@@ -35,7 +35,7 @@ enum OscillatorType {
     Conditional=WEB_AUDIO,
 ] interface OscillatorNode : AudioSourceNode {
 
-    attribute OscillatorType type;
+    [RaisesException=Setter] attribute OscillatorType type;
 
     readonly attribute AudioParam frequency; // in Hertz
     readonly attribute AudioParam detune; // in Cents

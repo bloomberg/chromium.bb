@@ -412,6 +412,23 @@ var Should = (function () {
             this._testFailed('was ' + value + ' instead of ' + this.target);
     };
 
+    // Check if |target| is not equal to |value|.
+    //
+    // Example:
+    // Should('One', one).notBeEqualTo(0);
+    // Result:
+    // "PASS One is not equal to 0."
+    ShouldModel.prototype.notBeEqualTo = function (value) {
+        var type = typeof value;
+        this._assert(type === 'number' || type === 'string',
+            'value should be number or string for');
+
+        if (this.target === value)
+            this._testFailed('should not be equal to ' + value);
+        else
+            this._testPassed('is not equal to ' + value);
+    };
+
     // Check if |func| throws an exception with a certain |errorType| correctly.
     // |errorType| is optional.
     //

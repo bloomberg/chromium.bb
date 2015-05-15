@@ -36,6 +36,7 @@
 namespace blink {
 
 class AudioContext;
+class ExceptionState;
 class PeriodicWave;
 
 // OscillatorNode is an audio generator of periodic waveforms.
@@ -59,7 +60,7 @@ public:
     virtual void process(size_t framesToProcess) override;
 
     String type() const;
-    void setType(const String&);
+    void setType(const String&, ExceptionState&);
 
     void setPeriodicWave(PeriodicWave*);
 
@@ -106,7 +107,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     String type() const;
-    void setType(const String&);
+    void setType(const String&, ExceptionState&);
     AudioParam* frequency();
     AudioParam* detune();
     void setPeriodicWave(PeriodicWave*);
