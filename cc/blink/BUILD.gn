@@ -78,11 +78,15 @@ if (!is_mac) {
       "web_animation_unittest.cc",
       "web_float_animation_curve_unittest.cc",
       "web_layer_impl_fixed_bounds_unittest.cc",
+
+      # Setup.
+      "test/cc_blink_test_suite.cc",
+      "test/run_all_unittests.cc",
     ]
 
     deps = [
       ":blink",
-      "//base/test:run_all_unittests",
+      "//base/test:test_support",
       "//base/third_party/dynamic_annotations",
       "//skia",
       "//testing/gtest",
