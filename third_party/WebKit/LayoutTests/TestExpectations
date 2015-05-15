@@ -492,6 +492,11 @@ crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 crbug.com/483436 [ Linux Mac Debug ] virtual/threaded/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Pass Failure ]
 
+crbug.com/486556 fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
+crbug.com/486556 fast/text/capitalize-boundaries.html [ NeedsRebaseline ]
+crbug.com/486556 virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
+crbug.com/486556 virtual/antialiasedtext/fast/text/capitalize-boundaries.html [ NeedsRebaseline ]
+
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
@@ -1899,8 +1904,8 @@ crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass 
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 
-crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
-crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
+#crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
+#crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
 crbug.com/479164 inspector/geolocation-emulation-tests.html [ Pass Failure ]
 

@@ -290,7 +290,6 @@ const UChar* getFontBasedOnUnicodeBlock(int ucs4, SkFontMgr* fontManager)
     case UBLOCK_RUNIC:
     case UBLOCK_SUPPLEMENTAL_MATHEMATICAL_OPERATORS:
     case UBLOCK_DINGBATS:
-    case UBLOCK_GENERAL_PUNCTUATION:
         return symbolFont;
     default:
         return 0;
