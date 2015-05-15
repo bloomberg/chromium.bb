@@ -46,6 +46,10 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
 std::vector<base::FilePath> GetGrayListedDirectories();
 
 #if defined(OS_CHROMEOS)
+// Dispatches an event about a mounted on unmounted volume in the system to
+// each extension which can request it.
+void DispatchVolumeListChangeEvent(Profile* profile);
+
 // Requests consent for the chrome.fileSystem.requestFileSystem() method.
 // Interaction with UI and environmental checks (kiosk mode, whitelist) are
 // provided by a delegate: ConsentProviderDelegate. For testing, it is

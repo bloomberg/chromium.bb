@@ -70,6 +70,8 @@
 #include "chrome/browser/extensions/api/file_system/request_file_system_notification.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "components/user_manager/user_manager.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "url/url_constants.h"
@@ -247,6 +249,25 @@ content::WebContents* GetWebContentsForAppId(Profile* profile,
       registry->GetCurrentAppWindowForApp(app_id);
   return app_window ? app_window->web_contents() : nullptr;
 }
+
+// Fills a list of volumes mounted in the system.
+void FillVolumeList(
+    Profile* profile,
+    std::vector<linked_ptr<extensions::api::file_system::Volume>>* result) {
+  using file_manager::VolumeManager;
+  VolumeManager* const volume_manager = VolumeManager::Get(profile);
+  DCHECK(volume_manager);
+
+  using extensions::api::file_system::Volume;
+  const auto& volume_list = volume_manager->GetVolumeList();
+  // Convert volume_list to result_volume_list.
+  for (const auto& volume : volume_list) {
+    const linked_ptr<Volume> result_volume(new Volume);
+    result_volume->volume_id = volume->volume_id();
+    result_volume->writable = !volume->is_read_only();
+    result->push_back(result_volume);
+  }
+}
 #endif
 
 }  // namespace
@@ -286,6 +307,33 @@ std::vector<base::FilePath> GetGrayListedDirectories() {
 }
 
 #if defined(OS_CHROMEOS)
+void DispatchVolumeListChangeEvent(Profile* profile) {
+  DCHECK(profile);
+  EventRouter* const event_router = EventRouter::Get(profile);
+  if (!event_router)  // Possible on shutdown.
+    return;
+
+  extensions::ExtensionRegistry* const registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)  // Possible on shutdown.
+    return;
+
+  ConsentProviderDelegate consent_provider_delegate(profile, nullptr);
+  ConsentProvider consent_provider(&consent_provider_delegate);
+  extensions::api::file_system::VolumeListChangedEvent event_args;
+  FillVolumeList(profile, &event_args.volumes);
+  for (const auto& extension : registry->enabled_extensions()) {
+    if (!consent_provider.IsGrantable(*extension.get()))
+      continue;
+    event_router->DispatchEventToExtension(
+        extension->id(),
+        make_scoped_ptr(new Event(
+            extensions::api::file_system::OnVolumeListChanged::kEventName,
+            extensions::api::file_system::OnVolumeListChanged::Create(
+                event_args))));
+  }
+}
+
 ConsentProvider::ConsentProvider(DelegateInterface* delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
@@ -361,7 +409,6 @@ ConsentProviderDelegate::ConsentProviderDelegate(Profile* profile,
                                                  content::RenderViewHost* host)
     : profile_(profile), host_(host) {
   DCHECK(profile_);
-  DCHECK(host_);
 }
 
 ConsentProviderDelegate::~ConsentProviderDelegate() {
@@ -378,6 +425,7 @@ void ConsentProviderDelegate::ShowDialog(
     const base::WeakPtr<file_manager::Volume>& volume,
     bool writable,
     const file_system_api::ConsentProvider::ShowDialogCallback& callback) {
+  DCHECK(host_);
   content::WebContents* const foreground_contents =
       GetWebContentsForRenderViewHost(profile_, host_);
   // If there is no web contents handle, then the method is most probably
@@ -1400,22 +1448,9 @@ ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
 
   if (!consent_provider.IsGrantable(*extension()))
     return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
-
-  using file_manager::VolumeManager;
-  VolumeManager* const volume_manager =
-      VolumeManager::Get(chrome_details_.GetProfile());
-  DCHECK(volume_manager);
-
   using extensions::api::file_system::Volume;
-  const auto& volume_list = volume_manager->GetVolumeList();
   std::vector<linked_ptr<Volume>> result_volume_list;
-  // Convert volume_list to result_volume_list.
-  for (const auto& volume : volume_list) {
-    const linked_ptr<Volume> result_volume(new Volume);
-    result_volume->volume_id = volume->volume_id();
-    result_volume->writable = !volume->is_read_only();
-    result_volume_list.push_back(result_volume);
-  }
+  FillVolumeList(chrome_details_.GetProfile(), &result_volume_list);
 
   return RespondNow(
       ArgumentList(extensions::api::file_system::GetVolumeList::Results::Create(
