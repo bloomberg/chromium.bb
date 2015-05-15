@@ -26,7 +26,8 @@ void RecordBubbleClosed(
 bool IsEnabledSmartLockBranding(Profile* profile) {
   const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  return password_manager_util::GetPasswordSyncState(sync_service) &&
+  return password_manager_util::GetPasswordSyncState(sync_service) ==
+             password_manager::SYNCING_NORMAL_ENCRYPTION &&
          base::FieldTrialList::FindFullName(kBrandingExperimentName) ==
              kSmartLockBrandingGroupName;
 }
