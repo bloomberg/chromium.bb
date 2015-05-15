@@ -36,6 +36,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/remote_commands/remote_commands_service.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -52,6 +53,7 @@
 #include "ui/base/l10n/time_format.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -807,9 +809,22 @@ void PolicyUIHandler::HandleInitialized(const base::ListValue* args) {
 }
 
 void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
-  GetPolicyService()->RefreshPolicies(
-      base::Bind(&PolicyUIHandler::OnRefreshPoliciesDone,
-                 weak_factory_.GetWeakPtr()));
+#if defined(OS_CHROMEOS)
+  // Allow user to manually fetch remote commands, in case invalidation
+  // service is not working properly.
+  // TODO(binjin): evaluate and possibly remove this after invalidation
+  // service is landed and tested. http://crbug.com/480982
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::RemoteCommandsService* remote_commands_service =
+      connector->GetDeviceCloudPolicyManager()
+          ->core()
+          ->remote_commands_service();
+  if (remote_commands_service)
+    remote_commands_service->FetchRemoteCommands();
+#endif
+  GetPolicyService()->RefreshPolicies(base::Bind(
+      &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
 }
 
 void PolicyUIHandler::OnRefreshPoliciesDone() const {

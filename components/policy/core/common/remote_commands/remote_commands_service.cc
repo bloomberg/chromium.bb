@@ -30,7 +30,7 @@ RemoteCommandsService::~RemoteCommandsService() {
 }
 
 bool RemoteCommandsService::FetchRemoteCommands() {
-  if (!client_->is_registered())
+  if (!client_ || !client_->is_registered())
     return false;
 
   if (command_fetch_in_progress_) {
