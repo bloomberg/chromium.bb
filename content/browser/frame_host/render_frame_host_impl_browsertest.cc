@@ -56,7 +56,9 @@ class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
 using RenderFrameHostImplBrowserTest = ContentBrowserTest;
 
 // Test that when creating a new window, the main frame is correctly focused.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_AtLoad) {
+// flaky http://crbug.com/452631
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       DISABLED_IsFocused_AtLoad) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
 
@@ -122,7 +124,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, RemoveFocusedFrame) {
 
 // Test that even if the frame is focused in the frame tree but its
 // RenderWidgetHost is not focused, it is not considered as focused.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_Widget) {
+// flaky http://crbug.com/452631
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       DISABLED_IsFocused_Widget) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
   WebContents* web_contents = shell()->web_contents();
