@@ -19,6 +19,7 @@ class SatisfySwapPromise : public SwapPromise {
   ~SatisfySwapPromise() override {}
 
  private:
+  void DidActivate() override {}
   void DidSwap(CompositorFrameMetadata* metadata) override {
     metadata->satisfies_sequences.push_back(sequence_.sequence);
   }

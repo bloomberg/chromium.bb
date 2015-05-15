@@ -47,6 +47,7 @@ class FrameSwapMessageQueueTest : public testing::Test {
   void DrainMessages(int source_frame_number,
                      ScopedVector<IPC::Message>* messages) {
     messages->clear();
+    queue_->DidActivate(source_frame_number);
     queue_->DidSwap(source_frame_number);
     scoped_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
         queue_->AcquireSendMessageScope();
@@ -92,6 +93,7 @@ TEST_F(FrameSwapMessageQueueTest, TestEmpty) {
   ASSERT_TRUE(queue_->Empty());
   QueueVisualStateMessage(1, CloneMessage(first_message_));
   ASSERT_FALSE(queue_->Empty());
+  queue_->DidActivate(1);
   queue_->DidSwap(1);
   ASSERT_FALSE(queue_->Empty());
 }
@@ -208,17 +210,31 @@ void FrameSwapMessageQueueTest::TestDidNotSwap(
   QueueNextSwapMessage(CloneMessage(first_message_));
   QueueVisualStateMessage(2, CloneMessage(second_message_));
   QueueVisualStateMessage(3, CloneMessage(third_message_));
+  const int rid[] = {first_message_.routing_id(),
+                     second_message_.routing_id(),
+                     third_message_.routing_id()};
 
-  queue_->DidNotSwap(2, cc::SwapPromise::COMMIT_NO_UPDATE, &messages);
-  ASSERT_EQ(2u, messages.size());
-  ASSERT_TRUE(HasMessageForId(messages, first_message_.routing_id()));
-  ASSERT_TRUE(HasMessageForId(messages, second_message_.routing_id()));
+  bool msg_delivered = reason != cc::SwapPromise::COMMIT_FAILS &&
+                       reason != cc::SwapPromise::ACTIVATION_FAILS;
+
+  queue_->DidNotSwap(2, reason, &messages);
+  ASSERT_TRUE(msg_delivered == HasMessageForId(messages, rid[0]));
+  ASSERT_TRUE(msg_delivered == HasMessageForId(messages, rid[1]));
+  ASSERT_FALSE(HasMessageForId(messages, rid[2]));
   messages.clear();
 
-  queue_->DidNotSwap(3, cc::SwapPromise::COMMIT_NO_UPDATE, &messages);
-  ASSERT_EQ(1u, messages.size());
-  ASSERT_TRUE(HasMessageForId(messages, third_message_.routing_id()));
+  queue_->DidNotSwap(3, reason, &messages);
+  ASSERT_FALSE(HasMessageForId(messages, rid[0]));
+  ASSERT_FALSE(HasMessageForId(messages, rid[1]));
+  ASSERT_TRUE(msg_delivered == HasMessageForId(messages, rid[2]));
   messages.clear();
+
+  // all undelivered messages should still be available for RenderFrameHostImpl
+  // to deliver.
+  DrainMessages(3, &messages);
+  ASSERT_TRUE(msg_delivered != HasMessageForId(messages, rid[0]));
+  ASSERT_TRUE(msg_delivered != HasMessageForId(messages, rid[1]));
+  ASSERT_TRUE(msg_delivered != HasMessageForId(messages, rid[2]));
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestDidNotSwapNoUpdate) {
@@ -230,23 +246,11 @@ TEST_F(FrameSwapMessageQueueTest, TestDidNotSwapSwapFails) {
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestDidNotSwapCommitFails) {
-  ScopedVector<IPC::Message> messages;
+  TestDidNotSwap(cc::SwapPromise::COMMIT_FAILS);
+}
 
-  QueueNextSwapMessage(CloneMessage(first_message_));
-  QueueVisualStateMessage(2, CloneMessage(second_message_));
-  QueueVisualStateMessage(3, CloneMessage(third_message_));
-
-  queue_->DidNotSwap(2, cc::SwapPromise::COMMIT_FAILS, &messages);
-  ASSERT_EQ(0u, messages.size());
-  messages.clear();
-
-  queue_->DidNotSwap(3, cc::SwapPromise::COMMIT_FAILS, &messages);
-  ASSERT_EQ(0u, messages.size());
-  messages.clear();
-
-  DrainMessages(1, &messages);
-  ASSERT_EQ(1u, messages.size());
-  ASSERT_TRUE(HasMessageForId(messages, first_message_.routing_id()));
+TEST_F(FrameSwapMessageQueueTest, TestDidNotSwapActivationFails) {
+  TestDidNotSwap(cc::SwapPromise::ACTIVATION_FAILS);
 }
 
 class NotifiesDeletionMessage : public IPC::Message {
@@ -281,6 +285,7 @@ TEST_F(FrameSwapMessageQueueTest, TestDeletesQueuedVisualStateMessage) {
   QueueVisualStateMessage(1,
                           make_scoped_ptr(new NotifiesDeletionMessage(
                               &message_deleted, first_message_)));
+  queue_->DidActivate(1);
   queue_->DidSwap(1);
   queue_ = NULL;
   ASSERT_TRUE(message_deleted);

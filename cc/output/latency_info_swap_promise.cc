@@ -10,7 +10,7 @@ namespace {
 ui::LatencyComponentType DidNotSwapReasonToLatencyComponentType(
     cc::SwapPromise::DidNotSwapReason reason) {
   switch (reason) {
-    case cc::SwapPromise::DID_NOT_SWAP_UNKNOWN:
+    case cc::SwapPromise::ACTIVATION_FAILS:
     case cc::SwapPromise::SWAP_FAILS:
       return ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT;
     case cc::SwapPromise::COMMIT_FAILS:

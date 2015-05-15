@@ -146,11 +146,15 @@ void FrameSwapMessageQueue::QueueMessageForFrame(MessageDeliveryPolicy policy,
   GetSubQueue(policy)->QueueMessage(source_frame_number, msg.Pass(), is_first);
 }
 
-void FrameSwapMessageQueue::DidSwap(int source_frame_number) {
+void FrameSwapMessageQueue::DidActivate(int source_frame_number) {
   base::AutoLock lock(lock_);
-
   visual_state_queue_->DrainMessages(source_frame_number,
                                      &next_drain_messages_);
+}
+
+void FrameSwapMessageQueue::DidSwap(int source_frame_number) {
+  base::AutoLock lock(lock_);
+  swap_queue_->DrainMessages(0, &next_drain_messages_);
 }
 
 void FrameSwapMessageQueue::DidNotSwap(int source_frame_number,
@@ -164,21 +168,18 @@ void FrameSwapMessageQueue::DidNotSwap(int source_frame_number,
       visual_state_queue_->DrainMessages(source_frame_number, messages);
       break;
     case cc::SwapPromise::COMMIT_FAILS:
-      // Do not queue any responses here.
-      // If COMMIT_FAILS the renderer is shutting down, which will
-      // result in the RenderFrameHostImpl destructor firing the
-      // remaining response callbacks itself.
+    case cc::SwapPromise::ACTIVATION_FAILS:
+      // Do not queue any responses here. If ACTIVATION_FAILS or
+      // COMMIT_FAILS the renderer is shutting down, which will result
+      // in the RenderFrameHostImpl destructor firing the remaining
+      // response callbacks itself.
       break;
-    default:
-      NOTREACHED();
   }
 }
 
 void FrameSwapMessageQueue::DrainMessages(
     ScopedVector<IPC::Message>* messages) {
   lock_.AssertAcquired();
-
-  swap_queue_->DrainMessages(0, messages);
   messages->insert(messages->end(),
                    next_drain_messages_.begin(),
                    next_drain_messages_.end());

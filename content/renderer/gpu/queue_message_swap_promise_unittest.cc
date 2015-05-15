@@ -115,8 +115,10 @@ class QueueMessageSwapPromiseTest : public testing::Test {
     for (ScopedVector<cc::SwapPromise>::iterator i = promises_.begin();
          i != promises_.end();
          ++i) {
-      if (*i)
+      if (*i) {
+        (*i)->DidActivate();
         (*i)->DidSwap(NULL);
+      }
     }
   }
 
@@ -144,11 +146,13 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySchedulesMessageForNextSwap) {
   QueueMessages(data, arraysize(data));
 
   ASSERT_TRUE(promises_[0]);
+  promises_[0]->DidActivate();
+  promises_[0]->DidSwap(NULL);
+
   EXPECT_TRUE(DirectSendMessages().empty());
   EXPECT_FALSE(frame_swap_message_queue_->Empty());
+  // frame_swap_message_queue_->DidSwap(1);
   EXPECT_TRUE(NextSwapHasMessage(messages_[0]));
-
-  CleanupPromises();
 }
 
 TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicyNeedsAtMostOnePromise) {
@@ -201,6 +205,7 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicyRetainsMessageOnCommitFails) {
   promises_[0]->DidNotSwap(cc::SwapPromise::COMMIT_FAILS);
   EXPECT_TRUE(DirectSendMessages().empty());
   EXPECT_FALSE(frame_swap_message_queue_->Empty());
+  frame_swap_message_queue_->DidSwap(2);
   EXPECT_TRUE(NextSwapHasMessage(messages_[0]));
 }
 
@@ -236,7 +241,7 @@ TEST_F(QueueMessageSwapPromiseTest,
   CleanupPromises();
 }
 
-TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidSwap) {
+TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidActivate) {
   QueueMessageData data[] = {
     /* { policy, source_frame_number } */
     {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
@@ -245,6 +250,7 @@ TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidSwap) {
   };
   QueueMessages(data, arraysize(data));
 
+  promises_[0]->DidActivate();
   promises_[0]->DidSwap(NULL);
   ASSERT_FALSE(promises_[1]);
   ScopedVector<IPC::Message> messages;
@@ -254,7 +260,8 @@ TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidSwap) {
   EXPECT_TRUE(ContainsMessage(messages, messages_[1]));
   EXPECT_FALSE(ContainsMessage(messages, messages_[2]));
 
-  promises_[2]->DidSwap(NULL);
+  promises_[2]->DidActivate();
+  promises_[2]->DidNotSwap(cc::SwapPromise::SWAP_FAILS);
   messages.swap(NextSwapMessages());
   EXPECT_EQ(1u, messages.size());
   EXPECT_TRUE(ContainsMessage(messages, messages_[2]));
@@ -274,59 +281,43 @@ void QueueMessageSwapPromiseTest::VisualStateSwapPromiseDidNotSwap(
   };
   QueueMessages(data, arraysize(data));
 
+  // If we fail to swap with COMMIT_FAILS or ACTIVATE_FAILS, then
+  // messages are delivered by the RenderFrameHostImpl destructor,
+  // rather than directly by the swap promise.
+  bool msg_delivered = reason != cc::SwapPromise::COMMIT_FAILS &&
+                       reason != cc::SwapPromise::ACTIVATION_FAILS;
+
   promises_[0]->DidNotSwap(reason);
   ASSERT_FALSE(promises_[1]);
   EXPECT_TRUE(NextSwapMessages().empty());
-  EXPECT_EQ(2u, DirectSendMessages().size());
-  EXPECT_TRUE(ContainsMessage(DirectSendMessages(), messages_[0]));
-  EXPECT_TRUE(ContainsMessage(DirectSendMessages(), messages_[1]));
+  EXPECT_EQ(msg_delivered, ContainsMessage(DirectSendMessages(), messages_[0]));
+  EXPECT_EQ(msg_delivered, ContainsMessage(DirectSendMessages(), messages_[1]));
   EXPECT_FALSE(ContainsMessage(DirectSendMessages(), messages_[2]));
 
   promises_[2]->DidNotSwap(reason);
   EXPECT_TRUE(NextSwapMessages().empty());
-  EXPECT_TRUE(ContainsMessage(DirectSendMessages(), messages_[2]));
+  EXPECT_EQ(msg_delivered, ContainsMessage(DirectSendMessages(), messages_[2]));
 
   EXPECT_TRUE(NextSwapMessages().empty());
-  EXPECT_TRUE(frame_swap_message_queue_->Empty());
+  EXPECT_EQ(msg_delivered, frame_swap_message_queue_->Empty());
 }
 
-TEST_F(QueueMessageSwapPromiseTest, VisalStateSwapPromiseDidNotSwapNoUpdate) {
+TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidNotSwapNoUpdate) {
   VisualStateSwapPromiseDidNotSwap(cc::SwapPromise::COMMIT_NO_UPDATE);
 }
 
 TEST_F(QueueMessageSwapPromiseTest,
        VisualStateSwapPromiseDidNotSwapCommitFails) {
-  // COMMIT_FAILS is treated differently:
-  //    If we fail to swap with COMMIT_FAILS, then the renderer is
-  //    shutting down, which implies that the RenderFrameHostImpl
-  //    destructor will eventually be called, firing the remaining
-  //    response callbacks (with swap_success = false) itself.
-  QueueMessageData data[] = {
-    /* { policy, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 2},
-  };
-  QueueMessages(data, arraysize(data));
-
-  promises_[0]->DidNotSwap(cc::SwapPromise::COMMIT_FAILS);
-  ASSERT_FALSE(promises_[1]);
-  EXPECT_TRUE(NextSwapMessages().empty());
-  EXPECT_EQ(0u, DirectSendMessages().size());
-  EXPECT_FALSE(ContainsMessage(DirectSendMessages(), messages_[0]));
-  EXPECT_FALSE(ContainsMessage(DirectSendMessages(), messages_[1]));
-  EXPECT_FALSE(ContainsMessage(DirectSendMessages(), messages_[2]));
-
-  promises_[2]->DidNotSwap(cc::SwapPromise::COMMIT_FAILS);
-  EXPECT_TRUE(NextSwapMessages().empty());
-  EXPECT_FALSE(ContainsMessage(DirectSendMessages(), messages_[2]));
-
-  EXPECT_TRUE(NextSwapMessages().empty());
-  EXPECT_FALSE(frame_swap_message_queue_->Empty());
+  VisualStateSwapPromiseDidNotSwap(cc::SwapPromise::COMMIT_FAILS);
 }
 
-TEST_F(QueueMessageSwapPromiseTest, VisalStateSwapPromiseDidNotSwapSwapFails) {
+TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidNotSwapSwapFails) {
   VisualStateSwapPromiseDidNotSwap(cc::SwapPromise::SWAP_FAILS);
+}
+
+TEST_F(QueueMessageSwapPromiseTest,
+       VisualStateSwapPromiseDidNotSwapActivationFails) {
+  VisualStateSwapPromiseDidNotSwap(cc::SwapPromise::ACTIVATION_FAILS);
 }
 
 }  // namespace content

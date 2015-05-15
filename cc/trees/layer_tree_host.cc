@@ -1279,8 +1279,8 @@ void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
 }
 
 void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
-  for (size_t i = 0; i < swap_promise_list_.size(); i++)
-    swap_promise_list_[i]->DidNotSwap(reason);
+  for (auto* swap_promise : swap_promise_list_)
+    swap_promise->DidNotSwap(reason);
   swap_promise_list_.clear();
 }
 

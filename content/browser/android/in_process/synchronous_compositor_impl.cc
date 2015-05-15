@@ -316,6 +316,7 @@ void SynchronousCompositorImpl::DeliverMessages() {
 void SynchronousCompositorImpl::DidActivatePendingTree() {
   DCHECK(compositor_client_);
   compositor_client_->DidUpdateContent();
+  DeliverMessages();
 }
 
 gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {

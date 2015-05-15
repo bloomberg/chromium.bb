@@ -15,30 +15,43 @@ namespace cc {
 // completed in the compositor, i.e. the compositor knows it has been sent
 // to its output or not.
 //
-// If the new compositor state is sent to the output, SwapPromise::DidSwap()
-// will be called, and if the compositor fails to send its new state to the
-// output, SwapPromise::DidNotSwap() will be called.
+// If the commit results in a successful activation of the pending layer tree,
+// SwapPromise::DidActivate() will be called.
 //
-// Client wishes to use SwapPromise should have a subclass that defines
-// the behavior of DidSwap() and DidNotSwap(). Notice that the promise can
-// be broken at either main or impl thread, e.g. commit fails on main thread,
-// new frame data has no actual damage so LayerTreeHostImpl::SwapBuffers()
-// bails out early on impl thread, so don't assume that DidSwap() and
-// DidNotSwap() are called at a particular thread. It is better to let the
-// subclass carry thread-safe member data and operate on that member data in
-// DidSwap() and DidNotSwap().
+// If the new compositor state is sent to the output, SwapPromise::DidSwap()
+// will be called.
+//
+// If the scheduler fails to activate the pending tree, or the compositor
+// fails to send its new state to the output, SwapPromise::DidNotSwap() will
+// be called. Note that it is possible to activate, and subsequently not swap.
+//
+// Promises complete afer either DidSwap() or DidNotSwap() is called, thus
+// there are three possible call sequences:
+//   DidNotSwap()
+//   DidActivate() ; DidSwap()
+//   DidActivate() ; DidNotSwap()
+//
+// Clients that wish to use SwapPromise should have a subclass that defines
+// the behavior of DidActivate(), DidSwap() and DidNotSwap(). Notice that the
+// promise can be broken at either main or impl thread, e.g. commit fails on
+// main thread, new frame data has no actual damage so
+// LayerTreeHostImpl::SwapBuffers() bails out early on impl thread, so don't
+// assume that Did*() methods are called at a particular thread. It is better
+// to let the subclass carry thread-safe member data and operate on that
+// member data in Did*().
 class CC_EXPORT SwapPromise {
  public:
   enum DidNotSwapReason {
-    DID_NOT_SWAP_UNKNOWN,
     SWAP_FAILS,
     COMMIT_FAILS,
     COMMIT_NO_UPDATE,
+    ACTIVATION_FAILS,
   };
 
   SwapPromise() {}
   virtual ~SwapPromise() {}
 
+  virtual void DidActivate() = 0;
   virtual void DidSwap(CompositorFrameMetadata* metadata) = 0;
   virtual void DidNotSwap(DidNotSwapReason reason) = 0;
 

@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_GPU_QUEUE_MESSAGE_SWAP_PROMISE_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/swap_promise.h"
 
 namespace IPC {
@@ -25,8 +24,8 @@ class QueueMessageSwapPromise : public cc::SwapPromise {
 
   ~QueueMessageSwapPromise() override;
 
+  void DidActivate() override;
   void DidSwap(cc::CompositorFrameMetadata* metadata) override;
-
   void DidNotSwap(DidNotSwapReason reason) override;
 
   int64 TraceId() const override;

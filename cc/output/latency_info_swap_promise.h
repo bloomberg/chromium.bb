@@ -16,6 +16,7 @@ class CC_EXPORT LatencyInfoSwapPromise : public SwapPromise {
   explicit LatencyInfoSwapPromise(const ui::LatencyInfo& latency_info);
   ~LatencyInfoSwapPromise() override;
 
+  void DidActivate() override {}
   void DidSwap(CompositorFrameMetadata* metadata) override;
   void DidNotSwap(DidNotSwapReason reason) override;
 

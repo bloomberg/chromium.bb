@@ -70,7 +70,8 @@ LayerTreeImpl::LayerTreeImpl(
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
-  BreakSwapPromises(SwapPromise::SWAP_FAILS);
+  BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
+                                   : SwapPromise::ACTIVATION_FAILS);
 
   // Need to explicitly clear the tree prior to destroying this so that
   // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
@@ -744,6 +745,8 @@ void LayerTreeImpl::DidBecomeActive() {
         root_layer(), [](LayerImpl* layer) { layer->DidBecomeActive(); });
   }
 
+  for (auto* swap_promise : swap_promise_list_)
+    swap_promise->DidActivate();
   devtools_instrumentation::DidActivateLayerTree(layer_tree_host_impl_->id(),
                                                  source_frame_number_);
 }
@@ -990,8 +993,8 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndArray();
 
   state->BeginArray("swap_promise_trace_ids");
-  for (size_t i = 0; i < swap_promise_list_.size(); i++)
-    state->AppendDouble(swap_promise_list_[i]->TraceId());
+  for (auto* swap_promise : swap_promise_list_)
+    state->AppendDouble(swap_promise->TraceId());
   state->EndArray();
 }
 
@@ -1072,20 +1075,20 @@ void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
 
 void LayerTreeImpl::PassSwapPromises(
     ScopedPtrVector<SwapPromise>* new_swap_promise) {
-  swap_promise_list_.insert_and_take(swap_promise_list_.end(),
-                                     new_swap_promise);
-  new_swap_promise->clear();
+  // Any left over promises have failed to swap before the next frame.
+  BreakSwapPromises(SwapPromise::SWAP_FAILS);
+  swap_promise_list_.swap(*new_swap_promise);
 }
 
 void LayerTreeImpl::FinishSwapPromises(CompositorFrameMetadata* metadata) {
-  for (size_t i = 0; i < swap_promise_list_.size(); i++)
-    swap_promise_list_[i]->DidSwap(metadata);
+  for (auto* swap_promise : swap_promise_list_)
+    swap_promise->DidSwap(metadata);
   swap_promise_list_.clear();
 }
 
 void LayerTreeImpl::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
-  for (size_t i = 0; i < swap_promise_list_.size(); i++)
-    swap_promise_list_[i]->DidNotSwap(reason);
+  for (auto* swap_promise : swap_promise_list_)
+    swap_promise->DidNotSwap(reason);
   swap_promise_list_.clear();
 }
 

@@ -32,6 +32,14 @@ QueueMessageSwapPromise::~QueueMessageSwapPromise() {
 #endif
 }
 
+void QueueMessageSwapPromise::DidActivate() {
+#if DCHECK_IS_ON()
+  DCHECK(!completed_);
+#endif
+  message_queue_->DidActivate(source_frame_number_);
+  // The OutputSurface will take care of the Drain+Send.
+}
+
 void QueueMessageSwapPromise::DidSwap(cc::CompositorFrameMetadata* metadata) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
