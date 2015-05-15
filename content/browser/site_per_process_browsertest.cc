@@ -1505,16 +1505,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   TestNavigationObserver observer(shell()->web_contents());
 
   // Navigate the first subframe to a cross-site page with two subframes.
-  // NavigateFrameToURL can't be used here because it doesn't guarantee that
-  // FrameTreeNodes will have been created for child frames when it returns.
-  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 4);
   GURL foo_url(
       embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
-  NavigationController::LoadURLParams params(foo_url);
-  params.transition_type = ui::PAGE_TRANSITION_LINK;
-  params.frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
-  root->child_at(0)->navigator()->GetController()->LoadURLWithParams(params);
-  frame_observer.Wait();
+  NavigateFrameToURL(root->child_at(0), foo_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // We can't use a TestNavigationObserver to verify the URL here,
   // since the frame has children that may have clobbered it in the observer.
@@ -1591,13 +1585,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsReplication) {
   TestNavigationObserver observer(shell()->web_contents());
 
   // Navigate the second (sandboxed) subframe to a cross-site page with a
-  // subframe. Use RenderFrameHostCreatedObserver to guarantee that all
-  // FrameTreeNodes are created for child frames.
-  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 4);
+  // subframe.
   GURL foo_url(
       embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
   NavigateFrameToURL(root->child_at(1), foo_url);
-  frame_observer.Wait();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // We can't use a TestNavigationObserver to verify the URL here,
   // since the frame has children that may have clobbered it in the observer.
