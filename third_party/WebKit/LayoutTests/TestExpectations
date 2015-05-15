@@ -38,9 +38,6 @@ crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Failure ]
 
-crbug.com/487587 fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
-crbug.com/487587 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
-
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
 
