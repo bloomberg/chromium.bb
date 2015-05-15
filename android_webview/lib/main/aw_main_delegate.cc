@@ -77,9 +77,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Web Notification API and the Push API are not supported (crbug.com/434712)
   cl->AppendSwitch(switches::kDisableNotifications);
 
-  // TODO(ddorwin): Enable unprefixed EME. See http://crbug.com/394931.
-  cl->AppendSwitch(switches::kDisableEncryptedMedia);
-
   // WebRTC hardware decoding is not supported, internal bug 15075307
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
   cl->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
