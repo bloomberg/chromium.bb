@@ -20223,6 +20223,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.PrefProxyConfig.GooglezipProxyRemovalCount">
+  <owner>sclittle@chromium.org</owner>
+  <summary>
+    Records how many *.googlezip.net Data Reduction Proxies were removed from
+    the effective proxy configuration when a proxy reconfiguration occurs.
+  </summary>
+</histogram>
+
 <histogram name="Net.Priority_High_Latency" units="milliseconds">
   <obsolete>
     Replaced by Net.Priority_High_Latency_b.

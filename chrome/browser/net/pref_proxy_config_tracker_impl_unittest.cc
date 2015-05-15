@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_switches.h"
@@ -310,39 +311,58 @@ TEST_F(PrefProxyConfigTrackerImplTest, ExcludeGooglezipDataReductionProxies) {
       "https://proxy.googlezip.net:443,compress.googlezip.net,"
       "https://proxy-dev.googlezip.net:443,proxy-dev.googlezip.net,"
       "quic://proxy.googlezip.net";
+  const int kNumDataReductionProxies = 5;
 
   struct {
     std::string initial_proxy_rules;
     const char* http_proxy_info;
     const char* https_proxy_info;
     const char* ftp_proxy_info;
+    int expected_num_removed_proxies;
   } test_cases[] = {
       {"http=foopyhttp," + kDataReductionProxies +
            ",direct://;https=foopyhttps," + kDataReductionProxies +
            ",direct://;ftp=foopyftp," + kDataReductionProxies + ",direct://",
        "foopyhttp;direct://",
        "foopyhttps;direct://",
-       "foopyftp;direct://"},
+       "foopyftp;direct://",
+       kNumDataReductionProxies * 3},
 
       {"foopy," + kDataReductionProxies + ",direct://",
        "foopy;direct://",
        "foopy;direct://",
-       "foopy;direct://"},
+       "foopy;direct://",
+       kNumDataReductionProxies},
 
       {"http=" + kDataReductionProxies + ";https=" + kDataReductionProxies +
            ";ftp=" + kDataReductionProxies,
        "direct://",
        "direct://",
-       "direct://"},
+       "direct://",
+       kNumDataReductionProxies * 3},
 
       {"http=" + kDataReductionProxies + ",foopy,direct://",
        "foopy;direct://",
        "direct://",
-       "direct://"},
+       "direct://",
+       kNumDataReductionProxies},
+
+      {"foopy,direct://",
+       "foopy;direct://",
+       "foopy;direct://",
+       "foopy;direct://",
+       0},
+
+      {"direct://",
+       "direct://",
+       "direct://",
+       "direct://",
+       0},
   };
 
   // Test setting the proxy from a user pref.
   for (const auto& test : test_cases) {
+    base::HistogramTester histogram_tester;
     pref_service_->SetUserPref(prefs::kProxy,
                                ProxyConfigDictionary::CreateFixedServers(
                                    test.initial_proxy_rules, std::string()));
@@ -351,6 +371,9 @@ TEST_F(PrefProxyConfigTrackerImplTest, ExcludeGooglezipDataReductionProxies) {
     net::ProxyConfig config;
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
               proxy_config_service_->GetLatestProxyConfig(&config));
+    histogram_tester.ExpectUniqueSample(
+        "Net.PrefProxyConfig.GooglezipProxyRemovalCount",
+        test.expected_num_removed_proxies, 1);
 
     CheckResolvedProxyMatches(&config, GURL("http://google.com"),
                               test.http_proxy_info);

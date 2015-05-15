@@ -5,6 +5,7 @@
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -30,10 +31,8 @@ bool IsGooglezipDataReductionProxy(const net::ProxyServer& proxy) {
 }
 
 // Removes any Data Reduction Proxies like *.googlezip.net from |proxy_list|.
-void RemoveGooglezipDataReductionProxiesFromList(net::ProxyList* proxy_list) {
-  if (proxy_list->IsEmpty())
-    return;
-
+// Returns the number of proxies that were removed from |proxy_list|.
+size_t RemoveGooglezipDataReductionProxiesFromList(net::ProxyList* proxy_list) {
   bool found_googlezip_proxy = false;
   for (const net::ProxyServer& proxy : proxy_list->GetAll()) {
     if (IsGooglezipDataReductionProxy(proxy)) {
@@ -42,17 +41,21 @@ void RemoveGooglezipDataReductionProxiesFromList(net::ProxyList* proxy_list) {
     }
   }
   if (!found_googlezip_proxy)
-    return;
+    return 0;
 
+  size_t num_removed_proxies = 0;
   net::ProxyList replacement_list;
   for (const net::ProxyServer& proxy : proxy_list->GetAll()) {
     if (!IsGooglezipDataReductionProxy(proxy))
       replacement_list.AddProxyServer(proxy);
+    else
+      ++num_removed_proxies;
   }
 
   if (replacement_list.IsEmpty())
     replacement_list.AddProxyServer(net::ProxyServer::Direct());
   *proxy_list = replacement_list;
+  return num_removed_proxies;
 }
 
 // Remove any Data Reduction Proxies like *.googlezip.net from |proxy_rules|.
@@ -61,17 +64,23 @@ void RemoveGooglezipDataReductionProxiesFromList(net::ProxyList* proxy_list) {
 // the Data Reduction Proxy without adding any of the necessary authentication
 // headers or applying the Data Reduction Proxy bypass logic. See
 // http://crbug.com/476610.
-// TODO(sclittle): Add UMA to record how often this method is called, and how
-// often it actually removes a *.googlezip.net proxy. This method should be
-// removed once it stops actually finding and removing *.googlezip.net proxies
-// from the proxy rules.
+// TODO(sclittle): This method should be removed once the UMA indicates that
+// *.googlezip.net proxies are no longer present in the |proxy_rules|.
 void RemoveGooglezipDataReductionProxies(
     net::ProxyConfig::ProxyRules* proxy_rules) {
-  RemoveGooglezipDataReductionProxiesFromList(&proxy_rules->fallback_proxies);
-  RemoveGooglezipDataReductionProxiesFromList(&proxy_rules->proxies_for_ftp);
-  RemoveGooglezipDataReductionProxiesFromList(&proxy_rules->proxies_for_http);
-  RemoveGooglezipDataReductionProxiesFromList(&proxy_rules->proxies_for_https);
-  RemoveGooglezipDataReductionProxiesFromList(&proxy_rules->single_proxies);
+  size_t num_removed_proxies =
+      RemoveGooglezipDataReductionProxiesFromList(
+          &proxy_rules->fallback_proxies) +
+      RemoveGooglezipDataReductionProxiesFromList(
+          &proxy_rules->proxies_for_ftp) +
+      RemoveGooglezipDataReductionProxiesFromList(
+          &proxy_rules->proxies_for_http) +
+      RemoveGooglezipDataReductionProxiesFromList(
+          &proxy_rules->proxies_for_https) +
+      RemoveGooglezipDataReductionProxiesFromList(&proxy_rules->single_proxies);
+
+  UMA_HISTOGRAM_COUNTS_100("Net.PrefProxyConfig.GooglezipProxyRemovalCount",
+                           num_removed_proxies);
 }
 
 }  // namespace
