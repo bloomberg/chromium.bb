@@ -40,7 +40,7 @@ class WorkerThreadStartupData;
 
 class DedicatedWorkerThread final : public WorkerThread {
 public:
-    static PassRefPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtr<WorkerThreadStartupData>);
+    static PassRefPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     virtual ~DedicatedWorkerThread();
 
@@ -50,7 +50,7 @@ protected:
     WebThreadSupportingGC& backingThread() override;
 
 private:
-    DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtr<WorkerThreadStartupData>);
+    DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
 
     WorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;

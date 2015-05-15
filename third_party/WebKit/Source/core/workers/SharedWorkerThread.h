@@ -40,7 +40,7 @@ class WorkerThreadStartupData;
 
 class CORE_EXPORT SharedWorkerThread : public WorkerThread {
 public:
-    static PassRefPtr<SharedWorkerThread> create(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    static PassRefPtr<SharedWorkerThread> create(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
     virtual ~SharedWorkerThread();
 
 protected:
@@ -48,7 +48,7 @@ protected:
     WebThreadSupportingGC& backingThread() override;
 
 private:
-    SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
     String m_name;
     OwnPtr<WebThreadSupportingGC> m_thread;

@@ -267,13 +267,12 @@ private:
     WorkerThread* m_thread;
 };
 
-WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
+WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : m_started(false)
     , m_terminated(false)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_webScheduler(nullptr)
-    , m_startupData(startupData)
     , m_isolate(nullptr)
     , m_shutdownEvent(adoptPtr(Platform::current()->createWaitableEvent()))
     , m_terminationEvent(adoptPtr(Platform::current()->createWaitableEvent()))
@@ -289,13 +288,13 @@ WorkerThread::~WorkerThread()
     workerThreads().remove(this);
 }
 
-void WorkerThread::start()
+void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     if (m_started)
         return;
 
     m_started = true;
-    backingThread().postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this))));
+    backingThread().postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData)));
 }
 
 void WorkerThread::interruptAndDispatchInspectorCommands()
@@ -312,13 +311,13 @@ PlatformThreadId WorkerThread::platformThreadId()
     return backingThread().platformThread().threadId();
 }
 
-void WorkerThread::initialize()
+void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    KURL scriptURL = m_startupData->m_scriptURL;
-    String sourceCode = m_startupData->m_sourceCode;
-    WorkerThreadStartMode startMode = m_startupData->m_startMode;
-    OwnPtr<Vector<char>> cachedMetaData = m_startupData->m_cachedMetaData.release();
-    V8CacheOptions v8CacheOptions = m_startupData->m_v8CacheOptions;
+    KURL scriptURL = startupData->m_scriptURL;
+    String sourceCode = startupData->m_sourceCode;
+    WorkerThreadStartMode startMode = startupData->m_startMode;
+    OwnPtr<Vector<char>> cachedMetaData = startupData->m_cachedMetaData.release();
+    V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
 
     m_webScheduler = backingThread().platformThread().scheduler();
     {
@@ -337,7 +336,7 @@ void WorkerThread::initialize()
         backingThread().initialize();
 
         m_isolate = initializeIsolate();
-        m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
+        m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
         PlatformThreadData::current().threadTimers().setSharedTimer(adoptPtr(new WorkerSharedTimer(this)));

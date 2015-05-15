@@ -110,8 +110,8 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     double originTime = document->loader() ? document->loader()->timing().referenceMonotonicTime() : monotonicallyIncreasingTime();
 
     m_loaderProxy = WorkerLoaderProxy::create(this);
-    RefPtr<WorkerThread> thread = createWorkerThread(originTime, startupData.release());
-    thread->start();
+    RefPtr<WorkerThread> thread = createWorkerThread(originTime);
+    thread->start(startupData.release());
     workerThreadCreated(thread);
     m_workerInspectorProxy->workerThreadCreated(m_executionContext.get(), m_workerThread.get(), scriptURL);
 }

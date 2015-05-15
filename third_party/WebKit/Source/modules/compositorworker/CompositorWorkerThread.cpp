@@ -13,14 +13,14 @@
 
 namespace blink {
 
-PassRefPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin)
 {
     ASSERT(isMainThread());
-    return adoptRef(new CompositorWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin, startupData));
+    return adoptRef(new CompositorWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin));
 }
 
-CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
+CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin)
+    : WorkerThread(workerLoaderProxy, workerObjectProxy)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
 {

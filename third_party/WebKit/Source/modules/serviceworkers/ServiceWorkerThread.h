@@ -40,7 +40,7 @@ class WorkerThreadStartupData;
 
 class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
 public:
-    static PassRefPtr<ServiceWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    static PassRefPtr<ServiceWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
     virtual ~ServiceWorkerThread();
 
 protected:
@@ -48,7 +48,7 @@ protected:
     WebThreadSupportingGC& backingThread() override;
 
 private:
-    ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
     OwnPtr<WebThreadSupportingGC> m_thread;
 };

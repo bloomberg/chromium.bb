@@ -19,9 +19,9 @@ CompositorWorkerMessagingProxy::~CompositorWorkerMessagingProxy()
 {
 }
 
-PassRefPtr<WorkerThread> CompositorWorkerMessagingProxy::createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<WorkerThread> CompositorWorkerMessagingProxy::createWorkerThread(double originTime)
 {
-    return CompositorWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime, startupData);
+    return CompositorWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime);
 }
 
 } // namespace blink

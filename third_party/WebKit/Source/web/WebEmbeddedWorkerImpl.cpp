@@ -432,8 +432,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
 
     m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *document, *m_workerContextClient);
     m_loaderProxy = WorkerLoaderProxy::create(this);
-    m_workerThread = ServiceWorkerThread::create(m_loaderProxy, *m_workerGlobalScopeProxy, startupData.release());
-    m_workerThread->start();
+    m_workerThread = ServiceWorkerThread::create(m_loaderProxy, *m_workerGlobalScopeProxy);
+    m_workerThread->start(startupData.release());
     m_workerInspectorProxy->workerThreadCreated(document, m_workerThread.get(), scriptURL);
 }
 

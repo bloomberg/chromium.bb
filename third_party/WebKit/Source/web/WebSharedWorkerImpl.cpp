@@ -416,11 +416,11 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(m_url, m_loadingDocument->userAgent(m_url), m_mainScriptLoader->script(), nullptr, startMode, m_contentSecurityPolicy, static_cast<ContentSecurityPolicyHeaderType>(m_policyType), starterOrigin, workerClients.release());
     m_loaderProxy = WorkerLoaderProxy::create(this);
-    setWorkerThread(SharedWorkerThread::create(m_name, m_loaderProxy, *this, startupData.release()));
+    setWorkerThread(SharedWorkerThread::create(m_name, m_loaderProxy, *this));
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());
     m_mainScriptLoader.clear();
 
-    workerThread()->start();
+    workerThread()->start(startupData.release());
     m_workerInspectorProxy->workerThreadCreated(m_loadingDocument.get(), workerThread(), m_url);
     if (client())
         client()->workerScriptLoaded();

@@ -83,9 +83,8 @@ class WorkerThreadForTest : public WorkerThread {
 public:
     WorkerThreadForTest(
         WorkerLoaderProxyProvider* mockWorkerLoaderProxyProvider,
-        WorkerReportingProxy& mockWorkerReportingProxy,
-        PassOwnPtr<WorkerThreadStartupData> workerThreadStartupData)
-        : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy, workerThreadStartupData)
+        WorkerReportingProxy& mockWorkerReportingProxy)
+        : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy)
         , m_thread(WebThreadSupportingGC::create("Test thread"))
     {
     }
@@ -159,18 +158,7 @@ public:
         m_securityOrigin = SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
         m_workerThread = adoptRef(new WorkerThreadForTest(
             m_mockWorkerLoaderProxyProvider.get(),
-            *m_mockWorkerReportingProxy,
-            WorkerThreadStartupData::create(
-                KURL(ParsedURLString, "http://fake.url/"),
-                "fake user agent",
-                "//fake source code",
-                nullptr,
-                DontPauseWorkerGlobalScopeOnStart,
-                "contentSecurityPolicy",
-                ContentSecurityPolicyHeaderTypeReport,
-                m_securityOrigin.get(),
-                WorkerClients::create(),
-                V8CacheOptionsDefault)));
+            *m_mockWorkerReportingProxy));
         ExpectWorkerLifetimeReportingCalls();
     }
 
@@ -183,7 +171,17 @@ public:
     {
         OwnPtr<WebWaitableEvent> completionEvent = adoptPtr(Platform::current()->createWaitableEvent());
 
-        m_workerThread->start();
+        m_workerThread->start(WorkerThreadStartupData::create(
+            KURL(ParsedURLString, "http://fake.url/"),
+            "fake user agent",
+            "//fake source code",
+            nullptr,
+            DontPauseWorkerGlobalScopeOnStart,
+            "contentSecurityPolicy",
+            ContentSecurityPolicyHeaderTypeReport,
+            m_securityOrigin.get(),
+            WorkerClients::create(),
+            V8CacheOptionsDefault));
         m_workerThread->backingThread().postTask(FROM_HERE, new SignalTask(completionEvent.get()));
         completionEvent->wait();
     }

@@ -62,7 +62,7 @@ class CORE_EXPORT WorkerThread : public RefCounted<WorkerThread> {
 public:
     virtual ~WorkerThread();
 
-    virtual void start();
+    virtual void start(PassOwnPtr<WorkerThreadStartupData>);
     virtual void stop();
 
     // Returns the thread this worker runs on. Some implementations can create
@@ -116,7 +116,7 @@ public:
     void setWorkerInspectorController(WorkerInspectorController*);
 
 protected:
-    WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
     // Factory method for creating a new worker context for the thread.
     virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
@@ -138,7 +138,7 @@ private:
     void stopInShutdownSequence();
     void stopInternal();
 
-    void initialize();
+    void initialize(PassOwnPtr<WorkerThreadStartupData>);
     void shutdown();
     void performIdleWork(double deadlineSeconds);
     void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
@@ -160,7 +160,6 @@ private:
     Mutex m_threadStateMutex;
 
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
-    OwnPtr<WorkerThreadStartupData> m_startupData;
 
     v8::Isolate* m_isolate;
     OwnPtr<V8IsolateInterruptor> m_interruptor;
