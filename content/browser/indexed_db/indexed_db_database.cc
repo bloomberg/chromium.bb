@@ -745,9 +745,7 @@ void IndexedDBDatabase::GetAllOperation(
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::GetAllOperation", "txn.id", transaction->id());
 
-  DCHECK_GE(max_count, 0);
-  if (!max_count)
-    max_count = std::numeric_limits<decltype(max_count)>::max();
+  DCHECK_GT(max_count, 0);
 
   DCHECK(metadata_.object_stores.find(object_store_id) !=
          metadata_.object_stores.end());
