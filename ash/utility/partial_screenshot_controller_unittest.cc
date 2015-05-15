@@ -33,6 +33,8 @@ class PartialScreenshotControllerTest : public test::AshTestBase {
         GetScreenshotDelegate());
   }
 
+  void Cancel() { partial_screenshot_controller()->Cancel(); }
+
   bool IsActive() {
     return partial_screenshot_controller()->screenshot_delegate_ != nullptr;
   }
@@ -141,6 +143,22 @@ TEST_F(PartialScreenshotControllerTest, MultipleDisplays) {
 }
 
 #if defined(OS_CHROMEOS)
+TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
+  aura::client::CursorClient* client = Shell::GetInstance()->cursor_manager();
+
+  GetEventGenerator().PressKey(ui::VKEY_A, 0);
+  GetEventGenerator().ReleaseKey(ui::VKEY_A, 0);
+
+  EXPECT_FALSE(client->IsCursorVisible());
+
+  StartPartialScreenshotSession();
+  EXPECT_TRUE(IsActive());
+  EXPECT_TRUE(client->IsCursorVisible());
+
+  Cancel();
+  EXPECT_TRUE(client->IsCursorVisible());
+}
+
 // Make sure PartialScreenshotController doesn't prevent handling of large
 // cursor. See http://crbug.com/459214
 TEST_F(PartialScreenshotControllerTest, LargeCursor) {

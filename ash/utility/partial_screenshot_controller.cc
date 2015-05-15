@@ -95,9 +95,11 @@ class PartialScreenshotController::ScopedCursorSetter {
     gfx::NativeCursor original_cursor = cursor_manager->GetCursor();
     cursor_manager_ = cursor_manager;
     cursor_manager_->SetCursor(cursor);
+    if (!cursor_manager_->IsCursorVisible())
+      cursor_manager_->ShowCursor();
     cursor_manager_->LockCursor();
-    // SetCursor does not make any effects at this point but it sets back to the
-    // original cursor when unlocked.
+    // SetCursor does not make any effects at this point but it sets back to
+    // the original cursor when unlocked.
     cursor_manager_->SetCursor(original_cursor);
   }
 
