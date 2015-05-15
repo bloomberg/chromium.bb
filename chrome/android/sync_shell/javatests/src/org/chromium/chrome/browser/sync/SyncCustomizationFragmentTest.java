@@ -12,13 +12,17 @@ import android.preference.Preference;
 import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.View;
+import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.shell.R;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.internal_api.pub.PassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.Collection;
@@ -138,6 +142,12 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertFalse(mAndroidSyncSettings.isChromeSyncEnabled());
     }
 
+    /**
+     * Make sure that the encryption UI presents the correct options.
+     *
+     * By default it should show the CUSTOM and KEYSTORE options, in that order.
+     * KEYSTORE should be selected but both should be enabled.
+     */
     @SmallTest
     @Feature({"Sync"})
     public void testSettingDataTypes() throws Exception {
@@ -165,6 +175,33 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         expectedTypes.remove(ModelType.AUTOFILL);
         expectedTypes.remove(ModelType.PASSWORD);
         assertDataTypesAre(expectedTypes);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testDefaultEncryptionOptions() throws Exception {
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        startSync();
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        Preference encryption = getEncryption(fragment);
+        clickPreference(encryption);
+
+        PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
+        ListView listView = (ListView) typeFragment.getDialog()
+                .findViewById(R.id.passphrase_type_list);
+        PassphraseTypeDialogFragment.Adapter adapter =
+                (PassphraseTypeDialogFragment.Adapter) listView.getAdapter();
+
+        // Confirm that correct types show up in the correct order.
+        assertEquals(PassphraseType.CUSTOM_PASSPHRASE, adapter.getType(0));
+        assertEquals(PassphraseType.KEYSTORE_PASSPHRASE, adapter.getType(1));
+        assertEquals(2, listView.getCount());
+        // Make sure they are both enabled and the correct on is selected.
+        View customView = listView.getChildAt(0);
+        View keystoreView = listView.getChildAt(1);
+        assertTrue(customView.isEnabled());
+        assertTrue(keystoreView.isEnabled());
+        assertEquals(keystoreView, listView.getSelectedView());
     }
 
     private SyncCustomizationFragment startSyncCustomizationFragment() {
@@ -215,6 +252,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     private Preference getManageData(SyncCustomizationFragment fragment) {
         return (Preference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_SYNC_MANAGE_DATA);
+    }
+
+    private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment() {
+        return (PassphraseTypeDialogFragment) mActivity.getFragmentManager()
+                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_PASSWORD_TYPE);
     }
 
     private void assertDefaultSyncOnState(SyncCustomizationFragment fragment) {
@@ -275,6 +317,16 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 pref.getOnPreferenceChangeListener().onPreferenceChange(
                         pref, Boolean.valueOf(newValue));
                 pref.setChecked(newValue);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+    }
+
+    private void clickPreference(final Preference pref) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                pref.getOnPreferenceClickListener().onPreferenceClick(pref);
             }
         });
         getInstrumentation().waitForIdleSync();

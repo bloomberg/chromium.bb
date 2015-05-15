@@ -11,7 +11,7 @@
     <item type="id" name="button_secondary" />
     <item type="id" name="button_tertiary" />
     <item type="id" name="infobar_extra_check" />
-    
+
     <!-- Menu Animation Constants -->
     <item type="fraction" format="fraction" name="menu_animation_pivot_x">95%</item>
 
@@ -41,5 +41,8 @@
 
     <!-- Cast notification -->
     <item type="id" name="remote_notification" />
-    
+
+    <!-- Sync UI constants -->
+    <item type="id" name="passphrase_type_list" />
+
 </resources>

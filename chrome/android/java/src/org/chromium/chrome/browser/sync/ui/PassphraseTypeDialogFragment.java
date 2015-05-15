@@ -31,6 +31,7 @@ import java.util.Set;
  */
 public class PassphraseTypeDialogFragment extends DialogFragment implements
         DialogInterface.OnClickListener, OnItemClickListener {
+    private static final String TAG = "PassphraseTypeDialogFragment";
 
     interface Listener {
         void onPassphraseTypeSelected(PassphraseType type);
@@ -96,7 +97,11 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         return new Adapter(container, container.getDisplayNames());
     }
 
-    private class Adapter extends ArrayAdapter<String> {
+    /**
+     * The adapter for our ListView; only visible for testing purposes.
+     */
+    @VisibleForTesting
+    public class Adapter extends ArrayAdapter<String> {
 
         private final PassphraseTypeUiElementContainer mElementsContainer;
 
@@ -176,6 +181,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         ListView list = new ListView(getActivity());
         Adapter adapter = createAdapter(getCurrentTypeFromArguments());
         list.setAdapter(adapter);
+        list.setId(R.id.passphrase_type_list);
         list.setOnItemClickListener(this);
         list.setDividerHeight(0);
         PassphraseType currentType = getCurrentTypeFromArguments();
