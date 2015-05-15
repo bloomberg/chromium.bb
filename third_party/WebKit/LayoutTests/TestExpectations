@@ -489,9 +489,7 @@ crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 crbug.com/483436 [ Linux Mac Debug ] virtual/threaded/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Pass Failure ]
 
-crbug.com/486556 [ Win Linux ] fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
 crbug.com/486556 fast/text/capitalize-boundaries.html [ NeedsRebaseline ]
-crbug.com/486556 [ Win Linux ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
 crbug.com/486556 virtual/antialiasedtext/fast/text/capitalize-boundaries.html [ NeedsRebaseline ]
 
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
