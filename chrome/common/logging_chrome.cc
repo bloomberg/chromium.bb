@@ -333,14 +333,19 @@ void InitChromeLogging(const base::CommandLine& command_line,
       command_line.HasSwitch(switches::kNoErrorDialogs))
     SuppressDialogs();
 
-  // Use a minimum log level if the command line asks for one,
-  // otherwise leave it at the default level (INFO).
-  if (command_line.HasSwitch(switches::kLoggingLevel)) {
-    std::string log_level = command_line.GetSwitchValueASCII(
-        switches::kLoggingLevel);
+  // Use a minimum log level if the command line asks for one. Ignore this
+  // switch if there's vlog level switch present too (as both of these switches
+  // refer to the same underlying log level, and the vlog level switch has
+  // already been processed inside logging::InitLogging). If there is neither
+  // log level nor vlog level specified, then just leave the default level
+  // (INFO).
+  if (command_line.HasSwitch(switches::kLoggingLevel) &&
+      logging::GetMinLogLevel() >= 0) {
+    std::string log_level =
+        command_line.GetSwitchValueASCII(switches::kLoggingLevel);
     int level = 0;
-    if (base::StringToInt(log_level, &level) &&
-        level >= 0 && level < LOG_NUM_SEVERITIES) {
+    if (base::StringToInt(log_level, &level) && level >= 0 &&
+        level < LOG_NUM_SEVERITIES) {
       logging::SetMinLogLevel(level);
     } else {
       DLOG(WARNING) << "Bad log level: " << log_level;
