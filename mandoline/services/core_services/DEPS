@@ -1,6 +1,7 @@
 include_rules = [
   "+components/clipboard",
   "+components/kiosk_wm",
+  "+components/native_viewport",
   "+components/resource_provider",
   "+components/surfaces",
   "+components/view_manager",

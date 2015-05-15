@@ -14,6 +14,11 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
   mojo::shell::ApplicationManager* manager = context->application_manager();
   manager->RegisterApplicationPackageAlias(GURL("mojo:clipboard"),
                                            GURL("mojo:core_services"), "Core");
+#if !defined(OS_ANDROID)
+  manager->RegisterApplicationPackageAlias(GURL("mojo:native_viewport_service"),
+                                           GURL("mojo:core_services"),
+                                           "Surfaces");
+#endif
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:network_service"), GURL("mojo:core_services"), "Network");
 #if !defined(OS_ANDROID)

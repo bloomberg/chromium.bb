@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "components/clipboard/clipboard_application_delegate.h"
+#include "components/native_viewport/native_viewport_application_delegate.h"
 #include "components/resource_provider/resource_provider_app.h"
 #include "components/surfaces/surfaces_service_application.h"
 #include "components/view_manager/view_manager_app.h"
@@ -128,6 +129,10 @@ void CoreServicesApplicationDelegate::StartApplication(
   scoped_ptr<mojo::ApplicationDelegate> delegate;
   if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
+#if !defined(OS_ANDROID)
+  else if (url == "mojo://native_viewport_service/")
+    delegate.reset(new native_viewport::NativeViewportApplicationDelegate);
+#endif
   else if (url == "mojo://network_service/")
     delegate.reset(new NetworkServiceDelegate);
 #if !defined(OS_ANDROID)
@@ -152,6 +157,8 @@ void CoreServicesApplicationDelegate::StartApplication(
   // In the case of mojo:network_service, we must use an IO message loop.
   if (url == "mojo://network_service/") {
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  } else if (url == "mojo://native_viewport_service/") {
+    thread_options.message_loop_type = base::MessageLoop::TYPE_UI;
   } else {
     // We must use a MessagePumpMojo to awake on mojo messages.
     thread_options.message_pump_factory =

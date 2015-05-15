@@ -76,6 +76,10 @@ source_set("sources") {
   ]
 
   if (!is_android) {
-    deps += [ "//mandoline/ui/omnibox:lib" ]
+    deps += [
+      "//components/native_viewport:lib",
+      "//components/native_viewport/public/cpp:args",
+      "//mandoline/ui/omnibox:lib",
+    ]
   }
 }
