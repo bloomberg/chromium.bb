@@ -338,11 +338,16 @@ var renderTile = function(data) {
 
   tile.href = data.url;
   tile.title = data.title;
-  tile.addEventListener('keypress', function(ev) {
-    if (ev.keyCode == 127) { // DELETE
+  tile.addEventListener('keydown', function(event) {
+    if (event.keyCode == 46 /* DELETE */ ||
+        event.keyCode == 8 /* BACKSPACE */) {
+      event.preventDefault();
+      event.stopPropagation();
       blacklistTile(tile);
-      ev.stopPropagation();
-      return false;
+    } else if (event.keyCode == 13 /* ENTER */ ||
+               event.keyCode == 32 /* SPACE */) {
+      event.preventDefault();
+      tile.click();
     }
   });
   // TODO(fserb): remove this or at least change to mouseenter.
