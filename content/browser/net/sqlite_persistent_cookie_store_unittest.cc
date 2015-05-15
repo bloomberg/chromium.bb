@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
+#include "content/browser/net/sqlite_persistent_cookie_store.h"
 
 #include <map>
 #include <set>
@@ -11,14 +11,15 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "net/cookies/canonical_cookie.h"
@@ -30,13 +31,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace net {
+namespace content {
 
 namespace {
 
 const base::FilePath::CharType kCookieFilename[] = FILE_PATH_LITERAL("Cookies");
 
-class CookieCryptor : public CookieCryptoDelegate {
+class CookieCryptor : public net::CookieCryptoDelegate {
  public:
   CookieCryptor();
   bool EncryptString(const std::string& plaintext,
@@ -49,13 +50,9 @@ class CookieCryptor : public CookieCryptoDelegate {
   crypto::Encryptor encryptor_;
 };
 
-CookieCryptor::CookieCryptor()
-    : key_(
-          crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
-                                                      "password",
-                                                      "saltiest",
-                                                      1000,
-                                                      256)) {
+CookieCryptor::CookieCryptor() : key_(
+    crypto::SymmetricKey::DeriveKeyFromPassword(
+        crypto::SymmetricKey::AES, "password", "saltiest", 1000, 256)) {
   std::string iv("the iv: 16 bytes");
   encryptor_.Init(key_.get(), crypto::Encryptor::CBC, iv);
 }
@@ -72,7 +69,7 @@ bool CookieCryptor::DecryptString(const std::string& ciphertext,
 
 }  // namespace
 
-typedef std::vector<CanonicalCookie*> CanonicalCookieVector;
+typedef std::vector<net::CanonicalCookie*> CanonicalCookieVector;
 
 class SQLitePersistentCookieStoreTest : public testing::Test {
  public:
@@ -80,7 +77,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
       : pool_owner_(new base::SequencedWorkerPoolOwner(3, "Background Pool")),
         loaded_event_(false, false),
         key_loaded_event_(false, false),
-        db_thread_event_(false, false) {}
+        db_thread_event_(false, false) {
+  }
 
   void OnLoaded(const CanonicalCookieVector& cookies) {
     cookies_ = cookies;
@@ -102,8 +100,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
   void Flush() {
     base::WaitableEvent event(false, false);
-    store_->Flush(
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+    store_->Flush(base::Bind(&base::WaitableEvent::Signal,
+                             base::Unretained(&event)));
     event.Wait();
   }
 
@@ -118,7 +116,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   }
 
   void DestroyStore() {
-    store_ = nullptr;
+    store_ = NULL;
     // Make sure we wait until the destructor has run by shutting down the pool
     // resetting the owner (whose destructor blocks on the pool completion).
     pool_owner_->pool()->Shutdown();
@@ -134,8 +132,11 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
       cookie_crypto_delegate_.reset(new CookieCryptor());
 
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.path().Append(kCookieFilename), client_task_runner(),
-        background_task_runner(), restore_old_session_cookies,
+        temp_dir_.path().Append(kCookieFilename),
+        client_task_runner(),
+        background_task_runner(),
+        restore_old_session_cookies,
+        NULL,
         cookie_crypto_delegate_.get());
     Load(cookies);
   }
@@ -148,7 +149,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
   // We have to create this method to wrap WaitableEvent::Wait, since we cannot
   // bind a non-void returning method as a Closure.
-  void WaitOnDBEvent() { db_thread_event_.Wait(); }
+  void WaitOnDBEvent() {
+    db_thread_event_.Wait();
+  }
 
   // Adds a persistent cookie to store_.
   void AddCookie(const std::string& name,
@@ -156,9 +159,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                  const std::string& domain,
                  const std::string& path,
                  const base::Time& creation) {
-    store_->AddCookie(CanonicalCookie(GURL(), name, value, domain, path,
-                                      creation, creation, creation, false,
-                                      false, false, COOKIE_PRIORITY_DEFAULT));
+    store_->AddCookie(net::CanonicalCookie(
+        GURL(), name, value, domain, path, creation, creation, creation, false,
+        false, false, net::COOKIE_PRIORITY_DEFAULT));
   }
 
   void AddCookieWithExpiration(const std::string& name,
@@ -167,9 +170,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                                const std::string& path,
                                const base::Time& creation,
                                const base::Time& expiration) {
-    store_->AddCookie(CanonicalCookie(GURL(), name, value, domain, path,
-                                      creation, expiration, creation, false,
-                                      false, false, COOKIE_PRIORITY_DEFAULT));
+    store_->AddCookie(net::CanonicalCookie(
+        GURL(), name, value, domain, path, creation, expiration, creation,
+        false, false, false, net::COOKIE_PRIORITY_DEFAULT));
   }
 
   std::string ReadRawDBContents() {
@@ -188,6 +191,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   }
 
  protected:
+  base::MessageLoop main_loop_;
   scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
@@ -195,7 +199,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   CanonicalCookieVector cookies_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
-  scoped_ptr<CookieCryptoDelegate> cookie_crypto_delegate_;
+  scoped_ptr<net::CookieCryptoDelegate> cookie_crypto_delegate_;
 };
 
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
@@ -293,21 +297,24 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   // Load the store a second time. Before the store finishes loading, add a
   // transient cookie and flush it to disk.
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename), client_task_runner(),
-      background_task_runner(), false, nullptr);
+      temp_dir_.path().Append(kCookieFilename),
+      client_task_runner(),
+      background_task_runner(),
+      false, NULL, NULL);
 
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and Flush have been posted to its task queue.
   background_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                 base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                           base::Unretained(this)));
   t += base::TimeDelta::FromInternalValue(10);
   AddCookieWithExpiration("A", "B", "c.com", "/", t, base::Time());
   base::WaitableEvent event(false, false);
-  store_->Flush(
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+  store_->Flush(base::Bind(&base::WaitableEvent::Signal,
+                           base::Unretained(&event)));
 
   // Now the DB-thread queue contains:
   // (active:)
@@ -326,8 +333,10 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   // store should contain exactly 4 cookies: the 3 persistent, and "c.com",
   // which was added during the second cookie store load.
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename), client_task_runner(),
-      background_task_runner(), true, nullptr);
+      temp_dir_.path().Append(kCookieFilename),
+      client_task_runner(),
+      background_task_runner(),
+      true, NULL, NULL);
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                           base::Unretained(this)));
   loaded_event_.Wait();
@@ -350,22 +359,26 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   DestroyStore();
 
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename), client_task_runner(),
-      background_task_runner(), false, nullptr);
+      temp_dir_.path().Append(kCookieFilename),
+      client_task_runner(),
+      background_task_runner(),
+      false, NULL, NULL);
 
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and LoadCookiesForKey have been posted to its task queue.
   background_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                 base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                           base::Unretained(this)));
-  store_->LoadCookiesForKey(
-      "aaa.com", base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
-                            base::Unretained(this)));
+  store_->LoadCookiesForKey("aaa.com",
+    base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
+               base::Unretained(this)));
   background_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                 base::Unretained(this)));
 
   // Now the DB-thread queue contains:
   // (active:)
@@ -379,7 +392,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   ASSERT_EQ(loaded_event_.IsSignaled(), false);
   std::set<std::string> cookies_loaded;
   for (CanonicalCookieVector::const_iterator it = cookies_.begin();
-       it != cookies_.end(); ++it) {
+       it != cookies_.end();
+       ++it) {
     cookies_loaded.insert((*it)->Domain().c_str());
   }
   STLDeleteElements(&cookies_);
@@ -391,11 +405,13 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   db_thread_event_.Signal();
   loaded_event_.Wait();
   for (CanonicalCookieVector::const_iterator it = cookies_.begin();
-       it != cookies_.end(); ++it) {
+       it != cookies_.end();
+       ++it) {
     cookies_loaded.insert((*it)->Domain().c_str());
   }
   ASSERT_EQ(4U, cookies_loaded.size());
-  ASSERT_EQ(cookies_loaded.find("foo.bar") != cookies_loaded.end(), true);
+  ASSERT_EQ(cookies_loaded.find("foo.bar") != cookies_loaded.end(),
+            true);
   ASSERT_EQ(cookies_loaded.find("www.bbb.com") != cookies_loaded.end(), true);
   STLDeleteElements(&cookies_);
 }
@@ -431,10 +447,10 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   InitializeStore(false, true);
 
   // Add a session cookie.
-  store_->AddCookie(CanonicalCookie(GURL(), "C", "D", "sessioncookie.com", "/",
-                                    base::Time::Now(), base::Time(),
-                                    base::Time::Now(), false, false, false,
-                                    COOKIE_PRIORITY_DEFAULT));
+  store_->AddCookie(net::CanonicalCookie(GURL(), "C", "D", "sessioncookie.com",
+                                         "/", base::Time::Now(), base::Time(),
+                                         base::Time::Now(), false, false, false,
+                                         net::COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -448,7 +464,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   ASSERT_STREQ("sessioncookie.com", cookies[0]->Domain().c_str());
   ASSERT_STREQ("C", cookies[0]->Name().c_str());
   ASSERT_STREQ("D", cookies[0]->Value().c_str());
-  ASSERT_EQ(COOKIE_PRIORITY_DEFAULT, cookies[0]->Priority());
+  ASSERT_EQ(net::COOKIE_PRIORITY_DEFAULT, cookies[0]->Priority());
 
   STLDeleteElements(&cookies);
 }
@@ -458,10 +474,10 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   InitializeStore(false, true);
 
   // Add a session cookie.
-  store_->AddCookie(CanonicalCookie(GURL(), "C", "D", "sessioncookie.com", "/",
-                                    base::Time::Now(), base::Time(),
-                                    base::Time::Now(), false, false, false,
-                                    COOKIE_PRIORITY_DEFAULT));
+  store_->AddCookie(net::CanonicalCookie(GURL(), "C", "D", "sessioncookie.com",
+                                         "/", base::Time::Now(), base::Time(),
+                                         base::Time::Now(), false, false, false,
+                                         net::COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -488,16 +504,16 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   static const char kPersistentName[] = "persistent";
 
   // Add a session cookie.
-  store_->AddCookie(CanonicalCookie(GURL(), kSessionName, "val",
-                                    "sessioncookie.com", "/", base::Time::Now(),
-                                    base::Time(), base::Time::Now(), false,
-                                    false, false, COOKIE_PRIORITY_DEFAULT));
+  store_->AddCookie(net::CanonicalCookie(
+      GURL(), kSessionName, "val", "sessioncookie.com", "/", base::Time::Now(),
+      base::Time(), base::Time::Now(), false, false, false,
+      net::COOKIE_PRIORITY_DEFAULT));
   // Add a persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(net::CanonicalCookie(
       GURL(), kPersistentName, "val", "sessioncookie.com", "/",
       base::Time::Now() - base::TimeDelta::FromDays(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time::Now(),
-      false, false, false, COOKIE_PRIORITY_DEFAULT));
+      false, false, false, net::COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -508,13 +524,14 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   CreateAndLoad(false, true, &cookies);
   ASSERT_EQ(2U, cookies.size());
 
-  std::map<std::string, CanonicalCookie*> cookie_map;
+  std::map<std::string, net::CanonicalCookie*> cookie_map;
   for (CanonicalCookieVector::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
+       it != cookies.end();
+       ++it) {
     cookie_map[(*it)->Name()] = *it;
   }
 
-  std::map<std::string, CanonicalCookie*>::const_iterator it =
+  std::map<std::string, net::CanonicalCookie*>::const_iterator it =
       cookie_map.find(kSessionName);
   ASSERT_TRUE(it != cookie_map.end());
   EXPECT_FALSE(cookie_map[kSessionName]->IsPersistent());
@@ -537,25 +554,25 @@ TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
   InitializeStore(false, true);
 
   // Add a low-priority persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(net::CanonicalCookie(
       GURL(), kLowName, kCookieValue, kCookieDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time::Now(),
-      false, false, false, COOKIE_PRIORITY_LOW));
+      false, false, false, net::COOKIE_PRIORITY_LOW));
 
   // Add a medium-priority persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(net::CanonicalCookie(
       GURL(), kMediumName, kCookieValue, kCookieDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(2),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time::Now(),
-      false, false, false, COOKIE_PRIORITY_MEDIUM));
+      false, false, false, net::COOKIE_PRIORITY_MEDIUM));
 
   // Add a high-priority peristent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(net::CanonicalCookie(
       GURL(), kHighName, kCookieValue, kCookieDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(3),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time::Now(),
-      false, false, false, COOKIE_PRIORITY_HIGH));
+      false, false, false, net::COOKIE_PRIORITY_HIGH));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -567,25 +584,26 @@ TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
   ASSERT_EQ(3U, cookies.size());
 
   // Put the cookies into a map, by name, so we can easily find them.
-  std::map<std::string, CanonicalCookie*> cookie_map;
+  std::map<std::string, net::CanonicalCookie*> cookie_map;
   for (CanonicalCookieVector::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
+       it != cookies.end();
+       ++it) {
     cookie_map[(*it)->Name()] = *it;
   }
 
   // Validate that each cookie has the correct priority.
-  std::map<std::string, CanonicalCookie*>::const_iterator it =
+  std::map<std::string, net::CanonicalCookie*>::const_iterator it =
       cookie_map.find(kLowName);
   ASSERT_TRUE(it != cookie_map.end());
-  EXPECT_EQ(COOKIE_PRIORITY_LOW, cookie_map[kLowName]->Priority());
+  EXPECT_EQ(net::COOKIE_PRIORITY_LOW, cookie_map[kLowName]->Priority());
 
   it = cookie_map.find(kMediumName);
   ASSERT_TRUE(it != cookie_map.end());
-  EXPECT_EQ(COOKIE_PRIORITY_MEDIUM, cookie_map[kMediumName]->Priority());
+  EXPECT_EQ(net::COOKIE_PRIORITY_MEDIUM, cookie_map[kMediumName]->Priority());
 
   it = cookie_map.find(kHighName);
   ASSERT_TRUE(it != cookie_map.end());
-  EXPECT_EQ(COOKIE_PRIORITY_HIGH, cookie_map[kHighName]->Priority());
+  EXPECT_EQ(net::COOKIE_PRIORITY_HIGH, cookie_map[kHighName]->Priority());
 
   STLDeleteElements(&cookies);
 }
@@ -621,8 +639,8 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   STLDeleteElements(&cookies_);
   CreateAndLoad(true, false, &cookies);
   EXPECT_EQ(2U, cookies_.size());
-  CanonicalCookie* cookie_name = nullptr;
-  CanonicalCookie* cookie_other = nullptr;
+  net::CanonicalCookie* cookie_name = NULL;
+  net::CanonicalCookie* cookie_other = NULL;
   if (cookies_[0]->Name() == "name") {
     cookie_name = cookies_[0];
     cookie_other = cookies_[1];
@@ -646,7 +664,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
                                    "WHERE host_key = 'foo.bar'"));
   while (smt.Step()) {
     resultcount++;
-    for (int i = 0; i < smt.ColumnCount(); i++) {
+    for (int i=0; i < smt.ColumnCount(); i++) {
       EXPECT_EQ(smt.ColumnString(i).find("value"), std::string::npos);
       EXPECT_EQ(smt.ColumnString(i).find("something"), std::string::npos);
     }
@@ -660,4 +678,4 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   EXPECT_EQ(contents.find("something456ABC"), std::string::npos);
 }
 
-}  // namespace net
+}  // namespace content

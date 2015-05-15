@@ -1272,8 +1272,6 @@
       'extras/sqlite/cookie_crypto_delegate.h',
       'extras/sqlite/sqlite_channel_id_store.cc',
       'extras/sqlite/sqlite_channel_id_store.h',
-      'extras/sqlite/sqlite_persistent_cookie_store.cc',
-      'extras/sqlite/sqlite_persistent_cookie_store.h',
     ],
     'net_test_sources': [
       'android/keystore_unittest.cc',
@@ -1390,7 +1388,6 @@
       'dns/serial_worker_unittest.cc',
       'dns/single_request_host_resolver_unittest.cc',
       'extras/sqlite/sqlite_channel_id_store_unittest.cc',
-      'extras/sqlite/sqlite_persistent_cookie_store_unittest.cc',
       'filter/filter_unittest.cc',
       'filter/gzip_filter_unittest.cc',
       'filter/mock_filter_context.cc',
