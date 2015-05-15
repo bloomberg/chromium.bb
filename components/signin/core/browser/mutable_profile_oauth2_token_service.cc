@@ -373,9 +373,6 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
               << "account_id=" << account_id;
       std::string revoke_reason = refresh_token_present ? "token differs" :
                                                           "token is missing";
-      LOG(WARNING) << "Revoking refresh token on server. "
-                   << "Reason: token update, " << revoke_reason;
-      RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
       CancelRequestsForAccount(account_id);
       ClearCacheForAccount(account_id);
       refresh_tokens_[account_id]->set_refresh_token(refresh_token);
