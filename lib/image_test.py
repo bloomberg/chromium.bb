@@ -514,9 +514,16 @@ class SymbolsTest(NonForgivingImageTestCase):
           importeds[full_name] = imp
           exported.update(exp)
 
+    known_unsatisfieds = {
+        'libthread_db-1.0.so': set([
+            'ps_pdwrite', 'ps_pdread', 'ps_lgetfpregs', 'ps_lsetregs',
+            'ps_lgetregs', 'ps_lsetfpregs', 'ps_pglobal_lookup', 'ps_getpid']),
+    }
+
     failures = []
     for full_name, imported in importeds.iteritems():
-      missing = imported - exported
+      file_name = os.path.basename(full_name)
+      missing = imported - exported - known_unsatisfieds.get(file_name, set())
       if missing:
         failures.append('File %s contains unsatisfied symbols: %r' %
                         (full_name, missing))
