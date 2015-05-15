@@ -471,6 +471,7 @@
       'browser/media/audio_stream_monitor_unittest.cc',
       'browser/media/capture/animated_content_sampler_unittest.cc',
       'browser/media/capture/audio_mirroring_manager_unittest.cc',
+      'browser/media/capture/capture_resolution_chooser_unittest.cc',
       'browser/media/capture/feedback_signal_accumulator_unittest.cc',
       'browser/media/capture/smooth_event_sampler_unittest.cc',
       'browser/media/capture/video_capture_oracle_unittest.cc',

@@ -49,7 +49,9 @@ ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
       oracle_(base::TimeDelta::FromMicroseconds(
           static_cast<int64>(1000000.0 / params.requested_format.frame_rate +
                              0.5 /* to round to nearest int */))),
-      params_(params) {}
+      params_(params),
+      resolution_chooser_(params.requested_format.frame_size,
+                          params.resolution_change_policy) {}
 
 ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {}
 
@@ -67,9 +69,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   if (!client_)
     return false;  // Capture is stopped.
 
-  if (capture_size_.IsEmpty())
-    capture_size_ = max_frame_size();
-  const gfx::Size visible_size = capture_size_;
+  const gfx::Size visible_size = resolution_chooser_.capture_size();
   // Always round up the coded size to multiple of 16 pixels.
   // See http://crbug.com/402151.
   const gfx::Size coded_size((visible_size.width() + 15) & ~15,
@@ -141,30 +141,15 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
 
 gfx::Size ThreadSafeCaptureOracle::GetCaptureSize() const {
   base::AutoLock guard(lock_);
-  return capture_size_.IsEmpty() ? max_frame_size() : capture_size_;
+  return resolution_chooser_.capture_size();
 }
 
 void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
   base::AutoLock guard(lock_);
-
-  // Update |capture_size_| based on |source_size| if either: 1) The resolution
-  // change policy specifies fixed frame sizes and |capture_size_| has not yet
-  // been set; or 2) The resolution change policy specifies dynamic frame
-  // sizes.
-  if (capture_size_.IsEmpty() || params_.resolution_change_policy ==
-      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT) {
-    capture_size_ = source_size;
-    // The capture size should not exceed the maximum frame size.
-    if (capture_size_.width() > max_frame_size().width() ||
-        capture_size_.height() > max_frame_size().height()) {
-      capture_size_ = media::ComputeLetterboxRegion(
-          gfx::Rect(max_frame_size()), capture_size_).size();
-    }
-    // The capture size must be even and not less than the minimum frame size.
-    capture_size_ = gfx::Size(
-        std::max(kMinFrameWidth, MakeEven(capture_size_.width())),
-        std::max(kMinFrameHeight, MakeEven(capture_size_.height())));
-  }
+  resolution_chooser_.SetSourceSize(source_size);
+  VLOG(1) << "Source size changed to " << source_size.ToString()
+          << " --> Capture size is now "
+          << resolution_chooser_.capture_size().ToString();
 }
 
 void ThreadSafeCaptureOracle::Stop() {
@@ -234,23 +219,15 @@ void ContentVideoCaptureDeviceCore::AllocateAndStart(
     return;
   }
 
-   if (params.requested_format.frame_size.width() < kMinFrameWidth ||
-       params.requested_format.frame_size.height() < kMinFrameHeight) {
-     std::string error_msg =
-         "invalid frame size: " + params.requested_format.frame_size.ToString();
-     DVLOG(1) << error_msg;
-     client->OnError(error_msg);
-     return;
-   }
+  if (params.requested_format.frame_size.IsEmpty()) {
+    std::string error_msg =
+        "invalid frame size: " + params.requested_format.frame_size.ToString();
+    DVLOG(1) << error_msg;
+    client->OnError(error_msg);
+    return;
+  }
 
-  media::VideoCaptureParams new_params = params;
-  // Frame dimensions must each be an even integer since the client wants (or
-  // will convert to) YUV420.
-  new_params.requested_format.frame_size.SetSize(
-      MakeEven(params.requested_format.frame_size.width()),
-      MakeEven(params.requested_format.frame_size.height()));
-
-  oracle_proxy_ = new ThreadSafeCaptureOracle(client.Pass(), new_params);
+  oracle_proxy_ = new ThreadSafeCaptureOracle(client.Pass(), params);
 
   // Starts the capture machine asynchronously.
   BrowserThread::PostTaskAndReplyWithResult(
@@ -259,7 +236,7 @@ void ContentVideoCaptureDeviceCore::AllocateAndStart(
       base::Bind(&VideoCaptureMachine::Start,
                  base::Unretained(capture_machine_.get()),
                  oracle_proxy_,
-                 new_params),
+                 params),
       base::Bind(&ContentVideoCaptureDeviceCore::CaptureStarted, AsWeakPtr()));
 
   TransitionStateTo(kCapturing);

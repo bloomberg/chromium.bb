@@ -40,15 +40,15 @@ class CONTENT_EXPORT WebContentsTracker
   explicit WebContentsTracker(bool track_fullscreen_rwh);
 
   // Callback to indicate a new RenderWidgetHost should be targeted for capture.
-  // This is also invoked with NULL to indicate tracking will not continue
+  // This is also invoked with false to indicate tracking will not continue
   // (i.e., the WebContents instance was not found or has been destroyed).
-  typedef base::Callback<void(RenderWidgetHost* rwh)> ChangeCallback;
+  typedef base::Callback<void(bool was_still_tracking)> ChangeCallback;
 
   // Start tracking.  The last-known |render_process_id| and
   // |main_render_frame_id| are provided, and |callback| will be run once to
-  // indicate the current capture target (this may occur during the invocation
-  // of Start(), or in the future).  The callback will be invoked on the same
-  // thread calling Start().
+  // indicate whether tracking successfully started (this may occur during the
+  // invocation of Start(), or in the future).  The callback will be invoked on
+  // the same thread calling Start().
   virtual void Start(int render_process_id, int main_render_frame_id,
                      const ChangeCallback& callback);
 
@@ -58,6 +58,12 @@ class CONTENT_EXPORT WebContentsTracker
 
   // Current target.  This must only be called on the UI BrowserThread.
   RenderWidgetHost* GetTargetRenderWidgetHost() const;
+
+  // Set a callback that is run whenever the main frame of the WebContents is
+  // resized.  This method must be called on the same thread that calls
+  // Start()/Stop(), and |callback| will be run on that same thread.  Calling
+  // the Stop() method guarantees the callback will never be invoked again.
+  void SetResizeChangeCallback(const base::Closure& callback);
 
  protected:
   friend class base::RefCountedThreadSafe<WebContentsTracker>;
@@ -72,7 +78,12 @@ class CONTENT_EXPORT WebContentsTracker
 
   // Called on the thread that Start()/Stop() are called on.  Checks whether the
   // callback is still valid and, if so, runs it.
-  void MaybeDoCallback(RenderWidgetHost* rwh);
+  void MaybeDoCallback(bool was_still_tracking);
+
+  // Called on the thread that Start()/Stop() are called on.  Checks whether the
+  // callback is still valid and, if so, runs it to indicate the main frame has
+  // changed in size.
+  void MaybeDoResizeCallback();
 
   // Look-up the current WebContents instance associated with the given
   // |render_process_id| and |main_render_frame_id| and begin observing it.
@@ -85,6 +96,10 @@ class CONTENT_EXPORT WebContentsTracker
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
+
+  // WebContentsObserver override to notify the client that the source size has
+  // changed.
+  void MainFrameWasResized(bool width_changed) override;
 
   // WebContentsObserver override to notify the client that the capture target
   // has been permanently lost.
@@ -108,6 +123,9 @@ class CONTENT_EXPORT WebContentsTracker
   // Pointer to the RenderWidgetHost provided in the last run of |callback_|.
   // This is used to eliminate duplicate callback runs.
   RenderWidgetHost* last_target_;
+
+  // Callback to run when the target RenderWidgetHost has resized.
+  base::Closure resize_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsTracker);
 };

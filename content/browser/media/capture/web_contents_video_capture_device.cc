@@ -79,27 +79,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/screen.h"
 
 namespace content {
 
 namespace {
-
-// Compute a letterbox region, aligned to even coordinates.
-gfx::Rect ComputeYV12LetterboxRegion(const gfx::Rect& visible_rect,
-                                     const gfx::Size& content_size) {
-
-  gfx::Rect result = media::ComputeLetterboxRegion(visible_rect, content_size);
-
-  result.set_x(MakeEven(result.x()));
-  result.set_y(MakeEven(result.y()));
-  result.set_width(std::max(kMinFrameWidth, MakeEven(result.width())));
-  result.set_height(std::max(kMinFrameHeight, MakeEven(result.height())));
-
-  return result;
-}
 
 void DeleteOnWorkerThread(scoped_ptr<base::Thread> render_thread,
                           const base::Closure& callback) {
@@ -254,8 +239,12 @@ class WebContentsCaptureMachine : public VideoCaptureMachine {
           deliver_frame_cb,
       bool success);
 
-  // Remove the old subscription, and start a new one if |rwh| is not NULL.
-  void RenewFrameSubscription(RenderWidgetHost* rwh);
+  // Remove the old subscription, and attempt to start a new one if |had_target|
+  // is true.
+  void RenewFrameSubscription(bool had_target);
+
+  // Called whenever the render widget is resized.
+  void UpdateCaptureSize();
 
   // Parameters saved in constructor.
   const int initial_render_process_id_;
@@ -396,7 +385,7 @@ void RenderVideoFrame(const SkBitmap& input,
 
   // Calculate the width and height of the content region in the |output|, based
   // on the aspect ratio of |input|.
-  gfx::Rect region_in_frame = ComputeYV12LetterboxRegion(
+  const gfx::Rect region_in_frame = media::ComputeLetterboxRegion(
       output->visible_rect(), gfx::Size(input.width(), input.height()));
 
   // Scale the bitmap to the required size, if necessary.
@@ -425,12 +414,20 @@ void RenderVideoFrame(const SkBitmap& input,
 
   TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture", "Capture", output.get(), "YUV");
   {
-    SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
+    // Align to 2x2 pixel boundaries, as required by
+    // media::CopyRGBToVideoFrame().
+    const gfx::Rect region_in_yv12_frame(region_in_frame.x() & ~1,
+                                         region_in_frame.y() & ~1,
+                                         region_in_frame.width() & ~1,
+                                         region_in_frame.height() & ~1);
+    if (region_in_yv12_frame.IsEmpty())
+      return;
 
+    SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
     media::CopyRGBToVideoFrame(
         reinterpret_cast<uint8*>(scaled_bitmap.getPixels()),
         scaled_bitmap.rowBytes(),
-        region_in_frame,
+        region_in_yv12_frame,
         output.get());
   }
 
@@ -501,6 +498,9 @@ bool WebContentsCaptureMachine::Start(
 
   // Note: Creation of the first WeakPtr in the following statement will cause
   // IsStarted() to return true from now on.
+  tracker_->SetResizeChangeCallback(
+      base::Bind(&WebContentsCaptureMachine::UpdateCaptureSize,
+                 weak_ptr_factory_.GetWeakPtr()));
   tracker_->Start(initial_render_process_id_, initial_main_render_frame_id_,
                   base::Bind(&WebContentsCaptureMachine::RenewFrameSubscription,
                              weak_ptr_factory_.GetWeakPtr()));
@@ -522,7 +522,7 @@ void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
 
   // Note: RenewFrameSubscription() must be called before stopping |tracker_| so
   // the web_contents() can be notified that the capturing is ending.
-  RenewFrameSubscription(NULL);
+  RenewFrameSubscription(false);
   tracker_->Stop();
 
   // The render thread cannot be stopped on the UI thread, so post a message
@@ -551,11 +551,6 @@ void WebContentsCaptureMachine::Capture(
   }
 
   gfx::Size view_size = view->GetViewBounds().size();
-  gfx::Size fitted_size;
-  if (!view_size.IsEmpty()) {
-    fitted_size = ComputeYV12LetterboxRegion(target->visible_rect(),
-                                             view_size).size();
-  }
   if (view_size != last_view_size_) {
     last_view_size_ = view_size;
 
@@ -574,6 +569,8 @@ void WebContentsCaptureMachine::Capture(
                    weak_ptr_factory_.GetWeakPtr(),
                    start_time, deliver_frame_cb));
   } else {
+    const gfx::Size fitted_size = view_size.IsEmpty() ? gfx::Size() :
+        media::ComputeLetterboxRegion(target->visible_rect(), view_size).size();
     rwh->CopyFromBackingStore(
         gfx::Rect(),
         fitted_size,  // Size here is a request not always honored.
@@ -589,7 +586,10 @@ void WebContentsCaptureMachine::Capture(
 gfx::Size WebContentsCaptureMachine::ComputeOptimalTargetSize() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  gfx::Size optimal_size = oracle_proxy_->GetCaptureSize();
+  // TODO(miu): Propagate capture frame size changes as new "preferred size"
+  // updates, rather than just using the max frame size.
+  // http://crbug.com/350491
+  gfx::Size optimal_size = oracle_proxy_->max_frame_size();
 
   // If the ratio between physical and logical pixels is greater than 1:1,
   // shrink |optimal_size| by that amount.  Then, when external code resizes the
@@ -657,8 +657,11 @@ void WebContentsCaptureMachine::DidCopyFromCompositingSurfaceToVideoFrame(
   deliver_frame_cb.Run(start_time, success);
 }
 
-void WebContentsCaptureMachine::RenewFrameSubscription(RenderWidgetHost* rwh) {
+void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderWidgetHost* const rwh =
+      had_target ? tracker_->GetTargetRenderWidgetHost() : nullptr;
 
   // Always destroy the old subscription before creating a new one.
   const bool had_subscription = !!subscription_;
@@ -686,6 +689,18 @@ void WebContentsCaptureMachine::RenewFrameSubscription(RenderWidgetHost* rwh) {
   subscription_.reset(new ContentCaptureSubscription(*rwh, oracle_proxy_,
       base::Bind(&WebContentsCaptureMachine::Capture,
                  weak_ptr_factory_.GetWeakPtr())));
+}
+
+void WebContentsCaptureMachine::UpdateCaptureSize() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!oracle_proxy_)
+    return;
+  RenderWidgetHost* const rwh = tracker_->GetTargetRenderWidgetHost();
+  RenderWidgetHostView* const view = rwh ? rwh->GetView() : nullptr;
+  if (!view)
+    return;
+  oracle_proxy_->UpdateCaptureSize(view->GetViewBounds().size());
 }
 
 }  // namespace

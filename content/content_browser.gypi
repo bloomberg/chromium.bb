@@ -973,6 +973,8 @@
       'browser/media/capture/animated_content_sampler.h',
       'browser/media/capture/audio_mirroring_manager.cc',
       'browser/media/capture/audio_mirroring_manager.h',
+      'browser/media/capture/capture_resolution_chooser.cc',
+      'browser/media/capture/capture_resolution_chooser.h',
       'browser/media/capture/content_video_capture_device_core.cc',
       'browser/media/capture/content_video_capture_device_core.h',
       'browser/media/capture/feedback_signal_accumulator.cc',

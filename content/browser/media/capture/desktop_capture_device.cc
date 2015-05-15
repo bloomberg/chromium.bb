@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
+#include "content/browser/media/capture/capture_resolution_chooser.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -72,11 +73,6 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
-  // Chooses new output properties based on the supplied source size and the
-  // properties requested to Allocate(), and dispatches OnFrameInfo[Changed]
-  // notifications.
-  void RefreshCaptureFormat(const webrtc::DesktopSize& frame_size);
-
   // Method that is scheduled on |task_runner_| to be called on regular interval
   // to capture a frame.
   void OnCaptureTimer();
@@ -97,23 +93,19 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // on the task_runner_ thread.
   scoped_ptr<Client> client_;
 
-  // Requested video capture format (width, height, frame rate, etc).
-  media::VideoCaptureParams requested_params_;
-
-  // Actual video capture format being generated.
-  media::VideoCaptureFormat capture_format_;
+  // Requested video capture frame rate.
+  float requested_frame_rate_;
 
   // Size of frame most recently captured from the source.
   webrtc::DesktopSize previous_frame_size_;
+
+  // Determines the size of frames to deliver to the |client_|.
+  scoped_ptr<CaptureResolutionChooser> resolution_chooser_;
 
   // DesktopFrame into which captured frames are down-scaled and/or letterboxed,
   // depending upon the caller's requested capture capabilities. If frames can
   // be returned to the caller directly then this is NULL.
   scoped_ptr<webrtc::DesktopFrame> output_frame_;
-
-  // Sub-rectangle of |output_frame_| into which the source will be scaled
-  // and/or letterboxed.
-  webrtc::DesktopRect output_rect_;
 
   // Timer used to capture the frame.
   base::OneShotTimer<Core> capture_timer_;
@@ -167,12 +159,10 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
   DCHECK(!client_.get());
 
   client_ = client.Pass();
-  requested_params_ = params;
-
-  capture_format_ = requested_params_.requested_format;
-
-  // This capturer always outputs ARGB, non-interlaced.
-  capture_format_.pixel_format = media::PIXEL_FORMAT_ARGB;
+  requested_frame_rate_ = params.requested_format.frame_rate;
+  resolution_chooser_.reset(new CaptureResolutionChooser(
+      params.requested_format.frame_size,
+      params.resolution_change_policy));
 
   power_save_blocker_.reset(
       PowerSaveBlocker::Create(
@@ -238,16 +228,29 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
 
   scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
+  // If the frame size has changed, drop the output frame (if any), and
+  // determine the new output size.
+  if (!previous_frame_size_.equals(frame->size())) {
+    output_frame_.reset();
+    resolution_chooser_->SetSourceSize(gfx::Size(frame->size().width(),
+                                                 frame->size().height()));
+    previous_frame_size_ = frame->size();
+  }
+  // Align to 2x2 pixel boundaries, as required by OnIncomingCapturedData() so
+  // it can convert the frame to I420 format.
+  const webrtc::DesktopSize output_size(
+      resolution_chooser_->capture_size().width() & ~1,
+      resolution_chooser_->capture_size().height() & ~1);
+  if (output_size.is_empty())
+    return;
+
   // On OSX We receive a 1x1 frame when the shared window is minimized. It
   // cannot be subsampled to I420 and will be dropped downstream. So we replace
   // it with a black frame to avoid the video appearing frozen at the last
   // frame.
   if (frame->size().width() == 1 || frame->size().height() == 1) {
     if (!black_frame_.get()) {
-      black_frame_.reset(
-          new webrtc::BasicDesktopFrame(
-              webrtc::DesktopSize(capture_format_.frame_size.width(),
-                                  capture_format_.frame_size.height())));
+      black_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
       memset(black_frame_->data(),
              0,
              black_frame_->stride() * black_frame_->size().height());
@@ -256,11 +259,6 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     frame = black_frame_.get();
   }
 
-  // Handle initial frame size and size changes.
-  RefreshCaptureFormat(frame->size());
-
-  webrtc::DesktopSize output_size(capture_format_.frame_size.width(),
-                                  capture_format_.frame_size.height());
   size_t output_bytes = output_size.width() * output_size.height() *
       webrtc::DesktopFrame::kBytesPerPixel;
   const uint8_t* output_data = NULL;
@@ -270,7 +268,7 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     // match the output size.
 
     // Allocate a buffer of the correct size to scale the frame into.
-    // |output_frame_| is cleared whenever |output_rect_| changes, so we don't
+    // |output_frame_| is cleared whenever the output size changes, so we don't
     // need to worry about clearing out stale pixel data in letterboxed areas.
     if (!output_frame_) {
       output_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
@@ -280,13 +278,15 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
 
     // TODO(wez): Optimize this to scale only changed portions of the output,
     // using ARGBScaleClip().
+    const webrtc::DesktopRect output_rect =
+        ComputeLetterboxRect(output_size, frame->size());
     uint8_t* output_rect_data = output_frame_->data() +
-        output_frame_->stride() * output_rect_.top() +
-        webrtc::DesktopFrame::kBytesPerPixel * output_rect_.left();
+        output_frame_->stride() * output_rect.top() +
+        webrtc::DesktopFrame::kBytesPerPixel * output_rect.left();
     libyuv::ARGBScale(frame->data(), frame->stride(),
                       frame->size().width(), frame->size().height(),
                       output_rect_data, output_frame_->stride(),
-                      output_rect_.width(), output_rect_.height(),
+                      output_rect.width(), output_rect.height(),
                       libyuv::kFilterBilinear);
     output_data = output_frame_->data();
   } else if (IsFrameUnpackedOrInverted(frame)) {
@@ -311,49 +311,14 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   }
 
   client_->OnIncomingCapturedData(
-      output_data, output_bytes, capture_format_, 0, base::TimeTicks::Now());
-}
-
-void DesktopCaptureDevice::Core::RefreshCaptureFormat(
-    const webrtc::DesktopSize& frame_size) {
-  if (previous_frame_size_.equals(frame_size))
-    return;
-
-  // Clear the output frame, if any, since it will either need resizing, or
-  // clearing of stale data in letterbox areas, anyway.
-  output_frame_.reset();
-
-  if (previous_frame_size_.is_empty() ||
-      requested_params_.resolution_change_policy ==
-      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT) {
-    // If this is the first frame, or the receiver supports variable resolution
-    // then determine the output size by treating the requested width & height
-    // as maxima.
-    if (frame_size.width() >
-            requested_params_.requested_format.frame_size.width() ||
-        frame_size.height() >
-            requested_params_.requested_format.frame_size.height()) {
-      output_rect_ = ComputeLetterboxRect(
-          webrtc::DesktopSize(
-              requested_params_.requested_format.frame_size.width(),
-              requested_params_.requested_format.frame_size.height()),
-          frame_size);
-      output_rect_.Translate(-output_rect_.left(), -output_rect_.top());
-    } else {
-      output_rect_ = webrtc::DesktopRect::MakeSize(frame_size);
-    }
-    capture_format_.frame_size.SetSize(output_rect_.width(),
-                                       output_rect_.height());
-  } else {
-    // Otherwise the output frame size cannot change, so just scale and
-    // letterbox.
-    output_rect_ = ComputeLetterboxRect(
-        webrtc::DesktopSize(capture_format_.frame_size.width(),
-                            capture_format_.frame_size.height()),
-        frame_size);
-  }
-
-  previous_frame_size_ = frame_size;
+      output_data,
+      output_bytes,
+      media::VideoCaptureFormat(gfx::Size(output_size.width(),
+                                          output_size.height()),
+                                requested_frame_rate_,
+                                media::PIXEL_FORMAT_ARGB),
+      0,
+      base::TimeTicks::Now());
 }
 
 void DesktopCaptureDevice::Core::OnCaptureTimer() {
@@ -375,7 +340,8 @@ void DesktopCaptureDevice::Core::CaptureFrameAndScheduleNext() {
   // Limit frame-rate to reduce CPU consumption.
   base::TimeDelta capture_period = std::max(
     (last_capture_duration * 100) / kMaximumCpuConsumptionPercentage,
-    base::TimeDelta::FromSeconds(1) / capture_format_.frame_rate);
+    base::TimeDelta::FromMicroseconds(static_cast<int64>(
+        1000000.0 / requested_frame_rate_ + 0.5 /* round to nearest int */)));
 
   // Schedule a task for the next frame.
   capture_timer_.Start(FROM_HERE, capture_period - last_capture_duration,

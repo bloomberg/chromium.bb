@@ -356,13 +356,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
  private:
   void SimulateChangeCallback(int render_process_id, int render_frame_id) {
     ASSERT_FALSE(change_callback_.is_null());
-    if (render_process_id == -1 || render_frame_id == -1) {
-      change_callback_.Run(NULL);
-    } else {
-      // For our tests, any non-NULL value will suffice since it will not be
-      // dereferenced.
-      change_callback_.Run(reinterpret_cast<RenderWidgetHost*>(0xdeadbee5));
-    }
+    change_callback_.Run(render_process_id != -1 && render_frame_id != -1);
   }
 
   scoped_ptr<TestBrowserThreadBundle> thread_bundle_;

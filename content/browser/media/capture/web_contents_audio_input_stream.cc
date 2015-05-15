@@ -91,7 +91,7 @@ class WebContentsAudioInputStream::Impl
 
   // Called by WebContentsTracker when the target of the audio mirroring has
   // changed.
-  void OnTargetChanged(RenderWidgetHost* target);
+  void OnTargetChanged(bool had_target);
 
   // Injected dependencies.
   const int initial_render_process_id_;
@@ -305,11 +305,10 @@ void WebContentsAudioInputStream::Impl::ReleaseInput(
   delete stream;
 }
 
-void WebContentsAudioInputStream::Impl::OnTargetChanged(
-    RenderWidgetHost* target) {
+void WebContentsAudioInputStream::Impl::OnTargetChanged(bool had_target) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  is_target_lost_ = !target;
+  is_target_lost_ = !had_target;
 
   if (state_ == MIRRORING) {
     if (is_target_lost_) {

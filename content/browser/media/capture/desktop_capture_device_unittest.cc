@@ -4,6 +4,7 @@
 
 #include "content/browser/media/capture/desktop_capture_device.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/basictypes.h"
@@ -22,8 +23,10 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::Expectation;
+using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
+using ::testing::WithArg;
 
 namespace content {
 
@@ -33,10 +36,10 @@ MATCHER_P2(EqualsCaptureCapability, width, height, "") {
   return arg.width == width && arg.height == height;
 }
 
-const int kTestFrameWidth1 = 100;
-const int kTestFrameHeight1 = 100;
-const int kTestFrameWidth2 = 200;
-const int kTestFrameHeight2 = 150;
+const int kTestFrameWidth1 = 500;
+const int kTestFrameHeight1 = 500;
+const int kTestFrameWidth2 = 400;
+const int kTestFrameHeight2 = 300;
 
 const int kFrameRate = 30;
 
@@ -208,6 +211,32 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   bool generate_cropped_frames_;
 };
 
+// Helper used to check that only two specific frame sizes are delivered to the
+// OnIncomingCapturedData() callback.
+class FormatChecker {
+ public:
+  FormatChecker(const gfx::Size& size_for_even_frames,
+                const gfx::Size& size_for_odd_frames)
+      : size_for_even_frames_(size_for_even_frames),
+        size_for_odd_frames_(size_for_odd_frames),
+        frame_count_(0) {}
+
+  void ExpectAcceptableSize(const media::VideoCaptureFormat& format) {
+    if (frame_count_ % 2 == 0)
+      EXPECT_EQ(size_for_even_frames_, format.frame_size);
+    else
+      EXPECT_EQ(size_for_odd_frames_, format.frame_size);
+    ++frame_count_;
+    EXPECT_EQ(kFrameRate, format.frame_rate);
+    EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+  }
+
+ private:
+  const gfx::Size size_for_even_frames_;
+  const gfx::Size size_for_odd_frames_;
+  int frame_count_;
+};
+
 }  // namespace
 
 class DesktopCaptureDeviceTest : public testing::Test {
@@ -277,15 +306,15 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   CreateScreenCaptureDevice(scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
-  media::VideoCaptureFormat format;
+  FormatChecker format_checker(gfx::Size(kTestFrameWidth1, kTestFrameHeight1),
+                               gfx::Size(kTestFrameWidth1, kTestFrameHeight1));
   base::WaitableEvent done_event(false, false);
-  int frame_size;
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_)).Times(0);
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(SaveArg<1>(&frame_size),
-            SaveArg<2>(&format),
+      DoAll(WithArg<2>(Invoke(&format_checker,
+                              &FormatChecker::ExpectAcceptableSize)),
             InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
@@ -293,23 +322,66 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
                                                      kTestFrameHeight1);
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
 
   capture_device_->AllocateAndStart(capture_params, client.Pass());
 
   // Capture at least two frames, to ensure that the source frame size has
-  // changed while capturing.
-  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
-  done_event.Reset();
-  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+  // changed to two different sizes while capturing.  The mock for
+  // OnIncomingCapturedData() will use FormatChecker to examine the format of
+  // each frame being delivered.
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+    done_event.Reset();
+  }
 
   capture_device_->StopAndDeAllocate();
+}
 
-  EXPECT_EQ(kTestFrameWidth1, format.frame_size.width());
-  EXPECT_EQ(kTestFrameHeight1, format.frame_size.height());
-  EXPECT_EQ(kFrameRate, format.frame_rate);
-  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+// Test that screen capturer behaves correctly if the source frame size changes,
+// where the video frames sent the the client vary in resolution but maintain
+// the same aspect ratio.
+TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
+  FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
 
-  EXPECT_EQ(format.frame_size.GetArea() * 4, frame_size);
+  CreateScreenCaptureDevice(scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
+
+  FormatChecker format_checker(gfx::Size(888, 500), gfx::Size(532, 300));
+  base::WaitableEvent done_event(false, false);
+
+  scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
+  EXPECT_CALL(*client, OnError(_)).Times(0);
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
+      DoAll(WithArg<2>(Invoke(&format_checker,
+                              &FormatChecker::ExpectAcceptableSize)),
+            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+
+  media::VideoCaptureParams capture_params;
+  const gfx::Size high_def_16_by_9(1920, 1080);
+  ASSERT_GE(high_def_16_by_9.width(),
+            std::max(kTestFrameWidth1, kTestFrameWidth2));
+  ASSERT_GE(high_def_16_by_9.height(),
+            std::max(kTestFrameHeight1, kTestFrameHeight2));
+  capture_params.requested_format.frame_size = high_def_16_by_9;
+  capture_params.requested_format.frame_rate = kFrameRate;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+
+  capture_device_->AllocateAndStart(
+      capture_params, client.Pass());
+
+  // Capture at least three frames, to ensure that the source frame size has
+  // changed to two different sizes while capturing.  The mock for
+  // OnIncomingCapturedData() will use FormatChecker to examine the format of
+  // each frame being delivered.
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+    done_event.Reset();
+  }
+
+  capture_device_->StopAndDeAllocate();
 }
 
 // Test that screen capturer behaves correctly if the source frame size changes
@@ -319,38 +391,42 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   CreateScreenCaptureDevice(scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
-  media::VideoCaptureFormat format;
+  FormatChecker format_checker(gfx::Size(kTestFrameWidth1, kTestFrameHeight1),
+                               gfx::Size(kTestFrameWidth2, kTestFrameHeight2));
   base::WaitableEvent done_event(false, false);
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_)).Times(0);
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(SaveArg<2>(&format),
+      DoAll(WithArg<2>(Invoke(&format_checker,
+                              &FormatChecker::ExpectAcceptableSize)),
             InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(kTestFrameWidth2,
-                                                     kTestFrameHeight2);
+  const gfx::Size high_def_16_by_9(1920, 1080);
+  ASSERT_GE(high_def_16_by_9.width(),
+            std::max(kTestFrameWidth1, kTestFrameWidth2));
+  ASSERT_GE(high_def_16_by_9.height(),
+            std::max(kTestFrameHeight1, kTestFrameHeight2));
+  capture_params.requested_format.frame_size = high_def_16_by_9;
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
 
   capture_device_->AllocateAndStart(
       capture_params, client.Pass());
 
   // Capture at least three frames, to ensure that the source frame size has
-  // changed at least twice while capturing.
-  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
-  done_event.Reset();
-  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
-  done_event.Reset();
-  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+  // changed to two different sizes while capturing.  The mock for
+  // OnIncomingCapturedData() will use FormatChecker to examine the format of
+  // each frame being delivered.
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+    done_event.Reset();
+  }
 
   capture_device_->StopAndDeAllocate();
-
-  EXPECT_EQ(kTestFrameWidth1, format.frame_size.width());
-  EXPECT_EQ(kTestFrameHeight1, format.frame_size.height());
-  EXPECT_EQ(kFrameRate, format.frame_rate);
-  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
 }
 
 // This test verifies that an unpacked frame is converted to a packed frame.

@@ -328,6 +328,8 @@ TEST_P(VideoUtilRotationTest, Rotate) {
 INSTANTIATE_TEST_CASE_P(, VideoUtilRotationTest,
                         testing::ValuesIn(kVideoRotationTestData));
 
+// Tests the ComputeLetterboxRegion function.  Also, because of shared code
+// internally, this also tests ScaleSizeToFitWithinTarget().
 TEST_F(VideoUtilTest, ComputeLetterboxRegion) {
   EXPECT_EQ(gfx::Rect(167, 0, 666, 500),
             ComputeLetterboxRegion(gfx::Rect(0, 0, 1000, 500),
@@ -346,6 +348,48 @@ TEST_F(VideoUtilTest, ComputeLetterboxRegion) {
                                    gfx::Size(40000, 30000)));
   EXPECT_TRUE(ComputeLetterboxRegion(gfx::Rect(0, 0, 2000000000, 2000000000),
                                      gfx::Size(0, 0)).IsEmpty());
+}
+
+TEST_F(VideoUtilTest, ScaleSizeToEncompassTarget) {
+  EXPECT_EQ(gfx::Size(1000, 750),
+            ScaleSizeToEncompassTarget(gfx::Size(640, 480),
+                                       gfx::Size(1000, 500)));
+  EXPECT_EQ(gfx::Size(1333, 1000),
+            ScaleSizeToEncompassTarget(gfx::Size(640, 480),
+                                       gfx::Size(500, 1000)));
+  EXPECT_EQ(gfx::Size(1000, 562),
+            ScaleSizeToEncompassTarget(gfx::Size(1920, 1080),
+                                       gfx::Size(1000, 500)));
+  EXPECT_EQ(gfx::Size(133, 100),
+            ScaleSizeToEncompassTarget(gfx::Size(400, 300),
+                                       gfx::Size(100, 100)));
+  EXPECT_EQ(gfx::Size(2666666666, 2000000000),
+            ScaleSizeToEncompassTarget(gfx::Size(40000, 30000),
+                                       gfx::Size(2000000000, 2000000000)));
+  EXPECT_TRUE(ScaleSizeToEncompassTarget(
+      gfx::Size(0, 0), gfx::Size(2000000000, 2000000000)).IsEmpty());
+}
+
+TEST_F(VideoUtilTest, PadToMatchAspectRatio) {
+  EXPECT_EQ(gfx::Size(640, 480),
+            PadToMatchAspectRatio(gfx::Size(640, 480), gfx::Size(640, 480)));
+  EXPECT_EQ(gfx::Size(640, 480),
+            PadToMatchAspectRatio(gfx::Size(640, 480), gfx::Size(4, 3)));
+  EXPECT_EQ(gfx::Size(960, 480),
+            PadToMatchAspectRatio(gfx::Size(640, 480), gfx::Size(1000, 500)));
+  EXPECT_EQ(gfx::Size(640, 1280),
+            PadToMatchAspectRatio(gfx::Size(640, 480), gfx::Size(500, 1000)));
+  EXPECT_EQ(gfx::Size(2160, 1080),
+            PadToMatchAspectRatio(gfx::Size(1920, 1080), gfx::Size(1000, 500)));
+  EXPECT_EQ(gfx::Size(400, 400),
+            PadToMatchAspectRatio(gfx::Size(400, 300), gfx::Size(100, 100)));
+  EXPECT_EQ(gfx::Size(400, 400),
+            PadToMatchAspectRatio(gfx::Size(300, 400), gfx::Size(100, 100)));
+  EXPECT_EQ(gfx::Size(40000, 40000),
+            PadToMatchAspectRatio(gfx::Size(40000, 30000),
+                                  gfx::Size(2000000000, 2000000000)));
+  EXPECT_TRUE(PadToMatchAspectRatio(
+      gfx::Size(40000, 30000), gfx::Size(0, 0)).IsEmpty());
 }
 
 TEST_F(VideoUtilTest, LetterboxYUV) {

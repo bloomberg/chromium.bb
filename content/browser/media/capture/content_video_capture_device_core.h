@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "content/browser/media/capture/capture_resolution_chooser.h"
 #include "content/browser/media/capture/video_capture_oracle.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame.h"
@@ -22,15 +23,6 @@ class VideoFrame;
 }  // namespace media
 
 namespace content {
-
-const int kMinFrameWidth = 2;
-const int kMinFrameHeight = 2;
-
-// Returns the nearest even integer closer to zero.
-template<typename IntType>
-IntType MakeEven(IntType x) {
-  return x & static_cast<IntType>(-2);
-}
 
 class VideoCaptureMachine;
 
@@ -104,8 +96,8 @@ class ThreadSafeCaptureOracle
   // The video capture parameters used to construct the oracle proxy.
   const media::VideoCaptureParams params_;
 
-  // The current video capture size.
-  gfx::Size capture_size_;
+  // Determines video capture frame sizes.
+  CaptureResolutionChooser resolution_chooser_;
 };
 
 // Keeps track of the video capture source frames and executes copying on the

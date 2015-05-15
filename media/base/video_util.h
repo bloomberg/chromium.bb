@@ -84,6 +84,29 @@ MEDIA_EXPORT void RotatePlaneByPixels(
 MEDIA_EXPORT gfx::Rect ComputeLetterboxRegion(const gfx::Rect& bounds,
                                               const gfx::Size& content);
 
+// Return a scaled |size| whose area is less than or equal to |target|, where
+// one of its dimensions is equal to |target|'s.  The aspect ratio of |size| is
+// preserved as closely as possible.  If |size| is empty, the result will be
+// empty.
+MEDIA_EXPORT gfx::Size ScaleSizeToFitWithinTarget(const gfx::Size& size,
+                                                  const gfx::Size& target);
+
+// Return a scaled |size| whose area is greater than or equal to |target|, where
+// one of its dimensions is equal to |target|'s.  The aspect ratio of |size| is
+// preserved as closely as possible.  If |size| is empty, the result will be
+// empty.
+MEDIA_EXPORT gfx::Size ScaleSizeToEncompassTarget(const gfx::Size& size,
+                                                  const gfx::Size& target);
+
+// Returns |size| with only one of its dimensions increased such that the result
+// matches the aspect ratio of |target|.  This is different from
+// ScaleSizeToEncompassTarget() in two ways: 1) The goal is to match the aspect
+// ratio of |target| rather than that of |size|.  2) Only one of the dimensions
+// of |size| may change, and it may only be increased (padded).  If either
+// |size| or |target| is empty, the result will be empty.
+MEDIA_EXPORT gfx::Size PadToMatchAspectRatio(const gfx::Size& size,
+                                             const gfx::Size& target);
+
 // Copy an RGB bitmap into the specified |region_in_frame| of a YUV video frame.
 // Fills the regions outside |region_in_frame| with black.
 MEDIA_EXPORT void CopyRGBToVideoFrame(const uint8* source,

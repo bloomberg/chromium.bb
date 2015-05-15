@@ -11,11 +11,13 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/capture/video_capture_oracle.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
@@ -77,7 +79,6 @@ SkColor ConvertRgbToYuv(SkColor rgb) {
 // counted.
 class CaptureTestSourceController {
  public:
-
   CaptureTestSourceController()
       : color_(SK_ColorMAGENTA),
         copy_result_size_(kTestWidth, kTestHeight),
@@ -162,13 +163,22 @@ class CaptureTestView : public TestRenderWidgetHostView {
   explicit CaptureTestView(RenderWidgetHostImpl* rwh,
                            CaptureTestSourceController* controller)
       : TestRenderWidgetHostView(rwh),
-        controller_(controller) {}
+        controller_(controller),
+        fake_bounds_(100, 100, 100 + kTestWidth, 100 + kTestHeight) {}
 
   ~CaptureTestView() override {}
 
   // TestRenderWidgetHostView overrides.
   gfx::Rect GetViewBounds() const override {
-    return gfx::Rect(100, 100, 100 + kTestWidth, 100 + kTestHeight);
+    return fake_bounds_;
+  }
+
+  void SetSize(const gfx::Size& size) override {
+    SetBounds(gfx::Rect(fake_bounds_.origin(), size));
+  }
+
+  void SetBounds(const gfx::Rect& rect) override {
+    fake_bounds_ = rect;
   }
 
   bool CanCopyToVideoFrame() const override {
@@ -213,6 +223,7 @@ class CaptureTestView : public TestRenderWidgetHostView {
  private:
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber_;
   CaptureTestSourceController* const controller_;
+  gfx::Rect fake_bounds_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureTestView);
 };
@@ -308,9 +319,10 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
 // WebContentsVideoCaptureDevice.
 class StubClient : public media::VideoCaptureDevice::Client {
  public:
-  StubClient(const base::Callback<void(SkColor)>& color_callback,
-             const base::Closure& error_callback)
-      : color_callback_(color_callback),
+  StubClient(
+      const base::Callback<void(SkColor, const gfx::Size&)>& report_callback,
+      const base::Closure& error_callback)
+      : report_callback_(report_callback),
         error_callback_(error_callback) {
     buffer_pool_ = new VideoCaptureBufferPool(2);
   }
@@ -360,20 +372,29 @@ class StubClient : public media::VideoCaptureDevice::Client {
       scoped_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override {
-    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->visible_rect().size());
+    EXPECT_FALSE(frame->visible_rect().IsEmpty());
     EXPECT_EQ(media::VideoFrame::I420, frame->format());
     double frame_rate = 0;
     EXPECT_TRUE(
         frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                      &frame_rate));
     EXPECT_EQ(kTestFramesPerSecond, frame_rate);
-    uint8 yuv[3];
-    for (int plane = 0; plane < 3; ++plane)
-      yuv[plane] = frame->visible_data(plane)[0];
-    // TODO(nick): We just look at the first pixel presently, because if
-    // the analysis is too slow, the backlog of frames will grow without bound
-    // and trouble erupts. http://crbug.com/174519
-    color_callback_.Run((SkColorSetRGB(yuv[0], yuv[1], yuv[2])));
+
+    // TODO(miu): We just look at the center pixel presently, because if the
+    // analysis is too slow, the backlog of frames will grow without bound and
+    // trouble erupts. http://crbug.com/174519
+    using media::VideoFrame;
+    const gfx::Point center = frame->visible_rect().CenterPoint();
+    const int center_offset_y =
+        (frame->stride(VideoFrame::kYPlane) * center.y()) + center.x();
+    const int center_offset_uv =
+        (frame->stride(VideoFrame::kUPlane) * (center.y() / 2)) +
+            (center.x() / 2);
+    report_callback_.Run(
+        SkColorSetRGB(frame->data(VideoFrame::kYPlane)[center_offset_y],
+                      frame->data(VideoFrame::kUPlane)[center_offset_uv],
+                      frame->data(VideoFrame::kVPlane)[center_offset_uv]),
+        frame->visible_rect().size());
   }
 
   void OnError(const std::string& reason) override { error_callback_.Run(); }
@@ -407,7 +428,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
   };
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
-  base::Callback<void(SkColor)> color_callback_;
+  base::Callback<void(SkColor, const gfx::Size&)> report_callback_;
   base::Closure error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StubClient);
@@ -417,9 +438,11 @@ class StubClientObserver {
  public:
   StubClientObserver()
       : error_encountered_(false),
-        wait_color_yuv_(0xcafe1950) {
+        wait_color_yuv_(0xcafe1950),
+        wait_size_(kTestWidth, kTestHeight) {
     client_.reset(new StubClient(
-        base::Bind(&StubClientObserver::OnColor, base::Unretained(this)),
+        base::Bind(&StubClientObserver::DidDeliverFrame,
+                   base::Unretained(this)),
         base::Bind(&StubClientObserver::OnError, base::Unretained(this))));
   }
 
@@ -429,16 +452,30 @@ class StubClientObserver {
     return client_.Pass();
   }
 
-  void QuitIfConditionMet(SkColor color) {
+  void QuitIfConditionsMet(SkColor color, const gfx::Size& size) {
     base::AutoLock guard(lock_);
-    if (wait_color_yuv_ == color || error_encountered_)
+    if (error_encountered_)
+      base::MessageLoop::current()->Quit();
+    else if (wait_color_yuv_ == color && wait_size_.IsEmpty())
+      base::MessageLoop::current()->Quit();
+    else if (wait_color_yuv_ == color && wait_size_ == size)
       base::MessageLoop::current()->Quit();
   }
 
+  // Run the current loop until a frame is delivered with the |expected_color|
+  // and any non-empty frame size.
   void WaitForNextColor(SkColor expected_color) {
+    WaitForNextColorAndFrameSize(expected_color, gfx::Size());
+  }
+
+  // Run the current loop until a frame is delivered with the |expected_color|
+  // and is of the |expected_size|.
+  void WaitForNextColorAndFrameSize(SkColor expected_color,
+                                    const gfx::Size& expected_size) {
     {
       base::AutoLock guard(lock_);
       wait_color_yuv_ = ConvertRgbToYuv(expected_color);
+      wait_size_ = expected_size;
       error_encountered_ = false;
     }
     RunCurrentLoopWithDeadline();
@@ -452,6 +489,7 @@ class StubClientObserver {
     {
       base::AutoLock guard(lock_);
       wait_color_yuv_ = kNotInterested;
+      wait_size_ = gfx::Size();
       error_encountered_ = false;
     }
     RunCurrentLoopWithDeadline();
@@ -472,22 +510,25 @@ class StubClientObserver {
       error_encountered_ = true;
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &StubClientObserver::QuitIfConditionMet,
+        &StubClientObserver::QuitIfConditionsMet,
         base::Unretained(this),
-        kNothingYet));
+        kNothingYet,
+        gfx::Size()));
   }
 
-  void OnColor(SkColor color) {
+  void DidDeliverFrame(SkColor color, const gfx::Size& size) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &StubClientObserver::QuitIfConditionMet,
+        &StubClientObserver::QuitIfConditionsMet,
         base::Unretained(this),
-        color));
+        color,
+        size));
   }
 
  private:
   base::Lock lock_;
   bool error_encountered_;
   SkColor wait_color_yuv_;
+  gfx::Size wait_size_;
   scoped_ptr<StubClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(StubClientObserver);
@@ -620,6 +661,22 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
           Source<RenderWidgetHost>(web_contents_->GetRenderViewHost()),
           NotificationService::NoDetails());
     }
+  }
+
+  void SimulateSourceSizeChange(const gfx::Size& size) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    CaptureTestView* test_view = static_cast<CaptureTestView*>(
+        web_contents_->GetRenderViewHost()->GetView());
+    test_view->SetSize(size);
+    // Normally, RenderWidgetHostImpl would notify WebContentsImpl that the size
+    // has changed.  However, in this test setup where there is no render
+    // process, we must notify WebContentsImpl directly.
+    WebContentsImpl* const as_web_contents_impl =
+        static_cast<WebContentsImpl*>(web_contents_.get());
+    RenderWidgetHostDelegate* const as_rwh_delegate =
+        static_cast<RenderWidgetHostDelegate*>(as_web_contents_impl);
+    as_rwh_delegate->RenderWidgetWasResized(
+        as_web_contents_impl->GetMainFrame()->GetRenderWidgetHost(), true);
   }
 
   void DestroyVideoCaptureDevice() { device_.reset(); }
@@ -875,6 +932,159 @@ TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
   ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorGREEN));
   source()->SetSolidColor(SK_ColorRED);
   ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorRED));
+
+  device()->StopAndDeAllocate();
+}
+
+// Tests that, when configured with the FIXED_ASPECT_RATIO resolution change
+// policy, the source size changes result in video frames of possibly varying
+// resolutions, but all with the same aspect ratio.
+TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
+  media::VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
+  capture_params.requested_format.frame_rate = kTestFramesPerSecond;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+
+  device()->AllocateAndStart(capture_params, client_observer()->PassClient());
+
+  for (int i = 0; i < 6; i++) {
+    const char* name = NULL;
+    switch (i % 3) {
+      case 0:
+        source()->SetCanCopyToVideoFrame(true);
+        source()->SetUseFrameSubscriber(false);
+        name = "VideoFrame";
+        break;
+      case 1:
+        source()->SetCanCopyToVideoFrame(false);
+        source()->SetUseFrameSubscriber(true);
+        name = "Subscriber";
+        break;
+      case 2:
+        source()->SetCanCopyToVideoFrame(false);
+        source()->SetUseFrameSubscriber(false);
+        name = "SkBitmap";
+        break;
+      default:
+        FAIL();
+    }
+
+    SCOPED_TRACE(base::StringPrintf("Using %s path, iteration #%d", name, i));
+
+    // Source size equals maximum size.  Expect delivered frames to be
+    // kTestWidth by kTestHeight.
+    source()->SetSolidColor(SK_ColorRED);
+    SimulateSourceSizeChange(gfx::Size(kTestWidth, kTestHeight));
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorRED, gfx::Size(kTestWidth, kTestHeight)));
+
+    // Source size is half in both dimensions.  Expect delivered frames to be of
+    // the same aspect ratio as kTestWidth by kTestHeight, but larger than the
+    // half size because the minimum height is 180 lines.
+    source()->SetSolidColor(SK_ColorGREEN);
+    SimulateSourceSizeChange(gfx::Size(kTestWidth / 2, kTestHeight / 2));
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorGREEN, gfx::Size(180 * kTestWidth / kTestHeight, 180)));
+
+    // Source size changes aspect ratio.  Expect delivered frames to be padded
+    // in the horizontal dimension to preserve aspect ratio.
+    source()->SetSolidColor(SK_ColorBLUE);
+    SimulateSourceSizeChange(gfx::Size(kTestWidth / 2, kTestHeight));
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorBLUE, gfx::Size(kTestWidth, kTestHeight)));
+
+    // Source size changes aspect ratio again.  Expect delivered frames to be
+    // padded in the vertical dimension to preserve aspect ratio.
+    source()->SetSolidColor(SK_ColorBLACK);
+    SimulateSourceSizeChange(gfx::Size(kTestWidth, kTestHeight / 2));
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorBLACK, gfx::Size(kTestWidth, kTestHeight)));
+  }
+
+  device()->StopAndDeAllocate();
+}
+
+// Tests that, when configured with the ANY_WITHIN_LIMIT resolution change
+// policy, the source size changes result in video frames of possibly varying
+// resolutions.
+TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_AnyWithinLimits) {
+  media::VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
+  capture_params.requested_format.frame_rate = kTestFramesPerSecond;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+
+  device()->AllocateAndStart(capture_params, client_observer()->PassClient());
+
+  for (int i = 0; i < 6; i++) {
+    const char* name = NULL;
+    switch (i % 3) {
+      case 0:
+        source()->SetCanCopyToVideoFrame(true);
+        source()->SetUseFrameSubscriber(false);
+        name = "VideoFrame";
+        break;
+      case 1:
+        source()->SetCanCopyToVideoFrame(false);
+        source()->SetUseFrameSubscriber(true);
+        name = "Subscriber";
+        break;
+      case 2:
+        source()->SetCanCopyToVideoFrame(false);
+        source()->SetUseFrameSubscriber(false);
+        name = "SkBitmap";
+        break;
+      default:
+        FAIL();
+    }
+
+    SCOPED_TRACE(base::StringPrintf("Using %s path, iteration #%d", name, i));
+
+    // Source size equals maximum size.  Expect delivered frames to be
+    // kTestWidth by kTestHeight.
+    source()->SetSolidColor(SK_ColorRED);
+    SimulateSourceSizeChange(gfx::Size(kTestWidth, kTestHeight));
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorRED, gfx::Size(kTestWidth, kTestHeight)));
+
+    // Source size is half in both dimensions.  Expect delivered frames to also
+    // be half in both dimensions.
+    source()->SetSolidColor(SK_ColorGREEN);
+    SimulateSourceSizeChange(gfx::Size(kTestWidth / 2, kTestHeight / 2));
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorGREEN, gfx::Size(kTestWidth / 2, kTestHeight / 2)));
+
+    // Source size changes to something arbitrary.  Since the source size is
+    // less than the maximum size, expect delivered frames to be the same size
+    // as the source size.
+    source()->SetSolidColor(SK_ColorBLUE);
+    gfx::Size arbitrary_source_size(kTestWidth / 2 + 42, kTestHeight - 10);
+    SimulateSourceSizeChange(arbitrary_source_size);
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorBLUE, arbitrary_source_size));
+
+    // Source size changes to something arbitrary that exceeds the maximum frame
+    // size.  Since the source size exceeds the maximum size, expect delivered
+    // frames to be downscaled.
+    source()->SetSolidColor(SK_ColorBLACK);
+    arbitrary_source_size = gfx::Size(kTestWidth * 2 + 99, kTestHeight / 2);
+    SimulateSourceSizeChange(arbitrary_source_size);
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+        SK_ColorBLACK, gfx::Size(kTestWidth,
+                                 kTestWidth * arbitrary_source_size.height() /
+                                     arbitrary_source_size.width())));
+  }
 
   device()->StopAndDeAllocate();
 }

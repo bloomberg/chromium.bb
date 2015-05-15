@@ -44,6 +44,7 @@ void WebContentsTracker::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   callback_.Reset();
+  resize_callback_.Reset();
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     WebContentsObserver::Observe(NULL);
@@ -78,6 +79,12 @@ RenderWidgetHost* WebContentsTracker::GetTargetRenderWidgetHost() const {
   return rwh;
 }
 
+void WebContentsTracker::SetResizeChangeCallback(
+    const base::Closure& callback) {
+  DCHECK(!task_runner_.get() || task_runner_->BelongsToCurrentThread());
+  resize_callback_ = callback;
+}
+
 void WebContentsTracker::OnPossibleTargetChange(bool force_callback_run) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -89,19 +96,29 @@ void WebContentsTracker::OnPossibleTargetChange(bool force_callback_run) {
   last_target_ = rwh;
 
   if (task_runner_->BelongsToCurrentThread()) {
-    MaybeDoCallback(rwh);
-  } else {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&WebContentsTracker::MaybeDoCallback, this, rwh));
+    MaybeDoCallback(rwh != nullptr);
+    return;
   }
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WebContentsTracker::MaybeDoCallback, this, rwh != nullptr));
 }
 
-void WebContentsTracker::MaybeDoCallback(RenderWidgetHost* rwh) {
+void WebContentsTracker::MaybeDoCallback(bool was_still_tracking) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!callback_.is_null())
-    callback_.Run(rwh);
+    callback_.Run(was_still_tracking);
+  if (was_still_tracking)
+    MaybeDoResizeCallback();
+}
+
+void WebContentsTracker::MaybeDoResizeCallback() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!resize_callback_.is_null())
+    resize_callback_.Run();
 }
 
 void WebContentsTracker::StartObservingWebContents(int render_process_id,
@@ -126,6 +143,19 @@ void WebContentsTracker::RenderFrameDeleted(
 void WebContentsTracker::RenderFrameHostChanged(RenderFrameHost* old_host,
                                                 RenderFrameHost* new_host) {
   OnPossibleTargetChange(false);
+}
+
+void WebContentsTracker::MainFrameWasResized(bool width_changed) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (task_runner_->BelongsToCurrentThread()) {
+    MaybeDoResizeCallback();
+    return;
+  }
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WebContentsTracker::MaybeDoResizeCallback, this));
 }
 
 void WebContentsTracker::WebContentsDestroyed() {
