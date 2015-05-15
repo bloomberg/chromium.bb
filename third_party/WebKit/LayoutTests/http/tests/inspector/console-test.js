@@ -192,8 +192,8 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
         var element = messageViews[i].contentElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
         InspectorTest.addResult(messageText);
-        var spans = element.querySelectorAll(".console-message-text > span > span");
-        for (var j = 0; j < spans.length; j++)
+        var spans = element.querySelectorAll(".console-message-text > span *");
+        for (var j = 0; j < spans.length; ++j)
             InspectorTest.addResult("Styled text #" + j + ": " + (spans[j].style.cssText || "NO STYLES DEFINED"));
     }
 }
