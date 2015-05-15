@@ -77,8 +77,10 @@ html[screen=oobe] .login-header-bar-animate-slow {
   color: black !important;
   display: block;
   font-size: 13px;
+  height: auto;
   left: 15px;
   margin: 0 0 -10px -10px;
+  min-height: 34px;
   position: absolute;
   text-align: center;
   width: 180px;
