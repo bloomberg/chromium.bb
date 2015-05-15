@@ -213,6 +213,7 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
                             registrations[i]).release();
       }
       callbacks->onSuccess(results);
+      break;
     case BACKGROUND_SYNC_ERROR_NOT_FOUND:
       // This error should never be returned from
       // BackgroundSyncManager::GetRegistrations
