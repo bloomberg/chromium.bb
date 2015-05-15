@@ -14,12 +14,14 @@
 
 namespace net {
 class HostResolver;
+class ProxyResolverErrorObserver;
 class ProxyResolverFactory;
 
 class MojoProxyResolverFactoryImpl : public interfaces::ProxyResolverFactory {
  public:
   using Factory = base::Callback<scoped_ptr<net::ProxyResolverFactory>(
       HostResolver*,
+      scoped_ptr<ProxyResolverErrorObserver>,
       const ProxyResolver::LoadStateChangedCallback&)>;
 
   explicit MojoProxyResolverFactoryImpl(
@@ -38,6 +40,7 @@ class MojoProxyResolverFactoryImpl : public interfaces::ProxyResolverFactory {
       const mojo::String& pac_script,
       mojo::InterfaceRequest<interfaces::ProxyResolver> request,
       interfaces::HostResolverPtr host_resolver,
+      interfaces::ProxyResolverErrorObserverPtr error_observer,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
   void RemoveJob(Job* job);

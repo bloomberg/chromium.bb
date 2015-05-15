@@ -42,11 +42,16 @@ interface ProxyResolverRequestClient {
   LoadStateChanged(int32 load_state);
 };
 
+interface ProxyResolverErrorObserver {
+  OnPacScriptError(int32 line_number, string error);
+};
+
 interface ProxyResolverFactory {
-  // TODO(amistry): Add NetLog and ProxyResolverErrorObserver.
+  // TODO(amistry): Add NetLog.
   CreateResolver(string pac_script,
                  ProxyResolver& resolver,
                  HostResolver host_resolver,
+                 ProxyResolverErrorObserver? error_observer,
                  ProxyResolverFactoryRequestClient client);
 };
 

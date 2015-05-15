@@ -25,6 +25,7 @@ class InProcessMojoProxyResolverFactory : public MojoProxyResolverFactory {
       const mojo::String& pac_script,
       mojo::InterfaceRequest<interfaces::ProxyResolver> req,
       interfaces::HostResolverPtr host_resolver,
+      interfaces::ProxyResolverErrorObserverPtr error_observer,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
  private:

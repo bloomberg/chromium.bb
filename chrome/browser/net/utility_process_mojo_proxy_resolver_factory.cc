@@ -64,6 +64,7 @@ UtilityProcessMojoProxyResolverFactory::CreateResolver(
     const mojo::String& pac_script,
     mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
     net::interfaces::HostResolverPtr host_resolver,
+    net::interfaces::ProxyResolverErrorObserverPtr error_observer,
     net::interfaces::ProxyResolverFactoryRequestClientPtr client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!resolver_factory_)
@@ -78,7 +79,8 @@ UtilityProcessMojoProxyResolverFactory::CreateResolver(
   idle_timer_.Stop();
   num_proxy_resolvers_++;
   resolver_factory_->CreateResolver(pac_script, req.Pass(),
-                                    host_resolver.Pass(), client.Pass());
+                                    host_resolver.Pass(), error_observer.Pass(),
+                                    client.Pass());
   return make_scoped_ptr(new base::ScopedClosureRunner(
       base::Bind(&UtilityProcessMojoProxyResolverFactory::OnResolverDestroyed,
                  base::Unretained(this))));

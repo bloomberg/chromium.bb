@@ -33,6 +33,7 @@ class UtilityProcessMojoProxyResolverFactory
       const mojo::String& pac_script,
       mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
       net::interfaces::HostResolverPtr host_resolver,
+      net::interfaces::ProxyResolverErrorObserverPtr error_observer,
       net::interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
  private:

@@ -10,7 +10,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver_mojo.h"
 #include "net/proxy/mojo_proxy_resolver_impl.h"
-#include "net/proxy/proxy_resolver_error_observer.h"
+#include "net/proxy/proxy_resolver_error_observer_mojo.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "net/proxy/proxy_resolver_v8_tracing.h"
@@ -19,15 +19,18 @@
 namespace net {
 namespace {
 
-scoped_ptr<ProxyResolverErrorObserver> ReturnNullErrorObserver() {
-  return nullptr;
+scoped_ptr<ProxyResolverErrorObserver> ReturnErrorObserver(
+    scoped_ptr<ProxyResolverErrorObserver> error_observer) {
+  return error_observer;
 }
 
 scoped_ptr<ProxyResolverFactory> CreateDefaultProxyResolver(
     HostResolver* host_resolver,
+    scoped_ptr<ProxyResolverErrorObserver> error_observer,
     const ProxyResolver::LoadStateChangedCallback& callback) {
   return make_scoped_ptr(new ProxyResolverFactoryV8Tracing(
-      host_resolver, nullptr, callback, base::Bind(&ReturnNullErrorObserver)));
+      host_resolver, nullptr, callback,
+      base::Bind(&ReturnErrorObserver, base::Passed(&error_observer))));
 }
 
 class LoadStateChangeForwarder
@@ -107,6 +110,7 @@ class MojoProxyResolverFactoryImpl::Job : public mojo::ErrorHandler {
       const MojoProxyResolverFactoryImpl::Factory& proxy_resolver_factory,
       mojo::InterfaceRequest<interfaces::ProxyResolver> request,
       interfaces::HostResolverPtr host_resolver,
+      interfaces::ProxyResolverErrorObserverPtr error_observer,
       interfaces::ProxyResolverFactoryRequestClientPtr client);
   ~Job() override;
 
@@ -134,6 +138,7 @@ MojoProxyResolverFactoryImpl::Job::Job(
     const MojoProxyResolverFactoryImpl::Factory& proxy_resolver_factory,
     mojo::InterfaceRequest<interfaces::ProxyResolver> request,
     interfaces::HostResolverPtr host_resolver,
+    interfaces::ProxyResolverErrorObserverPtr error_observer,
     interfaces::ProxyResolverFactoryRequestClientPtr client)
     : parent_(factory),
       host_resolver_(new HostResolverMojo(
@@ -144,6 +149,7 @@ MojoProxyResolverFactoryImpl::Job::Job(
       proxy_request_(request.Pass()),
       factory_(proxy_resolver_factory.Run(
           host_resolver_.get(),
+          ProxyResolverErrorObserverMojo::Create(error_observer.Pass()),
           base::Bind(&LoadStateChangeForwarder::OnLoadStateChanged,
                      load_state_change_forwarder_))),
       client_ptr_(client.Pass()) {
@@ -195,13 +201,14 @@ void MojoProxyResolverFactoryImpl::CreateResolver(
     const mojo::String& pac_script,
     mojo::InterfaceRequest<interfaces::ProxyResolver> request,
     interfaces::HostResolverPtr host_resolver,
+    interfaces::ProxyResolverErrorObserverPtr error_observer,
     interfaces::ProxyResolverFactoryRequestClientPtr client) {
   // The Job will call RemoveJob on |this| when either the create request
   // finishes or |request| or |client| encounters a connection error.
   jobs_.insert(new Job(
       this, ProxyResolverScriptData::FromUTF8(pac_script.To<std::string>()),
       proxy_resolver_impl_factory_, request.Pass(), host_resolver.Pass(),
-      client.Pass()));
+      error_observer.Pass(), client.Pass()));
 }
 
 void MojoProxyResolverFactoryImpl::RemoveJob(Job* job) {

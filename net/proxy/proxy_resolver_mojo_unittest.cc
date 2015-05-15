@@ -15,12 +15,15 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "mojo/common/common_type_converters.h"
+#include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log.h"
 #include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_resolver.h"
+#include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -316,6 +319,7 @@ class MockMojoProxyResolverFactory : public interfaces::ProxyResolverFactory {
       const mojo::String& pac_url,
       mojo::InterfaceRequest<interfaces::ProxyResolver> request,
       interfaces::HostResolverPtr host_resolver,
+      interfaces::ProxyResolverErrorObserverPtr error_observer,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
   void WakeWaiter();
@@ -368,6 +372,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
     const mojo::String& pac_script,
     mojo::InterfaceRequest<interfaces::ProxyResolver> request,
     interfaces::HostResolverPtr host_resolver,
+    interfaces::ProxyResolverErrorObserverPtr error_observer,
     interfaces::ProxyResolverFactoryRequestClientPtr client) {
   ASSERT_FALSE(create_resolver_actions_.empty());
   CreateProxyResolverAction action = create_resolver_actions_.front();
@@ -409,8 +414,9 @@ class ProxyResolverMojoTest : public testing::Test,
   void SetUp() override {
     mock_proxy_resolver_factory_.reset(new MockMojoProxyResolverFactory(
         &mock_proxy_resolver_, mojo::GetProxy(&factory_ptr_)));
-    proxy_resolver_factory_mojo_.reset(
-        new ProxyResolverFactoryMojo(this, nullptr));
+    proxy_resolver_factory_mojo_.reset(new ProxyResolverFactoryMojo(
+        this, nullptr,
+        base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>()));
   }
 
   scoped_ptr<Request> MakeRequest(const GURL& url) {
@@ -421,9 +427,10 @@ class ProxyResolverMojoTest : public testing::Test,
       const mojo::String& pac_script,
       mojo::InterfaceRequest<interfaces::ProxyResolver> req,
       interfaces::HostResolverPtr host_resolver,
+      interfaces::ProxyResolverErrorObserverPtr error_observer,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override {
     factory_ptr_->CreateResolver(pac_script, req.Pass(), host_resolver.Pass(),
-                                 client.Pass());
+                                 error_observer.Pass(), client.Pass());
     return make_scoped_ptr(
         new base::ScopedClosureRunner(on_delete_callback_.closure()));
   }
