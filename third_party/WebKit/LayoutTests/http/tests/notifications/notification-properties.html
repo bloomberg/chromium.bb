@@ -84,6 +84,16 @@
             });
             assert_array_equals(invalidVibrateNotification.vibrate, [100, 200, 0]);
 
+            // Invalid vibrate pattern should be sanitized.
+            // 1. If the vibration pattern is longer than 100 then truncate it.
+            // 2. If the last item in the vibration pattern is a pause then discard it.
+            // 3. If any pattern entry is longer than 10000 then truncate it.
+            var sanitizedVibrateNotification = new Notification("My Notification", {
+                vibrate: Array.apply(null, new Array(101)).map(Number.prototype.valueOf, 20000)
+            });
+            assert_array_equals(sanitizedVibrateNotification.vibrate,
+                    Array.apply(null, new Array(99)).map(Number.prototype.valueOf, 10000));
+
             // Verifying the exception throwing behavior, when silent set true and vibrate is presented.
             assert_throws(new TypeError(), function() {
                 var notification = new Notification("My Notification", {

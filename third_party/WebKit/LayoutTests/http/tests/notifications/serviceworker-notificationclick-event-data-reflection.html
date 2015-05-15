@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Notifications: Property reflection in the "notificationclick" event.</title>
+    <title>Notifications: data property reflection in the "notificationclick" event.</title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
     <script src="../serviceworker/resources/test-helpers.js"></script>
@@ -10,41 +10,38 @@
   <body>
     <script>
       // Tests that the notification available in the "notificationclick" event in the
-      // Service Worker accurately reflects the attributes with which the notification
-      // was created (for this test --) in the document.
+      // Service Worker accurately reflects the data attributes of several type
+      // with which the notification was created (for this test --) in the document.
 
       async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname,
               script = 'resources/instrumentation-service-worker.js';
 
-          var options = {
-              title: scope,
-              dir: 'rtl',
-              lang: 'nl-NL',
-              body: 'Hello, world!',
-              tag: 'tag',
-              // FIXME: Relative URLs for the icon attribute currently get reflected as
-              // an absolute URL, which should probably be the given relative URL.
-              icon: 'https://example/icon.png',
-              vibrate: [100, 200, 300],
-              silent: false,
-              data: [
-                  { property: 'foobar',
-                    string: '\uDFFF\u0000\uDBFF',
-                    scalar: true },
-                  12.15
-              ]
-          };
+          // Set notification's data of several type to a structured clone of options's data.
+          var notificationDataList = new Array(
+              true, // Check Boolean type
+              1024, // Check Number type
+              Number.NaN, // Check Number.NaN type
+              'any data', // Check String type
+              new Array('Saab', 'Volve', 'BMW'),  // Check Array type
+              { first: 'first', second: 'second' }  // Check object
+          );
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
               // (1) Tell the Service Worker to display a Web Notification.
-              workerInfo.port.postMessage({
-                  command: 'show',
+              var assertNotificationDataReflects = function(pos) {
+                  workerInfo.port.postMessage({
+                      command: 'show',
 
-                  title: scope,
-                  options: options
-              });
+                      title: scope,
+                      options: {
+                          title: scope,
+                          tag: pos,
+                          data: notificationDataList[pos]
+                      }
+                  });
+              };
 
               workerInfo.port.addEventListener('message', function(event) {
                   if (typeof event.data != 'object' || !event.data.command) {
@@ -65,12 +62,17 @@
                   // set on the Notification object are as expected.
                   assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');
 
-                  Object.keys(options).forEach(function(key) {
-                      assert_object_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
-                  });
+                  var pos = event.data.notification.tag;
 
-                  test.done();
+                  assert_object_equals(event.data.notification.data, notificationDataList[pos], 'The data field must be the same.');
+
+                  if (pos < notificationDataList.length)
+                      assertNotificationDataReflects(++pos);
+                  else
+                      test.done();
               });
+
+              assertNotificationDataReflects(0);
           }).catch(unreached_rejection(test));
 
       }, 'Clicking on a notification displayed by a Service Worker the notificationclick event.');
