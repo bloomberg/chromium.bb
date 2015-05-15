@@ -6,18 +6,11 @@
 
 from __future__ import print_function
 
-import os
-import sys
-
-from chromite.cbuildbot import constants
 from chromite.cli import command
 from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
-from chromite.lib import operation
-from chromite.lib import workspace_lib
+from chromite.lib import image_lib
 
 
 # argparse does not behave well with nargs='*', default and choices
@@ -27,123 +20,6 @@ from chromite.lib import workspace_lib
 # * ensure image_types is always a list.
 IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install',
                ['test']]
-
-
-class BrilloImageOperation(operation.ParallelEmergeOperation):
-  """Progress bar for brillo image.
-
-  Since brillo image is a long running operation, we divide it into stages.
-  For each stage, we display a different progress bar.
-  """
-  BASE_STAGE = 'base'
-  DEV_STAGE = 'dev'
-  TEST_STAGE = 'test'
-  SUMMARIZE_STAGE = 'summarize'
-
-  def __init__(self):
-    super(BrilloImageOperation, self).__init__()
-    self._stage_name = None
-    self._done = False
-
-  def _StageEnter(self, output):
-    """Return stage's name if we are entering a stage, else False."""
-    events = ['operation: summarize',
-              'operation: creating test image',
-              'operation: creating developer image',
-              'operation: creating base image']
-    stages = [self.SUMMARIZE_STAGE, self.TEST_STAGE, self.DEV_STAGE,
-              self.BASE_STAGE]
-    for event, stage in zip(events, stages):
-      if event in output:
-        return stage
-    return None
-
-  def _StageExit(self, output):
-    """Determine if we are exiting a stage."""
-    events = ['operation: done creating base image',
-              'operation: done creating developer image',
-              'operation: done creating test image',
-              'operation: done summarize']
-    for event in events:
-      if event in output:
-        return True
-    return False
-
-  def _StageStatus(self, output):
-    "Returns stage name if we are entering that stage and if exiting a stage."""
-    return self._StageEnter(output), self._StageExit(output)
-
-  def _PrintEnterStageMessages(self):
-    """Messages to indicate the start of a new stage.
-
-    As the base image is always created, we display a message then. For the
-    other stages, messages are only displayed if those stages will have a
-    progress bar.
-
-    Returns:
-      A message that is to be displayed before the progress bar is shown (if
-      needed). If the progress bar is not shown, then the message should not be
-      displayed.
-    """
-    if self._stage_name == self.BASE_STAGE:
-      logging.notice('Creating disk layout')
-      return 'Building base image.'
-    elif self._stage_name == self.DEV_STAGE:
-      return 'Building developer image.'
-    else:
-      return 'Building test image.'
-
-  def _PrintEndStageMessages(self):
-    """Messages to be shown at the end of a stage."""
-    logging.notice('Unmounting image. This may take a while.')
-
-  def ParseOutput(self, output=None):
-    """Display progress bars for brillo image."""
-
-    stdout = self._stdout.read()
-    stderr = self._stderr.read()
-    output = stdout + stderr
-    stage_name, stage_exit = self._StageStatus(output)
-
-    # If we are in a non-summarize stage, then we update the progress bar
-    # accordingly.
-    if (self._stage_name is not None and
-        self._stage_name != self.SUMMARIZE_STAGE and not self._done):
-      progress = super(BrilloImageOperation, self).ParseOutput(output)
-      # If we are done displaying a progress bar for a stage, then we display
-      # progress bar operation (parallel emerge).
-      if progress == 1:
-        self._done = True
-        self.Cleanup()
-        # Do not display a 100% progress in exit because it has already been
-        # done.
-        self._progress_bar_displayed = False
-        self._PrintEndStageMessages()
-
-     # Perform cleanup when exiting a stage.
-    if stage_exit:
-      self._stage_name = None
-      self._total = None
-      self._done = False
-      self._completed = 0
-      self._printed_no_packages = False
-      self.Cleanup()
-      self._progress_bar_displayed = False
-
-    # When entering a stage, print stage appropriate entry messages.
-    if stage_name is not None:
-      self._stage_name = stage_name
-      msg = self._PrintEnterStageMessages()
-      self.SetProgressBarMessage(msg)
-      if self._stage_name == self.SUMMARIZE_STAGE:
-        sys.stdout.write('\n')
-
-    # If we are in a summarize stage, properly format and display the output.
-    if self._stage_name == self.SUMMARIZE_STAGE and not self._done:
-      for line in output.split('\n'):
-        if 'INFO    : ' in line:
-          line = line.replace('INFO    : ', '')
-          logging.notice(line)
 
 
 @command.CommandDecorator('image')
@@ -189,60 +65,30 @@ class ImageCommand(command.CliCommand):
 
     self.options.Freeze()
 
-    cmd = [os.path.join(constants.CROSUTILS_DIR, 'build_image')]
+    board = None
+    packages = None
 
     if self.options.blueprint:
       blueprint = blueprint_lib.Blueprint(self.options.blueprint)
       packages = blueprint.GetPackages(with_implicit=False)
-
-      cmd.append('--extra_packages=%s' % ' '.join(packages))
       #TODO(stevefung): Support multiple sysroots (brbug.com/676)
-      cmd.append('--board=%s' % blueprint.FriendlyName())
+      board = blueprint.FriendlyName()
     elif self.options.brick:
       brick = brick_lib.Brick(self.options.brick)
-      cmd.append('--extra_packages=%s' % ' '.join(brick.MainPackages()))
-      cmd.append('--board=%s' % brick.FriendlyName())
+      packages = brick.MainPackages()
+      board = brick.FriendlyName()
     elif self.options.board:
-      cmd.append('--board=%s' % self.options.board)
+      board = self.options.board
 
-    if self.options.adjust_part:
-      cmd.append('--adjust_part=%s' % self.options.adjust_part)
-
-    if self.options.boot_args:
-      cmd.append('--boot_args=%s' % self.options.boot_args)
-
-    if self.options.enable_bootcache:
-      cmd.append('--enable_bootcache')
-    else:
-      cmd.append('--noenable_bootcache')
-
-    if self.options.enable_rootfs_verification:
-      cmd.append('--enable_rootfs_verification')
-    else:
-      cmd.append('--noenable_rootfs_verification')
-
-    if self.options.output_root:
-      if workspace_lib.IsLocator(self.options.output_root):
-        path = workspace_lib.LocatorToPath(self.options.output_root)
-      else:
-        path = self.options.output_root
-      cmd.append('--output_root=%s' % path)
-
-    if self.options.disk_layout:
-      cmd.append('--disk_layout=%s' % self.options.disk_layout)
-
-    if self.options.enable_serial:
-      cmd.append('--enable_serial=%s' % self.options.enable_serial)
-
-    if self.options.kernel_log_level:
-      cmd.append('--loglevel=%s' % self.options.kernel_log_level)
-
-    if self.options.image_types:
-      cmd.extend(self.options.image_types)
-
-    if command.UseProgressBar():
-      cmd.append('--progress_bar')
-      op = BrilloImageOperation()
-      op.Run(cros_build_lib.RunCommand, cmd, log_level=logging.DEBUG)
-    else:
-      cros_build_lib.RunCommand(cmd)
+    image_lib.BuildImage(
+        board,
+        adjust_part=self.options.adjust_part,
+        boot_args=self.options.boot_args,
+        enable_bootcache=self.options.enable_bootcache,
+        enable_rootfs_verification=self.options.enable_rootfs_verification,
+        output_root=self.options.output_root,
+        disk_layout=self.options.disk_layout,
+        enable_serial=self.options.enable_serial,
+        kernel_log_level=self.options.kernel_log_level,
+        packages=packages,
+        image_types=self.options.image_types)
