@@ -5,7 +5,7 @@
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation.  No representations are made about the suitability of this
- * software for any purpose.  It is provided "as is" without express or 
+ * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
  * GLMatrix -- simulate the text scrolls from the movie "The Matrix".
@@ -140,7 +140,7 @@ typedef struct {
 
   Bool highlight[GRID_SIZE];
                           /* some glyphs may be highlighted */
-  
+
   int spin_speed;         /* Rotate all spinners every this-many frames */
   int spin_tick;          /* frame counter */
 
@@ -270,7 +270,7 @@ reset_strip (ModeInfo *mi, strip *s)
 	    s->highlight[i] = True;
 	  }
 
-        time_displayed_p = True;	
+        time_displayed_p = True;
       }
     else
       {
@@ -420,7 +420,7 @@ draw_glyph (ModeInfo *mi, int glyph, Bool highlight,
         int i = ratio * WAVE_SIZE;
 
         if (i < 0) i = 0;
-        else if (i >= WAVE_SIZE) i = WAVE_SIZE-1; 
+        else if (i >= WAVE_SIZE) i = WAVE_SIZE-1;
 
         a *= mp->brightness_ramp[i];
       }
@@ -802,7 +802,7 @@ load_textures (ModeInfo *mi, Bool flip_p)
 }
 
 
-ENTRYPOINT void 
+ENTRYPOINT void
 init_matrix (ModeInfo *mi)
 {
   matrix_configuration *mp;
@@ -1008,7 +1008,7 @@ draw_matrix (ModeInfo *mi)
   glScalef(0.5, 0.5, 0.5);
 # endif
 # if 0
-  glRotatef(-30, 0, 1, 0); 
+  glRotatef(-30, 0, 1, 0);
 # endif
   draw_grid (mi);
 #endif

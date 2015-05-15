@@ -200,7 +200,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 		machine->state = utf8state_reject;
 		break;
 	}
-	
+
 	return machine->state;
 }
 
@@ -284,7 +284,7 @@ static void
 apply_char_set(character_set cs, union utf8_char *utf8)
 {
 	int i = 0;
-	
+
 	while (cs[i].match.byte[0]) {
 		if ((*utf8).ch == cs[i].match.ch) {
 			*utf8 = cs[i].replace;
@@ -361,7 +361,7 @@ apply_key_map(keyboard_mode mode, int sym, uint32_t modifiers, char *response)
 	struct key_map map;
 	int len = 0;
 	int i = 0;
-	
+
 	while (mode[i].sym) {
 		map = mode[i++];
 		if (sym == map.sym) {
@@ -371,7 +371,7 @@ apply_key_map(keyboard_mode mode, int sym, uint32_t modifiers, char *response)
 			break;
 		}
 	}
-	
+
 	return len;
 }
 
@@ -483,7 +483,7 @@ static void
 terminal_init_tabs(struct terminal *terminal)
 {
 	int i = 0;
-	
+
 	while (i < terminal->width) {
 		if (i % 8 == 0)
 			terminal->tab_ruler[i] = 1;
@@ -654,7 +654,7 @@ terminal_scroll_window(struct terminal *terminal, int d)
 	int i;
 	int window_height;
 	int from_row, to_row;
-	
+
 	// scrolling range is inclusive
 	window_height = terminal->margin_bottom - terminal->margin_top + 1;
 	d = d % (window_height + 1);
@@ -662,7 +662,7 @@ terminal_scroll_window(struct terminal *terminal, int d)
 		d = 0 - d;
 		to_row = terminal->margin_bottom;
 		from_row = terminal->margin_bottom - d;
-		
+
 		for (i = 0; i < (window_height - d); i++) {
 			memcpy(terminal_get_row(terminal, to_row - i),
 			       terminal_get_row(terminal, from_row - i),
@@ -679,7 +679,7 @@ terminal_scroll_window(struct terminal *terminal, int d)
 	} else {
 		to_row = terminal->margin_top;
 		from_row = terminal->margin_top + d;
-		
+
 		for (i = 0; i < (window_height - d); i++) {
 			memcpy(terminal_get_row(terminal, to_row + i),
 			       terminal_get_row(terminal, from_row + i),
@@ -710,7 +710,7 @@ terminal_shift_line(struct terminal *terminal, int d)
 {
 	union utf8_char *row;
 	struct attr *attr_row;
-	
+
 	row = terminal_get_row(terminal, terminal->row);
 	attr_row = terminal_get_attr_row(terminal, terminal->row);
 
@@ -718,7 +718,7 @@ terminal_shift_line(struct terminal *terminal, int d)
 		d = terminal->column + 1 - terminal->width;
 	if ((terminal->column + d) >= terminal->width)
 		d = terminal->width - terminal->column - 1;
-	
+
 	if (d < 0) {
 		d = 0 - d;
 		memmove(&row[terminal->column],
@@ -1195,7 +1195,7 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 				terminal_resize(terminal, 132, 24);
 			else
 				terminal_resize(terminal, 80, 24);
-			
+
 			/* set columns, but also home cursor and clear screen */
 			terminal->row = 0; terminal->column = 0;
 			for (i = 0; i < terminal->height; i++) {
@@ -1328,7 +1328,7 @@ handle_escape(struct terminal *terminal)
 			set[i] = 1;
 		}
 	}
-	
+
 	switch (*p) {
 	case '@':    /* ICH */
 		count = set[0] ? args[0] : 1;
@@ -1386,7 +1386,7 @@ handle_escape(struct terminal *terminal)
 	case 'G':    /* CHA */
 		y = set[0] ? args[0] : 1;
 		y = y <= 0 ? 1 : y > terminal->width ? terminal->width : y;
-		
+
 		terminal->column = y - 1;
 		break;
 	case 'f':    /* HVP */
@@ -1394,7 +1394,7 @@ handle_escape(struct terminal *terminal)
 		x = (set[1] ? args[1] : 1) - 1;
 		x = x < 0 ? 0 :
 		    (x >= terminal->width ? terminal->width - 1 : x);
-		
+
 		y = (set[0] ? args[0] : 1) - 1;
 		if (terminal->origin_mode) {
 			y += terminal->margin_top;
@@ -1404,7 +1404,7 @@ handle_escape(struct terminal *terminal)
 			y = y < 0 ? 0 :
 			    (y >= terminal->height ? terminal->height - 1 : y);
 		}
-		
+
 		terminal->row = y;
 		terminal->column = x;
 		break;
@@ -1527,7 +1527,7 @@ handle_escape(struct terminal *terminal)
 	case '`':    /* HPA */
 		y = set[0] ? args[0] : 1;
 		y = y <= 0 ? 1 : y > terminal->width ? terminal->width : y;
-		
+
 		terminal->column = y - 1;
 		break;
 	case 'b':    /* REP */
@@ -1544,7 +1544,7 @@ handle_escape(struct terminal *terminal)
 	case 'd':    /* VPA */
 		x = set[0] ? args[0] : 1;
 		x = x <= 0 ? 1 : x > terminal->height ? terminal->height : x;
-		
+
 		terminal->row = x - 1;
 		break;
 	case 'g':    /* TBC */
@@ -1680,7 +1680,7 @@ handle_escape(struct terminal *terminal)
 	default:
 		fprintf(stderr, "Unknown CSI escape: %c\n", *p);
 		break;
-	}	
+	}
 }
 
 static void
@@ -1936,7 +1936,7 @@ handle_special_char(struct terminal *terminal, char c)
 	default:
 		return 0;
 	}
-	
+
 	return 1;
 }
 
@@ -1945,24 +1945,24 @@ handle_char(struct terminal *terminal, union utf8_char utf8)
 {
 	union utf8_char *row;
 	struct attr *attr_row;
-	
+
 	if (handle_special_char(terminal, utf8.byte[0])) return;
 
 	apply_char_set(terminal->cs, &utf8);
-	
+
 	/* There are a whole lot of non-characters, control codes,
 	 * and formatting codes that should probably be ignored,
 	 * for example: */
 	if (strncmp((char*) utf8.byte, "\xEF\xBB\xBF", 3) == 0) {
 		/* BOM, ignore */
 		return;
-	} 
-	
+	}
+
 	/* Some of these non-characters should be translated, e.g.: */
 	if (utf8.byte[0] < 32) {
 		utf8.byte[0] = utf8.byte[0] + 64;
 	}
-	
+
 	/* handle right margin effects */
 	if (terminal->column >= terminal->width) {
 		if (terminal->mode & MODE_AUTOWRAP) {
@@ -1976,10 +1976,10 @@ handle_char(struct terminal *terminal, union utf8_char utf8)
 			terminal->column--;
  		}
  	}
-	
+
 	row = terminal_get_row(terminal, terminal->row);
 	attr_row = terminal_get_attr_row(terminal, terminal->row);
-	
+
 	if (terminal->mode & MODE_IRM)
 		terminal_shift_line(terminal, +1);
 	row[terminal->column] = utf8;
@@ -2096,7 +2096,7 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 				if (terminal->escape_length >= MAX_ESCAPE)
 					terminal->state = escape_state_normal;
 			}
-			
+
 			if (isalpha(utf8.byte[0]) || utf8.byte[0] == '@' ||
 				utf8.byte[0] == '`')
 			{
@@ -2503,7 +2503,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		/* Handle special keys with alternate mappings */
 		len = apply_key_map(terminal->key_mode, sym, modifiers, ch);
 		if (len != 0) break;
-		
+
 		if (modifiers & MOD_CONTROL_MASK) {
 			if (sym >= '3' && sym <= '7')
 				sym = (sym & 0x1f) + 8;

@@ -572,7 +572,7 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			wl_input_method_context_keysym(keyboard->keyboard->context,
 						       display_get_serial(keyboard->keyboard->display),
-						       time, 
+						       time,
 						       XKB_KEY_Return, key_state, mod_mask);
 			break;
 		case keytype_space:
@@ -616,35 +616,35 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			wl_input_method_context_keysym(keyboard->keyboard->context,
 						       display_get_serial(keyboard->keyboard->display),
-						       time, 
+						       time,
 						       XKB_KEY_Tab, key_state, mod_mask);
 			break;
 		case keytype_arrow_up:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			wl_input_method_context_keysym(keyboard->keyboard->context,
 						       display_get_serial(keyboard->keyboard->display),
-						       time, 
+						       time,
 						       XKB_KEY_Up, key_state, mod_mask);
 			break;
 		case keytype_arrow_left:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			wl_input_method_context_keysym(keyboard->keyboard->context,
 						       display_get_serial(keyboard->keyboard->display),
-						       time, 
+						       time,
 						       XKB_KEY_Left, key_state, mod_mask);
 			break;
 		case keytype_arrow_right:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			wl_input_method_context_keysym(keyboard->keyboard->context,
 						       display_get_serial(keyboard->keyboard->display),
-						       time, 
+						       time,
 						       XKB_KEY_Right, key_state, mod_mask);
 			break;
 		case keytype_arrow_down:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			wl_input_method_context_keysym(keyboard->keyboard->context,
 						       display_get_serial(keyboard->keyboard->display),
-						       time, 
+						       time,
 						       XKB_KEY_Down, key_state, mod_mask);
 			break;
 		case keytype_style:
@@ -730,7 +730,7 @@ touch_down_handler(struct widget *widget, struct input *input,
 		   uint32_t serial, uint32_t time, int32_t id,
 		   float x, float y, void *data)
 {
-  touch_handler(input, time, x, y, 
+  touch_handler(input, time, x, y,
 		WL_POINTER_BUTTON_STATE_PRESSED, data);
 }
 

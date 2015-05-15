@@ -612,7 +612,7 @@ editor_copy_cut(struct editor *editor, struct input *input, bool cut)
 
 	if (!entry)
 		return;
-	
+
 	if (entry->cursor != entry->anchor) {
 		int start_index = MIN(entry->cursor, entry->anchor);
 		int end_index = MAX(entry->cursor, entry->anchor);

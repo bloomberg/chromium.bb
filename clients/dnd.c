@@ -103,12 +103,12 @@ item_create(struct display *display, int x, int y, int seed)
 	item = malloc(sizeof *item);
 	if (item == NULL)
 		return NULL;
-	
-	
+
+
 	gettimeofday(&tv, NULL);
 	item->seed = seed ? seed : tv.tv_usec;
 	srandom(item->seed);
-	
+
 	const int petal_count = 3 + random() % 5;
 	const double r1 = 20 + random() % 10;
 	const double r2 = 5 + random() % 12;
@@ -289,7 +289,7 @@ static void
 data_source_send(void *data, struct wl_data_source *source,
 		 const char *mime_type, int32_t fd)
 {
-	struct dnd_flower_message dnd_flower_message;	
+	struct dnd_flower_message dnd_flower_message;
 	struct dnd_drag *dnd_drag = data;
 	char buffer[128];
 	int n;
@@ -325,7 +325,7 @@ data_source_cancelled(void *data, struct wl_data_source *source)
 	 * up the drag object created and the local state. */
 
 	wl_data_source_destroy(dnd_drag->data_source);
-	
+
 	/* Destroy the item that has been dragged out */
 	cairo_surface_destroy(dnd_drag->item->surface);
 	free(dnd_drag->item);
@@ -619,7 +619,7 @@ dnd_receive_func(void *data, size_t len, int32_t x, int32_t y, void *user_data)
 			len, sizeof *message);
 		return;
 	}
-		
+
 	widget_get_allocation(dnd->widget, &allocation);
 	item = item_create(dnd->display,
 			   x - message->x_offset - allocation.x,

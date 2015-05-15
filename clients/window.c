@@ -3181,7 +3181,7 @@ touch_handle_frame(void *data, struct wl_touch *wl_touch)
 
 	wl_list_for_each_safe(tp, tmp, &input->touch_point_list, link) {
 		if (tp->widget->touch_frame_handler)
-			(*tp->widget->touch_frame_handler)(tp->widget, input, 
+			(*tp->widget->touch_frame_handler)(tp->widget, input,
 							   tp->widget->user_data);
 	}
 }

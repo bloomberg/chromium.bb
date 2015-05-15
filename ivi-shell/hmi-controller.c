@@ -573,7 +573,7 @@ set_notification_configure_surface(struct ivi_layout_surface *ivisurf,
 							&length, &ivisurfs);
 	for (i = 0; i < length; i++) {
 		if (ivisurf == ivisurfs[i]) {
-			/* 
+			/*
 			 * if it is non new invoked application, just call
 			 * commit_changes to apply source_rectangle.
 			 */

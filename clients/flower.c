@@ -86,7 +86,7 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 		cairo_curve_to(cr,
 			       x1 - y1 * u, y1 + x1 * u,
 			       x2 + y2 * v, y2 - x2 * v,
-			       x2, y2);			       
+			       x2, y2);
 
 		cairo_curve_to(cr,
 			       x2 - y2 * v, y2 + x2 * v,
@@ -155,8 +155,8 @@ button_handler(struct widget *widget,
 }
 
 static void
-touch_down_handler(struct widget *widget, struct input *input, 
-		   uint32_t serial, uint32_t time, int32_t id, 
+touch_down_handler(struct widget *widget, struct input *input,
+		   uint32_t serial, uint32_t time, int32_t id,
 		   float x, float y, void *data)
 {
 	struct flower *flower = data;

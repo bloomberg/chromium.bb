@@ -76,7 +76,7 @@ struct gear_template {
 static const struct gear_template gear_templates[] = {
 	{ { 0.8, 0.1, 0.0, 1.0 }, 1.0, 4.0, 1.0, 20, 0.7 },
 	{ { 0.0, 0.8, 0.2, 1.0 }, 0.5, 2.0, 2.0, 10, 0.7 },
-	{ { 0.2, 0.2, 1.0, 1.0 }, 1.3, 2.0, 0.5, 10, 0.7 }, 
+	{ { 0.2, 0.2, 1.0, 1.0 }, 1.3, 2.0, 0.5, 10, 0.7 },
 };
 
 static GLfloat light_pos[4] = {5.0, 5.0, 10.0, 0.0};
@@ -313,7 +313,7 @@ redraw_handler(struct widget *widget, void *data)
 		die("Unable to acquire window surface, "
 		    "compiled without cairo-egl?\n");
 	}
-	
+
 	glViewport(allocation.x,
 		   window_allocation.height - allocation.height - allocation.y,
 		   allocation.width, allocation.height);

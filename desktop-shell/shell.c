@@ -2115,7 +2115,7 @@ xdg_ping_timeout_handler(void *data)
 			continue;
 		if (seat->pointer->focus->surface->resource == NULL)
 			continue;
-		
+
 		shsurf = get_shell_surface(seat->pointer->focus->surface);
 		if (shsurf &&
 		    wl_resource_get_client(shsurf->resource) == sc->client)

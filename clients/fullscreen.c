@@ -410,8 +410,8 @@ button_handler(struct widget *widget,
 }
 
 static void
-touch_handler(struct widget *widget, struct input *input, 
-		   uint32_t serial, uint32_t time, int32_t id, 
+touch_handler(struct widget *widget, struct input *input,
+		   uint32_t serial, uint32_t time, int32_t id,
 		   float x, float y, void *data)
 {
 	struct fullscreen *fullscreen = data;

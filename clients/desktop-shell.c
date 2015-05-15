@@ -34,7 +34,7 @@
 #include <cairo.h>
 #include <sys/wait.h>
 #include <sys/timerfd.h>
-#include <sys/epoll.h> 
+#include <sys/epoll.h>
 #include <linux/input.h>
 #include <libgen.h>
 #include <ctype.h>
@@ -241,7 +241,7 @@ panel_launcher_motion_handler(struct widget *widget, struct input *input,
 static void
 set_hex_color(cairo_t *cr, uint32_t color)
 {
-	cairo_set_source_rgba(cr, 
+	cairo_set_source_rgba(cr,
 			      ((color >> 16) & 0xff) / 255.0,
 			      ((color >>  8) & 0xff) / 255.0,
 			      ((color >>  0) & 0xff) / 255.0,
@@ -319,7 +319,7 @@ panel_launcher_touch_down_handler(struct widget *widget, struct input *input,
 
 static void
 panel_launcher_touch_up_handler(struct widget *widget, struct input *input,
-				uint32_t serial, uint32_t time, int32_t id, 
+				uint32_t serial, uint32_t time, int32_t id,
 				void *data)
 {
 	struct panel_launcher *launcher;
@@ -440,7 +440,7 @@ panel_resize_handler(struct widget *widget,
 	struct panel_launcher *launcher;
 	struct panel *panel = data;
 	int x, y, w, h;
-	
+
 	x = 10;
 	y = 16;
 	wl_list_for_each(launcher, &panel->launcher_list, link) {
@@ -521,7 +521,7 @@ panel_create(struct desktop *desktop)
 
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
 	widget_set_resize_handler(panel->widget, panel_resize_handler);
-	
+
 	panel_add_clock(panel);
 
 	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);

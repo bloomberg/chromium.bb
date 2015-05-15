@@ -615,7 +615,7 @@ compositor_create_surface(struct wl_client *client,
 {
 	struct nested *nested = wl_resource_get_user_data(resource);
 	struct nested_surface *surface;
-	
+
 	surface = zalloc(sizeof *surface);
 	if (surface == NULL) {
 		wl_resource_post_no_memory(resource);
