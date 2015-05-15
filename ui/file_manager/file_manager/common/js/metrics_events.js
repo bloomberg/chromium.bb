@@ -46,7 +46,15 @@ metrics.Dimension_ = {
  * @enum {string}
  */
 metrics.FileSystemProviders = {
-  oedeeodfidgoollimchfdnbmhcpnklnd: 'ZipUnpacker'
+  oedeeodfidgoollimchfdnbmhcpnklnd: 'ZipUnpacker',
+  hlffpaajmfllggclnjppbblobdhokjhe: 'File System for Dropbox (YT)',
+  jbfdfcehgafdbfpniaimfbfomafoadgo: 'File System for OneDrive (YT)',
+  gbheifiifcfekkamhepkeogobihicgmn: 'SFTP File System (YT)',
+  dikonaebkejmpbpcnnmfaeopkaenicgf: 'Box for Chrome OS',
+  iibcngmpkgghccnakicfmgajlkhnohep: 'TED Talks (FB)',
+  hmckflbfniicjijmdoffagjkpnjgbieh: 'WebDAV File System (YT)',
+  ibfbhbegfkamboeglpnianlggahglbfi: 'Cloud Storage (FB)',
+  pmnllmkmjilbojkpgplbdmckghmaocjh: 'Scan (FB)'
 };
 
 /**
