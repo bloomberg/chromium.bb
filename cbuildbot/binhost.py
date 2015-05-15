@@ -15,6 +15,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import parallel
 
 
 # A unique identifier for looking up CompatIds by board/useflags.
@@ -300,9 +301,7 @@ class CompatIdFetcher(object):
     """
     # pylint: disable=method-hidden
     logging.info('Fetching CompatId objects...')
-    # Portage cache updates aren't parallel-safe, so limit to 1 job for now.
-    # See http://crbug.com/470998
-    self.compat_ids = {}
-    for key in board_keys:
-      self._FetchCompatId(*key)
-    return dict(self.compat_ids)
+    with parallel.Manager() as manager:
+      self.compat_ids = manager.dict()
+      parallel.RunTasksInProcessPool(self._FetchCompatId, board_keys)
+      return dict(self.compat_ids)
