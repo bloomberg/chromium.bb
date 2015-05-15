@@ -1499,9 +1499,9 @@ class PreCQLauncherStage(SyncStage):
     status_counts = {}
     for status in status_map.values():
       status_counts[status] = status_counts.get(status, 0) + 1
-    status_gauge = graphite.StatsFactory.GetInstance().Gauge('precq.status')
     for status, count in status_counts.items():
-      status_gauge.send(status, count)
+      name = '.'.join(['precq', 'status', status if status else 'None'])
+      graphite.StatsFactory.GetInstance().Gauge(name).send(status, count)
 
     for change in inflight:
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
