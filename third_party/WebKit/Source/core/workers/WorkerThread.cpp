@@ -46,6 +46,7 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/Noncopyable.h"
@@ -55,8 +56,7 @@
 namespace blink {
 
 namespace {
-const int64_t kShortIdleHandlerDelayMs = 1000;
-const int64_t kLongIdleHandlerDelayMs = 10*1000;
+const double kLongIdlePeriodSecs = 1.0;
 
 } // namespace
 
@@ -272,6 +272,7 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_terminated(false)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
+    , m_webScheduler(nullptr)
     , m_startupData(startupData)
     , m_isolate(nullptr)
     , m_shutdownEvent(adoptPtr(Platform::current()->createWaitableEvent()))
@@ -319,6 +320,7 @@ void WorkerThread::initialize()
     OwnPtr<Vector<char>> cachedMetaData = m_startupData->m_cachedMetaData.release();
     V8CacheOptions v8CacheOptions = m_startupData->m_v8CacheOptions;
 
+    m_webScheduler = backingThread().platformThread().scheduler();
     {
         MutexLocker lock(m_threadStateMutex);
 
@@ -360,7 +362,7 @@ void WorkerThread::initialize()
 
     postInitialize();
 
-    postDelayedTask(FROM_HERE, createSameThreadTask(&WorkerThread::idleHandler, this), kShortIdleHandlerDelayMs);
+    m_webScheduler->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(&WorkerThread::performIdleWork, this));
 }
 
 void WorkerThread::shutdown()
@@ -482,21 +484,27 @@ bool WorkerThread::isCurrentThread()
     return m_started && backingThread().isCurrentThread();
 }
 
-void WorkerThread::idleHandler()
+void WorkerThread::performIdleWork(double deadlineSeconds)
 {
-    ASSERT(m_workerGlobalScope.get());
-    int64_t delay = kLongIdleHandlerDelayMs;
+    double gcDeadlineSeconds = deadlineSeconds;
 
-    // Do a script engine idle notification if the next event is distant enough.
-    const double kMinIdleTimespan = 0.3;
-    const double nextFireTime = PlatformThreadData::current().threadTimers().nextFireTime();
-    if (nextFireTime == 0.0 || nextFireTime > currentTime() + kMinIdleTimespan) {
-        bool hasMoreWork = !isolate()->IdleNotificationDeadline(Platform::current()->monotonicallyIncreasingTime() + 1.0);
-        if (hasMoreWork)
-            delay = kShortIdleHandlerDelayMs;
-    }
+    // The V8 GC does some GC steps (e.g. compaction) only when the idle notification is ~1s.
+    // TODO(rmcilroy): Refactor so extending the deadline like this this isn't needed.
+    if (m_webScheduler->canExceedIdleDeadlineIfRequired())
+        gcDeadlineSeconds = Platform::current()->monotonicallyIncreasingTime() + kLongIdlePeriodSecs;
 
-    postDelayedTask(FROM_HERE, createSameThreadTask(&WorkerThread::idleHandler, this), delay);
+    if (doIdleGc(gcDeadlineSeconds))
+        m_webScheduler->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(&WorkerThread::performIdleWork, this));
+    else
+        m_webScheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&WorkerThread::performIdleWork, this));
+}
+
+bool WorkerThread::doIdleGc(double deadlineSeconds)
+{
+    bool gcFinished = false;
+    if (deadlineSeconds > Platform::current()->monotonicallyIncreasingTime())
+        gcFinished = isolate()->IdleNotificationDeadline(deadlineSeconds);
+    return gcFinished;
 }
 
 void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)

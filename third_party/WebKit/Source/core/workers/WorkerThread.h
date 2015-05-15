@@ -128,6 +128,9 @@ protected:
     virtual void destroyIsolate();
     virtual void terminateV8Execution();
 
+    // This is protected virtual for testing.
+    virtual bool doIdleGc(double deadlineSeconds);
+
 private:
     friend class WorkerSharedTimer;
     friend class WorkerMicrotaskRunner;
@@ -137,7 +140,7 @@ private:
 
     void initialize();
     void shutdown();
-    void idleHandler();
+    void performIdleWork(double deadlineSeconds);
     void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
@@ -148,6 +151,7 @@ private:
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
+    RawPtr<WebScheduler> m_webScheduler; // Not owned.
 
     RefPtrWillBePersistent<WorkerInspectorController> m_workerInspectorController;
     Mutex m_workerInspectorControllerMutex;
