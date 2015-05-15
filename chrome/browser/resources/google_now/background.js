@@ -1028,8 +1028,6 @@ function stopPollingCards() {
  */
 function initialize() {
   recordEvent(GoogleNowEvent.EXTENSION_START);
-  // TODO(skare): Reenable, after signin.
-  unregisterFromGcm();
   onStateChange();
 }
 
@@ -1054,7 +1052,8 @@ function setShouldPollCards(shouldPollCardsRequest) {
 }
 
 /**
- * Starts or stops the optin check.
+ * Starts or stops the optin check and GCM channel to receive optin
+ * notifications.
  * @param {boolean} shouldPollOptInStatus true to start and false to stop
  *     polling the optin status.
  */
@@ -1073,6 +1072,12 @@ function setShouldPollOptInStatus(shouldPollOptInStatus) {
           'Action Ignored setShouldPollOptInStatus=' + shouldPollOptInStatus);
     }
   });
+
+  if (shouldPollOptInStatus) {
+    registerForGcm();
+  } else {
+    unregisterFromGcm();
+  }
 }
 
 /**
