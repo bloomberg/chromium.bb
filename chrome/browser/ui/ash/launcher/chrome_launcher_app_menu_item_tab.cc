@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 
 #include "ash/wm/window_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -43,6 +44,10 @@ void ChromeLauncherAppMenuItemTab::Execute(int event_flags) {
   if (event_flags & (ui::EF_SHIFT_DOWN | ui::EF_MIDDLE_MOUSE_BUTTON)) {
     tab_strip->CloseWebContentsAt(index, TabStripModel::CLOSE_USER_GESTURE);
   } else {
+    // In ChromeOS multiprofile scenario we might need to teleport the window
+    // back to the current user desktop.
+    multi_user_util::MoveWindowToCurrentDesktop(
+        browser->window()->GetNativeWindow());
     tab_strip->ActivateTabAt(index, false);
     browser->window()->Show();
     // Need this check to prevent unit tests from crashing.

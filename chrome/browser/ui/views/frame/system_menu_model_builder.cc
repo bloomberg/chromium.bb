@@ -9,8 +9,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -24,6 +26,24 @@
 #include "components/user_manager/user_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif
+
+namespace {
+
+// Given a |browser| that's an app or popup window, checks if it's hosting the
+// settings page.
+bool IsChromeSettingsAppOrPopupWindow(Browser* browser) {
+  DCHECK(browser);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  DCHECK_EQ(1, tab_strip->count());
+  const GURL gurl(tab_strip->GetWebContentsAt(0)->GetURL());
+  if (gurl.SchemeIs(content::kChromeUIScheme) &&
+      gurl.host().find(chrome::kChromeUISettingsHost) != std::string::npos) {
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 SystemMenuModelBuilder::SystemMenuModelBuilder(
     ui::AcceleratorProvider* provider,
@@ -108,7 +128,13 @@ void SystemMenuModelBuilder::BuildSystemMenuForAppOrPopupWindow(
   model->AddItemWithStringId(IDC_CLOSE_WINDOW, IDS_CLOSE);
 #endif
 
-  AppendTeleportMenu(model);
+  // Avoid appending the teleport menu for the settings window.  This window's
+  // presentation is unique: it's a normal browser window with an app-like
+  // frame, which doesn't have a user icon badge.  Thus if teleported it's not
+  // clear what user it applies to. Rather than bother to implement badging just
+  // for this rare case, simply prevent the user from teleporting the window.
+  if (!IsChromeSettingsAppOrPopupWindow(browser()))
+    AppendTeleportMenu(model);
 }
 
 void SystemMenuModelBuilder::AddFrameToggleItems(ui::SimpleMenuModel* model) {

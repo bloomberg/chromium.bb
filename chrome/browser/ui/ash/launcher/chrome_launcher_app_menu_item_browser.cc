@@ -6,6 +6,7 @@
 
 #include "ash/wm/window_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -42,6 +43,10 @@ void ChromeLauncherAppMenuItemBrowser::Execute(int event_flags) {
       TabStripModel* tab_strip = browser_->tab_strip_model();
       tab_strip->CloseAllTabs();
     } else {
+      // In ChromeOS multiprofile scenario we might need to teleport the window
+      // back to the current user desktop.
+      multi_user_util::MoveWindowToCurrentDesktop(
+          browser_->window()->GetNativeWindow());
       browser_->window()->Show();
       ash::wm::ActivateWindow(browser_->window()->GetNativeWindow());
     }
