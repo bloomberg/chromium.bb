@@ -91,11 +91,11 @@ class ExtensionUninstallDialog
   Delegate* delegate_;
 
   // The extension we are showing the dialog for.
-  const Extension* extension_;
+  scoped_refptr<const Extension> extension_;
 
   // The extension triggering the dialog if the dialog was shown by
   // chrome.management.uninstall.
-  const Extension* triggering_extension_;
+  scoped_refptr<const Extension> triggering_extension_;
 
   // The extensions icon.
   gfx::ImageSkia icon_;
