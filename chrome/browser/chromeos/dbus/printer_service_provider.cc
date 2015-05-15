@@ -34,6 +34,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/webstore_widget_private.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
@@ -44,6 +46,7 @@
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "device/usb/usb_ids.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -56,6 +59,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace webstore_widget_private_api =
+    extensions::api::webstore_widget_private;
 
 namespace {
 
@@ -199,25 +205,47 @@ class PrinterProviderExistsNotificationDelegate : public NotificationDelegate {
 // (not implemented yet).
 class SearchPrinterAppNotificationDelegate : public NotificationDelegate {
  public:
-  SearchPrinterAppNotificationDelegate(const std::string& vendor_id,
-                                       const std::string& product_id)
-      : vendor_id_(vendor_id), product_id_(product_id) {}
+  SearchPrinterAppNotificationDelegate(content::BrowserContext* browser_context,
+                                       uint16 vendor_id,
+                                       const std::string& vendor_id_str,
+                                       uint16 product_id,
+                                       const std::string& product_id_str)
+      : browser_context_(browser_context),
+        vendor_id_(vendor_id),
+        vendor_id_str_(vendor_id_str),
+        product_id_(product_id),
+        product_id_str_(product_id_str) {}
 
   std::string id() const override {
     return "system.printer.no_printer_provider_found/" +
-           GetNotificationTag(vendor_id_, product_id_);
+           GetNotificationTag(vendor_id_str_, product_id_str_);
   }
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    // TODO(tbarzic): Implement this (http://crbug.com/439448).
+    webstore_widget_private_api::Options options;
+    options.type = webstore_widget_private_api::TYPE_PRINTER_PROVIDER;
+    options.usb_id.reset(new webstore_widget_private_api::UsbId());
+    options.usb_id->vendor_id = vendor_id_;
+    options.usb_id->product_id = product_id_;
+
+    extensions::EventRouter* event_router =
+        extensions::EventRouter::Get(browser_context_);
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        webstore_widget_private_api::OnShowWidget::kEventName,
+        webstore_widget_private_api::OnShowWidget::Create(options)));
+    event_router->DispatchEventToExtension(extension_misc::kWebstoreWidgetAppId,
+                                           event.Pass());
   }
 
  private:
   ~SearchPrinterAppNotificationDelegate() override = default;
 
-  std::string vendor_id_;
-  std::string product_id_;
+  content::BrowserContext* browser_context_;
+  uint16 vendor_id_;
+  std::string vendor_id_str_;
+  uint16 product_id_;
+  std::string product_id_str_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchPrinterAppNotificationDelegate);
 };
@@ -280,8 +308,9 @@ void ShowPrinterPluggedNotification(
         message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                    kNoPrinterProviderNotificationID),
         base::string16(), GetNotificationTag(vendor_id_str, product_id_str),
-        options, new SearchPrinterAppNotificationDelegate(vendor_id_str,
-                                                          product_id_str)));
+        options,
+        new SearchPrinterAppNotificationDelegate(
+            profile, vendor_id, vendor_id_str, product_id, product_id_str)));
   }
 
   notification->SetSystemPriority();
@@ -340,7 +369,6 @@ void PrinterServiceProvider::PrinterAdded(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   DVLOG(1) << "PrinterAdded " << method_call->ToString();
-
   dbus::MessageReader reader(method_call);
 
   std::string vendor_id;

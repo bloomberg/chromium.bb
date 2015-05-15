@@ -1,0 +1,60 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  margin: 0;
+}
+
+button {
+  background-color: #fafafa;
+  background-image: none;
+  border: 5px solid transparent;
+  border-image: -webkit-image-set(
+    url(chrome://resources/images/apps/button.png) 1x,
+    url(chrome://resources/images/2x/apps/button.png)
+        2x) 5 / 5px / 2px repeat;
+  box-sizing: content-box;
+  color: #222;
+  cursor: default;
+  line-height: 21px;
+  margin: 0;
+  min-height: 21px;
+  min-width: 55px;
+  padding: 0 10px;
+}
+
+button:hover  {
+  border-image: -webkit-image-set(
+    url(chrome://resources/images/apps/button_hover.png) 1x,
+    url(chrome://resources/images/2x/apps/button_hover.png)
+        2x) 5 fill / 5px / 2px repeat;
+  color: #222;
+}
+
+button:active {
+  border-image: -webkit-image-set(
+    url(chrome://resources/images/apps/button_pressed.png) 1x,
+    url(chrome://resources/images/2x/apps/button_pressed.png)
+        2x) 5 fill / 5px / 2px repeat;
+  color: #333;
+}
+
+button:focus {
+  outline-color: rgb(77, 144, 254);
+}
+
+.title-area {
+  -webkit-app-region: drag;
+  background-color: white;
+  box-shadow: 0 1px #d0d0d0;
+  display: flex;
+  font-size: 15px;
+  height: 48px;
+}
+
+.window-title {
+  -webkit-margin-start: 20px;
+  flex: 1;
+  line-height: 48px;
+}

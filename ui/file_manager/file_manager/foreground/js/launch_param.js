@@ -4,8 +4,8 @@
 
 /**
  * @typedef {{
- *   overrideCwsContainerUrlForTest: string,
- *   overrideCwsContainerOriginForTest: string
+ *   overrideCwsContainerUrlForTest: (string|undefined),
+ *   overrideCwsContainerOriginForTest: (string|undefined)
  * }}
  */
 var SuggestAppDialogState;

@@ -7,6 +7,7 @@
       'target_name': 'main',
       'variables': {
         'depends': [
+          '<@(cws_widget_container)',
           '../../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
           '../../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../../ui/webui/resources/js/cr.js',
@@ -39,10 +40,6 @@
           '../../../../../ui/webui/resources/js/cr/ui/menu.js',
           '../../../../../ui/webui/resources/js/cr/ui/menu_button.js',
           '../../../../../ui/webui/resources/js/cr/ui/context_menu_handler.js',
-          '../../../../../components/chrome_apps/webstore_widget/cws_widget/app_installer.js',
-          '../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_webview_client.js',
-          '../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container.js',
-          '../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container_error_dialog.js',
           '../../common/js/error_util.js',
           '../../common/js/async_util.js',
           '../../common/js/file_type.js',
@@ -163,7 +160,8 @@
         ],
       },
       'includes': [
-        '../../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../../../../components/chrome_apps/webstore_widget/cws_widget/compiled_resources.gypi',
+        '../../../../../third_party/closure_compiler/compile_js.gypi',
       ],
     }
   ],

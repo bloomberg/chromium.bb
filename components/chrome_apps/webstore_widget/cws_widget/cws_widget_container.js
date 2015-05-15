@@ -47,10 +47,13 @@ var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
  * @param {!HTMLElement} parentNode Node to be parent for this container.
  * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
  *     Chrome platform APIs.
- * @param {!SuggestAppDialogState} state Static state of suggest app dialog.
+ * @param {!{
+ *   overrideCwsContainerUrlForTest: (string|undefined),
+ *   overrideCwsContainerOriginForTest: (string|undefined)
+ * }} params Overrides for container params.
  * @constructor
  */
-function CWSWidgetContainer(document, parentNode, delegate, state) {
+function CWSWidgetContainer(document, parentNode, delegate, params) {
   /** @private {!CWSWidgetContainer.PlatformDelegate} */
   this.delegate_ = delegate;
 
@@ -108,7 +111,6 @@ function CWSWidgetContainer(document, parentNode, delegate, state) {
    */
   this.webstoreButton_ = document.createElement('div');
   this.webstoreButton_.hidden = true;
-  this.webstoreButton_.classList.add('cws-widget-webstore-button');
   this.webstoreButton_.setAttribute('role', 'button');
   this.webstoreButton_.tabIndex = 0;
 
@@ -148,14 +150,14 @@ function CWSWidgetContainer(document, parentNode, delegate, state) {
    * @const {string}
    * @private
    */
-  this.widgetUrl_ = state.overrideCwsContainerUrlForTest || CWS_WIDGET_URL;
+  this.widgetUrl_ = params.overrideCwsContainerUrlForTest || CWS_WIDGET_URL;
 
   /**
    * The Chrome Web Store widget origin.
    * @const {string}
    * @private
    */
-  this.widgetOrigin_ = state.overrideCwsContainerOriginForTest ||
+  this.widgetOrigin_ = params.overrideCwsContainerOriginForTest ||
       CWS_WIDGET_ORIGIN;
 
   /**
@@ -389,10 +391,10 @@ CWSWidgetContainer.prototype.ready = function() {
  *
  * @param {!Object<string, *>} options Map of options for the dialog.
  * @param {?string} webStoreUrl Url for more results. Null if not supported.
- * @return {Promise.<CWSWidgetContainer.ResolveReason>} Resolved when app
+ * @return {!Promise.<CWSWidgetContainer.ResolveReason>} Resolved when app
  *     installation is done, or the installation is cancelled.
  */
-CWSWidgetContainer.prototype.start = function(options,  webStoreUrl) {
+CWSWidgetContainer.prototype.start = function(options, webStoreUrl) {
   return new Promise(function(resolve, reject) {
     if (this.state_ !== CWSWidgetContainer.State.ACCESS_TOKEN_READY) {
       this.state_ = CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING;
@@ -413,7 +415,9 @@ CWSWidgetContainer.prototype.start = function(options,  webStoreUrl) {
     this.webStoreUrl_ = webStoreUrl;
     this.options_ = options;
 
-    this.webstoreButton_.hidden = (webStoreUrl === null);
+    this.webstoreButton_.hidden = !webStoreUrl;
+    this.webstoreButton_.classList.toggle('cws-widget-webstore-button',
+                                          !!webStoreUrl);
 
     this.webview_ =
         /** @type {!WebView} */(this.document_.createElement('webview'));
@@ -469,7 +473,7 @@ CWSWidgetContainer.prototype.start = function(options,  webStoreUrl) {
 CWSWidgetContainer.prototype.onWebstoreLinkActivated_ = function(e) {
   if (!this.webStoreUrl_)
     return;
-  util.visitURL(this.webStoreUrl_);
+  window.open(this.webStoreUrl_);
   this.state_ = CWSWidgetContainer.State.OPENING_WEBSTORE_CLOSING;
   this.reportDone_();
 };
