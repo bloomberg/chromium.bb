@@ -7,7 +7,7 @@
 <script>
 var videoElement = document.getElementById("video");
 var canvas3D = document.createElement('canvas');
-var gl = canvas3D.getContext('experimental-webgl');
+var gl = canvas3D.getContext('webgl');
 if(!gl)
     CanvasRunner.logFatalError("\nWebGL is not supported or enabled on this platform!\n");
 

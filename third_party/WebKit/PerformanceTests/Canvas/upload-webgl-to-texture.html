@@ -6,9 +6,9 @@
 <script>
 
 var sourceCanvas3D = document.createElement('canvas');
-var sourceCtx = sourceCanvas3D.getContext('experimental-webgl');
+var sourceCtx = sourceCanvas3D.getContext('webgl');
 var destCanvas3D = document.createElement('canvas');
-var destCtx = destCanvas3D.getContext('experimental-webgl');
+var destCtx = destCanvas3D.getContext('webgl');
 if (!sourceCtx || !destCtx)
     CanvasRunner.logFatalError("\nWebGL is not supported or enabled on this platform!\n");
 var tex = null;
