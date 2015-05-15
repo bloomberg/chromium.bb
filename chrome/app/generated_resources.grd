@@ -6383,7 +6383,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Google Smart Lock for Passwords
       </message>
       <message name="IDS_PASSWORD_MANAGER_SMART_LOCK_ARTICLE" desc="URL of help center page explaining what the 'Google Smart Lock' is.">
-        https://support.google.com/chromebook/answer/6070209?hl=[GRITLANGCODE]
+        https://support.google.com/accounts/answer/6197437?hl=[GRITLANGCODE]
       </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_NO_THANKS_BUTTON" desc="Text for the button the user clicks to dismiss save password bubble.">
         No thanks
