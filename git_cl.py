@@ -222,7 +222,8 @@ def _prefix_master(master):
   return '%s%s' % (prefix, master)
 
 
-def trigger_try_jobs(auth_config, changelist, options, masters, category):
+def trigger_try_jobs(auth_config, changelist, options, masters, category,
+                     override_properties=None):
   rietveld_url = settings.GetDefaultServerUrl()
   rietveld_host = urlparse.urlparse(rietveld_url).hostname
   authenticator = auth.get_authenticator_for_host(rietveld_host, auth_config)
@@ -266,6 +267,8 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
               'testfilter': tests,
           },
       }
+      if override_properties:
+        parameters['properties'].update(override_properties)
       if options.clobber:
         parameters['properties']['clobber'] = True
       batch_req_body['builds'].append(
