@@ -7,6 +7,8 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/common/chrome_content_client.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_retrieval_params.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -61,6 +63,9 @@ CreateDataReductionProxyChromeIOData(
               DataReductionProxyChromeSettings::GetClient(), flags, net_log,
               io_task_runner, ui_task_runner, enabled, enable_quic,
               GetUserAgent()));
+  data_reduction_proxy_io_data->experiments_stats()->InitializeOnUIThread(
+      data_reduction_proxy::DataReductionProxyConfigRetrievalParams::Create(
+          prefs));
 
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
   scoped_ptr<data_reduction_proxy::ContentDataReductionProxyDebugUIService>

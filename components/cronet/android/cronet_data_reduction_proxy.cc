@@ -116,7 +116,7 @@ void CronetDataReductionProxy::Init(bool enable,
   scoped_ptr<data_reduction_proxy::DataReductionProxyService>
       data_reduction_proxy_service(
           new data_reduction_proxy::DataReductionProxyService(
-              compression_stats.Pass(), settings_.get(),
+              compression_stats.Pass(), settings_.get(), prefs_.get(),
               url_request_context_getter_.get(), task_runner_));
   io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service->GetWeakPtr());

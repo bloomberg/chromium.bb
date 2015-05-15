@@ -28,6 +28,7 @@ extern const char kDataReductionProxyAltEnabled[];
 extern const char kDataReductionProxyWasEnabledBefore[];
 extern const char kHttpOriginalContentLength[];
 extern const char kHttpReceivedContentLength[];
+extern const char kSimulatedConfigRetrieveTime[];
 extern const char kStatisticsPrefsMigrated[];
 extern const char kUpdateDailyReceivedContentLengths[];
 

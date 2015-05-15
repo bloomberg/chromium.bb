@@ -1,5 +1,6 @@
 include_rules = [
   "+components/pref_registry",
+  "+components/variations",
   "+crypto",
   "+google_apis",
   "+net",

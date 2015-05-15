@@ -138,7 +138,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
               profile_prefs, ui_task_runner, commit_delay));
   scoped_ptr<data_reduction_proxy::DataReductionProxyService> service =
       make_scoped_ptr(new data_reduction_proxy::DataReductionProxyService(
-          compression_stats.Pass(), this, request_context_getter,
+          compression_stats.Pass(), this, profile_prefs, request_context_getter,
           io_data->io_task_runner()));
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(profile_prefs, io_data, service.Pass());

@@ -31,6 +31,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
+class DataReductionProxyExperimentsStats;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
 
@@ -52,7 +53,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       scoped_ptr<net::NetworkDelegate> network_delegate,
       DataReductionProxyConfig* config,
       DataReductionProxyRequestOptions* handler,
-      const DataReductionProxyConfigurator* configurator);
+      const DataReductionProxyConfigurator* configurator,
+      DataReductionProxyExperimentsStats* experiments_stats);
   ~DataReductionProxyNetworkDelegate() override;
 
   // Initializes member variables to record data reduction proxy prefs and
@@ -121,6 +123,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   DataReductionProxyIOData* data_reduction_proxy_io_data_;
 
   const DataReductionProxyConfigurator* configurator_;
+
+  DataReductionProxyExperimentsStats* experiments_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyNetworkDelegate);
 };

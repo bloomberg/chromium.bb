@@ -82,7 +82,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         new DataReductionProxyNetworkDelegate(
             scoped_ptr<net::NetworkDelegate>(new TestNetworkDelegate()),
             config(), test_context_->io_data()->request_options(),
-            test_context_->configurator()));
+            test_context_->configurator(),
+            test_context_->io_data()->experiments_stats()));
   }
 
   const net::ProxyConfig& GetProxyConfig() const {

@@ -171,7 +171,8 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       new data_reduction_proxy::DataReductionProxyService(
           scoped_ptr<
               data_reduction_proxy::DataReductionProxyCompressionStats>(),
-          data_reduction_proxy_settings_.get(), GetAwURLRequestContext(),
+          data_reduction_proxy_settings_.get(), nullptr,
+          GetAwURLRequestContext(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   data_reduction_proxy_io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service_->GetWeakPtr());

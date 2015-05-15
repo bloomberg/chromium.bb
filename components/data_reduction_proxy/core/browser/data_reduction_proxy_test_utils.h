@@ -43,6 +43,7 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
+class DataReductionProxyExperimentsStats;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
@@ -150,6 +151,7 @@ class MockDataReductionProxyService : public DataReductionProxyService {
   MockDataReductionProxyService(
       scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
       DataReductionProxySettings* settings,
+      PrefService* prefs,
       net::URLRequestContextGetter* request_context,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~MockDataReductionProxyService() override;
@@ -170,8 +172,12 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       scoped_ptr<DataReductionProxyRequestOptions> request_options,
       scoped_ptr<DataReductionProxyConfigurator> configurator,
       scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
+      scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats,
       bool enabled);
   ~TestDataReductionProxyIOData() override;
+
+  void SetDataReductionProxyService(base::WeakPtr<DataReductionProxyService>
+                                        data_reduction_proxy_service) override;
 
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();
@@ -189,6 +195,10 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
   base::WeakPtr<DataReductionProxyIOData> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+ private:
+  // Allowed SetDataReductionProxyService to be re-entrant.
+  bool service_set_;
 };
 
 // Builds a test version of the Data Reduction Proxy stack for use in tests.

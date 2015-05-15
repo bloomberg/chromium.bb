@@ -9,6 +9,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
@@ -166,10 +167,14 @@ void TestDataReductionProxyConfigServiceClient::TestTickClock::SetTime(
 MockDataReductionProxyService::MockDataReductionProxyService(
     scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
     DataReductionProxySettings* settings,
+    PrefService* prefs,
     net::URLRequestContextGetter* request_context,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : DataReductionProxyService(
-        compression_stats.Pass(), settings, request_context, io_task_runner) {
+    : DataReductionProxyService(compression_stats.Pass(),
+                                settings,
+                                prefs,
+                                request_context,
+                                io_task_runner) {
 }
 
 MockDataReductionProxyService::~MockDataReductionProxyService() {
@@ -182,8 +187,9 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
     scoped_ptr<DataReductionProxyConfigurator> configurator,
     scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
+    scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats,
     bool enabled)
-    : DataReductionProxyIOData() {
+    : DataReductionProxyIOData(), service_set_(false) {
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
   config_ = config.Pass();
@@ -191,6 +197,7 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
   request_options_ = request_options.Pass();
   configurator_ = configurator.Pass();
   config_client_ = config_client.Pass();
+  experiments_stats_ = experiments_stats.Pass();
   bypass_stats_.reset(new DataReductionProxyBypassStats(
       config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
                                 base::Unretained(this))));
@@ -200,6 +207,15 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
 }
 
 TestDataReductionProxyIOData::~TestDataReductionProxyIOData() {
+}
+
+void TestDataReductionProxyIOData::SetDataReductionProxyService(
+    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+  if (!service_set_)
+    DataReductionProxyIOData::SetDataReductionProxyService(
+        data_reduction_proxy_service);
+
+  service_set_ = true;
 }
 
 DataReductionProxyTestContext::Builder::Builder()
@@ -391,11 +407,14 @@ DataReductionProxyTestContext::Builder::Build() {
 
   RegisterSimpleProfilePrefs(pref_service->registry());
 
+  scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats(
+      new DataReductionProxyExperimentsStats(base::Bind(
+          &PrefService::SetInt64, base::Unretained(pref_service.get()))));
   scoped_ptr<TestDataReductionProxyIOData> io_data(
       new TestDataReductionProxyIOData(
           task_runner, config.Pass(), event_creator.Pass(),
           request_options.Pass(), configurator.Pass(), config_client.Pass(),
-          true /* enabled */));
+          experiments_stats.Pass(), true /* enabled */));
   io_data->SetSimpleURLRequestContextGetter(request_context_getter);
 
   scoped_ptr<DataReductionProxyTestContext> test_context(
@@ -476,11 +495,11 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal() {
 
   if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE) {
     return make_scoped_ptr(new MockDataReductionProxyService(
-        compression_stats.Pass(), settings_.get(),
+        compression_stats.Pass(), settings_.get(), simple_pref_service_.get(),
         request_context_getter_.get(), task_runner_));
   } else {
     return make_scoped_ptr(new DataReductionProxyService(
-        compression_stats.Pass(), settings_.get(),
+        compression_stats.Pass(), settings_.get(), simple_pref_service_.get(),
         request_context_getter_.get(), task_runner_));
   }
 }

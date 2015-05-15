@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
@@ -142,6 +143,11 @@ DataReductionProxyIOData::DataReductionProxyIOData(
 
   proxy_delegate_.reset(
       new DataReductionProxyDelegate(request_options_.get(), config_.get()));
+  // It is safe to use base::Unretained here, since it gets executed
+  // synchronously on the IO thread, and |this| outlives the caller (since the
+  // caller is owned by |this|.
+  experiments_stats_.reset(new DataReductionProxyExperimentsStats(base::Bind(
+      &DataReductionProxyIOData::SetInt64Pref, base::Unretained(this))));
  }
 
  DataReductionProxyIOData::DataReductionProxyIOData()
@@ -177,6 +183,7 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
   config_->InitializeOnIOThread(basic_url_request_context_getter_.get());
   if (config_client_.get())
     config_client_->InitializeOnIOThread(url_request_context_getter_);
+  experiments_stats_->InitializeOnIOThread();
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyService::SetIOData,
@@ -209,7 +216,8 @@ DataReductionProxyIOData::CreateNetworkDelegate(
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           wrapped_network_delegate.Pass(), config_.get(),
-          request_options_.get(), configurator_.get()));
+          request_options_.get(), configurator_.get(),
+          experiments_stats_.get()));
   if (track_proxy_bypass_statistics)
     network_delegate->InitIODataAndUMA(this, bypass_stats_.get());
   return network_delegate.Pass();
@@ -277,6 +285,14 @@ void DataReductionProxyIOData::SetUnreachable(bool unreachable) {
       FROM_HERE,
       base::Bind(&DataReductionProxyService::SetUnreachable,
                  service_, unreachable));
+}
+
+void DataReductionProxyIOData::SetInt64Pref(const std::string& pref_path,
+                                            int64 value) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DataReductionProxyService::SetInt64Pref, service_,
+                            pref_path, value));
 }
 
 }  // namespace data_reduction_proxy
