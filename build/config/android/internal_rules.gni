@@ -449,8 +449,13 @@ template("create_apk") {
   _android_manifest = invoker.android_manifest
   _base_path = invoker.base_path
   _final_apk_path = invoker.apk_path
-  _resources_zip = invoker.resources_zip
-  _dex_path = invoker.dex_path
+
+  if (defined(invoker.resources_zip)) {
+    _resources_zip = invoker.resources_zip
+  }
+  if (defined(invoker.dex_path)) {
+    _dex_path = invoker.dex_path
+  }
   _keystore_path = invoker.keystore_path
   _keystore_name = invoker.keystore_name
   _keystore_password = invoker.keystore_password
@@ -466,7 +471,6 @@ template("create_apk") {
     _native_libs_dir = invoker.native_libs_dir
   }
 
-  _asset_location = "//build/android/empty/res"
   if (defined(invoker.asset_location)) {
     _asset_location = invoker.asset_location
   }
@@ -493,14 +497,15 @@ template("create_apk") {
     depfile = "${target_gen_dir}/${target_name}.d"
     inputs = [
       _android_manifest,
-      _resources_zip,
     ]
+    if (defined(_resources_zip)) {
+      inputs += [ _resources_zip ]
+    }
     outputs = [
       depfile,
       _resource_packaged_apk_path,
     ]
 
-    _rebased_resources_zips = [ rebase_path(_resources_zip, root_build_dir) ]
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
@@ -515,13 +520,22 @@ template("create_apk") {
       _version_code,
       "--version-name",
       _version_name,
-      "--asset-dir",
-      rebase_path(_asset_location, root_build_dir),
-      "--resource-zips=$_rebased_resources_zips",
       "--apk-path",
       rebase_path(_resource_packaged_apk_path, root_build_dir),
     ]
 
+    if (defined(_asset_location)) {
+      args += [
+        "--asset-dir",
+        rebase_path(_asset_location, root_build_dir),
+      ]
+    }
+    if (defined(_resources_zip)) {
+      args += [
+        "--resource-zips",
+        rebase_path(_resources_zip, root_build_dir),
+      ]
+    }
     if (_shared_resources) {
       args += [ "--shared-resources" ]
     }

@@ -60,7 +60,7 @@ def ParseArgs():
   # Check that required options have been provided.
   required_options = ('android_sdk', 'android_sdk_tools', 'configuration_name',
                       'android_manifest', 'version_code', 'version_name',
-                      'resource_zips', 'asset_dir', 'apk_path')
+                      'apk_path')
 
   build_utils.CheckOptions(options, parser, required=required_options)
 
@@ -140,16 +140,17 @@ def main():
     if options.shared_resources:
       package_command.append('--shared-lib')
 
-    if os.path.exists(options.asset_dir):
+    if options.asset_dir and os.path.exists(options.asset_dir):
       package_command += ['-A', options.asset_dir]
 
-    dep_zips = build_utils.ParseGypList(options.resource_zips)
-    for z in dep_zips:
-      subdir = os.path.join(temp_dir, os.path.basename(z))
-      if os.path.exists(subdir):
-        raise Exception('Resource zip name conflict: ' + os.path.basename(z))
-      build_utils.ExtractAll(z, path=subdir)
-      package_command += PackageArgsForExtractedZip(subdir)
+    if options.resource_zips:
+      dep_zips = build_utils.ParseGypList(options.resource_zips)
+      for z in dep_zips:
+        subdir = os.path.join(temp_dir, os.path.basename(z))
+        if os.path.exists(subdir):
+          raise Exception('Resource zip name conflict: ' + os.path.basename(z))
+        build_utils.ExtractAll(z, path=subdir)
+        package_command += PackageArgsForExtractedZip(subdir)
 
     if 'Debug' in options.configuration_name:
       package_command += ['--debug-mode']

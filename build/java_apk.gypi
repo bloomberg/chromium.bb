@@ -128,10 +128,7 @@
     'android_manifest_path%': '<(java_in_dir)/AndroidManifest.xml',
     'push_stamp': '<(intermediate_dir)/push.stamp',
     'link_stamp': '<(intermediate_dir)/link.stamp',
-    'package_resources_stamp': '<(intermediate_dir)/package_resources.stamp',
     'resource_zip_path': '<(intermediate_dir)/<(_target_name).resources.zip',
-    'resource_packaged_apk_name': '<(apk_name)-resources.ap_',
-    'resource_packaged_apk_path': '<(intermediate_dir)/<(resource_packaged_apk_name)',
     'shared_resources%': 0,
     'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
@@ -867,61 +864,20 @@
       'includes': [ 'android/dex_action.gypi' ],
     },
     {
-      'action_name': 'package_resources',
-      'message': 'packaging resources for <(_target_name)',
       'variables': {
-        'package_resources_options': [],
-        'package_resource_zip_input_paths': [
+        'extra_inputs': ['<(codegen_stamp)'],
+        'resource_zips': [
           '<(resource_zip_path)',
-          '>@(dependencies_res_zip_paths)',
         ],
         'conditions': [
-          ['shared_resources == 1', {
-            'package_resources_options+': ['--shared-resources']
+          ['is_test_apk == 0', {
+            'resource_zips': [
+              '>@(dependencies_res_zip_paths)',
+            ],
           }],
         ],
       },
-      'conditions': [
-        ['is_test_apk == 1', {
-          'variables': {
-            'dependencies_res_zip_paths=': [],
-            'additional_res_packages=': [],
-          }
-        }],
-      ],
-      'inputs': [
-        # TODO: This isn't always rerun correctly, http://crbug.com/351928
-        '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/package_resources.py',
-        '<(android_manifest_path)',
-
-        '>@(package_resource_zip_input_paths)',
-
-        '<(codegen_stamp)',
-      ],
-      'outputs': [
-        '<(resource_packaged_apk_path)',
-      ],
-      'action': [
-        'python', '<(DEPTH)/build/android/gyp/package_resources.py',
-        '--android-sdk', '<(android_sdk)',
-        '--android-sdk-tools', '<(android_sdk_tools)',
-
-        '--configuration-name', '<(CONFIGURATION_NAME)',
-
-        '--android-manifest', '<(android_manifest_path)',
-        '--version-code', '<(app_manifest_version_code)',
-        '--version-name', '<(app_manifest_version_name)',
-
-        '--asset-dir', '<(asset_location)',
-        '--resource-zips', '>(package_resource_zip_input_paths)',
-
-        '--no-compress', '<(extensions_to_not_compress)',
-
-        '--apk-path', '<(resource_packaged_apk_path)',
-
-        '<@(package_resources_options)',
-      ],
+      'includes': [ 'android/package_resources_action.gypi' ],
     },
     {
       'variables': {
