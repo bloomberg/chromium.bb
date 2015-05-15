@@ -818,6 +818,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
     const FontDescription& fontDescription = m_font->fontDescription();
     const String& localeString = fontDescription.locale();
     CString locale = localeString.latin1();
+    const hb_language_t language = hb_language_from_string(locale.data(), locale.length());
     HarfBuzzRun* previousRun = nullptr;
 
     for (unsigned i = 0; i < m_harfBuzzRuns.size(); ++i) {
@@ -830,7 +831,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
         if (!face)
             return false;
 
-        hb_buffer_set_language(harfBuzzBuffer.get(), hb_language_from_string(locale.data(), locale.length()));
+        hb_buffer_set_language(harfBuzzBuffer.get(), language);
         hb_buffer_set_script(harfBuzzBuffer.get(), currentRun->script());
         hb_buffer_set_direction(harfBuzzBuffer.get(), currentRun->direction());
 
