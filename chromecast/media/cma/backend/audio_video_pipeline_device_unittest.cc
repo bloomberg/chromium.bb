@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
@@ -28,6 +29,7 @@
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/test/frame_segmenter_for_test.h"
 #include "chromecast/media/cma/test/media_component_device_feeder_for_test.h"
+#include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffers.h"
@@ -70,6 +72,15 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
 
   AudioVideoPipelineDeviceTest();
   ~AudioVideoPipelineDeviceTest() override;
+
+  void SetUp() override {
+    CastMediaShlib::Initialize(
+        base::CommandLine::ForCurrentProcess()->argv());
+  }
+
+  void TearDown() override {
+    CastMediaShlib::Finalize();
+  }
 
   void ConfigureForFile(std::string filename);
   void ConfigureForAudioOnly(std::string filename);
