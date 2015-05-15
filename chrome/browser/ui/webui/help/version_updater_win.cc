@@ -4,10 +4,11 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/task_runner_util.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/first_run/upgrade_util_win.h"
+#include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_update_win.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
@@ -48,6 +49,10 @@ class VersionUpdaterWin : public VersionUpdater, public UpdateCheckDelegate {
 #if defined(GOOGLE_CHROME_BUILD)
   void BeginUpdateCheckOnFileThread(bool install_update_if_possible);
 #endif  // GOOGLE_CHROME_BUILD
+
+  // A task run on the UI thread with the result of checking for a pending
+  // restart.
+  void OnPendingRestartCheck(bool is_update_pending_restart);
 
   // The widget owning the UI for the update check.
   gfx::AcceleratedWidget owner_widget_;
@@ -99,7 +104,19 @@ void VersionUpdaterWin::OnUpdateCheckComplete(
   if (new_version.empty()) {
     // Google Update says that no new version is available. Check to see if a
     // restart is needed for a previously-applied update to take effect.
-    status = upgrade_util::IsRunningOldChrome() ? NEARLY_UPDATED : UPDATED;
+    if (base::PostTaskAndReplyWithResult(
+            content::BrowserThread::GetBlockingPool(),
+            FROM_HERE,
+            base::Bind(&upgrade_util::IsUpdatePendingRestart),
+            base::Bind(&VersionUpdaterWin::OnPendingRestartCheck,
+                       weak_factory_.GetWeakPtr()))) {
+      // Early exit since callback_ will be Run in OnPendingRestartCheck.
+      return;
+    }
+    // Failure to post the task means that Chrome is shutting down. A pending
+    // update (if there is one) will be applied as Chrome exits, so tell the
+    // caller that it is up to date in either case.
+    status = UPDATED;
   } else {
     // Notify the caller that the update is now beginning and initiate it.
     status = UPDATING;
@@ -155,6 +172,11 @@ void VersionUpdaterWin::BeginUpdateCheckOnFileThread(
                    weak_factory_.GetWeakPtr());
 }
 #endif  // GOOGLE_CHROME_BUILD
+
+void VersionUpdaterWin::OnPendingRestartCheck(bool is_update_pending_restart) {
+  callback_.Run(is_update_pending_restart ? NEARLY_UPDATED : UPDATED, 0,
+                base::string16());
+}
 
 }  // namespace
 
