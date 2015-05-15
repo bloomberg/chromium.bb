@@ -60,7 +60,7 @@ private:
     virtual ~PerformanceRenderTiming();
 
     unsigned m_sourceFrame;
-    RefPtr<Document> m_requestingDocument;
+    RefPtrWillBeMember<Document> m_requestingDocument;
 };
 
 } // namespace blink
