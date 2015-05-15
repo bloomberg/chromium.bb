@@ -311,12 +311,7 @@ std::string DumpFramesAsMarkup(blink::WebFrame* frame, bool recursive) {
 }
 
 std::string DumpDocumentText(blink::WebFrame* frame) {
-  // We use the document element's text instead of the body text here because
-  // not all documents have a body, such as XML documents.
-  blink::WebElement document_element = frame->document().documentElement();
-  if (document_element.isNull())
-    return std::string();
-  return document_element.innerText().utf8();
+  return frame->document().contentAsTextForTesting().utf8();
 }
 
 std::string DumpFramesAsText(blink::WebFrame* frame, bool recursive) {
