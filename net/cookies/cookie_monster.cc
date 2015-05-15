@@ -54,12 +54,13 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
@@ -393,7 +394,7 @@ class CookieMonster::CookieMonsterTask
   friend class base::RefCountedThreadSafe<CookieMonsterTask>;
 
   CookieMonster* cookie_monster_;
-  scoped_refptr<base::MessageLoopProxy> thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonsterTask);
 };
@@ -401,7 +402,7 @@ class CookieMonster::CookieMonsterTask
 CookieMonster::CookieMonsterTask::CookieMonsterTask(
     CookieMonster* cookie_monster)
     : cookie_monster_(cookie_monster),
-      thread_(base::MessageLoopProxy::current()) {
+      thread_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
 CookieMonster::CookieMonsterTask::~CookieMonsterTask() {
@@ -2428,7 +2429,7 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
   if (hook_map_.count(key) == 0)
     hook_map_[key] = make_linked_ptr(new CookieChangedCallbackList());
   return hook_map_[key]->Add(
-      base::Bind(&RunAsync, base::MessageLoopProxy::current(), callback));
+      base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 #if defined(OS_ANDROID)

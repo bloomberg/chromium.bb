@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -61,7 +61,7 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
         crypto::GetPrivateSlotForChromeOSUser(
             user_1_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
-    db_1_->SetSlowTaskRunnerForTest(base::MessageLoopProxy::current());
+    db_1_->SetSlowTaskRunnerForTest(base::ThreadTaskRunnerHandle::Get());
     db_1_->SetSystemSlot(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_db_.slot())));
     db_2_.reset(new NSSCertDatabaseChromeOS(
@@ -69,7 +69,7 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
         crypto::GetPrivateSlotForChromeOSUser(
             user_2_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
-    db_2_->SetSlowTaskRunnerForTest(base::MessageLoopProxy::current());
+    db_2_->SetSlowTaskRunnerForTest(base::ThreadTaskRunnerHandle::Get());
 
     // Add observer to CertDatabase for checking that notifications from
     // NSSCertDatabaseChromeOS are proxied to the CertDatabase.
