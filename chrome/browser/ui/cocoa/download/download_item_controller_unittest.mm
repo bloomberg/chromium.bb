@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#import "chrome/browser/ui/cocoa/download/download_item_button.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "content/public/test/mock_download_item.h"
@@ -43,6 +44,13 @@ using ::testing::ReturnRefOfCopy;
           initCallback:(const base::Closure&)callback;
 - (void)awakeFromNib;
 @end
+
+@interface DownloadItemButton(DownloadItemButtonTest)
+
+- (BOOL)showingContextMenu;
+
+@end
+
 
 @implementation DownloadItemControllerWithInitCallback
 
@@ -178,5 +186,32 @@ TEST_F(DownloadItemControllerTest, NormalDownloadBecomesDangerous) {
   [item verifyDangerousDownloadPromptIsVisible:false];
   [(id)shelf_ verify];
 }
+
+TEST_F(DownloadItemControllerTest, DismissesContextMenuWhenRemovedFromWindow) {
+  base::scoped_nsobject<DownloadItemController> item(CreateItemController());
+  DownloadItemButton* downloadItemButton = nil;
+  for (NSView *nextSubview in [[item view] subviews]) {
+    if ([nextSubview isKindOfClass:[DownloadItemButton class]]) {
+      downloadItemButton = static_cast<DownloadItemButton *>(nextSubview);
+      break;
+    }
+  }
+
+  // showContextMenu: calls [NSMenu popUpContextMenu:...], which blocks until
+  // the menu is dismissed. Use a block to cancel the menu while waiting for
+  // [NSMenu popUpContextMenu:...] to return (this block will execute on the
+  // main thread, on the next pass through the run loop).
+  [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    EXPECT_TRUE([downloadItemButton showingContextMenu]);
+    // Simulate the item's removal from the shelf. Ideally we would call an
+    // actual shelf removal method like [item remove] but the shelf and
+    // download item are mock objects.
+    [downloadItemButton removeFromSuperview];
+  }];
+  // The unit test will stop here until the block causes the DownloadItemButton
+  // to dismiss the menu.
+  [item showContextMenu:nil];
+}
+
 
 }  // namespace

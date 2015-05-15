@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,14 @@
  @private
   base::FilePath downloadPath_;
   DownloadItemController* controller_;  // weak
+  base::scoped_nsobject<NSMenu> contextMenu_;
 }
 
 @property(assign, nonatomic) base::FilePath download;
 @property(assign, nonatomic) DownloadItemController* controller;
+
+// Shows the DownloadItemButton's context menu.
+- (void)showContextMenu;
 
 // Overridden from DraggableButton.
 - (void)beginDrag:(NSEvent*)event;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -370,13 +370,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (IBAction)showContextMenu:(id)sender {
-  base::scoped_nsobject<DownloadShelfContextMenuController> menuController(
-      [[DownloadShelfContextMenuController alloc]
-        initWithItemController:self
-                  withDelegate:nil]);
-  [NSMenu popUpContextMenu:[menuController menu]
-                 withEvent:[NSApp currentEvent]
-                   forView:[self view]];
+  [progressView_ showContextMenu];
 }
 
 @end

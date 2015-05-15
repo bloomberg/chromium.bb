@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,18 @@
   }
 }
 
+- (void)showContextMenu {
+  base::scoped_nsobject<DownloadShelfContextMenuController> menuController(
+      [[DownloadShelfContextMenuController alloc]
+          initWithItemController:controller_
+                    withDelegate:self]);
+  contextMenu_.reset([[menuController menu] retain]);
+  [NSMenu popUpContextMenu:contextMenu_.get()
+                 withEvent:[NSApp currentEvent]
+                   forView:self];
+  contextMenu_.reset();
+}
+
 // Override to show a context menu on mouse down if clicked over the context
 // menu area.
 - (void)mouseDown:(NSEvent*)event {
@@ -35,15 +47,8 @@
   if ([reinterpret_cast<DownloadItemCell*>(cell) isMouseOverButtonPart]) {
     [self.draggableButton mouseDownImpl:event];
   } else {
-    base::scoped_nsobject<DownloadShelfContextMenuController> menuController(
-        [[DownloadShelfContextMenuController alloc]
-            initWithItemController:controller_
-                      withDelegate:self]);
-
     [cell setHighlighted:YES];
-    [NSMenu popUpContextMenu:[menuController menu]
-                   withEvent:[NSApp currentEvent]
-                     forView:self];
+    [self showContextMenu];
   }
 }
 
@@ -82,6 +87,18 @@
 
 - (void)windowDidChangeActive {
   [self setNeedsDisplay:YES];
+}
+
+- (BOOL)showingContextMenu
+{
+  return contextMenu_.get() != nil;
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow {
+  // If the DownloadItemButton's context menu is still visible, dismiss it.
+  if (!newWindow) {
+    [contextMenu_.get() cancelTrackingWithoutAnimation];
+  }
 }
 
 @end
