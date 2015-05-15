@@ -22,7 +22,9 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.net.test.BaseHttpTestServer;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URL;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -121,39 +123,78 @@ public class ConnectivityCheckerTest extends ChromeShellTestBase {
         }
     }
 
-    @MediumTest
-    public void testNoContentShouldWork() throws Exception {
-        executeTest(GENERATE_204_URL, true, TIMEOUT_MS);
+    private static URL getURLNoException(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 
     @MediumTest
-    public void testSlowNoContentShouldNotWork() throws Exception {
+    public void testNoContentShouldWorkSystemStack() throws Exception {
+        executeTest(GENERATE_204_URL, true, TIMEOUT_MS, true);
+    }
+
+    @MediumTest
+    public void testNoContentShouldWorkChromeStack() throws Exception {
+        executeTest(GENERATE_204_URL, true, TIMEOUT_MS, false);
+    }
+
+    @MediumTest
+    public void testSlowNoContentShouldNotWorkSystemStack() throws Exception {
         // Force quick timeout. The server will wait TIMEOUT_MS, so this triggers well before.
-        executeTest(GENERATE_204_SLOW_URL, false, 100);
+        executeTest(GENERATE_204_SLOW_URL, false, 100, true);
     }
 
     @MediumTest
-    public void testHttpOKShouldFail() throws Exception {
-        executeTest(GENERATE_200_URL, false, TIMEOUT_MS);
+    public void testSlowNoContentShouldNotWorkChromeStack() throws Exception {
+        // Force quick timeout. The server will wait TIMEOUT_MS, so this triggers well before.
+        executeTest(GENERATE_204_SLOW_URL, false, 100, false);
     }
 
     @MediumTest
-    public void testMovedTemporarilyShouldFail() throws Exception {
-        executeTest(GENERATE_302_URL, false, TIMEOUT_MS);
+    public void testHttpOKShouldFailSystemStack() throws Exception {
+        executeTest(GENERATE_200_URL, false, TIMEOUT_MS, true);
     }
 
     @MediumTest
-    public void testNotFoundShouldFail() throws Exception {
-        executeTest(GENERATE_404_URL, false, TIMEOUT_MS);
+    public void testHttpOKShouldFailChromeStack() throws Exception {
+        executeTest(GENERATE_200_URL, false, TIMEOUT_MS, false);
     }
 
     @MediumTest
-    public void testInvalidURLShouldFail() throws Exception {
-        executeTest("http:google.com:foo", false, TIMEOUT_MS);
+    public void testMovedTemporarilyShouldFailSystemStack() throws Exception {
+        executeTest(GENERATE_302_URL, false, TIMEOUT_MS, true);
     }
 
-    private void executeTest(final String url, boolean expectedResult, final long timeoutMs)
-            throws Exception {
+    @MediumTest
+    public void testMovedTemporarilyShouldFailChromeStack() throws Exception {
+        executeTest(GENERATE_302_URL, false, TIMEOUT_MS, false);
+    }
+
+    @MediumTest
+    public void testNotFoundShouldFailSystemStack() throws Exception {
+        executeTest(GENERATE_404_URL, false, TIMEOUT_MS, true);
+    }
+
+    @MediumTest
+    public void testNotFoundShouldFailChromeStack() throws Exception {
+        executeTest(GENERATE_404_URL, false, TIMEOUT_MS, false);
+    }
+
+    @MediumTest
+    public void testInvalidURLShouldFailSystemStack() throws Exception {
+        executeTest("http:google.com:foo", false, TIMEOUT_MS, true);
+    }
+
+    @MediumTest
+    public void testInvalidURLShouldFailChromeStack() throws Exception {
+        executeTest("http:google.com:foo", false, TIMEOUT_MS, false);
+    }
+
+    private void executeTest(final String url, boolean expectedResult, final long timeoutMs,
+            final boolean useSystemStack) throws Exception {
         Context targetContext = getInstrumentation().getTargetContext();
         startChromeBrowserProcessSync(targetContext);
         ConnectivityTestServer testServer = new ConnectivityTestServer();
@@ -166,8 +207,13 @@ public class ConnectivityCheckerTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ConnectivityChecker.checkConnectivity(
-                        Profile.getLastUsedProfile(), url, timeoutMs, callback);
+                if (useSystemStack) {
+                    ConnectivityChecker.checkConnectivitySystemNetworkStack(
+                            getURLNoException(url), ((int) timeoutMs), callback);
+                } else {
+                    ConnectivityChecker.checkConnectivityChromeNetworkStack(
+                            Profile.getLastUsedProfile(), url, timeoutMs, callback);
+                }
             }
         });
 
