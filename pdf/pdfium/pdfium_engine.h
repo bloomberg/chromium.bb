@@ -192,8 +192,8 @@ class PDFiumEngine : public PDFEngine,
                       unsigned char* buffer, unsigned long size);
 
   // PDFium interface to check is block of data is available.
-  static bool IsDataAvail(FX_FILEAVAIL* param,
-                          size_t offset, size_t size);
+  static FPDF_BOOL IsDataAvail(FX_FILEAVAIL* param,
+                               size_t offset, size_t size);
 
   // PDFium interface to request download of the block of data.
   static void AddSegment(FX_DOWNLOADHINTS* param,
