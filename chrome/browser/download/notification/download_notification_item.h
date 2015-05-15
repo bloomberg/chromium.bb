@@ -84,6 +84,7 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
   void OnDownloadDestroyed(content::DownloadItem* item) override;
 
   void CloseNotificationByUser();
+  void CloseNotificationByNonUser();
   void UpdateNotificationData(NotificationUpdateType type);
   void SetNotificationImage(int resource_id);
 
@@ -104,8 +105,9 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
   scoped_ptr<std::vector<DownloadCommands::Command>> GetPossibleActions() const;
 
   bool openable_ = false;
-  bool downloading_ = false;
   int image_resource_id_ = 0;
+  content::DownloadItem::DownloadState previous_download_state_ =
+      content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   Profile* profile_;
   scoped_refptr<NotificationWatcher> watcher_;
   scoped_ptr<Notification> notification_;

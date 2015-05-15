@@ -159,6 +159,13 @@ void DownloadNotificationItem::OnDownloadUpdated(content::DownloadItem* item) {
   UpdateNotificationData(UPDATE_EXISTING);
 }
 
+void DownloadNotificationItem::CloseNotificationByNonUser() {
+  const std::string& notification_id = watcher_->id();
+  const ProfileID profile_id = NotificationUIManager::GetProfileID(profile_);
+
+  notification_ui_manager()->CancelById(notification_id, profile_id);
+}
+
 void DownloadNotificationItem::CloseNotificationByUser() {
   const std::string& notification_id = watcher_->id();
   const ProfileID profile_id = NotificationUIManager::GetProfileID(profile_);
@@ -184,16 +191,12 @@ void DownloadNotificationItem::UpdateNotificationData(
   DownloadItemModel model(item_);
   DownloadCommands command(item_);
 
-  if (!downloading_) {
-    if (item_->GetState() == content::DownloadItem::IN_PROGRESS) {
+  if (previous_download_state_ != content::DownloadItem::IN_PROGRESS) {
+    if (item_->GetState() == content::DownloadItem::IN_PROGRESS)
       delegate_->OnDownloadStarted(this);
-      downloading_ = true;
-    }
   } else {
-    if (item_->GetState() != content::DownloadItem::IN_PROGRESS) {
+    if (item_->GetState() != content::DownloadItem::IN_PROGRESS)
       delegate_->OnDownloadStopped(this);
-      downloading_ = false;
-    }
   }
 
   if (item_->IsDangerous()) {
@@ -222,15 +225,21 @@ void DownloadNotificationItem::UpdateNotificationData(
         }
         break;
       case content::DownloadItem::COMPLETE:
-        notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+        DCHECK(item_->IsDone());
+
+        // Shows a notifiation as progress type once so the visible content will
+        // be updated.
+        // Note: only progress-type notification's content will be updated
+        // immediately when the message center is visible.
+        notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
+        notification_->set_progress(100);
+
         if (is_off_the_record) {
           // TODO(yoshiki): Replace the tentative image.
           SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
         } else {
           SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
         }
-
-        // TODO(yoshiki): Popup a notification again.
         break;
       case content::DownloadItem::CANCELLED:
         // Confgirms that a download is cancelled by user action.
@@ -240,12 +249,15 @@ void DownloadNotificationItem::UpdateNotificationData(
                    content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
 
         CloseNotificationByUser();
+
+        previous_download_state_ = item_->GetState();
         return;  // Skips the remaining since the notification has closed.
       case content::DownloadItem::INTERRUPTED:
-        notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+        // Shows a notifiation as progress type once so the visible content will
+        // be updated. (same as the case of type = COMPLETE)
+        notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
+        notification_->set_progress(0);
         SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_WARNING);
-
-        // TODO(yoshiki): Popup a notification again.
         break;
       case content::DownloadItem::MAX_DOWNLOAD_STATE:  // sentinel
         NOTREACHED();
@@ -275,12 +287,27 @@ void DownloadNotificationItem::UpdateNotificationData(
     // TODO(yoshiki): If the downloaded file is an image, show the thumbnail.
   }
 
-  if (type == ADD_NEW)
+  if (type == ADD_NEW) {
     notification_ui_manager()->Add(*notification_, profile_);
-  else if (type == UPDATE_EXISTING)
+  } else if (type == UPDATE_EXISTING) {
     notification_ui_manager()->Update(*notification_, profile_);
-  else
+
+    // When the download is just completed (or interrupted), close the
+    // notification once and re-show it immediately so it'll pop up.
+    if ((item_->GetState() == content::DownloadItem::COMPLETE &&
+         previous_download_state_ != content::DownloadItem::COMPLETE) ||
+        (item_->GetState() == content::DownloadItem::INTERRUPTED &&
+         previous_download_state_ != content::DownloadItem::INTERRUPTED)) {
+      CloseNotificationByNonUser();
+      // Changes the type from PROGRESS to SIMPLE.
+      notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+      notification_ui_manager()->Add(*notification_, profile_);
+    }
+  } else {
     NOTREACHED();
+  }
+
+  previous_download_state_ = item_->GetState();
 }
 
 void DownloadNotificationItem::OnDownloadOpened(content::DownloadItem* item) {
@@ -367,9 +394,10 @@ base::string16 DownloadNotificationItem::GetTitle() const {
     case content::DownloadItem::COMPLETE:
       title_text = l10n_util::GetStringFUTF16(
           IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE, file_name);
+      break;
     case content::DownloadItem::INTERRUPTED:
       title_text = l10n_util::GetStringFUTF16(
-          IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE, file_name);
+          IDS_DOWNLOAD_STATUS_DOWNLOAD_FAILED_TITLE, file_name);
       break;
     case content::DownloadItem::CANCELLED:
       title_text = l10n_util::GetStringFUTF16(
