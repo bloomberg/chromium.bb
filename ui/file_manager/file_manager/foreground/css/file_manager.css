@@ -804,7 +804,7 @@ html[dir='rtl'] #search-box .clear {
 
 /* The container for breadcrumb elements. */
 .breadcrumbs {
-  -webkit-margin-start: 16px;
+  -webkit-margin-start: 12px;
   align-items: center;
   display: flex;
   flex: auto;
@@ -838,8 +838,8 @@ body.check-select .breadcrumbs {
   margin-left: 0;
   margin-right: 0;
   min-width: 0;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 9px;
+  padding-right: 9px;
   text-overflow: ellipsis;
   text-transform: none;
   white-space: nowrap;
@@ -861,7 +861,7 @@ body.check-select .breadcrumbs {
       url(../images/files/ui/2x/arrow_right_white.png) 2x) center no-repeat;
   flex: none;
   height: 16px;
-  width: 16px;
+  width: 8px;
 }
 
 html[dir='rtl'] .breadcrumbs .separator {
