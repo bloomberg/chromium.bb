@@ -44,19 +44,16 @@ MessageWindowImpl.prototype.sendReply_ = function(
 };
 
 /**
- * Initializes the button with the label and the click handler.
+ * Updates the button label text.
  * Hides the button if the label is null or undefined.
  *
  * @param{HTMLElement} button
  * @param{?string} label
- * @param{Function} clickHandler
  * @private
  */
-MessageWindowImpl.prototype.initButton_ =
-    function(button, label, clickHandler) {
+MessageWindowImpl.prototype.updateButton_ = function(button, label) {
   if (label) {
     button.innerText = label;
-    button.addEventListener('click', clickHandler, false);
   }
   button.hidden = !Boolean(label);
 };
@@ -69,86 +66,89 @@ MessageWindowImpl.prototype.initButton_ =
  * @private
  */
 MessageWindowImpl.prototype.onMessage_ = function(event) {
-  switch (event.data['command']) {
-    case 'show':
-      // Validate the message.
-      var messageId = /** @type {number} */ (event.data['id']);
-      var title = /** @type {string} */ (event.data['title']);
-      var message = /** @type {string} */ (event.data['message']);
-      var infobox = /** @type {string} */ (event.data['infobox']);
-      var buttonLabel = /** @type {string} */ (event.data['buttonLabel']);
-      /** @type {string} */
-      var cancelButtonLabel = (event.data['cancelButtonLabel']);
-      var showSpinner = /** @type {boolean} */ (event.data['showSpinner']);
-      if (typeof(messageId) != 'number' ||
-          typeof(title) != 'string' ||
-          typeof(message) != 'string' ||
-          typeof(infobox) != 'string' ||
-          typeof(buttonLabel) != 'string' ||
-          typeof(showSpinner) != 'boolean') {
-        console.log('Bad show message:', event.data);
-        break;
-      }
+  var command = /** @type {string} */ (event.data['command']);
+  if (command !== 'show' && command !== 'update') {
+    console.error('Unexpected message: ' + command);
+    return;
+  }
 
-      // Set the dialog text.
-      var button = document.getElementById('button-primary');
-      var cancelButton = document.getElementById('button-secondary');
-      var messageDiv = document.getElementById('message');
-      var infoboxDiv = document.getElementById('infobox');
+  // Validate the message.
+  var messageId = /** @type {number} */ (event.data['id']);
+  var title = /** @type {string} */ (event.data['title']);
+  var message = /** @type {string} */ (event.data['message']);
+  var infobox = /** @type {string} */ (event.data['infobox']);
+  var buttonLabel = /** @type {string} */ (event.data['buttonLabel']);
+  var cancelButtonLabel = /** @type {string} */
+      (event.data['cancelButtonLabel']);
+  var showSpinner = /** @type {boolean} */ (event.data['showSpinner']);
 
-      document.getElementById('title').innerText = title;
-      document.querySelector('title').innerText = title;
-      messageDiv.innerHTML = message;
+  // Many of these fields are optional for either the 'show' or 'update'
+  // message. These vars are used to mark the optional fields to allow
+  // them to be undefined.
+  var optionalFieldShow = command === 'show';
+  var optionalFieldUpdate = command === 'update';
+  if (isNumber(messageId) ||
+      isString(title, optionalFieldUpdate) ||
+      isString(message, optionalFieldUpdate) ||
+      isString(infobox, optionalFieldUpdate) ||
+      isString(buttonLabel, optionalFieldUpdate) ||
+      isString(cancelButtonLabel, optionalFieldShow || optionalFieldUpdate) ||
+      isBoolean(showSpinner, optionalFieldUpdate) {
+    console.log('Bad ' + command + ' message: ' + event.data);
+    return;
+  }
 
-      if (showSpinner) {
-        messageDiv.classList.add('waiting');
-        messageDiv.classList.add('prominent');
-      }
-      if (infobox != '') {
-        infoboxDiv.innerText = infobox;
-      } else {
-        infoboxDiv.hidden = true;
-      }
+  var button = document.getElementById('button-primary');
+  var cancelButton = document.getElementById('button-secondary');
+  var messageDiv = document.getElementById('message');
+  var infoboxDiv = document.getElementById('infobox');
 
-      this.initButton_(
-          button,
-          buttonLabel,
-          this.sendReply_.bind(this, event.source, messageId, 1));
+  if (isString(title)) {
+    document.getElementById('title').innerText = title;
+    document.querySelector('title').innerText = title;
+  }
+  if (isString(message) {
+    messageDiv.innerText = message;
+  }
+  if (isString(infobox)) {
+    if (infobox != '') {
+      infoboxDiv.innerText = infobox;
+    } else {
+      infoboxDiv.hidden = true;
+    }
+  }
+  if (isBoolean(showSpinner)) {
+    if (showSpinner) {
+      messageDiv.classList.add('waiting');
+      messageDiv.classList.add('prominent');
+    } else {
+      messageDiv.classList.remove('waiting');
+      messageDiv.classList.remove('prominent');
+    }
+  }
+  this.updateButton_(button, buttonLabel);
+  this.updateButton_(cancelButton, cancelButtonLabel);
 
-      this.initButton_(
-          cancelButton,
-          cancelButtonLabel,
-          this.sendReply_.bind(this, event.source, messageId, 0));
+  base.resizeWindowToContent(true);
 
-      var buttonToFocus = (cancelButtonLabel) ? cancelButton : button;
-      buttonToFocus.focus();
+  if (command === 'show') {
+    // Set up click-handlers for the buttons.
+    button.addEventListener(
+        'click', this.sendReply_.bind(this, event.source, messageId, 1), false);
+    cancelButton.addEventListener(
+        'click', this.sendReply_.bind(this, event.source, messageId, 0), false);
 
-      // Add a close handler in case the window is closed without clicking one
-      // of the buttons. This will send a 0 as the result.
-      // Note that when a button is pressed, this will result in sendReply_
-      // being called multiple times (once for the button, once for close).
-      chrome.app.window.current().onClosed.addListener(
-          this.sendReply_.bind(this, event.source, messageId, 0));
+    var buttonToFocus = (cancelButtonLabel) ? cancelButton : button;
+    buttonToFocus.focus();
 
-      base.resizeWindowToContent(true);
-      chrome.app.window.current().show();
-      break;
+    // Add a close handler in case the window is closed without clicking one
+    // of the buttons. This will send a 0 as the result.
+    // Note that when a button is pressed, this will result in sendReply_
+    // being called multiple times (once for the button, once for close).
+    chrome.app.window.current().onClosed.addListener(
+        this.sendReply_.bind(this, event.source, messageId, 0));
 
-    case 'update_message':
-      var message = /** @type {string} */ (event.data['message']);
-      if (typeof(message) != 'string') {
-        console.log('Bad update_message message:', event.data);
-        break;
-      }
-
-      var messageDiv = document.getElementById('message');
-      messageDiv.innerText = message;
-
-      base.resizeWindowToContent(true);
-      break;
-
-    default:
-      console.error('Unexpected message:', event.data);
+    chrome.app.window.current().show();
   }
 };
 

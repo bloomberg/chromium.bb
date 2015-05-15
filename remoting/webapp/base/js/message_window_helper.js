@@ -41,6 +41,9 @@ remoting.MessageWindowOptions = function() {
 
   /** @type {number} */
   this.minimumWidth = 0;
+
+  /** @type {boolean} */
+  this.showSpinner = false;
 };
 
 /**
@@ -151,8 +154,32 @@ remoting.MessageWindow.prototype.updateMessage = function(message) {
   }
 
   var message_struct = {
-    command: 'update_message',
+    command: 'update',
     message: message
+  };
+  this.window_.postMessage(message_struct, '*');
+};
+
+/**
+ * Update the message being shown in the window to the given error message.
+ * In addition to updating the message, any spinner is disabled and the
+ * button text is changed to 'OK'.
+ * This should only be called after the window has been shown.
+ *
+ * @param {string} message The message.
+ */
+remoting.MessageWindow.prototype.updateErrorMessage = function(message) {
+  if (!this.window_) {
+    this.pendingWindowOperations_.push(this.updateMessage.bind(this, message));
+    return;
+  }
+
+  var message_struct = {
+    command: 'update',
+    message: message,
+    buttonLabel: chrome.i18n.getMessage(/*i18n-content*/'OK'),
+    cancelButtonLabel: '',
+    showSpinner: false
   };
   this.window_.postMessage(message_struct, '*');
 };
