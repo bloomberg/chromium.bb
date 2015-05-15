@@ -39,6 +39,10 @@ const std::string kTokenInfoIncompleteResponseFormat =
       \"hd\": \"\",           \
     }";
 
+const std::string kLSIDResponse = "{ lsid: \"Foo\" }";
+
+const std::string kServiceFlags = "allServices=Service1,Service2";
+
 enum TrackingEventType {
   UPDATED,
   REMOVED,
@@ -74,6 +78,9 @@ void CheckAccountDetails(const std::string account_id,
   EXPECT_EQ(AccountIdToFullName(account_id), info.full_name);
   EXPECT_EQ(AccountIdToGivenName(account_id), info.given_name);
   EXPECT_EQ(AccountIdToLocale(account_id), info.locale);
+  EXPECT_EQ(2U, info.service_flags.size());
+  EXPECT_EQ("Service1", info.service_flags[0]);
+  EXPECT_EQ("Service2", info.service_flags[1]);
 }
 
 class TrackingEvent {
@@ -340,6 +347,8 @@ void AccountTrackerServiceTest::ReturnOAuthUrlFetchSuccess(
   ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId,
                              net::HTTP_OK,
                              GenerateValidTokenInfoResponse(account_id));
+  ReturnOAuthUrlFetchResults(0, net::HTTP_OK, kLSIDResponse);
+  ReturnOAuthUrlFetchResults(0, net::HTTP_OK, kServiceFlags);
 }
 
 void AccountTrackerServiceTest::ReturnOAuthUrlFetchSuccessIncomplete(

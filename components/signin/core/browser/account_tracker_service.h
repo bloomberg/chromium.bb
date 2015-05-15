@@ -58,6 +58,7 @@ class AccountTrackerService : public KeyedService,
     std::string given_name;
     std::string hosted_domain;
     std::string locale;
+    std::vector<std::string> service_flags;
     // TODO(rogerta): eventually this structure will include other information
     // about the account, like full name, profile picture URL, etc.
 
@@ -130,15 +131,18 @@ class AccountTrackerService : public KeyedService,
 
  protected:
   // Available to be called in tests.
-  void SetAccountStateFromUserInfo(const std::string& account_id,
-                                   const base::DictionaryValue* user_info);
+  void SetAccountStateFromUserInfo(
+      const std::string& account_id,
+      const base::DictionaryValue* user_info,
+      const std::vector<std::string>* service_flags);
 
  private:
   friend class AccountInfoFetcher;
 
   // These methods are called by fetchers.
   void OnUserInfoFetchSuccess(AccountInfoFetcher* fetcher,
-                              const base::DictionaryValue* user_info);
+                              const base::DictionaryValue* user_info,
+                              const std::vector<std::string>* service_flags);
   void OnUserInfoFetchFailure(AccountInfoFetcher* fetcher);
 
   // Refreshes the AccountInfo associated with |account_id| if it's invalid or
