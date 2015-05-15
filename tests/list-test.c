@@ -103,7 +103,7 @@ validate_list(struct wl_list *list, int *reference, int length)
 			return 0;
 		i++;
 	}
-		
+
 	if (i != length)
 		return 0;
 

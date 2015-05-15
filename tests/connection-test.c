@@ -223,7 +223,7 @@ expected_fail_marshal(int expected_error, const char *format, ...)
 {
 	struct wl_closure *closure;
 	static const uint32_t opcode = 4444;
-	static const struct wl_interface test_interface = { 
+	static const struct wl_interface test_interface = {
 		.name = "test_object"
 	};
 	static struct wl_object sender = { 0 };
@@ -412,13 +412,13 @@ TEST(connection_demarshal)
 	msg[0] = 400200;
 	msg[1] = 12;
 	msg[2] = 0;
-	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);	
+	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);
 
 	release_marshal_data(&data);
 }
 
 static void
-marshal_demarshal(struct marshal_data *data, 
+marshal_demarshal(struct marshal_data *data,
 		  void (*func)(void), int size, const char *format, ...)
 {
 	struct wl_closure *closure;
@@ -501,7 +501,7 @@ TEST(connection_marshal_alot)
 	int i;
 
 	setup_marshal_data(&data);
-	
+
 	/* We iterate enough to make sure we wrap the circular buffers
 	 * for both regular data an fds. */
 

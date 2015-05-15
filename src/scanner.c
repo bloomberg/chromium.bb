@@ -365,7 +365,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		ctx->protocol->uppercase_name = uppercase_dup(name);
 		ctx->protocol->description = NULL;
 	} else if (strcmp(element_name, "copyright") == 0) {
-		
+
 	} else if (strcmp(element_name, "interface") == 0) {
 		if (name == NULL)
 			fail(&ctx->loc, "no interface name given");
