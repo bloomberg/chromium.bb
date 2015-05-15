@@ -1967,3 +1967,5 @@ crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_ove
 
 crbug.com/488101 fast/loader/unload-form-post-about-blank.html [ Pass Failure ]
 crbug.com/488185 [ Debug ] fast/layers/layer-visibility-sublayer.html [ Pass Failure ]
+
+crbug.com/488445 [ Win7 Debug ] http/tests/fetch/window/request.html [ Pass Failure ]
