@@ -60,6 +60,8 @@ class MicrodumpWriter {
  public:
   MicrodumpWriter(const ExceptionHandler::CrashContext* context,
                   const MappingList& mappings,
+                  const char* build_fingerprint,
+                  const char* product_info,
                   LinuxDumper* dumper)
       : ucontext_(context ? &context->context : NULL),
 #if !defined(__ARM_EABI__) && !defined(__mips__)
@@ -67,6 +69,8 @@ class MicrodumpWriter {
 #endif
         dumper_(dumper),
         mapping_list_(mappings),
+        build_fingerprint_(build_fingerprint),
+        product_info_(product_info),
         log_line_(NULL) {
     log_line_ = reinterpret_cast<char*>(Alloc(kLineBufferSize));
     if (log_line_)
@@ -88,9 +92,9 @@ class MicrodumpWriter {
   bool Dump() {
     bool success;
     LogLine("-----BEGIN BREAKPAD MICRODUMP-----");
-    success = DumpOSInformation();
-    if (success)
-      success = DumpCrashingThread();
+    DumpProductInformation();
+    DumpOSInformation();
+    success = DumpCrashingThread();
     if (success)
       success = DumpMappings();
     LogLine("-----END BREAKPAD MICRODUMP-----");
@@ -143,10 +147,17 @@ class MicrodumpWriter {
     my_strlcpy(log_line_, "", kLineBufferSize);
   }
 
-  bool DumpOSInformation() {
-    struct utsname uts;
-    if (uname(&uts))
-      return false;
+  void DumpProductInformation() {
+    LogAppend("V ");
+    if (product_info_) {
+      LogAppend(product_info_);
+    } else {
+      LogAppend("UNKNOWN:0.0.0.0");
+    }
+    LogCommitLine();
+  }
+
+  void DumpOSInformation() {
     const uint8_t n_cpus = static_cast<uint8_t>(sysconf(_SC_NPROCESSORS_CONF));
 
 #if defined(__ANDROID__)
@@ -178,13 +189,23 @@ class MicrodumpWriter {
     LogAppend(" ");
     LogAppend(n_cpus);
     LogAppend(" ");
-    LogAppend(uts.machine);
-    LogAppend(" ");
-    LogAppend(uts.release);
-    LogAppend(" ");
-    LogAppend(uts.version);
+    // If the client has attached a build fingerprint to the MinidumpDescriptor
+    // use that one. Otherwise try to get some basic info from uname().
+    if (build_fingerprint_) {
+      LogAppend(build_fingerprint_);
+    } else {
+      struct utsname uts;
+      if (uname(&uts) == 0) {
+        LogAppend(uts.machine);
+        LogAppend(" ");
+        LogAppend(uts.release);
+        LogAppend(" ");
+        LogAppend(uts.version);
+      } else {
+        LogAppend("no build fingerprint available");
+      }
+    }
     LogCommitLine();
-    return true;
   }
 
   bool DumpThreadStack(uint32_t thread_id,
@@ -367,6 +388,8 @@ class MicrodumpWriter {
 #endif
   LinuxDumper* dumper_;
   const MappingList& mapping_list_;
+  const char* const build_fingerprint_;
+  const char* const product_info_;
   char* log_line_;
 };
 }  // namespace
@@ -376,7 +399,9 @@ namespace google_breakpad {
 bool WriteMicrodump(pid_t crashing_process,
                     const void* blob,
                     size_t blob_size,
-                    const MappingList& mappings) {
+                    const MappingList& mappings,
+                    const char* build_fingerprint,
+                    const char* product_info) {
   LinuxPtraceDumper dumper(crashing_process);
   const ExceptionHandler::CrashContext* context = NULL;
   if (blob) {
@@ -388,7 +413,8 @@ bool WriteMicrodump(pid_t crashing_process,
     dumper.set_crash_signal(context->siginfo.si_signo);
     dumper.set_crash_thread(context->tid);
   }
-  MicrodumpWriter writer(context, mappings, &dumper);
+  MicrodumpWriter writer(context, mappings, build_fingerprint, product_info,
+                         &dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();
