@@ -7658,6 +7658,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">
         Passwords
       </message>
+      <message name="IDS_PASSWORDS_EXCEPTIONS_SMART_LOCK_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">
+        Google Smart Lock for Passwords
+      </message>
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_TITLE" desc="Title for 'Auto sign-in' checkbox in the password dialog">
         Auto Sign-in
       </message>
@@ -13648,8 +13651,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_BUTTON" desc="The confirmation button that is used in the manage passwords bubble when confirming blacklisting a site.">
         Delete saved passwords
       </message>
-      <message name="IDS_MANAGE_PASSWORDS_REMOTE_TEXT" desc="The text used to tell inform users of how to manage their passwords from a website. Text between |bars| is link text.">
-        Manage passwords remotely on your |Google Account|
+      <message name="IDS_MANAGE_PASSWORDS_REMOTE_TEXT" desc="The text used to tell inform users of how to manage their passwords from a website.">
+        Access your passwords from any device at <ph name="LINK_TEXT">$1<ex>passwords.google.com</ex></ph>
       </message>
 
       <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS" desc="The text that is used in the manage passwords bubble when all passwords have been deleted.">
