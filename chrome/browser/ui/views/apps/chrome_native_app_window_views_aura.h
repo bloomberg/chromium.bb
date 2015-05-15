@@ -43,7 +43,7 @@ class ChromeNativeAppWindowViewsAura : public ChromeNativeAppWindowViews,
   void OnBeforePanelWidgetInit(bool use_default_bounds,
                                views::Widget::InitParams* init_params,
                                views::Widget* widget) override;
-  apps::AppWindowFrameView* CreateNonStandardAppFrame() override;
+  views::NonClientFrameView* CreateNonStandardAppFrame() override;
 
   // ui::BaseWindow implementation.
   gfx::Rect GetRestoredBounds() const override;

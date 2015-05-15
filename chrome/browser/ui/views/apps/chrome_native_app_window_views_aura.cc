@@ -174,10 +174,12 @@ void ChromeNativeAppWindowViewsAura::OnBeforePanelWidgetInit(
   }
 }
 
-apps::AppWindowFrameView*
+views::NonClientFrameView*
 ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
   apps::AppWindowFrameView* frame =
-      ChromeNativeAppWindowViews::CreateNonStandardAppFrame();
+      new apps::AppWindowFrameView(widget(), this, HasFrameColor(),
+                                   ActiveFrameColor(), InactiveFrameColor());
+  frame->Init();
 
   // For Aura windows on the Ash desktop the sizes are different and the user
   // can resize the window from slightly outside the bounds as well.

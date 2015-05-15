@@ -8,13 +8,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/mac_util.h"
-#include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
+#import "base/mac/foundation_util.h"
+#import "base/mac/mac_util.h"
+#import "base/mac/scoped_nsobject.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#import "chrome/browser/ui/test/scoped_fake_nswindow_main_status.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -303,4 +305,36 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Controls) {
 
 IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, ControlsFrameless) {
   TestControls(CreateTestAppWindow("{\"frame\": \"none\"}"));
+}
+
+// Test that the colored frames have the correct color when active and inactive.
+IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, FrameColor) {
+  // The hex values indicate an RGB color. When we get the NSColor later, the
+  // components are CGFloats in the range [0, 1].
+  extensions::AppWindow* app_window = CreateTestAppWindow(
+      "{\"frame\": {\"color\": \"#FF0000\", \"inactiveColor\": \"#0000FF\"}}");
+  NSWindow* ns_window = app_window->GetNativeWindow();
+  // Disable color correction so we can read unmodified values from the bitmap.
+  [ns_window setColorSpace:[NSColorSpace sRGBColorSpace]];
+
+  NSView* frame_view = [[ns_window contentView] superview];
+  NSRect bounds = [frame_view bounds];
+  NSBitmapImageRep* bitmap =
+      [frame_view bitmapImageRepForCachingDisplayInRect:bounds];
+
+  [frame_view cacheDisplayInRect:bounds toBitmapImageRep:bitmap];
+  NSColor* color = [bitmap colorAtX:NSMidX(bounds) y:5];
+  // The window is currently inactive so it should be blue (#0000FF).
+  EXPECT_EQ(0, [color redComponent]);
+  EXPECT_EQ(0, [color greenComponent]);
+  EXPECT_EQ(1, [color blueComponent]);
+
+  ScopedFakeNSWindowMainStatus fake_main(ns_window);
+
+  [frame_view cacheDisplayInRect:bounds toBitmapImageRep:bitmap];
+  color = [bitmap colorAtX:NSMidX(bounds) y:5];
+  // The window is now active so it should be red (#FF0000).
+  EXPECT_EQ(1, [color redComponent]);
+  EXPECT_EQ(0, [color greenComponent]);
+  EXPECT_EQ(0, [color blueComponent]);
 }

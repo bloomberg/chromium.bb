@@ -232,15 +232,6 @@ ChromeNativeAppWindowViews::CreateStandardDesktopAppFrame() {
   return views::WidgetDelegateView::CreateNonClientFrameView(widget());
 }
 
-apps::AppWindowFrameView*
-ChromeNativeAppWindowViews::CreateNonStandardAppFrame() {
-  apps::AppWindowFrameView* frame =
-      new apps::AppWindowFrameView(widget(), this, has_frame_color_,
-                                   active_frame_color_, inactive_frame_color_);
-  frame->Init();
-  return frame;
-}
-
 // ui::BaseWindow implementation.
 
 gfx::Rect ChromeNativeAppWindowViews::GetRestoredBounds() const {

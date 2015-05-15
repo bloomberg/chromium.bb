@@ -1375,6 +1375,8 @@
       'browser/ui/cocoa/apps/app_shim_menu_controller_mac.mm',
       'browser/ui/cocoa/apps/quit_with_apps_controller_mac.cc',
       'browser/ui/cocoa/apps/quit_with_apps_controller_mac.h',
+      'browser/ui/cocoa/apps/titlebar_background_view.h',
+      'browser/ui/cocoa/apps/titlebar_background_view.mm',
       'browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h',
       'browser/ui/cocoa/bookmarks/bookmark_menu_bridge.mm',
       'browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h',

@@ -20,6 +20,7 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
       views::Widget::InitParams* init_params,
       views::Widget* widget) override;
   views::NonClientFrameView* CreateStandardDesktopAppFrame() override;
+  views::NonClientFrameView* CreateNonStandardAppFrame() override;
 
   // ui::BaseWindow implementation.
   void Show() override;

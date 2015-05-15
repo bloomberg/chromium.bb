@@ -41,7 +41,7 @@ class ChromeNativeAppWindowViews
   virtual void InitializePanelWindow(
       const extensions::AppWindow::CreateParams& create_params);
   virtual views::NonClientFrameView* CreateStandardDesktopAppFrame();
-  virtual apps::AppWindowFrameView* CreateNonStandardAppFrame();
+  virtual views::NonClientFrameView* CreateNonStandardAppFrame() = 0;
 
   // ui::BaseWindow implementation.
   gfx::Rect GetRestoredBounds() const override;

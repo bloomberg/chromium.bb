@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/profiles/profile.h"
+#import "chrome/browser/ui/cocoa/apps/titlebar_background_view.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
@@ -173,45 +174,6 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 
 @end
 
-// A view that paints a solid color. Used to change the title bar background.
-@interface TitlebarBackgroundView : NSView {
- @private
-  base::scoped_nsobject<NSColor> color_;
-  base::scoped_nsobject<NSColor> inactiveColor_;
-}
-- (void)setColor:(NSColor*)color
-    inactiveColor:(NSColor*)inactiveColor;
-@end
-
-@implementation TitlebarBackgroundView
-
-- (void)drawRect:(NSRect)rect {
-  // Only the top corners are rounded. For simplicity, round all 4 corners but
-  // draw the bottom corners outside of the visible bounds.
-  CGFloat cornerRadius = 4.0;
-  NSRect roundedRect = [self bounds];
-  roundedRect.origin.y -= cornerRadius;
-  roundedRect.size.height += cornerRadius;
-  [[NSBezierPath bezierPathWithRoundedRect:roundedRect
-                                   xRadius:cornerRadius
-                                   yRadius:cornerRadius] addClip];
-  if ([[self window] isMainWindow] || [[self window] isKeyWindow])
-    [color_ set];
-  else
-    [inactiveColor_ set];
-  NSRectFill(rect);
-}
-
-- (void)setColor:(NSColor*)color
-    inactiveColor:(NSColor*)inactiveColor {
-  color_.reset([color retain]);
-  inactiveColor_.reset([inactiveColor retain]);
-}
-
-@end
-
-// TODO(jamescook): Should these be AppNSWindow to match AppWindow?
-// http://crbug.com/344082
 @interface AppNSWindow : ChromeEventProcessingWindow
 @end
 
@@ -306,25 +268,9 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   [window setTitle:base::SysUTF8ToNSString(name)];
   [[window contentView] setWantsLayer:YES];
   if (has_frame_ && has_frame_color_) {
-    // AppKit only officially supports adding subviews to the window's
-    // contentView and not its superview (an NSNextStepFrame). The 10.10 SDK
-    // allows adding an NSTitlebarAccessoryViewController to a window, but the
-    // view can only be placed above the window control buttons, so we'd have to
-    // replicate those.
-    NSView* window_view = [[window contentView] superview];
-    CGFloat height = NSHeight([window_view bounds]) -
-                     NSHeight([[window contentView] bounds]);
-    titlebar_background_view_.reset([[TitlebarBackgroundView alloc]
-        initWithFrame:NSMakeRect(0, NSMaxY([window_view bounds]) - height,
-                                 NSWidth([window_view bounds]), height)]);
-    [titlebar_background_view_
-        setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
-    [window_view addSubview:titlebar_background_view_
-                 positioned:NSWindowBelow
-                 relativeTo:nil];
-    [titlebar_background_view_
-             setColor:gfx::SkColorToSRGBNSColor(active_frame_color_)
-        inactiveColor:gfx::SkColorToSRGBNSColor(inactive_frame_color_)];
+    [TitlebarBackgroundView addToNSWindow:window
+                              activeColor:active_frame_color_
+                            inactiveColor:inactive_frame_color_];
   }
 
   if (base::mac::IsOSSnowLeopard() &&
@@ -762,7 +708,6 @@ void NativeAppWindowCocoa::WindowWillClose() {
 }
 
 void NativeAppWindowCocoa::WindowDidBecomeKey() {
-  [titlebar_background_view_ setNeedsDisplay:YES];
   content::RenderWidgetHostView* rwhv =
       WebContents()->GetRenderWidgetHostView();
   if (rwhv)
@@ -779,8 +724,6 @@ void NativeAppWindowCocoa::WindowDidResignKey() {
   // lose key window status.
   if ([NSApp isActive] && ([NSApp keyWindow] == window()))
     return;
-
-  [titlebar_background_view_ setNeedsDisplay:YES];
 
   WebContents()->StoreFocus();
 

@@ -500,6 +500,8 @@
       'browser/ui/sync/profile_signin_confirmation_helper_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.h',
+      'browser/ui/test/scoped_fake_nswindow_main_status.h',
+      'browser/ui/test/scoped_fake_nswindow_main_status.mm',
       'browser/ui/website_settings/permission_bubble_browser_test_util.cc',
       'browser/ui/website_settings/permission_bubble_browser_test_util.h',
       'browser/ui/toolbar/browser_actions_bar_browsertest.cc',

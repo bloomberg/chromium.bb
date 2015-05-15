@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/test/scoped_fake_nswindow_main_status.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -26,37 +27,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-// Donates a testing implementation of [NSWindow isMainWindow].
-@interface IsMainWindowDonorForWindow : NSObject
-@end
-
 namespace {
-
-// Simulates a particular NSWindow to report YES for [NSWindow isMainWindow].
-// This allows test coverage of code relying on window focus changes without
-// resorting to an interactive_ui_test.
-class ScopedFakeWindowMainStatus {
- public:
-  ScopedFakeWindowMainStatus(NSWindow* window)
-      : swizzler_([NSWindow class],
-                  [IsMainWindowDonorForWindow class],
-                  @selector(isMainWindow)) {
-    DCHECK(!window_);
-    window_ = window;
-  }
-
-  ~ScopedFakeWindowMainStatus() { window_ = nil; }
-
-  static NSWindow* GetMainWindow() { return window_; }
-
- private:
-  static NSWindow* window_;
-  base::mac::ScopedObjCClassSwizzler swizzler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedFakeWindowMainStatus);
-};
-
-NSWindow* ScopedFakeWindowMainStatus::window_ = nil;
 
 class AppShimMenuControllerBrowserTest
     : public extensions::PlatformAppBrowserTest {
@@ -208,7 +179,8 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   // Start with app1 active.
   SetUpApps(PACKAGED_1);
   extensions::AppWindow* app_1_app_window = FirstWindowForApp(app_1_);
-  ScopedFakeWindowMainStatus app_1_is_main(app_1_app_window->GetNativeWindow());
+  ScopedFakeNSWindowMainStatus app_1_is_main(
+      app_1_app_window->GetNativeWindow());
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
@@ -275,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_1_window];
-  ScopedFakeWindowMainStatus app_1_is_main(app_1_window);
+  ScopedFakeNSWindowMainStatus app_1_is_main(app_1_window);
 
   CheckHasAppMenus(app_1_);
   ExtensionService::UninstallExtensionHelper(
@@ -286,10 +258,3 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
 }
 
 }  // namespace
-
-@implementation IsMainWindowDonorForWindow
-- (BOOL)isMainWindow {
-  NSWindow* selfAsWindow = base::mac::ObjCCastStrict<NSWindow>(self);
-  return selfAsWindow == ScopedFakeWindowMainStatus::GetMainWindow();
-}
-@end
