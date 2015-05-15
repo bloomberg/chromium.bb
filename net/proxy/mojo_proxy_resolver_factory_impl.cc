@@ -10,6 +10,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver_mojo.h"
 #include "net/proxy/mojo_proxy_resolver_impl.h"
+#include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "net/proxy/proxy_resolver_v8_tracing.h"
@@ -18,30 +19,15 @@
 namespace net {
 namespace {
 
-class DefaultProxyResolverFactory : public LegacyProxyResolverFactory {
- public:
-  DefaultProxyResolverFactory(
-      HostResolver* host_resolver,
-      const ProxyResolver::LoadStateChangedCallback& callback)
-      : LegacyProxyResolverFactory(true),
-        host_resolver_(host_resolver),
-        callback_(callback) {}
-
-  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    return make_scoped_ptr(new ProxyResolverV8Tracing(host_resolver_, nullptr,
-                                                      nullptr, callback_));
-  }
-
- private:
-  HostResolver* const host_resolver_;
-  const ProxyResolver::LoadStateChangedCallback callback_;
-};
+scoped_ptr<ProxyResolverErrorObserver> ReturnNullErrorObserver() {
+  return nullptr;
+}
 
 scoped_ptr<ProxyResolverFactory> CreateDefaultProxyResolver(
     HostResolver* host_resolver,
     const ProxyResolver::LoadStateChangedCallback& callback) {
-  return make_scoped_ptr(
-      new DefaultProxyResolverFactory(host_resolver, callback));
+  return make_scoped_ptr(new ProxyResolverFactoryV8Tracing(
+      host_resolver, nullptr, callback, base::Bind(&ReturnNullErrorObserver)));
 }
 
 class LoadStateChangeForwarder

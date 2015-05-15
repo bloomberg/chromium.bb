@@ -74,6 +74,14 @@ NetworkDelegateErrorObserver::~NetworkDelegateErrorObserver() {
   core_->Shutdown();
 }
 
+// static
+scoped_ptr<ProxyResolverErrorObserver> NetworkDelegateErrorObserver::Create(
+    NetworkDelegate* network_delegate,
+    const scoped_refptr<base::SingleThreadTaskRunner>& origin_runner) {
+  return make_scoped_ptr(
+      new NetworkDelegateErrorObserver(network_delegate, origin_runner.get()));
+}
+
 void NetworkDelegateErrorObserver::OnPACScriptError(
     int line_number,
     const base::string16& error) {

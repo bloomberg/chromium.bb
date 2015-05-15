@@ -5,93 +5,62 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_V8_TRACING_H_
 #define NET_PROXY_PROXY_RESOLVER_V8_TRACING_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
 #include "net/proxy/proxy_resolver.h"
-
-namespace base {
-class Thread;
-class SingleThreadTaskRunner;
-}  // namespace base
+#include "net/proxy/proxy_resolver_factory.h"
 
 namespace net {
 
 class HostResolver;
 class NetLog;
 class ProxyResolverErrorObserver;
-class ProxyResolverV8;
 
-// ProxyResolverV8Tracing is a non-blocking ProxyResolver. It executes
+// ProxyResolverFactoryV8Tracing is a ProxyResolverFactory that returns
+// non-blocking ProxyResolver instances. Each ProxyResolver instance executes
 // ProxyResolverV8 on a single helper thread, and does some magic to avoid
 // blocking in DNS. For more details see the design document:
 // https://docs.google.com/a/google.com/document/d/16Ij5OcVnR3s0MH4Z5XkhI9VTPoMJdaBn9rKreAmGOdE/edit?pli=1
-class NET_EXPORT_PRIVATE ProxyResolverV8Tracing
-    : public ProxyResolver,
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+class NET_EXPORT ProxyResolverFactoryV8Tracing : public ProxyResolverFactory {
  public:
-  // Constructs a ProxyResolver that will issue DNS requests through
-  // |host_resolver|, forward Javascript errors through |error_observer|, and
-  // log Javascript errors and alerts to |net_log|.
-  //
-  // Note that the constructor takes ownership of |error_observer|, whereas
-  // |host_resolver| and |net_log| are expected to outlive |this|.
-  ProxyResolverV8Tracing(HostResolver* host_resolver,
-                         ProxyResolverErrorObserver* error_observer,
-                         NetLog* net_log);
+  // Note that |host_resolver| and |net_log| are expected to outlive |this| and
+  // any ProxyResolver instances created using |this|. |error_observer_factory|
+  // will be invoked once per CreateProxyResolver() call to create a
+  // ProxyResolverErrorObserver to be used by the ProxyResolver instance
+  // returned by that call.
+  ProxyResolverFactoryV8Tracing(
+      HostResolver* host_resolver,
+      NetLog* net_log,
+      const ProxyResolver::LoadStateChangedCallback& callback,
+      const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
+          error_observer_factory);
+  ~ProxyResolverFactoryV8Tracing() override;
 
-  // Constructs a ProxyResolver that will issue DNS requests through
-  // |host_resolver|, forward Javascript errors through |error_observer|, and
-  // log Javascript errors and alerts to |net_log|. When the LoadState for a
-  // request changes, |on_load_state_changed| will be invoked with the
-  // RequestHandle for that request with the new LoadState.
-  //
-  // Note that the constructor takes ownership of |error_observer|, whereas
-  // |host_resolver| and |net_log| are expected to outlive |this|.
-  ProxyResolverV8Tracing(HostResolver* host_resolver,
-                         ProxyResolverErrorObserver* error_observer,
-                         NetLog* net_log,
-                         const LoadStateChangedCallback& on_load_state_changed);
-
-  ~ProxyResolverV8Tracing() override;
-
-  // ProxyResolver implementation:
-  int GetProxyForURL(const GURL& url,
-                     ProxyInfo* results,
-                     const CompletionCallback& callback,
-                     RequestHandle* request,
-                     const BoundNetLog& net_log) override;
-  void CancelRequest(RequestHandle request) override;
-  LoadState GetLoadState(RequestHandle request) const override;
-  void CancelSetPacScript() override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override;
+  // ProxyResolverFactory override.
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const CompletionCallback& callback,
+      scoped_ptr<Request>* request) override;
 
  private:
-  class Job;
+  class CreateJob;
 
-  // The worker thread on which the ProxyResolverV8 will be run.
-  scoped_ptr<base::Thread> thread_;
-  scoped_ptr<ProxyResolverV8> v8_resolver_;
+  void RemoveJob(CreateJob* job);
 
-  // Non-owned host resolver, which is to be operated on the origin thread.
-  HostResolver* host_resolver_;
+  HostResolver* const host_resolver_;
+  NetLog* const net_log_;
+  const ProxyResolver::LoadStateChangedCallback load_state_changed_callback_;
+  const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>
+      error_observer_factory_;
 
-  scoped_ptr<ProxyResolverErrorObserver> error_observer_;
-  NetLog* net_log_;
+  std::set<CreateJob*> jobs_;
 
-  // The outstanding SetPacScript operation, or NULL.
-  scoped_refptr<Job> set_pac_script_job_;
-
-  // The number of outstanding (non-cancelled) jobs.
-  int num_outstanding_callbacks_;
-
-  // Invoked when the load state for a request changes.
-  const LoadStateChangedCallback on_load_state_changed_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8Tracing);
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryV8Tracing);
 };
 
 }  // namespace net
