@@ -767,6 +767,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   g_browser_process->platform_part()->DestroyChromeUserManager();
 
+  // Make sure that there is no pending URLRequests.
+  UserSessionManager::GetInstance()->Shutdown();
+
   g_browser_process->platform_part()->ShutdownSessionManager();
 }
 

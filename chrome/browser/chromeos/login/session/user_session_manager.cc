@@ -1672,4 +1672,43 @@ void UserSessionManager::SendUserPodsMetrics() {
                             NUM_USER_PODS_DISPLAY);
 }
 
+void UserSessionManager::OnOAuth2TokensFetched(UserContext context) {
+  if (StartupUtils::IsWebviewSigninEnabled() && TokenHandlesEnabled()) {
+    if (!token_handle_util_.get()) {
+      token_handle_util_.reset(
+          new TokenHandleUtil(user_manager::UserManager::Get()));
+    }
+    if (token_handle_util_->ShouldObtainHandle(context.GetUserID())) {
+      token_handle_util_->GetTokenHandle(
+          context.GetUserID(), context.GetAccessToken(),
+          base::Bind(&UserSessionManager::OnTokenHandleObtained,
+                     weak_factory_.GetWeakPtr()));
+    }
+  }
+}
+
+void UserSessionManager::OnTokenHandleObtained(
+    const user_manager::UserID& id,
+    TokenHandleUtil::TokenHandleStatus status) {
+  if (status != TokenHandleUtil::VALID) {
+    LOG(ERROR) << "OAuth2 token handle fetch failed.";
+    return;
+  }
+}
+
+bool UserSessionManager::TokenHandlesEnabled() {
+  bool ephemeral_users_enabled = false;
+  bool show_names_on_signin = true;
+  auto cros_settings = CrosSettings::Get();
+  cros_settings->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
+                            &ephemeral_users_enabled);
+  cros_settings->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
+                            &show_names_on_signin);
+  return show_names_on_signin && !ephemeral_users_enabled;
+}
+
+void UserSessionManager::Shutdown() {
+  token_handle_util_.reset();
+}
+
 }  // namespace chromeos
