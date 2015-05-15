@@ -395,9 +395,6 @@ using content::WebContents;
     // Create the bridge for the status bubble.
     statusBubble_ = new StatusBubbleMac([self window], self);
 
-    // Create the permissions bubble.
-    permissionBubbleCocoa_.reset(new PermissionBubbleCocoa([self window]));
-
     // Register for application hide/unhide notifications.
     [[NSNotificationCenter defaultCenter]
          addObserver:self
@@ -1269,6 +1266,26 @@ using content::WebContents;
   [toolbarController_ setTranslateIconLit:on];
 }
 
+- (void)onActiveTabChanged:(content::WebContents*)oldContents
+                        to:(content::WebContents*)newContents {
+  // No need to remove previous bubble. It will close itself.
+  PermissionBubbleManager* manager(nullptr);
+  if (oldContents) {
+    manager = PermissionBubbleManager::FromWebContents(oldContents);
+    if (manager)
+      manager->SetView(nullptr);
+  }
+
+  if (newContents) {
+    if (!permissionBubbleCocoa_.get()) {
+      permissionBubbleCocoa_.reset(new PermissionBubbleCocoa([self window]));
+    }
+    manager = PermissionBubbleManager::FromWebContents(newContents);
+    if (manager)
+      manager->SetView(permissionBubbleCocoa_.get());
+  }
+}
+
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
   [toolbarController_ zoomChangedForActiveTab:canShowBubble];
 }
@@ -1650,14 +1667,6 @@ using content::WebContents;
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
   [infoBarContainerController_ changeWebContents:contents];
-
-  // No need to remove previous bubble. It will close itself.
-  // TODO(leng):  The PermissionBubbleManager for the previous contents should
-  // have SetView(NULL) called.  Fix this when the previous contents are
-  // available here or move to BrowserWindowCocoa::OnActiveTabChanged().
-  // crbug.com/340720
-  PermissionBubbleManager::FromWebContents(contents)->SetView(
-      permissionBubbleCocoa_.get());
 
   // Must do this after bookmark and infobar updates to avoid
   // unnecesary resize in contents.

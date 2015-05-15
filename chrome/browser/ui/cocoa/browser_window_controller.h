@@ -253,6 +253,11 @@ class Command;
 // Sets whether or not the current page is translated.
 - (void)setCurrentPageIsTranslated:(BOOL)on;
 
+// Invoked via BrowserWindowCocoa::OnActiveTabChanged, happens whenever a
+// new tab becomes active.
+- (void)onActiveTabChanged:(content::WebContents*)oldContents
+                        to:(content::WebContents*)newContents;
+
 // Happens when the zoom level is changed in the active tab, the active tab is
 // changed, or a new browser window or tab is created. |canShowBubble| denotes
 // whether it would be appropriate to show a zoom bubble or not.

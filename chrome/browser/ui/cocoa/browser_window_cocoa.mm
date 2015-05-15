@@ -330,11 +330,13 @@ void BrowserWindowCocoa::OnActiveTabChanged(content::WebContents* old_contents,
                                             content::WebContents* new_contents,
                                             int index,
                                             int reason) {
+  [controller_ onActiveTabChanged:old_contents to:new_contents];
   // TODO(pkasting): Perhaps the code in
   // TabStripController::activateTabWithContents should move here?  Or this
   // should call that (instead of TabStripModelObserverBridge doing so)?  It's
   // not obvious to me why Mac doesn't handle tab changes in BrowserWindow the
   // way views and GTK do.
+  // See http://crbug.com/340720 for discussion.
 }
 
 void BrowserWindowCocoa::ZoomChangedForActiveTab(bool can_show_bubble) {
