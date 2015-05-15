@@ -133,6 +133,11 @@ WebString WebElement::textContent()
     return unwrap<Element>()->textContent();
 }
 
+WebString WebElement::innerText()
+{
+    return unwrap<Element>()->innerText();
+}
+
 WebString WebElement::computeInheritedLanguage() const
 {
     return WebString(constUnwrap<Element>()->computeInheritedLanguage());
