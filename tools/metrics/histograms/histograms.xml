@@ -56743,6 +56743,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="909439558" label="disable-device-discovery"/>
+  <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="936919953" label="bypass-app-banner-engagement-checks"/>
   <int value="939554480" label="enable-credit-card-scan"/>
@@ -56845,6 +56846,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1783837132" label="enable-threaded-gpu-rasterization"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
+  <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1817312143" label="num-raster-threads"/>
   <int value="1819256299" label="disable-webrtc-hw-decoding"/>

@@ -1884,6 +1884,14 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(app_list::switches::kEnableCenteredAppList)
   },
+  {
+    "enable-new-app-list-mixer",
+    IDS_FLAGS_ENABLE_NEW_APP_LIST_MIXER_NAME,
+    IDS_FLAGS_ENABLE_NEW_APP_LIST_MIXER_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS | kOsMac,
+    ENABLE_DISABLE_VALUE_TYPE(app_list::switches::kEnableNewAppListMixer,
+                              app_list::switches::kDisableNewAppListMixer)
+  },
 #endif
   {
     "disable-threaded-scrolling",

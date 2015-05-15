@@ -6649,6 +6649,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_CENTERED_APP_LIST_DESCRIPTION" desc="Description of the flag to center the app launcher and make it wide instead of tall.">
           Positions the App Launcher in the center of the screen with a landscape aspect.
         </message>
+        <message name="IDS_FLAGS_ENABLE_NEW_APP_LIST_MIXER_NAME" desc="Name of the flag to enable the new mixing algorithm in the app launcher.">
+          Enable the new App Launcher mixer algorithm.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_NEW_APP_LIST_MIXER_DESCRIPTION" desc="Description of the flag to enable the new mixing algorithm in the app launcher.">
+          This enables a new search result selecting and ranking algorithm in the App Launcher.
+        </message>
         <message name="IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_NAME" desc="Name of the flag to disable Drive apps in app launcher.">
           Disable Drive apps in App Launcher.
         </message>

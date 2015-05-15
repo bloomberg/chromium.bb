@@ -21,9 +21,6 @@ const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 // If set, Drive apps will not be shown side-by-side with Chrome apps.
 const char kDisableDriveAppsInAppList[] = "disable-drive-apps-in-app-list";
 
-// Disables syncing of the app list independent of extensions.
-const char kDisableSyncAppList[] = "disable-sync-app-list";
-
 // If set, the app list will be centered and wide instead of tall.
 const char kEnableCenteredAppList[] = "enable-centered-app-list";
 
@@ -32,12 +29,18 @@ const char kEnableCenteredAppList[] = "enable-centered-app-list";
 const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
 const char kDisableExperimentalAppList[] = "disable-experimental-app-list";
 
-// Enables syncing of the app list independent of extensions.
+// Enable/disable syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
+const char kDisableSyncAppList[] = "disable-sync-app-list";
 
 // Enables launcher search provider api.
 const char kEnableLauncherSearchProviderApi[] =
     "enable-launcher-search-provider-api";
+
+// Enable/disable the new "blended" algorithm in app_list::Mixer. This is just
+// forcing the AppListMixer/Blended field trial.
+const char kEnableNewAppListMixer[] = "enable-new-app-list-mixer";
+const char kDisableNewAppListMixer[] = "disable-new-app-list-mixer";
 
 #if defined(OS_MACOSX)
 // Enables use of the toolkit-views app list on Mac.

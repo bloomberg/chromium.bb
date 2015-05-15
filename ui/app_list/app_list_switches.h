@@ -11,15 +11,17 @@
 namespace app_list {
 namespace switches {
 
-// Please keep these flags sorted.
+// Please keep these flags sorted (but keep enable/disable pairs together).
 APP_LIST_EXPORT extern const char kCustomLauncherPage[];
 APP_LIST_EXPORT extern const char kDisableAppListDismissOnBlur[];
 APP_LIST_EXPORT extern const char kDisableDriveAppsInAppList[];
-APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
 APP_LIST_EXPORT extern const char kDisableExperimentalAppList[];
+APP_LIST_EXPORT extern const char kEnableNewAppListMixer[];
+APP_LIST_EXPORT extern const char kDisableNewAppListMixer[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
+APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableLauncherSearchProviderApi[];
 
 #if defined(OS_MACOSX)
