@@ -86,6 +86,7 @@ generator_additional_non_configuration_keys = [
     'msvs_enable_winrt',
     'msvs_requires_importlibrary',
     'msvs_enable_winphone',
+    'msvs_application_type_revision',
 ]
 
 
@@ -2634,7 +2635,11 @@ def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
   if spec.get('msvs_enable_winrt'):
     properties[0].append(['DefaultLanguage', 'en-US'])
     properties[0].append(['AppContainerApplication', 'true'])
-    properties[0].append(['ApplicationTypeRevision', '8.1'])
+    if spec.get('msvs_application_type_revision'):
+      app_type_revision = spec.get('msvs_application_type_revision')
+      properties[0].append(['ApplicationTypeRevision', app_type_revision])
+    else:
+      properties[0].append(['ApplicationTypeRevision', '8.1'])
 
     if spec.get('msvs_enable_winphone'):
       properties[0].append(['ApplicationType', 'Windows Phone'])
