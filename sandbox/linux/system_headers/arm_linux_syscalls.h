@@ -1205,6 +1205,10 @@
 #define __NR_arm_sync_file_range (__NR_SYSCALL_BASE+341)
 #endif
 
+#if !defined(__NR_sync_file_range2)
+#define __NR_sync_file_range2 (__NR_SYSCALL_BASE+341)
+#endif
+
 #if !defined(__NR_tee)
 #define __NR_tee (__NR_SYSCALL_BASE+342)
 #endif

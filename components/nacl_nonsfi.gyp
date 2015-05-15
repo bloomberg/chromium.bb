@@ -56,8 +56,6 @@
               'nacl/loader/nacl_trusted_listener.cc',
               'nacl/loader/nonsfi/nonsfi_listener.cc',
               'nacl/loader/nonsfi/nonsfi_main.cc',
-              'nacl/loader/nonsfi/nonsfi_sandbox.cc',
-              'nacl/loader/sandbox_linux/nacl_sandbox_linux.cc',
             ],
 
             'link_flags': [
@@ -74,6 +72,7 @@
               '-lgpu_ipc_nacl',
               '-lipc_nacl_nonsfi',
               '-llatency_info_nacl',
+              '-lnacl_helper_nonsfi_sandbox',
               '-lplatform',
               '-lppapi_ipc_nacl',
               '-lppapi_proxy_nacl',
@@ -99,6 +98,7 @@
                   '>(tc_lib_dir_nonsfi_helper32)/libgpu_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libipc_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/liblatency_info_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libnacl_helper_nonsfi_sandbox.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libplatform.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libppapi_proxy_nacl.a',
@@ -123,6 +123,7 @@
                   '>(tc_lib_dir_nonsfi_helper_arm)/libgpu_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libipc_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/liblatency_info_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libnacl_helper_nonsfi_sandbox.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libplatform.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libppapi_proxy_nacl.a',
@@ -143,9 +144,132 @@
             '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
             '../ppapi/ppapi_proxy_nacl.gyp:ppapi_proxy_nacl',
             '../sandbox/sandbox_nacl_nonsfi.gyp:sandbox_nacl_nonsfi',
+            'nacl_helper_nonsfi_sandbox',
           ],
         },
-        # TODO(hidehiko): Add Non-SFI version of nacl_loader_unittests.
+
+        {
+          'target_name': 'nacl_helper_nonsfi_sandbox',
+          'type': 'none',
+          'variables': {
+            'nacl_untrusted_build': 1,
+            'nlib_target': 'libnacl_helper_nonsfi_sandbox.a',
+
+            'build_glibc': 0,
+            'build_newlib': 0,
+            'build_irt': 0,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
+
+            'sources': [
+              'nacl/loader/nonsfi/nonsfi_sandbox.cc',
+              'nacl/loader/sandbox_linux/nacl_sandbox_linux.cc',
+            ],
+          },
+          'dependencies': [
+            '../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../content/content_nacl_nonsfi.gyp:content_common_nacl_nonsfi',
+            '../sandbox/sandbox_nacl_nonsfi.gyp:sandbox_nacl_nonsfi',
+          ],
+        },
+
+        {
+          'target_name': 'nacl_helper_nonsfi_unittests',
+          'type': 'none',
+          'variables': {
+            'nacl_untrusted_build': 1,
+            'nexe_target': 'nacl_helper_nonsfi_unittests',
+            # Rename the output binary file to nacl_helper_nonsfi_unittests
+            # and put it directly under out/{Debug,Release}/, so that this is
+            # in the standard location, for running on the buildbots.
+            'out_newlib32_nonsfi': '<(PRODUCT_DIR)/nacl_helper_nonsfi_unittests',
+            'out_newlib_arm_nonsfi': '<(PRODUCT_DIR)/nacl_helper_nonsfi_unitttests',
+
+            'build_glibc': 0,
+            'build_newlib': 0,
+            'build_irt': 0,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
+
+            'sources': [
+              'nacl/loader/nonsfi/nonsfi_sandbox_sigsys_unittest.cc',
+              'nacl/loader/nonsfi/nonsfi_sandbox_unittest.cc',
+            ],
+
+            'link_flags': [
+              '-lbase_nacl_nonsfi',
+              '-lcontent_common_nacl_nonsfi',
+              '-levent_nacl_nonsfi',
+              '-lgio',
+              '-lgtest_main_nacl',
+              '-lgtest_nacl',
+              '-lnacl_helper_nonsfi_sandbox',
+              '-lplatform',
+              '-lsandbox_nacl_nonsfi',
+              '-lsandbox_linux_test_utils_nacl_nonsfi',
+            ],
+
+            'conditions': [
+              ['target_arch=="ia32" or target_arch=="x64"', {
+                'extra_deps_newlib32_nonsfi': [
+                  '>(tc_lib_dir_nonsfi_helper32)/libbase_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libcontent_common_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libevent_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libgio.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libgtest_main_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libgtest_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libnacl_helper_nonsfi_sandbox.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libplatform.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libsandbox_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libsandbox_linux_test_utils_nacl_nonsfi.a',
+                ],
+              }],
+              ['target_arch=="arm"', {
+                'extra_deps_newlib_arm_nonsfi': [
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libbase_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libcontent_common_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libevent_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libgio.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libgtest_main_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libgtest_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libnacl_helper_nonsfi_sandbox.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libplatform.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libsandbox_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libsandbox_linux_test_utils_nacl_nonsfi.a',
+                ],
+              }],
+            ],
+          },
+
+          'dependencies': [
+            '../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../content/content_nacl_nonsfi.gyp:content_common_nacl_nonsfi',
+            '../native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
+            '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
+            '../sandbox/sandbox_nacl_nonsfi.gyp:sandbox_nacl_nonsfi',
+            '../sandbox/sandbox_nacl_nonsfi.gyp:sandbox_linux_test_utils_nacl_nonsfi',
+            '../testing/gtest_nacl.gyp:gtest_main_nacl',
+            '../testing/gtest_nacl.gyp:gtest_nacl',
+            'nacl_helper_nonsfi_sandbox',
+          ],
+        },
+      ],
+    }],
+    ['disable_nacl==0 and disable_nacl_untrusted==0 and test_isolation_mode!="noop"', {
+      'targets': [
+        {
+          'target_name': 'nacl_helper_nonsfi_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'nacl_helper_nonsfi_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'nacl_helper_nonsfi_unittests.isolate',
+          ],
+        },
       ],
     }],
   ],

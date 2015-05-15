@@ -25,6 +25,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -41,6 +42,67 @@
 #include "sandbox/linux/system_headers/linux_futex.h"
 #include "sandbox/linux/system_headers/linux_signal.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+
+// These defines are for PNaCl toolchain build.
+#if !defined(F_DUPFD_CLOEXEC)
+#define F_DUPFD_CLOEXEC 1030
+#endif
+
+#if !defined(MAP_POPULATE)
+#define MAP_POPULATE 0x8000
+#endif
+
+#if !defined(PROT_GROWSDOWN)
+#define PROT_GROWSDOWN 0x01000000
+#endif
+
+#if !defined(CLOCK_MONOTONIC_RAW)
+#define CLOCK_MONOTONIC_RAW 4
+#endif
+
+#if !defined(AF_INET)
+#define AF_INET 2
+#endif
+
+#if defined(__i386__)
+
+#if !defined(SYS_SOCKET)
+#define SYS_SOCKET 1
+#endif
+
+#if !defined(SYS_BIND)
+#define SYS_BIND 2
+#endif
+
+#if !defined(SYS_CONNECT)
+#define SYS_CONNECT 3
+#endif
+
+#if !defined(SYS_LISTEN)
+#define SYS_LISTEN 4
+#endif
+
+#if !defined(SYS_ACCEPT)
+#define SYS_ACCEPT 5
+#endif
+
+#if !defined(SYS_GETSOCKNAME)
+#define SYS_GETSOCKNAME 6
+#endif
+
+#if !defined(SYS_GETPEERNAME)
+#define SYS_GETPEERNAME 7
+#endif
+
+#if !defined(SYS_SETSOCKOPT)
+#define SYS_SETSOCKOPT 14
+#endif
+
+#if !defined(SYS_GETSOCKOPT)
+#define SYS_GETSOCKOPT 15
+#endif
+
+#endif // defined(__i386__)
 
 namespace {
 
@@ -368,18 +430,28 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   fcntl(fds[0].get(), F_SETFL, O_APPEND);
 }
 
+void DoFcntl(int fd, int cmd) {
+  // fcntl in PNaCl toolchain returns an error without calling actual system
+  // call for unknown |cmd|. So, instead, here we use syscall().
+#if defined(OS_NACL_NONSFI)
+  syscall(__NR_fcntl64, fd, cmd);
+#else
+  fcntl(fd, cmd);
+#endif
+}
+
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  fcntl_DUPFD,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  fcntl(0, F_DUPFD);
+  DoFcntl(0, F_DUPFD);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  fcntl_DUPFD_CLOEXEC,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  fcntl(0, F_DUPFD_CLOEXEC);
+  DoFcntl(0, F_DUPFD_CLOEXEC);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
@@ -403,6 +475,14 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 BPF_TEST_C(NaClNonSfiSandboxTest,
            StartingAndJoiningThreadWorks,
            nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+#if defined(OS_NACL_NONSFI)
+  // base::Thread internally uses LazyInstance, which registers a callback to
+  // AtExitManager. However, in PNaCl toolchain build, it is not instantiated
+  // by the test runner, unlike host toolchain build (nacl_loader_unittests).
+  // Hence, declare it here so that the LazyInstance will work properly.
+  base::AtExitManager at_exit;
+#endif
+
   base::Thread thread("sandbox_tests");
   BPF_ASSERT(thread.Start());
   // |thread|'s destructor will join the thread.
@@ -417,9 +497,20 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   _exit(1);
 }
 
+void* DoMmap(int prot, int flags) {
+#if defined(OS_NACL_NONSFI)
+  // When PROT_EXEC is set, PNaCl toolchain's mmap() system call wrapper uses
+  // two system calls mmap2(2) and mprotect(2), so that we cannot test
+  // sandbox with the wrapper. Instead, here we use syscall().
+  return reinterpret_cast<void*>(
+      syscall(__NR_mmap2, NULL, getpagesize(), prot, flags, -1, 0));
+#else
+  return mmap(NULL, getpagesize(), prot, flags, -1, 0);
+#endif
+}
+
 void* DoAllowedAnonymousMmap() {
-  return mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE,
-              MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+  return DoMmap(PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED);
 }
 
 BPF_TEST_C(NaClNonSfiSandboxTest,
@@ -434,45 +525,42 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_unallowed_flag,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE,
-       MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+  DoMmap(PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_POPULATE);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_unallowed_prot,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  mmap(NULL, getpagesize(), PROT_READ | PROT_GROWSDOWN,
-       MAP_ANONYMOUS, -1, 0);
+  DoMmap(PROT_READ | PROT_GROWSDOWN, MAP_ANONYMOUS);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_exec,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  mmap(NULL, getpagesize(), PROT_EXEC, MAP_ANONYMOUS, -1, 0);
+  DoMmap(PROT_EXEC, MAP_ANONYMOUS);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_read_exec,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  mmap(NULL, getpagesize(), PROT_READ | PROT_EXEC, MAP_ANONYMOUS, -1, 0);
+  DoMmap(PROT_READ | PROT_EXEC, MAP_ANONYMOUS);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_write_exec,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  mmap(NULL, getpagesize(), PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS, -1, 0);
+  DoMmap(PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_read_write_exec,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE | PROT_EXEC,
-       MAP_ANONYMOUS, -1, 0);
+  DoMmap(PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS);
 }
 
 BPF_TEST_C(NaClNonSfiSandboxTest,
@@ -503,9 +591,13 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
   // The kernel interface must return zero for brk.
   BPF_ASSERT_EQ(0, syscall(__NR_brk, next_brk));
   // The libc wrapper translates it to ENOMEM.
+
+  // Note: PNaCl toolchain does not provide brk() system call wrapper.
+#if !defined(OS_NACL_NONSFI)
   errno = 0;
   BPF_ASSERT_EQ(-1, brk(next_brk));
   BPF_ASSERT_EQ(ENOMEM, errno);
+#endif
 }
 
 // clockid restrictions are mostly tested in sandbox/ with the
