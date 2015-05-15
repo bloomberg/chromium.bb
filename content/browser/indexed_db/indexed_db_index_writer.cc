@@ -160,7 +160,7 @@ bool MakeIndexWriters(
     if (!can_add_keys)
       return true;
 
-    index_writers->push_back(index_writer.release());
+    index_writers->push_back(index_writer.Pass());
   }
 
   *completed = true;
