@@ -33,6 +33,7 @@
 #include "core/frame/NavigatorID.h"
 
 #if !OS(MACOSX) && !OS(WIN)
+#include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include <sys/utsname.h>
 #endif
@@ -66,8 +67,11 @@ String NavigatorID::platform()
     return "Win32";
 #else // Unix-like systems
     struct utsname osname;
-    AtomicallyInitializedStaticReference(String, platformName, new String(uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString()));
-    return platformName;
+    AtomicallyInitializedStaticReference(ThreadSpecific<String>, platformName, new ThreadSpecific<String>());
+    if (platformName->isNull()) {
+        *platformName = String(uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString());
+    }
+    return *platformName;
 #endif
 }
 
