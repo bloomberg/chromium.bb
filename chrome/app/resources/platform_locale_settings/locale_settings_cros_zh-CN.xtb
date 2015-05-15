@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="IDS_STANDARD_FONT_FAMILY">Noto Sans CJK SC</translation>
-<translation id="IDS_FIXED_FONT_FAMILY">Noto Sans CJK SC</translation>
+<translation id="IDS_FIXED_FONT_FAMILY">Noto Sans Mono CJK SC</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Noto Sans CJK SC</translation>
 <if expr="_google_chrome">
   <translation id="IDS_SERIF_FONT_FAMILY">MSung GB18030</translation>
