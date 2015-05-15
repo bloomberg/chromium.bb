@@ -42,9 +42,6 @@ class NewTabUI : public content::WebUIController,
   // Returns whether or not to show apps pages.
   static bool ShouldShowApps();
 
-  // Returns whether or not "Discovery" in the NTP is Enabled.
-  static bool IsDiscoveryInNTPEnabled();
-
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.
   static void SetUrlTitleAndDirection(base::DictionaryValue* dictionary,

@@ -137,8 +137,6 @@ cr.define('ntp', function() {
             function() { chrome.send('onLearnMore'); });
       }
     }
-    if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))
-      sectionsToWaitFor++;
     measureNavDots();
 
     // Load the current theme colors.
@@ -169,21 +167,6 @@ cr.define('ntp', function() {
                                 loadTimeData.getString('mostvisited'),
                                 false);
       chrome.send('getMostVisited');
-    }
-
-    if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled')) {
-      var suggestionsScript = document.createElement('script');
-      suggestionsScript.src = 'suggestions_page.js';
-      suggestionsScript.onload = function() {
-         newTabView.appendTilePage(new ntp.SuggestionsPage(),
-                                   loadTimeData.getString('suggestions'),
-                                   false,
-                                   (newTabView.appsPages.length > 0) ?
-                                       newTabView.appsPages[0] : null);
-         chrome.send('getSuggestions');
-         cr.dispatchSimpleEvent(document, 'sectionready', true, true);
-      };
-      document.querySelector('head').appendChild(suggestionsScript);
     }
 
     if (!loadTimeData.getBoolean('showWebStoreIcon')) {
@@ -547,10 +530,6 @@ cr.define('ntp', function() {
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
-  function setSuggestionsPages(data, hasBlacklistedUrls) {
-    newTabView.suggestionsPage.data = data;
-  }
-
   /**
    * Set the dominant color for a node. This will be called in response to
    * getFaviconDominantColor. The node represented by |id| better have a setter
@@ -759,7 +738,6 @@ cr.define('ntp', function() {
     setBookmarkBarAttached: setBookmarkBarAttached,
     setForeignSessions: setForeignSessions,
     setMostVisitedPages: setMostVisitedPages,
-    setSuggestionsPages: setSuggestionsPages,
     setFaviconDominantColor: setFaviconDominantColor,
     showNotification: showNotification,
     themeChanged: themeChanged,

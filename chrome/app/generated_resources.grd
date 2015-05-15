@@ -11676,10 +11676,6 @@ Dead Jim feedback.
 
       <!-- Strings used for non-Android builds -->
       <if expr="not is_android">
-        <message name="IDS_NEW_TAB_SUGGESTIONS"
-                 desc="The name for the 'Suggestions' navigation control on the New Tab Page.">
-          Suggested
-        </message>
         <message name="IDS_APP_DEFAULT_PAGE_NAME"
                  desc="Default name for the first 'Apps' page on the New Tab Page.">
           Apps

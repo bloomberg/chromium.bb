@@ -279,13 +279,6 @@
       <if expr="enable_google_now">
         <include name="IDR_GOOGLE_NOW_MANIFEST" file="resources\google_now\manifest.json" type="BINDATA" />
       </if>
-      <if expr="not is_android">
-        <include name="IDR_SUGGESTIONS_INTERNALS_HTML" file="resources\suggestions_internals\suggestions_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_SUGGESTIONS_INTERNALS_CSS" file="resources\suggestions_internals\suggestions_internals.css" type="BINDATA" />
-        <include name="IDR_SUGGESTIONS_INTERNALS_JS" file="resources\suggestions_internals\suggestions_internals.js" type="BINDATA" />
-        <include name="IDR_SUGGESTIONS_PAGE_CSS" file="resources\ntp4\suggestions_page.css" type="BINDATA" />
-        <include name="IDR_SUGGESTIONS_PAGE_JS" file="resources\ntp4\suggestions_page.js" type="BINDATA" />
-      </if>
       <include name="IDR_UBER_HTML" file="resources\uber\uber.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_JS" file="resources\uber\uber.js" type="BINDATA" />
       <include name="IDR_UBER_FRAME_HTML" file="resources\uber\uber_frame.html" flattenhtml="true" type="BINDATA" />

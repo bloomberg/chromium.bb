@@ -421,8 +421,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   load_time_data.SetString("mostvisited",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED));
-  load_time_data.SetString("suggestions",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_SUGGESTIONS));
   load_time_data.SetString("restoreThumbnailsShort",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK));
   load_time_data.SetString("webStoreTitle",
@@ -477,8 +475,6 @@ void NTPResourceCache::CreateNewTabHTML() {
           GURL(extension_urls::GetWebstoreLaunchURL()), app_locale).spec());
   load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
-  load_time_data.SetBoolean("isDiscoveryInNTPEnabled",
-      NewTabUI::IsDiscoveryInNTPEnabled());
   load_time_data.SetString("collapseSessionMenuItemText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION));
   load_time_data.SetString("expandSessionMenuItemText",

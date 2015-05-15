@@ -1526,7 +1526,6 @@
       'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
       'browser/ui/webui/media_router/query_result_manager_unittest.cc',
       'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
-      'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
       'browser/ui/webui/options/autofill_options_handler_unittest.cc',
       'browser/ui/webui/options/language_options_handler_unittest.cc',
       'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',

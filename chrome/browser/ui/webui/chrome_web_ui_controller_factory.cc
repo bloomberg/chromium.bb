@@ -96,7 +96,6 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
-#include "chrome/browser/ui/webui/suggestions_internals/suggestions_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 #include "chrome/browser/ui/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
@@ -406,8 +405,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
        ::switches::AboutInSettingsEnabled())) {
     return &NewWebUI<options::OptionsUI>;
   }
-  if (url.host() == chrome::kChromeUISuggestionsInternalsHost)
-    return &NewWebUI<SuggestionsInternalsUI>;
   if (url.host() == chrome::kChromeUISyncFileSystemInternalsHost)
     return &NewWebUI<SyncFileSystemInternalsUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)

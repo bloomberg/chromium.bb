@@ -76,8 +76,6 @@ const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUIContentSettingsURL[] = "chrome://settings/content";
 const char kChromeUISettingsFrameURL[] = "chrome://settings-frame/";
 const char kChromeUISuggestionsURL[] = "chrome://suggestions/";
-const char kChromeUISuggestionsInternalsURL[] =
-    "chrome://suggestions-internals/";
 const char kChromeUISupervisedUserPassphrasePageURL[] =
     "chrome://managed-user-passphrase/";
 const char kChromeUITermsURL[] = "chrome://terms/";
@@ -229,7 +227,6 @@ const char kChromeUISettingsFrameHost[] = "settings-frame";
 const char kChromeUIShorthangHost[] = "shorthang";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISuggestionsHost[] = "suggestions";
-const char kChromeUISuggestionsInternalsHost[] = "suggestions-internals";
 const char kChromeUISupervisedUserPassphrasePageHost[] =
     "managed-user-passphrase";
 const char kChromeUISyncHost[] = "sync";
