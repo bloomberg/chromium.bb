@@ -87,21 +87,29 @@ void ChromeMetroViewerProcessHost::OnChannelError() {
   // connected.
   ::SetEnvironmentVariableA(env_vars::kMetroConnected, NULL);
 
-  aura::RemoteWindowTreeHostWin::Instance()->Disconnected();
-  chrome::DecrementKeepAliveCount();
+  // It seems possible that channel is connected, but ASH desktop is not yet
+  // created (instance is still NULL) and we receive channel error.
+  if (aura::RemoteWindowTreeHostWin::Instance()) {
+    aura::RemoteWindowTreeHostWin::Instance()->Disconnected();
 
-  // If browser is trying to quit, we shouldn't reenter the process.
-  // TODO(shrikant): In general there seem to be issues with how AttemptExit
-  // reentry works. In future release please clean up related code.
-  if (!browser_shutdown::IsTryingToQuit()) {
-    CloseOpenAshBrowsers();
-    chrome::CloseAsh();
+    chrome::DecrementKeepAliveCount();
+
+    // If browser is trying to quit, we shouldn't reenter the process.
+    // TODO(shrikant): In general there seem to be issues with how AttemptExit
+    // reentry works. In future release please clean up related code.
+    if (!browser_shutdown::IsTryingToQuit()) {
+      CloseOpenAshBrowsers();
+      chrome::CloseAsh();
+    }
+    // Tell the rest of Chrome about it.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_ASH_SESSION_ENDED,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+    return;
   }
-  // Tell the rest of Chrome about it.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_ASH_SESSION_ENDED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+
+  chrome::DecrementKeepAliveCount();
 
   // This will delete the MetroViewerProcessHost object. Don't access member
   // variables/functions after this call.
