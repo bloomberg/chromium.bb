@@ -40,7 +40,7 @@ class CallbackThreadAdapter : public blink::WebCallbacks<S, T> {
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id_,
         base::Bind(&blink::WebCallbacks<S, T>::onSuccess,
-                   base::Unretained(callbacks_.get()), results));
+                   base::Owned(callbacks_.release()), results));
   }
 
   virtual void onError(T* error) {
@@ -49,7 +49,7 @@ class CallbackThreadAdapter : public blink::WebCallbacks<S, T> {
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id_,
         base::Bind(&blink::WebCallbacks<S, T>::onError,
-                   base::Unretained(callbacks_.get()), error));
+                   base::Owned(callbacks_.release()), error));
   }
 
  private:
