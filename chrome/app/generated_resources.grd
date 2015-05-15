@@ -10558,6 +10558,9 @@ Dead Jim feedback.
         <message name="IDS_OPTIONS_PASSWORD_MANAGER_ENABLE" desc="The label of the password manager checkbox">
           Offer to save your web passwords.
         </message>
+        <message name="IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE" desc="The label of the password manager checkbox if Smart Lock is enabled.">
+          Offer to save passwords with Google Smart Lock for Passwords.
+        </message>
         <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
           Offer to sign in to Google sites automatically with this account
         </message>

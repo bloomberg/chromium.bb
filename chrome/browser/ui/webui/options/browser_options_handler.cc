@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
 #include "chrome/common/chrome_constants.h"
@@ -307,7 +308,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "metricsReportingResetRestart", IDS_OPTIONS_ENABLE_LOGGING_RESTART },
     { "networkPredictionEnabledDescription",
       IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION },
-    { "passwordManagerEnabled", IDS_OPTIONS_PASSWORD_MANAGER_ENABLE },
+    { "passwordManagerEnabled",
+      password_bubble_experiment::IsSmartLockBrandingEnabled(
+          Profile::FromWebUI(web_ui())) ?
+      IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE :
+      IDS_OPTIONS_PASSWORD_MANAGER_ENABLE },
     { "passwordsAndAutofillGroupName",
       IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME },
     { "privacyClearDataButton", IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
