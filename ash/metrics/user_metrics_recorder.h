@@ -149,6 +149,10 @@ class ASH_EXPORT UserMetricsRecorder {
   // Records an Ash owned user action.
   void RecordUserMetricsAction(ash::UserMetricsAction action);
 
+  TaskSwitchMetricsRecorder& task_switch_metrics_recorder() {
+    return task_switch_metrics_recorder_;
+  }
+
  private:
   friend class test::UserMetricsRecorderTestAPI;
 

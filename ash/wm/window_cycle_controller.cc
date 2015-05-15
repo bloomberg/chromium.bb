@@ -4,17 +4,25 @@
 
 #include "ash/wm/window_cycle_controller.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_cycle_list.h"
 #include "base/metrics/histogram.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 
 namespace ash {
 
 namespace {
+
+// Returns the most recently active window from the |window_list| or nullptr
+// if the list is empty.
+aura::Window* GetActiveWindow(const MruWindowTracker::WindowList& window_list) {
+  return window_list.empty() ? nullptr : window_list[0];
+}
 
 // Filter to watch for the termination of a keyboard gesture to cycle through
 // multiple windows.
@@ -77,8 +85,12 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 }
 
 void WindowCycleController::StartCycling() {
-  window_cycle_list_.reset(new WindowCycleList(ash::Shell::GetInstance()->
-      mru_window_tracker()->BuildMruWindowList()));
+  MruWindowTracker::WindowList window_list =
+      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+
+  active_window_before_window_cycle_ = GetActiveWindow(window_list);
+
+  window_cycle_list_.reset(new WindowCycleList(window_list));
   event_handler_.reset(new WindowCycleEventFilter());
   cycle_start_time_ = base::Time::Now();
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
@@ -94,10 +106,23 @@ void WindowCycleController::Step(Direction direction) {
 
 void WindowCycleController::StopCycling() {
   window_cycle_list_.reset();
+
+  aura::Window* active_window_after_window_cycle = GetActiveWindow(
+      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+
   // Remove our key event filter.
   event_handler_.reset();
   UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowCycleController.CycleTime",
                              base::Time::Now() - cycle_start_time_);
+
+  if (active_window_after_window_cycle != nullptr &&
+      active_window_before_window_cycle_ != active_window_after_window_cycle) {
+    Shell::GetInstance()
+        ->metrics()
+        ->task_switch_metrics_recorder()
+        .OnTaskSwitch(TaskSwitchMetricsRecorder::kWindowCycleController);
+  }
+  active_window_before_window_cycle_ = nullptr;
 }
 
 }  // namespace ash

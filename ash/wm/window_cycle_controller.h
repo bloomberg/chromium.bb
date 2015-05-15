@@ -14,6 +14,10 @@ namespace ui {
 class EventHandler;
 }
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace ash {
 
 class WindowCycleList;
@@ -62,6 +66,10 @@ class ASH_EXPORT WindowCycleController {
   void Step(Direction direction);
 
   scoped_ptr<WindowCycleList> window_cycle_list_;
+
+  // Tracks what Window was active when starting to cycle and used to determine
+  // if the active Window changed in when ending cycling.
+  aura::Window* active_window_before_window_cycle_ = nullptr;
 
   // Event handler to watch for release of alt key.
   scoped_ptr<ui::EventHandler> event_handler_;

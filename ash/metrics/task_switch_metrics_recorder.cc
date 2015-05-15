@@ -13,12 +13,17 @@ namespace {
 const char kShelfHistogramName[] =
     "Ash.Shelf.TimeBetweenNavigateToTaskSwitches";
 
+const char kAcceleratorWindowCycleHistogramName[] =
+    "Ash.WindowCycleController.TimeBetweenTaskSwitches";
+
 // Returns the histogram name for the given |task_switch_source|.
 const char* GetHistogramName(
     TaskSwitchMetricsRecorder::TaskSwitchSource task_switch_source) {
   switch (task_switch_source) {
     case TaskSwitchMetricsRecorder::kShelf:
       return kShelfHistogramName;
+    case TaskSwitchMetricsRecorder::kWindowCycleController:
+      return kAcceleratorWindowCycleHistogramName;
   }
   NOTREACHED();
   return nullptr;

@@ -23,7 +23,9 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
   // a task switch. Note this is not necessarily comprehensive of all sources.
   enum TaskSwitchSource {
     // All task switches caused by shelf buttons, not including sub-menus.
-    kShelf
+    kShelf,
+    // Task switches caused by the WindowCycleController (ie Alt+Tab).
+    kWindowCycleController
   };
 
   TaskSwitchMetricsRecorder();

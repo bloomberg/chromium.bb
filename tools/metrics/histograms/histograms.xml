@@ -916,6 +916,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowCycleController.TimeBetweenTaskSwitches"
+    units="seconds">
+  <owner>tdanderson@google.com</owner>
+  <owner>bruthig@google.com</owner>
+  <summary>
+    The number of seconds between task switches triggered by the next window and
+    previous window accelerator keys (ie Alt+Tab, Alt+Shift+Tab).
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowSelector.ArrowKeyPresses">
   <owner>flackr@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
