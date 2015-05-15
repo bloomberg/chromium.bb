@@ -148,6 +148,10 @@ bool DataReductionProxyParams::ShouldUseSecureProxyByDefault() {
               kDataReductionProxyStartSecureDisabled))
     return false;
 
+  if (FieldTrialList::FindFullName("DataReductionProxySecureProxyAfterCheck") ==
+      kEnabled)
+    return false;
+
   return true;
 }
 

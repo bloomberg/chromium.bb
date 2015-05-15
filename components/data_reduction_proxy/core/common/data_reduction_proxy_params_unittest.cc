@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -765,6 +766,57 @@ TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
       "google/sprout/sprout:4.4.4/KPW53/1379542:user/release-keys"));
   EXPECT_FALSE(DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
       "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
+}
+
+TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
+  struct {
+    bool command_line_set;
+    bool experiment_enabled;
+    bool in_trial_group;
+    bool expected_use_by_default;
+  } test_cases[]{
+      {
+       false, false, false, true,
+      },
+      {
+       true, false, false, false,
+      },
+      {
+       true, true, false, false,
+      },
+      {
+       true, true, true, false,
+      },
+      {
+       false, true, true, false,
+      },
+      {
+       false, true, false, true,
+      },
+  };
+
+  int test_index = 0;
+  for (const auto& test_case : test_cases) {
+    // Reset all flags.
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+
+    base::FieldTrialList trial_list(nullptr);
+    if (test_case.command_line_set) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyStartSecureDisabled, "");
+    }
+
+    if (test_case.experiment_enabled) {
+      base::FieldTrialList::CreateFieldTrial(
+          "DataReductionProxySecureProxyAfterCheck",
+          test_case.in_trial_group ? "Enabled" : "Disabled");
+    }
+
+    EXPECT_EQ(test_case.expected_use_by_default,
+              DataReductionProxyParams::ShouldUseSecureProxyByDefault())
+        << test_index;
+    test_index++;
+  }
 }
 
 TEST_F(DataReductionProxyParamsTest, PopulateConfigResponse) {
