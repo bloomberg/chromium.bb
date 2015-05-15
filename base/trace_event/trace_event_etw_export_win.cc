@@ -132,7 +132,9 @@ void TraceEventETWExport::AddEvent(
       !EventEnabledChromeEvent())
     return;
 
-  std::string phase_string;
+  const char* phase_string = nullptr;
+  // Space to store the phase identifier and null-terminator, when needed.
+  char phase_buffer[2];
   switch (phase) {
     case TRACE_EVENT_PHASE_BEGIN:
       phase_string = "Begin";
@@ -195,14 +197,20 @@ void TraceEventETWExport::AddEvent(
       phase_string = "Phase Delete Object";
       break;
     default:
-      phase_string.push_back(phase);
+      phase_buffer[0] = phase;
+      phase_buffer[1] = 0;
+      phase_string = phase_buffer;
       break;
   }
 
   std::string arg_values_string[3];
   for (int i = 0; i < num_args; i++) {
     if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-      convertable_values[i]->AppendAsTraceFormat(arg_values_string + i);
+      // Temporarily do nothing here. This function consumes 1/3 to 1/2 of
+      // *total* process CPU time when ETW tracing, and many of the strings
+      // created exceed WPA's 4094 byte limit and are shown as:
+      // "Unable to parse data". See crbug.com/488257
+      //convertable_values[i]->AppendAsTraceFormat(arg_values_string + i);
     } else {
       TraceEvent::TraceValue trace_event;
       trace_event.as_uint = arg_values[i];
@@ -212,7 +220,7 @@ void TraceEventETWExport::AddEvent(
   }
 
   EventWriteChromeEvent(
-      name, phase_string.c_str(), num_args > 0 ? arg_names[0] : "",
+      name, phase_string, num_args > 0 ? arg_names[0] : "",
       arg_values_string[0].c_str(), num_args > 1 ? arg_names[1] : "",
       arg_values_string[1].c_str(), num_args > 2 ? arg_names[2] : "",
       arg_values_string[2].c_str());
