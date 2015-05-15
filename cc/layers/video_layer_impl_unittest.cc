@@ -8,6 +8,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -243,6 +244,86 @@ TEST(VideoLayerImplTest, Rotated270) {
   impl.quad_list().front()->quadTransform().TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(100, 50, 0), p1);
   EXPECT_EQ(gfx::Point3F(0, 0, 0), p2);
+}
+
+void EmptyCallback(unsigned sync_point) {
+}
+
+TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
+
+  gpu::MailboxHolder mailbox_holder;
+  mailbox_holder.mailbox.name[0] = 1;
+
+  scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
+      media::VideoFrame::YV12, gfx::Size(20, 10), gfx::Rect(20, 10),
+      gfx::Size(20, 10), base::TimeDelta());
+
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetContentBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+  const DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+
+  const YUVVideoDrawQuad* yuv_draw_quad =
+      static_cast<const YUVVideoDrawQuad*>(draw_quad);
+  EXPECT_EQ(yuv_draw_quad->uv_tex_size.height(),
+            (yuv_draw_quad->ya_tex_size.height() + 1) / 2);
+  EXPECT_EQ(yuv_draw_quad->uv_tex_size.width(),
+            (yuv_draw_quad->ya_tex_size.width() + 1) / 2);
+}
+
+TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
+
+  gpu::MailboxHolder mailbox_holder;
+  mailbox_holder.mailbox.name[0] = 1;
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::WrapYUV420NativeTextures(
+          mailbox_holder, mailbox_holder, mailbox_holder,
+          base::Bind(EmptyCallback), gfx::Size(10, 10), gfx::Rect(10, 10),
+          gfx::Size(10, 10), base::TimeDelta(), true);
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetContentBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+  const DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+
+  const YUVVideoDrawQuad* yuv_draw_quad =
+      static_cast<const YUVVideoDrawQuad*>(draw_quad);
+  EXPECT_EQ(yuv_draw_quad->uv_tex_size.height(),
+            (yuv_draw_quad->ya_tex_size.height() + 1) / 2);
+  EXPECT_EQ(yuv_draw_quad->uv_tex_size.width(),
+            (yuv_draw_quad->ya_tex_size.width() + 1) / 2);
 }
 
 }  // namespace

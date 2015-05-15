@@ -217,8 +217,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
       DCHECK_GE(frame_resources_.size(), 3u);
-      if (frame_resources_.size() < 3u)
-        break;
+
       YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
       if (frame_->format() == media::VideoFrame::YV12J) {
         color_space = YUVVideoDrawQuad::JPEG;
@@ -227,15 +226,26 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       }
 
       const gfx::Size ya_tex_size = coded_size;
-      const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
-          frame_->format(), media::VideoFrame::kUPlane, coded_size);
-      DCHECK(uv_tex_size ==
-             media::VideoFrame::PlaneSize(
-                 frame_->format(), media::VideoFrame::kVPlane, coded_size));
-      if (frame_resources_.size() > 3) {
-        DCHECK(ya_tex_size ==
+      gfx::Size uv_tex_size;
+
+      if (frame_->format() == media::VideoFrame::NATIVE_TEXTURE) {
+        DCHECK_EQ(media::VideoFrame::TEXTURE_YUV_420, frame_->texture_format());
+        DCHECK_EQ(3u, frame_resources_.size());  // Alpha is not supported yet.
+        DCHECK(visible_rect.origin().IsOrigin());
+        DCHECK(visible_rect.size() == coded_size);
+        uv_tex_size.SetSize((ya_tex_size.width() + 1) / 2,
+                            (ya_tex_size.height() + 1) / 2);
+      } else {
+        uv_tex_size = media::VideoFrame::PlaneSize(
+            frame_->format(), media::VideoFrame::kUPlane, coded_size);
+        DCHECK(uv_tex_size ==
                media::VideoFrame::PlaneSize(
-                   frame_->format(), media::VideoFrame::kAPlane, coded_size));
+                   frame_->format(), media::VideoFrame::kVPlane, coded_size));
+        DCHECK_IMPLIES(
+            frame_resources_.size() > 3,
+            ya_tex_size ==
+                media::VideoFrame::PlaneSize(
+                    frame_->format(), media::VideoFrame::kAPlane, coded_size));
       }
 
       // Compute the UV sub-sampling factor based on the ratio between
