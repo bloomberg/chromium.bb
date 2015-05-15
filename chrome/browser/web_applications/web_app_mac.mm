@@ -700,6 +700,9 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
       return succeeded;
     }
 
+    // Ensure the copy does not merge with stale info.
+    base::DeleteFile(dst_path.Append(app_name), true);
+
     if (!base::CopyDirectory(staging_path, dst_path, true)) {
       LOG(ERROR) << "Copying app to dst path: " << dst_path.value()
                  << " failed";
@@ -798,7 +801,6 @@ void WebAppShortcutCreator::DeleteShortcuts() {
 
 bool WebAppShortcutCreator::UpdateShortcuts() {
   std::vector<base::FilePath> paths;
-  base::DeleteFile(GetInternalShortcutPath(), true);
   paths.push_back(app_data_dir_);
 
   // Try to update the copy under /Applications. If that does not exist, check
@@ -807,10 +809,8 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
   if (app_path.empty() || !base::PathExists(app_path))
     app_path = GetAppBundleById(GetBundleIdentifier());
 
-  if (!app_path.empty()) {
-    base::DeleteFile(app_path, true);
+  if (!app_path.empty())
     paths.push_back(app_path.DirName());
-  }
 
   size_t success_count = CreateShortcutsIn(paths);
   if (success_count == 0)
@@ -897,9 +897,13 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
 
 bool WebAppShortcutCreator::UpdateDisplayName(
     const base::FilePath& app_path) const {
-  // OSX searches for the best language in the order of preferred languages.
-  // Since we only have one localization directory, it will choose this one.
-  base::FilePath localized_dir = GetResourcesPath(app_path).Append("en.lproj");
+  // Localization is used to display the app name (rather than the bundle
+  // filename). OSX searches for the best language in the order of preferred
+  // languages, but one of them must be found otherwise it will default to
+  // the filename.
+  NSString* language = [[NSLocale preferredLanguages] objectAtIndex:0];
+  base::FilePath localized_dir = GetResourcesPath(app_path).Append(
+      base::SysNSStringToUTF8(language) + ".lproj");
   if (!base::CreateDirectory(localized_dir))
     return false;
 
