@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 #include "net/base/net_util.h"
 
 namespace extensions {
@@ -75,12 +76,13 @@ bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
   GURL origin = rfh->GetLastCommittedURL().GetOrigin();
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowHttpScreenCapture) &&
-      !origin.SchemeIsSecure()) {
+      !content::IsOriginSecure(origin)) {
     error_ = kUrlNotSecure;
     return false;
   }
-  base::string16 target_name = base::UTF8ToUTF16(origin.SchemeIsSecure() ?
-      net::GetHostAndOptionalPort(origin) : origin.spec());
+  base::string16 target_name = base::UTF8ToUTF16(
+      content::IsOriginSecure(origin) ? net::GetHostAndOptionalPort(origin)
+                                      : origin.spec());
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(rvh);
