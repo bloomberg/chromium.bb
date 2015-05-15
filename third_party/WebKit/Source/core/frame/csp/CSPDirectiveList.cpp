@@ -416,34 +416,9 @@ const String& CSPDirectiveList::pluginTypesText() const
 
 bool CSPDirectiveList::shouldSendCSPHeader(Resource::Type type) const
 {
-    switch (type) {
-    case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return !!operativeDirective(m_scriptSrc.get());
-    case Resource::Script:
-    case Resource::ImportResource:
-        return !!operativeDirective(m_scriptSrc.get());
-    case Resource::CSSStyleSheet:
-        return !!operativeDirective(m_styleSrc.get());
-    case Resource::SVGDocument:
-    case Resource::Image:
-        return !!operativeDirective(m_imgSrc.get());
-    case Resource::Font:
-        return !!operativeDirective(m_fontSrc.get());
-    case Resource::Media:
-    case Resource::TextTrack:
-        return !!operativeDirective(m_mediaSrc.get());
-    case Resource::Raw:
-        // This request could be for a plugin, a child frame, a worker, or
-        // something else. If there any potentially relevant policies,
-        // send the CSP header; sending it unnecessarily can't hurt.
-        return !!operativeDirective(m_objectSrc.get()) || !!m_pluginTypes.get() || !!operativeDirective(m_childSrc.get()) || !!operativeDirective(m_frameSrc.get()) || !!operativeDirective(m_connectSrc.get()) || !!operativeDirective(m_manifestSrc.get()) || !!m_formAction.get();
-    case Resource::MainResource:
-    case Resource::LinkPrefetch:
-    case Resource::LinkSubresource:
-        return false;
-    }
-    ASSERT_NOT_REACHED();
+    // TODO(mkwst): Revisit this once the CORS prefetch issue with the 'CSP'
+    //              header is worked out, one way or another:
+    //              https://github.com/whatwg/fetch/issues/52
     return false;
 }
 

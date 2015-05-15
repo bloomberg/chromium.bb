@@ -13,5 +13,5 @@ async_test(function(t) {
 }, 'CSP header is not sent on resource requests for which there is no policy.');
 
 test(function() {
-    assert_true(typeof(script_loaded) !== "undefined");
-}, 'CSP header is sent on resource requests for which there is a policy.');
+    assert_true(typeof(script_loaded) === "undefined");
+}, 'CSP header is not sent on resource requests for which there is a policy.');
