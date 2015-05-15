@@ -211,6 +211,7 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
   input_method_ = proxy_->GetInputMethod();
   input_method_->AddObserver(this);
   window_bounds_observer_.reset(new WindowBoundsChangeObserver());
+  proxy_->SetController(this);
 }
 
 KeyboardController::~KeyboardController() {
@@ -222,6 +223,7 @@ KeyboardController::~KeyboardController() {
   if (input_method_)
     input_method_->RemoveObserver(this);
   ResetWindowInsets();
+  proxy_->SetController(nullptr);
 }
 
 // static

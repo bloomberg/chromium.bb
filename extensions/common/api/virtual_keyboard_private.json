@@ -39,7 +39,17 @@
         "type": "string",
         "description": "The value of type attribute of the focused text input box.",
         "enum": ["text", "number", "password", "date", "url", "tel", "email"]
-       }
+      },
+      {
+        "id": "Bounds",
+        "type": "object",
+        "properties": {
+          "left": {"type": "integer", "description": "The position of the virtual keyboard window's left edge."},
+          "top": {"type": "integer", "description": "The position of the virtual keyboard window's top edge."},
+          "width": {"type": "integer", "description": "The width of the virtual keyboard window."},
+          "height": {"type": "integer", "description": "The height of the virtual keyboard window."}
+        }
+      }
     ],
     "functions": [
       {
@@ -206,6 +216,18 @@
                 "description": "The value of type attribute of the focused text input box."
               }
             }
+          }
+        ]
+      },
+      {
+        "name": "onBoundsChanged",
+        "type": "function",
+        "description": "This event is sent when virtual keyboard bounds changed and overscroll/resize is enabled.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "description": "The virtual keyboard bounds",
+            "$ref": "Bounds"
           }
         ]
       }

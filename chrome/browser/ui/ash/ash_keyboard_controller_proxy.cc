@@ -26,6 +26,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace virtual_keyboard_private =
     extensions::core_api::virtual_keyboard_private;
@@ -69,6 +70,43 @@ TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
   return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_NONE;
 }
 
+class AshKeyboardControllerObserver
+    : public keyboard::KeyboardControllerObserver {
+ public:
+  explicit AshKeyboardControllerObserver(content::BrowserContext* context)
+      : context_(context) {}
+  ~AshKeyboardControllerObserver() override {}
+
+  // KeyboardControllerObserver overrides:
+  void OnKeyboardBoundsChanging(const gfx::Rect& bounds) override {
+    extensions::EventRouter* router = extensions::EventRouter::Get(context_);
+
+    if (!router->HasEventListener(
+            virtual_keyboard_private::OnBoundsChanged::kEventName)) {
+      return;
+    }
+
+    scoped_ptr<base::ListValue> event_args(new base::ListValue());
+    scoped_ptr<base::DictionaryValue> new_bounds(new base::DictionaryValue());
+    new_bounds->SetInteger("left", bounds.x());
+    new_bounds->SetInteger("top", bounds.y());
+    new_bounds->SetInteger("width", bounds.width());
+    new_bounds->SetInteger("height", bounds.height());
+    event_args->Append(new_bounds.release());
+
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        virtual_keyboard_private::OnBoundsChanged::kEventName,
+        event_args.Pass()));
+    event->restrict_to_browser_context = context_;
+    router->BroadcastEvent(event.Pass());
+  }
+
+ private:
+  content::BrowserContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerObserver);
+};
+
 }  // namespace
 
 AshKeyboardControllerProxy::AshKeyboardControllerProxy(
@@ -76,7 +114,9 @@ AshKeyboardControllerProxy::AshKeyboardControllerProxy(
     : keyboard::KeyboardControllerProxy(context) {
 }
 
-AshKeyboardControllerProxy::~AshKeyboardControllerProxy() {}
+AshKeyboardControllerProxy::~AshKeyboardControllerProxy() {
+  DCHECK(!keyboard_controller_);
+}
 
 void AshKeyboardControllerProxy::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
@@ -121,6 +161,20 @@ extensions::WindowController*
     AshKeyboardControllerProxy::GetExtensionWindowController() const {
   // The keyboard doesn't have a window controller.
   return NULL;
+}
+
+void AshKeyboardControllerProxy::SetController(
+    keyboard::KeyboardController* controller) {
+  // During KeyboardController destruction, controller can be set to null.
+  if (!controller) {
+    DCHECK(keyboard_controller_);
+    keyboard_controller_->RemoveObserver(observer_.get());
+    keyboard_controller_ = nullptr;
+    return;
+  }
+  keyboard_controller_ = controller;
+  observer_.reset(new AshKeyboardControllerObserver(browser_context()));
+  keyboard_controller_->AddObserver(observer_.get());
 }
 
 content::WebContents*

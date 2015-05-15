@@ -22,6 +22,10 @@ class WindowController;
 namespace gfx {
 class Rect;
 }
+namespace keyboard {
+class KeyboardController;
+class KeyboardControllerObserver;
+}
 namespace ui {
 class InputMethod;
 }
@@ -46,6 +50,7 @@ class AshKeyboardControllerProxy
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
   void SetupWebContents(content::WebContents* contents) override;
+  void SetController(keyboard::KeyboardController* controller) override;
   void ShowKeyboardContainer(aura::Window* container) override;
 
   // The overridden implementation dispatches
@@ -65,8 +70,11 @@ class AshKeyboardControllerProxy
   bool OnMessageReceived(const IPC::Message& message) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
+  keyboard::KeyboardController* keyboard_controller_;
+
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;
+  scoped_ptr<keyboard::KeyboardControllerObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerProxy);
 };

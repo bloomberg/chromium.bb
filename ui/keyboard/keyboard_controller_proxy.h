@@ -31,6 +31,8 @@ class Shadow;
 
 namespace keyboard {
 
+class KeyboardController;
+
 // A proxy used by the KeyboardController to get access to the virtual
 // keyboard window.
 class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
@@ -100,6 +102,11 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   // provided keyboard, or keep using the system virtual keyboard if IME doesn't
   // provide one.
   virtual void ReloadKeyboardIfNeeded();
+
+  // KeyboardController owns KeyboardControllerProxy so KeyboardControllerProxy
+  // or its subclasses should not take ownership of the |controller|.
+  // |controller| can be null when KeyboardController is destroying.
+  virtual void SetController(KeyboardController* controller) {}
 
  protected:
   // The implementation can choose to setup the WebContents before the virtual
