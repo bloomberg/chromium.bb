@@ -52,6 +52,27 @@ def GetNonRootUser():
     return user
 
 
+def IsChildProcess(pid, name=None):
+  """Return True if pid is a child of the current process.
+
+  Args:
+    pid: Child pid to search for in current process's pstree.
+    name: Name of the child process.
+
+  Note:
+    This function is not fool proof. If the process tree contains wierd names,
+    an incorrect match might be possible.
+  """
+  cmd = ['pstree', '-Ap', str(os.getpid())]
+  pstree = cros_build_lib.RunCommand(
+      cmd, capture_output=True, print_cmd=False).output
+  if name is None:
+    match = '(%d)' % pid
+  else:
+    match = '-%s(%d)' % (name, pid)
+  return match in pstree
+
+
 def ExpandPath(path):
   """Returns path after passing through realpath and expanduser."""
   return os.path.realpath(os.path.expanduser(path))

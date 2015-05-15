@@ -173,4 +173,4 @@ Examples:
     except Exception as e:
       self._HandleException(e)
     else:
-      logging.info('cros flash completed successfully.')
+      logging.notice('cros flash completed successfully.')

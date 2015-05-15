@@ -182,6 +182,7 @@ class ProgressBarOperation(object):
     shutil.move(self._stderr_path, path)
     logging.warning('Please look at %s for more information.', path)
 
+  # TODO (ralphnathan): Store PID of spawned process.
   def Run(self, func, *args, **kwargs):
     """Run func, parse its output, and update the progress bar.
 

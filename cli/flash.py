@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import cStringIO
 import os
+import re
 import shutil
 import tempfile
 import time
@@ -30,6 +31,57 @@ from chromite.lib import workspace_lib
 
 _DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
+
+
+class UsbImagerOperation(operation.ProgressBarOperation):
+  """Progress bar for flashing image to operation."""
+
+  def __init__(self, image):
+    super(UsbImagerOperation, self).__init__()
+    self._size = os.path.getsize(image)
+    self._transferred = 0.
+    self._bytes = re.compile(r'(\d+) bytes')
+
+  def _GetDDPid(self):
+    """Get the Pid of dd."""
+    try:
+      pids = cros_build_lib.RunCommand(['pgrep', 'dd'], capture_output=True,
+                                       print_cmd=False).output
+      for pid in pids.splitlines():
+        if osutils.IsChildProcess(int(pid), name='dd'):
+          return int(pid)
+      return -1
+    except cros_build_lib.RunCommandError:
+      # If dd isn't still running, then we assume that it is finished.
+      return -1
+
+  def _PingDD(self, dd_pid):
+    """Send USR1 signal to dd to get status update."""
+    try:
+      cmd = ['kill', '-USR1', str(dd_pid)]
+      cros_build_lib.SudoRunCommand(cmd, print_cmd=False)
+    except cros_build_lib.RunCommandError:
+      # Here we assume that dd finished in the background.
+      return
+
+  def ParseOutput(self, output=None):
+    """Parse the output of dd to update progress bar."""
+    dd_pid = self._GetDDPid()
+    if dd_pid == -1:
+      return
+
+    self._PingDD(dd_pid)
+
+    if output is None:
+      stdout = self._stdout.read()
+      stderr = self._stderr.read()
+      output = stdout + stderr
+
+    match = self._bytes.search(output)
+    if match:
+      self._transferred = match.groups()[0]
+
+    self.ProgressBar(float(self._transferred) / self._size)
 
 
 def _IsFilePathGPTDiskImage(file_path):
@@ -160,24 +212,18 @@ class USBImager(object):
       image: Path to the image to copy.
       device: Device to copy to.
     """
-    # Use pv to display progress bar if possible.
-    cmd_base = 'pv -pretb'
-    try:
-      cros_build_lib.RunCommand(['pv', '--version'], print_cmd=False,
-                                capture_output=True)
-    except cros_build_lib.RunCommandError:
-      cmd_base = 'cat'
+    cmd = ['dd', 'if=%s' % image, 'of=%s' % device, 'bs=4M', 'iflag=fullblock',
+           'oflag=sync']
+    if logging.getLogger().getEffectiveLevel() <= logging.NOTICE:
+      op = UsbImagerOperation(image)
+      op.Run(cros_build_lib.SudoRunCommand, cmd, debug_level=logging.NOTICE,
+             update_period=0.5)
+    else:
+      cros_build_lib.SudoRunCommand(
+          cmd, debug_level=logging.NOTICE,
+          print_cmd=logging.getLogger().getEffectiveLevel() < logging.NOTICE)
 
-    cmd = '%s %s | dd of=%s bs=4M iflag=fullblock oflag=sync' % (
-        cmd_base, image, device)
-
-    # We want to display the output at logging level NOTICE or less but we only
-    # want to print the command at logging levels INFO and DEBUG.
-    cros_build_lib.SudoRunCommand(
-        cmd, shell=True, debug_level=logging.NOTICE,
-        print_cmd=logging.getLogger().getEffectiveLevel() < logging.NOTICE)
     cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
-
 
   def _GetImagePath(self):
     """Returns the image path to use."""

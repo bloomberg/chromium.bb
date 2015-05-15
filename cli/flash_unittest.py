@@ -13,6 +13,8 @@ from chromite.cli import flash
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
 from chromite.lib import osutils
@@ -205,6 +207,77 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests that we ask user to choose a device if none is given."""
     flash.Flash(self.Device(''), self.IMAGE)
     self.assertTrue(self.imager_mock.patched['ChooseRemovableDevice'].called)
+
+
+class UsbImagerOperationTest(cros_build_lib_unittest.RunCommandTestCase):
+  """Tests for flash.UsbImagerOperation."""
+  # pylint: disable=protected-access
+
+  def setUp(self):
+    self.PatchObject(flash.UsbImagerOperation, '__init__', return_value=None)
+
+  def testUsbImagerOperationCalled(self):
+    """Test that flash.UsbImagerOperation is called when log level <= NOTICE."""
+    expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',
+                    'oflag=sync']
+    usb_imager = flash.USBImager('dummy_device', 'board', 'foo')
+    run_mock = self.PatchObject(flash.UsbImagerOperation, 'Run')
+    self.PatchObject(logging.Logger, 'getEffectiveLevel',
+                     return_value=logging.NOTICE)
+    usb_imager.CopyImageToDevice('foo', 'bar')
+
+    # Check that flash.UsbImagerOperation.Run() is called correctly.
+    run_mock.assert_called_with(cros_build_lib.SudoRunCommand, expected_cmd,
+                                debug_level=logging.NOTICE, update_period=0.5)
+
+  def testSudoRunCommandCalled(self):
+    """Test that SudoRunCommand is called when log level > NOTICE."""
+    expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',
+                    'oflag=sync']
+    usb_imager = flash.USBImager('dummy_device', 'board', 'foo')
+    run_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    self.PatchObject(logging.Logger, 'getEffectiveLevel',
+                     return_value=logging.WARNING)
+    usb_imager.CopyImageToDevice('foo', 'bar')
+
+    # Check that SudoRunCommand() is called correctly.
+    run_mock.assert_any_call(expected_cmd, debug_level=logging.NOTICE,
+                             print_cmd=False)
+
+  def testPingDD(self):
+    """Test that UsbImagerOperation._PingDD() sends the correct signal."""
+    expected_cmd = ['kill', '-USR1', '5']
+    run_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    op = flash.UsbImagerOperation('foo')
+    op._PingDD(5)
+
+    # Check that SudoRunCommand was called correctly.
+    run_mock.assert_called_with(expected_cmd, print_cmd=False)
+
+  def testGetDDPidFound(self):
+    """Check that the expected pid is returned for _GetDDPid()."""
+    expected_pid = 5
+    op = flash.UsbImagerOperation('foo')
+    self.PatchObject(osutils, 'IsChildProcess', return_value=True)
+    self.rc.AddCmdResult(partial_mock.Ignore(),
+                         output='%d\n10\n' % expected_pid)
+
+    pid = op._GetDDPid()
+
+    # Check that the correct pid was returned.
+    self.assertEqual(pid, expected_pid)
+
+  def testGetDDPidNotFound(self):
+    """Check that -1 is returned for _GetDDPid() if the pids aren't valid."""
+    expected_pid = -1
+    op = flash.UsbImagerOperation('foo')
+    self.PatchObject(osutils, 'IsChildProcess', return_value=False)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output='5\n10\n')
+
+    pid = op._GetDDPid()
+
+    # Check that the correct pid was returned.
+    self.assertEqual(pid, expected_pid)
 
 
 class FlashUtilTest(cros_test_lib.MockTempDirTestCase):
