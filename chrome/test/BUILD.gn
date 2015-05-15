@@ -854,10 +854,9 @@ if (!is_android) {
     }
     if (enable_media_router) {
       sources += rebase_path(
-              chrome_tests_gypi_values.chrome_browser_tests_media_router_sources,
+              chrome_tests_gypi_values.chrome_browser_tests_media_router_webui_sources,
               ".",
               "//chrome")
-      deps += [ "//chrome/browser/media/router:test_support" ]
     }
     if (is_win) {
       deps += [
@@ -1284,6 +1283,7 @@ if (!is_android) {
                       ".",
                       "//chrome")
     }
+
     if (is_ios || is_chromeos) {
       sources -=
           [ "../browser/metrics/signin_status_metrics_provider_unittest.cc" ]
@@ -1490,17 +1490,13 @@ if (!is_android) {
               ".",
               "//chrome")
     }
-    if (enable_media_router) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_media_router_sources,
-                      ".",
-                      "//chrome")
-      deps += [ "//chrome/browser/media/router:test_support" ]
-    }
     if (enable_webrtc) {
       sources += rebase_path(unit_gypi_values.chrome_unit_tests_webrtc_sources,
                              ".",
                              "//chrome")
+    }
+    if (enable_media_router) {
+      deps += [ "//chrome/browser/media/router:unit_tests" ]
     }
     if (is_chromeos) {
       sources +=

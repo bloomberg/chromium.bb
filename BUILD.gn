@@ -169,7 +169,10 @@ group("both_gn_and_gyp") {
   }
 
   if (enable_media_router) {
-    deps += [ "//chrome/browser/media/router" ]
+    deps += [
+      "//chrome/browser/media/router/",
+      "//chrome/browser/media/router:unit_tests",
+    ]
   }
 
   if (enable_remoting) {

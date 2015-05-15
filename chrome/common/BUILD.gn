@@ -110,6 +110,9 @@ static_library("common") {
       "//extensions/strings",
       "//media/cast:net",
     ]
+    if (enable_media_router) {
+      defines += [ "ENABLE_MEDIA_ROUTER=1" ]
+    }
     if (is_chromeos) {
       sources +=
           rebase_path(gypi_values.chrome_common_extensions_chromeos_sources,
@@ -239,6 +242,9 @@ static_library("common") {
     sources += rebase_path(gypi_values.chrome_common_full_safe_browsing_sources,
                            ".",
                            "//chrome")
+  }
+  if (enable_media_router) {
+    defines += [ "ENABLE_MEDIA_ROUTER=1" ]
   }
 }
 
