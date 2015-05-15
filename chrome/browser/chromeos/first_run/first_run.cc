@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -76,8 +77,13 @@ class DialogLauncher : public content::NotificationObserver {
     bool first_run_forced = command_line->HasSwitch(switches::kForceFirstRunUI);
     bool first_run_seen =
         profile_->GetPrefs()->GetBoolean(prefs::kFirstRunTutorialShown);
+    bool is_pref_synced =
+        PrefServiceSyncable::FromProfile(profile_)->IsPrioritySyncing();
+    bool is_user_ephemeral = user_manager::UserManager::Get()
+                                 ->IsCurrentUserNonCryptohomeDataEphemeral();
     if (!launched_in_telemetry &&
-        ((is_user_new && !first_run_seen && !launched_in_test) ||
+        ((is_user_new && !first_run_seen &&
+          (is_pref_synced || !is_user_ephemeral) && !launched_in_test) ||
          first_run_forced)) {
       LaunchDialogForProfile(profile_);
     }

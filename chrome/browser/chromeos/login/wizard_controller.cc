@@ -401,9 +401,12 @@ void WizardController::ShowUpdateScreen() {
 void WizardController::ShowUserImageScreen() {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
-  // Skip user image selection for public sessions and ephemeral logins.
+  // Skip user image selection for public sessions and ephemeral non-regual user
+  // logins.
   if (user_manager->IsLoggedInAsPublicAccount() ||
-      user_manager->IsCurrentUserNonCryptohomeDataEphemeral()) {
+      (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
+       user_manager->GetLoggedInUser()->GetType() !=
+           user_manager::USER_TYPE_REGULAR)) {
     OnUserImageSkipped();
     return;
   }

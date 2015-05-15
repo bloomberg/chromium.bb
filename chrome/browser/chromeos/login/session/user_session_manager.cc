@@ -1121,10 +1121,8 @@ void UserSessionManager::InitializeStartUrls() const {
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
-  bool can_show_getstarted_guide =
-      user_manager->GetActiveUser()->GetType() ==
-          user_manager::USER_TYPE_REGULAR &&
-      !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
+  bool can_show_getstarted_guide = user_manager->GetActiveUser()->GetType() ==
+                                   user_manager::USER_TYPE_REGULAR;
 
   // Skip the default first-run behavior for public accounts.
   if (!user_manager->IsLoggedInAsPublicAccount()) {

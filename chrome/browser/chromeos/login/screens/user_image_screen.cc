@@ -109,6 +109,11 @@ void UserImageScreen::OnCameraPresenceCheckDone(bool is_camera_present) {
 }
 
 void UserImageScreen::HideCurtain() {
+  // Skip user image selection for ephemeral users.
+  if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+          GetUser()->GetUserID())) {
+    ExitScreen();
+  }
   if (view_)
     view_->HideCurtain();
 }
