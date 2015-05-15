@@ -254,10 +254,9 @@ CSSPrimitiveValue::CSSPrimitiveValue(const LengthSize& lengthSize, const Compute
     init(lengthSize, style);
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color, UnitType type)
+CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color)
     : CSSValue(PrimitiveClass)
 {
-    ASSERT(type == CSS_RGBCOLOR);
     m_primitiveUnitType = CSS_RGBCOLOR;
     m_value.rgbcolor = color;
 }

@@ -212,9 +212,9 @@ public:
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(propertyID));
     }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(unsigned rgbValue)
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(RGBA32 rgbValue)
     {
-        return adoptRefWillBeNoop(new CSSPrimitiveValue(rgbValue, CSS_RGBCOLOR));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(rgbValue));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(double value, UnitType type)
     {
@@ -308,9 +308,7 @@ public:
 private:
     CSSPrimitiveValue(CSSValueID);
     CSSPrimitiveValue(CSSPropertyID);
-    // int vs. unsigned is too subtle to distinguish types, so require a UnitType.
-    CSSPrimitiveValue(int parserOperator, UnitType);
-    CSSPrimitiveValue(unsigned color, UnitType); // RGB value
+    CSSPrimitiveValue(RGBA32 color);
     CSSPrimitiveValue(const Length&, float zoom);
     CSSPrimitiveValue(const LengthSize&, const ComputedStyle&);
     CSSPrimitiveValue(const String&, UnitType);
@@ -347,10 +345,9 @@ private:
     union {
         CSSPropertyID propertyID;
         CSSValueID valueID;
-        int parserOperator;
         double num;
         StringImpl* string;
-        unsigned rgbcolor;
+        RGBA32 rgbcolor;
         // FIXME: oilpan: Should be members, but no support for members in unions. Just trace the raw ptr for now.
         CSSBasicShape* shape;
         CSSCalcValue* calc;
