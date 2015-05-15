@@ -41,7 +41,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8SharedWorkerGlobalScope.h"
 #include "bindings/core/v8/V8WorkerGlobalScope.h"
-#include "bindings/core/v8/WorkerScriptDebugServer.h"
+#include "bindings/core/v8/WorkerThreadDebugger.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/DOMTimer.h"
@@ -144,7 +144,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     ScriptState::Scope scope(m_scriptState.get());
 
     // Name new context for debugging.
-    WorkerScriptDebugServer::setContextDebugData(context);
+    WorkerThreadDebugger::setContextDebugData(context);
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope.wrapperTypeInfo();

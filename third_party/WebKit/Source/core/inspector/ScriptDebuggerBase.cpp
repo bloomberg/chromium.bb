@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/inspector/PerIsolateDebuggerClient.h"
+#include "core/inspector/ScriptDebuggerBase.h"
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -12,23 +12,23 @@
 
 namespace blink {
 
-PerIsolateDebuggerClient::PerIsolateDebuggerClient(v8::Isolate* isolate, PassOwnPtrWillBeRawPtr<ScriptDebugServer> scriptDebugServer)
+ScriptDebuggerBase::ScriptDebuggerBase(v8::Isolate* isolate, PassOwnPtrWillBeRawPtr<ScriptDebugServer> scriptDebugServer)
     : m_isolate(isolate)
     , m_scriptDebugServer(scriptDebugServer)
 {
 }
 
-PerIsolateDebuggerClient::~PerIsolateDebuggerClient()
+ScriptDebuggerBase::~ScriptDebuggerBase()
 {
 }
 
-DEFINE_TRACE(PerIsolateDebuggerClient)
+DEFINE_TRACE(ScriptDebuggerBase)
 {
     visitor->trace(m_scriptDebugServer);
     ScriptDebugServer::Client::trace(visitor);
 }
 
-v8::Local<v8::Object> PerIsolateDebuggerClient::compileDebuggerScript()
+v8::Local<v8::Object> ScriptDebuggerBase::compileDebuggerScript()
 {
     const WebData& debuggerScriptSourceResource = Platform::current()->loadResource("DebuggerScriptSource.js");
     v8::Local<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));

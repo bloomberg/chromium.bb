@@ -51,7 +51,7 @@ class InstrumentingAgents;
 class WorkerDebuggerAgent;
 class WorkerGlobalScope;
 class WorkerRuntimeAgent;
-class WorkerScriptDebugServer;
+class WorkerThreadDebugger;
 
 class WorkerInspectorController : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
@@ -83,7 +83,7 @@ private:
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    OwnPtrWillBeMember<WorkerScriptDebugServer> m_debugServer;
+    OwnPtrWillBeMember<WorkerThreadDebugger> m_workerThreadDebugger;
     InspectorAgentRegistry m_agents;
     OwnPtr<InspectorFrontendChannel> m_frontendChannel;
     OwnPtr<InspectorFrontend> m_frontend;

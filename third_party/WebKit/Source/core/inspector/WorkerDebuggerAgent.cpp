@@ -62,14 +62,14 @@ private:
 
 } // namespace
 
-PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
+PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerThreadDebugger* workerThreadDebugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(scriptDebugServer, inspectedWorkerGlobalScope, injectedScriptManager));
+    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(workerThreadDebugger, inspectedWorkerGlobalScope, injectedScriptManager));
 }
 
-WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager, scriptDebugServer->scriptDebugServer()->isolate())
-    , m_scriptDebugServer(scriptDebugServer)
+WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerThreadDebugger* workerThreadDebugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
+    : InspectorDebuggerAgent(injectedScriptManager, workerThreadDebugger->scriptDebugServer()->isolate())
+    , m_workerThreadDebugger(workerThreadDebugger)
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {
 }
@@ -91,17 +91,17 @@ void WorkerDebuggerAgent::interruptAndDispatchInspectorCommands()
 
 void WorkerDebuggerAgent::startListeningScriptDebugServer()
 {
-    m_scriptDebugServer->addListener(this);
+    m_workerThreadDebugger->addListener(this);
 }
 
 void WorkerDebuggerAgent::stopListeningScriptDebugServer()
 {
-    m_scriptDebugServer->removeListener(this);
+    m_workerThreadDebugger->removeListener(this);
 }
 
 ScriptDebugServer& WorkerDebuggerAgent::scriptDebugServer()
 {
-    return *(m_scriptDebugServer->scriptDebugServer());
+    return *(m_workerThreadDebugger->scriptDebugServer());
 }
 
 InjectedScript WorkerDebuggerAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)

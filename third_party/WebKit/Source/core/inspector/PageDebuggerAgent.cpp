@@ -52,14 +52,14 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(pageScriptDebugServer, pageAgent, injectedScriptManager, overlay, debuggerId));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(MainThreadDebugger, pageAgent, injectedScriptManager, overlay, debuggerId));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
-    : InspectorDebuggerAgent(injectedScriptManager, pageScriptDebugServer->scriptDebugServer()->isolate())
-    , m_pageScriptDebugServer(pageScriptDebugServer)
+PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
+    : InspectorDebuggerAgent(injectedScriptManager, MainThreadDebugger->scriptDebugServer()->isolate())
+    , m_mainThreadDebugger(MainThreadDebugger)
     , m_pageAgent(pageAgent)
     , m_overlay(overlay)
     , m_debuggerId(debuggerId)
@@ -73,7 +73,7 @@ PageDebuggerAgent::~PageDebuggerAgent()
 
 DEFINE_TRACE(PageDebuggerAgent)
 {
-    visitor->trace(m_pageScriptDebugServer);
+    visitor->trace(m_mainThreadDebugger);
     visitor->trace(m_pageAgent);
     visitor->trace(m_overlay);
     InspectorDebuggerAgent::trace(visitor);
@@ -110,17 +110,17 @@ void PageDebuggerAgent::disable()
 
 void PageDebuggerAgent::startListeningScriptDebugServer()
 {
-    m_pageScriptDebugServer->addListener(this, m_pageAgent->inspectedFrame(), m_debuggerId);
+    m_mainThreadDebugger->addListener(this, m_pageAgent->inspectedFrame(), m_debuggerId);
 }
 
 void PageDebuggerAgent::stopListeningScriptDebugServer()
 {
-    m_pageScriptDebugServer->removeListener(this, m_pageAgent->inspectedFrame());
+    m_mainThreadDebugger->removeListener(this, m_pageAgent->inspectedFrame());
 }
 
 ScriptDebugServer& PageDebuggerAgent::scriptDebugServer()
 {
-    return *(m_pageScriptDebugServer->scriptDebugServer());
+    return *(m_mainThreadDebugger->scriptDebugServer());
 }
 
 void PageDebuggerAgent::muteConsole()

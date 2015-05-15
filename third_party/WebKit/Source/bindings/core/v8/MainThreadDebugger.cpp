@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/PageScriptDebugServer.h"
+#include "bindings/core/v8/MainThreadDebugger.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -61,10 +61,10 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> con
 
 // TODO(Oilpan): avoid keeping a raw reference separate from the
 // owner one; does not enable heap-movable objects.
-PageScriptDebugServer* PageScriptDebugServer::s_instance = nullptr;
+MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 
-PageScriptDebugServer::PageScriptDebugServer(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
-    : PerIsolateDebuggerClient(isolate, ScriptDebugServer::create(isolate, this))
+MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
+    : ScriptDebuggerBase(isolate, ScriptDebugServer::create(isolate, this))
     , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
 {
@@ -73,35 +73,35 @@ PageScriptDebugServer::PageScriptDebugServer(PassOwnPtr<ClientMessageLoop> clien
     s_instance = this;
 }
 
-PageScriptDebugServer::~PageScriptDebugServer()
+MainThreadDebugger::~MainThreadDebugger()
 {
     MutexLocker locker(creationMutex());
     ASSERT(s_instance == this);
     s_instance = nullptr;
 }
 
-Mutex& PageScriptDebugServer::creationMutex()
+Mutex& MainThreadDebugger::creationMutex()
 {
     AtomicallyInitializedStaticReference(Mutex, mutex, (new Mutex));
     return mutex;
 }
 
-DEFINE_TRACE(PageScriptDebugServer)
+DEFINE_TRACE(MainThreadDebugger)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_pausedFrame);
     visitor->trace(m_listenersMap);
 #endif
-    PerIsolateDebuggerClient::trace(visitor);
+    ScriptDebuggerBase::trace(visitor);
 }
 
-void PageScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextDebugId)
+void MainThreadDebugger::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextDebugId)
 {
     String debugData = "[" + type + "," + String::number(contextDebugId) + "]";
     ScriptDebugServer::setContextDebugData(context, debugData);
 }
 
-void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot, int contextDebugId)
+void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot, int contextDebugId)
 {
     ASSERT(localFrameRoot == localFrameRoot->localFrameRoot());
 
@@ -116,7 +116,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFram
     scriptDebugServer()->reportCompiledScripts(contextDataSubstring, listener);
 }
 
-void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
+void MainThreadDebugger::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
 {
     if (!m_listenersMap.contains(localFrame))
         return;
@@ -130,20 +130,20 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalF
         scriptDebugServer()->disable();
 }
 
-PageScriptDebugServer* PageScriptDebugServer::instance()
+MainThreadDebugger* MainThreadDebugger::instance()
 {
     ASSERT(isMainThread());
     return s_instance;
 }
 
-void PageScriptDebugServer::interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task> task)
+void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task> task)
 {
     MutexLocker locker(creationMutex());
     if (s_instance)
         s_instance->scriptDebugServer()->interruptAndRun(task);
 }
 
-ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context> context)
+ScriptDebugListener* MainThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context> context)
 {
     v8::HandleScope scope(context->GetIsolate());
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
@@ -152,7 +152,7 @@ ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Local
     return m_listenersMap.get(frame->localFrameRoot());
 }
 
-void PageScriptDebugServer::runMessageLoopOnPause(v8::Local<v8::Context> context)
+void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
 {
     v8::HandleScope scope(context->GetIsolate());
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
@@ -168,7 +168,7 @@ void PageScriptDebugServer::runMessageLoopOnPause(v8::Local<v8::Context> context
     m_pausedFrame = 0;
 }
 
-void PageScriptDebugServer::quitMessageLoopOnPause()
+void MainThreadDebugger::quitMessageLoopOnPause()
 {
     m_clientMessageLoop->quitNow();
 }

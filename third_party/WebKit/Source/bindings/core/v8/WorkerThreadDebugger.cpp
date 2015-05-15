@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/WorkerScriptDebugServer.h"
+#include "bindings/core/v8/WorkerThreadDebugger.h"
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/ScriptDebugListener.h"
@@ -43,29 +43,29 @@ namespace blink {
 
 static const char* workerContextDebugId = "[worker]";
 
-WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope)
-    : PerIsolateDebuggerClient(v8::Isolate::GetCurrent(), ScriptDebugServer::create(v8::Isolate::GetCurrent(), this))
+WorkerThreadDebugger::WorkerThreadDebugger(WorkerGlobalScope* workerGlobalScope)
+    : ScriptDebuggerBase(v8::Isolate::GetCurrent(), ScriptDebugServer::create(v8::Isolate::GetCurrent(), this))
     , m_listener(nullptr)
     , m_workerGlobalScope(workerGlobalScope)
 {
 }
 
-WorkerScriptDebugServer::~WorkerScriptDebugServer()
+WorkerThreadDebugger::~WorkerThreadDebugger()
 {
 }
 
-DEFINE_TRACE(WorkerScriptDebugServer)
+DEFINE_TRACE(WorkerThreadDebugger)
 {
     visitor->trace(m_workerGlobalScope);
-    PerIsolateDebuggerClient::trace(visitor);
+    ScriptDebuggerBase::trace(visitor);
 }
 
-void WorkerScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context)
+void WorkerThreadDebugger::setContextDebugData(v8::Local<v8::Context> context)
 {
     ScriptDebugServer::setContextDebugData(context, workerContextDebugId);
 }
 
-void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
+void WorkerThreadDebugger::addListener(ScriptDebugListener* listener)
 {
     ASSERT(!m_listener);
     scriptDebugServer()->enable();
@@ -73,7 +73,7 @@ void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
     scriptDebugServer()->reportCompiledScripts(workerContextDebugId, listener);
 }
 
-void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
+void WorkerThreadDebugger::removeListener(ScriptDebugListener* listener)
 {
     ASSERT(m_listener == listener);
     scriptDebugServer()->continueProgram();
@@ -81,13 +81,13 @@ void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
     scriptDebugServer()->disable();
 }
 
-ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context>)
+ScriptDebugListener* WorkerThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context>)
 {
     // There is only one worker context in isolate.
     return m_listener;
 }
 
-void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Local<v8::Context>)
+void WorkerThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context>)
 {
     MessageQueueWaitResult result;
     m_workerGlobalScope->thread()->willEnterNestedLoop();
@@ -102,7 +102,7 @@ void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Local<v8::Context>)
         m_listener->didContinue();
 }
 
-void WorkerScriptDebugServer::quitMessageLoopOnPause()
+void WorkerThreadDebugger::quitMessageLoopOnPause()
 {
     // Nothing to do here in case of workers since runMessageLoopOnPause will check for paused state after each debugger command.
 }

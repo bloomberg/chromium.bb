@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/WebDevToolsAgentImpl.h"
 
-#include "bindings/core/v8/PageScriptDebugServer.h"
+#include "bindings/core/v8/MainThreadDebugger.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/InspectorBackendDispatcher.h"
@@ -103,14 +103,14 @@
 
 namespace blink {
 
-class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
+class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 public:
     ~ClientMessageLoopAdapter() override
     {
         s_instance = nullptr;
     }
 
-    static void ensurePageScriptDebugServerCreated(WebDevToolsAgentClient* client)
+    static void ensureMainThreadDebuggerCreated(WebDevToolsAgentClient* client)
     {
         if (s_instance)
             return;
@@ -118,7 +118,7 @@ public:
         s_instance = instance.get();
         v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
         V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-        data->setScriptDebugServer(PageScriptDebugServer::create(instance.release(), isolate));
+        data->setScriptDebugger(MainThreadDebugger::create(instance.release(), isolate));
     }
 
     static void webViewImplClosed(WebViewImpl* view)
@@ -137,7 +137,7 @@ public:
     {
         // Release render thread if necessary.
         if (s_instance && s_instance->m_running)
-            PageScriptDebugServer::instance()->scriptDebugServer()->continueProgram();
+            MainThreadDebugger::instance()->scriptDebugServer()->continueProgram();
     }
 
 private:
@@ -345,10 +345,10 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     m_agents.append(InspectorTimelineAgent::create());
 
-    ClientMessageLoopAdapter::ensurePageScriptDebugServerCreated(m_client);
-    PageScriptDebugServer* scriptDebugServer = PageScriptDebugServer::instance();
+    ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
+    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
 
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, scriptDebugServer->scriptDebugServer(), m_pageAgent));
+    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, mainThreadDebugger->scriptDebugServer(), m_pageAgent));
     m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
     m_agents.append(pageRuntimeAgentPtr.release());
 
@@ -450,7 +450,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(PageScriptDebugServer::instance(), m_pageAgent, injectedScriptManager, m_overlay, m_pageRuntimeAgent->debuggerId()));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_pageAgent, injectedScriptManager, m_overlay, m_pageRuntimeAgent->debuggerId()));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent, m_instrumentingAgents.get()));
@@ -465,12 +465,12 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
 
-    PageScriptDebugServer* scriptDebugServer = PageScriptDebugServer::instance();
+    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     m_injectedScriptManager->injectedScriptHost()->init(
         m_pageConsoleAgent.get(),
         debuggerAgent,
         bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
-        scriptDebugServer->scriptDebugServer(),
+        mainThreadDebugger->scriptDebugServer(),
         adoptPtr(new PageInjectedScriptHostClient()));
 }
 
@@ -633,7 +633,7 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
     if (!m_attached)
         return;
     if (WebDevToolsAgent::shouldInterruptForMessage(message))
-        PageScriptDebugServer::instance()->scriptDebugServer()->runPendingTasks();
+        MainThreadDebugger::instance()->scriptDebugServer()->runPendingTasks();
     else
         dispatchMessageFromFrontend(message);
 }
@@ -732,7 +732,7 @@ void WebDevToolsAgent::interruptAndDispatch(MessageDescriptor* rawDescriptor)
     // rawDescriptor can't be a PassOwnPtr because interruptAndDispatch is a WebKit API function.
     OwnPtr<MessageDescriptor> descriptor = adoptPtr(rawDescriptor);
     OwnPtr<DebuggerTask> task = adoptPtr(new DebuggerTask(descriptor.release()));
-    PageScriptDebugServer::interruptMainThreadAndRun(task.release());
+    MainThreadDebugger::interruptMainThreadAndRun(task.release());
 }
 
 bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)

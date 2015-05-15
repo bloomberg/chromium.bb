@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageScriptDebugServer_h
-#define PageScriptDebugServer_h
+#ifndef MainThreadDebugger_h
+#define MainThreadDebugger_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/PerIsolateDebuggerClient.h"
+#include "core/inspector/ScriptDebuggerBase.h"
 #include <v8.h>
 
 namespace WTF {
@@ -43,9 +43,9 @@ namespace blink {
 
 class Page;
 
-class CORE_EXPORT PageScriptDebugServer final : public NoBaseWillBeGarbageCollectedFinalized<PageScriptDebugServer>, public PerIsolateDebuggerClient {
-    WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PageScriptDebugServer);
+class CORE_EXPORT MainThreadDebugger final : public NoBaseWillBeGarbageCollectedFinalized<MainThreadDebugger>, public ScriptDebuggerBase {
+    WTF_MAKE_NONCOPYABLE(MainThreadDebugger);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MainThreadDebugger);
 public:
     class ClientMessageLoop {
     public:
@@ -54,24 +54,24 @@ public:
         virtual void quitNow() = 0;
     };
 
-    static PassOwnPtrWillBeRawPtr<PageScriptDebugServer> create(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
+    static PassOwnPtrWillBeRawPtr<MainThreadDebugger> create(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
     {
-        return adoptPtrWillBeNoop(new PageScriptDebugServer(clientMessageLoop, isolate));
+        return adoptPtrWillBeNoop(new MainThreadDebugger(clientMessageLoop, isolate));
     }
 
-    ~PageScriptDebugServer() override;
+    ~MainThreadDebugger() override;
 
     static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextDebugId);
     void addListener(ScriptDebugListener*, LocalFrame*, int contextDebugId);
     void removeListener(ScriptDebugListener*, LocalFrame*);
 
-    static PageScriptDebugServer* instance();
+    static MainThreadDebugger* instance();
     static void interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task>);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PageScriptDebugServer(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
+    MainThreadDebugger(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
 
     ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
     void runMessageLoopOnPause(v8::Local<v8::Context>) override;
@@ -84,10 +84,10 @@ private:
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     RawPtrWillBeMember<LocalFrame> m_pausedFrame;
 
-    static PageScriptDebugServer* s_instance;
+    static MainThreadDebugger* s_instance;
 };
 
 } // namespace blink
 
 
-#endif // PageScriptDebugServer_h
+#endif // MainThreadDebugger_h

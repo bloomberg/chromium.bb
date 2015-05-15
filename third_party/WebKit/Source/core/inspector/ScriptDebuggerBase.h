@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PerIsolateDebuggerClient_h
-#define PerIsolateDebuggerClient_h
+#ifndef ScriptDebuggerBase_h
+#define ScriptDebuggerBase_h
 
 #include "bindings/core/v8/ScriptDebugServer.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class PerIsolateDebuggerClient : public ScriptDebugServer::Client {
-    WTF_MAKE_NONCOPYABLE(PerIsolateDebuggerClient);
+class ScriptDebuggerBase : public ScriptDebugServer::Client {
+    WTF_MAKE_NONCOPYABLE(ScriptDebuggerBase);
 public:
-    PerIsolateDebuggerClient(v8::Isolate*, PassOwnPtrWillBeRawPtr<ScriptDebugServer>);
-    ~PerIsolateDebuggerClient() override;
+    ScriptDebuggerBase(v8::Isolate*, PassOwnPtrWillBeRawPtr<ScriptDebugServer>);
+    ~ScriptDebuggerBase() override;
     v8::Local<v8::Object> compileDebuggerScript() override;
     ScriptDebugServer* scriptDebugServer() const { return m_scriptDebugServer.get(); }
 
@@ -28,4 +28,4 @@ private:
 } // namespace blink
 
 
-#endif // !defined(PerIsolateDebuggerClient_h)
+#endif // !defined(ScriptDebuggerBase_h)

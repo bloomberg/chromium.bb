@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerScriptDebugServer_h
-#define WorkerScriptDebugServer_h
+#ifndef WorkerThreadDebugger_h
+#define WorkerThreadDebugger_h
 
-#include "core/inspector/PerIsolateDebuggerClient.h"
+#include "core/inspector/ScriptDebuggerBase.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -41,16 +41,16 @@ namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerScriptDebugServer final : public NoBaseWillBeGarbageCollectedFinalized<WorkerScriptDebugServer>, public PerIsolateDebuggerClient {
-    WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerScriptDebugServer);
+class WorkerThreadDebugger final : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadDebugger>, public ScriptDebuggerBase {
+    WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerThreadDebugger);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerScriptDebugServer> create(WorkerGlobalScope* workerGlobalScope)
+    static PassOwnPtrWillBeRawPtr<WorkerThreadDebugger> create(WorkerGlobalScope* workerGlobalScope)
     {
-        return adoptPtrWillBeNoop(new WorkerScriptDebugServer(workerGlobalScope));
+        return adoptPtrWillBeNoop(new WorkerThreadDebugger(workerGlobalScope));
     }
 
-    ~WorkerScriptDebugServer() override;
+    ~WorkerThreadDebugger() override;
 
     static void setContextDebugData(v8::Local<v8::Context>);
     void addListener(ScriptDebugListener*);
@@ -59,7 +59,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit WorkerScriptDebugServer(WorkerGlobalScope*);
+    explicit WorkerThreadDebugger(WorkerGlobalScope*);
 
     ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>);
     void runMessageLoopOnPause(v8::Local<v8::Context>);
@@ -71,4 +71,4 @@ private:
 
 } // namespace blink
 
-#endif // WorkerScriptDebugServer_h
+#endif // WorkerThreadDebugger_h

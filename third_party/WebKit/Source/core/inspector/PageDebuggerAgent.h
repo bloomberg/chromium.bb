@@ -31,7 +31,7 @@
 #ifndef PageDebuggerAgent_h
 #define PageDebuggerAgent_h
 
-#include "bindings/core/v8/PageScriptDebugServer.h"
+#include "bindings/core/v8/MainThreadDebugger.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlay.h"
 
@@ -43,7 +43,7 @@ namespace blink {
 
 class DocumentLoader;
 class InspectorPageAgent;
-class PageScriptDebugServer;
+class MainThreadDebugger;
 
 class PageDebuggerAgent final
     : public InspectorDebuggerAgent
@@ -52,7 +52,7 @@ class PageDebuggerAgent final
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PageDebuggerAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PageDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
+    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -82,8 +82,8 @@ private:
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
     bool canExecuteScripts() const;
 
-    PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
-    RawPtrWillBeMember<PageScriptDebugServer> m_pageScriptDebugServer;
+    PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
+    RawPtrWillBeMember<MainThreadDebugger> m_mainThreadDebugger;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     int m_debuggerId;

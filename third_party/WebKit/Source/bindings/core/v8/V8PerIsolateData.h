@@ -31,7 +31,7 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
-#include "core/inspector/PerIsolateDebuggerClient.h"
+#include "core/inspector/ScriptDebuggerBase.h"
 #include "gin/public/isolate_holder.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -118,7 +118,7 @@ public:
     void runEndOfScopeTasks();
     void clearEndOfScopeTasks();
 
-    void setScriptDebugServer(PassOwnPtrWillBeRawPtr<PerIsolateDebuggerClient>);
+    void setScriptDebugger(PassOwnPtrWillBeRawPtr<ScriptDebuggerBase>);
 
 private:
     V8PerIsolateData();
@@ -155,9 +155,9 @@ private:
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
 #if ENABLE(OILPAN)
-    CrossThreadPersistent<PerIsolateDebuggerClient> m_debugServer;
+    CrossThreadPersistent<ScriptDebuggerBase> m_scriptDebugger;
 #else
-    OwnPtr<PerIsolateDebuggerClient> m_debugServer;
+    OwnPtr<ScriptDebuggerBase> m_scriptDebugger;
 #endif
 };
 
