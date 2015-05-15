@@ -93,6 +93,11 @@ class PowerSaveBlockerImpl::Delegate
   void ApplyBlock(DBusAPI api);
   void RemoveBlock(DBusAPI api);
 
+  // Asynchronous callback functions for ApplyBlock and RemoveBlock.
+  // Functions do not receive ownership of |response|.
+  void ApplyBlockFinished(DBusAPI api, dbus::Response* response);
+  void RemoveBlockFinished(dbus::Response* response);
+
   // If DPMS (the power saving system in X11) is not enabled, then we don't want
   // to try to disable power saving, since on some desktop environments that may
   // enable DPMS with very poor default settings (e.g. turning off the display
@@ -114,6 +119,15 @@ class PowerSaveBlockerImpl::Delegate
   DBusAPI api_;
   bool enqueue_apply_;
   base::Lock lock_;
+
+  // Indicates that a D-Bus power save blocking request is in flight.
+  bool block_inflight_;
+  // Used to detect erronous redundant calls to RemoveBlock().
+  bool unblock_inflight_;
+  // Indicates that RemoveBlock() is called before ApplyBlock() has finished.
+  // If it's true, then the RemoveBlock() call will be processed immediately
+  // after ApplyBlock() has finished.
+  bool enqueue_unblock_;
 
   scoped_refptr<dbus::Bus> bus_;
 
@@ -139,6 +153,9 @@ void PowerSaveBlockerImpl::Delegate::Init() {
   base::AutoLock lock(lock_);
   DCHECK(!enqueue_apply_);
   enqueue_apply_ = true;
+  block_inflight_ = false;
+  unblock_inflight_ = false;
+  enqueue_unblock_ = false;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&Delegate::InitOnUIThread, this));
 }
@@ -172,7 +189,8 @@ void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  DCHECK(!bus_.get());  // ApplyBlock() should only be called once.
+  DCHECK(!bus_);  // ApplyBlock() should only be called once.
+  DCHECK(!block_inflight_);
 
   dbus::Bus::Options options;
   options.bus_type = dbus::Bus::SESSION;
@@ -233,26 +251,53 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
       break;
   }
 
-  // We could do this method call asynchronously, but if we did, we'd need to
-  // handle the case where we want to cancel the block before we get a reply.
-  // We're on the FILE thread so it should be OK to block briefly here.
-  scoped_ptr<dbus::Response> response(object_proxy->CallMethodAndBlock(
-      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  block_inflight_ = true;
+  object_proxy->CallMethod(
+      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(&PowerSaveBlockerImpl::Delegate::ApplyBlockFinished, this,
+                 api));
+}
+
+void PowerSaveBlockerImpl::Delegate::ApplyBlockFinished(
+    DBusAPI api,
+    dbus::Response* response) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(bus_);
+  DCHECK(block_inflight_);
+  block_inflight_ = false;
+
   if (response) {
     // The method returns an inhibit_cookie, used to uniquely identify
     // this request. It should be used as an argument to Uninhibit()
     // in order to remove the request.
-    dbus::MessageReader message_reader(response.get());
+    dbus::MessageReader message_reader(response);
     if (!message_reader.PopUint32(&inhibit_cookie_))
       LOG(ERROR) << "Invalid Inhibit() response: " << response->ToString();
   } else {
     LOG(ERROR) << "No response to Inhibit() request!";
   }
+
+  if (enqueue_unblock_) {
+    enqueue_unblock_ = false;
+    // RemoveBlock() was called while the Inhibit operation was in flight,
+    // so go ahead and remove the block now.
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&Delegate::RemoveBlock, this, api_));
+  }
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  DCHECK(bus_.get());  // RemoveBlock() should only be called once.
+  DCHECK(bus_);  // RemoveBlock() should only be called once.
+  DCHECK(!unblock_inflight_);
+
+  if (block_inflight_) {
+    DCHECK(!enqueue_unblock_);
+    // Can't call RemoveBlock until ApplyBlock's async operation has
+    // finished. Enqueue it for execution once ApplyBlock is done.
+    enqueue_unblock_ = true;
+    return;
+  }
 
   scoped_refptr<dbus::ObjectProxy> object_proxy;
   scoped_ptr<dbus::MethodCall> method_call;
@@ -279,8 +324,18 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
 
   dbus::MessageWriter message_writer(method_call.get());
   message_writer.AppendUint32(inhibit_cookie_);
-  scoped_ptr<dbus::Response> response(object_proxy->CallMethodAndBlock(
-      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  unblock_inflight_ = true;
+  object_proxy->CallMethod(
+      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(&PowerSaveBlockerImpl::Delegate::RemoveBlockFinished, this));
+}
+
+void PowerSaveBlockerImpl::Delegate::RemoveBlockFinished(
+    dbus::Response* response) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(bus_);
+  unblock_inflight_ = false;
+
   if (!response)
     LOG(ERROR) << "No response to Uninhibit() request!";
   // We don't care about checking the result. We assume it works; we can't
