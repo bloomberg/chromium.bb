@@ -33,6 +33,11 @@ Request* FetchEvent::request() const
     return m_request;
 }
 
+ServiceWorkerClient* FetchEvent::client() const
+{
+    return m_client;
+}
+
 bool FetchEvent::isReload() const
 {
     return m_isReload;
@@ -60,6 +65,8 @@ FetchEvent::FetchEvent(const AtomicString& type, const FetchEventInit& initializ
 {
     if (initializer.hasRequest())
         m_request = initializer.request();
+    if (initializer.hasClient())
+        m_client = initializer.client();
     m_isReload = initializer.isReload();
 }
 

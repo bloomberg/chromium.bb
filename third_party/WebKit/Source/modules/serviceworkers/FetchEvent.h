@@ -11,6 +11,7 @@
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEventInit.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
+#include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -30,6 +31,7 @@ public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create(const AtomicString& type, FetchEventInit&, RespondWithObserver*);
 
     Request* request() const;
+    ServiceWorkerClient* client() const;
     bool isReload() const;
 
     void respondWith(ScriptState*, const ScriptValue&, ExceptionState&);
@@ -45,6 +47,7 @@ protected:
 private:
     PersistentWillBeMember<RespondWithObserver> m_observer;
     PersistentWillBeMember<Request> m_request;
+    PersistentWillBeMember<ServiceWorkerClient> m_client;
     bool m_isReload;
 };
 
