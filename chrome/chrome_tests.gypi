@@ -843,7 +843,7 @@
       'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
       'browser/ui/app_list/speech_recognizer_browsertest.cc',
     ],
-    'chrome_browser_tests_media_router_webui_sources': [
+    'chrome_browser_tests_media_router_sources': [
       'browser/ui/webui/media_router/media_router_dialog_controller_browsertest.cc',
     ],
     # Javascript sources. These are combined with the .cc files in the GYP build
@@ -2246,7 +2246,8 @@
          ],
         }],
         ['enable_media_router==1', {
-          'sources': [ '<@(chrome_browser_tests_media_router_webui_sources)' ],
+          'sources': [ '<@(chrome_browser_tests_media_router_sources)' ],
+          'dependencies': [ 'browser/media/router/media_router.gyp:media_router_test_support' ],
         }],
         ['OS=="win"', {
           'sources': [
