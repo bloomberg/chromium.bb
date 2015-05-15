@@ -22,7 +22,10 @@ class BoxReader;
 
 struct MEDIA_EXPORT Box {
   virtual ~Box();
+
+  // Parse errors may be logged using the BoxReader's log callback.
   virtual bool Parse(BoxReader* reader) = 0;
+
   virtual FourCC BoxType() const = 0;
 };
 

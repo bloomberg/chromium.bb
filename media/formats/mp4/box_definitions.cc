@@ -657,12 +657,15 @@ Movie::~Movie() {}
 FourCC Movie::BoxType() const { return FOURCC_MOOV; }
 
 bool Movie::Parse(BoxReader* reader) {
-  return reader->ScanChildren() &&
-         reader->ReadChild(&header) &&
-         reader->ReadChildren(&tracks) &&
-         // Media Source specific: 'mvex' required
-         reader->ReadChild(&extends) &&
-         reader->MaybeReadChildren(&pssh);
+  RCHECK(reader->ScanChildren() && reader->ReadChild(&header) &&
+         reader->ReadChildren(&tracks));
+
+  RCHECK_MEDIA_LOGGED(reader->ReadChild(&extends), reader->log_cb(),
+                      "Detected unfragmented MP4. Media Source Extensions "
+                      "require ISO BMFF moov to contain mvex to indicate that "
+                      "Movie Fragments are to be expected.");
+
+  return reader->MaybeReadChildren(&pssh);
 }
 
 TrackFragmentDecodeTime::TrackFragmentDecodeTime() : decode_time(0) {}

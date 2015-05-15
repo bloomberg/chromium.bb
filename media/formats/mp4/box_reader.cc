@@ -219,7 +219,8 @@ bool BoxReader::ReadHeader(bool* err) {
   CHECK(Read4Into8(&size) && ReadFourCC(&type_));
 
   if (size == 0) {
-    // Media Source specific: we do not support boxes that run to EOS.
+    MEDIA_LOG(DEBUG, log_cb_) << "Media Source Extensions do not support ISO "
+                                 "BMFF boxes that run to EOS";
     *err = true;
     return false;
   } else if (size == 1) {
