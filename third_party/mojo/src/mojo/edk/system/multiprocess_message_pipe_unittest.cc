@@ -448,7 +448,12 @@ class MultiprocessMessagePipeTestWithPipeCount
     : public test::MultiprocessMessagePipeTestBase,
       public testing::WithParamInterface<size_t> {};
 
+#if defined(OS_MACOSX)
+// http://crbug.com/488260
+TEST_P(MultiprocessMessagePipeTestWithPipeCount, DISABLED_PlatformHandlePassing) {
+#else
 TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
+#endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
