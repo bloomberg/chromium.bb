@@ -168,12 +168,11 @@ public:
         m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(animation, model, snapshot));
     }
 
-    void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertEffect> effect)
+    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertEffect> effect)
     {
         effect->setName(getPropertyName(id));
         NewTransition newTransition;
         newTransition.id = id;
-        newTransition.eventId = eventId;
         newTransition.from = from;
         newTransition.to = to;
         newTransition.effect = effect;
@@ -201,7 +200,6 @@ public:
         }
 
         CSSPropertyID id;
-        CSSPropertyID eventId;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
         RefPtrWillBeMember<InertEffect> effect;
