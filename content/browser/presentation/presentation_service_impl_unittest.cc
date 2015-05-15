@@ -43,6 +43,11 @@ bool ArePresentationSessionMessagesEqual(
          expected->data.Equals(actual->data);
 }
 
+void DoNothing(
+    presentation::PresentationSessionInfoPtr info,
+    presentation::PresentationErrorPtr error) {
+}
+
 }  // namespace
 
 class MockPresentationServiceDelegate : public PresentationServiceDelegate {
@@ -124,8 +129,7 @@ class MockPresentationServiceClient :
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
  public:
-  PresentationServiceImplTest()
-      : default_session_started_count_(0) {}
+  PresentationServiceImplTest() : default_session_started_count_(0) {}
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -781,6 +785,55 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
 
   EXPECT_FALSE(test_message);
   send_message_cb.Run();
+  SaveQuitClosureAndRunLoop();
+}
+
+TEST_F(PresentationServiceImplTest, MaxPendingStartSessionRequests) {
+  const char* presentation_url = "http://fooUrl%d";
+  const char* presentation_id = "presentationId%d";
+  int num_requests = PresentationServiceImpl::kMaxNumQueuedSessionRequests + 1;
+  int i = 0;
+  // First request will be processed. The subsequent
+  // |kMaxNumQueuedSessionRequests| requests will be queued.
+  EXPECT_CALL(mock_delegate_, StartSession(_, _, _, _, _, _)).Times(1);
+  for (; i < num_requests; ++i) {
+    service_ptr_->StartSession(
+        base::StringPrintf(presentation_url, i),
+        base::StringPrintf(presentation_id, i),
+        base::Bind(&DoNothing));
+  }
+
+  // Exceeded maximum queue size, should invoke mojo callback with error.
+  service_ptr_->StartSession(
+        base::StringPrintf(presentation_url, i),
+        base::StringPrintf(presentation_id, i),
+        base::Bind(
+            &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
+            base::Unretained(this)));
+  SaveQuitClosureAndRunLoop();
+}
+
+TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
+  const char* presentation_url = "http://fooUrl%d";
+  const char* presentation_id = "presentationId%d";
+  int num_requests = PresentationServiceImpl::kMaxNumQueuedSessionRequests;
+  int i = 0;
+  EXPECT_CALL(mock_delegate_, JoinSession(_, _, _, _, _, _))
+      .Times(num_requests);
+  for (; i < num_requests; ++i) {
+    service_ptr_->JoinSession(
+        base::StringPrintf(presentation_url, i),
+        base::StringPrintf(presentation_id, i),
+        base::Bind(&DoNothing));
+  }
+
+  // Exceeded maximum queue size, should invoke mojo callback with error.
+  service_ptr_->JoinSession(
+        base::StringPrintf(presentation_url, i),
+        base::StringPrintf(presentation_id, i),
+        base::Bind(
+            &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
+            base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
 }
 

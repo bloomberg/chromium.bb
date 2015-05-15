@@ -18,7 +18,16 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/presentation_constants.h"
 
+namespace content {
+
 namespace {
+
+const int kInvalidRequestSessionId = -1;
+
+int GetNextRequestSessionId() {
+  static int next_request_session_id = 0;
+  return ++next_request_session_id;
+}
 
 // The return value takes ownership of the contents of |input|.
 presentation::SessionMessagePtr ToMojoSessionMessage(
@@ -76,9 +85,15 @@ scoped_ptr<content::PresentationSessionMessage> GetPresentationSessionMessage(
   return output.Pass();
 }
 
-} // namespace
+void InvokeNewSessionMojoCallbackWithError(
+    const NewSessionMojoCallback& callback) {
+  callback.Run(
+        presentation::PresentationSessionInfoPtr(),
+        presentation::PresentationError::From(
+            PresentationError(PRESENTATION_ERROR_UNKNOWN, "Internal error")));
+}
 
-namespace content {
+} // namespace
 
 PresentationServiceImpl::PresentationServiceImpl(
     RenderFrameHost* render_frame_host,
@@ -86,8 +101,7 @@ PresentationServiceImpl::PresentationServiceImpl(
     PresentationServiceDelegate* delegate)
     : WebContentsObserver(web_contents),
       delegate_(delegate),
-      is_start_session_pending_(false),
-      next_request_session_id_(0),
+      start_session_request_id_(kInvalidRequestSessionId),
       weak_factory_(this) {
   DCHECK(render_frame_host);
   DCHECK(web_contents);
@@ -103,7 +117,6 @@ PresentationServiceImpl::PresentationServiceImpl(
 PresentationServiceImpl::~PresentationServiceImpl() {
   if (delegate_)
     delegate_->RemoveObserver(render_process_id_, render_frame_id_);
-  FlushNewSessionCallbacks();
 }
 
 // static
@@ -213,13 +226,21 @@ void PresentationServiceImpl::StartSession(
     return;
   }
 
-  if (is_start_session_pending_) {
-    queued_start_session_requests_.push_back(make_linked_ptr(
-        new StartSessionRequest(presentation_url, presentation_id, callback)));
+  // Currently not processing a request, so no need for queueing.
+  if (start_session_request_id_ == kInvalidRequestSessionId) {
+    DoStartSession(make_scoped_ptr(new StartSessionRequest(
+        presentation_url, presentation_id, callback)));
     return;
   }
 
-  DoStartSession(presentation_url, presentation_id, callback);
+  if (queued_start_session_requests_.size() >= kMaxNumQueuedSessionRequests) {
+    InvokeNewSessionMojoCallbackWithError(callback);
+    return;
+  }
+
+  queued_start_session_requests_.push_back(
+      make_linked_ptr(new StartSessionRequest(
+          presentation_url, presentation_id, callback)));
 }
 
 void PresentationServiceImpl::JoinSession(
@@ -232,98 +253,120 @@ void PresentationServiceImpl::JoinSession(
     return;
   }
 
-  int request_session_id = RegisterNewSessionCallback(callback);
+  int request_session_id = RegisterJoinSessionCallback(callback);
+  if (request_session_id == kInvalidRequestSessionId) {
+    InvokeNewSessionMojoCallbackWithError(callback);
+    return;
+  }
   delegate_->JoinSession(
       render_process_id_,
       render_frame_id_,
       presentation_url,
       presentation_id,
-      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
-                 weak_factory_.GetWeakPtr(), false, request_session_id),
-      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
-                 weak_factory_.GetWeakPtr(), false, request_session_id));
+      base::Bind(&PresentationServiceImpl::OnJoinSessionSucceeded,
+                 weak_factory_.GetWeakPtr(), request_session_id),
+      base::Bind(&PresentationServiceImpl::OnJoinSessionError,
+                 weak_factory_.GetWeakPtr(), request_session_id));
 }
 
 void PresentationServiceImpl::HandleQueuedStartSessionRequests() {
-  if (queued_start_session_requests_.empty()) {
-    is_start_session_pending_ = false;
+  if (queued_start_session_requests_.empty())
     return;
-  }
+
   linked_ptr<StartSessionRequest> request =
       queued_start_session_requests_.front();
   queued_start_session_requests_.pop_front();
-  DoStartSession(request->presentation_url(),
-                 request->presentation_id(),
-                 request->PassCallback());
+  DoStartSession(make_scoped_ptr(request.release()));
 }
 
-int PresentationServiceImpl::RegisterNewSessionCallback(
+int PresentationServiceImpl::RegisterJoinSessionCallback(
     const NewSessionMojoCallback& callback) {
-  ++next_request_session_id_;
-  pending_session_cbs_[next_request_session_id_].reset(
-      new NewSessionMojoCallback(callback));
-  return next_request_session_id_;
-}
+  if (pending_join_session_cbs_.size() >= kMaxNumQueuedSessionRequests)
+    return kInvalidRequestSessionId;
 
-void PresentationServiceImpl::FlushNewSessionCallbacks() {
-  for (auto& pending_entry : pending_session_cbs_) {
-    InvokeNewSessionMojoCallbackWithError(*pending_entry.second);
-  }
-  pending_session_cbs_.clear();
+  int request_id = GetNextRequestSessionId();
+  pending_join_session_cbs_[request_id].reset(
+      new NewSessionMojoCallbackWrapper(callback));
+  return request_id;
 }
 
 void PresentationServiceImpl::DoStartSession(
-    const std::string& presentation_url,
-    const std::string& presentation_id,
-    const NewSessionMojoCallback& callback) {
-  int request_session_id = RegisterNewSessionCallback(callback);
-  is_start_session_pending_ = true;
+    scoped_ptr<StartSessionRequest> request) {
+  DCHECK_EQ(kInvalidRequestSessionId, start_session_request_id_);
+  DCHECK(!pending_start_session_cb_.get());
+
+  int request_session_id = GetNextRequestSessionId();
+  start_session_request_id_ = request_session_id;
+  pending_start_session_cb_ = request->PassCallback();
+
   delegate_->StartSession(
       render_process_id_,
       render_frame_id_,
-      presentation_url,
-      presentation_id,
-      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
-                 weak_factory_.GetWeakPtr(), true, request_session_id),
-      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
-                 weak_factory_.GetWeakPtr(), true, request_session_id));
+      request->presentation_url(),
+      request->presentation_id(),
+      base::Bind(&PresentationServiceImpl::OnStartSessionSucceeded,
+                 weak_factory_.GetWeakPtr(), request_session_id),
+      base::Bind(&PresentationServiceImpl::OnStartSessionError,
+                 weak_factory_.GetWeakPtr(), request_session_id));
 }
 
-void PresentationServiceImpl::OnStartOrJoinSessionSucceeded(
-    bool is_start_session,
+void PresentationServiceImpl::OnStartSessionSucceeded(
     int request_session_id,
     const PresentationSessionInfo& session_info) {
-  RunAndEraseNewSessionMojoCallback(
+  if (request_session_id == start_session_request_id_) {
+    CHECK(pending_start_session_cb_.get());
+    pending_start_session_cb_->Run(
+        presentation::PresentationSessionInfo::From(session_info),
+        presentation::PresentationErrorPtr());
+    pending_start_session_cb_.reset();
+    start_session_request_id_ = kInvalidRequestSessionId;
+    HandleQueuedStartSessionRequests();
+  }
+}
+
+void PresentationServiceImpl::OnStartSessionError(
+    int request_session_id,
+    const PresentationError& error) {
+  if (request_session_id == start_session_request_id_) {
+    CHECK(pending_start_session_cb_.get());
+    pending_start_session_cb_->Run(
+        presentation::PresentationSessionInfoPtr(),
+        presentation::PresentationError::From(error));
+    pending_start_session_cb_.reset();
+    start_session_request_id_ = kInvalidRequestSessionId;
+    HandleQueuedStartSessionRequests();
+  }
+}
+
+void PresentationServiceImpl::OnJoinSessionSucceeded(
+    int request_session_id,
+    const PresentationSessionInfo& session_info) {
+  RunAndEraseJoinSessionMojoCallback(
       request_session_id,
       presentation::PresentationSessionInfo::From(session_info),
       presentation::PresentationErrorPtr());
-  if (is_start_session)
-    HandleQueuedStartSessionRequests();
 }
 
-void PresentationServiceImpl::OnStartOrJoinSessionError(
-    bool is_start_session,
+void PresentationServiceImpl::OnJoinSessionError(
     int request_session_id,
     const PresentationError& error) {
-  RunAndEraseNewSessionMojoCallback(
+  RunAndEraseJoinSessionMojoCallback(
       request_session_id,
       presentation::PresentationSessionInfoPtr(),
       presentation::PresentationError::From(error));
-  if (is_start_session)
-    HandleQueuedStartSessionRequests();
 }
 
-void PresentationServiceImpl::RunAndEraseNewSessionMojoCallback(
+void PresentationServiceImpl::RunAndEraseJoinSessionMojoCallback(
     int request_session_id,
     presentation::PresentationSessionInfoPtr session,
     presentation::PresentationErrorPtr error) {
-  auto it = pending_session_cbs_.find(request_session_id);
-  if (it == pending_session_cbs_.end())
+  auto it = pending_join_session_cbs_.find(request_session_id);
+  if (it == pending_join_session_cbs_.end())
     return;
 
   DCHECK(it->second.get());
   it->second->Run(session.Pass(), error.Pass());
-  pending_session_cbs_.erase(it);
+  pending_join_session_cbs_.erase(it);
 }
 
 void PresentationServiceImpl::SetDefaultPresentationURL(
@@ -489,30 +532,29 @@ void PresentationServiceImpl::Reset() {
 
   default_presentation_url_.clear();
   default_presentation_id_.clear();
+
   screen_availability_listener_.reset();
+
   queued_start_session_requests_.clear();
-  FlushNewSessionCallbacks();
+  start_session_request_id_ = kInvalidRequestSessionId;
+  pending_start_session_cb_.reset();
+
+  pending_join_session_cbs_.clear();
+
   default_session_start_context_.reset();
+
   if (on_session_messages_callback_.get()) {
     on_session_messages_callback_->Run(
         mojo::Array<presentation::SessionMessagePtr>());
     on_session_messages_callback_.reset();
   }
+
   if (send_message_callback_) {
     // Run the callback with false, indicating the renderer to stop sending
     // the requests and invalidate all pending requests.
     send_message_callback_->Run(false);
     send_message_callback_.reset();
   }
-}
-
-// static
-void PresentationServiceImpl::InvokeNewSessionMojoCallbackWithError(
-    const NewSessionMojoCallback& callback) {
-  callback.Run(
-        presentation::PresentationSessionInfoPtr(),
-        presentation::PresentationError::From(
-            PresentationError(PRESENTATION_ERROR_UNKNOWN, "Internal error")));
 }
 
 void PresentationServiceImpl::OnDelegateDestroyed() {
@@ -551,26 +593,40 @@ void PresentationServiceImpl::ScreenAvailabilityListenerImpl
   service_->client_->OnScreenAvailabilityUpdated(available);
 }
 
+PresentationServiceImpl::NewSessionMojoCallbackWrapper
+::NewSessionMojoCallbackWrapper(const NewSessionMojoCallback& callback)
+    : callback_(callback) {
+}
+
+PresentationServiceImpl::NewSessionMojoCallbackWrapper
+::~NewSessionMojoCallbackWrapper() {
+  if (!callback_.is_null())
+    InvokeNewSessionMojoCallbackWithError(callback_);
+}
+
+void PresentationServiceImpl::NewSessionMojoCallbackWrapper::Run(
+    presentation::PresentationSessionInfoPtr session,
+    presentation::PresentationErrorPtr error) {
+  DCHECK(!callback_.is_null());
+  callback_.Run(session.Pass(), error.Pass());
+  callback_.reset();
+}
+
 PresentationServiceImpl::StartSessionRequest::StartSessionRequest(
     const std::string& presentation_url,
     const std::string& presentation_id,
     const NewSessionMojoCallback& callback)
     : presentation_url_(presentation_url),
       presentation_id_(presentation_id),
-      callback_(callback) {
+      callback_wrapper_(new NewSessionMojoCallbackWrapper(callback)) {
 }
 
 PresentationServiceImpl::StartSessionRequest::~StartSessionRequest() {
-  // Ensure that a pending callback is not dropped.
-  if (!callback_.is_null())
-    InvokeNewSessionMojoCallbackWithError(callback_);
 }
 
-PresentationServiceImpl::NewSessionMojoCallback
+scoped_ptr<PresentationServiceImpl::NewSessionMojoCallbackWrapper>
 PresentationServiceImpl::StartSessionRequest::PassCallback() {
-  NewSessionMojoCallback callback = callback_;
-  callback_.reset();
-  return callback;
+  return callback_wrapper_.Pass();
 }
 
 PresentationServiceImpl::DefaultSessionStartContext

@@ -31,6 +31,10 @@ struct LoadCommittedDetails;
 struct PresentationSessionMessage;
 class RenderFrameHost;
 
+using NewSessionMojoCallback = mojo::Callback<
+    void(presentation::PresentationSessionInfoPtr,
+         presentation::PresentationErrorPtr)>;
+
 // Implementation of Mojo PresentationService.
 // It handles Presentation API requests coming from Blink / renderer process
 // and delegates the requests to the embedder's media router via
@@ -78,10 +82,14 @@ class CONTENT_EXPORT PresentationServiceImpl
       DefaultSessionStartReset);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ReceiveSessionMessagesAfterReset);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           MaxPendingStartSessionRequests);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           MaxPendingJoinSessionRequests);
 
-  using NewSessionMojoCallback =
-      mojo::Callback<void(presentation::PresentationSessionInfoPtr,
-          presentation::PresentationErrorPtr)>;
+  // Maximum number of queued StartSession or JoinSession requests.
+  static const int kMaxNumQueuedSessionRequests = 10;
+
   using DefaultSessionMojoCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr)>;
   using SessionStateCallback =
@@ -133,7 +141,24 @@ class CONTENT_EXPORT PresentationServiceImpl
     scoped_ptr<PresentationSessionInfo> session_;
   };
 
-  // Context for a StartSession request.
+  // Ensures the provided NewSessionMojoCallback is invoked exactly once
+  // before it goes out of scope.
+  class NewSessionMojoCallbackWrapper {
+   public:
+    explicit NewSessionMojoCallbackWrapper(
+        const NewSessionMojoCallback& callback);
+    ~NewSessionMojoCallbackWrapper();
+
+    void Run(presentation::PresentationSessionInfoPtr session,
+             presentation::PresentationErrorPtr error);
+
+   private:
+    NewSessionMojoCallback callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(NewSessionMojoCallbackWrapper);
+  };
+
+  // Context for a queued StartSession request.
   class CONTENT_EXPORT StartSessionRequest {
    public:
     StartSessionRequest(const std::string& presentation_url,
@@ -141,9 +166,7 @@ class CONTENT_EXPORT PresentationServiceImpl
                         const NewSessionMojoCallback& callback);
     ~StartSessionRequest();
 
-    // Retrieves the pending callback from this request, transferring ownership
-    // to the caller.
-    NewSessionMojoCallback PassCallback();
+    scoped_ptr<NewSessionMojoCallbackWrapper> PassCallback();
 
     const std::string& presentation_url() const { return presentation_url_; }
     const std::string& presentation_id() const { return presentation_id_; }
@@ -151,7 +174,9 @@ class CONTENT_EXPORT PresentationServiceImpl
    private:
     const std::string presentation_url_;
     const std::string presentation_id_;
-    NewSessionMojoCallback callback_;
+    scoped_ptr<NewSessionMojoCallbackWrapper> callback_wrapper_;
+
+    DISALLOW_COPY_AND_ASSIGN(StartSessionRequest);
   };
 
   // |render_frame_host|: The RFH this instance is associated with.
@@ -210,10 +235,11 @@ class CONTENT_EXPORT PresentationServiceImpl
   void OnDefaultPresentationStarted(const PresentationSessionInfo& session)
       override;
 
-  // Finds the callback from |pending_session_cbs_| using |request_session_id|.
+  // Finds the callback from |pending_join_session_cbs_| using
+  // |request_session_id|.
   // If it exists, invoke it with |session| and |error|, then erase it from
-  // |pending_session_cbs_|.
-  void RunAndEraseNewSessionMojoCallback(
+  // |pending_join_session_cbs_|.
+  void RunAndEraseJoinSessionMojoCallback(
       int request_session_id,
       presentation::PresentationSessionInfoPtr session,
       presentation::PresentationErrorPtr error);
@@ -229,21 +255,22 @@ class CONTENT_EXPORT PresentationServiceImpl
   // These functions are bound as base::Callbacks and passed to
   // embedder's implementation of PresentationServiceDelegate for later
   // invocation.
-  void OnStartOrJoinSessionSucceeded(
-      bool is_start_session,
+  void OnStartSessionSucceeded(
       int request_session_id,
       const PresentationSessionInfo& session_info);
-  void OnStartOrJoinSessionError(
-      bool is_start_session,
+  void OnStartSessionError(
+      int request_session_id,
+      const PresentationError& error);
+  void OnJoinSessionSucceeded(
+      int request_session_id,
+      const PresentationSessionInfo& session_info);
+  void OnJoinSessionError(
       int request_session_id,
       const PresentationError& error);
   void OnSendMessageCallback();
 
   // Requests delegate to start a session.
-  void DoStartSession(
-      const std::string& presentation_url,
-      const std::string& presentation_id,
-      const NewSessionMojoCallback& callback);
+  void DoStartSession(scoped_ptr<StartSessionRequest> request);
 
   // Passed to embedder's implementation of PresentationServiceDelegate for
   // later invocation when session messages arrive.
@@ -258,16 +285,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   // the first one in the queue.
   void HandleQueuedStartSessionRequests();
 
-  // Associates |callback| with a unique request ID and stores it in a map.
-  int RegisterNewSessionCallback(
-    const NewSessionMojoCallback& callback);
-
-  // Flushes all pending new session callbacks with error responses.
-  void FlushNewSessionCallbacks();
-
-  // Invokes |callback| with an error.
-  static void InvokeNewSessionMojoCallbackWithError(
-      const NewSessionMojoCallback& callback);
+  // Associates a JoinSession |callback| with a unique request ID and
+  // stores it in a map.
+  // Returns a positive value on success.
+  int RegisterJoinSessionCallback(const NewSessionMojoCallback& callback);
 
   // Returns true if this object is associated with |render_frame_host|.
   bool FrameMatches(content::RenderFrameHost* render_frame_host) const;
@@ -290,11 +311,14 @@ class CONTENT_EXPORT PresentationServiceImpl
   // it is removed from head of the queue.
   std::deque<linked_ptr<StartSessionRequest>> queued_start_session_requests_;
 
-  // Indicates that a StartSession request is currently being processed.
-  bool is_start_session_pending_;
+  // For StartSession requests.
+  // Set to a positive value when a StartSession request is being processed.
+  int start_session_request_id_;
+  scoped_ptr<NewSessionMojoCallbackWrapper> pending_start_session_cb_;
 
-  int next_request_session_id_;
-  base::hash_map<int, linked_ptr<NewSessionMojoCallback>> pending_session_cbs_;
+  // For JoinSession requests.
+  base::hash_map<int, linked_ptr<NewSessionMojoCallbackWrapper>>
+      pending_join_session_cbs_;
 
   scoped_ptr<DefaultSessionStartContext> default_session_start_context_;
 
