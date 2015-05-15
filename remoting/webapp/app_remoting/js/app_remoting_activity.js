@@ -189,8 +189,8 @@ remoting.AppRemotingActivity.prototype.onDisconnected = function(error) {
  * @param {!remoting.Error} error
  */
 remoting.AppRemotingActivity.prototype.onConnectionFailed = function(error) {
-  remoting.loadingWindow_.updateErrorMessage(
-      chrome.i18n.getMessage(error.getTag()));
+  remoting.LoadingWindow.close();
+  this.showErrorMessage_(error);
   this.cleanup_();
 };
 
@@ -199,7 +199,7 @@ remoting.AppRemotingActivity.prototype.onConnectionFailed = function(error) {
  * @private
  */
 remoting.AppRemotingActivity.prototype.showErrorMessage_ = function(error) {
-  console.error('Error: ' + error.toString());
+  console.error('Connection failed: ' + error.toString());
   remoting.MessageWindow.showErrorMessage(
       remoting.app.getApplicationName(),
       chrome.i18n.getMessage(error.getTag()));

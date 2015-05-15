@@ -19,25 +19,17 @@ var isArray = function(value) {
 
 /**
  * @param {*} value
- * @param {boolean=} opt_allowUndefined True to accept undefined.
  * @return {boolean}
  */
-var isBoolean = function(value, opt_allowUndefined) {
-  if (opt_allowUndefined && value === 'undefined') {
-    return true;
-  }
+var isBoolean = function(value) {
   return typeof value == 'boolean';
 };
 
 /**
  * @param {*} value
- * @param {boolean=} opt_allowUndefined True to accept undefined.
  * @return {boolean}
  */
-var isNumber = function(value, opt_allowUndefined) {
-  if (opt_allowUndefined && value === 'undefined') {
-    return true;
-  }
+var isNumber = function(value) {
   return typeof value == 'number';
 };
 
@@ -51,13 +43,9 @@ var isObject = function(value) {
 
 /**
  * @param {*} value
- * @param {boolean=} opt_allowUndefined True to accept undefined.
  * @return {boolean}
  */
-var isString = function(value, opt_allowUndefined) {
-  if (opt_allowUndefined && value === 'undefined') {
-    return true;
-  }
+var isString = function(value) {
   return typeof value == 'string';
 };
 
