@@ -934,6 +934,14 @@ output_rotate_damage(struct weston_output *output,
 	go->border_damage[go->buffer_damage_index] = border_status;
 }
 
+/* NOTE: We now allow falling back to ARGB gl visuals when XRGB is
+ * unavailable, so we're assuming the background has no transparency
+ * and that everything with a blend, like drop shadows, will have something
+ * opaque (like the background) drawn underneath it.
+ *
+ * Depending on the underlying hardware, violating that assumption could
+ * result in seeing through to another display plane.
+ */
 static void
 gl_renderer_repaint_output(struct weston_output *output,
 			      pixman_region32_t *output_damage)

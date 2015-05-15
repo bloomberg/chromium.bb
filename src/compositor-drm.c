@@ -1391,14 +1391,46 @@ create_gbm_device(int fd)
 	return gbm;
 }
 
+/* When initializing EGL, if the preferred buffer format isn't availble
+ * we may be able to susbstitute an ARGB format for an XRGB one.
+ *
+ * This returns 0 if substitution isn't possible, but 0 might be a
+ * legitimate format for other EGL platforms, so the caller is
+ * responsible for checking for 0 before calling gl_renderer->create().
+ *
+ * This works around https://bugs.freedesktop.org/show_bug.cgi?id=89689
+ * but it's entirely possible we'll see this again on other implementations.
+ */
+static int
+fallback_format_for(uint32_t format)
+{
+	switch (format) {
+	case GBM_FORMAT_XRGB8888:
+		return GBM_FORMAT_ARGB8888;
+	case GBM_FORMAT_XRGB2101010:
+		return GBM_FORMAT_ARGB2101010;
+	default:
+		return 0;
+	}
+}
+
 static int
 drm_compositor_create_gl_renderer(struct drm_compositor *ec)
 {
-	EGLint format;
+	EGLint format[2] = {
+		ec->format,
+		fallback_format_for(ec->format),
+	};
+	int n_formats = 1;
 
-	format = ec->format;
-	if (gl_renderer->create(&ec->base, EGL_PLATFORM_GBM_KHR, (void *) ec->gbm,
-			       gl_renderer->opaque_attribs, &format, 1) < 0) {
+	if (format[1])
+		n_formats = 2;
+	if (gl_renderer->create(&ec->base,
+				EGL_PLATFORM_GBM_KHR,
+				(void *)ec->gbm,
+				gl_renderer->opaque_attribs,
+				format,
+				n_formats) < 0) {
 		return -1;
 	}
 
@@ -1602,13 +1634,16 @@ find_crtc_for_connector(struct drm_compositor *ec,
 static int
 drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 {
-	EGLint format = output->format;
-	int i, flags;
+	EGLint format[2] = {
+		output->format,
+		fallback_format_for(output->format),
+	};
+	int i, flags, n_formats = 1;
 
 	output->surface = gbm_surface_create(ec->gbm,
 					     output->base.current_mode->width,
 					     output->base.current_mode->height,
-					     format,
+					     format[0],
 					     GBM_BO_USE_SCANOUT |
 					     GBM_BO_USE_RENDERING);
 	if (!output->surface) {
@@ -1616,12 +1651,14 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 		return -1;
 	}
 
+	if (format[1])
+		n_formats = 2;
 	if (gl_renderer->output_create(&output->base,
 				       (EGLNativeDisplayType)output->surface,
 				       output->surface,
 				       gl_renderer->opaque_attribs,
-				       &format,
-				       1) < 0) {
+				       format,
+				       n_formats) < 0) {
 		weston_log("failed to create gl renderer output state\n");
 		gbm_surface_destroy(output->surface);
 		return -1;
