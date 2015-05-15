@@ -5,21 +5,21 @@
 
 Polymer('gaia-password-changed', {
   invalidate: function() {
-    this.$.oldPasswordInput.setValid(false);
+    this.$.oldPasswordInput.isInvalid = true;
   },
 
   reset: function() {
     this.$.animatedPages.selected = 0;
     this.clearPassword();
-    this.$.oldPasswordInput.setValid(true);
+    this.$.oldPasswordInput.isInvalid = false;
     this.disabled = false;
     this.$.closeButton.hidden = false;
     this.$.oldPasswordCard.classList.remove('disabled');
   },
 
   ready: function() {
-    this.$.oldPasswordInput.addEventListener('buttonClick', function() {
-      var inputPassword = this.$.oldPasswordInput.inputValue;
+    this.$.oldPasswordInputForm.addEventListener('submit', function() {
+      var inputPassword = this.$.oldPasswordInput.value;
       if (!inputPassword)
         this.invalidate();
       else {
@@ -36,7 +36,7 @@ Polymer('gaia-password-changed', {
   },
 
   set disabled(value) {
-    this.$.oldPasswordInput.disabled = value;
+    this.$.oldPasswordInputForm.disabled = value;
   },
 
   onForgotPasswordClicked: function() {
@@ -45,7 +45,7 @@ Polymer('gaia-password-changed', {
   },
 
   onTryAgainClicked: function() {
-    this.$.oldPasswordInput.setValid(true);
+    this.$.oldPasswordInput.isInvalid = false;
     this.$.animatedPages.selected -= 1;
   },
 
@@ -54,7 +54,7 @@ Polymer('gaia-password-changed', {
   },
 
   clearPassword: function() {
-    this.$.oldPasswordInput.inputValue = '';
+    this.$.oldPasswordInput.value = '';
   },
 
   onProceedClicked: function() {
