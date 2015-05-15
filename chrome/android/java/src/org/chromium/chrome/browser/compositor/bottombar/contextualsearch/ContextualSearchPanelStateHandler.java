@@ -18,18 +18,7 @@ import java.util.Map;
  */
 abstract class ContextualSearchPanelStateHandler {
 
-    // Valid previous states for when the promo is active.
-    private static final Map<PanelState, PanelState> PREVIOUS_STATES_PROMO;
-    static {
-        Map<PanelState, PanelState> states = new HashMap<PanelState, PanelState>();
-        // Pairs are of the form <Current, Previous>.
-        states.put(PanelState.PEEKED, PanelState.CLOSED);
-        states.put(PanelState.PROMO, PanelState.PEEKED);
-        states.put(PanelState.EXPANDED, PanelState.PROMO);
-        PREVIOUS_STATES_PROMO = Collections.unmodifiableMap(states);
-    }
-
-    // Valid previous states for when the promo is not active (normal flow).
+    // Valid previous states for the Panel.
     private static final Map<PanelState, PanelState> PREVIOUS_STATES_NORMAL;
     static {
         Map<PanelState, PanelState> states = new HashMap<PanelState, PanelState>();
@@ -71,26 +60,8 @@ abstract class ContextualSearchPanelStateHandler {
      * @return The {@code PanelState} that is before the |state| in the order of states.
      */
     PanelState getPreviousPanelState(PanelState state) {
-        PanelState prevState = mIsPromoActive
-                ? PREVIOUS_STATES_PROMO.get(state)
-                : PREVIOUS_STATES_NORMAL.get(state);
+        PanelState prevState = PREVIOUS_STATES_NORMAL.get(state);
         return prevState != null ? prevState : PanelState.UNDEFINED;
-    }
-
-    /**
-     * Return the maximum state that the panel can be in, depending on whether the promo is
-     * active.
-     */
-    PanelState getMaximumState() {
-        return mIsPromoActive ? PanelState.PROMO : PanelState.MAXIMIZED;
-    }
-
-    /**
-     * Return the intermediary state that the panel can be in, depending on whether the promo is
-     * active.
-     */
-    PanelState getIntermediaryState() {
-        return mIsPromoActive ? PanelState.PROMO : PanelState.EXPANDED;
     }
 
     /**
@@ -198,14 +169,10 @@ abstract class ContextualSearchPanelStateHandler {
      * @return whether the state is valid.
      */
     boolean isValidState(PanelState state) {
-        ArrayList<PanelState> validStates;
-        if (mIsPromoActive) {
-            validStates = new ArrayList<PanelState>(PREVIOUS_STATES_PROMO.values());
-        } else {
-            validStates = new ArrayList<PanelState>(PREVIOUS_STATES_NORMAL.values());
-            // MAXIMIZED is not the previous state of anything, but it's a valid state.
-            validStates.add(PanelState.MAXIMIZED);
-        }
+        ArrayList<PanelState> validStates =
+                new ArrayList<PanelState>(PREVIOUS_STATES_NORMAL.values());
+        // MAXIMIZED is not the previous state of anything, but it's a valid state.
+        validStates.add(PanelState.MAXIMIZED);
 
         return validStates.contains(state);
     }

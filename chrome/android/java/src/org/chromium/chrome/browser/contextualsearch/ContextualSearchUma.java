@@ -412,17 +412,6 @@ public class ContextualSearchUma {
      * Logs the state of the Contextual Search preference. This function should be called if the
      * Contextual Search feature is enabled, and will track the different preference settings
      * (disabled, enabled or uninitialized). Calling more than once is fine.
-     * This is deprecated; pass the number of taps remaining to logPreferenceState.
-     */
-    @Deprecated
-    public static void logPreferenceState() {
-        logPreferenceState(PROMO_TAPS_REMAINING_INVALID);
-    }
-
-    /**
-     * Logs the state of the Contextual Search preference. This function should be called if the
-     * Contextual Search feature is enabled, and will track the different preference settings
-     * (disabled, enabled or uninitialized). Calling more than once is fine.
      * @param promoTapsRemaining The number of taps remaining, or -1 if not applicable.
      */
     public static void logPreferenceState(int promoTapsRemaining) {
@@ -442,16 +431,6 @@ public class ContextualSearchUma {
     public static void logPreferenceChange(boolean enabled) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPreferenceStateChange",
                 enabled ? PREFERENCE_ENABLED : PREFERENCE_DISABLED, PREFERENCE_HISTOGRAM_BOUNDARY);
-    }
-
-    /**
-     * Logs the outcome of a first run flow.
-     * This is deprecated; call logPromoOutcome instead.
-     */
-    @Deprecated
-    public static void logFirstRunFlowOutcome() {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunFlowOutcome",
-                getPreferenceValue(), PREFERENCE_HISTOGRAM_BOUNDARY);
     }
 
     /**

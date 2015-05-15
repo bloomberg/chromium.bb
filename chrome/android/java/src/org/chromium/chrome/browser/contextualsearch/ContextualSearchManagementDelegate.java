@@ -21,6 +21,7 @@ public interface ContextualSearchManagementDelegate {
     public void setPreferenceState(boolean enabled);
 
     /**
+     * TODO(pedrosimonetti): rename to isPromoAvailable (requires upstream and downstream changes).
      * @return Whether the Opt-out promo is available to be be shown in the panel.
      */
     boolean isOptOutPromoAvailable();

@@ -82,23 +82,6 @@ public class ContextualSearchControl extends LinearLayout {
     }
 
     /**
-     * Sets the text to display on top of the first-run promo.
-     * @param selection The portion of the text that represents the user's selection.
-     */
-    public void setFirstRunText(String selection) {
-        // TODO(pedrosimonetti): confirm that is okay to remove the experimental text
-//        String firstRunText = ContextualSearchFieldTrial.getEnglishExperimentFirstRunText(
-//                selection);
-//        if (firstRunText == null) {
-//            firstRunText =
-//                getContext().getString(R.string.contextual_search_action_bar, selection);
-//        }
-        String firstRunText =
-                getContext().getString(R.string.contextual_search_action_bar, selection);
-        setCentralText(firstRunText);
-    }
-
-    /**
      * Sets the search context to display in the control.
      * @param selection The portion of the context that represents the user's selection.
      * @param start The portion of the context from its start to the selection.
