@@ -549,3 +549,16 @@ html[dir=rtl] #supervised-user-creation-flip-photo {
 .camera.live:not(.online) .supervised-user-creation-image-stream-area .spinner {
   display: block;
 }
+
+#supervised-user-creation-close-button-item {
+  color: rgba(0, 0, 0, .54);
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 1;
+}
+
+html[dir=rtl] #supervised-user-creation-close-button-item {
+  left: 10px;
+  right: auto;
+}

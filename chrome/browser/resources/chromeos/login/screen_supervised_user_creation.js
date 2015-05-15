@@ -616,6 +616,12 @@ login.createScreen('SupervisedUserCreationScreen',
           'webkitTransitionEnd', function(e) {
             previewElement.classList.remove('animation');
           });
+
+      $('supervised-user-creation-close-button-item').addEventListener(
+          'click', function(e) {
+            this.cancel();
+            e.preventDefault();
+          }.bind(this));
     },
 
     buttonIds: [],
@@ -1193,6 +1199,9 @@ login.createScreen('SupervisedUserCreationScreen',
             !this.importList_.selectedPod_ ||
             this.importList_.selectedPod_.user.exists;
       }
+      $('supervised-user-creation-close-button-item').hidden =
+          (visiblePage == 'created');
+
       chrome.send('currentSupervisedUserPage', [this.currentPage_]);
     },
 

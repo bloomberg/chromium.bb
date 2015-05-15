@@ -352,7 +352,8 @@ cr.define('login', function() {
           accountPickerIsActive ||
           !this.allowCancel_ ||
           wrongHWIDWarningIsActive ||
-          isMultiProfilesUI;
+          isMultiProfilesUI ||
+          supervisedUserCreationDialogIsActive;
       $('guest-user-header-bar-item').hidden =
           (gaiaIsActive && !this.isNewGaiaFlow_) ||
           supervisedUserCreationDialogIsActiveAndNotIntro ||
