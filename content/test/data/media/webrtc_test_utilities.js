@@ -66,14 +66,9 @@ function detectVideo(videoElementName, predicate, callback) {
   var width = VIDEO_TAG_WIDTH;
   var height = VIDEO_TAG_HEIGHT;
   var videoElement = $(videoElementName);
+  var canvas = $(videoElementName + '-canvas');
   var oldPixels = [];
-  var startTimeMs = new Date().getTime();
   var waitVideo = setInterval(function() {
-    var canvas = $(videoElementName + '-canvas');
-    if (canvas == null) {
-      console.log('Waiting for ' + videoElementName + '-canvas' + ' to appear');
-      return;
-    }
     var context = canvas.getContext('2d');
     context.drawImage(videoElement, 0, 0, width, height);
     var pixels = context.getImageData(0, 0 , width, height / 3).data;
@@ -87,12 +82,6 @@ function detectVideo(videoElementName, predicate, callback) {
       callback(videoElement.videoWidth, videoElement.videoHeight);
     }
     oldPixels = pixels;
-
-    var elapsedTime = new Date().getTime() - startTimeMs;
-    if (elapsedTime > 3000) {
-      startTimeMs = new Date().getTime();
-      console.log('Still waiting for video to satisfy ' + predicate.toString());
-    }
   }, 200);
 }
 
@@ -197,19 +186,12 @@ function isVideoPlaying(pixels, previousPixels) {
   return false;
 }
 
-// Pixels is an array where pixels[0] is the R value for the first pixel,
-// pixels[1] is the G value, and so on.
 function isVideoBlack(pixels) {
   for (var i = 0; i < pixels.length; i++) {
-    if ((i + 1) % 4 == 0) {
-      // Ignore the alpha channel.
-      continue;
-    }
-
-    // A black pixel has 0 for R,G and B but allow a bit more here to account
-    // for rounding errors in libyuv.
-    if (pixels[i] > 3) {
-      console.log('Found nonblack pixel at ' + i + ', was ' + pixels[i]);
+    // |pixels| is in RGBA. Ignore the alpha channel.
+    // We allow it to be off by 1, to account for rounding errors in YUV
+    // conversion.
+    if (pixels[i] != 0 && pixels[i] != 1 && (i + 1) % 4 != 0) {
       return false;
     }
   }

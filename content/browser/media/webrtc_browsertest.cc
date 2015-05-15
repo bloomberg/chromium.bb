@@ -144,15 +144,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 }
 
 // Flaky on TSAN v2. http://crbug.com/408006
-#if defined(THREAD_SANITIZER)
-#define MAYBE_CanSetupVideoCallAndDisableLocalVideo \
-  DISABLED_CanSetupVideoCallAndDisableLocalVideo
-#else
-#define MAYBE_CanSetupVideoCallAndDisableLocalVideo \
-  CanSetupVideoCallAndDisableLocalVideo
-#endif
+// Flaky everywhere: http://crbug.com/477498
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupVideoCallAndDisableLocalVideo) {
+                       DISABLED_CanSetupVideoCallAndDisableLocalVideo) {
   const std::string javascript =
       "callAndDisableLocalVideo({video: true});";
   MakeTypicalPeerConnectionCall(javascript);
