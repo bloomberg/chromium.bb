@@ -257,7 +257,7 @@ deps = {
    Var('chromium_git') + '/chromium/tools/deps2git.git' + '@' + 'f04828eb0b5acd3e7ad983c024870f17f17b06d9',
 
   'src/third_party/webpagereplay':
-   Var('chromium_git') + '/external/github.com/chromium/web-page-replay.git' + '@' + '0e5c45a7ca4a43d9b9451db380de4ac5a543d1de',
+   Var('chromium_git') + '/external/github.com/chromium/web-page-replay.git' + '@' + 'e53550b73e8e098938a651bc8ceb3681e5980567',
 
   'src/third_party/pywebsocket/src':
     Var('chromium_git') + '/external/pywebsocket/src.git' + '@' + 'cb349e87ddb30ff8d1fa1a89be39cec901f4a29c',
