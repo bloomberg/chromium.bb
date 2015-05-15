@@ -56564,6 +56564,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
+  <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
   <int value="-1751928267" label="disable-icon-ntp"/>

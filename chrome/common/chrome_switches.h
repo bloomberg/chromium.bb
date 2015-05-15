@@ -86,6 +86,7 @@ extern const char kDisableNewOfflineErrorPage[];
 extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableOfflineAutoReload[];
 extern const char kDisableOfflineAutoReloadVisibleOnly[];
+extern const char kDisableOutOfProcessPac[];
 extern const char kDisablePasswordManagerReauthentication[];
 extern const char kDisablePdfMaterialUI[];
 extern const char kDisablePermissionsBubbles[];

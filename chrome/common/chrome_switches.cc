@@ -291,6 +291,9 @@ const char kDisableOfflineAutoReload[]       = "disable-offline-auto-reload";
 const char kDisableOfflineAutoReloadVisibleOnly[] =
     "disable-offline-auto-reload-visible-only";
 
+// Disable out-of-process V8 proxy resolver.
+const char kDisableOutOfProcessPac[] = "disable-out-of-process-pac";
+
 // Disable the setting to prompt the user for their OS account password before
 // revealing plaintext passwords in the password manager.
 const char kDisablePasswordManagerReauthentication[] =

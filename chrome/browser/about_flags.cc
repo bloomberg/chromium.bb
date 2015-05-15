@@ -2341,7 +2341,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_NAME,
     IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kV8PacMojoOutOfProcess),
+    ENABLE_DISABLE_VALUE_TYPE(switches::kV8PacMojoOutOfProcess,
+                              switches::kDisableOutOfProcessPac)
   },
 #if defined(ENABLE_MEDIA_ROUTER)
   {

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
@@ -37,6 +38,23 @@
 #endif
 
 using content::BrowserThread;
+
+namespace {
+
+#if !defined(OS_ANDROID)
+bool EnableOutOfProcessV8Pac(const base::CommandLine& command_line) {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("OutOfProcessPac");
+
+  if (command_line.HasSwitch(switches::kDisableOutOfProcessPac))
+    return false;
+  if (command_line.HasSwitch(switches::kV8PacMojoOutOfProcess))
+    return true;
+  return group_name == "Enabled";
+}
+#endif  // !defined(OS_ANDROID)
+
+}  // namespace
 
 // static
 net::ProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
@@ -144,14 +162,16 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 #endif
 
 #if !defined(OS_ANDROID)
-    if (command_line.HasSwitch(switches::kV8PacMojoOutOfProcess)) {
-      proxy_service = net::CreateProxyServiceUsingMojoFactory(
-          UtilityProcessMojoProxyResolverFactory::GetInstance(),
+    // In-process Mojo PAC can only be set on the command line, so its presence
+    // should override other options.
+    if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
+      proxy_service = net::CreateProxyServiceUsingMojoInProcess(
           proxy_config_service, new net::ProxyScriptFetcherImpl(context),
           dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
           network_delegate);
-    } else if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
-      proxy_service = net::CreateProxyServiceUsingMojoInProcess(
+    } else if (EnableOutOfProcessV8Pac(command_line)) {
+      proxy_service = net::CreateProxyServiceUsingMojoFactory(
+          UtilityProcessMojoProxyResolverFactory::GetInstance(),
           proxy_config_service, new net::ProxyScriptFetcherImpl(context),
           dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
           network_delegate);
