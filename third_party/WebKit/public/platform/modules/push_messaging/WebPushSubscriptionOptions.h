@@ -9,13 +9,9 @@ namespace blink {
 
 struct WebPushSubscriptionOptions {
     WebPushSubscriptionOptions()
-        : userVisible(false)
-        , userVisibleOnly(false)
+        : userVisibleOnly(false)
     {
     }
-
-    // TODO(peter): Remove this property when Chromium doesn't use it anymore.
-    bool userVisible;
 
     // Indicates that the subscription will only be used for push messages
     // that result in UI visible to the user.
