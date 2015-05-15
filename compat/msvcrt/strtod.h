@@ -1,5 +1,5 @@
 /*
- * C99-compatible snprintf() and vsnprintf() implementations
+ * C99-compatible strtod() implementation
  * Copyright (c) 2012 Ronald S. Bultje <rsbultje@gmail.com>
  *
  * This file is part of FFmpeg.
@@ -19,13 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef COMPAT_SNPRINTF_H
-#define COMPAT_SNPRINTF_H
+#ifndef COMPAT_STRTOD_H
+#define COMPAT_STRTOD_H
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <stdlib.h>
 
-extern int avpriv_snprintf(char *s, size_t n, const char *fmt, ...);
-extern int avpriv_vsnprintf(char *s, size_t n, const char *fmt, va_list ap);
+extern double avpriv_strtod(const char *nptr, char **endptr);
 
-#endif /* COMPAT_SNPRINTF_H */
+#endif /* COMPAT_STRTOD_H */

@@ -384,14 +384,18 @@
                     4267
                   ],
                 }],
+                ['component == "shared_library"', {
+                  # Fix warnings about a local symbol being inefficiently imported.
+                  'msvs_settings': {
+                    'VCCLCompilerTool': {
+                      'AdditionalOptions': [
+                        '/FIcompat/msvcrt/snprintf.h',
+                        '/FIcompat/msvcrt/strtod.h',
+                      ],
+                    },
+                  },
+                }],
               ],
-              'msvs_settings': {
-                # Ignore warnings about a local symbol being inefficiently imported,
-                # upstream is working on a fix.
-                'VCLinkerTool': {
-                  'AdditionalOptions': ['/ignore:4049', '/ignore:4217'],
-                }
-              },
             }],
           ],
         },
@@ -401,7 +405,7 @@
   'targets': [
     {
       'target_name': 'ffmpeg',
-      'type': 'none',
+      'type': 'static_library',
       'conditions': [
         ['build_ffmpegsumo == 1', {
           'dependencies': [

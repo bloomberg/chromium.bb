@@ -22,6 +22,10 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#if defined(_MSC_VER)
+#include "compat/msvcrt/strtod.h"
+#endif
+
 #include "libavutil/avstring.h"
 #include "libavutil/mathematics.h"
 
@@ -38,9 +42,6 @@ static char *check_nan_suffix(char *s)
 
     return *s == ')' ? s + 1 : start;
 }
-
-#undef strtod
-double strtod(const char *, char **);
 
 double avpriv_strtod(const char *nptr, char **endptr)
 {

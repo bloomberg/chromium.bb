@@ -262,6 +262,11 @@ if (build_ffmpegsumo) {
         "vsnprintf=avpriv_vsnprintf",
       ]
 
+      if (is_component_build) {
+        # Required to avoid 4049 and 4217 errors around redundant imports.
+        cflags += [ "/FIcompat/msvcrt/snprintf.h", "/FIcompat/msvcrt/strtod.h" ]
+      }
+
       # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
       cflags += [
         "/wd4996", # 'function': was declared deprecated
@@ -285,14 +290,6 @@ if (build_ffmpegsumo) {
         "/wd4056", # overflow in floating point constant arithmetic
         "/wd4756", # overflow in constant arithmetic
       ]
-# TODO(ajwong): Verify this is true.
-      # Ignore warnings about a local symbol being inefficiently imported,
-      # upstream is working on a fix.
-      ldflags += [
-        "/ignore:4049", # locally defined symbol 'symbol' imported
-        "/ignore:4217", # locally defined symbol 'symbol' imported in
-                        #   function 'function'
-      ]
       if (current_cpu == "x64") {
         # TODO(wolenetz): We should fix this.  http://crbug.com/171009
         cflags += [
@@ -308,32 +305,16 @@ if (build_ffmpegsumo) {
   }
 }
 
-if (is_win) {
-  config("ffmpeg_win_dependent_config") {
-    include_dirs = [
-      platform_config_root,
-      ".",
-    ]
-    libs = [ rebase_path("$target_gen_dir/ffmpegsumo.lib", root_build_dir) ]
-  }
+config("ffmpeg_dependent_config") {
+  include_dirs = [
+    platform_config_root,
+    ".",
+  ]
+}
 
-  group("ffmpeg") {
-    public_configs = [ ":ffmpeg_win_dependent_config" ]
-    public_deps = [
-      ":ffmpegsumo",
-    ]
-  }
-} else {
-  config("ffmpeg_posix_dependent_config") {
-    include_dirs = [
-      platform_config_root,
-      ".",
-    ]
-  }
-  group("ffmpeg") {
-    public_configs = [ ":ffmpeg_posix_dependent_config" ]
-    deps = [
-      ":ffmpegsumo",
-    ]
-  }
+group("ffmpeg") {
+  public_configs = [ ":ffmpeg_dependent_config" ]
+  public_deps = [
+    ":ffmpegsumo",
+  ]
 }
