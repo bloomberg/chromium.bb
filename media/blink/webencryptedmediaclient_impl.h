@@ -25,6 +25,7 @@ class WebSecurityOrigin;
 
 namespace media {
 
+struct CdmConfig;
 class CdmFactory;
 class KeySystems;
 class MediaPermission;
@@ -45,9 +46,8 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   // Create the CDM for |key_system| and |security_origin|. The caller owns
   // the created cdm (passed back using |result|).
   void CreateCdm(const blink::WebString& key_system,
-                 bool allow_distinctive_identifier,
-                 bool allow_persistent_state,
                  const blink::WebSecurityOrigin& security_origin,
+                 const CdmConfig& cdm_config,
                  blink::WebContentDecryptionModuleResult result);
 
  private:
@@ -62,7 +62,7 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   void OnRequestSucceeded(
       blink::WebEncryptedMediaRequest request,
       const blink::WebMediaKeySystemConfiguration& accumulated_configuration,
-      bool are_secure_codecs_required);
+      const CdmConfig& cdm_config);
 
   // Complete a requestMediaKeySystemAccess() request with an error message.
   void OnRequestNotSupported(blink::WebEncryptedMediaRequest request,

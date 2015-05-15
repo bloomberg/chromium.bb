@@ -23,7 +23,7 @@ void SetBrowserCdmFactory(BrowserCdmFactory* factory) {
 
 scoped_ptr<BrowserCdm> CreateBrowserCdm(
     const std::string& key_system,
-    bool use_secure_surface,
+    bool use_hw_secure_codecs,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
@@ -39,7 +39,7 @@ scoped_ptr<BrowserCdm> CreateBrowserCdm(
   }
 
   return g_cdm_factory->CreateBrowserCdm(
-      key_system, use_secure_surface, session_message_cb, session_closed_cb,
+      key_system, use_hw_secure_codecs, session_message_cb, session_closed_cb,
       legacy_session_error_cb, session_keys_change_cb,
       session_expiration_update_cb);
 }

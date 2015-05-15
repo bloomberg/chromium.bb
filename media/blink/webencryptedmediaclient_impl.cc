@@ -105,25 +105,23 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
 
 void WebEncryptedMediaClientImpl::CreateCdm(
     const blink::WebString& key_system,
-    bool allow_distinctive_identifier,
-    bool allow_persistent_state,
     const blink::WebSecurityOrigin& security_origin,
+    const CdmConfig& cdm_config,
     blink::WebContentDecryptionModuleResult result) {
   WebContentDecryptionModuleImpl::Create(
-      cdm_factory_, key_system, allow_distinctive_identifier,
-      allow_persistent_state, security_origin, result);
+      cdm_factory_, key_system, security_origin, cdm_config, result);
 }
 
 void WebEncryptedMediaClientImpl::OnRequestSucceeded(
     blink::WebEncryptedMediaRequest request,
     const blink::WebMediaKeySystemConfiguration& accumulated_configuration,
-    bool are_secure_codecs_required) {
+    const CdmConfig& cdm_config) {
   GetReporter(request.keySystem())->ReportSupported();
   // TODO(sandersd): Pass |are_secure_codecs_required| along and use it to
   // configure the CDM security level and use of secure surfaces on Android.
   request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
-      request.keySystem(), accumulated_configuration, request.securityOrigin(),
-      weak_factory_.GetWeakPtr()));
+      request.keySystem(), request.securityOrigin(), accumulated_configuration,
+      cdm_config, weak_factory_.GetWeakPtr()));
 }
 
 void WebEncryptedMediaClientImpl::OnRequestNotSupported(

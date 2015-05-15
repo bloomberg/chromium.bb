@@ -720,10 +720,10 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
     //
     // Because the check for regular codec support is early-exit, we don't have
     // to consider codecs that are only supported in hardware-secure mode. We
-    // could do so, and make use of SECURE_CODECS_REQUIRED, if it turns out that
-    // hardware-secure-only codecs actually exist and are useful.
+    // could do so, and make use of HW_SECURE_CODECS_REQUIRED, if it turns out
+    // that hardware-secure-only codecs actually exist and are useful.
     if ((codec & key_system_secure_codec_mask) == 0)
-      support = EmeConfigRule::SECURE_CODECS_NOT_ALLOWED;
+      support = EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED;
 #endif  // defined(OS_ANDROID)
   }
 
@@ -786,7 +786,7 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     }
 #elif defined(OS_ANDROID)
     if (robustness > EmeRobustness::SW_SECURE_CRYPTO)
-      return EmeConfigRule::SECURE_CODECS_REQUIRED;
+      return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
 #endif  // defined(OS_CHROMEOS)
   }
 

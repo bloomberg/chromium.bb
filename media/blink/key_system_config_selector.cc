@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "media/base/cdm_config.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_permission.h"
 #include "media/blink/webmediaplayer_util.h"
@@ -131,8 +132,8 @@ struct KeySystemConfigSelector::SelectionRequest {
   blink::WebVector<blink::WebMediaKeySystemConfiguration>
       candidate_configurations;
   blink::WebSecurityOrigin security_origin;
-  base::Callback<void(const blink::WebMediaKeySystemConfiguration&, bool)>
-      succeeded_cb;
+  base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
+                      const CdmConfig&)> succeeded_cb;
   base::Callback<void(const blink::WebString&)> not_supported_cb;
   bool was_permission_requested = false;
   bool is_permission_granted = false;
@@ -158,8 +159,8 @@ class KeySystemConfigSelector::ConfigState {
 
   bool IsIdentifierRecommended() const { return is_identifier_recommended_; }
 
-  bool AreSecureCodecsRequired() const {
-    return are_secure_codecs_required_;
+  bool AreHwSecureCodecsRequired() const {
+    return are_hw_secure_codecs_required_;
   }
 
   // Checks whether a rule is compatible with all previously added rules.
@@ -182,10 +183,10 @@ class KeySystemConfigSelector::ConfigState {
       case EmeConfigRule::IDENTIFIER_AND_PERSISTENCE_REQUIRED:
         return (!is_identifier_not_allowed_ && IsPermissionPossible() &&
                 !is_persistence_not_allowed_);
-      case EmeConfigRule::SECURE_CODECS_NOT_ALLOWED:
-        return !are_secure_codecs_required_;
-      case EmeConfigRule::SECURE_CODECS_REQUIRED:
-        return !are_secure_codecs_not_allowed_;
+      case EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED:
+        return !are_hw_secure_codecs_required_;
+      case EmeConfigRule::HW_SECURE_CODECS_REQUIRED:
+        return !are_hw_secure_codecs_not_allowed_;
       case EmeConfigRule::SUPPORTED:
         return true;
     }
@@ -219,11 +220,11 @@ class KeySystemConfigSelector::ConfigState {
         is_identifier_required_ = true;
         is_persistence_required_ = true;
         return;
-      case EmeConfigRule::SECURE_CODECS_NOT_ALLOWED:
-        are_secure_codecs_not_allowed_ = true;
+      case EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED:
+        are_hw_secure_codecs_not_allowed_ = true;
         return;
-      case EmeConfigRule::SECURE_CODECS_REQUIRED:
-        are_secure_codecs_required_ = true;
+      case EmeConfigRule::HW_SECURE_CODECS_REQUIRED:
+        are_hw_secure_codecs_required_ = true;
         return;
       case EmeConfigRule::SUPPORTED:
         return;
@@ -255,8 +256,8 @@ class KeySystemConfigSelector::ConfigState {
 
   // Whether a rule has been added that requires or blocks hardware-secure
   // codecs.
-  bool are_secure_codecs_required_ = false;
-  bool are_secure_codecs_not_allowed_ = false;
+  bool are_hw_secure_codecs_required_ = false;
+  bool are_hw_secure_codecs_not_allowed_ = false;
 };
 
 KeySystemConfigSelector::KeySystemConfigSelector(
@@ -673,8 +674,8 @@ void KeySystemConfigSelector::SelectConfig(
         candidate_configurations,
     const blink::WebSecurityOrigin& security_origin,
     bool are_secure_codecs_supported,
-    base::Callback<void(const blink::WebMediaKeySystemConfiguration&, bool)>
-        succeeded_cb,
+    base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
+                        const CdmConfig&)> succeeded_cb,
     base::Callback<void(const blink::WebString&)> not_supported_cb) {
   // Continued from requestMediaKeySystemAccess(), step 7, from
   // https://w3c.github.io/encrypted-media/#requestmediakeysystemaccess
@@ -723,10 +724,11 @@ void KeySystemConfigSelector::SelectConfigInternal(
     ConfigState config_state(request->was_permission_requested,
                              request->is_permission_granted);
     DCHECK(config_state.IsRuleSupported(
-        EmeConfigRule::SECURE_CODECS_NOT_ALLOWED));
+        EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED));
     if (!request->are_secure_codecs_supported)
-      config_state.AddRule(EmeConfigRule::SECURE_CODECS_NOT_ALLOWED);
+      config_state.AddRule(EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED);
     blink::WebMediaKeySystemConfiguration accumulated_configuration;
+    CdmConfig cdm_config;
     ConfigurationSupport support = GetSupportedConfiguration(
         request->key_system, request->candidate_configurations[i],
         &config_state, &accumulated_configuration);
@@ -746,8 +748,15 @@ void KeySystemConfigSelector::SelectConfigInternal(
                        weak_factory_.GetWeakPtr(), base::Passed(&request)));
         return;
       case CONFIGURATION_SUPPORTED:
-        request->succeeded_cb.Run(accumulated_configuration,
-                                  config_state.AreSecureCodecsRequired());
+        cdm_config.allow_distinctive_identifier =
+            (accumulated_configuration.distinctiveIdentifier ==
+             blink::WebMediaKeySystemConfiguration::Requirement::Required);
+        cdm_config.allow_persistent_state =
+            (accumulated_configuration.persistentState ==
+             blink::WebMediaKeySystemConfiguration::Requirement::Required);
+        cdm_config.use_hw_secure_codecs =
+            config_state.AreHwSecureCodecsRequired();
+        request->succeeded_cb.Run(accumulated_configuration, cdm_config);
         return;
     }
   }

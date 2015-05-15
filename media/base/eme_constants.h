@@ -132,11 +132,11 @@ enum class EmeConfigRule {
   // The configuration option prevents use of hardware-secure codecs.
   // This rule only has meaning on platforms that distinguish hardware-secure
   // codecs (ie. Android).
-  SECURE_CODECS_NOT_ALLOWED,
+  HW_SECURE_CODECS_NOT_ALLOWED,
   // The configuration option is supported if hardware-secure codecs are used.
   // This rule only has meaning on platforms that distinguish hardware-secure
   // codecs (ie. Android).
-  SECURE_CODECS_REQUIRED,
+  HW_SECURE_CODECS_REQUIRED,
   // The configuration option is supported without conditions.
   SUPPORTED,
 };
