@@ -118,16 +118,19 @@ void CacaWindowManager::RemoveWindow(int window_id, CacaWindow* window) {
 }
 
 CacaWindowManager::~CacaWindowManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool CacaWindowManager::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return false;
 }
 
 scoped_ptr<ui::SurfaceOzoneCanvas> CacaWindowManager::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   CacaWindow* window = windows_.Lookup(widget);
   DCHECK(window);
 

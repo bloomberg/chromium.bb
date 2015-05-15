@@ -7,6 +7,7 @@
 
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace gfx {
@@ -37,6 +38,7 @@ class CacaWindowManager : public SurfaceFactoryOzone {
 
  private:
   IDMap<CacaWindow> windows_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CacaWindowManager);
 };

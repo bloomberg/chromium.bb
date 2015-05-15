@@ -129,6 +129,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // Create a single native buffer to be used for overlay planes or zero copy
   // for |widget| representing a particular display controller or default
   // display controller for kNullAcceleratedWidget.
+  // It can be called on any thread.
   virtual scoped_refptr<NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       gfx::Size size,

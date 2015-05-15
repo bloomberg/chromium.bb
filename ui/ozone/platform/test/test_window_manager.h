@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/test/test_window.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -42,6 +43,7 @@ class TestWindowManager : public SurfaceFactoryOzone {
   base::FilePath location_;
 
   IDMap<TestWindow> windows_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
 };

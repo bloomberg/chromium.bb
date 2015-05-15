@@ -25,12 +25,14 @@ DrmSurfaceFactory::~DrmSurfaceFactory() {
 
 scoped_ptr<ui::SurfaceOzoneCanvas> DrmSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return make_scoped_ptr(new DrmSurface(screen_manager_->GetWindow(widget)));
 }
 
 bool DrmSurfaceFactory::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return false;
 }
 

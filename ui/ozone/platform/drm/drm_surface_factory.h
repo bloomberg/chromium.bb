@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRM_DRM_SURFACE_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -30,6 +31,7 @@ class DrmSurfaceFactory : public SurfaceFactoryOzone {
 
  protected:
   ScreenManager* screen_manager_;  // Not owned.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmSurfaceFactory);
 };

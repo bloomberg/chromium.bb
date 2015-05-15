@@ -9,6 +9,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/threading/thread_checker.h"
 #include "library_loaders/libeglplatform_shim.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -240,7 +241,9 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
  public:
   SurfaceFactoryEgltest(LibeglplatformShimLoader* eglplatform_shim)
       : eglplatform_shim_(eglplatform_shim) {}
-  ~SurfaceFactoryEgltest() override {}
+  ~SurfaceFactoryEgltest() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+  }
 
   // SurfaceFactoryOzone:
   intptr_t GetNativeDisplay() override;
@@ -253,14 +256,17 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
 
  private:
   LibeglplatformShimLoader* eglplatform_shim_;
+  base::ThreadChecker thread_checker_;
 };
 
 intptr_t SurfaceFactoryEgltest::GetNativeDisplay() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return eglplatform_shim_->ShimGetNativeDisplay();
 }
 
 scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryEgltest::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return make_scoped_ptr<SurfaceOzoneEGL>(
       new SurfaceOzoneEgltest(widget, eglplatform_shim_));
 }
@@ -268,6 +274,7 @@ scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryEgltest::CreateEGLSurfaceForWidget(
 bool SurfaceFactoryEgltest::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   const char* egl_soname = eglplatform_shim_->ShimQueryString(SHIM_EGL_LIBRARY);
   const char* gles_soname =
       eglplatform_shim_->ShimQueryString(SHIM_GLES_LIBRARY);
@@ -282,6 +289,7 @@ bool SurfaceFactoryEgltest::LoadEGLGLES2Bindings(
 
 const int32* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
     const int32* desired_list) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   static const int32 broken_props[] = {
       EGL_RENDERABLE_TYPE,
       EGL_OPENGL_ES2_BIT,
