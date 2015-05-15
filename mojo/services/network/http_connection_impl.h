@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/http_connection.mojom.h"
-#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/services/network/public/interfaces/http_message.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
@@ -51,7 +51,7 @@ class HttpConnectionImpl : public HttpConnection,
   // ErrorHandler implementation.
   void OnConnectionError() override;
 
-  void OnFinishedReadingResponseBody(URLResponsePtr response_ptr,
+  void OnFinishedReadingResponseBody(HttpResponsePtr response_ptr,
                                      SimpleDataPipeReader* reader,
                                      scoped_ptr<std::string> body);
 

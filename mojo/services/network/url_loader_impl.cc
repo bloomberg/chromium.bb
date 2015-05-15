@@ -31,12 +31,12 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
     response->status_code = headers->response_code();
     response->status_line = headers->GetStatusLine();
 
-    response->headers = Array<HTTPHeaderPtr>::New(0);
+    response->headers = Array<HttpHeaderPtr>::New(0);
     std::vector<String> header_lines;
     void* iter = nullptr;
     std::string name, value;
     while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-      HTTPHeaderPtr header = HTTPHeader::New();
+      HttpHeaderPtr header = HttpHeader::New();
       header->name = name;
       header->value = value;
       response->headers.push_back(header.Pass());

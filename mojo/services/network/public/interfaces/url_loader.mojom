@@ -4,12 +4,8 @@
 
 module mojo;
 
+import "network/public/interfaces/http_message.mojom";
 import "network/public/interfaces/network_error.mojom";
-
-struct HTTPHeader {
-  string name;
-  string value;
-};
 
 struct URLRequest {
   // The URL to load.
@@ -19,7 +15,7 @@ struct URLRequest {
   string method = "GET";
 
   // Additional HTTP request headers.
-  array<HTTPHeader>? headers;
+  array<HttpHeader>? headers;
 
   // The payload for the request body, represented as a concatenation of data
   // streams. For HTTP requests, the method must be set to "POST" or "PUT".
@@ -59,7 +55,7 @@ struct URLResponse {
   string? status_line;
 
   // The HTTP response headers.
-  array<HTTPHeader>? headers;
+  array<HttpHeader>? headers;
 
   // The MIME type of the response body.
   string? mime_type;

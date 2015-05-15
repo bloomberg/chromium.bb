@@ -68,13 +68,13 @@ std::string MakeRequestMessage(const TestRequest& data) {
   return message;
 }
 
-URLResponsePtr MakeResponseStruct(const TestResponse& data) {
-  URLResponsePtr response(URLResponse::New());
+HttpResponsePtr MakeResponseStruct(const TestResponse& data) {
+  HttpResponsePtr response(HttpResponse::New());
   response->status_code = data.status_code;
   response->headers.resize(data.headers.size());
   size_t index = 0;
   for (const auto& item : data.headers) {
-    HTTPHeaderPtr header(HTTPHeader::New());
+    HttpHeaderPtr header(HttpHeader::New());
     header->name = item.first;
     header->value = item.second;
     response->headers[index++] = header.Pass();
@@ -99,7 +99,7 @@ URLResponsePtr MakeResponseStruct(const TestResponse& data) {
 }
 
 void CheckHeaders(const TestHeaders& expected,
-                  const Array<HTTPHeaderPtr>& headers) {
+                  const Array<HttpHeaderPtr>& headers) {
   // The server impl fiddles with Content-Length and Content-Type. So we don't
   // do a strict check here.
   std::map<std::string, std::string> header_map;
@@ -116,17 +116,17 @@ void CheckHeaders(const TestHeaders& expected,
   }
 }
 
-void CheckRequest(const TestRequest& expected, URLRequestPtr request) {
+void CheckRequest(const TestRequest& expected, HttpRequestPtr request) {
   EXPECT_EQ(expected.method, request->method);
   EXPECT_EQ(expected.url, request->url);
   CheckHeaders(expected.headers, request->headers);
   if (expected.body) {
-    EXPECT_EQ(1u, request->body.size());
+    EXPECT_TRUE(request->body.is_valid());
     std::string body;
-    common::BlockingCopyToString(request->body[0].Pass(), &body);
+    common::BlockingCopyToString(request->body.Pass(), &body);
     EXPECT_EQ(*expected.body, body);
   } else {
-    EXPECT_EQ(0u, request->body.size());
+    EXPECT_FALSE(request->body.is_valid());
   }
 }
 
@@ -264,7 +264,7 @@ class TestHttpClient {
 class HttpConnectionDelegateImpl : public HttpConnectionDelegate {
  public:
   struct PendingRequest {
-    URLRequestPtr request;
+    HttpRequestPtr request;
     OnReceivedRequestCallback callback;
   };
 
@@ -277,7 +277,7 @@ class HttpConnectionDelegateImpl : public HttpConnectionDelegate {
   ~HttpConnectionDelegateImpl() override {}
 
   // HttpConnectionDelegate implementation:
-  void OnReceivedRequest(URLRequestPtr request,
+  void OnReceivedRequest(HttpRequestPtr request,
                          const OnReceivedRequestCallback& callback) override {
     linked_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->request = request.Pass();
@@ -290,12 +290,12 @@ class HttpConnectionDelegateImpl : public HttpConnectionDelegate {
   }
 
   void OnReceivedWebSocketRequest(
-      URLRequestPtr request,
+      HttpRequestPtr request,
       const OnReceivedWebSocketRequestCallback& callback) override {
     NOTREACHED();
   }
 
-  void SendResponse(URLResponsePtr response) {
+  void SendResponse(HttpResponsePtr response) {
     ASSERT_FALSE(pending_requests_.empty());
     linked_ptr<PendingRequest> request = pending_requests_[0];
     pending_requests_.erase(pending_requests_.begin());

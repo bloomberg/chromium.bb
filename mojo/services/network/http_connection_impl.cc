@@ -83,15 +83,15 @@ class HttpConnectionImpl::SimpleDataPipeReader {
 };
 
 template <>
-struct TypeConverter<URLRequestPtr, net::HttpServerRequestInfo> {
-  static URLRequestPtr Convert(const net::HttpServerRequestInfo& obj) {
-    URLRequestPtr request(URLRequest::New());
-    request->url = obj.path;
+struct TypeConverter<HttpRequestPtr, net::HttpServerRequestInfo> {
+  static HttpRequestPtr Convert(const net::HttpServerRequestInfo& obj) {
+    HttpRequestPtr request(HttpRequest::New());
     request->method = obj.method;
+    request->url = obj.path;
     request->headers.resize(obj.headers.size());
     size_t index = 0;
     for (const auto& item : obj.headers) {
-      HTTPHeaderPtr header(HTTPHeader::New());
+      HttpHeaderPtr header(HttpHeader::New());
       header->name = item.first;
       header->value = item.second;
       request->headers[index++] = header.Pass();
@@ -104,7 +104,7 @@ struct TypeConverter<URLRequestPtr, net::HttpServerRequestInfo> {
       options.element_num_bytes = 1;
       options.capacity_num_bytes = num_bytes;
       DataPipe data_pipe(options);
-      request->body.push_back(data_pipe.consumer_handle.Pass());
+      request->body = data_pipe.consumer_handle.Pass();
       MojoResult result =
           WriteDataRaw(data_pipe.producer_handle.get(), obj.data.data(),
                        &num_bytes, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
@@ -137,7 +137,7 @@ void HttpConnectionImpl::OnReceivedHttpRequest(
     return;
 
   delegate_->OnReceivedRequest(
-      URLRequest::From(info), [this](URLResponsePtr response) {
+      HttpRequest::From(info), [this](HttpResponsePtr response) {
         if (response->body.is_valid()) {
           SimpleDataPipeReader* reader = new SimpleDataPipeReader;
           response_body_readers_.insert(reader);
@@ -198,7 +198,7 @@ void HttpConnectionImpl::OnConnectionError() {
 }
 
 void HttpConnectionImpl::OnFinishedReadingResponseBody(
-    URLResponsePtr response,
+    HttpResponsePtr response,
     SimpleDataPipeReader* reader,
     scoped_ptr<std::string> body) {
   if (reader) {
@@ -211,7 +211,7 @@ void HttpConnectionImpl::OnFinishedReadingResponseBody(
 
   std::string content_type;
   for (size_t i = 0; i < response->headers.size(); ++i) {
-    const HTTPHeader& header = *(response->headers[i]);
+    const HttpHeader& header = *(response->headers[i]);
 
     if (body) {
       // net::HttpServerResponseInfo::SetBody() automatically sets

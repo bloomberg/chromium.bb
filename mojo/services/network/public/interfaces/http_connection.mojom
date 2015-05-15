@@ -4,7 +4,7 @@
 
 module mojo;
 
-import "network/public/interfaces/url_loader.mojom";
+import "network/public/interfaces/http_message.mojom";
 import "network/public/interfaces/network_error.mojom";
 import "network/public/interfaces/web_socket.mojom";
 
@@ -18,7 +18,7 @@ interface HttpConnection {
 
 interface HttpConnectionDelegate {
   // Called when an HTTP request is received.
-  OnReceivedRequest(URLRequest request) => (URLResponse response);
+  OnReceivedRequest(HttpRequest request) => (HttpResponse response);
 
   // Called when an WebSocket request is received.
   //
@@ -28,7 +28,7 @@ interface HttpConnectionDelegate {
   // WebSocket should be written to the producer end of the |send_stream|.
   // |web_socket| will be already connected. There is no need to call Connect()
   // on it. But |client| will still receive a DidConnect() notification.
-  OnReceivedWebSocketRequest(URLRequest request)
+  OnReceivedWebSocketRequest(HttpRequest request)
       => (WebSocket&? web_socket,
           handle<data_pipe_consumer>? send_stream,
           WebSocketClient? client);
