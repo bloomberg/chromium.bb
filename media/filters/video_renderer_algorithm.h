@@ -300,6 +300,10 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // ReadyFrameQueue.  Cleared when a new cadence is detected.
   uint64_t cadence_frame_counter_;
 
+  // Tracks whether the last call to Render() choose to ignore the frame chosen
+  // by cadence in favor of one by drift or coverage.
+  bool last_render_ignored_cadence_frame_;
+
   DISALLOW_COPY_AND_ASSIGN(VideoRendererAlgorithm);
 };
 

@@ -732,6 +732,55 @@ TEST_F(VideoRendererAlgorithmTest, BestFrameByCadenceOverdisplayed) {
   ASSERT_EQ(2, GetCurrentFrameIdealDisplayCount());
 }
 
+TEST_F(VideoRendererAlgorithmTest, BestFrameByCadenceOverdisplayedForDrift) {
+  // Use 24.94 to ensure drift expires pretty rapidly (8.36s in this case).
+  TickGenerator frame_tg(base::TimeTicks(), 24.94);
+  TickGenerator display_tg(tick_clock_->NowTicks(), 50);
+  time_source_.StartTicking();
+  disable_cadence_hysteresis();
+
+  scoped_refptr<VideoFrame> last_frame;
+  bool have_overdisplayed_frame = false;
+  while (!have_overdisplayed_frame) {
+    while (algorithm_.EffectiveFramesQueued() < 2) {
+      algorithm_.EnqueueFrame(
+          CreateFrame(frame_tg.current() - base::TimeTicks()));
+      frame_tg.step();
+    }
+
+    size_t frames_dropped = 0;
+    last_frame = RenderAndStep(&display_tg, &frames_dropped);
+    ASSERT_TRUE(last_frame);
+    ASSERT_TRUE(is_using_cadence());
+    ASSERT_EQ(0u, frames_dropped);
+    ASSERT_EQ(2, GetCurrentFrameIdealDisplayCount());
+    have_overdisplayed_frame = GetCurrentFrameDisplayCount() > 2;
+  }
+
+  ASSERT_TRUE(last_render_had_glitch());
+
+  // We've reached the point where the current frame is over displayed due to
+  // drift, the next frame should resume cadence without accounting for the
+  // overdisplayed frame.
+
+  size_t frames_dropped = 0;
+  scoped_refptr<VideoFrame> next_frame =
+      RenderAndStep(&display_tg, &frames_dropped);
+  ASSERT_EQ(0u, frames_dropped);
+  ASSERT_NE(last_frame, next_frame);
+  ASSERT_TRUE(is_using_cadence());
+  ASSERT_EQ(2, GetCurrentFrameIdealDisplayCount());
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  last_frame = next_frame;
+
+  next_frame = RenderAndStep(&display_tg, &frames_dropped);
+  ASSERT_EQ(0u, frames_dropped);
+  ASSERT_EQ(last_frame, next_frame);
+  ASSERT_TRUE(is_using_cadence());
+  ASSERT_EQ(2, GetCurrentFrameIdealDisplayCount());
+  ASSERT_EQ(2, GetCurrentFrameDisplayCount());
+}
+
 TEST_F(VideoRendererAlgorithmTest, BestFrameByCoverage) {
   TickGenerator tg(tick_clock_->NowTicks(), 50);
   time_source_.StartTicking();
@@ -984,7 +1033,7 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFrames) {
   // Advance expiry enough that one frame is removed, but one remains and is
   // still counted as effective.
   ASSERT_EQ(
-      1u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(1) * 0.75));
+      1u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(1) * 0.9));
   EXPECT_EQ(1u, frames_queued());
   EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
 
