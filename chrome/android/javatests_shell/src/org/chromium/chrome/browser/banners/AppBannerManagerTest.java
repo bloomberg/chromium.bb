@@ -4,11 +4,19 @@
 
 package org.chromium.chrome.browser.banners;
 
+import android.app.Activity;
+import android.app.Instrumentation.ActivityMonitor;
+import android.app.Instrumentation.ActivityResult;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
@@ -18,6 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.AnimationHelper;
 import org.chromium.chrome.browser.infobar.AppBannerInfoBar;
+import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegate;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -28,6 +37,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests the app banners.
@@ -42,24 +52,33 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
 
     private static final String NATIVE_APP_TITLE = "Mock app title";
 
+    private static final String NATIVE_APP_PACKAGE = "123456";
+
+    private static final String NATIVE_APP_INSTALL_TEXT = "Install this";
+
     private static final String WEB_APP_URL =
             TestHttpServerClient.getUrl("chrome/test/data/banners/manifest_test_page.html");
 
     private static final String WEB_APP_TITLE = "Manifest test app";
 
+    private static final String INSTALL_ACTION = "INSTALL_ACTION";
+
     private static class MockAppDetailsDelegate extends AppDetailsDelegate {
         private Observer mObserver;
         private AppData mAppData;
         private int mNumRetrieved;
+        private Intent mInstallIntent;
 
         @Override
         protected void getAppDetailsAsynchronously(
                 Observer observer, String url, String packageName, int iconSize) {
             mNumRetrieved += 1;
             mObserver = observer;
+            mInstallIntent = new Intent(INSTALL_ACTION);
+
             mAppData = new AppData(url, packageName);
-            mAppData.setPackageInfo(
-                    NATIVE_APP_TITLE, NATIVE_ICON_URL, 4.5f, "Install this", null, null);
+            mAppData.setPackageInfo(NATIVE_APP_TITLE, NATIVE_ICON_URL, 4.5f,
+                    NATIVE_APP_INSTALL_TEXT, null, mInstallIntent);
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -73,6 +92,23 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         }
     }
 
+    private static class TestPackageManager extends MockPackageManager {
+        public boolean isInstalled = false;
+
+        @Override
+        public List<PackageInfo> getInstalledPackages(int flags) {
+            List<PackageInfo> packages = new ArrayList<PackageInfo>();
+
+            if (isInstalled) {
+                PackageInfo info = new PackageInfo();
+                info.packageName = NATIVE_APP_PACKAGE;
+                packages.add(info);
+            }
+
+            return packages;
+        }
+    }
+
     private static class InfobarListener implements InfoBarContainer.InfoBarAnimationListener {
         private boolean mDoneAnimating;
 
@@ -83,12 +119,15 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
     }
 
     private MockAppDetailsDelegate mDetailsDelegate;
+    private TestPackageManager mPackageManager;
 
     @Override
     protected void setUp() throws Exception {
         mDetailsDelegate = new MockAppDetailsDelegate();
+        mPackageManager = new TestPackageManager();
         AppBannerManager.setAppDetailsDelegate(mDetailsDelegate);
         AppBannerManager.setIsEnabledForTesting(true);
+        AppBannerInfoBarDelegate.setPackageManagerForTesting(mPackageManager);
         clearAppData();
 
         super.setUp();
@@ -139,19 +178,63 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
 
     @SmallTest
     @Feature({"AppBanners"})
-    public void testBannerAppears() throws Exception {
+    public void testFullNativeInstallPathway() throws Exception {
         // Visit a site that requests a banner.
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(
                 new TabLoadObserver(getActivity().getActiveTab(), NATIVE_APP_URL)));
         assertTrue(waitUntilAppDetailsRetrieved(1));
         assertTrue(waitUntilNoInfoBarsExist());
 
-        // Indicate a day has passed, then revisit the page.
+        // Indicate a day has passed, then revisit the page to get the banner to appear.
+        InfoBarContainer container = getActivity().getActiveTab().getInfoBarContainer();
+        final InfobarListener listener = new InfobarListener();
+        container.setAnimationListener(listener);
         AppBannerManager.setTimeDeltaForTesting(1);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(
                 new TabLoadObserver(getActivity().getActiveTab(), NATIVE_APP_URL)));
         assertTrue(waitUntilAppDetailsRetrieved(2));
         assertTrue(waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE));
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return listener.mDoneAnimating;
+            }
+        }));
+
+        // Check that the button asks if the user wants to install the app.
+        InfoBar infobar = container.getInfoBars().get(0);
+        final Button button =
+                (Button) infobar.getContentWrapper().findViewById(R.id.button_primary);
+        assertEquals(NATIVE_APP_INSTALL_TEXT, button.getText());
+
+        // Click the button to trigger the install.
+        final ActivityMonitor activityMonitor = new ActivityMonitor(
+                new IntentFilter(INSTALL_ACTION), new ActivityResult(Activity.RESULT_OK, null),
+                true);
+        getInstrumentation().addMonitor(activityMonitor);
+        TouchCommon.singleClickView(button);
+
+        // Wait for the infobar to register that the app is installing.
+        final String installingText =
+                getInstrumentation().getTargetContext().getString(R.string.app_banner_installing);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getInstrumentation().checkMonitorHit(activityMonitor, 1)
+                        && TextUtils.equals(button.getText(), installingText);
+            }
+        }));
+
+        // Say that the package is installed.  Infobar should say that the app is ready to open.
+        mPackageManager.isInstalled = true;
+        final String openText =
+                getInstrumentation().getTargetContext().getString(R.string.app_banner_open);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return TextUtils.equals(button.getText(), openText);
+            }
+        }));
     }
 
     @MediumTest

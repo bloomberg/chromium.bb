@@ -14,6 +14,7 @@ import android.os.Looper;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.banners.AppData;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
@@ -25,6 +26,9 @@ import org.chromium.ui.base.WindowAndroid;
  */
 @JNINamespace("banners")
 public class AppBannerInfoBarDelegate {
+    /** PackageManager to use in place of the real one. */
+    private static PackageManager sPackageManagerForTests;
+
     /** Weak pointer to the native AppBannerInfoBarDelegate. */
     private long mNativePointer;
 
@@ -33,6 +37,12 @@ public class AppBannerInfoBarDelegate {
 
     /** Monitors for application state changes. */
     private final ApplicationStatus.ApplicationStateListener mListener;
+
+    /** Overrides the PackageManager for testing. */
+    @VisibleForTesting
+    public static void setPackageManagerForTesting(PackageManager manager) {
+        sPackageManagerForTests = manager;
+    }
 
     private AppBannerInfoBarDelegate(long nativePtr) {
         mNativePointer = nativePtr;
@@ -64,7 +74,7 @@ public class AppBannerInfoBarDelegate {
     private boolean installOrOpenNativeApp(Tab tab, AppData appData) {
         Context context = ApplicationStatus.getApplicationContext();
         String packageName = appData.packageName();
-        PackageManager packageManager = context.getPackageManager();
+        PackageManager packageManager = getPackageManager(context);
 
         if (InstallerDelegate.isInstalled(packageManager, packageName)) {
             // Open the app.
@@ -89,7 +99,7 @@ public class AppBannerInfoBarDelegate {
                 if (isInstalling) {
                     // Start monitoring the install.
                     PackageManager pm =
-                            ApplicationStatus.getApplicationContext().getPackageManager();
+                            getPackageManager(ApplicationStatus.getApplicationContext());
                     mInstallTask = new InstallerDelegate(
                             Looper.getMainLooper(), pm, createInstallerDelegateObserver(),
                             appData.packageName());
@@ -121,10 +131,15 @@ public class AppBannerInfoBarDelegate {
     private int determineInstallState(AppData data) {
         if (mInstallTask != null) return AppBannerInfoBar.INSTALL_STATE_INSTALLING;
 
-        PackageManager pm = ApplicationStatus.getApplicationContext().getPackageManager();
+        PackageManager pm = getPackageManager(ApplicationStatus.getApplicationContext());
         boolean isInstalled = InstallerDelegate.isInstalled(pm, data.packageName());
         return isInstalled ? AppBannerInfoBar.INSTALL_STATE_INSTALLED
                 : AppBannerInfoBar.INSTALL_STATE_NOT_INSTALLED;
+    }
+
+    private PackageManager getPackageManager(Context context) {
+        if (sPackageManagerForTests != null) return sPackageManagerForTests;
+        return context.getPackageManager();
     }
 
     @CalledByNative
