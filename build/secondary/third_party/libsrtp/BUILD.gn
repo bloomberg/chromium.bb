@@ -4,12 +4,15 @@
 
 declare_args() {
   use_system_libsrtp = false
+  use_srtp_boringssl = true
 }
 
 config("libsrtp_config") {
   defines = [
+    "HAVE_CONFIG_H",
     "HAVE_STDLIB_H",
     "HAVE_STRING_H",
+    "TESTAPP_SOURCE",
   ]
 
   include_dirs = [
@@ -17,6 +20,10 @@ config("libsrtp_config") {
     "srtp/include",
     "srtp/crypto/include",
   ]
+
+  if (use_srtp_boringssl) {
+    defines += [ "OPENSSL" ]
+  }
 
   if (is_posix) {
     defines += [
@@ -30,13 +37,14 @@ config("libsrtp_config") {
       "HAVE_STDINT_H",
       "HAVE_INTTYPES_H",
       "HAVE_NETINET_IN_H",
-      "INLINE=inline",
+      "HAVE_ARPA_INET_H",
+      "HAVE_UNISTD_H",
     ]
+    cflags = [ "-Wno-unused-variable" ]
   }
 
   if (is_win) {
     defines += [
-      "INLINE=__inline",
       "HAVE_BYTESWAP_METHODS_H",
 
       # All Windows architectures are this way.
@@ -149,6 +157,30 @@ if (use_system_libsrtp) {
     if (is_clang) {
       cflags = [ "-Wno-implicit-function-declaration" ]
     }
+
+    if (use_srtp_boringssl) {
+      deps = [
+        "//third_party/boringssl:boringssl",
+      ]
+      public_deps = [
+        "//third_party/boringssl:boringssl",
+      ]
+      sources -= [
+        "srtp/crypto/cipher/aes_cbc.c",
+        "srtp/crypto/cipher/aes_icm.c",
+        "srtp/crypto/hash/hmac.c",
+        "srtp/crypto/hash/sha1.c",
+        "srtp/crypto/rng/ctr_prng.c",
+        "srtp/crypto/rng/prng.c",
+      ]
+      sources += [
+        "srtp/crypto/cipher/aes_gcm_ossl.c",
+        "srtp/crypto/cipher/aes_icm_ossl.c",
+        "srtp/crypto/hash/hmac_ossl.c",
+        "srtp/crypto/include/aes_gcm_ossl.h",
+        "srtp/crypto/include/aes_icm_ossl.h",
+      ]
+    }
   }
 
   # TODO(GYP): A bunch of these tests don't compile (in gyp either). They're
@@ -238,6 +270,8 @@ if (use_system_libsrtp) {
       ]
       sources = [
         "srtp/crypto/test/cipher_driver.c",
+        "srtp/include/getopt_s.h",
+        "srtp/test/getopt_s.c",
       ]
     }
 
@@ -282,6 +316,8 @@ if (use_system_libsrtp) {
       ]
       sources = [
         "srtp/crypto/test/kernel_driver.c",
+        "srtp/include/getopt_s.h",
+        "srtp/test/getopt_s.c",
       ]
     }
 
@@ -304,6 +340,21 @@ if (use_system_libsrtp) {
       ]
       sources = [
         "srtp/crypto/test/rand_gen.c",
+        "srtp/include/getopt_s.h",
+        "srtp/test/getopt_s.c",
+      ]
+    }
+
+    executable("srtp_test_rand_gen_soak") {
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
+      deps = [
+        ":libsrtp",
+      ]
+      sources = [
+        "srtp/crypto/test/rand_gen_soak.c",
+        "srtp/include/getopt_s.h",
+        "srtp/test/getopt_s.c",
       ]
     }
 
@@ -332,6 +383,7 @@ if (use_system_libsrtp) {
         ":srtp_test_kernel_driver",
         ":srtp_test_aes_calc",
         ":srtp_test_rand_gen",
+        ":srtp_test_rand_gen_soak",
         ":srtp_test_env",
       ]
     }
