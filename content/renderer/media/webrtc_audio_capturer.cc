@@ -14,6 +14,7 @@
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -22,6 +23,11 @@
 namespace content {
 
 namespace {
+
+// Audio buffer sizes are specified in milliseconds.
+const char kAudioLatency[] = "latencyMs";
+const int kMinAudioLatencyMs = 0;
+const int kMaxAudioLatencyMs = 10000;
 
 // Method to check if any of the data in |audio_source| has energy.
 bool HasDataEnergy(const media::AudioBus& audio_source) {
@@ -89,7 +95,7 @@ class WebRtcAudioCapturer::TrackOwner
   // Wrapper which allows to use std::find_if() when adding and removing
   // sinks to/from the list.
   struct TrackWrapper {
-    TrackWrapper(WebRtcLocalAudioTrack* track) : track_(track) {}
+    explicit TrackWrapper(WebRtcLocalAudioTrack* track) : track_(track) {}
     bool operator()(
         const scoped_refptr<WebRtcAudioCapturer::TrackOwner>& owner) const {
       return owner->IsEqual(track_);
@@ -199,10 +205,27 @@ bool WebRtcAudioCapturer::Initialize() {
                          device_info_.device.input.sample_rate);
   }
 
+  // Initialize the buffer size to zero, which means it wasn't specified.
+  // If it is out of range, we return it to zero.
+  int buffer_size_ms = 0;
+  int buffer_size_samples = 0;
+  GetConstraintValueAsInteger(constraints_, kAudioLatency, &buffer_size_ms);
+  if (buffer_size_ms < kMinAudioLatencyMs ||
+      buffer_size_ms > kMaxAudioLatencyMs) {
+    DVLOG(1) << "Ignoring out of range buffer size " << buffer_size_ms;
+  } else {
+    buffer_size_samples =
+        device_info_.device.input.sample_rate * buffer_size_ms / 1000;
+  }
+  DVLOG_IF(1, buffer_size_samples > 0)
+      << "Custom audio buffer size: " << buffer_size_samples << " samples";
+
   // Create and configure the default audio capturing source.
   SetCapturerSourceInternal(
-      AudioDeviceFactory::NewInputDevice(render_frame_id_), channel_layout,
-      static_cast<float>(device_info_.device.input.sample_rate));
+      AudioDeviceFactory::NewInputDevice(render_frame_id_),
+      channel_layout,
+      device_info_.device.input.sample_rate,
+      buffer_size_samples);
 
   // Add the capturer to the WebRtcAudioDeviceImpl since it needs some hardware
   // information from the capturer.
@@ -287,7 +310,8 @@ void WebRtcAudioCapturer::RemoveTrack(WebRtcLocalAudioTrack* track) {
 void WebRtcAudioCapturer::SetCapturerSourceInternal(
     const scoped_refptr<media::AudioCapturerSource>& source,
     media::ChannelLayout channel_layout,
-    float sample_rate) {
+    int sample_rate,
+    int buffer_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "SetCapturerSource(channel_layout=" << channel_layout << ","
            << "sample_rate=" << sample_rate << ")";
@@ -308,15 +332,21 @@ void WebRtcAudioCapturer::SetCapturerSourceInternal(
   if (old_source.get())
     old_source->Stop();
 
+  // If the buffer size is zero, it has not been specified.
+  // We either default to 10ms, or use the hardware buffer size.
+  if (buffer_size == 0)
+    buffer_size = GetBufferSize(sample_rate);
+
   // Dispatch the new parameters both to the sink(s) and to the new source,
   // also apply the new |constraints|.
   // The idea is to get rid of any dependency of the microphone parameters
   // which would normally be used by default.
   // bits_per_sample is always 16 for now.
-  int buffer_size = GetBufferSize(sample_rate);
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                channel_layout, sample_rate,
-                                16, buffer_size,
+                                channel_layout,
+                                sample_rate,
+                                16,
+                                buffer_size,
                                 device_info_.device.input.effects);
 
   {
@@ -365,7 +395,8 @@ void WebRtcAudioCapturer::EnablePeerConnectionMode() {
   // WebRtc native buffer size.
   SetCapturerSourceInternal(AudioDeviceFactory::NewInputDevice(render_frame_id),
                             input_params.channel_layout(),
-                            static_cast<float>(input_params.sample_rate()));
+                            input_params.sample_rate(),
+                            0);
 }
 
 void WebRtcAudioCapturer::Start() {
@@ -588,8 +619,10 @@ void WebRtcAudioCapturer::SetCapturerSource(
     const scoped_refptr<media::AudioCapturerSource>& source,
     media::AudioParameters params) {
   // Create a new audio stream as source which uses the new source.
-  SetCapturerSourceInternal(source, params.channel_layout(),
-                            static_cast<float>(params.sample_rate()));
+  SetCapturerSourceInternal(source,
+                            params.channel_layout(),
+                            params.sample_rate(),
+                            0);
 }
 
 }  // namespace content

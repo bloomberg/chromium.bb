@@ -139,10 +139,12 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // desires to provide their own captured audio data. Client is responsible
   // for calling Start() on its own source to get the ball rolling.
   // Called on the main render thread.
+  // buffer_size is optional. Set to 0 to let it be chosen automatically.
   void SetCapturerSourceInternal(
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::ChannelLayout channel_layout,
-      float sample_rate);
+      int sample_rate,
+      int buffer_size);
 
   // Starts recording audio.
   // Triggered by AddSink() on the main render thread or a Libjingle working

@@ -200,6 +200,9 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     return NULL;
   }
 
+  DVLOG(2) << "Creating a new AudioInputStream with buffer size = "
+           << params.frames_per_buffer();
+
   AudioInputStream* stream;
   switch (params.format()) {
     case AudioParameters::AUDIO_PCM_LINEAR:
