@@ -795,7 +795,7 @@ source_set("browser") {
     }
   }
   if (enable_media_router) {
-    defines += [ "ENABLE_MEDIA_ROUTER=1" ]
+    deps += [ "//chrome/browser/media/router" ]
   }
 }
 

@@ -3,8 +3,12 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    'media_router.gypi',
+  ],
   'targets': [
     {
+      # GN version: //chrome/browser/media/router:router
       'target_name': 'media_router',
       'type': 'static_library',
       'include_dirs': [
@@ -13,43 +17,20 @@
       ],
       'dependencies': [
         # media_router_type_converters.h needs the generated file.
-        ':media_router_mojo_gen',
-        ':media_router_mojo',
+        'media_router_mojo_gen',
+        'media_router_mojo',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/components/components.gyp:keyed_service_core',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
-        'create_session_request.cc',
-        'create_session_request.h',
-        'issue.cc',
-        'issue.h',
-        'issue_manager.cc',
-        'issue_manager.h',
-        'issue_observer.h',
-        'media_route.cc',
-        'media_route.h',
-        'media_route_id.h',
-        'media_router.h',
-        'media_router_type_converters.cc',
-        'media_router_type_converters.h',
-        'media_routes_observer.cc',
-        'media_routes_observer.h',
-        'media_sink.cc',
-        'media_sink.h',
-        'media_sinks_observer.cc',
-        'media_sinks_observer.h',
-        'media_source.cc',
-        'media_source.h',
-        'media_source_helper.cc',
-        'media_source_helper.h',
-        'presentation_media_sinks_observer.cc',
-        'presentation_media_sinks_observer.h',
-        'route_id_manager.cc',
-        'route_id_manager.h',
+        '<@(media_router_sources)',
       ],
     },
     {
-      # Mojo bindings for the Media Router internal API.
+      # Mojo compiler for the Media Router internal API.
       'target_name': 'media_router_mojo_gen',
       'type': 'none',
       'sources': [
@@ -67,9 +48,6 @@
       ],
       'dependencies': [
         'media_router_mojo_gen',
-        '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
-        '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
-        '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/media_router.mojom.cc',
@@ -77,23 +55,21 @@
       ],
     },
     {
+      # GN version: //chrome/browser/media/router:test_support
       'target_name': 'media_router_test_support',
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)',
       ],
       'dependencies': [
-        ':media_router',
+        'media_router',
+        'media_router_mojo',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/testing/gmock.gyp:gmock',
       ],
       'sources': [
-        'mock_media_router.cc',
-        'mock_media_router.h',
-        'mock_screen_availability_listener.cc',
-        'mock_screen_availability_listener.h',
+        '<@(media_router_test_support_sources)',
       ],
     },
-
   ],
 }

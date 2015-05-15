@@ -1420,6 +1420,22 @@
       'browser/supervised_user/supervised_user_url_filter_unittest.cc',
       'browser/supervised_user/supervised_user_whitelist_service_unittest.cc',
     ],
+    'chrome_unit_tests_media_router_sources': [
+      'browser/media/router/issue_manager_unittest.cc',
+      'browser/media/router/issue_unittest.cc',
+      'browser/media/router/media_router_type_converters_unittest.cc',
+      'browser/media/router/media_route_unittest.cc',
+      'browser/media/router/media_sink_unittest.cc',
+      'browser/media/router/media_source_helper_unittest.cc',
+      'browser/media/router/media_source_unittest.cc',
+      'browser/media/router/presentation_media_sinks_observer_unittest.cc',
+      'browser/media/router/route_id_manager_unittest.cc',
+      'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
+      'browser/ui/webui/media_router/media_router_dialog_controller_unittest.cc',
+      'browser/ui/webui/media_router/media_router_test.cc',
+      'browser/ui/webui/media_router/media_router_test.h',
+      'browser/ui/webui/media_router/query_result_manager_unittest.cc',
+    ],
     # Everything but Android and iOS (iOS is handled separately).
     'chrome_unit_tests_non_android_sources': [
       # Bookmark export/import are handled via the BookmarkColumns
@@ -1523,8 +1539,6 @@
       'browser/ui/toolbar/wrench_menu_model_unittest.cc',
       'browser/ui/website_settings/permission_menu_model_unittest.cc',
       'browser/ui/webui/help/version_updater_chromeos_unittest.cc',
-      'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
-      'browser/ui/webui/media_router/query_result_manager_unittest.cc',
       'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
       'browser/ui/webui/options/autofill_options_handler_unittest.cc',
       'browser/ui/webui/options/language_options_handler_unittest.cc',
@@ -2349,9 +2363,8 @@
           'sources': [ '<@(chrome_unit_tests_print_preview_sources)' ],
         }],
         ['enable_media_router==1', {
-          'includes': [
-            'browser/media/router/media_router_tests.gypi',
-          ],
+          'sources': [ '<@(chrome_unit_tests_media_router_sources)' ],
+          'dependencies': [ 'browser/media/router/media_router.gyp:media_router_test_support' ],
         }],
         ['enable_captive_portal_detection==1', {
           'sources': [ '<@(chrome_unit_tests_captive_portal_sources)' ],

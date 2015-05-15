@@ -5,85 +5,25 @@
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-source_set("router") {
-  deps = [
-    ":router_core",
-  ]
-}
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("media_router.gypi") ],
+                          "scope",
+                          [ "media_router.gypi" ])
 
-source_set("router_core") {
+# TODO(mfoltz): Fix problem that requires explicitly listing //skia
+source_set("router") {
   deps = [
     ":mojo_bindings",
     "//base",
+    "//extensions/browser",
     "//components/keyed_service/core",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//skia",
     "//url",
   ]
-  sources = [
-    "create_session_request.cc",
-    "create_session_request.h",
-    "issue.cc",
-    "issue.h",
-    "issue_manager.cc",
-    "issue_manager.h",
-    "issues_observer.h",
-    "media_route.cc",
-    "media_route.h",
-    "media_route_id.h",
-    "media_router.h",
-    "media_router_type_converters.cc",
-    "media_router_type_converters.h",
-    "media_routes_observer.cc",
-    "media_routes_observer.h",
-    "media_sink.cc",
-    "media_sink.h",
-    "media_sinks_observer.cc",
-    "media_sinks_observer.h",
-    "media_source.cc",
-    "media_source.h",
-    "media_source_helper.cc",
-    "media_source_helper.h",
-    "presentation_media_sinks_observer.cc",
-    "presentation_media_sinks_observer.h",
-    "route_id_manager.cc",
-    "route_id_manager.h",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  deps = [
-    ":router_core",
-    ":unit_tests_support",
-    "//base/test:test_support",
-    "//chrome/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/cld_2:cld2_static",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-  ]
-  sources = [
-    "media_route_unittest.cc",
-    "media_router_type_converters_unittest.cc",
-    "media_sink_unittest.cc",
-    "media_source_unittest.cc",
-    "presentation_media_sinks_observer_unittest.cc",
-    "route_id_manager_unittest.cc",
-  ]
-}
-
-source_set("unit_tests_support") {
-  testonly = true
-  deps = [
-    ":router_core",
-    "//testing/gmock",
-  ]
-  sources = [
-    "mock_media_router.cc",
-    "mock_media_router.h",
-    "mock_screen_availability_listener.cc",
-    "mock_screen_availability_listener.h",
-  ]
+  sources = rebase_path(gypi_values.media_router_sources,
+                        ".",
+                        "//chrome/browser/media/router")
 }
 
 mojom("mojo_bindings") {
@@ -92,13 +32,15 @@ mojom("mojo_bindings") {
   ]
 }
 
-# Optional standalone test binary, for faster isolated builds.
-test("unit_tests_main") {
+source_set("test_support") {
+  testonly = true
   deps = [
-    ":unit_tests",
-    "//testing/gmock:gmock_main",
+    ":mojo_bindings",
+    ":router",
+    "//chrome/test:test_support",
+    "//testing/gmock",
   ]
-  sources = [
-    ":unittest_files",
-  ]
+  sources = rebase_path(gypi_values.media_router_test_support_sources,
+                        ".",
+                        "//chrome/browser/media/router")
 }

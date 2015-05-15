@@ -3145,7 +3145,7 @@
         }],
         ['enable_media_router==1', {
           'dependencies': [
-              'browser/media/router/media_router.gyp:media_router',
+            'browser/media/router/media_router.gyp:media_router',
           ],
           'sources': [ '<@(chrome_browser_ui_media_router_sources)' ],
         }],

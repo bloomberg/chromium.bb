@@ -202,7 +202,4 @@ source_set("extensions") {
   if (!use_ozone) {
     sources -= [ "global_shortcut_listener_ozone.cc" ]
   }
-  if (enable_media_router) {
-    defines += [ "ENABLE_MEDIA_ROUTER=1" ]
-  }
 }
