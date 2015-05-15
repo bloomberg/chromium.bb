@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "media/base/cdm_config.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
@@ -45,8 +44,9 @@ RenderCdmFactory::~RenderCdmFactory() {
 
 void RenderCdmFactory::Create(
     const std::string& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
     const GURL& security_origin,
-    const media::CdmConfig& cdm_config,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::LegacySessionErrorCB& legacy_session_error_cb,
@@ -75,19 +75,18 @@ void RenderCdmFactory::Create(
   }
 
 #if defined(ENABLE_PEPPER_CDMS)
-  DCHECK(!cdm_config.use_hw_secure_codecs);
   PpapiDecryptor::Create(
-      key_system, security_origin, cdm_config.allow_distinctive_identifier,
-      cdm_config.allow_persistent_state, create_pepper_cdm_cb_,
-      session_message_cb, session_closed_cb, legacy_session_error_cb,
-      session_keys_change_cb, session_expiration_update_cb, cdm_created_cb);
+      key_system, allow_distinctive_identifier, allow_persistent_state,
+      security_origin, create_pepper_cdm_cb_, session_message_cb,
+      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
+      session_expiration_update_cb, cdm_created_cb);
 #elif defined(ENABLE_BROWSER_CDMS)
-  DCHECK(cdm_config.allow_distinctive_identifier);
-  DCHECK(cdm_config.allow_persistent_state);
-  ProxyMediaKeys::Create(
-      key_system, security_origin, cdm_config.use_hw_secure_codecs, manager_,
-      session_message_cb, session_closed_cb, legacy_session_error_cb,
-      session_keys_change_cb, session_expiration_update_cb, cdm_created_cb);
+  DCHECK(allow_distinctive_identifier);
+  DCHECK(allow_persistent_state);
+  ProxyMediaKeys::Create(key_system, security_origin, manager_,
+                         session_message_cb, session_closed_cb,
+                         legacy_session_error_cb, session_keys_change_cb,
+                         session_expiration_update_cb, cdm_created_cb);
 #else
   // No possible CDM to create, so fail the request.
   base::MessageLoopProxy::current()->PostTask(

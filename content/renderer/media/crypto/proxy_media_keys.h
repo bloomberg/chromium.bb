@@ -30,7 +30,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   static void Create(
       const std::string& key_system,
       const GURL& security_origin,
-      bool use_hw_secure_codecs,
       RendererCdmManager* manager,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
@@ -101,7 +100,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
 
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin,
-                     bool use_hw_secure_codecs,
                      scoped_ptr<media::SimpleCdmPromise> promise);
 
   RendererCdmManager* manager_;

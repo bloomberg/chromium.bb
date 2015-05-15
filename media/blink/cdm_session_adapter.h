@@ -21,7 +21,6 @@ class GURL;
 
 namespace media {
 
-struct CdmConfig;
 class CdmFactory;
 class WebContentDecryptionModuleSessionImpl;
 
@@ -37,8 +36,9 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // via |result|.
   void CreateCdm(CdmFactory* cdm_factory,
                  const std::string& key_system,
+                 bool allow_distinctive_identifier,
+                 bool allow_persistent_state,
                  const GURL& security_origin,
-                 const CdmConfig& cdm_config,
                  blink::WebContentDecryptionModuleResult result);
 
   // Provides a server certificate to be used to encrypt messages to the

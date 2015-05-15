@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "media/base/cdm_callback_promise.h"
-#include "media/base/cdm_config.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
@@ -70,16 +69,15 @@ void ProxyDecryptor::CreateCdm(CdmFactory* cdm_factory,
   // TODO(sandersd): Trigger permissions check here and use it to determine
   // distinctive identifier support, instead of always requiring the
   // permission. http://crbug.com/455271
-  CdmConfig cdm_config;
-  cdm_config.allow_distinctive_identifier = true;
-  cdm_config.allow_persistent_state = true;
+  bool allow_distinctive_identifier = true;
+  bool allow_persistent_state = true;
 
   is_creating_cdm_ = true;
 
   base::WeakPtr<ProxyDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   cdm_factory->Create(
-      key_system, security_origin, cdm_config,
-      base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
+      key_system, allow_distinctive_identifier, allow_persistent_state,
+      security_origin, base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionClosed, weak_this),
       base::Bind(&ProxyDecryptor::OnLegacySessionError, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionKeysChange, weak_this),

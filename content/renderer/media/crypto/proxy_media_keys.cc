@@ -20,7 +20,6 @@ namespace content {
 void ProxyMediaKeys::Create(
     const std::string& key_system,
     const GURL& security_origin,
-    bool use_hw_secure_codecs,
     RendererCdmManager* manager,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -39,7 +38,7 @@ void ProxyMediaKeys::Create(
   scoped_ptr<CdmInitializedPromise> promise(
       new CdmInitializedPromise(cdm_created_cb, proxy_media_keys.Pass()));
   proxy_media_keys_copy->InitializeCdm(key_system, security_origin,
-                                       use_hw_secure_codecs, promise.Pass());
+                                       promise.Pass());
 }
 
 ProxyMediaKeys::~ProxyMediaKeys() {
@@ -205,11 +204,10 @@ ProxyMediaKeys::ProxyMediaKeys(
 void ProxyMediaKeys::InitializeCdm(
     const std::string& key_system,
     const GURL& security_origin,
-    bool use_hw_secure_codecs,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   manager_->InitializeCdm(cdm_id_, promise_id, this, key_system,
-                          security_origin, use_hw_secure_codecs);
+                          security_origin);
 }
 
 }  // namespace content

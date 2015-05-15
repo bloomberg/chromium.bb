@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
+#include "content/common/media/cdm_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -288,20 +289,19 @@ void BrowserCdmManager::OnSessionExpirationUpdate(
                                           new_expiry_time));
 }
 
-void BrowserCdmManager::OnInitializeCdm(
-    int render_frame_id,
-    int cdm_id,
-    uint32_t promise_id,
-    const CdmHostMsg_InitializeCdm_Params& params) {
-  if (params.key_system.size() > media::limits::kMaxKeySystemLength) {
-    NOTREACHED() << "Invalid key system: " << params.key_system;
+void BrowserCdmManager::OnInitializeCdm(int render_frame_id,
+                                        int cdm_id,
+                                        uint32_t promise_id,
+                                        const std::string& key_system,
+                                        const GURL& security_origin) {
+  if (key_system.size() > media::limits::kMaxKeySystemLength) {
+    NOTREACHED() << "Invalid key system: " << key_system;
     RejectPromise(render_frame_id, cdm_id, promise_id,
                   MediaKeys::INVALID_ACCESS_ERROR, 0, "Invalid key system.");
     return;
   }
 
-  AddCdm(render_frame_id, cdm_id, promise_id, params.key_system,
-         params.security_origin, params.use_hw_secure_codecs);
+  AddCdm(render_frame_id, cdm_id, promise_id, key_system, security_origin);
 }
 
 void BrowserCdmManager::OnSetServerCertificate(
@@ -440,17 +440,29 @@ void BrowserCdmManager::AddCdm(int render_frame_id,
                                int cdm_id,
                                uint32_t promise_id,
                                const std::string& key_system,
-                               const GURL& security_origin,
-                               bool use_hw_secure_codecs) {
+                               const GURL& security_origin) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!GetCdm(render_frame_id, cdm_id));
 
+  bool use_secure_surface = false;
   scoped_ptr<SimplePromise> promise(
       new SimplePromise(this, render_frame_id, cdm_id, promise_id));
 
+#if defined(OS_ANDROID)
+  // TODO(sandersd): Pass the security level from key system instead.
+  // http://crbug.com/467779
+  RenderFrameHost* rfh =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id);
+  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
+  if (web_contents) {
+    content::RendererPreferences* prefs =
+        web_contents->GetMutableRendererPrefs();
+    use_secure_surface = prefs->use_video_overlay_for_embedded_encrypted_video;
+  }
+#endif
+
   scoped_ptr<BrowserCdm> cdm(media::CreateBrowserCdm(
-      key_system, use_hw_secure_codecs,
-      BROWSER_CDM_MANAGER_CB(OnSessionMessage),
+      key_system, use_secure_surface, BROWSER_CDM_MANAGER_CB(OnSessionMessage),
       BROWSER_CDM_MANAGER_CB(OnSessionClosed),
       BROWSER_CDM_MANAGER_CB(OnLegacySessionError),
       BROWSER_CDM_MANAGER_CB(OnSessionKeysChange),

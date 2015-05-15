@@ -25,9 +25,9 @@ namespace content {
 
 void PpapiDecryptor::Create(
     const std::string& key_system,
-    const GURL& security_origin,
     bool allow_distinctive_identifier,
     bool allow_persistent_state,
+    const GURL& security_origin,
     const CreatePepperCdmCB& create_pepper_cdm_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,

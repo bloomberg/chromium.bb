@@ -25,8 +25,9 @@ namespace media {
 void WebContentDecryptionModuleImpl::Create(
     media::CdmFactory* cdm_factory,
     const base::string16& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
     const blink::WebSecurityOrigin& security_origin,
-    const CdmConfig& cdm_config,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!security_origin.isNull());
   DCHECK(!key_system.empty());
@@ -67,8 +68,9 @@ void WebContentDecryptionModuleImpl::Create(
   // |result|), it will keep a reference to |adapter|. Otherwise, |adapter| will
   // be destructed.
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
-  adapter->CreateCdm(cdm_factory, key_system_ascii, security_origin_as_gurl,
-                     cdm_config, result);
+  adapter->CreateCdm(cdm_factory, key_system_ascii,
+                     allow_distinctive_identifier, allow_persistent_state,
+                     security_origin_as_gurl, result);
 }
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(

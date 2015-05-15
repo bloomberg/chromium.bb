@@ -19,10 +19,6 @@
 
 class GURL;
 
-namespace media {
-struct CdmConfig;
-}  // namespace media
-
 namespace content {
 
 #if defined(ENABLE_BROWSER_CDMS)
@@ -46,8 +42,9 @@ class RenderCdmFactory : public media::CdmFactory, public RenderFrameObserver {
   // CdmFactory implementation.
   void Create(
       const std::string& key_system,
+      bool allow_distinctive_identifier,
+      bool allow_persistent_state,
       const GURL& security_origin,
-      const media::CdmConfig& cdm_config,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::LegacySessionErrorCB& legacy_session_error_cb,

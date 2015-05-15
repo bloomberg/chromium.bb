@@ -22,7 +22,7 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
   // ::media::BrowserCdmFactory implementation:
   scoped_ptr<::media::BrowserCdm> CreateBrowserCdm(
       const std::string& key_system,
-      bool use_hw_secure_codecs,
+      bool use_secure_surface,
       const ::media::SessionMessageCB& session_message_cb,
       const ::media::SessionClosedCB& session_closed_cb,
       const ::media::LegacySessionErrorCB& legacy_session_error_cb,

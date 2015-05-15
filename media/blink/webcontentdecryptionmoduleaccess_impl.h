@@ -6,7 +6,6 @@
 #define MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULEACCESS_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "media/base/cdm_config.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleAccess.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
@@ -22,9 +21,8 @@ class WebContentDecryptionModuleAccessImpl
  public:
   static WebContentDecryptionModuleAccessImpl* Create(
       const blink::WebString& key_system,
-      const blink::WebSecurityOrigin& security_origin,
       const blink::WebMediaKeySystemConfiguration& configuration,
-      const CdmConfig& cdm_config,
+      const blink::WebSecurityOrigin& security_origin,
       const base::WeakPtr<WebEncryptedMediaClientImpl>& client);
   virtual ~WebContentDecryptionModuleAccessImpl();
 
@@ -36,15 +34,13 @@ class WebContentDecryptionModuleAccessImpl
  private:
   WebContentDecryptionModuleAccessImpl(
       const blink::WebString& key_system,
-      const blink::WebSecurityOrigin& security_origin,
       const blink::WebMediaKeySystemConfiguration& configuration,
-      const CdmConfig& cdm_config,
+      const blink::WebSecurityOrigin& security_origin,
       const base::WeakPtr<WebEncryptedMediaClientImpl>& client);
 
-  const blink::WebString key_system_;
-  const blink::WebSecurityOrigin security_origin_;
-  const blink::WebMediaKeySystemConfiguration configuration_;
-  const CdmConfig cdm_config_;
+  blink::WebString key_system_;
+  blink::WebMediaKeySystemConfiguration configuration_;
+  blink::WebSecurityOrigin security_origin_;
 
   // Keep a WeakPtr as client is owned by render_frame_impl.
   base::WeakPtr<WebEncryptedMediaClientImpl> client_;

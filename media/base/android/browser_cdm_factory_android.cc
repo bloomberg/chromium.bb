@@ -15,7 +15,7 @@ namespace media {
 
 scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
     const std::string& key_system,
-    bool use_hw_secure_codecs,
+    bool use_secure_surface,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
@@ -35,18 +35,19 @@ scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
     return scoped_ptr<BrowserCdm>();
   }
 
+  // TODO(sandersd): Pass the security level from key system.
+  // http://crbug.com/467779
   if (key_system == kWidevineKeySystem) {
     MediaDrmBridge::SecurityLevel security_level =
-        use_hw_secure_codecs ? MediaDrmBridge::SECURITY_LEVEL_1
-                          : MediaDrmBridge::SECURITY_LEVEL_3;
+        use_secure_surface ? MediaDrmBridge::SECURITY_LEVEL_1
+                           : MediaDrmBridge::SECURITY_LEVEL_3;
     if (!cdm->SetSecurityLevel(security_level)) {
       DVLOG(1) << "failed to set security level " << security_level;
       return scoped_ptr<BrowserCdm>();
     }
   } else {
-    // Assume other key systems require hardware-secure codecs and thus do not
-    // support full compositing.
-    if (!use_hw_secure_codecs) {
+    // Assume other key systems do not support full compositing.
+    if (!use_secure_surface) {
       NOTREACHED()
           << key_system
           << " may require use_video_overlay_for_embedded_encrypted_video";

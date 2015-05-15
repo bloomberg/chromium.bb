@@ -27,7 +27,6 @@ class WebString;
 
 namespace media {
 
-struct CdmConfig;
 class KeySystems;
 class MediaPermission;
 
@@ -45,8 +44,9 @@ class MEDIA_EXPORT KeySystemConfigSelector {
           candidate_configurations,
       const blink::WebSecurityOrigin& security_origin,
       bool are_secure_codecs_supported,
+      // The second argument is |are_secure_codecs_required|.
       base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
-                          const CdmConfig&)> succeeded_cb,
+                          bool)> succeeded_cb,
       base::Callback<void(const blink::WebString&)> not_supported_cb);
 
  private:

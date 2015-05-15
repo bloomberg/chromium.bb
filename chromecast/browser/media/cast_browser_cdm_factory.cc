@@ -17,14 +17,13 @@ namespace media {
 
 scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
     const std::string& key_system_name,
-    bool use_hw_secure_codecs,
+    bool use_secure_surface,
     const ::media::SessionMessageCB& session_message_cb,
     const ::media::SessionClosedCB& session_closed_cb,
     const ::media::LegacySessionErrorCB& legacy_session_error_cb,
     const ::media::SessionKeysChangeCB& session_keys_change_cb,
     const ::media::SessionExpirationUpdateCB& session_expiration_update_cb) {
-  DCHECK(!use_hw_secure_codecs)
-      << "Chromecast does not use |use_hw_secure_codecs|";
+  DCHECK(!use_secure_surface) << "Chromecast does not use |use_secure_surface|";
 
   CastKeySystem key_system(GetKeySystemByName(key_system_name));
 
