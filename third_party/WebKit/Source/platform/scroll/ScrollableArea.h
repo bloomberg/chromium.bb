@@ -64,6 +64,10 @@ public:
     static float minFractionToStepWhenPaging();
     static int maxOverlapBetweenPages();
 
+    // Convert a non-finite scroll value (Infinity, -Infinity, NaN) to 0 as
+    // per http://dev.w3.org/csswg/cssom-view/#normalize-non_finite-values.
+    static double normalizeNonFiniteScroll(double value) { return std::isfinite(value) ? value : 0.0; }
+
     // The window that hosts the ScrollableArea. The ScrollableArea will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
     virtual HostWindow* hostWindow() const { return 0; };

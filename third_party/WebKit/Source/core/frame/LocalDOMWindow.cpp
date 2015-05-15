@@ -1124,8 +1124,8 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     if (!view)
         return;
 
-    if (std::isnan(x) || std::isnan(y))
-        return;
+    x = ScrollableArea::normalizeNonFiniteScroll(x);
+    y = ScrollableArea::normalizeNonFiniteScroll(y);
 
     DoublePoint currentOffset = view->scrollableArea()->scrollPositionDouble();
     DoubleSize scaledDelta(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
@@ -1155,8 +1155,8 @@ void LocalDOMWindow::scrollTo(double x, double y) const
     if (!view)
         return;
 
-    if (std::isnan(x) || std::isnan(y))
-        return;
+    x = ScrollableArea::normalizeNonFiniteScroll(x);
+    y = ScrollableArea::normalizeNonFiniteScroll(y);
 
     // It is only necessary to have an up-to-date layout if the position may be clamped,
     // which is never the case for (0, 0).
@@ -1192,17 +1192,11 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     scaledX = currentOffset.x();
     scaledY = currentOffset.y();
 
-    if (scrollToOptions.hasLeft()) {
-        if (std::isnan(scrollToOptions.left()))
-            return;
-        scaledX = scrollToOptions.left() * frame()->pageZoomFactor();
-    }
+    if (scrollToOptions.hasLeft())
+        scaledX = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) * frame()->pageZoomFactor();
 
-    if (scrollToOptions.hasTop()) {
-        if (std::isnan(scrollToOptions.top()))
-            return;
-        scaledY = scrollToOptions.top() * frame()->pageZoomFactor();
-    }
+    if (scrollToOptions.hasTop())
+        scaledY = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) * frame()->pageZoomFactor();
 
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);

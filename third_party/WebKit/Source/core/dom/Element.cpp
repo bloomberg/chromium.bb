@@ -731,8 +731,7 @@ void Element::setScrollLeft(double newLeft)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (std::isnan(newLeft))
-        return;
+    newLeft = ScrollableArea::normalizeNonFiniteScroll(newLeft);
 
     if (document().scrollingElement() == this) {
         if (LocalDOMWindow* window = document().domWindow())
@@ -748,8 +747,7 @@ void Element::setScrollTop(double newTop)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (std::isnan(newTop))
-        return;
+    newTop = ScrollableArea::normalizeNonFiniteScroll(newTop);
 
     if (document().scrollingElement() == this) {
         if (LocalDOMWindow* window = document().domWindow())
@@ -835,10 +833,8 @@ void Element::scrollTo(const ScrollToOptions& scrollToOptions)
 
 void Element::scrollLayoutBoxBy(const ScrollToOptions& scrollToOptions)
 {
-    double left = scrollToOptions.hasLeft() ? scrollToOptions.left() : 0.0;
-    double top = scrollToOptions.hasTop() ? scrollToOptions.top() : 0.0;
-    if (std::isnan(left) || std::isnan(top))
-        return;
+    double left = scrollToOptions.hasLeft() ? ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) : 0.0;
+    double top = scrollToOptions.hasTop() ? ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) : 0.0;
 
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
@@ -854,10 +850,6 @@ void Element::scrollLayoutBoxBy(const ScrollToOptions& scrollToOptions)
 
 void Element::scrollLayoutBoxTo(const ScrollToOptions& scrollToOptions)
 {
-    if ((scrollToOptions.hasLeft() && std::isnan(scrollToOptions.left()))
-        || (scrollToOptions.hasTop() && std::isnan(scrollToOptions.top())))
-        return;
-
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
 
@@ -866,19 +858,17 @@ void Element::scrollLayoutBoxTo(const ScrollToOptions& scrollToOptions)
         double scaledLeft = box->scrollLeft();
         double scaledTop = box->scrollTop();
         if (scrollToOptions.hasLeft())
-            scaledLeft = scrollToOptions.left() * box->style()->effectiveZoom();
+            scaledLeft = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) * box->style()->effectiveZoom();
         if (scrollToOptions.hasTop())
-            scaledTop = scrollToOptions.top() * box->style()->effectiveZoom();
+            scaledTop = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) * box->style()->effectiveZoom();
         box->scrollToOffset(DoubleSize(scaledLeft, scaledTop), scrollBehavior);
     }
 }
 
 void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
 {
-    double left = scrollToOptions.hasLeft() ? scrollToOptions.left() : 0.0;
-    double top = scrollToOptions.hasTop() ? scrollToOptions.top() : 0.0;
-    if (std::isnan(left) || std::isnan(top))
-        return;
+    double left = scrollToOptions.hasLeft() ? ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) : 0.0;
+    double top = scrollToOptions.hasTop() ? ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) : 0.0;
 
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
@@ -896,11 +886,6 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
 
 void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
 {
-    double left = scrollToOptions.hasLeft() ? scrollToOptions.left() : 0.0;
-    double top = scrollToOptions.hasTop() ? scrollToOptions.top() : 0.0;
-    if (std::isnan(left) || std::isnan(top))
-        return;
-
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
     LocalFrame* frame = document().frame();
@@ -913,9 +898,9 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     double scaledLeft = view->scrollPositionDouble().x();
     double scaledTop = view->scrollPositionDouble().y();
     if (scrollToOptions.hasLeft())
-        scaledLeft = scrollToOptions.left() * frame->pageZoomFactor();
+        scaledLeft = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) * frame->pageZoomFactor();
     if (scrollToOptions.hasTop())
-        scaledTop = scrollToOptions.top() * frame->pageZoomFactor();
+        scaledTop = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) * frame->pageZoomFactor();
     view->setScrollPosition(DoublePoint(scaledLeft, scaledTop), scrollBehavior);
 }
 
