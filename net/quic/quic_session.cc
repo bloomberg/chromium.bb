@@ -103,7 +103,6 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       config_(config),
       max_open_streams_(config_.MaxStreamsPerConnection()),
       next_stream_id_(perspective() == Perspective::IS_SERVER ? 2 : 5),
-      write_blocked_streams_(true),
       largest_peer_created_stream_id_(0),
       error_(QUIC_NO_ERROR),
       flow_controller_(connection_.get(),
