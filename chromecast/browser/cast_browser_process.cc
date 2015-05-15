@@ -18,10 +18,6 @@
 #include "components/crash/browser/crash_dump_manager_android.h"
 #endif  // defined(OS_ANDROID)
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 namespace chromecast {
 namespace shell {
 
@@ -44,9 +40,6 @@ CastBrowserProcess::~CastBrowserProcess() {
   DCHECK_EQ(g_instance, this);
   if (pref_service_)
     pref_service_->CommitPendingWrite();
-#if defined(USE_AURA)
-  aura::Env::DeleteInstance();
-#endif
   g_instance = NULL;
 }
 
