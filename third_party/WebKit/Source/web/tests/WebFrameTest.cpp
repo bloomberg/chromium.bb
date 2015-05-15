@@ -6711,7 +6711,7 @@ TEST_F(WebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(remoteClient.frame());
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", WebSandboxFlags::None, &childFrameClient, nullptr);
 
     // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
     RefPtrWillBePersistent<Frame> childCoreFrame = toCoreFrame(childFrame);
@@ -7058,7 +7058,7 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
     remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
 
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
+    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild("", WebSandboxFlags::None, &childFrameClient, nullptr);
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
 
     v8::Local<v8::Value> window = childFrame->executeScriptAndReturnValue(WebScriptSource("window"));
@@ -7085,7 +7085,7 @@ TEST_F(WebFrameSwapTest, FrameElementInFramesWithRemoteParent)
     remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
 
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
+    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild("", WebSandboxFlags::None, &childFrameClient, nullptr);
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
 
     v8::Local<v8::Value> frameElement = childFrame->executeScriptAndReturnValue(WebScriptSource("window.frameElement"));
@@ -7217,7 +7217,7 @@ TEST_F(WebFrameTest, RemoteFrameInitialCommitType)
 
     // If an iframe has a remote main frame, ensure the inital commit is correctly identified as WebInitialCommitInChildFrame.
     CommitTypeWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", WebSandboxFlags::None, &childFrameClient, nullptr);
     registerMockedHttpURLLoad("foo.html");
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "foo.html");
     EXPECT_EQ(WebInitialCommitInChildFrame, childFrameClient.historyCommitType());

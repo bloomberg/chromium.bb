@@ -716,12 +716,6 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
     return WebString();
 }
 
-// TODO(alexmos): Remove once Chromium side is updated to take previous sibling.
-WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client)
-{
-    return createLocalChild(name, sandboxFlags, client, lastChild());
-}
-
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling)
 {
     WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(client));
