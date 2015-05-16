@@ -81,7 +81,6 @@
         "syscalls/pipe.c",
         "syscalls/poll.c",
         "syscalls/realpath.c",
-        "syscalls/rename.c",
         "syscalls/select.c",
         "syscalls/sigaction.c",
         "syscalls/signal.c",

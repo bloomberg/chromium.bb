@@ -175,6 +175,7 @@ EXTERN_C_BEGIN
   OP(fdatasync);                         \
   OP(lstat);                             \
   OP(link);                              \
+  OP(rename);                            \
   OP(readlink);                          \
   OP(utimes);
 
@@ -346,6 +347,10 @@ int WRAP(lstat)(const char* pathname, struct nacl_abi_stat* nacl_buf) {
 
 int WRAP(link)(const char* pathname, const char* newpath) {
   ERRNO_RTN(ki_link(pathname, newpath));
+}
+
+int WRAP(rename)(const char* pathname, const char* newpath) {
+  ERRNO_RTN(ki_rename(pathname, newpath));
 }
 
 int WRAP(readlink)(const char* pathname,
