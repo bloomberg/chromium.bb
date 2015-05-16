@@ -50,7 +50,6 @@
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/browser_main_parts.h"
-#include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
@@ -335,30 +334,6 @@ base::win::MemoryPressureMonitor* CreateWinMemoryPressureMonitor(
 
 // The currently-running BrowserMainLoop.  There can be one or zero.
 BrowserMainLoop* g_current_browser_main_loop = NULL;
-
-// This is just to be able to keep ShutdownThreadsAndCleanUp out of
-// the public interface of BrowserMainLoop.
-class BrowserShutdownImpl {
- public:
-  static void ImmediateShutdownAndExitProcess() {
-    DCHECK(g_current_browser_main_loop);
-    g_current_browser_main_loop->ShutdownThreadsAndCleanUp();
-
-#if defined(OS_WIN)
-    // At this point the message loop is still running yet we've shut everything
-    // down. If any messages are processed we'll likely crash. Exit now.
-    ExitProcess(RESULT_CODE_NORMAL_EXIT);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
-    _exit(RESULT_CODE_NORMAL_EXIT);
-#else
-    NOTIMPLEMENTED();
-#endif
-  }
-};
-
-void ImmediateShutdownAndExitProcess() {
-  BrowserShutdownImpl::ImmediateShutdownAndExitProcess();
-}
 
 // For measuring memory usage after each task. Behind a command line flag.
 class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {

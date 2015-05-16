@@ -91,7 +91,6 @@
       'public/browser/browser_plugin_guest_manager.cc',
       'public/browser/browser_plugin_guest_manager.h',
       'public/browser/browser_ppapi_host.h',
-      'public/browser/browser_shutdown.h',
       'public/browser/browser_thread.h',
       'public/browser/browser_thread_delegate.h',
       'public/browser/browser_url_handler.h',
