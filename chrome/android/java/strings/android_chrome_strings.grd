@@ -1150,6 +1150,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_CONTEXTMENU_OPEN_ORIGINAL_IMAGE_IN_NEW_TAB" desc="Context sensitive menu item for opening/viewing the original version of the selected image in a new tab. [CHAR-LIMIT=30]">
         Open original image in new tab
       </message>
+      <message name="IDS_CONTEXTMENU_SHOW_ORIGINAL_IMAGE" desc="Context sensitive menu item for Data Saver low fidelity placeholder images that shows the original version in place. [CHAR-LIMIT=30]">
+        Show image
+      </message>
       <message name="IDS_CONTEXTMENU_SEARCH_WEB_FOR_IMAGE" desc="Context sensitive menu item for search-for-Image command in a new tab. [CHAR-LIMIT=30]">
         Search <ph name="SEARCH_ENGINE">%1$s<ex>Google</ex></ph> for this image
       </message>

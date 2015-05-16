@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_RENDERER_CONTENT_RENDERER_CLIENT_H_
 #define CONTENT_PUBLIC_RENDERER_CONTENT_RENDERER_CLIENT_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -47,6 +48,7 @@ class WebRTCPeerConnectionHandlerClient;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebThemeEngine;
+class WebURLResponse;
 class WebURLRequest;
 class WebWorkerContentSettingsClientProxy;
 struct WebPluginParams;
@@ -305,6 +307,12 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows an embedder to provide a blink::WebAppBannerClient.
   virtual scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
       RenderFrame* render_frame);
+
+  // Gives the embedder a chance to add properties to the context menu.
+  // Currently only called when the context menu is for an image.
+  virtual void AddImageContextMenuProperties(
+      const blink::WebURLResponse& response,
+      std::map<std::string, std::string>* properties) {}
 };
 
 }  // namespace content

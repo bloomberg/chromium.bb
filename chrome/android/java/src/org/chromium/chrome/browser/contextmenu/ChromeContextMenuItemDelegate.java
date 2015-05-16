@@ -63,6 +63,11 @@ public interface ChromeContextMenuItemDelegate {
     void onOpenImageInNewTab(String url, Referrer referrer);
 
     /**
+     * Called when the original image should be shown.
+     */
+    void onShowOriginalImage();
+
+    /**
      * Called when the {@code text} should be saved to the clipboard.
      * @param text  The text to save to the clipboard.
      * @param isUrl Whether or not the text is a URL.

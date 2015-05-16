@@ -20,6 +20,8 @@
             android:title="@string/contextmenu_save_link" />
     </group>
     <group android:id="@+id/contextmenu_group_image">
+        <item android:id="@+id/contextmenu_show_original_image"
+            android:title="@string/contextmenu_show_original_image"/>
         <item android:id="@+id/contextmenu_save_image"
             android:title="@string/contextmenu_save_image"/>
         <item android:id="@+id/contextmenu_open_image"

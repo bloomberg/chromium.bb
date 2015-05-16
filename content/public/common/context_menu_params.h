@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
 #define CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -150,6 +151,9 @@ struct CONTENT_EXPORT ContextMenuParams {
   std::vector<MenuItem> custom_items;
 
   ui::MenuSourceType source_type;
+
+  // Extra properties for the context menu.
+  std::map<std::string, std::string> properties;
 
 #if defined(OS_ANDROID)
   // Points representing the coordinates in the document space of the start and

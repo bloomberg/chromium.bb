@@ -26,6 +26,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
 
   // IPC handlers
   void OnSetIsPrerendering(bool is_prerendering);
+  void OnRequestReloadImageForContextNode();
   void OnRequestThumbnailForContextNode(
       int thumbnail_min_area_pixels,
       const gfx::Size& thumbnail_max_size_pixels);

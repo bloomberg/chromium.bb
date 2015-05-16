@@ -94,6 +94,8 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestReloadImageForContextNode,
+                        OnRequestReloadImageForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
                         OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
@@ -120,6 +122,14 @@ void ChromeRenderFrameObserver::OnSetIsPrerendering(bool is_prerendering) {
     // The PrerenderHelper will destroy itself either after recording histograms
     // or on destruction of the RenderView.
     new prerender::PrerenderHelper(render_frame());
+  }
+}
+
+void ChromeRenderFrameObserver::OnRequestReloadImageForContextNode() {
+  WebNode context_node = render_frame()->GetContextMenuNode();
+  if (!context_node.isNull() && context_node.isElementNode() &&
+      render_frame()->GetWebFrame()) {
+    render_frame()->GetWebFrame()->reloadImage(context_node);
   }
 }
 

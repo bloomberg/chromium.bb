@@ -22,7 +22,10 @@ using base::TimeDelta;
 namespace {
 
 const char kChromeProxyHeader[] = "chrome-proxy";
+
 const char kActionValueDelimiter = '=';
+
+const char kChromeProxyLoFiDirective[] = "q=low";
 
 const char kChromeProxyActionBlockOnce[] = "block-once";
 const char kChromeProxyActionBlock[] = "block";
@@ -48,6 +51,14 @@ base::TimeDelta GetDefaultBypassDuration() {
 }  // namespace
 
 namespace data_reduction_proxy {
+
+const char* chrome_proxy_header() {
+  return kChromeProxyHeader;
+}
+
+const char* chrome_proxy_lo_fi_directive() {
+  return kChromeProxyLoFiDirective;
+}
 
 bool GetDataReductionProxyActionValue(
     const net::HttpResponseHeaders* headers,

@@ -132,7 +132,7 @@ class DataReductionProxyRequestOptions {
   void SetSecureSession(const std::string& secure_session);
 
  protected:
-  void SetHeader(net::HttpRequestHeaders* headers);
+  void SetHeader(net::HttpRequestHeaders* headers, bool force_disable_lo_fi);
 
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
@@ -170,8 +170,9 @@ class DataReductionProxyRequestOptions {
   // Updates client type, build, and patch.
   void UpdateVersion();
 
-  // Updates the value of LoFi and regenerates the header if necessary.
-  void UpdateLoFi();
+  // Updates the value of LoFi and regenerates the header if necessary. The LoFi
+  // header is not added if the request bypasses the cache.
+  void UpdateLoFi(bool force_disable_lo_fi);
 
   // Update the value of the experiments to be run and regenerate the header if
   // necessary.
@@ -192,7 +193,8 @@ class DataReductionProxyRequestOptions {
   // reduction proxy for HTTP traffic.
   void MaybeAddRequestHeaderImpl(const net::HostPortPair& proxy_server,
                                  bool expect_ssl,
-                                 net::HttpRequestHeaders* request_headers);
+                                 net::HttpRequestHeaders* request_headers,
+                                 bool force_disable_lo_fi);
 
   // Regenerates the |header_value_| string which is concatenated to the
   // Chrome-proxy header.

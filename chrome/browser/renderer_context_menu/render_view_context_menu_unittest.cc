@@ -23,6 +23,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "content/public/browser/web_contents.h"
@@ -356,6 +357,10 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     return menu;
   }
 
+  void AppendImageItems(TestRenderViewContextMenu* menu) {
+    menu->AppendImageItems();
+  }
+
   void SetupDataReductionProxy(bool enable_data_reduction_proxy) {
     drp_test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
@@ -466,4 +471,20 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
   EXPECT_TRUE(headers.find("X-PSA-Client-Options: v=1,m=1") ==
                   std::string::npos &&
               headers.find("Cache-Control: no-cache") == std::string::npos);
+}
+
+// Verify that the Chrome-Proxy Lo-Fi directive causes the context menu to
+// display the "Show Image" menu item.
+TEST_F(RenderViewContextMenuPrefsTest, DataSaverShowImage) {
+  SetupDataReductionProxy(true);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.properties[data_reduction_proxy::chrome_proxy_header()] =
+      data_reduction_proxy::chrome_proxy_lo_fi_directive();
+  params.unfiltered_link_url = params.link_url;
+  content::WebContents* wc = web_contents();
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      new TestRenderViewContextMenu(wc->GetMainFrame(), params));
+  AppendImageItems(menu.get());
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE));
 }

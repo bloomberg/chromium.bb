@@ -62,6 +62,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_match.h"
@@ -220,8 +221,10 @@ const struct UmaEnumCommandIdPair {
     {63, IDC_WRITING_DIRECTION_DEFAULT},
     {64, IDC_WRITING_DIRECTION_LTR},
     {65, IDC_WRITING_DIRECTION_RTL},
+    {66, IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE},
     // Add new items here and use |enum_id| from the next line.
-    {66, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
+    // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
+    {67, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
@@ -741,6 +744,14 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
+  std::map<std::string, std::string>::const_iterator it =
+      params_.properties.find(data_reduction_proxy::chrome_proxy_header());
+  if (it != params_.properties.end() && it->second ==
+      data_reduction_proxy::chrome_proxy_lo_fi_directive()) {
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE,
+        IDS_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE);
+  }
   DataReductionProxyChromeSettings* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
           browser_context_);
@@ -1161,6 +1172,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     // The images shown in the most visited thumbnails can't be opened or
     // searched for conventionally.
     case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
+    case IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE:
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
       return params_.src_url.is_valid() &&
@@ -1474,6 +1486,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           params_.src_url, GetDocumentURL(params_), NEW_BACKGROUND_TAB,
           ui::PAGE_TRANSITION_LINK,
           data_reduction_proxy::kDataReductionPassThroughHeader);
+      break;
+
+    case IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE:
+      ShowOriginalImage();
       break;
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
@@ -1828,6 +1844,14 @@ base::string16 RenderViewContextMenu::PrintableSelectionText() {
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {
   source_web_contents_->GetRenderViewHost()->CopyImageAt(x, y);
+}
+
+void RenderViewContextMenu::ShowOriginalImage() {
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+  if (!render_frame_host)
+    return;
+  render_frame_host->Send(new ChromeViewMsg_RequestReloadImageForContextNode(
+      render_frame_host->GetRoutingID()));
 }
 
 void RenderViewContextMenu::GetImageThumbnailForSearch() {

@@ -342,6 +342,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
+        public void onShowOriginalImage() {
+            if (mNativeTabAndroid != 0) nativeShowOriginalImage(mNativeTabAndroid);
+        }
+
+        @Override
         public String getPageUrl() {
             return getUrl();
         }
@@ -2769,6 +2774,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
     private native void nativeUpdateTopControlsState(
             long nativeTabAndroid, int constraints, int current, boolean animate);
+    private native void nativeShowOriginalImage(long nativeTabAndroid);
     private native void nativeSearchByImageInNewTabAsync(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,

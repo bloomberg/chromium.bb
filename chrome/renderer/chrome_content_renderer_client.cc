@@ -59,6 +59,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
@@ -83,6 +84,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -1652,4 +1654,19 @@ ChromeContentRendererClient::CreateAppBannerClient(
     content::RenderFrame* render_frame) {
   return scoped_ptr<blink::WebAppBannerClient>(
       new AppBannerClient(render_frame));
+}
+
+void ChromeContentRendererClient::AddImageContextMenuProperties(
+    const blink::WebURLResponse& response,
+    std::map<std::string, std::string>* properties) {
+  DCHECK(properties);
+  WebString header_key(ASCIIToUTF16(
+      data_reduction_proxy::chrome_proxy_header()));
+  if (!response.httpHeaderField(header_key).isNull() &&
+      response.httpHeaderField(header_key).utf8().find(
+          data_reduction_proxy::chrome_proxy_lo_fi_directive()) !=
+              std::string::npos) {
+    (*properties)[data_reduction_proxy::chrome_proxy_header()] =
+        data_reduction_proxy::chrome_proxy_lo_fi_directive();
+  }
 }

@@ -4,6 +4,9 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,9 +19,13 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_flags.h"
 #include "net/proxy/proxy_server.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 const char kChromeProxyHeader[] = "chrome-proxy";
@@ -138,6 +145,13 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     request_options_->Init();
   }
 
+  void CreateRequest(int load_flags) {
+    net::URLRequestContext* context =
+        test_context_->request_context_getter()->GetURLRequestContext();
+    request_ = context->CreateRequest(GURL(), net::DEFAULT_PRIORITY, nullptr);
+    request_->SetLoadFlags(load_flags);
+  }
+
   TestDataReductionProxyParams* params() {
     return test_context_->config()->test_params();
   }
@@ -151,9 +165,10 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     test_context_->RunUntilIdle();
     net::HttpRequestHeaders headers;
     request_options_->MaybeAddRequestHeader(
-        NULL,
-        proxy_uri.empty() ? net::ProxyServer() :
-            net::ProxyServer::FromURI(proxy_uri, net::ProxyServer::SCHEME_HTTP),
+        request_.get(),
+        proxy_uri.empty() ? net::ProxyServer()
+                          : net::ProxyServer::FromURI(
+                                proxy_uri, net::ProxyServer::SCHEME_HTTP),
         &headers);
     if (expected_header.empty()) {
       EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
@@ -168,6 +183,7 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   scoped_ptr<TestDataReductionProxyRequestOptions> request_options_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
+  scoped_ptr<net::URLRequest> request_;
 };
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {
@@ -283,6 +299,30 @@ TEST_F(DataReductionProxyRequestOptionsTest, LoFiOn) {
                         kClientStr, std::string(), std::string(), "low",
                         std::vector<std::string>(), &expected_header);
 
+  CreateRequestOptions(kBogusVersion);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, LoFiReloadSingleImage) {
+  // Add the LoFi command line switch.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, std::string(), std::string(), std::string(),
+                        std::vector<std::string>(), &expected_header);
+
+  CreateRequest(net::LOAD_BYPASS_CACHE);
+  CreateRequestOptions(kBogusVersion);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+
+  // Check that LoFi turns back on.
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, std::string(), std::string(), "low",
+                        std::vector<std::string>(), &expected_header);
+
+  CreateRequest(net::LOAD_NORMAL);
   CreateRequestOptions(kBogusVersion);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }

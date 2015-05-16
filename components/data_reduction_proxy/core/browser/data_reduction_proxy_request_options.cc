@@ -25,6 +25,7 @@
 #include "components/data_reduction_proxy/core/common/version.h"
 #include "crypto/random.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_flags.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
 
@@ -33,12 +34,19 @@
 #endif
 
 namespace data_reduction_proxy {
-
 namespace {
+
 std::string FormatOption(const std::string& name, const std::string& value) {
   return name + "=" + value;
 }
-}  //namespace
+
+bool ShouldForceDisableLoFi(const net::URLRequest* request) {
+  if (!request)
+    return false;
+  return (request->load_flags() & net::LOAD_BYPASS_CACHE) != 0;
+}
+
+}  // namespace
 
 const char kSessionHeaderOption[] = "ps";
 const char kCredentialsHeaderOption[] = "sid";
@@ -126,7 +134,7 @@ DataReductionProxyRequestOptions::~DataReductionProxyRequestOptions() {
 void DataReductionProxyRequestOptions::Init() {
   key_ = GetDefaultKey(),
   UpdateCredentials();
-  UpdateLoFi();
+  UpdateLoFi(false);
   UpdateVersion();
   UpdateExperiments();
 }
@@ -156,10 +164,16 @@ void DataReductionProxyRequestOptions::UpdateVersion() {
   RegenerateRequestHeaderValue();
 }
 
-void DataReductionProxyRequestOptions::UpdateLoFi() {
+void DataReductionProxyRequestOptions::UpdateLoFi(bool force_disable_lo_fi) {
+  if (force_disable_lo_fi) {
+    if (lofi_.empty())
+      return;
+    lofi_ = std::string();
+    RegenerateRequestHeaderValue();
+    return;
+  }
   // LoFi was not enabled, but now is. Add the header option.
-  if (lofi_.empty() &&
-      DataReductionProxyParams::IsLoFiEnabled()) {
+  if (lofi_.empty() && DataReductionProxyParams::IsLoFiEnabled()) {
     lofi_ = "low";
     RegenerateRequestHeaderValue();
     return;
@@ -216,25 +230,25 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
     return;
   if (proxy_server.is_direct())
     return;
-  MaybeAddRequestHeaderImpl(proxy_server.host_port_pair(),
-                            false,
-                            request_headers);
+  MaybeAddRequestHeaderImpl(proxy_server.host_port_pair(), false,
+                            request_headers, ShouldForceDisableLoFi(request));
 }
 
 void DataReductionProxyRequestOptions::MaybeAddProxyTunnelRequestHandler(
     const net::HostPortPair& proxy_server,
     net::HttpRequestHeaders* request_headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MaybeAddRequestHeaderImpl(proxy_server, true, request_headers);
+  MaybeAddRequestHeaderImpl(proxy_server, true, request_headers, false);
 }
 
 void DataReductionProxyRequestOptions::SetHeader(
-    net::HttpRequestHeaders* headers) {
+    net::HttpRequestHeaders* headers,
+    bool force_disable_lo_fi) {
   base::Time now = Now();
   // Authorization credentials must be regenerated if they are expired.
   if (!use_assigned_credentials_ && (now > credentials_expiration_time_))
     UpdateCredentials();
-  UpdateLoFi();
+  UpdateLoFi(force_disable_lo_fi);
   const char kChromeProxyHeader[] = "Chrome-Proxy";
   std::string header_value;
   if (headers->HasHeader(kChromeProxyHeader)) {
@@ -349,14 +363,15 @@ const std::string& DataReductionProxyRequestOptions::GetSecureSession() const {
 void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
     const net::HostPortPair& proxy_server,
     bool expect_ssl,
-    net::HttpRequestHeaders* request_headers) {
+    net::HttpRequestHeaders* request_headers,
+    bool force_disable_lo_fi) {
   if (proxy_server.IsEmpty())
     return;
   if (data_reduction_proxy_config_ &&
       data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
       data_reduction_proxy_config_->UsingHTTPTunnel(proxy_server) ==
           expect_ssl) {
-    SetHeader(request_headers);
+    SetHeader(request_headers, force_disable_lo_fi);
   }
 }
 

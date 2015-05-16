@@ -806,6 +806,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB" desc="The name of the Open Original Image in New Tab command in the content area context menu">
             Open original &amp;image in new tab
           </message>
+          <message name="IDS_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE" desc="The name of the Show Original Image command in the content area context menu">
+            Show image
+          </message>
 
           <message name="IDS_CONTENT_CONTEXT_LOOP" desc="The name of the Loop command for audio and video playback in the content area context menu">
             &amp;Loop
@@ -1008,6 +1011,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB" desc="In Title Case: The name of the Open Original Image in New Tab command in the content area context menu">
             Open Original &amp;Image in New Tab
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE" desc="In Title Case: The name of the Show Original Image command in the content area context menu">
+            Show Image
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_LOOP" desc="In Title Case: The name of the Loop command for audio and video playback in the content area context menu">

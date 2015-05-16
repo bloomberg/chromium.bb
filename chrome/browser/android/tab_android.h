@@ -191,6 +191,8 @@ class TabAndroid : public CoreTabHelperDelegate,
                               jint current,
                               jboolean animate);
 
+  void ShowOriginalImage(JNIEnv* env, jobject obj);
+
   void SearchByImageInNewTabAsync(JNIEnv* env, jobject obj);
 
   jlong GetBookmarkId(JNIEnv* env, jobject obj, jboolean only_editable);

@@ -81,6 +81,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 menu.findItem(R.id.contextmenu_open_original_image_in_new_tab).setVisible(false);
             }
 
+            if (!params.imageWasFetchedLoFi()) {
+                menu.findItem(R.id.contextmenu_show_original_image).setVisible(false);
+            }
+
             // Avoid showing open image option for same image which is already opened.
             if (mDelegate.getPageUrl().equals(params.getSrcUrl())) {
                 menu.findItem(R.id.contextmenu_open_image).setVisible(false);
@@ -114,6 +118,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_open_image_in_new_tab
                 || itemId == R.id.contextmenu_open_original_image_in_new_tab) {
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
+        } else if (itemId == R.id.contextmenu_show_original_image) {
+            mDelegate.onShowOriginalImage();
         } else if (itemId == R.id.contextmenu_copy_link_address_text) {
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(), true);
         } else if (itemId == R.id.contextmenu_copy_email_address) {

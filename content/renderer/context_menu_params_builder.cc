@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/dom_utils.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/menu_item_builder.h"
@@ -42,6 +43,11 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.frame_charset = data.frameEncoding.utf8();
   params.referrer_policy = data.referrerPolicy;
   params.suggested_filename = data.suggestedFilename;
+
+  if (!data.imageResponse.isNull()) {
+    GetContentClient()->renderer()->AddImageContextMenuProperties(
+        data.imageResponse, &params.properties);
+  }
 
   for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
     params.dictionary_suggestions.push_back(data.dictionarySuggestions[i]);

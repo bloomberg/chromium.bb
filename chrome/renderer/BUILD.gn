@@ -39,6 +39,7 @@ static_library("renderer") {
     "//components/content_settings/content/common",
     "//components/cdm/renderer",
     "//components/data_reduction_proxy/content/common",
+    "//components/data_reduction_proxy/core/common",
     "//components/network_hints/renderer",
     "//components/error_page/renderer",
     "//components/password_manager/content/renderer",

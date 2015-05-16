@@ -36,6 +36,10 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     }
 
     @Override
+    public void onShowOriginalImage() {
+    }
+
+    @Override
     public void onOpenInNewIncognitoTab(String url) {
     }
 

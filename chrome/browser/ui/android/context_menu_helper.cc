@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/common/context_menu_params.h"
@@ -75,6 +76,12 @@ ContextMenuHelper::CreateJavaContextMenuParams(
   GURL sanitizedReferrer = (params.frame_url.is_empty() ?
       params.page_url : params.frame_url).GetAsReferrer();
 
+  std::map<std::string, std::string>::const_iterator it =
+      params.properties.find(data_reduction_proxy::chrome_proxy_header());
+  bool image_was_fetched_lo_fi =
+      it != params.properties.end() &&
+      it->second == data_reduction_proxy::chrome_proxy_lo_fi_directive();
+
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(
@@ -86,6 +93,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()).obj(),
           ConvertUTF8ToJavaString(env, params.src_url.spec()).obj(),
           ConvertUTF16ToJavaString(env, params.selection_text).obj(),
+          image_was_fetched_lo_fi,
           params.is_editable,
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()).obj(),
           params.referrer_policy);

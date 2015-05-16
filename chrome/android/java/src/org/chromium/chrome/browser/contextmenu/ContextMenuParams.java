@@ -44,6 +44,7 @@ public class ContextMenuParams {
     private final String mLinkText;
     private final String mUnfilteredLinkUrl;
     private final String mSrcUrl;
+    private final boolean mImageWasFetchedLoFi;
     private final boolean mIsEditable;
     private final Referrer mReferrer;
 
@@ -124,6 +125,13 @@ public class ContextMenuParams {
     }
 
     /**
+     * @return Whether or not an image was fetched using Lo-Fi.
+     */
+    public boolean imageWasFetchedLoFi() {
+        return mImageWasFetchedLoFi;
+    }
+
+    /**
      * @return Whether or not the context menu is being shown for an editable piece of content.
      */
     public boolean isEditable() {
@@ -166,13 +174,14 @@ public class ContextMenuParams {
     }
 
     private ContextMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
-            String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable,
-            Referrer referrer) {
+            String unfilteredLinkUrl, String srcUrl, String selectionText,
+            boolean imageWasFetchedLoFi, boolean isEditable, Referrer referrer) {
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
         mUnfilteredLinkUrl = unfilteredLinkUrl;
         mSrcUrl = srcUrl;
+        mImageWasFetchedLoFi = imageWasFetchedLoFi;
         mIsEditable = isEditable;
         mReferrer = referrer;
 
@@ -185,11 +194,12 @@ public class ContextMenuParams {
     @CalledByNative
     private static ContextMenuParams create(int mediaType, String pageUrl, String linkUrl,
             String linkText, String unfilteredLinkUrl, String srcUrl, String selectionText,
-            boolean isEditable, String sanitizedReferrer, int referrerPolicy) {
+            boolean imageWasFetchedLoFi, boolean isEditable, String sanitizedReferrer,
+            int referrerPolicy) {
         Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
                 ? null : new Referrer(sanitizedReferrer, referrerPolicy);
         return new ContextMenuParams(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl,
-                srcUrl, selectionText, isEditable, referrer);
+                srcUrl, selectionText, imageWasFetchedLoFi, isEditable, referrer);
     }
 
     @CalledByNative
