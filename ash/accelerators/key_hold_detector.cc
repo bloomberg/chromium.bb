@@ -4,11 +4,6 @@
 
 #include "ash/accelerators/key_hold_detector.h"
 
-#include <X11/Xlib.h>
-
-#undef RootWindow
-#undef Status
-
 #include "ash/shell.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window_tracker.h"
