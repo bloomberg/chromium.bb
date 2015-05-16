@@ -71,5 +71,6 @@ source_set("kiosk_wm_lib") {
 mojom("interfaces") {
   sources = [
     "omnibox.mojom",
+    "view_embedder.mojom",
   ]
 }

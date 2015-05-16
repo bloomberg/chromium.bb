@@ -39,6 +39,7 @@ bool OmniboxImpl::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<Omnibox>(this);
   connection->AddService(view_manager_client_factory_.get());
+  connection->ConnectToService(&view_embedder_);
   return true;
 }
 
@@ -134,7 +135,8 @@ void OmniboxImpl::SetClient(OmniboxClientPtr client) {
 
 void OmniboxImpl::ShowForURL(const mojo::String& url) {
   url_ = url;
-  // TODO: get embedding working.
+
+  view_embedder_->Embed("mojo:omnibox", nullptr, nullptr);
 }
 
 }  // namespace mandoline

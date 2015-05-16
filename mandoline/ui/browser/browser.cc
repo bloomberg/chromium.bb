@@ -36,7 +36,7 @@ Browser::Browser()
       omnibox_(nullptr),
       navigator_host_(this),
       ui_(nullptr) {
-  exposed_services_impl_.AddService(this);
+  exposed_services_impl_.AddService<mojo::NavigatorHost>(this);
 }
 
 Browser::~Browser() {
@@ -72,6 +72,7 @@ bool Browser::ConfigureIncomingConnection(
 
 bool Browser::ConfigureOutgoingConnection(
     mojo::ApplicationConnection* connection) {
+  connection->AddService<ViewEmbedder>(this);
   return true;
 }
 
@@ -122,24 +123,6 @@ void Browser::OpenURL(const mojo::String& url) {
   ReplaceContentWithURL(url);
 }
 
-void Browser::Create(mojo::ApplicationConnection* connection,
-                     mojo::InterfaceRequest<mojo::NavigatorHost> request) {
-  navigator_host_.Bind(request.Pass());
-}
-
-void Browser::ShowOmnibox(
-    const mojo::String& url,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
-  if (!omnibox_) {
-    omnibox_ = root_->view_manager()->CreateView();
-    root_->AddChild(omnibox_);
-    omnibox_->SetVisible(true);
-    omnibox_->SetBounds(root_->bounds());
-  }
-  omnibox_->Embed(url, services.Pass(), exposed_services.Pass());
-}
-
 void Browser::Embed(const mojo::String& url,
                     mojo::InterfaceRequest<mojo::ServiceProvider> services,
                     mojo::ServiceProviderPtr exposed_services) {
@@ -168,6 +151,29 @@ void Browser::Embed(const mojo::String& url,
                   merged_service_provider_->GetServiceProviderPtr().Pass());
 
   navigator_host_.RecordNavigation(url);
+}
+
+void Browser::Create(mojo::ApplicationConnection* connection,
+                     mojo::InterfaceRequest<mojo::NavigatorHost> request) {
+  navigator_host_.Bind(request.Pass());
+}
+
+void Browser::Create(mojo::ApplicationConnection* connection,
+                     mojo::InterfaceRequest<ViewEmbedder> request) {
+  view_embedder_bindings_.AddBinding(this, request.Pass());
+}
+
+void Browser::ShowOmnibox(
+    const mojo::String& url,
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
+  if (!omnibox_) {
+    omnibox_ = root_->view_manager()->CreateView();
+    root_->AddChild(omnibox_);
+    omnibox_->SetVisible(true);
+    omnibox_->SetBounds(root_->bounds());
+  }
+  omnibox_->Embed(url, services.Pass(), exposed_services.Pass());
 }
 
 }  // namespace mandoline

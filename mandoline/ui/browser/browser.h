@@ -11,10 +11,12 @@
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/ui/browser/navigator_host_impl.h"
 #include "mandoline/ui/browser/omnibox.mojom.h"
+#include "mandoline/ui/browser/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
+#include "mojo/common/weak_binding_set.h"
 #include "ui/mojo/events/input_events.mojom.h"
 #include "url/gurl.h"
 
@@ -31,7 +33,9 @@ class Browser : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
                 public mojo::ViewManagerRootClient,
                 public OmniboxClient,
-                public mojo::InterfaceFactory<mojo::NavigatorHost> {
+                public ViewEmbedder,
+                public mojo::InterfaceFactory<mojo::NavigatorHost>,
+                public mojo::InterfaceFactory<ViewEmbedder> {
  public:
   Browser();
   ~Browser() override;
@@ -63,13 +67,18 @@ class Browser : public mojo::ApplicationDelegate,
   // Overridden from OmniboxClient:
   void OpenURL(const mojo::String& url) override;
 
+  // Overridden from ViewEmbedder:
+  void Embed(const mojo::String& url,
+             mojo::InterfaceRequest<mojo::ServiceProvider> services,
+             mojo::ServiceProviderPtr exposed_services) override;
+
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
 
-  void Embed(const mojo::String& url,
-             mojo::InterfaceRequest<mojo::ServiceProvider> services,
-             mojo::ServiceProviderPtr exposed_services);
+  // Overridden from mojo::InterfaceFactory<ViewEmbedder>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<ViewEmbedder> request) override;
 
   void ShowOmnibox(const mojo::String& url,
                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
@@ -87,6 +96,8 @@ class Browser : public mojo::ApplicationDelegate,
 
   mojo::ServiceProviderImpl exposed_services_impl_;
   scoped_ptr<MergedServiceProvider> merged_service_provider_;
+
+  mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
 
   NavigatorHostImpl navigator_host_;
 

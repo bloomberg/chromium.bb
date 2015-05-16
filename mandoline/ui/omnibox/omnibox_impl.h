@@ -7,6 +7,7 @@
 
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "mandoline/ui/browser/omnibox.mojom.h"
+#include "mandoline/ui/browser/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
@@ -68,6 +69,7 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
   views::Textfield* edit_;
   mojo::WeakBindingSet<Omnibox> bindings_;
   scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
+  ViewEmbedderPtr view_embedder_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxImpl);
 };
