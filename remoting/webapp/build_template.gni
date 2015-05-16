@@ -15,17 +15,24 @@ import("//remoting/webapp/files.gni")
 # to this directory.
 remoting_dir = "//remoting"
 
-template("remoting_webapp") {
-  locales_listfile = target_name + "_locales"
-  listfile = "$target_gen_dir/${target_name}_locales.txt"
-  listfile_rel = rebase_path(listfile, root_build_dir)
+buildtype = "Dev"
+if (!is_debug) {
+  if (is_official_build) {
+    buildtype = "Official"
+  } else {
+    buildtype = "Release"
+  }
+}
 
-  action(locales_listfile) {
+template("build_locales_listfile") {
+  action(target_name) {
+    locales_listfile_output = invoker.locales_listfile_output
+
     script = "../tools/build/remoting_localize.py"
 
     inputs = []
     outputs = [
-      listfile,
+      locales_listfile_output,
     ]
 
     args = [
@@ -33,9 +40,87 @@ template("remoting_webapp") {
       rebase_path(webapp_locale_dir, root_build_dir) +
           "/@{json_suffix}/messages.json",
       "--locales_listfile",
-      listfile_rel,
+      rebase_path(locales_listfile_output, root_build_dir),
     ]
     args += remoting_locales
+  }
+}
+
+template("build_webapp_html") {
+  action(target_name) {
+    html_template_file = invoker.html_template_file
+    html_template_files = invoker.html_template_files
+    js_files = invoker.js_files
+    html_output = invoker.html_output
+
+    script = "build-html.py"
+
+    inputs = [ html_template_file ] + html_template_files + js_files
+
+    outputs = [
+      html_output,
+    ]
+
+    args = [
+      rebase_path(html_output, root_build_dir),
+      rebase_path(html_template_file, root_build_dir),
+    ]
+    args += [
+      "--template-dir",
+      rebase_path(remoting_dir, root_build_dir),
+    ]
+    args += [ "--templates" ] + html_template_files
+    args += [ "--js" ] + rebase_path(js_files, remoting_dir)
+  }
+}
+
+template("desktop_remoting_webapp") {
+  locales_listfile = target_name + "_locales"
+  locales_listfile_output = "$target_gen_dir/${target_name}_locales.txt"
+
+  build_locales_listfile(locales_listfile) {
+    # Template uses locales_listfile_output from outer scope.
+  }
+
+  background_html = target_name + "_background_html"
+  background_html_output = "$target_gen_dir/html/$target_name/background.html"
+
+  build_webapp_html(background_html) {
+    html_template_file = remoting_webapp_template_background
+    html_template_files = []
+    js_files = remoting_webapp_background_html_all_js_files
+    html_output = background_html_output
+  }
+
+  message_window_html = target_name + "_message_window_html"
+  message_window_html_output =
+      "$target_gen_dir/html/$target_name/message_window.html"
+
+  build_webapp_html(message_window_html) {
+    html_template_file = remoting_webapp_template_message_window
+    html_template_files = []
+    js_files = remoting_webapp_message_window_html_all_js_files
+    html_output = message_window_html_output
+  }
+
+  wcs_sandbox_html = target_name + "_wcs_sandbox_html"
+  wcs_sandbox_html_output = "$target_gen_dir/html/$target_name/wcs_sandbox.html"
+
+  build_webapp_html(wcs_sandbox_html) {
+    html_template_file = remoting_webapp_template_wcs_sandbox
+    html_template_files = []
+    js_files = remoting_webapp_wcs_sandbox_html_all_js_files
+    html_output = wcs_sandbox_html_output
+  }
+
+  main_html = target_name + "_main_html"
+  main_html_output = "$target_gen_dir/html/$target_name/main.html"
+
+  build_webapp_html(main_html) {
+    html_template_file = remoting_webapp_template_main
+    html_template_files = remoting_webapp_template_files
+    js_files = remoting_webapp_crd_main_html_all_js_files
+    html_output = main_html_output
   }
 
   action(target_name) {
@@ -46,39 +131,37 @@ template("remoting_webapp") {
     zip_path = invoker.zip_path
     extra_files = invoker.extra_files
 
-    inputs = []
+    inputs =
+        [ rebase_path("crd/manifest.json.jinja2", root_build_dir) ] +
+        remoting_version_files +
+        rebase_path(remoting_webapp_crd_files, root_build_dir) + extra_files
+
     outputs = [
       "$target_gen_dir/$zip_path",
     ]
 
     deps = [
-      ":html",
       ":$locales_listfile",
+      ":$background_html",
+      ":$message_window_html",
+      ":$wcs_sandbox_html",
+      ":$main_html",
       "//remoting/resources",
     ]
 
-    buildtype = "Dev"
-    if (!is_debug) {
-      if (is_official_build) {
-        buildtype = "Official"
-      } else {
-        buildtype = "Release"
-      }
-    }
-
-    generated_html_files = [
-      "$target_gen_dir/background.html",
-      "$target_gen_dir/main.html",
-      "$target_gen_dir/message_window.html",
-      "$target_gen_dir/wcs_sandbox.html",
+    dr_generated_html_files = [
+      background_html_output,
+      message_window_html_output,
+      wcs_sandbox_html_output,
+      main_html_output,
     ]
 
     # Create a file that contains a list of all the resource files needed
     # to build the webapp. This is needed to avoid problems on platforms that
     # limit the size of a command line.
-    file_list = "$target_gen_dir/${target_name}_file_list.txt"
+    file_list = "$target_gen_dir/${target_name}_files.txt"
     files = []
-    files += rebase_path(generated_html_files, root_build_dir)
+    files += rebase_path(dr_generated_html_files, root_build_dir)
     files += rebase_path(remoting_webapp_crd_files, root_build_dir)
     files += rebase_path(extra_files, root_build_dir)
     write_file(file_list, files)
@@ -97,11 +180,206 @@ template("remoting_webapp") {
     ]
     args += [
       "--locales_listfile",
-      listfile_rel,
+      rebase_path(locales_listfile_output, root_build_dir),
     ]
     args += [
       "--use_gcd",
       "$remoting_use_gcd",
+    ]
+  }
+}
+
+template("app_remoting_webapp") {
+  locales_listfile = target_name + "_locales"
+  locales_listfile_output = "$target_gen_dir/${target_name}_locales.txt"
+
+  build_locales_listfile(locales_listfile) {
+    # Template uses locales_listfile_output from outer scope.
+  }
+
+  feedback_consent_html = target_name + "_feedback_consent_html"
+  feedback_consent_html_output =
+      "$target_gen_dir/html/$target_name/feedback_consent.html"
+
+  build_webapp_html(feedback_consent_html) {
+    html_template_file = ar_feedback_consent_template
+    html_template_files = []
+    js_files = ar_feedback_consent_html_all_js_files
+    html_output = feedback_consent_html_output
+  }
+
+  loading_window_html = target_name + "_loading_window_html"
+  loading_window_html_output =
+      "$target_gen_dir/html/$target_name/loading_window.html"
+
+  build_webapp_html(loading_window_html) {
+    html_template_file = ar_loading_window_template
+    html_template_files = []
+
+    # The loading window is just a reskin of the message window -- all JS code
+    # is shared.
+    js_files = remoting_webapp_message_window_html_all_js_files
+    html_output = loading_window_html_output
+  }
+
+  message_window_html = target_name + "_message_window_html"
+  message_window_html_output =
+      "$target_gen_dir/html/$target_name/message_window.html"
+
+  build_webapp_html(message_window_html) {
+    html_template_file = remoting_webapp_template_message_window
+    html_template_files = []
+    js_files = remoting_webapp_message_window_html_all_js_files
+    html_output = message_window_html_output
+  }
+
+  wcs_sandbox_html = target_name + "_wcs_sandbox_html"
+  wcs_sandbox_html_output = "$target_gen_dir/html/$target_name/wcs_sandbox.html"
+
+  build_webapp_html(wcs_sandbox_html) {
+    html_template_file = remoting_webapp_template_wcs_sandbox
+    html_template_files = []
+    js_files = remoting_webapp_wcs_sandbox_html_all_js_files
+    html_output = wcs_sandbox_html_output
+  }
+
+  main_html = target_name + "_main_html"
+  main_html_output = "$target_gen_dir/html/$target_name/main.html"
+
+  build_webapp_html(main_html) {
+    html_template_file = ar_main_template
+    html_template_files = ar_main_template_files
+    js_files = ar_main_js_files
+    html_output = main_html_output
+  }
+
+  action(target_name) {
+    script = "build-webapp.py"
+
+    app_key = invoker.app_key
+    app_id = invoker.app_id
+    app_client_id = invoker.app_client_id
+    app_name = invoker.app_name
+    app_description = invoker.app_description
+    app_capabilities = invoker.app_capabilities
+    manifest_key = invoker.manifest_key
+
+    # These asserts are so that these variables get marked as being used so
+    # that GN doesn't complain about them.
+    assert(app_key != "" || app_key == "")
+    assert(app_id != "" || app_id == "")
+
+    # TODO(garykac) For internal targets, we need to extract the vendor and app
+    # name from the target.
+    ar_app_name = "sample_app"  #target_name
+    ar_app_path = "app_remoting/apps/$ar_app_name"
+    ar_app_manifest = "$ar_app_path/manifest.json.jinja2"
+    ar_app_manifest_common = "app_remoting/manifest_common.json.jinja2"
+
+    output_dir = "remoting/app_remoting/$ar_service_environment/$target_name"
+    zip_path = "remoting/app_remoting/$ar_service_environment/$target_name.zip"
+
+    ar_app_specific_files = [
+      "$ar_app_path/icon16.png",
+      "$ar_app_path/icon48.png",
+      "$ar_app_path/icon128.png",
+      "$ar_app_path/loading_splash.png",
+    ]
+
+    ar_generated_html_files = [
+      feedback_consent_html_output,
+      loading_window_html_output,
+      message_window_html_output,
+      wcs_sandbox_html_output,
+      main_html_output,
+    ]
+
+    ar_webapp_files =
+        ar_app_specific_files + ar_shared_resource_files + ar_all_js_files
+
+    inputs = [
+               rebase_path(ar_app_manifest, root_build_dir),
+               rebase_path(ar_app_manifest_common, root_build_dir),
+             ] + remoting_version_files + ar_webapp_files
+
+    outputs = [
+      "$target_gen_dir/$zip_path",
+    ]
+
+    deps = [
+      ":$locales_listfile",
+      ":$feedback_consent_html",
+      ":$loading_window_html",
+      ":$message_window_html",
+      ":$wcs_sandbox_html",
+      ":$main_html",
+      "//remoting/resources",
+    ]
+
+    # Create a file that contains a list of all the resource files needed
+    # to build the webapp. This is needed to avoid problems on platforms that
+    # limit the size of a command line.
+    file_list = "$target_gen_dir/${target_name}_files.txt"
+    files = []
+    files += rebase_path(ar_generated_html_files, root_build_dir)
+    files += rebase_path(ar_webapp_files, root_build_dir)
+    write_file(file_list, files)
+
+    args = [
+      buildtype,
+      version_full,
+      output_dir,
+      zip_path,
+      rebase_path(ar_app_manifest, root_build_dir),
+      "app_remoting",  # Web app type
+    ]
+    args += [
+      "--files_listfile",
+      rebase_path(file_list, root_build_dir),
+    ]
+    args += [
+      "--locales_listfile",
+      rebase_path(locales_listfile_output, root_build_dir),
+    ]
+    args += [
+      "--jinja_paths",
+      rebase_path("app_remoting", root_build_dir),
+    ]
+
+    if (is_debug) {
+      # Normally, the app-id for the orchestrator is automatically extracted
+      # from the webapp's extension id, but that approach doesn't work for
+      # dev webapp builds (since they all share the same dev extension id).
+      # The --appid arg will create a webapp that registers the given app-id
+      # rather than using the extension id.
+      # This is only done for Dev apps because the app-id for Release apps
+      # *must* match the extension id.
+      args += [
+        "--appid",
+        app_id,
+      ]
+    }
+
+    args += [
+      "--app_name",
+      app_name,
+    ]
+    args += [
+      "--app_description",
+      app_description,
+    ]
+    args += [ "--app_capabilities" ] + app_capabilities
+    args += [
+      "--service_environment",
+      ar_service_environment,
+    ]
+    args += [
+      "--manifest_key",
+      manifest_key,
+    ]
+    args += [
+      "--app_client_id",
+      app_client_id,
     ]
   }
 }
