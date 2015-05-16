@@ -43,6 +43,8 @@
       'autoclick/autoclick_controller.h',
       'cancel_mode.cc',
       'cancel_mode.h',
+      'cast_config_delegate.cc',
+      'cast_config_delegate.h',
       'content/display/display_color_manager_chromeos.cc',
       'content/display/display_color_manager_chromeos.h',
       'content/display/screen_orientation_controller_chromeos.cc',

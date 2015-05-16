@@ -548,6 +548,8 @@
       'browser/ui/ash/ash_keyboard_controller_proxy.h',
       'browser/ui/ash/ash_util.cc',
       'browser/ui/ash/ash_util.h',
+      'browser/ui/ash/cast_config_delegate_chromeos.cc',
+      'browser/ui/ash/cast_config_delegate_chromeos.h',
       'browser/ui/ash/chrome_launcher_prefs.cc',
       'browser/ui/ash/chrome_launcher_prefs.h',
       'browser/ui/ash/chrome_new_window_delegate.cc',

@@ -223,6 +223,10 @@ bool SystemTrayDelegate::GetBluetoothDiscovering() {
 void SystemTrayDelegate::ChangeProxySettings() {
 }
 
+CastConfigDelegate* SystemTrayDelegate::GetCastConfigDelegate() const {
+  return nullptr;
+}
+
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {
   return nullptr;
