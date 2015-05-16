@@ -31,8 +31,6 @@
       'media_source_helper.h',
       'presentation_media_sinks_observer.cc',
       'presentation_media_sinks_observer.h',
-      'route_id_manager.cc',
-      'route_id_manager.h',
     ],
     'media_router_test_support_sources': [
       'mock_media_router.cc',
