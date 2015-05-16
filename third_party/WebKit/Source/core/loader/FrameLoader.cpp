@@ -219,9 +219,16 @@ void FrameLoader::dispatchUnloadEvent()
 void FrameLoader::didExplicitOpen()
 {
     // Calling document.open counts as committing the first real document load.
-    if (!m_stateMachine.committedFirstRealDocumentLoad()) {
+    if (!m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
-        m_progressTracker->progressStarted();
+
+    // Only model a document.open() as part of a navigation if its parent is not done
+    // or in the process of completing.
+    if (Frame* parent = m_frame->tree().parent()) {
+        if ((parent->isLocalFrame() && toLocalFrame(parent)->document()->loadEventStillNeeded())
+            || (parent->isRemoteFrame() && parent->isLoading())) {
+            m_progressTracker->progressStarted();
+        }
     }
 
     // Prevent window.open(url) -- eg window.open("about:blank") -- from blowing away results
@@ -426,7 +433,7 @@ void FrameLoader::loadDone()
 static bool allDescendantsAreComplete(Frame* frame)
 {
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().traverseNext(frame)) {
-        if (child->isLoadingAsChild())
+        if (child->isLoading())
             return false;
     }
     return true;

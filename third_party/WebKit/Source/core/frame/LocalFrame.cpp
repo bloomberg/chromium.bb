@@ -308,11 +308,6 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const cha
     localDOMWindow()->printErrorMessage(message);
 }
 
-bool LocalFrame::isLoadingAsChild() const
-{
-    return isLoading() || !document()->isLoadCompleted();
-}
-
 WindowProxyManager* LocalFrame::windowProxyManager() const
 {
     return m_script->windowProxyManager();

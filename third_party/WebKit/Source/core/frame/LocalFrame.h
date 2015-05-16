@@ -92,7 +92,6 @@ namespace blink {
         virtual void disconnectOwnerElement() override;
         virtual SecurityContext* securityContext() const override;
         void printNavigationErrorMessage(const Frame&, const char* reason) override;
-        bool isLoadingAsChild() const override;
 
         void willDetachFrameHost();
 

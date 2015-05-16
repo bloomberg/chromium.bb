@@ -112,7 +112,6 @@ public:
     // want Document::loadEventFinished() instead.
     void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
     bool isLoading() const { return m_isLoading; }
-    virtual bool isLoadingAsChild() const { return isLoading(); }
 
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
