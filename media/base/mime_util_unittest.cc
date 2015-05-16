@@ -8,19 +8,7 @@
 #include "media/base/mime_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
-
 namespace media {
-
-TEST(MimeUtilTest, LookupTypes) {
-#if defined(OS_ANDROID)
-  EXPECT_TRUE(IsSupportedMediaMimeType("application/vnd.apple.mpegurl"));
-  EXPECT_TRUE(IsSupportedMediaMimeType("application/x-mpegurl"));
-  EXPECT_TRUE(IsSupportedMediaMimeType("Application/X-MPEGURL"));
-#endif
-}
 
 TEST(MimeUtilTest, StrictMediaMimeType) {
   EXPECT_TRUE(IsStrictMediaMimeType("video/webm"));
@@ -54,14 +42,6 @@ TEST(MimeUtilTest, StrictMediaMimeType) {
 }
 
 TEST(MimeUtilTest, CommonMediaMimeType) {
-#if defined(OS_ANDROID)
-  bool HLSSupported;
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 14)
-    HLSSupported = false;
-  else
-    HLSSupported = true;
-#endif
-
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/webm"));
   EXPECT_TRUE(IsSupportedMediaMimeType("video/webm"));
 
@@ -72,14 +52,22 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("application/ogg"));
 #if defined(OS_ANDROID)
   EXPECT_FALSE(IsSupportedMediaMimeType("video/ogg"));
-  EXPECT_EQ(HLSSupported, IsSupportedMediaMimeType("application/x-mpegurl"));
-  EXPECT_EQ(HLSSupported,
-            IsSupportedMediaMimeType("application/vnd.apple.mpegurl"));
 #else
   EXPECT_TRUE(IsSupportedMediaMimeType("video/ogg"));
-  EXPECT_FALSE(IsSupportedMediaMimeType("application/x-mpegurl"));
-  EXPECT_FALSE(IsSupportedMediaMimeType("application/vnd.apple.mpegurl"));
 #endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
+  // HLS is supported on Android API level 14 and higher and Chrome supports
+  // API levels 15 and higher, so these are expected to be supported.
+  bool kHlsSupported = true;
+#else
+  bool kHlsSupported = false;
+#endif
+
+  EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("application/x-mpegurl"));
+  EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("Application/X-MPEGURL"));
+  EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType(
+      "application/vnd.apple.mpegurl"));
 
 #if defined(USE_PROPRIETARY_CODECS)
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mp4"));
