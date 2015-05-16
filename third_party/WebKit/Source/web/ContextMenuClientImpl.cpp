@@ -221,6 +221,15 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     // all else.
     data.linkURL = r.absoluteLinkURL();
 
+    if (r.innerNode()->isHTMLElement()) {
+        HTMLElement* htmlElement = toHTMLElement(r.innerNode());
+        if (!htmlElement->title().isEmpty()) {
+            data.titleText = htmlElement->title();
+        } else {
+            data.titleText = htmlElement->altText();
+        }
+    }
+
     if (isHTMLCanvasElement(r.innerNode())) {
         data.mediaType = WebContextMenuData::MediaTypeCanvas;
         data.hasImageContents = true;
