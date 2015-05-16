@@ -47,7 +47,11 @@ class VideoEncoderVpx : public VideoEncoder {
 
   // Updates the active map according to |updated_region|. Active map is then
   // given to the encoder to speed up encoding.
-  void PrepareActiveMap(const webrtc::DesktopRegion& updated_region);
+  void SetActiveMapFromRegion(const webrtc::DesktopRegion& updated_region);
+
+  // Adds areas changed in the most recent frame to |updated_region|. This
+  // includes both content changes and areas enhanced by cyclic refresh.
+  void UpdateRegionFromActiveMap(webrtc::DesktopRegion* updated_region);
 
   // True if the encoder is for VP9, false for VP8.
   const bool use_vp9_;

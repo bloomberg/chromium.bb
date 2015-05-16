@@ -39,6 +39,10 @@ const int kMacroBlockSize = 16;
 const int kVp9I420ProfileNumber = 0;
 const int kVp9I444ProfileNumber = 1;
 
+// Magic encoder constants for adaptive quantization strategy.
+const int kVp9AqModeNone = 0;
+const int kVp9AqModeCyclicRefresh = 3;
+
 void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
                               const webrtc::DesktopSize& size) {
   // Use millisecond granularity time base.
@@ -137,6 +141,11 @@ void SetVp9CodecOptions(vpx_codec_ctx_t* codec, bool lossless_encode) {
   ret = vpx_codec_control(
       codec, VP9E_SET_TUNE_CONTENT, VP9E_CONTENT_SCREEN);
   DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set screen content mode";
+
+  // Set cyclic refresh (aka "top-off") only for lossy encoding.
+  int aq_mode = lossless_encode ? kVp9AqModeNone : kVp9AqModeCyclicRefresh;
+  ret = vpx_codec_control(codec, VP9E_SET_AQ_MODE, aq_mode);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set aq mode";
 }
 
 void FreeImageIfMismatched(bool use_i444,
@@ -273,7 +282,7 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   PrepareImage(frame, &updated_region);
 
   // Update active map based on updated region.
-  PrepareActiveMap(updated_region);
+  SetActiveMapFromRegion(updated_region);
 
   // Apply active map to the encoder.
   vpx_active_map_t act_map;
@@ -292,6 +301,14 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
       << "Encoding error: " << vpx_codec_err_to_string(ret) << "\n"
       << "Details: " << vpx_codec_error(codec_.get()) << "\n"
       << vpx_codec_error_detail(codec_.get());
+
+  if (use_vp9_ && !lossless_encode_) {
+    ret = vpx_codec_control(codec_.get(), VP9E_GET_ACTIVEMAP, &act_map);
+    DCHECK_EQ(ret, VPX_CODEC_OK)
+        << "Failed to fetch active map: "
+        << vpx_codec_err_to_string(ret) << "\n";
+    UpdateRegionFromActiveMap(&updated_region);
+  }
 
   // Read the encoded data.
   vpx_codec_iter_t iter = NULL;
@@ -485,7 +502,7 @@ void VideoEncoderVpx::PrepareImage(const webrtc::DesktopFrame& frame,
   }
 }
 
-void VideoEncoderVpx::PrepareActiveMap(
+void VideoEncoderVpx::SetActiveMapFromRegion(
     const webrtc::DesktopRegion& updated_region) {
   // Clear active map first.
   memset(active_map_.get(), 0, active_map_width_ * active_map_height_);
@@ -508,6 +525,28 @@ void VideoEncoderVpx::PrepareActiveMap(
       map += active_map_width_;
     }
   }
+}
+
+void VideoEncoderVpx::UpdateRegionFromActiveMap(
+    webrtc::DesktopRegion* updated_region) {
+  const uint8* map = active_map_.get();
+  for (int y = 0; y < active_map_height_; ++y) {
+    for (int x0 = 0; x0 < active_map_width_;) {
+      int x1 = x0;
+      for (; x1 < active_map_width_; ++x1) {
+        if (map[y * active_map_width_ + x1] == 0)
+          break;
+      }
+      if (x1 > x0) {
+        updated_region->AddRect(webrtc::DesktopRect::MakeLTRB(
+            kMacroBlockSize * x0, kMacroBlockSize * y, kMacroBlockSize * x1,
+            kMacroBlockSize * (y + 1)));
+      }
+      x0 = x1 + 1;
+    }
+  }
+  updated_region->IntersectWith(
+      webrtc::DesktopRect::MakeWH(image_->w, image_->h));
 }
 
 }  // namespace remoting
