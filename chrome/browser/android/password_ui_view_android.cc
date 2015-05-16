@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
@@ -112,6 +113,12 @@ jstring GetAccountDashboardURL(JNIEnv* env, jclass) {
 static jboolean ShouldDisplayManageAccountLink(
     JNIEnv* env, jclass) {
   return password_manager::ManageAccountLinkExperimentEnabled();
+}
+
+static jboolean ShouldUseSmartLockBranding(
+    JNIEnv* env, jclass) {
+  return password_bubble_experiment::IsSmartLockBrandingEnabled(
+      ProfileManager::GetLastUsedProfile());
 }
 
 // static

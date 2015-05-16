@@ -76,7 +76,11 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.prefs_saved_passwords);
+        if (PasswordUIView.shouldUseSmartLockBranding()) {
+            getActivity().setTitle(R.string.prefs_smart_lock_for_passwords);
+        } else {
+            getActivity().setTitle(R.string.prefs_saved_passwords);
+        }
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
         mPasswordManagerHandler.addObserver(this);
 

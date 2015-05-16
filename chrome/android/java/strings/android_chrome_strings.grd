@@ -235,7 +235,10 @@
       <message name="IDS_PREFS_SAVED_PASSWORDS" desc="Title for the Saved Passwords preferences. [CHAR-LIMIT=32]">
         Save passwords
       </message>
-     <message name="IDS_PASSWORDS_AUTO_SIGNIN_TITLE" desc="Title for checkbox to enable automatically signing the user in to websites">
+      <message name="IDS_PREFS_SMART_LOCK_FOR_PASSWORDS" desc="The brand name of the password manager to be displayed in preferences instead of the title 'Save Passwords' when a user is signed in. [CHAR-LIMIT=32]">
+        Smart Lock for Passwords
+      </message>
+      <message name="IDS_PASSWORDS_AUTO_SIGNIN_TITLE" desc="Title for checkbox to enable automatically signing the user in to websites">
         Auto Sign-in
       </message>
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_DESCRIPTION" desc="Text under 'Auto sign-in' checkbox">
