@@ -19,10 +19,15 @@ const char kTabStripHistogramName[] =
 const char kAcceleratorWindowCycleHistogramName[] =
     "Ash.WindowCycleController.TimeBetweenTaskSwitches";
 
+const char kOverviewModeHistogramName[] =
+    "Ash.WindowSelector.TimeBetweenActiveWindowChanges";
+
 // Returns the histogram name for the given |task_switch_source|.
 const char* GetHistogramName(
     TaskSwitchMetricsRecorder::TaskSwitchSource task_switch_source) {
   switch (task_switch_source) {
+    case TaskSwitchMetricsRecorder::kOverviewMode:
+      return kOverviewModeHistogramName;
     case TaskSwitchMetricsRecorder::kShelf:
       return kShelfHistogramName;
     case TaskSwitchMetricsRecorder::kTabStrip:

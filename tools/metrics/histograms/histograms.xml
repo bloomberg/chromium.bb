@@ -1016,11 +1016,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowSelector.TimeBetweenActiveWindowChanges"
+    units="seconds">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The amount of time between endings of overview mode sessions which were
+    caused by the user selecting a window which was not previously active. Only
+    recorded on the second and later times after startup that the user selected
+    a window which was not previously active.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowSelector.TimeBetweenUse" units="milliseconds">
   <owner>flackr@chromium.org</owner>
   <owner>kuscher@google.com</owner>
   <summary>
-    The amount of time between uses of overview mode to switch between windows.
+    The amount of time between uses of overview mode, recorded when overview
+    mode is entered. Only recorded on the second and later times after startup
+    that the user entered overview mode.
   </summary>
 </histogram>
 

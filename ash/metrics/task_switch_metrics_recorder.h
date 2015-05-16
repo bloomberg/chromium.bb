@@ -22,6 +22,9 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
   // Enumeration of the different user interfaces that could be the source of
   // a task switch. Note this is not necessarily comprehensive of all sources.
   enum TaskSwitchSource {
+    // Task switches caused by selecting a window from overview mode which is
+    // different from the previously-active window.
+    kOverviewMode,
     // All task switches caused by shelf buttons, not including sub-menus.
     kShelf,
     // All task switches caused by the tab strip.

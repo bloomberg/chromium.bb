@@ -107,4 +107,19 @@ TEST_F(TaskSwitchMetricsRecorderTest,
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
+// Verifies that the TaskSwitchMetricsRecorder::kOverviewMode source adds data
+// to the Ash.WindowSelector.TimeBetweenActiveWindowChanges histogram.
+TEST_F(TaskSwitchMetricsRecorderTest,
+       VerifyTaskSwitchesFromOverviewModeAreRecorded) {
+  const std::string kHistogramName =
+      "Ash.WindowSelector.TimeBetweenActiveWindowChanges";
+
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kOverviewMode);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kOverviewMode);
+  histogram_tester_->ExpectTotalCount(kHistogramName, 1);
+
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kOverviewMode);
+  histogram_tester_->ExpectTotalCount(kHistogramName, 2);
+}
+
 }  // namespace ash

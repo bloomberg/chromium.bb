@@ -584,6 +584,8 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED:
       base::RecordAction(
           base::UserMetricsAction("WindowSelector_ActiveWindowChanged"));
+      task_switch_metrics_recorder_.OnTaskSwitch(
+          TaskSwitchMetricsRecorder::kOverviewMode);
       break;
     case ash::UMA_WINDOW_OVERVIEW_ENTER_KEY:
       base::RecordAction(
