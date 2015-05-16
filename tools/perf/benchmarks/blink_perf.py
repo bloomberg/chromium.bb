@@ -167,7 +167,8 @@ class BlinkPerfCSS(benchmark.Benchmark):
     return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('win')  # http://crbug.com/488493
+@benchmark.Disabled('win',   # http://crbug.com/488493
+                    'linux') # http://crbug.com/488059
 class BlinkPerfCanvas(benchmark.Benchmark):
   tag = 'canvas'
   test = _BlinkPerfMeasurement
