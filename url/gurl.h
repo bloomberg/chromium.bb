@@ -198,6 +198,10 @@ class URL_EXPORT GURL {
   // scheme. Standard schemes have an authority and a path section. This
   // includes file: and filesystem:, which some callers may want to filter out
   // explicitly by calling SchemeIsFile[System].
+  //
+  // TODO(palmer): Determine whether GURL::IsStandard should return false for
+  // filesystem: URLs.
+  // https://code.google.com/p/chromium/issues/detail?id=487399
   bool IsStandard() const;
 
   // Returns true if the given parameter (should be lower-case ASCII to match
