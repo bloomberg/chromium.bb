@@ -143,6 +143,16 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // For testing.
   void SetManagedForTest(bool is_managed);
 
+  // Get/Set number of memory warnings received.
+  int GetMemoryPressureWarningCount() const;
+  void SetMemoryPressureWarningCount(int value);
+
+  // Check if the previous shutdown was clean.
+  bool DidSyncShutdownCleanly() const;
+
+  // Set whetherthe last shutdown was clean.
+  void SetCleanShutdown(bool value);
+
  private:
   void RegisterPrefGroups();
 

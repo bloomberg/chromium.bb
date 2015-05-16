@@ -41796,6 +41796,36 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sync.MemoryPressureWarningBeforeCleanShutdown" units="count">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Counts the number of times a user's sync service received a
+    MEMORY_PRESSURE_LEVEL_CRITICAL warning before the sync service shut down
+    cleanly. The sync service emits this number the next time the user's sync
+    service is started, which will likely happen the next time the user's
+    profile is opened after a Chrome restart.  This count is emitted once per
+    user/profile. Things like browser crashes that implicitly bring down all
+    users' sync services will cause unclean shutdown tags to appear on all open
+    profiles, meaning that there will be multiple emissions to this histogram as
+    those profiles are re-opened.
+  </summary>
+</histogram>
+
+<histogram name="Sync.MemoryPressureWarningBeforeUncleanShutdown" units="count">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Counts the number of times a user's sync service received a
+    MEMORY_PRESSURE_LEVEL_CRITICAL warning before the sync service shut down
+    uncleanly. The sync service emits this number the next time the user's sync
+    service is started, which will likely happen the next time the user's
+    profile is opened after a Chrome restart.  This count is emitted once per
+    user/profile. Things like browser crashes that implicitly bring down all
+    users' sync services will cause unclean shutdown tags to appear on all open
+    profiles, meaning that there will be multiple emissions to this histogram as
+    those profiles are re-opened.
+  </summary>
+</histogram>
+
 <histogram name="Sync.NigoriMigrationState" enum="SyncNigoriMigrationState">
   <owner>zea@chromium.org</owner>
   <summary>Breakdown of sync's nigori node keystore migration state.</summary>

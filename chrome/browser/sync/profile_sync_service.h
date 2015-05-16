@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -891,6 +892,13 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Tell the sync server that this client has disabled sync.
   void RemoveClientFromServer() const;
 
+  // Called when the system is under memory pressure.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  // Check if previous shutdown is shutdown cleanly.
+  void ReportPreviousSessionMemoryWarningCount();
+
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
@@ -1069,6 +1077,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   base::FilePath directory_path_;
 
   scoped_ptr<browser_sync::SyncStoppedReporter> sync_stopped_reporter_;
+
+  // Listens for the system being under memory pressure.
+  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 

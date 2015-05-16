@@ -659,5 +659,50 @@ TEST_F(ProfileSyncServiceTest, NoDisableSyncFlag) {
   EXPECT_TRUE(ProfileSyncService::IsSyncEnabled());
 }
 
+// Test Sync will stop after receive memory pressure
+TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
+  CreateService(browser_sync::AUTO_START);
+  IssueTestTokens();
+  ExpectDataTypeManagerCreation(1);
+  ExpectSyncBackendHostCreation(1);
+  InitializeForNthSync();
+
+  EXPECT_TRUE(service()->SyncActive());
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      sync_driver::prefs::kSyncSuppressStart));
+
+  testing::Mock::VerifyAndClearExpectations(components_factory());
+
+  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+
+  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                sync_driver::prefs::kSyncMemoryPressureWarningCount),
+            0);
+  EXPECT_FALSE(sync_prefs.DidSyncShutdownCleanly());
+
+  // Simulate memory pressure notification.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify memory pressure recorded.
+  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                sync_driver::prefs::kSyncMemoryPressureWarningCount),
+            1);
+  EXPECT_FALSE(sync_prefs.DidSyncShutdownCleanly());
+
+  // Simulate memory pressure notification.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+  ShutdownAndDeleteService();
+
+  // Verify memory pressure and shutdown recorded.
+  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                sync_driver::prefs::kSyncMemoryPressureWarningCount),
+            2);
+  EXPECT_TRUE(sync_prefs.DidSyncShutdownCleanly());
+}
+
 }  // namespace
 }  // namespace browser_sync

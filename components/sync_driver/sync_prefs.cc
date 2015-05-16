@@ -83,6 +83,10 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kSyncRemainingRollbackTries, 0);
 
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
+
+  registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
+
+  registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -455,4 +459,22 @@ void SyncPrefs::SetPassphrasePrompted(bool value) {
   pref_service_->SetBoolean(prefs::kSyncPassphrasePrompted, value);
 }
 
+int SyncPrefs::GetMemoryPressureWarningCount() const {
+  return pref_service_->GetInteger(prefs::kSyncMemoryPressureWarningCount);
+}
+
+void SyncPrefs::SetMemoryPressureWarningCount(int value) {
+  pref_service_->SetInteger(prefs::kSyncMemoryPressureWarningCount, value);
+}
+
+bool SyncPrefs::DidSyncShutdownCleanly() const {
+  return pref_service_->GetBoolean(prefs::kSyncShutdownCleanly);
+}
+
+void SyncPrefs::SetCleanShutdown(bool value) {
+  pref_service_->SetBoolean(prefs::kSyncShutdownCleanly, value);
+}
+
 }  // namespace sync_driver
+
+

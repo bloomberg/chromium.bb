@@ -104,6 +104,12 @@ const char kSyncFirstSyncTime[] = "sync.first_sync_time";
 // that we only want to use once.
 const char kSyncPassphrasePrompted[] = "sync.passphrase_prompted";
 
+// Stores how many times received MEMORY_PRESSURE_LEVEL_CRITICAL.
+const char kSyncMemoryPressureWarningCount[] = "sync.memory_warning_count";
+
+// Stores if sync shutdown cleanly.
+const char kSyncShutdownCleanly[] = "sync.shutdown_cleanly";
+
 }  // namespace prefs
 
 }  // namespace sync_driver

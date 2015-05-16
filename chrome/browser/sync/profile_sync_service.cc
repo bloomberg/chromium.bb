@@ -365,6 +365,8 @@ void ProfileSyncService::Initialize() {
   DCHECK(!running_rollback);
 #endif
 
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
+      &ProfileSyncService::OnMemoryPressure, weak_factory_.GetWeakPtr())));
   startup_controller_->Reset(GetRegisteredDataTypes());
   startup_controller_->TryStart();
 }
@@ -702,6 +704,8 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   InitializeBackend(ShouldDeleteSyncFolder());
 
   UpdateFirstSyncTimePref();
+
+  ReportPreviousSessionMemoryWarningCount();
 }
 
 void ProfileSyncService::OnGetTokenSuccess(
@@ -912,6 +916,9 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
     UpdateAuthErrorState(GoogleServiceAuthError::AuthErrorNone());
 
   NotifyObservers();
+
+  // Mark this as a clean shutdown(without crash).
+  sync_prefs_.SetCleanShutdown(true);
 }
 
 void ProfileSyncService::DisableForUser() {
@@ -2719,4 +2726,32 @@ void ProfileSyncService::RemoveClientFromServer() const {
     sync_stopped_reporter_->ReportSyncStopped(
         access_token_, cache_guid, birthday);
   }
+}
+
+void ProfileSyncService::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    sync_prefs_.SetMemoryPressureWarningCount(
+        sync_prefs_.GetMemoryPressureWarningCount() + 1);
+  }
+}
+
+void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
+  int warning_received = sync_prefs_.GetMemoryPressureWarningCount();
+
+  if (-1 != warning_received) {
+    // -1 means it is new client.
+    if (!sync_prefs_.DidSyncShutdownCleanly()) {
+      UMA_HISTOGRAM_COUNTS("Sync.MemoryPressureWarningBeforeUncleanShutdown",
+                           warning_received);
+    } else {
+      UMA_HISTOGRAM_COUNTS("Sync.MemoryPressureWarningBeforeCleanShutdown",
+                           warning_received);
+    }
+  }
+  sync_prefs_.SetMemoryPressureWarningCount(0);
+  // Will set to true during a clean shutdown, so crash or something else will
+  // remain this as false.
+  sync_prefs_.SetCleanShutdown(false);
 }
