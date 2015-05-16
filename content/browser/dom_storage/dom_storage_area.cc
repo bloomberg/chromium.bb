@@ -37,8 +37,8 @@ const int kCommitDefaultDelaySecs = 5;
 
 // To avoid excessive IO we apply limits to the amount of data being written
 // and the frequency of writes. The specific values used are somewhat arbitrary.
-const int kMaxBytesPerDay = kPerStorageAreaQuota * 2;
-const int kMaxCommitsPerHour = 6;
+const int kMaxBytesPerHour = kPerStorageAreaQuota;
+const int kMaxCommitsPerHour = 60;
 
 }  // namespace
 
@@ -109,7 +109,7 @@ DOMStorageArea::DOMStorageArea(const GURL& origin,
       is_shutdown_(false),
       commit_batches_in_flight_(0),
       start_time_(base::TimeTicks::Now()),
-      data_rate_limiter_(kMaxBytesPerDay, base::TimeDelta::FromHours(24)),
+      data_rate_limiter_(kMaxBytesPerHour, base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
   if (!directory.empty()) {
     base::FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
@@ -134,7 +134,7 @@ DOMStorageArea::DOMStorageArea(int64 namespace_id,
       is_shutdown_(false),
       commit_batches_in_flight_(0),
       start_time_(base::TimeTicks::Now()),
-      data_rate_limiter_(kMaxBytesPerDay, base::TimeDelta::FromHours(24)),
+      data_rate_limiter_(kMaxBytesPerHour, base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
   DCHECK(namespace_id != kLocalStorageNamespaceId);
   if (session_storage_backing) {
