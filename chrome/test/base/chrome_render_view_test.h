@@ -34,9 +34,6 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
 
-  void EnableUserGestureSimulationForAutofill();
-  void DisableUserGestureSimulationForAutofill();
-
 #if defined(ENABLE_EXTENSIONS)
   scoped_ptr<extensions::DispatcherDelegate> extension_dispatcher_delegate_;
 #endif
