@@ -1,6 +1,6 @@
 m4_define([weston_major_version], [1])
 m4_define([weston_minor_version], [7])
-m4_define([weston_micro_version], [91])
+m4_define([weston_micro_version], [92])
 m4_define([weston_version],
           [weston_major_version.weston_minor_version.weston_micro_version])
 
@@ -59,7 +59,7 @@ AC_CHECK_HEADERS([execinfo.h])
 
 AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
 
-COMPOSITOR_MODULES="wayland-server >= 1.7.91 pixman-1 >= 0.25.2"
+COMPOSITOR_MODULES="wayland-server >= 1.7.92 pixman-1 >= 0.25.2"
 
 AC_ARG_ENABLE(egl, [  --disable-egl],,
               enable_egl=yes)
@@ -292,7 +292,7 @@ AC_SUBST(JPEG_LIBS)
 
 PKG_CHECK_MODULES(CAIRO, [cairo])
 
-PKG_CHECK_MODULES(TEST_CLIENT, [wayland-client >= 1.7.91])
+PKG_CHECK_MODULES(TEST_CLIENT, [wayland-client >= 1.7.92])
 
 AC_ARG_ENABLE(simple-clients,
               AS_HELP_STRING([--disable-simple-clients],
