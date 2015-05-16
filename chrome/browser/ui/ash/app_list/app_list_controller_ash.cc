@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
+#include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -101,6 +102,11 @@ void AppListControllerDelegateAsh::ActivateApp(
     const extensions::Extension* extension,
     AppListSource source,
     int event_flags) {
+  ash::Shell::GetInstance()
+      ->metrics()
+      ->task_switch_metrics_recorder()
+      .OnTaskSwitch(ash::TaskSwitchMetricsRecorder::kAppList);
+
   // Platform apps treat activations as a launch. The app can decide whether to
   // show a new window or focus an existing window as it sees fit.
   if (extension->is_platform_app()) {

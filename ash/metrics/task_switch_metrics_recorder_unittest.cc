@@ -122,4 +122,18 @@ TEST_F(TaskSwitchMetricsRecorderTest,
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
+// Verifies that the TaskSwitchMetricsRecorder::kAppList source adds data to the
+// Ash.AppList.TimeBetweenTaskSwitches histogram.
+TEST_F(TaskSwitchMetricsRecorderTest,
+       VerifyTaskSwitchesFromApplistAreRecorded) {
+  const std::string kHistogramName = "Ash.AppList.TimeBetweenTaskSwitches";
+
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kAppList);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kAppList);
+  histogram_tester_->ExpectTotalCount(kHistogramName, 1);
+
+  OnTaskSwitch(TaskSwitchMetricsRecorder::kAppList);
+  histogram_tester_->ExpectTotalCount(kHistogramName, 2);
+}
+
 }  // namespace ash

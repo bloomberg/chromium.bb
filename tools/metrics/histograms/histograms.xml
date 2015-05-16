@@ -605,6 +605,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.AppList.TimeBetweenTaskSwitches" units="seconds">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The amount of time between selecting an item from the Ash app list. Not
+    recorded on the first time an item is selected from the app list after
+    startup.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Dock.Action" enum="DockedAction">
   <owner>kuscher@google.com</owner>
   <owner>varkha@chromium.org</owner>
