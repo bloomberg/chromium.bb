@@ -451,11 +451,13 @@
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
         'net',
+        'net_extras',
         'net_test_support',
       ],
       'sources': [
         'cookies/cookie_monster_perftest.cc',
         'disk_cache/blockfile/disk_cache_perftest.cc',
+        'extras/sqlite/sqlite_persistent_cookie_store_perftest.cc',
         'proxy/proxy_resolver_perftest.cc',
         'udp/udp_socket_perftest.cc',
         'websockets/websocket_frame_perftest.cc',
