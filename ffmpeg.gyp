@@ -343,6 +343,7 @@
                 ],
               },
               'xcode_settings': {
+                'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',  # Adds -fvisibility=hidden
                 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
                 'LIBRARY_SEARCH_PATHS': [
                   '<(shared_generated_dir)'
