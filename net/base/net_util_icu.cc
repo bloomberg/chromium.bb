@@ -797,7 +797,7 @@ base::string16 FormatUrlWithAdjustments(
     // after stripping the prefix.  The only thing necessary is to add an
     // adjustment to reflect the stripped prefix.
     adjustments->insert(adjustments->begin(),
-                        base::OffsetAdjuster::Adjustment(0, kHTTPSize, 0));
+        base::OffsetAdjuster::Adjustment(0, kHTTPSize, 0));
 
     if (prefix_end)
       *prefix_end -= kHTTPSize;
@@ -826,48 +826,6 @@ base::string16 FormatUrl(const GURL& url,
       unescape_rules, new_parsed, prefix_end, &offsets);
   if (offset_for_adjustment)
     *offset_for_adjustment = offsets[0];
-  return result;
-}
-
-base::string16 FormatOriginForDisplay(const GURL& url,
-                                      const std::string& languages,
-                                      bool omit_scheme) {
-  if (!url.IsStandard())
-    return FormatUrl(url, languages);
-
-  if (url.SchemeIsFile()) {
-    // TODO(palmer): Determine whether to encode this policy in GURL::GetOrigin.
-    return (omit_scheme ? base::ASCIIToUTF16("")
-                        : base::ASCIIToUTF16("file://")) +
-           base::UTF8ToUTF16(url.path());
-  }
-
-  if (url.SchemeIsFileSystem()) {
-    // TODO(palmer): Determine whether to encode this policy in GURL::GetOrigin.
-    const GURL inner_url(url.spec().substr(strlen("filesystem:")));
-    return base::ASCIIToUTF16("filesystem:") +
-           FormatOriginForDisplay(inner_url, languages, omit_scheme);
-  }
-
-  const GURL origin = url.GetOrigin();
-  const std::string& scheme = origin.scheme();
-  const std::string& host = origin.host();
-  if (scheme.empty() || host.empty())
-    return FormatUrl(url, languages);
-
-  base::string16 result;
-
-  if (!omit_scheme)
-    result = base::UTF8ToUTF16(scheme) + base::ASCIIToUTF16("://");
-
-  result += base::UTF8ToUTF16(host);
-
-  const int port = origin.IntPort();
-  const int default_port = url::DefaultPortForScheme(origin.scheme().c_str(),
-                                                     origin.scheme().length());
-  if (origin.port().length() > 0 && port != 0 && port != default_port)
-    result += base::ASCIIToUTF16(":") + base::UTF8ToUTF16(origin.port());
-
   return result;
 }
 

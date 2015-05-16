@@ -58,7 +58,7 @@ static const size_t kIPv6AddressSize = 16;
 static const size_t kBluetoothAddressSize = 6;
 #endif
 
-// Nothing is omitted.
+// Nothing is ommitted.
 NET_EXPORT extern const FormatUrlType kFormatUrlOmitNothing;
 
 // If set, any username and password are removed.
@@ -71,13 +71,13 @@ NET_EXPORT extern const FormatUrlType kFormatUrlOmitHTTP;
 // meaningful for non-file "standard" URLs.
 NET_EXPORT extern const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname;
 
-// Convenience for omitting all unnecessary types.
+// Convenience for omitting all unecessary types.
 NET_EXPORT extern const FormatUrlType kFormatUrlOmitAll;
 
 // Returns the number of explicitly allowed ports; for testing.
 NET_EXPORT_PRIVATE extern size_t GetCountOfExplicitlyAllowedPorts();
 
-// Splits an input of the form <host>[":"<port>] into its constituent parts.
+// Splits an input of the form <host>[":"<port>] into its consitituent parts.
 // Saves the result into |*host| and |*port|. If the input did not have
 // the optional port, sets |*port| to -1.
 // Returns true if the parsing was successful, false otherwise.
@@ -105,13 +105,13 @@ NET_EXPORT std::string GetHostAndPort(const GURL& url);
 NET_EXPORT_PRIVATE std::string GetHostAndOptionalPort(const GURL& url);
 
 // Returns true if |hostname| contains a non-registerable or non-assignable
-// domain name (e.g.: a gTLD that has not been assigned by IANA) or an IP
-// address that falls in an IANA-reserved range.
+// domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
+// that falls in an IANA-reserved range.
 NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
 
 // Returns true if an IP address hostname is in a range reserved by the IANA.
 // Works with both IPv4 and IPv6 addresses, and only compares against a given
-// protocol's reserved ranges.
+// protocols's reserved ranges.
 NET_EXPORT bool IsIPAddressReserved(const IPAddressNumber& address);
 
 // Convenience struct for when you need a |struct sockaddr|.
@@ -339,26 +339,6 @@ inline base::string16 FormatUrl(const GURL& url, const std::string& languages) {
                    NULL, NULL, NULL);
 }
 
-// This is a convenience function for formatting a URL as an origin in a concise
-// and human-friendly way. Use this instead of |FormatUrl| when the reader needs
-// only to understand the origin (rather than the entire URL).
-//
-// - Omits the path for standard schemes, excepting file and filesystem.
-// - Omits the port if it is the default for the scheme.
-//
-// Do not use this for URLs which will be parsed or sent to other applications.
-//
-// Callers should only set |omit_scheme| to true when it is safe to do so: in
-// contexts where the origin is known to be secure or is always secure by
-// necessity. As examples:
-//
-//   display = FormatOriginForDisplay(url, ..., url.SchemeIsCryptographic());
-//
-//   display = FormatOriginForDisplay(url, ..., IsOriginSecure(url));
-NET_EXPORT base::string16 FormatOriginForDisplay(const GURL& origin,
-                                                 const std::string& languages,
-                                                 bool omit_scheme);
-
 // Returns whether FormatUrl() would strip a trailing slash from |url|, given a
 // format flag including kFormatUrlOmitTrailingSlashOnBareHostname.
 NET_EXPORT bool CanStripTrailingSlash(const GURL& url);
@@ -461,7 +441,7 @@ NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
 
 NET_EXPORT_PRIVATE bool IsLocalhostTLD(const std::string& host);
 
-// Returns true if the URL's host is a Google server. This should only be used
+// Returns true if the url's host is a Google server. This should only be used
 // for histograms and shouldn't be used to affect behavior.
 NET_EXPORT_PRIVATE bool HasGoogleHost(const GURL& url);
 
