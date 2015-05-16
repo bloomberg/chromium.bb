@@ -46,12 +46,12 @@ class DnsSocketData {
       *length = base::HostToNet16(query_->io_buffer()->size());
       writes_.push_back(MockWrite(mode,
                                   reinterpret_cast<const char*>(length.get()),
-                                  sizeof(uint16)));
+                                  sizeof(uint16), num_reads_and_writes()));
       lengths_.push_back(length.release());
     }
-    writes_.push_back(MockWrite(mode,
-                                query_->io_buffer()->data(),
-                                query_->io_buffer()->size()));
+    writes_.push_back(MockWrite(mode, query_->io_buffer()->data(),
+                                query_->io_buffer()->size(),
+                                num_reads_and_writes()));
   }
   ~DnsSocketData() {}
 
@@ -66,12 +66,12 @@ class DnsSocketData {
       *length = base::HostToNet16(tcp_length);
       reads_.push_back(MockRead(mode,
                                 reinterpret_cast<const char*>(length.get()),
-                                sizeof(uint16)));
+                                sizeof(uint16), num_reads_and_writes()));
       lengths_.push_back(length.release());
     }
-    reads_.push_back(MockRead(mode,
-                              response->io_buffer()->data(),
-                              response->io_buffer()->size()));
+    reads_.push_back(MockRead(mode, response->io_buffer()->data(),
+                              response->io_buffer()->size(),
+                              num_reads_and_writes()));
     responses_.push_back(response.release());
   }
 
@@ -102,19 +102,20 @@ class DnsSocketData {
 
   // Add error response.
   void AddReadError(int error, IoMode mode) {
-    reads_.push_back(MockRead(mode, error));
+    reads_.push_back(MockRead(mode, error, num_reads_and_writes()));
   }
 
   // Build, if needed, and return the SocketDataProvider. No new responses
   // should be added afterwards.
-  SocketDataProvider* GetProvider() {
+  SequencedSocketData* GetProvider() {
     if (provider_.get())
       return provider_.get();
     // Terminate the reads with ERR_IO_PENDING to prevent overrun and default to
     // timeout.
-    reads_.push_back(MockRead(ASYNC, ERR_IO_PENDING));
-    provider_.reset(new DelayedSocketData(1, &reads_[0], reads_.size(),
-                                          &writes_[0], writes_.size()));
+    reads_.push_back(
+        MockRead(ASYNC, ERR_IO_PENDING, writes_.size() + reads_.size()));
+    provider_.reset(new SequencedSocketData(&reads_[0], reads_.size(),
+                                            &writes_[0], writes_.size()));
     if (use_tcp_) {
       provider_->set_connect_data(MockConnect(reads_[0].mode, OK));
     }
@@ -125,20 +126,16 @@ class DnsSocketData {
     return query_->id();
   }
 
-  // Returns true if the expected query was written to the socket.
-  bool was_written() const {
-    CHECK(provider_.get());
-    return provider_->write_index() > 0;
-  }
-
  private:
+  size_t num_reads_and_writes() const { return reads_.size() + writes_.size(); }
+
   scoped_ptr<DnsQuery> query_;
   bool use_tcp_;
   ScopedVector<uint16> lengths_;
   ScopedVector<DnsResponse> responses_;
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
-  scoped_ptr<DelayedSocketData> provider_;
+  scoped_ptr<SequencedSocketData> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSocketData);
 };
@@ -454,7 +451,7 @@ class DnsTransactionTest : public testing::Test {
   void TearDown() override {
     // Check that all socket data was at least written to.
     for (size_t i = 0; i < socket_data_.size(); ++i) {
-      EXPECT_TRUE(socket_data_[i]->was_written()) << i;
+      EXPECT_TRUE(socket_data_[i]->GetProvider()->AllWriteDataConsumed()) << i;
     }
   }
 
@@ -517,6 +514,11 @@ TEST_F(DnsTransactionTest, CancelLookup) {
   helper1.StartTransaction(transaction_factory_.get());
 
   helper0.Cancel();
+  // Since the transaction has been cancelled, the assocaited socket has been
+  // destroyed, so make sure the data provide does not attempt to callback
+  // to the socket.
+  // TODO(rch): Make the SocketDataProvider and MockSocket do this by default.
+  socket_data_[0]->GetProvider()->set_socket(nullptr);
 
   base::MessageLoop::current()->RunUntilIdle();
 

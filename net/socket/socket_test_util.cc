@@ -590,10 +590,6 @@ void SequencedSocketData::MaybePostWriteCompleteTask() {
 void SequencedSocketData::OnReadComplete() {
   CHECK_EQ(COMPLETING, read_state_);
   NET_TRACE(1, " *** ") << "Completing read for: " << sequence_number_;
-  if (!socket()) {
-    NET_TRACE(1, " *** ") << "No socket available to complete read";
-    return;
-  }
 
   MockRead data = helper_.AdvanceRead();
   DCHECK_EQ(sequence_number_, data.sequence_number);
@@ -607,6 +603,11 @@ void SequencedSocketData::OnReadComplete() {
   // before calling that.
   MaybePostWriteCompleteTask();
 
+  if (!socket()) {
+    NET_TRACE(1, " *** ") << "No socket available to complete read";
+    return;
+  }
+
   NET_TRACE(1, " *** ") << "Completing socket read for: "
                         << data.sequence_number;
   DumpMockReadWrite(data);
@@ -617,10 +618,6 @@ void SequencedSocketData::OnReadComplete() {
 void SequencedSocketData::OnWriteComplete() {
   CHECK_EQ(COMPLETING, write_state_);
   NET_TRACE(1, " *** ") << " Completing write for: " << sequence_number_;
-  if (!socket()) {
-    NET_TRACE(1, " *** ") << "No socket available to complete write.";
-    return;
-  }
 
   const MockWrite& data = helper_.AdvanceWrite();
   DCHECK_EQ(sequence_number_, data.sequence_number);
@@ -634,6 +631,11 @@ void SequencedSocketData::OnWriteComplete() {
   // from socket()->OnWriteComplete(), trigger the write task to be posted
   // before calling that.
   MaybePostReadCompleteTask();
+
+  if (!socket()) {
+    NET_TRACE(1, " *** ") << "No socket available to complete write";
+    return;
+  }
 
   NET_TRACE(1, " *** ") << " Completing socket write for: "
                         << data.sequence_number;
