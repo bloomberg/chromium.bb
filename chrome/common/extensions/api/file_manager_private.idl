@@ -919,10 +919,9 @@ interface Functions {
   static void addProvidedFileSystem(DOMString extension_id,
                                     SimpleCallback callback);
 
-  // Requests configuring an existing file system. If not possible, then returns
+  // Requests configuring an existing volume. If not possible, then returns
   // an error via chrome.runtime.lastError.
-  static void configureProvidedFileSystem(DOMString volumeId,
-                                          SimpleCallback callback);
+  static void configureVolume(DOMString volumeId, SimpleCallback callback);
 };
 
 interface Events {

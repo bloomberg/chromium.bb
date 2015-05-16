@@ -852,7 +852,7 @@ VolumeManager.prototype.mountArchive = function(
 };
 
 /**
- * Unmounts volume.
+ * Unmounts a volume.
  * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
  * @param {function()} successCallback Success callback.
  * @param {function(VolumeManagerCommon.VolumeError)} errorCallback Error
@@ -864,6 +864,25 @@ VolumeManager.prototype.unmount = function(volumeInfo,
   chrome.fileManagerPrivate.removeMount(volumeInfo.volumeId);
   var requestKey = this.makeRequestKey_('unmount', volumeInfo.volumeId);
   this.startRequest_(requestKey, successCallback, errorCallback);
+};
+
+/**
+ * Configures a volume.
+ * @param {!VolumeInfo} volumeInfo Volume to be configured.
+ * @return {!Promise} Fulfilled on success, otherwise rejected with an error
+ *     message.
+ */
+VolumeManager.prototype.configure = function(volumeInfo) {
+  return new Promise(function(fulfill, reject) {
+    chrome.fileManagerPrivate.configureVolume(
+        volumeInfo.volumeId,
+        function() {
+          if (chrome.runtime.lastError)
+            reject(chrome.runtime.lastError.message);
+          else
+            fulfill();
+        });
+  });
 };
 
 /** @override */

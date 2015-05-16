@@ -323,6 +323,24 @@ VolumeManagerWrapper.prototype.unmount = function(
 };
 
 /**
+ * Requests configuring of the specified volume.
+ * @param {!VolumeInfo} volumeInfo Volume to be configured.
+ * @return {!Promise} Fulfilled on success, otherwise rejected with an error
+ *     message.
+ */
+VolumeManagerWrapper.prototype.configure = function(volumeInfo) {
+  if (this.pendingTasks_) {
+    return new Promise(function(fulfill, reject) {
+      this.pendingTasks_.push(function() {
+        return this.volumeManager_.configure(volumeInfo).then(fulfill, reject);
+      }.bind(this));
+    }.bind(this));
+  }
+
+  return this.volumeManager_.configure(volumeInfo);
+};
+
+/**
  * Filters volume info by referring nonNativeEnabled.
  *
  * @param {VolumeInfo} volumeInfo Volume info.

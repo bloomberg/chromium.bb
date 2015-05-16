@@ -492,15 +492,14 @@ FileManagerPrivateAddProvidedFileSystemFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-FileManagerPrivateConfigureProvidedFileSystemFunction::
-    FileManagerPrivateConfigureProvidedFileSystemFunction()
+FileManagerPrivateConfigureVolumeFunction::
+    FileManagerPrivateConfigureVolumeFunction()
     : chrome_details_(this) {
 }
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateConfigureProvidedFileSystemFunction::Run() {
-  using extensions::api::file_manager_private::ConfigureProvidedFileSystem::
-      Params;
+FileManagerPrivateConfigureVolumeFunction::Run() {
+  using extensions::api::file_manager_private::ConfigureVolume::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -512,24 +511,32 @@ FileManagerPrivateConfigureProvidedFileSystemFunction::Run() {
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume.get())
     return RespondNow(Error("Volume not found."));
+  if (!volume->configurable())
+    return RespondNow(Error("Volume not configurable."));
 
-  using chromeos::file_system_provider::Service;
-  Service* const service = Service::Get(chrome_details_.GetProfile());
-  DCHECK(service);
+  switch (volume->type()) {
+    case file_manager::VOLUME_TYPE_PROVIDED: {
+      using chromeos::file_system_provider::Service;
+      Service* const service = Service::Get(chrome_details_.GetProfile());
+      DCHECK(service);
 
-  using chromeos::file_system_provider::ProvidedFileSystemInterface;
-  ProvidedFileSystemInterface* const file_system =
-      service->GetProvidedFileSystem(volume->extension_id(),
-                                     volume->file_system_id());
-  DCHECK(file_system);
+      using chromeos::file_system_provider::ProvidedFileSystemInterface;
+      ProvidedFileSystemInterface* const file_system =
+          service->GetProvidedFileSystem(volume->extension_id(),
+                                         volume->file_system_id());
+      if (file_system)
+        file_system->Configure(base::Bind(
+            &FileManagerPrivateConfigureVolumeFunction::OnCompleted, this));
+      break;
+    }
+    default:
+      NOTIMPLEMENTED();
+  }
 
-  file_system->Configure(base::Bind(
-      &FileManagerPrivateConfigureProvidedFileSystemFunction::OnCompleted,
-      this));
   return RespondLater();
 }
 
-void FileManagerPrivateConfigureProvidedFileSystemFunction::OnCompleted(
+void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
     Respond(Error("Failed to complete configuration."));

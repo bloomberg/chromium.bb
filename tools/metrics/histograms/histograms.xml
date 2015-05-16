@@ -52487,7 +52487,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1007" label="DEVELOPERPRIVATE_SHOWOPTIONS"/>
   <int value="1008" label="DEVELOPERPRIVATE_SHOWPATH"/>
   <int value="1009" label="FILEMANAGERPRIVATE_ADDPROVIDEDFILESYSTEM"/>
-  <int value="1010" label="FILEMANAGERPRIVATE_CONFIGUREPROVIDEDFILESYSTEM"/>
+  <int value="1010" label="FILEMANAGERPRIVATE_CONFIGUREVOLUME"/>
   <int value="1011" label="SEARCHENGINESPRIVATE_GETSEARCHENGINES"/>
   <int value="1012" label="SEARCHENGINESPRIVATE_SETSELECTEDSEARCHENGINE"/>
   <int value="1013" label="AUTOFILLPRIVATE_SAVEADDRESS"/>

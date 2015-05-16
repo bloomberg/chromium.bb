@@ -225,23 +225,22 @@ class FileManagerPrivateAddProvidedFileSystemFunction
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateAddProvidedFileSystemFunction);
 };
 
-// Implements the chrome.fileManagerPrivate.addProvidedFileSystem method.
-class FileManagerPrivateConfigureProvidedFileSystemFunction
+// Implements the chrome.fileManagerPrivate.configureVolume method.
+class FileManagerPrivateConfigureVolumeFunction
     : public UIThreadExtensionFunction {
  public:
-  FileManagerPrivateConfigureProvidedFileSystemFunction();
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.configureProvidedFileSystem",
-                             FILEMANAGERPRIVATE_CONFIGUREPROVIDEDFILESYSTEM)
+  FileManagerPrivateConfigureVolumeFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.configureVolume",
+                             FILEMANAGERPRIVATE_CONFIGUREVOLUME)
  protected:
-  ~FileManagerPrivateConfigureProvidedFileSystemFunction() override {}
+  ~FileManagerPrivateConfigureVolumeFunction() override {}
 
  private:
   ResponseAction Run() override;
   void OnCompleted(base::File::Error result);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateConfigureProvidedFileSystemFunction);
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateConfigureVolumeFunction);
 };
 
 }  // namespace extensions

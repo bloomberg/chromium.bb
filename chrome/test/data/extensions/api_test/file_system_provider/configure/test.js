@@ -41,11 +41,11 @@ function runTests() {
             chrome.test.assertEq('device', extensions[0].source);
           }));
 
-      chrome.fileManagerPrivate.configureProvidedFileSystem(test_util.volumeId,
+      chrome.fileManagerPrivate.configureVolume(test_util.volumeId,
           chrome.test.callbackPass(function() {}));
     },
 
-    // Verify that chrome.fileManager.configureProvidedFileSystem is well wired
+    // Verify that chrome.fileManager.configureVolume is well wired
     // to onConfigureRequested().
     function configureSuccess() {
       var configured = false;
@@ -59,7 +59,7 @@ function runTests() {
       chrome.fileSystemProvider.onConfigureRequested.addListener(
           onConfigureRequested);
 
-      chrome.fileManagerPrivate.configureProvidedFileSystem(test_util.volumeId,
+      chrome.fileManagerPrivate.configureVolume(test_util.volumeId,
           chrome.test.callbackPass(function() {
             chrome.test.assertTrue(configured);
           }));
@@ -77,7 +77,7 @@ function runTests() {
       chrome.fileSystemProvider.onConfigureRequested.addListener(
           onConfigureRequested);
 
-      chrome.fileManagerPrivate.configureProvidedFileSystem(test_util.volumeId,
+      chrome.fileManagerPrivate.configureVolume(test_util.volumeId,
           chrome.test.callbackFail('Failed to complete configuration.'));
     },
 

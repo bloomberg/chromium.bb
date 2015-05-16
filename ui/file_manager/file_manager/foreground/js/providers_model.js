@@ -145,15 +145,3 @@ ProvidersModel.prototype.requestMount = function(extensionId) {
             console.error(chrome.runtime.lastError.message);
       });
 };
-
-/**
- * @param {string} extensionId
- */
-ProvidersModel.prototype.requestConfigure = function(extensionId) {
-  chrome.fileManagerPrivate.configureProvidedFileSystem(
-      assert(extensionId),
-      function() {
-        if (chrome.runtime.lastError)
-            console.error(chrome.runtime.lastError.message);
-      });
-};

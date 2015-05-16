@@ -1375,10 +1375,8 @@ CommandHandler.COMMANDS_['configure'] = (function() {
      */
     execute: function(event, fileManager) {
       var volumeInfo = this.getCommandVolumeInfo_(event, fileManager);
-      if (volumeInfo && volumeInfo.configurable) {
-        fileManager.providersModel.requestConfigure(
-            assert(volumeInfo.extensionId));
-      }
+      if (volumeInfo && volumeInfo.configurable)
+        fileManager.volumeManager.configure(volumeInfo);
     },
 
     /**

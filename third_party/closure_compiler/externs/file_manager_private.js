@@ -615,8 +615,7 @@ chrome.fileManagerPrivate.addProvidedFileSystem =
  * @param {string} volumeId
  * @param {function()} callback
  */
-chrome.fileManagerPrivate.configureProvidedFileSystem =
-    function(volumeId, callback) {};
+chrome.fileManagerPrivate.configureVolume = function(volumeId, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
