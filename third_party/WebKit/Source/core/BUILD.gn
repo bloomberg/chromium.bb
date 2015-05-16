@@ -305,6 +305,7 @@ source_set("testing") {
   deps = [
     ":core",
     ":core_generated",
+    ":generated_testing_idls",
   ]
 
   sources = generated_core_testing_dictionary_files + webcore_testing_files
@@ -437,7 +438,7 @@ source_set("core_generated") {
     "..:inside_blink",
   ]
 
-  deps = [
+  public_deps = [
     ":make_core_generated",
     ":prerequisites",
     "inspector:protocol_sources",
@@ -511,7 +512,7 @@ generate_event_interfaces("core_event_interfaces") {
 
 # GYP version: WebKit/Source/core/core_generated.gyp:generated_testing_idls
 group("generated_testing_idls") {
-  deps = [
+  public_deps = [
     ":generated_settings_macros",
     ":generated_testing_idls_settings",
     ":generated_testing_idls_internal_runtime_flags",
@@ -585,7 +586,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 
 # GYP version: WebKit/Source/core/core_generated.gyp:make_core_generated
 group("make_core_generated") {
-  deps = [
+  public_deps = [
     ":make_core_generated_private_script",
     ":make_core_generated_private_script_for_testing",
     ":make_core_generated_html_entity_table",
@@ -596,6 +597,7 @@ group("make_core_generated") {
     ":make_core_generated_media_type_names",
     ":make_core_generated_style_property_shorthand",
     ":make_core_generated_style_builder",
+    ":make_core_generated_css_property_metadata",
     ":make_core_generated_css_value_keywords",
     ":make_core_generated_html_element_factory",
     ":make_core_generated_html_element_type_helpers",

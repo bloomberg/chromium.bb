@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 Tfe Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,6 +36,9 @@ make_event_factory("bindings_modules_generated_event_modules_factory") {
     "$blink_modules_output_dir/EventModules.cpp",
     "$blink_modules_output_dir/EventModulesHeaders.h",
   ]
+  deps = [
+    "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces",
+  ]
 }
 
 # GYP version: EventModulesNames action in bindings_modules_generated
@@ -46,6 +49,9 @@ make_names("bindings_modules_generated_event_modules_names") {
   outputs = [
     "$blink_modules_output_dir/EventModulesNames.cpp",
     "$blink_modules_output_dir/EventModulesNames.h",
+  ]
+  deps = [
+    "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces",
   ]
 }
 
@@ -102,7 +108,7 @@ action("interfaces_info") {
         root_build_dir),
   ]
 
-  deps = [
+  public_deps = [
     ":interfaces_info_individual_modules",
     "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
   ]
