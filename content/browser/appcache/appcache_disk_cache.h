@@ -96,8 +96,6 @@ class CONTENT_EXPORT AppCacheDiskCache
            const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
            const net::CompletionCallback& callback);
   void OnCreateBackendComplete(int rv);
-  void AddActiveCall(ActiveCall* call) { active_calls_.insert(call); }
-  void RemoveActiveCall(ActiveCall* call) { active_calls_.erase(call); }
   void AddOpenEntry(EntryImpl* entry) { open_entries_.insert(entry); }
   void RemoveOpenEntry(EntryImpl* entry) { open_entries_.erase(entry); }
 
@@ -105,9 +103,10 @@ class CONTENT_EXPORT AppCacheDiskCache
   net::CompletionCallback init_callback_;
   scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;
   PendingCalls pending_calls_;
-  ActiveCalls active_calls_;
   OpenEntries open_entries_;
   scoped_ptr<disk_cache::Backend> disk_cache_;
+
+  base::WeakPtrFactory<AppCacheDiskCache> weak_factory_;
 };
 
 }  // namespace content
