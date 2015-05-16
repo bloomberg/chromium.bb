@@ -10,7 +10,7 @@
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/instance_id/instance_id_profile_service_factory.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "extensions/test/result_catcher.h"
@@ -36,7 +36,6 @@ class InstanceIDApiTest : public ExtensionApiTest {
 
  protected:
   void SetUpOnMainThread() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstanceIDApiTest);
@@ -49,35 +48,40 @@ void InstanceIDApiTest::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
 }
 
-void InstanceIDApiTest::SetUpCommandLine(base::CommandLine* command_line) {
-  ExtensionApiTest::SetUpCommandLine(command_line);
-
-  // Makes sure InstanceID is enabled for testing.
-  command_line->AppendSwitchASCII(
-      switches::kForceFieldTrials, "InstanceID/Enabled/");
-}
-
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetID) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
   ASSERT_TRUE(RunExtensionTest("instance_id/get_id"));
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetCreationTime) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
   ASSERT_TRUE(RunExtensionTest("instance_id/get_creation_time"));
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, DeleteID) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
   ASSERT_TRUE(RunExtensionTest("instance_id/delete_id"));
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetToken) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
   ASSERT_TRUE(RunExtensionTest("instance_id/get_token"));
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, DeleteToken) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
   ASSERT_TRUE(RunExtensionTest("instance_id/delete_token"));
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, Incognito) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
+
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(profile());
   ResultCatcher incognito_catcher;
@@ -88,6 +92,18 @@ IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, Incognito) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(incognito_catcher.GetNextResult()) << incognito_catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, BetaChannel) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_BETA);
+  ASSERT_TRUE(RunExtensionTest("instance_id/channel"));
+}
+
+IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, StableChannel) {
+  extensions::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_STABLE);
+  ASSERT_TRUE(RunExtensionTest("instance_id/channel"));
 }
 
 }  // namespace extensions

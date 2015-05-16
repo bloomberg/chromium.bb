@@ -19,10 +19,12 @@ bool InstanceIDProfileService::IsInstanceIDEnabled(Profile* profile) {
   if (!gcm::GCMProfileService::IsGCMEnabled(profile))
     return false;
 
-  // Enabled for trunk build.
+  // Enabled only for trunk/canary/dev builds.
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN)
-    return true;
+  if (channel == chrome::VersionInfo::CHANNEL_BETA ||
+      channel == chrome::VersionInfo::CHANNEL_STABLE) {
+    return false;
+  }
 
   return InstanceIDDriver::IsInstanceIDEnabled();
 }

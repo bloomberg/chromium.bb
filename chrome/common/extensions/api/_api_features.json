@@ -508,6 +508,7 @@
     "contexts": ["blessed_extension"]
   },
   "instanceID": {
+    "channel": "dev",
     "dependencies": ["permission:gcm"],
     "contexts": ["blessed_extension"]
   },

@@ -4,26 +4,17 @@
 
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 
-#include "base/metrics/field_trial.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 
 namespace instance_id {
 
-namespace {
-#if !defined(OS_ANDROID)
-const char kInstanceIDFieldTrialName[] = "InstanceID";
-const char kInstanceIDFieldTrialEnabledGroupName[] = "Enabled";
-#endif    // !defined(OS_ANDROID)
-}  // namespace
-
 // static
 bool InstanceIDDriver::IsInstanceIDEnabled() {
 #if defined(OS_ANDROID)
-  return true;
+  // Not implemented yet.
+  return false;
 #else
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kInstanceIDFieldTrialName);
-  return group_name == kInstanceIDFieldTrialEnabledGroupName;
+  return true;
 #endif    // defined(OS_ANDROID)
 }
 
