@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -91,11 +92,7 @@ DisplayColorManager::DisplayColorManager(ui::DisplayConfigurator* configurator)
 
 DisplayColorManager::~DisplayColorManager() {
   configurator_->RemoveObserver(this);
-
-  for (auto it : calibration_map_) {
-    delete it.second;
-    calibration_map_.erase(it.first);
-  }
+  STLDeleteValues(&calibration_map_);
 }
 
 void DisplayColorManager::OnDisplayModeChanged(
