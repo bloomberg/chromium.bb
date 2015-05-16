@@ -417,6 +417,7 @@ void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
 void RenderFrameDevToolsAgentHost::ClearRenderFrameHost() {
   DCHECK(render_frame_host_);
   render_frame_host_ = nullptr;
+  WebContentsObserver::Observe(nullptr);
   dom_handler_->SetRenderFrameHost(nullptr);
   if (emulation_handler_)
     emulation_handler_->SetRenderFrameHost(nullptr);
