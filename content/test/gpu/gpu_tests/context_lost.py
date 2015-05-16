@@ -16,7 +16,7 @@ from telemetry.page import page_test
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
-wait_timeout = 20  # seconds
+wait_timeout = 27  # seconds
 
 harness_script = r"""
   var domAutomationController = {};
