@@ -12,6 +12,11 @@ static_library("mime_util") {
     "//base",
     "//net",
   ]
+
+  # iOS doesn't use and must not depend on //media
+  if (!is_ios) {
+    deps += [ "//media" ]
+  }
 }
 
 source_set("unit_tests") {

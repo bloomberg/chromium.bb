@@ -9,6 +9,11 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 
+#if !defined(OS_IOS)
+// iOS doesn't use and must not depend on //media
+#include "media/base/mime_util.h"
+#endif
+
 namespace mime_util {
 
 namespace {
@@ -153,11 +158,13 @@ bool MimeUtil::IsSupportedImageMimeType(const std::string& mime_type) const {
 bool MimeUtil::IsSupportedNonImageMimeType(const std::string& mime_type) const {
   return non_image_types_.find(base::StringToLowerASCII(mime_type)) !=
              non_image_types_.end() ||
+#if !defined(OS_IOS)
+         media::IsSupportedMediaMimeType(mime_type) ||
+#endif
          (StartsWithASCII(mime_type, "text/", false /* case insensitive */) &&
           !IsUnsupportedTextMimeType(mime_type)) ||
          (StartsWithASCII(mime_type, "application/", false) &&
-          net::MatchesMimeType("application/*+json", mime_type)) ||
-         net::IsSupportedMediaMimeType(mime_type);
+          net::MatchesMimeType("application/*+json", mime_type));
 }
 
 bool MimeUtil::IsUnsupportedTextMimeType(const std::string& mime_type) const {

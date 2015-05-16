@@ -14,6 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
@@ -63,9 +64,9 @@
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/key_systems.h"
+#include "media/base/mime_util.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
-#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
@@ -412,7 +413,7 @@ RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
     const WebString& key_system) {
   const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
   // Not supporting the container is a flat-out no.
-  if (!net::IsSupportedMediaMimeType(mime_type_ascii))
+  if (!media::IsSupportedMediaMimeType(mime_type_ascii))
     return IsNotSupported;
 
   if (!key_system.isEmpty()) {
@@ -425,7 +426,7 @@ RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
     std::string key_system_ascii =
         media::GetUnprefixedKeySystemName(base::UTF16ToASCII(key_system));
     std::vector<std::string> strict_codecs;
-    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, true);
+    media::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, true);
 
     if (!media::PrefixedIsSupportedKeySystemWithMediaMimeType(
             mime_type_ascii, strict_codecs, key_system_ascii)) {
@@ -436,18 +437,18 @@ RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
   }
 
   // Check list of strict codecs to see if it is supported.
-  if (net::IsStrictMediaMimeType(mime_type_ascii)) {
+  if (media::IsStrictMediaMimeType(mime_type_ascii)) {
     // Check if the codecs are a perfect match.
     std::vector<std::string> strict_codecs;
-    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
+    media::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
     return static_cast<WebMimeRegistry::SupportsType> (
-        net::IsSupportedStrictMediaMimeType(mime_type_ascii, strict_codecs));
+        media::IsSupportedStrictMediaMimeType(mime_type_ascii, strict_codecs));
   }
 
   // If we don't recognize the codec, it's possible we support it.
   std::vector<std::string> parsed_codecs;
-  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codecs, true);
-  if (!net::AreSupportedMediaCodecs(parsed_codecs))
+  media::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codecs, true);
+  if (!media::AreSupportedMediaCodecs(parsed_codecs))
     return MayBeSupported;
 
   // Otherwise we have a perfect match.
@@ -459,7 +460,7 @@ bool RendererBlinkPlatformImpl::MimeRegistry::supportsMediaSourceMIMEType(
     const WebString& codecs) {
   const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
   std::vector<std::string> parsed_codec_ids;
-  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
+  media::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
   if (mime_type_ascii.empty())
     return false;
   return media::StreamParserFactory::IsTypeSupported(

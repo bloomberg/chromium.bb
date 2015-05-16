@@ -11,8 +11,8 @@
 #include "media/base/cdm_config.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_permission.h"
+#include "media/base/mime_util.h"
 #include "media/blink/webmediaplayer_util.h"
-#include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -284,7 +284,7 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   std::string container_lower = base::StringToLowerASCII(container_mime_type);
 
   // Check that |container_mime_type| is supported by Chrome.
-  if (!net::IsSupportedMediaMimeType(container_lower))
+  if (!media::IsSupportedMediaMimeType(container_lower))
     return false;
 
   // Check that |codecs| are supported by Chrome. This is done primarily to
@@ -292,10 +292,10 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // codecs that Chrome does not (which could complicate the robustness
   // algorithm).
   std::vector<std::string> codec_vector;
-  net::ParseCodecString(codecs, &codec_vector, false);
+  media::ParseCodecString(codecs, &codec_vector, false);
   if (!codec_vector.empty() &&
-      (net::IsSupportedStrictMediaMimeType(container_lower, codec_vector) !=
-       net::IsSupported)) {
+      (media::IsSupportedStrictMediaMimeType(container_lower, codec_vector) !=
+       media::IsSupported)) {
     return false;
   }
 
@@ -303,7 +303,7 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // This check does not handle extended codecs, so extended codec information
   // is stripped (extended codec information was checked above).
   std::vector<std::string> stripped_codec_vector;
-  net::ParseCodecString(codecs, &stripped_codec_vector, true);
+  media::ParseCodecString(codecs, &stripped_codec_vector, true);
   EmeConfigRule codecs_rule = key_systems_->GetContentTypeConfigRule(
       key_system, media_type, container_lower, stripped_codec_vector);
   if (!config_state->IsRuleSupported(codecs_rule))

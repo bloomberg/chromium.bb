@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/mime_util/mime_util.h"
 #include "content/browser/bad_message.h"
@@ -40,8 +41,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/mime_util.h"
 #include "net/base/escape.h"
-#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "url/url_constants.h"
@@ -496,7 +497,7 @@ bool NavigationControllerImpl::CanViewSource() const {
   const std::string& mime_type = delegate_->GetContentsMimeType();
   bool is_viewable_mime_type =
       mime_util::IsSupportedNonImageMimeType(mime_type) &&
-      !net::IsSupportedMediaMimeType(mime_type);
+      !media::IsSupportedMediaMimeType(mime_type);
   NavigationEntry* visible_entry = GetVisibleEntry();
   return visible_entry && !visible_entry->IsViewSourceMode() &&
       is_viewable_mime_type && !delegate_->GetInterstitialPage();

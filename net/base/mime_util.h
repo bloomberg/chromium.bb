@@ -50,9 +50,6 @@ NET_EXPORT bool GetPreferredExtensionForMimeType(
     const std::string& mime_type,
     base::FilePath::StringType* extension);
 
-// Check to see if a particular MIME type is in our list.
-NET_EXPORT bool IsSupportedMediaMimeType(const std::string& mime_type);
-
 // Returns true if this the mime_type_pattern matches a given mime-type.
 // Checks for absolute matching and wildcards. MIME types are case insensitive.
 NET_EXPORT bool MatchesMimeType(const std::string& mime_type_pattern,
@@ -81,53 +78,6 @@ NET_EXPORT bool ParseMimeTypeWithoutParameter(const std::string& type_string,
 // this method.
 NET_EXPORT bool IsValidTopLevelMimeType(const std::string& type_string);
 
-// Returns true if and only if all codecs are supported, false otherwise.
-NET_EXPORT bool AreSupportedMediaCodecs(const std::vector<std::string>& codecs);
-
-// Parses a codec string, populating |codecs_out| with the prefix of each codec
-// in the string |codecs_in|. For example, passed "aaa.b.c,dd.eee", if
-// |strip| == true |codecs_out| will contain {"aaa", "dd"}, if |strip| == false
-// |codecs_out| will contain {"aaa.b.c", "dd.eee"}.
-// See http://www.ietf.org/rfc/rfc4281.txt.
-NET_EXPORT void ParseCodecString(const std::string& codecs,
-                                 std::vector<std::string>* codecs_out,
-                                 bool strip);
-
-// Check to see if a particular MIME type is in our list which only supports a
-// certain subset of codecs.
-NET_EXPORT bool IsStrictMediaMimeType(const std::string& mime_type);
-
-// Indicates that the MIME type and (possible codec string) are supported by the
-// underlying platform.
-enum SupportsType {
-  // The underlying platform is known not to support the given MIME type and
-  // codec combination.
-  IsNotSupported,
-
-  // The underlying platform is known to support the given MIME type and codec
-  // combination.
-  IsSupported,
-
-  // The underlying platform is unsure whether the given MIME type and codec
-  // combination can be rendered or not before actually trying to play it.
-  MayBeSupported
-};
-
-// Checks the |mime_type| and |codecs| against the MIME types known to support
-// only a particular subset of codecs.
-// * Returns IsSupported if the |mime_type| is supported and all the codecs
-//   within the |codecs| are supported for the |mime_type|.
-// * Returns MayBeSupported if the |mime_type| is supported and is known to
-//   support only a subset of codecs, but |codecs| was empty. Also returned if
-//   all the codecs in |codecs| are supported, but additional codec parameters
-//   were supplied (such as profile) for which the support cannot be decided.
-// * Returns IsNotSupported if either the |mime_type| is not supported or the
-//   |mime_type| is supported but at least one of the codecs within |codecs| is
-//   not supported for the |mime_type|.
-NET_EXPORT SupportsType IsSupportedStrictMediaMimeType(
-    const std::string& mime_type,
-    const std::vector<std::string>& codecs);
-
 // Get the extensions associated with the given mime type. There could be
 // multiple extensions for a given mime type, like "html,htm" for "text/html",
 // or "txt,text,html,..." for "text/*".
@@ -136,12 +86,6 @@ NET_EXPORT SupportsType IsSupportedStrictMediaMimeType(
 NET_EXPORT void GetExtensionsForMimeType(
     const std::string& mime_type,
     std::vector<base::FilePath::StringType>* extensions);
-
-// Test only method that removes proprietary media types and codecs from the
-// list of supported MIME types and codecs. These types and codecs must be
-// removed to ensure consistent layout test results across all Chromium
-// variations.
-NET_EXPORT void RemoveProprietaryMediaTypesAndCodecsForTests();
 
 // A list of supported certificate-related mime types.
 //

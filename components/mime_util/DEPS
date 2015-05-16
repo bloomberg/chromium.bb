@@ -3,5 +3,6 @@ include_rules = [
   # any dependencies on //content
   "-content",
 
+  "+media/base/mime_util.h",  # Only for platforms other than iOS
   "+net/base",
 ]

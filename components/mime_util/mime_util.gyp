@@ -16,6 +16,14 @@
         'mime_util.cc',
         'mime_util.h',
       ],
+      'conditions': [
+        ['OS!="ios"', {
+          # iOS doesn't use and must not depend on //media
+          'dependencies': [
+            '../../media/media.gyp:media',
+          ],
+        }],
+      ],
     }
   ],
 }
