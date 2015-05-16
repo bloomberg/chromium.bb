@@ -22,13 +22,13 @@ To make a release of Weston and/or Wayland, follow these steps.
 
       export DISTCHECK_CONFIGURE_FLAGS="--with-xserver-path=<your-Xwayland-path>"
 
-	  If you're using a locally installed libinput or other dependency
-	  libraries, you'll likely need to set a few other environment
-	  variables:
+      If you're using a locally installed libinput or other dependency
+      libraries, you'll likely need to set a few other environment
+      variables:
 
-	  export WLD="<path-to-your-local-installation>"
-	  export LD_LIBRARY_PATH=$WLD/lib
-	  export PKG_CONFIG_PATH=$WLD/lib/pkgconfig:$WLD/share/pkgconfig/
+      export WLD="<path-to-your-local-installation>"
+      export LD_LIBRARY_PATH=$WLD/lib
+      export PKG_CONFIG_PATH=$WLD/lib/pkgconfig:$WLD/share/pkgconfig/
 
   3.  Run the release.sh script to generate the tarballs, sign and
       upload them, and generate a release announcement template.
