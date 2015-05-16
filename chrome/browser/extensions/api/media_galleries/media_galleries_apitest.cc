@@ -164,7 +164,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     const char* custom_arg = NULL;
     std::string json_string;
     if (!custom_arg_value.empty()) {
-      base::JSONWriter::Write(&custom_arg_value, &json_string);
+      base::JSONWriter::Write(custom_arg_value, &json_string);
       custom_arg = json_string.c_str();
     }
 

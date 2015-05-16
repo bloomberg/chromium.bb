@@ -85,7 +85,7 @@ void LeakDetector::onLeakDetectionComplete(
 
   if (!detail.empty()) {
     std::string detail_str;
-    base::JSONWriter::Write(&detail, &detail_str);
+    base::JSONWriter::Write(detail, &detail_str);
     report.detail = detail_str;
     report.leaked = true;
   }

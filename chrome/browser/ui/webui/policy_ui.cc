@@ -217,7 +217,7 @@ void ExtractDomainFromUsername(base::DictionaryValue* dict) {
 
 // Utility function that returns a JSON serialization of the given |dict|.
 scoped_ptr<base::StringValue> DictionaryToJSONString(
-    const base::DictionaryValue* dict) {
+    const base::DictionaryValue& dict) {
   std::string json_string;
   base::JSONWriter::WriteWithOptions(dict,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
@@ -230,14 +230,14 @@ scoped_ptr<base::StringValue> DictionaryToJSONString(
 scoped_ptr<base::Value> CopyAndConvert(const base::Value* value) {
   const base::DictionaryValue* dict = NULL;
   if (value->GetAsDictionary(&dict))
-    return DictionaryToJSONString(dict);
+    return DictionaryToJSONString(*dict);
 
   scoped_ptr<base::Value> copy(value->DeepCopy());
   base::ListValue* list = NULL;
   if (copy->GetAsList(&list)) {
     for (size_t i = 0; i < list->GetSize(); ++i) {
       if (list->GetDictionary(i, &dict))
-        list->Set(i, DictionaryToJSONString(dict).release());
+        list->Set(i, DictionaryToJSONString(*dict).release());
     }
   }
 

@@ -160,7 +160,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
 
   std::string form_as_string;
   base::JSONWriter::WriteWithOptions(
-      &form_json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &form_as_string);
+      form_json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &form_as_string);
   base::TrimWhitespaceASCII(form_as_string, base::TRIM_ALL, &form_as_string);
   return os << "PasswordForm(" << form_as_string << ")";
 }

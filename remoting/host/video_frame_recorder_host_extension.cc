@@ -159,7 +159,7 @@ void VideoFrameRecorderHostExtensionSession::OnNextFrame(
   // Note that JSONWriter::Write() can only fail due to invalid inputs, and will
   // DCHECK in Debug builds in that case.
   std::string reply_json;
-  if (!base::JSONWriter::Write(&reply_message, &reply_json)) {
+  if (!base::JSONWriter::Write(reply_message, &reply_json)) {
     return;
   }
 

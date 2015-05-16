@@ -198,7 +198,7 @@ DataReductionProxyConfigServiceClient::ConstructStaticResponse() const {
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue());
   params_->PopulateConfigResponse(values.get());
   request_options_->PopulateConfigResponse(values.get());
-  base::JSONWriter::Write(values.get(), &response);
+  base::JSONWriter::Write(*values, &response);
 
   return response;
 }

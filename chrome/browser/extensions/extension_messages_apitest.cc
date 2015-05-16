@@ -994,7 +994,7 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
     base::DictionaryValue jwk_value;
     net::JwkSerializer::ConvertSpkiFromDerToJwk(spki, &jwk_value);
     std::string tls_channel_id_value;
-    base::JSONWriter::Write(&jwk_value, &tls_channel_id_value);
+    base::JSONWriter::Write(jwk_value, &tls_channel_id_value);
     return tls_channel_id_value;
   }
 

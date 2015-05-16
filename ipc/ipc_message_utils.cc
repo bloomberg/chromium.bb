@@ -451,7 +451,7 @@ bool ParamTraits<base::DictionaryValue>::Read(
 void ParamTraits<base::DictionaryValue>::Log(const param_type& p,
                                              std::string* l) {
   std::string json;
-  base::JSONWriter::Write(&p, &json);
+  base::JSONWriter::Write(p, &json);
   l->append(json);
 }
 
@@ -533,7 +533,7 @@ bool ParamTraits<base::ListValue>::Read(
 
 void ParamTraits<base::ListValue>::Log(const param_type& p, std::string* l) {
   std::string json;
-  base::JSONWriter::Write(&p, &json);
+  base::JSONWriter::Write(p, &json);
   l->append(json);
 }
 

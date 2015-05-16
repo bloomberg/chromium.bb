@@ -267,9 +267,9 @@ void ShellDevToolsFrontend::DispatchProtocolMessage(
 
   base::FundamentalValue total_size(static_cast<int>(message.length()));
   for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
-    base::StringValue message_value(message.substr(pos, kMaxMessageChunkSize));
     std::string param;
-    base::JSONWriter::Write(&message_value, &param);
+    base::JSONWriter::Write(
+        base::StringValue(message.substr(pos, kMaxMessageChunkSize)), &param);
     std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + ");";
     base::string16 javascript = base::UTF8ToUTF16(code);
     web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
@@ -308,13 +308,13 @@ void ShellDevToolsFrontend::CallClientFunction(
   std::string javascript = function_name + "(";
   if (arg1) {
     std::string json;
-    base::JSONWriter::Write(arg1, &json);
+    base::JSONWriter::Write(*arg1, &json);
     javascript.append(json);
     if (arg2) {
-      base::JSONWriter::Write(arg2, &json);
+      base::JSONWriter::Write(*arg2, &json);
       javascript.append(", ").append(json);
       if (arg3) {
-        base::JSONWriter::Write(arg3, &json);
+        base::JSONWriter::Write(*arg3, &json);
         javascript.append(", ").append(json);
       }
     }

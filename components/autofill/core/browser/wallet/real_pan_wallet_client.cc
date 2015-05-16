@@ -244,7 +244,7 @@ void RealPanWalletClient::CreateRequest() {
     request_dict.SetInteger("expiration_year", value);
 
   std::string json_request;
-  base::JSONWriter::Write(&request_dict, &json_request);
+  base::JSONWriter::Write(request_dict, &json_request);
   std::string post_body =
       base::StringPrintf(kUnmaskCardRequestFormat,
                          net::EscapeUrlEncodedData(json_request, true).c_str(),

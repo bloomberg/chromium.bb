@@ -388,7 +388,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   }
   dictionary.Set(kIdsKey, id_list.release());
   std::string json;
-  base::JSONWriter::Write(&dictionary, &json);
+  base::JSONWriter::Write(dictionary, &json);
   if (json.empty()) {
     ReportErrorViaCallback();
     return;

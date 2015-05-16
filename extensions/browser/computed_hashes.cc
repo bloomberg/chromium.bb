@@ -156,7 +156,7 @@ bool ComputedHashes::Writer::WriteToFile(const base::FilePath& path) {
   top_dictionary.SetInteger(kVersionKey, kVersion);
   top_dictionary.Set(kFileHashesKey, file_list_.release());
 
-  if (!base::JSONWriter::Write(&top_dictionary, &json))
+  if (!base::JSONWriter::Write(top_dictionary, &json))
     return false;
   int written = base::WriteFile(path, json.data(), json.size());
   if (static_cast<unsigned>(written) != json.size()) {

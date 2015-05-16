@@ -39,7 +39,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       command.Set(kParamsParam, params.release());
 
     std::string json_command;
-    base::JSONWriter::Write(&command, &json_command);
+    base::JSONWriter::Write(command, &json_command);
     agent_host_->DispatchProtocolMessage(json_command);
     base::MessageLoop::current()->Run();
   }

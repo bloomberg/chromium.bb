@@ -53,8 +53,7 @@ AssertionResult VerifySessionsHierarchyEquality(
 string ConvertFakeServerContentsToString(
     const base::DictionaryValue& entities) {
   string entities_str;
-  if (!JSONWriter::WriteWithOptions(&entities,
-                                    JSONWriter::OPTIONS_PRETTY_PRINT,
+  if (!JSONWriter::WriteWithOptions(entities, JSONWriter::OPTIONS_PRETTY_PRINT,
                                     &entities_str)) {
     entities_str = "Could not convert FakeServer contents to string.";
   }

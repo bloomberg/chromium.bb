@@ -545,7 +545,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
           PrinterSemanticCapsAndDefaultsToCdd(semantic_info));
       if (description) {
         base::JSONWriter::WriteWithOptions(
-            description.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT,
+            *description, base::JSONWriter::OPTIONS_PRETTY_PRINT,
             &printer_info.printer_capabilities);
       }
     }

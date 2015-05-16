@@ -76,7 +76,7 @@ void BluetoothPairingDialog::GetDialogSize(gfx::Size* size) const {
 
 std::string BluetoothPairingDialog::GetDialogArgs() const {
   std::string data;
-  base::JSONWriter::Write(&device_data_, &data);
+  base::JSONWriter::Write(device_data_, &data);
   return data;
 }
 

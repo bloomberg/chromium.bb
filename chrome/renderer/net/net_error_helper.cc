@@ -230,7 +230,7 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                              &error_strings);
 
   std::string json;
-  JSONWriter::Write(&error_strings, &json);
+  JSONWriter::Write(error_strings, &json);
 
   std::string js = "if (window.updateForDnsProbe) "
                    "updateForDnsProbe(" + json + ");";

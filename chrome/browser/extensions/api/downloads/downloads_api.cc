@@ -1860,7 +1860,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(arg);
   std::string json_args;
-  base::JSONWriter::Write(args.get(), &json_args);
+  base::JSONWriter::Write(*args, &json_args);
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   // The downloads system wants to share on-record events with off-record
   // extension renderers even in incognito_split_mode because that's how

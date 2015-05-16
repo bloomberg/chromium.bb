@@ -159,9 +159,9 @@ const std::string GetShowFeedbackFormJs() {
   std::string yes;
   std::string no;
 
-  base::JSONWriter::Write(&question_val, &question);
-  base::JSONWriter::Write(&yes_val, &yes);
-  base::JSONWriter::Write(&no_val, &no);
+  base::JSONWriter::Write(question_val, &question);
+  base::JSONWriter::Write(yes_val, &yes);
+  base::JSONWriter::Write(no_val, &no);
 
   return "showFeedbackForm(" + question + ", " + yes + ", " + no + ");";
 }
@@ -172,7 +172,7 @@ const std::string GetUnsafeIncrementalDistilledPageJs(
   std::string output(page_proto->html());
   EnsureNonEmptyContent(&output);
   base::StringValue value(output);
-  base::JSONWriter::Write(&value, &output);
+  base::JSONWriter::Write(value, &output);
   std::string page_update("addToPage(");
   page_update += output + ");";
   return page_update + GetToggleLoadingIndicatorJs(
@@ -184,7 +184,7 @@ const std::string GetErrorPageJs() {
   base::StringValue value(l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT));
   std::string output;
-  base::JSONWriter::Write(&value, &output);
+  base::JSONWriter::Write(value, &output);
   std::string page_update("addToPage(");
   page_update += output + ");";
   return page_update;
@@ -226,8 +226,7 @@ const std::string GetUnsafeArticleContentJs(
 
   std::string output(unsafe_output_stream.str());
   EnsureNonEmptyContent(&output);
-  base::StringValue value(output);
-  base::JSONWriter::Write(&value, &output);
+  base::JSONWriter::Write(base::StringValue(output), &output);
   std::string page_update("addToPage(");
   page_update += output + ");";
   return page_update + GetToggleLoadingIndicatorJs(true);

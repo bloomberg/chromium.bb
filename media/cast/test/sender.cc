@@ -187,13 +187,13 @@ void WriteStatsAndDestroySubscribers(
   scoped_ptr<base::DictionaryValue> stats = video_event_subscriber->GetStats();
   std::string json;
   base::JSONWriter::WriteWithOptions(
-      stats.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      *stats, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   VLOG(0) << "Video stats: " << json;
 
   stats = audio_event_subscriber->GetStats();
   json.clear();
   base::JSONWriter::WriteWithOptions(
-      stats.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      *stats, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   VLOG(0) << "Audio stats: " << json;
 }
 

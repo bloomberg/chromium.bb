@@ -93,7 +93,7 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
   result.SetBoolean("wifiCredentialsSynced",
                     types.Has(syncer::WIFI_CREDENTIALS));
   std::string args;
-  base::JSONWriter::Write(&result, &args);
+  base::JSONWriter::Write(result, &args);
   return args;
 }
 

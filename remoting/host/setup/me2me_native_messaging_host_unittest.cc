@@ -409,7 +409,7 @@ Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
 void Me2MeNativeMessagingHostTest::WriteMessageToInputPipe(
     const base::Value& message) {
   std::string message_json;
-  base::JSONWriter::Write(&message, &message_json);
+  base::JSONWriter::Write(message, &message_json);
 
   uint32 length = message_json.length();
   input_write_file_.WriteAtCurrentPos(reinterpret_cast<char*>(&length),

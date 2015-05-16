@@ -175,9 +175,8 @@ bool UpdateEntryWithEncryption(
     if (VLOG_IS_ON(2)) {
       scoped_ptr<base::DictionaryValue> value(entry->ToValue(NULL));
       std::string info;
-      base::JSONWriter::WriteWithOptions(value.get(),
-                                         base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                         &info);
+      base::JSONWriter::WriteWithOptions(
+          *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &info);
       DVLOG(2) << "Encrypting specifics of type "
                << ModelTypeToString(type)
                << " with content: "

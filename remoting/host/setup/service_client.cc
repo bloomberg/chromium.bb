@@ -83,7 +83,7 @@ void ServiceClient::Core::RegisterHost(
   if (!host_client_id.empty())
     url_suffix = "?hostClientId=" + host_client_id;
   std::string post_body_str;
-  base::JSONWriter::Write(&post_body, &post_body_str);
+  base::JSONWriter::Write(post_body, &post_body_str);
   MakeChromotingRequest(net::URLFetcher::POST,
                         url_suffix,
                         post_body_str,

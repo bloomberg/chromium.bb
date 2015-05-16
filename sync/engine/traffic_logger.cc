@@ -25,9 +25,8 @@ void LogData(const T& data,
     scoped_ptr<base::DictionaryValue> value =
         (*to_dictionary_value)(data, true /* include_specifics */);
     std::string message;
-    base::JSONWriter::WriteWithOptions(value.get(),
-        base::JSONWriter::OPTIONS_PRETTY_PRINT,
-        &message);
+    base::JSONWriter::WriteWithOptions(
+        *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &message);
     DVLOG(1) << "\n" << description << "\n" << message << "\n";
   }
 }

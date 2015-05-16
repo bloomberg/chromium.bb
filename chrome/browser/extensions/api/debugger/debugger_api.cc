@@ -385,7 +385,7 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
   }
 
   std::string json_args;
-  base::JSONWriter::Write(&protocol_request, &json_args);
+  base::JSONWriter::Write(protocol_request, &json_args);
   agent_host_->DispatchProtocolMessage(json_args);
 }
 
@@ -666,7 +666,7 @@ void DebuggerSendCommandFunction::SendResponseBody(
     base::DictionaryValue* response) {
   base::Value* error_body;
   if (response->Get("error", &error_body)) {
-    base::JSONWriter::Write(error_body, &error_);
+    base::JSONWriter::Write(*error_body, &error_);
     SendResponse(false);
     return;
   }

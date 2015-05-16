@@ -174,7 +174,7 @@ SyncData SupervisedUserSharedSettingsService::CreateSyncDataForSetting(
     const Value& value,
     bool acknowledged) {
   std::string json_value;
-  base::JSONWriter::Write(&value, &json_value);
+  base::JSONWriter::Write(value, &json_value);
   ::sync_pb::EntitySpecifics specifics;
   specifics.mutable_managed_user_shared_setting()->set_mu_id(su_id);
   specifics.mutable_managed_user_shared_setting()->set_key(key);

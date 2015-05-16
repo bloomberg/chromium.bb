@@ -173,7 +173,7 @@ std::string ProfileSigninConfirmationDialog::GetDialogArgs() const {
 #if defined(OS_WIN)
   dict.SetBoolean("hideTitle", true);
 #endif
-  base::JSONWriter::Write(&dict, &data);
+  base::JSONWriter::Write(dict, &data);
   return data;
 }
 

@@ -240,7 +240,7 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
 
     if (!clients_.empty()) {
       std::string json;
-      base::JSONWriter::Write(&clients_, &json);
+      base::JSONWriter::Write(clients_, &json);
       base::FilePath client_state_file =
           server_data_dir_.path().Append(kClientStateFileName);
       if (base::WriteFile(client_state_file, json.c_str(), json.size()) !=

@@ -133,7 +133,7 @@ std::string ReadAndUpdateServiceState(const base::FilePath& directory,
   if (!proxy_id.empty())  // Reuse proxy id if we already had one.
     dictionary->SetString(prefs::kCloudPrintProxyId, proxy_id);
   std::string result;
-  base::JSONWriter::WriteWithOptions(dictionary,
+  base::JSONWriter::WriteWithOptions(*dictionary,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &result);
   return result;
@@ -276,7 +276,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
   base::ListValue printer_list;
   printer_list.AppendStrings(printers);
   std::string printers_json;
-  base::JSONWriter::Write(&printer_list, &printers_json);
+  base::JSONWriter::Write(printer_list, &printers_json);
   size_t written = base::WriteFile(printers_file,
                                    printers_json.c_str(),
                                    printers_json.size());

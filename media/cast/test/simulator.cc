@@ -766,7 +766,7 @@ int main(int argc, char** argv) {
   values.SetString("sim-id", sim_id);
 
   std::string extra_data;
-  base::JSONWriter::Write(&values, &extra_data);
+  base::JSONWriter::Write(values, &extra_data);
 
   // Run.
   media::cast::RunSimulation(source_path, log_output_path, metrics_output_path,

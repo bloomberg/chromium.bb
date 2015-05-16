@@ -267,7 +267,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
     const base::Value* value;
     if (dict.Get(requestedAttributeUTF8, &value)) {
       std::string json_value;
-      base::JSONWriter::Write(value, &json_value);
+      base::JSONWriter::Write(*value, &json_value);
       WriteAttribute(
           [defaultAttributes containsObject:requestedAttribute],
           StringPrintf("%s=%s",

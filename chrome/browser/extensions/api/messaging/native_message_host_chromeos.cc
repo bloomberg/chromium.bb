@@ -70,12 +70,12 @@ class EchoHost : public NativeMessageHost {
 
  private:
   void ProcessEcho(const base::DictionaryValue& request) {
-    scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-    response->SetInteger("id", ++message_number_);
-    response->Set("echo", request.DeepCopy());
-    response->SetString("caller_url", kEchoHostOrigins[0]);
+    base::DictionaryValue response;
+    response.SetInteger("id", ++message_number_);
+    response.Set("echo", request.CreateDeepCopy());
+    response.SetString("caller_url", kEchoHostOrigins[0]);
     std::string response_string;
-    base::JSONWriter::Write(response.get(), &response_string);
+    base::JSONWriter::Write(response, &response_string);
     client_->PostMessageFromNativeHost(response_string);
   }
 

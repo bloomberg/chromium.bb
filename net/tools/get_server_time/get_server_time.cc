@@ -122,7 +122,7 @@ class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
     scoped_ptr<base::Value> params(entry.ParametersToValue());
     std::string params_str;
     if (params.get()) {
-      base::JSONWriter::Write(params.get(), &params_str);
+      base::JSONWriter::Write(*params, &params_str);
       params_str.insert(0, ": ");
     }
 

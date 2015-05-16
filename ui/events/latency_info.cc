@@ -108,7 +108,7 @@ LatencyInfoTracedValue::~LatencyInfoTracedValue() {
 
 void LatencyInfoTracedValue::AppendAsTraceFormat(std::string* out) const {
   std::string tmp;
-  base::JSONWriter::Write(value_.get(), &tmp);
+  base::JSONWriter::Write(*value_, &tmp);
   *out += tmp;
 }
 

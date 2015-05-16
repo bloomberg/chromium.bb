@@ -163,7 +163,7 @@ SyncData SupervisedUserSettingsService::CreateSyncDataForSetting(
     const std::string& name,
     const base::Value& value) {
   std::string json_value;
-  base::JSONWriter::Write(&value, &json_value);
+  base::JSONWriter::Write(value, &json_value);
   ::sync_pb::EntitySpecifics specifics;
   specifics.mutable_managed_user_setting()->set_name(name);
   specifics.mutable_managed_user_setting()->set_value(json_value);

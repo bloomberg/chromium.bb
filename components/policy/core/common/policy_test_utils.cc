@@ -222,9 +222,8 @@ std::ostream& operator<<(std::ostream& os, const policy::PolicyMap& policies) {
 
 std::ostream& operator<<(std::ostream& os, const policy::PolicyMap::Entry& e) {
   std::string value;
-  base::JSONWriter::WriteWithOptions(e.value,
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &value);
+  base::JSONWriter::WriteWithOptions(
+      *e.value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &value);
   os << "{" << std::endl
      << "  \"level\": " << e.level << "," << std::endl
      << "  \"scope\": " << e.scope << "," << std::endl

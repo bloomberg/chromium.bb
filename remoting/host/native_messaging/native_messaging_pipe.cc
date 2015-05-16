@@ -27,7 +27,7 @@ void NativeMessagingPipe::Start(
 
 void NativeMessagingPipe::OnMessage(scoped_ptr<base::Value> message) {
   std::string message_json;
-  base::JSONWriter::Write(message.get(), &message_json);
+  base::JSONWriter::Write(*message, &message_json);
   host_->OnMessage(message_json);
 }
 

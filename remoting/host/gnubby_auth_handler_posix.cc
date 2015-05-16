@@ -174,7 +174,7 @@ void GnubbyAuthHandlerPosix::DeliverHostDataMessage(
   request.Set(kDataPayload, bytes);
 
   std::string request_json;
-  if (!base::JSONWriter::Write(&request, &request_json)) {
+  if (!base::JSONWriter::Write(request, &request_json)) {
     LOG(ERROR) << "Failed to create request json";
     return;
   }

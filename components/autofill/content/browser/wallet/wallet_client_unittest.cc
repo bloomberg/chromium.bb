@@ -876,7 +876,7 @@ class WalletClientTest : public testing::Test {
         static_cast<base::DictionaryValue*>(root.get());
     dict->Remove("api_key", NULL);
     std::string clean_upload_data;
-    base::JSONWriter::Write(dict, &clean_upload_data);
+    base::JSONWriter::Write(*dict, &clean_upload_data);
     return clean_upload_data;
   }
 

@@ -708,7 +708,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   ASSERT_NE(nullptr, http_server_properties);
   std::string preferences_json;
   EXPECT_TRUE(
-      base::JSONWriter::Write(http_server_properties, &preferences_json));
+      base::JSONWriter::Write(*http_server_properties, &preferences_json));
   EXPECT_EQ(expected_json, preferences_json);
 }
 

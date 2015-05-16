@@ -198,7 +198,7 @@ std::string CreateRequestBody(
   request_dict.Set("params", params_dict.release());
 
   std::string request_body;
-  bool success = base::JSONWriter::Write(&request_dict, &request_body);
+  bool success = base::JSONWriter::Write(request_dict, &request_body);
   DCHECK(success);
   return request_body;
 }

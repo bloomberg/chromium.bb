@@ -709,7 +709,7 @@ scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
   body_params.SetString("sessionId", session_id);
   std::string body;
   base::JSONWriter::WriteWithOptions(
-      &body_params, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
+      body_params, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
       &body);
   scoped_ptr<net::HttpServerResponseInfo> response(
       new net::HttpServerResponseInfo(net::HTTP_OK));

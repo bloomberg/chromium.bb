@@ -242,7 +242,7 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
         delegate->HandleCommand(this, command.get()));
     if (response) {
       std::string json_response;
-      base::JSONWriter::Write(response.get(), &json_response);
+      base::JSONWriter::Write(*response, &json_response);
       SendMessageToClient(json_response);
       return true;
     }

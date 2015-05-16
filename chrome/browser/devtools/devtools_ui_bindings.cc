@@ -1016,13 +1016,13 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
   std::string javascript = function_name + "(";
   if (arg1) {
     std::string json;
-    base::JSONWriter::Write(arg1, &json);
+    base::JSONWriter::Write(*arg1, &json);
     javascript.append(json);
     if (arg2) {
-      base::JSONWriter::Write(arg2, &json);
+      base::JSONWriter::Write(*arg2, &json);
       javascript.append(", ").append(json);
       if (arg3) {
-        base::JSONWriter::Write(arg3, &json);
+        base::JSONWriter::Write(*arg3, &json);
         javascript.append(", ").append(json);
       }
     }

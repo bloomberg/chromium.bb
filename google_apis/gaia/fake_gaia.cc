@@ -390,7 +390,7 @@ void FakeGaia::HandleProgramaticAuth(
 void FakeGaia::FormatJSONResponse(const base::DictionaryValue& response_dict,
                                   BasicHttpResponse* http_response) {
   std::string response_json;
-  base::JSONWriter::Write(&response_dict, &response_json);
+  base::JSONWriter::Write(response_dict, &response_json);
   http_response->set_content(response_json);
   http_response->set_code(net::HTTP_OK);
 }

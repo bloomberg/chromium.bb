@@ -377,11 +377,9 @@ TEST(ValuesUtilTest, PopDoubleToIntDictionary) {
   // Create the expected value.
   base::DictionaryValue dictionary_value;
   for (size_t i = 0; i != values.size(); ++i) {
-    scoped_ptr<base::Value> key_value(new base::FundamentalValue(keys[i]));
     std::string key_string;
-    base::JSONWriter::Write(key_value.get(), &key_string);
-    dictionary_value.SetWithoutPathExpansion(
-        key_string, new base::FundamentalValue(values[i]));
+    base::JSONWriter::Write(base::FundamentalValue(keys[i]), &key_string);
+    dictionary_value.SetIntegerWithoutPathExpansion(key_string, values[i]);
   }
 
   // Pop a dictionary.

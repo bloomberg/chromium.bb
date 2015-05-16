@@ -123,7 +123,7 @@ void PerformanceLogger::AddLogEntry(
   log_message_dict.SetString("message.method", method);
   log_message_dict.Set("message.params", params.DeepCopy());
   std::string log_message_json;
-  base::JSONWriter::Write(&log_message_dict, &log_message_json);
+  base::JSONWriter::Write(log_message_dict, &log_message_json);
 
   // TODO(klm): extract timestamp from params?
   // Look at where it is for Page, Network, Timeline, and trace events.

@@ -692,7 +692,7 @@ Status ProcessExtension(const std::string& extension,
     }
   } else {
     manifest->SetString("key", public_key_base64);
-    base::JSONWriter::Write(manifest, &manifest_data);
+    base::JSONWriter::Write(*manifest, &manifest_data);
     if (base::WriteFile(
             manifest_path, manifest_data.c_str(), manifest_data.size()) !=
         static_cast<int>(manifest_data.size())) {
@@ -788,7 +788,7 @@ Status WritePrefsFile(
   }
 
   std::string prefs_str;
-  base::JSONWriter::Write(prefs, &prefs_str);
+  base::JSONWriter::Write(*prefs, &prefs_str);
   VLOG(0) << "Populating " << path.BaseName().value()
           << " file: " << PrettyPrintValue(*prefs);
   if (static_cast<int>(prefs_str.length()) != base::WriteFile(

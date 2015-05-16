@@ -139,7 +139,7 @@ std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
         media::MediaLog::PipelineStatusToString(status);
   }
   std::string params_json;
-  base::JSONWriter::Write(&event.params, &params_json);
+  base::JSONWriter::Write(event.params, &params_json);
   return EventTypeToString(event.type) + " " + params_json;
 }
 

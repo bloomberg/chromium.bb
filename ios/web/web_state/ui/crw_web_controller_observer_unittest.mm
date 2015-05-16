@@ -68,7 +68,7 @@ WEB_TEST_F(CRWUIWebViewWebControllerObserverTest,
   base::DictionaryValue command;
   command.SetString("command", "test.testMessage");
   std::string message;
-  base::JSONWriter::Write(&command, &message);
+  base::JSONWriter::Write(command, &message);
   this->RunJavaScript([NSString
       stringWithFormat:@"__gCrWeb.message.invokeOnHost(%s)", message.c_str()]);
   this->WaitForBackgroundTasks();
@@ -91,7 +91,7 @@ WEB_TEST_F(CRWUIWebViewWebControllerObserverTest,
   command.SetString("target", "target");
   command.SetString("referrerPolicy", "referrerPolicy");
   std::string message;
-  base::JSONWriter::Write(&command, &message);
+  base::JSONWriter::Write(command, &message);
   this->RunJavaScript(
       [NSString stringWithFormat:@"__gCrWeb.message.invokeOnHostImmediate(%s)",
                                  message.c_str()]);
@@ -112,7 +112,7 @@ WEB_TEST_F(CRWUIWebViewWebControllerObserverTest,
   for (int count = 0; count <= kNumberMessages; count++) {
     std::string message;
     command.SetInteger("number", count);
-    base::JSONWriter::Write(&command, &message);
+    base::JSONWriter::Write(command, &message);
     ASSERT_EQ(0U,
               [this->fake_web_controller_observer_ commandsReceived].size());
     this->RunJavaScript(

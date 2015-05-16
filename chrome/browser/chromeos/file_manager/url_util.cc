@@ -111,7 +111,7 @@ GURL GetFileManagerMainPageUrlWithParams(
                        !file_types || !file_types->support_drive);
 
   std::string json_args;
-  base::JSONWriter::Write(&arg_value, &json_args);
+  base::JSONWriter::Write(arg_value, &json_args);
 
   std::string url = GetFileManagerMainPageUrl().spec() + '?' +
       net::EscapeUrlEncodedData(json_args,

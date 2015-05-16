@@ -402,7 +402,7 @@ void RegistryTestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
   std::string json;
-  base::JSONWriter::Write(policy_value, &json);
+  base::JSONWriter::Write(*policy_value, &json);
   RegKey key(hive_, kTestPolicyKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
@@ -506,7 +506,7 @@ void PRegTestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
   std::string json;
-  base::JSONWriter::Write(policy_value, &json);
+  base::JSONWriter::Write(*policy_value, &json);
   AppendStringToPRegFile(kTestPolicyKey, policy_name, json);
 }
 
@@ -910,11 +910,11 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   policy.Set("list", list.DeepCopy());
   // Encode |policy| before adding the "dict" entry.
   std::string encoded_dict;
-  base::JSONWriter::Write(&policy, &encoded_dict);
+  base::JSONWriter::Write(policy, &encoded_dict);
   ASSERT_FALSE(encoded_dict.empty());
   policy.Set("dict", policy.DeepCopy());
   std::string encoded_list;
-  base::JSONWriter::Write(&list, &encoded_list);
+  base::JSONWriter::Write(list, &encoded_list);
   ASSERT_FALSE(encoded_list.empty());
   base::DictionaryValue encoded_policy;
   encoded_policy.SetString("null", "");

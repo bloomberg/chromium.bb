@@ -2434,7 +2434,7 @@ std::string PDFiumEngine::GetPageAsJSON(int index) {
   scoped_ptr<base::Value> node(
       pages_[index]->GetAccessibleContentAsValue(current_rotation_));
   std::string page_json;
-  base::JSONWriter::Write(node.get(), &page_json);
+  base::JSONWriter::Write(*node, &page_json);
   return page_json;
 }
 

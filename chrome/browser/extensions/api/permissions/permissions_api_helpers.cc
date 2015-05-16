@@ -51,7 +51,7 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
     } else {
       std::string name(i->name());
       std::string json;
-      base::JSONWriter::Write(value.get(), &json);
+      base::JSONWriter::Write(*value, &json);
       permissions->permissions->push_back(name + kDelimiter + json);
     }
   }

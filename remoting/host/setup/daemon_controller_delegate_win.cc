@@ -186,7 +186,7 @@ bool WriteConfig(const std::string& content) {
     }
   }
   std::string unprivileged_config_str;
-  base::JSONWriter::Write(&unprivileged_config_dict, &unprivileged_config_str);
+  base::JSONWriter::Write(unprivileged_config_dict, &unprivileged_config_str);
 
   // Write the full configuration file to a temporary location.
   base::FilePath full_config_file_path =
@@ -413,7 +413,7 @@ void DaemonControllerDelegateWin::UpdateConfig(
 
   // Write the updated config.
   std::string config_updated_str;
-  base::JSONWriter::Write(config_old.get(), &config_updated_str);
+  base::JSONWriter::Write(*config_old, &config_updated_str);
   bool result = WriteConfig(config_updated_str);
 
   InvokeCompletionCallback(done, result);
@@ -458,7 +458,7 @@ void DaemonControllerDelegateWin::SetConfigAndStart(
 
   // Set the configuration.
   std::string config_str;
-  base::JSONWriter::Write(config.release(), &config_str);
+  base::JSONWriter::Write(*config, &config_str);
 
   // Determine the config directory path and create it if necessary.
   base::FilePath config_dir = remoting::GetConfigDir();

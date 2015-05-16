@@ -37,7 +37,7 @@ const char kUnlockEventName[] = "easy_unlock";
 // Serializes the |value| to a JSON string and returns the result.
 std::string SerializeValueToJson(const base::Value& value) {
   std::string json;
-  base::JSONWriter::Write(&value, &json);
+  base::JSONWriter::Write(value, &json);
   return json;
 }
 

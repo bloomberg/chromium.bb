@@ -139,7 +139,7 @@ std::string MakeServerResponse(
                     static_cast<int>(time_to_live.InMilliseconds()));
 
   std::string output;
-  base::JSONWriter::Write(&dict, &output);
+  base::JSONWriter::Write(dict, &output);
   return output;
 }
 

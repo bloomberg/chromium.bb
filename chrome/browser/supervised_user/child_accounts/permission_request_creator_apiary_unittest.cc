@@ -24,7 +24,7 @@ std::string BuildResponse() {
   permission_dict->SetStringWithoutPathExpansion("id", "requestid");
   dict.SetWithoutPathExpansion("permissionRequest", permission_dict);
   std::string result;
-  base::JSONWriter::Write(&dict, &result);
+  base::JSONWriter::Write(dict, &result);
   return result;
 }
 

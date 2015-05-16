@@ -76,7 +76,7 @@ bool IsValidKioskAppManifest(const extensions::Manifest& manifest) {
   return false;
 }
 
-std::string ValueToString(const base::Value* value) {
+std::string ValueToString(const base::Value& value) {
   std::string json;
   base::JSONWriter::Write(value, &json);
   return json;
@@ -602,7 +602,7 @@ void KioskAppData::OnWebstoreResponseParseSuccess(
       icon_url_string);
   if (!icon_url.is_valid()) {
     LOG(ERROR) << "Webstore response error (icon url): "
-               << ValueToString(webstore_data.get());
+               << ValueToString(*webstore_data);
     OnWebstoreResponseParseFailure(kInvalidWebstoreResponseError);
     return;
   }
@@ -626,7 +626,7 @@ bool KioskAppData::CheckResponseKeyValue(const base::DictionaryValue* response,
                                          std::string* value) {
   if (!response->GetString(key, value)) {
     LOG(ERROR) << "Webstore response error (" << key
-               << "): " << ValueToString(response);
+               << "): " << ValueToString(*response);
     OnWebstoreResponseParseFailure(kInvalidWebstoreResponseError);
     return false;
   }

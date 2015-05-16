@@ -958,7 +958,7 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(
   base::DictionaryValue root_dict;
   root_dict.SetString("message", message);
   std::string output_js;
-  base::JSONWriter::Write(&root_dict, &output_js);
+  base::JSONWriter::Write(root_dict, &output_js);
 
   base::File file(info_path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);

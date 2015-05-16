@@ -221,7 +221,7 @@ void SetUIData(const NetworkUIData& ui_data,
   base::DictionaryValue ui_data_dict;
   ui_data.FillDictionary(&ui_data_dict);
   std::string ui_data_blob;
-  base::JSONWriter::Write(&ui_data_dict, &ui_data_blob);
+  base::JSONWriter::Write(ui_data_dict, &ui_data_blob);
   shill_dictionary->SetStringWithoutPathExpansion(shill::kUIDataProperty,
                                                   ui_data_blob);
 }

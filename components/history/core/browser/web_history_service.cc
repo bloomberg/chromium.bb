@@ -362,7 +362,7 @@ void WebHistoryService::ExpireHistory(
   }
   delete_request.Set("del", deletions.release());
   std::string post_data;
-  base::JSONWriter::Write(&delete_request, &post_data);
+  base::JSONWriter::Write(delete_request, &post_data);
 
   GURL url(kHistoryDeleteHistoryUrl);
 
@@ -426,7 +426,7 @@ void WebHistoryService::SetAudioHistoryEnabled(
                                   new_enabled_value);
   enable_audio_history.SetString("client", "audio");
   std::string post_data;
-  base::JSONWriter::Write(&enable_audio_history, &post_data);
+  base::JSONWriter::Write(enable_audio_history, &post_data);
   request->SetPostData(post_data);
 
   request->Start();

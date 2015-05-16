@@ -518,7 +518,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
               answer->AddImageURLsTo(&results->answers_image_urls);
 
               std::string contents;
-              base::JSONWriter::Write(answer_json, &contents);
+              base::JSONWriter::Write(*answer_json, &contents);
               answer_contents = base::UTF8ToUTF16(contents);
             } else {
               answer_type_str = base::string16();

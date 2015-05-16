@@ -191,7 +191,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   static std::string PrettyJson(const base::Value& value) {
     std::string pretty;
     base::JSONWriter::WriteWithOptions(
-        &value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &pretty);
+        value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &pretty);
     return pretty;
   }
 

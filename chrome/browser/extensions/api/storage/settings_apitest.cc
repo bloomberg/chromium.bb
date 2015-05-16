@@ -174,12 +174,12 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
       Namespace settings_namespace,
       const std::string& action,
       bool is_final_action) {
-    scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue());
-    message->SetString("namespace", ToString(settings_namespace));
-    message->SetString("action", action);
-    message->SetBoolean("isFinalAction", is_final_action);
+    base::DictionaryValue message;
+    message.SetString("namespace", ToString(settings_namespace));
+    message.SetString("action", action);
+    message.SetBoolean("isFinalAction", is_final_action);
     std::string message_json;
-    base::JSONWriter::Write(message.get(), &message_json);
+    base::JSONWriter::Write(message, &message_json);
     return message_json;
   }
 

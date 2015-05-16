@@ -100,7 +100,7 @@ void MessagePropertyProvider::GotChannelID(
     return;
   }
   std::string jwk_str;
-  base::JSONWriter::Write(&jwk_value, &jwk_str);
+  base::JSONWriter::Write(jwk_value, &jwk_str);
   original_task_runner->PostTask(FROM_HERE, base::Bind(reply, jwk_str));
 }
 

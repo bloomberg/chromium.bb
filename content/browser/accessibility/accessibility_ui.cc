@@ -116,14 +116,14 @@ bool HandleRequestCallback(BrowserContext* current_context,
     rvh_list->Append(BuildTargetDescriptor(rvh));
   }
 
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  data->Set("list", rvh_list.release());
-  data->SetInteger(
+  base::DictionaryValue data;
+  data.Set("list", rvh_list.release());
+  data.SetInteger(
       "global_a11y_mode",
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
 
   std::string json_string;
-  base::JSONWriter::Write(data.get(), &json_string);
+  base::JSONWriter::Write(data, &json_string);
 
   callback.Run(base::RefCountedString::TakeString(&json_string));
   return true;

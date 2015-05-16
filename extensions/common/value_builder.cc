@@ -20,7 +20,7 @@ DictionaryBuilder::~DictionaryBuilder() {}
 std::string DictionaryBuilder::ToJSON() const {
   std::string json;
   base::JSONWriter::WriteWithOptions(
-      dict_.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      *dict_, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return json;
 }
 

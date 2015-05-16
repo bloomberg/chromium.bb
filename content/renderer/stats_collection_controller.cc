@@ -66,7 +66,7 @@ void ConvertLoadTimeToJSON(
     item.SetDouble("load_duration_ms",
         (load_stop_time - load_start_time).InMillisecondsF());
   }
-  base::JSONWriter::Write(&item, result);
+  base::JSONWriter::Write(item, result);
 }
 
 }  // namespace

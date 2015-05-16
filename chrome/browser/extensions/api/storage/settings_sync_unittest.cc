@@ -45,9 +45,8 @@ const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 // Gets the pretty-printed JSON for a value.
 static std::string GetJson(const base::Value& value) {
   std::string json;
-  base::JSONWriter::WriteWithOptions(&value,
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json);
+  base::JSONWriter::WriteWithOptions(
+      value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return json;
 }
 

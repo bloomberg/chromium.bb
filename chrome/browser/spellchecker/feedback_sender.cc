@@ -403,7 +403,7 @@ void FeedbackSender::SendFeedback(const std::vector<Misspelling>& feedback_data,
                   country_),
       api_version_));
   std::string feedback;
-  base::JSONWriter::Write(feedback_value.get(), &feedback);
+  base::JSONWriter::Write(*feedback_value, &feedback);
 
   // The tests use this identifier to mock the URL fetcher.
   static const int kUrlFetcherId = 0;

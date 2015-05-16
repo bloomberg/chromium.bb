@@ -681,13 +681,15 @@ void FileManagerBrowserTestBase::OnMessage(const std::string& name,
 
   if (name == "getRootPaths") {
     // Pass the root paths.
-    const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-    res->SetString("downloads",
-        "/" + util::GetDownloadsMountPointName(profile()));
-    res->SetString("drive",
-        "/" + drive::util::GetDriveMountPointPath(profile()
-            ).BaseName().AsUTF8Unsafe() + "/root");
-    base::JSONWriter::Write(res.get(), output);
+    base::DictionaryValue res;
+    res.SetString("downloads",
+                  "/" + util::GetDownloadsMountPointName(profile()));
+    res.SetString("drive", "/" +
+                               drive::util::GetDriveMountPointPath(profile())
+                                   .BaseName()
+                                   .AsUTF8Unsafe() +
+                               "/root");
+    base::JSONWriter::Write(res, output);
     return;
   }
 
@@ -707,10 +709,10 @@ void FileManagerBrowserTestBase::OnMessage(const std::string& name,
     if (*origin.rbegin() == '/')
       origin.resize(origin.length() - 1);
 
-    const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-    res->SetString("url", url.spec());
-    res->SetString("origin", origin);
-    base::JSONWriter::Write(res.get(), output);
+    base::DictionaryValue res;
+    res.SetString("url", url.spec());
+    res.SetString("origin", origin);
+    base::JSONWriter::Write(res, output);
     return;
   }
 

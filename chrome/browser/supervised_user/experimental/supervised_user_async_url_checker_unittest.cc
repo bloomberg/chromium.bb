@@ -53,7 +53,7 @@ std::string BuildResponse(const GURL& url) {
     dict.SetWithoutPathExpansion("items", results_list);
   }
   std::string result;
-  base::JSONWriter::Write(&dict, &result);
+  base::JSONWriter::Write(dict, &result);
   return result;
 }
 

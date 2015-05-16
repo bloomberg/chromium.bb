@@ -191,7 +191,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   args->AppendInteger(utterance->id());
 
   std::string json;
-  base::JSONWriter::Write(args.get(), &json);
+  base::JSONWriter::Write(*args, &json);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnSpeak, args.Pass()));

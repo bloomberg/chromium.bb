@@ -52,7 +52,7 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
     if (!context->GetInteger("id", &context_id) ||
         !context->GetString("frameId", &frame_id)) {
       std::string json;
-      base::JSONWriter::Write(context, &json);
+      base::JSONWriter::Write(*context, &json);
       return Status(
           kUnknownError,
           "Runtime.executionContextCreated has invalid 'context': " + json);

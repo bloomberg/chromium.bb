@@ -22,7 +22,7 @@ const char kCommandTimeoutMs[] = "20000";
 SendCommandRequest::SendCommandRequest(const base::DictionaryValue* request,
                                        Delegate* delegate)
     : delegate_(delegate) {
-  base::JSONWriter::Write(request, &upload_data_);
+  base::JSONWriter::Write(*request, &upload_data_);
   DCHECK(delegate_);
 }
 

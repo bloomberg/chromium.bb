@@ -168,7 +168,7 @@ std::vector<uint8_t> MakeJsonVector(const std::string& json_string) {
 
 std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
   std::string json;
-  base::JSONWriter::Write(&dict, &json);
+  base::JSONWriter::Write(dict, &json);
   return MakeJsonVector(json);
 }
 

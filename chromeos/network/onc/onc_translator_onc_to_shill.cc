@@ -31,7 +31,7 @@ namespace {
 scoped_ptr<base::StringValue> ConvertValueToString(const base::Value& value) {
   std::string str;
   if (!value.GetAsString(&str))
-    base::JSONWriter::Write(&value, &str);
+    base::JSONWriter::Write(value, &str);
   return make_scoped_ptr(new base::StringValue(str));
 }
 

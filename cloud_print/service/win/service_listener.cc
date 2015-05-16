@@ -49,7 +49,7 @@ std::string GetEnvironment(const base::FilePath& user_data_dir) {
   }
 
   std::string result;
-  base::JSONWriter::Write(&environment, &result);
+  base::JSONWriter::Write(environment, &result);
   return result;
 }
 

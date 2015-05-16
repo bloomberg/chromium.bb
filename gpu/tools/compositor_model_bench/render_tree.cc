@@ -442,7 +442,7 @@ RenderNode* InterpretNode(base::DictionaryValue* node) {
 
 
   string outjson;
-  JSONWriter::WriteWithOptions(node, base::JSONWriter::OPTIONS_PRETTY_PRINT,
+  JSONWriter::WriteWithOptions(*node, base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                &outjson);
   LOG(ERROR) << "Unrecognized node type! JSON:\n\n"
       "-----------------------\n" <<

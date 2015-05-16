@@ -74,7 +74,7 @@ std::string PolicyHeaderService::CreateHeaderValue() {
   // TODO(atwilson): add user_policy_token once the server starts sending it
   // down (http://crbug.com/326799).
   std::string json;
-  base::JSONWriter::Write(&value, &json);
+  base::JSONWriter::Write(value, &json);
   DCHECK(!json.empty());
 
   // Base64-encode the result so we can include it in a header.

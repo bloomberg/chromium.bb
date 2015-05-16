@@ -295,7 +295,7 @@ void WalletClient::AuthenticateInstrument(
   request_dict.SetString(kInstrumentIdKey, instrument_id);
 
   std::string json_payload;
-  base::JSONWriter::Write(&request_dict, &json_payload);
+  base::JSONWriter::Write(request_dict, &json_payload);
 
   std::string escaped_card_verification_number = net::EscapeUrlEncodedData(
       card_verification_number, true);
@@ -339,7 +339,7 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
   request_dict.Set(kRiskCapabilitiesKey, risk_capabilities_list.release());
 
   std::string json_payload;
-  base::JSONWriter::Write(&request_dict, &json_payload);
+  base::JSONWriter::Write(request_dict, &json_payload);
 
   crypto::RandBytes(&(one_time_pad_[0]), one_time_pad_.size());
 
@@ -431,7 +431,7 @@ void WalletClient::SaveToWallet(
   }
 
   std::string json_payload;
-  base::JSONWriter::Write(&request_dict, &json_payload);
+  base::JSONWriter::Write(request_dict, &json_payload);
 
   if (!card_verification_number.empty()) {
     std::string post_body;
@@ -476,7 +476,7 @@ void WalletClient::GetWalletItems(const base::string16& amount,
     request_dict.SetString(kTransactionCurrencyKey, currency);
 
   std::string post_body;
-  base::JSONWriter::Write(&request_dict, &post_body);
+  base::JSONWriter::Write(request_dict, &post_body);
 
   MakeWalletRequest(GetGetWalletItemsUrl(user_index_),
                     post_body,
@@ -515,7 +515,7 @@ void WalletClient::DoAcceptLegalDocuments(
   request_dict.Set(kAcceptedLegalDocumentKey, docs_list.release());
 
   std::string post_body;
-  base::JSONWriter::Write(&request_dict, &post_body);
+  base::JSONWriter::Write(request_dict, &post_body);
 
   MakeWalletRequest(GetAcceptLegalDocumentsUrl(user_index_),
                     post_body,

@@ -128,7 +128,7 @@ std::string PatchSchema(const std::string& schema) {
   }
 
   std::string serialized;
-  base::JSONWriter::Write(json.get(), &serialized);
+  base::JSONWriter::Write(*json, &serialized);
   return serialized;
 }
 

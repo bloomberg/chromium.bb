@@ -46,7 +46,7 @@ std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
   value.SetInteger("generation", candidate.generation());
 
   std::string result;
-  base::JSONWriter::Write(&value, &result);
+  base::JSONWriter::Write(value, &result);
   return result;
 }
 

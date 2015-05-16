@@ -121,7 +121,7 @@ void It2MeNativeMessagingHost::SendMessageToClient(
     scoped_ptr<base::DictionaryValue> message) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
   std::string message_json;
-  base::JSONWriter::Write(message.get(), &message_json);
+  base::JSONWriter::Write(*message, &message_json);
   client_->PostMessageFromNativeHost(message_json);
 }
 

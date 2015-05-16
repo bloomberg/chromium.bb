@@ -86,10 +86,10 @@ std::string LocalSettingsToJson(const LocalSettings& settings) {
   current->SetBoolean("printer/local_printing_enabled",
                          settings.local_printing_enabled);
   current->SetInteger("xmpp_timeout_value", settings.xmpp_timeout_value);
-  dictionary.Set("current", current.release());
+  dictionary.Set("current", current.Pass());
 
   std::string local_settings;
-  base::JSONWriter::Write(&dictionary, &local_settings);
+  base::JSONWriter::Write(dictionary, &local_settings);
   return local_settings;
 }
 

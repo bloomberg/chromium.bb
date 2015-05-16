@@ -158,7 +158,7 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
       disabled_list->AppendString(disabled_features[i]);
     test_arg.Set(kDisabledFeaturesKey, disabled_list.release());
 
-    return base::JSONWriter::Write(&test_arg, result);
+    return base::JSONWriter::Write(test_arg, result);
   }
 };
 

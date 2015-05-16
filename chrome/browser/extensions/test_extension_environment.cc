@@ -41,7 +41,7 @@ scoped_ptr<base::DictionaryValue> MakeExtensionManifest(
     manifest->MergeDictionary(manifest_extra_dict);
   } else {
     std::string manifest_json;
-    base::JSONWriter::Write(&manifest_extra, &manifest_json);
+    base::JSONWriter::Write(manifest_extra, &manifest_json);
     ADD_FAILURE() << "Expected dictionary; got \"" << manifest_json << "\"";
   }
   return manifest;

@@ -48,7 +48,7 @@ bool ManifestPermission::Read(const IPC::Message* m, PickleIterator* iter) {
 
 void ManifestPermission::Log(std::string* log) const {
   base::JSONWriter::WriteWithOptions(
-      ToValue().get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, log);
+      *ToValue(), base::JSONWriter::OPTIONS_PRETTY_PRINT, log);
 }
 
 }  // namespace extensions

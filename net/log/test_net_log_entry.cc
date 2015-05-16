@@ -76,7 +76,7 @@ std::string TestNetLogEntry::GetParamsJson() const {
   if (!params)
     return std::string();
   std::string json;
-  base::JSONWriter::Write(params.get(), &json);
+  base::JSONWriter::Write(*params, &json);
   return json;
 }
 

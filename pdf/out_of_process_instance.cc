@@ -469,7 +469,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
           engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
       node.SetBoolean(kAccessibleCopyable, has_permissions);
       std::string json;
-      base::JSONWriter::Write(&node, &json);
+      base::JSONWriter::Write(node, &json);
       reply.Set(pp::Var(kJSAccessibilityJSON), pp::Var(json));
     }
     PostMessage(reply);

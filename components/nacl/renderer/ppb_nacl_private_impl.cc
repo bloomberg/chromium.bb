@@ -1190,12 +1190,12 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
   base::JSONReader json_reader;
   int json_read_error_code;
   std::string json_read_error_msg;
-  base::Value* json_data = json_reader.ReadAndReturnError(
+  scoped_ptr<base::Value> json_data(json_reader.ReadAndReturnError(
       buffer.get(),
       base::JSON_PARSE_RFC,
       &json_read_error_code,
-      &json_read_error_msg);
-  if (json_data == NULL) {
+      &json_read_error_msg));
+  if (!json_data) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         std::string("Parsing resource info failed: JSON parse error: ") +

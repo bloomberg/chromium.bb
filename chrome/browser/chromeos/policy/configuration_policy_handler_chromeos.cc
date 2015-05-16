@@ -298,9 +298,8 @@ base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
       *toplevel_dict,
       kPlaceholder);
 
-  base::JSONWriter::WriteWithOptions(toplevel_dict.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json_string);
+  base::JSONWriter::WriteWithOptions(
+      *toplevel_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_string);
   return new base::StringValue(json_string);
 }
 

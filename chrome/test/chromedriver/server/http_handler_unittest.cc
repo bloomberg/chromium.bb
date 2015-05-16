@@ -74,7 +74,7 @@ TEST(HttpHandlerTest, HandleNewSession) {
   body.SetInteger("value", 1);
   body.SetString("sessionId", "session_id");
   std::string json;
-  base::JSONWriter::Write(&body, &json);
+  base::JSONWriter::Write(body, &json);
   ASSERT_EQ(json, response.body());
 }
 
@@ -119,7 +119,7 @@ TEST(HttpHandlerTest, HandleCommand) {
   body.SetInteger("value", 1);
   body.SetString("sessionId", "session_id");
   std::string json;
-  base::JSONWriter::Write(&body, &json);
+  base::JSONWriter::Write(body, &json);
   ASSERT_EQ(json, response.body());
 }
 

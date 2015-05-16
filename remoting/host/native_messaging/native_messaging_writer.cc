@@ -44,7 +44,7 @@ bool NativeMessagingWriter::WriteMessage(const base::Value& message) {
   }
 
   std::string message_json;
-  base::JSONWriter::Write(&message, &message_json);
+  base::JSONWriter::Write(message, &message_json);
 
   CHECK_LE(message_json.length(), kMaximumMessageSize);
 

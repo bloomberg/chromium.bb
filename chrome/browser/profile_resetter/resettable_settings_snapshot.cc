@@ -215,7 +215,7 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
                 "new field needs to be serialized here");
 
   std::string json;
-  base::JSONWriter::Write(&dict, &json);
+  base::JSONWriter::Write(dict, &json);
   return json;
 }
 

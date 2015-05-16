@@ -68,7 +68,7 @@ CastMessage KeepAliveDelegate::CreateKeepAliveMessage(
   output.set_namespace_(kHeartbeatNamespace);
   base::DictionaryValue type_dict;
   type_dict.SetString(kTypeNodeId, message_type);
-  if (!base::JSONWriter::Write(&type_dict, output.mutable_payload_utf8())) {
+  if (!base::JSONWriter::Write(type_dict, output.mutable_payload_utf8())) {
     LOG(ERROR) << "Failed to serialize dictionary.";
     return output;
   }

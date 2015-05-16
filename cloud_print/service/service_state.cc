@@ -134,8 +134,6 @@ bool ServiceState::IsValid() const {
 }
 
 std::string ServiceState::ToString() {
-  scoped_ptr<base::DictionaryValue> services(new base::DictionaryValue());
-
   scoped_ptr<base::DictionaryValue> cloud_print(new base::DictionaryValue());
   cloud_print->SetBoolean(kEnabledOptionName, true);
 
@@ -147,12 +145,12 @@ std::string ServiceState::ToString() {
   SetNotEmptyJsonString(cloud_print.get(), kXmppAuthTokenOptionName,
                         xmpp_auth_token_);
 
-  services->Set(kCloudPrintJsonName, cloud_print.release());
+  base::DictionaryValue services;
+  services.Set(kCloudPrintJsonName, cloud_print.Pass());
 
   std::string json;
-  base::JSONWriter::WriteWithOptions(services.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json);
+  base::JSONWriter::WriteWithOptions(
+      services, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return json;
 }
 

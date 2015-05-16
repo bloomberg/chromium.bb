@@ -54,10 +54,10 @@ std::string GetPolicy(scoped_ptr<base::DictionaryValue> mandatory,
   root_dict.SetString("policy_user", account);
   root_dict.SetInteger("current_key_index", 0);
 
-  std::string jsonPolicy;
+  std::string json_policy;
   base::JSONWriter::WriteWithOptions(
-      &root_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &jsonPolicy);
-  return jsonPolicy;
+      root_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_policy);
+  return json_policy;
 }
 
 }  // namespace

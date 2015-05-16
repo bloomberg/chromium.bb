@@ -68,7 +68,7 @@ bool operator==(const base::Value& first, const base::Value& second) {
 // Helper for pretty-printing the contents of base::Value in case of failures.
 void PrintTo(const base::Value& value, std::ostream* stream) {
   std::string json;
-  JSONWriter::Write(&value, &json);
+  JSONWriter::Write(value, &json);
   *stream << json;
 }
 
@@ -192,7 +192,7 @@ void PreferencesBrowserTest::SetUpInProcessBrowserTestFixture() {
       .WillRepeatedly(Return(true));
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
       &policy_provider_);
-};
+}
 
 void PreferencesBrowserTest::SetUserPolicies(
     const std::vector<std::string>& names,
@@ -376,9 +376,8 @@ void PreferencesBrowserTest::VerifyClearPref(const std::string& name,
     ExpectClearCommit(name);
   else
     ExpectNoCommit(name);
-  scoped_ptr<base::Value> commit_ptr(new base::FundamentalValue(commit));
   std::string commit_json;
-  base::JSONWriter::Write(commit_ptr.get(), &commit_json);
+  base::JSONWriter::Write(base::FundamentalValue(commit), &commit_json);
   std::stringstream javascript;
   javascript << "testEnv.runAndReply(function() {"
              << "    Preferences.clearPref("

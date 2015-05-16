@@ -3124,7 +3124,7 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
   if (active_tree_->root_layer()) {
     scoped_ptr<base::Value> json(active_tree_->root_layer()->LayerTreeAsJson());
     base::JSONWriter::WriteWithOptions(
-        json.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
+        *json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
   }
   return str;
 }

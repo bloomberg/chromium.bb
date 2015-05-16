@@ -46,7 +46,7 @@ void DevToolsProtocolClient::SendRawMessage(const std::string& message) {
 
 void DevToolsProtocolClient::SendMessage(const base::DictionaryValue& message) {
   std::string json_message;
-  base::JSONWriter::Write(&message, &json_message);
+  base::JSONWriter::Write(message, &json_message);
   SendRawMessage(json_message);
 }
 

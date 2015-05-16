@@ -9,6 +9,6 @@
 
 std::string SerializeValue(const base::Value* value) {
   std::string json;
-  base::JSONWriter::Write(value, &json);
+  base::JSONWriter::Write(*value, &json);
   return json;
 }

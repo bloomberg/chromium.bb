@@ -27,11 +27,11 @@ MATCHER_P(IsPolicies, dict, "") {
   if (!equal) {
     std::string actual_value;
     base::JSONWriter::WriteWithOptions(
-        arg, base::JSONWriter::OPTIONS_PRETTY_PRINT, &actual_value);
+        *arg, base::JSONWriter::OPTIONS_PRETTY_PRINT, &actual_value);
 
     std::string expected_value;
     base::JSONWriter::WriteWithOptions(
-        dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &expected_value);
+        *dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &expected_value);
 
     *result_listener << "Policies are not equal. ";
     *result_listener << "Expected policy: " << expected_value << ". ";

@@ -234,7 +234,7 @@ net::HttpStatusCode PrivetHttpServer::ProcessHttpRequest(
     return status_code;
   }
 
-  base::JSONWriter::WriteWithOptions(json_response.get(),
+  base::JSONWriter::WriteWithOptions(*json_response,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      response);
   return status_code;

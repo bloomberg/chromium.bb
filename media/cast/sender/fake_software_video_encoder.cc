@@ -57,7 +57,7 @@ void FakeSoftwareVideoEncoder::Encode(
   values.SetInteger("ref", encoded_frame->referenced_frame_id);
   values.SetInteger("id", encoded_frame->frame_id);
   values.SetInteger("size", frame_size_);
-  base::JSONWriter::Write(&values, &encoded_frame->data);
+  base::JSONWriter::Write(values, &encoded_frame->data);
   encoded_frame->data.resize(
       std::max<size_t>(encoded_frame->data.size(), frame_size_), ' ');
 }

@@ -656,10 +656,12 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
       ADD_FAILURE();
     }
     std::string policy;
-    base::JSONWriter::Write(policy::test::ConstructExternalDataReference(
-        embedded_test_server()->GetURL(std::string("/") + relative_path).spec(),
-        image_data).get(),
-        &policy);
+    base::JSONWriter::Write(*policy::test::ConstructExternalDataReference(
+                                embedded_test_server()
+                                    ->GetURL(std::string("/") + relative_path)
+                                    .spec(),
+                                image_data),
+                            &policy);
     return policy;
   }
 

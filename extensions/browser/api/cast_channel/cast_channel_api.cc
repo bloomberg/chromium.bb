@@ -59,7 +59,7 @@ template <class T>
 std::string ParamToString(const T& info) {
   scoped_ptr<base::DictionaryValue> dict = info.ToValue();
   std::string out;
-  base::JSONWriter::Write(dict.get(), &out);
+  base::JSONWriter::Write(*dict, &out);
   return out;
 }
 

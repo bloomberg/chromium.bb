@@ -108,7 +108,7 @@ ListValue* TracedValue::GetCurrentArray() {
 
 void TracedValue::AppendAsTraceFormat(std::string* out) const {
   std::string tmp;
-  JSONWriter::Write(stack_.front(), &tmp);
+  JSONWriter::Write(*stack_.front(), &tmp);
   *out += tmp;
   DCHECK_EQ(1u, stack_.size()) << tmp;
 }

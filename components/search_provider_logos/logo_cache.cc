@@ -152,7 +152,7 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
                   metadata.can_show_after_expiration);
   dict.SetInteger(kNumBytesKey, num_bytes);
   SetTimeValue(dict, kExpirationTimeKey, metadata.expiration_time);
-  base::JSONWriter::Write(&dict, str);
+  base::JSONWriter::Write(dict, str);
 }
 
 base::FilePath LogoCache::GetLogoPath() {

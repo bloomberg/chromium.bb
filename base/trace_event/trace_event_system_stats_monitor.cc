@@ -125,7 +125,7 @@ bool TraceEventSystemStatsMonitor::IsTimerRunningForTest() const {
 void AppendSystemProfileAsTraceFormat(const SystemMetrics& system_metrics,
                                       std::string* output) {
   std::string tmp;
-  base::JSONWriter::Write(system_metrics.ToValue().get(), &tmp);
+  base::JSONWriter::Write(*system_metrics.ToValue(), &tmp);
   *output += tmp;
 }
 

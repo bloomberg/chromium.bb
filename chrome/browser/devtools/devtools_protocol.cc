@@ -37,7 +37,7 @@ std::string DevToolsProtocol::SerializeCommand(
     command.Set(kParamsParam, params.release());
 
   std::string json_command;
-  base::JSONWriter::Write(&command, &json_command);
+  base::JSONWriter::Write(command, &json_command);
   return json_command;
 }
 

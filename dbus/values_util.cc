@@ -48,10 +48,10 @@ bool PopDictionaryEntries(MessageReader* reader,
     } else {
       // If the type of keys is not STRING, convert it to string.
       scoped_ptr<base::Value> key(PopDataAsValue(&entry_reader));
-      if (!key.get())
+      if (!key)
         return false;
       // Use JSONWriter to convert an arbitrary value to a string.
-      base::JSONWriter::Write(key.get(), &key_string);
+      base::JSONWriter::Write(*key, &key_string);
     }
     // Get the value and set the key-value pair.
     base::Value* value = PopDataAsValue(&entry_reader);

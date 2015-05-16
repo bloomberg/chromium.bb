@@ -69,7 +69,7 @@ std::string ToJson(const Value* value) {
     return std::string();
 
   std::string json_value;
-  base::JSONWriter::Write(value, &json_value);
+  base::JSONWriter::Write(*value, &json_value);
   return json_value;
 }
 

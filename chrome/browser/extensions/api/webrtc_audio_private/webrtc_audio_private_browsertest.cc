@@ -94,7 +94,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
     base::ListValue parameters;
     AppendTabIdToRequestInfo(&parameters, tab_id);
     std::string parameter_string;
-    JSONWriter::Write(&parameters, &parameter_string);
+    JSONWriter::Write(parameters, &parameter_string);
 
     scoped_refptr<WebrtcAudioPrivateGetActiveSinkFunction> function =
         new WebrtcAudioPrivateGetActiveSinkFunction();
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
   scoped_ptr<base::Value> result = InvokeGetSinks(&sink_list);
 
   std::string result_string;
-  JSONWriter::Write(result.get(), &result_string);
+  JSONWriter::Write(*result, &result_string);
   VLOG(2) << result_string;
 
   EXPECT_EQ(devices.size(), sink_list->GetSize());
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetActiveSinkNoMediaStream) {
   base::ListValue parameters;
   AppendTabIdToRequestInfo(&parameters, tab_id);
   std::string parameter_string;
-  JSONWriter::Write(&parameters, &parameter_string);
+  JSONWriter::Write(parameters, &parameter_string);
 
   scoped_refptr<WebrtcAudioPrivateGetActiveSinkFunction> function =
       new WebrtcAudioPrivateGetActiveSinkFunction();
@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetActiveSinkNoMediaStream) {
                                        browser()));
 
   std::string result_string;
-  JSONWriter::Write(result.get(), &result_string);
+  JSONWriter::Write(*result, &result_string);
   EXPECT_EQ("\"\"", result_string);
 }
 
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
   AppendTabIdToRequestInfo(&parameters, tab_id);
   parameters.AppendString("no such id");
   std::string parameter_string;
-  JSONWriter::Write(&parameters, &parameter_string);
+  JSONWriter::Write(parameters, &parameter_string);
 
   scoped_refptr<WebrtcAudioPrivateSetActiveSinkFunction> function =
       new WebrtcAudioPrivateSetActiveSinkFunction();
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
     AppendTabIdToRequestInfo(&parameters, tab_id);
     parameters.AppendString(target_device);
     std::string parameter_string;
-    JSONWriter::Write(&parameters, &parameter_string);
+    JSONWriter::Write(parameters, &parameter_string);
 
     scoped_refptr<WebrtcAudioPrivateSetActiveSinkFunction> function =
       new WebrtcAudioPrivateSetActiveSinkFunction();
@@ -345,14 +345,14 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
     parameters.AppendString(origin.spec());
     parameters.AppendString(source_id_in_origin);
     std::string parameter_string;
-    JSONWriter::Write(&parameters, &parameter_string);
+    JSONWriter::Write(parameters, &parameter_string);
 
     scoped_ptr<base::Value> result(
         RunFunctionAndReturnSingleResult(function.get(),
                                          parameter_string,
                                          browser()));
     std::string result_string;
-    JSONWriter::Write(result.get(), &result_string);
+    JSONWriter::Write(*result, &result_string);
     VLOG(2) << "Results: " << result_string;
   }
 }

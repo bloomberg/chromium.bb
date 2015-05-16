@@ -152,7 +152,7 @@ std::string BootTimesRecorder::Stats::SerializeToString() const {
   dictionary.SetString(kDisk, disk_);
 
   std::string result;
-  if (!base::JSONWriter::Write(&dictionary, &result)) {
+  if (!base::JSONWriter::Write(dictionary, &result)) {
     LOG(WARNING) << "BootTimesRecorder::Stats::SerializeToString(): failed.";
     return std::string();
   }

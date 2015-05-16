@@ -102,13 +102,12 @@ bool P2PNotificationData::Equals(const P2PNotificationData& other) const {
 }
 
 std::string P2PNotificationData::ToString() const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString(kSenderIdKey, sender_id_);
-  dict->SetString(kNotificationTypeKey,
-                  P2PNotificationTargetToString(target_));
-  dict->Set(kInvalidationsKey, invalidation_map_.ToValue().release());
+  base::DictionaryValue dict;
+  dict.SetString(kSenderIdKey, sender_id_);
+  dict.SetString(kNotificationTypeKey, P2PNotificationTargetToString(target_));
+  dict.Set(kInvalidationsKey, invalidation_map_.ToValue().release());
   std::string json;
-  base::JSONWriter::Write(dict.get(), &json);
+  base::JSONWriter::Write(dict, &json);
   return json;
 }
 

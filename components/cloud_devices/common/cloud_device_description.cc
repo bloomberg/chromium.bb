@@ -47,7 +47,7 @@ bool CloudDeviceDescription::InitFromString(const std::string& json) {
 std::string CloudDeviceDescription::ToString() const {
   std::string json;
   base::JSONWriter::WriteWithOptions(
-      root_.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      *root_, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return json;
 }
 

@@ -90,7 +90,7 @@ class TaskManagerDataDumper :
 
     std::string json;
     auto options = base::JSONWriter::OPTIONS_PRETTY_PRINT;
-    if (!base::JSONWriter::WriteWithOptions(&dict, options, &json))
+    if (!base::JSONWriter::WriteWithOptions(dict, options, &json))
       return;
 
     file_.WriteAtCurrentPos(json.c_str(), json.size());

@@ -119,7 +119,7 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     base::DictionaryValue settings;
     settings.SetString("testPath", base::GetQuotedJSONString(spec));
     std::string settings_string;
-    base::JSONWriter::Write(&settings, &settings_string);
+    base::JSONWriter::Write(settings, &settings_string);
     test_runner_->ShowDevTools(settings_string, std::string());
   }
   if (spec.find("/viewsource/") != std::string::npos) {

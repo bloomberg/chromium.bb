@@ -108,7 +108,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
     response_dict.SetString("token_type", "shared_secret");
     response_dict.SetString("scope", scope);
     std::string response;
-    base::JSONWriter::Write(&response_dict, &response);
+    base::JSONWriter::Write(response_dict, &response);
     return response;
   }
 
@@ -116,7 +116,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
     base::DictionaryValue response_dict;
     response_dict.SetString("error", error);
     std::string response;
-    base::JSONWriter::Write(&response_dict, &response);
+    base::JSONWriter::Write(response_dict, &response);
     return response;
   }
 

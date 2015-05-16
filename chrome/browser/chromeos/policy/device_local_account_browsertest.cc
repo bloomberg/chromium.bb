@@ -1279,7 +1279,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   scoped_ptr<base::DictionaryValue> metadata =
       test::ConstructExternalDataReference(kExternalDataURL, kExternalData);
   std::string policy;
-  base::JSONWriter::Write(metadata.get(), &policy);
+  base::JSONWriter::Write(*metadata, &policy);
   device_local_account_policy_.payload().mutable_useravatarimage()->set_value(
       policy);
   UploadAndInstallDeviceLocalAccountPolicy();
@@ -1362,10 +1362,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
       &image_data));
 
   std::string policy;
-  base::JSONWriter::Write(test::ConstructExternalDataReference(
-      embedded_test_server()->GetURL(std::string("/") +
-          chromeos::test::kUserAvatarImage1RelativePath).spec(),
-      image_data).get(),
+  base::JSONWriter::Write(
+      *test::ConstructExternalDataReference(
+          embedded_test_server()
+              ->GetURL(std::string("/") +
+                       chromeos::test::kUserAvatarImage1RelativePath)
+              .spec(),
+          image_data),
       &policy);
   device_local_account_policy_.payload().mutable_useravatarimage()->set_value(
       policy);

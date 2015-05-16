@@ -40,18 +40,16 @@ void TracedPicture::AppendPictureAlias(std::string* out) const {
   scoped_ptr<base::DictionaryValue> alias(new base::DictionaryValue());
   alias->SetString("id_ref", base::StringPrintf("%p", picture_.get()));
 
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->Set("alias", alias.release());
-
+  base::DictionaryValue res;
+  res.Set("alias", alias.release());
   std::string tmp;
-  base::JSONWriter::Write(res.get(), &tmp);
+  base::JSONWriter::Write(res, &tmp);
   out->append(tmp);
 }
 
 void TracedPicture::AppendPicture(std::string* out) const {
-  scoped_ptr<base::Value> value = picture_->AsValue();
   std::string tmp;
-  base::JSONWriter::Write(value.get(), &tmp);
+  base::JSONWriter::Write(*picture_->AsValue(), &tmp);
   out->append(tmp);
 }
 

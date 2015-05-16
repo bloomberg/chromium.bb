@@ -78,7 +78,7 @@ void DebugDumpSettings(const base::string16& doc_name,
   PrintSettingsToJobSettingsDebug(settings, &job_settings);
   std::string settings_str;
   base::JSONWriter::WriteWithOptions(
-      &job_settings, base::JSONWriter::OPTIONS_PRETTY_PRINT, &settings_str);
+      job_settings, base::JSONWriter::OPTIONS_PRETTY_PRINT, &settings_str);
   scoped_refptr<base::RefCountedMemory> data =
       base::RefCountedString::TakeString(&settings_str);
   blocking_runner->PostTask(

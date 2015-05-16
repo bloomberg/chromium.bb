@@ -26,7 +26,7 @@ void ExpectSerialization(
       process_data_phase, process_id, process_type, &serialized_value);
 
   std::string serialized_json;
-  base::JSONWriter::Write(&serialized_value, &serialized_json);
+  base::JSONWriter::Write(serialized_value, &serialized_json);
 
   EXPECT_EQ(expected_json, serialized_json);
 }

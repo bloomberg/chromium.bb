@@ -720,8 +720,8 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   // Initialize the content map.
   profile.GetHostContentSettingsMap();
 
-  const base::DictionaryValue* content_setting_prefs =
-      profile.GetPrefs()->GetDictionary(
+  const base::DictionaryValue& content_setting_prefs =
+      *profile.GetPrefs()->GetDictionary(
           prefs::kContentSettingsImagesPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, &prefs_as_json);

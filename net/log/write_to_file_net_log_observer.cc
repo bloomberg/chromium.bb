@@ -43,12 +43,11 @@ void WriteToFileNetLogObserver::StartObserving(
   // different source and event types, as they may be added and removed
   // between Chrome versions.
   std::string json;
-  if (constants) {
-    base::JSONWriter::Write(constants, &json);
-  } else {
-    scoped_ptr<base::DictionaryValue> scoped_constants(GetNetConstants());
-    base::JSONWriter::Write(scoped_constants.get(), &json);
-  }
+  if (constants)
+    base::JSONWriter::Write(*constants, &json);
+  else
+    base::JSONWriter::Write(*GetNetConstants(), &json);
+
   fprintf(file_.get(), "{\"constants\": %s,\n", json.c_str());
 
   // Start events array.  It's closed in StopObserving().
@@ -78,9 +77,8 @@ void WriteToFileNetLogObserver::StopObserving(
     DCHECK(url_request_context->CalledOnValidThread());
 
     std::string json;
-    scoped_ptr<base::DictionaryValue> net_info =
-        GetNetInfo(url_request_context, NET_INFO_ALL_SOURCES);
-    base::JSONWriter::Write(net_info.get(), &json);
+    base::JSONWriter::Write(
+        *GetNetInfo(url_request_context, NET_INFO_ALL_SOURCES), &json);
     fprintf(file_.get(), ",\"tabInfo\": %s\n", json.c_str());
   }
   fprintf(file_.get(), "}");
@@ -94,7 +92,7 @@ void WriteToFileNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
   // work, lines cannot be pretty printed.
   scoped_ptr<base::Value> value(entry.ToValue());
   std::string json;
-  base::JSONWriter::Write(value.get(), &json);
+  base::JSONWriter::Write(*value, &json);
   fprintf(file_.get(), "%s%s", (added_events_ ? ",\n" : ""), json.c_str());
   added_events_ = true;
 }

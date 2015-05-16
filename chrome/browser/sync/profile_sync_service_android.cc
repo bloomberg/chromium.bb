@@ -441,7 +441,7 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
   scoped_ptr<base::DictionaryValue> about_info =
       sync_ui_util::ConstructAboutInformation(sync_service_);
   std::string about_info_json;
-  base::JSONWriter::Write(about_info.get(), &about_info_json);
+  base::JSONWriter::Write(*about_info, &about_info_json);
 
   return ConvertUTF8ToJavaString(env, about_info_json);
 }

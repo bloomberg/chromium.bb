@@ -496,7 +496,7 @@ bool ParseInspectorMessage(
     if (message_dict->GetDictionary("result", &unscoped_result))
       command_response->result.reset(unscoped_result->DeepCopy());
     else if (message_dict->GetDictionary("error", &unscoped_error))
-      base::JSONWriter::Write(unscoped_error, &command_response->error);
+      base::JSONWriter::Write(*unscoped_error, &command_response->error);
     else
       command_response->result.reset(new base::DictionaryValue());
     return true;

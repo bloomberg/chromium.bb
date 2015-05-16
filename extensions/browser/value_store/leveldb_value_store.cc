@@ -389,7 +389,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::AddToBatch(
 
   if (write_new_value) {
     std::string value_as_json;
-    if (!base::JSONWriter::Write(&value, &value_as_json))
+    if (!base::JSONWriter::Write(value, &value_as_json))
       return Error::Create(OTHER_ERROR, kCannotSerialize, util::NewKey(key));
     batch->Put(key, value_as_json);
   }

@@ -221,7 +221,7 @@ void FormUploadData(const WifiData& wifi_data,
   AddWifiData(wifi_data, age, &request);
   if (!access_token.empty())
     request.SetString(kAccessTokenString, access_token);
-  base::JSONWriter::Write(&request, upload_data);
+  base::JSONWriter::Write(request, upload_data);
 }
 
 void AddString(const std::string& property_name, const std::string& value,

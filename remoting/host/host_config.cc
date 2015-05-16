@@ -28,7 +28,7 @@ scoped_ptr<base::DictionaryValue> HostConfigFromJson(
 
 std::string HostConfigToJson(const base::DictionaryValue& host_config) {
   std::string data;
-  base::JSONWriter::Write(&host_config, &data);
+  base::JSONWriter::Write(host_config, &data);
   return data;
 }
 

@@ -21,7 +21,7 @@ const base::DictionaryValue& JsEventDetails::Get() const {
 
 std::string JsEventDetails::ToString() const {
   std::string str;
-  base::JSONWriter::Write(&Get(), &str);
+  base::JSONWriter::Write(Get(), &str);
   return str;
 }
 

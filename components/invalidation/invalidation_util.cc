@@ -61,9 +61,8 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
 }
 
 std::string ObjectIdToString(const invalidation::ObjectId& object_id) {
-  scoped_ptr<base::DictionaryValue> value(ObjectIdToValue(object_id));
   std::string str;
-  base::JSONWriter::Write(value.get(), &str);
+  base::JSONWriter::Write(*ObjectIdToValue(object_id), &str);
   return str;
 }
 

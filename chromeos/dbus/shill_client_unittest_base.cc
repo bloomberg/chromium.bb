@@ -54,7 +54,7 @@ bool ValueMatcher::MatchAndExplain(const base::Value& value,
 
 void ValueMatcher::DescribeTo(::std::ostream* os) const {
   std::string expected_value_str;
-  base::JSONWriter::WriteWithOptions(expected_value_.get(),
+  base::JSONWriter::WriteWithOptions(*expected_value_,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &expected_value_str);
   *os << "value equals " << expected_value_str;
@@ -62,7 +62,7 @@ void ValueMatcher::DescribeTo(::std::ostream* os) const {
 
 void ValueMatcher::DescribeNegationTo(::std::ostream* os) const {
   std::string expected_value_str;
-  base::JSONWriter::WriteWithOptions(expected_value_.get(),
+  base::JSONWriter::WriteWithOptions(*expected_value_,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &expected_value_str);
   *os << "value does not equal " << expected_value_str;
@@ -393,9 +393,9 @@ void ShillClientUnittestBase::ExpectDictionaryValueResultWithoutStatus(
     const base::DictionaryValue* expected_result,
     const base::DictionaryValue& result) {
   std::string expected_result_string;
-  base::JSONWriter::Write(expected_result, &expected_result_string);
+  base::JSONWriter::Write(*expected_result, &expected_result_string);
   std::string result_string;
-  base::JSONWriter::Write(&result, &result_string);
+  base::JSONWriter::Write(result, &result_string);
   EXPECT_EQ(expected_result_string, result_string);
 }
 

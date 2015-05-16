@@ -51,7 +51,7 @@ std::string CrxIdToHashToCrxId(const std::string& kCrxId) {
   return GetCrxComponentID(component);
 }
 
-std::string JsonToString(const base::DictionaryValue* dict) {
+std::string JsonToString(const base::DictionaryValue& dict) {
   std::string json;
   base::JSONWriter::Write(dict, &json);
   return json;
@@ -310,8 +310,8 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   ASSERT_TRUE(base::ReadFileToString(whitelist_path_, &whitelist_contents));
   EXPECT_EQ(kWhitelistContents, whitelist_contents);
 
-  EXPECT_EQ(JsonToString(&pref_),
-            JsonToString(local_state_.GetDictionary(
+  EXPECT_EQ(JsonToString(pref_),
+            JsonToString(*local_state_.GetDictionary(
                 prefs::kRegisteredSupervisedUserWhitelists)));
 }
 

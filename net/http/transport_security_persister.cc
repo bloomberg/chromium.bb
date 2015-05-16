@@ -171,9 +171,8 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
     toplevel.Set(HashedDomainToExternalString(hostname), serialized);
   }
 
-  base::JSONWriter::WriteWithOptions(&toplevel,
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     output);
+  base::JSONWriter::WriteWithOptions(
+      toplevel, base::JSONWriter::OPTIONS_PRETTY_PRINT, output);
   return true;
 }
 

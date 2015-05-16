@@ -190,7 +190,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
   dict.SetStringWithoutPathExpansion(kStateKey, kState);
 
   std::string body;
-  base::JSONWriter::Write(&dict, &body);
+  base::JSONWriter::Write(dict, &body);
   (*it)->url_fetcher->SetUploadData("application/json", body);
 
   (*it)->url_fetcher->Start();

@@ -100,7 +100,7 @@ void BindURLToStatement(const TemplateURLData& data,
   for (size_t i = 0; i < data.alternate_urls.size(); ++i)
     alternate_urls_value.AppendString(data.alternate_urls[i]);
   std::string alternate_urls;
-  base::JSONWriter::Write(&alternate_urls_value, &alternate_urls);
+  base::JSONWriter::Write(alternate_urls_value, &alternate_urls);
 
   s->BindInt64(id_column, data.id);
   s->BindString16(starting_column, data.short_name());

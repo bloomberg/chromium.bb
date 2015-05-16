@@ -333,7 +333,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
   void SetUserConfigInShill(base::DictionaryValue* pref_proxy_config_dict) {
     std::string proxy_config;
     if (pref_proxy_config_dict)
-      base::JSONWriter::Write(pref_proxy_config_dict, &proxy_config);
+      base::JSONWriter::Write(*pref_proxy_config_dict, &proxy_config);
 
     NetworkStateHandler* network_state_handler =
         NetworkHandler::Get()->network_state_handler();

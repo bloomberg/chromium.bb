@@ -71,7 +71,7 @@ bool SaveToFile(const base::FilePath& path, const PrinterState& state) {
     json.Set(kCdd, state.cdd->DeepCopy());
 
   std::string json_str;
-  base::JSONWriter::WriteWithOptions(&json,
+  base::JSONWriter::WriteWithOptions(json,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_str);
   int size = base::checked_cast<int>(json_str.size());

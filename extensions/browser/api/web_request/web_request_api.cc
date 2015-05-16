@@ -2374,7 +2374,7 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
             headers_value->GetDictionary(i, &header_value));
         if (!FromHeaderDictionary(header_value, &name, &value)) {
           std::string serialized_header;
-          base::JSONWriter::Write(header_value, &serialized_header);
+          base::JSONWriter::Write(*header_value, &serialized_header);
           RespondWithError(event_name,
                            sub_event_name,
                            request_id,

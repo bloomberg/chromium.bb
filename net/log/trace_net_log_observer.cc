@@ -32,7 +32,7 @@ class TracedValue : public base::trace_event::ConvertableToTraceFormat {
   void AppendAsTraceFormat(std::string* out) const override {
     if (value_) {
       std::string tmp;
-      base::JSONWriter::Write(value_.get(), &tmp);
+      base::JSONWriter::Write(*value_, &tmp);
       *out += tmp;
     } else {
       *out += "\"\"";

@@ -43,7 +43,7 @@ Status DomTracker::OnEvent(DevToolsClient* client,
 
     if (!ProcessNodeList(nodes)) {
       std::string json;
-      base::JSONWriter::Write(nodes, &json);
+      base::JSONWriter::Write(*nodes, &json);
       return Status(kUnknownError,
                     "DOM.setChildNodes has invalid 'nodes': " + json);
     }
@@ -54,7 +54,7 @@ Status DomTracker::OnEvent(DevToolsClient* client,
 
     if (!ProcessNode(node)) {
       std::string json;
-      base::JSONWriter::Write(node, &json);
+      base::JSONWriter::Write(*node, &json);
       return Status(kUnknownError,
                     "DOM.childNodeInserted has invalid 'node': " + json);
     }

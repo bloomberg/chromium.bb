@@ -122,7 +122,7 @@ class SetDisjunctionPermission : public APIPermission {
         data_set_.insert(data);
       } else {
         std::string unknown_permission;
-        base::JSONWriter::Write(item_value, &unknown_permission);
+        base::JSONWriter::Write(*item_value, &unknown_permission);
         if (unhandled_permissions) {
           unhandled_permissions->push_back(unknown_permission);
         } else {

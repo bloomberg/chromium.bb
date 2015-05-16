@@ -81,8 +81,8 @@ class DeviceCommandScreenshotJob::Payload
 DeviceCommandScreenshotJob::Payload::Payload(ResultCode result_code) {
   base::DictionaryValue root_dict;
   if (result_code != SUCCESS)
-    root_dict.Set(kResultFieldName, new base::FundamentalValue(result_code));
-  base::JSONWriter::Write(&root_dict, &payload_);
+    root_dict.SetInteger(kResultFieldName, result_code);
+  base::JSONWriter::Write(root_dict, &payload_);
 }
 
 scoped_ptr<std::string> DeviceCommandScreenshotJob::Payload::Serialize() {

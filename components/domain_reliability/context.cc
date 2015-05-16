@@ -223,9 +223,7 @@ void DomainReliabilityContext::StartUpload() {
   DCHECK(upload_time_.is_null());
   upload_time_ = time_->NowTicks();
   std::string report_json;
-  scoped_ptr<const Value> report_value(CreateReport(upload_time_));
-  base::JSONWriter::Write(report_value.get(), &report_json);
-  report_value.reset();
+  base::JSONWriter::Write(*CreateReport(upload_time_), &report_json);
 
   size_t collector_index = scheduler_.OnUploadStart();
 
@@ -281,7 +279,7 @@ scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
       resources_value->Append(resource_report.release());
   }
 
-  DictionaryValue* report_value = new DictionaryValue();
+  scoped_ptr<DictionaryValue> report_value(new DictionaryValue());
   if (!config().version.empty())
     report_value->SetString("config_version", config().version);
   report_value->SetString("reporter", upload_reporter_string_);
@@ -289,7 +287,7 @@ scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
   if (!resources_value->empty())
     report_value->Set("resources", resources_value.release());
 
-  return scoped_ptr<const Value>(report_value);
+  return report_value.Pass();
 }
 
 void DomainReliabilityContext::MarkUpload() {

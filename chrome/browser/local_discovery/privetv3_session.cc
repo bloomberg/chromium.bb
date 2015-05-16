@@ -410,7 +410,7 @@ void PrivetV3Session::StartPostRequest(const std::string& api,
     on_post_data_.Run(input);
   std::string json;
   base::JSONWriter::WriteWithOptions(
-      &input, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      input, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   PrivetURLFetcher* fetcher =
       CreateFetcher(api, net::URLFetcher::RequestType::POST, callback);
   fetcher->SetUploadData(cloud_print::kContentTypeJSON, json);

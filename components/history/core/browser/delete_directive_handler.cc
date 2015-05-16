@@ -32,7 +32,7 @@ std::string DeleteDirectiveToString(
   scoped_ptr<base::DictionaryValue> value(
       syncer::HistoryDeleteDirectiveSpecificsToValue(delete_directive));
   std::string str;
-  base::JSONWriter::Write(value.get(), &str);
+  base::JSONWriter::Write(*value, &str);
   return str;
 }
 

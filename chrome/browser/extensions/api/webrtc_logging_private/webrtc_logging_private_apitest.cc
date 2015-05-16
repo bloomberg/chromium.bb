@@ -35,7 +35,7 @@ static const char kTestLoggingUrl[] = "dummy url string";
 
 std::string ParamsToString(const base::ListValue& parameters) {
   std::string parameter_string;
-  EXPECT_TRUE(base::JSONWriter::Write(&parameters, &parameter_string));
+  EXPECT_TRUE(base::JSONWriter::Write(parameters, &parameter_string));
   return parameter_string;
 }
 

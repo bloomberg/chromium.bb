@@ -112,7 +112,7 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
                    network_handler::ErrorCallback()));
   } else {
     std::string proxy_config_str;
-    base::JSONWriter::Write(&proxy_config.GetDictionary(), &proxy_config_str);
+    base::JSONWriter::Write(proxy_config.GetDictionary(), &proxy_config_str);
     shill_service_client->SetProperty(
         dbus::ObjectPath(network.path()),
         shill::kProxyConfigProperty,

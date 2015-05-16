@@ -93,7 +93,7 @@ Status ConsoleLogger::OnEvent(
 
   // Don't know how to format, log full JSON.
   std::string message_json;
-  base::JSONWriter::Write(&params, &message_json);
+  base::JSONWriter::Write(params, &message_json);
   log_->AddEntry(Log::kWarning, message_json);
   return Status(kOk);
 }

@@ -70,7 +70,7 @@ class MockSyncWebSocket : public SyncWebSocket {
     base::DictionaryValue result;
     result.SetInteger("param", 1);
     response.Set("result", result.DeepCopy());
-    base::JSONWriter::Write(&response, message);
+    base::JSONWriter::Write(response, message);
     --queued_messages_;
     return SyncWebSocket::kOk;
   }
@@ -120,7 +120,7 @@ TEST_F(DevToolsClientImplTest, SendCommandAndGetResult) {
   Status status = client.SendCommandAndGetResult("method", params, &result);
   ASSERT_EQ(kOk, status.code());
   std::string json;
-  base::JSONWriter::Write(result.get(), &json);
+  base::JSONWriter::Write(*result, &json);
   ASSERT_STREQ("{\"param\":1}", json.c_str());
 }
 
@@ -725,7 +725,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
     response.SetInteger("id", id);
     response.Set("result", new base::DictionaryValue());
     std::string json_response;
-    base::JSONWriter::Write(&response, &json_response);
+    base::JSONWriter::Write(response, &json_response);
     queued_response_.push_back(json_response);
 
     // Push one event.
@@ -733,7 +733,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
     event.SetString("method", "updateEvent");
     event.Set("params", new base::DictionaryValue());
     std::string json_event;
-    base::JSONWriter::Write(&event, &json_event);
+    base::JSONWriter::Write(event, &json_event);
     queued_response_.push_back(json_event);
 
     return true;

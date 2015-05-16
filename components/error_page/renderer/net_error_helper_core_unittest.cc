@@ -84,13 +84,13 @@ std::string SuggestionsToResponse(const NavigationCorrection* corrections,
   for (int i = 0; i < num_corrections; ++i)
     url_corrections->Append(corrections[i].ToValue());
 
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  response->Set("result.UrlCorrections", url_corrections);
-  response->SetString("result.eventId", kNavigationCorrectionEventId);
-  response->SetString("result.fingerprint", kNavigationCorrectionFingerprint);
+  base::DictionaryValue response;
+  response.Set("result.UrlCorrections", url_corrections);
+  response.SetString("result.eventId", kNavigationCorrectionEventId);
+  response.SetString("result.fingerprint", kNavigationCorrectionFingerprint);
 
   std::string json;
-  base::JSONWriter::Write(response.get(), &json);
+  base::JSONWriter::Write(response, &json);
   return json;
 }
 

@@ -19,7 +19,7 @@ std::string MaybeToJson(const base::Value* value) {
     return "(null)";
 
   std::string json;
-  if (!base::JSONWriter::Write(value, &json))
+  if (!base::JSONWriter::Write(*value, &json))
     return "(invalid value)";
 
   return json;

@@ -40,14 +40,14 @@ namespace {
 
 void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
                      const std::set<std::string>& categorySet) {
-  scoped_ptr<base::ListValue> category_list(new base::ListValue());
+  base::ListValue category_list;
   for (std::set<std::string>::const_iterator it = categorySet.begin();
        it != categorySet.end(); it++) {
-    category_list->AppendString(*it);
+    category_list.AppendString(*it);
   }
 
   base::RefCountedString* res = new base::RefCountedString();
-  base::JSONWriter::Write(category_list.get(), &res->data());
+  base::JSONWriter::Write(category_list, &res->data());
   callback.Run(res);
 }
 
@@ -133,12 +133,12 @@ void OnTraceBufferUsageResult(const WebUIDataSource::GotDataCallback& callback,
 void OnTraceBufferStatusResult(const WebUIDataSource::GotDataCallback& callback,
                                float percent_full,
                                size_t approximate_event_count) {
-  scoped_ptr<base::DictionaryValue> status(new base::DictionaryValue());
-  status->SetDouble("percentFull", percent_full);
-  status->SetInteger("approximateEventCount", approximate_event_count);
+  base::DictionaryValue status;
+  status.SetDouble("percentFull", percent_full);
+  status.SetInteger("approximateEventCount", approximate_event_count);
 
   std::string status_json;
-  base::JSONWriter::Write(status.get(), &status_json);
+  base::JSONWriter::Write(status, &status_json);
 
   base::RefCountedString* status_base64 = new base::RefCountedString();
   base::Base64Encode(status_json, &status_base64->data());
@@ -177,18 +177,17 @@ void GetMonitoringStatus(const WebUIDataSource::GotDataCallback& callback) {
   TracingController::GetInstance()->GetMonitoringStatus(
       &is_monitoring, &category_filter, &options);
 
-  scoped_ptr<base::DictionaryValue>
-    monitoring_options(new base::DictionaryValue());
-  monitoring_options->SetBoolean("isMonitoring", is_monitoring);
-  monitoring_options->SetString("categoryFilter", category_filter.ToString());
-  monitoring_options->SetBoolean("useSystemTracing", options.enable_systrace);
-  monitoring_options->SetBoolean(
+  base::DictionaryValue monitoring_options;
+  monitoring_options.SetBoolean("isMonitoring", is_monitoring);
+  monitoring_options.SetString("categoryFilter", category_filter.ToString());
+  monitoring_options.SetBoolean("useSystemTracing", options.enable_systrace);
+  monitoring_options.SetBoolean(
       "useContinuousTracing",
       options.record_mode == base::trace_event::RECORD_CONTINUOUSLY);
-  monitoring_options->SetBoolean("useSampling", options.enable_sampling);
+  monitoring_options.SetBoolean("useSampling", options.enable_sampling);
 
   std::string monitoring_options_json;
-  base::JSONWriter::Write(monitoring_options.get(), &monitoring_options_json);
+  base::JSONWriter::Write(monitoring_options, &monitoring_options_json);
 
   base::RefCountedString* monitoring_options_base64 =
     new base::RefCountedString();

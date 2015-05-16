@@ -369,7 +369,7 @@ void JwkWriter::SetBytes(const std::string& member_name,
 
 void JwkWriter::ToJson(std::vector<uint8_t>* utf8_bytes) const {
   std::string json;
-  base::JSONWriter::Write(&dict_, &json);
+  base::JSONWriter::Write(dict_, &json);
   utf8_bytes->assign(json.begin(), json.end());
 }
 

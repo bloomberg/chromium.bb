@@ -1168,9 +1168,7 @@ ValueDeserializer::~ValueDeserializer() {
 
 std::ostream& operator<<(std::ostream& out, const Value& value) {
   std::string json;
-  JSONWriter::WriteWithOptions(&value,
-                               JSONWriter::OPTIONS_PRETTY_PRINT,
-                               &json);
+  JSONWriter::WriteWithOptions(value, JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return out << json;
 }
 

@@ -62,7 +62,7 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     incident->set_path(pref_path);
     if (!value ||
         (!value->GetAsString(incident->mutable_atomic_value()) &&
-         !base::JSONWriter::Write(value, incident->mutable_atomic_value()))) {
+         !base::JSONWriter::Write(*value, incident->mutable_atomic_value()))) {
       incident->clear_atomic_value();
     }
     incident->set_value_state(proto_value_state);

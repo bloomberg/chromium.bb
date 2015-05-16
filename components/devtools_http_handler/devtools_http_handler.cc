@@ -813,13 +813,11 @@ void DevToolsHttpHandler::SendJson(int connection_id,
   // Serialize value and message.
   std::string json_value;
   if (value) {
-    base::JSONWriter::WriteWithOptions(value,
-                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                       &json_value);
+    base::JSONWriter::WriteWithOptions(
+        *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_value);
   }
   std::string json_message;
-  scoped_ptr<base::Value> message_object(new base::StringValue(message));
-  base::JSONWriter::Write(message_object.get(), &json_message);
+  base::JSONWriter::Write(base::StringValue(message), &json_message);
 
   net::HttpServerResponseInfo response(status_code);
   response.SetBody(json_value + message, "application/json; charset=UTF-8");

@@ -35,7 +35,7 @@ std::string GetViewDescription(WebContents* web_contents) {
     description.SetInteger("height", screen_rect.height());
   }
   std::string json;
-  base::JSONWriter::Write(&description, &json);
+  base::JSONWriter::Write(description, &json);
   return json;
 }
 
