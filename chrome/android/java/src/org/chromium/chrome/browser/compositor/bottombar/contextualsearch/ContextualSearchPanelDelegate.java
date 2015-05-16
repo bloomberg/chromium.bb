@@ -54,6 +54,23 @@ public interface ContextualSearchPanelDelegate {
     void updateBasePageSelectionYPx(float y);
 
     /**
+     * Sets the content height of the First Run Flow Panel.
+     * @param height The content height of the First Run Flow Panel.
+     */
+    void setPromoContentHeight(float height);
+
+    /**
+     * @param shouldHidePromoHeader Sets whether the First Run Flow's header
+     *            should be hidden.
+     */
+    void setShouldHidePromoHeader(boolean shouldHidePromoHeader);
+
+    /**
+     * Animates the Contextual Search panel after first-run success.
+     */
+    void animateAfterFirstRunSuccess();
+
+    /**
      * Handles the onLoadStarted event in the WebContents.
      */
     void onLoadStarted();

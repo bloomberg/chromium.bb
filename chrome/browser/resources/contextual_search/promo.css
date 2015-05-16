@@ -1,0 +1,162 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+/* TODO: Need to clean up @font-face after we remove font-family from body. */
+@font-face {
+  font-family: 'Roboto2';
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto2-Regular'),
+      url(chrome://resources/roboto/roboto.woff2) format('woff2'),
+      url(chrome://resources/roboto/roboto.woff) format('woff');
+}
+
+/* TODO(pedrosimonetti): Find a better way to fix the problem when the
+ * text scaling preference is set to a high value.
+ *
+ * This CSS rule prevents the promo text from scaling as explained here:
+ * https://code.google.com/p/chromium/issues/detail?id=252828#c10
+ *
+ * For for background about the problem, see:
+ * https://code.google.com/p/chromium/issues/detail?id=466773
+ */
+#heading,
+#description {
+  max-height: 999999px;
+}
+
+body {
+  font-family: 'Roboto2', sans-serif;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+a.colored-link {
+  color: rgb(66, 133, 244);
+}
+
+#container {
+  /* NOTE(pedrosimonetti): There's an implicit extra top margin that is
+   * rendered natively (currently using 24dp). So, the total padding will
+   * be 38dp (24dp + 14dp). For more info, see SEARCH_BAR_HEIGHT_STATE_PROMO
+   * in ContextualSearchPanelBase.java.
+   *
+   * We're also setting the side and bottom paddings to ensure to make sure
+   * that when computing the height of the container all margins/paddings will
+   * be considered.
+   */
+  padding: 14px 16px 12px;
+}
+
+#button-container {
+  margin-top: 24px;
+  text-align: end;
+  width: 100%;
+}
+
+#container.hide {
+  -webkit-transform: scale(0.95);
+  -webkit-transition-duration: 130ms;
+  -webkit-transition-property: opacity, -webkit-transform;
+  opacity: 0;
+}
+
+#description {
+  color: #7E7E7E;
+  font-size: 16px;
+  line-height: 1.38em;
+  margin: 12px 0 24px;
+}
+
+/* Some properties below can be overridden in landscape orientation. */
+#heading {
+  font-size: 23px;
+  margin: 20px 0 12px;
+  text-align: center;
+}
+.header-image {
+  background-image: url(header.svg);
+  background-repeat: no-repeat;
+  height: 98px;
+  margin: 0 auto 38px auto;
+  width: 156px;
+}
+.portrait {
+  display: block;
+}
+.landscape {
+  display: none;
+}
+
+/* Landscape */
+@media screen and (orientation:landscape) {
+  #heading {
+    margin-top: 0;
+    /* The heading text and description text should be aligned, therefore
+     * the left margin here will be equal to the header image width (156px)
+     * plus its right margin (24px). Therefore the total left should be
+     * 156px + 24px = 180px.
+     */
+    margin-left: 180px;
+    padding-top: 8px;
+    text-align: left;
+  }
+  .header-image {
+    /* The header image is supposed to be vertically centered when the promo
+     * is in landscape mode. For now, we're forcefully moving the image 4
+     * pixels up to make it centered. A better approach would be using CSS
+     * flexbox to properly center it, but this will require changing the
+     * markup and styling of the whole promo, and it could be tricky coming
+     * up with a single markup that works in both portrait and lanscape modes.
+     */
+    margin: 0 24px 0 0;
+    position: relative;
+    top: -4px;
+  }
+  .portrait {
+    display: none;
+  }
+  .landscape {
+    display: block;
+    float: left;
+  }
+  html[dir='rtl'] .landscape {
+    float: right;
+  }
+}
+
+button {
+  background: none;
+  border: none;
+  display: inline-block;
+  font-family: 'Roboto2', sans-serif;
+  font-size: 14px;
+  margin: 6px 0;
+  /* We use a slightly different top-bottom padding because Roboto has a
+   * rendering bug which makes an extra padding to be rendered at the bottom of
+   * text.
+   */
+  padding: 12px 16px 8px;
+  white-space: nowrap;
+}
+
+button .caption {
+  text-transform: uppercase;
+}
+
+#optin-button {
+  background: rgb(66, 133, 244);
+  background-clip: padding-box;
+  border-radius: 3px;
+}
+
+#optin-button .caption {
+  color: white;
+}
+
+#optout-button .caption {
+  color: rgb(66, 133, 244);
+}

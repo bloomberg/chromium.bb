@@ -664,6 +664,8 @@
       'browser/safe_json_parser.h',
       'browser/search/contextual_search_policy_handler_android.cc',
       'browser/search/contextual_search_policy_handler_android.h',
+      'browser/search/contextual_search_promo_source_android.cc',
+      'browser/search/contextual_search_promo_source_android.h',
       'browser/search/iframe_source.cc',
       'browser/search/iframe_source.h',
       'browser/search/instant_io_context.cc',

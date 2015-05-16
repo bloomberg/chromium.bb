@@ -28,7 +28,8 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
      */
     protected enum Property {
         PANEL_HEIGHT,
-        PROMO_VISIBILITY
+        PROMO_VISIBILITY,
+        FIRST_RUN_PANEL_HEIGHT,
     }
 
     /**
@@ -109,7 +110,7 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
      * @param reason The reason for the change of panel state.
      */
     protected void expandPanel(StateChangeReason reason) {
-        animatePanelToState(PanelState.EXPANDED, reason);
+        animatePanelToState(getIntermediaryState(), reason);
     }
 
     /**
@@ -193,6 +194,19 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
     }
 
     /**
+     * Animates the Contextual Search panel after first-run success.
+     */
+    protected void animateAfterFirstRunSuccess() {
+        final PanelState desiredState = PanelState.EXPANDED;
+        mAnimatingState = desiredState;
+        mAnimatingStateReason = StateChangeReason.OPTIN;
+
+        final float desiredHeight = getPanelHeightFromState(desiredState);
+        animateProperty(Property.FIRST_RUN_PANEL_HEIGHT, getHeight(), desiredHeight,
+                BASE_ANIMATION_DURATION_MS);
+    }
+
+    /**
      * Animates the Panel to its nearest state.
      */
     protected void animateToNearestState() {
@@ -225,7 +239,7 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
         // the EXPANDED state is the only one that will show the Promo.
         if (projectedState == PanelState.MAXIMIZED
                 && getPanelState() == PanelState.PEEKED
-                && isPromoAvailable()) {
+                && isPanelPromoAvailable()) {
             projectedState = PanelState.EXPANDED;
         }
 
@@ -341,6 +355,8 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
             setPanelHeight(value);
         } else if (prop == Property.PROMO_VISIBILITY) {
             setPromoVisibilityForOptInAnimation(value);
+        } else if (prop == Property.FIRST_RUN_PANEL_HEIGHT) {
+            setPanelHeightForPromoOptInAnimation(value);
         }
     }
 
