@@ -214,7 +214,7 @@ class Config {
     TRACE_AFTER_DISPATCH_IMPL_METHOD
   };
 
-  static TraceMethodType GetTraceMethodType(clang::FunctionDecl* method) {
+  static TraceMethodType GetTraceMethodType(const clang::FunctionDecl* method) {
     if (method->getNumParams() != 1)
       return NOT_TRACE_METHOD;
 
@@ -244,7 +244,7 @@ class Config {
     return NOT_TRACE_METHOD;
   }
 
-  static bool IsTraceMethod(clang::FunctionDecl* method) {
+  static bool IsTraceMethod(const clang::FunctionDecl* method) {
     return GetTraceMethodType(method) != NOT_TRACE_METHOD;
   }
 
