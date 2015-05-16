@@ -26,7 +26,7 @@
             'BORINGSSL_SHARED_LIBRARY',
           ],
         }],
-        ['target_arch == "arm"', {
+        ['target_arch == "arm" and msan == 0', {
           'conditions': [
             ['OS == "linux" or OS == "android"', {
               'sources': [ '<@(boringssl_linux_arm_sources)' ],
@@ -35,7 +35,7 @@
             }],
           ],
         }],
-        ['target_arch == "arm64"', {
+        ['target_arch == "arm64" and msan == 0', {
           'conditions': [
             ['OS == "linux" or OS == "android"', {
               'sources': [ '<@(boringssl_linux_aarch64_sources)' ],
@@ -44,7 +44,7 @@
             }],
           ],
         }],
-        ['target_arch == "ia32"', {
+        ['target_arch == "ia32" and msan == 0', {
           'conditions': [
             ['OS == "mac" or OS == "ios"', {
               'sources': [ '<@(boringssl_mac_x86_sources)' ],
@@ -68,7 +68,7 @@
             }],
           ]
         }],
-        ['target_arch == "x64"', {
+        ['target_arch == "x64" and msan == 0', {
           'conditions': [
             ['OS == "mac" or OS == "ios"', {
               'sources': [ '<@(boringssl_mac_x86_64_sources)' ],
@@ -92,7 +92,7 @@
             }],
           ]
         }],
-        ['target_arch != "arm" and target_arch != "ia32" and target_arch != "x64" and target_arch != "arm64"', {
+        ['msan == 1 or (target_arch != "arm" and target_arch != "ia32" and target_arch != "x64" and target_arch != "arm64")', {
           'defines': [ 'OPENSSL_NO_ASM' ],
         }],
       ],

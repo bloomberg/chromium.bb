@@ -25,7 +25,7 @@ gypi_values =
 
 # Windows' assembly is built with Yasm. The other platforms use the platform
 # assembler.
-if (is_win) {
+if (is_win && !is_msan) {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("boringssl_asm") {
     if (current_cpu == "x64") {
@@ -70,7 +70,9 @@ component("boringssl") {
     "src/crypto",
   ]
 
-  if (current_cpu == "x64") {
+  if (is_msan) {
+    defines += [ "OPENSSL_NO_ASM" ]
+  } else if (current_cpu == "x64") {
     if (is_mac || is_ios) {
       sources += gypi_values.boringssl_mac_x86_64_sources
     } else if (is_linux || is_android) {
