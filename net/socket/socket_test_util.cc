@@ -524,15 +524,6 @@ MockRead SequencedSocketData::OnRead() {
   NET_TRACE(1, " *** ") << "next_read: " << next_read.sequence_number;
   CHECK_GE(next_read.sequence_number, sequence_number_);
 
-  // Special case handling for hanging reads.
-  if (next_read.mode == ASYNC && next_read.result == ERR_IO_PENDING) {
-    NET_TRACE(1, " *** ") << "Hanging read";
-    helper_.AdvanceRead();
-    ++sequence_number_;
-    CHECK(helper_.at_read_eof());
-    return MockRead(SYNCHRONOUS, ERR_IO_PENDING);
-  }
-
   if (next_read.sequence_number <= sequence_number_) {
     if (next_read.mode == SYNCHRONOUS) {
       NET_TRACE(1, " *** ") << "Returning synchronously";
@@ -543,6 +534,15 @@ MockRead SequencedSocketData::OnRead() {
       return next_read;
     }
 
+    // If the result is ERR_IO_PENDING, then advance to the next state
+    // and pause reads.
+    if (next_read.result == ERR_IO_PENDING) {
+      NET_TRACE(1, " *** ") << "Pausing at: " << sequence_number_;
+      ++sequence_number_;
+      helper_.AdvanceRead();
+      read_state_ = PAUSED;
+      return MockRead(SYNCHRONOUS, ERR_IO_PENDING);
+    }
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&SequencedSocketData::OnReadComplete,
                               weak_factory_.GetWeakPtr()));
@@ -625,12 +625,35 @@ bool SequencedSocketData::at_write_eof() const {
   return helper_.at_read_eof();
 }
 
+bool SequencedSocketData::IsReadPaused() {
+  return read_state_ == PAUSED;
+}
+
+void SequencedSocketData::CompleteRead() {
+  if (read_state_ != PAUSED) {
+    ADD_FAILURE() << "Unable to CompleteRead when not paused.";
+    return;
+  }
+  read_state_ = COMPLETING;
+  OnReadComplete();
+}
+
 void SequencedSocketData::MaybePostReadCompleteTask() {
   NET_TRACE(1, " ****** ") << " current: " << sequence_number_;
   // Only trigger the next read to complete if there is already a read pending
   // which should complete at the current sequence number.
   if (read_state_ != PENDING ||
       helper_.PeekRead().sequence_number != sequence_number_) {
+    return;
+  }
+
+  // If the result is ERR_IO_PENDING, then advance to the next state
+  // and pause reads.
+  if (helper_.PeekRead().result == ERR_IO_PENDING) {
+    NET_TRACE(1, " *** ") << "Pausing read at: " << sequence_number_;
+    ++sequence_number_;
+    helper_.AdvanceRead();
+    read_state_ = PAUSED;
     return;
   }
 
@@ -681,7 +704,8 @@ void SequencedSocketData::OnReadComplete() {
   // before calling that.
   MaybePostWriteCompleteTask();
 
-  NET_TRACE(1, " *** ") << "Completing socket read for: " << sequence_number_;
+  NET_TRACE(1, " *** ") << "Completing socket read for: "
+                        << data.sequence_number;
   DumpMockReadWrite(data);
   socket()->OnReadComplete(data);
   NET_TRACE(1, " *** ") << "Done";
@@ -708,7 +732,8 @@ void SequencedSocketData::OnWriteComplete() {
   // before calling that.
   MaybePostReadCompleteTask();
 
-  NET_TRACE(1, " *** ") << " Completing socket write for: " << sequence_number_;
+  NET_TRACE(1, " *** ") << " Completing socket write for: "
+                        << data.sequence_number;
   socket()->OnWriteComplete(rv);
   NET_TRACE(1, " *** ") << "Done";
 }

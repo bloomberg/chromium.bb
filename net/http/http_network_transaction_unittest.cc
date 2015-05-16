@@ -3686,22 +3686,22 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_body->size()));
 
   MockWrite spdy_writes[] = {
-      CreateMockWrite(*connect, 1),
-      CreateMockWrite(*wrapped_get, 3),
-      CreateMockWrite(*window_update_get_resp, 5),
+      CreateMockWrite(*connect, 0),
+      CreateMockWrite(*wrapped_get, 2),
+      CreateMockWrite(*window_update_get_resp, 6),
       CreateMockWrite(*window_update_body, 7),
   };
 
   MockRead spdy_reads[] = {
-      CreateMockRead(*conn_resp, 2, ASYNC),
+      CreateMockRead(*conn_resp, 1, ASYNC),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),
       CreateMockRead(*wrapped_get_resp, 4, ASYNC),
-      CreateMockRead(*wrapped_body, 6, ASYNC),
+      CreateMockRead(*wrapped_body, 5, ASYNC),
       MockRead(ASYNC, 0, 8),
   };
 
-  OrderedSocketData spdy_data(
-      spdy_reads, arraysize(spdy_reads),
-      spdy_writes, arraysize(spdy_writes));
+  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
+                                arraysize(spdy_writes));
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
@@ -3716,6 +3716,10 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
+  // Allow the SpdyProxyClientSocket's write callback to complete.
+  base::MessageLoop::current()->RunUntilIdle();
+  // Now allow the read of the response to complete.
+  spdy_data.CompleteRead();
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
 
@@ -11861,8 +11865,8 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
       reads.push_back(MockRead(ASYNC, OK, 3));
     }
 
-    OrderedSocketData data(vector_as_array(&reads), reads.size(),
-                           vector_as_array(&writes), writes.size());
+    SequencedSocketData data(vector_as_array(&reads), reads.size(),
+                             vector_as_array(&writes), writes.size());
     session_deps_.socket_factory->AddSocketDataProvider(&data);
 
     // Connection to the origin fails.
@@ -11907,6 +11911,10 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
 
     int rv = trans1->Start(&request1, callback1.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
+    base::MessageLoop::current()->RunUntilIdle();
+    if (data.IsReadPaused()) {
+      data.CompleteRead();
+    }
     rv = callback1.WaitForResult();
     if (valid) {
       EXPECT_EQ(OK, rv);

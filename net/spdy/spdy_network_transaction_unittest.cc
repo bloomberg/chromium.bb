@@ -2285,19 +2285,18 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    MockRead(ASYNC, ERR_IO_PENDING, 3),  // Force a pause
-    MockRead(ASYNC, reinterpret_cast<const char*>(kGetBodyFrame2),
-             arraysize(kGetBodyFrame2), 4),
-    MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause
-    MockRead(ASYNC, 0, 0, 6),  // EOF
+      CreateMockRead(*resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
+      MockRead(ASYNC, reinterpret_cast<const char*>(kGetBodyFrame2),
+               arraysize(kGetBodyFrame2), 3),
+      MockRead(ASYNC, ERR_IO_PENDING, 4),  // Force a pause
+      MockRead(ASYNC, 0, 0, 5),            // EOF
   };
   MockRead reads2[] = {
       CreateMockRead(*resp, 1), MockRead(ASYNC, 0, 0, 2),  // EOF
   };
 
-  OrderedSocketData data(reads, arraysize(reads),
-                         writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   SequencedSocketData data2(reads2, arraysize(reads2), writes2,
                             arraysize(writes2));
 
@@ -2320,6 +2319,7 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
       buf.get(), kSize,
       base::Bind(&SpdyNetworkTransactionTest::StartTransactionCallback,
                  helper.session(), GURL(GetDefaultUrl())));
+  ASSERT_EQ(ERR_IO_PENDING, rv);
   // This forces an err_IO_pending, which sets the callback.
   data.CompleteRead();
   // This finishes the read.
@@ -2333,19 +2333,18 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
 TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  MockWrite writes[] = { CreateMockWrite(*req) };
+  MockWrite writes[] = {CreateMockWrite(*req, 0)};
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
-    CreateMockRead(*resp.get(), 2),
-    MockRead(ASYNC, ERR_IO_PENDING, 3),  // Force a pause
-    CreateMockRead(*body.get(), 4),
-    MockRead(ASYNC, 0, 0, 5),  // EOF
+      CreateMockRead(*resp.get(), 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
+      CreateMockRead(*body.get(), 3),
+      MockRead(ASYNC, 0, 0, 4),  // EOF
   };
 
-  OrderedSocketData data(reads, arraysize(reads),
-                         writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
@@ -3666,16 +3665,15 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp),
-    MockRead(ASYNC, ERR_IO_PENDING),  // Force a pause
-    MockRead(ASYNC, combined_data_frames, combined_data_frames_len),
-    MockRead(ASYNC, ERR_IO_PENDING),  // Force a pause
-    CreateMockRead(*last_frame),
-    MockRead(ASYNC, 0, 0)  // EOF
+      CreateMockRead(*resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
+      MockRead(ASYNC, combined_data_frames, combined_data_frames_len, 3),
+      MockRead(ASYNC, ERR_IO_PENDING, 4),  // Force a pause
+      CreateMockRead(*last_frame, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  DelayedSocketData data(1, reads, arraysize(reads),
-                         writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
   TestCompletionCallback callback;
 
@@ -3740,7 +3738,7 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  MockWrite writes[] = { CreateMockWrite(*req) };
+  MockWrite writes[] = {CreateMockWrite(*req, 0)};
 
   // 4 data frames in a single read.
   scoped_ptr<SpdyFrame> data_frame(
@@ -3760,14 +3758,13 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp),
-    MockRead(ASYNC, ERR_IO_PENDING),  // Force a pause
-    MockRead(ASYNC, combined_data_frames, combined_data_frames_len),
-    MockRead(ASYNC, 0, 0)  // EOF
+      CreateMockRead(*resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
+      MockRead(ASYNC, combined_data_frames, combined_data_frames_len, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
   };
 
-  DelayedSocketData data(1, reads, arraysize(reads),
-                         writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
@@ -3919,7 +3916,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  MockWrite writes[] = { CreateMockWrite(*req) };
+  MockWrite writes[] = {CreateMockWrite(*req, 0)};
 
   // All data frames in a single read.
   // NOTE: We don't FIN the stream.
@@ -3937,14 +3934,13 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
                     combined_data_frames, arraysize(combined_data_frames));
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp),
-    MockRead(ASYNC, ERR_IO_PENDING),  // Force a wait
-    MockRead(ASYNC, combined_data_frames, combined_data_frames_len),
-    MockRead(ASYNC, 0, 0)  // EOF
+      CreateMockRead(*resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a wait
+      MockRead(ASYNC, combined_data_frames, combined_data_frames_len, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
   };
 
-  DelayedSocketData data(1, reads, arraysize(reads),
-                         writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
@@ -4012,7 +4008,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
-  MockWrite writes[] = {CreateMockWrite(*req), CreateMockWrite(*rst)};
+  MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4)};
 
   // NOTE: We don't FIN the stream.
   scoped_ptr<SpdyFrame> data_frame(
@@ -4020,14 +4016,13 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp),
-    MockRead(ASYNC, ERR_IO_PENDING),  // Force a wait
-    CreateMockRead(*data_frame),
-    MockRead(ASYNC, 0, 0)  // EOF
+      CreateMockRead(*resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a wait
+      CreateMockRead(*data_frame, 3),
+      MockRead(ASYNC, 0, 5)  // EOF
   };
 
-  DelayedSocketData data(1, reads, arraysize(reads),
-                         writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
@@ -4256,17 +4251,11 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
 
-  std::vector<MockWrite> writes;
-  if ((GetParam().protocol >= kProtoSPDY4MinimumVersion) &&
-      (GetParam().protocol <= kProtoSPDY4MaximumVersion)) {
-    writes.push_back(
-        MockWrite(ASYNC,
-                  kHttp2ConnectionHeaderPrefix,
-                  kHttp2ConnectionHeaderPrefixSize));
-  }
-  writes.push_back(CreateMockWrite(*initial_settings_frame));
-  writes.push_back(CreateMockWrite(*settings_frame));
-  writes.push_back(CreateMockWrite(*req));
+  MockWrite writes[] = {
+      CreateMockWrite(*initial_settings_frame, 0),
+      CreateMockWrite(*settings_frame, 1),
+      CreateMockWrite(*req, 2),
+  };
 
   // Construct the reply.
   scoped_ptr<SpdyHeaderBlock> reply_headers(new SpdyHeaderBlock());
@@ -4277,13 +4266,12 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
 
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
-    CreateMockRead(*reply),
-    CreateMockRead(*body),
-    MockRead(ASYNC, 0, 0)  // EOF
+      CreateMockRead(*reply, 3),
+      CreateMockRead(*body, 4),
+      MockRead(ASYNC, 0, 5)  // EOF
   };
 
-  DelayedSocketData data(2, reads, arraysize(reads),
-                         vector_as_array(&writes), writes.size());
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   helper.AddData(&data);
   helper.RunDefaultTest();
   helper.VerifyDataConsumed();
@@ -4787,16 +4775,16 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 0),
-      CreateMockRead(*body, 1),
-      MockRead(ASYNC, ERR_IO_PENDING, 2),
-      MockRead(ASYNC, ERR_CONNECTION_RESET, 3),
+      CreateMockRead(*resp, 1),
+      CreateMockRead(*body, 2),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      MockRead(ASYNC, ERR_CONNECTION_RESET, 4),
   };
 
   MockRead reads2[] = {
-      CreateMockRead(*resp, 0),
-      CreateMockRead(*body, 1),
-      MockRead(ASYNC, 0, 2)  // EOF
+      CreateMockRead(*resp, 1),
+      CreateMockRead(*body, 2),
+      MockRead(ASYNC, 0, 3)  // EOF
   };
 
   // This test has a couple of variants.
@@ -5502,8 +5490,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithLateHeaders) {
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  DelayedSocketData data(1, reads, arraysize(reads),
-                         writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
   helper.RunToCompletion(&data);

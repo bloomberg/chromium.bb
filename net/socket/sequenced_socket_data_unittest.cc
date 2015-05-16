@@ -194,6 +194,7 @@ class SequencedSocketDataTest : public testing::Test {
   void AssertSyncWriteEquals(const char* data, int len);
   void AssertAsyncWriteEquals(const char* data, int len);
   void AssertWriteReturns(const char* data, int len, int rv);
+  void CompleteRead();
 
   // When a given test completes, data_.at_eof() is expected to
   // match the value specified here. Most test should consume all
@@ -311,6 +312,10 @@ void SequencedSocketDataTest::AssertAsyncWriteEquals(const char* data,
   EXPECT_TRUE(sock_->IsConnected());
 
   ASSERT_EQ(len, write_callback_.WaitForResult());
+}
+
+void SequencedSocketDataTest::CompleteRead() {
+  data_->CompleteRead();
 }
 
 void SequencedSocketDataTest::AssertWriteReturns(const char* data,
@@ -601,6 +606,28 @@ TEST_F(SequencedSocketDataTest, HangingRead) {
   // verify that the read callback in never called.
   base::MessageLoop::current()->RunUntilIdle();
   ASSERT_FALSE(read_callback_.have_result());
+}
+
+TEST_F(SequencedSocketDataTest, CompleteRead) {
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 0), MockRead(ASYNC, kMsg1, kLen1, 1),
+  };
+
+  Initialize(reads, arraysize(reads), nullptr, 0);
+
+  AssertReadReturns(kLen1, ERR_IO_PENDING);
+  ASSERT_FALSE(read_callback_.have_result());
+
+  // Even though the read is scheduled to complete at sequence number 0,
+  // verify that the read callback in not called, until CompleteRead() is.
+  base::MessageLoop::current()->RunUntilIdle();
+  ASSERT_FALSE(read_callback_.have_result());
+
+  CompleteRead();
+
+  ASSERT_TRUE(read_callback_.have_result());
+  ASSERT_EQ(kLen1, read_callback_.WaitForResult());
+  AssertReadBufferEquals(kMsg1, kLen1);
 }
 
 // ----------- Write

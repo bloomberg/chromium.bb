@@ -512,6 +512,9 @@ class SequencedSocketData : public SocketDataProvider {
   // Returns true if all data has been written.
   bool at_write_eof() const;
 
+  bool IsReadPaused();
+  void CompleteRead();
+
  private:
   // Defines the state for the read or write path.
   enum IoState {
@@ -519,7 +522,9 @@ class SequencedSocketData : public SocketDataProvider {
     PENDING,     // An async operation in waiting for another opteration to
                  // complete.
     COMPLETING,  // A task has been posted to complet an async operation.
+    PAUSED,      // IO is paused until CompleteRead() is called.
   };
+
   void OnReadComplete();
   void OnWriteComplete();
 
