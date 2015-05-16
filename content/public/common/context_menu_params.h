@@ -105,6 +105,10 @@ struct CONTENT_EXPORT ContextMenuParams {
   // This is the text of the selection that the context menu was invoked on.
   base::string16 selection_text;
 
+  // This is the title or alt (if title not available) text of the selection
+  // that the context menu was invoked on.
+  base::string16 title_text;
+
   // This is the suggested filename to be used when saving file through "Save
   // Link As" option of context menu.
   base::string16 suggested_filename;

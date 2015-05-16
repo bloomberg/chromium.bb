@@ -32,6 +32,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.frame_url = data.frameURL;
   params.media_flags = data.mediaFlags;
   params.selection_text = data.selectedText;
+  params.title_text = data.titleText;
   params.misspelled_word = data.misspelledWord;
   params.misspelling_hash = data.misspellingHash;
   params.spellcheck_enabled = data.isSpellCheckingEnabled;

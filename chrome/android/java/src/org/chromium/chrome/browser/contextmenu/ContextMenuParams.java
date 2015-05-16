@@ -42,6 +42,7 @@ public class ContextMenuParams {
     private final String mPageUrl;
     private final String mLinkUrl;
     private final String mLinkText;
+    private final String mTitleText;
     private final String mUnfilteredLinkUrl;
     private final String mSrcUrl;
     private final boolean mImageWasFetchedLoFi;
@@ -111,6 +112,13 @@ public class ContextMenuParams {
     }
 
     /**
+     * @return The title or alt attribute (if title is not available).
+     */
+    public String getTitleText() {
+        return mTitleText;
+    }
+
+    /**
      * @return The unfiltered link URL, if any.
      */
     public String getUnfilteredLinkUrl() {
@@ -174,11 +182,12 @@ public class ContextMenuParams {
     }
 
     private ContextMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
-            String unfilteredLinkUrl, String srcUrl, String selectionText,
+            String unfilteredLinkUrl, String srcUrl, String selectionText, String titleText,
             boolean imageWasFetchedLoFi, boolean isEditable, Referrer referrer) {
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
+        mTitleText = titleText;
         mUnfilteredLinkUrl = unfilteredLinkUrl;
         mSrcUrl = srcUrl;
         mImageWasFetchedLoFi = imageWasFetchedLoFi;
@@ -194,12 +203,12 @@ public class ContextMenuParams {
     @CalledByNative
     private static ContextMenuParams create(int mediaType, String pageUrl, String linkUrl,
             String linkText, String unfilteredLinkUrl, String srcUrl, String selectionText,
-            boolean imageWasFetchedLoFi, boolean isEditable, String sanitizedReferrer,
-            int referrerPolicy) {
+            String titleText, boolean imageWasFetchedLoFi, boolean isEditable,
+            String sanitizedReferrer, int referrerPolicy) {
         Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
                 ? null : new Referrer(sanitizedReferrer, referrerPolicy);
         return new ContextMenuParams(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl,
-                srcUrl, selectionText, imageWasFetchedLoFi, isEditable, referrer);
+                srcUrl, selectionText, titleText, imageWasFetchedLoFi, isEditable, referrer);
     }
 
     @CalledByNative
