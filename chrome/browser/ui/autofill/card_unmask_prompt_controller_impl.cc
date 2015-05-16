@@ -48,6 +48,7 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   if (card_unmask_view_)
     card_unmask_view_->ControllerGone();
 
+  new_card_link_clicked_ = false;
   shown_timestamp_ = base::Time::Now();
   pending_response_ = CardUnmaskDelegate::UnmaskResponse();
   LoadRiskFingerprint();
