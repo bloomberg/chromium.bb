@@ -404,6 +404,37 @@ class LayerTreeHostDelegatedTestCreateChildId
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCreateChildId);
 
+class LayerTreeHostDelegatedTestDontUseLostChildIdAfterCommit
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ protected:
+  void BeginTest() override {
+    SetFrameData(CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1)));
+    LayerTreeHostDelegatedTestCaseSingleDelegatedLayer::BeginTest();
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    // Act like the context was lost while the layer is in the pending tree.
+    LayerImpl* root_impl = host_impl->sync_tree()->root_layer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+    delegated_impl->ReleaseResources();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+
+    // Should not try to activate a frame without a child id. If we did try to
+    // activate we would crash.
+    EXPECT_FALSE(delegated_impl->ChildId());
+    EndTest();
+  }
+};
+
+MULTI_THREAD_IMPL_TEST_F(
+    LayerTreeHostDelegatedTestDontUseLostChildIdAfterCommit);
+
 // Test that we can gracefully handle invalid frames after the context was lost.
 // For example, we might be trying to use the previous frame in that case and
 // have to make sure we don't crash because our resource accounting goes wrong.

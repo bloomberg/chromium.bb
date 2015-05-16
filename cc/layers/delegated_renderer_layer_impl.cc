@@ -78,6 +78,7 @@ void DelegatedRendererLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   own_child_id_ = false;
 
   if (have_render_passes_to_push_) {
+    DCHECK(child_id_);
     // This passes ownership of the render passes to the active tree.
     delegated_layer->SetRenderPasses(&render_passes_in_draw_order_);
     // Once resources are on the active tree, give them to the ResourceProvider
@@ -216,6 +217,7 @@ scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::CreateLayerImpl(
 void DelegatedRendererLayerImpl::ReleaseResources() {
   ClearRenderPasses();
   ClearChildId();
+  have_render_passes_to_push_ = false;
 }
 
 static inline int IndexToId(int index) { return index + 1; }
