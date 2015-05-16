@@ -1106,6 +1106,16 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                  ['id'])
     return bool(failures)
 
+  @minimum_schema(40)
+  def GetKeyVals(self):
+    """Get key-vals from keyvalTable.
+
+    Returns:
+      A dictionary of {key: value} strings (values may also be None).
+    """
+    results = self._Execute('SELECT k, v FROM keyvalTable').fetchall()
+    return dict(results)
+
 
 def _INV():
   raise AssertionError('CIDB connection factory has been invalidated.')
