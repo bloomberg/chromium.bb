@@ -166,7 +166,7 @@ struct MockReadWrite {
   const char* data;
   int data_len;
 
-  // For OrderedSocketData, which only allows reads to occur in a particular
+  // For data providers that only allows reads to occur in a particular
   // sequence.  If a read occurs before the given |sequence_number| is reached,
   // an ERR_IO_PENDING is returned.
   int sequence_number;    // The sequence number at which a read is allowed
@@ -420,61 +420,6 @@ class DelayedSocketData : public StaticSocketDataProvider {
   base::WeakPtrFactory<DelayedSocketData> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedSocketData);
-};
-
-// A DataProvider where the reads are ordered.
-// If a read is requested before its sequence number is reached, we return an
-// ERR_IO_PENDING (that way we don't have to explicitly add a MockRead just to
-// wait).
-// The sequence number is incremented on every read and write operation.
-// The message loop may be interrupted by setting the high bit of the sequence
-// number in the MockRead's sequence number.  When that MockRead is reached,
-// we post a Quit message to the loop.  This allows us to interrupt the reading
-// of data before a complete message has arrived, and provides support for
-// testing server push when the request is issued while the response is in the
-// middle of being received.
-class OrderedSocketData : public StaticSocketDataProvider {
- public:
-  // |reads| the list of MockRead completions.
-  // |writes| the list of MockWrite completions.
-  // Note: All MockReads and MockWrites must be async.
-  // Note: For stream sockets, the MockRead list must end with a EOF, e.g., a
-  //       MockRead(true, 0, 0);
-  OrderedSocketData(MockRead* reads,
-                    size_t reads_count,
-                    MockWrite* writes,
-                    size_t writes_count);
-  ~OrderedSocketData() override;
-
-  // |connect| the result for the connect phase.
-  // |reads| the list of MockRead completions.
-  // |writes| the list of MockWrite completions.
-  // Note: All MockReads and MockWrites must be async.
-  // Note: For stream sockets, the MockRead list must end with a EOF, e.g., a
-  //       MockRead(true, 0, 0);
-  OrderedSocketData(const MockConnect& connect,
-                    MockRead* reads,
-                    size_t reads_count,
-                    MockWrite* writes,
-                    size_t writes_count);
-
-  // Posts a quit message to the current message loop, if one is running.
-  void EndLoop();
-
-  // StaticSocketDataProvider:
-  MockRead OnRead() override;
-  MockWriteResult OnWrite(const std::string& data) override;
-  void Reset() override;
-  void CompleteRead() override;
-
- private:
-  int sequence_number_;
-  int loop_stop_stage_;
-  bool blocked_;
-
-  base::WeakPtrFactory<OrderedSocketData> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(OrderedSocketData);
 };
 
 // Uses the sequence_number field in the mock reads and writes to
