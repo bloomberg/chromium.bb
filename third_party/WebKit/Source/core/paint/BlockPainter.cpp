@@ -172,10 +172,13 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             scrolledOffset.move(-m_layoutBlock.scrolledContentOffset());
     }
 
-    LayoutRect bounds;
+    LayoutRect scrolledOffsetBounds;
+    LayoutRect paintBounds;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        bounds = m_layoutBlock.visualOverflowRect();
-        bounds.moveBy(scrolledOffset);
+        paintBounds = m_layoutBlock.visualOverflowRect();
+        paintBounds.moveBy(paintOffset);
+        scrolledOffsetBounds = m_layoutBlock.visualOverflowRect();
+        scrolledOffsetBounds.moveBy(scrolledOffset);
     }
 
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
@@ -184,7 +187,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask && m_layoutBlock.style()->visibility() == VISIBLE) {
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, paintPhase, bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, paintPhase, paintBounds);
         if (!recorder.canUseCachedDrawing())
             m_layoutBlock.paintMask(paintInfo, paintOffset);
         return;
@@ -207,7 +210,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             && m_layoutBlock.style()->visibility() == VISIBLE
             && m_layoutBlock.hasColumns()
             && !paintInfo.paintRootBackgroundOnly()) {
-            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, bounds);
+            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, scrolledOffsetBounds);
             if (!recorder.canUseCachedDrawing())
                 paintColumnRules(paintInfo, scrolledOffset);
         }
@@ -240,7 +243,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
         if (!m_layoutBlock.style()->outlineStyleIsAuto() || !m_layoutBlock.isAnonymousBlockContinuation())
-            ObjectPainter(m_layoutBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutBlock.size()), bounds);
+            ObjectPainter(m_layoutBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutBlock.size()), paintBounds);
     }
 
     if (paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)
@@ -249,7 +252,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground && hasCaret()) {
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, scrolledOffsetBounds);
         if (!recorder.canUseCachedDrawing())
             paintCarets(paintInfo, paintOffset);
     }

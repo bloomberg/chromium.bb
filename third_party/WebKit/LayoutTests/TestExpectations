@@ -1479,6 +1479,10 @@ crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failur
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
+crbug.com/472306 fast/forms/textarea-scrolled-focus-ring.html [ NeedsRebaseline ]
+crbug.com/472306 virtual/slimmingpaint/fast/forms/textarea-scrolled-focus-ring.html [ NeedsRebaseline ]
+crbug.com/472306 fast/forms/textarea-scrolled-mask.html [ NeedsRebaseline ]
+crbug.com/472306 virtual/slimmingpaint/fast/forms/textarea-scrolled-mask.html [ NeedsRebaseline ]
 
 # These are experiencing assertions in harfbuzz.
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.

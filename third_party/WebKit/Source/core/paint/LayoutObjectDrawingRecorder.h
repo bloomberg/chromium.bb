@@ -14,7 +14,7 @@ namespace blink {
 class GraphicsContext;
 class LayoutObject;
 
-// Convienance constructors for creating DrawingRecorders.
+// Convenience constructors for creating DrawingRecorders.
 class LayoutObjectDrawingRecorder final : public DrawingRecorder {
 public:
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
