@@ -388,7 +388,7 @@ void AutofillAgent::textFieldDidChange(const WebFormControlElement& element) {
   if (ignore_text_changes_)
     return;
 
-  if (!WebUserGestureIndicator::isProcessingUserGesture())
+  if (!IsUserGesture())
     return;
 
   // We post a task for doing the Autofill as the caret position is not set
@@ -750,6 +750,10 @@ void AutofillAgent::HidePopup() {
     return;
   is_popup_possibly_visible_ = false;
   Send(new AutofillHostMsg_HidePopup(routing_id()));
+}
+
+bool AutofillAgent::IsUserGesture() const {
+  return WebUserGestureIndicator::isProcessingUserGesture();
 }
 
 void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {

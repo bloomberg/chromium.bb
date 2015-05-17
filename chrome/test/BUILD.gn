@@ -1743,6 +1743,7 @@ if (!is_android) {
         "//chrome/browser",
         "//chrome/renderer",
         "//media/cast:test_support",
+        "//testing/gmock",
         "//testing/gtest",
         "//testing/perf",
       ]

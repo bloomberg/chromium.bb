@@ -35,8 +35,3 @@ BasicExtensionSettingsWebUITest.testUninstall
 
 # https://crbug.com/480721
 OutOfProcessProxyResolverBrowserTest.Verify
-
-# https://crbug.com/484910
-PasswordAutofillAgentTest.ClearPreviewWithInlineAutocompletedUsername
-PasswordAutofillAgentTest.InlineAutocomplete
-PasswordAutofillAgentTest.RememberLastNonEmptyUsernameAndPasswordOnSubmit_UserCleared

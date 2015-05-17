@@ -258,6 +258,7 @@ TEST_F(AutofillRendererTest, IgnoreNonUserGestureTextFieldChanges) {
     GetMainFrame()->view()->advanceFocus(false);
 
   // Not a user gesture, so no IPC message to browser.
+  DisableUserGestureSimulationForAutofill();
   full_name.setValue("Alice", true);
   GetMainFrame()->toWebLocalFrame()->autofillClient()->textFieldDidChange(
       full_name);
@@ -266,6 +267,7 @@ TEST_F(AutofillRendererTest, IgnoreNonUserGestureTextFieldChanges) {
                          AutofillHostMsg_TextFieldDidChange::ID));
 
   // A user gesture will send a message to the browser.
+  EnableUserGestureSimulationForAutofill();
   SimulateUserInputChangeForElement(&full_name, "Alice");
   ASSERT_NE(nullptr, render_thread_->sink().GetFirstMessageMatching(
                          AutofillHostMsg_TextFieldDidChange::ID));

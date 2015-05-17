@@ -221,6 +221,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Hides any currently showing Autofill popup.
   void HidePopup();
 
+  // Returns true if the text field change is due to a user gesture. Can be
+  // overriden in tests.
+  virtual bool IsUserGesture() const;
+
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.
   FormCache form_cache_;
