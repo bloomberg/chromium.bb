@@ -656,6 +656,7 @@ gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
 
 base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   base::DictionaryValue* result = new base::DictionaryValue;
+  result->SetInteger("LayerId", id());
   result->SetString("LayerType", LayerTypeAsString());
 
   base::ListValue* list = new base::ListValue;
