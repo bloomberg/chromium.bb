@@ -8,6 +8,8 @@
 // Errors are described at:
 // http://www.chromium.org/developers/blink-gc-plugin-errors
 
+#include <algorithm>
+
 #include "Config.h"
 #include "JsonWriter.h"
 #include "RecordInfo.h"
@@ -1655,6 +1657,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     string filename;
     if (!GetFilename(info->record()->getLocStart(), &filename))
       return false;  // TODO: should we ignore non-existing file locations?
+#if defined(LLVM_ON_WIN32)
+    std::replace(filename.begin(), filename.end(), '\\', '/');
+#endif
     std::vector<string>::iterator it = options_.ignored_directories.begin();
     for (; it != options_.ignored_directories.end(); ++it)
       if (filename.find(*it) != string::npos)
