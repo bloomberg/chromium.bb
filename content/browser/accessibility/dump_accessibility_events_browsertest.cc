@@ -225,6 +225,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsMenuListPopup) {
+  RunEventTest(FILE_PATH_LITERAL("menulist-popup.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsNameChange) {
   RunEventTest(FILE_PATH_LITERAL("name-change.html"));
 }

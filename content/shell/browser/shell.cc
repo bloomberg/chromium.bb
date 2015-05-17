@@ -121,8 +121,8 @@ void Shell::CloseAllWindows() {
   std::vector<Shell*> open_windows(windows_);
   for (size_t i = 0; i < open_windows.size(); ++i)
     open_windows[i]->Close();
-  PlatformExit();
   base::MessageLoop::current()->RunUntilIdle();
+  PlatformExit();
 }
 
 void Shell::SetShellCreatedCallback(
