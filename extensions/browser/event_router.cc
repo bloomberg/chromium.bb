@@ -155,14 +155,21 @@ void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
                                 const EventFilteringInfo& info) {
   int event_id = g_extension_event_id.GetNext();
 
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    // This is called from WebRequest API.
+    // TODO(lazyboy): Skip this entirely: http://crbug.com/488747.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&EventRouter::IncrementInFlightEventsOnUI,
+                   browser_context_id, extension_id, event_id, event_name));
+  } else {
+    IncrementInFlightEventsOnUI(browser_context_id, extension_id, event_id,
+                                event_name);
+  }
+
   DispatchExtensionMessage(ipc_sender, browser_context_id, extension_id,
                            event_id, event_name, event_args.get(), user_gesture,
                            info);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&EventRouter::IncrementInFlightEventsOnUI, browser_context_id,
-                 extension_id, event_id, event_name));
 }
 
 EventRouter::EventRouter(BrowserContext* browser_context,
