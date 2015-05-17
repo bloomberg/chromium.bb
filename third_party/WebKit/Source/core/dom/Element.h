@@ -247,8 +247,6 @@ public:
 
     const AtomicString& locateNamespacePrefix(const AtomicString& namespaceURI) const;
 
-    virtual KURL baseURI() const override final;
-
     virtual String nodeName() const override;
 
     PassRefPtrWillBeRawPtr<Element> cloneElementWithChildren();

@@ -501,7 +501,6 @@ public:
         RenderRuby = 576,
         CanvasRenderingContext2DCompositeOperationDarker = 577,
         ScriptElementWithInvalidTypeHasSrc = 578,
-        ElementBaseURIFromXMLBase = 580,
         XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload = 581,
         CSSSelectorPseudoScrollbar = 582,
         CSSSelectorPseudoScrollbarButton = 583,
