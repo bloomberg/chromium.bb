@@ -172,7 +172,7 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
   EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
-  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
 TEST_P(SpdyStreamTest, PushedStream) {
@@ -292,7 +292,7 @@ TEST_P(SpdyStreamTest, StreamError) {
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
   EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
-  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
 
   // Check that the NetLog was filled reasonably.
   TestNetLogEntry::List entries;
@@ -372,7 +372,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
-  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
 // Make sure that large blocks of data are properly split up into
@@ -435,7 +435,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
-  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
 // Receiving a header with uppercase ASCII should result in a protocol
@@ -875,7 +875,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
-  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
@@ -964,7 +964,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
-  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseBidirectional) {

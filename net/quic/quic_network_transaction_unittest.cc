@@ -823,18 +823,18 @@ TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
   // Run the first request.
   http_data.StopAfter(arraysize(http_reads) + arraysize(http_writes));
   SendRequestAndExpectHttpResponse("hello world");
-  ASSERT_TRUE(http_data.at_read_eof());
-  ASSERT_TRUE(http_data.at_write_eof());
+  ASSERT_TRUE(http_data.AllReadDataConsumed());
+  ASSERT_TRUE(http_data.AllWriteDataConsumed());
 
   // Now run the second request in which the QUIC socket hangs,
   // and verify the the transaction continues over HTTP.
   http_data2.StopAfter(arraysize(http_reads) + arraysize(http_writes));
   SendRequestAndExpectHttpResponse("hello world");
 
-  ASSERT_TRUE(http_data2.at_read_eof());
-  ASSERT_TRUE(http_data2.at_write_eof());
-  ASSERT_TRUE(!quic_data.at_read_eof());
-  ASSERT_TRUE(!quic_data.at_write_eof());
+  ASSERT_TRUE(http_data2.AllReadDataConsumed());
+  ASSERT_TRUE(http_data2.AllWriteDataConsumed());
+  ASSERT_TRUE(!quic_data.AllReadDataConsumed());
+  ASSERT_TRUE(!quic_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
@@ -1104,8 +1104,8 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
   ExpectBrokenAlternateProtocolMapping();
 
-  EXPECT_TRUE(quic_data.at_read_eof());
-  EXPECT_TRUE(quic_data.at_write_eof());
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {

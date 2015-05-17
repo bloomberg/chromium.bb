@@ -157,27 +157,27 @@ StaticSocketDataHelper::~StaticSocketDataHelper() {
 }
 
 const MockRead& StaticSocketDataHelper::PeekRead() const {
-  CHECK(!at_read_eof());
+  CHECK(!AllReadDataConsumed());
   return reads_[read_index_];
 }
 
 const MockWrite& StaticSocketDataHelper::PeekWrite() const {
-  CHECK(!at_write_eof());
+  CHECK(!AllWriteDataConsumed());
   return writes_[write_index_];
 }
 
 const MockRead& StaticSocketDataHelper::AdvanceRead() {
-  CHECK(!at_read_eof());
+  CHECK(!AllReadDataConsumed());
   return reads_[read_index_++];
 }
 
 const MockWrite& StaticSocketDataHelper::AdvanceWrite() {
-  CHECK(!at_write_eof());
+  CHECK(!AllWriteDataConsumed());
   return writes_[write_index_++];
 }
 
 bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
-  CHECK(!at_write_eof());
+  CHECK(!AllWriteDataConsumed());
   // Check that what the actual data matches the expectations.
   const MockWrite& next_write = PeekWrite();
   if (!next_write.data)
@@ -216,7 +216,7 @@ StaticSocketDataProvider::~StaticSocketDataProvider() {
 }
 
 MockRead StaticSocketDataProvider::OnRead() {
-  CHECK(!helper_.at_read_eof());
+  CHECK(!helper_.AllReadDataConsumed());
   return helper_.AdvanceRead();
 }
 
@@ -225,8 +225,8 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
     // Not using mock writes; succeed synchronously.
     return MockWriteResult(SYNCHRONOUS, data.length());
   }
-  EXPECT_FALSE(helper_.at_write_eof());
-  if (helper_.at_write_eof()) {
+  EXPECT_FALSE(helper_.AllWriteDataConsumed());
+  if (helper_.AllWriteDataConsumed()) {
     // Show what the extra write actually consists of.
     EXPECT_EQ("<unexpected write>", data);
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
@@ -250,11 +250,11 @@ void StaticSocketDataProvider::Reset() {
 }
 
 bool StaticSocketDataProvider::AllReadDataConsumed() const {
-  return helper_.at_read_eof();
+  return helper_.AllReadDataConsumed();
 }
 
 bool StaticSocketDataProvider::AllWriteDataConsumed() const {
-  return helper_.at_write_eof();
+  return helper_.AllWriteDataConsumed();
 }
 
 DynamicSocketDataProvider::DynamicSocketDataProvider()
@@ -420,7 +420,7 @@ SequencedSocketData::SequencedSocketData(const MockConnect& connect,
 
 MockRead SequencedSocketData::OnRead() {
   CHECK_EQ(IDLE, read_state_);
-  CHECK(!helper_.at_read_eof());
+  CHECK(!helper_.AllReadDataConsumed());
 
   NET_TRACE(1, " *** ") << "sequence_number: " << sequence_number_;
   const MockRead& next_read = helper_.PeekRead();
@@ -464,7 +464,7 @@ MockRead SequencedSocketData::OnRead() {
 
 MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
   CHECK_EQ(IDLE, write_state_);
-  CHECK(!helper_.at_write_eof());
+  CHECK(!helper_.AllWriteDataConsumed());
 
   NET_TRACE(1, " *** ") << "sequence_number: " << sequence_number_;
   const MockWrite& next_write = helper_.PeekWrite();
@@ -513,19 +513,11 @@ void SequencedSocketData::Reset() {
 }
 
 bool SequencedSocketData::AllReadDataConsumed() const {
-  return helper_.at_read_eof();
+  return helper_.AllReadDataConsumed();
 }
 
 bool SequencedSocketData::AllWriteDataConsumed() const {
-  return helper_.at_write_eof();
-}
-
-bool SequencedSocketData::at_read_eof() const {
-  return helper_.at_read_eof();
-}
-
-bool SequencedSocketData::at_write_eof() const {
-  return helper_.at_read_eof();
+  return helper_.AllWriteDataConsumed();
 }
 
 bool SequencedSocketData::IsReadPaused() {
@@ -672,7 +664,7 @@ void DeterministicSocketData::Run() {
   // the tasks in the message loop, and explicitly invoking the read/write
   // callbacks (simulating network I/O). We check our conditions between each,
   // since they can change in either.
-  while ((!at_write_eof() || !at_read_eof()) && !stopped()) {
+  while ((!AllWriteDataConsumed() || !AllReadDataConsumed()) && !stopped()) {
     if (counter % 2 == 0)
       base::RunLoop().RunUntilIdle();
     if (counter % 2 == 1) {

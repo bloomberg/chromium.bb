@@ -243,8 +243,8 @@ SequencedSocketDataTest::~SequencedSocketDataTest() {
   // Make sure no unexpected pending tasks will cause a failure.
   base::RunLoop().RunUntilIdle();
   if (expect_eof_) {
-    EXPECT_EQ(expect_eof_, data_->at_read_eof());
-    EXPECT_EQ(expect_eof_, data_->at_write_eof());
+    EXPECT_EQ(expect_eof_, data_->AllReadDataConsumed());
+    EXPECT_EQ(expect_eof_, data_->AllWriteDataConsumed());
   }
 }
 

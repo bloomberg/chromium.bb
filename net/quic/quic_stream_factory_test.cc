@@ -296,8 +296,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
 
     factory_.OnSessionClosed(session);
     EXPECT_EQ(nullptr, CreateIfSessionExists(destination, net_log_).get());
-    EXPECT_TRUE(socket_data.at_read_eof());
-    EXPECT_TRUE(socket_data.at_write_eof());
+    EXPECT_TRUE(socket_data.AllReadDataConsumed());
+    EXPECT_TRUE(socket_data.AllWriteDataConsumed());
     return port;
   }
 
@@ -373,8 +373,8 @@ TEST_P(QuicStreamFactoryTest, Create) {
   stream = request2.ReleaseStream();  // Will reset stream 5.
   stream.reset();  // Will reset stream 7.
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
@@ -402,8 +402,8 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
 
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
@@ -437,8 +437,8 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
@@ -483,10 +483,10 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
             QuicStreamFactoryPeer::GetActiveSession(
                 &factory_, host_port_pair_, !is_https_));
 
-  EXPECT_TRUE(socket_data1.at_read_eof());
-  EXPECT_TRUE(socket_data1.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, Pooling) {
@@ -532,8 +532,8 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
           &factory_, host_port_pair_, is_https_),
       QuicStreamFactoryPeer::GetActiveSession(&factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
@@ -585,10 +585,10 @@ TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
           &factory_, host_port_pair_, is_https_),
       QuicStreamFactoryPeer::GetActiveSession(&factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data1.at_read_eof());
-  EXPECT_TRUE(socket_data1.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
@@ -654,10 +654,10 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(
       &factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data1.at_read_eof());
-  EXPECT_TRUE(socket_data1.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, HttpsPooling) {
@@ -717,8 +717,8 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
             QuicStreamFactoryPeer::GetActiveSession(
                 &factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
@@ -784,10 +784,10 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
             QuicStreamFactoryPeer::GetActiveSession(
                 &factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data1.at_read_eof());
-  EXPECT_TRUE(socket_data1.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
@@ -850,10 +850,10 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
             QuicStreamFactoryPeer::GetActiveSession(
                 &factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data1.at_read_eof());
-  EXPECT_TRUE(socket_data1.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
@@ -918,8 +918,8 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
             QuicStreamFactoryPeer::GetActiveSession(
                 &factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
@@ -990,10 +990,10 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
             QuicStreamFactoryPeer::GetActiveSession(
                 &factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data1.at_read_eof());
-  EXPECT_TRUE(socket_data1.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
@@ -1070,10 +1070,10 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
             QuicStreamFactoryPeer::GetActiveSession(
                 &factory_, server2, is_https_));
 
-  EXPECT_TRUE(socket_data1.at_read_eof());
-  EXPECT_TRUE(socket_data1.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, Goaway) {
@@ -1135,10 +1135,10 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   stream2.reset();
   stream.reset();
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
@@ -1201,8 +1201,8 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
 
   EXPECT_EQ(OK, callback_.WaitForResult());
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   STLDeleteElements(&streams);
 }
 
@@ -1223,8 +1223,8 @@ TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback_.WaitForResult());
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
@@ -1245,8 +1245,8 @@ TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
 
   EXPECT_EQ(ERR_ADDRESS_IN_USE, callback_.WaitForResult());
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, CancelCreate) {
@@ -1275,8 +1275,8 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   EXPECT_TRUE(stream.get());
   stream.reset();
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
@@ -1360,10 +1360,10 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   stream = request2.ReleaseStream();
   stream.reset();  // Will reset stream 3.
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
@@ -1424,10 +1424,10 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   stream = request2.ReleaseStream();
   stream.reset();  // Will reset stream 3.
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, OnCertAdded) {
@@ -1488,10 +1488,10 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   stream = request2.ReleaseStream();
   stream.reset();  // Will reset stream 3.
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
@@ -1552,10 +1552,10 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   stream = request2.ReleaseStream();
   stream.reset();  // Will reset stream 3.
 
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
@@ -1664,8 +1664,8 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
 
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_EQ(0u,
             QuicStreamFactoryPeer::GetNumberOfActiveJobs(&factory_, server_id));
 }
@@ -1698,8 +1698,8 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
 
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
@@ -1832,12 +1832,12 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   EXPECT_TRUE(stream2.get());
   scoped_ptr<QuicHttpStream> stream3 = request3.ReleaseStream();
   EXPECT_TRUE(stream3.get());
-  EXPECT_TRUE(socket_data.at_read_eof());
-  EXPECT_TRUE(socket_data.at_write_eof());
-  EXPECT_TRUE(socket_data2.at_read_eof());
-  EXPECT_TRUE(socket_data2.at_write_eof());
-  EXPECT_TRUE(socket_data3.at_read_eof());
-  EXPECT_TRUE(socket_data3.at_write_eof());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data3.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data3.AllWriteDataConsumed());
 }
 
 }  // namespace test
