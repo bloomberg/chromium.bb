@@ -521,11 +521,7 @@ bool GraphicsContext::isRecording() const
 
 void GraphicsContext::drawPicture(const SkPicture* picture)
 {
-    // FIXME: SP currently builds empty-bounds pictures in some cases. This is a temp
-    // workaround, but the problem should be fixed: empty-bounds pictures are going to be culled
-    // on playback anyway.
-    bool cullEmptyPictures = !RuntimeEnabledFeatures::slimmingPaintEnabled();
-    if (contextDisabled() || !picture || (picture->cullRect().isEmpty() && cullEmptyPictures))
+    if (contextDisabled() || !picture || picture->cullRect().isEmpty())
         return;
 
     ASSERT(m_canvas);
