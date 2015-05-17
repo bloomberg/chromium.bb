@@ -38,6 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
+#include "core/events/UIEventWithKeyState.h"
 #include "core/frame/Console.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -212,7 +213,7 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& 
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy(features);
-    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(m_windowFeatures) != WebNavigationPolicyNewBackgroundTab)
+    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(m_windowFeatures) != WebNavigationPolicyNewBackgroundTab && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
         policy = WebNavigationPolicyNewForegroundTab;
 
     ASSERT(frame->document());
@@ -286,7 +287,7 @@ void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy(m_windowFeatures);
-    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(m_windowFeatures) != WebNavigationPolicyNewBackgroundTab)
+    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(m_windowFeatures) != WebNavigationPolicyNewBackgroundTab && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
         policy = WebNavigationPolicyNewForegroundTab;
     m_webView->client()->show(policy);
 }

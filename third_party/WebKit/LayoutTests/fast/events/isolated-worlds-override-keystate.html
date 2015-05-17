@@ -8,14 +8,17 @@ function test()
         testRunner.evaluateScriptInIsolatedWorld(1,
             "window.addEventListener('keydown', function(event) {" +
             "    var mouseEvent = new MouseEvent('click', { ctrlKey: true, metaKey: true });" +
-            "    var link = document.getElementById('link');" +
+            // event.code is something like Digit1, so code[5] gives the number.
+            "    var link = document.getElementById('link' + event.code[5]);" +
             "    link.dispatchEvent(mouseEvent);" +
             "});");
-        eventSender.keyDown("a");
+        eventSender.keyDown("1");
+        eventSender.keyDown("2");
     }
 }
 </script>
 <body onload="test()">
 <p>Tests that adding a ctrl modifier to a click on a link from an isolated world triggers a background tab.</p>
-<a href="blank" id="link">link</a>
+<a href="blank" id="link1">link</a>
+<a href="blank2" id="link2" target="_blank">link</a>
 </body>
