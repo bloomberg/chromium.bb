@@ -25,7 +25,7 @@ function test()
         {
             var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
             InspectorTest.waitForStyleApplied(onPropertyDisabled);
-            treeItem.toggleEnabled({ target: { checked: false }, consume: function() { } });
+            treeItem._toggleEnabled({ target: { checked: false }, consume: function() { } });
 
             function onPropertyDisabled()
             {

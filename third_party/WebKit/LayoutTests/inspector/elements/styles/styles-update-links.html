@@ -173,7 +173,7 @@ function test()
         {
             var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("border");
             InspectorTest.waitForStyleApplied(onPropertyDisabled);
-            treeItem.toggleEnabled({ target: { checked: false }, consume: function() { } });
+            treeItem._toggleEnabled({ target: { checked: false }, consume: function() { } });
 
             function onPropertyDisabled()
             {

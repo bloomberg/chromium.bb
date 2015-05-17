@@ -402,13 +402,13 @@ function buildMarkedSelectors(element)
 InspectorTest.toggleStyleProperty = function(propertyName, checked)
 {
     var treeItem = InspectorTest.getElementStylePropertyTreeItem(propertyName);
-    treeItem.toggleEnabled({ target: { checked: checked }, consume: function() { } });
+    treeItem._toggleEnabled({ target: { checked: checked }, consume: function() { } });
 }
 
 InspectorTest.toggleMatchedStyleProperty = function(propertyName, checked)
 {
     var treeItem = InspectorTest.getMatchedStylePropertyTreeItem(propertyName);
-    treeItem.toggleEnabled({ target: { checked: checked }, consume: function() { } });
+    treeItem._toggleEnabled({ target: { checked: checked }, consume: function() { } });
 }
 
 InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
