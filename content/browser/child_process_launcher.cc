@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -269,15 +269,7 @@ void TerminateOnLauncherThread(bool zygote, base::Process process) {
 void SetProcessBackgroundedOnLauncherThread(base::Process process,
                                             bool background) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
-#if defined(OS_MACOSX)
-  MachBroker* broker = MachBroker::GetInstance();
-  mach_port_t task_port = broker->TaskForPid(process.Pid());
-  if (task_port != TASK_NULL) {
-    process.SetProcessBackgrounded(task_port, background);
-  }
-#else
   process.SetProcessBackgrounded(background);
-#endif  // defined(OS_MACOSX)
 #if defined(OS_ANDROID)
   SetChildProcessInForeground(process.Handle(), !background);
 #endif
