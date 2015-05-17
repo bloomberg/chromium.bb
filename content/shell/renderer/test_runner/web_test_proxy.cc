@@ -896,6 +896,12 @@ bool WebTestProxyBase::CreateView(blink::WebLocalFrame* frame,
                                   const blink::WebString& frame_name,
                                   blink::WebNavigationPolicy policy,
                                   bool suppress_opener) {
+  if (test_interfaces_->GetTestRunner()->shouldDumpNavigationPolicy()) {
+    delegate_->PrintMessage("Default policy for createView for '" +
+                            URLDescription(request.url()) + "' is '" +
+                            WebNavigationPolicyToString(policy) + "'\n");
+  }
+
   if (!test_interfaces_->GetTestRunner()->canOpenWindows())
     return false;
   if (test_interfaces_->GetTestRunner()->shouldDumpCreateView())
