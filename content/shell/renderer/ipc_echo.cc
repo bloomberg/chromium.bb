@@ -5,13 +5,16 @@
 #include "content/shell/renderer/ipc_echo.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/renderer/binding_helpers.h"
+#include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebDOMCustomEvent.h"
 #include "third_party/WebKit/public/web/WebDOMEvent.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 
 namespace content {
@@ -72,10 +75,21 @@ gin::ObjectTemplateBuilder IPCEchoBindings::GetObjectTemplateBuilder(
 // static
 void IPCEchoBindings::Install(base::WeakPtr<IPCEcho> echo,
                               blink::WebFrame* frame) {
-  std::vector<std::string> names;
-  names.push_back("ipcEcho");
-  return InstallAsWindowProperties(
-      new IPCEchoBindings(echo), frame, names);
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  if (context.IsEmpty())
+    return;
+
+  v8::Context::Scope context_scope(context);
+
+  IPCEchoBindings* wrapped = new IPCEchoBindings(echo);
+  gin::Handle<IPCEchoBindings> bindings = gin::CreateHandle(isolate, wrapped);
+  if (bindings.IsEmpty())
+    return;
+  v8::Local<v8::Object> global = context->Global();
+  v8::Local<v8::Value> v8_bindings = bindings.ToV8();
+  global->Set(gin::StringToV8(isolate, "ipcEcho"), v8_bindings);
 }
 
 IPCEcho::IPCEcho(blink::WebDocument document,
