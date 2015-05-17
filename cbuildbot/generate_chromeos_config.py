@@ -4,8 +4,6 @@
 
 """Configuration options for various cbuildbot builders."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import copy
@@ -196,7 +194,7 @@ _settings = dict(
 
     # A list of vm tests to run.
     vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-            constants.SIMPLE_AU_TEST_TYPE],
+              constants.SIMPLE_AU_TEST_TYPE],
 
     # The number of times to run the VMTest stage. If this is >1, then we
     # will run the stage this many times, stopping if we encounter any
@@ -532,7 +530,6 @@ def GetDefaultWaterfall(build_config):
     return None
 
 
-# pylint: disable=W0102
 def GetCanariesForChromeLKGM(configs=GetConfig()):
   """Grabs a list of builders that are important for the Chrome LKGM."""
   builders = []
@@ -628,7 +625,8 @@ def GetSlavesForMaster(master_config, options=None):
 
 class _JSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
-  # pylint: disable=E0202
+
+  # pylint: disable=method-hidden
   def default(self, obj):
     return self.encode(obj.__dict__)
 
@@ -841,6 +839,9 @@ def append_useflags(useflags):
     return sorted(list(new_useflags))
 
   return handler
+
+
+# pylint: disable=bad-continuation
 
 
 # Arch-specific mixins.
