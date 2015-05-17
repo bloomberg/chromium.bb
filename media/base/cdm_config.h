@@ -12,7 +12,7 @@ namespace media {
 // The runtime configuration for new CDM instances as computed by
 // |requestMediaKeySystemAccess|. This is in some sense the Chromium-side
 // counterpart of Blink's WebMediaKeySystemConfiguration.
-struct MEDIA_EXPORT CdmConfig {
+struct CdmConfig {
   // Allow access to a distinctive identifier.
   bool allow_distinctive_identifier = false;
 
