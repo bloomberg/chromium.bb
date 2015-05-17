@@ -1,0 +1,49 @@
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_collapse/cr_collapse.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_network_icon/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_toggle_button/cr_toggle_button.html">
+
+<dom-module id="cr-demo-element">
+  <template>
+    <div>
+      <h3>cr-button</h3>
+      <cr-button>Button</cr-button>
+      <cr-button raised>Raised Button</cr-button>
+    </div>
+    <div>
+      <h3>cr-checkbox</h3>
+      <cr-checkbox checked="{{checkboxChecked}}">Checkbox</cr-checkbox>
+    </div>
+    <div>
+      <h3>cr-collapse</h3>
+      <paper-toggle-button checked="{{collapseOpened}}">
+        Toggle Collapse
+      </paper-toggle-button>
+      <cr-collapse opened="{{collapseOpened}}">
+        <div>
+          <span>Collapsable section</span>
+        </div>
+      </cr-collapse>
+    </div>
+    <div>
+      <h3>cr-input</h3>
+      <cr-input label="Input" value="{{inputValue}}"></cr-input>
+      <span>Input.value=</span><span>{{inputValue}}</span>
+    </div>
+    <div>
+      <h3>cr-network-icon</h3>
+      <cr-network-icon></cr-network-icon>
+    </div>
+    <div>
+      <h3>cr-toggle-button</h3>
+      <div horizontal layout>
+        <span>Toggle Button</span>
+        <cr-toggle-button></cr-toggle-button>
+      </div>
+    </div>
+  </template>
+  <script src="demo_element.js"></script>
+</dom-module>

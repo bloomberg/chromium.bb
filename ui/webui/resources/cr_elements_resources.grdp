@@ -105,6 +105,15 @@
 
   <!-- Polymer 0.8 Elements -->
   <if expr="enable_polymer_v08">
+    <structure name="IDR_CR_ELEMENTS_08_CR_DEMO_ELEMENT_HTML"
+               file="../../webui/resources/cr_elements/v0_8/demo_element.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_DEMO_ELEMENT_JS"
+               file="../../webui/resources/cr_elements/v0_8/demo_element.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_DEMO_PAGE_HTML"
+               file="../../webui/resources/cr_elements/v0_8/demo_page.html"
+               type="chrome_html" />
     <structure name="IDR_CR_ELEMENTS_08_CR_BUTTON_CSS"
                file="../../webui/resources/cr_elements/v0_8/cr_button/cr_button.css"
                type="chrome_html" />
