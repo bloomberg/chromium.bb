@@ -561,7 +561,6 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
     gyp_defines.append('target_arch=%s' % arch)
     if arch == 'arm':
       gyp_env['GYP_CROSSCOMPILE'] = '1'
-      gyp_defines.append('arm_float_abi=hard')
       if options.no_arm_trusted:
         gyp_defines.append('disable_cross_trusted=1')
   if getos.GetPlatform() == 'mac':

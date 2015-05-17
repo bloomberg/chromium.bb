@@ -2311,9 +2311,12 @@
           }, {
             'arm_fpu%': 'vfpv3-d16',
           }],
+          ['OS=="android"', {
+            'arm_float_abi%': 'softfp',
+          }, {
+            'arm_float_abi%': 'hard',
+          }],
         ],
-        # Change the default to hard once the armhf transition is complete.
-        'arm_float_abi%': 'softfp',
         'arm_thumb%': 1,
       }],
 

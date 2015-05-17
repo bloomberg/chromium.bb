@@ -189,8 +189,7 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
                'GYP_CROSSCOMPILE': '1',
                'GYP_GENERATORS': 'ninja',
                'GYP_DEFINES': ' '.join(self.gyp_defines_base +
-                                       ['target_arch=arm',
-                                        'arm_float_abi=hard']),
+                                       ['target_arch=arm']),
              }),
         call(['ninja', '-C', 'out_dir/Release', 'target'], cwd='src_dir')
     ])
@@ -209,7 +208,6 @@ class GypNinjaPosixTestCase(BasePosixTestCase):
                'GYP_GENERATORS': 'ninja',
                'GYP_DEFINES': ' '.join(self.gyp_defines_base +
                                        ['target_arch=arm',
-                                        'arm_float_abi=hard',
                                         'disable_cross_trusted=1']),
              }),
         call(['ninja', '-C', 'out_dir/Release', 'target'], cwd='src_dir')
