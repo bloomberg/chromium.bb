@@ -75,9 +75,15 @@ PushMessagingAppIdentifier PushMessagingAppIdentifier::Generate(
 // static
 PushMessagingAppIdentifier PushMessagingAppIdentifier::FindByAppId(
     Profile* profile, const std::string& app_id) {
-  // Check case of app_id hasn't been mangled (crbug.com/461867).
-  DCHECK_GE(app_id.size(), kPrefixLength + kGuidLength);
+  if (!StartsWithASCII(app_id, kPushMessagingAppIdentifierPrefix,
+                       false /* case_sensitive */)) {
+    return PushMessagingAppIdentifier();
+  }
+
+  // Since we now know this is a Push Messaging app_id, check the case hasn't
+  // been mangled (crbug.com/461867).
   DCHECK_EQ(kPushMessagingAppIdentifierPrefix, app_id.substr(0, kPrefixLength));
+  DCHECK_GE(app_id.size(), kPrefixLength + kGuidLength);
   DCHECK_EQ(app_id.substr(app_id.size() - kGuidLength),
             StringToUpperASCII(app_id.substr(app_id.size() - kGuidLength)));
 

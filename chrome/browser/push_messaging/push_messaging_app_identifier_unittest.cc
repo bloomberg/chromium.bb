@@ -76,6 +76,13 @@ TEST_F(PushMessagingAppIdentifierTest, UniqueGuids) {
                 GURL("https://www.example.com/"), 1).app_id());
 }
 
+TEST_F(PushMessagingAppIdentifierTest, FindInvalidAppId) {
+  // These calls to FindByAppId should not DCHECK.
+  EXPECT_TRUE(PushMessagingAppIdentifier::FindByAppId(profile(), "").is_null());
+  EXPECT_TRUE(PushMessagingAppIdentifier::FindByAppId(
+      profile(), "amhfneadkjmnlefnpidcijoldiibcdnd").is_null());
+}
+
 TEST_F(PushMessagingAppIdentifierTest, PersistAndFind) {
   ASSERT_TRUE(PushMessagingAppIdentifier::FindByAppId(
       profile(), original_.app_id()).is_null());
