@@ -807,7 +807,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     bool secure_quic = using_ssl_ || proxy_info_.is_quic();
     int rv = quic_request_.Request(
         destination, secure_quic, request_info_.privacy_mode,
-        request_info_.method, net_log_, io_callback_);
+        origin_url_.host(), request_info_.method, net_log_, io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;
     } else {

@@ -58,6 +58,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   int Request(const HostPortPair& host_port_pair,
               bool is_https,
               PrivacyMode privacy_mode,
+              base::StringPiece origin_host,
               base::StringPiece method,
               const BoundNetLog& net_log,
               const CompletionCallback& callback);
@@ -122,6 +123,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int Create(const HostPortPair& host_port_pair,
              bool is_https,
              PrivacyMode privacy_mode,
+             bool server_and_origin_have_same_host,
              base::StringPiece method,
              const BoundNetLog& net_log,
              QuicStreamRequest* request);
@@ -231,6 +233,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Creates a job which doesn't wait for server config to be loaded from the
   // disk cache. This job is started via a PostTask.
   void CreateAuxilaryJob(const QuicServerId server_id,
+                         bool server_and_origin_have_same_host,
                          bool is_post,
                          const BoundNetLog& net_log);
 
