@@ -22,6 +22,7 @@ import httplib
 import json
 import math
 import os
+import re
 import string
 import urllib
 import urllib2
@@ -45,6 +46,8 @@ DASHBOARD_URL = 'https://chromeperf.appspot.com'
 _MAX_DESCRIPTION_LENGTH = 256
 _MAX_UNIT_LENGTH = 32
 
+# Format for Chrome and Chrome OS version strings.
+_VERSION_REGEXP = r'^(\d+)\.(\d+)\.(\d+)\.(\d+)$'
 
 class PerfUploadingError(Exception):
   """A dummy class to wrap errors in this module."""
@@ -248,7 +251,7 @@ def _FormatForUpload(perf_data, platform_name, presentation_info, revision=None,
     revision: The raw X-axis value; normally it represents a VCS repo, but may
       be any monotonic increasing value integer.
     cros_version: A string identifying Chrome OS version e.g. '6052.0.0'.
-    chrome_version: A string identifying Chrome OS version e.g. '38.0.2091.2'.
+    chrome_version: A string identifying Chrome version e.g. '38.0.2091.2'.
     test_prefix: Arbitrary string to automatically prefix to the test name.
       If None, then 'cbuildbot.' is used to guarantee namespacing.
     platform_prefix: Arbitrary string to automatically prefix to
@@ -276,7 +279,7 @@ def _FormatForUpload(perf_data, platform_name, presentation_info, revision=None,
       test_parts.insert(1, graph)
     test_path = '/'.join(test_parts)
 
-    supp_cols = {}
+    supp_cols = {'a_default_rev': 'r_cros_version'}
     if data.get('stdio_uri'):
       supp_cols['a_stdio_uri'] = data['stdio_uri']
     if cros_version is not None:
@@ -328,6 +331,70 @@ def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
     raise PerfUploadingError('HTTPException for JSON %s\n' % data_obj['data'])
 
 
+def _ComputeRevisionFromVersions(chrome_version, cros_version):
+  """Computes the point ID to use, from Chrome and Chrome OS version numbers.
+
+  For ChromeOS row data, data values are associated with both a Chrome
+  version number and a ChromeOS version number (unlike for Chrome row data
+  that is associated with a single revision number).  This function takes
+  both version numbers as input, then computes a single, unique integer ID
+  from them, which serves as a 'fake' revision number that can uniquely
+  identify each ChromeOS data point, and which will allow ChromeOS data points
+  to be sorted by Chrome version number, with ties broken by ChromeOS version
+  number.
+
+  To compute the integer ID, we take the portions of each version number that
+  serve as the shortest unambiguous names for each (as described here:
+  http://www.chromium.org/developers/version-numbers).  We then force each
+  component of each portion to be a fixed width (padded by zeros if needed),
+  concatenate all digits together (with those coming from the Chrome version
+  number first), and convert the entire string of digits into an integer.
+  We ensure that the total number of digits does not exceed that which is
+  allowed by AppEngine NDB for an integer (64-bit signed value).
+
+  For example:
+    Chrome version: 27.0.1452.2 (shortest unambiguous name: 1452.2)
+    ChromeOS version: 27.3906.0.0 (shortest unambiguous name: 3906.0.0)
+    concatenated together with padding for fixed-width columns:
+        ('01452' + '002') + ('03906' + '000' + '00') = '014520020390600000'
+    Final integer ID: 14520020390600000
+
+  Args:
+    chrome_version: The Chrome version number as a string.
+    cros_version: The ChromeOS version number as a string.
+
+  Returns:
+    A unique integer ID associated with the two given version numbers.
+  """
+  # Number of digits to use from each part of the version string for Chrome
+  # and Chrome OS versions when building a point ID out of these two versions.
+  chrome_version_col_widths = [0, 0, 5, 3]
+  cros_version_col_widths = [0, 5, 3, 2]
+
+  def get_digits_from_version(version_num, column_widths):
+    if re.match(_VERSION_REGEXP, version_num):
+      computed_string = ''
+      version_parts = version_num.split('.')
+      for i, version_part in enumerate(version_parts):
+        if column_widths[i]:
+          computed_string += version_part.zfill(column_widths[i])
+      return computed_string
+    else:
+      return None
+
+  chrome_digits = get_digits_from_version(
+      chrome_version, chrome_version_col_widths)
+  cros_digits = get_digits_from_version(
+      cros_version, cros_version_col_widths)
+  if not chrome_digits or not cros_digits:
+    return None
+  result_digits = chrome_digits + cros_digits
+  max_digits = sum(chrome_version_col_widths + cros_version_col_widths)
+  if len(result_digits) > max_digits:
+    return None
+  return int(result_digits)
+
+
 def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
                      cros_version=None, chrome_version=None,
                      dashboard=DASHBOARD_URL, master_name=None,
@@ -346,7 +413,7 @@ def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
     revision: The raw X-axis value; normally it represents a VCS repo, but may
       be any monotonic increasing value integer.
     cros_version: A string identifying Chrome OS version e.g. '6052.0.0'.
-    chrome_version: A string identifying Chrome OS version e.g. '38.0.2091.2'.
+    chrome_version: A string identifying Chrome version e.g. '38.0.2091.2'.
     dashboard: The dashboard to upload data to.
     master_name: The "master" field to use; by default it is looked up in the
       perf_dashboard_config.json database.
@@ -369,11 +436,10 @@ def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
   _ComputeAvgStddev(perf_data)
 
   # Format the perf data for the upload, then upload it.
-  # Prefix the ChromeOS version number with the Chrome milestone.
-  # TODO(dennisjeffrey): Modify the dashboard to accept the ChromeOS version
-  # number *without* the milestone attached.
   if revision is None:
+    # No "revision" field, calculate one. Chrome and CrOS fields must be given.
     cros_version = chrome_version[:chrome_version.find('.') + 1] + cros_version
+    revision = _ComputeRevisionFromVersions(chrome_version, cros_version)
   try:
     if master_name is None:
       presentation_info = _GetPresentationInfo(test_name)
