@@ -89,18 +89,4 @@ extern const char kOmniboxGeolocationAuthorizationState[] =
 extern const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
     "ios.omnibox.geolocation_last_authorization_alert_version";
 
-// Number of seconds from 1970 when the doodle expires.
-extern const char kDoodleExpirationTimeInSeconds[] =
-    "ios.doodle.expiration_time.seconds";
-
-// The URL to navigate to when the user taps the doodle.
-extern const char kDoodleHref[] = "ios.doodle.href";
-
-// Number of seconds from 1970 since the last time a doodle was requested.
-extern const char kDoodleLastRequestTimeInSeconds[] =
-    "ios.doodle.last_request_time.seconds";
-
-// The alternative text for the doodle.
-extern const char kDoodleAltText[] = "ios.doodle.alttext";
-
 }  // namespace prefs
