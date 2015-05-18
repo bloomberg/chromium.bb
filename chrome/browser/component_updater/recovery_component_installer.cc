@@ -88,6 +88,32 @@ bool SimulatingElevatedRecovery() {
 }
 #endif  // !defined(OS_CHROMEOS)
 
+base::CommandLine GetRecoveryInstallCommandLine(
+    const base::FilePath& command,
+    const base::DictionaryValue& manifest,
+    bool is_deferred_run,
+    const Version& version) {
+  base::CommandLine command_line(command);
+
+  // Add a flag to for re-attempted install with elevated privilege so that the
+  // recovery executable can report back accordingly.
+  if (is_deferred_run)
+    command_line.AppendArg("/deferredrun");
+
+  std::string arguments;
+  if (manifest.GetStringASCII("x-recovery-args", &arguments))
+    command_line.AppendArg(arguments);
+  std::string add_version;
+  if (manifest.GetStringASCII("x-recovery-add-version", &add_version) &&
+      add_version == "yes") {
+    std::string version_string = "/version ";
+    version_string += version.GetString();
+    command_line.AppendArg(version_string);
+  }
+
+  return command_line;
+}
+
 #if defined(OS_WIN)
 scoped_ptr<base::DictionaryValue> ReadManifest(const base::FilePath& manifest) {
   JSONFileValueDeserializer deserializer(manifest);
@@ -132,15 +158,9 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   if (!version.IsValid())
     return;
 
-  base::CommandLine cmdline(main_file);
-  std::string arguments;
-  if (manifest->GetStringASCII("x-recovery-args", &arguments))
-    cmdline.AppendArg(arguments);
-  std::string add_version;
-  if (manifest->GetStringASCII("x-recovery-add-version", &add_version) &&
-      add_version == "yes") {
-    cmdline.AppendSwitchASCII("version", version.GetString());
-  }
+  const bool is_deferred_run = true;
+  const auto cmdline = GetRecoveryInstallCommandLine(
+      main_file, *manifest, is_deferred_run, version);
 
   RecordRecoveryComponentUMAEvent(RCE_RUNNING_ELEVATED);
 
@@ -331,16 +351,11 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
   base::FilePath main_file = path.Append(kRecoveryFileName);
   if (!base::PathExists(main_file))
     return false;
+
   // Run the recovery component.
-  base::CommandLine cmdline(main_file);
-  std::string arguments;
-  if (manifest.GetStringASCII("x-recovery-args", &arguments))
-    cmdline.AppendArg(arguments);
-  std::string add_version;
-  if (manifest.GetStringASCII("x-recovery-add-version", &add_version) &&
-      add_version == "yes") {
-    cmdline.AppendSwitchASCII("version", current_version_.GetString());
-  }
+  const bool is_deferred_run = false;
+  const auto cmdline = GetRecoveryInstallCommandLine(
+      main_file, manifest, is_deferred_run, current_version_);
 
   if (!RunInstallCommand(cmdline, path)) {
     return false;
