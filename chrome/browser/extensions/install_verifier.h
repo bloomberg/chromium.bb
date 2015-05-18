@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 
@@ -40,10 +41,14 @@ struct InstallSignature;
 //
 // This class should be kept notified of runtime changes to the set of
 // extensions installed from the webstore.
-class InstallVerifier : public ManagementPolicy::Provider {
+class InstallVerifier : public KeyedService,
+                        public ManagementPolicy::Provider {
  public:
   InstallVerifier(ExtensionPrefs* prefs, content::BrowserContext* context);
   ~InstallVerifier() override;
+
+  // Convenience method to return the InstallVerifier for a given |context|.
+  static InstallVerifier* Get(content::BrowserContext* context);
 
   // Returns whether install verification should be enforced.
   static bool ShouldEnforce();

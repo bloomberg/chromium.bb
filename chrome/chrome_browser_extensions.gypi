@@ -734,6 +734,8 @@
       'browser/extensions/install_tracker_factory.h',
       'browser/extensions/install_verifier.cc',
       'browser/extensions/install_verifier.h',
+      'browser/extensions/install_verifier_factory.cc',
+      'browser/extensions/install_verifier_factory.h',
       'browser/extensions/installed_loader.cc',
       'browser/extensions/installed_loader.h',
       'browser/extensions/launch_util.cc',

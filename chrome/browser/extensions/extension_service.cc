@@ -742,7 +742,7 @@ bool ExtensionService::UninstallExtension(
         extension.get(), is_ready());
   }
 
-  system_->install_verifier()->Remove(extension->id());
+  InstallVerifier::Get(GetBrowserContext())->Remove(extension->id());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
                             extension->GetType(), 100);
@@ -1913,7 +1913,7 @@ void ExtensionService::AddNewOrUpdatedExtension(
       extension, initial_state, page_ordinal, install_flags, install_parameter);
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension))
-    system_->install_verifier()->VerifyExtension(extension->id());
+    InstallVerifier::Get(GetBrowserContext())->VerifyExtension(extension->id());
 
   const Extension* old = GetInstalledExtension(extension->id());
   if (extensions::AppDataMigrator::NeedsMigration(old, extension)) {

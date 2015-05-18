@@ -148,10 +148,6 @@ EventRouter* ShellExtensionSystem::event_router() {
   return event_router_.get();
 }
 
-InstallVerifier* ShellExtensionSystem::install_verifier() {
-  return nullptr;
-}
-
 QuotaService* ShellExtensionSystem::quota_service() {
   return quota_service_.get();
 }

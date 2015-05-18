@@ -152,7 +152,7 @@ void PerformVerificationCheck(content::BrowserContext* context) {
   UMA_HISTOGRAM_BOOLEAN("ExtensionSettings.ShouldDoVerificationCheck",
                         should_do_verification_check);
   if (should_do_verification_check)
-    ExtensionSystem::Get(context)->install_verifier()->VerifyAllExtensions();
+    InstallVerifier::Get(context)->VerifyAllExtensions();
 }
 
 }  // namespace

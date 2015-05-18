@@ -142,7 +142,7 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
   }
 #endif  // defined(OS_CHROMEOS)
 
-  management_policy_->RegisterProvider(install_verifier_.get());
+  management_policy_->RegisterProvider(InstallVerifier::Get(profile_));
 }
 
 namespace {
@@ -324,9 +324,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
   {
-    install_verifier_.reset(
-        new InstallVerifier(ExtensionPrefs::Get(profile_), profile_));
-    install_verifier_->Init();
+    InstallVerifier::Get(profile_)->Init();
     content_verifier_ = new ContentVerifier(
         profile_, new ContentVerifierDelegateImpl(extension_service_.get()));
     ContentVerifierDelegate::Mode mode =
@@ -450,10 +448,6 @@ EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
 }
 
-InstallVerifier* ExtensionSystemImpl::Shared::install_verifier() {
-  return install_verifier_.get();
-}
-
 QuotaService* ExtensionSystemImpl::Shared::quota_service() {
   return quota_service_.get();
 }
@@ -533,10 +527,6 @@ EventRouter* ExtensionSystemImpl::event_router() {
 
 const OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();
-}
-
-InstallVerifier* ExtensionSystemImpl::install_verifier() {
-  return shared_->install_verifier();
 }
 
 QuotaService* ExtensionSystemImpl::quota_service() {

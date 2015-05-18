@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/blacklist_factory.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/install_verifier_factory.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -44,6 +45,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
   // This depends on ExtensionService which depends on ExtensionRegistry.
   DependsOn(ExtensionRegistryFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
+  DependsOn(InstallVerifierFactory::GetInstance());
   DependsOn(policy::ProfilePolicyConnectorFactory::GetInstance());
   DependsOn(ProcessManagerFactory::GetInstance());
   DependsOn(RendererStartupHelperFactory::GetInstance());

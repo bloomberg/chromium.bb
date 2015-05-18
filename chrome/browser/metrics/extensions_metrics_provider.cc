@@ -191,7 +191,7 @@ void ExtensionsMetricsProvider::ProvideOffStoreMetric(
   std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
   for (size_t i = 0u; i < profiles.size() && state < OFF_STORE; ++i) {
     extensions::InstallVerifier* verifier =
-        extensions::ExtensionSystem::Get(profiles[i])->install_verifier();
+        extensions::InstallVerifier::Get(profiles[i]);
 
     scoped_ptr<extensions::ExtensionSet> extensions(
         GetInstalledExtensions(profiles[i]));

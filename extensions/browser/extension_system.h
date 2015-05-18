@@ -35,7 +35,6 @@ class EventRouter;
 class Extension;
 class ExtensionSet;
 class InfoMap;
-class InstallVerifier;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class OneShotEvent;
@@ -93,9 +92,6 @@ class ExtensionSystem : public KeyedService {
 
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
-
-  // The InstallVerifier is created at startup.
-  virtual InstallVerifier* install_verifier() = 0;
 
   // Returns the QuotaService that limits calls to certain extension functions.
   // Lives on the UI thread. Created at startup.

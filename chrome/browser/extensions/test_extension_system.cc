@@ -83,8 +83,6 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     bool autoupdate_enabled) {
   if (!ExtensionPrefs::Get(profile_))
     CreateExtensionPrefs(command_line, install_directory);
-  install_verifier_.reset(
-      new InstallVerifier(ExtensionPrefs::Get(profile_), profile_));
   // The ownership of |value_store_| is immediately transferred to state_store_,
   // but we keep a naked pointer to the TestingValueStore.
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
@@ -154,10 +152,6 @@ void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {
 }
 
 EventRouter* TestExtensionSystem::event_router() { return event_router_.get(); }
-
-InstallVerifier* TestExtensionSystem::install_verifier() {
-  return install_verifier_.get();
-}
 
 QuotaService* TestExtensionSystem::quota_service() {
   return quota_service_.get();

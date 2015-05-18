@@ -39,7 +39,6 @@ class MockExtensionSystem : public ExtensionSystem {
   InfoMap* info_map() override;
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   EventRouter* event_router() override;
-  InstallVerifier* install_verifier() override;
   QuotaService* quota_service() override;
   const OneShotEvent& ready() const override;
   ContentVerifier* content_verifier() override;

@@ -328,7 +328,7 @@ void WebstoreInstaller::Start() {
   for (i = pending_modules_.begin(); i != pending_modules_.end(); ++i) {
     ids.insert(i->extension_id);
   }
-  ExtensionSystem::Get(profile_)->install_verifier()->AddProvisional(ids);
+  InstallVerifier::Get(profile_)->AddProvisional(ids);
 
   std::string name;
   if (!approval_->manifest->value()->GetString(manifest_keys::kName, &name)) {

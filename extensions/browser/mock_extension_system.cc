@@ -59,10 +59,6 @@ EventRouter* MockExtensionSystem::event_router() {
   return event_router_;
 }
 
-InstallVerifier* MockExtensionSystem::install_verifier() {
-  return nullptr;
-}
-
 QuotaService* MockExtensionSystem::quota_service() {
   return nullptr;
 }

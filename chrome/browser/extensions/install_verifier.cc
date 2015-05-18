@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_signer.h"
+#include "chrome/browser/extensions/install_verifier_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
@@ -178,6 +179,12 @@ InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
 }
 
 InstallVerifier::~InstallVerifier() {}
+
+// static
+InstallVerifier* InstallVerifier::Get(
+    content::BrowserContext* browser_context) {
+  return InstallVerifierFactory::GetForBrowserContext(browser_context);
+}
 
 // static
 bool InstallVerifier::ShouldEnforce() {
