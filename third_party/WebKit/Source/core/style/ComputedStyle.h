@@ -1509,6 +1509,9 @@ public:
     void setHasExplicitlyInheritedProperties() { noninherited_flags.explicitInheritance = true; }
     bool hasExplicitlyInheritedProperties() const { return noninherited_flags.explicitInheritance; }
 
+    bool hasChildDependentFlags() const { return emptyState() || hasExplicitlyInheritedProperties(); }
+    void copyChildDependentFlagsFrom(const ComputedStyle&);
+
     bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || resize() != RESIZE_NONE; }
 
     bool borderObscuresBackground() const;

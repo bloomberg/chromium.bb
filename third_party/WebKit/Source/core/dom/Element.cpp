@@ -1707,8 +1707,15 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (change > Inherit || localChange > Inherit)
         return max(localChange, change);
 
-    if (localChange < Inherit && (oldStyle->hasPseudoElementStyle() || newStyle->hasPseudoElementStyle()))
-        return UpdatePseudoElements;
+    if (localChange < Inherit) {
+        if (oldStyle->hasChildDependentFlags()) {
+            if (childNeedsStyleRecalc())
+                return Inherit;
+            newStyle->copyChildDependentFlagsFrom(*oldStyle);
+        }
+        if (oldStyle->hasPseudoElementStyle() || newStyle->hasPseudoElementStyle())
+            return UpdatePseudoElements;
+    }
 
     return localChange;
 }

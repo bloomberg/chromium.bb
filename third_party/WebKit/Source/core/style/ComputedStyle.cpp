@@ -1735,4 +1735,11 @@ void ComputedStyle::getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLef
         !horizontal || includeLogicalLeftEdge);
 }
 
+void ComputedStyle::copyChildDependentFlagsFrom(const ComputedStyle& other)
+{
+    setEmptyState(other.emptyState());
+    if (other.hasExplicitlyInheritedProperties())
+        setHasExplicitlyInheritedProperties();
+}
+
 } // namespace blink
