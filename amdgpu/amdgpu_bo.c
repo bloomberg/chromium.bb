@@ -666,7 +666,10 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 	unsigned i;
 	int r;
 
-	list = alloca(sizeof(struct drm_amdgpu_bo_list_entry) * number_of_resources);
+	list = calloc(number_of_resources, sizeof(struct drm_amdgpu_bo_list_entry));
+
+	if (list == NULL)
+		return -ENOMEM;
 
 	memset(&args, 0, sizeof(args));
 	args.in.operation = AMDGPU_BO_LIST_OP_CREATE;
@@ -685,12 +688,14 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
 				&args, sizeof(args));
 	if (r)
-		return r;
+		goto out;
 
 	*result = calloc(1, sizeof(struct amdgpu_bo_list));
 	(*result)->dev = dev;
 	(*result)->handle = args.out.list_handle;
-	return 0;
+out:
+	free(list);
+	return r;
 }
 
 int amdgpu_bo_list_destroy(amdgpu_bo_list_handle list)
