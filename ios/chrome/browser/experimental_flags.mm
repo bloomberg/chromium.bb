@@ -12,8 +12,10 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/web/public/web_view_util.h"
 
 namespace {
 NSString* const kEnableAlertOnBackgroundUpload =
@@ -30,6 +32,28 @@ bool IsAlertOnBackgroundUploadEnabled() {
 bool IsOpenFromClipboardEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableIOSOpenFromClipboard);
+}
+
+bool IsWKWebViewEnabled() {
+  // If WKWebView isn't supported, don't activate the experiment at all. This
+  // avoids someone being slotted into the WKWebView bucket (and thus reporting
+  // as WKWebView), but actually running UIWebView.
+  if (!web::IsWKWebViewSupported())
+    return false;
+
+  std::string group_name =
+      base::FieldTrialList::FindFullName("IOSUseWKWebView");
+
+  // First check if the experimental flag is turned on.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableIOSWKWebView)) {
+    return true;
+  } else if (command_line->HasSwitch(switches::kDisableIOSWKWebView)) {
+    return false;
+  }
+
+  // Check if the finch experiment is turned on.
+  return StartsWithASCII(group_name, "Enabled", false);
 }
 
 size_t MemoryWedgeSizeInMB() {

@@ -271,6 +271,8 @@
         'browser/updatable_config/updatable_dictionary.mm',
         'browser/web/dom_altering_lock.h',
         'browser/web/dom_altering_lock.mm',
+        'browser/web/web_view_type_util.h',
+        'browser/web/web_view_type_util.mm',
         'browser/web_resource/ios_web_resource_service.cc',
         'browser/web_resource/ios_web_resource_service.h',
         'browser/xcallback_parameters.h',
