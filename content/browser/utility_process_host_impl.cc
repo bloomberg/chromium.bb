@@ -222,6 +222,7 @@ bool UtilityProcessHostImpl::StartProcess() {
             channel_id, BrowserThread::UnsafeGetMessageLoopForThread(
                             BrowserThread::IO)->task_runner())));
     in_process_thread_->Start();
+    OnProcessLaunched();
   } else {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
