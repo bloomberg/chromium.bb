@@ -134,9 +134,6 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
 
     // By default, only local SecurityOrigins can load local resources.
     m_canLoadLocalResources = isLocal();
-
-    if (m_canLoadLocalResources)
-        m_filePath = url.path(); // In case enforceFilePathSeparation() is called.
 }
 
 SecurityOrigin::SecurityOrigin()
@@ -157,7 +154,6 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
     : m_protocol(other->m_protocol.isolatedCopy())
     , m_host(other->m_host.isolatedCopy())
     , m_domain(other->m_domain.isolatedCopy())
-    , m_filePath(other->m_filePath.isolatedCopy())
     , m_port(other->m_port)
     , m_isUnique(other->m_isUnique)
     , m_universalAccess(other->m_universalAccess)
@@ -275,10 +271,7 @@ bool SecurityOrigin::passesFileCheck(const SecurityOrigin* other) const
 {
     ASSERT(isLocal() && other->isLocal());
 
-    if (!m_enforceFilePathSeparation && !other->m_enforceFilePathSeparation)
-        return true;
-
-    return (m_filePath == other->m_filePath);
+    return !m_enforceFilePathSeparation && !other->m_enforceFilePathSeparation;
 }
 
 bool SecurityOrigin::canRequest(const KURL& url) const

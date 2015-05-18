@@ -226,7 +226,6 @@ private:
     String m_protocol;
     String m_host;
     String m_domain;
-    String m_filePath;
     unsigned short m_port;
     bool m_isUnique;
     bool m_universalAccess;
