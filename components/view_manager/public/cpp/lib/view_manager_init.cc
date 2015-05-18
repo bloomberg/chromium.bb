@@ -35,6 +35,7 @@ ViewManagerInit::ViewManagerInit(ApplicationImpl* app,
       app_->ConnectToApplication("mojo:view_manager");
   connection->AddService(client_factory_.get());
   connection->ConnectToService(&service_);
+  service_.set_error_handler(this);
   connection->ConnectToService(&view_manager_root_);
   if (root_client) {
     root_client_binding_.reset(new Binding<ViewManagerRootClient>(root_client));
@@ -53,6 +54,10 @@ void ViewManagerInit::OnCreate(InterfaceRequest<ViewManagerClient> request) {
   ViewManagerClientImpl* client = new ViewManagerClientImpl(
       delegate_, app_->shell(), request.Pass(), delete_on_error);
   client->SetViewManagerService(service_.Pass());
+}
+
+void ViewManagerInit::OnConnectionError() {
+  mojo::ApplicationImpl::Terminate();
 }
 
 }  // namespace mojo
