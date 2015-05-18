@@ -363,6 +363,9 @@ Output.RULES = {
     alertDialog: {
       enter: '$name $role $descendants'
     },
+    cell: {
+      enter: '@column_granularity $tableCellColumnIndex'
+    },
     checkBox: {
       speak: '$name $role $checked'
     },
@@ -421,6 +424,9 @@ Output.RULES = {
     },
     radioGroup: {
       enter: '$name $role'
+    },
+    row: {
+      enter: '@row_granularity $tableRowIndex'
     },
     slider: {
       speak: '@describe_slider($value, $name) $help'
@@ -845,6 +851,14 @@ Output.prototype = {
             console.error('Missing role info for ' + node.role);
           }
           this.append_(buff, msg, options);
+        } else if (token == 'tableRowIndex' ||
+            token == 'tableCellColumnIndex') {
+          var value = node.attributes[token];
+          if (!value)
+            return;
+          value = String(value + 1);
+          options.annotation.push(token);
+          this.append_(buff, value, options);
         } else if (node.attributes[token] !== undefined) {
           options.annotation.push(token);
           var value = node.attributes[token];
