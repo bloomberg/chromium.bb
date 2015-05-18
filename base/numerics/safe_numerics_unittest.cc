@@ -239,6 +239,9 @@ static void TestArithmetic(const char* dst, int line) {
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>() * 1));
   TEST_EXPECTED_VALUE(1, (CheckedNumeric<Dst>(1) * 1));
   TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) * 2));
+  TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * 0));
+  TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) * 0));
+  TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * -1));
   TEST_EXPECTED_VALIDITY(
       RANGE_OVERFLOW, CheckedNumeric<Dst>(DstLimits::max()) * DstLimits::max());
 
