@@ -5,7 +5,6 @@ if (window.testRunner)
   testRunner.waitUntilDone();
 
 function startTest() {
-  var eventCount = 0;
   var video = document.querySelector('video');
   video.addEventListener("playing", function () {
     video.poster = "content/abe.png";
