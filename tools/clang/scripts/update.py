@@ -295,7 +295,7 @@ def UpdateClang(args):
       CopyFile(os.path.join(sanitizer_include_dir, f),
                aux_sanitizer_include_dir)
 
-  if args.run_tests:
+  if args.run_tests or use_head_revision:
     os.chdir(LLVM_BUILD_DIR)
     RunCommand(GetVSVersion().SetupScript('x64') +
                ['&&', 'ninja', 'cr-check-all'])

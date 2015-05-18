@@ -698,9 +698,11 @@ if [[ -n "${with_android}" ]]; then
   popd
 fi
 
-if [[ -n "$run_tests" ]]; then
+if [[ -n "$run_tests" -o -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   # Run Chrome tool tests.
   ninja -C "${LLVM_BUILD_DIR}" cr-check-all
+fi
+if [[ -n "$run_tests" ]]; then
   # Run the LLVM and Clang tests.
   ninja -C "${LLVM_BUILD_DIR}" check-all
 fi
