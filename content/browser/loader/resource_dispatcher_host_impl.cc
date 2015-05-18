@@ -486,17 +486,6 @@ void ResourceDispatcherHostImpl::RemoveResourceContext(
   active_resource_contexts_.erase(context);
 }
 
-void ResourceDispatcherHostImpl::ResumeResponseDeferredAtStart(
-    const GlobalRequestID& id) {
-  ResourceLoader* loader = GetLoader(id);
-  if (loader) {
-    // The response we were meant to resume could have already been canceled.
-    ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-    if (info->cross_site_handler())
-      info->cross_site_handler()->ResumeResponseDeferredAtStart(id.request_id);
-  }
-}
-
 void ResourceDispatcherHostImpl::CancelRequestsForContext(
     ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -72,12 +72,6 @@ public interface WebContents {
     public int getBackgroundColor();
 
     /**
-     * Requests the renderer insert a link to the specified stylesheet in the
-     * main frame's document.
-     */
-    void addStyleSheetByURL(String url);
-
-    /**
      * Shows an interstitial page driven by the passed in delegate.
      *
      * @param url The URL being blocked by the interstitial.
@@ -154,60 +148,9 @@ public interface WebContents {
     public boolean isIncognito();
 
     /**
-     * Resumes the response which is deferred during start.
-     */
-    public void resumeResponseDeferredAtStart();
-
-    /**
      * Resumes the requests for a newly created window.
      */
     public void resumeLoadingCreatedWebContents();
-
-    /**
-     * Set pending Navigation for transition testing on this WebContents.
-     */
-    public void setHasPendingNavigationTransitionForTesting();
-
-    /**
-     * Set delegate for notifying navigation transition.
-     */
-    public void setNavigationTransitionDelegate(NavigationTransitionDelegate delegate);
-
-    /**
-     * Inserts the provided markup sandboxed into the frame.
-     */
-    public void setupTransitionView(String markup);
-
-    /**
-     * Hides transition elements specified by the selector, and activates any
-     * exiting-transition stylesheets.
-     */
-    public void beginExitTransition(String cssSelector, boolean exitToNativeApp);
-
-    /**
-     * Revert the effect of exit transition after it transitions to activity.
-     */
-    public void revertExitTransition();
-
-    /**
-     * Hide transition elements.
-     */
-    public void hideTransitionElements(String cssSelector);
-
-    /**
-     * Show transition elements.
-     */
-    public void showTransitionElements(String cssSelector);
-
-    /**
-     * Clear the navigation transition data.
-     */
-    public void clearNavigationTransitionData();
-
-    /**
-     * Fetch transition elements.
-     */
-    public void fetchTransitionElements(String url);
 
     /**
      * Injects the passed Javascript code in the current page and evaluates it.

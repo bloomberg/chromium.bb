@@ -423,30 +423,6 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   cross_site_transferring_request_.reset();
 }
 
-void RenderFrameHostManager::OnDeferredAfterResponseStarted(
-    const GlobalRequestID& global_request_id,
-    RenderFrameHostImpl* pending_render_frame_host) {
-  DCHECK(!response_started_id_);
-
-  response_started_id_.reset(new GlobalRequestID(global_request_id));
-}
-
-void RenderFrameHostManager::ResumeResponseDeferredAtStart() {
-  DCHECK(response_started_id_);
-
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(render_frame_host_->GetProcess());
-  process->ResumeResponseDeferredAtStart(*response_started_id_);
-
-  render_frame_host_->ClearPendingTransitionRequestData();
-
-  response_started_id_.reset();
-}
-
-void RenderFrameHostManager::ClearNavigationTransitionData() {
-  render_frame_host_->ClearPendingTransitionRequestData();
-}
-
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {

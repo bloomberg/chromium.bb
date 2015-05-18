@@ -49,7 +49,6 @@
 #endif
 
 struct FontDescriptor;
-struct FrameHostMsg_AddNavigationTransitionData_Params;
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace blink {
@@ -290,9 +289,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                             base::FileDescriptor pcm_output,
                             uint32_t data_size);
 #endif
-
-  void OnAddNavigationTransitionData(
-      FrameHostMsg_AddNavigationTransitionData_Params params);
 
   void OnAllocateGpuMemoryBuffer(uint32 width,
                                  uint32 height,

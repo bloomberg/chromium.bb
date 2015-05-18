@@ -108,9 +108,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Notify the ResourceDispatcherHostImpl of a resource context destruction.
   void RemoveResourceContext(ResourceContext* context);
 
-  // Resumes a request that deferred at response start.
-  void ResumeResponseDeferredAtStart(const GlobalRequestID& id);
-
   // Force cancels any pending requests for the given |context|. This is
   // necessary to ensure that before |context| goes away, all requests
   // for it are dead.

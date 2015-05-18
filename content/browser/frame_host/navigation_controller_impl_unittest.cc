@@ -3247,7 +3247,7 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
 
   // We create pending entries for renderer-initiated navigations so that we
   // can show them in new tabs when it is safe.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url1, false);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), url1);
 
   // Simulate what happens if a BrowserURLHandler rewrites the URL, causing
   // the virtual URL to differ from the URL.
@@ -3261,7 +3261,7 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   // If the user clicks another link, we should replace the pending entry.
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
   main_test_rfh()->PrepareForCommit();
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url2, false);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), url2);
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetVirtualURL());
 
@@ -3271,20 +3271,20 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetVirtualURL());
 
   // We should not replace the pending entry for an error URL.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url1, false);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), url1);
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
   navigator->DidStartProvisionalLoad(main_test_rfh(),
-                                     GURL(kUnreachableWebDataURL), false);
+                                     GURL(kUnreachableWebDataURL));
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
 
   // We should remember if the pending entry will replace the current one.
   // http://crbug.com/308444.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url1, false);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), url1);
   controller.GetPendingEntry()->set_should_replace_entry(true);
 
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
   main_test_rfh()->PrepareForCommit();
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url2, false);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), url2);
   EXPECT_TRUE(controller.GetPendingEntry()->should_replace_entry());
   main_test_rfh()->SendNavigate(0, 0, false, url2);
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());

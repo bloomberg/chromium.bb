@@ -267,10 +267,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void IncrementWorkerRefCount();
   void DecrementWorkerRefCount();
 
-  // Call this function to resume the navigation when it was deferred
-  // immediately after receiving response headers.
-  void ResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
-
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override;
 

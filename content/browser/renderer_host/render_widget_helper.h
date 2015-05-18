@@ -89,11 +89,10 @@ class RenderWidgetHelper
 
   // UI THREAD ONLY -----------------------------------------------------------
 
-  // These four functions provide the backend implementation of the
+  // These two functions provide the backend implementation of the
   // corresponding functions in RenderProcessHost. See those declarations
   // for documentation.
   void ResumeDeferredNavigation(const GlobalRequestID& request_id);
-  void ResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
 
   // Called to resume the requests for a view after it's ready. The view was
   // created by CreateNewWindow which initially blocked the requests.

@@ -727,11 +727,6 @@ void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
   GetMainFrame()->RequestAXTreeSnapshot(callback);
 }
 
-void WebContentsImpl::ClearNavigationTransitionData() {
-  FrameTreeNode* node = frame_tree_.root();
-  node->render_manager()->ClearNavigationTransitionData();
-}
-
 WebUI* WebContentsImpl::CreateWebUI(const GURL& url) {
   WebUIImpl* web_ui = new WebUIImpl(this);
   WebUIController* controller = WebUIControllerFactoryRegistry::GetInstance()->
@@ -2587,15 +2582,6 @@ void WebContentsImpl::DidStartProvisionalLoad(
   }
 }
 
-void WebContentsImpl::DidStartNavigationTransition(
-    RenderFrameHostImpl* render_frame_host) {
-#if defined(OS_ANDROID)
-  int render_frame_id = render_frame_host->GetRoutingID();
-  GetWebContentsAndroid()->DidStartNavigationTransitionForFrame(
-      render_frame_id);
-#endif
-}
-
 void WebContentsImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
@@ -3699,21 +3685,6 @@ void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
     delegate_->SwappedOut(this);
 }
 
-void WebContentsImpl::DidDeferAfterResponseStarted(
-    const TransitionLayerData& transition_data) {
-#if defined(OS_ANDROID)
-  GetWebContentsAndroid()->DidDeferAfterResponseStarted(transition_data);
-#endif
-}
-
-bool WebContentsImpl::WillHandleDeferAfterResponseStarted() {
-#if defined(OS_ANDROID)
-  return GetWebContentsAndroid()->WillHandleDeferAfterResponseStarted();
-#else
-  return false;
-#endif
-}
-
 void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
   if (delegate_ && delegate_->IsPopupOrPanel(this))
     delegate_->MoveContents(this, new_bounds);
@@ -4416,11 +4387,6 @@ void WebContentsImpl::RemoveAllMediaPlayerEntries(
   if (it == player_map->end())
     return;
   player_map->erase(it);
-}
-
-void WebContentsImpl::ResumeResponseDeferredAtStart() {
-  FrameTreeNode* node = frame_tree_.root();
-  node->render_manager()->ResumeResponseDeferredAtStart();
 }
 
 void WebContentsImpl::SetForceDisableOverscrollContent(bool force_disable) {

@@ -30,7 +30,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
-#include "content/browser/transition_request_manager.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
@@ -435,8 +434,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunWebAudioMediaCodec, OnWebAudioMediaCodec)
 #endif
-    IPC_MESSAGE_HANDLER(FrameHostMsg_AddNavigationTransitionData,
-                        OnAddNavigationTransitionData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1185,19 +1182,6 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
       true);
 }
 #endif
-
-void RenderMessageFilter::OnAddNavigationTransitionData(
-    FrameHostMsg_AddNavigationTransitionData_Params params) {
-  if (params.elements.size() > TransitionRequestManager::kMaxNumOfElements)
-    return;
-  TransitionRequestManager::GetInstance()->AddPendingTransitionRequestData(
-      render_process_id_,
-      params.render_frame_id,
-      params.allowed_destination_host_pattern,
-      params.selector,
-      params.markup,
-      params.elements);
-}
 
 void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
     uint32 width,

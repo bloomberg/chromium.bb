@@ -23,10 +23,6 @@ const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() const {
   return GURL::EmptyGURL();
 }
 
-bool RenderFrameHostDelegate::WillHandleDeferAfterResponseStarted() {
-  return false;
-}
-
 bool RenderFrameHostDelegate::AddMessageToConsole(
     int32 level, const base::string16& message, int32 line_no,
     const base::string16& source_id) {

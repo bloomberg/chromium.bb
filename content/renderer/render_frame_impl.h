@@ -31,7 +31,6 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
-#include "third_party/WebKit/public/web/WebTransitionElementData.h"
 #include "ui/gfx/range/range.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -44,7 +43,6 @@
 
 class GURL;
 class TransportDIB;
-struct FrameHostMsg_AddNavigationTransitionData_Params;
 struct FrameMsg_NewFrame_WidgetParams;
 struct FrameMsg_PostMessage_Params;
 struct FrameMsg_TextTrackSettings_Params;
@@ -60,7 +58,6 @@ class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
-struct WebTransitionElementData;
 }
 
 namespace gfx {
@@ -409,6 +406,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
+                                       double triggering_event_time);
+  // TODO(dglazkov): Remove once Navigation Transitions are gone from Blink.
+  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
                                        bool is_transition_navigation,
                                        double triggering_event_time);
   virtual void didReceiveServerRedirectForProvisionalLoad(
@@ -439,8 +439,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                      const blink::WebHistoryItem& item,
                                      blink::WebHistoryCommitType commit_type);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
-  virtual void addNavigationTransitionData(
-      const blink::WebTransitionElementData& data);
   virtual void didChangeThemeColor();
   virtual void dispatchLoad();
   virtual void requestNotificationPermission(
@@ -661,13 +659,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnExtendSelectionAndDelete(int before, int after);
   void OnReload(bool ignore_cache);
   void OnTextSurroundingSelectionRequest(size_t max_length);
-  void OnAddStyleSheetByURL(const std::string& url);
-  void OnSetupTransitionView(const std::string& markup);
-  void OnBeginExitTransition(const std::string& css_selector,
-                             bool exit_to_native_app);
-  void OnRevertExitTransition();
-  void OnHideTransitionElements(const std::string& css_selector);
-  void OnShowTransitionElements(const std::string& css_selector);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id);
   void OnDisownOpener();

@@ -12,7 +12,6 @@ import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.NavigationController;
-import org.chromium.content_public.browser.NavigationTransitionDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
@@ -30,8 +29,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
 
     // Lazily created proxy observer for handling all Java-based WebContentsObservers.
     private WebContentsObserverProxy mObserverProxy;
-
-    private NavigationTransitionDelegate mNavigationTransitionDelegate = null;
 
     private WebContentsImpl(
             long nativeWebContentsAndroid, NavigationController navigationController) {
@@ -122,11 +119,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
     }
 
     @Override
-    public void addStyleSheetByURL(String url) {
-        nativeAddStyleSheetByURL(mNativeWebContentsAndroid, url);
-    }
-
-    @Override
     public void showInterstitialPage(
             String url, long interstitialPageDelegateAndroid) {
         nativeShowInterstitialPage(mNativeWebContentsAndroid, url, interstitialPageDelegateAndroid);
@@ -188,122 +180,8 @@ import org.chromium.content_public.browser.WebContentsObserver;
     }
 
     @Override
-    public void resumeResponseDeferredAtStart() {
-        nativeResumeResponseDeferredAtStart(mNativeWebContentsAndroid);
-    }
-
-    @Override
     public void resumeLoadingCreatedWebContents() {
         nativeResumeLoadingCreatedWebContents(mNativeWebContentsAndroid);
-    }
-
-    @Override
-    public void setHasPendingNavigationTransitionForTesting() {
-        nativeSetHasPendingNavigationTransitionForTesting(mNativeWebContentsAndroid);
-    }
-
-    @Override
-    public void setNavigationTransitionDelegate(NavigationTransitionDelegate delegate) {
-        mNavigationTransitionDelegate = delegate;
-    }
-
-    /**
-     * Inserts the provided markup sandboxed into the frame.
-     */
-    @Override
-    public void setupTransitionView(String markup) {
-        nativeSetupTransitionView(mNativeWebContentsAndroid, markup);
-    }
-
-    /**
-     * Hides transition elements specified by the selector, and activates any
-     * exiting-transition stylesheets.
-     */
-    @Override
-    public void beginExitTransition(String cssSelector, boolean exitToNativeApp) {
-        nativeBeginExitTransition(mNativeWebContentsAndroid, cssSelector, exitToNativeApp);
-    }
-
-    /**
-     * Revert the effect of exit transition.
-     */
-    @Override
-    public void revertExitTransition() {
-        nativeRevertExitTransition(mNativeWebContentsAndroid);
-    }
-
-    /**
-     * Hide transition elements.
-     */
-    public void hideTransitionElements(String cssSelector) {
-        nativeHideTransitionElements(mNativeWebContentsAndroid, cssSelector);
-    }
-
-    /**
-     * Show transition elements.
-     */
-    public void showTransitionElements(String cssSelector) {
-        nativeShowTransitionElements(mNativeWebContentsAndroid, cssSelector);
-    }
-
-    /**
-     * Clear the navigation transition data.
-     */
-    @Override
-    public void clearNavigationTransitionData() {
-        nativeClearNavigationTransitionData(mNativeWebContentsAndroid);
-    }
-
-    /**
-     * Fetch transition elements.
-     */
-    @Override
-    public void fetchTransitionElements(String url) {
-        nativeFetchTransitionElements(mNativeWebContentsAndroid, url);
-    }
-
-    @CalledByNative
-    private void didDeferAfterResponseStarted(String markup, String cssSelector,
-            String enteringColor) {
-        if (mNavigationTransitionDelegate != null) {
-            mNavigationTransitionDelegate.didDeferAfterResponseStarted(markup,
-                    cssSelector, enteringColor);
-        }
-    }
-
-    @CalledByNative
-    private boolean willHandleDeferAfterResponseStarted() {
-        if (mNavigationTransitionDelegate == null) return false;
-        return mNavigationTransitionDelegate.willHandleDeferAfterResponseStarted();
-    }
-
-    @CalledByNative
-    private void addEnteringStylesheetToTransition(String stylesheet) {
-        if (mNavigationTransitionDelegate != null) {
-            mNavigationTransitionDelegate.addEnteringStylesheetToTransition(stylesheet);
-        }
-    }
-
-    @CalledByNative
-    private void didStartNavigationTransitionForFrame(long frameId) {
-        if (mNavigationTransitionDelegate != null) {
-            mNavigationTransitionDelegate.didStartNavigationTransitionForFrame(frameId);
-        }
-    }
-
-    @CalledByNative
-    private void addNavigationTransitionElements(String name, int x, int y, int width, int height) {
-        if (mNavigationTransitionDelegate != null) {
-            mNavigationTransitionDelegate.addNavigationTransitionElements(
-                    name, x, y, width, height);
-        }
-    }
-
-    @CalledByNative
-    private void onTransitionElementsFetched(String cssSelector) {
-        if (mNavigationTransitionDelegate != null) {
-            mNavigationTransitionDelegate.onTransitionElementsFetched(cssSelector);
-        }
     }
 
     @Override
@@ -387,8 +265,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
     private native void nativeOnShow(long nativeWebContentsAndroid);
     private native void nativeReleaseMediaPlayers(long nativeWebContentsAndroid);
     private native int nativeGetBackgroundColor(long nativeWebContentsAndroid);
-    private native void nativeAddStyleSheetByURL(long nativeWebContentsAndroid,
-            String url);
     private native void nativeShowInterstitialPage(long nativeWebContentsAndroid,
             String url, long nativeInterstitialPageDelegateAndroid);
     private native boolean nativeIsShowingInterstitialPage(long nativeWebContentsAndroid);
@@ -402,21 +278,7 @@ import org.chromium.content_public.browser.WebContentsObserver;
     private native String nativeGetURL(long nativeWebContentsAndroid);
     private native String nativeGetLastCommittedURL(long nativeWebContentsAndroid);
     private native boolean nativeIsIncognito(long nativeWebContentsAndroid);
-    private native void nativeResumeResponseDeferredAtStart(long nativeWebContentsAndroid);
     private native void nativeResumeLoadingCreatedWebContents(long nativeWebContentsAndroid);
-    private native void nativeSetHasPendingNavigationTransitionForTesting(
-            long nativeWebContentsAndroid);
-    private native void nativeSetupTransitionView(long nativeWebContentsAndroid,
-            String markup);
-    private native void nativeBeginExitTransition(long nativeWebContentsAndroid,
-            String cssSelector, boolean exitToNativeApp);
-    private native void nativeRevertExitTransition(long nativeWebContentsAndroid);
-    private native void nativeHideTransitionElements(long nativeWebContentsAndroid,
-            String cssSelector);
-    private native void nativeShowTransitionElements(long nativeWebContentsAndroid,
-            String cssSelector);
-    private native void nativeClearNavigationTransitionData(long nativeWebContentsAndroid);
-    private native void nativeFetchTransitionElements(long nativeWebContentsAndroid, String url);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
             String script, JavaScriptCallback callback);
     private native void nativeAddMessageToDevToolsConsole(

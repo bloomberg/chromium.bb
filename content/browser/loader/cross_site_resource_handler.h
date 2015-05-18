@@ -49,11 +49,6 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   CONTENT_EXPORT static void SetLeakRequestsForTesting(
       bool leak_requests_for_testing);
 
-  // Navigations are deferred at OnResponseStarted to parse out any navigation
-  // transition link headers, and give the navigation transition (if it exists)
-  // a chance to run.
-  void ResumeResponseDeferredAtStart(int request_id);
-
   // Returns whether the handler is deferred.
   bool did_defer_for_testing() const { return did_defer_; }
 
@@ -67,11 +62,6 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   bool DeferForNavigationPolicyCheck(ResourceRequestInfoImpl* info,
                                      ResourceResponse* response,
                                      bool* defer);
-
-  bool OnNavigationTransitionResponseStarted(
-      ResourceResponse* response,
-      bool* defer,
-      const TransitionLayerData& transition_data);
 
   bool OnNormalResponseStarted(ResourceResponse* response,
                                bool* defer);

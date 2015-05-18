@@ -289,19 +289,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       ui::PageTransition page_transition,
       bool should_replace_current_entry);
 
-  // Received a response from CrossSiteResourceHandler. If the navigation
-  // specifies a transition, this is called and the navigation will not resume
-  // until ResumeResponseDeferredAtStart.
-  void OnDeferredAfterResponseStarted(
-      const GlobalRequestID& global_request_id,
-      RenderFrameHostImpl* pending_render_frame_host);
-
-  // Resume navigation paused after receiving response headers.
-  void ResumeResponseDeferredAtStart();
-
-  // Clear navigation transition data.
-  void ClearNavigationTransitionData();
-
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
                         bool was_caused_by_user_gesture);

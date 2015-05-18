@@ -37,8 +37,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
   void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
-                               const GURL& url,
-                               bool is_transition_navigation) override;
+                               const GURL& url) override;
   void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)

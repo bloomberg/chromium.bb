@@ -103,13 +103,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::TransitionElement)
   IPC_STRUCT_TRAITS_MEMBER(rect)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(FrameHostMsg_AddNavigationTransitionData_Params)
-  IPC_STRUCT_MEMBER(int, render_frame_id)
-  IPC_STRUCT_MEMBER(std::string, allowed_destination_host_pattern)
-  IPC_STRUCT_MEMBER(std::string, selector)
-  IPC_STRUCT_MEMBER(std::string, markup)
-  IPC_STRUCT_MEMBER(std::vector<content::TransitionElement>, elements)
-IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
   // Error code as reported in the DidFailProvisionalLoad callback.
@@ -662,12 +655,8 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_RenderProcessGone,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
 // Sent when the renderer starts a provisional load for a frame.
-// |is_transition_navigation| signals that the frame has defined transition
-// elements which can be animated by the navigation destination to provide
-// a transition effect during load.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidStartProvisionalLoadForFrame,
-                    GURL /* url */,
-                    bool /* is_transition_navigation */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidStartProvisionalLoadForFrame,
+                    GURL /* url */)
 
 // Sent when the renderer fails a provisional load with an error.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,
@@ -936,11 +925,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
                     base::string16,  /* content */
                     size_t, /* startOffset */
                     size_t /* endOffset */)
-
-// Notifies the browser that the renderer has a pending navigation transition.
-// The string parameters are all UTF8.
-IPC_MESSAGE_CONTROL1(FrameHostMsg_AddNavigationTransitionData,
-                     FrameHostMsg_AddNavigationTransitionData_Params)
 
 // PlzNavigate
 // Tells the browser to perform a navigation.

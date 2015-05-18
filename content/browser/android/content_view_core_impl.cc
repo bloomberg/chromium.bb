@@ -32,7 +32,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/browser/transition_request_manager.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/web_input_event_traits.h"

@@ -236,124 +236,9 @@ jboolean WebContentsAndroid::IsIncognito(JNIEnv* env, jobject obj) {
   return web_contents_->GetBrowserContext()->IsOffTheRecord();
 }
 
-void WebContentsAndroid::ResumeResponseDeferredAtStart(JNIEnv* env,
-                                                       jobject obj) {
-  static_cast<WebContentsImpl*>(web_contents_)->ResumeResponseDeferredAtStart();
-}
-
 void WebContentsAndroid::ResumeLoadingCreatedWebContents(JNIEnv* env,
                                                          jobject obj) {
   web_contents_->ResumeLoadingCreatedWebContents();
-}
-
-void WebContentsAndroid::SetHasPendingNavigationTransitionForTesting(
-    JNIEnv* env,
-    jobject obj) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-  RenderFrameHost* frame =
-      static_cast<WebContentsImpl*>(web_contents_)->GetMainFrame();
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &TransitionRequestManager::AddPendingTransitionRequestDataForTesting,
-          base::Unretained(TransitionRequestManager::GetInstance()),
-          frame->GetProcess()->GetID(),
-          frame->GetRoutingID()));
-}
-
-void WebContentsAndroid::SetupTransitionView(JNIEnv* env,
-                                             jobject jobj,
-                                             jstring markup) {
-  web_contents_->GetMainFrame()->Send(new FrameMsg_SetupTransitionView(
-      web_contents_->GetMainFrame()->GetRoutingID(),
-      ConvertJavaStringToUTF8(env, markup)));
-}
-
-void WebContentsAndroid::BeginExitTransition(JNIEnv* env,
-                                             jobject jobj,
-                                             jstring css_selector,
-                                             jboolean exit_to_native_app) {
-  web_contents_->GetMainFrame()->Send(new FrameMsg_BeginExitTransition(
-      web_contents_->GetMainFrame()->GetRoutingID(),
-      ConvertJavaStringToUTF8(env, css_selector),
-      exit_to_native_app));
-}
-
-void WebContentsAndroid::RevertExitTransition(JNIEnv* env,
-                                              jobject jobj) {
-  web_contents_->GetMainFrame()->Send(new FrameMsg_RevertExitTransition(
-      web_contents_->GetMainFrame()->GetRoutingID()));
-}
-
-void WebContentsAndroid::HideTransitionElements(JNIEnv* env,
-                                                jobject jobj,
-                                                jstring css_selector) {
-  web_contents_->GetMainFrame()->Send(
-      new FrameMsg_HideTransitionElements(
-          web_contents_->GetMainFrame()->GetRoutingID(),
-          ConvertJavaStringToUTF8(env, css_selector)));
-}
-
-void WebContentsAndroid::ShowTransitionElements(JNIEnv* env,
-                                                jobject jobj,
-                                                jstring css_selector) {
-  web_contents_->GetMainFrame()->Send(
-      new FrameMsg_ShowTransitionElements(
-          web_contents_->GetMainFrame()->GetRoutingID(),
-          ConvertJavaStringToUTF8(env, css_selector)));
-}
-
-
-void WebContentsAndroid::ClearNavigationTransitionData(JNIEnv* env,
-                                                       jobject jobj) {
-  static_cast<WebContentsImpl*>(web_contents_)->ClearNavigationTransitionData();
-}
-
-void WebContentsAndroid::FetchTransitionElements(JNIEnv* env,
-                                                 jobject jobj,
-                                                 jstring jurl) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
-  RenderFrameHost* frame = web_contents_->GetMainFrame();
-
-  scoped_ptr<TransitionLayerData> transition_data(new TransitionLayerData());
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&TransitionRequestManager::GetPendingTransitionRequest,
-                 base::Unretained(TransitionRequestManager::GetInstance()),
-                 frame->GetProcess()->GetID(),
-                 frame->GetRoutingID(),
-                 url,
-                 transition_data.get()),
-      base::Bind(&WebContentsAndroid::OnTransitionElementsFetched,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&transition_data)));
-}
-
-void WebContentsAndroid::OnTransitionElementsFetched(
-    scoped_ptr<const TransitionLayerData> transition_data,
-    bool has_transition_data) {
-  // FetchTransitionElements is called after the navigation transition state
-  // machine starts, which means there must be transition data.
-  DCHECK(has_transition_data);
-  JNIEnv* env = AttachCurrentThread();
-
-  std::vector<TransitionElement>::const_iterator it =
-      transition_data->elements.begin();
-  for (; it != transition_data->elements.end(); ++it) {
-    ScopedJavaLocalRef<jstring> jstring_name(ConvertUTF8ToJavaString(env,
-                                                                     it->id));
-    Java_WebContentsImpl_addNavigationTransitionElements(
-        env, obj_.obj(), jstring_name.obj(),
-        it->rect.x(), it->rect.y(), it->rect.width(), it->rect.height());
-  }
-
-  ScopedJavaLocalRef<jstring> jstring_css_selector(
-      ConvertUTF8ToJavaString(env, transition_data->css_selector));
-  Java_WebContentsImpl_onTransitionElementsFetched(
-      env, obj_.obj(), jstring_css_selector.obj());
 }
 
 void WebContentsAndroid::OnHide(JNIEnv* env, jobject obj) {
@@ -369,15 +254,6 @@ void WebContentsAndroid::ReleaseMediaPlayers(JNIEnv* env, jobject jobj) {
   web_contents_->ForEachFrame(
       base::Bind(&ReleaseAllMediaPlayers, base::Unretained(web_contents_)));
 #endif // defined(ENABLE_BROWSER_CDMS)
-}
-
-void WebContentsAndroid::AddStyleSheetByURL(
-    JNIEnv* env,
-    jobject obj,
-    jstring url) {
-  web_contents_->GetMainFrame()->Send(new FrameMsg_AddStyleSheetByURL(
-      web_contents_->GetMainFrame()->GetRoutingID(),
-      ConvertJavaStringToUTF8(env, url)));
 }
 
 void WebContentsAndroid::ShowInterstitialPage(
@@ -447,58 +323,6 @@ void WebContentsAndroid::SelectWordAroundCaret(JNIEnv* env, jobject obj) {
   if (!host)
     return;
   host->SelectWordAroundCaret();
-}
-
-bool WebContentsAndroid::WillHandleDeferAfterResponseStarted() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_WebContentsImpl_willHandleDeferAfterResponseStarted(env,
-                                                                  obj_.obj());
-}
-
-void WebContentsAndroid::DidDeferAfterResponseStarted(
-    const TransitionLayerData& transition_data) {
-  JNIEnv* env = AttachCurrentThread();
-  std::vector<GURL> entering_stylesheets;
-  std::string transition_color;
-  if (transition_data.response_headers.get()) {
-    TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
-        transition_data.response_headers,
-        entering_stylesheets,
-        transition_data.request_url);
-
-    transition_data.response_headers->EnumerateHeader(
-        NULL, "X-Transition-Entering-Color", &transition_color);
-  }
-
-  ScopedJavaLocalRef<jstring> jstring_markup(
-      ConvertUTF8ToJavaString(env, transition_data.markup));
-
-  ScopedJavaLocalRef<jstring> jstring_css_selector(
-      ConvertUTF8ToJavaString(env, transition_data.css_selector));
-
-  ScopedJavaLocalRef<jstring> jstring_transition_color(
-      ConvertUTF8ToJavaString(env, transition_color));
-
-  Java_WebContentsImpl_didDeferAfterResponseStarted(
-      env,
-      obj_.obj(),
-      jstring_markup.obj(),
-      jstring_css_selector.obj(),
-      jstring_transition_color.obj());
-
-  std::vector<GURL>::const_iterator iter = entering_stylesheets.begin();
-  for (; iter != entering_stylesheets.end(); ++iter) {
-    ScopedJavaLocalRef<jstring> jstring_url(
-        ConvertUTF8ToJavaString(env, iter->spec()));
-    Java_WebContentsImpl_addEnteringStylesheetToTransition(
-        env, obj_.obj(), jstring_url.obj());
-  }
-}
-
-void WebContentsAndroid::DidStartNavigationTransitionForFrame(int64 frame_id) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsImpl_didStartNavigationTransitionForFrame(
-      env, obj_.obj(), frame_id);
 }
 
 void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,

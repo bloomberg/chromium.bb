@@ -339,17 +339,6 @@ public class ExternalNavigationHandler {
                         return OverrideUrlLoadingResult.NO_OVERRIDE;
                     }
                 }
-                if (mDelegate.isDocumentMode() && params.getTransitionPageHelper() != null
-                        && params.getTransitionPageHelper().isTransitionStarting()) {
-                    // Use web to native app navigation transitions if there is exactly one
-                    // activity to handle the intent.
-                    List<ComponentName> list = mDelegate.queryIntentActivities(intent);
-                    if (list.size() == 1) {
-                        params.getTransitionPageHelper().transitionToNativeApp(
-                                params.getUrl(), intent);
-                        return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-                    }
-                }
                 if (mDelegate.startActivityIfNeeded(intent)) {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 } else {

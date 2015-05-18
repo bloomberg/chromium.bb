@@ -39,7 +39,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/transition_request_manager.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -758,11 +757,9 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
   delegate_->DocumentOnLoadCompleted(this);
 }
 
-void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
-    const GURL& url,
-    bool is_transition_navigation) {
+void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(const GURL& url) {
   frame_tree_node_->navigator()->DidStartProvisionalLoad(
-      this, url, is_transition_navigation);
+      this, url);
 }
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
@@ -932,18 +929,6 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
       this, global_request_id, cross_site_transferring_request.Pass(),
       transfer_url_chain, referrer, page_transition,
       should_replace_current_entry);
-}
-
-void RenderFrameHostImpl::OnDeferredAfterResponseStarted(
-    const GlobalRequestID& global_request_id,
-    const TransitionLayerData& transition_data) {
-  frame_tree_node_->render_manager()->OnDeferredAfterResponseStarted(
-      global_request_id, this);
-
-  if (GetParent() || !delegate_->WillHandleDeferAfterResponseStarted())
-    frame_tree_node_->render_manager()->ResumeResponseDeferredAtStart();
-  else
-    delegate_->DidDeferAfterResponseStarted(transition_data);
 }
 
 void RenderFrameHostImpl::SwapOut(
@@ -2006,17 +1991,6 @@ void RenderFrameHostImpl::DidCancelPopupMenu() {
 }
 
 #endif
-
-void RenderFrameHostImpl::ClearPendingTransitionRequestData() {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &TransitionRequestManager::ClearPendingTransitionRequestData,
-          base::Unretained(TransitionRequestManager::GetInstance()),
-          GetProcess()->GetID(),
-          routing_id_));
-}
 
 void RenderFrameHostImpl::SetNavigationsSuspended(
     bool suspend,

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.externalnav;
 
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.tab.TransitionPageHelper;
 
 /**
  * A container object for passing navigation parameters to {@link ExternalNavigationHandler}.
@@ -33,9 +32,6 @@ public class ExternalNavigationParams {
     /** A redirect handler. */
     private final TabRedirectHandler mRedirectHandler;
 
-    /** Transition page helper, used for apps with a transition animation. */
-    private final TransitionPageHelper mTransitionPageHelper;
-
     private final Tab mTab;
 
     /** Whether the intent should force a new tab to open. */
@@ -52,7 +48,7 @@ public class ExternalNavigationParams {
 
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
-            TabRedirectHandler redirectHandler, TransitionPageHelper transitionPageHelper, Tab tab,
+            TabRedirectHandler redirectHandler, Tab tab,
             boolean openInNewTab, boolean isBackgroundTabNavigation, boolean isMainFrame,
             boolean needsToCloseTabAfterIncognitoDialog) {
         mUrl = url;
@@ -62,7 +58,6 @@ public class ExternalNavigationParams {
         mIsRedirect = isRedirect;
         mApplicationMustBeInForeground = appMustBeInForeground;
         mRedirectHandler = redirectHandler;
-        mTransitionPageHelper = transitionPageHelper;
         mTab = tab;
         mOpenInNewTab = openInNewTab;
         mIsBackgroundTabNavigation = isBackgroundTabNavigation;
@@ -103,11 +98,6 @@ public class ExternalNavigationParams {
     /** @return The redirect handler. */
     public TabRedirectHandler getRedirectHandler() {
         return mRedirectHandler;
-    }
-
-    /** @return The page transition helper. */
-    public TransitionPageHelper getTransitionPageHelper() {
-        return mTransitionPageHelper;
     }
 
     /** @return The current tab. */
@@ -161,9 +151,6 @@ public class ExternalNavigationParams {
         /** A redirect handler. */
         private TabRedirectHandler mRedirectHandler;
 
-        /** Transition page helper, used for apps with a transition animation. */
-        private TransitionPageHelper mTransitionPageHelper;
-
         private Tab mTab;
 
         /** Whether the intent should force a new tab to open. */
@@ -204,12 +191,6 @@ public class ExternalNavigationParams {
             return this;
         }
 
-        /** Sets a {@link TransitionPageHelper}. */
-        public Builder setTransitionPageHelper(TransitionPageHelper helper) {
-            mTransitionPageHelper = helper;
-            return this;
-        }
-
         /** Sets the current tab. */
         public Builder setTab(Tab tab) {
             mTab = tab;
@@ -244,7 +225,7 @@ public class ExternalNavigationParams {
         public ExternalNavigationParams build() {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
                     mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler,
-                    mTransitionPageHelper, mTab, mOpenInNewTab, mIsBackgroundTabNavigation,
+                    mTab, mOpenInNewTab, mIsBackgroundTabNavigation,
                     mIsMainFrame, mNeedsToCloseTabAfterIncognitoDialog);
         }
     }

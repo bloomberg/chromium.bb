@@ -213,10 +213,6 @@ class CONTENT_EXPORT WebContentsImpl
       AXTreeSnapshotCallback;
   void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback);
 
-  // Clear the navigation transition data when the user navigates back to Chrome
-  // from a native app.
-  void ClearNavigationTransitionData();
-
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
   void SetDelegate(WebContentsDelegate* delegate) override;
@@ -381,9 +377,6 @@ class CONTENT_EXPORT WebContentsImpl
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void SwappedOut(RenderFrameHost* render_frame_host) override;
-  void DidDeferAfterResponseStarted(
-      const TransitionLayerData& transition_data) override;
-  bool WillHandleDeferAfterResponseStarted() override;
   void WorkerCrashed(RenderFrameHost* render_frame_host) override;
   void ShowContextMenu(RenderFrameHost* render_frame_host,
                        const ContextMenuParams& params) override;
@@ -512,8 +505,6 @@ class CONTENT_EXPORT WebContentsImpl
                                const GURL& validated_url,
                                bool is_error_page,
                                bool is_iframe_srcdoc) override;
-  void DidStartNavigationTransition(
-      RenderFrameHostImpl* render_frame_host) override;
   void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
@@ -682,10 +673,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Requests the renderer to select the region between two points in the
   // currently focused frame.
   void SelectRange(const gfx::Point& base, const gfx::Point& extent);
-
-  // Notifies the main frame that it can continue navigation (if it was deferred
-  // immediately at first response).
-  void ResumeResponseDeferredAtStart();
 
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);

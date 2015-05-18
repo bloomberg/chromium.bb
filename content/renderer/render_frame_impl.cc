@@ -1059,18 +1059,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetEditableSelectionOffsets,
                         OnSetEditableSelectionOffsets)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetupTransitionView, OnSetupTransitionView)
-    IPC_MESSAGE_HANDLER(FrameMsg_BeginExitTransition, OnBeginExitTransition)
-    IPC_MESSAGE_HANDLER(FrameMsg_RevertExitTransition, OnRevertExitTransition)
-    IPC_MESSAGE_HANDLER(FrameMsg_HideTransitionElements,
-                        OnHideTransitionElements)
-    IPC_MESSAGE_HANDLER(FrameMsg_ShowTransitionElements,
-                        OnShowTransitionElements)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
                         OnTextSurroundingSelectionRequest)
-    IPC_MESSAGE_HANDLER(FrameMsg_AddStyleSheetByURL,
-                        OnAddStyleSheetByURL)
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
@@ -1737,37 +1728,6 @@ void RenderFrameImpl::OnTextSurroundingSelectionRequest(size_t max_length) {
       surroundingText.textContent(),
       surroundingText.startOffsetInTextContent(),
       surroundingText.endOffsetInTextContent()));
-}
-
-void RenderFrameImpl::OnAddStyleSheetByURL(const std::string& url) {
-  frame_->addStyleSheetByURL(WebString::fromUTF8(url));
-}
-
-void RenderFrameImpl::OnSetupTransitionView(const std::string& markup) {
-  frame_->document().setIsTransitionDocument(true);
-  frame_->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
-}
-
-void RenderFrameImpl::OnBeginExitTransition(const std::string& css_selector,
-                                            bool exit_to_native_app) {
-  frame_->document().setIsTransitionDocument(true);
-  frame_->document().beginExitTransition(WebString::fromUTF8(css_selector),
-                                         exit_to_native_app);
-}
-
-void RenderFrameImpl::OnRevertExitTransition() {
-  frame_->document().setIsTransitionDocument(false);
-  frame_->document().revertExitTransition();
-}
-
-void RenderFrameImpl::OnHideTransitionElements(
-    const std::string& css_selector) {
-  frame_->document().hideTransitionElements(WebString::fromUTF8(css_selector));
-}
-
-void RenderFrameImpl::OnShowTransitionElements(
-    const std::string& css_selector) {
-  frame_->document().showTransitionElements(WebString::fromUTF8(css_selector));
 }
 
 bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
@@ -2523,6 +2483,11 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                                               bool is_transition_navigation,
                                               double triggering_event_time) {
+  didStartProvisionalLoad(frame, triggering_event_time);
+}
+
+void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
+                                              double triggering_event_time) {
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->provisionalDataSource();
 
@@ -2567,7 +2532,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidStartProvisionalLoad());
 
   Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, ds->request().url(), is_transition_navigation));
+       routing_id_, ds->request().url()));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -2951,23 +2916,6 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   // TODO(nasko): Move implementation here. Needed methods:
   // * StartNavStateSyncTimerIfNecessary
   render_view_->didUpdateCurrentHistoryItem(frame);
-}
-
-void RenderFrameImpl::addNavigationTransitionData(
-    const blink::WebTransitionElementData& data) {
-  FrameHostMsg_AddNavigationTransitionData_Params params;
-  params.render_frame_id = routing_id_;
-  params.allowed_destination_host_pattern =
-      data.scope.utf8();
-  params.selector = data.selector.utf8();
-  params.markup = data.markup.utf8();
-  params.elements.resize(data.elements.size());
-  for (size_t i = 0; i < data.elements.size(); i++) {
-    params.elements[i].id = data.elements[i].id.utf8();
-    params.elements[i].rect = gfx::Rect(data.elements[i].rect);
-  }
-
-  Send(new FrameHostMsg_AddNavigationTransitionData(params));
 }
 
 void RenderFrameImpl::didChangeThemeColor() {
@@ -4129,9 +4077,8 @@ void RenderFrameImpl::OnFailedNavigation(
 
   // Inform the browser of the start of the provisional load. This is needed so
   // that the load is properly tracked by the WebNavigation API.
-  // TODO(clamy): Properly set is_transition_navigation.
   Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
-      routing_id_, common_params.url, false));
+      routing_id_, common_params.url));
 
   // Send the provisional load failure.
   blink::WebURLError error =

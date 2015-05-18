@@ -15,13 +15,11 @@
 #include "base/supports_user_data.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/browser/transition_request_manager.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
 class WebContents;
-struct TransitionLayerData;
 
 // Android wrapper around WebContents that provides safer passage from java and
 // back to native and provides java with a means of communicating with its
@@ -54,38 +52,12 @@ class CONTENT_EXPORT WebContentsAndroid
                                                                  jobject) const;
   jboolean IsIncognito(JNIEnv* env, jobject obj);
 
-  void ResumeResponseDeferredAtStart(JNIEnv* env, jobject obj);
   void ResumeLoadingCreatedWebContents(JNIEnv* env, jobject obj);
-  void SetHasPendingNavigationTransitionForTesting(JNIEnv* env, jobject obj);
-  void SetupTransitionView(JNIEnv* env, jobject jobj, jstring markup);
-  void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector,
-                           jboolean exit_to_native_app);
-  void RevertExitTransition(JNIEnv* env, jobject jobj);
-  void HideTransitionElements(JNIEnv* env, jobject jobj, jstring css_selector);
-  void ShowTransitionElements(JNIEnv* env, jobject jobj, jstring css_selector);
-  void ClearNavigationTransitionData(JNIEnv* env, jobject jobj);
-  void FetchTransitionElements(JNIEnv* env, jobject jobj, jstring jurl);
-  void OnTransitionElementsFetched(
-      scoped_ptr<const TransitionLayerData> transition_data,
-      bool has_transition_data);
-
-  // This method is invoked when the request is deferred immediately after
-  // receiving response headers.
-  void DidDeferAfterResponseStarted(const TransitionLayerData& transition_data);
-
-  // This method is invoked when a navigation transition is detected, to
-  // determine if the embedder intends to handle it.
-  bool WillHandleDeferAfterResponseStarted();
-
-  // This method is invoked when a navigation transition has started.
-  void DidStartNavigationTransitionForFrame(int64 frame_id);
 
   void OnHide(JNIEnv* env, jobject obj);
   void OnShow(JNIEnv* env, jobject obj);
   void ReleaseMediaPlayers(JNIEnv* env, jobject jobj);
 
-  void AddStyleSheetByURL(
-      JNIEnv* env, jobject obj, jstring url);
   void ShowInterstitialPage(
       JNIEnv* env, jobject obj, jstring jurl, jlong delegate_ptr);
   jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);

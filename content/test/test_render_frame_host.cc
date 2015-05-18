@@ -134,7 +134,7 @@ void TestRenderFrameHost::SendNavigateWithTransitionAndResponseCode(
   // before navigating the frame.
   SetRenderFrameCreated(true);
 
-  OnDidStartProvisionalLoadForFrame(url_copy, false);
+  OnDidStartProvisionalLoadForFrame(url_copy);
   SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry,
                              url_copy, transition, url_copy, response_code, 0,
                              std::vector<GURL>());
@@ -150,7 +150,7 @@ void TestRenderFrameHost::SendNavigateWithOriginalRequestURL(
   // before navigating the frame.
   SetRenderFrameCreated(true);
 
-  OnDidStartProvisionalLoadForFrame(url, false);
+  OnDidStartProvisionalLoadForFrame(url);
   SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, url,
                              ui::PAGE_TRANSITION_LINK, original_request_url,
                              200, 0, std::vector<GURL>());

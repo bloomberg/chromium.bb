@@ -70,7 +70,6 @@ struct ContextMenuParams;
 struct GlobalRequestID;
 struct Referrer;
 struct ResourceResponse;
-struct TransitionLayerData;
 
 // Flag arguments for RenderFrameHost creation.
 enum CreateRenderFrameFlags {
@@ -258,12 +257,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ui::PageTransition page_transition,
       bool should_replace_current_entry);
 
-  // Called on the current RenderFrameHost when the network response is first
-  // receieved.
-  void OnDeferredAfterResponseStarted(
-      const GlobalRequestID& global_request_id,
-      const TransitionLayerData& transition_data);
-
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler and move to
   // a blank document.  If |proxy| is not null, it should also create a
@@ -363,10 +356,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               bool success,
                               const base::string16& user_input,
                               bool dialog_was_suppressed);
-
-  // Clears any outstanding transition request. This is called when we hear the
-  // response or commit.
-  void ClearPendingTransitionRequestData();
 
   // Send a message to the renderer process to change the accessibility mode.
   void SetAccessibilityMode(AccessibilityMode AccessibilityMode);
@@ -478,8 +467,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDocumentOnLoadCompleted(
       FrameMsg_UILoadMetricsReportType::Value report_type,
       base::TimeTicks ui_timestamp);
-  void OnDidStartProvisionalLoadForFrame(const GURL& url,
-                                         bool is_transition_navigation);
+  void OnDidStartProvisionalLoadForFrame(const GURL& url);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidFailLoadWithError(

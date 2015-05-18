@@ -84,16 +84,6 @@ void RenderWidgetHelper::ResumeDeferredNavigation(
                  request_id));
 }
 
-void RenderWidgetHelper::ResumeResponseDeferredAtStart(
-    const GlobalRequestID& request_id) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&RenderWidgetHelper::OnResumeResponseDeferredAtStart,
-                 this,
-                 request_id));
-}
-
 void RenderWidgetHelper::ResumeRequestsForView(int route_id) {
   // We only need to resume blocked requests if we used a valid route_id.
   // See CreateNewWindow.
@@ -108,11 +98,6 @@ void RenderWidgetHelper::ResumeRequestsForView(int route_id) {
 void RenderWidgetHelper::OnResumeDeferredNavigation(
     const GlobalRequestID& request_id) {
   resource_dispatcher_host_->ResumeDeferredNavigation(request_id);
-}
-
-void RenderWidgetHelper::OnResumeResponseDeferredAtStart(
-    const GlobalRequestID& request_id) {
-  resource_dispatcher_host_->ResumeResponseDeferredAtStart(request_id);
 }
 
 void RenderWidgetHelper::CreateNewWindow(
