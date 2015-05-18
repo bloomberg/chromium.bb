@@ -2360,6 +2360,12 @@
         ],
       }],
 
+      ['OS=="win" and asan==1', {
+        # TODO(thakis): Enable this once the lkgr asan bot has caught up
+        # with trunk clang, http://crbug.com/489123 , http://crbug.com/489123
+        'blink_gc_plugin%': 0,
+      }],
+
       ['OS=="win" and (clang==1 or asan==1)', {
         'chromium_win_pch': 0,
       }],
