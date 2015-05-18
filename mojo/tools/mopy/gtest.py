@@ -22,8 +22,7 @@ def set_color():
     os.environ["GTEST_COLOR"] = "yes"
 
 # TODO(vtl): The return value is bizarre. Should just make it either return
-# True/False, or a list of failing fixtures. But the dart_apptest runner would
-# also need to be updated in the same way.
+# True/False, or a list of failing fixtures.
 def run_fixtures(config, shell, apptest_dict, apptest, isolate, test_args,
                  shell_args):
   """Run the gtest fixtures in isolation."""

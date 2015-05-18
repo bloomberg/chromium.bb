@@ -22,7 +22,6 @@ def build_shell_arguments(shell_args, apps_and_args=None):
   """
   result = shell_args[:]
   if apps_and_args:
-    # TODO(msw): Mojo's script uses --args-for; Chromium lacks support for that.
     for app_and_args in apps_and_args.items():
       result += app_and_args[1]
     result += apps_and_args.keys()
@@ -30,12 +29,12 @@ def build_shell_arguments(shell_args, apps_and_args=None):
 
 
 def get_shell_executable(config):
-  paths = Paths(config=config)
+  paths = Paths(config)
   if config.target_os == Config.OS_ANDROID:
     return os.path.join(paths.src_root, "mojo", "tools",
                         "android_mojo_shell.py")
   else:
-    return paths.mojo_shell_path
+    return paths.mojo_runner
 
 
 def build_command_line(config, shell_args, apps_and_args):

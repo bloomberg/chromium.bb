@@ -14,7 +14,6 @@
 #     #   * "gtest" (default)
 #     #   * "gtest_isolated": like "gtest", but run with fixture isolation,
 #     #      i.e., each test in a fresh mojo_shell)
-#     #   * "dart".
 #     "type": "gtest",
 #     # Optional arguments for the apptest.
 #     "test-args": ["--an_arg", "another_arg"],

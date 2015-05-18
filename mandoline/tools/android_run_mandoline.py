@@ -28,7 +28,7 @@ def main():
   debug_group.add_argument('--release', help='Release build', default=False,
                            dest='debug', action='store_false')
   parser.add_argument('--target-cpu', help='CPU architecture to run for.',
-                      choices=['x64', 'x86', 'arm'])
+                      choices=['x64', 'x86', 'arm'], default='arm')
   parser.add_argument('--target-device', help='Device to run on.')
   launcher_args, args = parser.parse_known_args()
 
@@ -37,8 +37,8 @@ def main():
                   is_debug=launcher_args.debug,
                   apk_name="Mandoline.apk")
   paths = Paths(config)
-  shell = AndroidShell(paths.target_mojo_shell_path, paths.build_dir,
-                       paths.adb_path, launcher_args.target_device,
+  shell = AndroidShell(paths.mojo_runner, paths.build_dir, paths.adb_path,
+                       launcher_args.target_device,
                        target_package='org.chromium.mandoline')
 
   extra_shell_args = shell.PrepareShellRun()

@@ -2,75 +2,55 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Build/test configurations, which are just dictionaries. This
-"defines" the schema and provides some wrappers."""
 
-
+import ast
+import os.path
 import platform
+import re
 import sys
 
 
 class Config(object):
-  """A Config is basically just a wrapper around a dictionary that species a
-  build/test configuration. The dictionary is accessible through the values
-  member."""
+  """A Config contains a dictionary that species a build configuration."""
 
-  # Valid values for target_os (None is also valid):
+  # Valid values for target_os:
   OS_ANDROID = "android"
   OS_CHROMEOS = "chromeos"
   OS_LINUX = "linux"
   OS_MAC = "mac"
   OS_WINDOWS = "windows"
 
-  # Valid values for target_cpu (None is also valid):
+  # Valid values for target_cpu:
   ARCH_X86 = "x86"
   ARCH_X64 = "x64"
   ARCH_ARM = "arm"
 
-  # Valid values for sanitizer (None is also valid):
-  SANITIZER_ASAN = "asan"
-
-  # Standard values for test types (test types are arbitrary strings; other
-  # values are allowed).
-  TEST_TYPE_DEFAULT = "default"
-  TEST_TYPE_UNIT = "unit"
-  TEST_TYPE_PERF = "perf"
-  TEST_TYPE_INTEGRATION = "integration"
-
-  def __init__(self, target_os=None, target_cpu=None, is_debug=True,
-               is_clang=None, sanitizer=None, dcheck_always_on=False,
-               apk_name="MojoRunner.apk", **kwargs):
-    """Constructs a Config with key-value pairs specified via keyword arguments.
-    If target_os is not specified, it will be set to the host OS."""
-
+  def __init__(self, build_dir=None, target_os=None, target_cpu=None,
+               is_debug=None, apk_name="MojoRunner.apk"):
+    """Function arguments take precedence over GN args and default values."""
     assert target_os in (None, Config.OS_ANDROID, Config.OS_CHROMEOS,
                          Config.OS_LINUX, Config.OS_MAC, Config.OS_WINDOWS)
     assert target_cpu in (None, Config.ARCH_X86, Config.ARCH_X64,
-                           Config.ARCH_ARM)
-    assert isinstance(is_debug, bool)
-    assert is_clang is None or isinstance(is_clang, bool)
-    assert sanitizer in (None, Config.SANITIZER_ASAN)
-    if "test_types" in kwargs:
-      assert isinstance(kwargs["test_types"], list)
+                          Config.ARCH_ARM)
+    assert is_debug in (None, True, False)
 
-    self.values = {}
-    self.values["target_os"] = (self.GetHostOS() if target_os is None else
-                                target_os)
+    self.values = {
+      "build_dir": build_dir,
+      "target_os": self.GetHostOS(),
+      "target_cpu": self.GetHostCPU(),
+      "is_debug": True,
+      "dcheck_always_on": False,
+      "is_asan": False,
+      "apk_name": apk_name,
+    }
 
-    if target_cpu is None:
-      if target_os == Config.OS_ANDROID:
-        target_cpu = Config.ARCH_ARM
-      else:
-        target_cpu = self.GetHostCPUArch()
-    self.values["target_cpu"] = target_cpu
-
-    self.values["is_debug"] = is_debug
-    self.values["is_clang"] = is_clang
-    self.values["sanitizer"] = sanitizer
-    self.values["dcheck_always_on"] = dcheck_always_on
-    self.values["apk_name"] = apk_name
-
-    self.values.update(kwargs)
+    self._ParseGNArgs()
+    if target_os is not None:
+      self.values["target_os"] = target_os
+    if target_cpu is not None:
+      self.values["target_cpu"] = target_cpu
+    if is_debug is not None:
+      self.values["is_debug"] = is_debug
 
   @staticmethod
   def GetHostOS():
@@ -83,7 +63,7 @@ class Config(object):
     raise NotImplementedError("Unsupported host OS")
 
   @staticmethod
-  def GetHostCPUArch():
+  def GetHostCPU():
     # Derived from //native_client/pynacl/platform.py
     machine = platform.machine()
     if machine in ("x86", "x86-32", "x86_32", "x8632", "i386", "i686", "ia32",
@@ -95,7 +75,30 @@ class Config(object):
       return Config.ARCH_ARM
     raise Exception("Cannot identify CPU arch: %s" % machine)
 
+  def _ParseGNArgs(self):
+    """Parse the gn config file from the build directory, if it exists."""
+    TRANSLATIONS = { "true": "True", "false": "False", }
+    if self.values["build_dir"] is None:
+      return
+    gn_file = os.path.join(self.values["build_dir"], "args.gn")
+    if not os.path.isfile(gn_file):
+      return
+
+    with open(gn_file, "r") as f:
+      for line in f:
+        line = re.sub("\s*#.*", "", line)
+        result = re.match("^\s*(\w+)\s*=\s*(.*)\s*$", line)
+        if result:
+          key = result.group(1)
+          value = result.group(2)
+          self.values[key] = ast.literal_eval(TRANSLATIONS.get(value, value))
+
   # Getters for standard fields ------------------------------------------------
+
+  @property
+  def build_dir(self):
+    """Build directory path."""
+    return self.values["build_dir"]
 
   @property
   def target_os(self):
@@ -118,21 +121,11 @@ class Config(object):
     return self.values["dcheck_always_on"]
 
   @property
+  def is_asan(self):
+    """Is ASAN build?"""
+    return self.values["is_asan"]
+
+  @property
   def apk_name(self):
     """Name of the APK file to run"""
     return self.values["apk_name"]
-
-  @property
-  def is_clang(self):
-    """Should use clang?"""
-    return self.values["is_clang"]
-
-  @property
-  def sanitizer(self):
-    """Sanitizer to use, if any."""
-    return self.values["sanitizer"]
-
-  @property
-  def test_types(self):
-    """List of test types to run."""
-    return self.values.get("test_types", [Config.TEST_TYPE_DEFAULT])

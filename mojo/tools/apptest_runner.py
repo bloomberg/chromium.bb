@@ -9,11 +9,9 @@ import argparse
 import logging
 import sys
 
-from mopy import dart_apptest
 from mopy import gtest
 from mopy.android import AndroidShell
 from mopy.config import Config
-from mopy.gn import ConfigForGNArgs, ParseGNConfig
 from mopy.log import InitLogging
 from mopy.paths import Paths
 
@@ -22,19 +20,16 @@ _logger = logging.getLogger()
 
 
 def main():
-  parser = argparse.ArgumentParser(description="A test runner for application "
-                                               "tests.")
-
+  parser = argparse.ArgumentParser(description="An application test runner.")
   parser.add_argument("--verbose", help="be verbose (multiple times for more)",
                       default=0, dest="verbose_count", action="count")
   parser.add_argument("test_list_file", type=file,
                       help="a file listing apptests to run")
-  parser.add_argument("build_dir", type=str,
-                      help="the build output directory")
+  parser.add_argument("build_dir", type=str, help="the build output directory")
   args = parser.parse_args()
 
   InitLogging(args.verbose_count)
-  config = ConfigForGNArgs(ParseGNConfig(args.build_dir))
+  config = Config(args.build_dir)
 
   _logger.debug("Test list file: %s", args.test_list_file)
   execution_globals = {"config": config}
@@ -45,8 +40,7 @@ def main():
   extra_args = []
   if config.target_os == Config.OS_ANDROID:
     paths = Paths(config)
-    shell = AndroidShell(paths.target_mojo_shell_path, paths.build_dir,
-                         paths.adb_path)
+    shell = AndroidShell(paths.mojo_runner, paths.build_dir, paths.adb_path)
     extra_args.extend(shell.PrepareShellRun('localhost'))
   else:
     shell = None
@@ -65,10 +59,7 @@ def main():
     print "Running %s...." % test_name,
     sys.stdout.flush()
 
-    if test_type == "dart":
-      apptest_result = dart_apptest.run_test(config, shell, test_dict,
-                                             shell_args, {test: test_args})
-    elif test_type == "gtest":
+    if test_type == "gtest":
       apptest_result = gtest.run_fixtures(config, shell, test_dict,
                                           test, False,
                                           test_args, shell_args)
