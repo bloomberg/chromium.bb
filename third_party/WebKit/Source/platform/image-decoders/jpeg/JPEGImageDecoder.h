@@ -49,10 +49,6 @@ public:
     virtual IntSize decodedSize() const override { return m_decodedSize; }
     virtual IntSize decodedYUVSize(int component, SizeType) const override;
     virtual bool setSize(unsigned width, unsigned height) override;
-    // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
-    // accessing deleted memory, especially when calling this from inside
-    // JPEGImageReader!
-    virtual bool setFailed() override;
     virtual bool canDecodeToYUV() override;
     virtual bool decodeToYUV() override;
     virtual void setImagePlanes(PassOwnPtr<ImagePlanes>) override;

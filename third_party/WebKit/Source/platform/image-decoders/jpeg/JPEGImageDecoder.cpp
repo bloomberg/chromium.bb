@@ -551,12 +551,8 @@ public:
                     if (m_info.output_scanline == 0xffffff)
                         m_info.output_scanline = 0;
 
-                    // If outputScanlines() fails, it deletes |this|. Therefore,
-                    // copy the decoder pointer and use it to check for failure
-                    // to avoid member access in the failure case.
-                    JPEGImageDecoder* decoder = m_decoder;
-                    if (!decoder->outputScanlines()) {
-                        if (decoder->failed()) // Careful; |this| is deleted.
+                    if (!m_decoder->outputScanlines()) {
+                        if (m_decoder->failed())
                             return false;
                         if (!m_info.output_scanline)
                             // Didn't manage to read any lines - flag so we
@@ -744,12 +740,6 @@ bool JPEGImageDecoder::decodeToYUV()
     decode(false);
     PlatformInstrumentation::didDecodeImage();
     return !failed();
-}
-
-bool JPEGImageDecoder::setFailed()
-{
-    m_reader.clear();
-    return ImageDecoder::setFailed();
 }
 
 void JPEGImageDecoder::setImagePlanes(PassOwnPtr<ImagePlanes> imagePlanes)
@@ -971,13 +961,13 @@ void JPEGImageDecoder::decode(bool onlySize)
     if (!m_reader)
         m_reader = adoptPtr(new JPEGImageReader(this));
 
-    // If we couldn't decode the image but we've received all the data, decoding
+    // If we couldn't decode the image but have received all the data, decoding
     // has failed.
     if (!m_reader->decode(*m_data, onlySize) && isAllDataReceived())
         setFailed();
-    // If we're done decoding the image, we don't need the JPEGImageReader
-    // anymore.  (If we failed, |m_reader| has already been cleared.)
-    else if (isComplete(this, onlySize))
+
+    // If decoding is done or failed, we don't need the JPEGImageReader anymore.
+    if (isComplete(this, onlySize) || failed())
         m_reader.clear();
 }
 
