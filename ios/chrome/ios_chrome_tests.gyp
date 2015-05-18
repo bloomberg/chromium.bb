@@ -26,6 +26,7 @@
       ],
       'sources': [
         'app/safe_mode_util_unittest.cc',
+        'browser/chrome_url_util_unittest.mm',
         'browser/experimental_flags_unittest.mm',
         'browser/geolocation/CLLocation+XGeoHeaderTest.mm',
         'browser/geolocation/location_manager_unittest.mm',

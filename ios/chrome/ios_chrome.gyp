@@ -20,6 +20,7 @@
       'link_settings': {
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+          '$(SDKROOT)/System/Library/Frameworks/UIKit.framework',
         ],
       },
       'sources': [
@@ -119,6 +120,8 @@
         'browser/chrome_switches.h',
         'browser/chrome_url_constants.cc',
         'browser/chrome_url_constants.h',
+        'browser/chrome_url_util.h',
+        'browser/chrome_url_util.mm',
         'browser/crash_report/crash_report_background_uploader.h',
         'browser/crash_report/crash_report_background_uploader.mm',
         'browser/dom_distiller/distiller_viewer.cc',
