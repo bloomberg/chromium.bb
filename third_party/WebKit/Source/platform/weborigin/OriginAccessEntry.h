@@ -45,6 +45,12 @@ public:
         DisallowSubdomains
     };
 
+    // Note that 'TreatIPAddressAsDomain' MUST only be used for testing, and does not work for IPv6 addresses. It does the
+    // bare minimum necessary to support 'document.domain' layout test expectations, and should not be relied upon for either
+    // robustness or sanity.
+    //
+    // TODO(mkwst): Remove this enum once we rewrite the 'document.domain' layout tests to use '*.example.test' rather than
+    // raw IP addresses.
     enum IPAddressSetting {
         TreatIPAddressAsDomain,
         TreatIPAddressAsIPAddress
@@ -57,6 +63,7 @@ public:
     };
 
     // If host is empty string and SubdomainSetting is AllowSubdomains, the entry will match all domains in the specified protocol.
+    // IPv6 addresses must include brackets (e.g. '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
     OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting, IPAddressSetting);
     MatchResult matchesOrigin(const SecurityOrigin&) const;
 
@@ -64,6 +71,7 @@ public:
     const String& host() const { return m_host; }
     SubdomainSetting subdomainSettings() const { return m_subdomainSettings; }
     IPAddressSetting ipAddressSettings() const { return m_ipAddressSettings; }
+    bool hostIsIPAddress() const { return m_hostIsIPAddress; }
 
 private:
     String m_protocol;

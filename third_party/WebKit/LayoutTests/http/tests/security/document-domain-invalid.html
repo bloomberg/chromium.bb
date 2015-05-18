@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invalid `document.domain` doesn't crash.</title>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script>
+        test(function () {
+            assert_equals(document.domain, '127.0.0.1');
+            assert_throws('SecurityError',
+                          function () {
+                            document.domain = '0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001.1';
+                          });
+            assert_equals(document.domain, '127.0.0.1');
+        }, 'Setting an invalid `document.domain` that looks like an IP address fails.');
+    </script>
+</head>
