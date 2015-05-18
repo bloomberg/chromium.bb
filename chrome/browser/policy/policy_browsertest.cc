@@ -19,6 +19,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,6 +63,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/translate/cld_data_harness_factory.h"
@@ -3652,7 +3654,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingAllowed) {
 }
 
 // Test that when SSL error overriding is disallowed by policy, the
-// proceed link does not appear on SSL blocking pages.
+// proceed link does not appear on SSL blocking pages and users should not
+// be able to proceed.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
   net::SpawnedTestServer https_server_expired(
       net::SpawnedTestServer::TYPE_HTTPS,
@@ -3685,6 +3688,24 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
   // The interstitial should not display the proceed link.
   EXPECT_FALSE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       interstitial, "proceed-link"));
+
+  // The interstitial should not proceed, even if the command is sent in
+  // some other way (e.g., via the keyboard shortcut).
+  content::InterstitialPageDelegate* interstitial_delegate =
+      content::InterstitialPage::GetInterstitialPage(
+          browser()->tab_strip_model()->GetActiveWebContents())
+          ->GetDelegateForTesting();
+  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_delegate->GetTypeForTesting());
+  SSLBlockingPage* ssl_delegate =
+      static_cast<SSLBlockingPage*>(interstitial_delegate);
+  ssl_delegate->CommandReceived(
+      base::IntToString(SecurityInterstitialPage::CMD_PROCEED));
+  EXPECT_TRUE(interstitial);
+  EXPECT_TRUE(browser()
+                  ->tab_strip_model()
+                  ->GetActiveWebContents()
+                  ->ShowingInterstitialPage());
 }
 
 #if !defined(OS_CHROMEOS)

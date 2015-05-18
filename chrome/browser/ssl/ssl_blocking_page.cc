@@ -252,7 +252,8 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       overridable_(IsOverridable(
           options_mask,
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
-      danger_overridable_(true),
+      danger_overridable_(DoesPolicyAllowDangerOverride(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
       strict_enforcement_((options_mask & STRICT_ENFORCEMENT) != 0),
       expired_but_previously_allowed_(
           (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
@@ -720,4 +721,10 @@ bool SSLBlockingPage::IsOverridable(int options_mask,
       !(options_mask & SSLBlockingPage::STRICT_ENFORCEMENT) &&
       profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
   return is_overridable;
+}
+
+// static
+bool SSLBlockingPage::DoesPolicyAllowDangerOverride(
+    const Profile* const profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
 }

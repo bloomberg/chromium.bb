@@ -30,6 +30,10 @@ class ExperienceSamplingEvent;
 }
 #endif
 
+namespace policy {
+class PolicyTest_SSLErrorOverridingDisallowed_Test;
+}
+
 class SSLErrorClassification;
 
 // This class is responsible for showing/hiding the interstitial page that is
@@ -76,10 +80,14 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // if SSL error overriding is allowed by policy.
   static bool IsOverridable(int options_mask, const Profile* const profile);
 
+  static bool DoesPolicyAllowDangerOverride(const Profile* const profile);
+
   void SetSSLCertReporterForTesting(
       scoped_ptr<SSLCertReporter> ssl_cert_reporter);
 
  protected:
+  friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
+
   // InterstitialPageDelegate implementation.
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
