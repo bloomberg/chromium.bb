@@ -156,6 +156,8 @@
         '<(webrtc_base)/pathutils.h',
         '<(webrtc_base)/physicalsocketserver.cc',
         '<(webrtc_base)/physicalsocketserver.h',
+        '<(webrtc_base)/platform_thread.cc',
+        '<(webrtc_base)/platform_thread.h',
         '<(webrtc_base)/proxydetect.cc',
         '<(webrtc_base)/proxydetect.h',
         '<(webrtc_base)/proxyinfo.cc',
