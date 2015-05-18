@@ -157,12 +157,13 @@ def _ResolveTombstones(jobs, tombstones):
     logging.warning('No tombstones to resolve.')
     return
   if len(tombstones) == 1:
-    data = _ResolveTombstone(tombstones[0])
+    data = [_ResolveTombstone(tombstones[0])]
   else:
     pool = multiprocessing.Pool(processes=jobs)
     data = pool.map(_ResolveTombstone, tombstones)
-  for d in data:
-    logging.info(d)
+  for tombstone in data:
+    for line in tombstone:
+      logging.info(line)
 
 
 def _GetTombstonesForDevice(device, options):
