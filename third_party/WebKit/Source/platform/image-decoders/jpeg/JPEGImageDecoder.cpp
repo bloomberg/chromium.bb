@@ -955,6 +955,14 @@ void JPEGImageDecoder::complete()
     buffer.setStatus(ImageFrame::FrameComplete);
 }
 
+inline bool isComplete(const JPEGImageDecoder* decoder, bool onlySize)
+{
+    if (decoder->hasImagePlanes() && !onlySize)
+        return true;
+
+    return decoder->frameIsCompleteAtIndex(0);
+}
+
 void JPEGImageDecoder::decode(bool onlySize)
 {
     if (failed())
@@ -969,8 +977,7 @@ void JPEGImageDecoder::decode(bool onlySize)
         setFailed();
     // If we're done decoding the image, we don't need the JPEGImageReader
     // anymore.  (If we failed, |m_reader| has already been cleared.)
-    // FIXME: factor these cases into an isComplete() routine, refer to the PNG encoder.
-    else if ((!m_frameBufferCache.isEmpty() && (m_frameBufferCache[0].status() == ImageFrame::FrameComplete)) || (hasImagePlanes() && !onlySize))
+    else if (isComplete(this, onlySize))
         m_reader.clear();
 }
 
