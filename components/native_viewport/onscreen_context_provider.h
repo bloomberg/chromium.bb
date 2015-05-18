@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_NATIVE_VIEWPORT_ONSCREEN_CONTEXT_PROVIDER_H_
 #define COMPONENTS_NATIVE_VIEWPORT_ONSCREEN_CONTEXT_PROVIDER_H_
 
+#include <set>
+
 #include "base/memory/ref_counted.h"
 #include "components/gpu/public/interfaces/context_provider.mojom.h"
 #include "components/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gles2 {
+class CommandBufferDriver;
 class GpuState;
 }
 
@@ -31,12 +34,14 @@ class OnscreenContextProvider : public mojo::ContextProvider {
               const CreateCallback& callback) override;
 
   void CreateAndReturnCommandBuffer();
+  void CommandBufferDestroyed(gles2::CommandBufferDriver* command_buffer);
 
   scoped_refptr<gles2::GpuState> state_;
   gfx::AcceleratedWidget widget_;
   mojo::ViewportParameterListenerPtr pending_listener_;
   CreateCallback pending_create_callback_;
   mojo::Binding<mojo::ContextProvider> binding_;
+  std::set<gles2::CommandBufferDriver*> command_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(OnscreenContextProvider);
 };

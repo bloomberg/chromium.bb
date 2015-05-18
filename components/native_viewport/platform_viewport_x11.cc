@@ -12,7 +12,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -45,10 +44,7 @@ class PlatformViewportX11 : public PlatformViewport,
  private:
   // Overridden from PlatformViewport:
   void Init(const gfx::Rect& bounds) override {
-    CHECK(!event_source_);
     CHECK(!platform_window_);
-
-    event_source_ = ui::PlatformEventSource::CreateDefault();
 
     metrics_ = mojo::ViewportMetrics::New();
     // TODO(sky): make density real.
@@ -154,7 +150,6 @@ class PlatformViewportX11 : public PlatformViewport,
 
   void OnActivationChanged(bool active) override {}
 
-  scoped_ptr<ui::PlatformEventSource> event_source_;
   scoped_ptr<ui::PlatformWindow> platform_window_;
   Delegate* delegate_;
   mojo::ViewportMetricsPtr metrics_;

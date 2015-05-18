@@ -22,7 +22,7 @@ NativeViewportImpl::NativeViewportImpl(
     const scoped_refptr<gles2::GpuState>& gpu_state,
     mojo::InterfaceRequest<mojo::NativeViewport> request)
     : is_headless_(is_headless),
-      context_provider_(gpu_state),
+      context_provider_(new OnscreenContextProvider(gpu_state)),
       sent_metrics_(false),
       metrics_(mojo::ViewportMetrics::New()),
       binding_(this, request.Pass()),
@@ -31,6 +31,11 @@ NativeViewportImpl::NativeViewportImpl(
 }
 
 NativeViewportImpl::~NativeViewportImpl() {
+  // Destroy before |platform_viewport_| because this will destroy
+  // CommandBufferDriver objects that contain child windows. Otherwise if this
+  // class destroys its window first, X errors will occur.
+  context_provider_.reset();
+
   // Destroy the NativeViewport early on as it may call us back during
   // destruction and we want to be in a known state.
   platform_viewport_.reset();
@@ -76,7 +81,7 @@ void NativeViewportImpl::SetSize(mojo::SizePtr size) {
 
 void NativeViewportImpl::GetContextProvider(
     mojo::InterfaceRequest<mojo::ContextProvider> request) {
-  context_provider_.Bind(request.Pass());
+  context_provider_->Bind(request.Pass());
 }
 
 void NativeViewportImpl::SetEventDispatcher(
@@ -102,7 +107,7 @@ void NativeViewportImpl::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   metrics_->device_pixel_ratio = device_pixel_ratio;
-  context_provider_.SetAcceleratedWidget(widget);
+  context_provider_->SetAcceleratedWidget(widget);
   // TODO: The metrics here might not match the actual window size on android
   // where we don't know the actual size until the first OnMetricsChanged call.
   create_callback_.Run(metrics_.Clone());
@@ -111,7 +116,7 @@ void NativeViewportImpl::OnAcceleratedWidgetAvailable(
 }
 
 void NativeViewportImpl::OnAcceleratedWidgetDestroyed() {
-  context_provider_.SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
+  context_provider_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 
 bool NativeViewportImpl::OnEvent(mojo::EventPtr event) {
@@ -150,8 +155,7 @@ bool NativeViewportImpl::OnEvent(mojo::EventPtr event) {
 }
 
 void NativeViewportImpl::OnDestroyed() {
-  // This will signal a connection error and cause us to delete |this|.
-  binding_.Close();
+  delete this;
 }
 
 void NativeViewportImpl::OnConnectionError() {

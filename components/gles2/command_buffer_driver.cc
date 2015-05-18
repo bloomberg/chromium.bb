@@ -57,27 +57,29 @@ CommandBufferDriver::CommandBufferDriver(
     : CommandBufferDriver(gfx::kNullAcceleratedWidget,
                           share_group,
                           mailbox_manager,
-                          sync_point_manager) {
+                          sync_point_manager,
+                          base::Callback<void(CommandBufferDriver*)>()) {
 }
 
 CommandBufferDriver::CommandBufferDriver(
     gfx::AcceleratedWidget widget,
     gfx::GLShareGroup* share_group,
     gpu::gles2::MailboxManager* mailbox_manager,
-    gpu::SyncPointManager* sync_point_manager)
+    gpu::SyncPointManager* sync_point_manager,
+    const base::Callback<void(CommandBufferDriver*)>& destruct_callback)
     : client_(nullptr),
       widget_(widget),
       share_group_(share_group),
       mailbox_manager_(mailbox_manager),
       sync_point_manager_(sync_point_manager),
+      destruct_callback_(destruct_callback),
       weak_factory_(this) {
 }
 
 CommandBufferDriver::~CommandBufferDriver() {
-  if (decoder_) {
-    bool have_context = decoder_->MakeCurrent();
-    decoder_->Destroy(have_context);
-  }
+  DestroyDecoder();
+  if (!destruct_callback_.is_null())
+    destruct_callback_.Run(this);
 }
 
 void CommandBufferDriver::Initialize(
@@ -174,12 +176,21 @@ void CommandBufferDriver::SetGetBuffer(int32_t buffer) {
 }
 
 void CommandBufferDriver::Flush(int32_t put_offset) {
+  if (!context_)
+    return;
   if (!context_->MakeCurrent(surface_.get())) {
     DLOG(WARNING) << "Context lost";
     OnContextLost(gpu::error::kUnknown);
     return;
   }
   command_buffer_->Flush(put_offset);
+}
+
+void CommandBufferDriver::DestroyWindow() {
+  DestroyDecoder();
+  surface_ = nullptr;
+  context_ = nullptr;
+  destruct_callback_.Reset();
 }
 
 void CommandBufferDriver::MakeProgress(int32_t last_get_offset) {
@@ -245,6 +256,14 @@ void CommandBufferDriver::OnUpdateVSyncParameters(
     const base::TimeTicks timebase,
     const base::TimeDelta interval) {
   client_->UpdateVSyncParameters(timebase, interval);
+}
+
+void CommandBufferDriver::DestroyDecoder() {
+  if (decoder_) {
+    bool have_context = decoder_->MakeCurrent();
+    decoder_->Destroy(have_context);
+    decoder_.reset();
+  }
 }
 
 }  // namespace gles2

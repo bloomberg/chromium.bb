@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/gpu/public/interfaces/command_buffer.mojom.h"
@@ -33,6 +34,10 @@ class GLSurface;
 
 namespace gles2 {
 
+// This class receives CommandBuffer messages on the same thread as the native
+// viewport. It is usually destructed on that thread, however if the native
+// viewport app is destroyed before CommandBufferImpl, then the latter's failed
+// PostTask will end up deleting this class on the control thread.
 class CommandBufferDriver {
  public:
   class Client {
@@ -47,10 +52,12 @@ class CommandBufferDriver {
                       gpu::gles2::MailboxManager* mailbox_manager,
                       gpu::SyncPointManager* sync_point_manager);
   // Onscreen.
-  CommandBufferDriver(gfx::AcceleratedWidget widget,
-                      gfx::GLShareGroup* share_group,
-                      gpu::gles2::MailboxManager* mailbox_manager,
-                      gpu::SyncPointManager* sync_point_manager);
+  CommandBufferDriver(
+      gfx::AcceleratedWidget widget,
+      gfx::GLShareGroup* share_group,
+      gpu::gles2::MailboxManager* mailbox_manager,
+      gpu::SyncPointManager* sync_point_manager,
+      const base::Callback<void(CommandBufferDriver*)>& destruct_callback);
   ~CommandBufferDriver();
 
   void set_client(scoped_ptr<Client> client) { client_ = client.Pass(); }
@@ -67,6 +74,10 @@ class CommandBufferDriver {
   void DestroyTransferBuffer(int32_t id);
   void Echo(const mojo::Callback<void()>& callback);
 
+  // Called at shutdown to destroy the X window. This is needed when the parent
+  // window is being destroyed. Otherwise X calls for this window will fail.
+  void DestroyWindow();
+
  private:
   bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state);
   void OnResize(gfx::Size size, float scale_factor);
@@ -76,6 +87,7 @@ class CommandBufferDriver {
   void OnContextLost(uint32_t reason);
   void OnUpdateVSyncParameters(const base::TimeTicks timebase,
                                const base::TimeDelta interval);
+  void DestroyDecoder();
 
   scoped_ptr<Client> client_;
   mojo::CommandBufferSyncClientPtr sync_client_;
@@ -92,6 +104,8 @@ class CommandBufferDriver {
 
   scoped_refptr<base::SingleThreadTaskRunner> context_lost_task_runner_;
   base::Callback<void(int32_t)> context_lost_callback_;
+
+  base::Callback<void(CommandBufferDriver*)> destruct_callback_;
 
   base::WeakPtrFactory<CommandBufferDriver> weak_factory_;
 

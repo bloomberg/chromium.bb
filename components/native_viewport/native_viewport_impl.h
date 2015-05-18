@@ -70,7 +70,7 @@ class NativeViewportImpl : public mojo::NativeViewport,
 
   bool is_headless_;
   scoped_ptr<PlatformViewport> platform_viewport_;
-  OnscreenContextProvider context_provider_;
+  scoped_ptr<OnscreenContextProvider> context_provider_;
   bool sent_metrics_;
   mojo::ViewportMetricsPtr metrics_;
   CreateCallback create_callback_;

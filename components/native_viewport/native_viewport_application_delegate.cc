@@ -10,6 +10,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "ui/events/event_switches.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_surface.h"
 
 namespace native_viewport {
@@ -23,6 +24,7 @@ NativeViewportApplicationDelegate::~NativeViewportApplicationDelegate() {
 
 void NativeViewportApplicationDelegate::Initialize(
     mojo::ApplicationImpl* application) {
+  event_source_ = ui::PlatformEventSource::CreateDefault();
   tracing_.Initialize(application);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

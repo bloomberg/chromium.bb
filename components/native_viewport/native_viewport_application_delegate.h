@@ -17,6 +17,10 @@ class ApplicationConnection;
 class ApplicationImpl;
 }
 
+namespace ui {
+class PlatformEventSource;
+}
+
 namespace native_viewport {
 
 class NativeViewportApplicationDelegate
@@ -42,6 +46,7 @@ class NativeViewportApplicationDelegate
               mojo::InterfaceRequest<mojo::Gpu> request) override;
 
   scoped_refptr<gles2::GpuState> gpu_state_;
+  scoped_ptr<ui::PlatformEventSource> event_source_;
   bool is_headless_;
   mojo::TracingImpl tracing_;
 
