@@ -301,7 +301,7 @@ extern const char kTestName[];
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUnlimitedStorage[];
-extern const char kUnsafetyTreatInsecureOriginAsSecure[];
+extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 extern const char kUseSimpleCacheBackend[];
 extern const char kUseSpdy[];
 extern const char kUserAgent[];

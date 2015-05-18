@@ -12,7 +12,7 @@ using content::IsOriginSecure;
 
 namespace chrome {
 
-TEST(SecureOriginWhiteList, UnsafetyTreatInsecureOriginAsSecure) {
+TEST(SecureOriginWhiteList, UnsafelyTreatInsecureOriginAsSecure) {
   EXPECT_FALSE(content::IsOriginSecure(GURL("http://example.com/a.html")));
   EXPECT_FALSE(
       content::IsOriginSecure(GURL("http://127.example.com/a.html")));
@@ -23,7 +23,7 @@ TEST(SecureOriginWhiteList, UnsafetyTreatInsecureOriginAsSecure) {
   // ChromeContentClient::AddSecureSchemesAndOrigins)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
-      switches::kUnsafetyTreatInsecureOriginAsSecure,
+      switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,http://127.example.com");
   command_line->AppendSwitch(switches::kUserDataDir);
   content::ResetSecureSchemesAndOriginsForTesting();

@@ -10,7 +10,7 @@
 #include "url/gurl.h"
 
 // Returns whitelisted origins that need to be considered trustworthy.
-// The whitelist is given by kUnsafetyTreatInsecureOriginAsSecure
+// The whitelist is given by kUnsafelyTreatInsecureOriginAsSecure
 // command-line option.
 // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
 void GetSecureOriginWhitelist(std::set<GURL>* origins);

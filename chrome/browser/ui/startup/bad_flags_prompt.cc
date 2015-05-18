@@ -82,7 +82,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
 
     // This flag allows people to whitelist certain origins as secure, even
     // if they are not.
-    switches::kUnsafetyTreatInsecureOriginAsSecure,
+    switches::kUnsafelyTreatInsecureOriginAsSecure,
 
     NULL
   };

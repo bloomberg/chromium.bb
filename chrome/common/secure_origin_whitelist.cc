@@ -11,16 +11,16 @@
 #include "chrome/common/chrome_switches.h"
 
 void GetSecureOriginWhitelist(std::set<GURL>* origins) {
-  // If kUnsafetyTreatInsecureOriginAsSecure option is given and
+  // If kUnsafelyTreatInsecureOriginAsSecure option is given and
   // kUserDataDir is present, add the given origins as trustworthy
   // for whitelisting.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kUnsafetyTreatInsecureOriginAsSecure) &&
+  if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure) &&
       command_line.HasSwitch(switches::kUserDataDir)) {
     std::vector<std::string> given_origins;
     base::SplitString(command_line.GetSwitchValueASCII(
-        switches::kUnsafetyTreatInsecureOriginAsSecure), ',', &given_origins);
+        switches::kUnsafelyTreatInsecureOriginAsSecure), ',', &given_origins);
     for (const auto& origin : given_origins)
       origins->insert(GURL(origin));
   }
