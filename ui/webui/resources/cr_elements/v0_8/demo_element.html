@@ -39,9 +39,13 @@
     </div>
     <div>
       <h3>cr-toggle-button</h3>
-      <div horizontal layout>
+      <div>
+        <cr-toggle-button checked="{{toggleButtonChecked}}"></cr-toggle-button>
         <span>Toggle Button</span>
-        <cr-toggle-button></cr-toggle-button>
+      </div>
+      <div>
+        <span>Bound Checkbox</span>
+        <cr-checkbox checked="{{toggleButtonChecked}}"></cr-checkbox>
       </div>
     </div>
   </template>

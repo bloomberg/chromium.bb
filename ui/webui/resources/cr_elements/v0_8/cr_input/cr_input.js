@@ -41,6 +41,7 @@ Polymer({
     value: {
       type: String,
       value: '',
+      notify: true,
     },
 
     /**

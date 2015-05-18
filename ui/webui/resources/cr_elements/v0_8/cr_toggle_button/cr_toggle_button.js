@@ -23,6 +23,7 @@ Polymer({
     checked: {
       type: Boolean,
       value: false,
+      notify: true,
       reflectToAttribute: true,
     },
 
