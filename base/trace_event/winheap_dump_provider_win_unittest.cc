@@ -13,7 +13,9 @@
 namespace base {
 namespace trace_event {
 
-TEST(WinHeapDumpProviderTest, OnMemoryDump) {
+// This test is flaky on XP and is not guaranteed reliable on any version of
+// Windows. https://crbug.com/487291
+TEST(WinHeapDumpProviderTest, DISABLED_OnMemoryDump) {
   ProcessMemoryDump pmd(make_scoped_refptr(new MemoryDumpSessionState()));
 
   WinHeapDumpProvider* winheap_dump_provider =
