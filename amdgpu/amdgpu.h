@@ -104,15 +104,15 @@ enum amdgpu_bo_handle_type {
  * \sa amdgpu_cs_alloc_ib()
  */
 enum amdgpu_cs_ib_size {
-	amdgpu_cs_ib_size_4K	= 1,
-	amdgpu_cs_ib_size_16K	= 2,
-	amdgpu_cs_ib_size_32K	= 3,
-	amdgpu_cs_ib_size_64K	= 4,
-	amdgpu_cs_ib_size_128K	= 5
+	amdgpu_cs_ib_size_4K	= 0,
+	amdgpu_cs_ib_size_16K	= 1,
+	amdgpu_cs_ib_size_32K	= 2,
+	amdgpu_cs_ib_size_64K	= 3,
+	amdgpu_cs_ib_size_128K	= 4
 };
 
 /** The number of different IB sizes */
-#define AMDGPU_CS_IB_SIZE_NUM 6
+#define AMDGPU_CS_IB_SIZE_NUM 5
 
 
 /*--------------------------------------------------------------------------*/
