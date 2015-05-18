@@ -48,7 +48,7 @@ TEST(ThreadWatcherAndroidTest, DISABLED_ApplicationStatusNotification) {
 
 
   scoped_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
-  watchdog_thread_->Start();
+  watchdog_thread_->StartAndWaitForTesting();
 
   EXPECT_FALSE(ThreadWatcherList::g_thread_watcher_list_);
 

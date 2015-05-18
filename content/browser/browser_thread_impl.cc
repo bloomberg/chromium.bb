@@ -159,14 +159,8 @@ void BrowserThreadImpl::Init() {
   AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
   BrowserThreadDelegate* delegate =
       reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
-  if (delegate) {
+  if (delegate)
     delegate->Init();
-    message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&BrowserThreadDelegate::InitAsync,
-                                        // Delegate is expected to exist for the
-                                        // duration of the thread's lifetime
-                                        base::Unretained(delegate)));
-  }
 }
 
 // We disable optimizations for this block of functions so the compiler doesn't

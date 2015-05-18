@@ -13,11 +13,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
 
 class MessagePump;
+class WaitableEvent;
 
 // A simple thread abstraction that establishes a MessageLoop on a new thread.
 // The consumer uses the MessageLoop of the thread to cause code to execute on
@@ -45,7 +47,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     // This is ignored if message_pump_factory.is_null() is false.
     MessageLoop::Type message_loop_type;
 
-    // Specify timer slack for thread message loop.
+    // Specifies timer slack for thread message loop.
     TimerSlack timer_slack;
 
     // Used to create the MessagePump for the MessageLoop. The callback is Run()
@@ -81,7 +83,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // init_com_with_mta(false) and then StartWithOptions() with any message loop
   // type other than TYPE_UI.
   void init_com_with_mta(bool use_mta) {
-    DCHECK(!started_);
+    DCHECK(!start_event_);
     com_status_ = use_mta ? MTA : STA;
   }
 #endif
@@ -102,6 +104,18 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // i.e. during a DllMain, global object construction or destruction, atexit()
   // callback.
   bool StartWithOptions(const Options& options);
+
+  // Starts the thread and wait for the thread to start and run initialization
+  // before returning. It's same as calling Start() and then
+  // WaitUntilThreadStarted().
+  // Note that using this (instead of Start() or StartWithOptions() causes
+  // jank on the calling thread, should be used only in testing code.
+  bool StartAndWaitForTesting();
+
+  // Blocks until the thread starts running. Called within StartAndWait().
+  // Note that calling this causes jank on the calling thread, must be used
+  // carefully for production code.
+  bool WaitUntilThreadStarted();
 
   // Signals the thread to exit and returns once the thread has exited.  After
   // this method returns, the Thread object is completely reset and may be used
@@ -166,7 +180,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   PlatformThreadHandle thread_handle() { return thread_; }
 
   // The thread ID.
-  PlatformThreadId thread_id() const { return thread_id_; }
+  PlatformThreadId thread_id() const;
 
   // Returns true if the thread has been started, and not yet stopped.
   bool IsRunning() const;
@@ -208,32 +222,31 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   ComStatus com_status_;
 #endif
 
-  // Whether we successfully started the thread.
-  bool started_;
-
   // If true, we're in the middle of stopping, and shouldn't access
   // |message_loop_|. It may non-NULL and invalid.
   bool stopping_;
 
   // True while inside of Run().
   bool running_;
-
-  // Used to pass data to ThreadMain.
-  struct StartupData;
-  StartupData* startup_data_;
+  mutable base::Lock running_lock_;  // Protects running_.
 
   // The thread's handle.
   PlatformThreadHandle thread_;
+  mutable base::Lock thread_lock_;  // Protects thread_.
 
   // The thread's message loop.  Valid only while the thread is alive.  Set
   // by the created thread.
   MessageLoop* message_loop_;
 
-  // Our thread's ID.
-  PlatformThreadId thread_id_;
+  // Stores Options::timer_slack_ until the message loop has been bound to
+  // a thread.
+  TimerSlack message_loop_timer_slack_;
 
   // The name of the thread.  Used for debugging purposes.
   std::string name_;
+
+  // Non-null if the thread has successfully started.
+  scoped_ptr<WaitableEvent> start_event_;
 
   friend void ThreadQuitHelper();
 
