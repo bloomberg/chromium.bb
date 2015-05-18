@@ -49,6 +49,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/path_utils.h"
+#include "base/debug/leak_annotations.h"
 #endif
 #include "third_party/lss/linux_syscall_support.h"
 
@@ -85,18 +86,20 @@ const char kUploadURL[] = "https://clients2.google.com/cr/report";
 bool g_is_crash_reporter_enabled = false;
 uint64_t g_process_start_time = 0;
 pid_t g_pid = 0;
-char* g_crash_log_path = NULL;
-ExceptionHandler* g_breakpad = NULL;
-ExceptionHandler* g_microdump = NULL;
+char* g_crash_log_path = nullptr;
+ExceptionHandler* g_breakpad = nullptr;
 
 #if defined(ADDRESS_SANITIZER)
-const char* g_asan_report_str = NULL;
+const char* g_asan_report_str = nullptr;
 #endif
 #if defined(OS_ANDROID)
-char* g_process_type = NULL;
+char* g_process_type = nullptr;
+ExceptionHandler* g_microdump = nullptr;
+const char* g_microdump_build_fingerprint = nullptr;
+const char* g_microdump_product_info = nullptr;
 #endif
 
-CrashKeyStorage* g_crash_keys = NULL;
+CrashKeyStorage* g_crash_keys = nullptr;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -133,7 +136,7 @@ const size_t kUint64StringSize = 21;
 void SetProcessStartTime() {
   // Set the base process start time value.
   struct timeval tv;
-  if (!gettimeofday(&tv, NULL))
+  if (!gettimeofday(&tv, nullptr))
     g_process_start_time = timeval_to_ms(&tv);
   else
     g_process_start_time = 0;
@@ -512,9 +515,11 @@ void DumpProcess() {
   if (g_breakpad)
     g_breakpad->WriteMinidump();
 
+#if defined(OS_ANDROID)
   // If microdumps are enabled write also a microdump on the system log.
   if (g_microdump)
     g_microdump->WriteMinidump();
+#endif
 }
 
 #if defined(OS_ANDROID)
@@ -678,9 +683,9 @@ void EnableCrashDumping(bool unattended) {
   if (unattended) {
     g_breakpad = new ExceptionHandler(
         minidump_descriptor,
-        NULL,
+        nullptr,
         CrashDoneNoUpload,
-        NULL,
+        nullptr,
         true,  // Install handlers.
         -1);   // Server file descriptor. -1 for in-process.
     return;
@@ -690,9 +695,9 @@ void EnableCrashDumping(bool unattended) {
   // Attended mode
   g_breakpad = new ExceptionHandler(
       minidump_descriptor,
-      NULL,
+      nullptr,
       CrashDoneUpload,
-      NULL,
+      nullptr,
       true,  // Install handlers.
       -1);   // Server file descriptor. -1 for in-process.
 #endif
@@ -710,7 +715,7 @@ bool MicrodumpCrashDone(const MinidumpDescriptor& minidump,
     return false;
   }
 
-  const bool is_browser_process = (context != NULL);
+  const bool is_browser_process = (context != nullptr);
   return FinalizeCrashDoneAndroid(is_browser_process);
  }
 
@@ -729,11 +734,37 @@ void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
 
   VLOG(1) << "Enabling microdumps crash handler (process_type:"
           << process_type << ")";
+
+  // The exception handler runs in a compromised context and cannot use c_str()
+  // as that would require the heap. Therefore, we have to guarantee that the
+  // build fingerprint and product info pointers are always valid.
+  const char* product_name = nullptr;
+  const char* product_version = nullptr;
+  GetCrashReporterClient()->GetProductNameAndVersion(&product_name,
+                                                     &product_version);
+
+  MinidumpDescriptor descriptor(MinidumpDescriptor::kMicrodumpOnConsole);
+
+  if (product_name && product_version) {
+    g_microdump_product_info = strdup(
+        (product_name + std::string(":") + product_version).c_str());
+    ANNOTATE_LEAKING_OBJECT_PTR(g_microdump_product_info);
+    descriptor.SetMicrodumpProductInfo(g_microdump_product_info);
+  }
+
+  const char* android_build_fp =
+      base::android::BuildInfo::GetInstance()->android_build_fp();
+  if (android_build_fp) {
+    g_microdump_build_fingerprint = strdup(android_build_fp);
+    ANNOTATE_LEAKING_OBJECT_PTR(g_microdump_build_fingerprint);
+    descriptor.SetMicrodumpBuildFingerprint(g_microdump_build_fingerprint);
+  }
+
   DCHECK(!g_microdump);
   bool is_browser_process = process_type.empty() || process_type == "webview";
   g_microdump = new ExceptionHandler(
-        MinidumpDescriptor(MinidumpDescriptor::kMicrodumpOnConsole),
-        NULL,
+        descriptor,
+        nullptr,
         MicrodumpCrashDone,
         reinterpret_cast<void*>(is_browser_process),
         true,  // Install handlers.
@@ -755,11 +786,11 @@ bool CrashDoneInProcessNoUpload(
 
   // Start constructing the message to send to the browser.
   BreakpadInfo info = {0};
-  info.filename = NULL;
+  info.filename = nullptr;
   info.fd = descriptor.fd();
   info.process_type = g_process_type;
   info.process_type_length = my_strlen(g_process_type);
-  info.distro = NULL;
+  info.distro = nullptr;
   info.distro_length = 0;
   info.upload = false;
   info.process_start_time = g_process_start_time;
@@ -798,7 +829,7 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
   g_process_type = new char[process_type_len];
   strncpy(g_process_type, process_type.c_str(), process_type_len);
   new google_breakpad::ExceptionHandler(MinidumpDescriptor(minidump_fd),
-      NULL, CrashDoneInProcessNoUpload, NULL, true, -1);
+      nullptr, CrashDoneInProcessNoUpload, nullptr, true, -1);
 }
 #else
 // Non-Browser = Extension, Gpu, Plugins, Ppapi and Renderer
@@ -902,9 +933,9 @@ void EnableNonBrowserCrashDumping() {
 
   g_breakpad = new ExceptionHandler(
       MinidumpDescriptor("/tmp"),  // Unused but needed or Breakpad will assert.
-      NULL,
-      NULL,
-      NULL,
+      nullptr,
+      nullptr,
+      nullptr,
       true,
       -1);
   g_breakpad->set_crash_generation_client(new NonBrowserCrashHandler());
@@ -1057,7 +1088,7 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
     pid_flag,
     uid_flag,
     exe_flag,
-    NULL,
+    nullptr,
   };
   static const char msg[] = "Cannot upload crash dump: cannot exec "
                             "/sbin/crash_reporter\n";
@@ -1092,7 +1123,7 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
     "--tries=1",     // Don't retry if the upload fails.
     "-O",  // output reply to fd 3
     "/dev/fd/3",
-    NULL,
+    nullptr,
   };
   static const char msg[] = "Cannot upload crash dump: cannot exec "
                             "/usr/bin/wget\n";
@@ -1137,7 +1168,7 @@ size_t WaitForCrashReportUploadProcess(int fd, size_t bytes_to_read,
   return bytes_read;
 }
 
-// |buf| should be |expected_len| + 1 characters in size and NULL terminated.
+// |buf| should be |expected_len| + 1 characters in size and nullptr terminated.
 bool IsValidCrashReportId(const char* buf, size_t bytes_read,
                           size_t expected_len) {
   if (bytes_read != expected_len)
@@ -1153,7 +1184,7 @@ bool IsValidCrashReportId(const char* buf, size_t bytes_read,
 #endif
 }
 
-// |buf| should be |expected_len| + 1 characters in size and NULL terminated.
+// |buf| should be |expected_len| + 1 characters in size and nullptr terminated.
 void HandleCrashReportId(const char* buf, size_t bytes_read,
                          size_t expected_len) {
   WriteNewline();
@@ -1186,7 +1217,7 @@ void HandleCrashReportId(const char* buf, size_t bytes_read,
 
   // Write crash dump id to crash log as: seconds_since_epoch,crash_id
   struct kernel_timeval tv;
-  if (g_crash_log_path && !sys_gettimeofday(&tv, NULL)) {
+  if (g_crash_log_path && !sys_gettimeofday(&tv, nullptr)) {
     uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
     char time_str[kUint64StringSize];
     const unsigned time_len = my_uint64_len(time);
@@ -1241,7 +1272,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
   size_t dump_size;
   uint8_t* dump_data;
   google_breakpad::PageAllocator allocator;
-  const char* exe_buf = NULL;
+  const char* exe_buf = nullptr;
 
   if (GetCrashReporterClient()->HandleCrashDump(info.filename)) {
     return;
@@ -1436,7 +1467,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddBoundary();
     writer.AddPairString(brand, android_build_info->brand());
     writer.AddBoundary();
-    if (android_build_info->java_exception_info() != NULL) {
+    if (android_build_info->java_exception_info() != nullptr) {
       writer.AddPairString(exception_info,
                            android_build_info->java_exception_info());
       writer.AddBoundary();
@@ -1447,7 +1478,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
 
   if (info.process_start_time > 0) {
     struct kernel_timeval tv;
-    if (!sys_gettimeofday(&tv, NULL)) {
+    if (!sys_gettimeofday(&tv, nullptr)) {
       uint64_t time = kernel_timeval_to_ms(&tv);
       if (time > info.process_start_time) {
         time -= info.process_start_time;
@@ -1606,7 +1637,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
             WaitForCrashReportUploadProcess(fds[0], kCrashIdLength, id_buf);
         HandleCrashReportId(id_buf, bytes_read, kCrashIdLength);
 
-        if (sys_waitpid(upload_child, NULL, WNOHANG) == 0) {
+        if (sys_waitpid(upload_child, nullptr, WNOHANG) == 0) {
           // Upload process is still around, kill it.
           sys_kill(upload_child, SIGKILL);
         }
@@ -1625,7 +1656,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
   // Main browser process.
   if (child <= 0)
     return;
-  (void) HANDLE_EINTR(sys_waitpid(child, NULL, 0));
+  (void) HANDLE_EINTR(sys_waitpid(child, nullptr, 0));
 }
 
 void InitCrashReporter(const std::string& process_type) {
