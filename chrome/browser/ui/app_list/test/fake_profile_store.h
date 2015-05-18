@@ -11,10 +11,12 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 
+class PrefService;
+
 class FakeProfileStore : public ProfileStore {
  public:
-  explicit FakeProfileStore(const base::FilePath& user_data_dir,
-                            const std::string& last_used_profile);
+  FakeProfileStore(const base::FilePath& user_data_dir,
+                   PrefService* local_state);
   ~FakeProfileStore() override;
 
   void LoadProfile(Profile* profile);
@@ -32,7 +34,7 @@ class FakeProfileStore : public ProfileStore {
 
  private:
   base::FilePath user_data_dir_;
-  std::string last_used_profile_name_;
+  PrefService* local_state_;
   typedef std::map<base::FilePath, base::Callback<void(Profile*)> >
       CallbacksByPath;
   CallbacksByPath callbacks_;

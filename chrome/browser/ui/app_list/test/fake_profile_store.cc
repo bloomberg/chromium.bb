@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/app_list/test/fake_profile_store.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/pref_names.h"
 
 FakeProfileStore::FakeProfileStore(const base::FilePath& user_data_dir,
-                                   const std::string& last_used_profile)
-    : user_data_dir_(user_data_dir),
-      last_used_profile_name_(last_used_profile) {
+                                   PrefService* local_state)
+    : user_data_dir_(user_data_dir), local_state_(local_state) {
 }
 
 FakeProfileStore::~FakeProfileStore() {
@@ -62,7 +64,13 @@ base::FilePath FakeProfileStore::GetUserDataDir() {
 }
 
 std::string FakeProfileStore::GetLastUsedProfileName() {
-  return last_used_profile_name_;
+  std::string profile_name = local_state_->GetString(prefs::kProfileLastUsed);
+
+  if (!profile_name.empty())
+    return profile_name;
+
+  // If there is no last used profile recorded, use the initial profile.
+  return chrome::kInitialProfile;
 }
 
 bool FakeProfileStore::IsProfileSupervised(const base::FilePath& path) {

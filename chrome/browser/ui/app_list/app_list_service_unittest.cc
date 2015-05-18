@@ -87,7 +87,6 @@ class AppListServiceUnitTest : public testing::Test {
  protected:
   void SetupWithCommandLine(const base::CommandLine& command_line) {
     user_data_dir_ = base::FilePath(FILE_PATH_LITERAL("udd"));
-    initial_profile_ = "ip";
     profile1_.reset(
         new FakeProfile("p1", user_data_dir_.AppendASCII("profile1")));
     profile2_.reset(
@@ -101,7 +100,7 @@ class AppListServiceUnitTest : public testing::Test {
     factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore));
     local_state_ = factory.Create(pref_registry).Pass();
 
-    profile_store_ = new FakeProfileStore(user_data_dir_, initial_profile_);
+    profile_store_ = new FakeProfileStore(user_data_dir_, local_state_.get());
     service_.reset(new TestingAppListServiceImpl(
         command_line,
         local_state_.get(),
@@ -114,7 +113,6 @@ class AppListServiceUnitTest : public testing::Test {
   }
 
   base::FilePath user_data_dir_;
-  std::string initial_profile_;
   scoped_ptr<PrefService> local_state_;
   FakeProfileStore* profile_store_;
   scoped_ptr<TestingAppListServiceImpl> service_;
@@ -143,8 +141,12 @@ TEST_F(AppListServiceUnitTest, ShowingForProfileLoadsAProfile) {
 TEST_F(AppListServiceUnitTest, RemovedProfileResetsToInitialProfile) {
   EnableAppList();
   profile_store_->RemoveProfile(profile1_.get());
+
+  // kAppListProfile should have been cleared, and therefore GetProfilePath
+  // should return the initial profile.
+  EXPECT_EQ("", local_state_->GetString(prefs::kAppListProfile));
   base::FilePath initial_profile_path =
-      user_data_dir_.AppendASCII(initial_profile_);
+      user_data_dir_.AppendASCII(chrome::kInitialProfile);
   EXPECT_EQ(initial_profile_path,
             service_->GetProfilePath(profile_store_->GetUserDataDir()));
 }
@@ -155,6 +157,8 @@ TEST_F(AppListServiceUnitTest,
   EnableAppList();
   profile_store_->RemoveProfile(profile1_.get());
 
+  // kAppListProfile should have been set to kProfileLastUsed.
+  EXPECT_EQ("last-used", local_state_->GetString(prefs::kAppListProfile));
   base::FilePath last_used_profile_path =
       user_data_dir_.AppendASCII("last-used");
   EXPECT_EQ(last_used_profile_path,
