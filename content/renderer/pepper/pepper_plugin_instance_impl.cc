@@ -663,7 +663,7 @@ v8::Local<v8::Context> PepperPluginInstanceImpl::GetMainWorldContext() {
 void PepperPluginInstanceImpl::Delete() {
   is_deleted_ = true;
 
-  if (render_frame_ &&
+  if (render_frame_ && render_frame_->render_view() &&
       render_frame_->render_view()->plugin_find_handler() == this) {
     render_frame_->render_view()->set_plugin_find_handler(NULL);
   }
