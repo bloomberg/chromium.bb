@@ -404,4 +404,15 @@ public class ApiCompatibilityUtils {
             return res.getDrawableForDensity(id, density);
         }
     }
+
+    /**
+     * @see android.app.Activity#finishAfterTransition().
+     */
+    public static void finishAfterTransition(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity.finishAfterTransition();
+        } else {
+            activity.finish();
+        }
+    }
 }
