@@ -137,7 +137,7 @@ struct timespec TimeDelta::ToTimeSpec() const {
 //   => Thu Jan 01 00:00:00 UTC 1970
 //   irb(main):011:0> Time.at(-11644473600).getutc()
 //   => Mon Jan 01 00:00:00 UTC 1601
-static const int64 kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
+static const int64 kWindowsEpochDeltaSeconds = INT64_C(11644473600);
 
 // static
 const int64 Time::kWindowsEpochDeltaMicroseconds =

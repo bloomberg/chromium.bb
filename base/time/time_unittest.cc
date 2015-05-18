@@ -4,8 +4,8 @@
 
 #include "base/time/time.h"
 
+#include <stdint.h>
 #include <time.h>
-
 #include <limits>
 #include <string>
 
@@ -832,7 +832,7 @@ TEST(TimeDelta, WindowsEpoch) {
   exploded.millisecond = 0;
   Time t = Time::FromUTCExploded(exploded);
   // Unix 1970 epoch.
-  EXPECT_EQ(GG_INT64_C(11644473600000000), t.ToInternalValue());
+  EXPECT_EQ(INT64_C(11644473600000000), t.ToInternalValue());
 
   // We can't test 1601 epoch, since the system time functions on Linux
   // only compute years starting from 1900.

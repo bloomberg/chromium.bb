@@ -36,6 +36,7 @@
 #pragma comment(lib, "winmm.lib")
 #include <windows.h>
 #include <mmsystem.h>
+#include <stdint.h>
 
 #include "base/basictypes.h"
 #include "base/cpu.h"
@@ -106,7 +107,7 @@ base::LazyInstance<base::Lock>::Leaky g_high_res_lock =
 // number of leap year days between 1601 and 1970: (1970-1601)/4 excluding
 // 1700, 1800, and 1900.
 // static
-const int64 Time::kTimeTToMicrosecondsOffset = GG_INT64_C(11644473600000000);
+const int64 Time::kTimeTToMicrosecondsOffset = INT64_C(11644473600000000);
 
 // static
 Time Time::Now() {

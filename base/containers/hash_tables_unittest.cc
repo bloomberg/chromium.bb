@@ -4,6 +4,7 @@
 
 #include "base/containers/hash_tables.h"
 
+#include <stdint.h>
 #include <string>
 
 #include "base/basictypes.h"
@@ -31,7 +32,7 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(Int16Int16Pair, 4, 6);
   INSERT_PAIR_TEST(Int16Int32Pair, 9, (1 << 29) + 378128932);
   INSERT_PAIR_TEST(Int16Int64Pair, 10,
-                   (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
+                   (INT64_C(1) << 60) + INT64_C(78931732321));
 
   typedef std::pair<int32, int16> Int32Int16Pair;
   typedef std::pair<int32, int32> Int32Int32Pair;
@@ -40,7 +41,7 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(Int32Int16Pair, 4, 6);
   INSERT_PAIR_TEST(Int32Int32Pair, 9, (1 << 29) + 378128932);
   INSERT_PAIR_TEST(Int32Int64Pair, 10,
-                   (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
+                   (INT64_C(1) << 60) + INT64_C(78931732321));
 
   typedef std::pair<int64, int16> Int64Int16Pair;
   typedef std::pair<int64, int32> Int64Int32Pair;
@@ -49,7 +50,7 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(Int64Int16Pair, 4, 6);
   INSERT_PAIR_TEST(Int64Int32Pair, 9, (1 << 29) + 378128932);
   INSERT_PAIR_TEST(Int64Int64Pair, 10,
-                   (GG_INT64_C(1) << 60) + GG_INT64_C(78931732321));
+                   (INT64_C(1) << 60) + INT64_C(78931732321));
 }
 
 // Verify that base::hash_set<const char*> compares by pointer value, not as C

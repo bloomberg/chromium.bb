@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_number_conversions.h"
+
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -10,7 +12,6 @@
 #include <limits>
 
 #include "base/format_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -237,10 +238,10 @@ TEST(StringNumberConversionsTest, StringToInt64) {
     {"42", 42, true},
     {"-2147483648", INT_MIN, true},
     {"2147483647", INT_MAX, true},
-    {"-2147483649", GG_INT64_C(-2147483649), true},
-    {"-99999999999", GG_INT64_C(-99999999999), true},
-    {"2147483648", GG_INT64_C(2147483648), true},
-    {"99999999999", GG_INT64_C(99999999999), true},
+    {"-2147483649", INT64_C(-2147483649), true},
+    {"-99999999999", INT64_C(-99999999999), true},
+    {"2147483648", INT64_C(2147483648), true},
+    {"99999999999", INT64_C(99999999999), true},
     {"9223372036854775807", kint64max, true},
     {"-9223372036854775808", kint64min, true},
     {"09", 9, true},
@@ -304,8 +305,8 @@ TEST(StringNumberConversionsTest, StringToUint64) {
     {"2147483647", INT_MAX, true},
     {"-2147483649", 0, false},
     {"-99999999999", 0, false},
-    {"2147483648", GG_UINT64_C(2147483648), true},
-    {"99999999999", GG_UINT64_C(99999999999), true},
+    {"2147483648", UINT64_C(2147483648), true},
+    {"99999999999", UINT64_C(99999999999), true},
     {"9223372036854775807", kint64max, true},
     {"-9223372036854775808", 0, false},
     {"09", 9, true},
@@ -327,7 +328,7 @@ TEST(StringNumberConversionsTest, StringToUint64) {
     {"-", 0, false},
     {"-9223372036854775809", 0, false},
     {"-99999999999999999999", 0, false},
-    {"9223372036854775808", GG_UINT64_C(9223372036854775808), true},
+    {"9223372036854775808", UINT64_C(9223372036854775808), true},
     {"99999999999999999999", kuint64max, false},
     {"18446744073709551615", kuint64max, true},
     {"18446744073709551616", kuint64max, false},
@@ -550,7 +551,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
     {"42", 66, true},
     {"-42", -66, true},
     {"+42", 66, true},
-    {"40acd88557b", GG_INT64_C(4444444448123), true},
+    {"40acd88557b", INT64_C(4444444448123), true},
     {"7fffffff", INT_MAX, true},
     {"-80000000", INT_MIN, true},
     {"ffffffff", 0xffffffff, true},
@@ -558,7 +559,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
     {"0x42", 66, true},
     {"-0x42", -66, true},
     {"+0x42", 66, true},
-    {"0x40acd88557b", GG_INT64_C(4444444448123), true},
+    {"0x40acd88557b", INT64_C(4444444448123), true},
     {"0x7fffffff", INT_MAX, true},
     {"-0x80000000", INT_MIN, true},
     {"0xffffffff", 0xffffffff, true},
@@ -607,7 +608,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
     {"42", 66, true},
     {"-42", 0, false},
     {"+42", 66, true},
-    {"40acd88557b", GG_INT64_C(4444444448123), true},
+    {"40acd88557b", INT64_C(4444444448123), true},
     {"7fffffff", INT_MAX, true},
     {"-80000000", 0, false},
     {"ffffffff", 0xffffffff, true},
@@ -615,14 +616,14 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
     {"0x42", 66, true},
     {"-0x42", 0, false},
     {"+0x42", 66, true},
-    {"0x40acd88557b", GG_INT64_C(4444444448123), true},
+    {"0x40acd88557b", INT64_C(4444444448123), true},
     {"0x7fffffff", INT_MAX, true},
     {"-0x80000000", 0, false},
     {"0xffffffff", 0xffffffff, true},
     {"0XDeadBeef", 0xdeadbeef, true},
     {"0x7fffffffffffffff", kint64max, true},
     {"-0x8000000000000000", 0, false},
-    {"0x8000000000000000", GG_UINT64_C(0x8000000000000000), true},
+    {"0x8000000000000000", UINT64_C(0x8000000000000000), true},
     {"-0x8000000000000001", 0, false},
     {"0xFFFFFFFFFFFFFFFF", kuint64max, true},
     {"FFFFFFFFFFFFFFFF", kuint64max, true},

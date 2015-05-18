@@ -8,6 +8,7 @@
 #include <CoreFoundation/CFTimeZone.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -114,7 +115,7 @@ namespace base {
 //   => Thu Jan 01 00:00:00 UTC 1970
 //   irb(main):011:0> Time.at(-11644473600).getutc()
 //   => Mon Jan 01 00:00:00 UTC 1601
-static const int64 kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
+static const int64 kWindowsEpochDeltaSeconds = INT64_C(11644473600);
 
 // static
 const int64 Time::kWindowsEpochDeltaMicroseconds =
