@@ -677,8 +677,6 @@ public:
     void setHasTransformRelatedProperty(bool hasTransform) { m_bitfields.setHasTransformRelatedProperty(hasTransform); }
     void setHasReflection(bool hasReflection) { m_bitfields.setHasReflection(hasReflection); }
 
-    void scheduleRelayout();
-
     void updateImage(StyleImage*, StyleImage*);
 
     // paintOffset is the offset from the origin of the GraphicsContext at which to paint the current object.
@@ -1206,6 +1204,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    void scheduleRelayout();
+
     void updateShapeImage(const ShapeValue*, const ShapeValue*);
     void updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers);
 
