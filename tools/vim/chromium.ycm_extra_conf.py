@@ -40,21 +40,28 @@
 import os
 import os.path
 import re
+import shlex
 import subprocess
 import sys
 
 
-def SystemIncludeDirectoryFlags():
+def SystemIncludeDirectoryFlags(clang_binary, clang_flags):
   """Determines compile flags to include the system include directories.
 
   Use as a workaround for https://github.com/Valloric/YouCompleteMe/issues/303
 
+  Args:
+    clang_binary: (String) Path to clang binary.
+    clang_flags: (List of Strings) List of additional flags to clang. It may
+      affect the choice of system include directories if -stdlib= is specified.
+
   Returns:
     (List of Strings) Compile flags to append.
   """
+  all_flags = ['-v', '-E', '-x', 'c++'] + clang_flags + ['-']
   try:
     with open(os.devnull, 'rb') as DEVNULL:
-      output = subprocess.check_output(['clang', '-v', '-E', '-x', 'c++', '-'],
+      output = subprocess.check_output([clang_binary] + all_flags,
                                        stdin=DEVNULL, stderr=subprocess.STDOUT)
   except:
     return []
@@ -69,21 +76,19 @@ def SystemIncludeDirectoryFlags():
       flags.append(path)
   return flags
 
-
-_system_include_flags = SystemIncludeDirectoryFlags()
-
 # Flags from YCM's default config.
-flags = [
-'-DUSE_CLANG_COMPLETER',
-'-std=c++11',
-'-x',
-'c++',
+_default_flags = [
+  '-DUSE_CLANG_COMPLETER',
+  '-std=c++11',
+  '-x',
+  'c++',
 ]
-
 
 def PathExists(*args):
   return os.path.exists(os.path.join(*args))
 
+def LooksLikeClangCommand(command):
+  return command.endswith('clang++') or command.endswith('clang')
 
 def FindChromeSrcFromFilename(filename):
   """Searches for the root of the Chromium checkout.
@@ -190,7 +195,8 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
     return chrome_flags
 
   # Parse flags that are important for YCM's purposes.
-  for flag in clang_line.split(' '):
+  clang_tokens = shlex.split(clang_line)
+  for flag in clang_tokens:
     if flag.startswith('-I'):
       # Relative paths need to be resolved, because they're relative to the
       # output dir, not the source.
@@ -207,6 +213,21 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
         # are fixed.
         continue
       chrome_flags.append(flag)
+
+  # Assume that the command for invoking clang++ looks like one of the
+  # following:
+  #   1) /path/to/clang/clang++ arguments
+  #   2) /some/wrapper /path/to/clang++ arguments
+  #
+  # We'll look for a token that looks like Clang command within the first two
+  # tokens of the command line and treat it as the clang++ binary. Using the
+  # command line upto the Clang-like token isn't always feasible since the
+  # wrapper may not like the invocation used by SystemIncludeDirectoryFlags()
+  # although the real clang++ binary does.
+  for command in clang_tokens[0:2]:
+    if LooksLikeClangCommand(command):
+      chrome_flags += SystemIncludeDirectoryFlags(command, chrome_flags)
+      break
 
   return chrome_flags
 
@@ -225,7 +246,7 @@ def FlagsForFile(filename):
   chrome_root = FindChromeSrcFromFilename(filename)
   chrome_flags = GetClangCommandFromNinjaForFilename(chrome_root,
                                                      filename)
-  final_flags = flags + chrome_flags + _system_include_flags
+  final_flags = _default_flags + chrome_flags
 
   return {
     'flags': final_flags,
