@@ -96,6 +96,7 @@ typedef int		FcBool;
 #define FC_SCALABLE	    "scalable"		/* Bool */
 #define FC_COLOR	    "color"		/* Bool */
 #define FC_SCALE	    "scale"		/* double (deprecated) */
+#define FC_SYMBOL	    "symbol"		/* Bool */
 #define FC_DPI		    "dpi"		/* double */
 #define FC_RGBA		    "rgba"		/* Int */
 #define FC_MINSPACE	    "minspace"		/* Bool use minimum line spacing */

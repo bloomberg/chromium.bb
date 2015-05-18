@@ -292,6 +292,7 @@ typedef enum _FcMatcherPriority {
     PRI1(LANG),
     PRI_FAMILY_WEAK,
     PRI_POSTSCRIPT_NAME_WEAK,
+    PRI1(SYMBOL),
     PRI1(SPACING),
     PRI1(SIZE),
     PRI1(PIXEL_SIZE),
