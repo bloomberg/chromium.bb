@@ -31,6 +31,7 @@
 #ifndef PageConsoleAgent_h
 #define PageConsoleAgent_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -43,7 +44,7 @@ class InspectorPageAgent;
 class WorkerInspectorProxy;
 class WorkerGlobalScopeProxy;
 
-class PageConsoleAgent final : public InspectorConsoleAgent {
+class CORE_EXPORT PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
     static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent)

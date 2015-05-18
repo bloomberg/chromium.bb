@@ -31,6 +31,7 @@
 #ifndef AsyncCallTracker_h
 #define AsyncCallTracker_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -52,7 +53,7 @@ class MutationObserver;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
-class AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
+class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
     WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker);
 public:

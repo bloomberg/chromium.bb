@@ -5,6 +5,7 @@
 #ifndef ConsoleMessageStorage_h
 #define ConsoleMessageStorage_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -27,7 +28,7 @@ public:
     void reportMessage(ExecutionContext*, PassRefPtrWillBeRawPtr<ConsoleMessage>);
     void clear(ExecutionContext*);
 
-    Vector<unsigned> argumentCounts() const;
+    CORE_EXPORT Vector<unsigned> argumentCounts() const;
 
     void adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy*);
     void frameWindowDiscarded(LocalDOMWindow*);

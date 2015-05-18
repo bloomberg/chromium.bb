@@ -31,6 +31,7 @@
 #ifndef InspectorHeapProfilerAgent_h
 #define InspectorHeapProfilerAgent_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
@@ -47,7 +48,7 @@ class HeapStatsUpdateTask;
 
 typedef String ErrorString;
 
-class InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, InspectorFrontend::HeapProfiler>, public InspectorBackendDispatcher::HeapProfilerCommandHandler {
+class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, InspectorFrontend::HeapProfiler>, public InspectorBackendDispatcher::HeapProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
 public:

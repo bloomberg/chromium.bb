@@ -25,6 +25,7 @@
 #ifndef InspectorConsoleAgent_h
 #define InspectorConsoleAgent_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
@@ -38,7 +39,7 @@ class InjectedScriptManager;
 
 typedef String ErrorString;
 
-class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, InspectorFrontend::Console>, public InspectorBackendDispatcher::ConsoleCommandHandler {
+class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, InspectorFrontend::Console>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
     explicit InspectorConsoleAgent(InjectedScriptManager*);

@@ -31,6 +31,7 @@
 #define InjectedScriptManager_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
@@ -43,7 +44,7 @@ class InjectedScriptHost;
 class InjectedScriptNative;
 class ScriptValue;
 
-class InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
+class CORE_EXPORT InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InjectedScriptManager);
 public:

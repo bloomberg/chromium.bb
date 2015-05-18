@@ -137,7 +137,7 @@ private:
 
 class InspectorStyleSheetBase : public RefCountedWillBeGarbageCollectedFinalized<InspectorStyleSheetBase> {
 public:
-    class Listener {
+    class CORE_EXPORT Listener {
     public:
         Listener() { }
         virtual ~Listener() { }

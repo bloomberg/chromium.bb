@@ -6,11 +6,12 @@
 #define ScriptDebuggerBase_h
 
 #include "bindings/core/v8/ScriptDebugServer.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class ScriptDebuggerBase : public ScriptDebugServer::Client {
+class CORE_EXPORT ScriptDebuggerBase : public ScriptDebugServer::Client {
     WTF_MAKE_NONCOPYABLE(ScriptDebuggerBase);
 public:
     ScriptDebuggerBase(v8::Isolate*, PassOwnPtrWillBeRawPtr<ScriptDebugServer>);

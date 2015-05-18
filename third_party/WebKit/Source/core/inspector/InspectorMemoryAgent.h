@@ -31,6 +31,7 @@
 #ifndef InspectorMemoryAgent_h
 #define InspectorMemoryAgent_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
@@ -39,7 +40,7 @@ namespace blink {
 
 typedef String ErrorString;
 
-class InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent, InspectorFrontend::Memory>, public InspectorBackendDispatcher::MemoryCommandHandler {
+class CORE_EXPORT InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent, InspectorFrontend::Memory>, public InspectorBackendDispatcher::MemoryCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorMemoryAgent> create()

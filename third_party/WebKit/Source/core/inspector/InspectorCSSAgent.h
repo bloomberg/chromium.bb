@@ -25,6 +25,7 @@
 #ifndef InspectorCSSAgent_h
 #define InspectorCSSAgent_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 #include "core/dom/SecurityContext.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -54,7 +55,7 @@ class MediaList;
 class Node;
 class LayoutText;
 
-class InspectorCSSAgent final
+class CORE_EXPORT InspectorCSSAgent final
     : public InspectorBaseAgent<InspectorCSSAgent, InspectorFrontend::CSS>
     , public InspectorDOMAgent::DOMListener
     , public InspectorBackendDispatcher::CSSCommandHandler

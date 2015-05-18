@@ -30,11 +30,12 @@
 #ifndef InspectorLayerTreeAgent_h
 #define InspectorLayerTreeAgent_h
 
-
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "platform/Timer.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -52,7 +53,8 @@ class DeprecatedPaintLayerCompositor;
 
 typedef String ErrorString;
 
-class InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, InspectorFrontend::LayerTree>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
+class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, InspectorFrontend::LayerTree>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
+    WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(InspectorPageAgent* pageAgent)
     {

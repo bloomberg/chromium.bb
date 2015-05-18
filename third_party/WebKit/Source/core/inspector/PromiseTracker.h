@@ -6,6 +6,7 @@
 #define PromiseTracker_h
 
 #include "bindings/core/v8/V8GlobalValueMap.h"
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/InspectorTypeBuilder.h"
 #include "platform/heap/Handle.h"
@@ -23,7 +24,7 @@ class ScriptValue;
 class PromiseTracker final : public NoBaseWillBeGarbageCollectedFinalized<PromiseTracker> {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
 public:
-    class Listener : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
         virtual void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) = 0;

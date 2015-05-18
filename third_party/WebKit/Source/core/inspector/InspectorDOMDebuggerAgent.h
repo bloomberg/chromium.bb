@@ -32,6 +32,7 @@
 #define InspectorDOMDebuggerAgent_h
 
 
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
@@ -55,7 +56,7 @@ class RegisteredEventListener;
 
 typedef String ErrorString;
 
-class InspectorDOMDebuggerAgent final
+class CORE_EXPORT InspectorDOMDebuggerAgent final
     : public InspectorBaseAgent<InspectorDOMDebuggerAgent, InspectorFrontend::DOMDebugger>
     , public InspectorDebuggerAgent::Listener
     , public InspectorDOMAgent::Listener

@@ -109,6 +109,7 @@ template_instrumenting_agents_h = string.Template("""// Code generated from Insp
 #ifndef InstrumentingAgentsInl_h
 #define InstrumentingAgentsInl_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
@@ -119,7 +120,7 @@ namespace blink {
 
 ${forward_list}
 
-class InstrumentingAgents : public RefCountedWillBeGarbageCollectedFinalized<InstrumentingAgents> {
+class CORE_EXPORT InstrumentingAgents : public RefCountedWillBeGarbageCollectedFinalized<InstrumentingAgents> {
     WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InstrumentingAgents);
 public:
@@ -276,7 +277,7 @@ class Method:
         if "Inline=Custom" in self.options:
             return
 
-        header_lines.append("%s %sImpl(%s);" % (
+        header_lines.append("CORE_EXPORT %s %sImpl(%s);" % (
             self.return_type, self.name, ", ".join(map(Parameter.to_str_class, self.params_impl))))
 
         if "Inline=FastReturn" in self.options or "Inline=Forward" in self.options:
@@ -511,6 +512,7 @@ def generate(input_path, output_dir):
     for agent in used_agents:
         cpp_includes.append(include_inspector_header(agent_class_name(agent)))
     cpp_includes.append(include_header("InstrumentingAgentsInl"))
+    cpp_includes.append(include_header("core/CoreExport"))
     cpp_includes.sort()
 
     instrumenting_agents_header, instrumenting_agents_cpp = generate_instrumenting_agents(used_agents)

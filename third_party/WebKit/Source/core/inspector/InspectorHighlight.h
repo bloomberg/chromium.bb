@@ -5,6 +5,7 @@
 #ifndef InspectorHighlight_h
 #define InspectorHighlight_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
@@ -33,7 +34,7 @@ public:
     bool showExtensionLines;
 };
 
-class InspectorHighlight {
+class CORE_EXPORT InspectorHighlight {
     STACK_ALLOCATED();
 public:
     InspectorHighlight(Node*, const InspectorHighlightConfig&, bool appendElementInfo);

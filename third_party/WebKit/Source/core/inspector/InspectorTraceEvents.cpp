@@ -38,8 +38,6 @@ namespace blink {
 
 static const unsigned maxInvalidationTrackingCallstackSize = 5;
 
-namespace {
-
 String toHexString(const void* p)
 {
     return String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<intptr_t>(p)));
@@ -55,6 +53,8 @@ void setCallStack(TracedValue* value)
     if (scriptCallStack)
         scriptCallStack->toTracedValue(value, "stackTrace");
 }
+
+namespace {
 
 void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const char* nameFieldName = nullptr)
 {
@@ -483,27 +483,6 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::d
         value->setString("frame", toHexString(toDocument(context)->frame()));
     else if (context->isWorkerGlobalScope())
         value->setString("worker", toHexString(toWorkerGlobalScope(context)));
-    setCallStack(value.get());
-    return value.release();
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
-{
-    RefPtr<TracedValue> value = TracedValue::create();
-    value->setInteger("identifier", identifier);
-    value->setString("url", url.string());
-    value->setString("frame", toHexString(document->frame()));
-    if (!protocol.isNull())
-        value->setString("webSocketProtocol", protocol);
-    setCallStack(value.get());
-    return value.release();
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
-{
-    RefPtr<TracedValue> value = TracedValue::create();
-    value->setInteger("identifier", identifier);
-    value->setString("frame", toHexString(document->frame()));
     setCallStack(value.get());
     return value.release();
 }

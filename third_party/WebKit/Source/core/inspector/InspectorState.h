@@ -31,23 +31,24 @@
 #ifndef InspectorState_h
 #define InspectorState_h
 
-
+#include "core/CoreExport.h"
 #include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class InspectorStateClient;
 
-class InspectorStateUpdateListener : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT InspectorStateUpdateListener : public WillBeGarbageCollectedMixin {
 public:
     virtual ~InspectorStateUpdateListener() { }
     virtual void inspectorStateUpdated() = 0;
 };
 
-class InspectorState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
+class CORE_EXPORT InspectorState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorState);
 public:
     InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);
@@ -88,8 +89,9 @@ private:
     RefPtr<JSONObject> m_properties;
 };
 
-class InspectorCompositeState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
+class CORE_EXPORT InspectorCompositeState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCompositeState);
+    WTF_MAKE_NONCOPYABLE(InspectorCompositeState);
 public:
     InspectorCompositeState(InspectorStateClient* inspectorStateClient)
         : m_client(inspectorStateClient)

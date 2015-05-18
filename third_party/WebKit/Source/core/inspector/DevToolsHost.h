@@ -30,6 +30,7 @@
 #define DevToolsHost_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -42,7 +43,7 @@ class FrontendMenuProvider;
 class InspectorFrontendClient;
 class LocalFrame;
 
-class DevToolsHost : public RefCountedWillBeGarbageCollectedFinalized<DevToolsHost>, public ScriptWrappable {
+class CORE_EXPORT DevToolsHost : public RefCountedWillBeGarbageCollectedFinalized<DevToolsHost>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DevToolsHost> create(InspectorFrontendClient* client, LocalFrame* frontendFrame)

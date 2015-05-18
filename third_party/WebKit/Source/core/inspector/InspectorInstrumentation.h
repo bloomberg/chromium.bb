@@ -32,6 +32,7 @@
 #define InspectorInstrumentation_h
 
 #include "bindings/core/v8/ScriptString.h"
+#include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
@@ -60,7 +61,7 @@ class WorkerInspectorProxy;
 
 #define FAST_RETURN_IF_NO_FRONTENDS(value) if (!hasFrontends()) return value;
 
-class InspectorInstrumentationCookie {
+class CORE_EXPORT InspectorInstrumentationCookie {
     STACK_ALLOCATED();
 public:
     InspectorInstrumentationCookie();
@@ -78,7 +79,7 @@ private:
 
 namespace InspectorInstrumentation {
 
-class FrontendCounter {
+class CORE_EXPORT FrontendCounter {
 private:
     friend void frontendCreated();
     friend void frontendDeleted();
@@ -90,11 +91,11 @@ inline void frontendCreated() { atomicIncrement(&FrontendCounter::s_frontendCoun
 inline void frontendDeleted() { atomicDecrement(&FrontendCounter::s_frontendCounter); }
 inline bool hasFrontends() { return FrontendCounter::s_frontendCounter; }
 
-void registerInstrumentingAgents(InstrumentingAgents*);
-void unregisterInstrumentingAgents(InstrumentingAgents*);
+CORE_EXPORT void registerInstrumentingAgents(InstrumentingAgents*);
+CORE_EXPORT void unregisterInstrumentingAgents(InstrumentingAgents*);
 
 // Called from generated instrumentation code.
-InstrumentingAgents* instrumentingAgentsFor(LocalFrame*);
+CORE_EXPORT InstrumentingAgents* instrumentingAgentsFor(LocalFrame*);
 InstrumentingAgents* instrumentingAgentsFor(EventTarget*);
 InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
 InstrumentingAgents* instrumentingAgentsFor(Document&);
@@ -104,7 +105,7 @@ InstrumentingAgents* instrumentingAgentsFor(Node*);
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 
 // Helper for the one above.
-InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
+CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
 
 }  // namespace InspectorInstrumentation
 

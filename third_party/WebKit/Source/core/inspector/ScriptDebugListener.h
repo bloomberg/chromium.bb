@@ -31,6 +31,7 @@
 #define ScriptDebugListener_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -42,7 +43,7 @@ class ScriptValue;
 
 enum CompileResult { CompileSuccess, CompileError };
 
-class ScriptDebugListener {
+class CORE_EXPORT ScriptDebugListener {
 public:
     class Script {
     public:

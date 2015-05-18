@@ -29,6 +29,7 @@
 #ifndef InspectorOverlay_h
 #define InspectorOverlay_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/heap/Handle.h"
@@ -55,7 +56,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    class Listener : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
         virtual void overlayResumed() = 0;

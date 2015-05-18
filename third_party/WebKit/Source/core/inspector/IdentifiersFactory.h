@@ -26,11 +26,12 @@
 #ifndef IdentifiersFactory_h
 #define IdentifiersFactory_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class IdentifiersFactory {
+class CORE_EXPORT IdentifiersFactory {
 public:
     static void setProcessId(long processId) { s_processId = processId; }
     static String createIdentifier();

@@ -25,6 +25,7 @@
 #ifndef InspectorApplicationCacheAgent_h
 #define InspectorApplicationCacheAgent_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
@@ -39,7 +40,7 @@ class InspectorPageAgent;
 
 typedef String ErrorString;
 
-class InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent, InspectorFrontend::ApplicationCache>, public InspectorBackendDispatcher::ApplicationCacheCommandHandler {
+class CORE_EXPORT InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent, InspectorFrontend::ApplicationCache>, public InspectorBackendDispatcher::ApplicationCacheCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorApplicationCacheAgent);
 public:

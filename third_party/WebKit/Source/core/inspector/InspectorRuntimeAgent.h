@@ -31,6 +31,7 @@
 #ifndef InspectorRuntimeAgent_h
 #define InspectorRuntimeAgent_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
@@ -46,7 +47,7 @@ class ScriptState;
 
 typedef String ErrorString;
 
-class InspectorRuntimeAgent : public InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>, public InspectorBackendDispatcher::RuntimeCommandHandler {
+class CORE_EXPORT InspectorRuntimeAgent : public InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>, public InspectorBackendDispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     class Client {

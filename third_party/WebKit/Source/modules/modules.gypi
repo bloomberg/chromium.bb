@@ -1387,6 +1387,8 @@
       'websockets/DOMWebSocket.h',
       'websockets/DocumentWebSocketChannel.cpp',
       'websockets/DocumentWebSocketChannel.h',
+      'websockets/InspectorWebSocketEvents.cpp',
+      'websockets/InspectorWebSocketEvents.h',
       'websockets/WebSocketChannel.cpp',
       'websockets/WebSocketChannel.h',
       'websockets/WebSocketChannelClient.h',

@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ConsoleAPITypes.h"
@@ -65,7 +66,7 @@ class V8AsyncCallTracker;
 
 typedef String ErrorString;
 
-class InspectorDebuggerAgent
+class CORE_EXPORT InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>
     , public ScriptDebugListener
     , public InspectorBackendDispatcher::DebuggerCommandHandler
@@ -153,7 +154,7 @@ public:
     void didEvaluateScript();
     bool getEditedScript(const String& url, String* content);
 
-    class Listener : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
         virtual void debuggerWasEnabled() = 0;
@@ -181,7 +182,7 @@ public:
     void traceAsyncOperationCompleted(int operationId);
     bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
 
-    class AsyncCallTrackingListener : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT AsyncCallTrackingListener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~AsyncCallTrackingListener() { }
         DEFINE_INLINE_VIRTUAL_TRACE() { }

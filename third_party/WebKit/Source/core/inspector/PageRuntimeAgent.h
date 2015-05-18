@@ -32,6 +32,7 @@
 #define PageRuntimeAgent_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -40,7 +41,7 @@ namespace blink {
 class InspectorPageAgent;
 class SecurityOrigin;
 
-class PageRuntimeAgent final : public InspectorRuntimeAgent {
+class CORE_EXPORT PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
     static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, InspectorRuntimeAgent::Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
     {

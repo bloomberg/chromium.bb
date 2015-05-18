@@ -32,6 +32,7 @@
 #define PageDebuggerAgent_h
 
 #include "bindings/core/v8/MainThreadDebugger.h"
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlay.h"
 
@@ -45,7 +46,7 @@ class DocumentLoader;
 class InspectorPageAgent;
 class MainThreadDebugger;
 
-class PageDebuggerAgent final
+class CORE_EXPORT PageDebuggerAgent final
     : public InspectorDebuggerAgent
     , public InspectorOverlay::Listener {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);

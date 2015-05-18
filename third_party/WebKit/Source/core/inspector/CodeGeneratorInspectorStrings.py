@@ -30,7 +30,7 @@
 # Its syntax is a Python syntax subset, suitable for manual parsing.
 
 frontend_domain_class = (
-"""    class $domainClassName {
+"""    class CORE_EXPORT $domainClassName {
     public:
         static $domainClassName* from(InspectorFrontend* frontend) { return &(frontend->m_$domainFieldName) ;}
         $domainClassName(InspectorFrontendChannel* inspectorFrontendChannel) : m_inspectorFrontendChannel(inspectorFrontendChannel) { }
@@ -96,6 +96,7 @@ frontend_h = (
 #define InspectorFrontend_h
 
 #include "InspectorTypeBuilder.h"
+#include "core/CoreExport.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "platform/JSONValues.h"
 #include "wtf/PassRefPtr.h"
@@ -105,7 +106,7 @@ namespace blink {
 
 typedef String ErrorString;
 
-class InspectorFrontend {
+class CORE_EXPORT InspectorFrontend {
 public:
     InspectorFrontend(InspectorFrontendChannel*);
     InspectorFrontendChannel* channel() { return m_inspectorFrontendChannel; }
@@ -125,6 +126,7 @@ backend_h = (
 
 #include "InspectorTypeBuilder.h"
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -140,13 +142,13 @@ typedef String ErrorString;
 
 class InspectorBackendDispatcherImpl;
 
-class InspectorBackendDispatcher: public RefCountedWillBeGarbageCollectedFinalized<InspectorBackendDispatcher> {
+class CORE_EXPORT InspectorBackendDispatcher: public RefCountedWillBeGarbageCollectedFinalized<InspectorBackendDispatcher> {
 public:
     static PassRefPtrWillBeRawPtr<InspectorBackendDispatcher> create(InspectorFrontendChannel* inspectorFrontendChannel);
     virtual ~InspectorBackendDispatcher() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    class CallbackBase: public RefCountedWillBeGarbageCollectedFinalized<CallbackBase> {
+    class CORE_EXPORT CallbackBase: public RefCountedWillBeGarbageCollectedFinalized<CallbackBase> {
     public:
         CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int id);
         virtual ~CallbackBase();
@@ -525,6 +527,7 @@ typebuilder_h = (
 #ifndef InspectorTypeBuilder_h
 #define InspectorTypeBuilder_h
 
+#include "core/CoreExport.h"
 #include "platform/JSONValues.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
@@ -794,7 +797,7 @@ struct ArrayItemHelper<TypeBuilder::Array<T> > {
 
 ${forwards}
 
-String getEnumConstantValue(int code);
+CORE_EXPORT String getEnumConstantValue(int code);
 
 ${typeBuilders}
 } // namespace TypeBuilder

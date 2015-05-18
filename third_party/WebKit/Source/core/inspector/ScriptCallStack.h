@@ -31,6 +31,7 @@
 #ifndef ScriptCallStack_h
 #define ScriptCallStack_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "platform/heap/Handle.h"
@@ -43,7 +44,7 @@ namespace blink {
 class ScriptAsyncCallStack;
 class TracedValue;
 
-class ScriptCallStack final : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
+class CORE_EXPORT ScriptCallStack final : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
 public:
     static const size_t maxCallStackSizeToCapture = 200;
 

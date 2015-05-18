@@ -31,6 +31,7 @@
 #ifndef InspectorCounters_h
 #define InspectorCounters_h
 
+#include "core/CoreExport.h"
 #include "wtf/FastAllocBase.h"
 
 #if ENABLE(ASSERT)
@@ -60,12 +61,12 @@ public:
         --s_counters[type];
     }
 
-    static int counterValue(CounterType);
+    CORE_EXPORT static int counterValue(CounterType);
 
 private:
     InspectorCounters();
 
-    static int s_counters[CounterTypeLength];
+    CORE_EXPORT static int s_counters[CounterTypeLength];
 };
 
 } // namespace blink

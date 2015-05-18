@@ -5,6 +5,7 @@
 #ifndef InspectorTraceEvents_h
 #define InspectorTraceEvents_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 #include "platform/EventTracer.h"
 #include "platform/TraceEvent.h"
@@ -154,7 +155,7 @@ extern const char ScrollbarChanged[];
 // not depend on this value.
 typedef const char LayoutInvalidationReasonForTracing[];
 
-class InspectorLayoutInvalidationTrackingEvent {
+class CORE_EXPORT InspectorLayoutInvalidationTrackingEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, LayoutInvalidationReasonForTracing);
 };
@@ -207,16 +208,6 @@ public:
 class InspectorAnimationFrameEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int callbackId);
-};
-
-class InspectorWebSocketCreateEvent {
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
-};
-
-class InspectorWebSocketEvent {
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier);
 };
 
 class InspectorParseHtmlEvent {
@@ -349,6 +340,9 @@ class InspectorAnimationStateEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
 };
+
+CORE_EXPORT String toHexString(const void* p);
+CORE_EXPORT void setCallStack(TracedValue*);
 
 } // namespace blink
 

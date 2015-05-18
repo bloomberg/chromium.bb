@@ -1647,7 +1647,7 @@ class Generator:
                 frontendDomainMethodDeclarations="".join(flatten_list(frontend_method_declaration_lines))))
 
             agent_interface_name = Capitalizer.lower_camel_case_to_upper(domain_name) + "CommandHandler"
-            Generator.backend_agent_interface_list.append("    class %s {\n" % agent_interface_name)
+            Generator.backend_agent_interface_list.append("    class CORE_EXPORT %s {\n" % agent_interface_name)
             Generator.backend_agent_interface_list.append("    public:\n")
             if "commands" in json_domain:
                 for json_command in json_domain["commands"]:
@@ -1787,7 +1787,7 @@ class Generator:
             callback_writer.newline("class " + callback_name + " : public CallbackBase {\n")
             callback_writer.newline("public:\n")
             callback_writer.newline("    " + callback_name + "(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl>, int id);\n")
-            callback_writer.newline("    void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
+            callback_writer.newline("    CORE_EXPORT void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
             error_part_writer = callback_writer.insert_writer("")
             callback_writer.newline("};\n")
 

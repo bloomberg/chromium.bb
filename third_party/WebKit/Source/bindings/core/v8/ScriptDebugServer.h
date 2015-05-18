@@ -51,7 +51,7 @@ class JavaScriptCallFrame;
 class CORE_EXPORT ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinalized<ScriptDebugServer> {
     WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
 public:
-    class Client : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Client : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Client() { }
         virtual v8::Local<v8::Object> compileDebuggerScript() = 0;

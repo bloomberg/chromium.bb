@@ -31,6 +31,7 @@
 #ifndef JSONParser_h
 #define JSONParser_h
 
+#include "core/CoreExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -38,7 +39,7 @@ namespace blink {
 
 class JSONValue;
 
-PassRefPtr<JSONValue> parseJSON(const String& json);
+CORE_EXPORT PassRefPtr<JSONValue> parseJSON(const String& json);
 
 } // namespace blink
 

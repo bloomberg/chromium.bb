@@ -30,6 +30,7 @@
 #ifndef InspectorDOMAgent_h
 #define InspectorDOMAgent_h
 
+#include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/events/EventListenerMap.h"
 #include "core/inspector/InjectedScript.h"
@@ -74,10 +75,10 @@ struct InspectorHighlightConfig;
 
 typedef String ErrorString;
 
-class InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>, public InspectorBackendDispatcher::DOMCommandHandler {
+class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>, public InspectorBackendDispatcher::DOMCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
-    struct DOMListener : public WillBeGarbageCollectedMixin {
+    struct CORE_EXPORT DOMListener : public WillBeGarbageCollectedMixin {
         virtual ~DOMListener()
         {
         }
@@ -146,7 +147,7 @@ public:
     virtual void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId) override;
     virtual void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<JSONObject>&) override;
 
-    class Listener : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
         virtual void domAgentWasEnabled() = 0;
