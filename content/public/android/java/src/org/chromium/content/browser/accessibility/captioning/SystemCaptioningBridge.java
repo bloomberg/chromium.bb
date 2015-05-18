@@ -9,17 +9,35 @@ package org.chromium.content.browser.accessibility.captioning;
  */
 public interface SystemCaptioningBridge {
     /**
-     * Calls all of the delegate's methods with the system's current captioning settings.
+     * Interface for listening to changed from SystemCaptioningBridge.
      */
-    public void syncToDelegate();
+    public interface SystemCaptioningBridgeListener {
+        /**
+         * Called when system captioning settings change.
+         *
+         * @param settings The TextTrackSettings object containing the new settings.
+         */
+        public void onSystemCaptioningChanged(TextTrackSettings settings);
+    }
 
     /**
-     * Register this bridge for event changes with the system CaptioningManager.
+     * Sync the system's current captioning settings with the listener.
+     *
+     * @param listener The SystemCaptioningBridgeListener object to receive all settings.
      */
-    public void registerBridge();
+    public void syncToListener(SystemCaptioningBridgeListener listener);
 
     /**
-     * Unregister this bridge from system CaptionManager. Must be called to avoid leaks.
+     * Add a listener for changes with the system CaptioningManager.
+     *
+     * @param listener The SystemCaptioningBridgeListener object to add.
      */
-    public void unregisterBridge();
+    public void addListener(SystemCaptioningBridgeListener listener);
+
+    /**
+     * Remove a listener from system CaptionManager.
+     *
+     * @param listener The SystemCaptioningBridgeListener object to remove.
+     */
+    public void removeListener(SystemCaptioningBridgeListener listener);
 }

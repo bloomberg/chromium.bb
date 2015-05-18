@@ -4,9 +4,8 @@
 
 package org.chromium.content.browser.accessibility.captioning;
 
+import android.content.Context;
 import android.os.Build;
-
-import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Returns the best captions bridge available.  If the API level is lower than KitKat, a no-op
@@ -16,12 +15,12 @@ public class CaptioningBridgeFactory {
     /**
      * Create and return the best SystemCaptioningBridge available.
      *
-     * @param contentViewCore the ContentViewCore to create the bridge with
+     * @param context Context associated with the activity.
      * @return the best SystemCaptioningBridge available.
      */
-    public static SystemCaptioningBridge create(ContentViewCore contentViewCore) {
+    public static SystemCaptioningBridge getSystemCaptioningBridge(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return new KitKatCaptioningBridge(contentViewCore);
+            return KitKatCaptioningBridge.getInstance(context);
         }
         // On older systems, return a CaptioningBridge that does nothing.
         return new EmptyCaptioningBridge();

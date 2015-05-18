@@ -10,20 +10,20 @@ package org.chromium.content.browser.accessibility.captioning;
  */
 public class EmptyCaptioningBridge implements SystemCaptioningBridge {
     /**
-     * A no-op implementation of the syncToDelegate function.
+     * A no-op implementation of the syncToListener function.
      */
     @Override
-    public void syncToDelegate() {}
+    public void syncToListener(SystemCaptioningBridge.SystemCaptioningBridgeListener listener) {}
 
     /**
-     * No-op implementation of registerBridge.
+     * No-op implementation of addListener.
      */
     @Override
-    public void registerBridge() {}
+    public void addListener(SystemCaptioningBridge.SystemCaptioningBridgeListener listener) {}
 
     /**
-     * A no-op implementation of the unregisterBridge function.
+     * A no-op implementation of the removeListener function.
      */
     @Override
-    public void unregisterBridge() {}
+    public void removeListener(SystemCaptioningBridge.SystemCaptioningBridgeListener listener) {}
 }

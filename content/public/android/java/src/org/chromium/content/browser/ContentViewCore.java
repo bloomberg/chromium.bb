@@ -97,8 +97,9 @@ import java.util.Map.Entry;
  * being tied to the view system.
  */
 @JNINamespace("content")
-public class ContentViewCore
-        implements AccessibilityStateChangeListener, ScreenOrientationObserver {
+public class ContentViewCore implements
+        AccessibilityStateChangeListener, ScreenOrientationObserver,
+        SystemCaptioningBridge.SystemCaptioningBridgeListener {
 
     private static final String TAG = "ContentViewCore";
 
@@ -631,7 +632,7 @@ public class ContentViewCore
         mRenderCoordinates.setDeviceScaleFactor(deviceScaleFactor);
         mAccessibilityManager = (AccessibilityManager)
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
-        mSystemCaptioningBridge = CaptioningBridgeFactory.create(this);
+        mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge(mContext);
         mGestureStateListeners = new ObserverList<GestureStateListener>();
         mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
 
@@ -1475,7 +1476,7 @@ public class ContentViewCore
         ScreenOrientationListener.getInstance().addObserver(this, mContext);
         GamepadList.onAttachedToWindow(mContext);
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
-        mSystemCaptioningBridge.registerBridge();
+        mSystemCaptioningBridge.addListener(this);
     }
 
     /**
@@ -1498,7 +1499,7 @@ public class ContentViewCore
         // locking and app switching.
         setTextHandlesTemporarilyHidden(true);
         hidePopupsAndPreserveSelection();
-        mSystemCaptioningBridge.unregisterBridge();
+        mSystemCaptioningBridge.removeListener(this);
     }
 
     /**
@@ -2602,7 +2603,7 @@ public class ContentViewCore
     private void onRenderProcessChange() {
         attachImeAdapter();
         // Immediately sync closed caption settings to the new render process.
-        mSystemCaptioningBridge.syncToDelegate();
+        mSystemCaptioningBridge.syncToListener(this);
     }
 
     /**
@@ -2910,13 +2911,9 @@ public class ContentViewCore
         return null;
     }
 
-    /**
-     * Set closed captioning text track style settings.
-     *
-     * @param settings The TextTrackSettings object containing the new settings.
-     */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void setTextTrackSettings(TextTrackSettings settings) {
+    @Override
+    public void onSystemCaptioningChanged(TextTrackSettings settings) {
         if (mNativeContentViewCore == 0) return;
         nativeSetTextTrackSettings(mNativeContentViewCore, settings.getTextTrackBackgroundColor(),
                 settings.getTextTrackFontFamily(), settings.getTextTrackFontStyle(),

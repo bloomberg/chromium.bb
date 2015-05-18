@@ -8,13 +8,15 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.accessibility.CaptioningManager.CaptionStyle;
 
-import org.chromium.base.VisibleForTesting;
-import org.chromium.content.browser.ContentViewCore;
 
-import java.lang.ref.WeakReference;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge.SystemCaptioningBridgeListener;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * API level agnostic delegate for getting updates about caption styles.
@@ -30,9 +32,6 @@ public class CaptioningChangeDelegate {
     @VisibleForTesting
     public static final String DEFAULT_CAPTIONING_PREF_VALUE = "";
 
-    // Using a weak reference avoids cycles that might prevent GC of WebView's WebContents.
-    private final WeakReference<ContentViewCore> mWeakContentViewCore;
-
     private boolean mTextTrackEnabled;
 
     private String mTextTrackBackgroundColor;
@@ -42,6 +41,10 @@ public class CaptioningChangeDelegate {
     private String mTextTrackTextColor;
     private String mTextTrackTextShadow;
     private String mTextTrackTextSize;
+    // Using weak references to avoid preventing listeners from getting GC'ed.
+    // TODO(qinmin): change this to a HashSet that supports weak references.
+    private final Map<SystemCaptioningBridgeListener, Boolean> mListeners =
+            new WeakHashMap<SystemCaptioningBridgeListener, Boolean>();
 
     /**
      * @see android.view.accessibility.CaptioningManager.CaptioningChangeListener#onEnabledChanged
@@ -55,7 +58,6 @@ public class CaptioningChangeDelegate {
      * @see android.view.accessibility.CaptioningManager.CaptioningChangeListener#onFontScaleChanged
      */
     public void onFontScaleChanged(float fontScale) {
-        if (mWeakContentViewCore.get() == null) return;
         mTextTrackTextSize = androidFontScaleToPercentage(fontScale);
         notifySettingsChanged();
     }
@@ -72,8 +74,6 @@ public class CaptioningChangeDelegate {
      * @see android.view.accessibility.CaptioningManager.CaptioningChangeListener#onUserStyleChanged
      */
     public void onUserStyleChanged(CaptioningStyle userStyle) {
-        if (mWeakContentViewCore.get() == null) return;
-
         mTextTrackTextColor = androidColorToCssColor(userStyle.getForegroundColor());
         mTextTrackBackgroundColor = androidColorToCssColor(userStyle.getBackgroundColor());
 
@@ -99,12 +99,8 @@ public class CaptioningChangeDelegate {
 
     /**
      * Construct a new CaptioningChangeDelegate object.
-     *
-     * @param contentViewCore the ContentViewCore to associate with
-     *        this delegate
      */
-    public CaptioningChangeDelegate(ContentViewCore contentViewCore) {
-        mWeakContentViewCore = new WeakReference<ContentViewCore>(contentViewCore);
+    public CaptioningChangeDelegate() {
     }
 
     /**
@@ -287,16 +283,52 @@ public class CaptioningChangeDelegate {
     }
 
     private void notifySettingsChanged() {
-        final ContentViewCore contentViewCore = mWeakContentViewCore.get();
-        if (contentViewCore == null) return;
+        for (SystemCaptioningBridgeListener listener : mListeners.keySet()) {
+            notifyListener(listener);
+        }
+    }
+
+    /**
+     * Notify a listener about the current text track settings.
+     *
+     * @param listener the listener to notify.
+     */
+    public void notifyListener(SystemCaptioningBridgeListener listener) {
         if (mTextTrackEnabled) {
             final TextTrackSettings settings = new TextTrackSettings(
                     mTextTrackBackgroundColor, mTextTrackFontFamily, mTextTrackFontStyle,
                     mTextTrackFontVariant, mTextTrackTextColor, mTextTrackTextShadow,
                     mTextTrackTextSize);
-            contentViewCore.setTextTrackSettings(settings);
+            listener.onSystemCaptioningChanged(settings);
         } else {
-            contentViewCore.setTextTrackSettings(new TextTrackSettings());
+            listener.onSystemCaptioningChanged(new TextTrackSettings());
         }
+    }
+
+    /**
+     * Add a listener for changes with the system CaptioningManager.
+     *
+     * @param listener The SystemCaptioningBridgeListener object to add.
+     */
+    public void addListener(SystemCaptioningBridgeListener listener) {
+        mListeners.put(listener, null);
+    }
+
+    /**
+     * Remove a listener from system CaptionManager.
+     *
+     * @param listener The SystemCaptioningBridgeListener object to remove.
+     */
+    public void removeListener(SystemCaptioningBridgeListener listener) {
+        mListeners.remove(listener);
+    }
+
+    /**
+     * Return whether there are listeners associated with this class.
+     *
+     * @return true if there are at least one listener, or false otherwise.
+     */
+    public boolean hasActiveListener() {
+        return !mListeners.isEmpty();
     }
 }

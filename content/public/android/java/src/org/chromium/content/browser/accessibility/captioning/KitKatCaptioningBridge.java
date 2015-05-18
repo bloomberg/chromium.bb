@@ -9,8 +9,6 @@ import android.content.Context;
 import android.os.Build;
 import android.view.accessibility.CaptioningManager;
 
-import org.chromium.content.browser.ContentViewCore;
-
 import java.util.Locale;
 
 /**
@@ -24,6 +22,7 @@ public class KitKatCaptioningBridge implements SystemCaptioningBridge {
 
     private final CaptioningChangeDelegate mCaptioningChangeDelegate;
     private final CaptioningManager mCaptioningManager;
+    private static KitKatCaptioningBridge sKitKatCaptioningBridge;
 
     /**
      * Bridge listener to inform the mCaptioningChangeDelegate when the mCaptioningManager
@@ -54,22 +53,34 @@ public class KitKatCaptioningBridge implements SystemCaptioningBridge {
     }
 
     /**
+     * Return the singleton instance of the captioning bridge for Kitkat+
+     *
+     * @param context the Context to associate with this bridge.
+     * @return the singleton instance of KitKatCaptioningBridge.
+     */
+    public static KitKatCaptioningBridge getInstance(Context context) {
+        if (sKitKatCaptioningBridge == null) {
+            sKitKatCaptioningBridge = new KitKatCaptioningBridge(context);
+        }
+        return sKitKatCaptioningBridge;
+    }
+
+    /**
      * Construct a new KitKat+ captioning bridge
      *
-     * @param contentViewCore the ContentViewCore to associate with this bridge.
+     * @param context the Context to associate with this bridge.
      */
-    public KitKatCaptioningBridge(ContentViewCore contenViewCore) {
-        mCaptioningChangeDelegate = new CaptioningChangeDelegate(contenViewCore);
-        mCaptioningManager = (CaptioningManager) contenViewCore.getContext()
-                                     .getApplicationContext()
-                                     .getSystemService(Context.CAPTIONING_SERVICE);
+    private KitKatCaptioningBridge(Context context) {
+        mCaptioningChangeDelegate = new CaptioningChangeDelegate();
+        mCaptioningManager =
+                (CaptioningManager) context.getApplicationContext().getSystemService(
+                        Context.CAPTIONING_SERVICE);
     }
 
     /**
      * Force-sync the current closed caption settings to the delegate
      */
-    @Override
-    public void syncToDelegate() {
+    private void syncToDelegate() {
         mCaptioningChangeDelegate.onEnabledChanged(mCaptioningManager.isEnabled());
         mCaptioningChangeDelegate.onFontScaleChanged(mCaptioningManager.getFontScale());
         mCaptioningChangeDelegate.onLocaleChanged(mCaptioningManager.getLocale());
@@ -77,21 +88,30 @@ public class KitKatCaptioningBridge implements SystemCaptioningBridge {
                 getCaptioningStyleFrom(mCaptioningManager.getUserStyle()));
     }
 
-    /**
-     * Register this bridge for event changes with the system CaptioningManager.
-     */
     @Override
-    public void registerBridge() {
-        mCaptioningManager.addCaptioningChangeListener(mCaptioningChangeListener);
-        syncToDelegate();
+    public void syncToListener(SystemCaptioningBridge.SystemCaptioningBridgeListener listener) {
+        if (!mCaptioningChangeDelegate.hasActiveListener()) {
+            syncToDelegate();
+        }
+        mCaptioningChangeDelegate.notifyListener(listener);
     }
 
-    /**
-     * De-register this bridge from the system captioning manager.
-     */
     @Override
-    public void unregisterBridge() {
-        mCaptioningManager.removeCaptioningChangeListener(mCaptioningChangeListener);
+    public void addListener(SystemCaptioningBridge.SystemCaptioningBridgeListener listener) {
+        if (!mCaptioningChangeDelegate.hasActiveListener()) {
+            mCaptioningManager.addCaptioningChangeListener(mCaptioningChangeListener);
+            syncToDelegate();
+        }
+        mCaptioningChangeDelegate.addListener(listener);
+        mCaptioningChangeDelegate.notifyListener(listener);
+    }
+
+    @Override
+    public void removeListener(SystemCaptioningBridge.SystemCaptioningBridgeListener listener) {
+        mCaptioningChangeDelegate.removeListener(listener);
+        if (!mCaptioningChangeDelegate.hasActiveListener()) {
+            mCaptioningManager.removeCaptioningChangeListener(mCaptioningChangeListener);
+        }
     }
 
     /**
@@ -99,7 +119,6 @@ public class KitKatCaptioningBridge implements SystemCaptioningBridge {
      *
      * @param userStyle the platform CaptionStyle
      * @return a Chromium CaptioningStyle
-     *
      */
     private CaptioningStyle getCaptioningStyleFrom(CaptioningManager.CaptionStyle userStyle) {
         return CaptioningStyle.createFrom(userStyle);
