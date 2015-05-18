@@ -57,14 +57,6 @@ void ContextMenuHelper::ShowContextMenu(
       ContextMenuHelper::CreateJavaContextMenuParams(params).obj());
 }
 
-// Called to show a custom context menu. Used by the NTP.
-void ContextMenuHelper::ShowCustomContextMenu(
-    const content::ContextMenuParams& params,
-    const base::Callback<void(int)>& callback) {
-  context_menu_callback_ = callback;
-  ShowContextMenu(params);
-}
-
 void ContextMenuHelper::SetPopulator(jobject jpopulator) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContextMenuHelper_setPopulator(env, java_obj_.obj(), jpopulator);
@@ -99,25 +91,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()).obj(),
           params.referrer_policy);
 
-  std::vector<content::MenuItem>::const_iterator i;
-  for (i = params.custom_items.begin(); i != params.custom_items.end(); ++i) {
-    ContextMenuParamsAndroid::Java_ContextMenuParams_addCustomItem(
-        env,
-        jmenu_info.obj(),
-        ConvertUTF16ToJavaString(env, i->label).obj(),
-        i->action);
-  }
-
   return jmenu_info;
-}
-
-void ContextMenuHelper::OnCustomItemSelected(JNIEnv* env,
-                                             jobject obj,
-                                             jint action) {
-  if (!context_menu_callback_.is_null()) {
-    context_menu_callback_.Run(action);
-    context_menu_callback_.Reset();
-  }
 }
 
 void ContextMenuHelper::OnStartDownload(JNIEnv* env,
