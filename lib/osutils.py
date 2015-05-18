@@ -1088,6 +1088,33 @@ class MountImageContext(object):
     self._CleanUp()
 
 
+class MountOverlayContext(object):
+  """A context manager for mounting an OverlayFS directory.
+
+  An overlay filesystem will be mounted at |mount_dir|, and will be unmounted
+  when the context exits.
+
+  Args:
+    lower_dir: The lower directory (read-only).
+    upper_dir: The upper directory (read-write).
+    mount_dir: The mount point for the merged overlay.
+  """
+
+  def __init__(self, lower_dir, upper_dir, mount_dir):
+    self._lower_dir = lower_dir
+    self._upper_dir = upper_dir
+    self._mount_dir = mount_dir
+
+  def __enter__(self):
+    MountDir('overlayfs', self._mount_dir, fs_type='overlayfs', makedirs=False,
+             mount_opts=('lowerdir=%s' % self._lower_dir,
+                         'upperdir=%s' % self._upper_dir))
+    return self
+
+  def __exit__(self, exc_type, exc_value, traceback):
+    UmountDir(self._mount_dir, cleanup=False)
+
+
 MountInfo = collections.namedtuple(
     'MountInfo',
     'source destination filesystem options')
