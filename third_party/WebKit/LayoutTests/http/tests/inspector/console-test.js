@@ -302,7 +302,7 @@ InspectorTest.waitUntilNthMessageReceived = function(count, callback)
 
 InspectorTest.changeExecutionContext = function(namePrefix)
 {
-    var selector = WebInspector.ConsolePanel._view()._executionContextSelector._selectElement;
+    var selector = WebInspector.ConsolePanel._view()._executionContextModel._selectElement;
     var option = selector.firstChild;
     while (option) {
         if (option.textContent && option.textContent.startsWith(namePrefix))
@@ -314,7 +314,7 @@ InspectorTest.changeExecutionContext = function(namePrefix)
         return;
     }
     option.selected = true;
-    WebInspector.ConsolePanel._view()._executionContextChanged();
+    WebInspector.ConsolePanel._view()._executionContextModel._executionContextChanged();
 }
 
 InspectorTest.waitForConsoleMessages = function(expectedCount, callback)
