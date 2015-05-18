@@ -323,6 +323,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void StopObservingRootWindow();
   void SendBeginFrame(base::TimeTicks frame_time, base::TimeDelta vsync_period);
   bool Animate(base::TimeTicks frame_time);
+  void RequestDisallowInterceptTouchEvent();
 
   // The model object.
   RenderWidgetHostImpl* host_;

@@ -239,6 +239,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnBackgroundColorChanged(SkColor color);
 
   bool HasFocus();
+  void RequestDisallowInterceptTouchEvent();
   void OnGestureEventAck(const blink::WebGestureEvent& event,
                          InputEventAckState ack_result);
   bool FilterInputEvent(const blink::WebInputEvent& event);

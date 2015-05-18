@@ -583,6 +583,13 @@ bool ContentViewCoreImpl::HasFocus() {
   return Java_ContentViewCore_hasFocus(env, obj.obj());
 }
 
+void ContentViewCoreImpl::RequestDisallowInterceptTouchEvent() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    Java_ContentViewCore_requestDisallowInterceptTouchEvent(env, obj.obj());
+}
+
 void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

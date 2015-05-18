@@ -748,12 +748,19 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   if (!host_)
     return false;
 
+  // If a browser-based widget consumes the touch event, it's critical that
+  // touch event interception be disabled. This avoids issues with
+  // double-handling for embedder-detected gestures like side swipe.
   if (selection_controller_ &&
-      selection_controller_->WillHandleTouchEvent(event))
+      selection_controller_->WillHandleTouchEvent(event)) {
+    RequestDisallowInterceptTouchEvent();
     return true;
+  }
 
-  if (stylus_text_selector_.OnTouchEvent(event))
+  if (stylus_text_selector_.OnTouchEvent(event)) {
+    RequestDisallowInterceptTouchEvent();
     return true;
+  }
 
   ui::FilteredGestureProvider::TouchHandlingResult result =
       gesture_provider_.OnTouchEvent(event);
@@ -782,13 +789,20 @@ bool RenderWidgetHostViewAndroid::OnTouchHandleEvent(
 void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   const ui::MotionEvent* current_down_event =
       gesture_provider_.GetCurrentDownEvent();
-  if (current_down_event) {
-    scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
-    OnTouchEvent(*cancel_event);
+  if (!current_down_event) {
+    // A hard reset ensures prevention of any timer-based events that might fire
+    // after a touch sequence has ended.
+    gesture_provider_.ResetDetection();
+    return;
   }
 
-  // A hard reset ensures prevention of any timer-based events.
-  gesture_provider_.ResetDetection();
+  scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
+  if (gesture_provider_.OnTouchEvent(*cancel_event).succeeded) {
+    bool causes_scrolling = false;
+    host_->ForwardTouchEventWithLatencyInfo(
+        ui::CreateWebTouchEventFromMotionEvent(*cancel_event, causes_scrolling),
+        ui::LatencyInfo());
+  }
 }
 
 void RenderWidgetHostViewAndroid::OnDidNavigateMainFrameToNewPage() {
@@ -1263,11 +1277,10 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
     ui::SelectionEventType event) {
   DCHECK(content_view_core_);
   DCHECK(selection_controller_);
-  // Showing the selection action bar can alter the current View coordinates in
-  // such a way that the current MotionEvent stream is suddenly shifted in
-  // space. Avoid the associated scroll jump by pre-emptively cancelling gesture
-  // detection; scrolling after the selection is activated is unnecessary.
-  if (event == ui::SelectionEventType::SELECTION_SHOWN)
+  // If a selection drag has started, it has taken over the active touch
+  // sequence. Immediately cancel gesture detection and any downstream touch
+  // listeners (e.g., web content) to communicate this transfer.
+  if (event == ui::SELECTION_SHOWN)
     ResetGestureDetection();
   content_view_core_->OnSelectionEvent(
       event, selection_controller_->GetStartPosition(),
@@ -1529,6 +1542,11 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   if (selection_controller_)
     needs_animate |= selection_controller_->Animate(frame_time);
   return needs_animate;
+}
+
+void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
+  if (content_view_core_)
+    content_view_core_->RequestDisallowInterceptTouchEvent();
 }
 
 void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
