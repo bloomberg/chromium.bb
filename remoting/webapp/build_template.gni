@@ -47,19 +47,44 @@ template("build_locales_listfile") {
 }
 
 template("build_webapp_html") {
+  target_jscompile = "${target_name}_jscompile"
+  target_jscompile_stamp = "$target_gen_dir/${target_jscompile}.stamp"
+  action(target_jscompile) {
+    js_files = remoting_webapp_js_proto_files + invoker.js_files
+
+    script = "../../third_party/closure_compiler/compile.py"
+    inputs = js_files
+    outputs = [
+      target_jscompile_stamp,
+    ]
+
+    args = [
+             "--strict",
+             "--no-single-file",
+             "--success-stamp",
+             rebase_path(target_jscompile_stamp, root_build_dir),
+           ] + rebase_path(js_files, root_build_dir)
+  }
+
   action(target_name) {
     html_template_file = invoker.html_template_file
-    html_template_files = invoker.html_template_files
+    html_template_include_files = invoker.html_template_include_files
     js_files = invoker.js_files
     html_output = invoker.html_output
 
     script = "build-html.py"
 
-    inputs = [ html_template_file ] + html_template_files + js_files
+    inputs = [ html_template_file ] + html_template_include_files + js_files
 
     outputs = [
       html_output,
     ]
+
+    if (run_jscompile) {
+      deps = [
+        ":$target_jscompile",
+      ]
+    }
 
     args = [
       rebase_path(html_output, root_build_dir),
@@ -69,7 +94,7 @@ template("build_webapp_html") {
       "--template-dir",
       rebase_path(remoting_dir, root_build_dir),
     ]
-    args += [ "--templates" ] + html_template_files
+    args += [ "--templates" ] + html_template_include_files
     args += [ "--js" ] + rebase_path(js_files, remoting_dir)
   }
 }
@@ -87,7 +112,7 @@ template("desktop_remoting_webapp") {
 
   build_webapp_html(background_html) {
     html_template_file = remoting_webapp_template_background
-    html_template_files = []
+    html_template_include_files = []
     js_files = remoting_webapp_background_html_all_js_files
     html_output = background_html_output
   }
@@ -98,7 +123,7 @@ template("desktop_remoting_webapp") {
 
   build_webapp_html(message_window_html) {
     html_template_file = remoting_webapp_template_message_window
-    html_template_files = []
+    html_template_include_files = []
     js_files = remoting_webapp_message_window_html_all_js_files
     html_output = message_window_html_output
   }
@@ -108,7 +133,7 @@ template("desktop_remoting_webapp") {
 
   build_webapp_html(wcs_sandbox_html) {
     html_template_file = remoting_webapp_template_wcs_sandbox
-    html_template_files = []
+    html_template_include_files = []
     js_files = remoting_webapp_wcs_sandbox_html_all_js_files
     html_output = wcs_sandbox_html_output
   }
@@ -118,7 +143,7 @@ template("desktop_remoting_webapp") {
 
   build_webapp_html(main_html) {
     html_template_file = remoting_webapp_template_main
-    html_template_files = remoting_webapp_template_files
+    html_template_include_files = remoting_webapp_template_files
     js_files = remoting_webapp_crd_main_html_all_js_files
     html_output = main_html_output
   }
@@ -203,7 +228,7 @@ template("app_remoting_webapp") {
 
   build_webapp_html(feedback_consent_html) {
     html_template_file = ar_feedback_consent_template
-    html_template_files = []
+    html_template_include_files = []
     js_files = ar_feedback_consent_html_all_js_files
     html_output = feedback_consent_html_output
   }
@@ -214,7 +239,7 @@ template("app_remoting_webapp") {
 
   build_webapp_html(loading_window_html) {
     html_template_file = ar_loading_window_template
-    html_template_files = []
+    html_template_include_files = []
 
     # The loading window is just a reskin of the message window -- all JS code
     # is shared.
@@ -228,7 +253,7 @@ template("app_remoting_webapp") {
 
   build_webapp_html(message_window_html) {
     html_template_file = remoting_webapp_template_message_window
-    html_template_files = []
+    html_template_include_files = []
     js_files = remoting_webapp_message_window_html_all_js_files
     html_output = message_window_html_output
   }
@@ -238,7 +263,7 @@ template("app_remoting_webapp") {
 
   build_webapp_html(wcs_sandbox_html) {
     html_template_file = remoting_webapp_template_wcs_sandbox
-    html_template_files = []
+    html_template_include_files = []
     js_files = remoting_webapp_wcs_sandbox_html_all_js_files
     html_output = wcs_sandbox_html_output
   }
@@ -248,7 +273,7 @@ template("app_remoting_webapp") {
 
   build_webapp_html(main_html) {
     html_template_file = ar_main_template
-    html_template_files = ar_main_template_files
+    html_template_include_files = ar_main_template_files
     js_files = ar_main_js_files
     html_output = main_html_output
   }

@@ -372,7 +372,6 @@ remoting_webapp_background_html_all_js_files =
     remoting_webapp_background_html_js_files
 remoting_webapp_background_html_all_js_files += [
   "base/js/base.js",
-  "base/js/client_session.js",
   "base/js/error.js",
   "base/js/identity.js",
   "base/js/ipc.js",

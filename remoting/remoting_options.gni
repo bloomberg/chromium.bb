@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # Set this to run the jscompile checks after building the webapp.
-run_jscompile = 0
+run_jscompile = false
 
 # Set this to enable cast mode on the android client.
 enable_cast = 0
