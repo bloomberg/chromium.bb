@@ -24,4 +24,9 @@ bool ManageAccountLinkExperimentEnabled() {
   return group_name == "Enabled";
 }
 
+bool ForceSavingExperimentEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      password_manager::switches::kEnablePasswordForceSaving);
+}
+
 }  // namespace password_manager

@@ -1153,6 +1153,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisablePasswordManagerReauthentication)
   },
   {
+    "enable-password-force-saving",
+    IDS_FLAGS_ENABLE_PASSWORD_FORCE_SAVING_NAME,
+    IDS_FLAGS_ENABLE_PASSWORD_FORCE_SAVING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(
+        password_manager::switches::kEnablePasswordForceSaving)
+  },
+  {
     "enable-password-link",
     IDS_FLAGS_PASSWORD_MANAGER_LINK_NAME,
     IDS_FLAGS_PASSWORD_MANAGER_LINK_DESCRIPTION,

@@ -58,6 +58,10 @@ const char kEnableManagerForSyncSignin[] = "enable-manager-for-sync-signin";
 // central.
 const char kEnablePasswordLink[] = "enable-password-link";
 
+// Enable a context menu item in the password field that allows the user
+// to manually enforce saving of their password.
+const char kEnablePasswordForceSaving[] = "enable-password-force-saving";
+
 }  // namespace switches
 
 }  // namespace password_manager

@@ -11,6 +11,9 @@ namespace password_manager {
 // settings.
 bool ManageAccountLinkExperimentEnabled();
 
+// True iff the force-saving of passwords is enabled.
+bool ForceSavingExperimentEnabled();
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_EXPERIMENTS_H_

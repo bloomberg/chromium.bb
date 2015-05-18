@@ -24,6 +24,7 @@ extern const char kEnableAutomaticPasswordSaving[];
 extern const char kEnableDropSyncCredential[];
 extern const char kEnableManagerForSyncSignin[];
 extern const char kEnablePasswordLink[];
+extern const char kEnablePasswordForceSaving[];
 
 }  // namespace switches
 
