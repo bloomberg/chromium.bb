@@ -49,6 +49,11 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
   DCHECK(menu_delegate);
 
   pending_menu_ = menu_delegate->BuildMenu(guest_web_contents(), params);
+  // It's possible for the returned menu to be null, so early out to avoid
+  // a crash. TODO(wjmaclean): find out why it's possible for this to happen
+  // in the first place, and if it's an error.
+  if (!pending_menu_)
+    return false;
 
   // Pass it to embedder.
   int request_id = ++pending_context_menu_request_id_;
