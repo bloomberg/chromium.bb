@@ -474,6 +474,13 @@ void NaClProcessHost::Launch(
       delete this;
       return;
     }
+
+    if (!enable_ppapi_proxy()) {
+      SendErrorToRenderer(
+          "PPAPI proxy must be enabled on NaCl in Non-SFI mode.");
+      delete this;
+      return;
+    }
   } else {
     // Rather than creating a socket pair in the renderer, and passing
     // one side through the browser to sel_ldr, socket pairs are created
@@ -672,37 +679,34 @@ bool NaClProcessHost::LaunchSelLdr() {
 }
 
 bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
   if (uses_nonsfi_mode_) {
     // IPC messages relating to NaCl's validation cache must not be exposed
-    // in Non-SFI Mode, otherwise a Non-SFI nexe could use
-    // SetKnownToValidate to create a hole in the SFI sandbox.
-    IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
-      IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelsCreated,
-                          OnPpapiChannelsCreated)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-  } else {
-    IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
-      IPC_MESSAGE_HANDLER(NaClProcessMsg_QueryKnownToValidate,
-                          OnQueryKnownToValidate)
-      IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
-                          OnSetKnownToValidate)
-      IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileToken,
-                          OnResolveFileToken)
+    // in Non-SFI Mode, otherwise a Non-SFI nexe could use SetKnownToValidate
+    // to create a hole in the SFI sandbox.
+    // In Non-SFI mode, no message is expected.
+    return false;
+  }
+
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
+    IPC_MESSAGE_HANDLER(NaClProcessMsg_QueryKnownToValidate,
+                        OnQueryKnownToValidate)
+    IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
+                        OnSetKnownToValidate)
+    IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileToken,
+                        OnResolveFileToken)
 
 #if defined(OS_WIN)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(
-          NaClProcessMsg_AttachDebugExceptionHandler,
-          OnAttachDebugExceptionHandler)
-      IPC_MESSAGE_HANDLER(NaClProcessHostMsg_DebugStubPortSelected,
-                          OnDebugStubPortSelected)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        NaClProcessMsg_AttachDebugExceptionHandler,
+        OnAttachDebugExceptionHandler)
+    IPC_MESSAGE_HANDLER(NaClProcessHostMsg_DebugStubPortSelected,
+                        OnDebugStubPortSelected)
 #endif
-      IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelsCreated,
-                          OnPpapiChannelsCreated)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-  }
+    IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelsCreated,
+                        OnPpapiChannelsCreated)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 
@@ -975,9 +979,7 @@ bool NaClProcessHost::StartNaClExecution() {
     }
   }
 
-  params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),
-                                                   process_->GetData().handle);
-  process_->Send(new NaClProcessMsg_Start(params));
+  StartNaClFileResolved(params, base::FilePath(), base::File());
   return true;
 }
 
@@ -998,45 +1000,110 @@ void NaClProcessHost::StartNaClFileResolved(
     params.nexe_file = IPC::TakeFileHandleForProcess(
         nexe_file_.Pass(), process_->GetData().handle);
   }
+
+#if defined(OS_LINUX)
+  // In Non-SFI mode, create socket pairs for IPC channels here, unlike in
+  // SFI-mode, in which those channels are created in nacl_listener.cc.
+  // This is for security hardening. We can then prohibit the socketpair()
+  // system call in nacl_helper and nacl_helper_nonsfi.
+  if (uses_nonsfi_mode_) {
+    // Note: here, because some FDs/handles for the NaCl loader process are
+    // already opened, they are transferred to NaCl loader process even if
+    // an error occurs first. It is because this is the simplest way to
+    // ensure that these FDs/handles don't get leaked and that the NaCl loader
+    // process will exit properly.
+    bool has_error = false;
+
+    // Note: this check is redundant. We check this earlier.
+    DCHECK(params.enable_ipc_proxy);
+
+    ScopedChannelHandle ppapi_browser_server_channel_handle;
+    ScopedChannelHandle ppapi_browser_client_channel_handle;
+    ScopedChannelHandle ppapi_renderer_server_channel_handle;
+    ScopedChannelHandle ppapi_renderer_client_channel_handle;
+    ScopedChannelHandle trusted_service_server_channel_handle;
+    ScopedChannelHandle trusted_service_client_channel_handle;
+    ScopedChannelHandle manifest_service_server_channel_handle;
+    ScopedChannelHandle manifest_service_client_channel_handle;
+
+    if (!CreateChannelHandlePair(&ppapi_browser_server_channel_handle,
+                                 &ppapi_browser_client_channel_handle) ||
+        !CreateChannelHandlePair(&ppapi_renderer_server_channel_handle,
+                                 &ppapi_renderer_client_channel_handle) ||
+        !CreateChannelHandlePair(&trusted_service_server_channel_handle,
+                                 &trusted_service_client_channel_handle) ||
+        !CreateChannelHandlePair(&manifest_service_server_channel_handle,
+                                 &manifest_service_client_channel_handle)) {
+      SendErrorToRenderer("Failed to create socket pairs.");
+      has_error = true;
+    }
+
+    if (!has_error &&
+        !StartPPAPIProxy(ppapi_browser_client_channel_handle.Pass())) {
+      SendErrorToRenderer("Failed to start browser PPAPI proxy.");
+      has_error = true;
+    }
+
+    if (!has_error) {
+      // On success, send back a success message to the renderer process,
+      // and transfer the channel handles for the NaCl loader process to
+      // |params|.
+      ReplyToRenderer(ppapi_renderer_client_channel_handle.Pass(),
+                      trusted_service_client_channel_handle.Pass(),
+                      manifest_service_client_channel_handle.Pass());
+      params.ppapi_browser_channel_handle =
+          ppapi_browser_server_channel_handle.release();
+      params.ppapi_renderer_channel_handle =
+          ppapi_renderer_server_channel_handle.release();
+      params.trusted_service_channel_handle =
+          trusted_service_server_channel_handle.release();
+      params.manifest_service_channel_handle =
+          manifest_service_server_channel_handle.release();
+    }
+  }
+#endif
+
   process_->Send(new NaClProcessMsg_Start(params));
 }
 
-// This method is called when NaClProcessHostMsg_PpapiChannelCreated is
-// received.
-void NaClProcessHost::OnPpapiChannelsCreated(
-    const IPC::ChannelHandle& raw_browser_channel_handle,
-    const IPC::ChannelHandle& raw_ppapi_renderer_channel_handle,
-    const IPC::ChannelHandle& raw_trusted_renderer_channel_handle,
-    const IPC::ChannelHandle& raw_manifest_service_channel_handle) {
-  ScopedChannelHandle browser_channel_handle(raw_browser_channel_handle);
-  ScopedChannelHandle ppapi_renderer_channel_handle(
-      raw_ppapi_renderer_channel_handle);
-  ScopedChannelHandle trusted_renderer_channel_handle(
-      raw_trusted_renderer_channel_handle);
-  ScopedChannelHandle manifest_service_channel_handle(
-      raw_manifest_service_channel_handle);
+#if defined(OS_LINUX)
+// static
+bool NaClProcessHost::CreateChannelHandlePair(
+    ScopedChannelHandle* channel_handle1,
+    ScopedChannelHandle* channel_handle2) {
+  DCHECK(channel_handle1);
+  DCHECK(channel_handle2);
 
-  if (!enable_ppapi_proxy()) {
-    ReplyToRenderer(ScopedChannelHandle(),
-                    trusted_renderer_channel_handle.Pass(),
-                    manifest_service_channel_handle.Pass());
-    return;
+  int fd1 = -1;
+  int fd2 = -1;
+  if (!IPC::SocketPair(&fd1, &fd2)) {
+    return false;
   }
 
+  IPC::ChannelHandle handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
+  handle.socket = base::FileDescriptor(fd1, true);
+  channel_handle1->reset(handle);
+  handle.socket = base::FileDescriptor(fd2, true);
+  channel_handle2->reset(handle);
+  return true;
+}
+#endif
+
+bool NaClProcessHost::StartPPAPIProxy(ScopedChannelHandle channel_handle) {
   if (ipc_proxy_channel_.get()) {
     // Attempt to open more than 1 browser channel is not supported.
     // Shut down the NaCl process.
     process_->GetHost()->ForceShutdown();
-    return;
+    return false;
   }
 
   DCHECK_EQ(PROCESS_TYPE_NACL_LOADER, process_->GetData().process_type);
 
-  ipc_proxy_channel_ =
-      IPC::ChannelProxy::Create(browser_channel_handle.release(),
-                                IPC::Channel::MODE_CLIENT,
-                                NULL,
-                                base::MessageLoopProxy::current().get());
+  ipc_proxy_channel_ = IPC::ChannelProxy::Create(
+      channel_handle.release(),
+      IPC::Channel::MODE_CLIENT,
+      NULL,
+      base::MessageLoopProxy::current().get());
   // Create the browser ppapi host and enable PPAPI message dispatching to the
   // browser process.
   ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(
@@ -1076,6 +1143,38 @@ void NaClProcessHost::OnPpapiChannelsCreated(
 
   // Send a message to initialize the IPC dispatchers in the NaCl plugin.
   ipc_proxy_channel_->Send(new PpapiMsg_InitializeNaClDispatcher(args));
+  return true;
+}
+
+// This method is called when NaClProcessHostMsg_PpapiChannelCreated is
+// received.
+void NaClProcessHost::OnPpapiChannelsCreated(
+    const IPC::ChannelHandle& raw_ppapi_browser_channel_handle,
+    const IPC::ChannelHandle& raw_ppapi_renderer_channel_handle,
+    const IPC::ChannelHandle& raw_trusted_renderer_channel_handle,
+    const IPC::ChannelHandle& raw_manifest_service_channel_handle) {
+  ScopedChannelHandle ppapi_browser_channel_handle(
+      raw_ppapi_browser_channel_handle);
+  ScopedChannelHandle ppapi_renderer_channel_handle(
+      raw_ppapi_renderer_channel_handle);
+  ScopedChannelHandle trusted_renderer_channel_handle(
+      raw_trusted_renderer_channel_handle);
+  ScopedChannelHandle manifest_service_channel_handle(
+      raw_manifest_service_channel_handle);
+
+  if (enable_ppapi_proxy()) {
+    if (!StartPPAPIProxy(ppapi_browser_channel_handle.Pass())) {
+      SendErrorToRenderer("Browser PPAPI proxy could not start.");
+      return;
+    }
+  } else {
+    // If PPAPI proxy is disabled, channel handles should be invalid.
+    DCHECK(ppapi_browser_channel_handle.get().name.empty());
+    DCHECK(ppapi_renderer_channel_handle.get().name.empty());
+    // Invalidate, just in case.
+    ppapi_browser_channel_handle.reset();
+    ppapi_renderer_channel_handle.reset();
+  }
 
   // Let the renderer know that the IPC channels are established.
   ReplyToRenderer(ppapi_renderer_channel_handle.Pass(),

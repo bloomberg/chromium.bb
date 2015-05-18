@@ -56,11 +56,6 @@ void NonSfiListener::Listen() {
   base::MessageLoop::current()->Run();
 }
 
-bool NonSfiListener::Send(IPC::Message* msg) {
-  DCHECK(channel_.get() != NULL);
-  return channel_->Send(msg);
-}
-
 bool NonSfiListener::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NonSfiListener, msg)
@@ -93,68 +88,34 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   SetUrandomFd(base::GetUrandomFD());
 #endif
 
-  IPC::ChannelHandle browser_handle;
-  IPC::ChannelHandle ppapi_renderer_handle;
-  IPC::ChannelHandle manifest_service_handle;
+  // In Non-SFI mode, PPAPI proxy must be enabled.
+  CHECK(params.enable_ipc_proxy);
 
-  if (params.enable_ipc_proxy) {
-    browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
-    ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
-    manifest_service_handle =
-        IPC::Channel::GenerateVerifiedChannelID("nacl");
+  // In Non-SFI mode, we neither intercept nor rewrite the message using
+  // NaClIPCAdapter, and the channels are connected between the plugin and
+  // the hosts directly. So, the IPC::Channel instances will be created in
+  // the plugin side, because the IPC::Listener needs to live on the
+  // plugin's main thread. We just pass the FDs to plugin side.
+  // The FDs are created in the browser process. Following check can fail
+  // if the preparation for sending NaClProcessMsg_Start were incomplete.
+  CHECK_NE(params.ppapi_browser_channel_handle.socket.fd, -1);
+  CHECK_NE(params.ppapi_renderer_channel_handle.socket.fd, -1);
+  CHECK_NE(params.trusted_service_channel_handle.socket.fd, -1);
+  CHECK_NE(params.manifest_service_channel_handle.socket.fd, -1);
 
-    // In non-SFI mode, we neither intercept nor rewrite the message using
-    // NaClIPCAdapter, and the channels are connected between the plugin and
-    // the hosts directly. So, the IPC::Channel instances will be created in
-    // the plugin side, because the IPC::Listener needs to live on the
-    // plugin's main thread. However, on initialization (i.e. before loading
-    // the plugin binary), the FD needs to be passed to the hosts. So, here
-    // we create raw FD pairs, and pass the client side FDs to the hosts,
-    // and the server side FDs to the plugin.
-    int browser_server_ppapi_fd;
-    int browser_client_ppapi_fd;
-    int renderer_server_ppapi_fd;
-    int renderer_client_ppapi_fd;
-    int manifest_service_server_fd;
-    int manifest_service_client_fd;
-    if (!IPC::SocketPair(
-            &browser_server_ppapi_fd, &browser_client_ppapi_fd) ||
-        !IPC::SocketPair(
-            &renderer_server_ppapi_fd, &renderer_client_ppapi_fd) ||
-        !IPC::SocketPair(
-            &manifest_service_server_fd, &manifest_service_client_fd)) {
-      LOG(ERROR) << "Failed to create sockets for IPC.";
-      return;
-    }
-
-    // Set the plugin IPC channel FDs.
-    ppapi::SetIPCFileDescriptors(browser_server_ppapi_fd,
-                                 renderer_server_ppapi_fd,
-                                 manifest_service_server_fd);
-    ppapi::StartUpPlugin();
-
-    // Send back to the client side IPC channel FD to the host.
-    browser_handle.socket =
-        base::FileDescriptor(browser_client_ppapi_fd, true);
-    ppapi_renderer_handle.socket =
-        base::FileDescriptor(renderer_client_ppapi_fd, true);
-    manifest_service_handle.socket =
-        base::FileDescriptor(manifest_service_client_fd, true);
-  }
+  ppapi::SetIPCFileDescriptors(
+      params.ppapi_browser_channel_handle.socket.fd,
+      params.ppapi_renderer_channel_handle.socket.fd,
+      params.manifest_service_channel_handle.socket.fd);
+  ppapi::StartUpPlugin();
 
   // TODO(teravest): Do we plan on using this renderer handle for nexe loading
   // for non-SFI? Right now, passing an empty channel handle instead causes
   // hangs, so we'll keep it.
   trusted_listener_ = new NaClTrustedListener(
-      IPC::Channel::GenerateVerifiedChannelID("nacl"),
+      params.trusted_service_channel_handle,
       io_thread_.message_loop_proxy().get(),
       &shutdown_event_);
-  if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
-          browser_handle,
-          ppapi_renderer_handle,
-          trusted_listener_->TakeClientChannelHandle(),
-          manifest_service_handle)))
-    LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
 
   // Ensure that the validation cache key (used as an extra input to the
   // validation cache's hashing) isn't exposed accidentally.

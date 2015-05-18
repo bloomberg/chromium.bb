@@ -166,6 +166,15 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
       const base::FilePath& file_path,
       base::File nexe_file);
 
+#if defined(OS_LINUX)
+  // Creates a pair of IPC::ChannelHandle. Returns true on success.
+  static bool CreateChannelHandlePair(ScopedChannelHandle* channel_handle1,
+                                      ScopedChannelHandle* channel_handle2);
+#endif
+
+  // Starts browser PPAPI proxy. Returns true on success.
+  bool StartPPAPIProxy(ScopedChannelHandle channel_handle);
+
   // Does post-process-launching tasks for starting the NaCl process once
   // we have a connection.
   //
@@ -191,7 +200,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Called when the PPAPI IPC channels to the browser/renderer have been
   // created.
   void OnPpapiChannelsCreated(
-      const IPC::ChannelHandle& browser_channel_handle,
+      const IPC::ChannelHandle& ppapi_browser_channel_handle,
       const IPC::ChannelHandle& ppapi_renderer_channel_handle,
       const IPC::ChannelHandle& trusted_renderer_channel_handle,
       const IPC::ChannelHandle& manifest_service_channel_handle);

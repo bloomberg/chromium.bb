@@ -37,7 +37,6 @@ class NonSfiListener : public IPC::Listener {
 
   // Listen for a request to launch a non-SFI NaCl module.
   void Listen();
-  bool Send(IPC::Message* msg);
 
  private:
   bool OnMessageReceived(const IPC::Message& msg) override;

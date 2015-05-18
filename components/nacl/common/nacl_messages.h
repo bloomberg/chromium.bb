@@ -25,6 +25,12 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
 #if defined(OS_POSIX)
   IPC_STRUCT_TRAITS_MEMBER(debug_stub_server_bound_socket)
 #endif
+#if defined(OS_LINUX) || defined(OS_NACL_NONSFI)
+  IPC_STRUCT_TRAITS_MEMBER(ppapi_browser_channel_handle)
+  IPC_STRUCT_TRAITS_MEMBER(ppapi_renderer_channel_handle)
+  IPC_STRUCT_TRAITS_MEMBER(trusted_service_channel_handle)
+  IPC_STRUCT_TRAITS_MEMBER(manifest_service_channel_handle)
+#endif
   IPC_STRUCT_TRAITS_MEMBER(validation_cache_enabled)
   IPC_STRUCT_TRAITS_MEMBER(validation_cache_key)
   IPC_STRUCT_TRAITS_MEMBER(version)
@@ -119,6 +125,8 @@ IPC_MESSAGE_CONTROL4(NaClProcessMsg_ResolveFileTokenReply,
 
 // Notify the browser process that the server side of the PPAPI channel was
 // created successfully.
+// This is used for SFI mode only. Non-SFI mode passes channel handles in
+// NaClStartParams instead.
 IPC_MESSAGE_CONTROL4(NaClProcessHostMsg_PpapiChannelsCreated,
                      IPC::ChannelHandle, /* browser_channel_handle */
                      IPC::ChannelHandle, /* ppapi_renderer_channel_handle */
