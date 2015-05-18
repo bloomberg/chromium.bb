@@ -49,7 +49,6 @@ WinWindow::WinWindow(PlatformWindowDelegate* delegate,
 }
 
 WinWindow::~WinWindow() {
-  Destroy();
 }
 
 void WinWindow::Destroy() {
