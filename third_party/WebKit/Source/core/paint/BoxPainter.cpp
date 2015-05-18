@@ -1710,10 +1710,9 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
 
 static inline bool includesAdjacentEdges(BorderEdgeFlags flags)
 {
-    return (flags & (TopBorderEdge | RightBorderEdge)) == (TopBorderEdge | RightBorderEdge)
-        || (flags & (RightBorderEdge | BottomBorderEdge)) == (RightBorderEdge | BottomBorderEdge)
-        || (flags & (BottomBorderEdge | LeftBorderEdge)) == (BottomBorderEdge | LeftBorderEdge)
-        || (flags & (LeftBorderEdge | TopBorderEdge)) == (LeftBorderEdge | TopBorderEdge);
+    // The set includes adjacent edges iff it contains at least one horizontal and one vertical edge.
+    return (flags & (TopBorderEdge | BottomBorderEdge))
+        && (flags & (LeftBorderEdge | RightBorderEdge));
 }
 
 void BoxPainter::paintTranslucentBorderSides(GraphicsContext* graphicsContext, const ComputedStyle& style,
