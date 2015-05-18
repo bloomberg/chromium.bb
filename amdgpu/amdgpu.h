@@ -781,6 +781,25 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 */
 int amdgpu_bo_list_destroy(amdgpu_bo_list_handle handle);
 
+/**
+ * Update resources for existing BO list
+ *
+ * \param   handle              - \c [in] BO list handle
+ * \param   number_of_resources - \c [in] Number of BOs in the list
+ * \param   resources           - \c [in] List of BO handles
+ * \param   resource_prios      - \c [in] Optional priority for each handle
+ *
+ * \return   0 on success\n
+ *          >0 - AMD specific error code\n
+ *          <0 - Negative POSIX Error code
+ *
+ * \sa amdgpu_bo_list_update()
+*/
+int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
+			  uint32_t number_of_resources,
+			  amdgpu_bo_handle *resources,
+			  uint8_t *resource_prios);
+
 /*
  * Special GPU Resources
  *

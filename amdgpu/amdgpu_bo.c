@@ -715,3 +715,38 @@ int amdgpu_bo_list_destroy(amdgpu_bo_list_handle list)
 
 	return r;
 }
+
+int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
+			  uint32_t number_of_resources,
+			  amdgpu_bo_handle *resources,
+			  uint8_t *resource_prios)
+{
+	struct drm_amdgpu_bo_list_entry *list;
+	union drm_amdgpu_bo_list args;
+	unsigned i;
+	int r;
+
+	list = calloc(number_of_resources, sizeof(struct drm_amdgpu_bo_list_entry));
+	if (list == NULL)
+		return -ENOMEM;
+
+	memset(&args, 0, sizeof(args));
+	args.in.operation = AMDGPU_BO_LIST_OP_UPDATE;
+	args.in.list_handle = handle->handle;
+	args.in.bo_number = number_of_resources;
+	args.in.bo_info_size = sizeof(struct drm_amdgpu_bo_list_entry);
+	args.in.bo_info_ptr = (uintptr_t)list;
+
+	for (i = 0; i < number_of_resources; i++) {
+		list[i].bo_handle = resources[i]->handle;
+		if (resource_prios)
+			list[i].bo_priority = resource_prios[i];
+		else
+			list[i].bo_priority = 0;
+	}
+
+	r = drmCommandWriteRead(handle->dev->fd, DRM_AMDGPU_BO_LIST,
+				&args, sizeof(args));
+	free(list);
+	return r;
+}
