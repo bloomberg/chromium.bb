@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "cc/resources/tile_manager.h"
+#include "cc/tiles/tile_manager.h"
 
 namespace cc {
 

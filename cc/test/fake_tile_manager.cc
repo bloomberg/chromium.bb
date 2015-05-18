@@ -9,8 +9,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/thread_task_runner_handle.h"
-#include "cc/resources/raster_buffer.h"
-#include "cc/resources/tile_task_runner.h"
+#include "cc/raster/raster_buffer.h"
+#include "cc/raster/tile_task_runner.h"
 
 namespace cc {
 

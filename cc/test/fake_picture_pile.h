@@ -5,7 +5,7 @@
 #ifndef CC_TEST_FAKE_PICTURE_PILE_H_
 #define CC_TEST_FAKE_PICTURE_PILE_H_
 
-#include "cc/resources/picture_pile.h"
+#include "cc/playback/picture_pile.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/impl_side_painting_settings.h"
 

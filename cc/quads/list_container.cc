@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/playback/display_item.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
-#include "cc/resources/display_item.h"
 
 namespace {
 const size_t kDefaultNumElementTypesToReserve = 32;

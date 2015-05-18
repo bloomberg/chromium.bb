@@ -4,7 +4,7 @@
 
 #include "cc/layers/picture_image_layer.h"
 
-#include "cc/resources/display_item.h"
+#include "cc/playback/display_item.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"

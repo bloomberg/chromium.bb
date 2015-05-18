@@ -12,9 +12,9 @@
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/output/renderer.h"
+#include "cc/raster/task_graph_runner.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/resources/task_graph_runner.h"
 #include "ui/gfx/geometry/quad_f.h"
 
 namespace cc {

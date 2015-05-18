@@ -7,7 +7,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/resources/tile_priority.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -15,6 +14,7 @@
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/tiles/tile_priority.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

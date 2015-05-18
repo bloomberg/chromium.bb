@@ -4,8 +4,8 @@
 
 #include "cc/test/skia_common.h"
 
-#include "cc/resources/display_item_list.h"
-#include "cc/resources/picture.h"
+#include "cc/playback/display_item_list.h"
+#include "cc/playback/picture.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/rect.h"

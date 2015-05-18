@@ -6,8 +6,8 @@
 #define CC_DEBUG_FRAME_VIEWER_INSTRUMENTATION_H_
 
 #include "base/trace_event/trace_event.h"
-#include "cc/resources/tile.h"
-#include "cc/resources/tile_priority.h"
+#include "cc/tiles/tile.h"
+#include "cc/tiles/tile_priority.h"
 
 namespace cc {
 namespace frame_viewer_instrumentation {

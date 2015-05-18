@@ -13,7 +13,7 @@
 #include "cc/output/gl_renderer.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_renderer.h"
-#include "cc/resources/texture_mailbox_deleter.h"
+#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"

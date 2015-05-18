@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/resources/recording_source.h"
+#include "cc/playback/recording_source.h"
 
 namespace cc {
 class FakePictureLayer : public PictureLayer {

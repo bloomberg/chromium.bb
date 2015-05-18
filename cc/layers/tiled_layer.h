@@ -7,8 +7,8 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/contents_scaling_layer.h"
-#include "cc/resources/layer_tiling_data.h"
 #include "cc/resources/resource_format.h"
+#include "cc/tiles/layer_tiling_data.h"
 
 namespace cc {
 class LayerUpdater;

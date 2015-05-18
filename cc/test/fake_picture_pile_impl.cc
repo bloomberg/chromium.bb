@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/synchronization/waitable_event.h"
-#include "cc/resources/picture_pile.h"
+#include "cc/playback/picture_pile.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

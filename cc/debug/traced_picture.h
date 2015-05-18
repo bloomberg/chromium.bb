@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/resources/picture.h"
+#include "cc/playback/picture.h"
 
 namespace cc {
 

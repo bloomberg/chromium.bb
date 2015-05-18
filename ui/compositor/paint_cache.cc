@@ -4,7 +4,7 @@
 
 #include "ui/compositor/paint_cache.h"
 
-#include "cc/resources/display_item_list.h"
+#include "cc/playback/display_item_list.h"
 #include "ui/compositor/paint_context.h"
 
 namespace ui {

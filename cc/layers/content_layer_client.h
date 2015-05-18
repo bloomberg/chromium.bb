@@ -6,7 +6,7 @@
 #define CC_LAYERS_CONTENT_LAYER_CLIENT_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/resources/display_item_list.h"
+#include "cc/playback/display_item_list.h"
 
 class SkCanvas;
 

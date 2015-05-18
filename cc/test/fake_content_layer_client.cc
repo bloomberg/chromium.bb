@@ -4,9 +4,9 @@
 
 #include "cc/test/fake_content_layer_client.h"
 
-#include "cc/resources/clip_display_item.h"
-#include "cc/resources/drawing_display_item.h"
-#include "cc/resources/transform_display_item.h"
+#include "cc/playback/clip_display_item.h"
+#include "cc/playback/drawing_display_item.h"
+#include "cc/playback/transform_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/skia_util.h"

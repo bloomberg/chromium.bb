@@ -5,7 +5,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 
 #include <vector>
-#include "cc/resources/tile.h"
+#include "cc/tiles/tile.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/resources/tile_priority.h"
+#include "cc/tiles/tile_priority.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 
 namespace cc {

@@ -5,7 +5,7 @@
 #ifndef UI_COMPOSITOR_PAINT_CACHE_H_
 #define UI_COMPOSITOR_PAINT_CACHE_H_
 
-#include "cc/resources/drawing_display_item.h"
+#include "cc/playback/drawing_display_item.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {

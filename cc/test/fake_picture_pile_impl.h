@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_PICTURE_PILE_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/resources/picture_pile_impl.h"
+#include "cc/playback/picture_pile_impl.h"
 #include "cc/test/fake_picture_pile.h"
 
 namespace base {

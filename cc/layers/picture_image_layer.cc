@@ -5,7 +5,7 @@
 #include "cc/layers/picture_image_layer.h"
 
 #include "cc/layers/picture_image_layer_impl.h"
-#include "cc/resources/drawing_display_item.h"
+#include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/skia_util.h"

@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "cc/debug/micro_benchmark_controller.h"
-#include "cc/resources/picture.h"
+#include "cc/playback/picture.h"
 
 namespace base {
 class DictionaryValue;

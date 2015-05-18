@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
-#include "cc/resources/display_item_list.h"
+#include "cc/playback/display_item_list.h"
 #include "third_party/WebKit/public/platform/WebDisplayItemList.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkRegion.h"
