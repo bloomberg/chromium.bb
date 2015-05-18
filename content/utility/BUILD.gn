@@ -2,22 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//content/utility/utility.gni")
+
 source_set("utility") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
   visibility = [ "//content/public/utility:utility_sources" ]
 
-  sources = [
-    "in_process_utility_thread.cc",
-    "in_process_utility_thread.h",
-    "utility_blink_platform_impl.cc",
-    "utility_blink_platform_impl.h",
-    "utility_main.cc",
-    "utility_thread_impl.cc",
-    "utility_thread_impl.h",
-    "webthread_impl_for_utility_thread.cc",
-    "webthread_impl_for_utility_thread.h",
-  ]
+  sources =
+      rebase_path(content_utility_gypi_values.utility_sources, ".", "//content")
 
   configs += [ "//content:content_implementation" ]
 
