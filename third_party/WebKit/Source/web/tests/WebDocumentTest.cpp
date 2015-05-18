@@ -208,10 +208,12 @@ TEST(WebDocumentTest, SetIsTransitionDocument)
 
 namespace {
     const char* baseURLOriginA = "http://example.test:0/";
+    const char* baseURLOriginSubA = "http://subdomain.example.test:0/";
     const char* baseURLOriginB = "http://not-example.test:0/";
     const char* emptyFile = "first_party/empty.html";
     const char* nestedData = "first_party/nested-data.html";
     const char* nestedOriginA = "first_party/nested-originA.html";
+    const char* nestedOriginSubA = "first_party/nested-originSubA.html";
     const char* nestedOriginAInOriginA = "first_party/nested-originA-in-originA.html";
     const char* nestedOriginAInOriginB = "first_party/nested-originA-in-originB.html";
     const char* nestedOriginB = "first_party/nested-originB.html";
@@ -222,6 +224,11 @@ namespace {
     static KURL toOriginA(const char* file)
     {
         return toKURL(std::string(baseURLOriginA) + file);
+    }
+
+    static KURL toOriginSubA(const char* file)
+    {
+        return toKURL(std::string(baseURLOriginSubA) + file);
     }
 
     static KURL toOriginB(const char* file)
@@ -248,12 +255,15 @@ void WebDocumentFirstPartyTest::SetUpTestCase()
     URLTestHelpers::registerMockedURLLoad(toOriginA(emptyFile), WebString::fromUTF8(emptyFile));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedData), WebString::fromUTF8(nestedData));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginA), WebString::fromUTF8(nestedOriginA));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginSubA), WebString::fromUTF8(nestedOriginSubA));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginAInOriginA), WebString::fromUTF8(nestedOriginAInOriginA));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginAInOriginB), WebString::fromUTF8(nestedOriginAInOriginB));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginB), WebString::fromUTF8(nestedOriginB));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginBInOriginA), WebString::fromUTF8(nestedOriginBInOriginA));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginBInOriginB), WebString::fromUTF8(nestedOriginBInOriginB));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedSrcDoc), WebString::fromUTF8(nestedSrcDoc));
+
+    URLTestHelpers::registerMockedURLLoad(toOriginSubA(emptyFile), WebString::fromUTF8(emptyFile));
 
     URLTestHelpers::registerMockedURLLoad(toOriginB(emptyFile), WebString::fromUTF8(emptyFile));
     URLTestHelpers::registerMockedURLLoad(toOriginB(nestedOriginA), WebString::fromUTF8(nestedOriginA));
@@ -302,6 +312,19 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginA)
     RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
     ASSERT_EQ(toOriginA(nestedOriginA), topDocument()->firstPartyForCookies());
     ASSERT_EQ(toOriginA(nestedOriginA), nestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginSubA)
+{
+    load(nestedOriginSubA);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedOriginSubA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginSubA), nestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedOriginSubA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginSubA), nestedDocument()->firstPartyForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginA)
