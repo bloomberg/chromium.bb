@@ -80,7 +80,7 @@ class UdpTransport : public PacketSender {
   const scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
   const net::IPEndPoint local_addr_;
   net::IPEndPoint remote_addr_;
-  const scoped_ptr<net::UDPSocket> udp_socket_;
+  scoped_ptr<net::UDPSocket> udp_socket_;
   bool send_pending_;
   bool receive_pending_;
   bool client_connected_;

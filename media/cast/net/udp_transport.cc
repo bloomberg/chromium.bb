@@ -66,6 +66,11 @@ void UdpTransport::StartReceiving(
     const PacketReceiverCallbackWithStatus& packet_receiver) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
+  if (!udp_socket_) {
+    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
+    return;
+  }
+
   packet_receiver_ = packet_receiver;
   udp_socket_->SetMulticastLoopbackMode(true);
   if (!IsEmpty(local_addr_)) {
@@ -73,6 +78,7 @@ void UdpTransport::StartReceiving(
         udp_socket_->AllowAddressReuse() < 0 ||
         udp_socket_->Bind(local_addr_) < 0) {
       udp_socket_->Close();
+      udp_socket_.reset();
       status_callback_.Run(TRANSPORT_SOCKET_ERROR);
       LOG(ERROR) << "Failed to bind local address.";
       return;
@@ -82,6 +88,7 @@ void UdpTransport::StartReceiving(
         udp_socket_->AllowAddressReuse() < 0 ||
         udp_socket_->Connect(remote_addr_) < 0) {
       udp_socket_->Close();
+      udp_socket_.reset();
       status_callback_.Run(TRANSPORT_SOCKET_ERROR);
       LOG(ERROR) << "Failed to connect to remote address.";
       return;
@@ -111,6 +118,8 @@ void UdpTransport::SetDscp(net::DiffServCodePoint dscp) {
 #if defined(OS_WIN)
 void UdpTransport::UseNonBlockingIO() {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+  if (!udp_socket_)
+    return;
   udp_socket_->UseNonBlockingIO();
 }
 #endif
@@ -130,6 +139,8 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
   if (packet_receiver_.is_null())
+    return;
+  if (!udp_socket_)
     return;
 
   // Loop while UdpSocket is delivering data synchronously.  When it responds
@@ -187,6 +198,8 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
 
 bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+  if (!udp_socket_)
+    return true;
 
   // Increase byte count no matter the packet was sent or dropped.
   bytes_sent_ += packet->data.size();
