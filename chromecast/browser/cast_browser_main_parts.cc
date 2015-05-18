@@ -41,7 +41,6 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_factory.h"
 #include "media/base/browser_cdm_factory.h"
-#include "media/base/media_switches.h"
 
 #if defined(OS_ANDROID)
 #include "chromecast/browser/media/cast_media_client_android.h"
@@ -163,7 +162,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // Disables Chromecast-specific WiFi-related features on ATV for now.
   { switches::kNoWifi, "" },
   { switches::kEnableOverlayFullscreenVideo, ""},
-  { switches::kDisableInfobarForProtectedMediaIdentifier, ""},
   { switches::kDisableGestureRequirementForMediaPlayback, ""},
 #endif
   // Always enable HTMLMediaElement logs.
