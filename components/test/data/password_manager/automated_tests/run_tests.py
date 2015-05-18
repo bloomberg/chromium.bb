@@ -156,6 +156,9 @@ def RunTests(config_path):
   logger = logging.getLogger("run_tests")
   logger.log(SCRIPT_DEBUG, "%d tests to run: %s", len(config.tests_to_run),
              config.tests_to_run)
+  logger.log(SCRIPT_DEBUG, "%d test cases to run: %s",
+             len(config.test_cases_to_run),
+             config.test_cases_to_run)
   data = [(website, test_case, config)
           for website in config.tests_to_run
           for test_case in config.test_cases_to_run]
