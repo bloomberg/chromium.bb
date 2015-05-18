@@ -1100,10 +1100,6 @@ template("process_resources") {
       ]
     }
 
-    if (defined(invoker.v14_verify_only) && invoker.v14_verify_only) {
-      args += [ "--v14-verify-only" ]
-    }
-
     if (defined(invoker.v14_skip) && invoker.v14_skip) {
       args += [ "--v14-skip" ]
     }

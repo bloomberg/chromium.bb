@@ -231,36 +231,6 @@ def GenerateV14StyleResourcesInDir(input_dir, output_v14_dir):
     GenerateV14StyleResource(input_filename, output_v14_filename)
 
 
-def VerifyV14ResourcesInDir(input_dir, resource_type):
-  """Verify that the resources in input_dir is compatible with v14, i.e., they
-  don't use attributes that cause crashes on certain devices. Print an error if
-  they have."""
-  for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
-    exception_message = ('error : ' + input_filename + ' has an RTL attribute, '
-                        'i.e., attribute that has "start" or "end" in its name.'
-                        ' Pre-v17 resources should not include it because it '
-                        'can cause crashes on certain devices. Please refer to '
-                        'http://crbug.com/243952 for the details.')
-    dom = ParseAndReportErrors(input_filename)
-    if resource_type in ('layout', 'xml'):
-      if GenerateV14LayoutResourceDom(dom, input_filename, False):
-        raise Exception(exception_message)
-    elif resource_type == 'values':
-      if GenerateV14StyleResourceDom(dom, input_filename, False):
-        raise Exception(exception_message)
-
-
-def AssertNoDeprecatedAttributesInDir(input_dir, resource_type):
-  """Raises an exception if resources in input_dir have deprecated attributes,
-  e.g., paddingLeft, paddingRight"""
-  for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
-    dom = ParseAndReportErrors(input_filename)
-    if resource_type in ('layout', 'xml'):
-      GenerateV14LayoutResourceDom(dom, input_filename)
-    elif resource_type == 'values':
-      GenerateV14StyleResourceDom(dom, input_filename)
-
-
 def ParseArgs():
   """Parses command line options.
 
@@ -275,10 +245,6 @@ def ParseArgs():
                     help='output directory into which '
                          'v14 compatible resources will be generated')
   parser.add_option('--stamp', help='File to touch on success')
-  parser.add_option('--verify-only', action="store_true", help='Do not generate'
-      ' v14 resources. Instead, just verify that the resources are already '
-      "compatible with v14, i.e. they don't use attributes that cause crashes "
-      'on certain devices.')
 
   options, args = parser.parse_args()
 
@@ -290,7 +256,7 @@ def ParseArgs():
   build_utils.CheckOptions(options, parser, required=required_options)
   return options
 
-def GenerateV14Resources(res_dir, res_v14_dir, verify_only):
+def GenerateV14Resources(res_dir, res_v14_dir):
   for name in os.listdir(res_dir):
     if not os.path.isdir(os.path.join(res_dir, name)):
       continue
@@ -313,33 +279,27 @@ def GenerateV14Resources(res_dir, res_v14_dir, verify_only):
 
     input_dir = os.path.abspath(os.path.join(res_dir, name))
 
-    if verify_only:
-      if not api_level_qualifier or int(api_level_qualifier[1:]) < 17:
-        VerifyV14ResourcesInDir(input_dir, resource_type)
-      else:
-        AssertNoDeprecatedAttributesInDir(input_dir, resource_type)
-    else:
-      # We also need to copy the original v17 resource to *-v17 directory
-      # because the generated v14 resource will hide the original resource.
-      output_v14_dir = os.path.join(res_v14_dir, name)
-      output_v17_dir = os.path.join(res_v14_dir, name + '-v17')
+    # We also need to copy the original v17 resource to *-v17 directory
+    # because the generated v14 resource will hide the original resource.
+    output_v14_dir = os.path.join(res_v14_dir, name)
+    output_v17_dir = os.path.join(res_v14_dir, name + '-v17')
 
-      # We only convert layout resources under layout*/, xml*/,
-      # and style resources under values*/.
-      if resource_type in ('layout', 'xml'):
-        if not api_level_qualifier:
-          GenerateV14LayoutResourcesInDir(input_dir, output_v14_dir,
-                                          output_v17_dir)
-      elif resource_type == 'values':
-        if api_level_qualifier == 'v17':
-          output_qualifiers = qualifiers[:]
-          del output_qualifiers[api_level_qualifier_index]
-          output_v14_dir = os.path.join(res_v14_dir,
-                                        '-'.join([resource_type] +
-                                                 output_qualifiers))
-          GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
-        elif not api_level_qualifier:
-          ErrorIfStyleResourceExistsInDir(input_dir)
+    # We only convert layout resources under layout*/, xml*/,
+    # and style resources under values*/.
+    if resource_type in ('layout', 'xml'):
+      if not api_level_qualifier:
+        GenerateV14LayoutResourcesInDir(input_dir, output_v14_dir,
+                                        output_v17_dir)
+    elif resource_type == 'values':
+      if api_level_qualifier == 'v17':
+        output_qualifiers = qualifiers[:]
+        del output_qualifiers[api_level_qualifier_index]
+        output_v14_dir = os.path.join(res_v14_dir,
+                                      '-'.join([resource_type] +
+                                               output_qualifiers))
+        GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
+      elif not api_level_qualifier:
+        ErrorIfStyleResourceExistsInDir(input_dir)
 
 def main():
   options = ParseArgs()
@@ -349,7 +309,7 @@ def main():
   build_utils.DeleteDirectory(res_v14_dir)
   build_utils.MakeDirectory(res_v14_dir)
 
-  GenerateV14Resources(options.res_dir, res_v14_dir, options.verify_only)
+  GenerateV14Resources(options.res_dir, res_v14_dir)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

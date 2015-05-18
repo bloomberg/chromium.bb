@@ -139,7 +139,6 @@
     'symlink_script_device_path': '<(device_intermediate_dir)/create_symlinks.sh',
     'create_standalone_apk%': 1,
     'res_v14_skip%': 0,
-    'res_v14_verify_only%': 0,
     'variables': {
       'variables': {
         'native_lib_target%': '',
@@ -607,9 +606,6 @@
           }],
           ['res_v14_skip == 1', {
             'process_resources_options+': ['--v14-skip']
-          }],
-          ['res_v14_verify_only == 1', {
-            'process_resources_options+': ['--v14-verify-only']
           }],
           ['shared_resources == 1', {
             'process_resources_options+': ['--shared-resources']

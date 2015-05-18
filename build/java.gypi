@@ -70,7 +70,6 @@
     'res_extra_dirs': [],
     'res_extra_files': [],
     'res_v14_skip%': 0,
-    'res_v14_verify_only%': 0,
     'resource_input_paths': ['>@(res_extra_files)'],
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
@@ -160,9 +159,6 @@
             'conditions': [
               ['res_v14_skip == 1', {
                 'process_resources_options': ['--v14-skip']
-              }],
-              ['res_v14_verify_only == 1', {
-                'process_resources_options': ['--v14-verify-only']
               }],
             ],
           },

@@ -523,10 +523,9 @@ template("jinja_template_resources") {
 #   android_manifest: AndroidManifest.xml for this target. Defaults to
 #     //build/android/AndroidManifest.xml.
 #   custom_package: java package for generated .java files.
-#   v14_verify_only: If true, don't generate v14/v17 resources and just verify
-#     that the resources are v14-compliant (see
-#     build/android/gyp/generate_v14_compatible_resources.py). Defaults to
-#     false.
+#   v14_skip: If true, don't run v14 resource generator on this. Defaults to
+#     false. (see build/android/gyp/generate_v14_compatible_resources.py)
+#
 #   shared_resources: If true make a resource package that can be loaded by a
 #     different application at runtime to access the package's resources.
 #
@@ -577,10 +576,6 @@ template("android_resources") {
     resource_dirs = invoker.resource_dirs
     if (defined(invoker.custom_package)) {
       custom_package = invoker.custom_package
-    }
-
-    if (defined(invoker.v14_verify_only)) {
-      v14_verify_only = invoker.v14_verify_only
     }
 
     if (defined(invoker.v14_skip)) {
