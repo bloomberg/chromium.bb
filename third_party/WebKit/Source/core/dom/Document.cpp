@@ -5359,7 +5359,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             sawCommonAncestor = true;
         if (allowActiveChanges)
             nodesToAddToChain[i]->setActive(true);
-        if (!sawCommonAncestor) {
+        if (!sawCommonAncestor || nodesToAddToChain[i] == m_hoverNode) {
             nodesToAddToChain[i]->setHovered(true);
         }
     }

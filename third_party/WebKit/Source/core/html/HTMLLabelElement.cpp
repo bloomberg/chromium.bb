@@ -86,28 +86,28 @@ HTMLFormElement* HTMLLabelElement::formOwner() const
 
 void HTMLLabelElement::setActive(bool down)
 {
-    if (down == active())
-        return;
-
-    // Update our status first.
-    HTMLElement::setActive(down);
+    if (down != active()) {
+        // Update our status first.
+        HTMLElement::setActive(down);
+    }
 
     // Also update our corresponding control.
-    if (HTMLElement* element = control())
-        element->setActive(down);
+    HTMLElement* controlElement = control();
+    if (controlElement && controlElement->active() != active())
+        controlElement->setActive(active());
 }
 
 void HTMLLabelElement::setHovered(bool over)
 {
-    if (over == hovered())
-        return;
-
-    // Update our status first.
-    HTMLElement::setHovered(over);
+    if (over != hovered()) {
+        // Update our status first.
+        HTMLElement::setHovered(over);
+    }
 
     // Also update our corresponding control.
-    if (HTMLElement* element = control())
-        element->setHovered(over);
+    HTMLElement* element = control();
+    if (element && element->hovered() != hovered())
+        element->setHovered(hovered());
 }
 
 bool HTMLLabelElement::isInteractiveContent() const
