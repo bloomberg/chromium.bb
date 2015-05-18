@@ -52,7 +52,7 @@ class PowerTop10(benchmark.Benchmark):
     return 'power.top_10'
 
 
-@benchmark.Enabled('mac')
+@benchmark.Disabled()  # crbug.com/489214
 class PowerTop25(benchmark.Benchmark):
   """Top 25 quiescent power test."""
   test = power.QuiescentPower
