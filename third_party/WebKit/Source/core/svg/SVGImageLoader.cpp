@@ -19,12 +19,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGImageLoader.h"
 
 #include "core/events/Event.h"
 #include "core/fetch/ImageResource.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGImageElement.h"
 
 namespace blink {
@@ -42,14 +40,6 @@ void SVGImageLoader::dispatchLoadEvent()
         SVGImageElement* imageElement = toSVGImageElement(element());
         imageElement->sendSVGLoadEventToSelfAndAncestorChainIfPossible();
     }
-}
-
-String SVGImageLoader::sourceURI(const AtomicString& attribute) const
-{
-    KURL base = element()->baseURI();
-    if (!base.isValid())
-        base = element()->document().baseURI();
-    return element()->document().completeURLWithOverride(stripLeadingAndTrailingHTMLSpaces(attribute), base);
 }
 
 }

@@ -36,7 +36,6 @@ public:
     virtual ~HTMLImageLoader();
 
     virtual void dispatchLoadEvent() override;
-    virtual String sourceURI(const AtomicString&) const override;
 
     virtual void notifyFinished(Resource*) override;
 

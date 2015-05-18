@@ -390,8 +390,11 @@ KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const
 
     // Do not load any image if the 'src' attribute is missing or if it is
     // an empty string.
-    if (!imageSourceURL.isNull() && !stripLeadingAndTrailingHTMLSpaces(imageSourceURL).isEmpty())
-        url = document.completeURL(sourceURI(imageSourceURL));
+    if (!imageSourceURL.isNull()) {
+        String strippedImageSourceURL = stripLeadingAndTrailingHTMLSpaces(imageSourceURL);
+        if (!strippedImageSourceURL.isEmpty())
+            url = document.completeURL(strippedImageSourceURL);
+    }
     return url;
 }
 

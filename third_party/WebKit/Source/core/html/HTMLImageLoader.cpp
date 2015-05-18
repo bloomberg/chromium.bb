@@ -60,11 +60,6 @@ void HTMLImageLoader::dispatchLoadEvent()
     element()->dispatchEvent(Event::create(errorOccurred ? EventTypeNames::error : EventTypeNames::load));
 }
 
-String HTMLImageLoader::sourceURI(const AtomicString& attr) const
-{
-    return stripLeadingAndTrailingHTMLSpaces(attr);
-}
-
 static void loadFallbackContentForElement(Element* element)
 {
     if (isHTMLImageElement(element))

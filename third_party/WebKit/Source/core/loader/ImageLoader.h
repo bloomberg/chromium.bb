@@ -120,7 +120,6 @@ private:
     void doUpdateFromElement(BypassMainWorldBehavior, UpdateFromElementBehavior);
 
     virtual void dispatchLoadEvent() = 0;
-    virtual String sourceURI(const AtomicString&) const = 0;
     virtual void noImageResourceToLoad() { };
 
     void updatedHasPendingEvent();
