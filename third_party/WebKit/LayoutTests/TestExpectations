@@ -1910,12 +1910,6 @@ crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ P
 crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
 crbug.com/479202 virtual/slimmingpaint/fast/forms/select/select-typeahead-with-spacekey.html [ Skip ]
 
-crbug.com/480652 fast/events/window-onerror-04.html [ NeedsManualRebaseline ]
-crbug.com/480652 svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
-crbug.com/480652 virtual/slimmingpaint/svg/dom/SVGViewSpec.html [ Skip ]
-crbug.com/480652 virtual/pointerevent/fast/events/window-onerror-04.html [ NeedsManualRebaseline ]
-crbug.com/480652 virtual/slimmingpaint/fast/events/window-onerror-04.html [ Skip ]
-
 crbug.com/477743 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ ImageOnlyFailure Pass ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
