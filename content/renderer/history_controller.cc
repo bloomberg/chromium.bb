@@ -179,8 +179,6 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
       if (current_entry_) {
         if (HistoryEntry::HistoryNode* node =
                 current_entry_->GetHistoryNodeForFrame(frame)) {
-          if (!navigation_within_page)
-            node->RemoveChildren();
           node->set_item(item);
         }
       }
