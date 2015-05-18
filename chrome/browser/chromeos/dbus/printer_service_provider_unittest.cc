@@ -34,25 +34,6 @@ const char kPrinterAppExistsDelegateIDTemplate[] =
 const char kPrinterAppNotFoundDelegateIDTemplate[] =
     "system.printer.no_printer_provider_found/%s:%s";
 
-class MockPrinterServiceProvider : public PrinterServiceProvider {
- public:
-  MOCK_METHOD2(ShowCloudPrintHelp,
-               void(const std::string& vendor, const std::string& product));
-};
-
-class PrinterServiceProviderTest : public testing::Test {
- public:
-  void SetUp() override {
-    test_helper_.SetUp(kPrinterAdded, &service_provider_);
-  }
-
-  void TearDown() override { test_helper_.TearDown(); }
-
- protected:
-  MockPrinterServiceProvider service_provider_;
-  ServiceProviderTestHelper test_helper_;
-};
-
 class PrinterServiceProviderAppSearchEnabledTest : public testing::Test {
  public:
   PrinterServiceProviderAppSearchEnabledTest()
@@ -64,8 +45,6 @@ class PrinterServiceProviderAppSearchEnabledTest : public testing::Test {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnablePrinterAppSearch);
-    EXPECT_CALL(service_provider_, ShowCloudPrintHelp(testing::_, testing::_))
-        .Times(0);
     service_provider_.SetNotificationUIManagerForTesting(
         &notification_ui_manager_);
   }
@@ -137,30 +116,12 @@ class PrinterServiceProviderAppSearchEnabledTest : public testing::Test {
   user_manager::FakeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
-  MockPrinterServiceProvider service_provider_;
+  PrinterServiceProvider service_provider_;
   ServiceProviderTestHelper test_helper_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrinterServiceProviderAppSearchEnabledTest);
 };
-
-TEST_F(PrinterServiceProviderTest, ShowCloudPrintHelp) {
-  dbus::MethodCall method_call(kLibCrosServiceInterface, kPrinterAdded);
-  dbus::MessageWriter writer(&method_call);
-  writer.AppendString("123");
-  writer.AppendString("456");
-
-  EXPECT_CALL(service_provider_, ShowCloudPrintHelp("123", "456"))
-      .Times(1);
-
-  // Call the PrinterAdded method.
-  scoped_ptr<dbus::Response> response(test_helper_.CallMethod(&method_call));
-
-  // An empty response should be returned.
-  ASSERT_TRUE(response.get());
-  dbus::MessageReader reader(response.get());
-  ASSERT_FALSE(reader.HasMoreData());
-}
 
 TEST_F(PrinterServiceProviderAppSearchEnabledTest, ShowFindAppNotification) {
   AddTestUser();

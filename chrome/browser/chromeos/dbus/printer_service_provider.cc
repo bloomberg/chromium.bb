@@ -8,9 +8,6 @@
 
 #include <limits>
 
-#include "ash/session/session_state_delegate.h"
-#include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -20,28 +17,17 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/webstore_widget_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -54,9 +40,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "grit/theme_resources.h"
-#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -75,28 +59,12 @@ const char kNoPrinterProviderNotificationID[] =
 
 enum PrinterServiceEvent {
   PRINTER_ADDED,
-  PAGE_DISPLAYED,
+  DEPRECATED_PAGE_DISPLAYED,
+  NOTIFICATION_SHOWN_PRINTER_SUPPORTED,
+  NOTIFICATION_SHOWN_PRINTER_NOT_SUPPORTED,
+  WEBSTORE_WIDGET_APP_LAUNCHED,
   PRINTER_SERVICE_EVENT_MAX,
 };
-
-// TODO(vitalybuka): update URL with more relevant information.
-const char kCloudPrintLearnUrl[] =
-    "https://www.google.com/landing/cloudprint/index.html";
-
-void ActivateContents(Browser* browser, content::WebContents* contents) {
-  browser->tab_strip_model()->ActivateTabAt(
-      browser->tab_strip_model()->GetIndexOfWebContents(contents), false);
-}
-
-Browser* ActivateAndGetBrowserForUrl(GURL url) {
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (it->GetLastCommittedURL() == url) {
-      ActivateContents(it.browser(), *it);
-      return it.browser();
-    }
-  }
-  return nullptr;
-}
 
 bool HexStringToUInt16(const std::string& input, uint16* output) {
   uint32 output_uint = 0;
@@ -105,32 +73,6 @@ bool HexStringToUInt16(const std::string& input, uint16* output) {
     return false;
   *output = static_cast<uint16>(output_uint);
   return true;
-}
-
-void FindOrOpenCloudPrintPage(const std::string& /* vendor */,
-                              const std::string& /* product */) {
-  UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent", PRINTER_ADDED,
-                            PRINTER_SERVICE_EVENT_MAX);
-  if (!ash::Shell::GetInstance()->session_state_delegate()->
-          IsActiveUserSessionStarted() ||
-      ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
-    return;
-  }
-
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-  if (!profile)
-    return;
-
-  GURL url(kCloudPrintLearnUrl);
-
-  if (!ActivateAndGetBrowserForUrl(url)) {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        profile, chrome::HOST_DESKTOP_TYPE_ASH);
-    UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
-                              PAGE_DISPLAYED, PRINTER_SERVICE_EVENT_MAX);
-    chrome::AddSelectedTabWithURL(displayer.browser(), url,
-                                  ui::PAGE_TRANSITION_LINK);
-  }
 }
 
 base::string16 GetNotificationTitle(uint16 vendor_id, uint16 product_id) {
@@ -223,6 +165,9 @@ class SearchPrinterAppNotificationDelegate : public NotificationDelegate {
   bool HasClickedListener() override { return true; }
 
   void Click() override {
+    UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
+                              WEBSTORE_WIDGET_APP_LAUNCHED,
+                              PRINTER_SERVICE_EVENT_MAX);
     webstore_widget_private_api::Options options;
     options.type = webstore_widget_private_api::TYPE_PRINTER_PROVIDER;
     options.usb_id.reset(new webstore_widget_private_api::UsbId());
@@ -282,6 +227,9 @@ void ShowPrinterPluggedNotification(
   scoped_ptr<Notification> notification;
 
   if (HasAppThatSupportsPrinter(profile, vendor_id, product_id)) {
+    UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
+                              NOTIFICATION_SHOWN_PRINTER_SUPPORTED,
+                              PRINTER_SERVICE_EVENT_MAX);
     notification.reset(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         GURL(kPrinterProviderFoundNotificationID),
@@ -296,6 +244,9 @@ void ShowPrinterPluggedNotification(
         new PrinterProviderExistsNotificationDelegate(vendor_id_str,
                                                       product_id_str)));
   } else {
+    UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
+                              NOTIFICATION_SHOWN_PRINTER_NOT_SUPPORTED,
+                              PRINTER_SERVICE_EVENT_MAX);
     message_center::RichNotificationData options;
     options.clickable = true;
     notification.reset(new Notification(
@@ -358,13 +309,6 @@ void PrinterServiceProvider::OnExported(
   DVLOG(1) << "Method exported: " << interface_name << "." << method_name;
 }
 
-void PrinterServiceProvider::ShowCloudPrintHelp(const std::string& vendor,
-                                                const std::string& product) {
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(&FindOrOpenCloudPrintPage, vendor,
-                                              product));
-}
-
 void PrinterServiceProvider::PrinterAdded(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
@@ -382,25 +326,18 @@ void PrinterServiceProvider::PrinterAdded(
   // Send an empty response.
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent", PRINTER_ADDED,
+                            PRINTER_SERVICE_EVENT_MAX);
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrinterAppSearch)) {
-    ShowPrinterPluggedNotification(
-        notification_ui_manager_ ? notification_ui_manager_
-                                 : g_browser_process->notification_ui_manager(),
-        vendor_id, product_id);
     return;
   }
 
-  // Disable showing Cloudprint help on canary and dev channel, as these have
-  // support for printerProvider API.
-  // TODO(tbarzic): Remove this and offer the user to search for an extension
-  // that can act as a print driver (using printerProvider API) for USB printers
-  // detected by this service. http://crbug.com/439448
-  if (base::SysInfo::IsRunningOnChromeOS() &&
-      chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV)
-    return;
-
-  ShowCloudPrintHelp(vendor_id, product_id);
+  ShowPrinterPluggedNotification(
+      notification_ui_manager_ ? notification_ui_manager_
+                               : g_browser_process->notification_ui_manager(),
+      vendor_id, product_id);
 }
 
 }  // namespace chromeos

@@ -54,10 +54,6 @@ class PrinterServiceProvider
   // CrosDBusService::ServiceProviderInterface override.
   void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
 
- protected:
-  virtual void ShowCloudPrintHelp(const std::string& vendor,
-                                  const std::string& product);
-
  private:
   friend class PrinterServiceProviderAppSearchEnabledTest;
 

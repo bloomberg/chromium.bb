@@ -61066,7 +61066,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="PrinterServiceEventType" type="int">
   <int value="0" label="Printer added"/>
-  <int value="1" label="Page displayed"/>
+  <int value="1" label="Page displayed (Deprecated)"/>
+  <int value="2" label="Printer supported notification shown"/>
+  <int value="3" label="Printer not supported notification shown"/>
+  <int value="4" label="Printer provider Web Store app launched"/>
 </enum>
 
 <enum name="PrintPreviewFailureType" type="int">
