@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.01",
+  "version": "8.02",
   "entries": [
     {
       "id": 1,
@@ -1308,6 +1308,36 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Mali-400.*",
       "features": [
         "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 112,
+      "cr_bugs": [477514],
+      "description": "EXT_disjoint_timer_query fails after 2 queries on adreno 330 in lollypop",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": ">=",
+          "value": "5.0.0"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*330",
+      "disabled_extensions": [
+        "GL_EXT_disjoint_timer_query"
+      ]
+    },
+    {
+      "id": 113,
+      "cr_bugs": [477514],
+      "description": "EXT_disjoint_timer_query fails after 2 queries on adreno 420",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*420",
+      "disabled_extensions": [
+        "GL_EXT_disjoint_timer_query"
       ]
     }
   ]

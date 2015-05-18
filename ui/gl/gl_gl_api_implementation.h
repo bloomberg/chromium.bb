@@ -62,15 +62,19 @@ class GL_EXPORT RealGLApi : public GLApiBase {
   void InitializeWithCommandLine(DriverGL* driver,
                                  base::CommandLine* command_line);
 
+  void InitializeWithContext();
+
   void glGetIntegervFn(GLenum pname, GLint* params) override;
   const GLubyte* glGetStringFn(GLenum name) override;
   const GLubyte* glGetStringiFn(GLenum name, GLuint index) override;
 
  private:
+  void InitializeFilteredExtensions();
   void glFinishFn() override;
   void glFlushFn() override;
 
   // Filtered GL_EXTENSIONS we return to glGetString(i) calls.
+  std::vector<std::string> disabled_exts_;
   std::vector<std::string> filtered_exts_;
   std::string filtered_exts_str_;
 };

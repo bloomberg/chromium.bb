@@ -42,6 +42,7 @@ class GLApiTest : public testing::Test {
       api_->InitializeWithCommandLine(driver_.get(), command_line);
     else
       api_->Initialize(driver_.get());
+    api_->InitializeWithContext();
   }
 
   void SetFakeExtensionString(const char* fake_string) {
