@@ -1542,6 +1542,1392 @@
           "output": "⠠⠓⠁⠝ ⠅⠚⠪⠏⠞⠑ ⠼⠃ ⠼⠁⠼⠁⠌⠼⠃⠇⠊⠞⠑⠗⠎⠋⠇⠁⠎⠅⠑⠗ ⠃⠗⠥⠎⠄"
         }
       ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Time Indications: Example 1",
+          "input": "Han kommer kl 20.15.",
+          "output": "⠠⠓⠁⠝ ⠅⠕⠍⠍⠑⠗ ⠅⠇ ⠼⠃⠚⠄⠁⠑⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Time Indications: Example 2",
+          "input": "Jeg må bli ferdig innen 10.03.2007.",
+          "output": "⠠⠚⠑⠛ ⠍⠡ ⠃⠇⠊ ⠋⠑⠗⠙⠊⠛ ⠊⠝⠝⠑⠝ ⠼⠁⠚⠄⠚⠉⠄⠃⠚⠚⠛⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Time Indications: Example 3",
+          "input": "Kurset ble holdt helga 18.—20. mars.",
+          "output": "⠠⠅⠥⠗⠎⠑⠞ ⠃⠇⠑ ⠓⠕⠇⠙⠞ ⠓⠑⠇⠛⠁ ⠼⠁⠓⠄⠤⠼⠃⠚⠄ ⠍⠁⠗⠎⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bible References: Example 1",
+          "input": "1 Mos 3,15",
+          "output": "⠼⠁ ⠠⠍⠕⠎ ⠼⠉⠂⠁⠑"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bible References: Example 2",
+          "input": "Matt 4,1-11",
+          "output": "⠍⠁⠞⠞ ⠼⠙⠂⠁⠤⠁⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bible References: Example 3",
+          "input": "Gal 5,26-6,5",
+          "output": "⠛⠁⠇ ⠼⠑⠂⠃⠋⠤⠼⠋⠂⠑"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bible References: Example 4",
+          "input": "5 Mos 8,7.11-18",
+          "output": "⠼⠑ ⠠⠍⠕⠎ ⠼⠓⠂⠛⠄⠁⠁⠤⠁⠓"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bible References: Example 5",
+          "input": "2 Mos 20,1-8.12-17",
+          "output": "⠼⠃ ⠠⠍⠕⠎ ⠼⠃⠚⠂⠁⠤⠓⠄⠁⠃⠤⠁⠛"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bible References: Example 6",
+          "input": "Luk 4,16-22a",
+          "output": "⠠⠇⠥⠅ ⠼⠙⠂⠁⠋⠤⠃⠃⠰⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bible References: Example 7",
+          "input": "Pet 3,13-15a.17-18",
+          "output": "⠠⠏⠑⠞ ⠼⠉⠂⠁⠉⠤⠁⠑⠰⠁⠄⠼⠁⠛⠤⠁⠓"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Koranen References: Example 1",
+          "input": "Sure 3,27",
+          "output": "⠠⠎⠥⠗⠑ ⠼⠉⠂⠃⠛"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Koranen References: Example 2",
+          "input": "Sure 13,12-20",
+          "output": "⠠⠎⠥⠗⠑ ⠼⠁⠉⠂⠁⠃⠤⠃⠚"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Other writings: : Example 1",
+          "input": "III.77",
+          "output": "⠠⠊⠊⠊⠄⠼⠛⠛"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Mathematical signs Operators: Example 1",
+          "input": "2 + 2 = 4",
+          "output": "⠼⠃ ⠖⠼⠃ ⠶⠼⠙"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Mathematical signs Operators: Example 2",
+          "input": "13 - 4 = 9",
+          "output": "⠼⠁⠉ ⠤⠼⠙ ⠶⠼⠊"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Mathematical signs Operators: Example 3",
+          "input": "4 . 7 = 28",
+          "output": "⠼⠙ ⠄⠼⠛ ⠶⠼⠃⠓"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Mathematical signs Operators: Example 4",
+          "input": "32 : 4 = 8",
+          "output": "⠼⠉⠃ ⠒⠼⠙ ⠶⠼⠓"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Mathematical signs Operators: Example 5",
+          "input": "Per + Kari = sant!",
+          "output": "⠠⠏⠑⠗ ⠖ ⠠⠅⠁⠗⠊ ⠶ ⠎⠁⠝⠞⠖"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Mathematical signs Operators: Example 6",
+          "input": "Lengde x bredde x dybde.",
+          "output": "⠠⠇⠑⠝⠛⠙⠑ ⠭ ⠃⠗⠑⠙⠙⠑ ⠭ ⠙⠽⠃⠙⠑⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Inequality Signs: Example 1",
+          "input": "8 > 7,98",
+          "output": "⠼⠓ ⠕⠂⠼⠛⠂⠊⠓"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Inequality Signs: Example 2",
+          "input": "Bodø < Bergen",
+          "output": "⠠⠃⠕⠙⠪ ⠪⠄ ⠠⠃⠑⠗⠛⠑⠝"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Fractions sign: Example 1",
+          "input": "1/4",
+          "output": "⠼⠁⠌⠼⠙"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Fractions sign: Example 2",
+          "input": "Han hadde bare en 1/2-kartong med melk.",
+          "output": "⠓⠁⠝ ⠓⠁⠙⠙⠑ ⠃⠁⠗⠑ ⠑⠝ ⠼⠁⠌⠼⠃⠤⠅⠁⠗⠞⠕⠝⠛ ⠍⠑⠙ ⠍⠑⠇⠅⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Fractions sign: Example 3",
+          "input": "56+35/9+4  = 7",
+          "output": "⠆⠼⠑⠋ ⠖⠼⠉⠑ ⠌ ⠼⠊ ⠖⠼⠙⠰ ⠶⠼⠛"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Fractions sign: Example 4",
+          "input": "Effekt = energioverføring / tid.",
+          "output": "⠠⠑⠋⠋⠑⠅⠞ ⠶ ⠆⠑⠝⠑⠗⠛⠊⠕⠧⠑⠗⠋⠪⠗⠊⠝⠛ ⠲⠠ ⠞⠊⠙⠰⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Indices: Example 1",
+          "input": "Gulvet er 10 m2 stort.",
+          "output": "⠠⠛⠥⠇⠧⠑⠞ ⠑⠗ ⠼⠁⠚ ⠍⠨⠼⠃ ⠎⠞⠕⠗⠞⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Indices: Example 2",
+          "input": "xn - 1 er et nokså ukjent tall.",
+          "output": "⠭⠨⠦⠝ ⠤⠼⠁⠴ ⠑⠗ ⠑⠞ ⠝⠕⠅⠎⠡ ⠥⠅⠚⠑⠝⠞ ⠞⠁⠇⠇⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Indices: Example 3",
+          "input": "x1 = 8",
+          "output": "⠭⠡⠼⠁ ⠶⠼⠓"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Indices: Example 4",
+          "input": "Minimumstemperaturen, xmin, var 2 grader.",
+          "output": "⠠⠍⠊⠝⠊⠍⠥⠍⠎⠞⠑⠍⠏⠑⠗⠁⠞⠥⠗⠑⠝⠂ ⠭⠡⠦⠍⠊⠝⠴⠂ ⠧⠁⠗ ⠼⠃ ⠛⠗⠁⠙⠑⠗⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Indices: Example 5",
+          "input": "Norge kjøper CO2-kvoter.",
+          "output": "⠠⠝⠕⠗⠛⠑ ⠅⠚⠪⠏⠑⠗ ⠠⠉⠠⠕⠡⠼⠃⠤⠅⠧⠕⠞⠑⠗⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Indices: Example 6",
+          "input": "√25 =5",
+          "output": "⠩⠼⠃⠑ ⠶⠼⠑"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Indices: Example 7",
+          "input": "√49-24 =5",
+          "output": "⠩⠦⠼⠙⠊ ⠤⠼⠃⠙⠴ ⠶⠼⠑"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Percent: Example 1",
+          "input": "Det er 10 % rabatt på alle varer onsdag.",
+          "output": "⠠⠙⠑⠞ ⠑⠗ ⠼⠁⠚⠨⠴ ⠗⠁⠃⠁⠞⠞ ⠏⠡ ⠁⠇⠇⠑ ⠧⠁⠗⠑⠗ ⠕⠝⠎⠙⠁⠛⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Percent: Example 2",
+          "input": "Det bør være en promillegrense på 0,2 ‰ på sjøen.",
+          "output": "⠙⠑⠞ ⠃⠪⠗ ⠧⠜⠗⠑ ⠑⠝ ⠏⠗⠕⠍⠊⠇⠇⠑⠛⠗⠑⠝⠎⠑ ⠏⠡ ⠼⠚⠂⠃⠨⠴⠴ ⠏⠡ ⠎⠚⠪⠑⠝⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Percent: Example 3",
+          "input": "Det er ikke snakk om å endre promillegrensa (0,2 ‰) ved bilkjøring.",
+          "output": "⠠⠙⠑⠞ ⠑⠗ ⠊⠅⠅⠑ ⠎⠝⠁⠅⠅ ⠕⠍ ⠡ ⠑⠝⠙⠗⠑ ⠏⠗⠕⠍⠊⠇⠇⠑⠛⠗⠑⠝⠎⠁ ⠦⠼⠚⠂⠃⠨⠴⠶⠠⠴ ⠧⠑⠙ ⠃⠊⠇⠅⠚⠪⠗⠊⠝⠛⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Hyphen: Example 1",
+          "input": "Totalvekten = bilens vekt + vekten på lasten.",
+          "output": "⠠⠞⠕⠞⠁⠇⠧⠑⠅⠞⠑⠝ ⠶ ⠃⠊⠇⠑⠝⠎ ⠧⠑⠅⠞ ⠖⠠ ⠧⠑⠅⠞⠑⠝ ⠏⠡ ⠇⠁⠎⠞⠑⠝⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Gradtegn",
+          "input": "°",
+          "output": "⠐⠴"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Minute, foot",
+          "input": "'",
+          "output": "⠐"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Second, empty",
+          "input": "''",
+          "output": "⠐⠐"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Kaliber",
+          "input": ".",
+          "output": "⠼⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Annotations: Example 1",
+          "input": "Spydkastet var 85,71 m.",
+          "output": "⠎⠏⠽⠙⠅⠁⠎⠞⠑⠞ ⠧⠁⠗ ⠼⠓⠑⠂⠛⠁ ⠍⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Annotations: Example 2",
+          "input": "En boks melk rommer normalt 1 l.",
+          "output": "⠠⠑⠝ ⠃⠕⠅⠎ ⠍⠑⠇⠅ ⠗⠕⠍⠍⠑⠗ ⠝⠕⠗⠍⠁⠇⠞ ⠼⠁ ⠇⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Annotations: Example 3",
+          "input": "Det er bare 30 g smør i kaka!",
+          "output": "⠠⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠼⠉⠚ ⠛ ⠎⠍ø⠗ ⠊ ⠅⠁⠅⠁⠖"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Annotations: Example 4",
+          "input": "Lua kostet bare 64 kr på salg.",
+          "output": "⠇⠥⠁ ⠅⠕⠎⠞⠑⠞ ⠃⠁⠗⠑ ⠼⠋⠙ ⠅⠗ ⠏⠡ ⠎⠁⠇⠛⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Annotations: Example 5",
+          "input": "Radiostasjonen sender på 98,4 MHz.",
+          "output": "⠠⠗⠁⠙⠊⠕⠎⠞⠁⠎⠚⠕⠝⠑⠝ ⠎⠑⠝⠙⠑⠗ ⠏⠡ ⠼⠊⠓⠂⠙ ⠠⠍⠠⠓⠵⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Annotations: Example 6",
+          "input": "Dokumentet var ikke større enn 20 kB.",
+          "output": "⠠⠙⠕⠅⠥⠍⠑⠝⠞⠑⠞ ⠧⠁⠗ ⠊⠅⠅⠑ ⠎⠞⠪⠗⠗⠑ ⠑⠝⠝ ⠼⠃⠚ ⠅⠠⠃⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Degrees: Example 1",
+          "input": "Vinkelen var 45°.",
+          "output": "⠧⠊⠝⠅⠑⠇⠑⠝ ⠧⠁⠗ ⠼⠙⠑⠐⠴⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Degrees: Example 2",
+          "input": "Alta ligger på 69° 57' nordlig bredde.",
+          "output": "⠠⠁⠇⠞⠁ ⠇⠊⠛⠛⠑⠗ ⠏⠡ ⠼⠋⠊⠐⠴ ⠼⠑⠛⠐ ⠝⠕⠗⠙⠇⠊⠛ ⠃⠗⠑⠙⠙⠑⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Degrees: Example 3",
+          "input": "Ute er det 20° C.",
+          "output": "⠠⠥⠞⠑ ⠑⠗ ⠙⠑⠞ ⠼⠃⠚⠐⠴⠠⠉⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Degrees: Example 4",
+          "input": "Vannet har nådd kokepunktet (100°).",
+          "output": "⠧⠁⠝⠝⠑⠞ ⠓⠁⠗ ⠝⠡⠙⠙ ⠅⠕⠅⠑⠏⠥⠝⠅⠞⠑⠞ ⠦⠼⠁⠚⠚⠐⠴⠠⠴⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Foot: Example 1",
+          "input": "Båten er 13' lang.",
+          "output": "⠠⠃⠡⠞⠑⠝ ⠑⠗ ⠼⠁⠉⠐ ⠇⠁⠝⠛⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Foot: Example 2",
+          "input": "5,25'' disketter er ikke lenger å få tak i.",
+          "output": "⠼⠑⠂⠃⠑⠐⠐ ⠙⠊⠎⠅⠑⠞⠞⠑⠗ ⠑⠗ ⠊⠅⠅⠑ ⠇⠑⠝⠛⠑⠗ ⠡ ⠋⠡ ⠞⠁⠅ ⠊⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Kaliber: Example 1",
+          "input": "Hun prøvde å skyte meg med en 38 Colt!",
+          "output": "⠠⠓⠥⠝ ⠏⠗⠪⠧⠙⠑ ⠡ ⠎⠅⠽⠞⠑ ⠍⠑⠛ ⠍⠑⠙ ⠑⠝ ⠼⠄⠉⠓ ⠠⠉⠕⠇⠞⠖"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 1",
+          "input": "1 kr 10,50 kr kr 1.500,- NOK 750",
+          "output": "⠼⠁ ⠅⠗ ⠼⠁⠚⠂⠑⠚ ⠅⠗ ⠅⠗ ⠼⠁⠄⠑⠚⠚⠂⠤ ⠠⠠⠝⠕⠅ ⠼⠛⠑⠚"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 2",
+          "input": "k1 k10,50 k1.500",
+          "output": "⠅⠼⠁ ⠅⠼⠁⠚⠂⠑⠚ ⠅⠼⠁⠄⠑⠚⠚"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 3",
+          "input": "€1 €10,50 €1.500",
+          "output": "⠢⠼⠁ ⠢⠼⠁⠚⠂⠑⠚ ⠢⠼⠁⠄⠑⠚⠚"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 4",
+          "input": "I Belgia kostet CD-en €8,50.",
+          "output": "⠠⠊ ⠠⠃⠑⠇⠛⠊⠁ ⠅⠕⠎⠞⠑⠞ ⠠⠠⠉⠙⠤⠑⠝ ⠢⠼⠓⠂⠑⠚⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 5",
+          "input": "Billetten på londonbussen kostet £2.",
+          "output": "⠠⠃⠊⠇⠇⠑⠞⠞⠑⠝ ⠏⠡ ⠇⠕⠝⠙⠕⠝⠃⠥⠎⠎⠑⠝ ⠅⠕⠎⠞⠑⠞ ⠇⠼⠃⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 6",
+          "input": "$1 $10,50 $1.500",
+          "output": "⠲⠼⠁ ⠲⠼⠁⠚⠂⠑⠚ ⠲⠼⠁⠄⠑⠚⠚"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 7",
+          "input": "I New York er billettprisene bare $2.",
+          "output": "⠠⠊ ⠠⠝⠑⠺ ⠠⠽⠕⠗⠅ ⠑⠗ ⠃⠊⠇⠇⠑⠞⠞⠏⠗⠊⠎⠑⠝⠑ ⠃⠁⠗⠑ ⠲⠼⠃⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 8",
+          "input": "$29 kostet boka, sa han.",
+          "output": "⠲⠠⠲⠼⠃⠊ ⠅⠕⠎⠞⠑⠞ ⠃⠕⠅⠁⠂⠲ ⠎⠁ ⠓⠁⠝⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 9",
+          "input": "I Indonesia kostet sjalet ¤114 i lokal valuta.",
+          "output": "⠠⠊ ⠠⠊⠝⠙⠕⠝⠑⠎⠊⠁ ⠅⠕⠎⠞⠑⠞ ⠎⠚⠁⠇⠑⠞ ⠦⠍⠴⠼⠁⠁⠙ ⠊ ⠇⠕⠅⠁⠇ ⠧⠁⠇⠥⠞⠁⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 10",
+          "input": "Bildet kostet 125 SEK i Stockholm.",
+          "output": "⠠⠃⠊⠇⠙⠑⠞ ⠅⠕⠎⠞⠑⠞ ⠼⠁⠃⠑ ⠠⠠⠎⠑⠅ ⠊ ⠠⠎⠞⠕⠉⠅⠓⠕⠇⠍⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Currencies: Example 11",
+          "input": "Hytteleia i Århus var DKK 700 pr. døgn.",
+          "output": "⠠⠓⠽⠞⠞⠑⠇⠑⠊⠁ ⠊ ⠠⠡⠗⠓⠥⠎ ⠧⠁⠗ ⠠⠠⠙⠅⠅ ⠼⠛⠚⠚ ⠏⠗⠄ ⠙⠪⠛⠝⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 1",
+          "input": "Hun har e-postadressen line@online.no.",
+          "output": "⠠⠓⠥⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠇⠊⠝⠑⠈⠕⠝⠇⠊⠝⠑⠄⠝⠕⠜⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 2",
+          "input": "Hun oppga tone21@hotmail.com som sin adresse.",
+          "output": "⠠⠓⠥⠝ ⠕⠏⠏⠛⠁ ⠣⠞⠕⠝⠑⠼⠃⠁⠈⠓⠕⠞⠍⠁⠊⠇⠄⠉⠕⠍⠜ ⠎⠕⠍ ⠎⠊⠝ ⠁⠙⠗⠑⠎⠎⠑⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 3",
+          "input": "Han har e-postadressen msvendsen@c2i.net.",
+          "output": "⠠⠓⠁⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠍⠎⠧⠑⠝⠙⠎⠑⠝⠈⠉⠼⠃⠰⠊⠄⠝⠑⠞⠜⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 4",
+          "input": "Dokumentet ligger i mappen c:\\tekst\\ på harddisken.",
+          "output": "⠠⠙⠕⠅⠥⠍⠑⠝⠞⠑⠞ ⠇⠊⠛⠛⠑⠗ ⠊ ⠍⠁⠏⠏⠑⠝ ⠉⠒⠱⠞⠑⠅⠎⠞⠱ ⠏⠡ ⠓⠁⠗⠙⠙⠊⠎⠅⠑⠝⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 5",
+          "input": "per_erik.iversen@online.no",
+          "output": "⠏⠑⠗⠸⠑⠗⠊⠅⠄⠊⠧⠑⠗⠎⠑⠝⠈⠕⠝⠇⠊⠝⠑⠄⠝⠕"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 6",
+          "input": "Dokumentet heter en_spøkelseshistorie_fra_lofoten.doc.",
+          "output": "⠠⠙⠕⠅⠥⠍⠑⠝⠞⠑⠞ ⠓⠑⠞⠑⠗ ⠑⠝⠸⠎⠏⠪⠅⠑⠇⠎⠑⠎⠓⠊⠎⠞⠕⠗⠊⠑⠸⠋⠗⠁⠸⠠ ⠇⠕⠋⠕⠞⠑⠝⠄⠙⠕⠉⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 7",
+          "input": "Den midlertidige filen $~pgave.doc slettes når Word avsluttes.",
+          "output": "⠠⠙⠑⠝ ⠍⠊⠙⠇⠑⠗⠞⠊⠙⠊⠛⠑ ⠋⠊⠇⠑⠝ ⠲⠹⠏⠛⠁⠧⠑⠄⠙⠕⠉ ⠎⠇⠑⠞⠞⠑⠎ ⠝⠡⠗ ⠠⠺⠕⠗⠙ ⠁⠧⠎⠇⠥⠞⠞⠑⠎⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 8",
+          "input": "Han har hjemmeside www.nettpark.no/~tjb.",
+          "output": "⠠⠓⠁⠝ ⠓⠁⠗ ⠓⠚⠑⠍⠍⠑⠎⠊⠙⠑ ⠣⠺⠺⠺⠄⠝⠑⠞⠞⠏⠁⠗⠅⠄⠝⠕⠌⠹⠞⠚⠃⠜⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 9",
+          "input": "Du finner tasten | like til venstre for 1-tallet på tastaturet.",
+          "output": "⠠⠙⠥ ⠋⠊⠝⠝⠑⠗ ⠞⠁⠎⠞⠑⠝ ⠿ ⠇⠊⠅⠑ ⠞⠊⠇ ⠧⠑⠝⠎⠞⠗⠑ ⠋⠕⠗ ⠼⠁⠤⠞⠁⠇⠇⠑⠞ ⠏⠡ ⠞⠁⠎⠞⠁⠞⠥⠗⠑⠞⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 10",
+          "input": "Dir *.* | more",
+          "output": "⠠⠙⠊⠗ ⠔⠄⠔ ⠿ ⠍⠕⠗⠑"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 11",
+          "input": "Send $^g til skriveren og du får tilbake et pip!",
+          "output": "⠠⠎⠑⠝⠙ ⠲⠨⠛ ⠞⠊⠇ ⠎⠅⠗⠊⠧⠑⠗⠑⠝ ⠕⠛ ⠙⠥ ⠋⠡⠗ ⠞⠊⠇⠃⠁⠅⠑ ⠑⠞ ⠏⠊⠏⠖"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 12",
+          "input": "Avslutt med ^w for å lukke Word.",
+          "output": "⠠⠁⠧⠎⠇⠥⠞⠞ ⠍⠑⠙ ⠨⠺ ⠋⠕⠗ ⠡ ⠇⠥⠅⠅⠑ ⠠⠺⠕⠗⠙⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 13",
+          "input": "Du finner alltid ferske nyheter på www.nrk.no.",
+          "output": "⠠⠙⠥ ⠋⠊⠝⠝⠑⠗ ⠁⠇⠇⠞⠊⠙ ⠋⠑⠗⠎⠅⠑ ⠝⠽⠓⠑⠞⠑⠗ ⠏⠡ ⠣⠺⠺⠺⠄⠝⠗⠅⠄⠝⠕⠜⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 14",
+          "input": "set path=c:\\prog;%PATH%",
+          "output": "⠎⠑⠞ ⠏⠁⠞⠓⠶⠉⠒⠱⠏⠗⠕⠛⠆⠫⠠⠠⠏⠁⠞⠓⠫"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 15",
+          "input": "<a href=\"http://www.aftenposten.no\">Aftenposten<a>",
+          "output": "⠣⠁ ⠓⠗⠑⠋⠶⠮⠓⠞⠞⠏⠒⠌⠌⠺⠺⠺⠄⠁⠋⠞⠑⠝⠏⠕⠎⠞⠑⠝⠠⠄⠝⠕⠮⠜⠠⠁⠋⠞⠑⠝⠏⠕⠎⠞⠑⠝⠣⠁⠜"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 16",
+          "input": "tall := a + b",
+          "output": "⠞⠁⠇⠇ ⠒⠶ ⠁ ⠖ ⠃"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Edb-sign: Example 17",
+          "input": "Send inn et ønske til onskekonserten@nrk.no du også!",
+          "output": "⠠⠎⠑⠝⠙ ⠊⠝⠝ ⠑⠞ ⠪⠝⠎⠅⠑ ⠞⠊⠇⠣⠕⠝⠎⠅⠑⠅⠕⠝⠎⠑⠗⠞⠑⠝⠈⠠ ⠝⠗⠅⠄⠝⠕⠜ ⠙⠥ ⠕⠛⠎⠡⠖"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Character Combinations: Example 1",
+          "input": "© OUP 2007",
+          "output": "⠦⠉⠴ ⠠⠠⠕⠥⠏ ⠼⠃⠚⠚⠛"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Character Combinations: Example 2",
+          "input": "Regnskapet er redigert i Microsoft Excel®.",
+          "output": "⠠⠗⠑⠛⠝⠎⠅⠁⠏⠑⠞ ⠑⠗ ⠗⠑⠙⠊⠛⠑⠗⠞ ⠊ ⠠⠍⠊⠉⠗⠕⠎⠕⠋⠞ ⠠⠑⠭⠉⠑⠇⠦⠗⠴⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Character Combinations: Example 3",
+          "input": "Paracetamolpreparater selges under flere navn. Paracet™ og Pinex™ er to av dem.",
+          "output": "⠠⠏⠁⠗⠁⠉⠑⠞⠁⠍⠕⠇⠏⠗⠑⠏⠁⠗⠁⠞⠑⠗ ⠎⠑⠇⠛⠑⠎ ⠥⠝⠙⠑⠗ ⠋⠇⠑⠗⠑ ⠝⠁⠧⠝⠄ ⠠⠏⠁⠗⠁⠉⠑⠞⠦⠞⠴ ⠕⠛ ⠠⠏⠊⠝⠑⠭⠦⠞⠴ ⠑⠗ ⠞⠕ ⠁⠧ ⠙⠑⠍⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Character Combinations: Example 4",
+          "input": "./. Du finner alt i brevet fra advokaten.",
+          "output": "⠄⠌⠄ ⠠⠙⠥ ⠋⠊⠝⠝⠑⠗ ⠁⠇⠞ ⠊ ⠃⠗⠑⠧⠑⠞ ⠋⠗⠁ ⠁⠙⠧⠕⠅⠁⠞⠑⠝⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Character Combinations: Example 5",
+          "input": "så /: vi vant :/ vår rett.",
+          "output": "⠎⠡ ⠌⠒ ⠧⠊ ⠧⠁⠝⠞ ⠒⠌ ⠧⠡⠗ ⠗⠑⠞⠞⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Character Combinations: Example 6",
+          "input": "Noe så dumt er det bare du som kan skrive. :-)",
+          "output": "⠠⠝⠕⠑ ⠎⠡ ⠙⠥⠍⠞ ⠑⠗ ⠙⠑⠞ ⠃⠁⠗⠑ ⠙⠥ ⠎⠕⠍ ⠅⠁⠝ ⠎⠅⠗⠊⠧⠑⠄ ⠒⠤⠴"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Character Combinations: Example 7",
+          "input": "Jeg har prøvd å sende deg denne meldingen to ganger før, men enten henger pc-en seg opp, eller så brytes nettforbindelsen. :-(",
+          "output": "⠠⠚⠑⠛ ⠓⠁⠗ ⠏⠗⠪⠧⠙ ⠡ ⠎⠑⠝⠙⠑ ⠙⠑⠛ ⠙⠑⠝⠝⠑ ⠍⠑⠇⠙⠊⠝⠛⠑⠝ ⠞⠕ ⠛⠁⠝⠛⠑⠗ ⠋⠪⠗⠂ ⠍⠑⠝ ⠑⠝⠞⠑⠝ ⠓⠑⠝⠛⠑⠗ ⠏⠉⠤⠑⠝ ⠎⠑⠛ ⠕⠏⠏⠂ ⠑⠇⠇⠑⠗ ⠎⠡ ⠃⠗⠽⠞⠑⠎ ⠝⠑⠞⠞⠋⠕⠗⠃⠊⠝⠙⠑⠇⠎⠑⠝⠄ ⠒⠤⠦"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 1",
+          "input": "Forlì",
+          "output": "⠠⠋⠕⠗⠇⠈⠊"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 2",
+          "input": "Citroën",
+          "output": "⠠⠉⠊⠞⠗⠕⠈⠑⠝"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 3",
+          "input": "hôpital",
+          "output": "⠓⠈⠕⠏⠊⠞⠁⠇"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 4",
+          "input": "Dvořák",
+          "output": "⠠⠙⠧⠕⠈⠗⠈⠁⠅"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 5",
+          "input": "Brăila",
+          "output": "⠠⠃⠗⠈⠁⠊⠇⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 6",
+          "input": "français",
+          "output": "⠋⠗⠁⠝⠈⠉⠁⠊⠎"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 7",
+          "input": "Częstochowa",
+          "output": "⠠⠉⠵⠈⠑⠎⠞⠕⠉⠓⠕⠺⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 8",
+          "input": "Łódź",
+          "output": "⠠⠈⠇⠈⠕⠙⠈⠵"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 9",
+          "input": "ođđasat",
+          "output": "⠕⠈⠙⠈⠙⠁⠎⠁⠞"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 10",
+          "input": "Han fór opp.",
+          "output": "⠠⠓⠁⠝ ⠋⠈⠕⠗ ⠕⠏⠏⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 11",
+          "input": "Málaga",
+          "output": "⠠⠍⠈⠁⠇⠁⠛⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 12",
+          "input": "Bartók",
+          "output": "⠠⠃⠁⠗⠞⠈⠕⠅"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 13",
+          "input": "Gdańsk",
+          "output": "⠠⠛⠙⠁⠈⠝⠎⠅"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 14",
+          "input": "où ",
+          "output": "⠕⠘⠥"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 15",
+          "input": "Forlì",
+          "output": "⠠⠋⠕⠗⠇⠘⠊"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 16",
+          "input": "lātus",
+          "output": "⠇⠘⠁⠞⠥⠎"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 17",
+          "input": "São Paulo",
+          "output": "⠎⠹⠁⠕ ⠠⠏⠁⠥⠇⠕"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 18",
+          "input": "España",
+          "output": "⠠⠑⠎⠏⠁⠹⠝⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 19",
+          "input": "Citroën",
+          "output": "⠠⠉⠊⠞⠗⠕⠒⠑⠝"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 20",
+          "input": "że",
+          "output": "⠒⠵⠑"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 21",
+          "input": "sâl",
+          "output": "⠎⠨⠁⠇"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 22",
+          "input": "hôpital",
+          "output": "⠓⠨⠕⠏⠊⠞⠁⠇"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 23",
+          "input": "ĵus",
+          "output": "⠨⠚⠥⠎"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 24",
+          "input": "sápmelaš",
+          "output": "⠎⠈⠁⠏⠍⠑⠇⠁⠨⠎"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 25",
+          "input": "Dvořák",
+          "output": "⠠⠙⠧⠕⠨⠗⠈⠁⠅"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 26",
+          "input": "lătus",
+          "output": "⠇⠲⠁⠞⠥⠎"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 27",
+          "input": "aŭ",
+          "output": "⠁⠲⠥"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 28",
+          "input": "Brăila",
+          "output": "⠠⠃⠗⠲⠁⠊⠇⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Universal Accent: Example 29",
+          "input": "dům",
+          "output": "⠙⠲⠥⠍"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Sign under the character: Example 1",
+          "input": "français",
+          "output": "⠋⠗⠁⠝⠖⠉⠁⠊⠎"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Sign under the character: Example 2",
+          "input": "Moçambique",
+          "output": "⠠⠍⠕⠖⠉⠁⠍⠃⠊⠟⠥⠑"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Sign under the character: Example 3",
+          "input": "Constanţa",
+          "output": "⠠⠉⠕⠝⠎⠞⠁⠝⠖⠞⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Sign under the character: Example 4",
+          "input": "Częstochowa",
+          "output": "⠠⠉⠵⠖⠑⠎⠞⠕⠉⠓⠕⠺⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Strikethrough: Example 1",
+          "input": "Łódź",
+          "output": "⠠⠔⠇⠈⠕⠙⠈⠵"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Strikethrough: Example 2",
+          "input": "ođđasat",
+          "output": "⠕⠔⠙⠔⠙⠁⠎⠁⠞"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Strikethrough: Example 3",
+          "input": "Bláalóniđ",
+          "output": "⠠⠃⠇⠈⠁⠁⠇⠈⠕⠝⠊⠔⠙"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Strikethrough: Example 4",
+          "input": "Ruoŧŧa",
+          "output": "⠠⠗⠥⠕⠔⠞⠔⠞⠁"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Strikethrough: Example 5",
+          "input": "þingvellir",
+          "output": "⠔⠞⠊⠝⠛⠧⠑⠇⠇⠊⠗"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Strikethrough: Example 6",
+          "input": "groß",
+          "output": "⠛⠗⠕⠔⠎"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Special characters: Example 1",
+          "input": "Would you like to come and play football with us? John asked, staring at me with a threatening look. \"Oh yes, let's play football,\" I said, showing great enthusiasm (but in fact I was deadly frightened).",
+          "output": "⠲⠠⠺⠕⠥⠇⠙ ⠆⠽⠕⠥⠰ ⠇⠊⠅⠑ ⠞⠕ ⠉⠕⠍⠑ ⠁⠝⠙ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇ ⠺⠊⠞⠓ ⠥⠎⠢⠲ ⠠⠚⠕⠓⠝ ⠁⠎⠅⠑⠙⠂ ⠎⠞⠁⠗⠊⠝⠛ ⠁⠞ ⠍⠑ ⠺⠊⠞⠓ ⠁ ⠞⠓⠗⠑⠁⠞⠑⠝⠊⠝⠛ ⠇⠕⠕⠅⠄ ⠲⠆⠕⠓ ⠽⠑⠎⠂ ⠇⠑⠞⠐⠎ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇⠰⠂⠲ ⠠⠊ ⠎⠁⠊⠙⠂ ⠎⠓⠕⠺⠊⠝⠛ ⠛⠗⠑⠁⠞ ⠑⠝⠞⠓⠥⠎⠊⠁⠎⠍ ⠦⠃⠥⠞ ⠊⠝ ⠋⠁⠉⠞ ⠠⠊ ⠺⠁⠎ ⠙⠑⠁⠙⠇⠽ ⠋⠗⠊⠛⠓⠞⠑⠝⠑⠙⠴⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Special characters: Example 2",
+          "input": "Would you like to come and play football with us? John asked, staring at me with a threatening look. \"Oh yes, let's play football,\" I said, showing great enthusiasm (but in fact I was deadly frightened).",
+          "output": "⠐⠂⠦⠠⠺⠕⠥⠇⠙ ⠨⠽⠕⠥ ⠇⠊⠅⠑ ⠞⠕ ⠉⠕⠍⠑ ⠁⠝⠙ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇ ⠺⠊⠞⠓ ⠥⠎⠦⠴ ⠠⠚⠕⠓⠝ ⠁⠎⠅⠑⠙⠂ ⠎⠞⠁⠗⠊⠝⠛ ⠁⠞ ⠍⠑ ⠺⠊⠞⠓ ⠁ ⠞⠓⠗⠑⠁⠞⠑⠝⠊⠝⠛ ⠇⠕⠕⠅⠲ ⠦⠨⠨⠠⠕⠓ ⠽⠑⠎⠂ ⠇⠑⠞⠄⠎ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇⠂⠴⠨⠄ ⠠⠊ ⠎⠁⠊⠙⠂ ⠎⠓⠕⠺⠊⠝⠛ ⠛⠗⠑⠁⠞ ⠑⠝⠞⠓⠥⠎⠊⠁⠎⠍ ⠶⠃⠥⠞ ⠊⠝ ⠋⠁⠉⠞ ⠠⠊ ⠺⠁⠎ ⠙⠑⠁⠙⠇⠽ ⠋⠗⠊⠛⠓⠞⠑⠝⠑⠙⠶⠲⠐⠂"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Special characters: Example 3",
+          "input": "[`k'a:kə]",
+          "output": "⠰⠶⠦⠂⠘⠅⠤⠁⠒⠅⠢⠰⠶"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Special characters: Example 4",
+          "input": "/`ka:ke/",
+          "output": "⠸⠶⠦⠂⠘⠅⠁⠒⠅⠑⠸⠶"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 1",
+          "input": "I 2007 feires det 100-årsjubileum ifm. Edvard Griegs død i 1907. I en avis sto blant annet følgende fakta om Edvard Grieg:",
+          "output": "⠠⠊ ⠼⠃⠚⠚⠛ ⠋⠑⠊⠗⠑⠎ ⠙⠑⠞ ⠼⠁⠚⠚⠡⠗⠎⠚⠥⠃⠊⠇⠑⠥⠍ ⠊⠋⠍⠄ ⠠⠑⠙⠧⠁⠗⠙ ⠠⠛⠗⠊⠑⠛⠎ ⠙⠪⠙ ⠊ ⠼⠁⠊⠚⠛⠄ ⠠⠊ ⠑⠝ ⠁⠧⠊⠎ ⠎⠞⠕ ⠃⠇⠄⠁⠄ ⠋⠪⠇⠛⠑⠝⠙⠑ ⠋⠁⠅⠞⠁ ⠕⠍ ⠠⠑⠙⠧⠁⠗⠙ ⠠⠛⠗⠊⠑⠛⠒"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 2",
+          "input": "– Edvard Grieg ble født i Bergen 15. juni 1843, og døde samme sted 4. september 1907. Han var gift med kusinen Nina Hagerup.",
+          "output": "⠤⠤ ⠠⠑⠙⠧⠁⠗⠙ ⠠⠛⠗⠊⠑⠛ ⠃⠇⠑ ⠋⠪⠙⠞ ⠊ ⠠⠃⠑⠗⠛⠑⠝ ⠼⠁⠑⠄ ⠚⠥⠝⠊ ⠼⠁⠓⠙⠉⠂ ⠕⠛ ⠙⠪⠙⠑ ⠎⠁⠍⠍⠑ ⠎⠞⠑⠙ ⠼⠙⠄ ⠎⠑⠏⠞⠑⠍⠃⠑⠗ ⠼⠁⠊⠚⠛⠄ ⠠⠓⠁⠝ ⠧⠁⠗ ⠛⠊⠋⠞ ⠍⠑⠙ ⠅⠥⠎⠊⠝⠑⠝ ⠠⠝⠊⠝⠁ ⠠⠓⠁⠛⠑⠗⠥⠏⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 3",
+          "input": "– Grieg er Norges mest kjente komponist. Han jobbet og studerte bl.a. i Danmark og Tyskland.",
+          "output": "⠤⠤ ⠠⠛⠗⠊⠑⠛ ⠑⠗ ⠠⠝⠕⠗⠛⠑⠎ ⠍⠑⠎⠞ ⠅⠚⠑⠝⠞⠑ ⠅⠕⠍⠏⠕⠝⠊⠎⠞⠄ ⠠⠓⠁⠝ ⠚⠕⠃⠃⠑⠞ ⠕⠛ ⠎⠞⠥⠙⠑⠗⠞⠑ ⠃⠇⠄⠁⠄ ⠊ ⠠⠙⠁⠝⠍⠁⠗⠅ ⠕⠛ ⠠⠞⠽⠎⠅⠇⠁⠝⠙⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 4",
+          "input": "– Han var også en dyktig pianist. Han opptrådte alene eller sammen med kona Nina, som var sanger.",
+          "output": "⠤⠤ ⠠⠓⠁⠝ ⠧⠁⠗ ⠕⠛⠎⠡ ⠑⠝ ⠙⠽⠅⠞⠊⠛ ⠏⠊⠁⠝⠊⠎⠞⠄ ⠠⠓⠁⠝ ⠕⠏⠏⠞⠗⠡⠙⠞⠑ ⠁⠇⠑⠝⠑ ⠑⠇⠇⠑⠗ ⠎⠁⠍⠍⠑⠝ ⠍⠑⠙ ⠅⠕⠝⠁ ⠠⠝⠊⠝⠁⠂ ⠎⠕⠍ ⠧⠁⠗ ⠎⠁⠝⠛⠑⠗⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 5",
+          "input": "Du må ta med deg følgende dokumenter:",
+          "output": "⠠⠙⠥ ⠍⠡ ⠞⠁ ⠍⠑⠙ ⠙⠑⠛ ⠋⠪⠇⠛⠑⠝⠙⠑ ⠙⠕⠅⠥⠍⠑⠝⠞⠑⠗⠒"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 6",
+          "input": "– undertegnet salgsmelding",
+          "output": "⠤⠤ ⠥⠝⠙⠑⠗⠞⠑⠛⠝⠑⠞ ⠎⠁⠇⠛⠎⠍⠑⠇⠙⠊⠝⠛"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 7",
+          "input": "– kvittering for betalt veiavgift",
+          "output": "⠤⠤ ⠅⠧⠊⠞⠞⠑⠗⠊⠝⠛ ⠋⠕⠗ ⠃⠑⠞⠁⠇⠞ ⠧⠑⠊⠁⠧⠛⠊⠋⠞"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 8",
+          "input": "– kvittering for betalt registreringsavgift",
+          "output": "⠤⠤ ⠅⠧⠊⠞⠞⠑⠗⠊⠝⠛ ⠋⠕⠗ ⠃⠑⠞⠁⠇⠞ ⠗⠑⠛⠊⠎⠞⠗⠑⠗⠊⠝⠛⠎⠁⠧⠛⠊⠋⠞"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 9",
+          "input": "Vi er takknemlig hvis du ringer før du kommer!",
+          "output": "⠠⠧⠊ ⠑⠗ ⠞⠁⠅⠅⠝⠑⠍⠇⠊⠛ ⠓⠧⠊⠎ ⠙⠥ ⠗⠊⠝⠛⠑⠗ ⠋⠪⠗ ⠙⠥ ⠅⠕⠍⠍⠑⠗⠖"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 10",
+          "input": "10 år med skolefaget KRL:",
+          "output": "⠼⠁⠚ ⠡⠗ ⠍⠑⠙ ⠎⠅⠕⠇⠑⠋⠁⠛⠑⠞ ⠠⠠⠅⠗⠇⠒"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 11",
+          "input": "•      Før kunne foreldre og elever søke om fritak fra faget kristendom. Da fikk elevene faget alternativ livssynsundervisning i stedet.",
+          "output": "⠶ ⠠⠋⠪⠗ ⠅⠥⠝⠝⠑ ⠋⠕⠗⠑⠇⠙⠗⠑ ⠕⠛ ⠑⠇⠑⠧⠑⠗ ⠎⠪⠅⠑ ⠕⠍ ⠋⠗⠊⠞⠁⠅ ⠋⠗⠁ ⠋⠁⠛⠑⠞ ⠅⠗⠊⠎⠞⠑⠝⠙⠕⠍⠄ ⠠⠙⠁ ⠋⠊⠅⠅ ⠑⠇⠑⠧⠑⠝⠑ ⠋⠁⠛⠑⠞ ⠁⠇⠞⠑⠗⠝⠁⠞⠊⠧ ⠇⠊⠧⠎⠎⠽⠝⠎⠥⠝⠙⠑⠗⠧⠊⠎⠝⠊⠝⠛ ⠊ ⠎⠞⠑⠙⠑⠞⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 12",
+          "input": "•      I 1997 ble de to fagene slått sammen til ett fag: kristendoms-, religions- og livssynskunnskap (KRL).",
+          "output": "⠶ ⠠⠊ ⠼⠁⠊⠊⠛ ⠃⠇⠑ ⠙⠑ ⠞⠕ ⠋⠁⠛⠑⠝⠑ ⠎⠇⠡⠞⠞ ⠎⠁⠍⠍⠑⠝ ⠞⠊⠇ ⠑⠞⠞ ⠋⠁⠛⠒ ⠅⠗⠊⠎⠞⠑⠝⠙⠕⠍⠎⠤⠂ ⠗⠑⠇⠊⠛⠊⠕⠝⠎⠤ ⠕⠛ ⠇⠊⠧⠎⠎⠽⠝⠎⠅⠥⠝⠝⠎⠅⠁⠏ ⠦⠠⠠⠅⠗⠇⠴⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Bullet Points: Example 13",
+          "input": "•      Det ble gjort mindre endringer i KRL-faget i 2001 og 2005, og det ble enklere å søke om fritak fra aktiviteter i faget.",
+          "output": "⠶ ⠠⠙⠑⠞ ⠃⠇⠑ ⠛⠚⠕⠗⠞ ⠍⠊⠝⠙⠗⠑ ⠑⠝⠙⠗⠊⠝⠛⠑⠗ ⠊ ⠠⠠⠅⠗⠇⠤⠋⠁⠛⠑⠞ ⠊ ⠼⠃⠚⠚⠁ ⠕⠛ ⠼⠃⠚⠚⠑⠂ ⠕⠛ ⠙⠑⠞ ⠃⠇⠑ ⠑⠝⠅⠇⠑⠗⠑ ⠡ ⠎⠪⠅⠑ ⠕⠍ ⠋⠗⠊⠞⠁⠅ ⠋⠗⠁ ⠁⠅⠞⠊⠧⠊⠞⠑⠞⠑⠗ ⠊ ⠋⠁⠛⠑⠞⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 1",
+          "input": "Skolen ble åpnet i den franske hovedstaden i 1784,*",
+          "output": "⠠⠎⠅⠕⠇⠑⠝ ⠃⠇⠑ ⠡⠏⠝⠑⠞ ⠊ ⠙⠑⠝ ⠋⠗⠁⠝⠎⠅⠑ ⠓⠕⠧⠑⠙⠎⠞⠁⠙⠑⠝ ⠊ ⠼⠁⠛⠓⠙⠂⠔ "
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 2",
+          "input": "*Dette var verdens første skole for blinde.",
+          "output": "⠔⠙⠑⠞⠞⠑ ⠧⠁⠗ ⠧⠑⠗⠙⠑⠝⠎ ⠋⠪⠗⠎⠞⠑ ⠎⠅⠕⠇⠑ ⠋⠕⠗ ⠃⠇⠊⠝⠙⠑⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 3",
+          "input": "men allerede 5 år etter åpningen oppstod alvorlige vanskeligheter ...",
+          "output": "⠍⠑⠝ ⠁⠇⠇⠑⠗⠑⠙⠑ ⠼⠑ ⠡⠗ ⠑⠞⠞⠑⠗ ⠡⠏⠝⠊⠝⠛⠑⠝ ⠕⠏⠏⠎⠞⠕⠙ ⠁⠇⠧⠕⠗⠇⠊⠛⠑ ⠧⠁⠝⠎⠅⠑⠇⠊⠛⠓⠑⠞⠑⠗ ⠄⠄⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 4",
+          "input": "Året etter1 ble den første spesialskole for blinde barn etablert i Paris.2 Etter hvert som tiden gikk, vokste det fram …",
+          "output": "⠠⠡⠗⠑⠞ ⠑⠞⠞⠑⠗⠠⠼⠁ ⠃⠇⠑ ⠙⠑⠝ ⠋⠪⠗⠎⠞⠑ ⠎⠏⠑⠎⠊⠁⠇⠎⠅⠕⠇⠑ ⠋⠕⠗ ⠃⠇⠊⠝⠙⠑ ⠃⠁⠗⠝ ⠑⠞⠁⠃⠇⠑⠗⠞ ⠊ ⠠⠏⠁⠗⠊⠎⠄⠠⠼⠃ ⠠⠑⠞⠞⠑⠗ ⠓⠧⠑⠗⠞ ⠎⠕⠍ ⠞⠊⠙⠑⠝ ⠛⠊⠅⠅⠂ ⠧⠕⠅⠎⠞⠑ ⠙⠑⠞ ⠋⠗⠁⠍ ⠄⠄⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 5",
+          "input": "1 1784.",
+          "output": "⠠⠼⠁ ⠼⠁⠛⠓⠙⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 6",
+          "input": "2 Grunnleggerens navn var Valentin Haüy.",
+          "output": "⠠⠼⠃ ⠠⠛⠗⠥⠝⠝⠇⠑⠛⠛⠑⠗⠑⠝⠎ ⠝⠁⠧⠝ ⠧⠁⠗ ⠠⠧⠁⠇⠑⠝⠞⠊⠝ ⠠⠓⠁⠳⠽⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 7",
+          "input": "Man viser til en fotnote med et siffer1 som settes opphøyd uten mellomrom inntil det ord eller det uttrykk som noten gjelder: Hun brukte uttrykket \"takle problemet\"2",
+          "output": "⠠⠍⠁⠝ ⠧⠊⠎⠑⠗ ⠞⠊⠇ ⠑⠝ ⠋⠕⠞⠝⠕⠞⠑ ⠍⠑⠙ ⠑⠞ ⠎⠊⠋⠋⠑⠗⠠⠼⠁ ⠎⠕⠍ ⠎⠑⠞⠞⠑⠎ ⠕⠏⠏⠓⠪⠽⠙ ⠥⠞⠑⠝ ⠍⠑⠇⠇⠕⠍⠗⠕⠍ ⠊⠝⠝⠞⠊⠇ ⠙⠑⠞ ⠕⠗⠙ ⠑⠇⠇⠑⠗ ⠙⠑⠞ ⠥⠞⠞⠗⠽⠅⠅ ⠎⠕⠍ ⠝⠕⠞⠑⠝ ⠛⠚⠑⠇⠙⠑⠗⠒ ⠆⠠⠓⠥⠝ ⠃⠗⠥⠅⠞⠑ ⠥⠞⠞⠗⠽⠅⠅⠑⠞ ⠲⠞⠁⠅⠇⠑ ⠏⠗⠕⠃⠇⠑⠍⠑⠞⠲⠰⠠⠼⠃"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 8",
+          "input": "Sluttnoter",
+          "output": "⠠⠎⠇⠥⠞⠞⠝⠕⠞⠑⠗"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 9",
+          "input": "1 Hvis det er bare én fotnote på siden, forekommer også asterisk (*) som notetegn. I eldre tekster ble også kors brukt. Siffer er å foretrekke.",
+          "output": "⠼⠁ ⠠⠓⠧⠊⠎ ⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠿⠝ ⠋⠕⠞⠝⠕⠞⠑ ⠏⠡ ⠎⠊⠙⠑⠝⠂ ⠋⠕⠗⠑⠅⠕⠍⠍⠑⠗ ⠕⠛⠎⠡ ⠁⠎⠞⠑⠗⠊⠎⠅ ⠦⠔⠴ ⠎⠕⠍ ⠝⠕⠞⠑⠞⠑⠛⠝⠄ ⠠⠊ ⠑⠇⠙⠗⠑ ⠞⠑⠅⠎⠞⠑⠗ ⠃⠇⠑ ⠕⠛⠎⠡ ⠅⠕⠗⠎ ⠃⠗⠥⠅⠞⠄ ⠠⠎⠊⠋⠋⠑⠗ ⠑⠗ ⠡ ⠕⠗⠑⠞⠗⠑⠅⠅⠑⠄"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "comment": "Footnotes and endnotes: Example 10",
+          "input": "2 Fra engelsk tackle a problem.",
+          "output": "⠼⠃ ⠠⠋⠗⠁ ⠑⠝⠛⠑⠇⠎⠅ ⠆⠞⠁⠉⠅⠇⠑ ⠁ ⠏⠗⠕⠃⠇⠑⠍⠰⠄"
+        }
+      ]
     }
   ]
 }
