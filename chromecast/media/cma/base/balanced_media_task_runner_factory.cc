@@ -244,8 +244,14 @@ void BalancedMediaTaskRunnerFactory::OnNewTask() {
 
 void BalancedMediaTaskRunnerFactory::UnregisterMediaTaskRunner(
       const scoped_refptr<BalancedMediaTaskRunner>& media_task_runner) {
-  base::AutoLock auto_lock(lock_);
-  task_runners_.erase(media_task_runner);
+  {
+    base::AutoLock auto_lock(lock_);
+    task_runners_.erase(media_task_runner);
+  }
+  // After removing one of the task runners some of the other task runners might
+  // need to be waken up, if they are no longer blocked by the balancing
+  // restrictions with the old stream.
+  OnNewTask();
 }
 
 }  // namespace media
