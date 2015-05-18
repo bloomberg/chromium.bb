@@ -68,7 +68,7 @@ bool AppCacheBackendImpl::SelectCache(
     const int64 cache_document_was_loaded_from,
     const GURL& manifest_url) {
   AppCacheHost* host = GetHost(host_id);
-  if (!host)
+  if (!host || host->was_select_cache_called())
     return false;
 
   host->SelectCache(document_url, cache_document_was_loaded_from,
@@ -79,7 +79,7 @@ bool AppCacheBackendImpl::SelectCache(
 bool AppCacheBackendImpl::SelectCacheForWorker(
     int host_id, int parent_process_id, int parent_host_id) {
   AppCacheHost* host = GetHost(host_id);
-  if (!host)
+  if (!host || host->was_select_cache_called())
     return false;
 
   host->SelectCacheForWorker(parent_process_id, parent_host_id);
@@ -89,7 +89,7 @@ bool AppCacheBackendImpl::SelectCacheForWorker(
 bool AppCacheBackendImpl::SelectCacheForSharedWorker(
     int host_id, int64 appcache_id) {
   AppCacheHost* host = GetHost(host_id);
-  if (!host)
+  if (!host || host->was_select_cache_called())
     return false;
 
   host->SelectCacheForSharedWorker(appcache_id);

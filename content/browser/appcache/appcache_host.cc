@@ -49,6 +49,7 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
       parent_host_id_(kAppCacheNoHostId), parent_process_id_(0),
       pending_main_resource_cache_id_(kAppCacheNoCacheId),
       pending_selected_cache_id_(kAppCacheNoCacheId),
+      was_select_cache_called_(false),
       is_cache_selection_enabled_(true),
       frontend_(frontend), service_(service),
       storage_(service->storage()),
@@ -85,8 +86,9 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
          pending_get_status_callback_.is_null() &&
-         !is_selection_pending());
+         !is_selection_pending() && !was_select_cache_called_);
 
+  was_select_cache_called_ = true;
   if (!is_cache_selection_enabled_) {
     FinishCacheSelection(NULL, NULL);
     return;
@@ -152,8 +154,9 @@ void AppCacheHost::SelectCacheForWorker(int parent_process_id,
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
          pending_get_status_callback_.is_null() &&
-         !is_selection_pending());
+         !is_selection_pending() && !was_select_cache_called_);
 
+  was_select_cache_called_ = true;
   parent_process_id_ = parent_process_id;
   parent_host_id_ = parent_host_id;
   FinishCacheSelection(NULL, NULL);
@@ -163,8 +166,9 @@ void AppCacheHost::SelectCacheForSharedWorker(int64 appcache_id) {
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
          pending_get_status_callback_.is_null() &&
-         !is_selection_pending());
+         !is_selection_pending() && !was_select_cache_called_);
 
+  was_select_cache_called_ = true;
   if (appcache_id != kAppCacheNoCacheId) {
     LoadSelectedCache(appcache_id);
     return;
