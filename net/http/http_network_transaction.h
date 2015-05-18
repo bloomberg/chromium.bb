@@ -239,7 +239,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void ResetStateForAuthRestart();
 
   // Records metrics relating to SSL fallbacks.
-  void RecordSSLFallbackMetrics();
+  void RecordSSLFallbackMetrics(int result);
 
   // Returns true if we should try to add a Proxy-Authorization header
   bool ShouldApplyProxyAuth() const;

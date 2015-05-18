@@ -19495,6 +19495,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.GoogleConnectionInappropriateFallback"
+    enum="BooleanInappropriateFallback">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    Records a sample for each HTTPS request to a Google server that either
+    succeeded or received an inappropriate_fallback alert. This is used to
+    estimate how frequently the fallback is used to recover from a spurious
+    network failure.
+  </summary>
+</histogram>
+
 <histogram name="Net.GoogleConnectionUsedSSLVersionFallback"
     enum="FallbackSSLVersion">
   <obsolete>
@@ -19515,8 +19526,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     For each successful HTTPS request to a Google server, whether it used the
     SSL version fallback. The value indicates the SSL version the request fell
-    back on. Since Google servers support TLS 1.2, any fallback is an indication
-    of network middleware problems.
+    back on. Since Google servers support TLS 1.2 and FALLBACK_SCSV, any
+    fallback is an indication of a broken local SSL MITM proxy.
   </summary>
 </histogram>
 
@@ -48331,6 +48342,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanIgnored" type="int">
   <int value="0" label="Not ignored"/>
   <int value="1" label="Ignored"/>
+</enum>
+
+<enum name="BooleanInappropriateFallback" type="int">
+  <int value="0" label="Handshake successful"/>
+  <int value="1" label="inappropriate_fallback alert"/>
 </enum>
 
 <enum name="BooleanIsMobileOptimized" type="int">

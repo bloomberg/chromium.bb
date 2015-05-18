@@ -776,9 +776,10 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
   if (result != ERR_HTTPS_PROXY_TUNNEL_RESPONSE)
     CopyConnectionAttemptsFromStreamRequest();
 
+  if (request_->url.SchemeIsCryptographic())
+    RecordSSLFallbackMetrics(result);
+
   if (result == OK) {
-    if (request_->url.SchemeIsCryptographic())
-      RecordSSLFallbackMetrics();
     next_state_ = STATE_INIT_STREAM;
     DCHECK(stream_.get());
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
@@ -1438,7 +1439,27 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   establishing_tunnel_ = false;
 }
 
-void HttpNetworkTransaction::RecordSSLFallbackMetrics() {
+void HttpNetworkTransaction::RecordSSLFallbackMetrics(int result) {
+  if (result != OK && result != ERR_SSL_INAPPROPRIATE_FALLBACK)
+    return;
+
+  const std::string& host = request_->url.host();
+  bool is_google = EndsWith(host, "google.com", true) &&
+                   (host.size() == 10 || host[host.size() - 11] == '.');
+  if (is_google) {
+    // Some fraction of successful connections use the fallback, but only due to
+    // a spurious network failure. To estimate this fraction, compare handshakes
+    // to Google servers which succeed against those that fail with an
+    // inappropriate_fallback alert. Google servers are known to implement
+    // FALLBACK_SCSV, so a spurious network failure while connecting would
+    // trigger the fallback, successfully connect, but fail with this alert.
+    UMA_HISTOGRAM_BOOLEAN("Net.GoogleConnectionInappropriateFallback",
+                          result == ERR_SSL_INAPPROPRIATE_FALLBACK);
+  }
+
+  if (result != OK)
+    return;
+
   // Note: these values are used in histograms, so new values must be appended.
   enum FallbackVersion {
     FALLBACK_NONE = 0,  // SSL version fallback did not occur.
@@ -1467,9 +1488,7 @@ void HttpNetworkTransaction::RecordSSLFallbackMetrics() {
   // Google servers are known to implement TLS 1.2 and FALLBACK_SCSV, so it
   // should be impossible to successfully connect to them with the fallback.
   // This helps estimate intolerant locally-configured SSL MITMs.
-  const std::string& host = request_->url.host();
-  if (EndsWith(host, "google.com", true) &&
-      (host.size() == 10 || host[host.size() - 11] == '.')) {
+  if (is_google) {
     UMA_HISTOGRAM_ENUMERATION("Net.GoogleConnectionUsedSSLVersionFallback2",
                               fallback, FALLBACK_MAX);
   }
