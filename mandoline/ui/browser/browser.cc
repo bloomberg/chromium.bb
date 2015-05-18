@@ -40,6 +40,10 @@ Browser::Browser()
 }
 
 Browser::~Browser() {
+  // Destruct ui_ manually while |this| is alive and reset the pointer first.
+  // This is to avoid a double delete when OnViewManagerDisconnected gets
+  // called.
+  delete ui_.release();
 }
 
 void Browser::ReplaceContentWithURL(const mojo::String& url) {
