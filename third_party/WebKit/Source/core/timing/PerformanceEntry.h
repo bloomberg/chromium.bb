@@ -33,12 +33,13 @@
 #define PerformanceEntry_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
+class CORE_EXPORT PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~PerformanceEntry();
