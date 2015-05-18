@@ -53,6 +53,7 @@
       'sources': [
         'common/common_type_converters.cc',
         'common/common_type_converters.h',
+        'common/data_pipe_file_utils.cc',
         'common/data_pipe_utils.cc',
         'common/data_pipe_utils.h',
         'common/handle_watcher.cc',
