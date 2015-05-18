@@ -8,6 +8,8 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
+#include <limits.h>
+
 #include "base/atomicops.h"
 #include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -17,6 +19,21 @@
 
 namespace gpu {
 namespace gles2 {
+
+QuerySyncManager::Bucket::Bucket(QuerySync* sync_mem,
+                                 int32 shm_id,
+                                 unsigned int shm_offset)
+    : syncs(sync_mem),
+      shm_id(shm_id),
+      base_shm_offset(shm_offset),
+      free_queries(kSyncsPerBucket) {
+  static_assert(kSyncsPerBucket <= USHRT_MAX,
+                "Can't fit kSyncsPerBucket in unsigned short");
+  for (size_t ii = 0; ii < kSyncsPerBucket; ++ii)
+    free_queries[ii] = ii;
+}
+
+QuerySyncManager::Bucket::~Bucket() = default;
 
 QuerySyncManager::QuerySyncManager(MappedMemoryManager* manager)
     : mapped_memory_(manager) {
@@ -33,7 +50,14 @@ QuerySyncManager::~QuerySyncManager() {
 
 bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
   DCHECK(info);
-  if (free_queries_.empty()) {
+  Bucket* bucket = nullptr;
+  for (Bucket* bucket_candidate : buckets_) {
+    if (!bucket_candidate->free_queries.empty()) {
+      bucket = bucket_candidate;
+      break;
+    }
+  }
+  if (!bucket) {
     int32 shm_id;
     unsigned int shm_offset;
     void* mem = mapped_memory_->Alloc(
@@ -42,40 +66,31 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
       return false;
     }
     QuerySync* syncs = static_cast<QuerySync*>(mem);
-    Bucket* bucket = new Bucket(syncs);
+    bucket = new Bucket(syncs, shm_id, shm_offset);
     buckets_.push_back(bucket);
-    for (size_t ii = 0; ii < kSyncsPerBucket; ++ii) {
-      free_queries_.push_back(QueryInfo(bucket, shm_id, shm_offset, syncs));
-      ++syncs;
-      shm_offset += sizeof(*syncs);
-    }
   }
-  *info = free_queries_.front();
-  ++(info->bucket->used_query_count);
+
+  unsigned short index_in_bucket = bucket->free_queries.back();
+  uint32 shm_offset =
+      bucket->base_shm_offset + index_in_bucket * sizeof(QuerySync);
+  QuerySync* sync = bucket->syncs + index_in_bucket;
+  *info = QueryInfo(bucket, bucket->shm_id, shm_offset, sync);
   info->sync->Reset();
-  free_queries_.pop_front();
+  bucket->free_queries.pop_back();
   return true;
 }
 
 void QuerySyncManager::Free(const QuerySyncManager::QueryInfo& info) {
-  DCHECK_GT(info.bucket->used_query_count, 0u);
-  --(info.bucket->used_query_count);
-  free_queries_.push_back(info);
+  DCHECK(info.bucket->free_queries.size() < kSyncsPerBucket);
+  unsigned short index_in_bucket = info.sync - info.bucket->syncs;
+  info.bucket->free_queries.push_back(index_in_bucket);
 }
 
 void QuerySyncManager::Shrink() {
-  std::deque<QueryInfo> new_queue;
-  while (!free_queries_.empty()) {
-    if (free_queries_.front().bucket->used_query_count)
-      new_queue.push_back(free_queries_.front());
-    free_queries_.pop_front();
-  }
-  free_queries_.swap(new_queue);
-
   std::deque<Bucket*> new_buckets;
   while (!buckets_.empty()) {
     Bucket* bucket = buckets_.front();
-    if (bucket->used_query_count) {
+    if (bucket->free_queries.size() < kSyncsPerBucket) {
       new_buckets.push_back(bucket);
     } else {
       mapped_memory_->Free(bucket->syncs);

@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <list>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
@@ -30,12 +31,12 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
   static const size_t kSyncsPerBucket = 1024;
 
   struct Bucket {
-    explicit Bucket(QuerySync* sync_mem)
-        : syncs(sync_mem),
-          used_query_count(0) {
-    }
+    Bucket(QuerySync* sync_mem, int32 shm_id, uint32 shm_offset);
+    ~Bucket();
     QuerySync* syncs;
-    unsigned used_query_count;
+    int32 shm_id;
+    uint32 base_shm_offset;
+    std::vector<unsigned short> free_queries;
   };
   struct QueryInfo {
     QueryInfo(Bucket* bucket, int32 id, uint32 offset, QuerySync* sync_mem)
@@ -68,7 +69,6 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
  private:
   MappedMemoryManager* mapped_memory_;
   std::deque<Bucket*> buckets_;
-  std::deque<QueryInfo> free_queries_;
 
   DISALLOW_COPY_AND_ASSIGN(QuerySyncManager);
 };

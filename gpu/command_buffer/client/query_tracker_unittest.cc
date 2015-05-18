@@ -107,6 +107,10 @@ class QueryTrackerTest : public testing::Test {
     return query->info_.bucket;
   }
 
+  uint32 GetBucketUsedCount(QuerySyncManager::Bucket* bucket) {
+    return QuerySyncManager::kSyncsPerBucket - bucket->free_queries.size();
+  }
+
   uint32 GetFlushGeneration() { return helper_->flush_generation(); }
 
   scoped_ptr<CommandBuffer> command_buffer_;
@@ -209,7 +213,7 @@ TEST_F(QueryTrackerTest, Remove) {
   ASSERT_TRUE(query != NULL);
 
   QuerySyncManager::Bucket* bucket = GetBucket(query);
-  EXPECT_EQ(1u, bucket->used_query_count);
+  EXPECT_EQ(1u, GetBucketUsedCount(bucket));
 
   query->MarkAsActive();
   query->MarkAsPending(kToken);
@@ -219,7 +223,7 @@ TEST_F(QueryTrackerTest, Remove) {
   EXPECT_TRUE(query_tracker_->GetQuery(kId1) == NULL);
 
   // Check that memory was not freed.
-  EXPECT_EQ(1u, bucket->used_query_count);
+  EXPECT_EQ(1u, GetBucketUsedCount(bucket));
 
   // Simulate GPU process marking it as available.
   QuerySync* sync = GetSync(query);
@@ -228,7 +232,7 @@ TEST_F(QueryTrackerTest, Remove) {
 
   // Check FreeCompletedQueries.
   query_tracker_->FreeCompletedQueries();
-  EXPECT_EQ(0u, bucket->used_query_count);
+  EXPECT_EQ(0u, GetBucketUsedCount(bucket));
 }
 
 }  // namespace gles2
