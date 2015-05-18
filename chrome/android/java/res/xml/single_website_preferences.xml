@@ -39,6 +39,8 @@
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="push_notifications_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="fullscreen_permission_list" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="midi_sysex_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="protected_media_identifier_permission_list" />

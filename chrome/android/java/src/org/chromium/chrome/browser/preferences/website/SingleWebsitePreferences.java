@@ -274,6 +274,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 setUpListPreference(preference, mSite.getCookiePermission());
             } else if (PREF_FULLSCREEN_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getFullscreenPermission());
+                preference.setEnabled(false);
             } else if (PREF_IMAGES_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getImagesPermission());
             } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
