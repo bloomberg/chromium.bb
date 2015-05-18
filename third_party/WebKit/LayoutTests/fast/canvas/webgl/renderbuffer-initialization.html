@@ -63,7 +63,7 @@ function runTest(gl, width, height)
 description('Verify renderbuffers are initialized to 0 before being read in WebGL');
 
 var canvas = document.getElementById("testbed");
-var gl = canvas.getContext("experimental-webgl");
+var gl = canvas.getContext("webgl");
 if (gl) {
     runTest(gl, canvas.width, canvas.height);
 

@@ -558,7 +558,7 @@ var create3DContext = function(opt_canvas, opt_attributes) {
     opt_canvas = document.getElementById(opt_canvas);
   }
   var context = null;
-  var names = ["webgl", "experimental-webgl"];
+  var names = ["webgl", "webgl"];
   for (var i = 0; i < names.length; ++i) {
     try {
       context = opt_canvas.getContext(names[i], opt_attributes);

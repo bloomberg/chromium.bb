@@ -20,7 +20,7 @@ if (window.testRunner)
 function initWebGL()
 {
     var canvas = document.getElementById('canvas');
-    var gl = canvas.getContext("experimental-webgl", {'antialias': false});
+    var gl = canvas.getContext("webgl", {'antialias': false});
     if (!gl) {
         alert("No WebGL context found");
         return null;

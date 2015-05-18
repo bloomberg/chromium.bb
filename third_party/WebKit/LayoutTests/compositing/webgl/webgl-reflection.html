@@ -85,7 +85,7 @@
     function initialize()
     {
         var theCanvas = document.getElementById("canvas");
-        gl = theCanvas.getContext("experimental-webgl");
+        gl = theCanvas.getContext("webgl");
 
         var vertexShader = getVertexShader();
         var fragmentShader = getFragmentShader();

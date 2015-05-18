@@ -67,7 +67,7 @@ for (var i=0; i<8; ++i) {
     document.body.appendChild(can);
     if (i == 3)
         document.body.appendChild(document.createElement('br'));
-    ctxs[i] = can.getContext("experimental-webgl", attrs);
+    ctxs[i] = can.getContext("webgl", attrs);
     setup(ctxs[i]);
 }
 

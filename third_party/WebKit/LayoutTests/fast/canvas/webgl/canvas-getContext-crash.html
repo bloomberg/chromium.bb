@@ -10,7 +10,7 @@ function start()
         window.internals.settings.setWebGLEnabled(false);
 
     var canvas = document.getElementById('example');
-    var gl = canvas.getContext("experimental-webgl");
+    var gl = canvas.getContext("webgl");
 }
 
 testPassed("Canvas did not crash on getContext.");

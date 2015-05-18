@@ -18,7 +18,7 @@
 
         function drawCanvas(canvasID) {
             var canvas = document.getElementById(canvasID);
-            var gl = canvas.getContext("experimental-webgl");
+            var gl = canvas.getContext("webgl");
 
             // Fill NW quadrant with opaque blue.
             gl.enable(gl.SCISSOR_TEST);

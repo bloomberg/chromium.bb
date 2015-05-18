@@ -21,7 +21,7 @@
      red using WebGL */
   function drawRedQuadGL(elementId) {
     var canvas = document.getElementById(elementId);
-    var gl = canvas.getContext("experimental-webgl");
+    var gl = canvas.getContext("webgl");
     if (!gl) {
       throw "Unable to fetch WebGL rendering context for Canvas";
     }

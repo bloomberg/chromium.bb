@@ -11,7 +11,7 @@ function create3DContext(canvas, attributes)
         canvas = document.createElement("canvas");
     var context = null;
     try {
-        context = canvas.getContext("experimental-webgl", attributes);
+        context = canvas.getContext("webgl", attributes);
     } catch(e) {}
     if (!context) {
         try {

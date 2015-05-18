@@ -50,7 +50,7 @@ testToDataURL = function(canvas, description)
 
 test = function(canvas, description)
 {
-    testReadPixels(canvas.getContext("experimental-webgl"), description);
+    testReadPixels(canvas.getContext("webgl"), description);
     testToDataURL(canvas, description);
 }
 
@@ -62,7 +62,7 @@ testResource = function (resource, resourceType, continuation)
     var canvas = document.createElement("canvas");
     canvas.width = 100;
     canvas.height = 100;
-    var gl = canvas.getContext("experimental-webgl");
+    var gl = canvas.getContext("webgl");
 
     // Control tests
     log("Untainted canvas:");
