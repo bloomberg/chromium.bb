@@ -7,7 +7,6 @@
 #if defined(OS_ANDROID)
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
-#include <map>
 #endif
 
 #include "base/base_paths.h"
@@ -38,7 +37,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "base/memory/linked_ptr.h"
+#include "base/containers/scoped_ptr_hash_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/android/surface_texture_manager.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
@@ -74,8 +74,8 @@ class TestSurfaceTextureManager : public SurfaceTextureManager {
   void RegisterSurfaceTexture(int surface_texture_id,
                               int client_id,
                               gfx::SurfaceTexture* surface_texture) override {
-    surfaces_[surface_texture_id] =
-        make_linked_ptr(new gfx::ScopedJavaSurface(surface_texture));
+    surfaces_.add(surface_texture_id,
+                  make_scoped_ptr(new gfx::ScopedJavaSurface(surface_texture)));
   }
   void UnregisterSurfaceTexture(int surface_texture_id,
                                 int client_id) override {
@@ -85,11 +85,12 @@ class TestSurfaceTextureManager : public SurfaceTextureManager {
       int surface_texture_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     return ANativeWindow_fromSurface(
-        env, surfaces_[surface_texture_id]->j_surface().obj());
+        env, surfaces_.get(surface_texture_id)->j_surface().obj());
   }
 
  private:
-  typedef std::map<int, linked_ptr<gfx::ScopedJavaSurface>> SurfaceMap;
+  using SurfaceMap =
+      base::ScopedPtrHashMap<int, scoped_ptr<gfx::ScopedJavaSurface>>;
   SurfaceMap surfaces_;
 };
 #endif
