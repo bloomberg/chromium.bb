@@ -1928,11 +1928,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   int load_flags = info.begin_params.load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;
-  if (info.is_main_frame) {
+  if (info.is_main_frame)
     load_flags |= net::LOAD_MAIN_FRAME;
-  } else {
-    load_flags |= net::LOAD_SUB_FRAME;
-  }
   // Add a flag to selectively bypass the data reduction proxy if the resource
   // type is not an image.
   load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
@@ -2358,8 +2355,6 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
     load_flags |= net::LOAD_MAIN_FRAME;
-  } else if (request_data.resource_type == RESOURCE_TYPE_SUB_FRAME) {
-    load_flags |= net::LOAD_SUB_FRAME;
   } else if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
     load_flags |= net::LOAD_PREFETCH;
   }

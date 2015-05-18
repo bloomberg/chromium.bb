@@ -5,6 +5,8 @@
 #include "chrome/browser/net/connect_interceptor.h"
 
 #include "chrome/browser/net/predictor.h"
+#include "content/public/browser/resource_request_info.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 
@@ -25,11 +27,22 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   if (request_scheme_host == GURL::EmptyGURL())
     return;
 
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  bool is_main_frame = false;
+  bool is_sub_frame = false;
+  // TODO(mmenke):  Should the predictor really be fed requests without a
+  // ResourceRequestInfo?
+  if (info) {
+    content::ResourceType resource_type = info->GetResourceType();
+    is_main_frame = (resource_type == content::RESOURCE_TYPE_MAIN_FRAME);
+    is_sub_frame = (resource_type == content::RESOURCE_TYPE_SUB_FRAME);
+  }
+
   // Learn what URLs are likely to be needed during next startup.
   predictor_->LearnAboutInitialNavigation(request_scheme_host);
 
   bool redirected_host = false;
-  bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
   if (request->referrer().empty()) {
     if (request->url() != request->original_url()) {
       // This request was completed with a redirect.
@@ -57,9 +70,10 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   } else {
     GURL referring_scheme_host = GURL(request->referrer()).GetWithEmptyPath();
     // Learn about our referring URL, for use in the future.
-    if (is_subresource && timed_cache_.WasRecentlySeen(referring_scheme_host))
+    if (!is_main_frame && timed_cache_.WasRecentlySeen(referring_scheme_host)) {
       predictor_->LearnFromNavigation(referring_scheme_host,
                                       request_scheme_host);
+    }
     if (referring_scheme_host == request_scheme_host) {
       // We've already made any/all predictions when we navigated to the
       // referring host, so we can bail out here.
@@ -74,9 +88,10 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   // Subresources for main frames usually get predicted when we detected the
   // main frame request - way back in RenderViewHost::Navigate.  So only handle
   // predictions now for subresources or for redirected hosts.
-  if ((request->load_flags() & net::LOAD_SUB_FRAME) || redirected_host)
+  if (is_sub_frame || redirected_host) {
     predictor_->PredictFrameSubresources(request_scheme_host,
                                          request->first_party_for_cookies());
+  }
   return;
 }
 

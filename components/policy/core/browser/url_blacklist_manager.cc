@@ -18,9 +18,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "net/base/filename_util.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request.h"
 #include "url/url_constants.h"
 #include "url/url_parse.h"
 
@@ -490,22 +488,16 @@ bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
   return blacklist_->IsURLBlocked(url);
 }
 
-bool URLBlacklistManager::IsRequestBlocked(
-    const net::URLRequest& request, int* reason) const {
+bool URLBlacklistManager::ShouldBlockRequestForFrame(const GURL& url,
+                                                     int* reason) const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-#if !defined(OS_IOS)
-  // TODO(joaodasilva): iOS doesn't set these flags. http://crbug.com/338283
-  int filter_flags = net::LOAD_MAIN_FRAME | net::LOAD_SUB_FRAME;
-  if ((request.load_flags() & filter_flags) == 0)
-    return false;
-#endif
 
   bool block = false;
-  if (override_blacklist_.Run(request.url(), &block, reason))
+  if (override_blacklist_.Run(url, &block, reason))
     return block;
 
   *reason = net::ERR_BLOCKED_BY_ADMINISTRATOR;
-  return IsURLBlocked(request.url());
+  return IsURLBlocked(url);
 }
 
 // static

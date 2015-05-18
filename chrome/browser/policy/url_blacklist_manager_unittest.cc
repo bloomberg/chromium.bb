@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -18,10 +19,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/request_priority.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -642,17 +639,9 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   blacklist_manager_->SetBlacklist(blacklist.Pass());
   EXPECT_TRUE(blacklist_manager_->IsURLBlocked(GURL("http://google.com")));
 
-  net::TestURLRequestContext context;
-  scoped_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://google.com"), net::DEFAULT_PRIORITY, NULL));
-
   int reason = net::ERR_UNEXPECTED;
-  // Background requests aren't filtered.
-  EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(*request.get(), &reason));
-
-  // Main frames are filtered.
-  request->SetLoadFlags(net::LOAD_MAIN_FRAME);
-  EXPECT_TRUE(blacklist_manager_->IsRequestBlocked(*request.get(), &reason));
+  EXPECT_TRUE(blacklist_manager_->ShouldBlockRequestForFrame(
+      GURL("http://google.com"), &reason));
   EXPECT_EQ(net::ERR_BLOCKED_BY_ADMINISTRATOR, reason);
 }
 

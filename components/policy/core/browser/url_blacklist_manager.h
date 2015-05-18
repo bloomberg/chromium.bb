@@ -27,10 +27,6 @@ class ListValue;
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -161,14 +157,17 @@ class POLICY_EXPORT URLBlacklistManager {
   // from the IO thread.
   bool IsURLBlocked(const GURL& url) const;
 
-  // Returns true if |request| is blocked by the current blacklist.
-  // Only main frame and sub frame requests may be blocked; other sub resources
-  // or background downloads (e.g. extensions updates, sync, etc) are not
-  // filtered. The sync signin page is also not filtered.
+  // Returns true if a request for |url| is blocked by the current blacklist.
+  //
+  // Should only be called for requests for frames (Main frames or subframes).
+  // Other subresources or background downloads (e.g. extensions updates, sync,
+  // etc) should not be filtered. The sync signin page will also not be
+  // filtered.
+  //
   // |reason| is populated with the exact reason for blocking the url if and
   // only if the return value is true otherwise it is left untouched.
   // Must be called from the IO thread.
-  bool IsRequestBlocked(const net::URLRequest& request, int* reason) const;
+  bool ShouldBlockRequestForFrame(const GURL& url, int* reason) const;
 
   // Replaces the current blacklist. Must be called on the IO thread.
   // Virtual for testing.
