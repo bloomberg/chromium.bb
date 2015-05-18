@@ -50,8 +50,14 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "net/base/net_util.h"
 #include "url/url_parse.h"
+
+namespace autofill {
+struct PasswordForm;
+}  // namespace autofill
 
 namespace base {
 class CommandLine;
@@ -192,6 +198,13 @@ bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
 // is force enabled/disabled correspondingly.
 bool IsAffiliationRequestsForDummyFacetsEnabled(
     const base::CommandLine& command_line);
+
+// Returns the origin URI in a format which can be presented to a user based of
+// |password_from| field values. For web URIs |languages| is using in order to
+// determine whether a URI is 'comprehensible' to a user who understands
+// languages listed.
+std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form,
+                                   const std::string& languages);
 
 // For logging use only.
 std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri);

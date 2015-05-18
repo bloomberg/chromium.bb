@@ -522,7 +522,6 @@
       'browser/ui/passwords/manage_passwords_icon_mock.cc',
       'browser/ui/passwords/manage_passwords_state_unittest.cc',
       'browser/ui/passwords/manage_passwords_ui_controller_unittest.cc',
-      'browser/ui/passwords/manage_passwords_view_utils_unittest.cc',
       'browser/ui/passwords/password_bubble_experiment_unittest.cc',
       'browser/ui/passwords/password_manager_presenter_unittest.cc',
       'browser/ui/search_engines/keyword_editor_controller_unittest.cc',

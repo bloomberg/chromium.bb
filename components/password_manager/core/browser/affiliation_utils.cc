@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
@@ -336,4 +337,13 @@ bool IsValidAndroidFacetURI(const std::string& url) {
   return facet.IsValidAndroidFacetURI();
 }
 
+std::string GetHumanReadableOrigin(const autofill::PasswordForm& password_form,
+                                   const std::string& languages) {
+  password_manager::FacetURI facet_uri =
+      password_manager::FacetURI::FromPotentiallyInvalidSpec(
+          password_form.signon_realm);
+  if (facet_uri.IsValidAndroidFacetURI())
+    return facet_uri.scheme() + "://" + facet_uri.android_package_name();
+  return base::UTF16ToUTF8(net::FormatUrl(password_form.origin, languages));
+}
 }  // namespace password_manager

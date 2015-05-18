@@ -16,12 +16,12 @@
 #if defined(OS_WIN) && defined(USE_ASH)
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/common/experiments.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -201,7 +201,8 @@ void PasswordManagerHandler::SetPasswordList(
   base::string16 placeholder(base::ASCIIToUTF16("        "));
   for (size_t i = 0; i < password_list.size(); ++i) {
     base::ListValue* entry = new base::ListValue();
-    entry->AppendString(GetHumanReadableOrigin(*password_list[i], languages_));
+    entry->AppendString(password_manager::GetHumanReadableOrigin(
+        *password_list[i], languages_));
     entry->AppendString(password_list[i]->username_value);
     if (show_passwords) {
       entry->AppendString(password_list[i]->password_value);
@@ -227,8 +228,8 @@ void PasswordManagerHandler::SetPasswordExceptionList(
     const ScopedVector<autofill::PasswordForm>& password_exception_list) {
   base::ListValue entries;
   for (size_t i = 0; i < password_exception_list.size(); ++i) {
-    entries.AppendString(
-        GetHumanReadableOrigin(*password_exception_list[i], languages_));
+    entries.AppendString(password_manager::GetHumanReadableOrigin(
+        *password_exception_list[i], languages_));
   }
 
   web_ui()->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
