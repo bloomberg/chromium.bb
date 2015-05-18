@@ -1,6 +1,6 @@
 {
   "name": "paper-toggle-button",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "authors": [
     "The Polymer Authors"
   ],
@@ -23,14 +23,14 @@
     "polymer": "polymer/polymer#v0.8.0-rc.7",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
     "paper-styles": "PolymerElements/paper-styles#^0.8.0",
-    "paper-behaviors": "PolymerElements/paper-behaviors#^0.8.0",
-    "iron-state-behaviors": "PolymerElements/iron-state-behaviors#^0.8.0"
+    "paper-behaviors": "PolymerElements/paper-behaviors#^0.8.0"
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.1",
     "web-component-tester": "Polymer/web-component-tester#^2.2.3",
     "test-fixture": "PolymerElements/test-fixture#^0.8.0",
     "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
-    "iron-test-helpers": "PolymerElements/iron-test-helpers#^0.8.0"
+    "iron-test-helpers": "PolymerElements/iron-test-helpers#^0.8.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^0.8.0"
   }
 }

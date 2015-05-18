@@ -20,10 +20,13 @@ var Polymer = function(descriptor) {};
 
 
 /** @constructor @extends {HTMLElement} */
-var PolymerElement = function() {
-  /** @type {!Object<string,!HTMLElement>} */
-  this.$;
-};
+var PolymerElement = function() {};
+
+/**
+ * A mapping from ID to element in this Polymer Element's local DOM.
+ * @type {!Object}
+ */
+PolymerElement.prototype.$;
 
 /** @type {string} The Custom element tag name. */
 PolymerElement.prototype.is;

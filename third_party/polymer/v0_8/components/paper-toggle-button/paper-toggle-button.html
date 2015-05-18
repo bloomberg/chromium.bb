@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
 
 <!--
 `paper-toggle-button` provides a ON/OFF switch that user can toggle the state
@@ -67,7 +67,7 @@ Styling toggle-button:
       is: 'paper-toggle-button',
 
       behaviors: [
-        Polymer.PaperButtonBehavior
+        Polymer.PaperRadioButtonBehavior
       ],
 
       // The custom properties shim is currently an opt-in feature.
@@ -101,7 +101,22 @@ Styling toggle-button:
           type: Boolean,
           value: false,
           reflectToAttribute: true,
+          notify: true,
           observer: '_checkedChanged'
+        },
+
+        /**
+         * If true, the button toggles the active state with each tap or press
+         * of the spacebar.
+         *
+         * @attribute toggles
+         * @type boolean
+         * @default true
+         */
+        toggles: {
+          type: Boolean,
+          value: true,
+          reflectToAttribute: true
         }
       },
 
@@ -109,10 +124,6 @@ Styling toggle-button:
         // TODO(sjmiles): tracking feature disabled until we can control
         // track/tap interaction with confidence
         //xtrack: '_ontrack'
-      },
-
-      ready: function() {
-        this.toggles = true;
       },
 
       // button-behavior hook

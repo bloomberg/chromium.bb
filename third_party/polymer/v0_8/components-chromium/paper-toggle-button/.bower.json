@@ -1,6 +1,6 @@
 {
   "name": "paper-toggle-button",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "authors": [
     "The Polymer Authors"
   ],
@@ -22,21 +22,21 @@
     "polymer": "polymer/polymer#v0.8.0-rc.7",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
     "paper-styles": "PolymerElements/paper-styles#^0.8.0",
-    "paper-behaviors": "PolymerElements/paper-behaviors#^0.8.0",
-    "iron-state-behaviors": "PolymerElements/iron-state-behaviors#^0.8.0"
+    "paper-behaviors": "PolymerElements/paper-behaviors#^0.8.0"
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.1",
     "web-component-tester": "Polymer/web-component-tester#^2.2.3",
     "test-fixture": "PolymerElements/test-fixture#^0.8.0",
     "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
-    "iron-test-helpers": "PolymerElements/iron-test-helpers#^0.8.0"
+    "iron-test-helpers": "PolymerElements/iron-test-helpers#^0.8.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^0.8.0"
   },
-  "_release": "0.8.0",
+  "_release": "0.8.1",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.0",
-    "commit": "6d9e93cc963e9f6974c3c34c63e3790586ae5d6c"
+    "tag": "v0.8.1",
+    "commit": "db5ce1ea8c4435650b172d3f287821d9797974c8"
   },
   "_source": "git://github.com/PolymerElements/paper-toggle-button.git",
   "_target": "^0.8.0",

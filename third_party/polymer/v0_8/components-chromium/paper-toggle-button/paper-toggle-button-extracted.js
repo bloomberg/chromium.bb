@@ -3,7 +3,7 @@
       is: 'paper-toggle-button',
 
       behaviors: [
-        Polymer.PaperButtonBehavior
+        Polymer.PaperRadioButtonBehavior
       ],
 
       // The custom properties shim is currently an opt-in feature.
@@ -37,7 +37,22 @@
           type: Boolean,
           value: false,
           reflectToAttribute: true,
+          notify: true,
           observer: '_checkedChanged'
+        },
+
+        /**
+         * If true, the button toggles the active state with each tap or press
+         * of the spacebar.
+         *
+         * @attribute toggles
+         * @type boolean
+         * @default true
+         */
+        toggles: {
+          type: Boolean,
+          value: true,
+          reflectToAttribute: true
         }
       },
 
@@ -45,10 +60,6 @@
         // TODO(sjmiles): tracking feature disabled until we can control
         // track/tap interaction with confidence
         //xtrack: '_ontrack'
-      },
-
-      ready: function() {
-        this.toggles = true;
       },
 
       // button-behavior hook
