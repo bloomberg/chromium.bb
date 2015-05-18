@@ -1136,6 +1136,7 @@ void WebAXObjectProxy::Decrement() {
 }
 
 void WebAXObjectProxy::ShowMenu() {
+  accessibility_object_.showContextMenu();
 }
 
 void WebAXObjectProxy::Press() {
