@@ -37,6 +37,20 @@ void ThreadQuitHelper() {
   Thread::SetThreadWasQuitProperly(true);
 }
 
+// Used to pass data to ThreadMain.  This structure is allocated on the stack
+// from within StartWithOptions.
+struct Thread::StartupData {
+  // We get away with a const reference here because of how we are allocated.
+  const Thread::Options& options;
+
+  // Used to synchronize thread startup.
+  WaitableEvent event;
+
+  explicit StartupData(const Options& opt)
+      : options(opt),
+        event(false, false) {}
+};
+
 Thread::Options::Options()
     : message_loop_type(MessageLoop::TYPE_DEFAULT),
       timer_slack(TIMER_SLACK_NONE),
@@ -58,11 +72,13 @@ Thread::Thread(const std::string& name)
 #if defined(OS_WIN)
       com_status_(NONE),
 #endif
+      started_(false),
       stopping_(false),
       running_(false),
+      startup_data_(NULL),
       thread_(0),
-      message_loop_(nullptr),
-      message_loop_timer_slack_(TIMER_SLACK_NONE),
+      message_loop_(NULL),
+      thread_id_(kInvalidThreadId),
       name_(name) {
 }
 
@@ -88,50 +104,34 @@ bool Thread::StartWithOptions(const Options& options) {
 
   SetThreadWasQuitProperly(false);
 
-  MessageLoop::Type type = options.message_loop_type;
-  if (!options.message_pump_factory.is_null())
-    type = MessageLoop::TYPE_CUSTOM;
+  StartupData startup_data(options);
+  startup_data_ = &startup_data;
 
-  message_loop_timer_slack_ = options.timer_slack;
-  message_loop_ = new MessageLoop(type, options.message_pump_factory);
-
-  start_event_.reset(new WaitableEvent(false, false));
-
-  // Hold the thread_lock_ while starting a new thread, so that we can make sure
-  // that thread_ is populated before the newly created thread accesses it.
-  {
-    AutoLock lock(thread_lock_);
-    if (!PlatformThread::Create(options.stack_size, this, &thread_)) {
-      DLOG(ERROR) << "failed to create thread";
-      delete message_loop_;
-      message_loop_ = nullptr;
-      start_event_.reset();
-      return false;
-    }
+  if (!PlatformThread::Create(options.stack_size, this, &thread_)) {
+    DLOG(ERROR) << "failed to create thread";
+    startup_data_ = NULL;
+    return false;
   }
+
+  // TODO(kinuko): Remove once crbug.com/465458 is solved.
+  tracked_objects::ScopedTracker tracking_profile_wait(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465458 base::Thread::StartWithOptions (Wait)"));
+
+  // Wait for the thread to start and initialize message_loop_
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  startup_data.event.Wait();
+
+  // set it to NULL so we don't keep a pointer to some object on the stack.
+  startup_data_ = NULL;
+  started_ = true;
 
   DCHECK(message_loop_);
   return true;
 }
 
-bool Thread::StartAndWaitForTesting() {
-  bool result = Start();
-  if (!result)
-    return false;
-  WaitUntilThreadStarted();
-  return true;
-}
-
-bool Thread::WaitUntilThreadStarted() {
-  if (!start_event_)
-    return false;
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  start_event_->Wait();
-  return true;
-}
-
 void Thread::Stop() {
-  if (!start_event_)
+  if (!started_)
     return;
 
   StopSoon();
@@ -147,7 +147,7 @@ void Thread::Stop() {
   DCHECK(!message_loop_);
 
   // The thread no longer needs to be joined.
-  start_event_.reset();
+  started_ = false;
 
   stopping_ = false;
 }
@@ -155,7 +155,9 @@ void Thread::Stop() {
 void Thread::StopSoon() {
   // We should only be called on the same thread that started us.
 
-  DCHECK_NE(thread_id(), PlatformThread::CurrentId());
+  // Reading thread_id_ without a lock can lead to a benign data race
+  // with ThreadMain, so we annotate it to stay silent under ThreadSanitizer.
+  DCHECK_NE(ANNOTATE_UNPROTECTED_READ(thread_id_), PlatformThread::CurrentId());
 
   if (stopping_ || !message_loop_)
     return;
@@ -164,28 +166,14 @@ void Thread::StopSoon() {
   task_runner()->PostTask(FROM_HERE, base::Bind(&ThreadQuitHelper));
 }
 
-PlatformThreadId Thread::thread_id() const {
-  AutoLock lock(thread_lock_);
-  return thread_.id();
-}
-
 bool Thread::IsRunning() const {
-  // If the thread's already started (i.e. message_loop_ is non-null) and
-  // not yet requested to stop (i.e. stopping_ is false) we can just return
-  // true. (Note that stopping_ is touched only on the same thread that
-  // starts / started the new thread so we need no locking here.)
-  if (message_loop_ && !stopping_)
-    return true;
-  // Otherwise check the running_ flag, which is set to true by the new thread
-  // only while it is inside Run().
-  AutoLock lock(running_lock_);
   return running_;
 }
 
 void Thread::SetPriority(ThreadPriority priority) {
   // The thread must be started (and id known) for this to be
   // compatible with all platforms.
-  DCHECK(message_loop_ != nullptr);
+  DCHECK_NE(thread_id_, kInvalidThreadId);
   PlatformThread::SetThreadPriority(thread_, priority);
 }
 
@@ -206,60 +194,60 @@ bool Thread::GetThreadWasQuitProperly() {
 }
 
 void Thread::ThreadMain() {
-  // Complete the initialization of our Thread object.
-  PlatformThread::SetName(name_.c_str());
-  ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
+  {
+    // The message loop for this thread.
+    // Allocated on the heap to centralize any leak reports at this line.
+    scoped_ptr<MessageLoop> message_loop;
+    if (!startup_data_->options.message_pump_factory.is_null()) {
+      message_loop.reset(
+          new MessageLoop(startup_data_->options.message_pump_factory.Run()));
+    } else {
+      message_loop.reset(
+          new MessageLoop(startup_data_->options.message_loop_type));
+    }
 
-  // Lazily initialize the message_loop so that it can run on this thread.
-  DCHECK(message_loop_);
-  scoped_ptr<MessageLoop> message_loop(message_loop_);
-  message_loop_->BindToCurrentThread();
-  message_loop_->set_thread_name(name_);
-  message_loop_->SetTimerSlack(message_loop_timer_slack_);
+    // Complete the initialization of our Thread object.
+    thread_id_ = PlatformThread::CurrentId();
+    PlatformThread::SetName(name_);
+    ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
+    message_loop->set_thread_name(name_);
+    message_loop->SetTimerSlack(startup_data_->options.timer_slack);
+    message_loop_ = message_loop.get();
 
 #if defined(OS_WIN)
-  scoped_ptr<win::ScopedCOMInitializer> com_initializer;
-  if (com_status_ != NONE) {
-    com_initializer.reset((com_status_ == STA) ?
-        new win::ScopedCOMInitializer() :
-        new win::ScopedCOMInitializer(win::ScopedCOMInitializer::kMTA));
-  }
+    scoped_ptr<win::ScopedCOMInitializer> com_initializer;
+    if (com_status_ != NONE) {
+      com_initializer.reset((com_status_ == STA) ?
+          new win::ScopedCOMInitializer() :
+          new win::ScopedCOMInitializer(win::ScopedCOMInitializer::kMTA));
+    }
 #endif
 
-  // Make sure the thread_id() returns current thread.
-  // (This internally acquires lock against PlatformThread::Create)
-  DCHECK_EQ(thread_id(), PlatformThread::CurrentId());
+    // Let the thread do extra initialization.
+    // Let's do this before signaling we are started.
+    Init();
 
-  // Let the thread do extra initialization.
-  Init();
-
-  {
-    AutoLock lock(running_lock_);
     running_ = true;
-  }
+    startup_data_->event.Signal();
+    // startup_data_ can't be touched anymore since the starting thread is now
+    // unlocked.
 
-  start_event_->Signal();
-
-  Run(message_loop_);
-
-  {
-    AutoLock lock(running_lock_);
+    Run(message_loop_);
     running_ = false;
-  }
 
-  // Let the thread do extra cleanup.
-  CleanUp();
+    // Let the thread do extra cleanup.
+    CleanUp();
 
 #if defined(OS_WIN)
-  com_initializer.reset();
+    com_initializer.reset();
 #endif
 
-  // Assert that MessageLoop::Quit was called by ThreadQuitHelper.
-  DCHECK(GetThreadWasQuitProperly());
+    // Assert that MessageLoop::Quit was called by ThreadQuitHelper.
+    DCHECK(GetThreadWasQuitProperly());
 
-  // We can't receive messages anymore.
-  // (The message loop is destructed at the end of this block)
-  message_loop_ = NULL;
+    // We can't receive messages anymore.
+    message_loop_ = NULL;
+  }
 }
 
 }  // namespace base

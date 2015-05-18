@@ -608,6 +608,11 @@ net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
 }
 
 void IOThread::Init() {
+  // Prefer to use InitAsync unless you need initialization to block
+  // the UI thread
+}
+
+void IOThread::InitAsync() {
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile1(

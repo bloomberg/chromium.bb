@@ -36,10 +36,6 @@ class TestBrowserThread {
   // Starts the thread with a generic message loop.
   bool Start();
 
-  // Starts the thread with a generic message loop and waits for the
-  // thread to run.
-  bool StartAndWaitForTesting();
-
   // Starts the thread with an IOThread message loop.
   bool StartIOThread();
 

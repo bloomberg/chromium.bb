@@ -255,6 +255,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // This handles initialization and destruction of state that must
   // live on the IO thread.
   void Init() override;
+  void InitAsync() override;
   void CleanUp() override;
 
   // Initializes |params| based on the settings in |globals|.

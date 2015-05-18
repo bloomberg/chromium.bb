@@ -108,16 +108,15 @@ bool CreateThreadInternal(size_t stack_size,
   // have to work running on CreateThread() threads anyway, since we run code
   // on the Windows thread pool, etc.  For some background on the difference:
   //   http://www.microsoft.com/msj/1099/win32/win321099.aspx
-  PlatformThreadId thread_id;
   void* thread_handle = CreateThread(
-      NULL, stack_size, ThreadFunc, params, flags, &thread_id);
+      NULL, stack_size, ThreadFunc, params, flags, NULL);
   if (!thread_handle) {
     delete params;
     return false;
   }
 
   if (out_thread_handle)
-    *out_thread_handle = PlatformThreadHandle(thread_handle, thread_id);
+    *out_thread_handle = PlatformThreadHandle(thread_handle);
   else
     CloseHandle(thread_handle);
   return true;

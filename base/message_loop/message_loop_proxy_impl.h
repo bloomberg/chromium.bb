@@ -24,9 +24,6 @@ class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
   explicit MessageLoopProxyImpl(
       scoped_refptr<IncomingTaskQueue> incoming_queue);
 
-  // Initialize this message loop proxy on the current thread.
-  void BindToCurrentThread();
-
   // MessageLoopProxy implementation
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,

@@ -53,10 +53,6 @@ class BASE_EXPORT IncomingTaskQueue
   // Disconnects |this| from the parent message loop.
   void WillDestroyCurrentMessageLoop();
 
-  // This should be called when the message loop becomes ready for
-  // scheduling work.
-  void StartScheduling();
-
  private:
   friend class RefCountedThreadSafe<IncomingTaskQueue>;
   virtual ~IncomingTaskQueue();
@@ -69,9 +65,6 @@ class BASE_EXPORT IncomingTaskQueue
   // |pending_task->task|. This is needed to ensure that the posting call stack
   // does not retain |pending_task->task| beyond this function call.
   bool PostPendingTask(PendingTask* pending_task);
-
-  // Wakes up the message loop and schedules work.
-  void ScheduleWork();
 
   // Number of tasks that require high resolution timing. This value is kept
   // so that ReloadWorkQueue() completes in constant time.
@@ -98,9 +91,6 @@ class BASE_EXPORT IncomingTaskQueue
   // True if we always need to call ScheduleWork when receiving a new task, even
   // if the incoming queue was not empty.
   const bool always_schedule_work_;
-
-  // False until StartScheduling() is called.
-  bool is_ready_for_scheduling_;
 
   DISALLOW_COPY_AND_ASSIGN(IncomingTaskQueue);
 };
