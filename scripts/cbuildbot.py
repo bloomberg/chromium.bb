@@ -27,6 +27,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tee
+from chromite.cbuildbot import topology
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import completion_stages
@@ -948,6 +949,46 @@ def _ParseCommandLine(parser, argv):
   return options, args
 
 
+_ENVIRONMENT_PROD = 'prod'
+_ENVIRONMENT_DEBUG = 'debug'
+_ENVIRONMENT_STANDALONE = 'standalone'
+
+
+def _GetRunEnvironment(options, build_config):
+  """Determine whether this is a prod/debug/standalone run."""
+  # TODO(akeshet): This is a temporary workaround to make sure that the cidb
+  # is not used on waterfalls that the db schema does not support (in particular
+  # the chromeos.chrome waterfall).
+  # See crbug.com/406940
+  waterfall = os.environ.get('BUILDBOT_MASTERNAME', '')
+  if not waterfall in constants.CIDB_KNOWN_WATERFALLS:
+    return _ENVIRONMENT_STANDALONE
+
+  # TODO(akeshet): Clean up this code once we have better defined flags to
+  # specify on-or-off waterfall and on-or-off production runs of cbuildbot.
+  # See crbug.com/331417
+
+  # --buildbot runs should use the production services, unless the --debug flag
+  # is also present.
+  if options.buildbot:
+    if options.debug:
+      return _ENVIRONMENT_DEBUG
+    else:
+      return _ENVIRONMENT_PROD
+
+  # --remote-trybot runs should use the debug services, with the exception of
+  # pre-cq builds, which should use the production services.
+  if options.remote_trybot:
+    if build_config['pre_cq']:
+      return _ENVIRONMENT_PROD
+    else:
+      return _ENVIRONMENT_DEBUG
+
+  # If neither --buildbot nor --remote-trybot flag was used, don't use external
+  # services.
+  return _ENVIRONMENT_STANDALONE
+
+
 def _SetupConnections(options, build_config):
   """Set up CIDB and graphite connections using the appropriate Setup call.
 
@@ -955,56 +996,34 @@ def _SetupConnections(options, build_config):
     options: Command line options structure.
     build_config: Config object for this build.
   """
-  # TODO(akeshet): This is a temporary workaround to make sure that the cidb
-  # is not used on waterfalls that the db schema does not support (in particular
-  # the chromeos.chrome waterfall).
-  # See crbug.com/406940
-  waterfall = os.environ.get('BUILDBOT_MASTERNAME', '')
-  if not waterfall in constants.CIDB_KNOWN_WATERFALLS:
-    graphite.StatsFactory.SetupMock()
-    graphite.ESMetadataFactory.SetupReadOnly()
+  # Outline:
+  # 1) Based on options and build_config, decide whether we are a production
+  # run, debug run, or standalone run.
+  # 2) Set up cidb instance accordingly.
+  # 3) Update topology info from cidb, so that any other service set up can use
+  # topology.
+  # 4) Set up any other services.
+  run_type = _GetRunEnvironment(options, build_config)
+
+  if run_type == _ENVIRONMENT_PROD:
+    cidb.CIDBConnectionFactory.SetupProdCidb()
+  elif run_type == _ENVIRONMENT_DEBUG:
+    cidb.CIDBConnectionFactory.SetupDebugCidb()
+  else:
     cidb.CIDBConnectionFactory.SetupNoCidb()
-    return
 
-  # TODO(akeshet): Clean up this code once we have better defined flags to
-  # specify on-or-off waterfall and on-or-off production runs of cbuildbot.
-  # See crbug.com/331417
+  db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+  topology.FetchTopologyFromCIDB(db)
 
-  # --buildbot runs should use the production services, unless the --debug flag
-  # is also present in which case they should use the debug cidb and not emit
-  # stats.
-  if options.buildbot:
-    if options.debug:
-      graphite.StatsFactory.SetupDebug()
-      graphite.ESMetadataFactory.SetupReadOnly()
-      cidb.CIDBConnectionFactory.SetupDebugCidb()
-      return
-    else:
-      graphite.StatsFactory.SetupProd()
-      graphite.ESMetadataFactory.SetupProd()
-      cidb.CIDBConnectionFactory.SetupProdCidb()
-      return
-
-  # --remote-trybot runs should use the debug database and not emit stats.
-  # With the exception of pre-cq builds, which should use the production
-  # database and emit stats.
-  if options.remote_trybot:
-    if build_config['pre_cq']:
-      graphite.StatsFactory.SetupProd()
-      graphite.ESMetadataFactory.SetupProd()
-      cidb.CIDBConnectionFactory.SetupProdCidb()
-      return
-    else:
-      graphite.StatsFactory.SetupDebug()
-      graphite.ESMetadataFactory.SetupReadOnly()
-      cidb.CIDBConnectionFactory.SetupDebugCidb()
-      return
-
-  # If neither --buildbot nor --remote-trybot flag was used, don't use the
-  # database or emit stats.
-  cidb.CIDBConnectionFactory.SetupNoCidb()
-  graphite.StatsFactory.SetupMock()
-  graphite.ESMetadataFactory.SetupReadOnly()
+  if run_type == _ENVIRONMENT_PROD:
+    graphite.ESMetadataFactory.SetupProd()
+    graphite.StatsFactory.SetupProd()
+  elif run_type == _ENVIRONMENT_DEBUG:
+    graphite.ESMetadataFactory.SetupReadOnly()
+    graphite.StatsFactory.SetupDebug()
+  else:
+    graphite.ESMetadataFactory.SetupReadOnly()
+    graphite.StatsFactory.SetupMock()
 
 
 # TODO(build): This function is too damn long.

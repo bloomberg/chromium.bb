@@ -22,12 +22,13 @@ class FakeCIDBConnection(object):
 
   NUM_RESULTS_NO_LIMIT = -1
 
-  def __init__(self):
+  def __init__(self, fake_keyvals=None):
     self.buildTable = []
     self.clActionTable = []
     self.buildStageTable = {}
     self.failureTable = {}
     self.fake_time = None
+    self.fake_keyvals = fake_keyvals or {}
 
   def SetTime(self, fake_time):
     """Sets a fake time to be retrieved by GetTime.
@@ -229,3 +230,7 @@ class FakeCIDBConnection(object):
     now = datetime.datetime.now()
     deadline = self.buildTable[build_id]['deadline']
     return max(0, (deadline - now).total_seconds())
+
+  def GetKeyVals(self):
+    """Gets contents of keyvalTable."""
+    return self.fake_keyvals

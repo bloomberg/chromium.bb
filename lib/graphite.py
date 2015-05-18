@@ -12,6 +12,7 @@ developer machines etc.) stay separate.
 from __future__ import print_function
 
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import topology
 from chromite.lib import factory
 from chromite.lib.graphite_lib import es_utils
 from chromite.lib.graphite_lib import stats
@@ -34,17 +35,19 @@ class ESMetadataFactoryClass(factory.ObjectFactory):
       CONNECTION_TYPE_PROD: factory.CachedFunctionCall(
           lambda: es_utils.ESMetadata(
               use_http=constants.ELASTIC_SEARCH_USE_HTTP,
-              host=constants.ELASTIC_SEARCH_HOST,
-              port=constants.ELASTIC_SEARCH_PORT,
+              host=topology.topology.get(topology.ELASTIC_SEARCH_HOST_KEY),
+              port=topology.topology.get(topology.ELASTIC_SEARCH_PORT_KEY),
               index=constants.ELASTIC_SEARCH_INDEX,
-              udp_port=constants.ELASTIC_SEARCH_UDP_PORT)),
+              udp_port=topology.topology.get(
+                  topology.ELASTIC_SEARCH_UDP_PORT_KEY))),
       CONNECTION_TYPE_READONLY: factory.CachedFunctionCall(
           lambda: es_utils.ESMetadataRO(
               use_http=constants.ELASTIC_SEARCH_USE_HTTP,
-              host=constants.ELASTIC_SEARCH_HOST,
-              port=constants.ELASTIC_SEARCH_PORT,
+              host=topology.topology.get(topology.ELASTIC_SEARCH_HOST_KEY),
+              port=topology.topology.get(topology.ELASTIC_SEARCH_PORT_KEY),
               index=constants.ELASTIC_SEARCH_INDEX,
-              udp_port=constants.ELASTIC_SEARCH_UDP_PORT))
+              udp_port=topology.topology.get(
+                  topology.ELASTIC_SEARCH_UDP_PORT_KEY)))
       }
 
   def __init__(self):
@@ -71,14 +74,14 @@ class StatsFactoryClass(factory.ObjectFactory):
       CONNECTION_TYPE_PROD: factory.CachedFunctionCall(
           lambda: stats.Statsd(
               es=ESMetadataFactory.GetInstance(),
-              host=constants.STATSD_HOST,
-              port=constants.STATSD_PORT,
+              host=topology.topology.get(topology.STATSD_HOST_KEY),
+              port=topology.topology.get(topology.STATSD_PORT_KEY),
               prefix=constants.STATSD_PROD_PREFIX)),
       CONNECTION_TYPE_DEBUG: factory.CachedFunctionCall(
           lambda: stats.Statsd(
               es=ESMetadataFactory.GetInstance(),
-              host=constants.STATSD_HOST,
-              port=constants.STATSD_PORT,
+              host=topology.topology.get(topology.STATSD_HOST_KEY),
+              port=topology.topology.get(topology.STATSD_PORT_KEY),
               prefix=constants.STATSD_DEBUG_PREFIX)),
       CONNECTION_TYPE_MOCK: factory.CachedFunctionCall(
           lambda: stats_es_mock.Stats())

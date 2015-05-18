@@ -874,14 +874,10 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
 AFDO_GENERATE_TIMEOUT = 90 * 60
 
 # Stats dashboard elastic search and statsd constants.
-ELASTIC_SEARCH_HOST = '146.148.70.158'
-ELASTIC_SEARCH_PORT = 9200
+# Host and port information specified in topology.py.
 ELASTIC_SEARCH_INDEX = 'metadata_index'
-ELASTIC_SEARCH_UDP_PORT = 9700
 ELASTIC_SEARCH_USE_HTTP = False
 
-STATSD_HOST = '146.148.70.158'
-STATSD_PORT = 8125
 STATSD_PROD_PREFIX = 'chromite'
 STATSD_DEBUG_PREFIX = 'chromite_debug'
 
