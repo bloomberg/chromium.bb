@@ -78,58 +78,41 @@ void PopulateNativeProfileFromJava(
           Java_AutofillProfile_getOrigin(env, jprofile)));
   profile->SetInfo(
       AutofillType(NAME_FULL),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getFullName(env, jprofile)),
+      ConvertJavaStringToUTF16(Java_AutofillProfile_getFullName(env, jprofile)),
       g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(COMPANY_NAME),
+  profile->SetRawInfo(autofill::COMPANY_NAME,
+                      ConvertJavaStringToUTF16(
+                          Java_AutofillProfile_getCompanyName(env, jprofile)));
+  profile->SetRawInfo(
+      autofill::ADDRESS_HOME_STREET_ADDRESS,
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getCompanyName(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(ADDRESS_HOME_STREET_ADDRESS),
+          Java_AutofillProfile_getStreetAddress(env, jprofile)));
+  profile->SetRawInfo(
+      autofill::ADDRESS_HOME_STATE,
+      ConvertJavaStringToUTF16(Java_AutofillProfile_getRegion(env, jprofile)));
+  profile->SetRawInfo(autofill::ADDRESS_HOME_CITY,
+                      ConvertJavaStringToUTF16(
+                          Java_AutofillProfile_getLocality(env, jprofile)));
+  profile->SetRawInfo(
+      autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getStreetAddress(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(ADDRESS_HOME_STATE),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getRegion(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(ADDRESS_HOME_CITY),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getLocality(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getDependentLocality(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(ADDRESS_HOME_ZIP),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getPostalCode(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(ADDRESS_HOME_SORTING_CODE),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getSortingCode(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
+          Java_AutofillProfile_getDependentLocality(env, jprofile)));
+  profile->SetRawInfo(autofill::ADDRESS_HOME_ZIP,
+                      ConvertJavaStringToUTF16(
+                          Java_AutofillProfile_getPostalCode(env, jprofile)));
+  profile->SetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE,
+                      ConvertJavaStringToUTF16(
+                          Java_AutofillProfile_getSortingCode(env, jprofile)));
   profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                    ConvertJavaStringToUTF16(
                        Java_AutofillProfile_getCountryCode(env, jprofile)),
                    g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(PHONE_HOME_WHOLE_NUMBER),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getPhoneNumber(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(EMAIL_ADDRESS),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getEmailAddress(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
+  profile->SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                      ConvertJavaStringToUTF16(
+                          Java_AutofillProfile_getPhoneNumber(env, jprofile)));
+  profile->SetRawInfo(autofill::EMAIL_ADDRESS,
+                      ConvertJavaStringToUTF16(
+                          Java_AutofillProfile_getEmailAddress(env, jprofile)));
   profile->set_language_code(
       ConvertJavaStringToUTF8(
           Java_AutofillProfile_getLanguageCode(env, jprofile)));
