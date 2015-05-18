@@ -1604,7 +1604,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
     const char bytes[] = "hello";
 
-    SpdyDataIR data_ir(1, StringPiece(bytes, strlen(bytes)));
+    SpdyDataIR data_ir(1, bytes);
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
@@ -1615,7 +1615,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     }
 
     SpdyDataIR data_header_ir(1);
-    data_header_ir.SetDataShallow(base::StringPiece(bytes, strlen(bytes)));
+    data_header_ir.SetDataShallow(bytes);
     frame.reset(framer.SerializeDataFrameHeaderWithPaddingLengthField(
         data_header_ir));
     CompareCharArraysWithHexError(
@@ -1666,7 +1666,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
     const char bytes[] = "hello";
 
-    SpdyDataIR data_ir(1, StringPiece(bytes, strlen(bytes)));
+    SpdyDataIR data_ir(1, bytes);
     // 247 zeros and the pad length field make the overall padding to be 248
     // bytes.
     data_ir.set_padding_len(248);
@@ -1708,7 +1708,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
     const char bytes[] = "hello";
 
-    SpdyDataIR data_ir(1, StringPiece(bytes, strlen(bytes)));
+    SpdyDataIR data_ir(1, bytes);
     // 7 zeros and the pad length field make the overall padding to be 8 bytes.
     data_ir.set_padding_len(8);
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
@@ -1740,7 +1740,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
     const char bytes[] = "hello";
 
-    SpdyDataIR data_ir(1, StringPiece(bytes, strlen(bytes)));
+    SpdyDataIR data_ir(1, bytes);
     // The pad length field itself is used for the 1-byte padding and no padding
     // payload is needed.
     data_ir.set_padding_len(1);
@@ -1774,7 +1774,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       0x00, 0x00, 0x00, 0x01,
       0xff
     };
-    SpdyDataIR data_ir(1, StringPiece("\xff", 1));
+    SpdyDataIR data_ir(1, "\xff");
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
@@ -1799,7 +1799,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       0x01, 'h',  'e',  'l',
       'l',  'o'
     };
-    SpdyDataIR data_ir(1, StringPiece("hello", 5));
+    SpdyDataIR data_ir(1, "hello");
     data_ir.set_fin(true);
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
@@ -1822,7 +1822,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       0x00, 0x00, 0x00, 0x00,
       0x01,
     };
-    SpdyDataIR data_ir(1, StringPiece());
+    SpdyDataIR data_ir(1, "");
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
@@ -1884,7 +1884,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     memcpy(expected_frame_data.get(), kFrameHeader, arraysize(kFrameHeader));
     memset(expected_frame_data.get() + arraysize(kFrameHeader), 'A', kDataSize);
 
-    SpdyDataIR data_ir(1, StringPiece(kData.data(), kData.size()));
+    SpdyDataIR data_ir(1, kData);
     data_ir.set_fin(true);
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     CompareFrame(kDescription, *frame, expected_frame_data.get(), kFrameSize);
@@ -4116,7 +4116,7 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
-  SpdyDataIR data_ir(1, StringPiece(data_payload, strlen(data_payload)));
+  SpdyDataIR data_ir(1, data_payload);
   data_ir.set_padding_len(kPaddingLen);
   scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
   ASSERT_TRUE(frame.get() != NULL);
@@ -4888,7 +4888,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV2V3) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    SpdyDataIR data_ir(1, StringPiece("hello", 5));
+    SpdyDataIR data_ir(1, "hello");
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
@@ -4932,7 +4932,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    SpdyDataIR data_ir(1, StringPiece("hello", 5));
+    SpdyDataIR data_ir(1, "hello");
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
