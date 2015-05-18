@@ -18,8 +18,6 @@ const CGFloat kMinSwipeXThreshold = 4;
 }  // namespace
 
 @implementation SideSwipeGestureRecognizer {
-  // Starting point of swipe.
-  CGPoint _startPoint;
   // Expected direction of the swipe, based on starting point.
   UISwipeGestureRecognizerDirection _direction;
 }
@@ -27,6 +25,7 @@ const CGFloat kMinSwipeXThreshold = 4;
 @synthesize swipeEdge = _swipeEdge;
 @synthesize direction = _direction;
 @synthesize swipeOffset = _swipeOffset;
+@synthesize startPoint = _startPoint;
 
 // To quickly avoid interference with other gesture recognizers, fail
 // immediately if the touches aren't at the edge of the touched view.
@@ -34,16 +33,21 @@ const CGFloat kMinSwipeXThreshold = 4;
   [super touchesBegan:touches withEvent:event];
   UITouch* touch = [[event allTouches] anyObject];
   CGPoint location = [touch locationInView:self.view];
-  if (location.x > _swipeEdge &&
-      location.x < CGRectGetMaxX([self.view bounds]) - _swipeEdge) {
-    self.state = UIGestureRecognizerStateFailed;
-  } else {
-    if (location.x < _swipeEdge) {
-      _direction = UISwipeGestureRecognizerDirectionRight;
+  if (_swipeEdge > 0) {
+    if (location.x > _swipeEdge &&
+        location.x < CGRectGetMaxX([self.view bounds]) - _swipeEdge) {
+      self.state = UIGestureRecognizerStateFailed;
     } else {
-      _direction = UISwipeGestureRecognizerDirectionLeft;
+      if (location.x < _swipeEdge) {
+        _direction = UISwipeGestureRecognizerDirectionRight;
+      } else {
+        _direction = UISwipeGestureRecognizerDirectionLeft;
+      }
+      _startPoint = location;
     }
+  } else {
     _startPoint = location;
+    _direction = 0;
   }
 }
 
@@ -78,6 +82,14 @@ const CGFloat kMinSwipeXThreshold = 4;
        currentPoint.x - _startPoint.x > 0)) {
     self.state = UIGestureRecognizerStateFailed;
     return;
+  }
+
+  if (_swipeEdge == 0 && _direction == 0) {
+    if (currentPoint.x > _startPoint.x) {
+      _direction = UISwipeGestureRecognizerDirectionRight;
+    } else {
+      _direction = UISwipeGestureRecognizerDirectionLeft;
+    }
   }
 
   // Begin recognizer after |kMinSwipeXThreshold| distance swiped.
