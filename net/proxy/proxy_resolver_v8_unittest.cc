@@ -283,8 +283,7 @@ TEST(ProxyResolverV8Test, ParseError) {
 
   EXPECT_EQ("Uncaught SyntaxError: Unexpected end of input",
             bindings->errors[0]);
-  // TODO: replace expected value with 5 after V8 roll
-  // EXPECT_EQ(0, bindings->errors_line_number[0]);
+  EXPECT_EQ(5, bindings->errors_line_number[0]);
 }
 
 // Run a PAC script several times, which has side-effects.
