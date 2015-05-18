@@ -440,6 +440,7 @@ void ExtensionDownloader::StartUpdateCheck(
     NotifyExtensionsDownloadFailed(id_set,
                                    fetch_data->request_ids(),
                                    ExtensionDownloaderDelegate::DISABLED);
+    return;
   }
 
   RequestQueue<ManifestFetchData>::iterator i;
