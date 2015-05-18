@@ -67,6 +67,7 @@ public:
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) override;
 
     virtual bool hasWebView() const override;
+    virtual bool inShadowTree() const override;
     virtual Frame* opener() const override;
     virtual void setOpener(Frame*) override;
     virtual Frame* parent() const override;

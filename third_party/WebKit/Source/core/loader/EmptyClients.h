@@ -163,6 +163,8 @@ public:
 
     virtual bool hasWebView() const override { return true; } // mainly for assertions
 
+    virtual bool inShadowTree() const override { return false; }
+
     virtual Frame* opener() const override { return 0; }
     virtual void setOpener(Frame*) override { }
 

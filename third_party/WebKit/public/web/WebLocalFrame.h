@@ -11,6 +11,7 @@ namespace blink {
 
 enum class WebAppBannerPromptReply;
 enum class WebSandboxFlags;
+enum class WebTreeScopeType;
 class WebAutofillClient;
 class WebContentSettingsClient;
 class WebDevToolsAgent;
@@ -28,6 +29,8 @@ class WebLocalFrame : public WebFrame {
 public:
     // Creates a WebFrame. Delete this WebFrame by calling WebFrame::close().
     // It is valid to pass a null client pointer.
+    BLINK_EXPORT static WebLocalFrame* create(WebTreeScopeType, WebFrameClient*);
+    // TODO(dcheng): Remove this deprecated overload.
     BLINK_EXPORT static WebLocalFrame* create(WebFrameClient*);
 
     // Returns the WebFrame associated with the current V8 context. This
@@ -142,6 +145,9 @@ public:
 
     // If the provided node is an image, reload the image bypassing the cache.
     virtual void reloadImage(const WebNode&) = 0;
+
+protected:
+    explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) { }
 };
 
 } // namespace blink

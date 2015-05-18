@@ -267,6 +267,11 @@ bool FrameLoaderClientImpl::hasWebView() const
     return m_webFrame->viewImpl();
 }
 
+bool FrameLoaderClientImpl::inShadowTree() const
+{
+    return m_webFrame->inShadowTree();
+}
+
 Frame* FrameLoaderClientImpl::opener() const
 {
     return toCoreFrame(m_webFrame->opener());

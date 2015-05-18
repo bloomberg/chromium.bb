@@ -55,6 +55,7 @@
 
 namespace blink {
 
+enum class WebTreeScopeType;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebAppBannerClient;
@@ -149,6 +150,8 @@ public:
     // until frameDetached() is called on it.
     // Note: If you override this, you should almost certainly be overriding
     // frameDetached().
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags sandboxFlags) { return nullptr; }
+    // TODO(dcheng): Remove this overload, since it's deprecated.
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName, WebSandboxFlags sandboxFlags) { return nullptr; }
 
     // This frame set its opener to null, disowning it.

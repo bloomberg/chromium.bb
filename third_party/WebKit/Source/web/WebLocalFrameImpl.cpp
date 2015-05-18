@@ -204,6 +204,7 @@
 #include "public/web/WebRange.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSerializedScriptValue.h"
+#include "public/web/WebTreeScopeType.h"
 #include "web/AssociatedURLLoader.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
@@ -1586,12 +1587,17 @@ WebString WebLocalFrameImpl::layerTreeAsText(bool showDebugInfo) const
 
 WebLocalFrame* WebLocalFrame::create(WebFrameClient* client)
 {
-    return WebLocalFrameImpl::create(client);
+    return WebLocalFrame::create(WebTreeScopeType::Document, client);
 }
 
-WebLocalFrameImpl* WebLocalFrameImpl::create(WebFrameClient* client)
+WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope, WebFrameClient* client)
 {
-    WebLocalFrameImpl* frame = new WebLocalFrameImpl(client);
+    return WebLocalFrameImpl::create(scope, client);
+}
+
+WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameClient* client)
+{
+    WebLocalFrameImpl* frame = new WebLocalFrameImpl(scope, client);
 #if ENABLE(OILPAN)
     return frame;
 #else
@@ -1599,8 +1605,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebFrameClient* client)
 #endif
 }
 
-WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
-    : m_frameLoaderClientImpl(this)
+WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* client)
+    : WebLocalFrame(scope)
+    , m_frameLoaderClientImpl(this)
     , m_frameWidget(0)
     , m_client(client)
     , m_autofillClient(0)

@@ -22,7 +22,7 @@ class RemoteFrame;
 
 class WebRemoteFrameImpl final : public RefCountedWillBeGarbageCollectedFinalized<WebRemoteFrameImpl>, public WebRemoteFrame {
 public:
-    explicit WebRemoteFrameImpl(WebRemoteFrameClient*);
+    static WebRemoteFrame* create(WebTreeScopeType, WebRemoteFrameClient*);
     virtual ~WebRemoteFrameImpl();
 
     // WebRemoteFrame methods.
@@ -169,7 +169,9 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling) override;
+    virtual WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling) override;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) override;
+    virtual WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) override;
 
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
 
@@ -195,6 +197,8 @@ public:
 #endif
 
 private:
+    WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
+
     RemoteFrameClientImpl m_frameClient;
     RefPtrWillBeMember<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;

@@ -26,6 +26,11 @@ RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
 {
 }
 
+bool RemoteFrameClientImpl::inShadowTree() const
+{
+    return m_webFrame->inShadowTree();
+}
+
 void RemoteFrameClientImpl::willBeDetached()
 {
 }

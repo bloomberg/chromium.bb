@@ -42,6 +42,7 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebSettings.h"
+#include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/StdLibExtras.h"
@@ -254,7 +255,7 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
         m_webView->settings()->setDeviceSupportsMouse(false);
 
     m_webView->setDefaultPageScaleLimits(1, 4);
-    m_webView->setMainFrame(WebLocalFrameImpl::create(webFrameClient));
+    m_webView->setMainFrame(WebLocalFrameImpl::create(WebTreeScopeType::Document, webFrameClient));
 
     return m_webView;
 }

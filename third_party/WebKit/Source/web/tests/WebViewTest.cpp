@@ -80,6 +80,7 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
+#include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidget.h"
 #include "public/web/WebWidgetClient.h"
@@ -498,7 +499,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
     // webView does not have a frame yet, but we should still be able to set the background color.
     webView->setBaseBackgroundColor(kBlue);
     EXPECT_EQ(kBlue, webView->backgroundColor());
-    WebLocalFrameImpl* frame = WebLocalFrameImpl::create(0);
+    WebLocalFrameImpl* frame = WebLocalFrameImpl::create(WebTreeScopeType::Document, nullptr);
     webView->setMainFrame(frame);
     webView->close();
     frame->close();

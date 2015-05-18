@@ -42,6 +42,7 @@
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebTreeScopeType.h"
 
 struct NPObject;
 
@@ -677,6 +678,9 @@ public:
 
 #if BLINK_IMPLEMENTATION
     static WebFrame* fromFrame(Frame*);
+
+    bool inShadowTree() const { return m_scope == WebTreeScopeType::Shadow; }
+
 #if ENABLE(OILPAN)
     static void traceFrames(Visitor*, WebFrame*);
     static void traceFrames(InlinedGlobalMarkingVisitor, WebFrame*);
@@ -686,7 +690,7 @@ public:
 #endif
 
 protected:
-    WebFrame();
+    explicit WebFrame(WebTreeScopeType);
     virtual ~WebFrame();
 
     // Sets the parent WITHOUT fulling adding it to the frame tree.
@@ -715,6 +719,8 @@ private:
     static bool isFrameAliveImpl(VisitorDispatcher, const WebFrame*);
 #endif
 #endif
+
+    const WebTreeScopeType m_scope;
 
     WebFrame* m_parent;
     WebFrame* m_previousSibling;

@@ -15,6 +15,7 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebPerformance.h"
 #include "public/web/WebRange.h"
+#include "public/web/WebTreeScopeType.h"
 #include "web/RemoteBridgeFrameOwner.h"
 #include "web/WebViewImpl.h"
 #include <v8/include/v8.h>
@@ -23,21 +24,22 @@ namespace blink {
 
 WebRemoteFrame* WebRemoteFrame::create(WebRemoteFrameClient* client)
 {
-    WebRemoteFrameImpl* frame = new WebRemoteFrameImpl(client);
+    return WebRemoteFrame::create(WebTreeScopeType::Document, client);
+}
+
+WebRemoteFrame* WebRemoteFrame::create(WebTreeScopeType scope, WebRemoteFrameClient* client)
+{
+    return WebRemoteFrameImpl::create(scope, client);
+}
+
+WebRemoteFrame* WebRemoteFrameImpl::create(WebTreeScopeType scope, WebRemoteFrameClient* client)
+{
+    WebRemoteFrameImpl* frame = new WebRemoteFrameImpl(scope, client);
 #if ENABLE(OILPAN)
     return frame;
 #else
     return adoptRef(frame).leakRef();
 #endif
-}
-
-WebRemoteFrameImpl::WebRemoteFrameImpl(WebRemoteFrameClient* client)
-    : m_frameClient(this)
-    , m_client(client)
-#if ENABLE(OILPAN)
-    , m_selfKeepAlive(this)
-#endif
-{
 }
 
 WebRemoteFrameImpl::~WebRemoteFrameImpl()
@@ -718,7 +720,12 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
 
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling)
 {
-    WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(client));
+    return createLocalChild(WebTreeScopeType::Document, name, sandboxFlags, client, previousSibling);
+}
+
+WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling)
+{
+    WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(scope, client));
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
         m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(child, static_cast<SandboxFlags>(sandboxFlags)));
     insertAfter(child, previousSibling);
@@ -733,6 +740,7 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSa
     return child;
 }
 
+
 void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name)
 {
     setCoreFrame(RemoteFrame::create(&m_frameClient, host, owner));
@@ -742,7 +750,12 @@ void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner,
 
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
 {
-    WebRemoteFrameImpl* child = toWebRemoteFrameImpl(WebRemoteFrame::create(client));
+    return createRemoteChild(WebTreeScopeType::Document, name, sandboxFlags, client);
+}
+
+WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
+{
+    WebRemoteFrameImpl* child = toWebRemoteFrameImpl(WebRemoteFrame::create(scope, client));
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
         m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(nullptr, static_cast<SandboxFlags>(sandboxFlags)));
     appendChild(child);
@@ -808,6 +821,16 @@ void WebRemoteFrameImpl::didStopLoading()
             toWebLocalFrameImpl(parent()->toWebLocalFrame());
         parentFrame->frame()->loader().checkCompleted();
     }
+}
+
+WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope, WebRemoteFrameClient* client)
+    : WebRemoteFrame(scope)
+    , m_frameClient(this)
+    , m_client(client)
+#if ENABLE(OILPAN)
+    , m_selfKeepAlive(this)
+#endif
+{
 }
 
 } // namespace blink

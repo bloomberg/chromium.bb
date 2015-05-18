@@ -248,7 +248,7 @@ public:
     void willBeDetached();
     void willDetachParent();
 
-    static WebLocalFrameImpl* create(WebFrameClient*);
+    static WebLocalFrameImpl* create(WebTreeScopeType, WebFrameClient*);
     virtual ~WebLocalFrameImpl();
 
     PassRefPtrWillBeRawPtr<LocalFrame> initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
@@ -340,7 +340,7 @@ public:
 private:
     friend class FrameLoaderClientImpl;
 
-    explicit WebLocalFrameImpl(WebFrameClient*);
+    WebLocalFrameImpl(WebTreeScopeType, WebFrameClient*);
 
     // Sets the local core frame and registers destruction observers.
     void setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame>);

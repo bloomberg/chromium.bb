@@ -10,24 +10,22 @@
 namespace blink {
 class WebRemoteFrameImpl;
 
-class RemoteFrameClientImpl : public RemoteFrameClient {
+class RemoteFrameClientImpl final : public RemoteFrameClient {
 public:
     explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
     // FrameClient overrides:
+    virtual bool inShadowTree() const override;
     virtual void willBeDetached() override;
     virtual void detached() override;
-
     virtual Frame* opener() const override;
     virtual void setOpener(Frame*) override;
-
     virtual Frame* parent() const override;
     virtual Frame* top() const override;
     virtual Frame* previousSibling() const override;
     virtual Frame* nextSibling() const override;
     virtual Frame* firstChild() const override;
     virtual Frame* lastChild() const override;
-
     virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin*, MessageEvent*, LocalFrame*) const override;
 
     // RemoteFrameClient overrides:
