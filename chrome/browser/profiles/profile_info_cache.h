@@ -159,6 +159,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, DownloadHighResAvatarTest);
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest,
+                           NothingToDownloadHighResAvatarTest);
 
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache and takes ownership of |info|.

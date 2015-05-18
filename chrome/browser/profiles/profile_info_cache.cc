@@ -905,6 +905,12 @@ void ProfileInfoCache::DownloadHighResAvatarIfNeeded(
 #endif
   DCHECK(!disable_avatar_download_for_testing_);
 
+  // If this is the placeholder avatar, it is already included in the
+  // resources, so it doesn't need to be downloaded (and it will never be
+  // requested from disk by GetHighResAvatarOfProfileAtIndex).
+  if (icon_index == profiles::GetPlaceholderAvatarIndex())
+    return;
+
   const base::FilePath& file_path =
       profiles::GetPathOfHighResAvatarAtIndex(icon_index);
   base::Closure callback =
@@ -1036,20 +1042,21 @@ void ProfileInfoCache::UpdateSortForProfileIndex(size_t index) {
 
 const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
     size_t index) const {
-  int avatar_index = GetAvatarIconIndexOfProfileAtIndex(index);
-  std::string key = profiles::GetDefaultAvatarIconFileNameAtIndex(avatar_index);
+  const size_t avatar_index = GetAvatarIconIndexOfProfileAtIndex(index);
 
   // If this is the placeholder avatar, it is already included in the
   // resources, so it doesn't need to be downloaded.
-  if (!strcmp(key.c_str(), profiles::GetNoHighResAvatarFileName())) {
+  if (avatar_index == profiles::GetPlaceholderAvatarIndex()) {
     return &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());
   }
 
-  base::FilePath image_path =
+  const std::string file_name =
+      profiles::GetDefaultAvatarIconFileNameAtIndex(avatar_index);
+  const base::FilePath image_path =
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
-  return LoadAvatarPictureFromPath(GetPathOfProfileAtIndex(index),
-                                   key, image_path);
+  return LoadAvatarPictureFromPath(GetPathOfProfileAtIndex(index), file_name,
+                                   image_path);
 }
 
 void ProfileInfoCache::DownloadHighResAvatar(
@@ -1064,8 +1071,9 @@ void ProfileInfoCache::DownloadHighResAvatar(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461175 ProfileInfoCache::DownloadHighResAvatar::GetFileName"));
-  const std::string file_name =
+  const char* file_name =
       profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index);
+  DCHECK(file_name);
   // If the file is already being downloaded, don't start another download.
   if (avatar_images_downloads_in_progress_.count(file_name))
     return;

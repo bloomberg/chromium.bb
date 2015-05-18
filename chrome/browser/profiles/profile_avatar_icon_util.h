@@ -67,7 +67,7 @@ size_t GetDefaultAvatarIconCount();
 size_t GetGenericAvatarIconCount();
 
 // Gets the index for the (grey silhouette) avatar used as a placeholder.
-int GetPlaceholderAvatarIndex();
+size_t GetPlaceholderAvatarIndex();
 
 // Gets the resource ID of the placeholder avatar icon.
 int GetPlaceholderAvatarIconResourceID();
@@ -77,9 +77,6 @@ int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
 
 // Gets the resource filename of the default avatar icon at |index|.
 const char* GetDefaultAvatarIconFileNameAtIndex(size_t index);
-
-// Gets the file name of an avatar that has no high res version.
-const char* GetNoHighResAvatarFileName();
 
 // Gets the full path of the high res avatar icon at |index|.
 base::FilePath GetPathOfHighResAvatarAtIndex(size_t index);

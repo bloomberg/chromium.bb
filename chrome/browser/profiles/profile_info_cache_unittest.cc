@@ -616,6 +616,31 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   EXPECT_FALSE(base::PathExists(icon_path));
 }
 
+TEST_F(ProfileInfoCacheTest, NothingToDownloadHighResAvatarTest) {
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
+
+  // The TestingProfileManager's ProfileInfoCache doesn't download avatars.
+  ProfileInfoCache profile_info_cache(
+      g_browser_process->local_state(),
+      testing_profile_manager_.profile_manager()->user_data_dir());
+
+  const size_t kIconIndex = profiles::GetPlaceholderAvatarIndex();
+
+  EXPECT_EQ(0U, profile_info_cache.GetNumberOfProfiles());
+  base::FilePath path_1 = GetProfilePath("path_1");
+  profile_info_cache.AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
+                                       std::string(), base::string16(),
+                                       kIconIndex, std::string());
+  EXPECT_EQ(1U, profile_info_cache.GetNumberOfProfiles());
+  base::RunLoop().RunUntilIdle();
+
+  // We haven't tried to download any high-res avatars as the specified icon is
+  // just a placeholder.
+  EXPECT_EQ(0U, profile_info_cache.cached_avatar_images_.size());
+  EXPECT_EQ(0U, profile_info_cache.avatar_images_downloads_in_progress_.size());
+}
+
 TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesWithNewAvatarMenu) {
   switches::EnableNewAvatarMenuForTesting(
       base::CommandLine::ForCurrentProcess());
