@@ -282,14 +282,9 @@ private:
     void resolvePromisesForResume();
     void resolvePromisesForResumeOnMainThread();
 
-    void resolvePromisesForSuspend();
-    void resolvePromisesForSuspendOnMainThread();
-
     // Vector of promises created by resume(). It takes time to handle them, so we collect all of
     // the promises here until they can be resolved or rejected.
     WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver>> m_resumeResolvers;
-    // Like m_resumeResolvers but for suspend().
-    WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver>> m_suspendResolvers;
     void rejectPendingResolvers();
 
     // True if we're in the process of resolving promises for resume().  Resolving can take some
