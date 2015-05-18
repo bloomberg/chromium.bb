@@ -1,8 +1,10 @@
 <!doctype HTML>
 <body>
-<div id="targetDiv" style="height: 2000px; width: 2000px; will-change: transform">
-<img id="targetImage">
+<div style="height: 2000px; width: 2000px;">
+<div id="targetImage" style="width: 50px; height: 50px">
 </div>
+<img id="testTarget" style="visibility: hidden">
+
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
 window.testIsAsync = true;
@@ -25,18 +27,22 @@ window.testIsAsync = true;
 // so we may miss it.
 
 function repaintTest() {
-    setTimeout(finishRepaintTest, 150);
+  setTimeout(finishRepaintTest, 150);
 }
 
 function targetImageOnload() {
-    targetDiv.style.transform = "translateY(-1000px)";
+    window.scrollTo(0, 1000);
     if (window.internals)
         window.internals.startTrackingRepaints(document);
     runRepaintTest();
 }
 
 window.onload = function() {
-    targetImage.onload = targetImageOnload;
-    targetImage.src="../../fast/backgrounds/resources/red-green-animated.gif";
+    targetImage.style.background = "url(../../fast/backgrounds/resources/red-green-animated.gif)";
+
+    // Use a parallel image element as a hack to detect whether the image has loaded, and therefore
+    // we'll get a frame.
+    testTarget.onload = targetImageOnload;
+    testTarget.src = "../../fast/backgrounds/resources/red-green-animated.gif";
 }
 </script>

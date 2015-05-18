@@ -47,6 +47,7 @@
 #include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
@@ -59,6 +60,7 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/LengthFunctions.h"
+#include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/TransformState.h"
@@ -1330,6 +1332,7 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
     if (!parent())
         return;
 
+    // TODO(chrishtr): support PaintInvalidationDelayedFull for animated border images.
     if ((style()->borderImage().image() && style()->borderImage().image()->data() == image)
         || (style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image)) {
         setShouldDoFullPaintInvalidation();
@@ -1366,16 +1369,44 @@ bool LayoutBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
     }
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
-            for (LayoutObject* layerLayoutObject : layerLayoutObjects)
-                layerLayoutObject->setShouldDoFullPaintInvalidation();
+            for (LayoutObject* layerLayoutObject : layerLayoutObjects) {
+                // For now, only support delayed paint invalidation for animated background images.
+                bool maybeAnimated = curLayer->image()->cachedImage() && curLayer->image()->cachedImage()->image() && curLayer->image()->cachedImage()->image()->maybeAnimated();
+                if (maybeAnimated && drawingBackground)
+                    layerLayoutObject->setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
+                else
+                    layerLayoutObject->setShouldDoFullPaintInvalidation(PaintInvalidationFull);
+            }
             return true;
         }
     }
     return false;
 }
 
+bool LayoutBox::intersectsVisibleViewport()
+{
+    LayoutRect rect = visualOverflowRect();
+    LayoutView* layoutView = view();
+    while (layoutView->frame()->ownerLayoutObject())
+        layoutView = layoutView->frame()->ownerLayoutObject()->view();
+    mapRectToPaintInvalidationBacking(layoutView, rect, 0);
+    return rect.intersects(LayoutRect(layoutView->frameView()->scrollableArea()->visibleContentRectDouble()));
+}
+
 PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& newPaintInvalidationContainer)
 {
+    PaintInvalidationReason fullInvalidationReason = fullPaintInvalidationReason();
+    // If the current paint invalidation reason is PaintInvalidationDelayedFull, then this paint invalidation can delayed if the
+    // LayoutBox in question is not on-screen. The logic to decide whether this is appropriate exists at the site of the original
+    // paint invalidation that chose PaintInvalidationDelayedFull.
+    if (fullInvalidationReason == PaintInvalidationDelayedFull) {
+        if (!intersectsVisibleViewport())
+            return PaintInvalidationDelayedFull;
+
+        // Reset state back to regular full paint invalidation if the object is onscreen.
+        setShouldDoFullPaintInvalidation(PaintInvalidationFull);
+    }
+
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
     // If we are set to do a full paint invalidation that means the LayoutView will be

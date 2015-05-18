@@ -25,22 +25,18 @@ window.testIsAsync = true;
 // so we may miss it.
 
 function repaintTest() {
-  setTimeout(finishRepaintTest, 150);
+    setTimeout(finishRepaintTest, 150);
 }
 
 function targetImageOnload() {
-  window.scrollTo(0, 1000);
-  window.internals.startTrackingRepaints(document);
-  runRepaintTest();
+    window.scrollTo(0, 1000);
+    if (window.internals)
+        internals.startTrackingRepaints(document);
+    runRepaintTest();
 }
 
-window.onload = function() {
-  targetImage.onload = targetImageOnload;
-  targetImage.src="../../fast/backgrounds/resources/red-green-animated.gif";
+onload = function() {
+    targetImage.onload = targetImageOnload;
+    targetImage.src = "../../fast/backgrounds/resources/red-green-animated.gif";
 }
-
-testRunner.waitUntilDone();
-
-</script>
-
 </script>

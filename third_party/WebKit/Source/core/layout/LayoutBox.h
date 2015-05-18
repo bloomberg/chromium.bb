@@ -831,6 +831,9 @@ private:
             setMayNeedPaintInvalidation();
     }
 
+    // Returns true if the box intersects the viewport visible to the user.
+    bool intersectsVisibleViewport();
+
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
     LayoutRect m_frameRect;
 
