@@ -24,11 +24,6 @@
   var launcherManager = new hotword.LauncherManager(stateManager);
   var trainingManager = new hotword.TrainingManager(stateManager);
 
-  // Detect Chrome startup and make sure we get a chance to run.
-  chrome.runtime.onStartup.addListener(function() {
-    stateManager.updateStatus();
-  });
-
   // Detect when hotword settings have changed.
   chrome.hotwordPrivate.onEnabledChanged.addListener(function() {
     stateManager.updateStatus();

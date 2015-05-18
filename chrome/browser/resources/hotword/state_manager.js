@@ -101,6 +101,7 @@ cr.define('hotword', function() {
      * @private
      */
     this.idleStateChangedListener_ = this.handleIdleStateChanged_.bind(this);
+    this.startupListener_ = this.handleStartup_.bind(this);
 
     /**
      * Whether this user is locked.
@@ -141,6 +142,18 @@ cr.define('hotword', function() {
     this.chime_.src = chrome.extension.getURL(
         hotword.constants.SHARED_MODULE_ROOT + '/audio/chime.wav');
     document.body.appendChild(this.chime_);
+
+    // In order to remove this listener, it must first be added. This handles
+    // the case on first Chrome startup where this event is never registered,
+    // so can't be removed when it's determined that hotwording is disabled.
+    // Why not only remove the listener if it exists? Extension API events have
+    // two parts to them, the Javascript listeners, and a browser-side component
+    // that wakes up the extension if it's an event page. The browser-side
+    // wake-up event is only removed when the number of javascript listeners
+    // becomes 0. To clear the browser wake-up event, a listener first needs to
+    // be added, then removed in order to drop the count to 0 and remove the
+    // event.
+    chrome.runtime.onStartup.addListener(this.startupListener_);
   }
 
   /**
@@ -279,12 +292,18 @@ cr.define('hotword', function() {
           chrome.idle.onStateChanged.addListener(
               this.idleStateChangedListener_);
         }
+        if (!chrome.runtime.onStartup.hasListener(this.startupListener_))
+          chrome.runtime.onStartup.addListener(this.startupListener_);
       } else {
         // Not enabled. Shut down if running.
         this.shutdownDetector_();
 
         chrome.idle.onStateChanged.removeListener(
             this.idleStateChangedListener_);
+        // If hotwording isn't enabled, don't start this component extension on
+        // Chrome startup. If a user enables hotwording, the status change
+        // event will be fired and the onStartup event will be registered.
+        chrome.runtime.onStartup.removeListener(this.startupListener_);
       }
     },
 
@@ -602,6 +621,14 @@ cr.define('hotword', function() {
 
       if (oldLocked != this.isLocked_)
         this.updateStateFromStatus_();
+    },
+
+    /**
+     * Handles a chrome.runtime.onStartup event.
+     * @private
+     */
+    handleStartup_: function() {
+      updateStatus();
     }
   };
 
