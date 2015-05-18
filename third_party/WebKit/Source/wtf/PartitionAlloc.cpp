@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "wtf/PartitionAlloc.h"
+#include "wtf/Vector.h"
 
 #include <string.h>
 
@@ -992,65 +993,85 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
 #endif
 }
 
-#ifndef NDEBUG
-
-void partitionDumpStats(const PartitionRoot& root)
+static void partitionDumpBucketStats(const PartitionBucket* bucket, PartitionBucketMemoryStats* memoryStats)
 {
-    size_t i;
-    size_t totalLive = 0;
-    size_t totalResident = 0;
-    size_t totalFreeable = 0;
-    for (i = 0; i < root.numBuckets; ++i) {
-        const PartitionBucket& bucket = root.buckets()[i];
-        if (bucket.activePagesHead == &PartitionRootGeneric::gSeedPage && !bucket.freePagesHead && !bucket.numFullPages) {
-            // Empty bucket with no freelist or full pages. Skip reporting it.
-            continue;
-        }
-        size_t numFreePages = 0;
-        PartitionPage* freePages = bucket.freePagesHead;
-        while (freePages) {
-            ++numFreePages;
-            freePages = freePages->nextPage;
-        }
-        size_t bucketSlotSize = bucket.slotSize;
-        uint16_t bucketNumSlots = partitionBucketSlots(&bucket);
-        size_t bucketUsefulStorage = bucketSlotSize * bucketNumSlots;
-        size_t bucketPageSize = bucket.numSystemPagesPerSlotSpan * kSystemPageSize;
-        size_t bucketWaste = bucketPageSize - bucketUsefulStorage;
-        size_t numActiveBytes = bucket.numFullPages * bucketUsefulStorage;
-        size_t numResidentBytes = bucket.numFullPages * bucketPageSize;
-        size_t numFreeableBytes = 0;
-        size_t numActivePages = 0;
-        const PartitionPage* page = bucket.activePagesHead;
-        while (page) {
-            ASSERT(page != &PartitionRootGeneric::gSeedPage);
-            // A page may be on the active list but freed and not yet swept.
-            if (!page->freelistHead && !page->numUnprovisionedSlots && !page->numAllocatedSlots) {
-                ++numFreePages;
-            } else {
-                ++numActivePages;
-                numActiveBytes += (page->numAllocatedSlots * bucketSlotSize);
-                size_t pageBytesResident = (bucketNumSlots - page->numUnprovisionedSlots) * bucketSlotSize;
-                // Round up to system page size.
-                pageBytesResident = (pageBytesResident + kSystemPageOffsetMask) & kSystemPageBaseMask;
-                numResidentBytes += pageBytesResident;
-                if (!page->numAllocatedSlots)
-                    numFreeableBytes += pageBytesResident;
-            }
-            page = page->nextPage;
-        }
-        totalLive += numActiveBytes;
-        totalResident += numResidentBytes;
-        totalFreeable += numFreeableBytes;
-        printf("bucket size %zu (pageSize %zu waste %zu): %zu alloc/%zu commit/%zu freeable bytes, %zu/%zu/%zu full/active/free pages\n", bucketSlotSize, bucketPageSize, bucketWaste, numActiveBytes, numResidentBytes, numFreeableBytes, static_cast<size_t>(bucket.numFullPages), numActivePages, numFreePages);
+    memoryStats->isValid = false;
+    // TODO(ssid): The PartitionRootGeneric::gSeedPage should be accounted (crbug.com/488465).
+    if (bucket->activePagesHead == &PartitionRootGeneric::gSeedPage) {
+        // Empty bucket with no freelist or full pages. Skip reporting it.
+        return;
     }
-    printf("total live: %zu bytes\n", totalLive);
-    printf("total resident: %zu bytes\n", totalResident);
-    printf("total freeable: %zu bytes\n", totalFreeable);
-    fflush(stdout);
+    memoryStats->numFreePages = 0;
+    for (PartitionPage* page = bucket->freePagesHead; page; page = page->nextPage) {
+        memoryStats->numFreePages++;
+    }
+    memoryStats->bucketSlotSize = bucket->slotSize;
+    uint16_t bucketNumSlots = partitionBucketSlots(bucket);
+    size_t bucketUsefulStorage = memoryStats->bucketSlotSize * bucketNumSlots;
+    memoryStats->allocatedPageSize = bucket->numSystemPagesPerSlotSpan * kSystemPageSize;
+    memoryStats->pageWasteSize = memoryStats->allocatedPageSize - bucketUsefulStorage;
+    memoryStats->activeBytes = bucket->numFullPages * bucketUsefulStorage;
+    memoryStats->residentBytes = bucket->numFullPages * memoryStats->allocatedPageSize;
+    memoryStats->freeableBytes = 0;
+    memoryStats->numActivePages = 0;
+    const PartitionPage* page = bucket->activePagesHead;
+    // TODO(ssid): Fix the accounting of resident and freeable bytes, and full
+    // pages are double-counted (crbug.com/488465).
+    while (page) {
+        ASSERT(page != &PartitionRootGeneric::gSeedPage);
+        // A page may be on the active list but freed and not yet swept.
+        if (!page->freelistHead && page->numUnprovisionedSlots == 0 && page->numAllocatedSlots == 0) {
+            ++memoryStats->numFreePages;
+        } else {
+            ++memoryStats->numActivePages;
+            memoryStats->activeBytes += (page->numAllocatedSlots * memoryStats->bucketSlotSize);
+            size_t pageBytesResident = (bucketNumSlots - page->numUnprovisionedSlots) * memoryStats->bucketSlotSize;
+            // Round up to system page size.
+            size_t pageBytesResidentRounded = (pageBytesResident + kSystemPageOffsetMask) & kSystemPageBaseMask;
+            memoryStats->residentBytes += pageBytesResidentRounded;
+            if (!page->numAllocatedSlots)
+                memoryStats->freeableBytes += pageBytesResidentRounded;
+        }
+        page = page->nextPage;
+    }
+    memoryStats->numFullPages = static_cast<size_t>(bucket->numFullPages);
+    memoryStats->isValid = true;
 }
 
-#endif // !NDEBUG
+void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* partitionName, PartitionStatsDumper* partitionStatsDumper)
+{
+    const size_t partitionNumBuckets = kGenericNumBucketedOrders * kGenericNumBucketsPerOrder;
+    Vector<PartitionBucketMemoryStats> memoryStats(partitionNumBuckets);
+    spinLockLock(&partition->lock);
+    for (size_t i = 0; i < partitionNumBuckets; ++i) {
+        partitionDumpBucketStats(&partition->buckets[i], &memoryStats[i]);
+    }
+    spinLockUnlock(&partition->lock);
+
+    // partitionsDumpBucketStats is called after collecting stats because it
+    // can try to allocate using PartitionAllocGeneric and it can't obtain the
+    // lock.
+    for (size_t i = 0; i < partitionNumBuckets; ++i) {
+        if (memoryStats[i].isValid)
+            partitionStatsDumper->partitionsDumpBucketStats(partitionName, &memoryStats[i]);
+    }
+}
+
+void partitionDumpStats(PartitionRoot* partition, const char* partitionName, PartitionStatsDumper* partitionStatsDumper)
+{
+    const size_t partitionNumBuckets = partition->numBuckets;
+    Vector<PartitionBucketMemoryStats> memoryStats(partitionNumBuckets);
+    for (size_t i = 0; i < partitionNumBuckets; ++i) {
+        partitionDumpBucketStats(&partition->buckets()[i], &memoryStats[i]);
+    }
+
+    // partitionsDumpBucketStats is called after collecting stats because it
+    // can use PartitionAlloc to allocate and this can affect the statistics.
+    for (size_t i = 0; i < partitionNumBuckets; ++i) {
+        if (memoryStats[i].isValid)
+            partitionStatsDumper->partitionsDumpBucketStats(partitionName, &memoryStats[i]);
+    }
+}
 
 } // namespace WTF
 

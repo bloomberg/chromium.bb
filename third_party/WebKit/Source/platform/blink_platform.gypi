@@ -72,6 +72,8 @@
       'MIMETypeRegistry.h',
       'NotImplemented.cpp',
       'NotImplemented.h',
+      'PartitionAllocMemoryDumpProvider.cpp',
+      'PartitionAllocMemoryDumpProvider.h',
       'PODArena.h',
       'PODFreeListArena.h',
       'PODInterval.h',

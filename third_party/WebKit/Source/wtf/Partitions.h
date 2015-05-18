@@ -90,6 +90,8 @@ public:
 
     static void reportMemoryUsageHistogram();
 
+    static void dumpMemoryStats(PartitionStatsDumper*);
+
 private:
     static bool s_initialized;
     static PartitionAllocatorGeneric m_fastMallocAllocator;

@@ -94,4 +94,16 @@ void Partitions::reportMemoryUsageHistogram()
     }
 }
 
+void Partitions::dumpMemoryStats(PartitionStatsDumper* partitionStatsDumper)
+{
+    // Object model and rendering partitions are not thread safe and can be
+    // accessed only on the main thread.
+    ASSERT(isMainThread());
+
+    partitionDumpStatsGeneric(getFastMallocPartition(), "fast_malloc_partition", partitionStatsDumper);
+    partitionDumpStatsGeneric(getBufferPartition(), "buffer_partition", partitionStatsDumper);
+    partitionDumpStats(getObjectModelPartition(), "object_model_partition", partitionStatsDumper);
+    partitionDumpStats(getRenderingPartition(), "rendering_partition", partitionStatsDumper);
+}
+
 } // namespace WTF

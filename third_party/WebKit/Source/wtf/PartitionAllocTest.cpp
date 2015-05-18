@@ -76,12 +76,6 @@ static void TestSetup()
 
 static void TestShutdown()
 {
-#ifndef NDEBUG
-    // Test that the partition statistic dumping code works. Previously, it
-    // bitrotted because no test calls it.
-    partitionDumpStats(*allocator.root());
-#endif
-
     // We expect no leaks in the general case. We have a test for leak
     // detection.
     EXPECT_TRUE(allocator.shutdown());
@@ -196,6 +190,28 @@ static void CycleGenericFreeCache(size_t size)
         EXPECT_NE(-1, bucket->activePagesHead->freeCacheIndex);
     }
 }
+
+class MockPartitionStatsDumper : public WTF::PartitionStatsDumper {
+public:
+    MockPartitionStatsDumper()
+        : m_totalResidentBytes(0)
+        , m_totalActiveBytes(0) { }
+
+    void partitionsDumpBucketStats(const char* partitionName, const WTF::PartitionBucketMemoryStats* memoryStats) override
+    {
+        m_totalResidentBytes += memoryStats->residentBytes;
+        m_totalActiveBytes += memoryStats->activeBytes;
+    }
+
+    bool IsMemoryAllocationRecorded()
+    {
+        return m_totalResidentBytes != 0 && m_totalActiveBytes != 0;
+    }
+
+private:
+    size_t m_totalResidentBytes;
+    size_t m_totalActiveBytes;
+};
 
 // Check that the most basic of allocate / free pairs work.
 TEST(PartitionAllocTest, Basic)
@@ -1261,6 +1277,27 @@ TEST(PartitionAllocDeathTest, GuardPages)
 }
 
 #endif // !OS(ANDROID)
+
+// Tests that partitionDumpStatsGeneric and partitionDumpStats runs without
+// crashing and returns non zero values when memory is allocated.
+TEST(PartitionAllocTest, DumpMemoryStats)
+{
+    TestSetup();
+    void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
+    void* genericPtr = partitionAllocGeneric(genericAllocator.root(), 1);
+
+    MockPartitionStatsDumper mockStatsDumperGeneric;
+    partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+    EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+    MockPartitionStatsDumper mockStatsDumper;
+    partitionDumpStats(allocator.root(), "mock_allocator", &mockStatsDumper);
+    EXPECT_TRUE(mockStatsDumper.IsMemoryAllocationRecorded());
+
+    partitionFree(ptr);
+    partitionFreeGeneric(genericAllocator.root(), genericPtr);
+    TestShutdown();
+}
 
 // Tests that the countLeadingZeros() functions work to our satisfaction.
 // It doesn't seem worth the overhead of a whole new file for these tests, so

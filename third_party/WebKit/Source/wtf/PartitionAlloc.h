@@ -329,6 +329,29 @@ enum PartitionAllocFlags {
     PartitionAllocReturnNull = 1 << 0,
 };
 
+// Struct used to retrieve memory statistics about a partition bucket. Used by
+// PartitionStatsDumper implementation.
+// TODO(ssid): Add direct mapped memory tracking (allocations >1MB).
+struct PartitionBucketMemoryStats {
+    bool isValid; // Used to check if the stats is valid.
+    size_t bucketSlotSize; // The size of the slot in bytes.
+    size_t allocatedPageSize; // Total size the partition page allocated from the system.
+    size_t pageWasteSize; // The bytes allocated from the system but can't be used in any slot in a partition page.
+    size_t activeBytes; // Total active bytes used in the bucket.
+    size_t residentBytes; // Total bytes provisioned in the bucket.
+    size_t freeableBytes; // Total bytes that could be decomitted (non-resident).
+    size_t numFullPages; // Number of pages with all slots allocated.
+    size_t numActivePages; // Number of pages that have at least one provisioned slot.
+    size_t numFreePages; // Number of pages in freelist + free pages in active list but are not freed.
+};
+
+// Interface that is passed to partitionDumpStats and
+// partitionDumpStatsGeneric for using the memory statistics.
+class WTF_EXPORT PartitionStatsDumper {
+public:
+    virtual void partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats*) = 0;
+};
+
 WTF_EXPORT void partitionAllocInit(PartitionRoot*, size_t numBuckets, size_t maxAllocation);
 WTF_EXPORT bool partitionAllocShutdown(PartitionRoot*);
 WTF_EXPORT void partitionAllocGenericInit(PartitionRootGeneric*);
@@ -338,9 +361,8 @@ WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, int, si
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);
 WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, void*, size_t);
 
-#ifndef NDEBUG
-WTF_EXPORT void partitionDumpStats(const PartitionRoot&);
-#endif
+WTF_EXPORT void partitionDumpStats(PartitionRoot*, const char* partitionName, PartitionStatsDumper*);
+WTF_EXPORT void partitionDumpStatsGeneric(PartitionRootGeneric*, const char* partitionName, PartitionStatsDumper*);
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
