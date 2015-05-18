@@ -24,12 +24,12 @@ NativeViewportApplicationDelegate::~NativeViewportApplicationDelegate() {
 
 void NativeViewportApplicationDelegate::Initialize(
     mojo::ApplicationImpl* application) {
-  event_source_ = ui::PlatformEventSource::CreateDefault();
   tracing_.Initialize(application);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   is_headless_ = command_line->HasSwitch(mojo::kUseHeadlessConfig);
   if (!is_headless_) {
+    event_source_ = ui::PlatformEventSource::CreateDefault();
     if (command_line->HasSwitch(mojo::kUseTestConfig))
       gfx::GLSurface::InitializeOneOffForTests();
     else
