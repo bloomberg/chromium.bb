@@ -252,9 +252,9 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
     case syncer::AUTOFILL:
       return prefs::kSyncAutofill;
     case syncer::AUTOFILL_PROFILE:
-      return prefs::kSyncAutofillWallet;
-    case syncer::AUTOFILL_WALLET_DATA:
       return prefs::kSyncAutofillProfile;
+    case syncer::AUTOFILL_WALLET_DATA:
+      return prefs::kSyncAutofillWallet;
     case syncer::THEMES:
       return prefs::kSyncThemes;
     case syncer::TYPED_URLS:
@@ -476,5 +476,3 @@ void SyncPrefs::SetCleanShutdown(bool value) {
 }
 
 }  // namespace sync_driver
-
-

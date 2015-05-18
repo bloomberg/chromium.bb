@@ -367,7 +367,7 @@ scoped_ptr<base::DictionaryValue> AutofillWalletSpecificsToValue(
     value->Set("masked_card",
                WalletMaskedCreditCardToValue(proto.masked_card()));
   } else if (proto.type() == sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS) {
-    value->Set("masked_card",
+    value->Set("address",
                WalletPostalAddressToValue(proto.address()));
   }
   return value;
