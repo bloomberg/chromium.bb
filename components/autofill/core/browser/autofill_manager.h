@@ -123,6 +123,13 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnDidPreviewAutofillFormData();
 
+  // Returns true if the value/identifier is deletable. Fills out
+  // |title| and |body| with relevant user-facing text.
+  bool GetDeletionConfirmationText(const base::string16& value,
+                                   int identifier,
+                                   base::string16* title,
+                                   base::string16* body);
+
   // Remove the credit card or Autofill profile that matches |unique_id|
   // from the database. Returns true if deletion is allowed.
   bool RemoveAutofillProfileOrCreditCard(int unique_id);

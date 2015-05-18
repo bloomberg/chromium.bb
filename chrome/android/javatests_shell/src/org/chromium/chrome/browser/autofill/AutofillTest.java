@@ -73,6 +73,10 @@ public class AutofillTest extends ChromeShellTestBase {
             mGotPopupSelection.set(true);
         }
 
+        @Override
+        public void deleteSuggestion(int listIndex) {
+        }
+
         public boolean waitForCallback() throws InterruptedException {
             return CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override
@@ -90,19 +94,19 @@ public class AutofillTest extends ChromeShellTestBase {
     private AutofillSuggestion[] createTwoAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
             new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                42),
-            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43),
+                42, false),
+            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false),
         };
     }
 
     private AutofillSuggestion[] createFiveAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
             new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                42),
-            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43),
-            new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON, 44),
-            new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON, 45),
-            new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON, 46),
+                42, false),
+            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false),
+            new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON, 44, false),
+            new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON, 45, false),
+            new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON, 46, false),
         };
     }
 

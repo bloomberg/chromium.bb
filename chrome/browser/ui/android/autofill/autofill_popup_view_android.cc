@@ -25,7 +25,8 @@ namespace autofill {
 
 AutofillPopupViewAndroid::AutofillPopupViewAndroid(
     AutofillPopupController* controller)
-    : controller_(controller) {}
+    : controller_(controller),
+      deleting_index_(-1) {}
 
 AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {}
 
@@ -77,6 +78,8 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
           controller_->GetIconResourceID(suggestion.icon));
     }
 
+    bool deletable =
+        controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env,
         data_array.obj(),
@@ -84,7 +87,8 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
         value.obj(),
         label.obj(),
         android_icon_id,
-        suggestion.frontend_id);
+        suggestion.frontend_id,
+        deletable);
   }
 
   Java_AutofillPopupBridge_show(
@@ -97,6 +101,37 @@ void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
   // Race: Hide() may have already run.
   if (controller_)
     controller_->AcceptSuggestion(list_index);
+}
+
+void AutofillPopupViewAndroid::DeletionRequested(JNIEnv* env,
+                                                jobject obj,
+                                                jint list_index) {
+  if (!controller_)
+    return;
+
+  base::string16 confirmation_title, confirmation_body;
+  if (!controller_->GetRemovalConfirmationText(list_index, &confirmation_title,
+          &confirmation_body)) {
+    return;
+  }
+
+  deleting_index_ = list_index;
+  Java_AutofillPopupBridge_confirmDeletion(
+      env,
+      java_object_.obj(),
+      base::android::ConvertUTF16ToJavaString(
+          env, confirmation_title).obj(),
+      base::android::ConvertUTF16ToJavaString(
+          env, confirmation_body).obj());
+}
+
+void AutofillPopupViewAndroid::DeletionConfirmed(JNIEnv* env,
+                                                 jobject obj) {
+  if (!controller_)
+    return;
+
+  CHECK_GE(deleting_index_, 0);
+  controller_->RemoveSuggestion(deleting_index_);
 }
 
 void AutofillPopupViewAndroid::PopupDismissed(JNIEnv* env, jobject obj) {

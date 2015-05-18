@@ -267,6 +267,14 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   manager_->client()->HideAutofillPopup();
 }
 
+bool AutofillExternalDelegate::GetDeletionConfirmationText(
+    const base::string16& value,
+    int identifier,
+    base::string16* title,
+    base::string16* body) {
+  return manager_->GetDeletionConfirmationText(value, identifier, title, body);
+}
+
 bool AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
                                                 int identifier) {
   if (identifier > 0)

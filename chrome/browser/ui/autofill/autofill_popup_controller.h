@@ -53,6 +53,15 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   virtual const base::string16& GetElidedValueAt(size_t row) const = 0;
   virtual const base::string16& GetElidedLabelAt(size_t row) const = 0;
 
+  // Returns whether the item at |list_index| can be removed. If so, fills
+  // out |title| and |body| (when non-null) with relevant user-facing text.
+  virtual bool GetRemovalConfirmationText(int index,
+                                          base::string16* title,
+                                          base::string16* body) = 0;
+
+  // Removes the suggestion at the given index.
+  virtual bool RemoveSuggestion(int index) = 0;
+
 #if !defined(OS_ANDROID)
   // The same font can vary based on the type of data it is showing,
   // so we need to know the row.

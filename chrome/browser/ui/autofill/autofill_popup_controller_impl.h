@@ -88,6 +88,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   const autofill::Suggestion& GetSuggestionAt(size_t row) const override;
   const base::string16& GetElidedValueAt(size_t row) const override;
   const base::string16& GetElidedLabelAt(size_t row) const override;
+  bool GetRemovalConfirmationText(int list_index,
+                                  base::string16* title,
+                                  base::string16* body) override;
+  bool RemoveSuggestion(int list_index) override;
 #if !defined(OS_ANDROID)
   const gfx::FontList& GetValueFontListForRow(size_t index) const override;
   const gfx::FontList& GetLabelFontList() const override;

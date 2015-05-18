@@ -25,7 +25,7 @@ import java.util.List;
  * The Autofill suggestion popup that lists relevant suggestions.
  */
 public class AutofillPopup extends DropdownPopupWindow implements AdapterView.OnItemClickListener,
-        PopupWindow.OnDismissListener {
+        AdapterView.OnItemLongClickListener, PopupWindow.OnDismissListener {
 
     /**
      * The constant used to specify a separator in a list of Autofill suggestions.
@@ -52,6 +52,12 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
          * @param listIndex The index of the selected Autofill suggestion.
          */
         public void suggestionSelected(int listIndex);
+
+        /**
+         * Initiates the deletion process for an item. (A confirm dialog should be shown.)
+         * @param listIndex The index of the suggestion to delete.
+         */
+        public void deleteSuggestion(int listIndex);
     }
 
     /**
@@ -95,6 +101,7 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         setAdapter(new DropdownAdapter(mContext, cleanedData, separators));
         setRtl(isRtl);
         show();
+        getListView().setOnItemLongClickListener(this);
     }
 
     @Override
@@ -103,6 +110,18 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         int listIndex = mSuggestions.indexOf(adapter.getItem(position));
         assert listIndex > -1;
         mAutofillCallback.suggestionSelected(listIndex);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        DropdownAdapter adapter = (DropdownAdapter) parent.getAdapter();
+        AutofillSuggestion suggestion = (AutofillSuggestion) adapter.getItem(position);
+        if (!suggestion.isDeletable()) return false;
+
+        int listIndex = mSuggestions.indexOf(suggestion);
+        assert listIndex > -1;
+        mAutofillCallback.deleteSuggestion(listIndex);
+        return true;
     }
 
     @Override

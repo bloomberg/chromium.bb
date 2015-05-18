@@ -417,6 +417,38 @@ const base::string16& AutofillPopupControllerImpl::GetElidedLabelAt(
   return elided_labels_[row];
 }
 
+bool AutofillPopupControllerImpl::GetRemovalConfirmationText(
+    int list_index,
+    base::string16* title,
+    base::string16* body) {
+  return delegate_->GetDeletionConfirmationText(
+      suggestions_[list_index].value, suggestions_[list_index].frontend_id,
+      title, body);
+}
+
+bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
+  if (!delegate_->RemoveSuggestion(suggestions_[list_index].value,
+                                   suggestions_[list_index].frontend_id)) {
+    return false;
+  }
+
+  // Remove the deleted element.
+  suggestions_.erase(suggestions_.begin() + list_index);
+  elided_values_.erase(elided_values_.begin() + list_index);
+  elided_labels_.erase(elided_labels_.begin() + list_index);
+
+  SetSelectedLine(kNoSelection);
+
+  if (HasSuggestions()) {
+    delegate_->ClearPreviewedForm();
+    UpdateBoundsAndRedrawPopup();
+  } else {
+    Hide();
+  }
+
+  return true;
+}
+
 #if !defined(OS_ANDROID)
 const gfx::FontList& AutofillPopupControllerImpl::GetValueFontListForRow(
     size_t index) const {
@@ -499,27 +531,7 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
 
   DCHECK_GE(selected_line_, 0);
   DCHECK_LT(selected_line_, static_cast<int>(GetLineCount()));
-
-  if (!delegate_->RemoveSuggestion(suggestions_[selected_line_].value,
-                                   suggestions_[selected_line_].frontend_id)) {
-    return false;
-  }
-
-  // Remove the deleted element.
-  suggestions_.erase(suggestions_.begin() + selected_line_);
-  elided_values_.erase(elided_values_.begin() + selected_line_);
-  elided_labels_.erase(elided_labels_.begin() + selected_line_);
-
-  SetSelectedLine(kNoSelection);
-
-  if (HasSuggestions()) {
-    delegate_->ClearPreviewedForm();
-    UpdateBoundsAndRedrawPopup();
-  } else {
-    Hide();
-  }
-
-  return true;
+  return RemoveSuggestion(selected_line_);
 }
 
 int AutofillPopupControllerImpl::LineFromY(int y) {

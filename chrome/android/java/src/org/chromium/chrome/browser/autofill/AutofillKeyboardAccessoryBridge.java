@@ -106,7 +106,7 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
             String label, int iconId, int suggestionId) {
         int drawableId = iconId == 0 ? DropdownItem.NO_ICON : ResourceId.mapToDrawableId(iconId);
-        array[index] = new AutofillSuggestion(label, null, drawableId, suggestionId);
+        array[index] = new AutofillSuggestion(label, null, drawableId, suggestionId, false);
     }
 
     private native void nativeViewDismissed(long nativeAutofillKeyboardAccessoryView);

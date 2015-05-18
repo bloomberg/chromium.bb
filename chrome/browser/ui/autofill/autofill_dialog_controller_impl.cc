@@ -2448,6 +2448,14 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   HidePopup();
 }
 
+bool AutofillDialogControllerImpl::GetDeletionConfirmationText(
+    const base::string16& value,
+    int identifier,
+    base::string16* title,
+    base::string16* body) {
+  return false;
+}
+
 bool AutofillDialogControllerImpl::RemoveSuggestion(
     const base::string16& value,
     int identifier) {

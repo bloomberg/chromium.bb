@@ -28,6 +28,13 @@ class AutofillPopupDelegate {
   virtual void DidAcceptSuggestion(const base::string16& value,
                                    int identifier) = 0;
 
+  // Returns whether the given value can be deleted, and if true,
+  // fills out |title| and |body|.
+  virtual bool GetDeletionConfirmationText(const base::string16& value,
+                                           int identifier,
+                                           base::string16* title,
+                                           base::string16* body) = 0;
+
   // Delete the described suggestion. Returns true if something was deleted,
   // or false if deletion is not allowed.
   virtual bool RemoveSuggestion(const base::string16& value,

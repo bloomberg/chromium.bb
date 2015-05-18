@@ -169,6 +169,10 @@ class AutofillDialogControllerImpl
                            int identifier) override;
   void DidAcceptSuggestion(const base::string16& value,
                            int identifier) override;
+  bool GetDeletionConfirmationText(const base::string16& value,
+                                   int identifier,
+                                   base::string16* title,
+                                   base::string16* body) override;
   bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
 
