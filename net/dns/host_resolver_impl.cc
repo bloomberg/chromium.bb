@@ -23,7 +23,8 @@
 #include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -1553,9 +1554,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         } else {
           UmaAsyncDnsResolveStatus(RESOLVE_STATUS_PROC_SUCCESS);
         }
-        UMA_HISTOGRAM_CUSTOM_ENUMERATION("AsyncDNS.ResolveError",
-                                         std::abs(dns_task_error_),
-                                         GetAllErrorCodesForUma());
+        UMA_HISTOGRAM_SPARSE_SLOWLY("AsyncDNS.ResolveError",
+                                    std::abs(dns_task_error_));
         resolver_->OnDnsTaskResolve(dns_task_error_);
       } else {
         DNS_HISTOGRAM("AsyncDNS.FallbackFail", duration);
@@ -2403,9 +2403,8 @@ void HostResolverImpl::OnDnsTaskResolve(int net_error) {
   AbortDnsTasks();
 
   UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", false);
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("AsyncDNS.DnsClientDisabledReason",
-                                   std::abs(net_error),
-                                   GetAllErrorCodesForUma());
+  UMA_HISTOGRAM_SPARSE_SLOWLY("AsyncDNS.DnsClientDisabledReason",
+                              std::abs(net_error));
 }
 
 void HostResolverImpl::SetDnsClient(scoped_ptr<DnsClient> dns_client) {

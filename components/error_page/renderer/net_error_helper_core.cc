@@ -17,7 +17,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -346,24 +347,19 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
 void ReportAutoReloadSuccess(const blink::WebURLError& error, size_t count) {
   if (error.domain.utf8() != net::kErrorDomain)
     return;
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtSuccess",
-                                   -error.reason,
-                                   net::GetAllErrorCodesForUma());
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtSuccess", -error.reason);
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
                        static_cast<base::HistogramBase::Sample>(count));
   if (count == 1) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtFirstSuccess",
-                                     -error.reason,
-                                     net::GetAllErrorCodesForUma());
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtFirstSuccess",
+                                -error.reason);
   }
 }
 
 void ReportAutoReloadFailure(const blink::WebURLError& error, size_t count) {
   if (error.domain.utf8() != net::kErrorDomain)
     return;
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtStop",
-                                   -error.reason,
-                                   net::GetAllErrorCodesForUma());
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtStop", -error.reason);
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
                        static_cast<base::HistogramBase::Sample>(count));
 }

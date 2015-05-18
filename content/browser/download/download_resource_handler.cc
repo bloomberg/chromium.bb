@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
@@ -453,9 +454,8 @@ void DownloadResourceHandler::OnResponseCompleted(
   // If the error mapped to something unknown, record it so that
   // we can drill down.
   if (reason == DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.MapErrorNetworkFailed",
-                                     std::abs(status.error()),
-                                     net::GetAllErrorCodesForUma());
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Download.MapErrorNetworkFailed",
+                                std::abs(status.error()));
   }
 
   stream_writer_.reset();  // We no longer need the stream.
