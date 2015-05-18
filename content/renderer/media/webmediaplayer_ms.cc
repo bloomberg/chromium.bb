@@ -464,6 +464,11 @@ bool WebMediaPlayerMS::UpdateCurrentFrame(base::TimeTicks deadline_min,
   return false;
 }
 
+bool WebMediaPlayerMS::HasCurrentFrame() {
+  base::AutoLock auto_lock(current_frame_lock_);
+  return current_frame_;
+}
+
 scoped_refptr<media::VideoFrame> WebMediaPlayerMS::GetCurrentFrame() {
   DVLOG(3) << "WebMediaPlayerMS::GetCurrentFrame";
   base::AutoLock auto_lock(current_frame_lock_);

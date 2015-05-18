@@ -136,6 +136,7 @@ class WebMediaPlayerMS
       cc::VideoFrameProvider::Client* client) override;
   bool UpdateCurrentFrame(base::TimeTicks deadline_min,
                           base::TimeTicks deadline_max) override;
+  bool HasCurrentFrame() override;
   scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
   void PutCurrentFrame() override;
 

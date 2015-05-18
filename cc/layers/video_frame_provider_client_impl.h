@@ -42,6 +42,7 @@ class CC_EXPORT VideoFrameProviderClientImpl
   scoped_refptr<media::VideoFrame> AcquireLockAndCurrentFrame();
   void PutCurrentFrame();
   void ReleaseLock();
+  bool HasCurrentFrame();
 
   const gfx::Transform& StreamTextureMatrix() const;
 

@@ -124,6 +124,11 @@ bool VideoFrameCompositor::UpdateCurrentFrame(base::TimeTicks deadline_min,
   return CallRender(deadline_min, deadline_max, false);
 }
 
+bool VideoFrameCompositor::HasCurrentFrame() {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  return current_frame_;
+}
+
 void VideoFrameCompositor::Start(RenderCallback* callback) {
   TRACE_EVENT0("media", "VideoFrameCompositor::Start");
 

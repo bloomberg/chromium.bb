@@ -85,6 +85,50 @@ TEST(VideoLayerImplTest, Occlusion) {
   }
 }
 
+TEST(VideoLayerImplTest, OccludesOtherLayers) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Rect visible(layer_size);
+
+  LayerTestCommon::LayerImplTest impl;
+  impl.host_impl()->SetViewportSize(layer_size);
+  DebugSetImplThreadAndMainThreadBlocked(impl.proxy());
+  auto active_tree = impl.host_impl()->active_tree();
+
+  // Create a video layer with no frame on top of another layer.
+  scoped_ptr<LayerImpl> layer_impl = LayerImpl::Create(active_tree, 3);
+  layer_impl->SetHasRenderSurface(true);
+  layer_impl->SetBounds(layer_size);
+  layer_impl->SetContentBounds(layer_size);
+  layer_impl->SetDrawsContent(true);
+  const auto& draw_properties = layer_impl->draw_properties();
+
+  FakeVideoFrameProvider provider;
+  scoped_ptr<VideoLayerImpl> video_layer_impl = VideoLayerImpl::Create(
+      active_tree, 4, &provider, media::VIDEO_ROTATION_0);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetContentBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+  video_layer_impl->SetContentsOpaque(true);
+
+  layer_impl->AddChild(video_layer_impl.Pass());
+  active_tree->SetRootLayer(layer_impl.Pass());
+
+  active_tree->UpdateDrawProperties(false);
+
+  // We don't have a frame yet, so the video doesn't occlude the layer below it.
+  EXPECT_FALSE(draw_properties.occlusion_in_content_space.IsOccluded(visible));
+
+  scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
+      media::VideoFrame::YV12, gfx::Size(10, 10), gfx::Rect(10, 10),
+      gfx::Size(10, 10), base::TimeDelta());
+  provider.set_frame(video_frame);
+  active_tree->set_needs_update_draw_properties();
+  active_tree->UpdateDrawProperties(false);
+
+  // We have a frame now, so the video occludes the layer below it.
+  EXPECT_TRUE(draw_properties.occlusion_in_content_space.IsOccluded(visible));
+}
+
 TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
   LayerTestCommon::LayerImplTest impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.proxy());

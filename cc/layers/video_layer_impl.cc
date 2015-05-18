@@ -388,6 +388,13 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   provider_client_impl_->ReleaseLock();
 }
 
+SimpleEnclosedRegion VideoLayerImpl::VisibleContentOpaqueRegion() const {
+  // If we don't have a frame yet, then we don't have an opaque region.
+  if (!provider_client_impl_->HasCurrentFrame())
+    return SimpleEnclosedRegion();
+  return LayerImpl::VisibleContentOpaqueRegion();
+}
+
 void VideoLayerImpl::ReleaseResources() {
   updater_ = nullptr;
 }

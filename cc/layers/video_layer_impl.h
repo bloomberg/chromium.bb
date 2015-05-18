@@ -38,6 +38,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   void DidDraw(ResourceProvider* resource_provider) override;
+  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
   void DidBecomeActive() override;
   void ReleaseResources() override;
 

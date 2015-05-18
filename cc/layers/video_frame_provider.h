@@ -67,6 +67,10 @@ class CC_EXPORT VideoFrameProvider {
   virtual bool UpdateCurrentFrame(base::TimeTicks deadline_min,
                                   base::TimeTicks deadline_max) = 0;
 
+  // Returns true if GetCurrentFrame() will return a non-null frame and false
+  // otherwise. Aside from thread locks, the state won't change.
+  virtual bool HasCurrentFrame() = 0;
+
   // Returns the current frame, which may have been updated by a recent call to
   // UpdateCurrentFrame(). A call to this method does not ensure that the frame
   // will be rendered. A subsequent call to PutCurrentFrame() must be made if

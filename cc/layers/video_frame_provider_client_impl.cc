@@ -98,6 +98,11 @@ void VideoFrameProviderClientImpl::ReleaseLock() {
   provider_lock_.Release();
 }
 
+bool VideoFrameProviderClientImpl::HasCurrentFrame() {
+  base::AutoLock locker(provider_lock_);
+  return provider_ && provider_->HasCurrentFrame();
+}
+
 const gfx::Transform& VideoFrameProviderClientImpl::StreamTextureMatrix()
     const {
   DCHECK(thread_checker_.CalledOnValidThread());
