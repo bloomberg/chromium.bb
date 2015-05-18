@@ -811,11 +811,17 @@ function finishJSTest()
         testRunner.notifyDone();
 }
 
-function startWorker(testScriptURL, shared)
+function startWorker(testScriptURL, workerType)
 {
     self.jsTestIsAsync = true;
     debug('Starting worker: ' + testScriptURL);
-    var worker = shared ? new SharedWorker(testScriptURL, "Shared Worker") : new Worker(testScriptURL);
+    var worker;
+    if (workerType == 'shared')
+        worker = new SharedWorker(testScriptURL, "Shared Worker");
+    else if (workerType == 'compositor')
+        worker = new CompositorWorker(testScriptURL);
+    else
+        worker = new Worker(testScriptURL);
     worker.onmessage = function(event)
     {
         var workerPrefix = "[Worker] ";
@@ -843,7 +849,7 @@ function startWorker(testScriptURL, shared)
         finishJSTest();
     };
 
-    if (shared) {
+    if (workerType == 'shared') {
         worker.port.onmessage = function(event) { worker.onmessage(event); };
         worker.port.start();
     }

@@ -8,7 +8,7 @@
     <div id="description"></div>
     <div id="console"></div>
     <script>
-        var worker = startWorker("../resources/shared-worker-stub.js", true /* shared */);
+        var worker = startWorker("../resources/shared-worker-stub.js", "shared");
         worker.port.postMessage("IMPORT:file-writer-events.js");
     </script>
  </body>
