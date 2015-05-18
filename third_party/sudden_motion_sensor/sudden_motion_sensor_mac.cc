@@ -134,6 +134,10 @@ const SuddenMotionSensor::SensorDescriptor
   // Tested by avi on a 13" MacBook.
   { "MacBook7,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
+  // Note:
+  // - MacBook8,1 (12" MacBook, early 2015)
+  // has no accelerometer sensors.
+
   // Tested by crc on a 13" MacBook Air.
   { "MacBookAir1,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
@@ -149,6 +153,8 @@ const SuddenMotionSensor::SensorDescriptor
   // - MacBookAir5,2 (13" MacBook Air, mid 2012)
   // - MacBookAir6,1 (11" MacBook Air, mid 2013)
   // - MacBookAir6,2 (13" MacBook Air, mid 2013)
+  // - MacBookAir7,1 (11" MacBook Air, early 2015)
+  // - MacBookAir7,2 (13" MacBook Air, early 2015)
   // have no accelerometer sensors.
 
   // Tested by crc on a 15" MacBook Pro.
@@ -224,6 +230,7 @@ const SuddenMotionSensor::SensorDescriptor
   // - MacBookPro11,1 (13" MacBook Pro with Retina display)
   // - MacBookPro11,2 (15" MacBook Pro with Retina display)
   // - MacBookPro11,3 (15" MacBook Pro with Retina display)
+  // - MacBookPro12,1 (13" MacBook Pro with Retina display)
   // have no accelerometer sensors.
 
   // Generic MacBook accelerometer sensor data, to be used for future models
