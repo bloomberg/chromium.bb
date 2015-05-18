@@ -63,6 +63,7 @@
 #include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/declarative_user_script_manager_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -94,6 +95,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::CommandService::GetFactoryInstance();
   extensions::ContentSettingsService::GetFactoryInstance();
   extensions::CookiesAPI::GetFactoryInstance();
+  extensions::DeclarativeUserScriptManagerFactory::GetInstance();
   extensions::DeveloperPrivateAPI::GetFactoryInstance();
   extensions::DialAPIFactory::GetInstance();
   extensions::EasyUnlockPrivateAPI::GetFactoryInstance();

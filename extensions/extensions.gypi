@@ -550,6 +550,8 @@
       'browser/crx_file_info.h',
       'browser/declarative_user_script_manager.cc',
       'browser/declarative_user_script_manager.h',
+      'browser/declarative_user_script_manager_factory.cc',
+      'browser/declarative_user_script_manager_factory.h',
       'browser/declarative_user_script_master.cc',
       'browser/declarative_user_script_master.h',
       'browser/deferred_start_render_host.h',

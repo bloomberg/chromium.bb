@@ -121,11 +121,6 @@ SharedUserScriptMaster* ShellExtensionSystem::shared_user_script_master() {
   return nullptr;
 }
 
-DeclarativeUserScriptManager*
-ShellExtensionSystem::declarative_user_script_manager() {
-  return nullptr;
-}
-
 StateStore* ShellExtensionSystem::state_store() {
   return nullptr;
 }

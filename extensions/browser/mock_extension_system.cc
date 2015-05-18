@@ -34,11 +34,6 @@ SharedUserScriptMaster* MockExtensionSystem::shared_user_script_master() {
   return nullptr;
 }
 
-DeclarativeUserScriptManager*
-MockExtensionSystem::declarative_user_script_manager() {
-  return nullptr;
-}
-
 StateStore* MockExtensionSystem::state_store() {
   return nullptr;
 }

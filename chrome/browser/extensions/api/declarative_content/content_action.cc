@@ -353,8 +353,7 @@ RequestContentScript::RequestContentScript(
   HostID host_id(HostID::EXTENSIONS, extension->id());
   InitScript(host_id, extension, script_data);
 
-  master_ = ExtensionSystem::Get(browser_context)
-                ->declarative_user_script_manager()
+  master_ = DeclarativeUserScriptManager::Get(browser_context)
                 ->GetDeclarativeUserScriptMasterByID(host_id);
   AddScript();
 }

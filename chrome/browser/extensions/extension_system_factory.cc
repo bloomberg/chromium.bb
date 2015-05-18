@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/declarative_user_script_manager_factory.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
@@ -50,6 +51,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
   DependsOn(ProcessManagerFactory::GetInstance());
   DependsOn(RendererStartupHelperFactory::GetInstance());
   DependsOn(BlacklistFactory::GetInstance());
+  DependsOn(DeclarativeUserScriptManagerFactory::GetInstance());
   // This depends on ExtensionDownloader which depends on
   // ProfileIdentityProvider which depends on SigninManager.
   DependsOn(SigninManagerFactory::GetInstance());

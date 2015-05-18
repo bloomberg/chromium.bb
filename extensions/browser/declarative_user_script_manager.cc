@@ -5,6 +5,7 @@
 #include "extensions/browser/declarative_user_script_manager.h"
 
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/declarative_user_script_manager_factory.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/browser/extension_registry.h"
 
@@ -17,6 +18,13 @@ DeclarativeUserScriptManager::DeclarativeUserScriptManager(
 }
 
 DeclarativeUserScriptManager::~DeclarativeUserScriptManager() {
+}
+
+// static
+DeclarativeUserScriptManager* DeclarativeUserScriptManager::Get(
+    content::BrowserContext* browser_context) {
+  return DeclarativeUserScriptManagerFactory::GetForBrowserContext(
+      browser_context);
 }
 
 DeclarativeUserScriptMaster*

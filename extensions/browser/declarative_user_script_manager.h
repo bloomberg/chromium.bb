@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/host_id.h"
 
@@ -21,11 +22,16 @@ namespace extensions {
 class DeclarativeUserScriptMaster;
 
 // Manages a set of DeclarativeUserScriptMaster objects for script injections.
-class DeclarativeUserScriptManager : public ExtensionRegistryObserver {
+class DeclarativeUserScriptManager : public KeyedService,
+                                     public ExtensionRegistryObserver {
  public:
   explicit DeclarativeUserScriptManager(
       content::BrowserContext* browser_context);
   ~DeclarativeUserScriptManager() override;
+
+  // Convenience method to return the DeclarativeUserScriptManager for a given
+  // |context|.
+  static DeclarativeUserScriptManager* Get(content::BrowserContext* context);
 
   // Gets the user script master for declarative scripts by the given
   // HostID; if one does not exist, a new object will be created.

@@ -39,7 +39,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier_delegate.h"
-#include "extensions/browser/declarative_user_script_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
@@ -304,8 +303,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   ExtensionErrorReporter::Init(allow_noisy_errors);
 
   shared_user_script_master_.reset(new SharedUserScriptMaster(profile_));
-  declarative_user_script_manager_.reset(
-      new DeclarativeUserScriptManager(profile_));
 
   // ExtensionService depends on RuntimeData.
   runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
@@ -428,11 +425,6 @@ ExtensionSystemImpl::Shared::shared_user_script_master() {
   return shared_user_script_master_.get();
 }
 
-DeclarativeUserScriptManager*
-ExtensionSystemImpl::Shared::declarative_user_script_manager() {
-  return declarative_user_script_manager_.get();
-}
-
 InfoMap* ExtensionSystemImpl::Shared::info_map() {
   if (!extension_info_map_.get())
     extension_info_map_ = new InfoMap();
@@ -500,11 +492,6 @@ ManagementPolicy* ExtensionSystemImpl::management_policy() {
 
 SharedUserScriptMaster* ExtensionSystemImpl::shared_user_script_master() {
   return shared_->shared_user_script_master();
-}
-
-DeclarativeUserScriptManager*
-ExtensionSystemImpl::declarative_user_script_manager() {
-  return shared_->declarative_user_script_manager();
 }
 
 StateStore* ExtensionSystemImpl::state_store() {

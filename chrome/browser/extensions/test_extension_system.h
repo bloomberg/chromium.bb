@@ -23,7 +23,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-class DeclarativeUserScriptManager;
 class ExtensionPrefs;
 class InstallVerifier;
 class RuntimeData;
@@ -64,7 +63,6 @@ class TestExtensionSystem : public ExtensionSystem {
   RuntimeData* runtime_data() override;
   ManagementPolicy* management_policy() override;
   SharedUserScriptMaster* shared_user_script_master() override;
-  DeclarativeUserScriptManager* declarative_user_script_manager() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
   TestingValueStore* value_store() { return value_store_; }
@@ -92,7 +90,6 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<StateStore> state_store_;
   // A pointer to the TestingValueStore owned by |state_store_|.
   TestingValueStore* value_store_;
-  scoped_ptr<DeclarativeUserScriptManager> declarative_user_script_manager_;
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<ExtensionService> extension_service_;

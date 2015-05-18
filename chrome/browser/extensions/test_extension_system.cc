@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/declarative_user_script_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
@@ -88,8 +87,6 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
   value_store_ = value_store.get();
   state_store_.reset(new StateStore(profile_, value_store.Pass()));
-  declarative_user_script_manager_.reset(
-      new DeclarativeUserScriptManager(profile_));
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProviders(
       ExtensionManagementFactory::GetForBrowserContext(profile_)
@@ -125,11 +122,6 @@ void TestExtensionSystem::SetExtensionService(ExtensionService* service) {
 
 SharedUserScriptMaster* TestExtensionSystem::shared_user_script_master() {
   return NULL;
-}
-
-DeclarativeUserScriptManager*
-TestExtensionSystem::declarative_user_script_manager() {
-  return declarative_user_script_manager_.get();
 }
 
 StateStore* TestExtensionSystem::state_store() {

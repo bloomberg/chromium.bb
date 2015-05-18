@@ -30,7 +30,6 @@ class BrowserContext;
 namespace extensions {
 
 class ContentVerifier;
-class DeclarativeUserScriptManager;
 class EventRouter;
 class Extension;
 class ExtensionSet;
@@ -74,9 +73,6 @@ class ExtensionSystem : public KeyedService {
 
   // The SharedUserScriptMaster is created at startup.
   virtual SharedUserScriptMaster* shared_user_script_master() = 0;
-
-  // The DeclarativeUserScriptManager is created at startup.
-  virtual DeclarativeUserScriptManager* declarative_user_script_manager() = 0;
 
   // The StateStore is created at startup.
   virtual StateStore* state_store() = 0;

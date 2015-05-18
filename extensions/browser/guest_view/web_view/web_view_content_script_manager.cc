@@ -117,8 +117,7 @@ void WebViewContentScriptManager::AddContentScripts(
   DCHECK(embedder_web_contents);
 
   DeclarativeUserScriptMaster* master =
-      ExtensionSystem::Get(browser_context_)
-          ->declarative_user_script_manager()
+      DeclarativeUserScriptManager::Get(browser_context_)
           ->GetDeclarativeUserScriptMasterByID(host_id);
   DCHECK(master);
 
@@ -210,8 +209,7 @@ void WebViewContentScriptManager::RemoveContentScripts(
     return;
 
   DeclarativeUserScriptMaster* master =
-      ExtensionSystem::Get(browser_context_)
-          ->declarative_user_script_manager()
+      DeclarativeUserScriptManager::Get(browser_context_)
           ->GetDeclarativeUserScriptMasterByID(host_id);
   CHECK(master);
 

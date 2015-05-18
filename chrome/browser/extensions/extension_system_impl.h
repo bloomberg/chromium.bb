@@ -40,8 +40,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   RuntimeData* runtime_data() override;            // shared
   ManagementPolicy* management_policy() override;  // shared
   SharedUserScriptMaster* shared_user_script_master() override;  // shared
-  DeclarativeUserScriptManager* declarative_user_script_manager()
-      override;                                                    // shared
   StateStore* state_store() override;                              // shared
   StateStore* rules_store() override;                              // shared
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;  // shared
@@ -86,7 +84,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     RuntimeData* runtime_data();
     ManagementPolicy* management_policy();
     SharedUserScriptMaster* shared_user_script_master();
-    DeclarativeUserScriptManager* declarative_user_script_manager();
     InfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     EventRouter* event_router();
@@ -111,9 +108,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // Shared memory region manager for scripts statically declared in extension
     // manifests. This region is shared between all extensions.
     scoped_ptr<SharedUserScriptMaster> shared_user_script_master_;
-    // Manager of a set of DeclarativeUserScript objects for programmatically
-    // declared scripts.
-    scoped_ptr<DeclarativeUserScriptManager> declarative_user_script_manager_;
     scoped_ptr<RuntimeData> runtime_data_;
     // ExtensionService depends on StateStore, Blacklist and RuntimeData.
     scoped_ptr<ExtensionService> extension_service_;
