@@ -20,7 +20,7 @@ SurfaceTextureManager* SurfaceTextureManager::GetInstance() {
 }
 
 // static
-void SurfaceTextureManager::InitInstance(SurfaceTextureManager* instance) {
+void SurfaceTextureManager::SetInstance(SurfaceTextureManager* instance) {
   DCHECK(!g_instance || !instance);
   g_instance = instance;
 }

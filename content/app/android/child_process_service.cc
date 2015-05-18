@@ -150,7 +150,7 @@ void InternalInitChildProcess(const std::vector<int>& file_ids,
   for (size_t i = 0; i < file_ids.size(); ++i)
     base::GlobalDescriptors::GetInstance()->Set(file_ids[i], file_fds[i]);
 
-  SurfaceTextureManager::InitInstance(new SurfaceTextureManagerImpl(service));
+  SurfaceTextureManager::SetInstance(new SurfaceTextureManagerImpl(service));
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(env);
 }

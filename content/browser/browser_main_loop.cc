@@ -571,7 +571,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
 #if defined(OS_ANDROID)
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTextureManager");
-    SurfaceTextureManager::InitInstance(new BrowserSurfaceTextureManager);
+    SurfaceTextureManager::SetInstance(new BrowserSurfaceTextureManager);
   }
 
   if (!parsed_command_line_.HasSwitch(

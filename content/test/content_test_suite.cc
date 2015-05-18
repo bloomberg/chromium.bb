@@ -135,7 +135,7 @@ void ContentTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
 #if defined(OS_ANDROID)
-  SurfaceTextureManager::InitInstance(new TestSurfaceTextureManager);
+  SurfaceTextureManager::SetInstance(new TestSurfaceTextureManager);
 #endif
 }
 

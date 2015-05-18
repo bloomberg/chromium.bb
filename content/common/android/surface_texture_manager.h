@@ -17,7 +17,7 @@ namespace content {
 class CONTENT_EXPORT SurfaceTextureManager {
  public:
   static SurfaceTextureManager* GetInstance();
-  static void InitInstance(SurfaceTextureManager* instance);
+  static void SetInstance(SurfaceTextureManager* instance);
 
   // Register a surface texture for use in another process.
   virtual void RegisterSurfaceTexture(int surface_texture_id,
