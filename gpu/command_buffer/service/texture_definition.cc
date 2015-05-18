@@ -31,6 +31,7 @@ class GLImageSync : public gfx::GLImage {
   // Implement GLImage.
   void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
+  unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
   bool CopyTexImage(unsigned target) override;
@@ -71,6 +72,10 @@ void GLImageSync::Destroy(bool have_context) {
 
 gfx::Size GLImageSync::GetSize() {
   return size_;
+}
+
+unsigned GLImageSync::GetInternalFormat() {
+  return GL_RGBA;
 }
 
 bool GLImageSync::BindTexImage(unsigned target) {

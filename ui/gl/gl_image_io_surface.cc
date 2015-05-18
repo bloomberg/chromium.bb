@@ -150,6 +150,8 @@ void GLImageIOSurface::Destroy(bool have_context) {
 
 gfx::Size GLImageIOSurface::GetSize() { return size_; }
 
+unsigned GLImageIOSurface::GetInternalFormat() { return internalformat_; }
+
 bool GLImageIOSurface::BindTexImage(unsigned target) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (target != GL_TEXTURE_RECTANGLE_ARB) {

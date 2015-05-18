@@ -119,4 +119,6 @@ bool GLImageLinuxDMABuffer::Initialize(const base::FileDescriptor& handle,
       EGL_LINUX_DMA_BUF_EXT, static_cast<EGLClientBuffer>(NULL), attrs);
 }
 
+unsigned GLImageLinuxDMABuffer::GetInternalFormat() { return internalformat_; }
+
 }  // namespace gfx

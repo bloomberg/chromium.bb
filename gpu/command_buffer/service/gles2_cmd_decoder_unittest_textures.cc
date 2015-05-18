@@ -2742,6 +2742,7 @@ class MockGLImage : public gfx::GLImage {
 
   // Overridden from gfx::GLImage:
   MOCK_METHOD0(GetSize, gfx::Size());
+  MOCK_METHOD0(GetInternalFormat, unsigned());
   MOCK_METHOD1(Destroy, void(bool));
   MOCK_METHOD1(BindTexImage, bool(unsigned));
   MOCK_METHOD1(ReleaseTexImage, void(unsigned));

@@ -12500,8 +12500,9 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
 
   gfx::Size size = gl_image->GetSize();
   texture_manager()->SetLevelInfo(
-      texture_ref, target, 0, GL_RGBA, size.width(), size.height(), 1, 0,
-      GL_RGBA, GL_UNSIGNED_BYTE, true);
+      texture_ref, target, 0, gl_image->GetInternalFormat(),
+      size.width(), size.height(), 1, 0,
+      gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE, true);
   texture_manager()->SetLevelImage(texture_ref, target, 0, gl_image);
 }
 
@@ -12539,8 +12540,8 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
   }
 
   texture_manager()->SetLevelInfo(
-      texture_ref, target, 0, GL_RGBA, 0, 0, 1, 0,
-      GL_RGBA, GL_UNSIGNED_BYTE, false);
+      texture_ref, target, 0, gl_image->GetInternalFormat(), 0, 0, 1, 0,
+      gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE, false);
 }
 
 error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(

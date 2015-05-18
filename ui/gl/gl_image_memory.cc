@@ -238,6 +238,10 @@ Size GLImageMemory::GetSize() {
   return size_;
 }
 
+unsigned GLImageMemory::GetInternalFormat() {
+  return internalformat_;
+}
+
 bool GLImageMemory::BindTexImage(unsigned target) {
   if (target_ && target_ != target) {
     LOG(ERROR) << "GLImage can only be bound to one target";

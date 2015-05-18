@@ -27,6 +27,9 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Get the size of the image.
   virtual gfx::Size GetSize() = 0;
 
+  // Get the internal format of the image.
+  virtual unsigned GetInternalFormat() = 0;
+
   // Bind image to texture currently bound to |target|.
   virtual bool BindTexImage(unsigned target) = 0;
 

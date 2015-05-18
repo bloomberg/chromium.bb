@@ -168,6 +168,8 @@ void GLImageGLX::Destroy(bool have_context) {
 
 gfx::Size GLImageGLX::GetSize() { return size_; }
 
+unsigned GLImageGLX::GetInternalFormat() { return internalformat_; }
+
 bool GLImageGLX::BindTexImage(unsigned target) {
   if (!glx_pixmap_)
     return false;

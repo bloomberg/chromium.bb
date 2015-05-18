@@ -32,6 +32,7 @@ class GL_EXPORT GLImageMemory : public GLImage {
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
   Size GetSize() override;
+  unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override;

@@ -20,6 +20,9 @@ class GL_EXPORT GLImageLinuxDMABuffer : public GLImageEGL {
                   GpuMemoryBuffer::Format format,
                   int pitch);
 
+  // Overridden from GLImage:
+  unsigned GetInternalFormat() override;
+
  protected:
   ~GLImageLinuxDMABuffer() override;
 

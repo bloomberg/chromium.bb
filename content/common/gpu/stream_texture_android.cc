@@ -165,6 +165,10 @@ gfx::Size StreamTexture::GetSize() {
   return size_;
 }
 
+unsigned StreamTexture::GetInternalFormat() {
+  return GL_RGBA;
+}
+
 bool StreamTexture::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(StreamTexture, message)

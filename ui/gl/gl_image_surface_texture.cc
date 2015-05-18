@@ -34,6 +34,8 @@ void GLImageSurfaceTexture::Destroy(bool have_context) {
 
 gfx::Size GLImageSurfaceTexture::GetSize() { return size_; }
 
+unsigned GLImageSurfaceTexture::GetInternalFormat() { return GL_RGBA; }
+
 bool GLImageSurfaceTexture::BindTexImage(unsigned target) {
   TRACE_EVENT0("gpu", "GLImageSurfaceTexture::BindTexImage");
   DCHECK(thread_checker_.CalledOnValidThread());

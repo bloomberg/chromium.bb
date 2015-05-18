@@ -51,6 +51,8 @@ void GLImageEGL::Destroy(bool have_context) {
 
 gfx::Size GLImageEGL::GetSize() { return size_; }
 
+unsigned GLImageEGL::GetInternalFormat() { return GL_RGBA; }
+
 bool GLImageEGL::BindTexImage(unsigned target) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
