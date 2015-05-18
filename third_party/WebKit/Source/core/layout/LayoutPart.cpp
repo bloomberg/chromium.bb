@@ -310,7 +310,7 @@ bool LayoutPart::setWidgetGeometry(const LayoutRect& frame)
     if (widget->frameRect() == newFrame)
         return false;
 
-    RefPtrWillBeRawPtr<LayoutPart> protector(this);
+    RefPtr<LayoutPart> protector(this);
     RefPtrWillBeRawPtr<Node> protectedNode(node());
     widget->setFrameRect(newFrame);
     return widget->frameRect().size() != newFrame.size();
