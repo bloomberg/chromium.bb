@@ -17,10 +17,30 @@ extern const char kAcceptLanguages[];
 
 namespace prefs {
 
+extern const char kContextualSearchEnabled[];
 extern const char kIosBookmarkFolderDefault[];
 extern const char kIosBookmarkPromoAlreadySeen[];
+extern const char kIosHandoffToOtherDevices[];
+extern const char kMetricsReportingWifiOnly[];
+extern const char kNetworkPredictionWifiOnly[];
+extern const char kNtpShownBookmarksFolder[];
 extern const char kPaymentsPreferredUserId[];
 extern const char kShowMemoryDebuggingTools[];
+
+extern const char kVoiceSearchLocale[];
+extern const char kVoiceSearchTTS[];
+
+extern const char kSigninLastAccounts[];
+extern const char kSigninSharedAuthenticationUserId[];
+extern const char kSigninShouldPromptForSigninAgain[];
+
+extern const char kOmniboxGeolocationAuthorizationState[];
+extern const char kOmniboxGeolocationLastAuthorizationAlertVersion[];
+
+extern const char kDoodleAltText[];
+extern const char kDoodleExpirationTimeInSeconds[];
+extern const char kDoodleHref[];
+extern const char kDoodleLastRequestTimeInSeconds[];
 
 }  // namespace prefs
 
