@@ -614,8 +614,7 @@ class NET_EXPORT_PRIVATE SpdyFrameWithNameValueBlockIR
     // Deep copy.
     name_value_block_ = name_value_block;
   }
-  void SetHeader(const base::StringPiece& name,
-                 const base::StringPiece& value) {
+  void SetHeader(base::StringPiece name, base::StringPiece value) {
     name_value_block_[name.as_string()] = value.as_string();
   }
   SpdyNameValueBlock* mutable_name_value_block() {
@@ -636,7 +635,7 @@ class NET_EXPORT_PRIVATE SpdyDataIR
     : public NON_EXPORTED_BASE(SpdyFrameWithFinIR) {
  public:
   // Performs deep copy on data.
-  SpdyDataIR(SpdyStreamId stream_id, const base::StringPiece& data);
+  SpdyDataIR(SpdyStreamId stream_id, base::StringPiece data);
 
   // Use in conjunction with SetDataShallow() for shallow-copy on data.
   explicit SpdyDataIR(SpdyStreamId stream_id);
@@ -658,13 +657,13 @@ class NET_EXPORT_PRIVATE SpdyDataIR
   }
 
   // Deep-copy of data (keep private copy).
-  void SetDataDeep(const base::StringPiece& data) {
+  void SetDataDeep(base::StringPiece data) {
     data_store_.reset(new std::string(data.data(), data.length()));
     data_ = *(data_store_.get());
   }
 
   // Shallow-copy of data (do not keep private copy).
-  void SetDataShallow(const base::StringPiece& data) {
+  void SetDataShallow(base::StringPiece data) {
     data_store_.reset();
     data_ = data;
   }
@@ -814,8 +813,9 @@ class NET_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
 
 class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
  public:
-  SpdyGoAwayIR(SpdyStreamId last_good_stream_id, SpdyGoAwayStatus status,
-               const base::StringPiece& description);
+  SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
+               SpdyGoAwayStatus status,
+               base::StringPiece description);
   ~SpdyGoAwayIR() override;
   SpdyStreamId last_good_stream_id() const { return last_good_stream_id_; }
   void set_last_good_stream_id(SpdyStreamId last_good_stream_id) {

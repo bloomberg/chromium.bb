@@ -11,10 +11,8 @@ SpdyFrameWithNameValueBlockIR::SpdyFrameWithNameValueBlockIR(
 
 SpdyFrameWithNameValueBlockIR::~SpdyFrameWithNameValueBlockIR() {}
 
-SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, const base::StringPiece& data)
-    : SpdyFrameWithFinIR(stream_id),
-      padded_(false),
-      padding_payload_len_(0) {
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, base::StringPiece data)
+    : SpdyFrameWithFinIR(stream_id), padded_(false), padding_payload_len_(0) {
   SetDataDeep(data);
 }
 
@@ -807,7 +805,7 @@ void SpdyPingIR::Visit(SpdyFrameVisitor* visitor) const {
 
 SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                            SpdyGoAwayStatus status,
-                           const base::StringPiece& description)
+                           base::StringPiece description)
     : description_(description) {
       set_last_good_stream_id(last_good_stream_id);
   set_status(status);
