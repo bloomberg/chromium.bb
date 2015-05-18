@@ -53,6 +53,7 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     CardUnmaskPromptController* controller)
     : controller_(controller),
       main_contents_(nullptr),
+      instructions_(nullptr),
       permanent_error_label_(nullptr),
       input_row_(nullptr),
       cvc_input_(nullptr),
@@ -153,6 +154,7 @@ void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
   cvc_input_->SetText(base::string16());
   GetDialogClientView()->UpdateDialogButtons();
   GetWidget()->UpdateWindowTitle();
+  instructions_->SetText(controller_->GetInstructionsMessage());
   SetRetriableErrorMessage(base::string16());
 }
 
@@ -398,13 +400,12 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       new views::BoxLayout(views::BoxLayout::kVertical, kEdgePadding, 0, 0));
   main_contents_->AddChildView(controls_container);
 
-  views::Label* instructions =
-      new views::Label(controller_->GetInstructionsMessage());
-  instructions->SetEnabledColor(kGreyTextColor);
-  instructions->SetMultiLine(true);
-  instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  instructions->SetBorder(views::Border::CreateEmptyBorder(0, 0, 16, 0));
-  controls_container->AddChildView(instructions);
+  instructions_ = new views::Label(controller_->GetInstructionsMessage());
+  instructions_->SetEnabledColor(kGreyTextColor);
+  instructions_->SetMultiLine(true);
+  instructions_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  instructions_->SetBorder(views::Border::CreateEmptyBorder(0, 0, 16, 0));
+  controls_container->AddChildView(instructions_);
 
   input_row_ = new views::View();
   input_row_->SetLayoutManager(

@@ -120,6 +120,9 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   views::View* main_contents_;
 
+  // Expository language at the top of the dialog.
+  views::Label* instructions_;
+
   // The error label for permanent errors (where the user can't retry).
   views::Label* permanent_error_label_;
 
