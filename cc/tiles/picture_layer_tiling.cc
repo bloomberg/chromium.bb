@@ -121,13 +121,13 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   for (TilingData::Iterator iter(&tiling_data_, live_tiles_rect_,
                                  include_borders);
        iter; ++iter) {
-    TileMapKey key = iter.index();
+    TileMapKey key(iter.index());
     TileMap::iterator find = tiles_.find(key);
     if (find != tiles_.end())
       continue;
 
-    if (ShouldCreateTileAt(key.first, key.second))
-      CreateTile(key.first, key.second);
+    if (ShouldCreateTileAt(key.index_x, key.index_y))
+      CreateTile(key.index_x, key.index_y);
   }
   VerifyLiveTilesRect(false);
 }
@@ -286,13 +286,13 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
         iter; ++iter) {
       if (RemoveTileAt(iter.index_x(), iter.index_y())) {
         if (recreate_tiles)
-          new_tile_keys.push_back(iter.index());
+          new_tile_keys.push_back(TileMapKey(iter.index()));
       }
     }
   }
 
   for (const auto& key : new_tile_keys)
-    CreateTile(key.first, key.second);
+    CreateTile(key.index_x, key.index_y);
 }
 
 bool PictureLayerTiling::ShouldCreateTileAt(int i, int j) const {
@@ -658,8 +658,8 @@ void PictureLayerTiling::SetLiveTilesRect(
                                            live_tiles_rect_);
        iter; ++iter) {
     TileMapKey key(iter.index());
-    if (ShouldCreateTileAt(key.first, key.second))
-      CreateTile(key.first, key.second);
+    if (ShouldCreateTileAt(key.index_x, key.index_y))
+      CreateTile(key.index_x, key.index_y);
   }
 
   live_tiles_rect_ = new_live_tiles_rect;
@@ -671,19 +671,19 @@ void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {
   for (auto it = tiles_.begin(); it != tiles_.end(); ++it) {
     if (!it->second)
       continue;
-    DCHECK(it->first.first < tiling_data_.num_tiles_x())
-        << this << " " << it->first.first << "," << it->first.second
-        << " num_tiles_x " << tiling_data_.num_tiles_x() << " live_tiles_rect "
+    TileMapKey key = it->first;
+    DCHECK(key.index_x < tiling_data_.num_tiles_x())
+        << this << " " << key.index_x << "," << key.index_y << " num_tiles_x "
+        << tiling_data_.num_tiles_x() << " live_tiles_rect "
         << live_tiles_rect_.ToString();
-    DCHECK(it->first.second < tiling_data_.num_tiles_y())
-        << this << " " << it->first.first << "," << it->first.second
-        << " num_tiles_y " << tiling_data_.num_tiles_y() << " live_tiles_rect "
+    DCHECK(key.index_y < tiling_data_.num_tiles_y())
+        << this << " " << key.index_x << "," << key.index_y << " num_tiles_y "
+        << tiling_data_.num_tiles_y() << " live_tiles_rect "
         << live_tiles_rect_.ToString();
-    DCHECK(tiling_data_.TileBounds(it->first.first, it->first.second)
+    DCHECK(tiling_data_.TileBounds(key.index_x, key.index_y)
                .Intersects(live_tiles_rect_))
-        << this << " " << it->first.first << "," << it->first.second
-        << " tile bounds "
-        << tiling_data_.TileBounds(it->first.first, it->first.second).ToString()
+        << this << " " << key.index_x << "," << key.index_y << " tile bounds "
+        << tiling_data_.TileBounds(key.index_x, key.index_y).ToString()
         << " live_tiles_rect " << live_tiles_rect_.ToString();
   }
 #endif

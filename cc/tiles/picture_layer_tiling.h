@@ -52,6 +52,35 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual ~PictureLayerTilingClient() {}
 };
 
+struct TileMapKey {
+  TileMapKey(int x, int y) : index_x(x), index_y(y) {}
+  explicit TileMapKey(const std::pair<int, int>& index)
+      : index_x(index.first), index_y(index.second) {}
+
+  bool operator==(const TileMapKey& other) const {
+    return index_x == other.index_x && index_y == other.index_y;
+  }
+
+  int index_x;
+  int index_y;
+};
+
+}  // namespace cc
+
+namespace BASE_HASH_NAMESPACE {
+template <>
+struct hash<cc::TileMapKey> {
+  size_t operator()(const cc::TileMapKey& key) const {
+    uint16 value1 = static_cast<uint16>(key.index_x);
+    uint16 value2 = static_cast<uint16>(key.index_y);
+    uint32 value1_32 = value1;
+    return (value1_32 << 16) | value2;
+  }
+};
+}  // namespace BASE_HASH_NAMESPACE
+
+namespace cc {
+
 class CC_EXPORT PictureLayerTiling {
  public:
   static const int kBorderTexels = 1;
@@ -225,7 +254,6 @@ class CC_EXPORT PictureLayerTiling {
     EVENTUALLY_RECT
   };
 
-  using TileMapKey = std::pair<int, int>;
   using TileMap = base::ScopedPtrHashMap<TileMapKey, ScopedTilePtr>;
 
   struct FrameVisibleRect {
