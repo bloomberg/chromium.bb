@@ -128,9 +128,9 @@ WebString WebElement::attributeValue(unsigned index) const
     return constUnwrap<Element>()->attributes().at(index).value();
 }
 
-WebString WebElement::textContent()
+WebString WebElement::textContent() const
 {
-    return unwrap<Element>()->textContent();
+    return constUnwrap<Element>()->textContent();
 }
 
 WebString WebElement::computeInheritedLanguage() const
