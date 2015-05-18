@@ -78,19 +78,21 @@ void WriteNode::SetTitle(const std::string& title) {
   bool encrypted_without_overwriting_name = (needs_encryption &&
       entry_->GetNonUniqueName() != kEncryptedString);
 
+  // For bookmarks, we also set the title field in the specifics.
+  // TODO(zea): refactor bookmarks to not need this functionality.
+  sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
+  if (GetModelType() == BOOKMARKS &&
+      specifics.bookmark().title() != new_legal_title) {
+    specifics.mutable_bookmark()->set_title(new_legal_title);
+    SetEntitySpecifics(specifics);  // Does it's own encryption checking.
+    title_matches = false;
+  }
+
   // If the title matches and the NON_UNIQUE_NAME is properly overwritten as
   // necessary, nothing needs to change.
   if (title_matches && !encrypted_without_overwriting_name) {
     DVLOG(2) << "Title matches, dropping change.";
     return;
-  }
-
-  // For bookmarks, we also set the title field in the specifics.
-  // TODO(zea): refactor bookmarks to not need this functionality.
-  if (GetModelType() == BOOKMARKS) {
-    sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
-    specifics.mutable_bookmark()->set_title(new_legal_title);
-    SetEntitySpecifics(specifics);  // Does it's own encryption checking.
   }
 
   // For bookmarks, this has to happen after we set the title in the specifics,
