@@ -80,6 +80,7 @@ StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldRes
     : m_markupAccumulator(shouldResolveURLs, toTextOffset(start.parentAnchoredEquivalent()), toTextOffset(end.parentAnchoredEquivalent()), start.document(), shouldAnnotate, highestNodeToBeSerialized)
     , m_start(start)
     , m_end(end)
+    , m_shouldAnnotate(shouldAnnotate)
 {
 }
 
@@ -128,7 +129,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInline
     Node* firstNode = m_start.nodeAsRangeFirstNode();
     VisiblePosition visibleStart(toPositionInDOMTree(m_start), VP_DEFAULT_AFFINITY);
     VisiblePosition visibleEnd(toPositionInDOMTree(m_end), VP_DEFAULT_AFFINITY);
-    if (m_markupAccumulator.shouldAnnotateForInterchange() && needInterchangeNewlineAfter(visibleStart)) {
+    if (m_shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAfter(visibleStart)) {
         if (visibleStart == visibleEnd.previous())
             return interchangeNewlineString;
 
@@ -187,7 +188,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInline
     }
 
     // FIXME: The interchange newline should be placed in the block that it's in, not after all of the content, unconditionally.
-    if (m_markupAccumulator.shouldAnnotateForInterchange() && needInterchangeNewlineAt(visibleEnd))
+    if (m_shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAt(visibleEnd))
         m_markupAccumulator.appendString(interchangeNewlineString);
 
     return takeResults();
@@ -240,8 +241,9 @@ Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pa
 
     Node* highestNodeToBeSerialized = m_markupAccumulator.highestNodeToBeSerialized();
     if (highestNodeToBeSerialized && Strategy::parent(*highestNodeToBeSerialized)) {
-        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), m_markupAccumulator.shouldAnnotate());
-        if (m_markupAccumulator.shouldAnnotateForNavigationTransition()) {
+        bool shouldAnnotate = m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition;
+        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), shouldAnnotate);
+        if (m_shouldAnnotate == AnnotateForNavigationTransition) {
             wrappingStyle->style()->removeProperty(CSSPropertyBackgroundColor);
             wrappingStyle->style()->removeProperty(CSSPropertyBackgroundImage);
         }
@@ -274,7 +276,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             continue;
         }
 
-        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && !m_markupAccumulator.shouldAnnotateForNavigationTransition()) {
+        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
             next = Strategy::nextSkippingChildren(*n);
             // Don't skip over pastEnd.
             if (pastEnd && Strategy::isDescendantOf(*pastEnd, *n))

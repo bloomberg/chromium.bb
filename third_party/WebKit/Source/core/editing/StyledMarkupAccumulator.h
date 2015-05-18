@@ -80,9 +80,6 @@ public:
     Node* highestNodeToBeSerialized() { return m_highestNodeToBeSerialized.get(); }
     void setHighestNodeToBeSerialized(Node* highestNodeToBeSerialized) { m_highestNodeToBeSerialized = highestNodeToBeSerialized; }
     void setWrappingStyle(PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyle) { m_wrappingStyle = wrappingStyle; }
-    bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition; }
-    bool shouldAnnotateForNavigationTransition() const { return m_shouldAnnotate == AnnotateForNavigationTransition; }
-    bool shouldAnnotateForInterchange() const { return m_shouldAnnotate == AnnotateForInterchange; }
 
     size_t length() const { return m_accumulator.length(); }
     void concatenateMarkup(StringBuilder&) const;
@@ -94,6 +91,8 @@ private:
     String stringValueForRange(const Text&);
 
     bool shouldApplyWrappingStyle(const Node&) const;
+
+    bool shouldAnnotate() const;
 
     MarkupAccumulator m_accumulator;
     const TextOffset m_start;

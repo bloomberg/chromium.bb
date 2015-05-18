@@ -62,6 +62,7 @@ private:
     StyledMarkupAccumulator m_markupAccumulator;
     const PositionType m_start;
     const PositionType m_end;
+    const EAnnotateForInterchange m_shouldAnnotate;
     Vector<String> m_reversedPrecedingMarkup;
 };
 

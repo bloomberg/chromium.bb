@@ -278,4 +278,9 @@ bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
         && m_wrappingStyle && m_wrappingStyle->style();
 }
 
+bool StyledMarkupAccumulator::shouldAnnotate() const
+{
+    return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition;
+}
+
 } // namespace blink
