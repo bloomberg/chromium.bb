@@ -9,6 +9,7 @@
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
+#include "content/public/renderer/render_thread.h"
 
 namespace plugins {
 // Placeholders can be used if a plugin is missing or not available
@@ -23,7 +24,6 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
     is_blocked_for_prerendering_ = blocked_for_prerendering;
   }
 
-#if defined(ENABLE_PLUGINS)
   bool power_saver_enabled() const { return power_saver_enabled_; }
 
   void set_power_saver_enabled(bool power_saver_enabled) {
@@ -35,23 +35,19 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
 
   // When we load the plugin, use this already-created plugin, not a new one.
   void SetPremadePlugin(content::PluginInstanceThrottler* throttler);
-#endif
 
-  void set_allow_loading(bool allow_loading) { allow_loading_ = allow_loading; }
+  void DisallowLoading() { allow_loading_ = false; }
 
  protected:
   LoadablePluginPlaceholder(content::RenderFrame* render_frame,
                             blink::WebLocalFrame* frame,
                             const blink::WebPluginParams& params,
-                            const std::string& html_data,
-                            GURL placeholderDataUrl);
+                            const std::string& html_data);
 
   ~LoadablePluginPlaceholder() override;
 
-#if defined(ENABLE_PLUGINS)
   void MarkPluginEssential(
       content::PluginInstanceThrottler::PowerSaverUnthrottleMethod method);
-#endif
 
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
@@ -67,14 +63,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   // a placeholder again).
   void ReplacePlugin(blink::WebPlugin* new_plugin);
 
-  // Hide this placeholder.
-  void HidePlugin();
-
   // Load the blocked plugin.
   void LoadPlugin();
-
-  // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  void BindWebFrame(blink::WebFrame* frame) override;
 
   // gin::Wrappable method:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -125,7 +115,6 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
 
   bool allow_loading_;
 
-  bool hidden_;
   bool finished_loading_;
   std::string identifier_;
 

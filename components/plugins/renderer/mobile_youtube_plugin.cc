@@ -11,10 +11,8 @@
 #include "base/values.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
-#include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/webui/jstemplate_builder.h"
 
 using blink::WebFrame;
@@ -76,13 +74,12 @@ namespace plugins {
 MobileYouTubePlugin::MobileYouTubePlugin(content::RenderFrame* render_frame,
                                          blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params,
-                                         base::StringPiece& template_html,
-                                         GURL placeholderDataUrl)
+                                         base::StringPiece& template_html)
     : PluginPlaceholder(render_frame,
                         frame,
                         params,
-                        HtmlData(params, template_html),
-                        placeholderDataUrl) {}
+                        HtmlData(params, template_html)) {
+}
 
 MobileYouTubePlugin::~MobileYouTubePlugin() {}
 
@@ -105,18 +102,6 @@ void MobileYouTubePlugin::OpenYoutubeUrlCallback() {
   request.setURL(url);
   render_frame()->LoadURLExternally(
       GetFrame(), request, blink::WebNavigationPolicyNewForegroundTab);
-}
-
-void MobileYouTubePlugin::BindWebFrame(WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-  DCHECK(!context.IsEmpty());
-
-  v8::Context::Scope context_scope(context);
-  v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "plugin"),
-              gin::CreateHandle(isolate, this).ToV8());
 }
 
 gin::ObjectTemplateBuilder MobileYouTubePlugin::GetObjectTemplateBuilder(
