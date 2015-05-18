@@ -5,6 +5,7 @@
 #include "mandoline/services/core_services/core_services_application_delegate.h"
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "components/clipboard/clipboard_application_delegate.h"
 #include "components/native_viewport/native_viewport_application_delegate.h"
 #include "components/resource_provider/resource_provider_app.h"
@@ -37,10 +38,14 @@ class ApplicationThread;
 // AtExitManager et all at this point.)
 class ApplicationThread : public base::Thread {
  public:
-  ApplicationThread(const std::string& name,
+  ApplicationThread(CoreServicesApplicationDelegate* core_services_application,
+                    const std::string& name,
                     scoped_ptr<mojo::ApplicationDelegate> delegate,
                     mojo::InterfaceRequest<mojo::Application> request)
       : base::Thread(name),
+        core_services_application_(core_services_application),
+        core_services_application_task_runner_(
+            base::MessageLoop::current()->task_runner()),
         delegate_(delegate.Pass()),
         request_(request.Pass()) {
   }
@@ -59,6 +64,12 @@ class ApplicationThread : public base::Thread {
     }
     delegate_.reset();
 
+    core_services_application_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&CoreServicesApplicationDelegate::ApplicationThreadDestroyed,
+                   base::Unretained(core_services_application_),
+                   this));
+
     // TODO(erg): This is a hack.
     //
     // Right now, most of our services do not receive
@@ -72,6 +83,8 @@ class ApplicationThread : public base::Thread {
   }
 
   void RequestQuit() {
+    if (!IsRunning())
+      return;
     task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ApplicationThread::ShutdownCleanly,
@@ -85,6 +98,9 @@ class ApplicationThread : public base::Thread {
   }
 
  private:
+  CoreServicesApplicationDelegate* core_services_application_;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      core_services_application_task_runner_;
   scoped_ptr<mojo::ApplicationImpl> application_impl_;
   scoped_ptr<mojo::ApplicationDelegate> delegate_;
   mojo::InterfaceRequest<mojo::Application> request_;
@@ -96,6 +112,16 @@ CoreServicesApplicationDelegate::CoreServicesApplicationDelegate() {}
 
 CoreServicesApplicationDelegate::~CoreServicesApplicationDelegate() {
   application_threads_.clear();
+}
+
+void CoreServicesApplicationDelegate::ApplicationThreadDestroyed(
+    ApplicationThread* thread) {
+  ScopedVector<ApplicationThread>::iterator iter =
+      std::find(application_threads_.begin(),
+                application_threads_.end(),
+                thread);
+  DCHECK(iter != application_threads_.end());
+  application_threads_.erase(iter);
 }
 
 bool CoreServicesApplicationDelegate::ConfigureIncomingConnection(
@@ -166,7 +192,7 @@ void CoreServicesApplicationDelegate::StartApplication(
   }
 
   scoped_ptr<ApplicationThread> thread(
-      new ApplicationThread(url, delegate.Pass(), request.Pass()));
+      new ApplicationThread(this, url, delegate.Pass(), request.Pass()));
   thread->StartWithOptions(thread_options);
 
   application_threads_.push_back(thread.Pass());

@@ -28,6 +28,8 @@ class CoreServicesApplicationDelegate
   CoreServicesApplicationDelegate();
   ~CoreServicesApplicationDelegate() override;
 
+  void ApplicationThreadDestroyed(ApplicationThread* thread);
+
  private:
   // Overridden from mojo::ApplicationDelegate:
   bool ConfigureIncomingConnection(
