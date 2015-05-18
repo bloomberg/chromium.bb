@@ -330,11 +330,11 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
 
 LayoutObject* HTMLImageElement::createLayoutObject(const ComputedStyle& style)
 {
-    if (style.hasContent())
-        return LayoutObject::createObject(this, style);
-
     if (m_useFallbackContent)
         return new LayoutBlockFlow(this);
+
+    if (style.hasContent())
+        return LayoutObject::createObject(this, style);
 
     LayoutImage* image = new LayoutImage(this);
     image->setImageResource(LayoutImageResource::create());
