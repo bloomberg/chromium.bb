@@ -687,6 +687,11 @@ public:
         EncryptedMediaInsecureOrigin = 771,
         PerformanceFrameTiming = 772,
         V8Element_Animate_Method = 773,
+        V8SVGSVGElement_PixelUnitToMillimeterX_AttributeGetter = 774,
+        V8SVGSVGElement_PixelUnitToMillimeterY_AttributeGetter = 775,
+        V8SVGSVGElement_ScreenPixelToMillimeterX_AttributeGetter = 776,
+        V8SVGSVGElement_ScreenPixelToMillimeterY_AttributeGetter = 777,
+        V8SVGSVGElement_GetElementById_Method = 778,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
