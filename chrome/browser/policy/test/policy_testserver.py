@@ -79,6 +79,7 @@ except ImportError:
   try:
     import json
   except ImportError:
+    logging.error('Could not import json')
     json = None
 
 import asn1der
@@ -91,12 +92,14 @@ import cloud_policy_pb2 as cp
 try:
   import chrome_extension_policy_pb2 as ep
 except ImportError:
+  logging.error('Could not import chrome_extension_policy_pb2')
   ep = None
 
 # Device policy is only available on Chrome OS builds.
 try:
   import chrome_device_policy_pb2 as dp
 except ImportError:
+  logging.error('Could not import chrome_device_policy_pb2')
   dp = None
 
 # ASN.1 object identifier for PKCS#1/RSA.
@@ -986,12 +989,12 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     """
     policy = {}
     if json is None:
-      print 'No JSON module, cannot parse policy information'
+      logging.error('No JSON module, cannot parse policy information')
     else :
       try:
         policy = json.loads(open(self.policy_path).read(), strict=False)
       except IOError:
-        print 'Failed to load policy from %s' % self.policy_path
+        logging.error('Failed to load policies from %s' % self.policy_path)
     return policy
 
   def RegisterDevice(self, device_id, machine_id, type):
