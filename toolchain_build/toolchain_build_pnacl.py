@@ -311,7 +311,7 @@ def CmakeHostArchFlags(host, options):
   tool_flags = HostArchToolFlags(host, [], options)
   if options.sanitize:
     for f in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
-      tool_flags[f] += '-fsanitize=%s' % options.sanitize
+      tool_flags[f].append('-fsanitize=%s' % options.sanitize)
   cmake_flags.extend(['-DCMAKE_C_FLAGS=' + ' '.join(tool_flags['CFLAGS'])])
   cmake_flags.extend(['-DCMAKE_CXX_FLAGS=' + ' '.join(tool_flags['CXXFLAGS'])])
   for linker_type in ['EXE', 'SHARED', 'MODULE']:
