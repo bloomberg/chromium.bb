@@ -1958,3 +1958,8 @@ crbug.com/488101 fast/loader/unload-form-post-about-blank.html [ Pass Failure ]
 crbug.com/488185 [ Debug ] fast/layers/layer-visibility-sublayer.html [ Pass Failure ]
 
 crbug.com/488445 [ Win7 Debug ] http/tests/fetch/window/request.html [ Pass Failure ]
+
+crbug.com/489143 [ Linux ] virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-objectBoundingBox.svg [ Pass ImageOnlyFailure ]
+crbug.com/489143 [ Linux ] virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-userSpaceOnUse.svg [ Pass ImageOnlyFailure ]
+crbug.com/489143 [ Linux ] virtual/slimmingpaint/svg/filters/feImage-filterUnits-userSpaceOnUse-primitiveUnits-objectBoundingBox.svg [ Pass ImageOnlyFailure ]
+crbug.com/489143 [ Linux ] virtual/slimmingpaint/svg/filters/feImage-filterUnits-userSpaceOnUse-primitiveUnits-userSpaceOnUse.svg [ Pass ImageOnlyFailure ]
