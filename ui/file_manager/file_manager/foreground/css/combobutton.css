@@ -10,6 +10,7 @@
   border-radius: 3px;
   cursor: pointer;
   display: flex;
+  flex: none;
   /* Use bold until we get Roboto medium. crbug.com/368442. */
   font-weight: bold;
   margin: 0 0.29em;
