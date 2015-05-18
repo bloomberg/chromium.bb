@@ -268,16 +268,19 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
         server_wrapper_(server_wrapper),
         connection_id_(connection_id),
         agent_host_(agent_host) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     agent_host_->AttachClient(this);
   }
 
   ~DevToolsAgentHostClientImpl() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (agent_host_.get())
       agent_host_->DetachClient();
   }
 
   void AgentHostClosed(DevToolsAgentHost* agent_host,
                        bool replaced_with_another_client) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(agent_host == agent_host_.get());
 
     std::string message = base::StringPrintf(
@@ -297,6 +300,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(agent_host == agent_host_.get());
     message_loop_->PostTask(
         FROM_HERE,
@@ -307,6 +311,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   }
 
   void OnMessage(const std::string& message) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (agent_host_.get())
       agent_host_->DispatchProtocolMessage(message);
   }
