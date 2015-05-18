@@ -4,6 +4,7 @@
 
 #include "components/surfaces/surfaces_service_application.h"
 
+#include "base/stl_util.h"
 #include "components/surfaces/display_factory_impl.h"
 #include "components/surfaces/surfaces_impl.h"
 #include "components/surfaces/surfaces_scheduler.h"
@@ -15,6 +16,12 @@ SurfacesServiceApplication::SurfacesServiceApplication()
 }
 
 SurfacesServiceApplication::~SurfacesServiceApplication() {
+  // Make a copy of the sets before deleting them because their destructor will
+  // call back into this class to remove them from the set.
+  auto displays = displays_;
+  STLDeleteElements(&displays);
+  auto surfaces = surfaces_;
+  STLDeleteElements(&surfaces);
 }
 
 void SurfacesServiceApplication::Initialize(mojo::ApplicationImpl* app) {
@@ -32,15 +39,28 @@ bool SurfacesServiceApplication::ConfigureIncomingConnection(
 void SurfacesServiceApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::DisplayFactory> request) {
-  new DisplayFactoryImpl(&manager_, next_id_namespace_++, scheduler_.get(),
-                         request.Pass());
+  new DisplayFactoryImpl(this, &manager_, next_id_namespace_++,
+                         scheduler_.get(), request.Pass());
 }
 
 void SurfacesServiceApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::Surface> request) {
-  new SurfacesImpl(&manager_, next_id_namespace_++, scheduler_.get(),
-                   request.Pass());
+  surfaces_.insert(
+      new SurfacesImpl(this, &manager_, next_id_namespace_++, scheduler_.get(),
+                       request.Pass()));
+}
+
+void SurfacesServiceApplication::DisplayCreated(DisplayImpl* display) {
+  displays_.insert(display);
+}
+
+void SurfacesServiceApplication::DisplayDestroyed(DisplayImpl* display) {
+  displays_.erase(display);
+}
+
+void SurfacesServiceApplication::SurfaceDestroyed(SurfacesImpl* surface) {
+  surfaces_.erase(surface);
 }
 
 }  // namespace surfaces

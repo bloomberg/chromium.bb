@@ -9,6 +9,7 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/surfaces/surfaces_scheduler.h"
+#include "components/surfaces/surfaces_service_application.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
@@ -22,11 +23,13 @@ void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
 }
 }
 
-SurfacesImpl::SurfacesImpl(cc::SurfaceManager* manager,
+SurfacesImpl::SurfacesImpl(SurfacesServiceApplication* application,
+                           cc::SurfaceManager* manager,
                            uint32_t id_namespace,
                            SurfacesScheduler* scheduler,
                            mojo::InterfaceRequest<mojo::Surface> request)
-    : manager_(manager),
+    : application_(application),
+      manager_(manager),
       factory_(manager, this),
       id_namespace_(id_namespace),
       scheduler_(scheduler),
@@ -34,6 +37,7 @@ SurfacesImpl::SurfacesImpl(cc::SurfaceManager* manager,
 }
 
 SurfacesImpl::~SurfacesImpl() {
+  application_->SurfaceDestroyed(this);
   factory_.DestroyAll();
 }
 

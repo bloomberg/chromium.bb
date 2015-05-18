@@ -9,6 +9,7 @@
 #include "components/surfaces/surfaces_context_provider.h"
 #include "components/surfaces/surfaces_output_surface.h"
 #include "components/surfaces/surfaces_scheduler.h"
+#include "components/surfaces/surfaces_service_application.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
@@ -19,13 +20,15 @@ void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
 }
 }
 
-DisplayImpl::DisplayImpl(cc::SurfaceManager* manager,
+DisplayImpl::DisplayImpl(SurfacesServiceApplication* application,
+                         cc::SurfaceManager* manager,
                          cc::SurfaceId cc_id,
                          SurfacesScheduler* scheduler,
                          mojo::ContextProviderPtr context_provider,
                          mojo::ResourceReturnerPtr returner,
                          mojo::InterfaceRequest<mojo::Display> display_request)
-    : manager_(manager),
+    : application_(application),
+      manager_(manager),
       factory_(manager, this),
       cc_id_(cc_id),
       scheduler_(scheduler),
@@ -33,6 +36,7 @@ DisplayImpl::DisplayImpl(cc::SurfaceManager* manager,
       returner_(returner.Pass()),
       viewport_param_binding_(this),
       display_binding_(this, display_request.Pass()) {
+  application_->DisplayCreated(this);
   mojo::ViewportParameterListenerPtr viewport_parameter_listener;
   viewport_param_binding_.Bind(GetProxy(&viewport_parameter_listener));
   context_provider_->Create(
@@ -60,7 +64,11 @@ DisplayImpl::~DisplayImpl() {
   if (display_) {
     factory_.Destroy(cc_id_);
     scheduler_->RemoveDisplay(display_.get());
+    // By deleting the object after display_ is reset, OutputSurfaceLost can
+    // know not to do anything (which would result in double delete).
+    delete display_.release();
   }
+  application_->DisplayDestroyed(this);
 }
 
 void DisplayImpl::SubmitFrame(mojo::FramePtr frame,
@@ -97,6 +105,9 @@ void DisplayImpl::CommitVSyncParameters(base::TimeTicks timebase,
 }
 
 void DisplayImpl::OutputSurfaceLost() {
+  if (!display_)  // Shutdown case
+    return;
+
   // If our OutputSurface is lost we can't draw until we get a new one. For now,
   // destroy the display and create a new one when our ContextProvider provides
   // a new one.

@@ -19,13 +19,15 @@ class SurfaceFactory;
 
 namespace surfaces {
 class SurfacesScheduler;
+class SurfacesServiceApplication;
 
 class DisplayImpl : public mojo::Display,
                     public mojo::ViewportParameterListener,
                     public cc::DisplayClient,
                     public cc::SurfaceFactoryClient {
  public:
-  DisplayImpl(cc::SurfaceManager* manager,
+  DisplayImpl(SurfacesServiceApplication* application,
+              cc::SurfaceManager* manager,
               cc::SurfaceId cc_id,
               SurfacesScheduler* scheduler,
               mojo::ContextProviderPtr context_provider,
@@ -57,6 +59,7 @@ class DisplayImpl : public mojo::Display,
 
   void Draw();
 
+  SurfacesServiceApplication* application_;
   cc::SurfaceManager* manager_;
   cc::SurfaceFactory factory_;
   cc::SurfaceId cc_id_;

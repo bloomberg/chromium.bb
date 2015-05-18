@@ -25,10 +25,12 @@ class ApplicationManager;
 
 namespace surfaces {
 class SurfacesScheduler;
+class SurfacesServiceApplication;
 
 class SurfacesImpl : public mojo::Surface, public cc::SurfaceFactoryClient {
  public:
-  SurfacesImpl(cc::SurfaceManager* manager,
+  SurfacesImpl(SurfacesServiceApplication* application,
+               cc::SurfaceManager* manager,
                uint32_t id_namespace,
                SurfacesScheduler* scheduler,
                mojo::InterfaceRequest<mojo::Surface> request);
@@ -52,6 +54,7 @@ class SurfacesImpl : public mojo::Surface, public cc::SurfaceFactoryClient {
  private:
   cc::SurfaceId QualifyIdentifier(uint32_t local_id);
 
+  SurfacesServiceApplication* application_;
   cc::SurfaceManager* manager_;
   cc::SurfaceFactory factory_;
   const uint32_t id_namespace_;

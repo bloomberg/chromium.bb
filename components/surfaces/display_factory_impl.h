@@ -15,10 +15,12 @@ class SurfaceManager;
 
 namespace surfaces {
 class SurfacesScheduler;
+class SurfacesServiceApplication;
 
 class DisplayFactoryImpl : public mojo::DisplayFactory {
  public:
-  DisplayFactoryImpl(cc::SurfaceManager* manager,
+  DisplayFactoryImpl(SurfacesServiceApplication* application,
+                     cc::SurfaceManager* manager,
                      uint32_t id_namespace,
                      SurfacesScheduler* scheduler,
                      mojo::InterfaceRequest<mojo::DisplayFactory> request);
@@ -34,6 +36,7 @@ class DisplayFactoryImpl : public mojo::DisplayFactory {
   // cc and not exposed through mojom.
   uint32_t id_namespace_;
   uint32_t next_local_id_;
+  SurfacesServiceApplication* application_;
   SurfacesScheduler* scheduler_;
   cc::SurfaceManager* manager_;
   mojo::StrongBinding<mojo::DisplayFactory> binding_;
