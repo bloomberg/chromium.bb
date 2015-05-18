@@ -111,7 +111,9 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
             return false;
         }
     }
-    // Only one visible shape/path was found. Directly continue clipping and transform the content to userspace if necessary.
+
+    // We are able to represent the clip as a path. Continue with direct clipping,
+    // and transform the content to userspace if necessary.
     if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
@@ -121,10 +123,6 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
 
     // Transform path by animatedLocalTransform.
     clipPath.transform(animatedLocalTransform);
-
-    // The SVG specification wants us to clip everything, if clip-path doesn't have a child.
-    if (clipPath.isEmpty())
-        clipPath.addRect(FloatRect());
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (!context->displayItemList()->displayItemConstructionIsDisabled())
