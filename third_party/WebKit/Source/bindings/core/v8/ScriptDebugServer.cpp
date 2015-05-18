@@ -732,16 +732,6 @@ v8::Local<v8::Value> ScriptDebugServer::collectionEntries(v8::Local<v8::Object>&
     return callDebuggerMethod("getCollectionEntries", 1, argv).ToLocalChecked();
 }
 
-v8::Local<v8::Value> ScriptDebugServer::getInternalProperties(v8::Local<v8::Object>& object)
-{
-    if (!enabled()) {
-        // FIXME: provide a way to collect internal properties without enabling debugger. See crbug.com/485451
-        return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
-    }
-    v8::Local<v8::Value> argv[] = { object };
-    return callDebuggerMethod("getInternalProperties", 1, argv).ToLocalChecked();
-}
-
 v8::MaybeLocal<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue)
 {
     if (m_debuggerScript.IsEmpty()) {

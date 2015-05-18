@@ -300,10 +300,8 @@ void V8InjectedScriptHost::getInternalPropertiesMethodCustom(const v8::FunctionC
         return;
 
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(info[0]);
-
-    InjectedScriptHost* host = V8InjectedScriptHost::toImpl(info.Holder());
-    ScriptDebugServer& debugServer = host->scriptDebugServer();
-    v8SetReturnValue(info, debugServer.getInternalProperties(object));
+    v8::MaybeLocal<v8::Array> properties = v8::Debug::GetInternalProperties(info.GetIsolate(), object);
+    v8SetReturnValue(info, properties);
 }
 
 static v8::Local<v8::Array> getJSListenerFunctions(v8::Isolate* isolate, ExecutionContext* executionContext, const EventListenerInfo& listenerInfo)

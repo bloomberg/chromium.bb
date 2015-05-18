@@ -482,11 +482,10 @@ InjectedScript.prototype = {
         var descriptors = [];
         var internalProperties = InjectedScriptHost.getInternalProperties(object);
         if (internalProperties) {
-            for (var i = 0; i < internalProperties.length; i++) {
-                var property = internalProperties[i];
+            for (var i = 0; i < internalProperties.length; i += 2) {
                 var descriptor = {
-                    name: property.name,
-                    value: this._wrapObject(property.value, objectGroupName),
+                    name: internalProperties[i],
+                    value: this._wrapObject(internalProperties[i + 1], objectGroupName),
                     __proto__: null
                 };
                 push(descriptors, descriptor);
@@ -1398,11 +1397,16 @@ InjectedScript.RemoteObject.prototype = {
                 return preview;
 
             // Add internal properties to preview.
-            var internalProperties = InjectedScriptHost.getInternalProperties(object) || [];
-            for (var i = 0; i < internalProperties.length; ++i) {
-                internalProperties[i] = nullifyObjectProto(internalProperties[i]);
-                internalProperties[i].isOwn = true;
-                internalProperties[i].enumerable = true;
+            var rawInternalProperties = InjectedScriptHost.getInternalProperties(object) || [];
+            var internalProperties = [];
+            for (var i = 0; i < rawInternalProperties.length; i += 2) {
+                push(internalProperties, {
+                    name: rawInternalProperties[i],
+                    value: rawInternalProperties[i + 1],
+                    isOwn: true,
+                    enumerable: true,
+                    __proto__: null
+                });
             }
             this._appendPropertyDescriptors(preview, internalProperties, propertiesThreshold, secondLevelKeys, isTable);
 

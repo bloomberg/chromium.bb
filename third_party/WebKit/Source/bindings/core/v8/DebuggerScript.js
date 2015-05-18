@@ -113,20 +113,6 @@ DebuggerScript.getCollectionEntries = function(object)
     }
 }
 
-DebuggerScript.getInternalProperties = function(value)
-{
-    var properties = ObjectMirror.GetInternalProperties(value);
-    var result = [];
-    for (var i = 0; i < properties.length; i++) {
-        var mirror = properties[i];
-        result.push({
-            name: mirror.name(),
-            value: mirror.value().value()
-        });
-    }
-    return result;
-}
-
 DebuggerScript.setFunctionVariableValue = function(functionValue, scopeIndex, variableName, newValue)
 {
     var mirror = MakeMirror(functionValue);
