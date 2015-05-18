@@ -272,23 +272,11 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   }
 
   // Information about how the "time ticks" values we have given it relate to
-  // actual system times. (We used time ticks throughout since they are stable
-  // across system clock changes).
+  // actual system times.  Time ticks are used throughout since they are stable
+  // across system clock changes.
   {
-    int64 cur_time_ms = (base::Time::Now() - base::Time()).InMilliseconds();
-
-    int64 cur_time_ticks_ms =
-        (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds();
-
-    // If we add this number to a time tick value, it gives the timestamp.
-    int64 tick_to_time_ms = cur_time_ms - cur_time_ticks_ms;
-
-    // Chrome on all platforms stores times using the Windows epoch
-    // (Jan 1 1601), but the javascript wants a unix epoch.
-    // TODO(eroman): Getting the timestamp relative to the unix epoch should
-    //               be part of the time library.
-    const int64 kUnixEpochMs = 11644473600000LL;
-    int64 tick_to_unix_time_ms = tick_to_time_ms - kUnixEpochMs;
+    int64 tick_to_unix_time_ms =
+        (base::TimeTicks() - base::TimeTicks::UnixEpoch()).InMilliseconds();
 
     // Pass it as a string, since it may be too large to fit in an integer.
     constants_dict->SetString("timeTickOffset",
