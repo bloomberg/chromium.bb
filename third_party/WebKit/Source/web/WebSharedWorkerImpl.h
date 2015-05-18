@@ -168,8 +168,6 @@ private:
 
     WebURL m_url;
     WebString m_name;
-    WebString m_contentSecurityPolicy;
-    WebContentSecurityPolicyType m_policyType;
 };
 
 } // namespace blink

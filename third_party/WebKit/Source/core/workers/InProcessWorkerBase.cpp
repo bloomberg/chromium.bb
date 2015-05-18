@@ -78,16 +78,12 @@ bool InProcessWorkerBase::hasPendingActivity() const
 
 PassRefPtr<ContentSecurityPolicy> InProcessWorkerBase::contentSecurityPolicy()
 {
-    return m_contentSecurityPolicy;
+    return WorkerScriptLoaderClient::contentSecurityPolicy();
 }
 
 void InProcessWorkerBase::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
 {
-    if (!response.url().protocolIs("blob") && !response.url().protocolIs("file") && !response.url().protocolIs("filesystem")) {
-        m_contentSecurityPolicy = ContentSecurityPolicy::create();
-        m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
-        m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
-    }
+    processContentSecurityPolicy(response);
     InspectorInstrumentation::didReceiveScriptResponse(executionContext(), identifier);
 }
 

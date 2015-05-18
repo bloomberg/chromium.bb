@@ -58,7 +58,6 @@ private:
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
-    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 } // namespace blink

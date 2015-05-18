@@ -34,7 +34,7 @@ var fn = function() {
     postMessage('Function() function blocked');
 }
 try {
-    fn = new Function("", "postMessage('Function() function allowed');"); 
+    fn = new Function("", "postMessage('Function() function allowed');");
 }
 catch(e) {
 }
@@ -57,10 +57,28 @@ try {
 
 try {
     var xhr = new XMLHttpRequest;
-    xhr.open("GET", "http://127.0.0.1:8000/xmlhttprequest/resources/get.txt", true); 
+    xhr.open("GET", "http://127.0.0.1:8000/xmlhttprequest/resources/get.txt", true);
     postMessage("xhr allowed");
 } catch(e) {
     postMessage("xhr blocked");
+}
+
+<?php
+} else if ($_GET["type"] == "shared-make-xhr") {
+?>
+
+onconnect = function (e) {
+    var port = e.ports[0];
+    try {
+        var xhr = new XMLHttpRequest;
+        xhr.open(
+            "GET",
+            "http://127.0.0.1:8000/xmlhttprequest/resources/get.txt",
+            true);
+        port.postMessage("xhr allowed");
+    } catch(e) {
+        port.postMessage("xhr blocked");
+    }
 }
 
 <?php
@@ -90,6 +108,23 @@ xhr.onload = function () {
     postMessage(this.responseText);
 };
 xhr.send();
+
+<?php
+} else if ($_GET["type"] == "shared-report-referrer") {
+?>
+
+onconnect = function (e) {
+    var port = e.ports[0];
+    var xhr = new XMLHttpRequest;
+    xhr.open(
+        "GET",
+        "http://127.0.0.1:8000/security/resources/echo-referrer-header.php",
+        true);
+    xhr.onload = function () {
+        port.postMessage(this.responseText);
+    };
+    xhr.send();
+};
 
 <?php
 }

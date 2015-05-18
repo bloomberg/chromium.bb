@@ -29,9 +29,11 @@
 #define WorkerScriptLoaderClient_h
 
 #include "core/CoreExport.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
+class ContentSecurityPolicy;
 class ResourceResponse;
 
 class CORE_EXPORT WorkerScriptLoaderClient {
@@ -42,8 +44,16 @@ public:
     // This will cause leaks when we support nested workers.
     virtual void notifyFinished() { }
 
+    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy();
+
 protected:
-    virtual ~WorkerScriptLoaderClient() { }
+    virtual ~WorkerScriptLoaderClient();
+
+    void processContentSecurityPolicy(const ResourceResponse&);
+    void setContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy>);
+
+private:
+    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 } // namespace blink
