@@ -43,9 +43,9 @@ class SecurityOrigin;
 
 class CORE_EXPORT PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, InspectorRuntimeAgent::Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, InspectorRuntimeAgent::Client* client, V8Debugger* debugger, InspectorPageAgent* pageAgent)
     {
-        return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, scriptDebugServer, pageAgent));
+        return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, debugger, pageAgent));
     }
     virtual ~PageRuntimeAgent();
     DECLARE_VIRTUAL_TRACE();
@@ -59,7 +59,7 @@ public:
     int debuggerId() const { return m_debuggerId; }
 
 private:
-    PageRuntimeAgent(InjectedScriptManager*, Client*, ScriptDebugServer*, InspectorPageAgent*);
+    PageRuntimeAgent(InjectedScriptManager*, Client*, V8Debugger*, InspectorPageAgent*);
 
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
     virtual void muteConsole() override;

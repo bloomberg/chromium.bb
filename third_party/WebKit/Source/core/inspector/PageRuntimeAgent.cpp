@@ -49,8 +49,8 @@ namespace blink {
 
 static int s_nextDebuggerId = 1;
 
-PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
-    : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer, client)
+PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, V8Debugger* debugger, InspectorPageAgent* pageAgent)
+    : InspectorRuntimeAgent(injectedScriptManager, debugger, client)
     , m_pageAgent(pageAgent)
     , m_mainWorldContextCreated(false)
     , m_debuggerId(s_nextDebuggerId++)

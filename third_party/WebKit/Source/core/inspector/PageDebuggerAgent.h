@@ -70,9 +70,9 @@ protected:
     void disable() override;
 
 private:
-    void startListeningScriptDebugServer() override;
-    void stopListeningScriptDebugServer() override;
-    ScriptDebugServer& scriptDebugServer() override;
+    void startListeningV8Debugger() override;
+    void stopListeningV8Debugger() override;
+    V8Debugger& debugger() override;
     void muteConsole() override;
     void unmuteConsole() override;
 

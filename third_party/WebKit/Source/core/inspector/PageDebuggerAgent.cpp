@@ -58,7 +58,7 @@ PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDe
 }
 
 PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
-    : InspectorDebuggerAgent(injectedScriptManager, MainThreadDebugger->scriptDebugServer()->isolate())
+    : InspectorDebuggerAgent(injectedScriptManager, MainThreadDebugger->debugger()->isolate())
     , m_mainThreadDebugger(MainThreadDebugger)
     , m_pageAgent(pageAgent)
     , m_overlay(overlay)
@@ -108,19 +108,19 @@ void PageDebuggerAgent::disable()
     m_compiledScriptURLs.clear();
 }
 
-void PageDebuggerAgent::startListeningScriptDebugServer()
+void PageDebuggerAgent::startListeningV8Debugger()
 {
     m_mainThreadDebugger->addListener(this, m_pageAgent->inspectedFrame(), m_debuggerId);
 }
 
-void PageDebuggerAgent::stopListeningScriptDebugServer()
+void PageDebuggerAgent::stopListeningV8Debugger()
 {
     m_mainThreadDebugger->removeListener(this, m_pageAgent->inspectedFrame());
 }
 
-ScriptDebugServer& PageDebuggerAgent::scriptDebugServer()
+V8Debugger& PageDebuggerAgent::debugger()
 {
-    return *(m_mainThreadDebugger->scriptDebugServer());
+    return *(m_mainThreadDebugger->debugger());
 }
 
 void PageDebuggerAgent::muteConsole()

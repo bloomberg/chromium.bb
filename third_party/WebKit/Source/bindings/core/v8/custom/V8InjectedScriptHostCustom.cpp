@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -41,6 +40,7 @@
 #include "bindings/core/v8/V8DOMError.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
+#include "bindings/core/v8/V8Debugger.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventTarget.h"
@@ -262,8 +262,8 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     result->Set(v8AtomicString(isolate, "isGenerator"), v8::Boolean::New(isolate, function->IsGeneratorFunction()));
 
     InjectedScriptHost* host = V8InjectedScriptHost::toImpl(info.Holder());
-    ScriptDebugServer& debugServer = host->scriptDebugServer();
-    v8::Local<v8::Value> scopes = debugServer.functionScopes(function);
+    V8Debugger& debugger = host->debugger();
+    v8::Local<v8::Value> scopes = debugger.functionScopes(function);
     if (!scopes.IsEmpty() && scopes->IsArray())
         result->Set(v8AtomicString(isolate, "rawScopes"), scopes);
 
@@ -278,8 +278,8 @@ void V8InjectedScriptHost::generatorObjectDetailsMethodCustom(const v8::Function
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(info[0]);
 
     InjectedScriptHost* host = V8InjectedScriptHost::toImpl(info.Holder());
-    ScriptDebugServer& debugServer = host->scriptDebugServer();
-    v8SetReturnValue(info, debugServer.generatorObjectDetails(object));
+    V8Debugger& debugger = host->debugger();
+    v8SetReturnValue(info, debugger.generatorObjectDetails(object));
 }
 
 void V8InjectedScriptHost::collectionEntriesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -290,8 +290,8 @@ void V8InjectedScriptHost::collectionEntriesMethodCustom(const v8::FunctionCallb
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(info[0]);
 
     InjectedScriptHost* host = V8InjectedScriptHost::toImpl(info.Holder());
-    ScriptDebugServer& debugServer = host->scriptDebugServer();
-    v8SetReturnValue(info, debugServer.collectionEntries(object));
+    V8Debugger& debugger = host->debugger();
+    v8SetReturnValue(info, debugger.collectionEntries(object));
 }
 
 void V8InjectedScriptHost::getInternalPropertiesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -450,8 +450,8 @@ void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::Functi
     v8::Local<v8::Value> newValue = info[3];
 
     InjectedScriptHost* host = V8InjectedScriptHost::toImpl(info.Holder());
-    ScriptDebugServer& debugServer = host->scriptDebugServer();
-    v8SetReturnValue(info, debugServer.setFunctionVariableValue(functionValue, scopeIndex, variableName, newValue));
+    V8Debugger& debugger = host->debugger();
+    v8SetReturnValue(info, debugger.setFunctionVariableValue(functionValue, scopeIndex, variableName, newValue));
 }
 
 static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& info, String* scriptId, int* lineNumber, int* columnNumber)

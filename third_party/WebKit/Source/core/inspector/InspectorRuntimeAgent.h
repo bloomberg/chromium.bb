@@ -42,8 +42,8 @@ namespace blink {
 class InjectedScript;
 class InjectedScriptManager;
 class JSONArray;
-class ScriptDebugServer;
 class ScriptState;
+class V8Debugger;
 
 typedef String ErrorString;
 
@@ -94,7 +94,7 @@ public:
     void restore() override final;
 
 protected:
-    InspectorRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*, Client*);
+    InspectorRuntimeAgent(InjectedScriptManager*, V8Debugger*, Client*);
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
 
     virtual void muteConsole() = 0;
@@ -112,7 +112,7 @@ private:
     class InjectedScriptCallScope;
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    ScriptDebugServer* m_scriptDebugServer;
+    V8Debugger* m_debugger;
     Client* m_client;
 };
 

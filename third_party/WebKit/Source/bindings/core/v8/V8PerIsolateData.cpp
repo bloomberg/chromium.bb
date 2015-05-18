@@ -27,7 +27,6 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 
 #include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HiddenValue.h"
@@ -35,6 +34,7 @@
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ScriptDebuggerBase.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 

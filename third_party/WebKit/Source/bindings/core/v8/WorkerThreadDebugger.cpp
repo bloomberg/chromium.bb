@@ -44,7 +44,7 @@ namespace blink {
 static const char* workerContextDebugId = "[worker]";
 
 WorkerThreadDebugger::WorkerThreadDebugger(WorkerGlobalScope* workerGlobalScope)
-    : ScriptDebuggerBase(v8::Isolate::GetCurrent(), ScriptDebugServer::create(v8::Isolate::GetCurrent(), this))
+    : ScriptDebuggerBase(v8::Isolate::GetCurrent(), V8Debugger::create(v8::Isolate::GetCurrent(), this))
     , m_listener(nullptr)
     , m_workerGlobalScope(workerGlobalScope)
 {
@@ -62,23 +62,23 @@ DEFINE_TRACE(WorkerThreadDebugger)
 
 void WorkerThreadDebugger::setContextDebugData(v8::Local<v8::Context> context)
 {
-    ScriptDebugServer::setContextDebugData(context, workerContextDebugId);
+    V8Debugger::setContextDebugData(context, workerContextDebugId);
 }
 
 void WorkerThreadDebugger::addListener(ScriptDebugListener* listener)
 {
     ASSERT(!m_listener);
-    scriptDebugServer()->enable();
+    debugger()->enable();
     m_listener = listener;
-    scriptDebugServer()->reportCompiledScripts(workerContextDebugId, listener);
+    debugger()->reportCompiledScripts(workerContextDebugId, listener);
 }
 
 void WorkerThreadDebugger::removeListener(ScriptDebugListener* listener)
 {
     ASSERT(m_listener == listener);
-    scriptDebugServer()->continueProgram();
+    debugger()->continueProgram();
     m_listener = 0;
-    scriptDebugServer()->disable();
+    debugger()->disable();
 }
 
 ScriptDebugListener* WorkerThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context>)
@@ -94,7 +94,7 @@ void WorkerThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context>)
     do {
         result = m_workerGlobalScope->thread()->runDebuggerTask();
     // Keep waiting until execution is resumed.
-    } while (result == MessageQueueMessageReceived && scriptDebugServer()->isPaused());
+    } while (result == MessageQueueMessageReceived && debugger()->isPaused());
     m_workerGlobalScope->thread()->didLeaveNestedLoop();
 
     // The listener may have been removed in the nested loop.

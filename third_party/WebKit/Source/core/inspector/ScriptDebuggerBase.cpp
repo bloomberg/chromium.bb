@@ -12,9 +12,9 @@
 
 namespace blink {
 
-ScriptDebuggerBase::ScriptDebuggerBase(v8::Isolate* isolate, PassOwnPtrWillBeRawPtr<ScriptDebugServer> scriptDebugServer)
+ScriptDebuggerBase::ScriptDebuggerBase(v8::Isolate* isolate, PassOwnPtrWillBeRawPtr<V8Debugger> debugger)
     : m_isolate(isolate)
-    , m_scriptDebugServer(scriptDebugServer)
+    , m_debugger(debugger)
 {
 }
 
@@ -24,8 +24,8 @@ ScriptDebuggerBase::~ScriptDebuggerBase()
 
 DEFINE_TRACE(ScriptDebuggerBase)
 {
-    visitor->trace(m_scriptDebugServer);
-    ScriptDebugServer::Client::trace(visitor);
+    visitor->trace(m_debugger);
+    V8Debugger::Client::trace(visitor);
 }
 
 v8::Local<v8::Object> ScriptDebuggerBase::compileDebuggerScript()

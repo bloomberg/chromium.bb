@@ -66,7 +66,7 @@ public:
     void removeListener(ScriptDebugListener*, LocalFrame*);
 
     static MainThreadDebugger* instance();
-    static void interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task>);
+    static void interruptMainThreadAndRun(PassOwnPtr<V8Debugger::Task>);
 
     DECLARE_VIRTUAL_TRACE();
 

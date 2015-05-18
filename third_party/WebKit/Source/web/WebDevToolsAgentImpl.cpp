@@ -137,7 +137,7 @@ public:
     {
         // Release render thread if necessary.
         if (s_instance && s_instance->m_running)
-            MainThreadDebugger::instance()->scriptDebugServer()->continueProgram();
+            MainThreadDebugger::instance()->debugger()->continueProgram();
     }
 
 private:
@@ -249,7 +249,7 @@ public:
     }
 };
 
-class DebuggerTask : public ScriptDebugServer::Task {
+class DebuggerTask : public V8Debugger::Task {
 public:
     DebuggerTask(PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
         : m_descriptor(descriptor)
@@ -348,7 +348,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
 
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, mainThreadDebugger->scriptDebugServer(), m_pageAgent));
+    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, mainThreadDebugger->debugger(), m_pageAgent));
     m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
     m_agents.append(pageRuntimeAgentPtr.release());
 
@@ -470,7 +470,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         m_pageConsoleAgent.get(),
         debuggerAgent,
         bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
-        mainThreadDebugger->scriptDebugServer(),
+        mainThreadDebugger->debugger(),
         adoptPtr(new PageInjectedScriptHostClient()));
 }
 
@@ -633,7 +633,7 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
     if (!m_attached)
         return;
     if (WebDevToolsAgent::shouldInterruptForMessage(message))
-        MainThreadDebugger::instance()->scriptDebugServer()->runPendingTasks();
+        MainThreadDebugger::instance()->debugger()->runPendingTasks();
     else
         dispatchMessageFromFrontend(message);
 }

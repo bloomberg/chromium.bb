@@ -42,8 +42,8 @@
 namespace blink {
 
 class DOMDataStore;
-class ScriptDebugServer;
 class StringCache;
+class V8Debugger;
 struct WrapperTypeInfo;
 
 typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;

@@ -32,9 +32,9 @@
 #include "core/inspector/InspectorRuntimeAgent.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Debugger.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/events/EventTarget.h"
@@ -58,11 +58,11 @@ public:
     InjectedScriptCallScope(InspectorRuntimeAgent* agent, bool doNotPauseOnExceptionsAndMuteConsole)
         : m_agent(agent)
         , m_doNotPauseOnExceptionsAndMuteConsole(doNotPauseOnExceptionsAndMuteConsole)
-        , m_previousPauseOnExceptionsState(ScriptDebugServer::DontPauseOnExceptions)
+        , m_previousPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions)
     {
         if (!m_doNotPauseOnExceptionsAndMuteConsole)
             return;
-        m_previousPauseOnExceptionsState = setPauseOnExceptionsState(ScriptDebugServer::DontPauseOnExceptions);
+        m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
         m_agent->muteConsole();
     }
     ~InjectedScriptCallScope()
@@ -74,28 +74,28 @@ public:
     }
 
 private:
-    ScriptDebugServer::PauseOnExceptionsState setPauseOnExceptionsState(ScriptDebugServer::PauseOnExceptionsState newState)
+    V8Debugger::PauseOnExceptionsState setPauseOnExceptionsState(V8Debugger::PauseOnExceptionsState newState)
     {
-        ScriptDebugServer* scriptDebugServer = m_agent->m_scriptDebugServer;
-        ASSERT(scriptDebugServer);
-        if (!scriptDebugServer->enabled())
+        V8Debugger* debugger = m_agent->m_debugger;
+        ASSERT(debugger);
+        if (!debugger->enabled())
             return newState;
-        ScriptDebugServer::PauseOnExceptionsState presentState = scriptDebugServer->pauseOnExceptionsState();
+        V8Debugger::PauseOnExceptionsState presentState = debugger->pauseOnExceptionsState();
         if (presentState != newState)
-            scriptDebugServer->setPauseOnExceptionsState(newState);
+            debugger->setPauseOnExceptionsState(newState);
         return presentState;
     }
 
     InspectorRuntimeAgent* m_agent;
     bool m_doNotPauseOnExceptionsAndMuteConsole;
-    ScriptDebugServer::PauseOnExceptionsState m_previousPauseOnExceptionsState;
+    V8Debugger::PauseOnExceptionsState m_previousPauseOnExceptionsState;
 };
 
-InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Client* client)
+InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, Client* client)
     : InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>("Runtime")
     , m_enabled(false)
     , m_injectedScriptManager(injectedScriptManager)
-    , m_scriptDebugServer(scriptDebugServer)
+    , m_debugger(debugger)
     , m_client(client)
 {
 }
@@ -156,22 +156,22 @@ void InspectorRuntimeAgent::releaseObject(ErrorString*, const String& objectId)
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
     if (injectedScript.isEmpty())
         return;
-    bool pausingOnNextStatement = m_scriptDebugServer->pausingOnNextStatement();
+    bool pausingOnNextStatement = m_debugger->pausingOnNextStatement();
     if (pausingOnNextStatement)
-        m_scriptDebugServer->setPauseOnNextStatement(false);
+        m_debugger->setPauseOnNextStatement(false);
     injectedScript.releaseObject(objectId);
     if (pausingOnNextStatement)
-        m_scriptDebugServer->setPauseOnNextStatement(true);
+        m_debugger->setPauseOnNextStatement(true);
 }
 
 void InspectorRuntimeAgent::releaseObjectGroup(ErrorString*, const String& objectGroup)
 {
-    bool pausingOnNextStatement = m_scriptDebugServer->pausingOnNextStatement();
+    bool pausingOnNextStatement = m_debugger->pausingOnNextStatement();
     if (pausingOnNextStatement)
-        m_scriptDebugServer->setPauseOnNextStatement(false);
+        m_debugger->setPauseOnNextStatement(false);
     m_injectedScriptManager->releaseObjectGroup(objectGroup);
     if (pausingOnNextStatement)
-        m_scriptDebugServer->setPauseOnNextStatement(true);
+        m_debugger->setPauseOnNextStatement(true);
 }
 
 void InspectorRuntimeAgent::run(ErrorString*)
@@ -235,4 +235,3 @@ void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptSta
 }
 
 } // namespace blink
-

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptDebugServer_h
-#define ScriptDebugServer_h
+#ifndef V8Debugger_h
+#define V8Debugger_h
 
 #include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
@@ -48,8 +48,8 @@ class ScriptDebugListener;
 class ScriptValue;
 class JavaScriptCallFrame;
 
-class CORE_EXPORT ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinalized<ScriptDebugServer> {
-    WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
+class CORE_EXPORT V8Debugger : public NoBaseWillBeGarbageCollectedFinalized<V8Debugger> {
+    WTF_MAKE_NONCOPYABLE(V8Debugger);
 public:
     class CORE_EXPORT Client : public WillBeGarbageCollectedMixin {
     public:
@@ -62,12 +62,12 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
-    static PassOwnPtrWillBeRawPtr<ScriptDebugServer> create(v8::Isolate* isolate, Client* client)
+    static PassOwnPtrWillBeRawPtr<V8Debugger> create(v8::Isolate* isolate, Client* client)
     {
-        return adoptPtrWillBeNoop(new ScriptDebugServer(isolate, client));
+        return adoptPtrWillBeNoop(new V8Debugger(isolate, client));
     }
 
-    virtual ~ScriptDebugServer();
+    virtual ~V8Debugger();
     DECLARE_VIRTUAL_TRACE();
 
     void enable();
@@ -82,7 +82,7 @@ public:
 
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);
-    void setBreakpointsActivated(bool activated);
+    void setBreakpointsActivated(bool);
 
     enum PauseOnExceptionsState {
         DontPauseOnExceptions,
@@ -90,9 +90,9 @@ public:
         PauseOnUncaughtExceptions
     };
     PauseOnExceptionsState pauseOnExceptionsState();
-    void setPauseOnExceptionsState(PauseOnExceptionsState pauseOnExceptionsState);
+    void setPauseOnExceptionsState(PauseOnExceptionsState);
 
-    void setPauseOnNextStatement(bool pause);
+    void setPauseOnNextStatement(bool);
     bool pausingOnNextStatement();
     bool canBreakProgram();
     void breakProgram();
@@ -116,7 +116,7 @@ public:
         virtual void run() = 0;
     };
     // This method can be called on any thread. It is caller's responsibility to make sure that
-    // this ScriptDebugServer and corresponding v8::Isolate exist while this method is running.
+    // this V8Debugger and corresponding v8::Isolate exist while this method is running.
     void interruptAndRun(PassOwnPtr<Task>);
     void runPendingTasks();
 
@@ -130,7 +130,7 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
 
 private:
-    ScriptDebugServer(v8::Isolate*, Client*);
+    V8Debugger(v8::Isolate*, Client*);
 
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
@@ -175,4 +175,4 @@ private:
 } // namespace blink
 
 
-#endif // ScriptDebugServer_h
+#endif // V8Debugger_h

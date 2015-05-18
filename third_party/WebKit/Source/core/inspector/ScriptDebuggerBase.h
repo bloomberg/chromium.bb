@@ -5,25 +5,25 @@
 #ifndef ScriptDebuggerBase_h
 #define ScriptDebuggerBase_h
 
-#include "bindings/core/v8/ScriptDebugServer.h"
+#include "bindings/core/v8/V8Debugger.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CORE_EXPORT ScriptDebuggerBase : public ScriptDebugServer::Client {
+class CORE_EXPORT ScriptDebuggerBase : public V8Debugger::Client {
     WTF_MAKE_NONCOPYABLE(ScriptDebuggerBase);
 public:
-    ScriptDebuggerBase(v8::Isolate*, PassOwnPtrWillBeRawPtr<ScriptDebugServer>);
+    ScriptDebuggerBase(v8::Isolate*, PassOwnPtrWillBeRawPtr<V8Debugger>);
     ~ScriptDebuggerBase() override;
     v8::Local<v8::Object> compileDebuggerScript() override;
-    ScriptDebugServer* scriptDebugServer() const { return m_scriptDebugServer.get(); }
+    V8Debugger* debugger() const { return m_debugger.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     v8::Isolate* m_isolate;
-    OwnPtrWillBeMember<ScriptDebugServer> m_scriptDebugServer;
+    OwnPtrWillBeMember<V8Debugger> m_debugger;
 };
 
 } // namespace blink

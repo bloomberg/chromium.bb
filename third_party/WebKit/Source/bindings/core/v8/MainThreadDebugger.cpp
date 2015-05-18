@@ -64,7 +64,7 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> con
 MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 
 MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
-    : ScriptDebuggerBase(isolate, ScriptDebugServer::create(isolate, this))
+    : ScriptDebuggerBase(isolate, V8Debugger::create(isolate, this))
     , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
 {
@@ -98,7 +98,7 @@ DEFINE_TRACE(MainThreadDebugger)
 void MainThreadDebugger::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextDebugId)
 {
     String debugData = "[" + type + "," + String::number(contextDebugId) + "]";
-    ScriptDebugServer::setContextDebugData(context, debugData);
+    V8Debugger::setContextDebugData(context, debugData);
 }
 
 void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot, int contextDebugId)
@@ -110,10 +110,10 @@ void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* 
         return;
 
     if (m_listenersMap.isEmpty())
-        scriptDebugServer()->enable();
+        debugger()->enable();
     m_listenersMap.set(localFrameRoot, listener);
     String contextDataSubstring = "," + String::number(contextDebugId) + "]";
-    scriptDebugServer()->reportCompiledScripts(contextDataSubstring, listener);
+    debugger()->reportCompiledScripts(contextDataSubstring, listener);
 }
 
 void MainThreadDebugger::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
@@ -122,12 +122,12 @@ void MainThreadDebugger::removeListener(ScriptDebugListener* listener, LocalFram
         return;
 
     if (m_pausedFrame == localFrame)
-        scriptDebugServer()->continueProgram();
+        debugger()->continueProgram();
 
     m_listenersMap.remove(localFrame);
 
     if (m_listenersMap.isEmpty())
-        scriptDebugServer()->disable();
+        debugger()->disable();
 }
 
 MainThreadDebugger* MainThreadDebugger::instance()
@@ -136,11 +136,11 @@ MainThreadDebugger* MainThreadDebugger::instance()
     return s_instance;
 }
 
-void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task> task)
+void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<V8Debugger::Task> task)
 {
     MutexLocker locker(creationMutex());
     if (s_instance)
-        s_instance->scriptDebugServer()->interruptAndRun(task);
+        s_instance->debugger()->interruptAndRun(task);
 }
 
 ScriptDebugListener* MainThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context> context)

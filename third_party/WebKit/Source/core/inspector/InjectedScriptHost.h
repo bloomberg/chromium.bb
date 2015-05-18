@@ -49,8 +49,8 @@ class InspectorDebuggerAgent;
 class InspectorInspectorAgent;
 class JSONValue;
 class Node;
-class ScriptDebugServer;
 class ScriptValue;
+class V8Debugger;
 
 struct EventListenerInfo;
 
@@ -68,12 +68,12 @@ public:
 
     using InspectCallback = Function<void(PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>)>;
 
-    void init(InspectorConsoleAgent* consoleAgent, InspectorDebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, ScriptDebugServer* scriptDebugServer, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
+    void init(InspectorConsoleAgent* consoleAgent, InspectorDebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, V8Debugger* debugger, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
     {
         m_consoleAgent = consoleAgent;
         m_debuggerAgent = debuggerAgent;
         m_inspectCallback = inspectCallback;
-        m_scriptDebugServer = scriptDebugServer;
+        m_debugger = debugger;
         m_client = injectedScriptHostClient;
     }
 
@@ -102,7 +102,7 @@ public:
     void monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName);
     void unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber);
 
-    ScriptDebugServer& scriptDebugServer() { return *m_scriptDebugServer; }
+    V8Debugger& debugger() { return *m_debugger; }
     InjectedScriptHostClient* client() { return m_client.get(); }
 
 private:
@@ -111,7 +111,7 @@ private:
     RawPtrWillBeMember<InspectorConsoleAgent> m_consoleAgent;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
-    RawPtrWillBeMember<ScriptDebugServer> m_scriptDebugServer;
+    RawPtrWillBeMember<V8Debugger> m_debugger;
     Vector<OwnPtr<InspectableObject> > m_inspectedObjects;
     OwnPtr<InspectableObject> m_defaultInspectableObject;
     OwnPtr<InjectedScriptHostClient> m_client;

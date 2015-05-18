@@ -33,9 +33,9 @@
 
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8Debugger.h"
 #include "bindings/core/v8/V8InjectedScriptHost.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
