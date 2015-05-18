@@ -28,13 +28,17 @@ String TracedLayoutObject::asTraceFormat() const
 
 TracedLayoutObject::TracedLayoutObject(const LayoutObject& object)
     : m_address((unsigned long) &object)
-    , m_name(object.name())
-    , m_positioned(object.isOutOfFlowPositioned())
+    , m_isAnonymous(object.isAnonymous())
+    , m_isPositioned(object.isOutOfFlowPositioned())
+    , m_isRelPositioned(object.isRelPositioned())
+    , m_isFloating(object.isFloating())
     , m_selfNeeds(object.selfNeedsLayout())
     , m_positionedMovement(object.needsPositionedMovementLayout())
     , m_childNeeds(object.normalChildNeedsLayout())
     , m_posChildNeeds(object.posChildNeedsLayout())
     , m_isTableCell(object.isTableCell())
+    , m_name(object.name())
+    , m_absRect(object.absoluteBoundingBoxRect())
 {
     if (Node* node = object.node()) {
         m_tag = node->nodeName();
@@ -84,7 +88,7 @@ PassRefPtr<JSONObject> TracedLayoutObject::toJSON() const
     if (!m_tag.isEmpty())
         json->setString("tag", m_tag);
     if (!m_id.isEmpty())
-        json->setString("id", m_id);
+        json->setString("htmlId", m_id);
     if (m_classNames.size()) {
         RefPtr<JSONArray> classNames(JSONArray::create());
         for (const auto& className : m_classNames) {
@@ -92,12 +96,14 @@ PassRefPtr<JSONObject> TracedLayoutObject::toJSON() const
         }
         json->setArray("classNames", classNames);
     }
-    json->setNumber("x", m_rect.x());
-    json->setNumber("y", m_rect.y());
+    json->setNumber("absX", m_absRect.x());
+    json->setNumber("absY", m_absRect.y());
+    json->setNumber("relX", m_rect.x());
+    json->setNumber("relY", m_rect.y());
     json->setNumber("width", m_rect.width());
     json->setNumber("height", m_rect.height());
-    if (m_positioned)
-        json->setBoolean("positioned", m_positioned);
+    if (m_isPositioned)
+        json->setBoolean("positioned", m_isPositioned);
     if (m_selfNeeds)
         json->setBoolean("selfNeeds", m_selfNeeds);
     if (m_positionedMovement)
@@ -114,6 +120,12 @@ PassRefPtr<JSONObject> TracedLayoutObject::toJSON() const
         if (m_colSpan != 1)
             json->setNumber("colSpan", m_colSpan);
     }
+    if (m_isAnonymous)
+        json->setBoolean("anonymous", m_isAnonymous);
+    if (m_isRelPositioned)
+        json->setBoolean("relativePositioned", m_isRelPositioned);
+    if (m_isFloating)
+        json->setBoolean("float", m_isFloating);
     if (m_children.size()) {
         RefPtr<JSONArray> children(JSONArray::create());
         for (const auto& child : m_children) {

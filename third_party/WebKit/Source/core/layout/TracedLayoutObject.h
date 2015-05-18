@@ -28,16 +28,20 @@ private:
     PassRefPtr<JSONObject> toJSON() const;
 
     unsigned long m_address;
-    String m_name;
-    bool m_positioned;
+    bool m_isAnonymous;
+    bool m_isPositioned;
+    bool m_isRelPositioned;
+    bool m_isFloating;
     bool m_selfNeeds;
     bool m_positionedMovement;
     bool m_childNeeds;
     bool m_posChildNeeds;
     bool m_isTableCell;
+    String m_name;
     String m_tag;
     String m_id;
     Vector<String> m_classNames;
+    IntRect m_absRect;
     LayoutRect m_rect;
     unsigned m_row;
     unsigned m_col;
