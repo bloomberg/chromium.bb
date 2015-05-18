@@ -20,34 +20,6 @@
 #include "ipc/ipc_channel_reader.h"
 #include "ipc/ipc_message_attachment_set.h"
 
-#if !defined(OS_MACOSX)
-// On Linux, the seccomp sandbox makes it very expensive to call
-// recvmsg() and sendmsg(). The restriction on calling read() and write(), which
-// are cheap, is that we can't pass file descriptors over them.
-//
-// As we cannot anticipate when the sender will provide us with file
-// descriptors, we have to make the decision about whether we call read() or
-// recvmsg() before we actually make the call. The easiest option is to
-// create a dedicated socketpair() for exchanging file descriptors. Any file
-// descriptors are split out of a message, with the non-file-descriptor payload
-// going over the normal connection, and the file descriptors being sent
-// separately over the other channel. When read()ing from a channel, we'll
-// notice if the message was supposed to have come with file descriptors and
-// use recvmsg on the other socketpair to retrieve them and combine them
-// back with the rest of the message.
-//
-// Mac can also run in IPC_USES_READWRITE mode if necessary, but at this time
-// doesn't take a performance hit from recvmsg and sendmsg, so it doesn't
-// make sense to waste resources on having the separate dedicated socketpair.
-// It is however useful for debugging between Linux and Mac to be able to turn
-// this switch 'on' on the Mac as well.
-//
-// The HELLO message from the client to the server is always sent using
-// sendmsg because it will contain the file descriptor that the server
-// needs to send file descriptors in later messages.
-#define IPC_USES_READWRITE 1
-#endif
-
 namespace IPC {
 
 class IPC_EXPORT ChannelPosix : public Channel,
@@ -107,14 +79,6 @@ class IPC_EXPORT ChannelPosix : public Channel,
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
 
-#if defined(IPC_USES_READWRITE)
-  // Reads the next message from the fd_pipe_ and appends them to the
-  // input_fds_ queue. Returns false if there was a message receiving error.
-  // True means there was a message and it was processed properly, or there was
-  // no messages.
-  bool ReadFileDescriptorsFromFDPipe();
-#endif
-
   // Finds the set of file descriptors in the given message.  On success,
   // appends the descriptors to the input_fds_ member and returns true
   //
@@ -160,12 +124,6 @@ class IPC_EXPORT ChannelPosix : public Channel,
   // pipe_ that is passed to the client.
   base::ScopedFD client_pipe_;
   mutable base::Lock client_pipe_lock_;  // Lock that protects |client_pipe_|.
-
-#if defined(IPC_USES_READWRITE)
-  // Linux/BSD use a dedicated socketpair() for passing file descriptors.
-  base::ScopedFD fd_pipe_;
-  base::ScopedFD remote_fd_pipe_;
-#endif
 
   // The "name" of our pipe.  On Windows this is the global identifier for
   // the pipe.  On POSIX it's used as a key in a local map of file descriptors.
