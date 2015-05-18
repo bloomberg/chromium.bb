@@ -40,6 +40,7 @@
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
 #include "util_hash_table.h"
+#include "util_math.h"
 
 static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
 				     uint32_t handle)
@@ -72,6 +73,39 @@ void amdgpu_bo_free_internal(amdgpu_bo_handle bo)
 	pthread_mutex_destroy(&bo->cpu_access_mutex);
 	amdgpu_vamgr_free_va(&bo->dev->vamgr, bo->virtual_mc_base_address, bo->alloc_size);
 	free(bo);
+}
+
+/* map the buffer to the GPU virtual address space */
+static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
+{
+	amdgpu_device_handle dev = bo->dev;
+	union drm_amdgpu_gem_va va;
+	int r;
+
+	memset(&va, 0, sizeof(va));
+
+	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr,
+					 bo->alloc_size, alignment);
+
+	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS)
+		return -ENOSPC;
+
+	va.in.handle = bo->handle;
+	va.in.operation = AMDGPU_VA_OP_MAP;
+	va.in.flags = 	AMDGPU_VM_PAGE_READABLE |
+			AMDGPU_VM_PAGE_WRITEABLE |
+			AMDGPU_VM_PAGE_EXECUTABLE;
+	va.in.va_address = bo->virtual_mc_base_address;
+	va.in.offset_in_bo = 0;
+	va.in.map_size = ALIGN(bo->alloc_size, getpagesize());
+
+	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
+	if (r || va.out.result == AMDGPU_VA_RESULT_ERROR) {
+		amdgpu_bo_free_internal(bo);
+		return r;
+	}
+
+	return 0;
 }
 
 int amdgpu_bo_alloc(amdgpu_device_handle dev,
@@ -115,33 +149,10 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 
 	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
 
-	/* map the buffer to the GPU virtual address space */
-	{
-		union drm_amdgpu_gem_va va;
-
-		memset(&va, 0, sizeof(va));
-
-		bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr,
-						 alloc_buffer->alloc_size,
-						 alloc_buffer->phys_alignment);
-
-		if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS) {
-			amdgpu_bo_free_internal(bo);
-			return -ENOSPC;
-		}
-
-		va.in.handle = bo->handle;
-		va.in.operation = AMDGPU_VA_OP_MAP;
-		va.in.flags = 	AMDGPU_VM_PAGE_READABLE |
-				AMDGPU_VM_PAGE_WRITEABLE |
-				AMDGPU_VM_PAGE_EXECUTABLE;
-		va.in.va_address = bo->virtual_mc_base_address;
-
-		r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
-		if (r || va.out.result == AMDGPU_VA_RESULT_ERROR) {
-			amdgpu_bo_free_internal(bo);
-			return r;
-		}
+	r = amdgpu_bo_map(bo, alloc_buffer->phys_alignment);
+	if (r) {
+		amdgpu_bo_free_internal(bo);
+		return r;
 	}
 
 	info->buf_handle = bo;
@@ -314,7 +325,6 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		     struct amdgpu_bo_import_result *output)
 {
 	struct drm_gem_open open_arg = {};
-	union drm_amdgpu_gem_va va;
 	struct amdgpu_bo *bo = NULL;
 	int r;
 	int dma_fd;
@@ -439,26 +449,10 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	atomic_set(&bo->refcount, 1);
 	bo->dev = dev;
 	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
+	pthread_mutex_unlock(&dev->bo_table_mutex);
 
-	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr, bo->alloc_size, 1 << 20);
-
-	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS) {
-		pthread_mutex_unlock(&dev->bo_table_mutex);
-		amdgpu_bo_reference(&bo, NULL);
-		return -ENOSPC;
-	}
-
-	memset(&va, 0, sizeof(va));
-	va.in.handle = bo->handle;
-	va.in.operation = AMDGPU_VA_OP_MAP;
-	va.in.va_address = bo->virtual_mc_base_address;
-	va.in.flags =	AMDGPU_VM_PAGE_READABLE | AMDGPU_VM_PAGE_WRITEABLE |
-			AMDGPU_VM_PAGE_EXECUTABLE;
-
-	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
-	if (r || va.out.result == AMDGPU_VA_RESULT_ERROR) {
-		pthread_mutex_unlock(&dev->bo_table_mutex);
-		amdgpu_vamgr_free_va(&dev->vamgr, bo->virtual_mc_base_address, bo->alloc_size);
+	r = amdgpu_bo_map(bo, 1 << 20);
+	if (r) {
 		amdgpu_bo_reference(&bo, NULL);
 		return r;
 	}
@@ -592,7 +586,6 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	int r;
 	struct amdgpu_bo *bo;
 	struct drm_amdgpu_gem_userptr args;
-	union drm_amdgpu_gem_va va;
 	uintptr_t cpu0;
 	uint32_t ps, off;
 
@@ -619,24 +612,13 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	bo->dev = dev;
 	bo->alloc_size = size;
 	bo->handle = args.handle;
-	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr, size, 4 * 1024);
 
-	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS) {
-		amdgpu_bo_free_internal(bo);
-		return -ENOSPC;
-	}
-
-	memset(&va, 0, sizeof(va));
-	va.in.handle = bo->handle;
-	va.in.operation = AMDGPU_VA_OP_MAP;
-	va.in.flags =	AMDGPU_VM_PAGE_READABLE | AMDGPU_VM_PAGE_WRITEABLE |
-			AMDGPU_VM_PAGE_EXECUTABLE;
-	va.in.va_address = bo->virtual_mc_base_address;
-	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
-	if (r || va.out.result == AMDGPU_VA_RESULT_ERROR) {
+	r = amdgpu_bo_map(bo, 1 << 12);
+	if (r) {
 		amdgpu_bo_free_internal(bo);
 		return r;
 	}
+
 	info->buf_handle = bo;
 	info->virtual_mc_base_address = bo->virtual_mc_base_address;
 	info->virtual_mc_base_address += off;
