@@ -33,7 +33,7 @@ enum NextProto {
   // kProtoSPDY4_15 = 104,  // HTTP/2 draft-15
   // kProtoSPDY4_16 = 105,  // HTTP/2 draft-16
   // kProtoSPDY4_17 = 106,  // HTTP/2 draft-17
-  kProtoSPDY4 = 107,  // HTTP/2.  TODO(bnc):  Add RFC number when published.
+  kProtoSPDY4 = 107,  // HTTP/2, see https://tools.ietf.org/html/rfc7540.
   kProtoSPDY4MaximumVersion = kProtoSPDY4,
   kProtoSPDYMaximumVersion = kProtoSPDY4MaximumVersion,
 
