@@ -68,8 +68,6 @@ struct amdgpu_device {
 	struct util_hash_table *bo_handles;
 	/** List of buffer GEM flink names. Protected by bo_table_mutex. */
 	struct util_hash_table *bo_flink_names;
-	/** List of buffer virtual memory ranges. Protected by bo_table_mutex. */
-	struct util_hash_table *bo_vas;
 	/** This protects all hash tables. */
 	pthread_mutex_t bo_table_mutex;
 	struct amdgpu_bo_va_mgr vamgr;

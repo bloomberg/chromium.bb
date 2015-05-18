@@ -192,7 +192,6 @@ int amdgpu_device_initialize(int fd,
 	dev->bo_flink_names = util_hash_table_create(handle_hash,
 						     handle_compare);
 	dev->bo_handles = util_hash_table_create(handle_hash, handle_compare);
-	dev->bo_vas = util_hash_table_create(handle_hash, handle_compare);
 	pthread_mutex_init(&dev->bo_table_mutex, NULL);
 
 	/* Check if acceleration is working. */
@@ -228,7 +227,6 @@ void amdgpu_device_free_internal(amdgpu_device_handle dev)
 {
 	util_hash_table_destroy(dev->bo_flink_names);
 	util_hash_table_destroy(dev->bo_handles);
-	util_hash_table_destroy(dev->bo_vas);
 	pthread_mutex_destroy(&dev->bo_table_mutex);
 	pthread_mutex_destroy(&(dev->vamgr.bo_va_mutex));
 	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
