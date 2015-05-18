@@ -24,11 +24,13 @@ const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
 
 ScreenCaptureTrayItem::ScreenCaptureTrayItem(SystemTray* system_tray)
     : ScreenTrayItem(system_tray) {
+  Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->system_tray_notifier()->
       AddScreenCaptureObserver(this);
 }
 
 ScreenCaptureTrayItem::~ScreenCaptureTrayItem() {
+  Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->system_tray_notifier()->
       RemoveScreenCaptureObserver(this);
 }
@@ -79,6 +81,17 @@ void ScreenCaptureTrayItem::OnScreenCaptureStart(
     const base::Closure& stop_callback,
     const base::string16& screen_capture_status) {
   screen_capture_status_ = screen_capture_status;
+
+  // We do not want to show the screen capture tray item and the chromecast
+  // casting tray item at the same time. We will hide this tray item.
+  //
+  // This suppression technique is currently dependent on the order
+  // that OnScreenCaptureStart and OnCastingSessionStartedOrStopped
+  // get invoked. OnCastingSessionStartedOrStopped currently gets
+  // called first.
+  if (is_casting_)
+    return;
+
   Start(stop_callback);
 }
 
@@ -87,6 +100,10 @@ void ScreenCaptureTrayItem::OnScreenCaptureStop() {
   // screen capture is stopped externally.
   set_is_started(false);
   Update();
+}
+
+void ScreenCaptureTrayItem::OnCastingSessionStartedOrStopped(bool started) {
+  is_casting_ = started;
 }
 
 }  // namespace ash

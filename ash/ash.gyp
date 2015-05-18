@@ -278,6 +278,8 @@
       'system/bluetooth/tray_bluetooth.cc',
       'system/bluetooth/tray_bluetooth.h',
       'system/brightness_control_delegate.h',
+      'system/cast/tray_cast.cc',
+      'system/cast/tray_cast.h',
       'system/chromeos/audio/audio_detailed_view.cc',
       'system/chromeos/audio/audio_detailed_view.h',
       'system/chromeos/audio/tray_audio_chromeos.cc',
