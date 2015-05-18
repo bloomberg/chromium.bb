@@ -132,10 +132,6 @@ public:
 
     virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override final;
 
-    virtual void synchronizeRequiredFeatures() { }
-    virtual void synchronizeRequiredExtensions() { }
-    virtual void synchronizeSystemLanguage() { }
-
 #if ENABLE(ASSERT)
     virtual bool isAnimatableAttribute(const QualifiedName&) const;
 #endif
