@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "third_party/hunspell_new/google/bdict.h"
+#include "third_party/hunspell/google/bdict.h"
 
 namespace hunspell {
 

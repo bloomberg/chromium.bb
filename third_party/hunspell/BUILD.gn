@@ -10,7 +10,7 @@ config("hunspell_config") {
   ]
 }
 
-source_set("hunspell_new") {
+source_set("hunspell") {
   sources = [
     "google/bdict.cc",
     "google/bdict.h",

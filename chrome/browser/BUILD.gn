@@ -367,7 +367,7 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_spellchecker_sources,
                            ".",
                            "//chrome")
-    deps += [ "//third_party/hunspell_new" ]
+    deps += [ "//third_party/hunspell" ]
   }
   if (enable_nacl) {
     sources +=

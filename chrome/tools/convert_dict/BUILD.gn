@@ -32,6 +32,6 @@ executable("convert_dict") {
     ":lib",
     "//base",
     "//base:i18n",
-    "//third_party/hunspell_new",
+    "//third_party/hunspell",
   ]
 }

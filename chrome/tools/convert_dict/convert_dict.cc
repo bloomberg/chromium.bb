@@ -22,8 +22,8 @@
 #include "base/strings/string_util.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
 #include "chrome/tools/convert_dict/dic_reader.h"
-#include "third_party/hunspell_new/google/bdict_reader.h"
-#include "third_party/hunspell_new/google/bdict_writer.h"
+#include "third_party/hunspell/google/bdict_reader.h"
+#include "third_party/hunspell/google/bdict_writer.h"
 
 namespace {
 

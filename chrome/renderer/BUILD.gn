@@ -139,7 +139,7 @@ static_library("renderer") {
   if (enable_spellcheck) {
     sources +=
         rebase_path(gypi_values.chrome_renderer_spellchecker_sources, ".", "..")
-    deps += [ "//third_party/hunspell_new" ]
+    deps += [ "//third_party/hunspell" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {

@@ -344,7 +344,7 @@
             '<@(chrome_renderer_spellchecker_sources)',
           ],
           'dependencies': [
-            '../third_party/hunspell_new/hunspell.gyp:hunspell',
+            '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
         }],
         ['OS=="mac"', {

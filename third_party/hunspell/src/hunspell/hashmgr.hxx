@@ -14,7 +14,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "third_party/hunspell_new/google/bdict_reader.h"
+#include "third_party/hunspell/google/bdict_reader.h"
 #endif
 
 enum flag { FLAG_CHAR, FLAG_LONG, FLAG_NUM, FLAG_UNI };
