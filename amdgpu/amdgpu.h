@@ -65,17 +65,6 @@ struct drm_amdgpu_info_hw_ip;
 */
 #define AMDGPU_CS_REUSE_IB			0x2
 
-/**
- * The special resource flag for IB submission.
- * When VRAM is full, some resources may be moved to GTT to make place
- * for other resources which want to be in VRAM. This flag affects the order
- * in which resources are moved back to VRAM until there is no space there.
- * The resources with the highest priority will be moved first.
- * The value can be between 0 and 15, inclusive.
- */
-#define AMDGPU_IB_RESOURCE_PRIORITY(x)		((x) & 0xf)
-
-
 /*--------------------------------------------------------------------------*/
 /* ----------------------------- Enums ------------------------------------ */
 /*--------------------------------------------------------------------------*/
