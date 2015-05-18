@@ -444,7 +444,8 @@ class PathContext(object):
       if self.use_local_cache:
         try:
           with open(cache_filename) as cache_file:
-            cache = json.load(cache_file)
+            for (key, value) in json.load(cache_file).items():
+              cache[key] = value
             revisions = cache.get(cache_dict_key, [])
             githash_svn_dict = cache.get('githash_svn_dict', {})
             if revisions:
