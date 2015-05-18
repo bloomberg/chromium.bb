@@ -313,44 +313,6 @@ class StaticSocketDataProvider : public SocketDataProvider {
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataProvider);
 };
 
-// SocketDataProvider which can make decisions about next mock reads based on
-// received writes. It can also be used to enforce order of operations, for
-// example that tested code must send the "Hello!" message before receiving
-// response. This is useful for testing conversation-like protocols like FTP.
-class DynamicSocketDataProvider : public SocketDataProvider {
- public:
-  DynamicSocketDataProvider();
-  ~DynamicSocketDataProvider() override;
-
-  int short_read_limit() const { return short_read_limit_; }
-  void set_short_read_limit(int limit) { short_read_limit_ = limit; }
-
-  void allow_unconsumed_reads(bool allow) { allow_unconsumed_reads_ = allow; }
-
-  // SocketDataProvider implementation.
-  MockRead OnRead() override;
-  MockWriteResult OnWrite(const std::string& data) override = 0;
-  void Reset() override;
-
- protected:
-  // The next time there is a read from this socket, it will return |data|.
-  // Before calling SimulateRead next time, the previous data must be consumed.
-  void SimulateRead(const char* data, size_t length);
-  void SimulateRead(const char* data) { SimulateRead(data, std::strlen(data)); }
-
- private:
-  std::deque<MockRead> reads_;
-
-  // Max number of bytes we will read at a time. 0 means no limit.
-  int short_read_limit_;
-
-  // If true, we'll not require the client to consume all data before we
-  // mock the next read.
-  bool allow_unconsumed_reads_;
-
-  DISALLOW_COPY_AND_ASSIGN(DynamicSocketDataProvider);
-};
-
 // SSLSocketDataProviders only need to keep track of the return code from calls
 // to Connect().
 struct SSLSocketDataProvider {

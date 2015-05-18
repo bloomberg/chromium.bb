@@ -31,7 +31,7 @@ const int kBufferSize = 128;
 
 namespace net {
 
-class FtpSocketDataProvider : public DynamicSocketDataProvider {
+class FtpSocketDataProvider : public SocketDataProvider {
  public:
   enum State {
     NONE,
@@ -54,11 +54,28 @@ class FtpSocketDataProvider : public DynamicSocketDataProvider {
   };
 
   FtpSocketDataProvider()
-      : failure_injection_state_(NONE),
+      : short_read_limit_(0),
+        allow_unconsumed_reads_(false),
+        failure_injection_state_(NONE),
         multiline_welcome_(false),
         use_epsv_(true),
         data_type_('I') {
     Init();
+  }
+
+  // SocketDataProvider implementation.
+  MockRead OnRead() override {
+    if (reads_.empty())
+      return MockRead(SYNCHRONOUS, ERR_UNEXPECTED);
+    MockRead result = reads_.front();
+    if (short_read_limit_ == 0 || result.data_len <= short_read_limit_) {
+      reads_.pop_front();
+    } else {
+      result.data_len = short_read_limit_;
+      reads_.front().data += result.data_len;
+      reads_.front().data_len -= result.data_len;
+    }
+    return result;
   }
 
   MockWriteResult OnWrite(const std::string& data) override {
@@ -124,7 +141,7 @@ class FtpSocketDataProvider : public DynamicSocketDataProvider {
   }
 
   void Reset() override {
-    DynamicSocketDataProvider::Reset();
+    reads_.clear();
     Init();
   }
 
@@ -138,6 +155,13 @@ class FtpSocketDataProvider : public DynamicSocketDataProvider {
   void set_use_epsv(bool use_epsv) { use_epsv_ = use_epsv; }
 
   void set_data_type(char data_type) { data_type_ = data_type; }
+
+  int short_read_limit() const { return short_read_limit_; }
+  void set_short_read_limit(int limit) { short_read_limit_ = limit; }
+
+  void set_allow_unconsumed_reads(bool allow) {
+    allow_unconsumed_reads_ = allow;
+  }
 
  protected:
   void Init() {
@@ -177,8 +201,27 @@ class FtpSocketDataProvider : public DynamicSocketDataProvider {
                   next_read, std::strlen(next_read));
   }
 
+  // The next time there is a read from this socket, it will return |data|.
+  // Before calling SimulateRead next time, the previous data must be consumed.
+  void SimulateRead(const char* data, size_t length) {
+    if (!allow_unconsumed_reads_) {
+      EXPECT_TRUE(reads_.empty()) << "Unconsumed read: " << reads_.front().data;
+    }
+    reads_.push_back(MockRead(ASYNC, data, length));
+  }
+  void SimulateRead(const char* data) { SimulateRead(data, std::strlen(data)); }
 
  private:
+  // List of reads to be consumed.
+  std::deque<MockRead> reads_;
+
+  // Max number of bytes we will read at a time. 0 means no limit.
+  int short_read_limit_;
+
+  // If true, we'll not require the client to consume all data before we
+  // mock the next read.
+  bool allow_unconsumed_reads_;
+
   State state_;
   State failure_injection_state_;
   State failure_injection_next_state_;
@@ -950,7 +993,7 @@ TEST_P(FtpNetworkTransactionTest, DirectoryTransactionMultilineWelcomeShort) {
   FtpSocketDataProviderDirectoryListing ctrl_socket;
   // The client will not consume all three 230 lines. That's good, we want to
   // test that scenario.
-  ctrl_socket.allow_unconsumed_reads(true);
+  ctrl_socket.set_allow_unconsumed_reads(true);
   ctrl_socket.set_multiline_welcome(true);
   ctrl_socket.set_short_read_limit(5);
   ExecuteTransaction(&ctrl_socket, "ftp://host", OK);

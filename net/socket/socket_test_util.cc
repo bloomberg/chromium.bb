@@ -257,39 +257,6 @@ bool StaticSocketDataProvider::AllWriteDataConsumed() const {
   return helper_.AllWriteDataConsumed();
 }
 
-DynamicSocketDataProvider::DynamicSocketDataProvider()
-    : short_read_limit_(0),
-      allow_unconsumed_reads_(false) {
-}
-
-DynamicSocketDataProvider::~DynamicSocketDataProvider() {}
-
-MockRead DynamicSocketDataProvider::OnRead() {
-  if (reads_.empty())
-    return MockRead(SYNCHRONOUS, ERR_UNEXPECTED);
-  MockRead result = reads_.front();
-  if (short_read_limit_ == 0 || result.data_len <= short_read_limit_) {
-    reads_.pop_front();
-  } else {
-    result.data_len = short_read_limit_;
-    reads_.front().data += result.data_len;
-    reads_.front().data_len -= result.data_len;
-  }
-  return result;
-}
-
-void DynamicSocketDataProvider::Reset() {
-  reads_.clear();
-}
-
-void DynamicSocketDataProvider::SimulateRead(const char* data,
-                                             const size_t length) {
-  if (!allow_unconsumed_reads_) {
-    EXPECT_TRUE(reads_.empty()) << "Unconsumed read: " << reads_.front().data;
-  }
-  reads_.push_back(MockRead(ASYNC, data, length));
-}
-
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto_status(SSLClientSocket::kNextProtoUnsupported),
