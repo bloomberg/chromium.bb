@@ -73,4 +73,8 @@ mojom("interfaces") {
     "omnibox.mojom",
     "view_embedder.mojom",
   ]
+
+  deps = [
+    "//mojo/application/public/interfaces",
+  ]
 }
