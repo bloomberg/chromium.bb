@@ -376,6 +376,10 @@ class PinchromeCommand(command.CliCommand):
     message = [
         '%s' % subject,
         '',
+        'DO NOT REVERT THIS CL.',
+        'In general, reverting chrome (un)pin CLs does not do what you expect.',
+        'Instead, use `cros pinchrome` to generate new CLs.',
+        '',
         'BUG=%s' % self.options.bug,
         'TEST=None',
     ]
