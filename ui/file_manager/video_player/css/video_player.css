@@ -40,7 +40,7 @@ body {
 }
 
 #spinner-container {
-  display: block;
+  display: none;
   height: 100%;
   left: 0;
   position: absolute;
