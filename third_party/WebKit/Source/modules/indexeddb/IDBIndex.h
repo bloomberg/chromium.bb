@@ -64,6 +64,8 @@ public:
     IDBRequest* openKeyCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
     IDBRequest* count(ScriptState*, const ScriptValue& range, ExceptionState&);
     IDBRequest* get(ScriptState*, const ScriptValue& key, ExceptionState&);
+    IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
+    IDBRequest* getAll(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&);
     IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
 
     void markDeleted() { m_deleted = true; }
@@ -78,6 +80,7 @@ private:
     IDBIndex(const IDBIndexMetadata&, IDBObjectStore*, IDBTransaction*);
 
     IDBRequest* getInternal(ScriptState*, const ScriptValue& key, ExceptionState&, bool keyOnly);
+    IDBRequest* getAllInternal(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&, bool keyOnly);
 
     IDBIndexMetadata m_metadata;
     Member<IDBObjectStore> m_objectStore;

@@ -179,6 +179,17 @@ IDBRequest* IDBIndex::get(ScriptState* scriptState, const ScriptValue& key, Exce
     return getInternal(scriptState, key, exceptionState, false);
 }
 
+IDBRequest* IDBIndex::getAll(ScriptState* scriptState, const ScriptValue& range, ExceptionState& exceptionState)
+{
+    return getAll(scriptState, range, std::numeric_limits<uint32_t>::max(), exceptionState);
+}
+
+IDBRequest* IDBIndex::getAll(ScriptState* scriptState, const ScriptValue& range, unsigned long maxCount, ExceptionState& exceptionState)
+{
+    IDB_TRACE("IDBIndex::getAll");
+    return getAllInternal(scriptState, range, maxCount, exceptionState, false);
+}
+
 IDBRequest* IDBIndex::getKey(ScriptState* scriptState, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::getKey");
@@ -214,6 +225,38 @@ IDBRequest* IDBIndex::getInternal(ScriptState* scriptState, const ScriptValue& k
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     backendDB()->get(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, keyOnly, WebIDBCallbacksImpl::create(request).leakPtr());
+    return request;
+}
+
+IDBRequest* IDBIndex::getAllInternal(ScriptState* scriptState, const ScriptValue& range, unsigned long maxCount, ExceptionState& exceptionState, bool keyOnly)
+{
+    if (!maxCount) {
+        exceptionState.throwTypeError(IDBDatabase::notValidMaxCountErrorMessage);
+        return 0;
+    }
+    if (isDeleted()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished() || m_transaction->isFinishing()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        return 0;
+    }
+    if (!m_transaction->isActive()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        return 0;
+    }
+
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    if (exceptionState.hadException())
+        return 0;
+    if (!backendDB()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
+        return 0;
+    }
+
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
+    backendDB()->getAll(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, maxCount, keyOnly, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
