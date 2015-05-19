@@ -68,6 +68,11 @@ extern const char kLs_HelpShort[];
 extern const char kLs_Help[];
 int RunLs(const std::vector<std::string>& args);
 
+extern const char kPath[];
+extern const char kPath_HelpShort[];
+extern const char kPath_Help[];
+int RunPath(const std::vector<std::string>& args);
+
 extern const char kRefs[];
 extern const char kRefs_HelpShort[];
 extern const char kRefs_Help[];

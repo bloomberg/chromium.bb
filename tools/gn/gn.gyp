@@ -34,6 +34,7 @@
         'command_gen.cc',
         'command_help.cc',
         'command_ls.cc',
+        'command_path.cc',
         'command_refs.cc',
         'commands.cc',
         'commands.h',

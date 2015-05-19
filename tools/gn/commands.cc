@@ -362,6 +362,7 @@ const CommandInfoMap& GetCommands() {
     INSERT_COMMAND(Format)
     INSERT_COMMAND(Help)
     INSERT_COMMAND(Ls)
+    INSERT_COMMAND(Path)
     INSERT_COMMAND(Refs)
 
     #undef INSERT_COMMAND
