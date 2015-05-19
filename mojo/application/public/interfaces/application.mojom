@@ -23,7 +23,7 @@ interface Application {
   // mappings, resolution, and redirects. And it will not include the
   // querystring, since the querystring is not part of an application's
   // identity.
-  Initialize(Shell shell, array<string>? args, string url);
+  Initialize(Shell shell, string url);
 
   // Called when another application (identified by |requestor_url|) attempts to
   // open a connection to this application.

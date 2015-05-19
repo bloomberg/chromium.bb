@@ -145,7 +145,6 @@ class TestApplicationLoader : public ApplicationLoader,
 
   void set_context(TestContext* context) { context_ = context; }
   int num_loads() const { return num_loads_; }
-  const std::vector<std::string>& GetArgs() const { return test_app_->args(); }
   const GURL& last_requestor_url() const { return last_requestor_url_; }
 
  private:
@@ -519,22 +518,6 @@ TEST_F(ApplicationManagerTest, Basic) {
   test_client_->Test("test");
   loop_.Run();
   EXPECT_EQ(std::string("test"), context_.last_test_string);
-}
-
-// Confirm that no arguments are sent to an application by default.
-TEST_F(ApplicationManagerTest, NoArgs) {
-  ApplicationManager am(&test_delegate_);
-  GURL test_url("test:test");
-  TestApplicationLoader* loader = new TestApplicationLoader;
-  loader->set_context(&context_);
-  am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url);
-  TestServicePtr test_service;
-  am.ConnectToService(test_url, &test_service);
-  TestClient test_client(test_service.Pass());
-  test_client.Test("test");
-  loop_.Run();
-  std::vector<std::string> app_args = loader->GetArgs();
-  EXPECT_EQ(0U, app_args.size());
 }
 
 // Confirm that url mappings are respected.

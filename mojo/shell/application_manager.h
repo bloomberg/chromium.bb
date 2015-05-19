@@ -154,14 +154,13 @@ class ApplicationManager {
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
   using URLToNativeOptionsMap = std::map<GURL, NativeRunnerFactory::Options>;
 
-  void ConnectToApplicationWithParameters(
+  void ConnectToApplicationInternal(
       const GURL& application_url,
       const std::string& qualifier,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
-      const base::Closure& on_application_end,
-      const std::vector<std::string>& pre_redirect_parameters);
+      const base::Closure& on_application_end);
 
   bool ConnectToRunningApplication(const GURL& resolved_url,
                                    const std::string& qualifier,
@@ -177,7 +176,6 @@ class ApplicationManager {
       InterfaceRequest<ServiceProvider>* services,
       ServiceProviderPtr* exposed_services,
       const base::Closure& on_application_end,
-      const std::vector<std::string>& parameters,
       ApplicationLoader* loader);
 
   InterfaceRequest<Application> RegisterShell(
@@ -186,8 +184,7 @@ class ApplicationManager {
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,
       ServiceProviderPtr exposed_services,
-      const base::Closure& on_application_end,
-      const std::vector<std::string>& parameters);
+      const base::Closure& on_application_end);
 
   ShellImpl* GetShellImpl(const GURL& url, const std::string& qualifier);
 
@@ -205,7 +202,6 @@ class ApplicationManager {
                            InterfaceRequest<ServiceProvider> services,
                            ServiceProviderPtr exposed_services,
                            const base::Closure& on_application_end,
-                           const std::vector<std::string>& parameters,
                            NativeApplicationCleanup cleanup,
                            scoped_ptr<Fetcher> fetcher);
 

@@ -31,10 +31,6 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
       shell_watch_(nullptr) {
 }
 
-bool ApplicationImpl::HasArg(const std::string& arg) const {
-  return std::find(args_.begin(), args_.end(), arg) != args_.end();
-}
-
 void ApplicationImpl::ClearConnections() {
   for (ServiceRegistryList::iterator i(incoming_service_registries_.begin());
        i != incoming_service_registries_.end();
@@ -72,14 +68,11 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
   return registry;
 }
 
-void ApplicationImpl::Initialize(ShellPtr shell,
-                                 Array<String> args,
-                                 const mojo::String& url) {
+void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
   shell_ = shell.Pass();
   shell_watch_ = new ShellPtrWatcher(this);
   shell_.set_error_handler(shell_watch_);
   url_ = url;
-  args_ = args.To<std::vector<std::string>>();
   delegate_->Initialize(this);
 }
 

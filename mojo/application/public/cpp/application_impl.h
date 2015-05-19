@@ -64,10 +64,6 @@ class ApplicationImpl : public Application {
 
   const std::string& url() const { return url_; }
 
-  // Returns any initial configuration arguments, passed by the Shell.
-  const std::vector<std::string>& args() const { return args_; }
-  bool HasArg(const std::string& arg) const;
-
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller does not take ownership. The pointer remains
@@ -84,9 +80,7 @@ class ApplicationImpl : public Application {
   }
 
   // Application implementation.
-  void Initialize(ShellPtr shell,
-                  Array<String> args,
-                  const mojo::String& url) override;
+  void Initialize(ShellPtr shell, const mojo::String& url) override;
 
   // Block until the Application is initialized, if it is not already.
   void WaitForInitialize();
@@ -130,7 +124,6 @@ class ApplicationImpl : public Application {
   ShellPtr shell_;
   ShellPtrWatcher* shell_watch_;
   std::string url_;
-  std::vector<std::string> args_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);
 };

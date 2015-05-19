@@ -40,9 +40,7 @@ class ShellGrabber : public Application {
 
  private:
   // Application implementation.
-  void Initialize(ShellPtr shell,
-                  Array<String> args,
-                  const mojo::String& url) override {
+  void Initialize(ShellPtr shell, const mojo::String& url) override {
     g_url = url;
     g_application_request = binding_.Unbind();
     g_shell = shell.Pass();
@@ -127,9 +125,8 @@ void ApplicationTestBase::SetUp() {
   application_impl_ = new ApplicationImpl(GetApplicationDelegate(),
                                           g_application_request.Pass());
 
-  // Fake application initialization with the given command line arguments.
-  Array<String> empty_args;
-  application_impl_->Initialize(g_shell.Pass(), empty_args.Clone(), g_url);
+  // Fake application initialization.
+  application_impl_->Initialize(g_shell.Pass(), g_url);
 }
 
 void ApplicationTestBase::TearDown() {

@@ -27,7 +27,7 @@ class ShellImpl : public Shell, public ErrorHandler {
 
   ~ShellImpl() override;
 
-  void InitializeApplication(Array<String> args);
+  void InitializeApplication();
 
   void ConnectToClient(const GURL& requested_url,
                        const GURL& requestor_url,

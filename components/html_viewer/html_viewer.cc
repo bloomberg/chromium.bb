@@ -50,9 +50,7 @@ class HTMLViewerApplication : public mojo::Application {
         initial_response_(response.Pass()),
         setup_(setup) {}
 
-  void Initialize(ShellPtr shell,
-                  Array<String> args,
-                  const String& url) override {
+  void Initialize(ShellPtr shell, const String& url) override {
     ServiceProviderPtr service_provider;
     shell_ = shell.Pass();
     shell_->ConnectToApplication("mojo:network_service",
