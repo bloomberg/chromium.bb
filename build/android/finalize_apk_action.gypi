@@ -24,6 +24,7 @@
     'keystore_password%': 'chromium',
     'zipalign_path%': '<(android_sdk_tools)/zipalign',
     'rezip_apk_jar_path%': '<(PRODUCT_DIR)/lib.java/rezip_apk.jar',
+    'load_library_from_zip%': 0,
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/finalize_apk.py',
@@ -42,7 +43,7 @@
     '--key-path=<(keystore_path)',
     '--key-name=<(keystore_name)',
     '--key-passwd=<(keystore_password)',
-    '--load-library-from-zip-file=<(load_library_from_zip_file)',
+    '--load-library-from-zip-file=<(load_library_from_zip)',
     '--rezip-apk-jar-path=<(rezip_apk_jar_path)',
   ],
 }

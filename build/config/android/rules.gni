@@ -1203,7 +1203,7 @@ template("android_apk") {
   base_path = "$gen_dir/$target_name"
   _build_config = "$target_gen_dir/$target_name.build_config"
   resources_zip_path = "$base_path.resources.zip"
-  all_resources_zip_path = "$base_path.resources.all.zip"
+  _all_resources_zip_path = "$base_path.resources.all.zip"
   jar_path = "$base_path.jar"
   final_dex_path = "$gen_dir/classes.dex"
   _template_name = target_name
@@ -1221,6 +1221,15 @@ template("android_apk") {
 
   _native_libs = []
 
+  _version_code = "1"
+  if (defined(invoker.version_code)) {
+    _version_code = invoker.version_code
+  }
+
+  _version_name = "Developer Build"
+  if (defined(invoker.version_name)) {
+    _version_name = invoker.version_name
+  }
   _keystore_path = android_default_keystore_path
   _keystore_name = android_default_keystore_name
   _keystore_password = android_default_keystore_password
@@ -1286,6 +1295,11 @@ template("android_apk") {
 
   _android_manifest = invoker.android_manifest
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
+  _create_abi_split =
+      defined(invoker.create_abi_split) && invoker.create_abi_split
+
+  # Help GN understand that _create_abi_split is not unused (bug in GN).
+  assert(_create_abi_split || true)
 
   write_build_config("${_template_name}__build_config") {
     type = "android_apk"
@@ -1314,6 +1328,7 @@ template("android_apk") {
     android_manifest = _android_manifest
     resource_dirs = [ "//build/android/ant/empty/res" ]
     zip_path = resources_zip_path
+    all_resources_zip_path = _all_resources_zip_path
     generate_constant_ids = true
     build_config = _build_config
 
@@ -1470,19 +1485,12 @@ template("android_apk") {
   create_apk("${_template_name}__create") {
     apk_path = _final_apk_path
     android_manifest = _android_manifest
-    resources_zip = all_resources_zip_path
+    resources_zip = _all_resources_zip_path
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
 
-    version_code = "1"
-    if (defined(invoker.version_code)) {
-      version_code = invoker.version_code
-    }
-
-    version_name = "Developer Build"
-    if (defined(invoker.version_name)) {
-      version_name = invoker.version_name
-    }
+    version_code = _version_code
+    version_name = _version_name
 
     keystore_name = _keystore_name
     keystore_path = _keystore_path
@@ -1500,9 +1508,45 @@ template("android_apk") {
       }
     }
 
-    if (_native_libs != []) {
+    if (_native_libs != [] && !_create_abi_split) {
       native_libs_dir = _native_libs_dir
       deps += [ ":${_template_name}__prepare_native" ]
+    }
+  }
+
+  if (_native_libs != [] && _create_abi_split) {
+    _manifest_rule = "${_template_name}__split_manifest_abi_${android_app_abi}"
+    generate_split_manifest(_manifest_rule) {
+      main_manifest = _android_manifest
+      out_manifest =
+          "$gen_dir/split-manifests/${android_app_abi}/AndroidManifest.xml"
+      split_name = "abi_${android_app_abi}"
+    }
+
+    _apk_rule = "${_template_name}__split_apk_abi_${android_app_abi}"
+    final_deps += [ ":$_apk_rule" ]
+    create_apk(_apk_rule) {
+      _split_paths = process_file_template(
+              [ _final_apk_path ],
+              "{{source_dir}}/{{source_name_part}}-abi-${android_app_abi}.apk")
+      apk_path = _split_paths[0]
+      base_path = "$gen_dir/$_apk_rule"
+
+      manifest_outputs = get_target_outputs(":${_manifest_rule}")
+      android_manifest = manifest_outputs[1]
+      load_library_from_apk = _load_library_from_apk
+
+      version_code = _version_code
+      version_name = _version_name
+
+      keystore_name = _keystore_name
+      keystore_path = _keystore_path
+      keystore_password = _keystore_password
+
+      native_libs_dir = _native_libs_dir
+      deps = [
+        ":${_template_name}__prepare_native",
+      ]
     }
   }
 

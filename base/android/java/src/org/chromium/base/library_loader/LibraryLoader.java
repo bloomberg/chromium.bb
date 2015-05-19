@@ -4,14 +4,19 @@
 
 package org.chromium.base.library_loader;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -250,7 +255,7 @@ public class LibraryLoader {
                     // Check if the device supports memory mapping the APK file
                     // with executable permissions.
                     if (context != null) {
-                        apkFilePath = context.getApplicationInfo().sourceDir;
+                        apkFilePath = getLibraryApkPath(context);
                         if (mProbeMapApkWithExecPermission) {
                             mMapApkWithExecPermission = Linker.checkMapExecSupport(apkFilePath);
                         } else {
@@ -365,6 +370,31 @@ public class LibraryLoader {
         if (!NativeLibraries.sVersionNumber.equals(nativeGetVersionNumber())) {
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION);
         }
+    }
+
+    // Returns whether the given split name is that of the ABI split.
+    private static boolean isAbiSplit(String splitName) {
+        // The split name for the ABI split is manually set in the build rules.
+        return splitName.startsWith("abi_");
+    }
+
+    // Returns the path to the .apk that holds the native libraries.
+    // This is either the main .apk, or the abi split apk.
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static String getLibraryApkPath(Context context) {
+        ApplicationInfo appInfo = context.getApplicationInfo();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return appInfo.sourceDir;
+        }
+        PackageInfo packageInfo = PackageUtils.getOwnPackageInfo(context);
+        if (packageInfo.splitNames != null) {
+            for (int i = 0; i < packageInfo.splitNames.length; ++i) {
+                if (isAbiSplit(packageInfo.splitNames[i])) {
+                    return appInfo.splitSourceDirs[i];
+                }
+            }
+        }
+        return appInfo.sourceDir;
     }
 
     // Load a native shared library with the Chromium linker. If the zip file

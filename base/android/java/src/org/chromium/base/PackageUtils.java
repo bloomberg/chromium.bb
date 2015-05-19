@@ -7,11 +7,29 @@ package org.chromium.base;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 
 /**
  * This class provides package checking related methods.
  */
 public class PackageUtils {
+    /**
+     * Retrieves the PackageInfo object for this application.
+     *
+     * @param context Any context.
+     * @return The PackageInfo object for this application.
+     */
+    public static PackageInfo getOwnPackageInfo(Context context) {
+        PackageManager manager = context.getPackageManager();
+        try {
+            String packageName = context.getApplicationContext().getPackageName();
+            return manager.getPackageInfo(packageName, 0);
+        } catch (NameNotFoundException e) {
+            // Should never happen.
+            throw new AssertionError("Failed to retrieve own package info");
+        }
+    }
+
     /**
      * Retrieves the version of the given package installed on the device.
      *
