@@ -13,12 +13,15 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/native_library.h"
 #include "base/scoped_native_library.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_unittest_util_win.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
+
+namespace {
 
 // A scoper that makes a modification at a given address when constructed, and
 // reverts it upon destruction.
@@ -56,6 +59,8 @@ class ScopedModuleModifier {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedModuleModifier);
 };
+
+}  // namespace
 
 class SafeBrowsingModuleVerifierWinTest : public testing::Test {
  protected:
@@ -120,6 +125,15 @@ class SafeBrowsingModuleVerifierWinTest : public testing::Test {
     return export_addr;
   }
 
+  static void AssertModuleUnmodified(const ModuleState& state,
+                                     const wchar_t* module_name) {
+    ASSERT_TRUE(state.has_name());
+    ASSERT_EQ(base::WideToUTF8(module_name), state.name());
+    ASSERT_TRUE(state.has_modified_state());
+    ASSERT_EQ(ModuleState::MODULE_STATE_UNMODIFIED, state.modified_state());
+    ASSERT_EQ(0, state.modification_size());
+  }
+
   // Replaces the contents of |modification_map| with pointers to those in
   // |state|. |state| must outlive |modification_map|.
   static void BuildModificationMap(
@@ -146,89 +160,35 @@ class SafeBrowsingModuleVerifierWinTest : public testing::Test {
 // startup, thus interferes with all these test expectations.
 #if !defined(ADDRESS_SANITIZER)
 TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleUnmodified) {
-  std::set<std::string> modified_exports;
-  int num_bytes = 0;
+  ModuleState state;
+  int num_bytes_different = 0;
   // Call VerifyModule before the module has been loaded, should fail.
-  ASSERT_EQ(MODULE_STATE_UNKNOWN,
-            VerifyModule(kTestDllNames[0], &modified_exports, &num_bytes));
-  ASSERT_EQ(0, modified_exports.size());
+  ASSERT_FALSE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  ASSERT_TRUE(state.has_name());
+  ASSERT_EQ(base::WideToUTF8(kTestDllNames[0]), state.name());
+  ASSERT_TRUE(state.has_modified_state());
+  ASSERT_EQ(ModuleState::MODULE_STATE_UNKNOWN, state.modified_state());
+  ASSERT_EQ(0, num_bytes_different);
+  ASSERT_EQ(0, state.modification_size());
 
   // On loading, the module should be identical (up to relocations) in memory as
   // on disk.
   SetUpTestDllAndPEImages();
-  EXPECT_EQ(MODULE_STATE_UNMODIFIED,
-            VerifyModule(kTestDllNames[0], &modified_exports, &num_bytes));
-  EXPECT_EQ(0, modified_exports.size());
+  state.Clear();
+  num_bytes_different = 0;
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  AssertModuleUnmodified(state, kTestDllNames[0]);
+  ASSERT_EQ(0, num_bytes_different);
 }
 
 TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleModified) {
-  std::set<std::string> modified_exports;
-  int num_bytes = 0;
-  // Confirm the module is identical in memory as on disk before we begin.
-  SetUpTestDllAndPEImages();
-  ASSERT_EQ(MODULE_STATE_UNMODIFIED,
-            VerifyModule(kTestDllNames[0], &modified_exports, &num_bytes));
-
-  uint8_t* mem_code_addr = NULL;
-  uint8_t* disk_code_addr = NULL;
-  uint32_t code_size = 0;
-  ASSERT_TRUE(GetCodeAddrsAndSize(*mem_peimage_ptr_,
-                                  *disk_peimage_ptr_,
-                                  &mem_code_addr,
-                                  &disk_code_addr,
-                                  &code_size));
-
-  // Edit the first byte of the code section of the module (this may be before
-  // the address of any export).
-  ScopedModuleModifier<1> mod(mem_code_addr);
-
-  // VerifyModule should detect the change.
-  EXPECT_EQ(MODULE_STATE_MODIFIED,
-            VerifyModule(kTestDllNames[0], &modified_exports, &num_bytes));
-}
-
-TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleExportModified) {
-  std::set<std::string> modified_exports;
-  int num_bytes = 0;
-  // Confirm the module is identical in memory as on disk before we begin.
-  SetUpTestDllAndPEImages();
-  ASSERT_EQ(MODULE_STATE_UNMODIFIED,
-            VerifyModule(kTestDllNames[0], &modified_exports, &num_bytes));
-  modified_exports.clear();
-
-  // Edit the exported function, VerifyModule should now return the function
-  // name in modified_exports.
-  ScopedModuleModifier<1> mod(GetAddressOfExport(kTestExportName));
-  EXPECT_EQ(MODULE_STATE_MODIFIED,
-            VerifyModule(kTestDllNames[0], &modified_exports, &num_bytes));
-  ASSERT_EQ(1, modified_exports.size());
-  EXPECT_EQ(0, std::string(kTestExportName).compare(*modified_exports.begin()));
-}
-
-TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleUnmodified) {
-  ModuleState state;
-  // Call VerifyModule before the module has been loaded, should fail.
-  VerificationResult result = NewVerifyModule(kTestDllNames[0], &state);
-
-  ASSERT_EQ(MODULE_STATE_UNKNOWN, result.state);
-  EXPECT_EQ(0, result.num_bytes_different);
-
-  // On loading, the module should be identical (up to relocations) in memory as
-  // on disk.
-  SetUpTestDllAndPEImages();
-  result = NewVerifyModule(kTestDllNames[0], &state);
-  EXPECT_EQ(MODULE_STATE_UNMODIFIED, result.state);
-  EXPECT_EQ(0, state.modification_size());
-  EXPECT_EQ(0, result.num_bytes_different);
-}
-
-TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleModified) {
+  int num_bytes_different = 0;
   ModuleState state;
 
   SetUpTestDllAndPEImages();
-  VerificationResult result = NewVerifyModule(kTestDllNames[0], &state);
-  ASSERT_EQ(MODULE_STATE_UNMODIFIED, result.state);
-  EXPECT_EQ(0, result.num_bytes_different);
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  AssertModuleUnmodified(state, kTestDllNames[0]);
+  ASSERT_EQ(0, num_bytes_different);
 
   uint8_t* mem_code_addr = NULL;
   uint8_t* disk_code_addr = NULL;
@@ -244,12 +204,16 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleModified) {
   size_t modification_offset = code_size - 1;
   ScopedModuleModifier<1> mod2(mem_code_addr + modification_offset);
 
-  result = NewVerifyModule(kTestDllNames[0], &state);
-  EXPECT_EQ(MODULE_STATE_MODIFIED, result.state);
+  state.Clear();
+  num_bytes_different = 0;
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  ASSERT_TRUE(state.has_name());
+  ASSERT_EQ(base::WideToUTF8(kTestDllNames[0]), state.name());
+  ASSERT_TRUE(state.has_modified_state());
+  ASSERT_EQ(ModuleState::MODULE_STATE_MODIFIED, state.modified_state());
+  ASSERT_EQ(2, num_bytes_different);
+  ASSERT_EQ(2, state.modification_size());
 
-  EXPECT_EQ(2, result.num_bytes_different);
-
-  EXPECT_EQ(2, state.modification_size());
   size_t expected_file_offset =
       disk_code_addr - reinterpret_cast<uint8_t*>(disk_peimage_ptr_->module());
   EXPECT_EQ(expected_file_offset, state.modification(0).file_offset());
@@ -265,14 +229,14 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleModified) {
             (uint8_t)state.modification(1).modified_bytes()[0]);
 }
 
-TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleLongModification) {
+TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleLongModification) {
   ModuleState state;
+  int num_bytes_different = 0;
 
   SetUpTestDllAndPEImages();
-  VerificationResult result = NewVerifyModule(kTestDllNames[0], &state);
-  ASSERT_EQ(MODULE_STATE_UNMODIFIED, result.state);
-
-  EXPECT_EQ(0, result.num_bytes_different);
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  AssertModuleUnmodified(state, kTestDllNames[0]);
+  ASSERT_EQ(0, num_bytes_different);
 
   uint8_t* mem_code_addr = NULL;
   uint8_t* disk_code_addr = NULL;
@@ -289,12 +253,16 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleLongModification) {
   ScopedModuleModifier<kModificationSize> mod(
       mem_code_addr + modification_offset);
 
-  result = NewVerifyModule(kTestDllNames[0], &state);
-  EXPECT_EQ(MODULE_STATE_MODIFIED, result.state);
+  state.Clear();
+  num_bytes_different = 0;
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  ASSERT_TRUE(state.has_name());
+  ASSERT_EQ(base::WideToUTF8(kTestDllNames[0]), state.name());
+  ASSERT_TRUE(state.has_modified_state());
+  ASSERT_EQ(ModuleState::MODULE_STATE_MODIFIED, state.modified_state());
+  ASSERT_EQ(kModificationSize, num_bytes_different);
+  ASSERT_EQ(1, state.modification_size());
 
-  EXPECT_EQ(kModificationSize, result.num_bytes_different);
-
-  EXPECT_EQ(1, state.modification_size());
   EXPECT_EQ(kModificationSize, state.modification(0).byte_count());
 
   size_t expected_file_offset = disk_code_addr + modification_offset -
@@ -307,14 +275,14 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleLongModification) {
       state.modification(0).modified_bytes());
 }
 
-TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleRelocOverlap) {
+TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleRelocOverlap) {
+  int num_bytes_different = 0;
   ModuleState state;
 
   SetUpTestDllAndPEImages();
-  VerificationResult result = NewVerifyModule(kTestDllNames[0], &state);
-  ASSERT_EQ(MODULE_STATE_UNMODIFIED, result.state);
-
-  EXPECT_EQ(0, result.num_bytes_different);
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  AssertModuleUnmodified(state, kTestDllNames[0]);
+  ASSERT_EQ(0, num_bytes_different);
 
   uint8_t* mem_code_addr = NULL;
   uint8_t* disk_code_addr = NULL;
@@ -329,33 +297,42 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleRelocOverlap) {
   const size_t kModificationSize = 256;
   ScopedModuleModifier<kModificationSize> mod(mem_code_addr);
 
-  result = NewVerifyModule(kTestDllNames[0], &state);
-  EXPECT_EQ(MODULE_STATE_MODIFIED, result.state);
-
-  EXPECT_EQ(kModificationSize, result.num_bytes_different);
+  state.Clear();
+  num_bytes_different = 0;
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  ASSERT_TRUE(state.has_name());
+  ASSERT_EQ(base::WideToUTF8(kTestDllNames[0]), state.name());
+  ASSERT_TRUE(state.has_modified_state());
+  ASSERT_EQ(ModuleState::MODULE_STATE_MODIFIED, state.modified_state());
+  ASSERT_EQ(kModificationSize, num_bytes_different);
 
   // Modifications across the relocs should have been coalesced into one.
-  ASSERT_EQ(1U, state.modification_size());
+  ASSERT_EQ(1, state.modification_size());
   ASSERT_EQ(kModificationSize, state.modification(0).byte_count());
   ASSERT_EQ(kModificationSize, state.modification(0).modified_bytes().size());
   EXPECT_EQ(std::string(mem_code_addr, mem_code_addr + kModificationSize),
             state.modification(0).modified_bytes());
 }
 
-TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleExportModified) {
+TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleExportModified) {
   ModuleState state;
-
+  int num_bytes_different = 0;
   // Confirm the module is identical in memory as on disk before we begin.
   SetUpTestDllAndPEImages();
-  VerificationResult result = NewVerifyModule(kTestDllNames[0], &state);
-  ASSERT_EQ(MODULE_STATE_UNMODIFIED, result.state);
-  state.Clear();
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  AssertModuleUnmodified(state, kTestDllNames[0]);
+  ASSERT_EQ(0, num_bytes_different);
 
   // Edit one exported function. VerifyModule should now return the function
   // name in the modification.
   ScopedModuleModifier<1> mod(GetAddressOfExport(kTestExportName));
-  result = NewVerifyModule(kTestDllNames[0], &state);
-  EXPECT_EQ(MODULE_STATE_MODIFIED, result.state);
+  state.Clear();
+  num_bytes_different = 0;
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  ASSERT_TRUE(state.has_name());
+  ASSERT_EQ(base::WideToUTF8(kTestDllNames[0]), state.name());
+  ASSERT_TRUE(state.has_modified_state());
+  ASSERT_EQ(ModuleState::MODULE_STATE_MODIFIED, state.modified_state());
   ASSERT_EQ(1, state.modification_size());
 
   // Extract the offset of this modification.
@@ -369,8 +346,10 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleExportModified) {
   // coalesced in the event that the first export is only one byte (e.g., ret).
   ScopedModuleModifier<1> mod2(GetAddressOfExport(kTestDllMainExportName) + 1);
   state.Clear();
-  result = NewVerifyModule(kTestDllNames[0], &state);
-  EXPECT_EQ(MODULE_STATE_MODIFIED, result.state);
+  num_bytes_different = 0;
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  ASSERT_TRUE(state.has_modified_state());
+  ASSERT_EQ(ModuleState::MODULE_STATE_MODIFIED, state.modified_state());
   ASSERT_EQ(2, state.modification_size());
 
   // The first modification should be present and unmodified.
@@ -396,8 +375,9 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleExportModified) {
   ScopedModuleModifier<1> mod3(mem_code_addr + code_size - 1);
 
   state.Clear();
-  result = NewVerifyModule(kTestDllNames[0], &state);
-  EXPECT_EQ(MODULE_STATE_MODIFIED, result.state);
+  ASSERT_TRUE(VerifyModule(kTestDllNames[0], &state, &num_bytes_different));
+  ASSERT_TRUE(state.has_modified_state());
+  ASSERT_EQ(ModuleState::MODULE_STATE_MODIFIED, state.modified_state());
   ASSERT_EQ(3, state.modification_size());
 
   // One of the two exports now has two modifications.

@@ -16446,6 +16446,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ModuleIntegrityVerification.Difference" units="bytes">
+  <obsolete>
+    Deprecated and removed from code as of 05/2015.
+  </obsolete>
   <owner>anthonyvd@chromium.org</owner>
   <summary>
     Represents the difference in bytes deemed modified by the two
@@ -67783,8 +67786,12 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="The version of the Module Integrity Verifier that doesn't use a
              hash set to track relocations."/>
   <suffix name="WithByteSet"
-      label="The version of the Module Integrity Verifier that uses a hash
-             set to track relocations."/>
+      label="The version of the Module Integrity Verifier that uses a hash set
+             to track relocations.">
+    <obsolete>
+      Deprecated and removed from code as of 05/2015.
+    </obsolete>
+  </suffix>
   <affected-histogram name="ModuleIntegrityVerification.BytesModified"/>
   <affected-histogram name="ModuleIntegrityVerification.Difference"/>
 </histogram_suffixes>

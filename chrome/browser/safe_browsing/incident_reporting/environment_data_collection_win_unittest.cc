@@ -208,7 +208,8 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   ASSERT_LE(1, process_report.module_state_size());
 #if !defined(ADDRESS_SANITIZER)
   EXPECT_EQ(1, process_report.module_state_size());
-  EXPECT_EQ(1, process_report.module_state(0).modified_export_size());
+  EXPECT_EQ(1, process_report.module_state(0).modification_size());
+  EXPECT_TRUE(process_report.module_state(0).modification(0).has_export_name());
 #endif
 
   EXPECT_EQ(base::WideToUTF8(kTestDllNames[0]),
@@ -219,7 +220,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   // See comment above about AddressSantizier.
 #if !defined(ADDRESS_SANITIZER)
   EXPECT_EQ(std::string(kTestExportName),
-            process_report.module_state(0).modified_export(0));
+            process_report.module_state(0).modification(0).export_name());
 #endif
 }
 #endif  // _WIN64

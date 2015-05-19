@@ -474,7 +474,7 @@ message ClientIncidentReport {
         }
         optional string name = 1;
         optional ModifiedState modified_state = 2;
-        repeated string modified_export = 3;
+        repeated string OBSOLETE_modified_export = 3;
 
         message Modification {
           optional uint32 file_offset = 1;
