@@ -22,6 +22,7 @@ class ListValue;
 }
 
 class ProfileInfoCache;
+class SupervisedUserSyncService;
 
 namespace options {
 
@@ -100,6 +101,8 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
       profile_observer_;
   ScopedObserver<SigninErrorController, SupervisedUserImportHandler>
       signin_error_observer_;
+  ScopedObserver<SupervisedUserSyncService, SupervisedUserImportHandler>
+      supervised_user_sync_service_observer_;
 
   bool removed_profile_is_supervised_;
 

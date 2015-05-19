@@ -56,19 +56,12 @@ namespace options {
 SupervisedUserImportHandler::SupervisedUserImportHandler()
     : profile_observer_(this),
       signin_error_observer_(this),
+      supervised_user_sync_service_observer_(this),
       removed_profile_is_supervised_(false),
       weak_ptr_factory_(this) {
 }
 
 SupervisedUserImportHandler::~SupervisedUserImportHandler() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!profile->IsSupervised()) {
-    SupervisedUserSyncService* service =
-        SupervisedUserSyncServiceFactory::GetForProfile(profile);
-    if (service)
-      service->RemoveObserver(this);
-    subscription_.reset();
-  }
 }
 
 void SupervisedUserImportHandler::GetLocalizedValues(
@@ -105,7 +98,7 @@ void SupervisedUserImportHandler::InitializeHandler() {
     SupervisedUserSyncService* sync_service =
         SupervisedUserSyncServiceFactory::GetForProfile(profile);
     if (sync_service) {
-      sync_service->AddObserver(this);
+      supervised_user_sync_service_observer_.Add(sync_service);
       signin_error_observer_.Add(
           SigninErrorControllerFactory::GetForProfile(profile));
       SupervisedUserSharedSettingsService* settings_service =
