@@ -141,8 +141,9 @@ void HttpConnectionImpl::OnReceivedHttpRequest(
         if (response->body.is_valid()) {
           SimpleDataPipeReader* reader = new SimpleDataPipeReader;
           response_body_readers_.insert(reader);
+          ScopedDataPipeConsumerHandle body = response->body.Pass();
           reader->Start(
-              response->body.Pass(),
+              body.Pass(),
               base::Bind(&HttpConnectionImpl::OnFinishedReadingResponseBody,
                          base::Unretained(this), base::Passed(&response)));
         } else {
