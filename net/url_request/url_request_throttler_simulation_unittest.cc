@@ -427,8 +427,7 @@ class Requester : public DiscreteTimeSimulation::Actor {
               server_->mock_request(),
               server_->context().network_delegate())) {
         int status_code = server_->HandleRequest();
-        MockURLRequestThrottlerHeaderAdapter response_headers(status_code);
-        throttler_entry_->UpdateWithResponse(std::string(), &response_headers);
+        throttler_entry_->UpdateWithResponse(status_code);
 
         if (status_code == 200) {
           if (results_)

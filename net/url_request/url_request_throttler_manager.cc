@@ -75,12 +75,9 @@ scoped_refptr<URLRequestThrottlerEntryInterface>
 
     // We only disable back-off throttling on an entry that we have
     // just constructed.  This is to allow unit tests to explicitly override
-    // the entry for localhost URLs.  Given that we do not attempt to
-    // disable throttling for entries already handed out (see comment
-    // in AddToOptOutList), this is not a problem.
+    // the entry for localhost URLs.
     std::string host = url.host();
-    if (opt_out_hosts_.find(host) != opt_out_hosts_.end() ||
-        IsLocalhost(host)) {
+    if (IsLocalhost(host)) {
       if (!logged_for_localhost_disabled_ && IsLocalhost(host)) {
         logged_for_localhost_disabled_ = true;
         net_log_.AddEvent(NetLog::TYPE_THROTTLING_DISABLED_FOR_HOST,
@@ -89,28 +86,12 @@ scoped_refptr<URLRequestThrottlerEntryInterface>
 
       // TODO(joi): Once sliding window is separate from back-off throttling,
       // we can simply return a dummy implementation of
-      // URLRequestThrottlerEntryInterface here that never blocks anything (and
-      // not keep entries in url_entries_ for opted-out sites).
+      // URLRequestThrottlerEntryInterface here that never blocks anything.
       entry->DisableBackoffThrottling();
     }
   }
 
   return entry;
-}
-
-void URLRequestThrottlerManager::AddToOptOutList(const std::string& host) {
-  // There is an edge case here that we are not handling, to keep things
-  // simple.  If a host starts adding the opt-out header to its responses
-  // after there are already one or more entries in url_entries_ for that
-  // host, the pre-existing entries may still perform back-off throttling.
-  // In practice, this would almost never occur.
-  if (opt_out_hosts_.find(host) == opt_out_hosts_.end()) {
-    UMA_HISTOGRAM_COUNTS("Throttling.SiteOptedOut", 1);
-
-    net_log_.EndEvent(NetLog::TYPE_THROTTLING_DISABLED_FOR_HOST,
-                      NetLog::StringCallback("host", &host));
-    opt_out_hosts_.insert(host);
-  }
 }
 
 void URLRequestThrottlerManager::OverrideEntryForTests(

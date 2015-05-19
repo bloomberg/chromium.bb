@@ -45,7 +45,6 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_redirect_job.h"
-#include "net/url_request/url_request_throttler_header_adapter.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 
@@ -308,11 +307,8 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   // also need this info.
   is_cached_content_ = response_info_->was_cached;
 
-  if (!is_cached_content_ && throttling_entry_.get()) {
-    URLRequestThrottlerHeaderAdapter response_adapter(GetResponseHeaders());
-    throttling_entry_->UpdateWithResponse(request_info_.url.host(),
-                                          &response_adapter);
-  }
+  if (!is_cached_content_ && throttling_entry_.get())
+    throttling_entry_->UpdateWithResponse(GetResponseCode());
 
   // The ordering of these calls is not important.
   ProcessStrictTransportSecurityHeader();

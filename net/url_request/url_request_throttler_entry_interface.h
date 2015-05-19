@@ -51,9 +51,7 @@ class NET_EXPORT URLRequestThrottlerEntryInterface
   virtual base::TimeTicks GetExponentialBackoffReleaseTime() const = 0;
 
   // This method needs to be called each time a response is received.
-  virtual void UpdateWithResponse(
-      const std::string& host,
-      const URLRequestThrottlerHeaderInterface* response) = 0;
+  virtual void UpdateWithResponse(int status_code) = 0;
 
   // Lets higher-level modules, that know how to parse particular response
   // bodies, notify of receiving malformed content for the given URL. This will
