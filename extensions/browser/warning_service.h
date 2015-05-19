@@ -38,7 +38,8 @@ class WarningService : public KeyedService,
  public:
   class Observer {
    public:
-    virtual void ExtensionWarningsChanged() = 0;
+    virtual void ExtensionWarningsChanged(
+        const ExtensionIdSet& affected_extensions) = 0;
   };
 
   // |browser_context| may be NULL for testing. In this case, be sure to not
@@ -75,7 +76,7 @@ class WarningService : public KeyedService,
   void RemoveObserver(Observer* observer);
 
  private:
-  void NotifyWarningsChanged();
+  void NotifyWarningsChanged(const ExtensionIdSet& affected_extensions);
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

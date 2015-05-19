@@ -14,11 +14,11 @@ chrome.developerPrivate = {};
  * @see https://developer.chrome.com/extensions/developerPrivate#type-ItemType
  */
 chrome.developerPrivate.ItemType = {
-  hosted_app: 'hosted_app',
-  packaged_app: 'packaged_app',
-  legacy_packaged_app: 'legacy_packaged_app',
-  extension: 'extension',
-  theme: 'theme',
+  HOSTED_APP: 'hosted_app',
+  PACKAGED_APP: 'packaged_app',
+  LEGACY_PACKAGED_APP: 'legacy_packaged_app',
+  EXTENSION: 'extension',
+  THEME: 'theme',
 };
 
 /**
@@ -390,6 +390,7 @@ chrome.developerPrivate.EventType = {
   ERROR_ADDED: 'ERROR_ADDED',
   ERRORS_REMOVED: 'ERRORS_REMOVED',
   PREFS_CHANGED: 'PREFS_CHANGED',
+  WARNINGS_CHANGED: 'WARNINGS_CHANGED',
 };
 
 /**
@@ -616,7 +617,8 @@ chrome.developerPrivate.openDevTools = function(properties, callback) {};
 
 /**
  * Delete reported extension erors.
- * @param {DeleteExtensionErrorsProperties} properties
+ * @param {DeleteExtensionErrorsProperties} properties The properties specifying
+ *     the errors to remove.
  * @param {function():void=} callback
  * @see https://developer.chrome.com/extensions/developerPrivate#method-deleteExtensionErrors
  */
@@ -624,7 +626,7 @@ chrome.developerPrivate.deleteExtensionErrors = function(properties, callback) {
 
 /**
  * Repairs the extension specified.
- * @param {string} extensionId
+ * @param {string} extensionId The id of the extension to repair.
  * @param {function():void=} callback
  * @see https://developer.chrome.com/extensions/developerPrivate#method-repairExtension
  */
@@ -632,7 +634,8 @@ chrome.developerPrivate.repairExtension = function(extensionId, callback) {};
 
 /**
  * Shows the options page for the extension specified.
- * @param {string} extensionId
+ * @param {string} extensionId The id of the extension to show the options page
+ *     for.
  * @param {function():void=} callback
  * @see https://developer.chrome.com/extensions/developerPrivate#method-showOptions
  */
@@ -640,7 +643,7 @@ chrome.developerPrivate.showOptions = function(extensionId, callback) {};
 
 /**
  * Shows the path of the extension specified.
- * @param {string} extensionId
+ * @param {string} extensionId The id of the extension to show the path for.
  * @param {function():void=} callback
  * @see https://developer.chrome.com/extensions/developerPrivate#method-showPath
  */
@@ -687,3 +690,10 @@ chrome.developerPrivate.inspect = function(options, callback) {};
  * @see https://developer.chrome.com/extensions/developerPrivate#event-onItemStateChanged
  */
 chrome.developerPrivate.onItemStateChanged;
+
+/**
+ * Fired when the profile's state has changed.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/developerPrivate#event-onProfileStateChanged
+ */
+chrome.developerPrivate.onProfileStateChanged;

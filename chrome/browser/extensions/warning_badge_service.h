@@ -36,7 +36,8 @@ class WarningBadgeService : public KeyedService,
 
  private:
   // Implementation of WarningService::Observer.
-  void ExtensionWarningsChanged() override;
+  void ExtensionWarningsChanged(
+      const ExtensionIdSet& affected_extensions) override;
 
   void UpdateBadgeStatus();
   virtual void ShowBadge(bool show);

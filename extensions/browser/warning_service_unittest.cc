@@ -30,17 +30,15 @@ class TestWarningService : public WarningService {
 class MockObserver : public WarningService::Observer {
  public:
   virtual ~MockObserver() {}
-  MOCK_METHOD0(ExtensionWarningsChanged, void());
+  MOCK_METHOD1(ExtensionWarningsChanged, void(const ExtensionIdSet&));
 };
 
 typedef ExtensionsTest WarningServiceTest;
 
 const char* ext1_id = "extension1";
 const char* ext2_id = "extension2";
-const Warning::WarningType warning_1 =
-    Warning::kNetworkDelay;
-const Warning::WarningType warning_2 =
-    Warning::kNetworkConflict;
+const Warning::WarningType warning_1 = Warning::kNetworkDelay;
+const Warning::WarningType warning_2 = Warning::kNetworkConflict;
 
 }  // namespace
 
@@ -52,15 +50,16 @@ TEST_F(WarningServiceTest, SetWarning) {
   MockObserver observer;
   warning_service.AddObserver(&observer);
 
+  ExtensionIdSet affected_extensions;
+  affected_extensions.insert(ext1_id);
   // Insert warning for the first time.
-  EXPECT_CALL(observer, ExtensionWarningsChanged());
+  EXPECT_CALL(observer, ExtensionWarningsChanged(affected_extensions));
   warning_service.AddWarning(
       Warning::CreateNetworkDelayWarning(ext1_id));
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
   // Second insertion of same warning does not trigger anything.
-  warning_service.AddWarning(
-      Warning::CreateNetworkDelayWarning(ext1_id));
+  warning_service.AddWarning(Warning::CreateNetworkDelayWarning(ext1_id));
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
   warning_service.RemoveObserver(&observer);
@@ -75,7 +74,10 @@ TEST_F(WarningServiceTest, ClearWarnings) {
   warning_service.AddObserver(&observer);
 
   // Insert two unique warnings in one batch.
-  EXPECT_CALL(observer, ExtensionWarningsChanged());
+  std::set<std::string> affected_extensions;
+  affected_extensions.insert(ext1_id);
+  affected_extensions.insert(ext2_id);
+  EXPECT_CALL(observer, ExtensionWarningsChanged(affected_extensions));
   WarningSet warning_set;
   warning_set.insert(Warning::CreateNetworkDelayWarning(ext1_id));
   warning_set.insert(Warning::CreateNetworkConflictWarning(ext2_id));
@@ -83,7 +85,9 @@ TEST_F(WarningServiceTest, ClearWarnings) {
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
   // Remove one warning and check that the badge remains.
-  EXPECT_CALL(observer, ExtensionWarningsChanged());
+  affected_extensions.clear();
+  affected_extensions.insert(ext2_id);
+  EXPECT_CALL(observer, ExtensionWarningsChanged(affected_extensions));
   std::set<Warning::WarningType> to_clear;
   to_clear.insert(warning_2);
   warning_service.ClearWarnings(to_clear);
@@ -98,12 +102,14 @@ TEST_F(WarningServiceTest, ClearWarnings) {
   EXPECT_EQ(0u, existing_warnings.size());
 
   // Remove the other one warning.
-  EXPECT_CALL(observer, ExtensionWarningsChanged());
+  affected_extensions.clear();
+  affected_extensions.insert(ext1_id);
+  EXPECT_CALL(observer, ExtensionWarningsChanged(affected_extensions));
   to_clear.insert(warning_1);
   warning_service.ClearWarnings(to_clear);
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
-  // Check that not warnings remain.
+  // Check that no warnings remain.
   existing_warnings =
       warning_service.GetWarningTypesAffectingExtension(ext1_id);
   EXPECT_EQ(0u, existing_warnings.size());

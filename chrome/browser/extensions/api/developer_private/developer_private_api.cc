@@ -155,6 +155,23 @@ void PerformVerificationCheck(content::BrowserContext* context) {
     InstallVerifier::Get(context)->VerifyAllExtensions();
 }
 
+scoped_ptr<developer::ProfileInfo> CreateProfileInfo(Profile* profile) {
+  scoped_ptr<developer::ProfileInfo> info(new developer::ProfileInfo());
+  info->is_supervised = profile->IsSupervised();
+  PrefService* prefs = profile->GetPrefs();
+  info->is_incognito_available =
+      IncognitoModePrefs::GetAvailability(prefs) !=
+          IncognitoModePrefs::DISABLED;
+  info->in_developer_mode =
+      !info->is_supervised &&
+      prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  info->app_info_dialog_enabled = CanShowAppInfoDialog();
+  info->can_load_unpacked =
+      !ExtensionManagementFactory::GetForBrowserContext(profile)
+          ->BlacklistedByDefault();
+  return info.Pass();
+}
+
 }  // namespace
 
 namespace ChoosePath = api::developer_private::ChoosePath;
@@ -188,6 +205,9 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
       process_manager_observer_(this),
       app_window_registry_observer_(this),
       extension_action_api_observer_(this),
+      warning_service_observer_(this),
+      extension_prefs_observer_(this),
+      extension_management_observer_(this),
       profile_(profile),
       event_router_(EventRouter::Get(profile_)),
       weak_factory_(this) {
@@ -196,6 +216,10 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
   process_manager_observer_.Add(ProcessManager::Get(profile));
   app_window_registry_observer_.Add(AppWindowRegistry::Get(profile));
   extension_action_api_observer_.Add(ExtensionActionAPI::Get(profile));
+  warning_service_observer_.Add(WarningService::Get(profile));
+  extension_prefs_observer_.Add(ExtensionPrefs::Get(profile));
+  extension_management_observer_.Add(
+      ExtensionManagementFactory::GetForBrowserContext(profile));
 }
 
 DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
@@ -289,6 +313,25 @@ void DeveloperPrivateEventRouter::OnExtensionActionVisibilityChanged(
     const std::string& extension_id,
     bool is_now_visible) {
   BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED, extension_id);
+}
+
+void DeveloperPrivateEventRouter::OnExtensionDisableReasonsChanged(
+    const std::string& extension_id, int disable_reasons) {
+  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED, extension_id);
+}
+
+void DeveloperPrivateEventRouter::OnExtensionManagementSettingsChanged() {
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(CreateProfileInfo(profile_)->ToValue());
+  scoped_ptr<Event> event(new Event(
+      developer::OnProfileStateChanged::kEventName, args.Pass()));
+  event_router_->BroadcastEvent(event.Pass());
+}
+
+void DeveloperPrivateEventRouter::ExtensionWarningsChanged(
+    const ExtensionIdSet& affected_extensions) {
+  for (const ExtensionId& id : affected_extensions)
+    BroadcastItemStateChanged(developer::EVENT_TYPE_WARNINGS_CHANGED, id);
 }
 
 void DeveloperPrivateEventRouter::BroadcastItemStateChanged(
@@ -499,18 +542,7 @@ DeveloperPrivateGetProfileConfigurationFunction::
 
 ExtensionFunction::ResponseAction
 DeveloperPrivateGetProfileConfigurationFunction::Run() {
-  developer::ProfileInfo info;
-  info.is_supervised = GetProfile()->IsSupervised();
-  info.is_incognito_available =
-      IncognitoModePrefs::GetAvailability(GetProfile()->GetPrefs()) !=
-          IncognitoModePrefs::DISABLED;
-  info.in_developer_mode =
-      !info.is_supervised &&
-      GetProfile()->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  info.app_info_dialog_enabled = CanShowAppInfoDialog();
-  info.can_load_unpacked =
-      !ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->BlacklistedByDefault();
+  scoped_ptr<developer::ProfileInfo> info = CreateProfileInfo(GetProfile());
 
   // If this is called from the chrome://extensions page, we use this as a
   // heuristic that it's a good time to verify installs. We do this on startup,
@@ -519,7 +551,7 @@ DeveloperPrivateGetProfileConfigurationFunction::Run() {
   if (source_context_type() == Feature::WEBUI_CONTEXT)
     PerformVerificationCheck(browser_context());
 
-  return RespondNow(OneArgument(info.ToValue()));
+  return RespondNow(OneArgument(info->ToValue()));
 }
 
 DeveloperPrivateUpdateProfileConfigurationFunction::

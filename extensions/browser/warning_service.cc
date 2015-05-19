@@ -33,19 +33,19 @@ WarningService* WarningService::Get(content::BrowserContext* browser_context) {
 void WarningService::ClearWarnings(
     const std::set<Warning::WarningType>& types) {
   DCHECK(CalledOnValidThread());
-  bool deleted_anything = false;
+  ExtensionIdSet affected_extensions;
   for (WarningSet::iterator i = warnings_.begin();
        i != warnings_.end();) {
     if (types.find(i->warning_type()) != types.end()) {
-      deleted_anything = true;
+      affected_extensions.insert(i->extension_id());
       warnings_.erase(i++);
     } else {
       ++i;
     }
   }
 
-  if (deleted_anything)
-    NotifyWarningsChanged();
+  if (!affected_extensions.empty())
+    NotifyWarningsChanged(affected_extensions);
 }
 
 std::set<Warning::WarningType> WarningService::
@@ -78,12 +78,14 @@ std::vector<std::string> WarningService::GetWarningMessagesForExtension(
 
 void WarningService::AddWarnings(const WarningSet& warnings) {
   DCHECK(CalledOnValidThread());
-  size_t old_size = warnings_.size();
 
-  warnings_.insert(warnings.begin(), warnings.end());
-
-  if (old_size != warnings_.size())
-    NotifyWarningsChanged();
+  ExtensionIdSet affected_extensions;
+  for (const Warning& warning : warnings) {
+    if (warnings_.insert(warning).second)
+      affected_extensions.insert(warning.extension_id());
+  }
+  if (!affected_extensions.empty())
+    NotifyWarningsChanged(affected_extensions);
 }
 
 // static
@@ -113,8 +115,10 @@ void WarningService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void WarningService::NotifyWarningsChanged() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, ExtensionWarningsChanged());
+void WarningService::NotifyWarningsChanged(
+    const ExtensionIdSet& affected_extensions) {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    ExtensionWarningsChanged(affected_extensions));
 }
 
 void WarningService::OnExtensionUnloaded(

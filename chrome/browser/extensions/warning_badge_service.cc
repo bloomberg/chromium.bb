@@ -125,7 +125,8 @@ const WarningSet& WarningBadgeService::GetCurrentWarnings() const {
   return WarningService::Get(profile_)->warnings();
 }
 
-void WarningBadgeService::ExtensionWarningsChanged() {
+void WarningBadgeService::ExtensionWarningsChanged(
+    const ExtensionIdSet& affected_extensions) {
   DCHECK(CalledOnValidThread());
   UpdateBadgeStatus();
 }

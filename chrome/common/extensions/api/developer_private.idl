@@ -288,7 +288,8 @@ namespace developerPrivate {
     VIEW_UNREGISTERED,
     ERROR_ADDED,
     ERRORS_REMOVED,
-    PREFS_CHANGED
+    PREFS_CHANGED,
+    WARNINGS_CHANGED
   };
 
   dictionary PackDirectoryResponse {
@@ -536,6 +537,9 @@ namespace developerPrivate {
   interface Events {
     // Fired when a item state is changed.
     static void onItemStateChanged(EventData response);
+
+    // Fired when the profile's state has changed.
+    static void onProfileStateChanged(ProfileInfo info);
   };
 
 };

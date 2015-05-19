@@ -148,10 +148,12 @@ cr.define('extensions', function() {
       var wrapper = $('extension-list-wrapper');
       wrapper.insertBefore(extensionList, wrapper.firstChild);
 
-      this.update_();
-      // TODO(devlin): Remove this once all notifications are moved to events on
-      // the developerPrivate api.
-      chrome.send('extensionSettingsRegister');
+      // Get the initial profile state, and register to be notified of any
+      // future changes.
+      chrome.developerPrivate.getProfileConfiguration(
+          this.update_.bind(this));
+      chrome.developerPrivate.onProfileStateChanged.addListener(
+          this.update_.bind(this));
 
       var extensionLoader = extensions.ExtensionLoader.getInstance();
 
@@ -240,23 +242,14 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Updates the extensions page to the latest profile and extensions
-     * configuration.
-     * @private
-     */
-    update_: function() {
-      chrome.developerPrivate.getProfileConfiguration(
-          this.returnProfileConfiguration_.bind(this));
-    },
-
-    /**
      * [Re]-Populates the page with data representing the current state of
      * installed extensions.
      * @param {ProfileInfo} profileInfo
      * @private
      */
-    returnProfileConfiguration_: function(profileInfo) {
+    update_: function(profileInfo) {
       webuiResponded = true;
+
       /** @const */
       var supervised = profileInfo.isSupervised;
 
@@ -364,14 +357,6 @@ cr.define('extensions', function() {
       $('no-extensions').hidden = hasExtensions;
       $('extension-list-wrapper').hidden = !hasExtensions;
     },
-  };
-
-  /**
-   * Called by the WebUI when something has changed and the extensions UI needs
-   * to be updated.
-   */
-  ExtensionSettings.onExtensionsChanged = function() {
-    ExtensionSettings.getInstance().update_();
   };
 
   /**

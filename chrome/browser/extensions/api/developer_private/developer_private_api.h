@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/common/extensions/api/developer_private.h"
@@ -22,8 +23,10 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/process_manager_observer.h"
+#include "extensions/browser/warning_service.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -52,7 +55,10 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
                                     public ErrorConsole::Observer,
                                     public ProcessManagerObserver,
                                     public AppWindowRegistry::Observer,
-                                    public ExtensionActionAPI::Observer {
+                                    public ExtensionActionAPI::Observer,
+                                    public ExtensionPrefsObserver,
+                                    public ExtensionManagement::Observer,
+                                    public WarningService::Observer {
  public:
   explicit DeveloperPrivateEventRouter(Profile* profile);
   ~DeveloperPrivateEventRouter() override;
@@ -95,6 +101,17 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void OnExtensionActionVisibilityChanged(const std::string& extension_id,
                                           bool is_now_visible) override;
 
+  // ExtensionPrefsObserver:
+  void OnExtensionDisableReasonsChanged(const std::string& extension_id,
+                                        int disable_reasons) override;
+
+  // ExtensionManagement::Observer:
+  void OnExtensionManagementSettingsChanged() override;
+
+  // WarningService::Observer:
+  void ExtensionWarningsChanged(
+      const ExtensionIdSet& affected_extensions) override;
+
   // Broadcasts an event to all listeners.
   void BroadcastItemStateChanged(api::developer_private::EventType event_type,
                                  const std::string& id);
@@ -114,6 +131,12 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
       app_window_registry_observer_;
   ScopedObserver<ExtensionActionAPI, ExtensionActionAPI::Observer>
       extension_action_api_observer_;
+  ScopedObserver<WarningService, WarningService::Observer>
+      warning_service_observer_;
+  ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver>
+      extension_prefs_observer_;
+  ScopedObserver<ExtensionManagement, ExtensionManagement::Observer>
+      extension_management_observer_;
 
   Profile* profile_;
 
