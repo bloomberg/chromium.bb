@@ -281,11 +281,7 @@ cr.define('extensions', function() {
           case EventType.UNINSTALLED:
             var index = this.getIndexOfExtension_(eventData.item_id);
             this.extensions_.splice(index, 1);
-            var childNode = $(eventData.item_id);
-            childNode.parentNode.removeChild(childNode);
-            this.focusGrid_.removeRow(assertInstanceof(childNode,
-                                                       ExtensionFocusRow));
-            this.focusGrid_.ensureRowActive();
+            this.removeNode_(getRequiredElement(eventData.item_id));
             break;
           default:
             assertNotReached();
@@ -406,22 +402,10 @@ cr.define('extensions', function() {
 
       // Remove extensions that are no longer installed.
       var nodes = document.querySelectorAll('.extension-list-item-wrapper[id]');
-      for (var i = 0; i < nodes.length; ++i) {
-        var node = nodes[i];
-        if (seenIds.indexOf(node.id) < 0) {
-          if (node.contains(document.activeElement)) {
-            var focusableNode = nodes[i + 1] || nodes[i - 1];
-            if (focusableNode) {
-              focusableNode.getEquivalentElement(
-                  document.activeElement).focus();
-            }
-          }
-
-          node.parentElement.removeChild(node);
-          // Unregister the removed node from events.
-          assertInstanceof(node, ExtensionFocusRow).destroy();
-        }
-      }
+      Array.prototype.forEach.call(nodes, function(node) {
+        if (seenIds.indexOf(node.id) < 0)
+          this.removeNode_(node);
+      }, this);
     },
 
     /** Updates each row's focusable elements without rebuilding the grid. */
@@ -430,6 +414,30 @@ cr.define('extensions', function() {
       for (var i = 0; i < rows.length; ++i) {
         assertInstanceof(rows[i], ExtensionFocusRow).updateFocusableElements();
       }
+    },
+
+    /**
+     * Removes the node from the DOM, and updates the focused element if needed.
+     * @param {!HTMLElement} node
+     * @private
+     */
+    removeNode_: function(node) {
+      if (node.contains(document.activeElement)) {
+        var nodes =
+            document.querySelectorAll('.extension-list-item-wrapper[id]');
+        var index = Array.prototype.indexOf.call(nodes, node);
+        assert(index != -1);
+        var focusableNode = nodes[index + 1] || nodes[index - 1];
+        if (focusableNode)
+          focusableNode.getEquivalentElement(document.activeElement).focus();
+      }
+      node.parentNode.removeChild(node);
+      this.focusGrid_.removeRow(assertInstanceof(node, ExtensionFocusRow));
+
+      // Unregister the removed node from events.
+      assertInstanceof(node, ExtensionFocusRow).destroy();
+
+      this.focusGrid_.ensureRowActive();
     },
 
     /**
