@@ -2584,6 +2584,11 @@
       '<(SHARED_INTERMEDIATE_DIR)',
     ],
     'conditions': [
+      ['OS=="mac"', {
+        # When compiling Objective C, warns if a method is used whose
+        # availability is newer than the deployment target.
+        'xcode_settings': { 'WARNING_CFLAGS': ['-Wpartial-availability']},
+      }],
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
