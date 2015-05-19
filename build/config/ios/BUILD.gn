@@ -11,12 +11,12 @@ config("sdk") {
     sysroot,
   ]
 
+  if (use_ios_simulator) {
+    common_flags += [ "-mios-simulator-version-min=$ios_deployment_target" ]
+  } else {
+    common_flags += [ "-miphoneos-version-min=$ios_deployment_target" ]
+  }
+
   cflags = common_flags
   ldflags = common_flags
-
-  if (use_ios_simulator) {
-    cflags += [ "-mios-simulator-version-min=$ios_deployment_target" ]
-  } else {
-    cflags += [ "-miphoneos-version-min=$ios_deployment_target" ]
-  }
 }
