@@ -81,8 +81,10 @@ void AppLifetimeHelper::AddRef() {
 }
 
 void AppLifetimeHelper::Release() {
-  if (!--ref_count_)
-    ApplicationImpl::Terminate();
+  if (!--ref_count_) {
+    // Disabled until network_service tests pass again http://crbug.com/484234
+    //ApplicationImpl::Terminate();
+  }
 }
 
 }  // namespace mojo
