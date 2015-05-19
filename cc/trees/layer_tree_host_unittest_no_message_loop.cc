@@ -103,7 +103,7 @@ class LayerTreeHostNoMessageLoopTest
   void SetupLayerTreeHost() {
     LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
-    settings.verify_property_trees = true;
+    settings.verify_property_trees = false;
     settings.raster_enabled = false;
 
     LayerTreeHost::InitParams params;

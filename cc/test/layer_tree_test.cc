@@ -532,7 +532,7 @@ LayerTreeTest::LayerTreeTest()
       started_(false),
       ended_(false),
       delegating_renderer_(false),
-      verify_property_trees_(true),
+      verify_property_trees_(false),
       timeout_seconds_(0),
       weak_factory_(this) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
