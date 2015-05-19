@@ -18,7 +18,6 @@ import unittest
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import filetype
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 
@@ -279,6 +278,9 @@ class BlacklistTest(NonForgivingImageTestCase):
     """
     failures = []
 
+    # This is imported here to not depend on third_party modules at load time.
+    # Others modules might import image_test but don't actually run any test.
+    from chromite.lib import filetype
     for root, _, file_names in os.walk(ROOT_A):
       for file_name in file_names:
         full_name = os.path.join(root, file_name)
