@@ -958,11 +958,11 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
         return;
     switch (position.anchorType()) {
     case Position::PositionIsBeforeChildren:
-        if (position.containerNode() == node)
+        if (node.containsIncludingShadowDOM(position.containerNode()))
             position = positionInParentBeforeNode(node);
         break;
     case Position::PositionIsAfterChildren:
-        if (position.containerNode() == node)
+        if (node.containsIncludingShadowDOM(position.containerNode()))
             position = positionInParentAfterNode(node);
         break;
     case Position::PositionIsOffsetInAnchor:
