@@ -33,10 +33,4 @@ void SVGTextLayoutAttributes::clear()
     m_textMetricsValues.clear();
 }
 
-float SVGTextLayoutAttributes::emptyValue()
-{
-    static float s_emptyValue = std::numeric_limits<float>::max() - 1;
-    return s_emptyValue;
-}
-
 }

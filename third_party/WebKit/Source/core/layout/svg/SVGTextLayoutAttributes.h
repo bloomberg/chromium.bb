@@ -22,6 +22,7 @@
 
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "wtf/HashMap.h"
+#include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
@@ -47,7 +48,8 @@ public:
     SVGTextLayoutAttributes(LayoutSVGInlineText*);
 
     void clear();
-    static float emptyValue();
+    static float emptyValue() { return std::numeric_limits<float>::quiet_NaN(); }
+    static bool isEmptyValue(float value) { return std::isnan(value); }
 
     LayoutSVGInlineText* context() const { return m_context; }
 
