@@ -335,7 +335,7 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
         layer->paint(contextRecorder.context(), IntRect(IntPoint(0, 0), size));
     }
 
-    RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(pictureRecorder.endRecording()));
+    RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(adoptRef(pictureRecorder.endRecording())));
 
     *snapshotId = String::number(++s_lastSnapshotId);
     bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
