@@ -45,58 +45,6 @@ const char kOptional = '?';
 const char kSearchTermsParameter[] = "searchTerms";
 const char kSearchTermsParameterFull[] = "{searchTerms}";
 const char kSearchTermsParameterFullEscaped[] = "%7BsearchTerms%7D";
-const char kCountParameter[] = "count";
-const char kStartIndexParameter[] = "startIndex";
-const char kStartPageParameter[] = "startPage";
-const char kLanguageParameter[] = "language";
-const char kInputEncodingParameter[] = "inputEncoding";
-const char kOutputEncodingParameter[] = "outputEncoding";
-
-const char kGoogleAssistedQueryStatsParameter[] = "google:assistedQueryStats";
-
-// Host/Domain Google searches are relative to.
-const char kGoogleBaseURLParameter[] = "google:baseURL";
-const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
-
-// Like google:baseURL, but for the Search Suggest capability.
-const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
-const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
-const char kGoogleBookmarkBarPinnedParameter[] = "google:bookmarkBarPinned";
-const char kGoogleContextualSearchContextData[] =
-    "google:contextualSearchContextData";
-const char kGoogleContextualSearchVersion[] = "google:contextualSearchVersion";
-const char kGoogleCurrentPageUrlParameter[] = "google:currentPageUrl";
-const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
-const char kGoogleForceInstantResultsParameter[] = "google:forceInstantResults";
-const char kGoogleImageSearchSource[] = "google:imageSearchSource";
-const char kGoogleImageThumbnailParameter[] = "google:imageThumbnail";
-const char kGoogleImageOriginalWidth[] = "google:imageOriginalWidth";
-const char kGoogleImageOriginalHeight[] = "google:imageOriginalHeight";
-const char kGoogleImageURLParameter[] = "google:imageURL";
-const char kGoogleInputTypeParameter[] = "google:inputType";
-const char kGoogleInstantExtendedEnabledParameter[] =
-    "google:instantExtendedEnabledParameter";
-const char kGoogleInstantExtendedEnabledKey[] =
-    "google:instantExtendedEnabledKey";
-const char kGoogleInstantExtendedEnabledKeyFull[] =
-    "{google:instantExtendedEnabledKey}";
-const char kGoogleNTPIsThemedParameter[] = "google:ntpIsThemedParameter";
-const char kGoogleOmniboxStartMarginParameter[] =
-    "google:omniboxStartMarginParameter";
-const char kGoogleOriginalQueryForSuggestionParameter[] =
-    "google:originalQueryForSuggestion";
-const char kGooglePageClassificationParameter[] = "google:pageClassification";
-const char kGooglePrefetchQuery[] = "google:prefetchQuery";
-const char kGoogleRLZParameter[] = "google:RLZ";
-const char kGoogleSearchClient[] = "google:searchClient";
-const char kGoogleSearchFieldtrialParameter[] =
-    "google:searchFieldtrialParameter";
-const char kGoogleSearchVersion[] = "google:searchVersion";
-const char kGoogleSessionToken[] = "google:sessionToken";
-const char kGoogleSourceIdParameter[] = "google:sourceId";
-const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
-const char kGoogleSuggestClient[] = "google:suggestClient";
-const char kGoogleSuggestRequestId[] = "google:suggestRid";
 
 // Same as kSearchTermsParameter, with no escaping.
 const char kGoogleUnescapedSearchTermsParameter[] =
@@ -114,7 +62,7 @@ const char kDisplayUnescapedSearchTerms[] = "%S";
 // results.
 const char kDefaultCount[] = "10";
 
-// Used if the parameter kOutputEncodingParameter is required.
+// Used if the output encoding parameter is required.
 const char kOutputEncodingType[] = "UTF-8";
 
 // Attempts to encode |terms| and |original_query| in |encoding| and escape
@@ -605,85 +553,85 @@ bool TemplateURLRef::ParseParameter(size_t start,
   url->erase(start, end - start + 1);
   if (parameter == kSearchTermsParameter) {
     replacements->push_back(Replacement(SEARCH_TERMS, start));
-  } else if (parameter == kCountParameter) {
+  } else if (parameter == "count") {
     if (!optional)
       url->insert(start, kDefaultCount);
-  } else if (parameter == kGoogleAssistedQueryStatsParameter) {
+  } else if (parameter == "google:assistedQueryStats") {
     replacements->push_back(Replacement(GOOGLE_ASSISTED_QUERY_STATS, start));
-  } else if (parameter == kGoogleBaseURLParameter) {
+  } else if (parameter == "google:baseURL") {
     replacements->push_back(Replacement(GOOGLE_BASE_URL, start));
-  } else if (parameter == kGoogleBaseSuggestURLParameter) {
+  } else if (parameter == "google:baseSuggestURL") {
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
-  } else if (parameter == kGoogleBookmarkBarPinnedParameter) {
+  } else if (parameter == "google:bookmarkBarPinned") {
     replacements->push_back(Replacement(GOOGLE_BOOKMARK_BAR_PINNED, start));
-  } else if (parameter == kGoogleCurrentPageUrlParameter) {
+  } else if (parameter == "google:currentPageUrl") {
     replacements->push_back(Replacement(GOOGLE_CURRENT_PAGE_URL, start));
-  } else if (parameter == kGoogleCursorPositionParameter) {
+  } else if (parameter == "google:cursorPosition") {
     replacements->push_back(Replacement(GOOGLE_CURSOR_POSITION, start));
-  } else if (parameter == kGoogleForceInstantResultsParameter) {
+  } else if (parameter == "google:forceInstantResults") {
     replacements->push_back(Replacement(GOOGLE_FORCE_INSTANT_RESULTS, start));
-  } else if (parameter == kGoogleImageOriginalHeight) {
+  } else if (parameter == "google:imageOriginalHeight") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_HEIGHT, start));
-  } else if (parameter == kGoogleImageOriginalWidth) {
+  } else if (parameter == "google:imageOriginalWidth") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_WIDTH, start));
-  } else if (parameter == kGoogleImageSearchSource) {
+  } else if (parameter == "google:imageSearchSource") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_SEARCH_SOURCE, start));
-  } else if (parameter == kGoogleImageThumbnailParameter) {
+  } else if (parameter == "google:imageThumbnail") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL, start));
-  } else if (parameter == kGoogleImageURLParameter) {
+  } else if (parameter == "google:imageURL") {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
                                         start));
-  } else if (parameter == kGoogleInputTypeParameter) {
+  } else if (parameter == "google:inputType") {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_INPUT_TYPE,
                                         start));
-  } else if (parameter == kGoogleInstantExtendedEnabledParameter) {
+  } else if (parameter == "google:instantExtendedEnabledParameter") {
     replacements->push_back(Replacement(GOOGLE_INSTANT_EXTENDED_ENABLED,
                                         start));
-  } else if (parameter == kGoogleInstantExtendedEnabledKey) {
+  } else if (parameter == "google:instantExtendedEnabledKey") {
     url->insert(start, google_util::kInstantExtendedAPIParam);
-  } else if (parameter == kGoogleNTPIsThemedParameter) {
+  } else if (parameter == "google:ntpIsThemedParameter") {
     replacements->push_back(Replacement(GOOGLE_NTP_IS_THEMED, start));
-  } else if (parameter == kGoogleOmniboxStartMarginParameter) {
+  } else if (parameter == "google:omniboxStartMarginParameter") {
     replacements->push_back(Replacement(GOOGLE_OMNIBOX_START_MARGIN, start));
-  } else if (parameter == kGoogleContextualSearchVersion) {
+  } else if (parameter == "google:contextualSearchVersion") {
     replacements->push_back(
         Replacement(GOOGLE_CONTEXTUAL_SEARCH_VERSION, start));
-  } else if (parameter == kGoogleContextualSearchContextData) {
+  } else if (parameter == "google:contextualSearchContextData") {
     replacements->push_back(
         Replacement(GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA, start));
-  } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
+  } else if (parameter == "google:originalQueryForSuggestion") {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));
-  } else if (parameter == kGooglePageClassificationParameter) {
+  } else if (parameter == "google:pageClassification") {
     replacements->push_back(Replacement(GOOGLE_PAGE_CLASSIFICATION, start));
-  } else if (parameter == kGooglePrefetchQuery) {
+  } else if (parameter == "google:prefetchQuery") {
     replacements->push_back(Replacement(GOOGLE_PREFETCH_QUERY, start));
-  } else if (parameter == kGoogleRLZParameter) {
+  } else if (parameter == "google:RLZ") {
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
-  } else if (parameter == kGoogleSearchClient) {
+  } else if (parameter == "google:searchClient") {
     replacements->push_back(Replacement(GOOGLE_SEARCH_CLIENT, start));
-  } else if (parameter == kGoogleSearchFieldtrialParameter) {
+  } else if (parameter == "google:searchFieldtrialParameter") {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
-  } else if (parameter == kGoogleSearchVersion) {
+  } else if (parameter == "google:searchVersion") {
     replacements->push_back(Replacement(GOOGLE_SEARCH_VERSION, start));
-  } else if (parameter == kGoogleSessionToken) {
+  } else if (parameter == "google:sessionToken") {
     replacements->push_back(Replacement(GOOGLE_SESSION_TOKEN, start));
-  } else if (parameter == kGoogleSourceIdParameter) {
+  } else if (parameter == "google:sourceId") {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     url->insert(start, "sourceid=chrome-mobile&");
 #else
     url->insert(start, "sourceid=chrome&");
 #endif
-  } else if (parameter == kGoogleSuggestAPIKeyParameter) {
+  } else if (parameter == "google:suggestAPIKeyParameter") {
     url->insert(start,
                 net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
-  } else if (parameter == kGoogleSuggestClient) {
+  } else if (parameter == "google:suggestClient") {
     replacements->push_back(Replacement(GOOGLE_SUGGEST_CLIENT, start));
-  } else if (parameter == kGoogleSuggestRequestId) {
+  } else if (parameter == "google:suggestRid") {
     replacements->push_back(Replacement(GOOGLE_SUGGEST_REQUEST_ID, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
@@ -699,15 +647,14 @@ bool TemplateURLRef::ParseParameter(size_t start,
         url->insert(start, "padsearch");
         break;
     }
-  } else if (parameter == kInputEncodingParameter) {
+  } else if (parameter == "inputEncoding") {
     replacements->push_back(Replacement(ENCODING, start));
-  } else if (parameter == kLanguageParameter) {
+  } else if (parameter == "language") {
     replacements->push_back(Replacement(LANGUAGE, start));
-  } else if (parameter == kOutputEncodingParameter) {
+  } else if (parameter == "outputEncoding") {
     if (!optional)
       url->insert(start, kOutputEncodingType);
-  } else if ((parameter == kStartIndexParameter) ||
-             (parameter == kStartPageParameter)) {
+  } else if ((parameter == "startIndex") || (parameter == "startPage")) {
     // We don't support these.
     if (!optional)
       url->insert(start, "1");
@@ -822,11 +769,9 @@ void TemplateURLRef::ParseIfNecessary(
 void TemplateURLRef::ParseHostAndSearchTermKey(
     const SearchTermsData& search_terms_data) const {
   std::string url_string(GetURL());
-  ReplaceSubstringsAfterOffset(&url_string, 0,
-                               kGoogleBaseURLParameterFull,
+  ReplaceSubstringsAfterOffset(&url_string, 0, "{google:baseURL}",
                                search_terms_data.GoogleBaseURLValue());
-  ReplaceSubstringsAfterOffset(&url_string, 0,
-                               kGoogleBaseSuggestURLParameterFull,
+  ReplaceSubstringsAfterOffset(&url_string, 0, "{google:baseSuggestURL}",
                                search_terms_data.GoogleBaseSuggestURLValue());
 
   search_term_key_.clear();
@@ -1247,7 +1192,7 @@ TemplateURL::TemplateURL(const TemplateURLData& data)
   SetPrepopulateId(data_.prepopulate_id);
 
   if (data_.search_terms_replacement_key ==
-      kGoogleInstantExtendedEnabledKeyFull) {
+      "{google:instantExtendedEnabledKey}") {
     data_.search_terms_replacement_key = google_util::kInstantExtendedAPIParam;
   }
 }
