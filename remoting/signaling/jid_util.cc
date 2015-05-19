@@ -9,15 +9,35 @@
 namespace remoting {
 
 std::string NormalizeJid(const std::string& jid) {
-  size_t slash_pos = jid.find('/');
+  std::string bare_jid;
+  std::string resource;
+  if (SplitJidResource(jid, &bare_jid, &resource)) {
+    return base::StringToLowerASCII(bare_jid) + "/" + resource;
+  }
+  return base::StringToLowerASCII(bare_jid);
+}
 
-  // In case there the jid doesn't have resource id covert the whole value to
-  // lower-case.
-  if (slash_pos == std::string::npos)
-    return base::StringToLowerASCII(jid);
+bool SplitJidResource(const std::string& full_jid,
+                      std::string* bare_jid,
+                      std::string* resource) {
+  size_t slash_index = full_jid.find('/');
+  if (slash_index == std::string::npos) {
+    if (bare_jid) {
+      *bare_jid = full_jid;
+    }
+    if (resource) {
+      resource->clear();
+    }
+    return false;
+  }
 
-  return base::StringToLowerASCII(jid.substr(0, slash_pos)) +
-         jid.substr(slash_pos);
+  if (bare_jid) {
+    *bare_jid = full_jid.substr(0, slash_index);
+  }
+  if (resource) {
+    *resource = full_jid.substr(slash_index + 1);
+  }
+  return true;
 }
 
 }  // namespace remoting

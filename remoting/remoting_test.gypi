@@ -254,6 +254,7 @@
         'signaling/iq_sender_unittest.cc',
         'signaling/jid_util_unittest.cc',
         'signaling/log_to_server_unittest.cc',
+        'signaling/push_notification_subscriber_unittest.cc',
         'signaling/server_log_entry_unittest.cc',
         'signaling/server_log_entry_unittest.h',
         'signaling/xmpp_login_handler_unittest.cc',

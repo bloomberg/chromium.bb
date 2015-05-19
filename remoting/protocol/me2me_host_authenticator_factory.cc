@@ -10,6 +10,7 @@
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/negotiating_host_authenticator.h"
 #include "remoting/protocol/token_validator.h"
+#include "remoting/signaling/jid_util.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -115,12 +116,10 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     // where the host owner account does not have an email associated with it.
     // In those cases, the only guarantee we have is that JIDs for the same
     // account will have the same prefix.
-    size_t slash_pos = local_jid.find('/');
-    if (slash_pos == std::string::npos) {
+    if (!SplitJidResource(local_jid, &remote_jid_prefix, nullptr)) {
       LOG(DFATAL) << "Invalid local JID:" << local_jid;
       return make_scoped_ptr(new RejectingAuthenticator());
     }
-    remote_jid_prefix = local_jid.substr(0, slash_pos);
   } else {
     // TODO(rmsousa): This only works for cases where the JID prefix matches
     // the host owner email. Figure out a way to verify the JID in other cases.

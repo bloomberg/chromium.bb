@@ -201,6 +201,8 @@
       'signaling/jingle_info_request.h',
       'signaling/log_to_server.cc',
       'signaling/log_to_server.h',
+      'signaling/push_notification_subscriber.cc',
+      'signaling/push_notification_subscriber.h',
       'signaling/server_log_entry.cc',
       'signaling/server_log_entry.h',
       'signaling/signal_strategy.h',

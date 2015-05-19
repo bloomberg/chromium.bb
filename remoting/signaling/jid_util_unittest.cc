@@ -16,4 +16,20 @@ TEST(JidUtil, NormalizeJid) {
   EXPECT_EQ(NormalizeJid("USER@DOMAIN.com/"), "user@domain.com/");
 }
 
+TEST(JidUtil, SplitJidResource) {
+  std::string bare_jid;
+  std::string resource_suffix;
+
+  EXPECT_TRUE(SplitJidResource("user@domain/resource", nullptr, nullptr));
+  EXPECT_TRUE(
+      SplitJidResource("user@domain/resource", &bare_jid, &resource_suffix));
+  EXPECT_EQ(bare_jid, "user@domain");
+  EXPECT_EQ(resource_suffix, "resource");
+
+  EXPECT_FALSE(SplitJidResource("user@domain", nullptr, nullptr));
+  EXPECT_FALSE(SplitJidResource("user@domain", &bare_jid, &resource_suffix));
+  EXPECT_EQ(bare_jid, "user@domain");
+  EXPECT_EQ(resource_suffix, "");
+}
+
 }  // namespace remoting
