@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<p>To run this test manually, print this document.</p>
+<p>There should be 6 pages in this document. Multicol doesn't work well with printing, so it should
+    be disabled. See crbug.com/99358</p>
+<div style="page-break-before:always; -webkit-columns:10; line-height:400px;">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+</div>
+<script>
+    if (window.internals)
+        shouldBe("internals.numberOfPages(800, 800)", "6");
+</script>
