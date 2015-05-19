@@ -88,7 +88,7 @@ baz
 
     sysroot._GenerateProfile()
 
-    profile_link = os.path.join(sysroot.path, 'etc', 'make.profile')
+    profile_link = os.path.join(sysroot.path, 'etc', 'portage', 'make.profile')
     profile_parent = osutils.ReadFile(
         os.path.join(profile_link, 'parent')).splitlines()
     self.assertTrue(os.path.islink(profile_link))

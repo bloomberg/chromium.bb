@@ -554,8 +554,9 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
                                     'parent')
     osutils.WriteFile(
         generated_parent, '\n'.join(profile_list), sudo=True, makedirs=True)
-    osutils.SafeSymlink(os.path.dirname(generated_parent),
-                        os.path.join(self.path, 'etc', 'make.profile'),
+    profile_link = os.path.join(self.path, 'etc', 'portage', 'make.profile')
+    osutils.SafeMakedirs(os.path.dirname(profile_link), sudo=True)
+    osutils.SafeSymlink(os.path.dirname(generated_parent), profile_link,
                         sudo=True)
 
   def GeneratePortageConfig(self):
