@@ -184,7 +184,6 @@ public:
 private:
     virtual bool isChromeClientImpl() const override { return true; }
 
-    WebNavigationPolicy getNavigationPolicy(const WindowFeatures&);
     void setCursor(const WebCursorInfo&);
 
     WebViewImpl* m_webView;  // weak pointer

@@ -204,29 +204,9 @@ void ChromeClientImpl::focusedFrameChanged(LocalFrame* frame)
         webframe->client()->frameFocused();
 }
 
-Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& r, const WindowFeatures& features,
-    NavigationPolicy navigationPolicy, ShouldSendReferrer shouldSendReferrer)
-{
-    if (!m_webView->client())
-        return nullptr;
+namespace {
 
-    WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
-    if (policy == WebNavigationPolicyIgnore)
-        policy = getNavigationPolicy(features);
-    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(features) != WebNavigationPolicyNewBackgroundTab && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
-        policy = WebNavigationPolicyNewForegroundTab;
-
-    ASSERT(frame->document());
-    Fullscreen::fullyExitFullscreen(*frame->document());
-
-    WebViewImpl* newView = toWebViewImpl(
-        m_webView->client()->createView(WebLocalFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy, shouldSendReferrer == NeverSendReferrer));
-    if (!newView)
-        return nullptr;
-    return newView->page();
-}
-
-static inline void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* policy)
+void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* policy)
 {
     if (!inputEvent || inputEvent->type != WebInputEvent::MouseUp)
         return;
@@ -260,7 +240,7 @@ static inline void updatePolicyForEvent(const WebInputEvent* inputEvent, Navigat
     *policy = userPolicy;
 }
 
-WebNavigationPolicy ChromeClientImpl::getNavigationPolicy(const WindowFeatures& features)
+WebNavigationPolicy getNavigationPolicy(const WindowFeatures& features)
 {
     // If our default configuration was modified by a script or wasn't
     // created by a user gesture, then show as a popup. Else, let this
@@ -279,16 +259,42 @@ WebNavigationPolicy ChromeClientImpl::getNavigationPolicy(const WindowFeatures& 
     return static_cast<WebNavigationPolicy>(policy);
 }
 
+WebNavigationPolicy effectiveNavigationPolicy(NavigationPolicy navigationPolicy, const WindowFeatures& features)
+{
+    WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
+    if (policy == WebNavigationPolicyIgnore)
+        return getNavigationPolicy(features);
+    if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(features) != WebNavigationPolicyNewBackgroundTab && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
+        return WebNavigationPolicyNewForegroundTab;
+
+    return policy;
+}
+
+} // namespace
+
+Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& r, const WindowFeatures& features,
+    NavigationPolicy navigationPolicy, ShouldSendReferrer shouldSendReferrer)
+{
+    if (!m_webView->client())
+        return nullptr;
+
+    WebNavigationPolicy policy = effectiveNavigationPolicy(navigationPolicy, features);
+    ASSERT(frame->document());
+    Fullscreen::fullyExitFullscreen(*frame->document());
+
+    WebViewImpl* newView = toWebViewImpl(
+        m_webView->client()->createView(WebLocalFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy, shouldSendReferrer == NeverSendReferrer));
+    if (!newView)
+        return nullptr;
+    return newView->page();
+}
+
 void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
 {
     if (!m_webView->client())
         return;
 
-    WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
-    if (policy == WebNavigationPolicyIgnore)
-        policy = getNavigationPolicy(m_windowFeatures);
-    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(m_windowFeatures) != WebNavigationPolicyNewBackgroundTab && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
-        policy = WebNavigationPolicyNewForegroundTab;
+    WebNavigationPolicy policy = effectiveNavigationPolicy(navigationPolicy, m_windowFeatures);
     m_webView->client()->show(policy);
 }
 
