@@ -115,6 +115,10 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled,
                                               bool alternative_enabled,
                                               bool at_startup) {
   DCHECK(CalledOnValidThread());
+  if (io_task_runner_->BelongsToCurrentThread()) {
+    io_data_->SetProxyPrefs(enabled, alternative_enabled, at_startup);
+    return;
+  }
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyIOData::SetProxyPrefs,
@@ -123,6 +127,10 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled,
 
 void DataReductionProxyService::RetrieveConfig() {
   DCHECK(CalledOnValidThread());
+  if (io_task_runner_->BelongsToCurrentThread()) {
+    io_data_->RetrieveConfig();
+    return;
+  }
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyIOData::RetrieveConfig, io_data_));

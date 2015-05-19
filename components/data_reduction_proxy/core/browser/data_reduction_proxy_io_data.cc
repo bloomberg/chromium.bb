@@ -172,6 +172,10 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
   // Using base::Unretained is safe here, unless the browser is being shut down
   // before the Initialize task can be executed. The task is only created as
   // part of class initialization.
+  if (io_task_runner_->BelongsToCurrentThread()) {
+    InitializeOnIOThread();
+    return;
+  }
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyIOData::InitializeOnIOThread,
@@ -184,6 +188,10 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
   if (config_client_.get())
     config_client_->InitializeOnIOThread(url_request_context_getter_);
   experiments_stats_->InitializeOnIOThread();
+  if (ui_task_runner_->BelongsToCurrentThread()) {
+    service_->SetIOData(weak_factory_.GetWeakPtr());
+    return;
+  }
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyService::SetIOData,
