@@ -110,26 +110,6 @@ void BlitContextToContext(NativeDrawingContext dst_context,
 #endif
 }
 
-void BlitContextToCanvas(SkCanvas *dst_canvas,
-                         const Rect& dst_rect,
-                         NativeDrawingContext src_context,
-                         const Point& src_origin) {
-  DCHECK(skia::SupportsPlatformPaint(dst_canvas));
-  BlitContextToContext(skia::BeginPlatformPaint(dst_canvas), dst_rect,
-                       src_context, src_origin);
-  skia::EndPlatformPaint(dst_canvas);
-}
-
-void BlitCanvasToContext(NativeDrawingContext dst_context,
-                         const Rect& dst_rect,
-                         SkCanvas *src_canvas,
-                         const Point& src_origin) {
-  DCHECK(skia::SupportsPlatformPaint(src_canvas));
-  BlitContextToContext(dst_context, dst_rect,
-                       skia::BeginPlatformPaint(src_canvas), src_origin);
-  skia::EndPlatformPaint(src_canvas);
-}
-
 void BlitCanvasToCanvas(SkCanvas *dst_canvas,
                         const Rect& dst_rect,
                         SkCanvas *src_canvas,

@@ -21,7 +21,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
-#include "ui/gfx/blit.h"
 #include "ui/gfx/canvas.h"
 #include "url/url_constants.h"
 
