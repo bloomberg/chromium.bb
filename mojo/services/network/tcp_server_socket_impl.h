@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_NETWORK_TCP_SERVER_SOCKET_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "mojo/application/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/tcp_server_socket.mojom.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/tcp_socket.h"
@@ -18,7 +19,8 @@ class TCPServerSocketImpl : public InterfaceImpl<TCPServerSocket> {
   typedef Callback<void(NetworkErrorPtr, NetAddressPtr)> AcceptCallback;
 
   // Passed ownership of a socket already in listening mode.
-  explicit TCPServerSocketImpl(scoped_ptr<net::TCPSocket> socket);
+  TCPServerSocketImpl(scoped_ptr<net::TCPSocket> socket,
+                      scoped_ptr<mojo::AppRefCount> app_refcount);
   ~TCPServerSocketImpl() override;
 
   // TCPServerSocket.
@@ -43,6 +45,8 @@ class TCPServerSocketImpl : public InterfaceImpl<TCPServerSocket> {
   // These are written to by net::TCPSocket when Accept is completed.
   scoped_ptr<net::TCPSocket> accepted_socket_;
   net::IPEndPoint accepted_address_;
+
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
 };
 
 }  // namespace mojo

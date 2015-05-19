@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_NETWORK_COOKIE_STORE_IMPL_H_
 #define MOJO_SERVICES_NETWORK_COOKIE_STORE_IMPL_H_
 
+#include "mojo/application/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "url/gurl.h"
 
@@ -13,7 +14,9 @@ class NetworkContext;
 
 class CookieStoreImpl : public InterfaceImpl<CookieStore> {
  public:
-  CookieStoreImpl(NetworkContext* context, const GURL& origin);
+  CookieStoreImpl(NetworkContext* context,
+                  const GURL& origin,
+                  scoped_ptr<mojo::AppRefCount> app_refcount);
   ~CookieStoreImpl() override;
 
  private:
@@ -25,6 +28,7 @@ class CookieStoreImpl : public InterfaceImpl<CookieStore> {
 
   NetworkContext* context_;
   GURL origin_;
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieStoreImpl);
 };

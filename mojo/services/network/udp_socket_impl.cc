@@ -34,7 +34,8 @@ UDPSocketImpl::PendingSendRequest::PendingSendRequest() {}
 
 UDPSocketImpl::PendingSendRequest::~PendingSendRequest() {}
 
-UDPSocketImpl::UDPSocketImpl(InterfaceRequest<UDPSocket> request)
+UDPSocketImpl::UDPSocketImpl(InterfaceRequest<UDPSocket> request,
+                             scoped_ptr<mojo::AppRefCount> app_refcount)
     : binding_(this, request.Pass()),
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),
@@ -43,7 +44,8 @@ UDPSocketImpl::UDPSocketImpl(InterfaceRequest<UDPSocket> request)
       state_(NOT_BOUND_OR_CONNECTED),
       allow_address_reuse_(false),
       remaining_recv_slots_(0),
-      max_pending_send_requests_(kDefaultMaxPendingSendRequests) {
+      max_pending_send_requests_(kDefaultMaxPendingSendRequests),
+      app_refcount_(app_refcount.Pass()) {
 }
 
 UDPSocketImpl::~UDPSocketImpl() {

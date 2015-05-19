@@ -40,5 +40,9 @@ void NetworkServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::NetworkService> request) {
   mojo::BindToRequest(
-      new mojo::NetworkServiceImpl(connection, context_.get()), &request);
+      new mojo::NetworkServiceImpl(
+          connection,
+          context_.get(),
+          app_lifetime_helper_.CreateAppRefCount()),
+      &request);
 }

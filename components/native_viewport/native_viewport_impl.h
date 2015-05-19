@@ -13,6 +13,7 @@
 #include "components/native_viewport/onscreen_context_provider.h"
 #include "components/native_viewport/platform_viewport.h"
 #include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
+#include "mojo/application/app_lifetime_helper.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -36,7 +37,8 @@ class NativeViewportImpl : public mojo::NativeViewport,
  public:
   NativeViewportImpl(bool is_headless,
                      const scoped_refptr<gles2::GpuState>& gpu_state,
-                     mojo::InterfaceRequest<mojo::NativeViewport> request);
+                     mojo::InterfaceRequest<mojo::NativeViewport> request,
+                     scoped_ptr<mojo::AppRefCount> app_refcount);
   ~NativeViewportImpl() override;
 
   // NativeViewport implementation.
@@ -69,6 +71,7 @@ class NativeViewportImpl : public mojo::NativeViewport,
   void AckEvent(int32 pointer_id);
 
   bool is_headless_;
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
   scoped_ptr<PlatformViewport> platform_viewport_;
   scoped_ptr<OnscreenContextProvider> context_provider_;
   bool sent_metrics_;

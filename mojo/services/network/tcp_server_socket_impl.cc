@@ -11,8 +11,10 @@
 
 namespace mojo {
 
-TCPServerSocketImpl::TCPServerSocketImpl(scoped_ptr<net::TCPSocket> socket)
-    : socket_(socket.Pass()) {
+TCPServerSocketImpl::TCPServerSocketImpl(
+    scoped_ptr<net::TCPSocket> socket,
+    scoped_ptr<mojo::AppRefCount> app_refcount)
+    : socket_(socket.Pass()), app_refcount_(app_refcount.Pass()) {
 }
 
 TCPServerSocketImpl::~TCPServerSocketImpl() {
@@ -57,7 +59,8 @@ void TCPServerSocketImpl::OnAcceptCompleted(int result) {
   } else {
     new TCPConnectedSocketImpl(
         accepted_socket_.Pass(), pending_send_stream_.Pass(),
-        pending_receive_stream_.Pass(), pending_client_socket_.Pass());
+        pending_receive_stream_.Pass(), pending_client_socket_.Pass(),
+        app_refcount_->Clone());
     pending_callback_.Run(MakeNetworkError(net::OK),
                           NetAddress::From(accepted_address_));
   }

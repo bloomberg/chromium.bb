@@ -96,12 +96,14 @@ class UploadDataPipeElementReader : public net::UploadElementReader {
 }  // namespace
 
 URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
-                             InterfaceRequest<URLLoader> request)
+                             InterfaceRequest<URLLoader> request,
+                             scoped_ptr<mojo::AppRefCount> app_refcount)
     : context_(context),
       response_body_buffer_size_(0),
       auto_follow_redirects_(true),
       connected_(true),
       binding_(this, request.Pass()),
+      app_refcount_(app_refcount.Pass()),
       weak_ptr_factory_(this) {
   binding_.set_error_handler(this);
   context_->RegisterURLLoader(this);

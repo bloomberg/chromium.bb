@@ -114,7 +114,9 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
     url_request_context->Init();
     network_context_.reset(new NetworkContext(url_request_context.Pass()));
     MessagePipe pipe;
-    new URLLoaderImpl(network_context_.get(), GetProxy(&url_loader_proxy_));
+    new URLLoaderImpl(network_context_.get(),
+                      GetProxy(&url_loader_proxy_),
+                      make_scoped_ptr<mojo::AppRefCount>(nullptr));
     EXPECT_TRUE(IsUrlLoaderValid());
   }
 

@@ -36,7 +36,12 @@ void NativeViewportApplicationLoader::Create(
     InterfaceRequest<NativeViewport> request) {
   if (!gpu_state_)
     gpu_state_ = new gles2::GpuState;
-  new native_viewport::NativeViewportImpl(false, gpu_state_, request.Pass());
+  // Pass a null AppRefCount because on Android the NativeViewPort app must
+  // live on the main thread and we don't want to exit that when all the native
+  // viewports are gone.
+  new native_viewport::NativeViewportImpl(
+      false, gpu_state_, request.Pass(),
+      make_scoped_ptr<mojo::AppRefCount>(nullptr));
 }
 
 void NativeViewportApplicationLoader::Create(ApplicationConnection* connection,

@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/application/app_lifetime_helper.h"
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/tcp_connected_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
@@ -22,7 +23,8 @@ class TCPConnectedSocketImpl : public TCPConnectedSocket, public ErrorHandler {
   TCPConnectedSocketImpl(scoped_ptr<net::TCPSocket> socket,
                          ScopedDataPipeConsumerHandle send_stream,
                          ScopedDataPipeProducerHandle receive_stream,
-                         InterfaceRequest<TCPConnectedSocket> request);
+                         InterfaceRequest<TCPConnectedSocket> request,
+                         scoped_ptr<mojo::AppRefCount> app_refcount);
   ~TCPConnectedSocketImpl() override;
 
  private:
@@ -67,6 +69,8 @@ class TCPConnectedSocketImpl : public TCPConnectedSocket, public ErrorHandler {
 
   // To bind to the message pipe.
   Binding<TCPConnectedSocket> binding_;
+
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
 
   base::WeakPtrFactory<TCPConnectedSocketImpl> weak_ptr_factory_;
 };

@@ -38,10 +38,12 @@ class ApplicationThread;
 // AtExitManager et all at this point.)
 class ApplicationThread : public base::Thread {
  public:
-  ApplicationThread(CoreServicesApplicationDelegate* core_services_application,
-                    const std::string& name,
-                    scoped_ptr<mojo::ApplicationDelegate> delegate,
-                    mojo::InterfaceRequest<mojo::Application> request)
+  ApplicationThread(
+      const base::WeakPtr<CoreServicesApplicationDelegate>
+          core_services_application,
+      const std::string& name,
+      scoped_ptr<mojo::ApplicationDelegate> delegate,
+      mojo::InterfaceRequest<mojo::Application> request)
       : base::Thread(name),
         core_services_application_(core_services_application),
         core_services_application_task_runner_(
@@ -67,7 +69,7 @@ class ApplicationThread : public base::Thread {
     core_services_application_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&CoreServicesApplicationDelegate::ApplicationThreadDestroyed,
-                   base::Unretained(core_services_application_),
+                   core_services_application_,
                    this));
 
     // TODO(erg): This is a hack.
@@ -98,7 +100,7 @@ class ApplicationThread : public base::Thread {
   }
 
  private:
-  CoreServicesApplicationDelegate* core_services_application_;
+  base::WeakPtr<CoreServicesApplicationDelegate> core_services_application_;
   scoped_refptr<base::SingleThreadTaskRunner>
       core_services_application_task_runner_;
   scoped_ptr<mojo::ApplicationImpl> application_impl_;
@@ -108,7 +110,9 @@ class ApplicationThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
 };
 
-CoreServicesApplicationDelegate::CoreServicesApplicationDelegate() {}
+CoreServicesApplicationDelegate::CoreServicesApplicationDelegate()
+    : weak_factory_(this) {
+}
 
 CoreServicesApplicationDelegate::~CoreServicesApplicationDelegate() {
   application_threads_.clear();
@@ -139,6 +143,7 @@ void CoreServicesApplicationDelegate::Quit() {
   // This will delete all threads. This also performs a blocking join, waiting
   // for the threads to end.
   application_threads_.clear();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void CoreServicesApplicationDelegate::Create(
@@ -192,7 +197,8 @@ void CoreServicesApplicationDelegate::StartApplication(
   }
 
   scoped_ptr<ApplicationThread> thread(
-      new ApplicationThread(this, url, delegate.Pass(), request.Pass()));
+      new ApplicationThread(weak_factory_.GetWeakPtr(), url, delegate.Pass(),
+      request.Pass()));
   thread->StartWithOptions(thread_options);
 
   application_threads_.push_back(thread.Pass());

@@ -5,6 +5,8 @@
 # GYP version: mojo/mojo_base.gyp:mojo_application_chromium
 source_set("application") {
   sources = [
+    "app_lifetime_helper.cc",
+    "app_lifetime_helper.h",
     "application_runner_chromium.cc",
     "application_runner_chromium.h",
   ]

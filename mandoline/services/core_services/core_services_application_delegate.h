@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -49,6 +50,8 @@ class CoreServicesApplicationDelegate
   mojo::WeakBindingSet<ContentHandler> handler_bindings_;
 
   ScopedVector<ApplicationThread> application_threads_;
+
+  base::WeakPtrFactory<CoreServicesApplicationDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreServicesApplicationDelegate);
 };

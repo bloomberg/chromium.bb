@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/application/app_lifetime_helper.h"
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "net/base/net_errors.h"
@@ -24,7 +25,9 @@ class URLLoaderImpl : public URLLoader,
                       public ErrorHandler,
                       public net::URLRequest::Delegate {
  public:
-  URLLoaderImpl(NetworkContext* context, InterfaceRequest<URLLoader> request);
+  URLLoaderImpl(NetworkContext* context,
+                InterfaceRequest<URLLoader> request,
+                scoped_ptr<mojo::AppRefCount> app_refcount);
   ~URLLoaderImpl() override;
 
   // Called when the associated NetworkContext is going away.
@@ -68,6 +71,7 @@ class URLLoaderImpl : public URLLoader,
   bool auto_follow_redirects_;
   bool connected_;
   Binding<URLLoader> binding_;
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;
 };

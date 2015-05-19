@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_NETWORK_WEB_SOCKET_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "mojo/application/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
@@ -21,7 +22,8 @@ class WebSocketReadQueue;
 // implementation.
 class WebSocketImpl : public InterfaceImpl<WebSocket> {
  public:
-  explicit WebSocketImpl(NetworkContext* context);
+  WebSocketImpl(NetworkContext* context,
+                scoped_ptr<mojo::AppRefCount> app_refcount);
   ~WebSocketImpl() override;
 
  private:
@@ -46,6 +48,7 @@ class WebSocketImpl : public InterfaceImpl<WebSocket> {
   ScopedDataPipeConsumerHandle send_stream_;
   scoped_ptr<WebSocketReadQueue> read_queue_;
   NetworkContext* context_;
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
 };
 
 }  // namespace mojo

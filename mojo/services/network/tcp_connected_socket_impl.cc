@@ -14,11 +14,13 @@ TCPConnectedSocketImpl::TCPConnectedSocketImpl(
     scoped_ptr<net::TCPSocket> socket,
     ScopedDataPipeConsumerHandle send_stream,
     ScopedDataPipeProducerHandle receive_stream,
-    InterfaceRequest<TCPConnectedSocket> request)
+    InterfaceRequest<TCPConnectedSocket> request,
+    scoped_ptr<mojo::AppRefCount> app_refcount)
     : socket_(socket.Pass()),
       send_stream_(send_stream.Pass()),
       receive_stream_(receive_stream.Pass()),
       binding_(this, request.Pass()),
+      app_refcount_(app_refcount.Pass()),
       weak_ptr_factory_(this) {
   // Queue up async communication.
   binding_.set_error_handler(this);

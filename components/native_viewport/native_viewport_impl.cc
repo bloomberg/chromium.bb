@@ -20,8 +20,10 @@ namespace native_viewport {
 NativeViewportImpl::NativeViewportImpl(
     bool is_headless,
     const scoped_refptr<gles2::GpuState>& gpu_state,
-    mojo::InterfaceRequest<mojo::NativeViewport> request)
+    mojo::InterfaceRequest<mojo::NativeViewport> request,
+    scoped_ptr<mojo::AppRefCount> app_refcount)
     : is_headless_(is_headless),
+      app_refcount_(app_refcount.Pass()),
       context_provider_(new OnscreenContextProvider(gpu_state)),
       sent_metrics_(false),
       metrics_(mojo::ViewportMetrics::New()),

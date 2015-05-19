@@ -15,9 +15,12 @@
 
 namespace mojo {
 
-NetworkServiceImpl::NetworkServiceImpl(ApplicationConnection* connection,
-                                       NetworkContext* context)
+NetworkServiceImpl::NetworkServiceImpl(
+    ApplicationConnection* connection,
+    NetworkContext* context,
+    scoped_ptr<mojo::AppRefCount> app_refcount)
     : context_(context),
+      app_refcount_(app_refcount.Pass()),
       origin_(GURL(connection->GetRemoteApplicationURL()).GetOrigin()) {
 }
 
@@ -29,22 +32,24 @@ void NetworkServiceImpl::CreateURLLoader(InterfaceRequest<URLLoader> loader) {
   // The loader will delete itself when the pipe is closed, unless a request is
   // in progress. In which case, the loader will delete itself when the request
   // is finished.
-  new URLLoaderImpl(context_, loader.Pass());
+  new URLLoaderImpl(context_, loader.Pass(), app_refcount_->Clone());
 }
 
 void NetworkServiceImpl::GetCookieStore(InterfaceRequest<CookieStore> store) {
-  BindToRequest(new CookieStoreImpl(context_, origin_), &store);
+  BindToRequest(new CookieStoreImpl(context_, origin_, app_refcount_->Clone()),
+                &store);
 }
 
 void NetworkServiceImpl::CreateWebSocket(InterfaceRequest<WebSocket> socket) {
-  BindToRequest(new WebSocketImpl(context_), &socket);
+  BindToRequest(new WebSocketImpl(context_, app_refcount_->Clone()), &socket);
 }
 
 void NetworkServiceImpl::CreateTCPBoundSocket(
     NetAddressPtr local_address,
     InterfaceRequest<TCPBoundSocket> bound_socket,
     const CreateTCPBoundSocketCallback& callback) {
-  scoped_ptr<TCPBoundSocketImpl> bound(new TCPBoundSocketImpl);
+  scoped_ptr<TCPBoundSocketImpl> bound(new TCPBoundSocketImpl(
+      app_refcount_->Clone()));
   int net_error = bound->Bind(local_address.Pass());
   if (net_error != net::OK) {
     callback.Run(MakeNetworkError(net_error), NetAddressPtr());
@@ -69,14 +74,15 @@ void NetworkServiceImpl::CreateTCPConnectedSocket(
 
 void NetworkServiceImpl::CreateUDPSocket(InterfaceRequest<UDPSocket> request) {
   // The lifetime of this UDPSocketImpl is bound to that of the underlying pipe.
-  new UDPSocketImpl(request.Pass());
+  new UDPSocketImpl(request.Pass(), app_refcount_->Clone());
 }
 
 void NetworkServiceImpl::CreateHttpServer(
     NetAddressPtr local_address,
     HttpServerDelegatePtr delegate,
     const CreateHttpServerCallback& callback) {
-  HttpServerImpl::Create(local_address.Pass(), delegate.Pass(), callback);
+  HttpServerImpl::Create(local_address.Pass(), delegate.Pass(),
+                         app_refcount_->Clone(), callback);
 }
 
 }  // namespace mojo

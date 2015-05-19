@@ -24,10 +24,13 @@ void AdaptSetCookieCallback(const Callback<void(bool)>& callback,
 
 }  // namespace
 
-CookieStoreImpl::CookieStoreImpl(NetworkContext* context,
-                                 const GURL& origin)
+CookieStoreImpl::CookieStoreImpl(
+    NetworkContext* context,
+    const GURL& origin,
+    scoped_ptr<mojo::AppRefCount> app_refcount)
     : context_(context),
-      origin_(origin) {
+      origin_(origin),
+      app_refcount_(app_refcount.Pass()) {
 }
 
 CookieStoreImpl::~CookieStoreImpl() {

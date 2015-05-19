@@ -12,7 +12,9 @@
 
 namespace mojo {
 
-TCPBoundSocketImpl::TCPBoundSocketImpl() {
+TCPBoundSocketImpl::TCPBoundSocketImpl(
+    scoped_ptr<mojo::AppRefCount> app_refcount)
+    : app_refcount_(app_refcount.Pass()) {
 }
 
 TCPBoundSocketImpl::~TCPBoundSocketImpl() {
@@ -63,7 +65,9 @@ void TCPBoundSocketImpl::StartListening(
   }
 
   // The server socket object takes ownership of the socket.
-  BindToRequest(new TCPServerSocketImpl(socket_.Pass()), &server);
+  BindToRequest(
+      new TCPServerSocketImpl(socket_.Pass(), app_refcount_->Clone()),
+      &server);
   callback.Run(MakeNetworkError(net::OK));
 }
 
@@ -106,7 +110,8 @@ void TCPBoundSocketImpl::OnConnected(int result) {
   if (result == net::OK) {
     new TCPConnectedSocketImpl(
         socket_.Pass(), pending_connect_send_stream_.Pass(),
-        pending_connect_receive_stream_.Pass(), pending_connect_socket_.Pass());
+        pending_connect_receive_stream_.Pass(), pending_connect_socket_.Pass(),
+        app_refcount_->Clone());
   } else {
     pending_connect_send_stream_.reset();
     pending_connect_receive_stream_.reset();

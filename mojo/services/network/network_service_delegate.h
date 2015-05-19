@@ -32,6 +32,7 @@ class NetworkServiceDelegate
 
  private:
   scoped_ptr<mojo::NetworkContext> context_;
+  mojo::AppLifetimeHelper app_lifetime_helper_;
 };
 
 #endif  // MOJO_SERVICES_NETWORK_NETWORK_SERVICE_DELEGATE_H_

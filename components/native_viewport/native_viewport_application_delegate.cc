@@ -49,7 +49,8 @@ void NativeViewportApplicationDelegate::Create(
     mojo::InterfaceRequest<mojo::NativeViewport> request) {
   if (!gpu_state_.get())
     gpu_state_ = new gles2::GpuState;
-  new NativeViewportImpl(is_headless_, gpu_state_, request.Pass());
+  new NativeViewportImpl(is_headless_, gpu_state_, request.Pass(),
+                         app_lifetime_helper_.CreateAppRefCount());
 }
 
 void NativeViewportApplicationDelegate::Create(
