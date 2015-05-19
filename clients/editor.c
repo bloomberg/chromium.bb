@@ -570,7 +570,8 @@ data_source_send(void *data,
 {
 	struct editor *editor = data;
 
-	write(fd, editor->selected_text, strlen(editor->selected_text) + 1);
+	if (write(fd, editor->selected_text, strlen(editor->selected_text) + 1) < 0)
+		fprintf(stderr, "write failed: %m\n");
 }
 
 static void
