@@ -33,11 +33,6 @@ TiclProfileSettingsProvider::~TiclProfileSettingsProvider() {
 }
 
 bool TiclProfileSettingsProvider::UseGCMChannel() const {
-  if (!gcm::GCMProfileService::IsGCMEnabled(profile_)) {
-    // Do not try to use GCM channel if GCM is disabled.
-    return false;
-  }
-
   if (profile_->GetPrefs()->GetBoolean(
           prefs::kInvalidationServiceUseGCMChannel)) {
     // Use GCM channel if it was enabled via prefs.
