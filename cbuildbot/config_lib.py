@@ -258,18 +258,24 @@ class HWTestConfig(object):
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
 
+
 class Config(dict):
   """This holds a set of named BuildConfig values."""
 
-  def __init__(self, defaults):
+  def __init__(self, defaults=None):
+    """Init."""
     super(Config, self).__init__()
-    self._defaults = defaults
+    self._defaults = {} if defaults is None else defaults
 
   def GetDefault(self):
     """Create the cannonical default build configuration."""
     # Enumeration of valid settings; any/all config settings must be in this.
     # All settings must be documented.
     return BuildConfig(**self._defaults)
+
+  #
+  # Methods used when creating a Config programatically.
+  #
 
   def AddConfig(self, config, name, *args, **kwargs):
     """Derive and add the config to cbuildbot's usable config targets

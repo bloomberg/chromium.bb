@@ -74,26 +74,26 @@ def _DecodeDict(data):
   return rv
 
 
-def _LoadHwTestConfig(jsonString):
-  """Load a HWTestConfig object from it's JSON encoding."""
+def _CreateHwTestConfig(jsonString):
+  """Create a HWTestConfig object from a JSON string."""
   # Each HW Test is dumped as a json string embedded in json.
   hw_test_config = json.loads(jsonString, object_hook=_DecodeDict)
   return HWTestConfig(**hw_test_config)
 
 
-def _LoadBuildConfig(default, parsedJson):
-  """Load a BuildConfig object from it's JSON encoding."""
+def _CreateBuildConfig(default, build_dict):
+  """Create a BuildConfig object from it's parsed JSON dictionary encoding."""
   # These build config values need special handling.
-  hwtests = parsedJson.pop('hw_tests', None)
-  child_configs = parsedJson.pop('child_configs', None)
+  hwtests = build_dict.pop('hw_tests', None)
+  child_configs = build_dict.pop('child_configs', None)
 
-  result = default.derive(**parsedJson)
+  result = default.derive(**build_dict)
 
   if hwtests is not None:
-    result['hw_tests'] = [_LoadHwTestConfig(hwtest) for hwtest in hwtests]
+    result['hw_tests'] = [_CreateHwTestConfig(hwtest) for hwtest in hwtests]
 
   if child_configs is not None:
-    result['child_configs'] = [_LoadBuildConfig(default, child)
+    result['child_configs'] = [_CreateBuildConfig(default, child)
                                for child in child_configs]
 
   return result
@@ -107,27 +107,29 @@ def _LoadConfig():
                              'config_dump.json')
 
   with open(config_file) as fh:
-    config = json.load(fh, object_hook=_DecodeDict)
+    config_dict = json.load(fh, object_hook=_DecodeDict)
 
-  # _DEFAULT is a dictionary of default build configuration values.
-  default = config.pop(DEFAULT_BUILD_CONFIG)
+  # defaults is a dictionary of default build configuration values.
+  defaults = config_dict.pop(DEFAULT_BUILD_CONFIG)
 
-  defaultBuildConfig = BuildConfig(**default)
+  defaultBuildConfig = BuildConfig(**defaults)
 
-  # _CONFIG is a dictionary mapping build name to BuildConfigs.
-  config = {n: _LoadBuildConfig(defaultBuildConfig, v)
-            for n, v in config.iteritems()}
+  builds = {n: _CreateBuildConfig(defaultBuildConfig, v)
+            for n, v in config_dict.iteritems()}
 
-  return config, default
+  # config is the struct that holds the complete cbuildbot config.
+  result = Config(defaults=defaults)
+  result.update(builds)
+
+  return result
 
 
 def GetConfig():
   """Fetch the global cbuildbot config."""
-  config, _ = _LoadConfig()
-  return config
+  return _LoadConfig()
 
 
 def GetDefault():
   """Fetch the global default BuildConfig."""
-  _, default = _LoadConfig()
-  return default
+  config = _LoadConfig()
+  return config.GetDefault()
