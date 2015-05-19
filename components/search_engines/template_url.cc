@@ -28,6 +28,7 @@
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 namespace {
@@ -686,6 +687,18 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_SUGGEST_REQUEST_ID, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
+  } else if (parameter == "yandex:searchPath") {
+    switch (ui::GetDeviceFormFactor()) {
+      case ui::DEVICE_FORM_FACTOR_DESKTOP:
+        url->insert(start, "yandsearch");
+        break;
+      case ui::DEVICE_FORM_FACTOR_PHONE:
+        url->insert(start, "touchsearch");
+        break;
+      case ui::DEVICE_FORM_FACTOR_TABLET:
+        url->insert(start, "padsearch");
+        break;
+    }
   } else if (parameter == kInputEncodingParameter) {
     replacements->push_back(Replacement(ENCODING, start));
   } else if (parameter == kLanguageParameter) {
