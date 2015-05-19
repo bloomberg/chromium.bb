@@ -760,6 +760,12 @@ GLenum Texture::SetParameteri(
   }
 
   switch (pname) {
+    case GL_TEXTURE_MIN_LOD:
+    case GL_TEXTURE_MAX_LOD:
+      {
+        GLfloat fparam = static_cast<GLfloat>(param);
+        return SetParameterf(feature_info, pname, fparam);
+      }
     case GL_TEXTURE_MIN_FILTER:
       if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
@@ -849,8 +855,13 @@ GLenum Texture::SetParameterf(
     case GL_TEXTURE_MIN_FILTER:
     case GL_TEXTURE_MAG_FILTER:
     case GL_TEXTURE_POOL_CHROMIUM:
+    case GL_TEXTURE_WRAP_R:
     case GL_TEXTURE_WRAP_S:
     case GL_TEXTURE_WRAP_T:
+    case GL_TEXTURE_COMPARE_FUNC:
+    case GL_TEXTURE_COMPARE_MODE:
+    case GL_TEXTURE_BASE_LEVEL:
+    case GL_TEXTURE_MAX_LEVEL:
     case GL_TEXTURE_USAGE_ANGLE:
       {
         GLint iparam = static_cast<GLint>(param);
