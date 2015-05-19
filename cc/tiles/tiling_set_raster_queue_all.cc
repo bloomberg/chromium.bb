@@ -158,14 +158,18 @@ TilingSetRasterQueueAll::OnePriorityRectIterator::OnePriorityRectIterator(
 template <typename TilingIteratorType>
 void TilingSetRasterQueueAll::OnePriorityRectIterator::AdvanceToNextTile(
     TilingIteratorType* iterator) {
-  bool found_tile = false;
-  while (!found_tile) {
+  for (;;) {
     ++(*iterator);
     if (!(*iterator)) {
       current_tile_ = PrioritizedTile();
       break;
     }
-    found_tile = GetFirstTileAndCheckIfValid(iterator);
+    Tile* tile = tiling_->TileAt(iterator->index_x(), iterator->index_y());
+    if (IsTileValid(tile)) {
+      tiling_->UpdateRequiredStatesOnTile(tile);
+      current_tile_ = tiling_->MakePrioritizedTile(tile, priority_rect_type_);
+      break;
+    }
   }
 }
 
@@ -173,20 +177,26 @@ template <typename TilingIteratorType>
 bool TilingSetRasterQueueAll::OnePriorityRectIterator::
     GetFirstTileAndCheckIfValid(TilingIteratorType* iterator) {
   Tile* tile = tiling_->TileAt(iterator->index_x(), iterator->index_y());
-  if (!tile || !TileNeedsRaster(tile)) {
-    current_tile_ = PrioritizedTile();
-    return false;
-  }
-  // After the pending visible rect has been processed, we must return false
-  // for pending visible rect tiles as tiling iterators do not ignore those
-  // tiles.
-  if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT &&
-      tiling_->pending_visible_rect().Intersects(tile->content_rect())) {
+  if (!IsTileValid(tile)) {
     current_tile_ = PrioritizedTile();
     return false;
   }
   tiling_->UpdateRequiredStatesOnTile(tile);
   current_tile_ = tiling_->MakePrioritizedTile(tile, priority_rect_type_);
+  return true;
+}
+
+bool TilingSetRasterQueueAll::OnePriorityRectIterator::IsTileValid(
+    const Tile* tile) const {
+  if (!tile || !TileNeedsRaster(tile))
+    return false;
+  // After the pending visible rect has been processed, we must return false
+  // for pending visible rect tiles as tiling iterators do not ignore those
+  // tiles.
+  if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT &&
+      tiling_->pending_visible_rect().Intersects(tile->content_rect())) {
+    return false;
+  }
   return true;
 }
 
