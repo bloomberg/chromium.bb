@@ -175,7 +175,7 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptState* sc
 
 bool V8AbstractEventListener::belongsToTheCurrentWorld() const
 {
-    return isolate()->InContext() && &world() == &DOMWrapperWorld::current(isolate());
+    return ScriptState::hasCurrentScriptState(isolate()) && &world() == &DOMWrapperWorld::current(isolate());
 }
 
 void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener> &data)

@@ -10,6 +10,7 @@
 #include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include <v8-debug.h>
 #include <v8.h>
 
 namespace blink {
@@ -53,6 +54,17 @@ public:
     static ScriptState* current(v8::Isolate* isolate)
     {
         return from(isolate->GetCurrentContext());
+    }
+
+    // Debugger context doesn't have associated ScriptState and when current
+    // context is debugger it should be treated as if context stack was empty.
+    static bool hasCurrentScriptState(v8::Isolate* isolate)
+    {
+        v8::HandleScope scope(isolate);
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
+        if (context.IsEmpty())
+            return false;
+        return context != v8::Debug::GetDebugContext();
     }
 
     static ScriptState* from(v8::Local<v8::Context> context)
