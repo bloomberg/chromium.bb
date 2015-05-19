@@ -5,17 +5,6 @@
     "git_repo_url": "https://chromium.googlesource.com/chromium/src",
     "hide_ref_in_committed_msg": true,
     "max_commit_burst": 2,
-    "project_bases_legacy": [
-        "^svn\\:\\/\\/svn\\.chromium\\.org\\/chrome/trunk/src(|/.*)$",
-        "^svn\\:\\/\\/chrome\\-svn\\/chrome/trunk/src(|/.*)$",
-        "^svn\\:\\/\\/chrome\\-svn\\.corp\\/chrome/trunk/src(|/.*)$",
-        "^svn\\:\\/\\/chrome\\-svn\\.corp\\.google\\.com\\/chrome/trunk/src(|/.*)$",
-        "^http\\:\\/\\/src\\.chromium\\.org\\/svn/trunk/src(|/.*)$",
-        "^https\\:\\/\\/src\\.chromium\\.org\\/svn/trunk/src(|/.*)$",
-        "^http\\:\\/\\/src\\.chromium\\.org\\/chrome/trunk/src(|/.*)$",
-        "^https\\:\\/\\/src\\.chromium\\.org\\/chrome/trunk/src(|/.*)$"
-    ],
-    "project_bases_legacy_from_git_repo_url": true,
     "remote_branch": "refs/pending/heads/master",
     "rietveld_url": "https://codereview.chromium.org",
     "rietveld_user": "commit-bot@chromium.org",
