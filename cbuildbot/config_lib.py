@@ -7,8 +7,10 @@
 from __future__ import print_function
 
 import copy
+import json
 
 from chromite.cbuildbot import constants
+from chromite.lib import osutils
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
 
@@ -54,6 +56,12 @@ CONFIG_TYPE_DUMP_ORDER = (
     constants.BRANCH_UTIL_CONFIG,
     constants.PAYLOADS_TYPE,
 )
+
+
+# In the Json, this special build config holds the default values for all
+# other configs.
+DEFAULT_BUILD_CONFIG = '_default'
+
 
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
@@ -321,3 +329,93 @@ class Config(dict):
     """
     child_configs = [self.GetDefault().derive(x, grouped=True) for x in args]
     return self.AddConfig(args[0], name, child_configs=child_configs, **kwargs)
+
+
+
+#
+# Methods related to loading/saving to Json.
+#
+
+def CreateConfigFromFile(config_file):
+  """Load a Config a Json encoded file."""
+  json_string = osutils.ReadFile(config_file)
+  return CreateConfigFromString(json_string)
+
+
+def CreateConfigFromString(json_string):
+  """Load a cbuildbot config from it's Json encoded string."""
+  config_dict = json.loads(json_string, object_hook=_DecodeDict)
+
+  # default is a dictionary of default build configuration values.
+  defaults = config_dict.pop(DEFAULT_BUILD_CONFIG)
+
+  defaultBuildConfig = BuildConfig(**defaults)
+
+  builds = {n: _CreateBuildConfig(defaultBuildConfig, v)
+            for n, v in config_dict.iteritems()}
+
+  # config is the struct that holds the complete cbuildbot config.
+  result = Config(defaults=defaults)
+  result.update(builds)
+
+  return result
+
+
+def _DecodeList(data):
+  """Convert a JSON result list from unicode to utf-8."""
+  rv = []
+  for item in data:
+    if isinstance(item, unicode):
+      item = item.encode('utf-8')
+    elif isinstance(item, list):
+      item = _DecodeList(item)
+    elif isinstance(item, dict):
+      item = _DecodeDict(item)
+
+    # Other types (None, int, float, etc) are stored unmodified.
+    rv.append(item)
+  return rv
+
+
+def _DecodeDict(data):
+  """Convert a JSON result dict from unicode to utf-8."""
+  rv = {}
+  for key, value in data.iteritems():
+    if isinstance(key, unicode):
+      key = key.encode('utf-8')
+
+    if isinstance(value, unicode):
+      value = value.encode('utf-8')
+    elif isinstance(value, list):
+      value = _DecodeList(value)
+    elif isinstance(value, dict):
+      value = _DecodeDict(value)
+
+    # Other types (None, int, float, etc) are stored unmodified.
+    rv[key] = value
+  return rv
+
+
+def _CreateHwTestConfig(jsonString):
+  """Create a HWTestConfig object from a JSON string."""
+  # Each HW Test is dumped as a json string embedded in json.
+  hw_test_config = json.loads(jsonString, object_hook=_DecodeDict)
+  return HWTestConfig(**hw_test_config)
+
+
+def _CreateBuildConfig(default, build_dict):
+  """Create a BuildConfig object from it's parsed JSON dictionary encoding."""
+  # These build config values need special handling.
+  hwtests = build_dict.pop('hw_tests', None)
+  child_configs = build_dict.pop('child_configs', None)
+
+  result = default.derive(**build_dict)
+
+  if hwtests is not None:
+    result['hw_tests'] = [_CreateHwTestConfig(hwtest) for hwtest in hwtests]
+
+  if child_configs is not None:
+    result['child_configs'] = [_CreateBuildConfig(default, child)
+                               for child in child_configs]
+
+  return result

@@ -147,3 +147,6 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
       if not isinstance(x, set):
         self.assertRaises(AssertionError, self.AssertDeepCopy, x,
                           copy_x, copy.copy(x))
+
+class ConfigClassTest(cros_test_lib.TestCase):
+  """Config tests."""
