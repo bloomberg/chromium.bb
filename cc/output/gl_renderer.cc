@@ -452,9 +452,8 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   }
 }
 
-static ResourceProvider::ResourceId WaitOnResourceSyncPoints(
-    ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id) {
+static ResourceId WaitOnResourceSyncPoints(ResourceProvider* resource_provider,
+                                           ResourceId resource_id) {
   resource_provider->WaitSyncPointIfNeeded(resource_id);
   return resource_id;
 }
@@ -1641,7 +1640,7 @@ void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
 
 void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
                                  const ContentDrawQuadBase* quad,
-                                 ResourceProvider::ResourceId resource_id,
+                                 ResourceId resource_id,
                                  const gfx::QuadF* clip_region) {
   gfx::Transform device_transform =
       frame->window_matrix * frame->projection_matrix * quad->quadTransform();
@@ -1661,7 +1660,7 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
 
 void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
                                    const ContentDrawQuadBase* quad,
-                                   ResourceProvider::ResourceId resource_id,
+                                   ResourceId resource_id,
                                    const gfx::Transform& device_transform,
                                    const gfx::QuadF* clip_region) {
   if (!device_transform.IsInvertible())
@@ -1781,7 +1780,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
 
 void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
                                      const ContentDrawQuadBase* quad,
-                                     ResourceProvider::ResourceId resource_id,
+                                     ResourceId resource_id,
                                      const gfx::QuadF* clip_region) {
   gfx::RectF tex_coord_rect = MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, quad->rect, quad->visible_rect);

@@ -461,11 +461,10 @@ bool ResourceProvider::AllowOverlay(ResourceId id) {
   return resource->allow_overlay;
 }
 
-ResourceProvider::ResourceId ResourceProvider::CreateResource(
-    const gfx::Size& size,
-    GLint wrap_mode,
-    TextureHint hint,
-    ResourceFormat format) {
+ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
+                                            GLint wrap_mode,
+                                            TextureHint hint,
+                                            ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GL_TEXTURE:
@@ -484,12 +483,11 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
   return 0;
 }
 
-ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
-    const gfx::Size& size,
-    GLenum target,
-    GLint wrap_mode,
-    TextureHint hint,
-    ResourceFormat format) {
+ResourceId ResourceProvider::CreateManagedResource(const gfx::Size& size,
+                                                   GLenum target,
+                                                   GLint wrap_mode,
+                                                   TextureHint hint,
+                                                   ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GL_TEXTURE:
@@ -508,13 +506,12 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
   return 0;
 }
 
-ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
-    const gfx::Size& size,
-    GLenum target,
-    GLenum texture_pool,
-    GLint wrap_mode,
-    TextureHint hint,
-    ResourceFormat format) {
+ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
+                                             GLenum target,
+                                             GLenum texture_pool,
+                                             GLint wrap_mode,
+                                             TextureHint hint,
+                                             ResourceFormat format) {
   DCHECK_LE(size.width(), max_texture_size_);
   DCHECK_LE(size.height(), max_texture_size_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -527,8 +524,8 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
   return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
-    const gfx::Size& size, GLint wrap_mode) {
+ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
+                                          GLint wrap_mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<SharedBitmap> bitmap =
@@ -544,7 +541,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
   return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::CreateResourceFromIOSurface(
+ResourceId ResourceProvider::CreateResourceFromIOSurface(
     const gfx::Size& size,
     unsigned io_surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -564,7 +561,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromIOSurface(
   return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
+ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -963,7 +960,7 @@ void ResourceProvider::UnlockForWrite(ResourceProvider::Resource* resource) {
 
 ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id)
+    ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_id_(resource_id),
       resource_(resource_provider->LockForRead(resource_id)) {
@@ -976,7 +973,7 @@ ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
 
 ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id,
+    ResourceId resource_id,
     GLenum filter)
     : ScopedReadLockGL(resource_provider, resource_id),
       unit_(GL_TEXTURE0),
@@ -985,7 +982,7 @@ ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
 
 ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id,
+    ResourceId resource_id,
     GLenum unit,
     GLenum filter)
     : ScopedReadLockGL(resource_provider, resource_id),
@@ -998,7 +995,7 @@ ResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {
 
 ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id)
+    ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_(resource_provider->LockForWrite(resource_id)) {
   resource_provider_->LazyAllocate(resource_);
@@ -1020,9 +1017,8 @@ void ResourceProvider::PopulateSkBitmapWithResource(
 
 ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id)
-    : resource_provider_(resource_provider),
-      resource_id_(resource_id) {
+    ResourceId resource_id)
+    : resource_provider_(resource_provider), resource_id_(resource_id) {
   const Resource* resource = resource_provider->LockForRead(resource_id);
   wrap_mode_ = resource->wrap_mode;
   ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource);
@@ -1034,7 +1030,7 @@ ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
 
 ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id)
+    ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_(resource_provider->LockForWrite(resource_id)) {
   ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource_);
@@ -1048,7 +1044,7 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
 
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
-                                   ResourceProvider::ResourceId resource_id)
+                                   ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_(resource_provider->LockForWrite(resource_id)),
       gpu_memory_buffer_manager_(resource_provider->gpu_memory_buffer_manager_),
@@ -1106,7 +1102,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
 
 ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
     ResourceProvider* resource_provider,
-    ResourceProvider::ResourceId resource_id)
+    ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_(resource_provider->LockForWrite(resource_id)) {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -746,9 +746,8 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   return gfx::Size(tile_width, tile_height);
 }
 
-void PictureLayerImpl::GetContentsResourceId(
-    ResourceProvider::ResourceId* resource_id,
-    gfx::Size* resource_size) const {
+void PictureLayerImpl::GetContentsResourceId(ResourceId* resource_id,
+                                             gfx::Size* resource_size) const {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
   DCHECK_IMPLIES(!raster_source_->GetSize().IsEmpty(),

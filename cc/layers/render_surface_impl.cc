@@ -177,7 +177,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
                               debug_border_width);
   }
 
-  ResourceProvider::ResourceId mask_resource_id = 0;
+  ResourceId mask_resource_id = 0;
   gfx::Size mask_texture_size;
   gfx::Vector2dF mask_uv_scale;
   if (mask_layer && mask_layer->DrawsContent() &&

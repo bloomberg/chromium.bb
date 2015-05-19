@@ -96,7 +96,6 @@ class CC_EXPORT DrawQuad {
     return !opaque_rect.Contains(visible_rect);
   }
 
-  typedef ResourceProvider::ResourceId ResourceId;
   typedef base::Callback<ResourceId(ResourceId)> ResourceIteratorCallback;
   virtual void IterateResources(const ResourceIteratorCallback& callback) = 0;
 

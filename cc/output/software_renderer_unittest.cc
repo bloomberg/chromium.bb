@@ -153,14 +153,12 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
-  ResourceProvider::ResourceId resource_yellow =
-      resource_provider()->CreateResource(
-          outer_size, GL_CLAMP_TO_EDGE,
-          ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
-  ResourceProvider::ResourceId resource_cyan =
-      resource_provider()->CreateResource(
-          inner_size, GL_CLAMP_TO_EDGE,
-          ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+  ResourceId resource_yellow = resource_provider()->CreateResource(
+      outer_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
+  ResourceId resource_cyan = resource_provider()->CreateResource(
+      inner_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
 
   SkBitmap yellow_tile;
   yellow_tile.allocN32Pixels(outer_size.width(), outer_size.height());
@@ -240,10 +238,9 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   visible_rect.Inset(1, 2, 3, 4);
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
-  ResourceProvider::ResourceId resource_cyan =
-      resource_provider()->CreateResource(
-          tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-          RGBA_8888);
+  ResourceId resource_cyan = resource_provider()->CreateResource(
+      tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
 
   SkBitmap cyan_tile;  // The lowest five rows are yellow.
   cyan_tile.allocN32Pixels(tile_size.width(), tile_size.height());

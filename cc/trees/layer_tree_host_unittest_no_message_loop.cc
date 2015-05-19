@@ -210,7 +210,7 @@ class LayerTreeHostNoMessageLoopDelegatedLayer
 
  private:
   scoped_ptr<DelegatedFrameData> CreateFrameDataWithResource(
-      ResourceProvider::ResourceId resource_id) {
+      ResourceId resource_id) {
     scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
     gfx::Rect frame_rect(size_);
 

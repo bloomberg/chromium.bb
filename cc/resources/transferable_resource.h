@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/resource_id.h"
 #include "cc/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/gfx/geometry/size.h"
@@ -28,7 +29,7 @@ struct CC_EXPORT TransferableResource {
   static void ReturnResources(const TransferableResourceArray& input,
                               ReturnedResourceArray* output);
 
-  unsigned id;
+  ResourceId id;
   ResourceFormat format;
   uint32 filter;
   gfx::Size size;

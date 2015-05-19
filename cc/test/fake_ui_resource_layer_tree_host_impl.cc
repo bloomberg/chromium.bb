@@ -34,14 +34,13 @@ void FakeUIResourceLayerTreeHostImpl::CreateUIResource(
 }
 
 void FakeUIResourceLayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
-  ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
+  ResourceId id = ResourceIdForUIResource(uid);
   if (id)
     fake_ui_resource_map_.erase(uid);
 }
 
-ResourceProvider::ResourceId
-    FakeUIResourceLayerTreeHostImpl::ResourceIdForUIResource(
-        UIResourceId uid) const {
+ResourceId FakeUIResourceLayerTreeHostImpl::ResourceIdForUIResource(
+    UIResourceId uid) const {
   UIResourceMap::const_iterator iter = fake_ui_resource_map_.find(uid);
   if (iter != fake_ui_resource_map_.end())
     return iter->second.resource_id;

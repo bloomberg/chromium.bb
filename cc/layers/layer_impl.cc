@@ -379,7 +379,7 @@ RenderPassId LayerImpl::NextContributingRenderPassId(RenderPassId id) const {
   return RenderPassId(0, 0);
 }
 
-void LayerImpl::GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+void LayerImpl::GetContentsResourceId(ResourceId* resource_id,
                                       gfx::Size* resource_size) const {
   NOTREACHED();
   *resource_id = 0;
@@ -749,9 +749,8 @@ void LayerImpl::NoteLayerPropertyChangedForDescendants() {
 
 #if DCHECK_IS_ON()
 // Verify that the resource id is valid.
-static ResourceProvider::ResourceId ValidateResource(
-    const ResourceProvider* provider,
-    ResourceProvider::ResourceId id) {
+static ResourceId ValidateResource(const ResourceProvider* provider,
+                                   ResourceId id) {
   provider->ValidateResource(id);
   return id;
 }

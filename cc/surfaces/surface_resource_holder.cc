@@ -49,7 +49,7 @@ void SurfaceResourceHolder::UnrefResources(
   for (ReturnedResourceArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
-    ResourceProvider::ResourceId id = it->id;
+    unsigned id = it->id;
     ResourceIdCountMap::iterator count_it = resource_id_use_count_map_.find(id);
     if (count_it == resource_id_use_count_map_.end())
       continue;

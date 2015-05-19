@@ -109,7 +109,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
 
 void AddRenderPassQuad(TestRenderPass* to_pass,
                        TestRenderPass* contributing_pass,
-                       ResourceProvider::ResourceId mask_resource_id,
+                       ResourceId mask_resource_id,
                        const FilterOperations& filters,
                        gfx::Transform transform,
                        SkXfermode::Mode blend_mode) {

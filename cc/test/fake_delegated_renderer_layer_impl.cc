@@ -25,10 +25,9 @@ scoped_ptr<LayerImpl> FakeDelegatedRendererLayerImpl::CreateLayerImpl(
   return FakeDelegatedRendererLayerImpl::Create(tree_impl, id());
 }
 
-static ResourceProvider::ResourceId AddResourceToFrame(
-    ResourceProvider* resource_provider,
-    DelegatedFrameData* frame,
-    ResourceProvider::ResourceId resource_id) {
+static ResourceId AddResourceToFrame(ResourceProvider* resource_provider,
+                                     DelegatedFrameData* frame,
+                                     ResourceId resource_id) {
   TransferableResource resource;
   resource.id = resource_id;
   resource.mailbox_holder.texture_target =

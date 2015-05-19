@@ -58,10 +58,9 @@ class TiledLayerImplTest : public testing::Test {
 
     for (int i = 0; i < layer->TilingForTesting()->num_tiles_x(); ++i) {
       for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j) {
-        ResourceProvider::ResourceId resource_id =
-            host_impl_.resource_provider()->CreateResource(
-                gfx::Size(1, 1), GL_CLAMP_TO_EDGE,
-                ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+        ResourceId resource_id = host_impl_.resource_provider()->CreateResource(
+            gfx::Size(1, 1), GL_CLAMP_TO_EDGE,
+            ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
         layer->PushTileProperties(i, j, resource_id, false);
       }
     }
@@ -291,7 +290,7 @@ TEST_F(TiledLayerImplTest, GPUMemoryUsage) {
 
   EXPECT_EQ(layer->GPUMemoryUsageInBytes(), 0u);
 
-  ResourceProvider::ResourceId resource_id = 1;
+  ResourceId resource_id = 1;
   layer->PushTileProperties(0, 1, resource_id++, false);
   layer->PushTileProperties(2, 3, resource_id++, false);
   layer->PushTileProperties(2, 0, resource_id++, false);
@@ -300,7 +299,7 @@ TEST_F(TiledLayerImplTest, GPUMemoryUsage) {
       layer->GPUMemoryUsageInBytes(),
       static_cast<size_t>(3 * 4 * tile_size.width() * tile_size.height()));
 
-  ResourceProvider::ResourceId empty_resource(0);
+  ResourceId empty_resource(0);
   layer->PushTileProperties(0, 1, empty_resource, false);
   layer->PushTileProperties(2, 3, empty_resource, false);
   layer->PushTileProperties(2, 0, empty_resource, false);
@@ -314,7 +313,7 @@ TEST_F(TiledLayerImplTest, EmptyMask) {
   scoped_ptr<TiledLayerImpl> layer =
       CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
 
-  ResourceProvider::ResourceId mask_resource_id;
+  ResourceId mask_resource_id;
   gfx::Size mask_texture_size;
   layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
   EXPECT_EQ(0u, mask_resource_id);
@@ -342,10 +341,9 @@ TEST_F(TiledLayerImplTest, Occlusion) {
 
   for (int i = 0; i < tiled_layer->TilingForTesting()->num_tiles_x(); ++i) {
     for (int j = 0; j < tiled_layer->TilingForTesting()->num_tiles_y(); ++j) {
-      ResourceProvider::ResourceId resource_id =
-          impl.resource_provider()->CreateResource(
-              gfx::Size(1, 1), GL_CLAMP_TO_EDGE,
-              ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      ResourceId resource_id = impl.resource_provider()->CreateResource(
+          gfx::Size(1, 1), GL_CLAMP_TO_EDGE,
+          ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
       tiled_layer->PushTileProperties(i, j, resource_id, false);
     }
   }

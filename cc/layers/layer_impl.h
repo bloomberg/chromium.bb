@@ -255,7 +255,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 #endif
   }
 
-  virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+  virtual void GetContentsResourceId(ResourceId* resource_id,
                                      gfx::Size* resource_size) const;
 
   virtual bool HasDelegatedContent() const;

@@ -14,7 +14,7 @@ namespace cc {
 
 RenderPassDrawQuad::RenderPassDrawQuad()
     : render_pass_id(RenderPassId(-1, -1)),
-      mask_resource_id(static_cast<ResourceProvider::ResourceId>(-1)) {
+      mask_resource_id(static_cast<ResourceId>(-1)) {
 }
 
 RenderPassDrawQuad::~RenderPassDrawQuad() {
@@ -24,7 +24,7 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& visible_rect,
                                 RenderPassId render_pass_id,
-                                ResourceProvider::ResourceId mask_resource_id,
+                                ResourceId mask_resource_id,
                                 const gfx::Vector2dF& mask_uv_scale,
                                 const gfx::Size& mask_texture_size,
                                 const FilterOperations& filters,
@@ -55,7 +55,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& visible_rect,
                                 bool needs_blending,
                                 RenderPassId render_pass_id,
-                                ResourceProvider::ResourceId mask_resource_id,
+                                ResourceId mask_resource_id,
                                 const gfx::Vector2dF& mask_uv_scale,
                                 const gfx::Size& mask_texture_size,
                                 const FilterOperations& filters,

@@ -19,7 +19,7 @@ class CC_EXPORT Resource {
         size_(size),
         format_(format) {}
 
-  ResourceProvider::ResourceId id() const { return id_; }
+  ResourceId id() const { return id_; }
   gfx::Size size() const { return size_; }
   ResourceFormat format() const { return format_; }
   size_t bytes() const;
@@ -31,14 +31,14 @@ class CC_EXPORT Resource {
   }
 
  protected:
-  void set_id(ResourceProvider::ResourceId id) { id_ = id; }
+  void set_id(ResourceId id) { id_ = id; }
   void set_dimensions(const gfx::Size& size, ResourceFormat format) {
     size_ = size;
     format_ = format;
   }
 
  private:
-  ResourceProvider::ResourceId id_;
+  ResourceId id_;
   gfx::Size size_;
   ResourceFormat format_;
 

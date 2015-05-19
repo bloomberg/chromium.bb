@@ -29,10 +29,8 @@ class DrawableTile : public LayerTilingData::Tile {
     return make_scoped_ptr(new DrawableTile());
   }
 
-  ResourceProvider::ResourceId resource_id() const { return resource_id_; }
-  void set_resource_id(ResourceProvider::ResourceId resource_id) {
-    resource_id_ = resource_id;
-  }
+  ResourceId resource_id() const { return resource_id_; }
+  void set_resource_id(ResourceId resource_id) { resource_id_ = resource_id; }
   bool contents_swizzled() { return contents_swizzled_; }
   void set_contents_swizzled(bool contents_swizzled) {
     contents_swizzled_ = contents_swizzled;
@@ -41,7 +39,7 @@ class DrawableTile : public LayerTilingData::Tile {
  private:
   DrawableTile() : resource_id_(0), contents_swizzled_(false) {}
 
-  ResourceProvider::ResourceId resource_id_;
+  ResourceId resource_id_;
   bool contents_swizzled_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawableTile);
@@ -61,9 +59,8 @@ TiledLayerImpl::TiledLayerImpl(
 TiledLayerImpl::~TiledLayerImpl() {
 }
 
-void TiledLayerImpl::GetContentsResourceId(
-    ResourceProvider::ResourceId* resource_id,
-    gfx::Size* resource_size) const {
+void TiledLayerImpl::GetContentsResourceId(ResourceId* resource_id,
+                                           gfx::Size* resource_size) const {
   // This function is only valid for single texture layers, e.g. masks.
   DCHECK(tiler_);
   // It's possible the mask layer is created but has no size or otherwise
@@ -287,11 +284,10 @@ void TiledLayerImpl::SetTilingData(const LayerTilingData& tiler) {
   *tiler_ = tiler;
 }
 
-void TiledLayerImpl::PushTileProperties(
-    int i,
-    int j,
-    ResourceProvider::ResourceId resource_id,
-    bool contents_swizzled) {
+void TiledLayerImpl::PushTileProperties(int i,
+                                        int j,
+                                        ResourceId resource_id,
+                                        bool contents_swizzled) {
   DrawableTile* tile = TileAt(i, j);
   if (!tile)
     tile = CreateTile(i, j);

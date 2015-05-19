@@ -1370,7 +1370,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   // Mask layers have a tiling with a single tile in it.
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
   // The mask resource exists.
-  ResourceProvider::ResourceId mask_resource_id;
+  ResourceId mask_resource_id;
   gfx::Size mask_texture_size;
   active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
   EXPECT_NE(0u, mask_resource_id);
@@ -1512,7 +1512,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   // Mask layers have a tiling with a single tile in it.
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
   // The mask resource exists.
-  ResourceProvider::ResourceId mask_resource_id;
+  ResourceId mask_resource_id;
   gfx::Size mask_texture_size;
   active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
   EXPECT_NE(0u, mask_resource_id);

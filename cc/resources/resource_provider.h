@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/resource_id.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/release_callback_impl.h"
@@ -62,7 +63,6 @@ class CC_EXPORT ResourceProvider {
   struct Resource;
 
  public:
-  typedef unsigned ResourceId;
   typedef std::vector<ResourceId> ResourceIdArray;
   typedef base::hash_set<ResourceId> ResourceIdSet;
   typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
@@ -220,7 +220,7 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedReadLockGL {
    public:
     ScopedReadLockGL(ResourceProvider* resource_provider,
-                     ResourceProvider::ResourceId resource_id);
+                     ResourceId resource_id);
     virtual ~ScopedReadLockGL();
 
     unsigned texture_id() const { return resource_->gl_id; }
@@ -228,7 +228,7 @@ class CC_EXPORT ResourceProvider {
 
    protected:
     ResourceProvider* resource_provider_;
-    ResourceProvider::ResourceId resource_id_;
+    ResourceId resource_id_;
 
    private:
     const ResourceProvider::Resource* resource_;
@@ -239,10 +239,10 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedSamplerGL : public ScopedReadLockGL {
    public:
     ScopedSamplerGL(ResourceProvider* resource_provider,
-                    ResourceProvider::ResourceId resource_id,
+                    ResourceId resource_id,
                     GLenum filter);
     ScopedSamplerGL(ResourceProvider* resource_provider,
-                    ResourceProvider::ResourceId resource_id,
+                    ResourceId resource_id,
                     GLenum unit,
                     GLenum filter);
     ~ScopedSamplerGL() override;
@@ -259,7 +259,7 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedWriteLockGL {
    public:
     ScopedWriteLockGL(ResourceProvider* resource_provider,
-                      ResourceProvider::ResourceId resource_id);
+                      ResourceId resource_id);
     ~ScopedWriteLockGL();
 
     unsigned texture_id() const { return texture_id_; }
@@ -275,7 +275,7 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedReadLockSoftware {
    public:
     ScopedReadLockSoftware(ResourceProvider* resource_provider,
-                           ResourceProvider::ResourceId resource_id);
+                           ResourceId resource_id);
     ~ScopedReadLockSoftware();
 
     const SkBitmap* sk_bitmap() const {
@@ -288,7 +288,7 @@ class CC_EXPORT ResourceProvider {
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceProvider::ResourceId resource_id_;
+    ResourceId resource_id_;
     SkBitmap sk_bitmap_;
     GLint wrap_mode_;
 
@@ -298,7 +298,7 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedWriteLockSoftware {
    public:
     ScopedWriteLockSoftware(ResourceProvider* resource_provider,
-                            ResourceProvider::ResourceId resource_id);
+                            ResourceId resource_id);
     ~ScopedWriteLockSoftware();
 
     SkBitmap& sk_bitmap() { return sk_bitmap_; }
@@ -316,7 +316,7 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedWriteLockGpuMemoryBuffer {
    public:
     ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
-                                   ResourceProvider::ResourceId resource_id);
+                                   ResourceId resource_id);
     ~ScopedWriteLockGpuMemoryBuffer();
 
     gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
@@ -336,7 +336,7 @@ class CC_EXPORT ResourceProvider {
   class CC_EXPORT ScopedWriteLockGr {
    public:
     ScopedWriteLockGr(ResourceProvider* resource_provider,
-                      ResourceProvider::ResourceId resource_id);
+                      ResourceId resource_id);
     ~ScopedWriteLockGr();
 
     void InitSkSurface(bool use_distance_field_text,

@@ -106,10 +106,9 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
                                        bool has_mailbox) {
   // TODO(danakj): Abstract out hw/sw resource create/delete from
   // ResourceProvider and stop using ResourceProvider in this class.
-  const ResourceProvider::ResourceId resource_id =
-      resource_provider_->CreateResource(
-          plane_size, GL_CLAMP_TO_EDGE,
-          ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  const ResourceId resource_id = resource_provider_->CreateResource(
+      plane_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      format);
   if (resource_id == 0)
     return all_resources_.end();
 
@@ -455,7 +454,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 // static
 void VideoResourceUpdater::RecycleResource(
     base::WeakPtr<VideoResourceUpdater> updater,
-    ResourceProvider::ResourceId resource_id,
+    ResourceId resource_id,
     uint32 sync_point,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {

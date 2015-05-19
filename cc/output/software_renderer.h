@@ -74,7 +74,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void ClearCanvas(SkColor color);
   void ClearFramebuffer(DrawingFrame* frame);
   void SetClipRect(const gfx::Rect& rect);
-  bool IsSoftwareResource(ResourceProvider::ResourceId resource_id) const;
+  bool IsSoftwareResource(ResourceId resource_id) const;
 
   void DrawCheckerboardQuad(const DrawingFrame* frame,
                             const CheckerboardDrawQuad* quad);

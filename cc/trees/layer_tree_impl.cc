@@ -1101,8 +1101,7 @@ void LayerTreeImpl::set_ui_resource_request_queue(
   ui_resource_request_queue_ = queue;
 }
 
-ResourceProvider::ResourceId LayerTreeImpl::ResourceIdForUIResource(
-    UIResourceId uid) const {
+ResourceId LayerTreeImpl::ResourceIdForUIResource(UIResourceId uid) const {
   return layer_tree_host_impl_->ResourceIdForUIResource(uid);
 }
 

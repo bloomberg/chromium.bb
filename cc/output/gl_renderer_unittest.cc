@@ -1558,7 +1558,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   RenderPassId root_pass_id(1, 0);
   TestRenderPass* root_pass;
 
-  ResourceProvider::ResourceId mask = resource_provider_->CreateResource(
+  ResourceId mask = resource_provider_->CreateResource(
       gfx::Size(20, 12), GL_CLAMP_TO_EDGE,
       ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider_->best_texture_format());
@@ -2169,9 +2169,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   mailbox.set_allow_overlay(true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceProvider::ResourceId resource_id =
-      resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, release_callback.Pass());
+  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
+      mailbox, release_callback.Pass());
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -2296,9 +2295,8 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
   mailbox.set_allow_overlay(true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceProvider::ResourceId resource_id =
-      resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, release_callback.Pass());
+  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
+      mailbox, release_callback.Pass());
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;

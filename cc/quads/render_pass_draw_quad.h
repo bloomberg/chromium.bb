@@ -24,7 +24,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               RenderPassId render_pass_id,
-              ResourceProvider::ResourceId mask_resource_id,
+              ResourceId mask_resource_id,
               const gfx::Vector2dF& mask_uv_scale,
               const gfx::Size& mask_texture_size,
               const FilterOperations& filters,
@@ -37,7 +37,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& visible_rect,
               bool needs_blending,
               RenderPassId render_pass_id,
-              ResourceProvider::ResourceId mask_resource_id,
+              ResourceId mask_resource_id,
               const gfx::Vector2dF& mask_uv_scale,
               const gfx::Size& mask_texture_size,
               const FilterOperations& filters,
@@ -45,7 +45,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const FilterOperations& background_filters);
 
   RenderPassId render_pass_id;
-  ResourceProvider::ResourceId mask_resource_id;
+  ResourceId mask_resource_id;
   gfx::Vector2dF mask_uv_scale;
   gfx::Size mask_texture_size;
 

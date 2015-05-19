@@ -198,16 +198,16 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                     const gfx::QuadF* clip_region);
   void DrawContentQuad(const DrawingFrame* frame,
                        const ContentDrawQuadBase* quad,
-                       ResourceProvider::ResourceId resource_id,
+                       ResourceId resource_id,
                        const gfx::QuadF* clip_region);
   void DrawContentQuadAA(const DrawingFrame* frame,
                          const ContentDrawQuadBase* quad,
-                         ResourceProvider::ResourceId resource_id,
+                         ResourceId resource_id,
                          const gfx::Transform& device_transform,
                          const gfx::QuadF* clip_region);
   void DrawContentQuadNoAA(const DrawingFrame* frame,
                            const ContentDrawQuadBase* quad,
-                           ResourceProvider::ResourceId resource_id,
+                           ResourceId resource_id,
                            const gfx::QuadF* clip_region);
   void DrawYUVVideoQuad(const DrawingFrame* frame,
                         const YUVVideoDrawQuad* quad,
@@ -515,7 +515,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool use_blend_equation_advanced_coherent_;
 
   SkBitmap on_demand_tile_raster_bitmap_;
-  ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;
+  ResourceId on_demand_tile_raster_resource_id_;
   BoundGeometry bound_geometry_;
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };

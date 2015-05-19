@@ -48,7 +48,7 @@ class CC_EXPORT TileDrawInfo {
     return false;
   }
 
-  ResourceProvider::ResourceId resource_id() const {
+  ResourceId resource_id() const {
     DCHECK(mode_ == RESOURCE_MODE);
     DCHECK(resource_);
     return resource_->id();

@@ -404,7 +404,7 @@ TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
   gfx::Size size(58, 95);
-  ResourceProvider::ResourceId resource_id = 72;
+  ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
   CREATE_SHARED_STATE();
 
@@ -431,7 +431,7 @@ TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   RenderPassId render_pass_id(22, 64);
-  ResourceProvider::ResourceId mask_resource_id = 78;
+  ResourceId mask_resource_id = 78;
   gfx::Vector2dF mask_uv_scale(33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
   FilterOperations filters;
@@ -507,7 +507,7 @@ TEST(DrawQuadTest, CopySolidColorDrawQuad) {
 TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  ResourceProvider::ResourceId resource_id = 64;
+  ResourceId resource_id = 64;
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
   CREATE_SHARED_STATE();
 
@@ -642,10 +642,10 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   gfx::RectF uv_tex_coord_rect(20, 25, 15, 10);
   gfx::Size ya_tex_size(32, 68);
   gfx::Size uv_tex_size(41, 51);
-  ResourceProvider::ResourceId y_plane_resource_id = 45;
-  ResourceProvider::ResourceId u_plane_resource_id = 532;
-  ResourceProvider::ResourceId v_plane_resource_id = 4;
-  ResourceProvider::ResourceId a_plane_resource_id = 63;
+  ResourceId y_plane_resource_id = 45;
+  ResourceId u_plane_resource_id = 532;
+  ResourceId v_plane_resource_id = 4;
+  ResourceId a_plane_resource_id = 63;
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
   CREATE_SHARED_STATE();
 
@@ -725,8 +725,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
 
 class DrawQuadIteratorTest : public testing::Test {
  protected:
-  ResourceProvider::ResourceId IncrementResourceId(
-      ResourceProvider::ResourceId id) {
+  ResourceId IncrementResourceId(ResourceId id) {
     ++num_resources_;
     return id + 1;
   }
@@ -766,7 +765,7 @@ TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
   gfx::Size size(58, 95);
-  ResourceProvider::ResourceId resource_id = 72;
+  ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
 
   CREATE_SHARED_STATE();
@@ -784,7 +783,7 @@ TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   RenderPassId render_pass_id(22, 64);
-  ResourceProvider::ResourceId mask_resource_id = 78;
+  ResourceId mask_resource_id = 78;
   gfx::Vector2dF mask_uv_scale(33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
   FilterOperations filters;
@@ -829,7 +828,7 @@ TEST_F(DrawQuadIteratorTest, SolidColorDrawQuad) {
 TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  ResourceProvider::ResourceId resource_id = 64;
+  ResourceId resource_id = 64;
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
 
   CREATE_SHARED_STATE();
@@ -907,10 +906,10 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   gfx::RectF uv_tex_coord_rect(0.0f, 0.0f, 0.375f, 0.25f);
   gfx::Size ya_tex_size(32, 68);
   gfx::Size uv_tex_size(41, 51);
-  ResourceProvider::ResourceId y_plane_resource_id = 45;
-  ResourceProvider::ResourceId u_plane_resource_id = 532;
-  ResourceProvider::ResourceId v_plane_resource_id = 4;
-  ResourceProvider::ResourceId a_plane_resource_id = 63;
+  ResourceId y_plane_resource_id = 45;
+  ResourceId u_plane_resource_id = 532;
+  ResourceId v_plane_resource_id = 4;
+  ResourceId a_plane_resource_id = 63;
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
 
   CREATE_SHARED_STATE();

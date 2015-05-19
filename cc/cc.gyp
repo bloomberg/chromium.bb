@@ -74,6 +74,7 @@
         'base/math_util.h',
         'base/region.cc',
         'base/region.h',
+        'base/resource_id.h',
         'base/rolling_time_delta_history.cc',
         'base/rolling_time_delta_history.h',
         'base/scoped_ptr_algorithm.h',

@@ -15,6 +15,7 @@ source_set("base") {
     "math_util.h",
     "region.cc",
     "region.h",
+    "resource_id.h",
     "rolling_time_delta_history.cc",
     "rolling_time_delta_history.h",
     "scoped_ptr_algorithm.h",

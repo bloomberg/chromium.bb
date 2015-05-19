@@ -9,12 +9,13 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/resource_id.h"
 
 namespace cc {
 
 struct CC_EXPORT ReturnedResource {
   ReturnedResource() : id(0), sync_point(0), count(0), lost(false) {}
-  unsigned id;
+  ResourceId id;
   unsigned sync_point;
   int count;
   bool lost;

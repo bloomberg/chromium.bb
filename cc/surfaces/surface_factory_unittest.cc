@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
+#include "cc/resources/resource_provider.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -48,7 +49,7 @@ class SurfaceFactoryTest : public testing::Test {
       factory_.Destroy(surface_id_);
   }
 
-  void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
+  void SubmitFrameWithResources(ResourceId* resource_ids,
                                 size_t num_resource_ids) {
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     for (size_t i = 0u; i < num_resource_ids; ++i) {
@@ -63,7 +64,7 @@ class SurfaceFactoryTest : public testing::Test {
                          SurfaceFactory::DrawCallback());
   }
 
-  void UnrefResources(ResourceProvider::ResourceId* ids_to_unref,
+  void UnrefResources(ResourceId* ids_to_unref,
                       int* counts_to_unref,
                       size_t num_ids_to_unref) {
     ReturnedResourceArray unref_array;
@@ -76,10 +77,9 @@ class SurfaceFactoryTest : public testing::Test {
     factory_.UnrefResources(unref_array);
   }
 
-  void CheckReturnedResourcesMatchExpected(
-      ResourceProvider::ResourceId* expected_returned_ids,
-      int* expected_returned_counts,
-      size_t expected_resources) {
+  void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
+                                           int* expected_returned_counts,
+                                           size_t expected_resources) {
     const ReturnedResourceArray& actual_resources =
         client_.returned_resources();
     ASSERT_EQ(expected_resources, actual_resources.size());
@@ -107,7 +107,7 @@ class SurfaceFactoryTest : public testing::Test {
 // Tests submitting a frame with resources followed by one with no resources
 // with no resource provider action in between.
 TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
-  ResourceProvider::ResourceId first_frame_ids[] = {1, 2, 3};
+  ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitFrameWithResources(first_frame_ids, arraysize(first_frame_ids));
 
   // All of the resources submitted in the first frame are still in use at this
@@ -120,7 +120,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
   // available to be returned.
   SubmitFrameWithResources(NULL, 0);
 
-  ResourceProvider::ResourceId expected_returned_ids[] = {1, 2, 3};
+  ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
   CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                       expected_returned_counts,
@@ -130,7 +130,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
 // Tests submitting a frame with resources followed by one with no resources
 // with the resource provider holding everything alive.
 TEST_F(SurfaceFactoryTest, ResourceLifetimeSimpleWithProviderHoldingAlive) {
-  ResourceProvider::ResourceId first_frame_ids[] = {1, 2, 3};
+  ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitFrameWithResources(first_frame_ids, arraysize(first_frame_ids));
 
   // All of the resources submitted in the first frame are still in use at this
@@ -152,7 +152,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimpleWithProviderHoldingAlive) {
   int release_counts[] = {1, 1, 1};
   UnrefResources(first_frame_ids, release_counts, arraysize(first_frame_ids));
 
-  ResourceProvider::ResourceId expected_returned_ids[] = {1, 2, 3};
+  ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
   CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                       expected_returned_counts,
@@ -162,7 +162,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimpleWithProviderHoldingAlive) {
 // Tests referencing a resource, unref'ing it to zero, then using it again
 // before returning it to the client.
 TEST_F(SurfaceFactoryTest, ResourceReusedBeforeReturn) {
-  ResourceProvider::ResourceId first_frame_ids[] = {7};
+  ResourceId first_frame_ids[] = {7};
   SubmitFrameWithResources(first_frame_ids, arraysize(first_frame_ids));
 
   // This removes all references to resource id 7.
@@ -189,14 +189,14 @@ TEST_F(SurfaceFactoryTest, ResourceReusedBeforeReturn) {
 // Tests having resources referenced multiple times, as if referenced by
 // multiple providers.
 TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
-  ResourceProvider::ResourceId first_frame_ids[] = {3, 4};
+  ResourceId first_frame_ids[] = {3, 4};
   SubmitFrameWithResources(first_frame_ids, arraysize(first_frame_ids));
 
   // Ref resources from the first frame twice.
   RefCurrentFrameResources();
   RefCurrentFrameResources();
 
-  ResourceProvider::ResourceId second_frame_ids[] = {4, 5};
+  ResourceId second_frame_ids[] = {4, 5};
   SubmitFrameWithResources(second_frame_ids, arraysize(second_frame_ids));
 
   // Ref resources from the second frame 3 times.
@@ -217,7 +217,7 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
   //  5 -> 3
   {
     SCOPED_TRACE("unref all 3");
-    ResourceProvider::ResourceId ids_to_unref[] = {3, 4, 5};
+    ResourceId ids_to_unref[] = {3, 4, 5};
     int counts[] = {1, 1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
@@ -226,7 +226,7 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
 
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
-    ResourceProvider::ResourceId expected_returned_ids[] = {3};
+    ResourceId expected_returned_ids[] = {3};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                         expected_returned_counts,
@@ -238,11 +238,11 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
   //  5 -> 1
   {
     SCOPED_TRACE("unref 4 and 5");
-    ResourceProvider::ResourceId ids_to_unref[] = {4, 5};
+    ResourceId ids_to_unref[] = {4, 5};
     int counts[] = {1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
-    ResourceProvider::ResourceId expected_returned_ids[] = {5};
+    ResourceId expected_returned_ids[] = {5};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                         expected_returned_counts,
@@ -253,11 +253,11 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
   // the returned count is correct.
   {
     SCOPED_TRACE("unref only 4");
-    ResourceProvider::ResourceId ids_to_unref[] = {4};
+    ResourceId ids_to_unref[] = {4};
     int counts[] = {2};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
-    ResourceProvider::ResourceId expected_returned_ids[] = {4};
+    ResourceId expected_returned_ids[] = {4};
     int expected_returned_counts[] = {2};
     CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                         expected_returned_counts,
@@ -266,7 +266,7 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
 }
 
 TEST_F(SurfaceFactoryTest, ResourceLifetime) {
-  ResourceProvider::ResourceId first_frame_ids[] = {1, 2, 3};
+  ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitFrameWithResources(first_frame_ids, arraysize(first_frame_ids));
 
   // All of the resources submitted in the first frame are still in use at this
@@ -278,12 +278,12 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   // The second frame references some of the same resources, but some different
   // ones. We expect to receive back resource 1 with a count of 1 since it was
   // only referenced by the first frame.
-  ResourceProvider::ResourceId second_frame_ids[] = {2, 3, 4};
+  ResourceId second_frame_ids[] = {2, 3, 4};
   SubmitFrameWithResources(second_frame_ids, arraysize(second_frame_ids));
 
   {
     SCOPED_TRACE("second frame");
-    ResourceProvider::ResourceId expected_returned_ids[] = {1};
+    ResourceId expected_returned_ids[] = {1};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                         expected_returned_counts,
@@ -294,12 +294,12 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   // receive back all resources from the first and second frames. Resource IDs 2
   // and 3 will have counts of 2, since they were used in both frames, and
   // resource ID 4 will have a count of 1.
-  ResourceProvider::ResourceId third_frame_ids[] = {10, 11, 12, 13};
+  ResourceId third_frame_ids[] = {10, 11, 12, 13};
   SubmitFrameWithResources(third_frame_ids, arraysize(third_frame_ids));
 
   {
     SCOPED_TRACE("third frame");
-    ResourceProvider::ResourceId expected_returned_ids[] = {2, 3, 4};
+    ResourceId expected_returned_ids[] = {2, 3, 4};
     int expected_returned_counts[] = {2, 2, 1};
     CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                         expected_returned_counts,
@@ -309,7 +309,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   // Simulate a ResourceProvider taking a ref on all of the resources.
   RefCurrentFrameResources();
 
-  ResourceProvider::ResourceId fourth_frame_ids[] = {12, 13};
+  ResourceId fourth_frame_ids[] = {12, 13};
   SubmitFrameWithResources(fourth_frame_ids, arraysize(fourth_frame_ids));
 
   EXPECT_EQ(0u, client_.returned_resources().size());
@@ -323,14 +323,14 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   // Release resources associated with the first RefCurrentFrameResources() call
   // first.
   {
-    ResourceProvider::ResourceId ids_to_unref[] = {10, 11, 12, 13};
+    ResourceId ids_to_unref[] = {10, 11, 12, 13};
     int counts[] = {1, 1, 1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
   }
 
   {
     SCOPED_TRACE("fourth frame, first unref");
-    ResourceProvider::ResourceId expected_returned_ids[] = {10, 11};
+    ResourceId expected_returned_ids[] = {10, 11};
     int expected_returned_counts[] = {1, 1};
     CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                         expected_returned_counts,
@@ -338,7 +338,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   }
 
   {
-    ResourceProvider::ResourceId ids_to_unref[] = {12, 13};
+    ResourceId ids_to_unref[] = {12, 13};
     int counts[] = {1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
   }
@@ -352,7 +352,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
 
   {
     SCOPED_TRACE("fourth frame, second unref");
-    ResourceProvider::ResourceId expected_returned_ids[] = {12, 13};
+    ResourceId expected_returned_ids[] = {12, 13};
     int expected_returned_counts[] = {2, 2};
     CheckReturnedResourcesMatchExpected(expected_returned_ids,
                                         expected_returned_counts,

@@ -66,9 +66,8 @@ const RendererCapabilitiesImpl& DelegatingRenderer::Capabilities() const {
   return capabilities_;
 }
 
-static ResourceProvider::ResourceId AppendToArray(
-    ResourceProvider::ResourceIdArray* array,
-    ResourceProvider::ResourceId id) {
+static ResourceId AppendToArray(ResourceProvider::ResourceIdArray* array,
+                                ResourceId id) {
   array->push_back(id);
   return id;
 }

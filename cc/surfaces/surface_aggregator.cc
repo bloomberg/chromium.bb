@@ -131,23 +131,23 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   }
 }
 
-static ResourceProvider::ResourceId ResourceRemapHelper(
+static ResourceId ResourceRemapHelper(
     const ResourceProvider::ResourceIdMap& child_to_parent_map,
-    ResourceProvider::ResourceId id) {
+    ResourceId id) {
   ResourceProvider::ResourceIdMap::const_iterator it =
       child_to_parent_map.find(id);
   DCHECK(it != child_to_parent_map.end());
 
   DCHECK_EQ(it->first, id);
-  ResourceProvider::ResourceId remapped_id = it->second;
+  ResourceId remapped_id = it->second;
   return remapped_id;
 }
 
-static ResourceProvider::ResourceId ValidateResourceHelper(
+static ResourceId ValidateResourceHelper(
     bool* invalid_frame,
     const ResourceProvider::ResourceIdMap& child_to_parent_map,
     ResourceProvider::ResourceIdSet* resources_in_frame,
-    ResourceProvider::ResourceId id) {
+    ResourceId id) {
   ResourceProvider::ResourceIdMap::const_iterator it =
       child_to_parent_map.find(id);
   if (it == child_to_parent_map.end()) {

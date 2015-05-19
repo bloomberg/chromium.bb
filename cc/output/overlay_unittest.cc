@@ -152,8 +152,7 @@ scoped_ptr<RenderPass> CreateRenderPass() {
   return pass.Pass();
 }
 
-ResourceProvider::ResourceId CreateResource(
-    ResourceProvider* resource_provider) {
+ResourceId CreateResource(ResourceProvider* resource_provider) {
   unsigned sync_point = 0;
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
@@ -180,7 +179,7 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
                                        const SharedQuadState* shared_quad_state,
                                        RenderPass* render_pass,
                                        const gfx::Rect& rect) {
-  ResourceProvider::ResourceId resource_id = CreateResource(resource_provider);
+  ResourceId resource_id = CreateResource(resource_provider);
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -210,7 +209,7 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     RenderPass* render_pass,
     const gfx::Rect& rect,
     const gfx::Transform& transform) {
-  ResourceProvider::ResourceId resource_id = CreateResource(resource_provider);
+  ResourceId resource_id = CreateResource(resource_provider);
 
   StreamVideoDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
@@ -1104,10 +1103,8 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturned) {
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
-  ResourceProvider::ResourceId resource1 =
-      CreateResource(resource_provider_.get());
-  ResourceProvider::ResourceId resource2 =
-      CreateResource(resource_provider_.get());
+  ResourceId resource1 = CreateResource(resource_provider_.get());
+  ResourceId resource2 = CreateResource(resource_provider_.get());
 
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   RenderPassList pass_list;

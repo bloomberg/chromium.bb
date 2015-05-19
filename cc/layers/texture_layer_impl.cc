@@ -165,7 +165,7 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
 
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  ResourceProvider::ResourceId id =
+  ResourceId id =
       valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
   quad->SetNew(shared_quad_state,
                quad_rect,

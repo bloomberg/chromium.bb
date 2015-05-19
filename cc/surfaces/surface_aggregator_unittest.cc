@@ -1320,7 +1320,7 @@ class ResourceTrackingSurfaceFactoryClient : public SurfaceFactoryClient {
   DISALLOW_COPY_AND_ASSIGN(ResourceTrackingSurfaceFactoryClient);
 };
 
-void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
+void SubmitFrameWithResources(ResourceId* resource_ids,
                               size_t num_resource_ids,
                               bool valid,
                               SurfaceId child_id,
@@ -1383,7 +1383,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   SurfaceId surface_id(7u);
   factory.Create(surface_id);
 
-  ResourceProvider::ResourceId ids[] = {11, 12, 13};
+  ResourceId ids[] = {11, 12, 13};
   SubmitFrameWithResources(ids, arraysize(ids), true, SurfaceId(), &factory,
                            surface_id);
 
@@ -1397,7 +1397,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   frame = aggregator_->Aggregate(surface_id);
 
   ASSERT_EQ(3u, client.returned_resources().size());
-  ResourceProvider::ResourceId returned_ids[3];
+  ResourceId returned_ids[3];
   for (size_t i = 0; i < 3; ++i) {
     returned_ids[i] = client.returned_resources()[i].id;
   }
@@ -1447,10 +1447,10 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   SurfaceId surface_id2(8u);
   factory.Create(surface_id2);
 
-  ResourceProvider::ResourceId ids[] = {11, 12, 13};
+  ResourceId ids[] = {11, 12, 13};
   SubmitFrameWithResources(ids, arraysize(ids), true, SurfaceId(), &factory,
                            surface_id);
-  ResourceProvider::ResourceId ids2[] = {14, 15, 16};
+  ResourceId ids2[] = {14, 15, 16};
   SubmitFrameWithResources(ids2, arraysize(ids2), true, SurfaceId(), &factory,
                            surface_id2);
 
@@ -1465,7 +1465,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 
   // surface_id wasn't referenced, so its resources should be returned.
   ASSERT_EQ(3u, client.returned_resources().size());
-  ResourceProvider::ResourceId returned_ids[3];
+  ResourceId returned_ids[3];
   for (size_t i = 0; i < 3; ++i) {
     returned_ids[i] = client.returned_resources()[i].id;
   }
@@ -1488,15 +1488,15 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   SurfaceId child_surface_id(9u);
   factory.Create(child_surface_id);
 
-  ResourceProvider::ResourceId ids[] = {14, 15, 16};
+  ResourceId ids[] = {14, 15, 16};
   SubmitFrameWithResources(ids, arraysize(ids), true, SurfaceId(), &factory,
                            child_surface_id);
 
-  ResourceProvider::ResourceId ids2[] = {17, 18, 19};
+  ResourceId ids2[] = {17, 18, 19};
   SubmitFrameWithResources(ids2, arraysize(ids2), false, child_surface_id,
                            &factory, middle_surface_id);
 
-  ResourceProvider::ResourceId ids3[] = {20, 21, 22};
+  ResourceId ids3[] = {20, 21, 22};
   SubmitFrameWithResources(ids3, arraysize(ids3), true, middle_surface_id,
                            &factory, root_surface_id);
 

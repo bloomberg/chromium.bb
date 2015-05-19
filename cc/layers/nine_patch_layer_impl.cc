@@ -94,7 +94,7 @@ void NinePatchLayerImpl::AppendQuads(
   if (!ui_resource_id_)
     return;
 
-  ResourceProvider::ResourceId resource =
+  ResourceId resource =
       layer_tree_impl()->ResourceIdForUIResource(ui_resource_id_);
 
   if (!resource)

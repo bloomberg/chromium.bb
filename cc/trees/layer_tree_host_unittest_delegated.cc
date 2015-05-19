@@ -135,7 +135,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
   }
 
   void AddTransferableResource(DelegatedFrameData* frame,
-                               ResourceProvider::ResourceId resource_id) {
+                               ResourceId resource_id) {
     TransferableResource resource;
     resource.id = resource_id;
     resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
@@ -147,8 +147,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     frame->resource_list.push_back(resource);
   }
 
-  void AddTextureQuad(DelegatedFrameData* frame,
-                      ResourceProvider::ResourceId resource_id) {
+  void AddTextureQuad(DelegatedFrameData* frame, ResourceId resource_id) {
     RenderPass* render_pass = frame->render_pass_list[0];
     SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
     TextureDrawQuad* quad =
@@ -201,9 +200,9 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  background_filters);
   }
 
-  static ResourceProvider::ResourceId AppendResourceId(
-      std::vector<ResourceProvider::ResourceId>* resources_in_last_sent_frame,
-      ResourceProvider::ResourceId resource_id) {
+  static ResourceId AppendResourceId(
+      std::vector<ResourceId>* resources_in_last_sent_frame,
+      ResourceId resource_id) {
     resources_in_last_sent_frame->push_back(resource_id);
     return resource_id;
   }
@@ -214,19 +213,18 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     if (!delegated_frame_data)
       return;
 
-    std::vector<ResourceProvider::ResourceId> resources_in_last_sent_frame;
+    std::vector<ResourceId> resources_in_last_sent_frame;
     for (size_t i = 0; i < delegated_frame_data->resource_list.size(); ++i) {
       resources_in_last_sent_frame.push_back(
           delegated_frame_data->resource_list[i].id);
     }
 
-    std::vector<ResourceProvider::ResourceId> resources_to_return;
+    std::vector<ResourceId> resources_to_return;
 
     const TransferableResourceArray& resources_held_by_parent =
         output_surface()->resources_held_by_parent();
     for (size_t i = 0; i < resources_held_by_parent.size(); ++i) {
-      ResourceProvider::ResourceId resource_in_parent =
-          resources_held_by_parent[i].id;
+      ResourceId resource_in_parent = resources_held_by_parent[i].id;
       bool resource_in_parent_is_not_part_of_frame =
           std::find(resources_in_last_sent_frame.begin(),
                     resources_in_last_sent_frame.end(),
@@ -804,9 +802,9 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
     EXPECT_EQ(1u, map.count(999));
     EXPECT_EQ(1u, map.count(555));
 
-    ResourceProvider::ResourceId parent_resource_id1 = map.find(999)->second;
+    ResourceId parent_resource_id1 = map.find(999)->second;
     EXPECT_NE(parent_resource_id1, 999u);
-    ResourceProvider::ResourceId parent_resource_id2 = map.find(555)->second;
+    ResourceId parent_resource_id2 = map.find(555)->second;
     EXPECT_NE(parent_resource_id2, 555u);
 
     // The resources in the quads should be remapped to the parent's namespace.

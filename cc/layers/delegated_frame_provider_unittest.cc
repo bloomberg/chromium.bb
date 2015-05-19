@@ -35,15 +35,14 @@ class DelegatedFrameProviderTest
   }
 
   void AddTransferableResource(DelegatedFrameData* frame,
-                               ResourceProvider::ResourceId resource_id) {
+                               ResourceId resource_id) {
     TransferableResource resource;
     resource.id = resource_id;
     resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
     frame->resource_list.push_back(resource);
   }
 
-  void AddTextureQuad(DelegatedFrameData* frame,
-                      ResourceProvider::ResourceId resource_id) {
+  void AddTextureQuad(DelegatedFrameData* frame, ResourceId resource_id) {
     SharedQuadState* sqs =
         frame->render_pass_list[0]->CreateAndAppendSharedQuadState();
     TextureDrawQuad* quad =

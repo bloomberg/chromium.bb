@@ -229,8 +229,7 @@ void SoftwareRenderer::PrepareSurfaceForPass(
   }
 }
 
-bool SoftwareRenderer::IsSoftwareResource(
-    ResourceProvider::ResourceId resource_id) const {
+bool SoftwareRenderer::IsSoftwareResource(ResourceId resource_id) const {
   switch (resource_provider_->GetResourceType(resource_id)) {
     case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE:
       return false;

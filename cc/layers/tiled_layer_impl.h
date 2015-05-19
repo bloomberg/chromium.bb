@@ -38,14 +38,14 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
-  void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+  void GetContentsResourceId(ResourceId* resource_id,
                              gfx::Size* resource_size) const override;
 
   void set_skips_draw(bool skips_draw) { skips_draw_ = skips_draw; }
   void SetTilingData(const LayerTilingData& tiler);
   void PushTileProperties(int i,
                           int j,
-                          ResourceProvider::ResourceId resource,
+                          ResourceId resource,
                           bool contents_swizzled);
   void PushInvalidTile(int i, int j);
 

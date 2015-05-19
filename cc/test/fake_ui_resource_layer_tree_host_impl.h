@@ -21,8 +21,7 @@ class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
 
   void DeleteUIResource(UIResourceId uid) override;
 
-  ResourceProvider::ResourceId ResourceIdForUIResource(
-      UIResourceId uid) const override;
+  ResourceId ResourceIdForUIResource(UIResourceId uid) const override;
 
   bool IsUIResourceOpaque(UIResourceId uid) const override;
 

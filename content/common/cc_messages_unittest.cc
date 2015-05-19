@@ -30,6 +30,7 @@ using cc::PictureDrawQuad;
 using cc::RenderPass;
 using cc::RenderPassId;
 using cc::RenderPassDrawQuad;
+using cc::ResourceId;
 using cc::ResourceProvider;
 using cc::SharedQuadState;
 using cc::SoftwareFrameData;
@@ -272,10 +273,10 @@ TEST_F(CCMessagesTest, AllQuads) {
   SkXfermode::Mode arbitrary_blend_mode3 = SkXfermode::kOverlay_Mode;
   IOSurfaceDrawQuad::Orientation arbitrary_orientation =
       IOSurfaceDrawQuad::UNFLIPPED;
-  ResourceProvider::ResourceId arbitrary_resourceid1 = 55;
-  ResourceProvider::ResourceId arbitrary_resourceid2 = 47;
-  ResourceProvider::ResourceId arbitrary_resourceid3 = 23;
-  ResourceProvider::ResourceId arbitrary_resourceid4 = 16;
+  ResourceId arbitrary_resourceid1 = 55;
+  ResourceId arbitrary_resourceid2 = 47;
+  ResourceId arbitrary_resourceid3 = 23;
+  ResourceId arbitrary_resourceid4 = 16;
   SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
   YUVVideoDrawQuad::ColorSpace arbitrary_color_space =
       YUVVideoDrawQuad::REC_601;

@@ -137,7 +137,7 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
       pixels[i * rect.width() + k] = pixel_stripe_color;
     }
   }
-  ResourceProvider::ResourceId resource = resource_provider->CreateResource(
+  ResourceId resource = resource_provider->CreateResource(
       rect.size(), GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       RGBA_8888);
   resource_provider->SetPixels(resource,
@@ -172,7 +172,7 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   size_t num_pixels = static_cast<size_t>(rect.width()) * rect.height();
   std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
-  ResourceProvider::ResourceId resource = resource_provider->CreateResource(
+  ResourceId resource = resource_provider->CreateResource(
       rect.size(), GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       RGBA_8888);
   resource_provider->CopyToResource(
@@ -224,22 +224,19 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
             resources.release_callbacks.size());
 
-  ResourceProvider::ResourceId y_resource =
-      resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kYPlane],
-          SingleReleaseCallbackImpl::Create(
-              resources.release_callbacks[media::VideoFrame::kYPlane]));
-  ResourceProvider::ResourceId u_resource =
-      resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kUPlane],
-          SingleReleaseCallbackImpl::Create(
-              resources.release_callbacks[media::VideoFrame::kUPlane]));
-  ResourceProvider::ResourceId v_resource =
-      resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kVPlane],
-          SingleReleaseCallbackImpl::Create(
-              resources.release_callbacks[media::VideoFrame::kVPlane]));
-  ResourceProvider::ResourceId a_resource = 0;
+  ResourceId y_resource = resource_provider->CreateResourceFromTextureMailbox(
+      resources.mailboxes[media::VideoFrame::kYPlane],
+      SingleReleaseCallbackImpl::Create(
+          resources.release_callbacks[media::VideoFrame::kYPlane]));
+  ResourceId u_resource = resource_provider->CreateResourceFromTextureMailbox(
+      resources.mailboxes[media::VideoFrame::kUPlane],
+      SingleReleaseCallbackImpl::Create(
+          resources.release_callbacks[media::VideoFrame::kUPlane]));
+  ResourceId v_resource = resource_provider->CreateResourceFromTextureMailbox(
+      resources.mailboxes[media::VideoFrame::kVPlane],
+      SingleReleaseCallbackImpl::Create(
+          resources.release_callbacks[media::VideoFrame::kVPlane]));
+  ResourceId a_resource = 0;
   if (with_alpha) {
     a_resource = resource_provider->CreateResourceFromTextureMailbox(
         resources.mailboxes[media::VideoFrame::kAPlane],
@@ -1679,10 +1676,9 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
     rect.Inset(6, 6, 4, 4);
   }
 
-  ResourceProvider::ResourceId mask_resource_id =
-      this->resource_provider_->CreateResource(
-          mask_rect.size(), GL_CLAMP_TO_EDGE,
-          ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+  ResourceId mask_resource_id = this->resource_provider_->CreateResource(
+      mask_rect.size(), GL_CLAMP_TO_EDGE,
+      ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
   {
     SkAutoLockPixels lock(bitmap);
     this->resource_provider_->CopyToResource(
@@ -2464,10 +2460,9 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   }
 
   gfx::Size tile_size(2, 2);
-  ResourceProvider::ResourceId resource =
-      this->resource_provider_->CreateResource(
-          tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-          RGBA_8888);
+  ResourceId resource = this->resource_provider_->CreateResource(
+      tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2516,10 +2511,9 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   }
 
   gfx::Size tile_size(2, 2);
-  ResourceProvider::ResourceId resource =
-      this->resource_provider_->CreateResource(
-          tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-          RGBA_8888);
+  ResourceId resource = this->resource_provider_->CreateResource(
+      tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2569,10 +2563,9 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   }
 
   gfx::Size tile_size(2, 2);
-  ResourceProvider::ResourceId resource =
-      this->resource_provider_->CreateResource(
-          tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-          RGBA_8888);
+  ResourceId resource = this->resource_provider_->CreateResource(
+      tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2929,10 +2922,9 @@ TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
     colors[2], colors[2], colors[3], colors[3],
     colors[2], colors[2], colors[3], colors[3],
   };
-  ResourceProvider::ResourceId resource =
-      this->resource_provider_->CreateResource(
-          texture_size, GL_REPEAT, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-          RGBA_8888);
+  ResourceId resource = this->resource_provider_->CreateResource(
+      texture_size, GL_REPEAT, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
   this->resource_provider_->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(pixels), texture_size);
 

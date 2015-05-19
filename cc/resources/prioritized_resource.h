@@ -82,9 +82,7 @@ class CC_EXPORT PrioritizedResource {
                  const gfx::Rect& source_rect,
                  const gfx::Vector2d& dest_offset);
 
-  ResourceProvider::ResourceId resource_id() const {
-    return backing_ ? backing_->id() : 0;
-  }
+  ResourceId resource_id() const { return backing_ ? backing_->id() : 0; }
 
   // Self-managed textures are accounted for when prioritizing other textures,
   // but they are not allocated/recycled/deleted, so this needs to be done

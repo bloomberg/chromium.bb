@@ -3286,7 +3286,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 
   // Allow for multiple creation requests with the same UIResourceId.  The
   // previous resource is simply deleted.
-  ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
+  ResourceId id = ResourceIdForUIResource(uid);
   if (id)
     DeleteUIResource(uid);
 
@@ -3319,7 +3319,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 }
 
 void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
-  ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
+  ResourceId id = ResourceIdForUIResource(uid);
   if (id) {
     resource_provider_->DeleteResource(id);
     ui_resource_map_.erase(uid);
@@ -3344,8 +3344,7 @@ void LayerTreeHostImpl::EvictAllUIResources() {
   client_->RenewTreePriority();
 }
 
-ResourceProvider::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
-    UIResourceId uid) const {
+ResourceId LayerTreeHostImpl::ResourceIdForUIResource(UIResourceId uid) const {
   UIResourceMap::const_iterator iter = ui_resource_map_.find(uid);
   if (iter != ui_resource_map_.end())
     return iter->second.resource_id;
