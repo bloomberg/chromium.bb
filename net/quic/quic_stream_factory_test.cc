@@ -305,6 +305,18 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam().version));
   }
 
+  static ProofVerifyDetailsChromium DefaultProofVerifyDetails() {
+    // Load a certificate that is valid for www.example.org, mail.example.org,
+    // and mail.example.com.
+    scoped_refptr<X509Certificate> test_cert(
+        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+    EXPECT_TRUE(test_cert.get());
+    ProofVerifyDetailsChromium verify_details;
+    verify_details.cert_verify_result.verified_cert = test_cert;
+    verify_details.cert_verify_result.is_issued_by_known_root = true;
+    return verify_details;
+  }
+
   MockQuicServerInfoFactory quic_server_info_factory_;
   MockHostResolver host_resolver_;
   DeterministicMockClientSocketFactory socket_factory_;
@@ -652,17 +664,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   HostPortPair server1("www.example.org", 443);
   HostPortPair server2("mail.example.org", 443);
 
-  // Load a cert that is valid for:
-  //   www.example.org (server1)
-  //   mail.example.org (server2)
-  //   www.example.com
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-  ProofVerifyDetailsChromium verify_details;
-  verify_details.cert_verify_result.verified_cert = test_cert;
-  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
@@ -708,17 +710,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   HostPortPair server1("www.example.org", 443);
   HostPortPair server2("mail.example.org", 443);
 
-  // Load a cert that is valid for:
-  //   www.example.org (server1)
-  //   mail.example.org (server2)
-  //   www.example.com
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-  ProofVerifyDetailsChromium verify_details;
-  verify_details.cert_verify_result.verified_cert = test_cert;
-  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
@@ -769,17 +761,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   HostPortPair server1("www.example.org", 443);
   HostPortPair server2("mail.google.com", 443);
 
-  // Load a cert that is valid for:
-  //   www.example.org (server1)
-  //   mail.example.org
-  //   www.example.com
-  // But is not valid for mail.google.com (server2).
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-  ProofVerifyDetailsChromium verify_details;
-  verify_details.cert_verify_result.verified_cert = test_cert;
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
@@ -828,16 +810,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
                backup_pin);
 
-  // Load a cert that is valid for:
-  //   www.example.org (server1)
-  //   mail.example.org (server2)
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-  ProofVerifyDetailsChromium verify_details;
-  verify_details.cert_verify_result.verified_cert = test_cert;
-  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   verify_details.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(primary_pin));
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -889,16 +862,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
   test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
                backup_pin);
 
-  // Load a cert that is valid for:
-  //   www.example.org (server1)
-  //   mail.example.org (server2)
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-  ProofVerifyDetailsChromium verify_details;
-  verify_details.cert_verify_result.verified_cert = test_cert;
-  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   verify_details.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(primary_pin));
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -956,24 +920,12 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
                backup_pin);
 
-  // Load a cert that is valid for:
-  //   www.example.org (server1)
-  //   mail.example.org (server2)
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
-
-  ProofVerifyDetailsChromium verify_details1;
-  verify_details1.cert_verify_result.verified_cert = test_cert;
-  verify_details1.cert_verify_result.is_issued_by_known_root = true;
+  ProofVerifyDetailsChromium verify_details1 = DefaultProofVerifyDetails();
   verify_details1.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(bad_pin));
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details1);
 
-  ProofVerifyDetailsChromium verify_details2;
-  verify_details2.cert_verify_result.verified_cert = test_cert;
-  verify_details2.cert_verify_result.is_issued_by_known_root = true;
+  ProofVerifyDetailsChromium verify_details2 = DefaultProofVerifyDetails();
   verify_details2.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(primary_pin));
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
