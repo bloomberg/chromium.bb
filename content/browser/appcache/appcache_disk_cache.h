@@ -52,9 +52,6 @@ class CONTENT_EXPORT AppCacheDiskCache
                 const net::CompletionCallback& callback) override;
   int DoomEntry(int64 key, const net::CompletionCallback& callback) override;
 
- protected:
-  explicit AppCacheDiskCache(bool use_simple_cache);
-
  private:
   class CreateBackendCallbackShim;
   class EntryImpl;
@@ -102,7 +99,6 @@ class CONTENT_EXPORT AppCacheDiskCache
   void AddOpenEntry(EntryImpl* entry) { open_entries_.insert(entry); }
   void RemoveOpenEntry(EntryImpl* entry) { open_entries_.erase(entry); }
 
-  bool use_simple_cache_;
   bool is_disabled_;
   net::CompletionCallback init_callback_;
   scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;

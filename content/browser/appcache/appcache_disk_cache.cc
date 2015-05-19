@@ -198,12 +198,8 @@ class AppCacheDiskCache::ActiveCall
 };
 
 AppCacheDiskCache::AppCacheDiskCache()
-#if defined(APPCACHE_USE_SIMPLE_CACHE)
-    : AppCacheDiskCache(true)
-#else
-    : AppCacheDiskCache(false)
-#endif
-{
+    : is_disabled_(false),
+      weak_factory_(this) {
 }
 
 AppCacheDiskCache::~AppCacheDiskCache() {
@@ -308,12 +304,6 @@ int AppCacheDiskCache::DoomEntry(int64 key,
   return ActiveCall::DoomEntry(weak_factory_.GetWeakPtr(), key, callback);
 }
 
-AppCacheDiskCache::AppCacheDiskCache(bool use_simple_cache)
-    : use_simple_cache_(use_simple_cache),
-      is_disabled_(false),
-      weak_factory_(this) {
-}
-
 AppCacheDiskCache::PendingCall::PendingCall()
     : call_type(CREATE),
       key(0),
@@ -343,10 +333,14 @@ int AppCacheDiskCache::Init(
   is_disabled_ = false;
   create_backend_callback_ = new CreateBackendCallbackShim(this);
 
+#if defined(APPCACHE_USE_SIMPLE_CACHE)
+  const net::BackendType backend_type = net::CACHE_BACKEND_SIMPLE;
+#else
+  const net::BackendType backend_type = net::CACHE_BACKEND_DEFAULT;
+#endif
   int rv = disk_cache::CreateCacheBackend(
       cache_type,
-      use_simple_cache_ ? net::CACHE_BACKEND_SIMPLE
-                        : net::CACHE_BACKEND_DEFAULT,
+      backend_type,
       cache_directory,
       cache_size,
       force,

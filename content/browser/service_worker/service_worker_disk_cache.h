@@ -18,8 +18,6 @@ namespace content {
 
 class CONTENT_EXPORT ServiceWorkerDiskCache
     : public AppCacheDiskCache {
- public:
-  ServiceWorkerDiskCache();
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseReader

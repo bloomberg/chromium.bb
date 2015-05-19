@@ -6,10 +6,6 @@
 
 namespace content {
 
-ServiceWorkerDiskCache::ServiceWorkerDiskCache()
-    : AppCacheDiskCache(true /* use_simple_cache */) {
-}
-
 ServiceWorkerResponseReader::ServiceWorkerResponseReader(
     int64 response_id, ServiceWorkerDiskCache* disk_cache)
     : AppCacheResponseReader(response_id, 0, disk_cache) {
