@@ -2931,10 +2931,10 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
 
   // Size can be 0 for cases where copyImageAt was called on position
   // that doesn't have an image.
-  int width = snapshot.info().fWidth;
+  int width = snapshot.info().width();
   argv[0] = v8::Number::New(isolate, width);
 
-  int height = snapshot.info().fHeight;
+  int height = snapshot.info().height();
   argv[1] = v8::Number::New(isolate, height);
 
   blink::WebArrayBuffer buffer =

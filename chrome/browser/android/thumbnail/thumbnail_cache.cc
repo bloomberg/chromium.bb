@@ -914,8 +914,8 @@ std::pair<SkBitmap, float> ThumbnailCache::CreateApproximation(
   SkBitmap dst_bitmap;
   dst_bitmap.allocPixels(SkImageInfo::Make(dst_size.width(),
                                            dst_size.height(),
-                                           bitmap.info().fColorType,
-                                           bitmap.info().fAlphaType));
+                                           bitmap.info().colorType(),
+                                           bitmap.info().alphaType()));
   dst_bitmap.eraseColor(0);
   SkAutoLockPixels dst_bitmap_lock(dst_bitmap);
 

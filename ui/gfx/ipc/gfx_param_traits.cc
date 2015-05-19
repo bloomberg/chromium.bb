@@ -28,10 +28,10 @@ struct SkBitmap_Data {
 
   void InitSkBitmapDataForTransfer(const SkBitmap& bitmap) {
     const SkImageInfo& info = bitmap.info();
-    fColorType = info.fColorType;
-    fAlphaType = info.fAlphaType;
-    fWidth = info.fWidth;
-    fHeight = info.fHeight;
+    fColorType = info.colorType();
+    fAlphaType = info.alphaType();
+    fWidth = info.width();
+    fHeight = info.height();
   }
 
   // Returns whether |bitmap| successfully initialized.

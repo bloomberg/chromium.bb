@@ -193,8 +193,9 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
   raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
 
-  SkImageInfo dst_info = info;
-  dst_info.fColorType = buffer_color_type;
+  SkImageInfo dst_info =
+      SkImageInfo::Make(info.width(), info.height(), buffer_color_type,
+                        info.alphaType(), info.profileType());
   // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
   // bitmap data. There will be no need to call SkAlign4 once crbug.com/293728
   // is fixed.

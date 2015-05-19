@@ -577,9 +577,9 @@ void CaptureCallback::didCompositeAndReadback(const SkBitmap& bitmap) {
   TRACE_EVENT2("shell",
                "CaptureCallback::didCompositeAndReadback",
                "x",
-               bitmap.info().fWidth,
+               bitmap.info().width(),
                "y",
-               bitmap.info().fHeight);
+               bitmap.info().height());
   if (!wait_for_popup_) {
     callback_.Run(bitmap);
     delete this;

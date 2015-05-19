@@ -757,8 +757,8 @@ void BlinkTestRunner::CaptureDump() {
 }
 
 void BlinkTestRunner::CaptureDumpPixels(const SkBitmap& snapshot) {
-  DCHECK_NE(0, snapshot.info().fWidth);
-  DCHECK_NE(0, snapshot.info().fHeight);
+  DCHECK_NE(0, snapshot.info().width());
+  DCHECK_NE(0, snapshot.info().height());
 
   SkAutoLockPixels snapshot_lock(snapshot);
   // The snapshot arrives from the GPU process via shared memory. Because MSan

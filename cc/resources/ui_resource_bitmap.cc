@@ -54,8 +54,7 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
 
   skia::RefPtr<SkPixelRef> pixel_ref = skia::SharePtr(skbitmap.pixelRef());
   const SkImageInfo& info = pixel_ref->info();
-  Create(pixel_ref,
-         gfx::Size(info.fWidth, info.fHeight),
+  Create(pixel_ref, gfx::Size(info.width(), info.height()),
          SkColorTypeToUIResourceFormat(skbitmap.colorType()));
 
   SetOpaque(skbitmap.isOpaque());

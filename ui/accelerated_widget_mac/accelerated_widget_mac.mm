@@ -284,7 +284,7 @@ void AcceleratedWidgetMac::GotSoftwareFrame(float scale_factor,
   SkImageInfo info;
   size_t row_bytes;
   const void* pixels = canvas->peekPixels(&info, &row_bytes);
-  gfx::Size pixel_size(info.fWidth, info.fHeight);
+  gfx::Size pixel_size(info.width(), info.height());
   [software_layer_ setContentsToData:pixels
                         withRowBytes:row_bytes
                        withPixelSize:pixel_size

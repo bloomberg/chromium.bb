@@ -654,10 +654,12 @@ SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
   if (bitmap.isOpaque())
     return bitmap;
 
-  SkImageInfo info = bitmap.info();
-  info.fAlphaType = kOpaque_SkAlphaType;
+  const SkImageInfo& info = bitmap.info();
+  SkImageInfo opaque_info =
+      SkImageInfo::Make(info.width(), info.height(), info.colorType(),
+                        kOpaque_SkAlphaType, info.profileType());
   SkBitmap opaque_bitmap;
-  opaque_bitmap.allocPixels(info);
+  opaque_bitmap.allocPixels(opaque_info);
 
   {
     SkAutoLockPixels bitmap_lock(bitmap);
