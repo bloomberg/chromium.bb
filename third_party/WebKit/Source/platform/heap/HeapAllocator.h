@@ -6,6 +6,7 @@
 #define HeapAllocator_h
 
 #include "platform/heap/Heap.h"
+#include "platform/heap/TraceTraits.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/Deque.h"
@@ -30,8 +31,6 @@ public:
     }
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
-
-template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
 // This is a static-only class used as a trait on collections to make them heap
 // allocated.  However see also HeapListHashSetAllocator.
@@ -126,7 +125,7 @@ public:
     template<typename VisitorDispatcher, typename T, typename Traits>
     static void trace(VisitorDispatcher visitor, T& t)
     {
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, t);
+        TraceCollectionIfEnabled<WTF::ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, t);
     }
 
     template<typename VisitorDispatcher>
@@ -214,7 +213,7 @@ static void traceListHashSetValue(VisitorDispatcher visitor, Value& value)
     // (there's an assert elsewhere), but we have to specify some value for the
     // strongify template argument, so we specify WTF::WeakPointersActWeak,
     // arbitrarily.
-    CollectionBackingTraceTrait<WTF::ShouldBeTraced<WTF::HashTraits<Value>>::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value>>::trace(visitor, value);
+    TraceCollectionIfEnabled<WTF::ShouldBeTraced<WTF::HashTraits<Value>>::value, WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, Value, WTF::HashTraits<Value>>::trace(visitor, value);
 }
 
 // The inline capacity is just a dummy template argument to match the off-heap
@@ -298,28 +297,6 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
         }
     }
 }
-
-// CollectionBackingTraceTrait.  Do nothing for things in collections that don't
-// need tracing, or call TraceInCollectionTrait for those that do.
-
-// Specialization for things that don't need marking and have no weak pointers.
-// We do nothing, even if WTF::WeakPointersActStrong.
-template<WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
-struct CollectionBackingTraceTrait<false, WTF::NoWeakHandlingInCollections, strongify, T, Traits> {
-    template<typename VisitorDispatcher>
-    static bool trace(VisitorDispatcher, T&) { return false; }
-};
-
-// Specialization for things that either need marking or have weak pointers or
-// both.
-template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
-struct CollectionBackingTraceTrait {
-    template<typename VisitorDispatcher>
-    static bool trace(VisitorDispatcher visitor, T&t)
-    {
-        return WTF::TraceInCollectionTrait<weakHandlingFlag, strongify, T, Traits>::trace(visitor, t);
-    }
-};
 
 template<typename Table> class HeapHashTableBacking {
 public:

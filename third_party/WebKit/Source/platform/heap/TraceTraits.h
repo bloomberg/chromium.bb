@@ -7,6 +7,7 @@
 
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/Heap.h"
+#include "platform/heap/InlinedGlobalMarkingVisitor.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
@@ -116,6 +117,23 @@ struct TraceIfEnabled<T, true> {
     static void trace(VisitorDispatcher visitor, T* t)
     {
         visitor->trace(*t);
+    }
+};
+
+template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct TraceCollectionIfEnabled;
+
+template<WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
+struct TraceCollectionIfEnabled<false, WTF::NoWeakHandlingInCollections, strongify, T, Traits> {
+    template<typename VisitorDispatcher>
+    static bool trace(VisitorDispatcher, T&) { return false; }
+};
+
+template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
+struct TraceCollectionIfEnabled {
+    template<typename VisitorDispatcher>
+    static bool trace(VisitorDispatcher visitor, T&t)
+    {
+        return WTF::TraceInCollectionTrait<weakHandlingFlag, strongify, T, Traits>::trace(visitor, t);
     }
 };
 
@@ -393,7 +411,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         if (WTF::IsPolymorphic<T>::value) {
             for (size_t i = 0; i < length; ++i) {
                 if (blink::vTableInitialized(&array[i]))
-                    blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+                    blink::TraceCollectionIfEnabled<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
             }
         } else {
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
@@ -402,7 +420,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
             ANNOTATE_CHANGE_SIZE(array, length, 0, length);
 #endif
             for (size_t i = 0; i < length; ++i)
-                blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+                blink::TraceCollectionIfEnabled<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
         }
         return false;
     }
@@ -422,7 +440,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; ++i) {
             if (!HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
-                blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, strongify, Value, Traits>::trace(visitor, array[i]);
+                blink::TraceCollectionIfEnabled<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, strongify, Value, Traits>::trace(visitor, array[i]);
         }
         return false;
     }
@@ -467,8 +485,8 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, KeyValuePa
     static bool trace(VisitorDispatcher visitor, KeyValuePair<Key, Value>& self)
     {
         ASSERT(ShouldBeTraced<Traits>::value);
-        blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, NoWeakHandlingInCollections, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
-        blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, NoWeakHandlingInCollections, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
+        blink::TraceCollectionIfEnabled<ShouldBeTraced<typename Traits::KeyTraits>::value, NoWeakHandlingInCollections, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
+        blink::TraceCollectionIfEnabled<ShouldBeTraced<typename Traits::ValueTraits>::value, NoWeakHandlingInCollections, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
         return false;
     }
 };
@@ -500,16 +518,16 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair
         static_assert(!keyIsWeak || !valueIsWeak || !keyHasStrongRefs || !valueHasStrongRefs, "this configuration is disallowed to avoid unexpected leaks");
         if ((valueIsWeak && !keyIsWeak) || (valueIsWeak && keyIsWeak && !valueHasStrongRefs)) {
             // Check value first.
-            bool deadWeakObjectsFoundOnValueSide = blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
+            bool deadWeakObjectsFoundOnValueSide = blink::TraceCollectionIfEnabled<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
             if (deadWeakObjectsFoundOnValueSide)
                 return true;
-            return blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
+            return blink::TraceCollectionIfEnabled<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
         }
         // Check key first.
-        bool deadWeakObjectsFoundOnKeySide = blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
+        bool deadWeakObjectsFoundOnKeySide = blink::TraceCollectionIfEnabled<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
         if (deadWeakObjectsFoundOnKeySide)
             return true;
-        return blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
+        return blink::TraceCollectionIfEnabled<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
     }
 };
 
