@@ -187,6 +187,21 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
     LayoutObject::styleDidChange(diff, oldStyle);
     updateFromStyle();
 
+    // When an out-of-flow-positioned element changes its display between block and inline-block,
+    // then an incremental layout on the element's containing block lays out the element through
+    // LayoutPositionedObjects, which skips laying out the element's parent.
+    // The element's parent needs to relayout so that it calls
+    // LayoutBlockFlow::setStaticInlinePositionForChild with the out-of-flow-positioned child, so
+    // that when it's laid out, its LayoutBox::computePositionedLogicalWidth/Height takes into
+    // account its new inline/block position rather than its old block/inline position.
+    // Position changes and other types of display changes are handled elsewhere.
+    if (oldStyle && isOutOfFlowPositioned() && parent() && (parent() != containingBlock())
+        && (styleRef().position() == oldStyle->position())
+        && (styleRef().originalDisplay() != oldStyle->originalDisplay())
+        && ((styleRef().originalDisplay() == BLOCK) || (styleRef().originalDisplay() == INLINE_BLOCK))
+        && ((oldStyle->originalDisplay() == BLOCK) || (oldStyle->originalDisplay() == INLINE_BLOCK)))
+        parent()->setNeedsLayout(LayoutInvalidationReason::ChildChanged, MarkContainerChain);
+
     DeprecatedPaintLayerType type = layerTypeRequired();
     if (type != NoDeprecatedPaintLayer) {
         if (!layer() && layerCreationAllowedForSubtree()) {
