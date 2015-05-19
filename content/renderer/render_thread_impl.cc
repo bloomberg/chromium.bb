@@ -1138,22 +1138,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 }
 
 void RenderThreadImpl::RegisterSchemes() {
-  // swappedout:
+  // swappedout: pages should not be accessible, and should also
+  // be treated as empty documents that can commit synchronously.
   WebString swappedout_scheme(base::ASCIIToUTF16(kSwappedOutScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(swappedout_scheme);
   WebSecurityPolicy::registerURLSchemeAsEmptyDocument(swappedout_scheme);
-
-  // chrome:
-  WebString chrome_scheme(base::ASCIIToUTF16(kChromeUIScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
-      chrome_scheme);
-  WebSecurityPolicy::registerURLSchemeAsSecure(chrome_scheme);
-  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(chrome_scheme);
-
-  // chrome-devtools:
-  WebString devtools_scheme(base::ASCIIToUTF16(kChromeDevToolsScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(devtools_scheme);
 }
 
 void RenderThreadImpl::NotifyTimezoneChange() {

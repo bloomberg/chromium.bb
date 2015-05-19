@@ -439,15 +439,21 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (command_line->HasSwitch(switches::kInstantProcess))
     thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
 
-  // chrome-search: and chrome-distiller: pages  should not be accessible by
-  // normal content, and should also be unable to script anything but themselves
-  // (to help limit the damage that a corrupt page could cause).
-  WebString chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));
+  // chrome:, chrome-search:, chrome-devtools:, and chrome-distiller: pages
+  // should not be accessible by normal content, and should also be unable to
+  // script anything but themselves (to help limit the damage that a corrupt
+  // page could cause).
+  WebString chrome_ui_scheme(ASCIIToUTF16(content::kChromeUIScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
 
+  WebString chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));
   // The Instant process can only display the content but not read it.  Other
   // processes can't display it or read it.
   if (!command_line->HasSwitch(switches::kInstantProcess))
     WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_search_scheme);
+
+  WebString dev_tools_scheme(ASCIIToUTF16(content::kChromeDevToolsScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dev_tools_scheme);
 
   WebString dom_distiller_scheme(
       ASCIIToUTF16(dom_distiller::kDomDistillerScheme));
@@ -469,13 +475,16 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   }
 #endif
 
-  // chrome-search: pages should not be accessible by bookmarklets
+  // chrome: and chrome-search: pages should not be accessible by bookmarklets
   // or javascript: URLs typed in the omnibox.
+  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
+      chrome_ui_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       chrome_search_scheme);
 
-  // chrome-search:, chrome-extension:, and chrome-extension-resource:
+  // chrome:, chrome-search:, chrome-extension:, and chrome-extension-resource:
   // resources shouldn't trigger insecure content warnings.
+  WebSecurityPolicy::registerURLSchemeAsSecure(chrome_ui_scheme);
   WebSecurityPolicy::registerURLSchemeAsSecure(chrome_search_scheme);
 
   WebString extension_scheme(ASCIIToUTF16(extensions::kExtensionScheme));
@@ -487,6 +496,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   // chrome:, chrome-extension:, chrome-extension-resource: resources should be
   // allowed to receive CORS requests.
+  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(chrome_ui_scheme);
   WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
   WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_resource_scheme);
 
