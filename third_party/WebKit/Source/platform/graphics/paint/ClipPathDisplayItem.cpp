@@ -15,15 +15,12 @@ namespace blink {
 void BeginClipPathDisplayItem::replay(GraphicsContext& context)
 {
     context.save();
-    context.clipPath(m_clipPath, m_windRule);
+    context.clipPath(m_clipPath, AntiAliased);
 }
 
 void BeginClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    // FIXME: Store an SkPath instead of a blink::Path to avoid this conversion on every update
-    SkPath& path = const_cast<SkPath&>(m_clipPath.skPath());
-    path.setFillType(WebCoreWindRuleToSkFillType(m_windRule));
-    list->appendClipPathItem(path, SkRegion::kIntersect_Op, true);
+    list->appendClipPathItem(m_clipPath, SkRegion::kIntersect_Op, true);
 }
 
 void EndClipPathDisplayItem::replay(GraphicsContext& context)
@@ -40,8 +37,9 @@ void EndClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list
 void BeginClipPathDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", pathLength: %f, windRule: \"%s\"",
-        m_clipPath.length(), m_windRule == RULE_NONZERO ? "nonzero" : "evenodd"));
+    stringBuilder.append(WTF::String::format(", pathVerbs: %d, pathPoints: %d, windRule: \"%s\"",
+        m_clipPath.countVerbs(), m_clipPath.countPoints(),
+        m_clipPath.getFillType() == SkPath::kWinding_FillType ? "nonzero" : "evenodd"));
 }
 
 #endif

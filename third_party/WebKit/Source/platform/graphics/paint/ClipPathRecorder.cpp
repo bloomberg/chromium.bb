@@ -12,7 +12,7 @@
 
 namespace blink {
 
-ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, const Path& clipPath, WindRule windRule)
+ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemClientWrapper& client, const Path& clipPath)
     : m_context(context)
     , m_client(client)
 {
@@ -20,9 +20,9 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemCl
         ASSERT(m_context.displayItemList());
         if (m_context.displayItemList()->displayItemConstructionIsDisabled())
             return;
-        m_context.displayItemList()->add(BeginClipPathDisplayItem::create(m_client, clipPath, windRule));
+        m_context.displayItemList()->add(BeginClipPathDisplayItem::create(m_client, clipPath));
     } else {
-        BeginClipPathDisplayItem clipPathDisplayItem(m_client, clipPath, windRule);
+        BeginClipPathDisplayItem clipPathDisplayItem(m_client, clipPath);
         clipPathDisplayItem.replay(m_context);
     }
 }

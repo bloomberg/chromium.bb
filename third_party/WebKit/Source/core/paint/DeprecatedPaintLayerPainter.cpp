@@ -132,7 +132,7 @@ public:
                     rootRelativeBoundsComputed = true;
                 }
                 m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, *paintLayer.layoutObject(),
-                    clipPath->path(rootRelativeBounds), clipPath->windRule()));
+                    clipPath->path(rootRelativeBounds)));
             }
         } else if (style.clipPath()->type() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style.clipPath());

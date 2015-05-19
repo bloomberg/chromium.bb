@@ -256,6 +256,10 @@ void SVGGraphicsElement::toClipPath(Path& path)
 {
     updatePathFromGraphicsElement(this, path);
     path.transform(calculateAnimatedLocalTransform());
+
+    ASSERT(layoutObject());
+    ASSERT(layoutObject()->style());
+    path.setWindRule(layoutObject()->style()->svgStyle().clipRule());
 }
 
 }

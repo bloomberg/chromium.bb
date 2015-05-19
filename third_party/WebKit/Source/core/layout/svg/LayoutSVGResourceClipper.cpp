@@ -71,8 +71,8 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
     // If the current clip-path gets clipped itself, we have to fallback to masking.
     if (!style()->svgStyle().clipperResource().isEmpty())
         return false;
-    WindRule clipRule = RULE_NONZERO;
-    Path clipPath = Path();
+
+    Path clipPath;
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         LayoutObject* childLayoutObject = childElement->layoutObject();
@@ -95,8 +95,6 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
         if (clipPath.isEmpty()) {
             // First clip shape.
             styled->toClipPath(clipPath);
-            clipRule = svgStyle.clipRule();
-            clipPath.setWindRule(clipRule);
             continue;
         }
 
@@ -104,7 +102,6 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
             // Attempt to generate a combined clip path, fall back to masking if not possible.
             Path subPath;
             styled->toClipPath(subPath);
-            subPath.setWindRule(svgStyle.clipRule());
             if (!clipPath.unionPath(subPath))
                 return false;
         } else {
@@ -126,9 +123,9 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (!context->displayItemList()->displayItemConstructionIsDisabled())
-            context->displayItemList()->add(BeginClipPathDisplayItem::create(layoutObject, clipPath, clipRule));
+            context->displayItemList()->add(BeginClipPathDisplayItem::create(layoutObject, clipPath));
     } else {
-        BeginClipPathDisplayItem clipPathDisplayItem(layoutObject, clipPath, clipRule);
+        BeginClipPathDisplayItem clipPathDisplayItem(layoutObject, clipPath);
         clipPathDisplayItem.replay(*context);
     }
 

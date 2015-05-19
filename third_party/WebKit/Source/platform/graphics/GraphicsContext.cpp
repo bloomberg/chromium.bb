@@ -701,9 +701,7 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
 
     save();
     if (rect.isRounded()) {
-        Path path;
-        path.addRoundedRect(rect);
-        clipPath(path);
+        clipRoundedRect(rect);
         if (shadowSpread < 0)
             roundedHole.expandRadii(-shadowSpread);
         else
@@ -1360,22 +1358,6 @@ void GraphicsContext::clipOut(const Path& pathToClip)
     path.toggleInverseFillType();
     clipPath(path, AntiAliased);
     path.toggleInverseFillType();
-}
-
-void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule, AntiAliasingMode antiAliasingMode)
-{
-    if (contextDisabled())
-        return;
-
-    // Use const_cast and temporarily modify the fill type instead of copying the path.
-    SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
-    SkPath::FillType previousFillType = path.getFillType();
-
-    SkPath::FillType temporaryFillType = WebCoreWindRuleToSkFillType(clipRule);
-    path.setFillType(temporaryFillType);
-    clipPath(path, antiAliasingMode);
-
-    path.setFillType(previousFillType);
 }
 
 void GraphicsContext::clipPolygon(size_t numPoints, const FloatPoint* points, bool antialiased)

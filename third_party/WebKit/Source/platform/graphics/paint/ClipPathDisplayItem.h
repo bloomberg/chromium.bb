@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Path.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -15,22 +16,20 @@ namespace blink {
 class PLATFORM_EXPORT BeginClipPathDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(BeginClipPathDisplayItem);
 public:
-    static PassOwnPtr<BeginClipPathDisplayItem> create(const DisplayItemClientWrapper& client, const Path& clipPath, WindRule windRule)
+    static PassOwnPtr<BeginClipPathDisplayItem> create(const DisplayItemClientWrapper& client, const Path& clipPath)
     {
-        return adoptPtr(new BeginClipPathDisplayItem(client, clipPath, windRule));
+        return adoptPtr(new BeginClipPathDisplayItem(client, clipPath));
     }
 
-    BeginClipPathDisplayItem(const DisplayItemClientWrapper& client, const Path& clipPath, WindRule windRule)
+    BeginClipPathDisplayItem(const DisplayItemClientWrapper& client, const Path& clipPath)
         : PairedBeginDisplayItem(client, BeginClipPath)
-        , m_clipPath(clipPath)
-        , m_windRule(windRule) { }
+        , m_clipPath(clipPath.skPath()) { }
 
     virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
-    const Path m_clipPath;
-    const WindRule m_windRule;
+    const SkPath m_clipPath;
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
