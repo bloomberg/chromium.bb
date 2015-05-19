@@ -54,6 +54,7 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   std::set<std::string> GetAllIdsByProfileAndSourceOrigin(Profile* profile,
                                                           const GURL& source)
       override;
+  std::set<std::string> GetAllIdsByProfile(Profile* profile) override;
   bool CancelAllBySourceOrigin(const GURL& source_origin) override;
   bool CancelAllByProfile(ProfileID profile_id) override;
   void CancelAll() override;

@@ -237,13 +237,28 @@ MessageCenterNotificationManager::GetAllIdsByProfileAndSourceOrigin(
   // no profile method should be called inside this function.
 
   std::set<std::string> delegate_ids;
-  for (NotificationMap::iterator iter = profile_notifications_.begin();
-       iter != profile_notifications_.end(); iter++) {
-    if ((*iter).second->notification().origin_url() == source &&
-        profile == (*iter).second->profile()) {
-      delegate_ids.insert(iter->second->notification().delegate_id());
+  for (const auto& pair : profile_notifications_) {
+    const Notification& notification = pair.second->notification();
+    if (pair.second->profile() == profile &&
+        notification.origin_url() == source) {
+      delegate_ids.insert(notification.delegate_id());
     }
   }
+
+  return delegate_ids;
+}
+
+std::set<std::string> MessageCenterNotificationManager::GetAllIdsByProfile(
+    Profile* profile) {
+  // The profile pointer can be weak, the instance may have been destroyed, so
+  // no profile method should be called inside this function.
+
+  std::set<std::string> delegate_ids;
+  for (const auto& pair : profile_notifications_) {
+    if (pair.second->profile() == profile)
+      delegate_ids.insert(pair.second->notification().delegate_id());
+  }
+
   return delegate_ids;
 }
 

@@ -55,6 +55,9 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   void ClosePersistentNotification(
       BrowserContext* browser_context,
       int64_t persistent_notification_id) override;
+  bool GetDisplayedPersistentNotifications(
+      BrowserContext* browser_context,
+      std::set<std::string>* displayed_notifications) override;
 
  private:
   // Structure to represent the information of a persistent notification.

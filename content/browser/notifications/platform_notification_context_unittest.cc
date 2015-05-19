@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/notification_database_data.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -86,7 +87,9 @@ class PlatformNotificationContextTest : public ::testing::Test {
   // current message loop proxy will be used as the task runner.
   PlatformNotificationContextImpl* CreatePlatformNotificationContext() {
     PlatformNotificationContextImpl* context =
-        new PlatformNotificationContextImpl(base::FilePath(), nullptr);
+        new PlatformNotificationContextImpl(base::FilePath(),
+                                            &browser_context_,
+                                            nullptr);
     context->Initialize();
 
     OverrideTaskRunnerForTesting(context);
@@ -98,6 +101,9 @@ class PlatformNotificationContextTest : public ::testing::Test {
   void OverrideTaskRunnerForTesting(PlatformNotificationContextImpl* context) {
     context->SetTaskRunnerForTesting(base::MessageLoopProxy::current());
   }
+
+  // Returns the testing browsing context that can be used for this test.
+  BrowserContext* browser_context() { return &browser_context_; }
 
   // Returns whether the last invoked callback finished successfully.
   bool success() const { return success_; }
@@ -113,6 +119,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
 
  private:
   TestBrowserThreadBundle thread_bundle_;
+  TestBrowserContext browser_context_;
 
   bool success_;
   NotificationDatabaseData database_data_;
@@ -240,6 +247,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   scoped_refptr<PlatformNotificationContextImpl> notification_context(
       new PlatformNotificationContextImpl(
           base::FilePath(),
+          browser_context(),
           embedded_worker_test_helper->context_wrapper()));
   notification_context->Initialize();
 
@@ -343,7 +351,9 @@ TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
   // Manually construct the PlatformNotificationContextImpl because this test
   // requires the database to be created on the filesystem.
   scoped_refptr<PlatformNotificationContextImpl> context(
-      new PlatformNotificationContextImpl(database_dir.path(), nullptr));
+      new PlatformNotificationContextImpl(database_dir.path(),
+                                          browser_context(),
+                                          nullptr));
 
   OverrideTaskRunnerForTesting(context.get());
 

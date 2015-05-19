@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_CONTEXT_IMPL_H_
 
 #include <stdint.h>
+#include <set>
+#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -25,6 +27,7 @@ class SequencedTaskRunner;
 
 namespace content {
 
+class BrowserContext;
 class NotificationDatabase;
 struct NotificationDatabaseData;
 class ServiceWorkerContextWrapper;
@@ -42,6 +45,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // constructor must only be called on the IO thread.
   PlatformNotificationContextImpl(
       const base::FilePath& path,
+      BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
 
   // To be called on the UI thread to initialize the instance.
@@ -139,11 +143,15 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   base::FilePath path_;
+  BrowserContext* browser_context_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<NotificationDatabase> database_;
+
+  // Indicates whether the database should be pruned when it's opened.
+  bool prune_database_on_open_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationContextImpl);
 };

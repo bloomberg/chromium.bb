@@ -521,7 +521,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new NavigatorConnectServiceWorkerServiceFactory(service_worker_context)));
 
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context =
-      new PlatformNotificationContextImpl(path, service_worker_context);
+      new PlatformNotificationContextImpl(path, context,
+                                          service_worker_context);
   platform_notification_context->Initialize();
 
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context =

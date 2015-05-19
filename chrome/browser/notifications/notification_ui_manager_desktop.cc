@@ -14,8 +14,12 @@
 
 // static
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return nullptr;
+
   ProfileInfoCache* profile_info_cache =
-      &g_browser_process->profile_manager()->GetProfileInfoCache();
+      &profile_manager->GetProfileInfoCache();
   scoped_ptr<message_center::NotifierSettingsProvider> settings_provider(
       new MessageCenterSettingsController(profile_info_cache));
   return new MessageCenterNotificationManager(

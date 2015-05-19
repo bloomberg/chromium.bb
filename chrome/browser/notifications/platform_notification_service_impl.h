@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 #include <map>
+#include <set>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
@@ -78,6 +80,9 @@ class PlatformNotificationServiceImpl
   void ClosePersistentNotification(
       content::BrowserContext* browser_context,
       int64_t persistent_notification_id) override;
+  bool GetDisplayedPersistentNotifications(
+      content::BrowserContext* browser_context,
+      std::set<std::string>* displayed_notifications) override;
 
  private:
   friend struct DefaultSingletonTraits<PlatformNotificationServiceImpl>;

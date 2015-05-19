@@ -306,6 +306,28 @@ void PlatformNotificationServiceImpl::ClosePersistentNotification(
 #endif
 }
 
+bool PlatformNotificationServiceImpl::GetDisplayedPersistentNotifications(
+    BrowserContext* browser_context,
+    std::set<std::string>* displayed_notifications) {
+  DCHECK(displayed_notifications);
+
+#if !defined(OS_ANDROID)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile || profile->AsTestingProfile())
+    return false;  // Tests will not have a message center.
+
+  // TODO(peter): Filter for persistent notifications only.
+  *displayed_notifications =
+      GetNotificationUIManager()->GetAllIdsByProfile(profile);
+
+  return true;
+#else
+  // Android cannot reliably return the notifications that are currently being
+  // displayed on the platform, see the comment in NotificationUIManagerAndroid.
+  return false;
+#endif  // !defined(OS_ANDROID)
+}
+
 Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     Profile* profile,
     const GURL& origin,

@@ -92,6 +92,16 @@ StubNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
   return delegate_ids;
 }
 
+std::set<std::string> StubNotificationUIManager::GetAllIdsByProfile(
+    Profile* profile) {
+  std::set<std::string> delegate_ids;
+  for (const auto& pair : notifications_) {
+    if (pair.second == profile)
+      delegate_ids.insert(pair.first.delegate_id());
+  }
+  return delegate_ids;
+}
+
 bool StubNotificationUIManager::CancelAllBySourceOrigin(
     const GURL& source_origin) {
   NOTIMPLEMENTED();

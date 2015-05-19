@@ -97,6 +97,15 @@ void LayoutTestNotificationManager::ClosePersistentNotification(
   }
 }
 
+bool LayoutTestNotificationManager::GetDisplayedPersistentNotifications(
+    BrowserContext* browser_context,
+    std::set<std::string>* displayed_notifications) {
+  DCHECK(displayed_notifications);
+
+  // Notifications will never outlive the lifetime of running layout tests.
+  return false;
+}
+
 void LayoutTestNotificationManager::SimulateClick(const std::string& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

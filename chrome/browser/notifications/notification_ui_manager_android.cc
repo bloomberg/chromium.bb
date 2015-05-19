@@ -205,6 +205,12 @@ NotificationUIManagerAndroid::GetAllIdsByProfileAndSourceOrigin(
   return std::set<std::string>();
 }
 
+std::set<std::string> NotificationUIManagerAndroid::GetAllIdsByProfile(
+    Profile* profile) {
+  NOTREACHED();
+  return std::set<std::string>();
+}
+
 bool NotificationUIManagerAndroid::CancelAllBySourceOrigin(
     const GURL& source_origin) {
   NOTREACHED();
