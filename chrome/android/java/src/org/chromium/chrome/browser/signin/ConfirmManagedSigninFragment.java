@@ -29,6 +29,8 @@ public class ConfirmManagedSigninFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setCancelable(false);
+
         Activity activity = getActivity();
         AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
         builder.setTitle(R.string.policy_dialog_title);
