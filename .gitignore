@@ -1,3 +1,4 @@
+*.gypcmd
 *.mk
 *.ncb
 *.opensdf
