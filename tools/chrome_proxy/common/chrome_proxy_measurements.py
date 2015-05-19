@@ -19,8 +19,6 @@ class ChromeProxyValidation(page_test.PageTest):
         needs_browser_restart_after_each_page=restart_after_each_page)
     self._metrics = metrics
     self._page = None
-    # Whether a timeout exception is expected during the test.
-    self._expect_timeout = False
 
   def CustomizeBrowserOptions(self, options):
     # Enable the chrome proxy (data reduction proxy).
@@ -49,17 +47,3 @@ class ChromeProxyValidation(page_test.PageTest):
     if hasattr(page, 'restart_after') and page.restart_after:
       return True
     return False
-
-  def RunNavigateSteps(self, page, tab):
-    # The redirect from safebrowsing causes a timeout. Ignore that.
-    try:
-      super(ChromeProxyValidation, self).RunNavigateSteps(page, tab)
-      if self._expect_timeout:
-        raise metrics.ChromeProxyMetricException, (
-            'Timeout was expected, but did not occur')
-    except exceptions.TimeoutException as e:
-      if self._expect_timeout:
-        logging.warning('Navigation timeout on page %s',
-                        page.name if page.name else page.url)
-      else:
-        raise e

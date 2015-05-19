@@ -113,10 +113,6 @@ class ChromeProxySafebrowsingOn(ChromeProxyValidation):
     super(ChromeProxySafebrowsingOn, self).__init__(
         metrics=metrics.ChromeProxyMetric())
 
-  def WillNavigateToPage(self, page, tab):
-    super(ChromeProxySafebrowsingOn, self).WillNavigateToPage(page, tab)
-    self._expect_timeout = True
-
   def AddResults(self, tab, results):
     self._metrics.AddResultsForSafebrowsingOn(tab, results)
 
