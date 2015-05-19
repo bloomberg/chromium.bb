@@ -519,6 +519,10 @@ TEST_F(AudioRendererImplTest, Underflow_Flush) {
   WaitForPendingRead();
   StopTicking();
 
+  // After time stops ticking wall clock times should not be returned.
+  EXPECT_FALSE(
+      renderer_->GetWallClockTimes(std::vector<base::TimeDelta>(1), nullptr));
+
   // We shouldn't expect another buffering state change when flushing.
   FlushDuringPendingRead();
 }

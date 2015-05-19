@@ -170,8 +170,10 @@ bool AudioRendererImpl::GetWallClockTimes(
     const std::vector<base::TimeDelta>& media_timestamps,
     std::vector<base::TimeTicks>* wall_clock_times) {
   base::AutoLock auto_lock(lock_);
-  if (last_render_ticks_.is_null() || !playback_rate_)
+  if (last_render_ticks_.is_null() || !playback_rate_ ||
+      buffering_state_ != BUFFERING_HAVE_ENOUGH || !sink_playing_) {
     return false;
+  }
 
   DCHECK(wall_clock_times->empty());
   wall_clock_times->reserve(media_timestamps.size());
