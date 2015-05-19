@@ -18,7 +18,7 @@ scoped_refptr<DrmDevice> DrmDeviceGenerator::CreateDevice(
     const base::FilePath& device_path,
     base::File file) {
   scoped_refptr<DrmDevice> drm = new DrmDevice(device_path, file.Pass());
-  if (drm->Initialize())
+  if (drm->Initialize(false))
     return drm;
 
   return nullptr;

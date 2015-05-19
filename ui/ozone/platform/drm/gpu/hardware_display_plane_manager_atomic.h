@@ -17,10 +17,6 @@ class OZONE_EXPORT HardwareDisplayPlaneManagerAtomic
   ~HardwareDisplayPlaneManagerAtomic() override;
 
   // HardwareDisplayPlaneManager:
-  bool AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
-                           const OverlayPlaneList& overlay_list,
-                           uint32_t crtc_id,
-                           CrtcController* crtc) override;
   bool Commit(HardwareDisplayPlaneList* plane_list, bool is_sync) override;
 
  private:

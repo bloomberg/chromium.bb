@@ -11,6 +11,7 @@
 
 namespace ui {
 
+class CrtcController;
 class DrmDevice;
 
 class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
@@ -26,6 +27,9 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
 
   // HardwareDisplayPlane:
   bool Initialize(DrmDevice* drm) override;
+
+  void set_crtc(CrtcController* crtc) { crtc_ = crtc; }
+  CrtcController* crtc() const { return crtc_; }
 
  private:
   struct Property {
@@ -46,6 +50,7 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
   Property src_y_prop_;
   Property src_w_prop_;
   Property src_h_prop_;
+  CrtcController* crtc_;
 };
 
 }  // namespace ui

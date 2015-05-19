@@ -5,15 +5,23 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 
 #include "base/bind.h"
+#include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 
-static void AtomicPageFlipCallback(unsigned int /* frame */,
-                                   unsigned int /* seconds */,
-                                   unsigned int /* useconds */) {
+static void AtomicPageFlipCallback(
+    std::vector<base::WeakPtr<CrtcController>> crtcs,
+    unsigned int frame,
+    unsigned int seconds,
+    unsigned int useconds) {
+  for (auto& crtc : crtcs) {
+    auto* crtc_ptr = crtc.get();
+    if (crtc_ptr)
+      crtc_ptr->OnPageFlipEvent(frame, seconds, useconds);
+  }
 }
 
 HardwareDisplayPlaneManagerAtomic::HardwareDisplayPlaneManagerAtomic() {
@@ -39,26 +47,23 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     }
   }
 
+  std::vector<base::WeakPtr<CrtcController>> crtcs;
+  for (HardwareDisplayPlane* plane : plane_list->plane_list) {
+    HardwareDisplayPlaneAtomic* atomic_plane =
+        static_cast<HardwareDisplayPlaneAtomic*>(plane);
+    if (crtcs.empty() || crtcs.back().get() != atomic_plane->crtc())
+      crtcs.push_back(atomic_plane->crtc()->AsWeakPtr());
+  }
+
   plane_list->plane_list.swap(plane_list->old_plane_list);
   plane_list->plane_list.clear();
   if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), 0, is_sync,
-                              base::Bind(&AtomicPageFlipCallback))) {
+                              base::Bind(&AtomicPageFlipCallback, crtcs))) {
     PLOG(ERROR) << "Failed to commit properties";
     return false;
   }
+  plane_list->committed = true;
   return true;
-}
-
-bool HardwareDisplayPlaneManagerAtomic::AssignOverlayPlanes(
-    HardwareDisplayPlaneList* plane_list,
-    const OverlayPlaneList& overlay_list,
-    uint32_t crtc_id,
-    CrtcController* crtc) {
-  // Lazy-initialize the atomic property set.
-  if (!plane_list->atomic_property_set)
-    plane_list->atomic_property_set.reset(drmModePropertySetAlloc());
-  return HardwareDisplayPlaneManager::AssignOverlayPlanes(
-      plane_list, overlay_list, crtc_id, crtc);
 }
 
 bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
@@ -76,7 +81,7 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
     LOG(ERROR) << "Failed to set plane properties";
     return false;
   }
-  plane_list->plane_list.push_back(hw_plane);
+  atomic_plane->set_crtc(crtc);
   return true;
 }
 

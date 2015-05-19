@@ -25,7 +25,11 @@ const float kFixedPointScaleValue = 65536.0f;
 }  // namespace
 
 HardwareDisplayPlaneList::HardwareDisplayPlaneList() : committed(false) {
+#if defined(USE_DRM_ATOMIC)
+  atomic_property_set.reset(drmModePropertySetAlloc());
+#endif  // defined(USE_DRM_ATOMIC)
 }
+
 HardwareDisplayPlaneList::~HardwareDisplayPlaneList() {
   for (auto* plane : plane_list) {
     plane->set_in_use(false);

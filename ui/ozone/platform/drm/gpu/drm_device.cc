@@ -290,7 +290,7 @@ DrmDevice::~DrmDevice() {
     watcher_->Shutdown();
 }
 
-bool DrmDevice::Initialize() {
+bool DrmDevice::Initialize(bool use_atomic) {
   // Ignore devices that cannot perform modesetting.
   if (!CanQueryForResources(file_.GetPlatformFile())) {
     VLOG(2) << "Cannot query for resources for '" << device_path_.value()
@@ -299,10 +299,13 @@ bool DrmDevice::Initialize() {
   }
 
 #if defined(USE_DRM_ATOMIC)
-  plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
-#else
-  plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
+  // Use atomic only if the build, kernel & flags all allow it.
+  if (use_atomic && SetCapability(DRM_CLIENT_CAP_ATOMIC, 1))
+    plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
 #endif  // defined(USE_DRM_ATOMIC)
+
+  if (!plane_manager_)
+    plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
   if (!plane_manager_->Initialize(this)) {
     LOG(ERROR) << "Failed to initialize the plane manager for "
                << device_path_.value();
@@ -563,11 +566,9 @@ bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
   flags |= DRM_MODE_PAGE_FLIP_EVENT;
-  scoped_ptr<PageFlipPayload> payload(
-      new PageFlipPayload(base::ThreadTaskRunnerHandle::Get(), callback));
   uint64_t id = page_flip_manager_->GetNextId();
-  if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags, payload.get(),
-                                properties)) {
+  if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags,
+                                reinterpret_cast<void*>(id), properties)) {
     page_flip_manager_->RegisterCallback(id, callback);
 
     // If the flip was requested synchronous or if no watcher has been installed

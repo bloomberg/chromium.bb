@@ -19,7 +19,7 @@ class GbmDevice : public DrmDevice {
   gbm_device* device() const { return device_; }
 
   // DrmDevice implementation:
-  bool Initialize() override;
+  bool Initialize(bool use_atomic) override;
 
  private:
   ~GbmDevice() override;

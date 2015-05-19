@@ -49,7 +49,7 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   DrmDevice(const base::FilePath& device_path, base::File file);
 
   // Open device.
-  virtual bool Initialize();
+  virtual bool Initialize(bool use_atomic);
 
   // |task_runner| will be used to asynchronously page flip.
   virtual void InitializeTaskRunner(

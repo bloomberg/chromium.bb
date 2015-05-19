@@ -21,8 +21,8 @@ GbmDevice::~GbmDevice() {
     gbm_device_destroy(device_);
 }
 
-bool GbmDevice::Initialize() {
-  if (!DrmDevice::Initialize())
+bool GbmDevice::Initialize(bool use_atomic) {
+  if (!DrmDevice::Initialize(use_atomic))
     return false;
 
   device_ = gbm_create_device(get_fd());
