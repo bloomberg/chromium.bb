@@ -449,7 +449,9 @@ all_tests = {
   "amazon": Amazon("amazon"), # Bug not reproducible without test.
   "ask": Ask("ask"), # Password not saved.
   "baidu": Baidu("baidu"), # Password not saved.
-  "buzzfeed": Buzzfeed("buzzfeed"),
+  "buzzfeed": Buzzfeed("buzzfeed",
+                       username_not_auto=True,
+                       password_not_auto=True),
   "cnn": Cnn("cnn"), # http://crbug.com/368690
   "craigslist": Craigslist("craigslist"), # Too many failed logins per time.
   "dailymotion": Dailymotion("dailymotion"), # Crashes.

@@ -30,18 +30,21 @@ class WebsiteTest:
   # interaction.
   MAX_WAIT_TIME_IN_SECONDS = 200
 
-  def __init__(self, name, username_not_auto=False):
+  def __init__(self, name, username_not_auto=False, password_not_auto=False):
     """Creates a new WebsiteTest.
 
     Args:
       name: The website name, identifying it in the test results.
       username_not_auto: Expect that the tested website fills username field
         on load, and Chrome cannot autofill in that case.
+      password_not_auto: Expect that the tested website fills password field
+        on load, and Chrome cannot autofill in that case.
     """
     self.name = name
     self.username = None
     self.password = None
     self.username_not_auto = username_not_auto
+    self.password_not_auto = password_not_auto
 
     # Specify, whether it is expected that credentials get autofilled.
     self.autofill_expectation = WebsiteTest.NOT_AUTOFILLED
@@ -195,7 +198,9 @@ class WebsiteTest:
 
     Depending on self.autofill_expectation, this either checks that the
     element already has the password autofilled, or checks that the value
-    is empty and replaces it with the password.
+    is empty and replaces it with the password. If self.password_not_auto
+    is true, it skips the checks and just overwrites the value with the
+    password.
 
     Args:
       selector: The CSS selector for the filled element.
@@ -215,15 +220,18 @@ class WebsiteTest:
     action_chains.key_down(Keys.CONTROL).key_up(Keys.CONTROL).perform()
 
     self.Wait(2)  # TODO(vabr): Detect when autofill finished.
-    if self.autofill_expectation == WebsiteTest.AUTOFILLED:
-      if password_element.get_attribute("value") != self.password:
-        raise Exception("Error: autofilled password is different from the saved"
-                        " one on website: %s" % self.name)
-    elif self.autofill_expectation == WebsiteTest.NOT_AUTOFILLED:
-      if password_element.get_attribute("value"):
-        raise Exception("Error: password value unexpectedly not empty on"
-                        "website: %s" % self.name)
-      password_element.send_keys(self.password)
+    if not self.password_not_auto:
+      if self.autofill_expectation == WebsiteTest.AUTOFILLED:
+        if password_element.get_attribute("value") != self.password:
+          raise Exception("Error: autofilled password is different from the"
+                          "saved one on website: %s" % self.name)
+      elif self.autofill_expectation == WebsiteTest.NOT_AUTOFILLED:
+        if password_element.get_attribute("value"):
+          raise Exception("Error: password value unexpectedly not empty on"
+                          "website: %s" % self.name)
+
+    password_element.clear()
+    password_element.send_keys(self.password)
 
   def FillUsernameInto(self, selector):
     """Ensures that the selected element's value is the saved username.
