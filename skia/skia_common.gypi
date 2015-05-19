@@ -99,7 +99,7 @@
         'SK_ARM_HAS_NEON',
       ],
     }],
-    [ 'target_arch == "arm" and arm_version >= 7 and arm_neon_optional == 1', {
+    [ 'target_arch == "arm" and arm_version >= 7 and arm_neon == 0 and arm_neon_optional == 1', {
       'defines': [
         'SK_ARM_HAS_OPTIONAL_NEON',
       ],
