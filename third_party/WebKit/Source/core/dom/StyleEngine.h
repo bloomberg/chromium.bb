@@ -119,8 +119,6 @@ public:
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
     bool usesWindowInactiveSelector() const { return m_usesWindowInactiveSelector; }
 
-    bool usesFirstLetterRules() const { return m_usesFirstLetterRules; }
-    void setUsesFirstLetterRules(bool b) { m_usesFirstLetterRules = b; }
     bool usesRemUnits() const { return m_usesRemUnits; }
     void setUsesRemUnit(bool b) { m_usesRemUnits = b; }
 
@@ -290,7 +288,6 @@ private:
     bool m_usesSiblingRules;
     bool m_usesFirstLineRules;
     bool m_usesWindowInactiveSelector;
-    bool m_usesFirstLetterRules;
     bool m_usesRemUnits;
     unsigned m_maxDirectAdjacentSelectors;
 

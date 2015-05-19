@@ -260,8 +260,6 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
                 return SelectorFailsLocally;
 
             PseudoId pseudoId = CSSSelector::pseudoId(context.selector->pseudoType());
-            if (pseudoId == FIRST_LETTER)
-                context.element->document().styleEngine().setUsesFirstLetterRules(true);
             if (pseudoId != NOPSEUDO && m_mode != SharingRules && result)
                 result->dynamicPseudo = pseudoId;
         }
