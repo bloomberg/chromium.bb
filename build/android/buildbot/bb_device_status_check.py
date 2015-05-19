@@ -52,21 +52,28 @@ def DeviceInfo(serial, options):
   device = device_utils.DeviceUtils(serial)
   battery = battery_utils.BatteryUtils(device)
 
-  battery_info = {}
+  build_product = ''
+  build_id = ''
   battery_level = 100
   errors = []
   dev_good = True
-  json_data = {
-    'serial': serial,
-    'type': device.build_product,
-    'build': device.build_id,
-    'build_detail': device.GetProp('ro.build.fingerprint'),
-    'battery': {},
-    'imei_slice': 'Unknown',
-    'wifi_ip': device.GetProp('dhcp.wlan0.ipaddress'),
-  }
+  json_data = {}
 
   try:
+    build_product = device.build_product
+    build_id = device.build_id
+
+    json_data = {
+      'serial': serial,
+      'type': build_product,
+      'build': build_id,
+      'build_detail': device.GetProp('ro.build.fingerprint'),
+      'battery': {},
+      'imei_slice': 'Unknown',
+      'wifi_ip': device.GetProp('dhcp.wlan0.ipaddress'),
+    }
+
+    battery_info = {}
     try:
       battery_info = battery.GetBatteryInfo(timeout=5)
       battery_level = int(battery_info.get('level', battery_level))
@@ -103,8 +110,7 @@ def DeviceInfo(serial, options):
     logging.exception('Timeout while getting device status.')
     dev_good = False
 
-  return (device.build_product, device.build_id, battery_level, errors,
-          dev_good, json_data)
+  return (build_product, build_id, battery_level, errors, dev_good, json_data)
 
 
 def CheckForMissingDevices(options, adb_online_devs):
