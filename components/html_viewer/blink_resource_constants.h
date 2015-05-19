@@ -93,7 +93,6 @@ const DataResource kDataResources[] = {
     {"themeWin.css", IDR_UASTYLE_THEME_WIN_CSS},
     {"themeWinQuirks.css", IDR_UASTYLE_THEME_WIN_QUIRKS_CSS},
     {"svg.css", IDR_UASTYLE_SVG_CSS},
-    {"navigationTransitions.css", IDR_UASTYLE_NAVIGATION_TRANSITIONS_CSS},
     {"mathml.css", IDR_UASTYLE_MATHML_CSS},
     {"mediaControls.css", IDR_UASTYLE_MEDIA_CONTROLS_CSS},
     {"fullscreen.css", IDR_UASTYLE_FULLSCREEN_CSS},
