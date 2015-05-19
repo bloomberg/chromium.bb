@@ -374,60 +374,38 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequest) {
   EXPECT_EQ(ClientSocketPoolTest::kIndexOutOfBounds, GetOrderOfRequest(7));
 }
 
-class RequestSocketCallback : public TestCompletionCallbackBase {
- public:
-  RequestSocketCallback(ClientSocketHandle* handle,
-                        WebSocketTransportClientSocketPool* pool)
-      : handle_(handle),
-        pool_(pool),
-        within_callback_(false),
-        callback_(base::Bind(&RequestSocketCallback::OnComplete,
-                             base::Unretained(this))) {}
+// Function to be used as a callback on socket request completion.  It first
+// disconnects the successfully connected socket from the first request, and
+// then reuses the ClientSocketHandle to request another socket.  The second
+// request is expected to succeed asynchronously.
+//
+// |nested_callback| is called with the result of the second socket request.
+void RequestSocketOnComplete(ClientSocketHandle* handle,
+                             WebSocketTransportClientSocketPool* pool,
+                             const CompletionCallback& nested_callback,
+                             int first_request_result) {
+  EXPECT_EQ(OK, first_request_result);
 
-  ~RequestSocketCallback() override {}
+  // Don't allow reuse of the socket.  Disconnect it and then release it.
+  handle->socket()->Disconnect();
+  handle->Reset();
 
-  const CompletionCallback& callback() const { return callback_; }
+  scoped_refptr<TransportSocketParams> dest(new TransportSocketParams(
+      HostPortPair("www.google.com", 80), false, false,
+      OnHostResolutionCallback(),
+      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+  int rv =
+      handle->Init("a", dest, LOWEST, nested_callback, pool, BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  if (ERR_IO_PENDING != rv)
+    nested_callback.Run(rv);
+}
 
- private:
-  void OnComplete(int result) {
-    SetResult(result);
-    ASSERT_EQ(OK, result);
-
-    if (!within_callback_) {
-      // Don't allow reuse of the socket.  Disconnect it and then release it and
-      // run through the MessageLoop once to get it completely released.
-      handle_->socket()->Disconnect();
-      handle_->Reset();
-      {
-        base::MessageLoop::ScopedNestableTaskAllower allow(
-            base::MessageLoop::current());
-        base::MessageLoop::current()->RunUntilIdle();
-      }
-      within_callback_ = true;
-      scoped_refptr<TransportSocketParams> dest(
-          new TransportSocketParams(
-              HostPortPair("www.google.com", 80),
-              false,
-              false,
-              OnHostResolutionCallback(),
-              TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-      int rv =
-          handle_->Init("a", dest, LOWEST, callback(), pool_, BoundNetLog());
-      EXPECT_EQ(OK, rv);
-    }
-  }
-
-  ClientSocketHandle* const handle_;
-  WebSocketTransportClientSocketPool* const pool_;
-  bool within_callback_;
-  CompletionCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestSocketCallback);
-};
-
+// Tests the case where a second socket is requested in a completion callback,
+// and the second socket connects asynchronously.  Reuses the same
+// ClientSocketHandle for the second socket, after disconnecting the first.
 TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
-  RequestSocketCallback callback(&handle, &pool_);
   scoped_refptr<TransportSocketParams> dest(
       new TransportSocketParams(
           HostPortPair("www.google.com", 80),
@@ -435,15 +413,13 @@ TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
           false,
           OnHostResolutionCallback(),
           TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-  int rv = handle.Init(
-      "a", dest, LOWEST, callback.callback(), &pool_, BoundNetLog());
+  TestCompletionCallback second_result_callback;
+  int rv = handle.Init("a", dest, LOWEST,
+                       base::Bind(&RequestSocketOnComplete, &handle, &pool_,
+                                  second_result_callback.callback()),
+                       &pool_, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);
-
-  // The callback is going to request "www.google.com". We want it to complete
-  // synchronously this time.
-  host_resolver_->set_synchronous_mode(true);
-
-  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_EQ(OK, second_result_callback.WaitForResult());
 
   handle.Reset();
 }
