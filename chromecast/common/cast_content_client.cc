@@ -6,7 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "chromecast/common/version.h"
+#include "chromecast/base/version.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

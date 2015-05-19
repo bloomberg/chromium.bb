@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "chromecast/android/cast_metrics_helper_android.h"
+#include "chromecast/base/cast_sys_info_android.h"
 #include "chromecast/browser/android/cast_window_android.h"
 #include "chromecast/browser/android/cast_window_manager.h"
 #include "chromecast/crash/android/crash_handler.h"
@@ -19,6 +20,7 @@ namespace {
 
 static base::android::RegistrationMethod kMethods[] = {
   { "CastMetricsHelperAndroid", CastMetricsHelperAndroid::RegisterJni },
+  { "CastSysInfoAndroid", CastSysInfoAndroid::RegisterJni },
   { "CastWindowAndroid", shell::CastWindowAndroid::RegisterJni },
   { "CastWindowManager", shell::RegisterCastWindowManager },
   { "CrashHandler", CrashHandler::RegisterCastCrashJni },

@@ -274,6 +274,7 @@ int CastBrowserMainParts::PreCreateThreads() {
 }
 
 void CastBrowserMainParts::PreMainMessageLoopRun() {
+#if !defined(OS_ANDROID)
   // Set GL strings so GPU config code can make correct feature blacklisting/
   // whitelisting decisions.
   // Note: SetGLStrings MUST be called after GpuDataManager::Initialize.
@@ -281,6 +282,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   content::GpuDataManager::GetInstance()->SetGLStrings(
       sys_info->GetGlVendor(), sys_info->GetGlRenderer(),
       sys_info->GetGlVersion());
+#endif  // !defined(OS_ANDROID)
 
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   metrics::RegisterPrefs(pref_registry.get());

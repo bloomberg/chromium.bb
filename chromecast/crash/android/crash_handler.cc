@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/handler/minidump_descriptor.h"
-#include "chromecast/common/version.h"
+#include "chromecast/base/version.h"
 #include "chromecast/crash/android/cast_crash_reporter_client_android.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/app/crash_reporter_client.h"

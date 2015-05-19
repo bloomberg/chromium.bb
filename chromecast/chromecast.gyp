@@ -354,7 +354,7 @@
         'base/cast_sys_info_dummy.h',
       ],
       'conditions': [
-        ['chromecast_branding!="Chrome"', {
+        ['chromecast_branding!="Chrome" and OS!="android"', {
           'sources': [
             'base/cast_sys_info_util_simple.cc',
           ],
@@ -375,10 +375,10 @@
           'message': 'Generating version header file: <@(_outputs)',
           'inputs': [
             '<(version_path)',
-            'common/version.h.in',
+            'base/version.h.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/chromecast/common/version.h',
+            '<(SHARED_INTERMEDIATE_DIR)/chromecast/base/version.h',
           ],
           'action': [
             'python',
@@ -392,7 +392,7 @@
             '-e', 'CAST_BUILD_RELEASE="<!(if test -f <(cast_build_release); then cat <(cast_build_release); else echo eng.${USER}; fi)"',
             '-e', 'CAST_IS_DEBUG_BUILD=1 if "<(CONFIGURATION_NAME)" == "Debug" or <(cast_is_debug_build) == 1 else 0',
             '-e', 'CAST_PRODUCT_TYPE=<(cast_product_type)',
-            'common/version.h.in',
+            'base/version.h.in',
             '<@(_outputs)',
           ],
           'includes': [
@@ -446,6 +446,8 @@
             '../breakpad/src',
           ],
           'sources': [
+            'base/cast_sys_info_android.cc',
+            'base/cast_sys_info_android.h',
             'android/cast_jni_registrar.cc',
             'android/cast_jni_registrar.h',
             'android/cast_metrics_helper_android.cc',
@@ -535,6 +537,7 @@
           'sources': [
             'browser/android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java',
+            'browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java',
           ],
