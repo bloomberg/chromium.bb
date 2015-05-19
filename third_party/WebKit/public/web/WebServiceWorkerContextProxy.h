@@ -70,6 +70,8 @@ public:
     // Once the ServiceWorker has finished handling the sync event
     // didHandleSyncEvent is called on the context client.
     virtual void dispatchSyncEvent(int syncEventID) = 0;
+
+    virtual void addStashedMessagePorts(const WebMessagePortChannelArray& channels, const WebVector<WebString>& channelNames) = 0;
 };
 
 } // namespace blink

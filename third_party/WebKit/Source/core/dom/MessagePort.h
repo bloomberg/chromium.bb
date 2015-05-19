@@ -55,7 +55,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 // Not to be confused with WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
 typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
-class CORE_EXPORT MessagePort final
+class CORE_EXPORT MessagePort
     : public EventTargetWithInlineData
     , public RefCountedWillBeNoBase<MessagePort>
     , public ActiveDOMObject
@@ -109,9 +109,11 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-private:
+protected:
     explicit MessagePort(ExecutionContext&);
+    bool tryGetMessage(RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels);
 
+private:
     // WebMessagePortChannelClient implementation.
     virtual void messageAvailable() override;
     virtual v8::Isolate* scriptIsolate() override;

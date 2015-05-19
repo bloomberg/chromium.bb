@@ -47,6 +47,7 @@ class ScriptState;
 class ServiceWorkerClients;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
+class StashedPortCollection;
 class WaitUntilObserver;
 class WebServiceWorkerRegistration;
 class WorkerThreadStartupData;
@@ -67,6 +68,7 @@ public:
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
     ServiceWorkerRegistration* registration();
+    PassRefPtrWillBeRawPtr<StashedPortCollection> ports();
 
     ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
@@ -102,6 +104,7 @@ private:
 
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
     PersistentWillBeMember<ServiceWorkerRegistration> m_registration;
+    RefPtrWillBeMember<StashedPortCollection> m_ports;
     bool m_didEvaluateScript;
     bool m_hadErrorInTopLevelEventHandler;
     unsigned m_eventNestingLevel;
@@ -109,6 +112,8 @@ private:
     size_t m_scriptTotalSize;
     size_t m_scriptCachedMetadataTotalSize;
 };
+
+DEFINE_TYPE_CASTS(ServiceWorkerGlobalScope, ExecutionContext, context, context->isServiceWorkerGlobalScope(), context.isServiceWorkerGlobalScope());
 
 } // namespace blink
 

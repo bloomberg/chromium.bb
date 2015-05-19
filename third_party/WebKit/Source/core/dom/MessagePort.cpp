@@ -184,6 +184,13 @@ static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<Serializ
     return true;
 }
 
+bool MessagePort::tryGetMessage(RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels)
+{
+    if (!m_entangledChannel)
+        return false;
+    return tryGetMessageFrom(*m_entangledChannel, message, channels);
+}
+
 void MessagePort::dispatchMessages()
 {
     // Because close() doesn't cancel any in flight calls to dispatchMessages() we need to check if the port is still open before dispatch.
@@ -197,7 +204,7 @@ void MessagePort::dispatchMessages()
 
     RefPtr<SerializedScriptValue> message;
     OwnPtr<MessagePortChannelArray> channels;
-    while (m_entangledChannel && tryGetMessageFrom(*m_entangledChannel, message, channels)) {
+    while (tryGetMessage(message, channels)) {
         // close() in Worker onmessage handler should prevent next message from dispatching.
         if (executionContext()->isWorkerGlobalScope() && toWorkerGlobalScope(executionContext())->isClosing())
             return;

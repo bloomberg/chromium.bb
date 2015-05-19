@@ -51,6 +51,7 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "modules/serviceworkers/ServiceWorkerScriptCachedMetadataHandler.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
+#include "modules/serviceworkers/StashedPortCollection.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
@@ -114,6 +115,13 @@ void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
             platform->histogramCustomCounts("ServiceWorker.ScriptCachedMetadataTotalSize", m_scriptCachedMetadataTotalSize, 1000, 50000000, 50);
     }
     m_didEvaluateScript = true;
+}
+
+PassRefPtrWillBeRawPtr<StashedPortCollection> ServiceWorkerGlobalScope::ports()
+{
+    if (!m_ports)
+        m_ports = StashedPortCollection::create(this);
+    return m_ports;
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)

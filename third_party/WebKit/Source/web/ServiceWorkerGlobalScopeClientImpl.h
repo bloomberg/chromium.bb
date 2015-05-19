@@ -68,6 +68,7 @@ public:
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) override;
     virtual void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) override;
+    virtual void stashMessagePort(WebMessagePortChannel*, const WebString& name) override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { ServiceWorkerGlobalScopeClient::trace(visitor); }
 
