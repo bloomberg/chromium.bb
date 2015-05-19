@@ -74,6 +74,7 @@ class ProgressBarOperation(object):
     self._stderr_path = None
     self._progress_bar_displayed = False
     self._workspace_path = workspace_lib.WorkspacePath()
+    self._isatty = os.isatty(sys.stdout.fileno())
 
   def _GetTerminalSize(self, fd=pty.STDOUT_FILENO):
     """Return a terminal size object for |fd|.
@@ -88,10 +89,14 @@ class ProgressBarOperation(object):
   def ProgressBar(self, progress):
     """This method creates and displays a progress bar.
 
+    If not in a terminal, we do not display a progress bar.
+
     Args:
       progress: a float between 0 and 1 that represents the fraction of the
         current progress.
     """
+    if not self._isatty:
+      return
     self._progress_bar_displayed = True
     progress = max(0.0, min(1.0, progress))
     width = max(1, self._GetTerminalSize().columns -
@@ -197,7 +202,7 @@ class ProgressBarOperation(object):
 
     # If we are not running in a terminal device, do not display the progress
     # bar.
-    if not os.isatty(sys.stdout.fileno()):
+    if not self._isatty:
       func(*args, **kwargs)
       return
 

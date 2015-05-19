@@ -50,8 +50,8 @@ class RunScriptTest(cros_test_lib.WorkspaceTestCase):
     arg_parser.assert_called_with(caching=True, default_log_level='notice')
 
   def testDefaultLogLevelCros(self):
-    """Test that the default log level is not set to notice for cros tools."""
+    """Test that the default log level is set to notice for cros tools."""
     arg_parser = self.PatchObject(commandline, 'ArgumentParser',
                                   return_value=commandline.ArgumentParser())
     cros.GetOptions({})
-    arg_parser.assert_called_with(caching=True)
+    arg_parser.assert_called_with(caching=True, default_log_level='notice')
