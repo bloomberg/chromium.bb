@@ -96,7 +96,8 @@ HTMLParserScheduler::~HTMLParserScheduler()
 void HTMLParserScheduler::scheduleForResume()
 {
     ASSERT(!m_isSuspendedWithActiveTimer);
-    Platform::current()->currentThread()->scheduler()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
+    Platform::current()->currentThread()->scheduler()->postLoadingTask(
+        FROM_HERE, m_cancellableContinueParse.cancelAndCreate());
 }
 
 void HTMLParserScheduler::suspend()
@@ -115,7 +116,8 @@ void HTMLParserScheduler::resume()
         return;
     m_isSuspendedWithActiveTimer = false;
 
-    Platform::current()->currentThread()->scheduler()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
+    Platform::current()->currentThread()->scheduler()->postLoadingTask(
+        FROM_HERE, m_cancellableContinueParse.cancelAndCreate());
 }
 
 inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session, bool startingScript) const

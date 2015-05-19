@@ -36,7 +36,7 @@ public:
 
     // Returns a task that can be disabled by calling cancel().  The user takes
     // ownership of the task.  Creating a new task cancels any previous ones.
-    WebThread::Task* task();
+    WebThread::Task* cancelAndCreate();
 
 private:
     class CancellableTask : public WebThread::Task {
