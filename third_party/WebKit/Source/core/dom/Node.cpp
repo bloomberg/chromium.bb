@@ -592,8 +592,6 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
     // FIXME: Respect editableLevel for ARIA editable elements.
     if (editableLevel == RichlyEditable)
         return false;
-
-    ASSERT(document().settings() && document().settings()->accessibilityEnabled());
     ASSERT(document().existingAXObjectCache());
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
