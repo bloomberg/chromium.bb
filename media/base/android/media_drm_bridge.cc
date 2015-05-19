@@ -56,16 +56,19 @@ const uint8 kWidevineUuid[16] = {
 // Convert |init_data_type| to a string supported by MediaDRM.
 // "audio"/"video" does not matter, so use "video".
 std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
-  // TODO(jrummell): API level >=20 supports "webm" and "cenc", so switch
-  // to those strings.
+  // TODO(jrummell/xhwang): EME init data types like "webm" and "cenc" are
+  // supported in API level >=21 for Widevine key system. Switch to use those
+  // strings when they are officially supported in Android for all key systems.
   switch (init_data_type) {
     case media::EmeInitDataType::WEBM:
       return "video/webm";
     case media::EmeInitDataType::CENC:
       return "video/mp4";
+    case media::EmeInitDataType::KEYIDS:
+      return "keyids";
     default:
       NOTREACHED();
-      return "video/unknown";
+      return "unknown";
   }
 }
 
