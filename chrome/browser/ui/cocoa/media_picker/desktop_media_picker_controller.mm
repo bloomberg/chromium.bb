@@ -127,6 +127,7 @@ const int kExcessButtonPadding = 6;
   [sourceBrowser_ setDataSource:self];
   [sourceBrowser_ setCellsStyleMask:cellStyle];
   [sourceBrowser_ setCellSize:NSMakeSize(kThumbnailWidth, kThumbnailHeight)];
+  [sourceBrowser_ setAllowsMultipleSelection:NO];
 
   // Create a scroll view to host the image browser.
   NSRect imageBrowserScrollFrame = NSMakeRect(
