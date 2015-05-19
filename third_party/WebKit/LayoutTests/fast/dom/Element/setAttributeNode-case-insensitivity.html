@@ -3,6 +3,9 @@
 <head>
 <script src="../../../resources/js-test.js"></script>
 <script>
+var oldStyleAttr;
+var resultantAttr;
+
 function runTest()
 {
     description("This test verifies that the setAttributeNode() API checks for existing attributes case-insensitively. Thus the value of an existing attribute with the same name but in a different case should get replaced by the new value specified via the setAttributeNode() method.");
@@ -10,10 +13,13 @@ function runTest()
     var test = document.getElementById("test");
     var newStyleAttr = document.createAttribute("STYLE");
     newStyleAttr.value = "background-color: green";
-    test.setAttributeNode(newStyleAttr);
+    oldStyleAttr = test.getAttributeNode("style");
+    resultantAttr = test.setAttributeNode(newStyleAttr);
     if (window.testRunner) {
         shouldBe("test.getAttribute('style')", "test.getAttribute('STYLE')");
         shouldBe("test.getAttributeNode('style').value", "test.getAttributeNode('STYLE').value");
+        shouldBe("resultantAttr", "oldStyleAttr");
+        shouldBeNull("oldStyleAttr.ownerElement");
     }
 
     debug("Verifying that attributes with the same name but different namespaces are treated as unique entities. For the following test two different attribute values should be returned.");
