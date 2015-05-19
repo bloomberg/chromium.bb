@@ -145,6 +145,12 @@ TEST(ToolsSanityTest, MAYBE_AccessesToMallocMemory) {
   HARMFUL_ACCESS(foo[5] = 0, "heap-use-after-free");
 }
 
+static int* allocateArray() {
+  // Clang warns about the mismatched new[]/delete if they occur in the same
+  // function.
+  return new int[10];
+}
+
 TEST(ToolsSanityTest, MAYBE_ArrayDeletedWithoutBraces) {
 #if !defined(ADDRESS_SANITIZER) && !defined(SYZYASAN)
   // This test may corrupt memory if not run under Valgrind or compiled with
@@ -154,8 +160,14 @@ TEST(ToolsSanityTest, MAYBE_ArrayDeletedWithoutBraces) {
 #endif
 
   // Without the |volatile|, clang optimizes away the next two lines.
-  int* volatile foo = new int[10];
+  int* volatile foo = allocateArray();
   delete foo;
+}
+
+static int* allocateScalar() {
+  // Clang warns about the mismatched new/delete[] if they occur in the same
+  // function.
+  return new int;
 }
 
 TEST(ToolsSanityTest, MAYBE_SingleElementDeletedWithBraces) {
@@ -167,7 +179,7 @@ TEST(ToolsSanityTest, MAYBE_SingleElementDeletedWithBraces) {
 #endif
 
   // Without the |volatile|, clang optimizes away the next two lines.
-  int* volatile foo = new int;
+  int* volatile foo = allocateScalar();
   (void) foo;
   delete [] foo;
 }

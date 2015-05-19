@@ -135,8 +135,14 @@ TEST_F(StackTraceTest, DebugPrintBacktrace) {
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 #if !defined(OS_IOS)
+static char* newArray() {
+  // Clang warns about the mismatched new[]/delete if they occur in the same
+  // function.
+  return new char[10];
+}
+
 MULTIPROCESS_TEST_MAIN(MismatchedMallocChildProcess) {
-  char* pointer = new char[10];
+  char* pointer = newArray();
   delete pointer;
   return 2;
 }
