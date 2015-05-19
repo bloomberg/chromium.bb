@@ -1,0 +1,461 @@
+/*
+ * Copyright 2015 Advanced Micro Devices, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER(S) OR AUTHOR(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+*/
+
+#include <stdio.h>
+#include <inttypes.h>
+
+#include "CUnit/Basic.h"
+
+#include "util_math.h"
+
+#include "amdgpu_test.h"
+#include "amdgpu_drm.h"
+#include "amdgpu_internal.h"
+
+#include "vce_ib.h"
+#include "frame.h"
+
+#define IB_SIZE		amdgpu_cs_ib_size_4K
+#define MAX_RESOURCES	16
+
+struct amdgpu_vce_bo {
+	struct amdgpu_bo *handle;
+	uint64_t addr;
+	uint8_t *ptr;
+};
+
+struct amdgpu_vce_encode {
+	unsigned width;
+	unsigned height;
+	struct amdgpu_vce_bo vbuf;
+	struct amdgpu_vce_bo bs[2];
+	struct amdgpu_vce_bo fb[2];
+	struct amdgpu_vce_bo cpb;
+	unsigned ib_len;
+	bool two_instance;
+};
+
+static amdgpu_device_handle device_handle;
+static uint32_t major_version;
+static uint32_t minor_version;
+static uint32_t family_id;
+
+static amdgpu_context_handle context_handle;
+static amdgpu_ib_handle ib_handle;
+uint32_t *ib_cpu;
+
+struct amdgpu_vce_encode enc;
+amdgpu_bo_handle resources[MAX_RESOURCES];
+unsigned num_resources;
+
+static void amdgpu_cs_vce_create(void);
+static void amdgpu_cs_vce_encode(void);
+static void amdgpu_cs_vce_destroy(void);
+
+CU_TestInfo vce_tests[] = {
+	{ "VCE create",  amdgpu_cs_vce_create },
+	{ "VCE encode",  amdgpu_cs_vce_encode },
+	{ "VCE destroy",  amdgpu_cs_vce_destroy },
+	CU_TEST_INFO_NULL,
+};
+
+int suite_vce_tests_init(void)
+{
+	struct amdgpu_cs_ib_alloc_result ib_result = {0};
+	int r;
+
+	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
+				     &minor_version, &device_handle);
+	if (r)
+		return CUE_SINIT_FAILED;
+
+	family_id = device_handle->info.family_id;
+
+	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
+	if (r)
+		return CUE_SINIT_FAILED;
+
+        r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
+	if (r)
+		return CUE_SINIT_FAILED;
+
+	ib_handle = ib_result.handle;
+	ib_cpu = ib_result.cpu;
+
+	memset(&enc, 0, sizeof(struct amdgpu_vce_encode));
+
+	return CUE_SUCCESS;
+}
+
+int suite_vce_tests_clean(void)
+{
+	int r;
+
+	r = amdgpu_cs_free_ib(ib_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
+
+	r = amdgpu_cs_ctx_free(context_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
+
+	r = amdgpu_device_deinitialize(device_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
+
+	return CUE_SUCCESS;
+}
+
+static int submit(unsigned ndw, unsigned ip)
+{
+	struct amdgpu_cs_ib_alloc_result ib_result = {0};
+	struct amdgpu_cs_request ibs_request = {0};
+	struct amdgpu_cs_ib_info ib_info = {0};
+	struct amdgpu_cs_query_fence fence_status = {0};
+	uint32_t expired;
+	int r;
+
+	ib_info.ib_handle = ib_handle;
+	ib_info.size = ndw;
+
+	ibs_request.ip_type = ip;
+
+	r = amdgpu_bo_list_create(device_handle, num_resources, resources,
+				  NULL, &ibs_request.resources);
+	if (r)
+		return r;
+
+	ibs_request.number_of_ibs = 1;
+	ibs_request.ibs = &ib_info;
+
+	r = amdgpu_cs_submit(context_handle, 0,
+			     &ibs_request, 1, &fence_status.fence);
+	if (r)
+		return r;
+
+	r = amdgpu_bo_list_destroy(ibs_request.resources);
+	if (r)
+		return r;
+
+	r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
+	if (r)
+		return r;
+
+	ib_handle = ib_result.handle;
+	ib_cpu = ib_result.cpu;
+
+	fence_status.context = context_handle;
+	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
+	fence_status.ip_type = ip;
+
+	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+	if (r)
+		return r;
+
+	return 0;
+}
+
+static void alloc_resource(struct amdgpu_vce_bo *vce_bo, unsigned size, unsigned domain)
+{
+	struct amdgpu_bo_alloc_request req = {0};
+	struct amdgpu_bo_alloc_result res = {0};
+	int r;
+
+	req.alloc_size = ALIGN(size, 4096);
+	req.preferred_heap = domain;
+	r = amdgpu_bo_alloc(device_handle, &req, &res);
+	CU_ASSERT_EQUAL(r, 0);
+	vce_bo->addr = res.virtual_mc_base_address;
+	vce_bo->handle = res.buf_handle;
+	r = amdgpu_bo_cpu_map(vce_bo->handle, (void **)&vce_bo->ptr);
+	CU_ASSERT_EQUAL(r, 0);
+	memset(vce_bo->ptr, 0, size);
+	r = amdgpu_bo_cpu_unmap(vce_bo->handle);
+	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_cs_vce_create(void)
+{
+	int len, r;
+
+	enc.width = vce_create[6];
+	enc.height = vce_create[7];
+
+	num_resources  = 0;
+	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = enc.fb[0].handle;
+
+	len = 0;
+	memcpy(ib_cpu, vce_session, sizeof(vce_session));
+	len += sizeof(vce_session) / 4;
+	memcpy((ib_cpu + len), vce_taskinfo, sizeof(vce_taskinfo));
+	len += sizeof(vce_taskinfo) / 4;
+	memcpy((ib_cpu + len), vce_create, sizeof(vce_create));
+	len += sizeof(vce_create) / 4;
+	memcpy((ib_cpu + len), vce_feedback, sizeof(vce_feedback));
+	ib_cpu[len + 2] = enc.fb[0].addr >> 32;
+	ib_cpu[len + 3] = enc.fb[0].addr;
+	len += sizeof(vce_feedback) / 4;
+
+	r = submit(len, AMDGPU_HW_IP_VCE);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_free(resources[0]);
+	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_cs_vce_config(void)
+{
+	int len = 0, r;
+
+	memcpy((ib_cpu + len), vce_session, sizeof(vce_session));
+	len += sizeof(vce_session) / 4;
+	memcpy((ib_cpu + len), vce_taskinfo, sizeof(vce_taskinfo));
+	ib_cpu[len + 3] = 2;
+	ib_cpu[len + 6] = 0xffffffff;
+	len += sizeof(vce_taskinfo) / 4;
+	memcpy((ib_cpu + len), vce_rate_ctrl, sizeof(vce_rate_ctrl));
+	len += sizeof(vce_rate_ctrl) / 4;
+	memcpy((ib_cpu + len), vce_config_ext, sizeof(vce_config_ext));
+	len += sizeof(vce_config_ext) / 4;
+	memcpy((ib_cpu + len), vce_motion_est, sizeof(vce_motion_est));
+	len += sizeof(vce_motion_est) / 4;
+	memcpy((ib_cpu + len), vce_rdo, sizeof(vce_rdo));
+	len += sizeof(vce_rdo) / 4;
+	memcpy((ib_cpu + len), vce_pic_ctrl, sizeof(vce_pic_ctrl));
+	len += sizeof(vce_pic_ctrl) / 4;
+
+	r = submit(len, AMDGPU_HW_IP_VCE);
+	CU_ASSERT_EQUAL(r, 0);
+}
+
+static  void amdgpu_cs_vce_encode_idr(struct amdgpu_vce_encode *enc)
+{
+
+	uint64_t luma_offset, chroma_offset;
+	int len = 0, r;
+
+	luma_offset = enc->vbuf.addr;
+	chroma_offset = luma_offset + enc->width * enc->height;
+
+	memcpy((ib_cpu + len), vce_session, sizeof(vce_session));
+	len += sizeof(vce_session) / 4;
+	memcpy((ib_cpu + len), vce_taskinfo, sizeof(vce_taskinfo));
+	len += sizeof(vce_taskinfo) / 4;
+	memcpy((ib_cpu + len), vce_bs_buffer, sizeof(vce_bs_buffer));
+	ib_cpu[len + 2] = enc->bs[0].addr >> 32;
+	ib_cpu[len + 3] = enc->bs[0].addr;
+	len += sizeof(vce_bs_buffer) / 4;
+	memcpy((ib_cpu + len), vce_context_buffer, sizeof(vce_context_buffer));
+	ib_cpu[len + 2] = enc->cpb.addr >> 32;
+	ib_cpu[len + 3] = enc->cpb.addr;
+	len += sizeof(vce_context_buffer) / 4;
+	memcpy((ib_cpu + len), vce_aux_buffer, sizeof(vce_aux_buffer));
+	len += sizeof(vce_aux_buffer) / 4;
+	memcpy((ib_cpu + len), vce_feedback, sizeof(vce_feedback));
+	ib_cpu[len + 2] = enc->fb[0].addr >> 32;
+	ib_cpu[len + 3] = enc->fb[0].addr;
+	len += sizeof(vce_feedback) / 4;
+	memcpy((ib_cpu + len), vce_encode, sizeof(vce_encode));
+	ib_cpu[len + 9] = luma_offset >> 32;
+	ib_cpu[len + 10] = luma_offset;
+	ib_cpu[len + 11] = chroma_offset >> 32;
+	ib_cpu[len + 12] = chroma_offset;
+	ib_cpu[len + 73] = 0x7800;
+	ib_cpu[len + 74] = 0x7800 + 0x5000;
+	len += sizeof(vce_encode) / 4;
+	enc->ib_len = len;
+	if (!enc->two_instance) {
+		r = submit(len, AMDGPU_HW_IP_VCE);
+		CU_ASSERT_EQUAL(r, 0);
+	}
+}
+
+static void amdgpu_cs_vce_encode_p(struct amdgpu_vce_encode *enc)
+{
+	uint64_t luma_offset, chroma_offset;
+	int len, r;
+
+	len = (enc->two_instance) ? enc->ib_len : 0;
+	luma_offset = enc->vbuf.addr;
+	chroma_offset = luma_offset + enc->width * enc->height;
+
+	if (!enc->two_instance) {
+		memcpy((ib_cpu + len), vce_session, sizeof(vce_session));
+		len += sizeof(vce_session) / 4;
+	}
+	memcpy((ib_cpu + len), vce_taskinfo, sizeof(vce_taskinfo));
+	len += sizeof(vce_taskinfo) / 4;
+	memcpy((ib_cpu + len), vce_bs_buffer, sizeof(vce_bs_buffer));
+	ib_cpu[len + 2] = enc->bs[1].addr >> 32;
+	ib_cpu[len + 3] = enc->bs[1].addr;
+	len += sizeof(vce_bs_buffer) / 4;
+	memcpy((ib_cpu + len), vce_context_buffer, sizeof(vce_context_buffer));
+	ib_cpu[len + 2] = enc->cpb.addr >> 32;
+	ib_cpu[len + 3] = enc->cpb.addr;
+	len += sizeof(vce_context_buffer) / 4;
+	memcpy((ib_cpu + len), vce_aux_buffer, sizeof(vce_aux_buffer));
+	len += sizeof(vce_aux_buffer) / 4;
+	memcpy((ib_cpu + len), vce_feedback, sizeof(vce_feedback));
+	ib_cpu[len + 2] = enc->fb[1].addr >> 32;
+	ib_cpu[len + 3] = enc->fb[1].addr;
+	len += sizeof(vce_feedback) / 4;
+	memcpy((ib_cpu + len), vce_encode, sizeof(vce_encode));
+	ib_cpu[len + 2] = 0;
+	ib_cpu[len + 9] = luma_offset >> 32;
+	ib_cpu[len + 10] = luma_offset;
+	ib_cpu[len + 11] = chroma_offset >> 32;
+	ib_cpu[len + 12] = chroma_offset;
+	ib_cpu[len + 18] = 0;
+	ib_cpu[len + 19] = 0;
+	ib_cpu[len + 56] = 3;
+	ib_cpu[len + 57] = 0;
+	ib_cpu[len + 58] = 0;
+	ib_cpu[len + 59] = 0x7800;
+	ib_cpu[len + 60] = 0x7800 + 0x5000;
+	ib_cpu[len + 73] = 0;
+	ib_cpu[len + 74] = 0x5000;
+	ib_cpu[len + 81] = 1;
+	ib_cpu[len + 82] = 1;
+	len += sizeof(vce_encode) / 4;
+
+	r = submit(len, AMDGPU_HW_IP_VCE);
+	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void check_result(struct amdgpu_vce_encode *enc)
+{
+	uint64_t sum;
+	uint32_t s[2] = {180325, 15946};
+	uint32_t *ptr, size;
+	int i, j, r;
+
+	for (i = 0; i < 2; ++i) {
+		r = amdgpu_bo_cpu_map(enc->fb[i].handle, (void **)&enc->fb[i].ptr);
+		CU_ASSERT_EQUAL(r, 0);
+		ptr = (uint32_t *)enc->fb[i].ptr;
+		size = ptr[4] - ptr[9];
+		r = amdgpu_bo_cpu_unmap(enc->fb[i].handle);
+		CU_ASSERT_EQUAL(r, 0);
+		r = amdgpu_bo_cpu_map(enc->bs[i].handle, (void **)&enc->bs[i].ptr);
+		CU_ASSERT_EQUAL(r, 0);
+		for (j = 0, sum = 0; j < size; ++j)
+			sum += enc->bs[i].ptr[j];
+		CU_ASSERT_EQUAL(sum, s[i]);
+		r = amdgpu_bo_cpu_unmap(enc->bs[i].handle);
+		CU_ASSERT_EQUAL(r, 0);
+	}
+}
+
+static void amdgpu_cs_vce_encode(void)
+{
+	uint32_t vbuf_size, bs_size = 0x2000, cpb_size;
+	int i, r;
+
+	vbuf_size = enc.width * enc.height * 1.5;
+	cpb_size = vbuf_size * 10;
+
+	num_resources = 0;
+	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = enc.fb[0].handle;
+	alloc_resource(&enc.fb[1], 4096, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = enc.fb[1].handle;
+	alloc_resource(&enc.bs[0], bs_size, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = enc.bs[0].handle;
+	alloc_resource(&enc.bs[1], bs_size, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = enc.bs[1].handle;
+	alloc_resource(&enc.vbuf, vbuf_size, AMDGPU_GEM_DOMAIN_VRAM);
+	resources[num_resources++] = enc.vbuf.handle;
+	alloc_resource(&enc.cpb, cpb_size, AMDGPU_GEM_DOMAIN_VRAM);
+	resources[num_resources++] = enc.cpb.handle;
+
+	r = amdgpu_bo_cpu_map(enc.vbuf.handle, (void **)&enc.vbuf.ptr);
+	CU_ASSERT_EQUAL(r, 0);
+	memcpy(enc.vbuf.ptr, frame, sizeof(frame));
+	r = amdgpu_bo_cpu_unmap(enc.vbuf.handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	amdgpu_cs_vce_config();
+
+	if (family_id >= AMDGPU_FAMILY_VI) {
+		vce_taskinfo[3] = 3;
+		amdgpu_cs_vce_encode_idr(&enc);
+		amdgpu_cs_vce_encode_p(&enc);
+		check_result(&enc);
+
+		/* two pipes */
+		vce_encode[16] = 0;
+		amdgpu_cs_vce_encode_idr(&enc);
+		amdgpu_cs_vce_encode_p(&enc);
+		check_result(&enc);
+
+		/* two instances */
+		enc.two_instance = true;
+		vce_taskinfo[2] = 0x83;
+		vce_taskinfo[4] = 1;
+		amdgpu_cs_vce_encode_idr(&enc);
+		vce_taskinfo[2] = 0xffffffff;
+		vce_taskinfo[4] = 2;
+		amdgpu_cs_vce_encode_p(&enc);
+		check_result(&enc);
+	} else {
+		vce_taskinfo[3] = 3;
+		vce_encode[16] = 0;
+		amdgpu_cs_vce_encode_idr(&enc);
+		amdgpu_cs_vce_encode_p(&enc);
+		check_result(&enc);
+	}
+
+	for (i = 0; i < num_resources; ++i) {
+		r = amdgpu_bo_free(resources[i]);
+		CU_ASSERT_EQUAL(r, 0);
+	}
+}
+
+static void amdgpu_cs_vce_destroy(void)
+{
+	int len, r;
+
+	num_resources  = 0;
+	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = enc.fb[0].handle;
+
+	len = 0;
+	memcpy(ib_cpu, vce_session, sizeof(vce_session));
+	len += sizeof(vce_session) / 4;
+	memcpy((ib_cpu + len), vce_taskinfo, sizeof(vce_taskinfo));
+	ib_cpu[len + 3] = 1;
+	len += sizeof(vce_taskinfo) / 4;
+	memcpy((ib_cpu + len), vce_feedback, sizeof(vce_feedback));
+	ib_cpu[len + 2] = enc.fb[0].addr >> 32;
+	ib_cpu[len + 3] = enc.fb[0].addr;
+	len += sizeof(vce_feedback) / 4;
+	memcpy((ib_cpu + len), vce_destroy, sizeof(vce_destroy));
+	len += sizeof(vce_destroy) / 4;
+
+	r = submit(len, AMDGPU_HW_IP_VCE);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_free(resources[0]);
+	CU_ASSERT_EQUAL(r, 0);
+}

@@ -59,6 +59,8 @@ static CU_SuiteInfo suites[] = {
 	  suite_bo_tests_clean, bo_tests },
 	{ "CS Tests", suite_cs_tests_init,
 	  suite_cs_tests_clean, cs_tests },
+	{ "VCE Tests", suite_vce_tests_init,
+	  suite_vce_tests_clean, vce_tests },
 	CU_SUITE_INFO_NULL,
 };
 

@@ -86,6 +86,21 @@ int suite_cs_tests_clean();
 extern CU_TestInfo cs_tests[];
 
 /**
+ * Initialize vce test suite
+ */
+int suite_vce_tests_init();
+
+/**
+ * Deinitialize vce test suite
+ */
+int suite_vce_tests_clean();
+
+/**
+ * Tests in vce test suite
+ */
+extern CU_TestInfo vce_tests[];
+
+/**
  * Helper functions
  */
 static inline amdgpu_bo_handle gpu_mem_alloc(
