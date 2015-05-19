@@ -84,6 +84,7 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case DIR_DEVICE_COLOR_CALIBRATION_PROFILES:
       *result = base::FilePath(kDeviceColorProfileDirectory);
+      break;
     default:
       return false;
   }
