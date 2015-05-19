@@ -46,7 +46,7 @@ if ($type eq "iframe") {
     print "</body>";
 } elsif ($type eq "object") {
     print "<body>";
-    print "<object data=$src></object>";
+    print "<object type='text/plain' data=$src></object>";
     print "</body>";
 } else {
     print "<frameset>";
