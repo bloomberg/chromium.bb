@@ -405,6 +405,10 @@ void RendererImpl::OnAudioRendererFlushDone() {
   DCHECK_EQ(state_, STATE_FLUSHING);
   DCHECK(!flush_cb_.is_null());
 
+  // If we had a deferred video renderer underflow prior to the flush, it should
+  // have been cleared by the audio renderer changing to BUFFERING_HAVE_NOTHING.
+  DCHECK(deferred_underflow_cb_.IsCancelled());
+
   DCHECK_EQ(audio_buffering_state_, BUFFERING_HAVE_NOTHING);
   audio_ended_ = false;
   FlushVideoRenderer();
@@ -457,10 +461,12 @@ void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
 
   bool was_waiting_for_enough_data = WaitingForEnoughData();
 
-  // When audio is present, defer underflow callbacks for some time to avoid
-  // unnecessary glitches in audio; see http://crbug.com/144683#c53.
+  // When audio is present and has enough data, defer video underflow callbacks
+  // for some time to avoid unnecessary glitches in audio; see
+  // http://crbug.com/144683#c53.
   if (audio_renderer_ && !is_audio && state_ == STATE_PLAYING) {
     if (video_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
+        audio_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
         new_buffering_state == BUFFERING_HAVE_NOTHING &&
         deferred_underflow_cb_.IsCancelled()) {
       deferred_underflow_cb_.Reset(base::Bind(

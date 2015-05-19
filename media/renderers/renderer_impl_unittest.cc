@@ -564,4 +564,42 @@ TEST_F(RendererImplTest, VideoAndAudioUnderflow) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(RendererImplTest, VideoUnderflowWithAudioFlush) {
+  InitializeWithAudioAndVideo();
+  Play();
+
+  // Set a massive threshold such that it shouldn't fire within this test.
+  renderer_impl_->set_video_underflow_threshold_for_testing(
+      base::TimeDelta::FromSeconds(100));
+
+  // Simulate the cases where audio underflows and then video underflows.
+  EXPECT_CALL(time_source_, StopTicking());
+  audio_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  video_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  Mock::VerifyAndClearExpectations(&time_source_);
+
+  // Flush the audio and video renderers, both think they're in an underflow
+  // state, but if the video renderer underflow was deferred, RendererImpl would
+  // think it still has enough data.
+  EXPECT_CALL(*audio_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*video_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(callbacks_, OnFlushed());
+  renderer_impl_->Flush(
+      base::Bind(&CallbackHelper::OnFlushed, base::Unretained(&callbacks_)));
+  base::RunLoop().RunUntilIdle();
+
+  // Start playback after the flush, but never return BUFFERING_HAVE_ENOUGH from
+  // the video renderer (which simulates spool up time for the video renderer).
+  const base::TimeDelta kStartTime;
+  EXPECT_CALL(time_source_, SetMediaTime(kStartTime));
+  EXPECT_CALL(*audio_renderer_, StartPlaying())
+      .WillOnce(
+          SetBufferingState(&audio_buffering_state_cb_, BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(kStartTime));
+  renderer_impl_->StartPlayingFrom(kStartTime);
+
+  // Nothing else should primed on the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace media
