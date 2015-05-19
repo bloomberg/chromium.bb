@@ -131,6 +131,7 @@ public:
     static const char transactionInactiveErrorMessage[];
     static const char transactionReadOnlyErrorMessage[];
     static const char databaseClosedErrorMessage[];
+    static const char notValidMaxCountErrorMessage[];
 
 private:
     IDBDatabase(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);
