@@ -49,6 +49,7 @@ class MEDIA_EXPORT ProxyDecryptor {
                               const GURL& destination_url)> KeyMessageCB;
 
   ProxyDecryptor(MediaPermission* media_permission,
+                 bool use_hw_secure_codecs,
                  const KeyAddedCB& key_added_cb,
                  const KeyErrorCB& key_error_cb,
                  const KeyMessageCB& key_message_cb);
@@ -131,6 +132,7 @@ class MEDIA_EXPORT ProxyDecryptor {
   scoped_ptr<MediaKeys> media_keys_;
 
   MediaPermission* media_permission_;
+  bool use_hw_secure_codecs_;
 
   // Callbacks for firing key events.
   KeyAddedCB key_added_cb_;

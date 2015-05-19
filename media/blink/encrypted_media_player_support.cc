@@ -154,11 +154,15 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
   if (!PrefixedIsSupportedConcreteKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
+  // |use_hw_secure_codecs| is only supported on Android, and Android (WMPA)
+  // does not use EncryptedMediaPlayerSupport.
+  bool use_hw_secure_codecs = false;
+
   if (!proxy_decryptor_) {
     DCHECK(current_key_system_.empty());
     DCHECK(!cdm_context_ready_cb_.is_null());
     proxy_decryptor_.reset(new ProxyDecryptor(
-        media_permission_,
+        media_permission_, use_hw_secure_codecs,
         BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyAdded),
         BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyError),
         BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyMessage)));

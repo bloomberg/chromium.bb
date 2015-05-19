@@ -1542,8 +1542,10 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   if (!proxy_decryptor_) {
     DCHECK(current_key_system_.empty());
     proxy_decryptor_.reset(new media::ProxyDecryptor(
-        media_permission_, base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
-                                      weak_factory_.GetWeakPtr()),
+        media_permission_,
+        player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo(),
+        base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
+                   weak_factory_.GetWeakPtr()),
         base::Bind(&WebMediaPlayerAndroid::OnKeyError,
                    weak_factory_.GetWeakPtr()),
         base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,

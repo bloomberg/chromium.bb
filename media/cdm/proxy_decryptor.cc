@@ -38,11 +38,13 @@ ProxyDecryptor::PendingGenerateKeyRequestData::
 }
 
 ProxyDecryptor::ProxyDecryptor(MediaPermission* media_permission,
+                               bool use_hw_secure_codecs,
                                const KeyAddedCB& key_added_cb,
                                const KeyErrorCB& key_error_cb,
                                const KeyMessageCB& key_message_cb)
     : is_creating_cdm_(false),
       media_permission_(media_permission),
+      use_hw_secure_codecs_(use_hw_secure_codecs),
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
@@ -73,6 +75,7 @@ void ProxyDecryptor::CreateCdm(CdmFactory* cdm_factory,
   CdmConfig cdm_config;
   cdm_config.allow_distinctive_identifier = true;
   cdm_config.allow_persistent_state = true;
+  cdm_config.use_hw_secure_codecs = use_hw_secure_codecs_;
 
   is_creating_cdm_ = true;
 
