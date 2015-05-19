@@ -393,7 +393,7 @@ public class AccountManagementFragment extends PreferenceFragment
                                 ProfileAccountManagementMetrics.CLICK_PRIMARY_ACCOUNT,
                                 mGaiaServiceType);
 
-                        if (AndroidSyncSettings.get(activity).isMasterSyncEnabled()) {
+                        if (AndroidSyncSettings.isMasterSyncEnabled(activity)) {
                             AccountManagementFragmentDelegate delegate = getDelegate();
                             // The delegate is set as part of deferred startup, so it might be null.
                             if (delegate == null) return false;
@@ -480,7 +480,6 @@ public class AccountManagementFragment extends PreferenceFragment
     private static String getSyncStatusSummary(Activity activity) {
         if (!ChromeSigninController.get(activity).isSignedIn()) return "";
 
-        AndroidSyncSettings androidSyncSettings = AndroidSyncSettings.get(activity);
         ProfileSyncService profileSyncService = ProfileSyncService.get(activity);
         Resources res = activity.getResources();
 
@@ -488,7 +487,7 @@ public class AccountManagementFragment extends PreferenceFragment
             return res.getString(R.string.kids_account);
         }
 
-        if (!androidSyncSettings.isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.isMasterSyncEnabled(activity)) {
             return res.getString(R.string.sync_android_master_sync_disabled);
         }
 
@@ -496,7 +495,7 @@ public class AccountManagementFragment extends PreferenceFragment
             return res.getString(profileSyncService.getAuthError().getMessage());
         }
 
-        if (androidSyncSettings.isSyncEnabled()) {
+        if (AndroidSyncSettings.isSyncEnabled(activity)) {
             if (!profileSyncService.isSyncInitialized()) {
                 return res.getString(R.string.sync_setup_progress);
             }
@@ -506,7 +505,7 @@ public class AccountManagementFragment extends PreferenceFragment
             }
         }
 
-        return androidSyncSettings.isSyncEnabled()
+        return AndroidSyncSettings.isSyncEnabled(activity)
                 ? res.getString(R.string.sync_is_enabled)
                 : res.getString(R.string.sync_is_disabled);
     }

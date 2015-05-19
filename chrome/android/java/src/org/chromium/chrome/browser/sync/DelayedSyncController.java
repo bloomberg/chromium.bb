@@ -63,8 +63,7 @@ public class DelayedSyncController {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... unused) {
-                String contractAuthority =
-                        AndroidSyncSettings.get(context).getContractAuthority();
+                String contractAuthority = AndroidSyncSettings.getContractAuthority(context);
                 ContentResolver.requestSync(account, contractAuthority, new Bundle());
                 return null;
             }

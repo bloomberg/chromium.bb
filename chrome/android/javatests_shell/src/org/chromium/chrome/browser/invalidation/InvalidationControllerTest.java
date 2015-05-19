@@ -117,11 +117,10 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Account account = AccountManagerHelper.createAccountFromName("test@gmail.com");
         ChromeSigninController chromeSigninController = ChromeSigninController.get(mContext);
         chromeSigninController.setSignedInAccountName(account.name);
-        AndroidSyncSettings androidSyncSettings = AndroidSyncSettings.get(mContext);
         if (syncEnabled) {
-            androidSyncSettings.enableChromeSync();
+            AndroidSyncSettings.enableChromeSync(mContext);
         } else {
-            androidSyncSettings.disableChromeSync();
+            AndroidSyncSettings.disableChromeSync(mContext);
         }
     }
 

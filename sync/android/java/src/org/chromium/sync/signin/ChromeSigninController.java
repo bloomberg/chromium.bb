@@ -44,14 +44,11 @@ public class ChromeSigninController {
 
     private final ObserverList<Listener> mListeners = new ObserverList<Listener>();
 
-    private final AndroidSyncSettings mAndroidSyncSettings;
-
     private boolean mGcmInitialized;
 
     private ChromeSigninController(Context context) {
         mApplicationContext = context.getApplicationContext();
-        mAndroidSyncSettings = AndroidSyncSettings.get(context);
-        mAndroidSyncSettings.updateAccount(getSignedInUser());
+        AndroidSyncSettings.updateAccount(context, getSignedInUser());
     }
 
     /**
@@ -86,7 +83,7 @@ public class ChromeSigninController {
                 .putString(SIGNED_IN_ACCOUNT_KEY, accountName)
                 .apply();
         // TODO(maxbogue): Move this to SigninManager.
-        mAndroidSyncSettings.updateAccount(getSignedInUser());
+        AndroidSyncSettings.updateAccount(mApplicationContext, getSignedInUser());
     }
 
     public void clearSignedInUser() {

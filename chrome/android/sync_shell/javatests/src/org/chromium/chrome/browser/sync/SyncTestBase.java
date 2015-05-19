@@ -60,7 +60,7 @@ public class SyncTestBase extends ChromeShellTestBase {
             public void run() {
                 mSyncController = SyncController.get(mContext);
                 // Ensure SyncController is registered with the new AndroidSyncSettings.
-                AndroidSyncSettings.get(mContext).registerObserver(mSyncController);
+                AndroidSyncSettings.registerObserver(mContext, mSyncController);
                 mFakeServerHelper = FakeServerHelper.get();
             }
         });

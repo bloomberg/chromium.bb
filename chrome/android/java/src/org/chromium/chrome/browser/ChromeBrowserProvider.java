@@ -630,7 +630,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         // Don't allow going up the hierarchy if sync is disabled and the requested node
         // is the Mobile Bookmarks folder.
         if (getParent && nodeId == getMobileBookmarksFolderId()
-                && !AndroidSyncSettings.get(getContext()).isSyncEnabled()) {
+                && !AndroidSyncSettings.isSyncEnabled(getContext())) {
             getParent = false;
         }
 

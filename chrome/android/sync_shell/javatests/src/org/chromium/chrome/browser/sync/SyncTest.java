@@ -152,7 +152,7 @@ public class SyncTest extends SyncTestBase {
 
         Account account =
                 AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
-        String authority = AndroidSyncSettings.get(mContext).getContractAuthority();
+        String authority = AndroidSyncSettings.getContractAuthority(mContext);
 
         // Disabling Android sync should turn Chrome sync engine off.
         mSyncContentResolver.setSyncAutomatically(account, authority, false);

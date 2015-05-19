@@ -27,7 +27,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
     private static final String TAG = "SyncNotificationController";
     private final Context mApplicationContext;
     private final GoogleServicesNotificationController mNotificationController;
-    private final AndroidSyncSettings mAndroidSyncSettings;
     private final Class<? extends Activity> mPassphraseRequestActivity;
     private final Class<? extends Fragment> mAccountManagementFragment;
     private final ProfileSyncService mProfileSyncService;
@@ -38,7 +37,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         mApplicationContext = context.getApplicationContext();
         mNotificationController = GoogleServicesNotificationController.get(context);
         mProfileSyncService = ProfileSyncService.get(context);
-        mAndroidSyncSettings = AndroidSyncSettings.get(context);
         mPassphraseRequestActivity = passphraseRequestActivity;
         mAccountManagementFragment = accountManagementFragment;
     }
@@ -62,7 +60,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         Intent intent;
 
         // Auth errors take precedence over passphrase errors.
-        if (!mAndroidSyncSettings.isSyncEnabled()) {
+        if (!AndroidSyncSettings.isSyncEnabled(mApplicationContext)) {
             mNotificationController.cancelNotification(NotificationConstants.NOTIFICATION_ID_SYNC);
             return;
         }

@@ -54,12 +54,10 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     }
 
     private Activity mActivity;
-    private AndroidSyncSettings mAndroidSyncSettings;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mAndroidSyncSettings = AndroidSyncSettings.get(mContext);
         mActivity = getActivity();
     }
 
@@ -72,13 +70,13 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         final SwitchPreference syncSwitch = getSyncSwitch(fragment);
 
         assertTrue(syncSwitch.isChecked());
-        assertTrue(mAndroidSyncSettings.isChromeSyncEnabled());
+        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
         togglePreference(syncSwitch);
         assertFalse(syncSwitch.isChecked());
-        assertFalse(mAndroidSyncSettings.isChromeSyncEnabled());
+        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
         togglePreference(syncSwitch);
         assertTrue(syncSwitch.isChecked());
-        assertTrue(mAndroidSyncSettings.isChromeSyncEnabled());
+        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 
     /**
@@ -91,7 +89,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         stopSync();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         closeFragment(fragment);
-        assertFalse(mAndroidSyncSettings.isChromeSyncEnabled());
+        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 
     @SmallTest
@@ -139,7 +137,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         }
         getInstrumentation().waitForIdleSync();
         assertDefaultSyncOffState(fragment);
-        assertFalse(mAndroidSyncSettings.isChromeSyncEnabled());
+        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 
     /**

@@ -89,7 +89,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     private static final int ERROR_COLOR = Color.RED;
 
     private ChromeSwitchPreference mSyncSwitchPreference;
-    private AndroidSyncSettings mAndroidSyncSettings;
     private boolean mIsSyncInitialized;
 
     @VisibleForTesting
@@ -120,7 +119,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mAndroidSyncSettings = AndroidSyncSettings.get(getActivity());
         mProfileSyncService = ProfileSyncService.get(getActivity());
         mIsSyncInitialized = mProfileSyncService.isSyncInitialized();
 
@@ -242,7 +240,8 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         if (!getActivity().isChangingConfigurations()) {
             // Only save state if the switch and external state match. If a stop and clear comes
             // while the dialog is open, this will be false and settings won't be saved.
-            if (mSyncSwitchPreference.isChecked() && mAndroidSyncSettings.isSyncEnabled()) {
+            if (mSyncSwitchPreference.isChecked()
+                    && AndroidSyncSettings.isSyncEnabled(getActivity())) {
                 // Save the new data type state.
                 configureSyncDataTypes();
                 // Inform sync that the user has finished setting up sync at least once.
@@ -260,7 +259,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
      * updateSyncStateFromSwitch, which uses that as its source of truth.
      */
     private void updateSyncState() {
-        boolean isSyncEnabled = mAndroidSyncSettings.isSyncEnabled();
+        boolean isSyncEnabled = AndroidSyncSettings.isSyncEnabled(getActivity());
         mSyncSwitchPreference.setChecked(isSyncEnabled);
         mSyncSwitchPreference.setEnabled(canDisableSync());
         updateSyncStateFromSwitch();

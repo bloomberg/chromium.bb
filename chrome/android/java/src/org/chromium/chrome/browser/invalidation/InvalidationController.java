@@ -104,7 +104,7 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
 
     @Override
     public void onApplicationStateChange(int newState) {
-        if (AndroidSyncSettings.get(mContext).isSyncEnabled()) {
+        if (AndroidSyncSettings.isSyncEnabled(mContext)) {
             if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
                 start();
             } else if (newState == ApplicationState.HAS_PAUSED_ACTIVITIES) {

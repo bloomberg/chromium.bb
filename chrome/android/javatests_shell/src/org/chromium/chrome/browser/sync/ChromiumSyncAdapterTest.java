@@ -72,7 +72,7 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
 
     public void performSyncWithBundle(Bundle bundle) {
         mSyncAdapter.onPerformSync(TEST_ACCOUNT, bundle,
-                AndroidSyncSettings.get(getActivity()).getContractAuthority(),
+                AndroidSyncSettings.getContractAuthority(getActivity()),
                 null, new SyncResult());
     }
 

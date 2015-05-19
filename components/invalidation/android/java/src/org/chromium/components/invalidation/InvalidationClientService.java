@@ -444,7 +444,7 @@ public class InvalidationClientService extends AndroidListener {
             bundle.putString("payload", (payload == null) ? "" : payload);
         }
         Account account = ChromeSigninController.get(this).getSignedInUser();
-        String contractAuthority = AndroidSyncSettings.get(this).getContractAuthority();
+        String contractAuthority = AndroidSyncSettings.getContractAuthority(this);
         requestSyncFromContentResolver(bundle, account, contractAuthority);
     }
 
@@ -472,7 +472,7 @@ public class InvalidationClientService extends AndroidListener {
     /** Returns whether sync is enabled. LLocal method so it can be overridden in tests. */
     @VisibleForTesting
     boolean isSyncEnabled() {
-        return AndroidSyncSettings.get(getApplicationContext()).isSyncEnabled();
+        return AndroidSyncSettings.isSyncEnabled(getApplicationContext());
     }
 
     /**
