@@ -933,7 +933,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       message_port_message_filter_.get()));
   if (browser_command_line.HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
-    AddFilter(new BluetoothDispatcherHost());
+    bluetooth_dispatcher_host_ = new BluetoothDispatcherHost();
+    AddFilter(bluetooth_dispatcher_host_.get());
   }
 }
 
@@ -2458,6 +2459,10 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
 void RenderProcessHostImpl::GetAudioOutputControllers(
     const GetAudioOutputControllersCallback& callback) const {
   audio_renderer_host()->GetOutputControllers(callback);
+}
+
+BluetoothDispatcherHost* RenderProcessHostImpl::GetBluetoothDispatcherHost() {
+  return bluetooth_dispatcher_host_.get();
 }
 
 }  // namespace content

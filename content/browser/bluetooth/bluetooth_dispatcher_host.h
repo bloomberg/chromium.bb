@@ -23,7 +23,7 @@ namespace content {
 // UI Thread Note:
 // BluetoothDispatcherHost is constructed, operates, and destroyed on the UI
 // thread because BluetoothAdapter and related objects live there.
-class BluetoothDispatcherHost final
+class CONTENT_EXPORT BluetoothDispatcherHost final
     : public BrowserMessageFilter,
       public device::BluetoothAdapter::Observer {
  public:
@@ -33,6 +33,8 @@ class BluetoothDispatcherHost final
   void OverrideThreadForMessage(const IPC::Message& message,
                                 BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
+
+  void SetBluetoothAdapterForTesting(const std::string& name);
 
  protected:
   ~BluetoothDispatcherHost() override;
@@ -49,7 +51,6 @@ class BluetoothDispatcherHost final
   void OnRequestDevice(int thread_id, int request_id);
   void OnConnectGATT(int thread_id, int request_id,
                      const std::string& device_instance_id);
-  void OnSetBluetoothMockDataSetForTesting(const std::string& name);
 
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(

@@ -120,11 +120,6 @@ void BluetoothDispatcher::connectGATT(
                                         device_instance_id.utf8()));
 }
 
-void BluetoothDispatcher::SetBluetoothMockDataSetForTesting(
-    const std::string& name) {
-  Send(new BluetoothHostMsg_SetBluetoothMockDataSetForTesting(name));
-}
-
 void BluetoothDispatcher::OnWorkerRunLoopStopped() {
   delete this;
 }

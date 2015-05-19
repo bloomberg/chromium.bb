@@ -50,7 +50,6 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   void requestDevice(blink::WebBluetoothRequestDeviceCallbacks* callbacks);
   void connectGATT(const blink::WebString& device_instance_id,
                    blink::WebBluetoothConnectGATTCallbacks* callbacks);
-  void SetBluetoothMockDataSetForTesting(const std::string& name);
 
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;

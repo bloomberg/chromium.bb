@@ -174,8 +174,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
 
-  WebBluetoothImpl* BluetoothImplForTesting() { return bluetooth_.get(); }
-
   virtual blink::WebString domCodeStringFromEnum(int dom_code);
   virtual int domEnumFromCodeString(const blink::WebString& codeString);
 

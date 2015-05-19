@@ -38,3 +38,5 @@ IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     GURL /* origin */,
                     GURL /* embedding_origin */ )
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ResetPermissions)
+IPC_MESSAGE_CONTROL1(LayoutTestHostMsg_SetBluetoothAdapter,
+                     std::string /* name */)

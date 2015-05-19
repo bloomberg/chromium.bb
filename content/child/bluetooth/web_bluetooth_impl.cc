@@ -26,11 +26,6 @@ void WebBluetoothImpl::connectGATT(const blink::WebString& device_instance_id,
   GetDispatcher()->connectGATT(device_instance_id, callbacks);
 }
 
-void WebBluetoothImpl::SetBluetoothMockDataSetForTesting(
-    const std::string& name) {
-  GetDispatcher()->SetBluetoothMockDataSetForTesting(name);
-}
-
 BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
   return BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
       thread_safe_sender_.get());

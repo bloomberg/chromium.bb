@@ -464,7 +464,7 @@ void BlinkTestRunner::SetDeviceColorProfile(const std::string& name) {
 }
 
 void BlinkTestRunner::SetBluetoothMockDataSet(const std::string& name) {
-  content::SetBluetoothMockDataSetForTesting(name);
+  Send(new LayoutTestHostMsg_SetBluetoothAdapter(name));
 }
 
 void BlinkTestRunner::SetGeofencingMockProvider(bool service_available) {

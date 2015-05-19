@@ -7,8 +7,9 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "cc/blink/web_layer_impl.h"
+#include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/child/bluetooth/web_bluetooth_impl.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/public/common/page_state.h"
@@ -312,11 +313,14 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
       SetDeviceColorProfileForTesting(color_profile);
 }
 
-void SetBluetoothMockDataSetForTesting(const std::string& name) {
-  RenderThreadImpl::current()
-      ->blink_platform_impl()
-      ->BluetoothImplForTesting()
-      ->SetBluetoothMockDataSetForTesting(name);
+void SetBluetoothAdapter(int render_process_id, const std::string& name) {
+  RenderProcessHostImpl* render_process_host_impl =
+      static_cast<RenderProcessHostImpl*>(
+          RenderProcessHost::FromID(render_process_id));
+
+  render_process_host_impl
+      ->GetBluetoothDispatcherHost()
+      ->SetBluetoothAdapterForTesting(name);
 }
 
 void SetGeofencingMockProvider(bool service_available) {

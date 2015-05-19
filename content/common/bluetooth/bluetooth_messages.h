@@ -141,8 +141,3 @@ IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ConnectGATT,
                      int /* thread_id */,
                      int /* request_id */,
                      std::string /* device_instance_id */)
-
-// Configures the mock data set in the browser used while under test.
-// TODO(scheib): Disable testing in non-test executables. crbug.com/436284.
-IPC_MESSAGE_CONTROL1(BluetoothHostMsg_SetBluetoothMockDataSetForTesting,
-                     std::string /* name */)
