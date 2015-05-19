@@ -7774,5 +7774,40 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 }
 
+// A mock output surface which lets us detect calls to ForceReclaimResources.
+class MockReclaimResourcesOutputSurface : public FakeOutputSurface {
+ public:
+  static scoped_ptr<MockReclaimResourcesOutputSurface> Create3d() {
+    return make_scoped_ptr(new MockReclaimResourcesOutputSurface(
+        TestContextProvider::Create(), TestContextProvider::Create(), false));
+  }
+
+  MOCK_METHOD0(ForceReclaimResources, void());
+
+ protected:
+  MockReclaimResourcesOutputSurface(
+      scoped_refptr<ContextProvider> context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider,
+      bool delegated_rendering)
+      : FakeOutputSurface(context_provider,
+                          worker_context_provider,
+                          delegated_rendering) {}
+};
+
+// Display::Draw (and the planned Display Scheduler) currently rely on resources
+// being reclaimed to block drawing between BeginCommit / Swap. This test
+// ensures that BeginCommit triggers ForceReclaimResources. See
+// crbug.com/489515.
+TEST_F(LayerTreeHostImplTest, BeginCommitReclaimsResources) {
+  scoped_ptr<MockReclaimResourcesOutputSurface> output_surface(
+      MockReclaimResourcesOutputSurface::Create3d());
+  // Hold an unowned pointer to the output surface to use for mock expectations.
+  MockReclaimResourcesOutputSurface* mock_output_surface = output_surface.get();
+
+  CreateHostImpl(DefaultSettings(), output_surface.Pass());
+  EXPECT_CALL(*mock_output_surface, ForceReclaimResources()).Times(1);
+  host_impl_->BeginCommit();
+}
+
 }  // namespace
 }  // namespace cc

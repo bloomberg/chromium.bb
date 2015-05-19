@@ -297,9 +297,12 @@ void LayerTreeHostImpl::BeginCommit() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BeginCommit");
 
   // Ensure all textures are returned so partial texture updates can happen
-  // during the commit. Impl-side-painting doesn't upload during commits, so
-  // is unaffected.
-  if (!settings_.impl_side_painting && output_surface_)
+  // during the commit.
+  // TODO(ericrk): We should not need to ForceReclaimResources when using
+  // Impl-side-painting as it doesn't upload during commits. However,
+  // Display::Draw currently relies on resource being reclaimed to block drawing
+  // between BeginCommit / Swap. See crbug.com/489515.
+  if (output_surface_)
     output_surface_->ForceReclaimResources();
 
   if (settings_.impl_side_painting && !proxy_->CommitToActiveTree())
