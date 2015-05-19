@@ -400,15 +400,13 @@ class SchedulerTest : public testing::Test {
     }
   }
 
-  BeginFrameArgs SendNextBeginFrame() {
+  void SendNextBeginFrame() {
     DCHECK(scheduler_->settings().use_external_begin_frame_source);
     // Creep the time forward so that any BeginFrameArgs is not equal to the
     // last one otherwise we violate the BeginFrameSource contract.
     now_src_->AdvanceNow(BeginFrameArgs::DefaultInterval());
-    BeginFrameArgs args =
-        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
-    fake_external_begin_frame_source_->TestOnBeginFrame(args);
-    return args;
+    fake_external_begin_frame_source_->TestOnBeginFrame(
+        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src()));
   }
 
   FakeExternalBeginFrameSource* fake_external_begin_frame_source() const {
@@ -1608,7 +1606,7 @@ TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
   scheduler_->NotifyBeginMainFrameStarted();
 
   client_->Reset();
-  BeginFrameArgs retro_frame_args = SendNextBeginFrame();
+  SendNextBeginFrame();
   // This BeginFrame is queued up as a retro frame.
   EXPECT_NO_ACTION(client_);
   // The previous deadline is still pending.
@@ -1632,8 +1630,10 @@ TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
   scheduler_->SetNeedsRedraw();
   EXPECT_NO_ACTION(client_);
 
-  // Let's advance to the retro frame's deadline.
-  now_src()->AdvanceNow(retro_frame_args.deadline - now_src()->Now());
+  // Let's advance sufficiently past the next frame's deadline.
+  now_src()->AdvanceNow(BeginFrameArgs::DefaultInterval() -
+                        BeginFrameArgs::DefaultEstimatedParentDrawTime() +
+                        base::TimeDelta::FromMicroseconds(1));
 
   // The retro frame hasn't expired yet.
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(false));
@@ -1648,7 +1648,7 @@ TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
 }
 
-TEST_F(SchedulerTest, RetroFrameExpiresOnTime) {
+TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooLate) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -1666,7 +1666,7 @@ TEST_F(SchedulerTest, RetroFrameExpiresOnTime) {
   scheduler_->NotifyBeginMainFrameStarted();
 
   client_->Reset();
-  BeginFrameArgs retro_frame_args = SendNextBeginFrame();
+  SendNextBeginFrame();
   // This BeginFrame is queued up as a retro frame.
   EXPECT_NO_ACTION(client_);
   // The previous deadline is still pending.
@@ -1690,62 +1690,12 @@ TEST_F(SchedulerTest, RetroFrameExpiresOnTime) {
   scheduler_->SetNeedsRedraw();
   EXPECT_NO_ACTION(client_);
 
-  // Let's advance sufficiently past the retro frame's deadline.
-  now_src()->AdvanceNow(retro_frame_args.deadline - now_src()->Now() +
+  // Let's advance sufficiently past the next frame's deadline.
+  now_src()->AdvanceNow(BeginFrameArgs::DefaultInterval() +
                         base::TimeDelta::FromMicroseconds(1));
 
   // The retro frame should've expired.
   EXPECT_NO_ACTION(client_);
-}
-
-TEST_F(SchedulerTest, MissedFrameDoesNotExpireTooEarly) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
-
-  scheduler_->SetNeedsCommit();
-  EXPECT_TRUE(client_->needs_begin_frames());
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
-
-  BeginFrameArgs missed_frame_args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
-  missed_frame_args.type = BeginFrameArgs::MISSED;
-
-  // Advance to the deadline.
-  now_src()->AdvanceNow(missed_frame_args.deadline - now_src()->Now());
-
-  // Missed frame is handled because it's on time.
-  client_->Reset();
-  fake_external_begin_frame_source_->TestOnBeginFrame(missed_frame_args);
-  EXPECT_TRUE(
-      task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(false)));
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-}
-
-TEST_F(SchedulerTest, MissedFrameExpiresOnTime) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
-
-  scheduler_->SetNeedsCommit();
-  EXPECT_TRUE(client_->needs_begin_frames());
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
-
-  BeginFrameArgs missed_frame_args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
-  missed_frame_args.type = BeginFrameArgs::MISSED;
-
-  // Advance sufficiently past the deadline.
-  now_src()->AdvanceNow(missed_frame_args.deadline - now_src()->Now() +
-                        base::TimeDelta::FromMicroseconds(1));
-
-  // Missed frame is dropped because it's too late.
-  client_->Reset();
-  fake_external_begin_frame_source_->TestOnBeginFrame(missed_frame_args);
-  EXPECT_FALSE(
-      task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(false)));
-  EXPECT_NO_ACTION(client_);
-  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
 }
 
 void SchedulerTest::BeginFramesNotFromClient(

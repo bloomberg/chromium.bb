@@ -434,7 +434,7 @@ void Scheduler::BeginRetroFrame() {
 
   while (!begin_retro_frame_args_.empty()) {
     const BeginFrameArgs& args = begin_retro_frame_args_.front();
-    base::TimeTicks expiration_time = args.deadline;
+    base::TimeTicks expiration_time = args.frame_time + args.interval;
     if (now <= expiration_time)
       break;
     TRACE_EVENT_INSTANT2(
