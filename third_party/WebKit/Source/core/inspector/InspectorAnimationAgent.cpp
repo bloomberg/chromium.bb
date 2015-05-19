@@ -36,6 +36,7 @@ InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, 
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
     , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
+    , m_latestStartTime(std::numeric_limits<double>::min())
 {
 }
 
@@ -301,15 +302,10 @@ void InspectorAnimationAgent::didCreateAnimation(Animation* player)
     if (m_idToAnimation.get(playerId))
         return;
 
-    // Check threshold
-    double latestStartTime = 0;
-    for (const auto& p : m_idToAnimation.values())
-        latestStartTime = max(latestStartTime, normalizedStartTime(*p));
-
-    bool reset = false;
-    const double threshold = 1000;
-    if (normalizedStartTime(*player) - latestStartTime > threshold) {
-        reset = true;
+    double threshold = 1000;
+    bool reset = normalizedStartTime(*player) - threshold > m_latestStartTime;
+    m_latestStartTime = normalizedStartTime(*player);
+    if (reset) {
         m_idToAnimation.clear();
         m_idToAnimationType.clear();
     }
