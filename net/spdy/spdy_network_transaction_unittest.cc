@@ -272,6 +272,10 @@ class SpdyNetworkTransactionTest
         EXPECT_TRUE(provider->AllReadDataConsumed());
         EXPECT_TRUE(provider->AllWriteDataConsumed());
       }
+      for (const SocketDataProvider* provider : deterministic_data_vector_) {
+        EXPECT_TRUE(provider->AllReadDataConsumed());
+        EXPECT_TRUE(provider->AllWriteDataConsumed());
+      }
     }
 
     // Occasionally a test will expect to error out before certain reads are
@@ -279,6 +283,10 @@ class SpdyNetworkTransactionTest
     // not processed.
     void VerifyDataNotConsumed() {
       for (const SocketDataProvider* provider : data_vector_) {
+        EXPECT_FALSE(provider->AllReadDataConsumed());
+        EXPECT_FALSE(provider->AllWriteDataConsumed());
+      }
+      for (const SocketDataProvider* provider : deterministic_data_vector_) {
         EXPECT_FALSE(provider->AllReadDataConsumed());
         EXPECT_FALSE(provider->AllWriteDataConsumed());
       }
@@ -336,7 +344,7 @@ class SpdyNetworkTransactionTest
 
     void AddDeterministicData(DeterministicSocketData* data) {
       DCHECK(deterministic_);
-      data_vector_.push_back(data);
+      deterministic_data_vector_.push_back(data);
       SSLSocketDataProvider* ssl_provider =
           new SSLSocketDataProvider(ASYNC, OK);
       ssl_provider->SetNextProto(test_params_.protocol);
@@ -354,7 +362,7 @@ class SpdyNetworkTransactionTest
         hanging_non_alt_svc_socket->set_connect_data(hanging_connect);
         session_deps_->deterministic_socket_factory->AddSocketDataProvider(
             hanging_non_alt_svc_socket);
-        alternate_vector_.push_back(hanging_non_alt_svc_socket);
+        alternate_deterministic_vector_.push_back(hanging_non_alt_svc_socket);
       }
     }
 
@@ -378,6 +386,7 @@ class SpdyNetworkTransactionTest
 
    private:
     typedef std::vector<SocketDataProvider*> DataVector;
+    typedef std::vector<DeterministicSocketData*> DeterministicDataVector;
     typedef ScopedVector<SSLSocketDataProvider> SSLVector;
     typedef ScopedVector<SocketDataProvider> AlternateVector;
     typedef ScopedVector<DeterministicSocketData> AlternateDeterministicVector;
@@ -392,6 +401,7 @@ class SpdyNetworkTransactionTest
     scoped_ptr<HttpNetworkTransaction> trans_;
     scoped_ptr<HttpNetworkTransaction> trans_http_;
     DataVector data_vector_;
+    DeterministicDataVector deterministic_data_vector_;
     AlternateVector alternate_vector_;
     AlternateDeterministicVector alternate_deterministic_vector_;
     const BoundNetLog log_;
@@ -553,7 +563,6 @@ class SpdyNetworkTransactionTest
   // to skip over data destined for other transactions while we consume
   // the data for |trans|.
   int ReadResult(HttpNetworkTransaction* trans,
-                 SocketDataProvider* data,
                  std::string* result) {
     const int kSize = 3000;
 
@@ -621,10 +630,10 @@ class SpdyNetworkTransactionTest
 
     // Read the server push body.
     std::string result2;
-    ReadResult(trans2.get(), data, &result2);
+    ReadResult(trans2.get(), &result2);
     // Read the response body.
     std::string result;
-    ReadResult(trans, data, &result);
+    ReadResult(trans, &result);
 
     // Verify that we consumed all test data.
     EXPECT_TRUE(data->AllReadDataConsumed());
@@ -5144,10 +5153,10 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
 
   // Read the server push body.
   std::string result2;
-  ReadResult(trans2.get(), &data, &result2);
+  ReadResult(trans2.get(), &result2);
   // Read the response body.
   std::string result;
-  ReadResult(trans, &data, &result);
+  ReadResult(trans, &result);
 
   // Verify that the received push data is same as the expected push data.
   EXPECT_EQ(result2.compare(expected_push_result), 0)
@@ -5282,10 +5291,10 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
   // Read the server push body.
   std::string result2;
-  ReadResult(trans2.get(), &data, &result2);
+  ReadResult(trans2.get(), &result2);
   // Read the response body.
   std::string result;
-  ReadResult(trans, &data, &result);
+  ReadResult(trans, &result);
 
   // Verify that the received push data is same as the expected push data.
   EXPECT_EQ(expected_push_result, result2);
@@ -5398,10 +5407,10 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
 
   // Read the server push body.
   std::string result2;
-  ReadResult(trans2.get(), &data, &result2);
+  ReadResult(trans2.get(), &result2);
   // Read the response body.
   std::string result;
-  ReadResult(trans, &data, &result);
+  ReadResult(trans, &result);
   EXPECT_EQ("hello!", result);
 
   // Verify that we haven't received any push data.
@@ -5603,7 +5612,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
 
     // Read the response body.
     std::string result;
-    ReadResult(trans, &data, &result);
+    ReadResult(trans, &result);
 
     // Verify that we consumed all test data.
     EXPECT_TRUE(data.AllReadDataConsumed());
