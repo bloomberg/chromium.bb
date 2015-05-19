@@ -2349,7 +2349,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ClearDataCache) {
+#if defined(OS_WIN)
+// Test is disabled on Windows because it fails often (~9% time)
+// http://crbug.com/489088
+#define MAYBE_ClearDataCache DISABLED_ClearDataCache
+#else
+#define MAYBE_ClearDataCache ClearDataCache
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_ClearDataCache) {
   TestHelper("testClearCache", "web_view/clear_data_cache", NEEDS_TEST_SERVER);
 }
 
