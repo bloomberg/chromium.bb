@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -93,6 +95,12 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
 
 class AutofillServerTest : public InProcessBrowserTest  {
  public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable finch experiment for sending field metadata.
+    command_line->AppendSwitchASCII(
+        ::switches::kForceFieldTrials, "AutofillFieldMetadata/Enabled/");
+  }
+
   void SetUpOnMainThread() override {
     // Disable interactions with the Mac Keychain.
     PrefService* pref_service = browser()->profile()->GetPrefs();

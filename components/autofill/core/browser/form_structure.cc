@@ -11,6 +11,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -65,6 +66,13 @@ const char kIgnorePatternInFieldName[] = "\\d{5,}+";
 // mismatches exceeds this threshold.
 const int kNumberOfMismatchesThreshold = 3;
 
+// Returns whether sending autofill field metadata to the server is enabled.
+bool IsAutofillFieldMetadataEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AutofillFieldMetadata");
+  return StartsWithASCII(group_name, "Enabled", true);
+}
+
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
 std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
@@ -111,12 +119,14 @@ buzz::XmlElement* EncodeFieldForQuery(const AutofillField& field,
       buzz::QName(kXMLElementField));
   field_element->SetAttr(buzz::QName(kAttributeSignature),
                          field.FieldSignature());
-  if (!field.name.empty()) {
-    field_element->SetAttr(buzz::QName(kAttributeName),
-                           base::UTF16ToUTF8(field.name));
+  if (IsAutofillFieldMetadataEnabled()) {
+    if (!field.name.empty()) {
+      field_element->SetAttr(buzz::QName(kAttributeName),
+                             base::UTF16ToUTF8(field.name));
+    }
+    field_element->SetAttr(buzz::QName(kAttributeControlType),
+                           field.form_control_type);
   }
-  field_element->SetAttr(buzz::QName(kAttributeControlType),
-                         field.form_control_type);
   parent->AddElement(field_element);
   return field_element;
 }
@@ -136,12 +146,14 @@ void EncodeFieldForUpload(const AutofillField& field,
     // We use the same field elements as the query and add a few more below.
     buzz::XmlElement* field_element = EncodeFieldForQuery(field, parent);
 
-    if (!field.autocomplete_attribute.empty()) {
-      field_element->SetAttr(buzz::QName(kAttributeAutocomplete),
-                             field.autocomplete_attribute);
+    if (IsAutofillFieldMetadataEnabled()) {
+      if (!field.autocomplete_attribute.empty()) {
+        field_element->SetAttr(buzz::QName(kAttributeAutocomplete),
+                               field.autocomplete_attribute);
+      }
+      field_element->SetAttr(buzz::QName(kAttributeAutofillType),
+                             base::IntToString(*field_type));
     }
-    field_element->SetAttr(buzz::QName(kAttributeAutofillType),
-                           base::IntToString(*field_type));
   }
 }
 

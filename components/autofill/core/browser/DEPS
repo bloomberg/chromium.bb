@@ -4,6 +4,7 @@ include_rules = [
   "+components/signin/core/browser",
   "+components/signin/core/common",
   "+components/sync_driver",
+  "+components/variations",
   "+components/webdata/common",
   "+components/webdata_services",
   "+crypto/random.h",

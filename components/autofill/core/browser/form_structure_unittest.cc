@@ -6,12 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/rappor/test_rappor_service.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -42,14 +44,38 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
 
 }  // namespace content
 
-class FormStructureTest {
+class FormStructureTest : public testing::Test {
  public:
   static std::string Hash64Bit(const std::string& str) {
     return FormStructure::Hash64Bit(str);
   }
+
+  void SetUp() override {
+    // By default this trial is enabled on tests.
+    EnableAutofillMetadataFieldTrial();
+  }
+
+ protected:
+  void DisableAutofillMetadataFieldTrial() {
+    field_trial_list_.reset(NULL);
+  }
+
+ private:
+  void EnableAutofillMetadataFieldTrial() {
+    // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
+    field_trial_list_.reset(NULL);
+    field_trial_list_.reset(
+        new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
+    field_trial_ = base::FieldTrialList::CreateFieldTrial(
+        "AutofillFieldMetadata", "Enabled");
+    field_trial_->group();
+  }
+
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  scoped_refptr<base::FieldTrial> field_trial_;
 };
 
-TEST(FormStructureTest, FieldCount) {
+TEST_F(FormStructureTest, FieldCount) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -81,7 +107,7 @@ TEST(FormStructureTest, FieldCount) {
   EXPECT_EQ(4U, form_structure->field_count());
 }
 
-TEST(FormStructureTest, AutofillCount) {
+TEST_F(FormStructureTest, AutofillCount) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -134,7 +160,7 @@ TEST(FormStructureTest, AutofillCount) {
   EXPECT_EQ(4U, form_structure->autofill_count());
 }
 
-TEST(FormStructureTest, SourceURL) {
+TEST_F(FormStructureTest, SourceURL) {
   FormData form;
   form.origin = GURL("http://www.foo.com/");
   FormStructure form_structure(form);
@@ -142,7 +168,7 @@ TEST(FormStructureTest, SourceURL) {
   EXPECT_EQ(form.origin, form_structure.source_url());
 }
 
-TEST(FormStructureTest, IsAutofillable) {
+TEST_F(FormStructureTest, IsAutofillable) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -206,7 +232,7 @@ TEST(FormStructureTest, IsAutofillable) {
   EXPECT_TRUE(form_structure->IsAutofillable());
 }
 
-TEST(FormStructureTest, ShouldBeParsed) {
+TEST_F(FormStructureTest, ShouldBeParsed) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -287,7 +313,7 @@ TEST(FormStructureTest, ShouldBeParsed) {
   EXPECT_FALSE(form_structure->ShouldBeParsed());
 }
 
-TEST(FormStructureTest, HeuristicsContactInfo) {
+TEST_F(FormStructureTest, HeuristicsContactInfo) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -355,7 +381,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
 }
 
 // Verify that we can correctly process the |autocomplete| attribute.
-TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
+TEST_F(FormStructureTest, HeuristicsAutocompleteAttribute) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -395,7 +421,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
 
 // Verify that we can correctly process the 'autocomplete' attribute for phone
 // number types (especially phone prefixes and suffixes).
-TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
+TEST_F(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -437,7 +463,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
 
 // If at least one field includes type hints in the 'autocomplete' attribute, we
 // should not try to apply any other heuristics.
-TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
+TEST_F(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -488,7 +514,7 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
 // return true if the structure contains a password field, since there are
 // no local heuristics to depend upon in this case. Fields will still not be
 // considered autofillable though.
-TEST(FormStructureTest, PasswordFormShouldBeCrowdsourced) {
+TEST_F(FormStructureTest, PasswordFormShouldBeCrowdsourced) {
   FormData form;
 
   // Start with a regular contact form.
@@ -520,7 +546,7 @@ TEST(FormStructureTest, PasswordFormShouldBeCrowdsourced) {
 
 // Verify that we can correctly process sections listed in the |autocomplete|
 // attribute.
-TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
+TEST_F(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
   FormData form;
 
   FormFieldData field;
@@ -583,7 +609,8 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
 
 // Verify that we can correctly process a degenerate section listed in the
 // |autocomplete| attribute.
-TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsDegenerate) {
+TEST_F(FormStructureTest,
+       HeuristicsAutocompleteAttributeWithSectionsDegenerate) {
   FormData form;
 
   FormFieldData field;
@@ -626,7 +653,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsDegenerate) {
 
 // Verify that we can correctly process repeated sections listed in the
 // |autocomplete| attribute.
-TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
+TEST_F(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
   FormData form;
 
   FormFieldData field;
@@ -655,7 +682,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
 
 // Verify that we do not override the author-specified sections from a form with
 // local heuristics.
-TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
+TEST_F(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   FormData form;
 
   FormFieldData field;
@@ -690,7 +717,7 @@ TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
             form_structure.field(3)->section());
 }
 
-TEST(FormStructureTest, HeuristicsSample8) {
+TEST_F(FormStructureTest, HeuristicsSample8) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -767,7 +794,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(9)->heuristic_type());
 }
 
-TEST(FormStructureTest, HeuristicsSample6) {
+TEST_F(FormStructureTest, HeuristicsSample6) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -829,7 +856,7 @@ TEST(FormStructureTest, HeuristicsSample6) {
 // Tests a sequence of FormFields where only labels are supplied to heuristics
 // for matching.  This works because FormFieldData labels are matched in the
 // case that input element ids (or |name| fields) are missing.
-TEST(FormStructureTest, HeuristicsLabelsOnly) {
+TEST_F(FormStructureTest, HeuristicsLabelsOnly) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -894,7 +921,7 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(7)->heuristic_type());
 }
 
-TEST(FormStructureTest, HeuristicsCreditCardInfo) {
+TEST_F(FormStructureTest, HeuristicsCreditCardInfo) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -948,7 +975,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(5)->heuristic_type());
 }
 
-TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
+TEST_F(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1010,7 +1037,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(6)->heuristic_type());
 }
 
-TEST(FormStructureTest, ThreeAddressLines) {
+TEST_F(FormStructureTest, ThreeAddressLines) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1050,7 +1077,7 @@ TEST(FormStructureTest, ThreeAddressLines) {
 }
 
 // Numbered address lines after line two are ignored.
-TEST(FormStructureTest, SurplusAddressLinesIgnored) {
+TEST_F(FormStructureTest, SurplusAddressLinesIgnored) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1093,7 +1120,7 @@ TEST(FormStructureTest, SurplusAddressLinesIgnored) {
 // test was written). We interpret this as address line 2. And the following
 // "Street address second line" we interpret as address line 3.
 // See http://crbug.com/48197 for details.
-TEST(FormStructureTest, ThreeAddressLinesExpedia) {
+TEST_F(FormStructureTest, ThreeAddressLinesExpedia) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1135,7 +1162,7 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
 // This example comes from ebay.com where the word "suite" appears in the label
 // and the name "address2" clearly indicates that this is the address line 2.
 // See http://crbug.com/48197 for details.
-TEST(FormStructureTest, TwoAddressLinesEbay) {
+TEST_F(FormStructureTest, TwoAddressLinesEbay) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1168,7 +1195,7 @@ TEST(FormStructureTest, TwoAddressLinesEbay) {
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(2)->heuristic_type());
 }
 
-TEST(FormStructureTest, HeuristicsStateWithProvince) {
+TEST_F(FormStructureTest, HeuristicsStateWithProvince) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1202,7 +1229,7 @@ TEST(FormStructureTest, HeuristicsStateWithProvince) {
 }
 
 // This example comes from lego.com's checkout page.
-TEST(FormStructureTest, HeuristicsWithBilling) {
+TEST_F(FormStructureTest, HeuristicsWithBilling) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1273,7 +1300,7 @@ TEST(FormStructureTest, HeuristicsWithBilling) {
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(10)->heuristic_type());
 }
 
-TEST(FormStructureTest, ThreePartPhoneNumber) {
+TEST_F(FormStructureTest, ThreePartPhoneNumber) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1320,7 +1347,7 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(3)->heuristic_type());
 }
 
-TEST(FormStructureTest, HeuristicsInfernoCC) {
+TEST_F(FormStructureTest, HeuristicsInfernoCC) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1368,7 +1395,7 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
             form_structure->field(4)->heuristic_type());
 }
 
-TEST(FormStructureTest, CVCCodeClash) {
+TEST_F(FormStructureTest, CVCCodeClash) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
@@ -1423,7 +1450,7 @@ TEST(FormStructureTest, CVCCodeClash) {
             form_structure->field(5)->heuristic_type());
 }
 
-TEST(FormStructureTest, EncodeQueryRequest) {
+TEST_F(FormStructureTest, EncodeQueryRequest) {
   FormData form;
 
   FormFieldData field;
@@ -1551,7 +1578,7 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   EXPECT_EQ("", encoded_xml);
 }
 
-TEST(FormStructureTest, EncodeUploadRequest) {
+TEST_F(FormStructureTest, EncodeUploadRequest) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
@@ -1728,7 +1755,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
                                                    &encoded_xml));
 }
 
-TEST(FormStructureTest, EncodeUploadRequestWithAutocomplete) {
+TEST_F(FormStructureTest, EncodeUploadRequestWithAutocomplete) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
@@ -1787,7 +1814,7 @@ TEST(FormStructureTest, EncodeUploadRequestWithAutocomplete) {
             encoded_xml);
 }
 
-TEST(FormStructureTest, EncodeUploadRequestPartialMetadata) {
+TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
@@ -1844,7 +1871,66 @@ TEST(FormStructureTest, EncodeUploadRequestPartialMetadata) {
             encoded_xml);
 }
 
-TEST(FormStructureTest, EncodeFieldAssignments) {
+// Sending field metadata to the server is disabled.
+TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
+  DisableAutofillMetadataFieldTrial();
+
+  scoped_ptr<FormStructure> form_structure;
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  FormData form;
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_FIRST);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  field.autocomplete_attribute = "family-name";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_LAST);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "email";
+  field.autocomplete_attribute = "email";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(EMAIL_ADDRESS);
+
+  form_structure.reset(new FormStructure(form));
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+
+  ServerFieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(EMAIL_ADDRESS);
+
+  std::string encoded_xml;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
+                                                  &encoded_xml));
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"14746822798145140279\" autofillused=\"true\""
+            " datapresent=\"1440\">"
+            "<field signature=\"3763331450\"/>"
+            "<field signature=\"3494530716\"/>"
+            "<field signature=\"1029417091\"/></autofillupload>",
+            encoded_xml);
+}
+
+TEST_F(FormStructureTest, EncodeFieldAssignments) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
@@ -1971,7 +2057,7 @@ TEST(FormStructureTest, EncodeFieldAssignments) {
 
 // Check that we compute the "datapresent" string correctly for the given
 // |available_types|.
-TEST(FormStructureTest, CheckDataPresence) {
+TEST_F(FormStructureTest, CheckDataPresence) {
   FormData form;
 
   FormFieldData field;
@@ -2208,7 +2294,7 @@ TEST(FormStructureTest, CheckDataPresence) {
             encoded_xml);
 }
 
-TEST(FormStructureTest, CheckMultipleTypes) {
+TEST_F(FormStructureTest, CheckMultipleTypes) {
   // Throughout this test, datapresent should be
   // 0x1440000360000008 ==
   //     0b0001010001000000000000000000001101100000000000000000000000001000
@@ -2352,7 +2438,7 @@ TEST(FormStructureTest, CheckMultipleTypes) {
             encoded_xml);
 }
 
-TEST(FormStructureTest, CheckFormSignature) {
+TEST_F(FormStructureTest, CheckFormSignature) {
   // Check that form signature is created correctly.
   scoped_ptr<FormStructure> form_structure;
   FormData form;
@@ -2420,7 +2506,7 @@ TEST(FormStructureTest, CheckFormSignature) {
       form_structure->FormSignature());
 }
 
-TEST(FormStructureTest, ToFormData) {
+TEST_F(FormStructureTest, ToFormData) {
   FormData form;
   form.name = ASCIIToUTF16("the-name");
   form.origin = GURL("http://cool.com");
@@ -2450,7 +2536,7 @@ TEST(FormStructureTest, ToFormData) {
   EXPECT_FALSE(form.SameFormAs(FormStructure(form).ToFormData()));
 }
 
-TEST(FormStructureTest, SkipFieldTest) {
+TEST_F(FormStructureTest, SkipFieldTest) {
   FormData form;
   form.name = ASCIIToUTF16("the-name");
   form.origin = GURL("http://cool.com");
@@ -2495,7 +2581,7 @@ TEST(FormStructureTest, SkipFieldTest) {
 }
 
 // One name is missing from one field.
-TEST(FormStructureTest, EncodeQueryRequest_MissingNames) {
+TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   FormData form;
   // No name set for the form.
   form.origin = GURL("http://cool.com");
@@ -2533,7 +2619,48 @@ TEST(FormStructureTest, EncodeQueryRequest_MissingNames) {
   EXPECT_EQ(kResponse, encoded_xml);
 }
 
-TEST(FormStructureTest, PossibleValues) {
+// Sending field metadata to the server is disabled.
+TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
+  DisableAutofillMetadataFieldTrial();
+
+  FormData form;
+  // No name set for the form.
+  form.origin = GURL("http://cool.com");
+  form.action = form.origin.Resolve("/login");
+
+  FormFieldData field;
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("country");
+  field.form_control_type = "text";
+  field.is_checkable = false;
+  form.fields.push_back(field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+  std::vector<std::string> encoded_signatures;
+  std::string encoded_xml;
+
+  const char kSignature[] = "7635954436925888745";
+  const char kResponse[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
+      "<form signature=\"7635954436925888745\">"
+      "<field signature=\"239111655\"/>"
+      "<field signature=\"3654076265\"/>"
+      "</form></autofillquery>";
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
+                                                &encoded_signatures,
+                                                &encoded_xml));
+  ASSERT_EQ(1U, encoded_signatures.size());
+  EXPECT_EQ(kSignature, encoded_signatures[0]);
+  EXPECT_EQ(kResponse, encoded_xml);
+}
+
+TEST_F(FormStructureTest, PossibleValues) {
   FormData form_data;
   FormFieldData field;
   field.autocomplete_attribute = "billing country";
@@ -2573,7 +2700,7 @@ TEST(FormStructureTest, PossibleValues) {
   EXPECT_EQ(0U, form_structure2.PossibleValues(ADDRESS_BILLING_COUNTRY).size());
 }
 
-TEST(FormStructureTest, ParseQueryResponse) {
+TEST_F(FormStructureTest, ParseQueryResponse) {
   TestRapporService rappor_service;
   FormData form;
   form.origin = GURL("http://foo.com");
@@ -2632,7 +2759,7 @@ TEST(FormStructureTest, ParseQueryResponse) {
 }
 
 // If user defined types are present, only parse password fields.
-TEST(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
+TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
   TestRapporService rappor_service;
   FormData form;
   form.origin = GURL("http://foo.com");
@@ -2669,7 +2796,8 @@ TEST(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
 
 // If the server returns NO_SERVER_DATA for one of the forms, expect RAPPOR
 // logging.
-TEST(FormStructureTest, ParseQueryResponse_RapporLogging_OneFormNoServerData) {
+TEST_F(FormStructureTest,
+       ParseQueryResponse_RapporLogging_OneFormNoServerData) {
   TestRapporService rappor_service;
   FormData form;
   form.origin = GURL("http://foo.com");
@@ -2719,7 +2847,8 @@ TEST(FormStructureTest, ParseQueryResponse_RapporLogging_OneFormNoServerData) {
 
 // If the server returns NO_SERVER_DATA for both of the forms, expect RAPPOR
 // logging.
-TEST(FormStructureTest, ParseQueryResponse_RapporLogging_AllFormsNoServerData) {
+TEST_F(FormStructureTest,
+       ParseQueryResponse_RapporLogging_AllFormsNoServerData) {
   TestRapporService rappor_service;
   FormData form;
   form.origin = GURL("http://foo.com");
@@ -2771,7 +2900,8 @@ TEST(FormStructureTest, ParseQueryResponse_RapporLogging_AllFormsNoServerData) {
 
 // If the server returns NO_SERVER_DATA for only some of the fields, expect no
 // RAPPOR logging.
-TEST(FormStructureTest, ParseQueryResponse_RapporLogging_PartialNoServerData) {
+TEST_F(FormStructureTest,
+       ParseQueryResponse_RapporLogging_PartialNoServerData) {
   TestRapporService rappor_service;
   FormData form;
   form.origin = GURL("http://foo.com");
