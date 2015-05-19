@@ -74,7 +74,11 @@ remoting.ContextMenuDom = function(root) {
 
   this.root_.hidden = false;
   this.root_.style.bottom = this.bottom_ + 'px';
-  remoting.windowShape.addCallback(this);
+  remoting.windowShape.registerClientUI(this);
+};
+
+remoting.ContextMenuDom.prototype.dispose = function() {
+  remoting.windowShape.unregisterClientUI(this);
 };
 
 /**

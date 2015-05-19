@@ -37,13 +37,14 @@ remoting.ConnectionStats = function(statsElement, plugin) {
     that.update(plugin.getPerfStats());
   }, 1000, true);
 
-  remoting.windowShape.addCallback(this);
+  remoting.windowShape.registerClientUI(this);
 };
 
 remoting.ConnectionStats.prototype.dispose = function() {
   base.dispose(this.timer_);
   this.timer_ = null;
   this.plugin_ = null;
+  remoting.windowShape.unregisterClientUI(this);
 };
 
 /**

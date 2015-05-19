@@ -12,7 +12,10 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-/** @interface */
+/**
+ * @interface
+ * @extends {base.Disposable}
+ */
 remoting.ContextMenuAdapter = function() {
 };
 

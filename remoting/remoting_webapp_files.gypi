@@ -93,6 +93,7 @@
       'webapp/base/js/protocol_extension_manager_unittest.js',
       'webapp/base/js/typecheck_unittest.js',
       'webapp/base/js/viewport_unittest.js',
+      'webapp/base/js/window_shape_unittest.js',
       'webapp/base/js/xhr_unittest.js',
       'webapp/base/js/xmpp_connection_unittest.js',
       'webapp/base/js/xmpp_login_handler_unittest.js',

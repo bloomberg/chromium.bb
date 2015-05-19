@@ -16,8 +16,9 @@ var remoting = remoting || {};
  * @constructor
  * @implements {remoting.ContextMenuAdapter}
  */
-remoting.ContextMenuChrome = function() {
-};
+remoting.ContextMenuChrome = function() {};
+
+remoting.ContextMenuChrome.prototype.dispose = function() {};
 
 /**
  * @param {string} id An identifier for the menu entry.

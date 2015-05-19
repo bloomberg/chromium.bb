@@ -41,7 +41,6 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
   /** @private */
   this.host_ = connectionInfo.host();
 
-  /** @private {remoting.ContextMenuAdapter} */
   var menuAdapter = new remoting.ContextMenuChrome();
 
   // Initialize the context menus.

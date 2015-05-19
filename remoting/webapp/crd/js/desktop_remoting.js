@@ -119,8 +119,6 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
   remoting.manageHelpAndFeedback(
       document.getElementById('help-feedback-main'));
 
-  remoting.windowShape.updateClientWindowShape();
-
   remoting.showOrHideIT2MeUi();
   remoting.showOrHideMe2MeUi();
 

@@ -54,8 +54,6 @@ remoting.IdleDetector = function(idleWarning, callback) {
   cont.addEventListener('click', this.onContinue_.bind(this), false);
   var quit = this.idleWarning_.querySelector('.idle-dialog-disconnect');
   quit.addEventListener('click', this.onDisconnect_.bind(this), false);
-
-  remoting.windowShape.addCallback(this);
   this.resetTimeout_();
 };
 
@@ -140,8 +138,12 @@ remoting.IdleDetector.prototype.onDisconnect_ = function() {
  */
 remoting.IdleDetector.prototype.showIdleWarning_ = function(show) {
   this.idleWarning_.hidden = !show;
-  remoting.windowShape.updateClientWindowShape();
-}
+  if (show) {
+    remoting.windowShape.registerClientUI(this);
+  } else {
+    remoting.windowShape.unregisterClientUI(this);
+  }
+};
 
 /**
  * @param {Array<{left: number, top: number, width: number, height: number}>}
