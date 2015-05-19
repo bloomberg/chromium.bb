@@ -11,7 +11,6 @@ from pylib import ports
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 from pylib.device import device_errors
-from pylib.gtest import gtest_test_instance
 from pylib.local import local_test_server_spawner
 from pylib.perf import perf_control
 

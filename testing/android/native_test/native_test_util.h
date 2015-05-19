@@ -12,7 +12,7 @@
 // Helper methods for setting up environment for running gtest tests
 // inside an APK.
 namespace testing {
-namespace android {
+namespace native_test_util {
 
 class ScopedMainEntryLogger {
  public:
@@ -33,7 +33,7 @@ void ParseArgsFromCommandLineFile(
     const char* path, std::vector<std::string>* args);
 int ArgsToArgv(const std::vector<std::string>& args, std::vector<char*>* argv);
 
-}  // namespace android
+}  // namespace native_test_util
 }  // namespace testing
 
 #endif  // TESTING_ANDROID_NATIVE_TEST_UTIL_

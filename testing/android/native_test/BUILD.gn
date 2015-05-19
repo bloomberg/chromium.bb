@@ -4,34 +4,22 @@
 
 import("//build/config/android/rules.gni")
 
-# GYP: //testing/android/native_test.gyp:native_test_support
-source_set("native_test_support") {
-  testonly = true
-  sources = [
-    "native_test_launcher.cc",
-    "native_test_launcher.h",
-    "native_test_util.cc",
-    "native_test_util.h",
-  ]
-  deps = [
-    ":native_test_jni_headers",
-    "//base",
-    "//base/test:test_support",
-    "//base/third_party/dynamic_annotations",
-    "//testing/gtest",
-  ]
-}
-
 # GYP: //testing/android/native_test.gyp:native_test_native_code
 source_set("native_test_native_code") {
   testonly = true
   sources = [
     "native_test_jni_onload.cc",
+    "native_test_launcher.cc",
+    "native_test_launcher.h",
   ]
   libs = [ "log" ]
   deps = [
-    ":native_test_support",
+    ":native_test_jni_headers",
+    ":native_test_util",
     "//base",
+    "//base/test:test_support",
+    "//base/third_party/dynamic_annotations",
+    "//testing/gtest",
   ]
 }
 
@@ -41,4 +29,15 @@ generate_jni("native_test_jni_headers") {
     "java/src/org/chromium/native_test/NativeTestActivity.java",
   ]
   jni_package = "testing"
+}
+
+# GYP: //testing/android/native_test.gyp:native_test_util
+source_set("native_test_util") {
+  sources = [
+    "native_test_util.cc",
+    "native_test_util.h",
+  ]
+  deps = [
+    "//base",
+  ]
 }

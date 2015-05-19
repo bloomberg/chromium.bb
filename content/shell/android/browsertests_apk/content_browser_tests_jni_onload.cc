@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
 #include "content/public/test/nested_message_pump_android.h"
+#include "content/shell/android/browsertests_apk/content_browser_tests_android.h"
 #include "content/shell/android/shell_jni_registrar.h"
 #include "content/shell/app/shell_main_delegate.h"
-#include "testing/android/native_test/native_test_launcher.h"
 
 namespace {
 
 bool RegisterJNI(JNIEnv* env) {
-  return base::android::RegisterJni(env) &&
-      content::android::RegisterShellJni(env) &&
+  return content::android::RegisterShellJni(env) &&
       content::NestedMessagePumpAndroid::RegisterJni(env) &&
-      testing::android::RegisterNativeTestJNI(env);
+      content::RegisterContentBrowserTestsAndroid(env);
 }
 
 bool Init() {

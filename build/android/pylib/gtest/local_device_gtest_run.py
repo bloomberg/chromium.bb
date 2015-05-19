@@ -24,9 +24,6 @@ _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFlags')
-_EXTRA_NATIVE_TEST_ACTIVITY = (
-    'org.chromium.native_test.NativeTestInstrumentationTestRunner'
-        '.NativeTestActivity')
 
 _MAX_SHARD_SIZE = 256
 
@@ -40,11 +37,8 @@ _SUITE_REQUIRES_TEST_SERVER_SPAWNER = [
 class _ApkDelegate(object):
   def __init__(self, apk):
     self._apk = apk
-
-    helper = apk_helper.ApkHelper(self._apk)
-    self._activity = helper.GetActivityName()
-    self._package = helper.GetPackageName()
-    self._runner = helper.GetInstrumentationName()
+    self._package = apk_helper.GetPackageName(self._apk)
+    self._runner = apk_helper.GetInstrumentationName(self._apk)
     self._component = '%s/%s' % (self._package, self._runner)
     self._enable_test_server_spawner = False
 
@@ -57,7 +51,6 @@ class _ApkDelegate(object):
 
       extras = {
         _EXTRA_COMMAND_LINE_FILE: command_line_file.name,
-        _EXTRA_NATIVE_TEST_ACTIVITY: self._activity,
       }
 
       return device.StartInstrumentation(
@@ -139,7 +132,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def TestPackage(self):
-    return self._test_instance.suite
+    return self._test_instance._suite
 
   #override
   def SetUp(self):
@@ -173,16 +166,13 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def _CreateShards(self, tests):
-    if self._test_instance.suite in gtest_test_instance.BROWSER_TEST_SUITES:
-      return tests
-    else:
-      device_count = len(self._env.devices)
-      shards = []
-      for i in xrange(0, device_count):
-        unbounded_shard = tests[i::device_count]
-        shards += [unbounded_shard[j:j+_MAX_SHARD_SIZE]
-                   for j in xrange(0, len(unbounded_shard), _MAX_SHARD_SIZE)]
-      return [':'.join(s) for s in shards]
+    device_count = len(self._env.devices)
+    shards = []
+    for i in xrange(0, device_count):
+      unbounded_shard = tests[i::device_count]
+      shards += [unbounded_shard[j:j+_MAX_SHARD_SIZE]
+                 for j in xrange(0, len(unbounded_shard), _MAX_SHARD_SIZE)]
+    return [':'.join(s) for s in shards]
 
   #override
   def _GetTests(self):
@@ -195,8 +185,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
   #override
   def _RunTest(self, device, test):
     # Run the test.
-    output = self._delegate.RunWithFlags(
-        device, '--gtest_filter=%s' % test, timeout=900, retries=0)
+    output = self._delegate.RunWithFlags(device, '--gtest_filter=%s' % test,
+                                         timeout=900, retries=0)
     for s in self._servers[str(device)]:
       s.Reset()
     self._delegate.Clear(device)

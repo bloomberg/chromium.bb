@@ -19,14 +19,14 @@ _MANIFEST_ELEMENT_RE = re.compile(r'\s*(?:E|N): (\S*) .*$')
 
 def GetPackageName(apk_path):
   """Returns the package name of the apk."""
-  return ApkHelper(apk_path).GetPackageName()
-
-
-# TODO(jbudorick): Deprecate and remove this function once callers have been
-# converted to ApkHelper.GetInstrumentationName
-def GetInstrumentationName(apk_path):
-  """Returns the name of the Instrumentation in the apk."""
-  return ApkHelper(apk_path).GetInstrumentationName()
+  aapt_cmd = [_AAPT_PATH, 'dump', 'badging', apk_path]
+  aapt_output = cmd_helper.GetCmdOutput(aapt_cmd).split('\n')
+  package_name_re = re.compile(r'package: .*name=\'(\S*)\'')
+  for line in aapt_output:
+    m = package_name_re.match(line)
+    if m:
+      return m.group(1)
+  raise Exception('Failed to determine package name of %s' % apk_path)
 
 
 def _ParseManifestFromApk(apk_path):
@@ -65,53 +65,12 @@ def _ParseManifestFromApk(apk_path):
   return parsed_manifest
 
 
-class ApkHelper(object):
-  def __init__(self, apk_path):
-    self._apk_path = apk_path
-    self._manifest = None
-    self._package_name = None
+def GetInstrumentationName(
+    apk_path, default='android.test.InstrumentationTestRunner'):
+  """Returns the name of the Instrumentation in the apk."""
 
-  def GetActivityName(self):
-    """Returns the name of the Activity in the apk."""
-    manifest_info = self._GetManifest()
-    try:
-      activity = (
-          manifest_info['manifest']['application']['activity']
-              ['android:name'][0])
-    except KeyError:
-      return None
-    if '.' not in activity:
-      activity = '%s.%s' % (self.GetPackageName(), activity)
-    elif activity.startswith('.'):
-      activity = '%s%s' % (self.GetPackageName(), activity)
-    return activity
-
-  def GetInstrumentationName(
-      self, default='android.test.InstrumentationTestRunner'):
-    """Returns the name of the Instrumentation in the apk."""
-    manifest_info = self._GetManifest()
-    try:
-      return manifest_info['manifest']['instrumentation']['android:name'][0]
-    except KeyError:
-      return default
-
-  def GetPackageName(self):
-    """Returns the package name of the apk."""
-    if self._package_name:
-      return self._package_name
-
-    aapt_cmd = [_AAPT_PATH, 'dump', 'badging', self._apk_path]
-    aapt_output = cmd_helper.GetCmdOutput(aapt_cmd).split('\n')
-    package_name_re = re.compile(r'package: .*name=\'(\S*)\'')
-    for line in aapt_output:
-      m = package_name_re.match(line)
-      if m:
-        self._package_name = m.group(1)
-        return self._package_name
-    raise Exception('Failed to determine package name of %s' % self._apk_path)
-
-  def _GetManifest(self):
-    if not self._manifest:
-      self._manifest = _ParseManifestFromApk(self._apk_path)
-    return self._manifest
-
+  try:
+    manifest_info = _ParseManifestFromApk(apk_path)
+    return manifest_info['manifest']['instrumentation']['android:name'][0]
+  except KeyError:
+    return default
