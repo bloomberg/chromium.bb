@@ -94,7 +94,7 @@ sequential_promise_test(function(test) {
     }, 'JSONFailedTest');
 
 sequential_promise_test(function(test) {
-    return fetch('/serviceworker/resources/simple.json')
+    return fetch('/fetch/resources/simple.json')
       .then(function(response) {
           return response.json();
         })

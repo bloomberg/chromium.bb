@@ -1,14 +1,7 @@
-if ('ServiceWorkerGlobalScope' in self &&
-    self instanceof ServiceWorkerGlobalScope) {
-  // ServiceWorker case
-  importScripts('/serviceworker/resources/worker-testharness.js');
-  importScripts('/serviceworker/resources/test-helpers.js');
-  importScripts('/serviceworker/resources/fetch-test-options.js');
-} else if (self.importScripts) {
-  // Other workers cases
+if (self.importScripts) {
   importScripts('/resources/testharness.js');
   importScripts('/serviceworker/resources/test-helpers.js');
-  importScripts('/serviceworker/resources/fetch-test-options.js');
+  importScripts('../resources/fetch-test-options.js');
 }
 
 function getContentType(headers) {

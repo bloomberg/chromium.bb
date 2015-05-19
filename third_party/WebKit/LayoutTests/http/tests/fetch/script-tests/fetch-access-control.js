@@ -1,7 +1,7 @@
 // OPTIONS: ,-base-https-other-https
 if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
-  importScripts('/serviceworker/resources/fetch-access-control-util.js');
+  importScripts('../resources/fetch-access-control-util.js');
 }
 
 var referer;

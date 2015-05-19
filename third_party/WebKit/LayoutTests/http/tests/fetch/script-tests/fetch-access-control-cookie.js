@@ -1,6 +1,6 @@
 if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
-  importScripts('/serviceworker/resources/fetch-access-control-util.js');
+  importScripts('../resources/fetch-access-control-util.js');
 }
 
 // This test assumes TEST_TARGETS are executed in order and sequentially.

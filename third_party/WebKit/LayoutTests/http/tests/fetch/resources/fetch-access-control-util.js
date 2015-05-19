@@ -1,5 +1,5 @@
 var SCOPE = BASE_ORIGIN +
-  '/serviceworker/resources/fetch-access-control-iframe.html?' + TEST_OPTIONS;
+  '/fetch/resources/fetch-access-control-iframe.html?' + TEST_OPTIONS;
 var IFRAME_ORIGIN = BASE_ORIGIN;
 var BASE_URL = BASE_ORIGIN +
   '/serviceworker/resources/fetch-access-control.php?';
@@ -10,12 +10,12 @@ var REDIRECT_URL = BASE_ORIGIN +
 var OTHER_REDIRECT_URL = OTHER_ORIGIN +
   '/serviceworker/resources/redirect.php?Redirect=';
 var REDIRECT_LOOP_URL = BASE_ORIGIN +
-  '/serviceworker/resources/redirect-loop.php?Redirect=';
+  '/fetch/resources/redirect-loop.php?Redirect=';
 var OTHER_REDIRECT_LOOP_URL = OTHER_ORIGIN +
-  '/serviceworker/resources/redirect-loop.php?Redirect=';
+  '/fetch/resources/redirect-loop.php?Redirect=';
 var IFRAME_URL = SCOPE;
 var WORKER_URL = BASE_ORIGIN +
-  '/serviceworker/resources/fetch-access-control-worker.js?' +
+  '/fetch/resources/fetch-access-control-worker.js?' +
   TEST_OPTIONS;
 
 function onlyOnServiceWorkerProxiedTest(checkFuncs) {
@@ -316,9 +316,7 @@ function headersToArray(headers) {
   return ret;
 }
 
-function doFetch(url0) {
-  var request = new Request(url0,
-                            {credentials: 'same-origin', mode: 'no-cors'});
+function doFetch(request) {
   var originalURL = request.url;
   var params = getQueryParams(originalURL);
   var init = getRequestInit(params);
@@ -371,7 +369,8 @@ function executeTest(test_target) {
   if (test_target.length == 0) {
     return Promise.resolve();
   }
-  return doFetch(test_target[0])
+  return doFetch(new Request(test_target[0],
+                             {credentials: 'same-origin', mode: 'no-cors'}))
     .then(function(message) {
         var checks = test_target[1].concat(showComment);
         checks.forEach(function(checkFunc) {

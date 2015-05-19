@@ -1,6 +1,6 @@
 <?php
 $url = $_GET['Redirect'];
-$path = '/serviceworker/resources/redirect-loop.php';
+$path = '/fetch/resources/redirect-loop.php';
 if (isset($_GET['Count'])) {
   $count = intval($_GET['Count']) - 1;
   if ($count > 0) {

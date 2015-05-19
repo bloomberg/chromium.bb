@@ -65,13 +65,13 @@ Helper JS files and server side scripts are located on
 - /serviceworker/resources/test-helpers.js
     Utility functions for all tests.
     Include this before X.js and from HTML files.
-- /serviceworker/resources/fetch-test-options.js
+- /fetch/resources/fetch-test-options.js
     Process test options for X.js. BASE_ORIGIN/OTHER_ORIGIN are defined here.
     Include this before X.js and fetch-access-control-util.js.
 - /fetch/resources/fetch-test-helpers.js
     Variables/functions commonly used from X.js.
     Include this before X.js.
-- /serviceworker/resources/fetch-access-control-util.js
+- /fetch/resources/fetch-access-control-util.js
     Utility functions for fetch-access-control* tests.
     Include this before X.js in fetch-access-control* tests.
 - /fetch/resources/init.js
@@ -84,9 +84,9 @@ Files needed from HTML/X.js files for each tests:
 Files                                                 wi wo sw swp wi wo sw swp
 ----------------------------------------------------- -- -- -- --- -- -- -- ---
 /serviceworker/resources/test-helpers.js              Y  Y  Y  Y   .  .  .  .
-/serviceworker/resources/fetch-test-options.js        Y  -  -  Y   .  .  .  .
+/fetch/resources/fetch-test-options.js                Y  -  -  Y   .  .  .  .
 /fetch/resources/fetch-test-helpers.js                Y  -  -  Y   .  Y  Y  .
-/serviceworker/resources/fetch-access-control-util.js Y* -  -  Y*  .  Y* Y* .
+/fetch/resources/fetch-access-control-util.js         Y* -  -  Y*  .  Y* Y* .
 /fetch/script-tests/X.js                              Y  -  -  Y
 /fetch/resources/init.js                              Y  Y  Y  Y   -  -  -  -
 ----------------------------------------------------- ------------ ------------

@@ -26,10 +26,10 @@ async_test(function(t) {
           return wait_for_state(t, reg.installing, 'activated');
         })
       .then(function() {
-          return fetch_url('/serviceworker/resources/simple.json');
+          return fetch_url('/serviceworker/resources/simple.txt');
         })
-      .then(function(json) {
-          assert_equals(json, '{ "a" : 1, "b" : 2 }\n');
+      .then(function(text) {
+          assert_equals(text, 'a simple text file\n');
           service_worker_unregister_and_done(t, scope);
         })
       .catch(t.step_func(function(reason) {

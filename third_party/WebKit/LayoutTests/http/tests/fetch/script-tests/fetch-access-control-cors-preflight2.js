@@ -1,6 +1,6 @@
 if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
-  importScripts('/serviceworker/resources/fetch-access-control-util.js');
+  importScripts('../resources/fetch-access-control-util.js');
 }
 
 // Tests for CORS preflight fetch (non-simple methods).

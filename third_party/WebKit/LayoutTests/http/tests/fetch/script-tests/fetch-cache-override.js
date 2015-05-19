@@ -5,9 +5,8 @@ if (self.importScripts) {
 promise_test(function() {
     var lastModified = '';
     var eTag = '';
-    var url = '/serviceworker/resources/other.html';
-    var expectedText = '<!DOCTYPE html>\n<title>Other</title>\n' +
-      'Here\'s an other html file.\n';
+    var url = '../resources/doctype.html';
+    var expectedText = '<!DOCTYPE html>\n';
     return fetch(url)
       .then(function(res) {
           lastModified = res.headers.get('last-modified');
@@ -175,7 +174,7 @@ promise_test(function() {
             'When If-Range is overridden to the invalid tag, the response ' +
             'body must be correct.');
 
-          return fetch('/serviceworker/resources/fetch-status.php?status=304');
+          return fetch('../resources/fetch-status.php?status=304');
         })
       .then(function(res) {
           assert_equals(

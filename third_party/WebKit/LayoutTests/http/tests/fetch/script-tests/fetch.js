@@ -32,7 +32,7 @@ sequential_promise_test(function(t) {
   }, 'fetch of scheme not listed in basic fetch spec');
 
 sequential_promise_test(function(t) {
-    return fetch('/serviceworker/resources/fetch-status.php?status=200')
+    return fetch('/fetch/resources/fetch-status.php?status=200')
       .then(function(response) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
@@ -40,7 +40,7 @@ sequential_promise_test(function(t) {
   }, 'Fetch result of 200 response');
 
 sequential_promise_test(function(t) {
-    return fetch('/serviceworker/resources/fetch-status.php?status=404')
+    return fetch('/fetch/resources/fetch-status.php?status=404')
       .then(function(response) {
           assert_equals(response.status, 404);
           assert_equals(response.statusText, 'Not Found');
@@ -49,12 +49,12 @@ sequential_promise_test(function(t) {
 
 sequential_promise_test(function(t) {
     var request = new Request(
-      '/serviceworker/resources/fetch-status.php?status=200#fragment');
+      '/fetch/resources/fetch-status.php?status=200#fragment');
 
     // The url attribute's getter must return request's url,
     // serialized with the exclude fragment flag set.
     assert_equals(request.url,
-      BASE_ORIGIN + '/serviceworker/resources/fetch-status.php?status=200');
+      BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200');
     assert_equals(request.context, '');
 
     return fetch(request)
@@ -66,14 +66,14 @@ sequential_promise_test(function(t) {
           // serialized with the exclude fragment flag set, otherwise.
           assert_equals(response.url,
             BASE_ORIGIN +
-            '/serviceworker/resources/fetch-status.php?status=200');
+            '/fetch/resources/fetch-status.php?status=200');
           assert_equals(request.context, '');
         });
   }, 'Request/response url attribute getter with fragment');
 
 sequential_promise_test(function(t) {
     var redirect_target_url =
-      BASE_ORIGIN + '/serviceworker/resources/fetch-status.php?status=200';
+      BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
     var redirect_original_url =
       BASE_ORIGIN + '/serviceworker/resources/redirect.php?Redirect=' +
       redirect_target_url;
