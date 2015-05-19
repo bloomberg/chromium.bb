@@ -551,6 +551,12 @@ bool AutofillManager::WillFillCreditCardNumber(const FormData& form,
   if (autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER)
     return true;
 
+#if defined(OS_IOS)
+  // On iOS, we only fill out one field at a time. So we only need to check the
+  // current field.
+  return false;
+#endif
+
   // If the relevant section is already autofilled, the new fill operation will
   // only fill |autofill_field|.
   if (SectionIsAutofilled(*form_structure, form, autofill_field->section()))

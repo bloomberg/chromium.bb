@@ -1310,7 +1310,7 @@ TEST_F(AutofillMetricsTest, CreditCardSelectedFormEvents) {
         "10000000-0000-0000-0000-000000000002", 0); // masked server card
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL,
-        0, form, form.fields.front(),
+        0, form, form.fields[2],
         autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
@@ -1332,11 +1332,11 @@ TEST_F(AutofillMetricsTest, CreditCardSelectedFormEvents) {
         "10000000-0000-0000-0000-000000000002", 0); // masked server card
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL,
-        0, form, form.fields.front(),
+        0, form, form.fields[2],
         autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL,
-        0, form, form.fields.front(),
+        0, form, form.fields[2],
         autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",

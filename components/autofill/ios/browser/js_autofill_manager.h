@@ -23,8 +23,17 @@
         minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
                  completionHandler:(void (^)(NSString*))completionHandler;
 
+// Stores the current active element. This is used to make the element active
+// again in case the web view loses focus when a dialog is presented over it.
+- (void)storeActiveElement;
+
+// Clears the current active element.
+- (void)clearActiveElement;
+
 // Fills the data in JSON string |dataString| into the active form field, then
-// executes the |completionHandler|.
+// executes the |completionHandler|. The active form field is either
+// document.activeElement or the field stored by a call to storeActiveElement.
+// non-null.
 - (void)fillActiveFormField:(NSString*)dataString
           completionHandler:(ProceduralBlock)completionHandler;
 

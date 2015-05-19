@@ -8,7 +8,8 @@
 // representing an array of objects, each of which represents an Autofill form
 // with information about a form to be filled and/or submitted and it can be
 // translated to struct FormData
-// (chromium/src/components/autofill/common/form_data.h) for further processing.
+// (chromium/src/components/autofill/core/common/form_data.h) for further
+// processing.
 
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
@@ -98,6 +99,11 @@ __gCrWeb.autofill.EXTRACT_MASK_OPTIONS = 1 << 2;
 __gCrWeb.autofill.lastAutoFilledElement = null;
 
 /**
+ * The last element that was active (used to restore focus if necessary).
+ */
+__gCrWeb.autofill.lastActiveElement = null;
+
+/**
  * Scans DOM and returns a JSON string representation of forms and form
  * extraction results.
  * @param {int} requiredFields The minimum number of fields forms must have to
@@ -126,12 +132,34 @@ __gCrWeb.autofill['extractForms'] = function(requiredFields, requirements) {
 };
 
 /**
- * Fills data into the active form field.
+ * Stores the current active element. This is used to make the element active
+ * again in case the web view loses focus when a dialog is presented over it.
+ */
+__gCrWeb.autofill['storeActiveElement'] = function() {
+  __gCrWeb.autofill.lastActiveElement = document.activeElement;
+}
+
+/**
+ * Clears the current active element by setting it to null.
+ */
+__gCrWeb.autofill['clearActiveElement'] = function() {
+  __gCrWeb.autofill.lastActiveElement = null;
+}
+
+/**
+ * Fills data into the active form field. The active form field is either
+ * document.activeElement or the value of lastActiveElement if that value is
+ * non-null.
  *
  * @param {Object} data The data to fill in.
  */
 __gCrWeb.autofill['fillActiveFormField'] = function(data) {
   var activeElement = document.activeElement;
+  if (__gCrWeb.autofill.lastActiveElement) {
+    activeElement = __gCrWeb.autofill.lastActiveElement;
+    activeElement.focus();
+    __gCrWeb.autofill.lastActiveElement = null;
+  }
   if (data['name'] !== __gCrWeb['common'].nameForAutofill(activeElement)) {
     return;
   }

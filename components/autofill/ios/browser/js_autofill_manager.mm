@@ -47,6 +47,16 @@
   return @"__gCrWeb.autofill";
 }
 
+- (void)storeActiveElement {
+  NSString* js = @"__gCrWeb.autofill.storeActiveElement()";
+  [self evaluate:js stringResultHandler:nil];
+}
+
+- (void)clearActiveElement {
+  NSString* js = @"__gCrWeb.autofill.clearActiveElement()";
+  [self evaluate:js stringResultHandler:nil];
+}
+
 - (void)fillActiveFormField:(NSString*)dataString
           completionHandler:(ProceduralBlock)completionHandler {
   web::JavaScriptCompletion resultHandler = ^void(NSString*, NSError*) {
