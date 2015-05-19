@@ -2817,9 +2817,17 @@ drm_compositor_create(struct wl_display *display,
 	if (ec == NULL)
 		return NULL;
 
-	/* KMS support for sprites is not complete yet, so disable the
-	 * functionality for now. */
+	/*
+	 * KMS support for hardware planes cannot properly synchronize
+	 * without nuclear page flip. Without nuclear/atomic, hw plane
+	 * and cursor plane updates would either tear or cause extra
+	 * waits for vblanks which means dropping the compositor framerate
+	 * to a fraction.
+	 *
+	 * These can be enabled again when nuclear/atomic support lands.
+	 */
 	ec->sprites_are_broken = 1;
+	ec->cursors_are_broken = 1;
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
 	if (get_gbm_format_from_section(section,
