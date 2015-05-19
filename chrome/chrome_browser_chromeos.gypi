@@ -93,6 +93,8 @@
         'browser/chromeos/display/display_configuration_observer.h',
         'browser/chromeos/display/display_preferences.cc',
         'browser/chromeos/display/display_preferences.h',
+        'browser/chromeos/display/output_protection_delegate.cc',
+        'browser/chromeos/display/output_protection_delegate.h',
         'browser/chromeos/display/overscan_calibrator.cc',
         'browser/chromeos/display/overscan_calibrator.h',
         'browser/chromeos/drive/change_list_loader.cc',
