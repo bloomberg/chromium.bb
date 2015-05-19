@@ -411,7 +411,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(const ComputedStyle& other
 
     if (!diff.needsFullLayout() && surround->margin != other.surround->margin) {
         // Relative-positioned elements collapse their margins so need a full layout.
-        if (position() == AbsolutePosition || position() == FixedPosition)
+        if (hasOutOfFlowPosition())
             diff.setNeedsPositionedMovementLayout();
         else
             diff.setNeedsFullLayout();
