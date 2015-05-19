@@ -14252,6 +14252,9 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_GO_INCOGNITO_BUTTON" desc="Text shown on Chrome OS sign-in screen button that launches guest session. Should be short.">
           Browse as Guest
         </message>
+        <message name="IDS_MORE_OPTIONS_BUTTON" desc="Text read but not shown on the [...] button on login screen">
+          More Options
+        </message>
         <message name="IDS_SCREEN_LOCK_ACTIVE_USER">
           Currently signed in
         </message>
