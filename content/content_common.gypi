@@ -367,6 +367,8 @@
       'common/input/gesture_event_stream_validator.h',
       'common/input/input_event.cc',
       'common/input/input_event.h',
+      'common/input/input_event_ack.cc',
+      'common/input/input_event_ack.h',
       'common/input/input_event_stream_validator.cc',
       'common/input/input_event_stream_validator.h',
       'common/input/input_param_traits.cc',

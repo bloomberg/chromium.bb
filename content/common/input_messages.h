@@ -12,6 +12,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event.h"
+#include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_param_traits.h"
 #include "content/common/input/synthetic_gesture_packet.h"
@@ -106,13 +107,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticTapGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(duration_ms)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(InputHostMsg_HandleInputEvent_ACK_Params)
-  IPC_STRUCT_MEMBER(blink::WebInputEvent::Type, type)
-  IPC_STRUCT_MEMBER(content::InputEventAckState, state)
-  IPC_STRUCT_MEMBER(ui::LatencyInfo, latency)
-  // TODO(jdduke): Use Optional<T> type to avoid heap alloc, crbug.com/375002.
-  IPC_STRUCT_MEMBER(scoped_ptr<content::DidOverscrollParams>, overscroll)
-IPC_STRUCT_END()
+IPC_STRUCT_TRAITS_BEGIN(content::InputEventAck)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(state)
+  IPC_STRUCT_TRAITS_MEMBER(latency)
+  IPC_STRUCT_TRAITS_MEMBER(overscroll)
+  IPC_STRUCT_TRAITS_MEMBER(unique_touch_event_id)
+IPC_STRUCT_TRAITS_END()
 
 // Sends an input event to the render widget.
 IPC_MESSAGE_ROUTED3(InputMsg_HandleInputEvent,
@@ -239,7 +240,7 @@ IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted)
 
 // Acknowledges receipt of a InputMsg_HandleInputEvent message.
 IPC_MESSAGE_ROUTED1(InputHostMsg_HandleInputEvent_ACK,
-                    InputHostMsg_HandleInputEvent_ACK_Params)
+                    content::InputEventAck /* ack */)
 
 IPC_MESSAGE_ROUTED1(InputHostMsg_QueueSyntheticGesture,
                     content::SyntheticGesturePacket)

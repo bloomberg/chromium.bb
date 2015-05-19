@@ -168,6 +168,7 @@ void SyntheticWebTouchEvent::ResetPoints() {
   touchesLength = point;
   type = WebInputEvent::Undefined;
   causesScrollingIfUncanceled = false;
+  uniqueTouchEventId = ui::GetNextTouchEventId();
 }
 
 int SyntheticWebTouchEvent::PressPoint(float x, float y) {

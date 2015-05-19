@@ -358,19 +358,22 @@ void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
   OfferToRenderer(input_event, latency_info, is_keyboard_shortcut);
 
   // Touch events should always indicate in the event whether they are
-  // cancelable (respect ACK disposition) or not.
-  bool ignores_ack = WebInputEventTraits::IgnoresAckDisposition(input_event);
-  if (WebInputEvent::isTouchEventType(input_event.type)) {
+  // cancelable (respect ACK disposition) or not except touchmove.
+  bool needs_synthetic_ack =
+      !WebInputEventTraits::WillReceiveAckFromRenderer(input_event);
+
+  if (WebInputEvent::isTouchEventType(input_event.type) &&
+      input_event.type != WebInputEvent::TouchMove) {
     const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(input_event);
-    DCHECK_NE(ignores_ack, !!touch.cancelable);
+    DCHECK_EQ(needs_synthetic_ack, !touch.cancelable);
   }
 
-  // If we don't care about the ack disposition, send the ack immediately.
-  if (ignores_ack) {
-    ProcessInputEventAck(input_event.type,
-                         INPUT_EVENT_ACK_STATE_IGNORED,
-                         latency_info,
-                         IGNORING_DISPOSITION);
+  // The synthetic acks are sent immediately.
+  if (needs_synthetic_ack) {
+    ProcessInputEventAck(
+        input_event.type, INPUT_EVENT_ACK_STATE_IGNORED, latency_info,
+        WebInputEventTraits::GetUniqueTouchEventId(input_event),
+        IGNORING_DISPOSITION);
   }
 }
 
@@ -385,7 +388,9 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
     case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
       // Send the ACK and early exit.
       next_mouse_move_.reset();
-      ProcessInputEventAck(input_event.type, filter_ack, latency_info, CLIENT);
+      ProcessInputEventAck(
+          input_event.type, filter_ack, latency_info,
+          WebInputEventTraits::GetUniqueTouchEventId(input_event), CLIENT);
       // WARNING: |this| may be deleted at this point.
       consumed = true;
       break;
@@ -408,7 +413,7 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
     // Ack messages for ignored ack event types should never be sent by the
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.
-    if (!WebInputEventTraits::IgnoresAckDisposition(input_event)) {
+    if (WebInputEventTraits::WillReceiveAckFromRenderer(input_event)) {
       input_event_start_time_ = TimeTicks::Now();
       client_->IncrementInFlightEventCount();
     }
@@ -417,10 +422,8 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
   return false;
 }
 
-void InputRouterImpl::OnInputEventAck(
-    const InputHostMsg_HandleInputEvent_ACK_Params& ack) {
+void InputRouterImpl::OnInputEventAck(const InputEventAck& ack) {
   client_->DecrementInFlightEventCount();
-
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
   UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
@@ -431,21 +434,8 @@ void InputRouterImpl::OnInputEventAck(
     OnDidOverscroll(*ack.overscroll);
   }
 
-  ProcessInputEventAck(ack.type, ack.state, ack.latency, RENDERER);
-  // WARNING: |this| may be deleted at this point.
-
-  // This is used only for testing, and the other end does not use the
-  // source object.  On linux, specifying
-  // Source<RenderWidgetHost> results in a very strange
-  // runtime error in the epilogue of the enclosing
-  // (ProcessInputEventAck) method, but not on other platforms; using
-  // 'void' instead is just as safe (since NotificationSource
-  // is not actually typesafe) and avoids this error.
-  int type = static_cast<int>(ack.type);
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
-      Source<void>(this),
-      Details<int>(&type));
+  ProcessInputEventAck(ack.type, ack.state, ack.latency,
+                       ack.unique_touch_event_id, RENDERER);
 }
 
 void InputRouterImpl::OnDidOverscroll(const DidOverscrollParams& params) {
@@ -509,11 +499,11 @@ void InputRouterImpl::OnDidStopFlinging() {
   client_->DidStopFlinging();
 }
 
-void InputRouterImpl::ProcessInputEventAck(
-    WebInputEvent::Type event_type,
-    InputEventAckState ack_result,
-    const ui::LatencyInfo& latency_info,
-    AckSource ack_source) {
+void InputRouterImpl::ProcessInputEventAck(WebInputEvent::Type event_type,
+                                           InputEventAckState ack_result,
+                                           const ui::LatencyInfo& latency_info,
+                                           uint32 unique_touch_event_id,
+                                           AckSource ack_source) {
   TRACE_EVENT2("input", "InputRouterImpl::ProcessInputEventAck",
                "type", WebInputEventTraits::GetName(event_type),
                "ack", GetEventAckName(ack_result));
@@ -535,7 +525,7 @@ void InputRouterImpl::ProcessInputEventAck(
   } else if (event_type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(ack_result, latency_info);
   } else if (WebInputEvent::isTouchEventType(event_type)) {
-    ProcessTouchAck(ack_result, latency_info);
+    ProcessTouchAck(ack_result, latency_info, unique_touch_event_id);
   } else if (WebInputEvent::isGestureEventType(event_type)) {
     ProcessGestureAck(event_type, ack_result, latency_info);
   } else if (event_type != WebInputEvent::Undefined) {
@@ -620,11 +610,12 @@ void InputRouterImpl::ProcessGestureAck(WebInputEvent::Type type,
   gesture_event_queue_.ProcessGestureAck(ack_result, type, latency);
 }
 
-void InputRouterImpl::ProcessTouchAck(
-    InputEventAckState ack_result,
-    const ui::LatencyInfo& latency) {
+void InputRouterImpl::ProcessTouchAck(InputEventAckState ack_result,
+                                      const ui::LatencyInfo& latency,
+                                      uint32 unique_touch_event_id) {
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
-  touch_event_queue_.ProcessTouchAck(ack_result, latency);
+  touch_event_queue_.ProcessTouchAck(ack_result, latency,
+                                     unique_touch_event_id);
 }
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {

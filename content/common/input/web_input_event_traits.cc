@@ -110,10 +110,8 @@ void ApppendEventDetails(const WebTouchEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Touches: %u, Cancelable: %d, CausesScrolling: %d,"
                 " uniqueTouchEventId: %u\n[\n",
-                event.touchesLength,
-                event.cancelable,
-                event.causesScrollingIfUncanceled,
-                static_cast<uint32>(event.uniqueTouchEventId));
+                event.touchesLength, event.cancelable,
+                event.causesScrollingIfUncanceled, event.uniqueTouchEventId);
   for (unsigned i = 0; i < event.touchesLength; ++i)
     ApppendTouchPointDetails(event.touches[i], result);
   result->append(" ]\n}");
@@ -463,7 +461,8 @@ void WebInputEventTraits::Coalesce(const WebInputEvent& event_to_coalesce,
   Apply(WebInputEventCoalesce(), event->type, event_to_coalesce, event);
 }
 
-bool WebInputEventTraits::IgnoresAckDisposition(const WebInputEvent& event) {
+bool WebInputEventTraits::WillReceiveAckFromRenderer(
+    const WebInputEvent& event) {
   switch (event.type) {
     case WebInputEvent::MouseDown:
     case WebInputEvent::MouseUp:
@@ -479,14 +478,20 @@ bool WebInputEventTraits::IgnoresAckDisposition(const WebInputEvent& event) {
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::TouchCancel:
-      return true;
-    case WebInputEvent::TouchStart:
-    case WebInputEvent::TouchMove:
-    case WebInputEvent::TouchEnd:
-      return !static_cast<const WebTouchEvent&>(event).cancelable;
-    default:
       return false;
+    case WebInputEvent::TouchStart:
+    case WebInputEvent::TouchEnd:
+      return static_cast<const WebTouchEvent&>(event).cancelable;
+    default:
+      return true;
   }
+}
+
+uint32 WebInputEventTraits::GetUniqueTouchEventId(const WebInputEvent& event) {
+  if (WebInputEvent::isTouchEventType(event.type)) {
+    return static_cast<const WebTouchEvent&>(event).uniqueTouchEventId;
+  }
+  return 0U;
 }
 
 }  // namespace content

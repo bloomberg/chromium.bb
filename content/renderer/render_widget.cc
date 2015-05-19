@@ -1239,11 +1239,10 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // by reentrant calls for events after the paused one.
   bool no_ack = ignore_ack_for_mouse_move_from_debugger_ &&
       input_event->type == WebInputEvent::MouseMove;
-  if (!WebInputEventTraits::IgnoresAckDisposition(*input_event) && !no_ack) {
-    InputHostMsg_HandleInputEvent_ACK_Params ack;
-    ack.type = input_event->type;
-    ack.state = ack_result;
-    ack.latency = swap_latency_info;
+  if (WebInputEventTraits::WillReceiveAckFromRenderer(*input_event) &&
+      !no_ack) {
+    InputEventAck ack(input_event->type, ack_result, swap_latency_info,
+                      WebInputEventTraits::GetUniqueTouchEventId(*input_event));
     scoped_ptr<IPC::Message> response(
         new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
     if (rate_limiting_wanted && frame_pending && !is_hidden_) {
@@ -1794,9 +1793,7 @@ bool RenderWidget::SendAckForMouseMoveFromDebugger() {
     // If we pause multiple times during a single mouse move event, we should
     // only send ACK once.
     if (!ignore_ack_for_mouse_move_from_debugger_) {
-      InputHostMsg_HandleInputEvent_ACK_Params ack;
-      ack.type = handling_event_type_;
-      ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+      InputEventAck ack(handling_event_type_, INPUT_EVENT_ACK_STATE_CONSUMED);
       Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
       return true;
     }

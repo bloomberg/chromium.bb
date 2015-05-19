@@ -711,9 +711,8 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   ASSERT_EQ(1U, process_host->sink().message_count());
 
   // Send an ACK for the first wheel event, so that the queue will be flushed.
-  InputHostMsg_HandleInputEvent_ACK_Params ack;
-  ack.type = blink::WebInputEvent::MouseWheel;
-  ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+  InputEventAck ack(blink::WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
   scoped_ptr<IPC::Message> response(
       new InputHostMsg_HandleInputEvent_ACK(0, ack));
   host->OnMessageReceived(*response);
@@ -757,9 +756,8 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   process_host->sink().ClearMessages();
 
   // Indicate that the wheel event was unhandled.
-  InputHostMsg_HandleInputEvent_ACK_Params unhandled_ack;
-  unhandled_ack.type = blink::WebInputEvent::MouseWheel;
-  unhandled_ack.state = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  InputEventAck unhandled_ack(blink::WebInputEvent::MouseWheel,
+                              INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   scoped_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response1);
@@ -914,9 +912,8 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   // We'll use this IPC message to ack events.
-  InputHostMsg_HandleInputEvent_ACK_Params ack;
-  ack.type = blink::WebInputEvent::GesturePinchUpdate;
-  ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+  InputEventAck ack(blink::WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
   scoped_ptr<IPC::Message> response(
       new InputHostMsg_HandleInputEvent_ACK(0, ack));
 

@@ -150,7 +150,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   bool is_keyboard_shortcut = get<2>(params);
   DCHECK(event);
 
-  const bool send_ack = !WebInputEventTraits::IgnoresAckDisposition(*event);
+  const bool send_ack = WebInputEventTraits::WillReceiveAckFromRenderer(*event);
 
   // Intercept |DidOverscroll| notifications, bundling any triggered overscroll
   // response with the input event ack.
@@ -176,11 +176,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   if (!send_ack)
     return;
 
-  InputHostMsg_HandleInputEvent_ACK_Params ack;
-  ack.type = event->type;
-  ack.state = ack_state;
-  ack.latency = latency_info;
-  ack.overscroll = overscroll_params.Pass();
+  InputEventAck ack(event->type, ack_state, latency_info,
+                    overscroll_params.Pass(),
+                    WebInputEventTraits::GetUniqueTouchEventId(*event));
   SendMessage(scoped_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
 }

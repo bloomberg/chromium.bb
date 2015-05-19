@@ -34,8 +34,7 @@ class TouchEventQueueTest : public testing::Test,
                             public TouchEventQueueClient {
  public:
   TouchEventQueueTest()
-      : sent_event_count_(0),
-        acked_event_count_(0),
+      : acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN),
         slop_length_dips_(0) {}
 
@@ -44,6 +43,7 @@ class TouchEventQueueTest : public testing::Test,
   // testing::Test
   void SetUp() override {
     ResetQueueWithConfig(TouchEventQueue::Config());
+    sent_events_ids_.clear();
   }
 
   void TearDown() override { queue_.reset(); }
@@ -51,8 +51,8 @@ class TouchEventQueueTest : public testing::Test,
   // TouchEventQueueClient
   void SendTouchEventImmediately(
       const TouchEventWithLatencyInfo& event) override {
-    ++sent_event_count_;
-    last_sent_event_ = event.event;
+    sent_events_.push_back(event.event);
+    sent_events_ids_.push_back(event.event.uniqueTouchEventId);
     if (sync_ack_result_) {
       auto sync_ack_result = sync_ack_result_.Pass();
       SendTouchEventAck(*sync_ack_result);
@@ -115,7 +115,18 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   void SendTouchEventAck(InputEventAckState ack_result) {
-    queue_->ProcessTouchAck(ack_result, ui::LatencyInfo());
+    DCHECK(!sent_events_ids_.empty());
+    queue_->ProcessTouchAck(ack_result, ui::LatencyInfo(),
+                            sent_events_ids_.front());
+    sent_events_ids_.pop_front();
+  }
+
+  void SendTouchEventAckWithID(InputEventAckState ack_result,
+                               int unique_event_id) {
+    queue_->ProcessTouchAck(ack_result, ui::LatencyInfo(), unique_event_id);
+    sent_events_ids_.erase(std::remove(sent_events_ids_.begin(),
+                                       sent_events_ids_.end(), unique_event_id),
+                           sent_events_ids_.end());
   }
 
   void SendGestureEventAck(WebInputEvent::Type type,
@@ -224,8 +235,8 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   size_t GetAndResetSentEventCount() {
-    size_t count = sent_event_count_;
-    sent_event_count_ = 0;
+    size_t count = sent_events_.size();
+    sent_events_.clear();
     return count;
   }
 
@@ -258,7 +269,12 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   const WebTouchEvent& sent_event() const {
-    return last_sent_event_;
+    DCHECK(!sent_events_.empty());
+    return sent_events_.back();
+  }
+
+  const std::vector<WebTouchEvent>& all_sent_events() const {
+    return sent_events_;
   }
 
   InputEventAckState acked_event_state() const {
@@ -270,6 +286,12 @@ class TouchEventQueueTest : public testing::Test,
         FROM_HERE, base::MessageLoop::QuitClosure(), delay);
     base::MessageLoop::current()->Run();
   }
+
+  size_t uncancelable_touch_moves_pending_ack_count() const {
+    return queue_->uncancelable_touch_moves_pending_ack_count();
+  }
+
+  int GetUniqueTouchEventID() { return sent_events_ids_.back(); }
 
  private:
   void SendTouchEvent() {
@@ -283,10 +305,9 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   scoped_ptr<TouchEventQueue> queue_;
-  size_t sent_event_count_;
   size_t acked_event_count_;
-  WebTouchEvent last_sent_event_;
   WebTouchEvent last_acked_event_;
+  std::vector<WebTouchEvent> sent_events_;
   InputEventAckState last_acked_event_state_;
   SyntheticWebTouchEvent touch_event_;
   scoped_ptr<WebTouchEvent> followup_touch_event_;
@@ -295,6 +316,7 @@ class TouchEventQueueTest : public testing::Test,
   double slop_length_dips_;
   gfx::PointF anchor_;
   base::MessageLoopForUI message_loop_;
+  std::deque<int> sent_events_ids_;
 };
 
 
@@ -647,7 +669,7 @@ TEST_F(TouchEventQueueTest, MultiTouch) {
 // Tests that the touch-event queue is robust to redundant acks.
 TEST_F(TouchEventQueueTest, SpuriousAcksIgnored) {
   // Trigger a spurious ack.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAckWithID(INPUT_EVENT_ACK_STATE_CONSUMED, 0);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Send and ack a touch press.
@@ -659,7 +681,7 @@ TEST_F(TouchEventQueueTest, SpuriousAcksIgnored) {
   EXPECT_EQ(0U, queued_event_count());
 
   // Trigger a spurious ack.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAckWithID(INPUT_EVENT_ACK_STATE_CONSUMED, 3);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
@@ -1030,10 +1052,10 @@ TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
   // Ack'ing the original event should trigger a cancel event.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(WebInputEvent::TouchCancel, sent_event().type);
   EXPECT_FALSE(sent_event().cancelable);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Touch events should not be forwarded until we receive the cancel acks.
   MoveTouchPoint(0, 1, 1);
@@ -1052,10 +1074,10 @@ TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
 
   // Subsequent events should be handled normally.
   PressTouchPoint(0, 1);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
   EXPECT_TRUE(sent_event().cancelable);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
 // Tests that the timeout is never started if the renderer consumes
@@ -1540,7 +1562,6 @@ TEST_F(TouchEventQueueTest, AsyncTouch) {
    SendGestureEventAck(WebInputEvent::GestureScrollUpdate,
                        INPUT_EVENT_ACK_STATE_CONSUMED);
    MoveTouchPoint(0, 10, 7+i);
-   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
    EXPECT_TRUE(HasPendingAsyncTouchMove());
    EXPECT_EQ(0U, queued_event_count());
    EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1579,32 +1600,29 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   // Now queue a second touchmove and verify it's not (yet) dispatched.
   MoveTouchPoint(0, 0, 100);
   SetFollowupEvent(followup_scroll);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_TRUE(HasPendingAsyncTouchMove());
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Queuing the final touchend should flush the pending, async touchmove.
+  // Queuing the final touchend should flush the pending async touchmove. In
+  // this case, we will first dispatch an async touchmove and then a touchend.
+  // For the async touchmove, we will not send ack again.
   ReleaseTouchPoint(0);
   followup_scroll.type = WebInputEvent::GestureScrollEnd;
   SetFollowupEvent(followup_scroll);
-  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(2U, queued_event_count());
-
-  // Ack the flushed, async touchmove. The ack should not reach the client, but
-  // it should trigger sending of the (now non-cancelable) touchend.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::TouchEnd, sent_event().type);
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_EQ(WebInputEvent::TouchMove, all_sent_events()[0].type);
+  EXPECT_FALSE(all_sent_events()[0].cancelable);
+  EXPECT_EQ(WebInputEvent::TouchEnd, all_sent_events()[1].type);
+  EXPECT_FALSE(all_sent_events()[1].cancelable);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, queued_event_count());
 
   // Ack the touchend.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1639,7 +1657,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 0, 10);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_TRUE(HasPendingAsyncTouchMove());
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1651,22 +1668,22 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, uncancelable_touch_moves_pending_ack_count());
 
   // The pending touchmove should be flushed with the the new touchmove if
-  // sufficient time has passed.
+  // sufficient time has passed and ack to the client.
   AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
   MoveTouchPoint(0, 0, 15);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
   EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Non-touchmove events should always flush any pending touchmove events.
+  // Non-touchmove events should always flush any pending touchmove events. In
+  // this case, we will first dispatch an async touchmove and then a
+  // touchstart. For the async touchmove, we will not send ack again.
   MoveTouchPoint(0, 0, 25);
   EXPECT_TRUE(HasPendingAsyncTouchMove());
   EXPECT_EQ(0U, queued_event_count());
@@ -1674,22 +1691,17 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   PressTouchPoint(30, 30);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(2U, queued_event_count());
-
-  // Ack'ing the flushed, async touchmove will dispatch the touchstart. Note
-  // that the flushed touchmove's ack will not reach the client (its
-  // constituent events have already been ack'ed).
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_TRUE(sent_event().cancelable);
-  EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_EQ(WebInputEvent::TouchMove, all_sent_events()[0].type);
+  EXPECT_FALSE(all_sent_events()[0].cancelable);
+  EXPECT_EQ(WebInputEvent::TouchStart, all_sent_events()[1].type);
+  EXPECT_TRUE(all_sent_events()[1].cancelable);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, queued_event_count());
 
   // Ack the touchstart.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1781,20 +1793,20 @@ TEST_F(TouchEventQueueTest, AsyncTouchFlushedByTouchEnd) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Queuing the final touchend should flush the pending, async touchmove.
+  // Queuing the final touchend should flush the pending, async touchmove. In
+  // this case, we will first dispatch an async touchmove and then a touchend.
+  // For the async touchmove, we will not send ack again.
   ReleaseTouchPoint(0);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
-  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(0, sent_event().touches[0].position.x);
-  EXPECT_EQ(0, sent_event().touches[0].position.y);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-
-  // Touchend is not cancelable during async touch dispatch.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_IGNORED);
-  EXPECT_EQ(WebInputEvent::TouchEnd, sent_event().type);
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_EQ(WebInputEvent::TouchMove, all_sent_events()[0].type);
+  EXPECT_FALSE(all_sent_events()[0].cancelable);
+  EXPECT_EQ(0, all_sent_events()[0].touches[0].position.x);
+  EXPECT_EQ(0, all_sent_events()[0].touches[0].position.y);
+  EXPECT_EQ(WebInputEvent::TouchEnd, all_sent_events()[1].type);
+  EXPECT_FALSE(all_sent_events()[1].cancelable);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
 // Ensure that async touch dispatch and touch ack timeout interactions work
@@ -1835,7 +1847,6 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithAckTimeout) {
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_FALSE(HasPendingAsyncTouchMove());
   EXPECT_FALSE(sent_event().cancelable);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
@@ -1908,23 +1919,19 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithTouchCancelAfterAck) {
   followup_cancel.touches[0].state = WebTouchPoint::StateCancelled;
   SetFollowupEvent(followup_cancel);
   MoveTouchPoint(0, 5, 5);
-  EXPECT_EQ(2U, queued_event_count());
-  EXPECT_FALSE(sent_event().cancelable);
-  EXPECT_FALSE(HasPendingAsyncTouchMove());
-  EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
-  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-
-  // The ack for the async touchmove should not reach the client, as it has
-  // already been ack'ed.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_FALSE(sent_event().cancelable);
   EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::TouchCancel, sent_event().type);
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_EQ(WebInputEvent::TouchMove, all_sent_events()[0].type);
+  EXPECT_FALSE(all_sent_events()[0].cancelable);
+  EXPECT_EQ(WebInputEvent::TouchCancel, all_sent_events()[1].type);
+  EXPECT_FALSE(all_sent_events()[1].cancelable);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+  // Sending the ack is because the async touchmove is not ready for
+  // dispatching send the ack immediately.
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
 
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(WebInputEvent::TouchCancel, acked_event().type);
@@ -1965,10 +1972,307 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithHardTouchStartReset) {
   ResetTouchEvent();
 
   PressTouchPoint(0, 0);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
+// Ensure that even when the interval expires, we still need to wait for the
+// ack sent back from render to send the next async touchmove once the scroll
+// starts.
+TEST_F(TouchEventQueueTest, SendNextThrottledAsyncTouchMoveAfterAck) {
+  // Process a TouchStart
+  PressTouchPoint(0, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Initiate async touchmove dispatch after the start of a scroll sequence.
+  MoveTouchPoint(0, 0, 5);
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, 0, 10);
+  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // We set the next touch event time to be after the throttled interval.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  // Dispatch the touch move event when sufficient time has passed.
+  MoveTouchPoint(0, 0, 40);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_FALSE(sent_event().cancelable);
+  // When we dispatch an async touchmove, we do not put it back to the queue
+  // any more and we will ack to client right away.
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+
+  // Do not dispatch the event until throttledTouchmoves intervals expires and
+  // receive an ack from render.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  MoveTouchPoint(0, 0, 50);
+  EXPECT_TRUE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+
+  // Send pending_async_touch_move_ when we receive an ack back from render,
+  // but we will not send an ack for pending_async_touch_move_ becasue it is
+  // been acked before.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+}
+
+// Ensure that even when we receive the ack from render, we still need to wait
+// for the interval expires to send the next async touchmove once the scroll
+// starts.
+TEST_F(TouchEventQueueTest, SendNextAsyncTouchMoveAfterAckAndTimeExpire) {
+  // Process a TouchStart
+  PressTouchPoint(0, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Initiate async touchmove dispatch after the start of a scroll sequence.
+  MoveTouchPoint(0, 0, 5);
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, 0, 10);
+  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Dispatch the touch move event when sufficient time has passed.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  MoveTouchPoint(0, 0, 40);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_FALSE(sent_event().cancelable);
+  // When we dispatch an async touchmove, we do not put it back to the queue
+  // any more and we will ack to client right away.
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+
+  // We receive an ack back from render but the time interval is not expired,
+  // so we do not dispatch the touch move event.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, uncancelable_touch_moves_pending_ack_count());
+  MoveTouchPoint(0, 0, 50);
+  EXPECT_TRUE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Dispatch the touch move when sufficient time has passed.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  MoveTouchPoint(0, 0, 50);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
+  EXPECT_FALSE(sent_event().cancelable);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+}
+
+TEST_F(TouchEventQueueTest, AsyncTouchFlushedByNonTouchMove) {
+  // Process a TouchStart
+  PressTouchPoint(0, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Initiate async touchmove dispatch after the start of a scroll sequence.
+  MoveTouchPoint(0, 0, 5);
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, 0, 10);
+  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Dispatch the touch move when sufficient time has passed.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  MoveTouchPoint(0, 0, 40);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_FALSE(sent_event().cancelable);
+  // When we dispatch an async touchmove, we do not put it back to the queue
+  // any more and we will ack to client right away.
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+
+  for (int i = 0; i < 3; ++i) {
+    // We throttle the touchmoves, put it in the pending_async_touch_move_,
+    // do not dispatch it.
+    MoveTouchPoint(0, 10 + 10 * i, 10 + 10 * i);
+    EXPECT_TRUE(HasPendingAsyncTouchMove());
+    EXPECT_EQ(0U, queued_event_count());
+    EXPECT_EQ(0U, GetAndResetSentEventCount());
+    EXPECT_EQ(1U, GetAndResetAckedEventCount());
+    EXPECT_EQ(static_cast<size_t>(i + 1),
+              uncancelable_touch_moves_pending_ack_count());
+
+    // Send touchstart will flush pending_async_touch_move_, and increase the
+    // count. In this case, we will first dispatch an async touchmove and
+    // then a touchstart. For the async touchmove, we will not send ack again.
+    PressTouchPoint(30, 30);
+    EXPECT_FALSE(HasPendingAsyncTouchMove());
+    EXPECT_EQ(2U, all_sent_events().size());
+    EXPECT_EQ(WebInputEvent::TouchMove, all_sent_events()[0].type);
+    EXPECT_FALSE(all_sent_events()[0].cancelable);
+    EXPECT_EQ(10 + 10 * i, all_sent_events()[0].touches[0].position.x);
+    EXPECT_EQ(10 + 10 * i, all_sent_events()[0].touches[0].position.y);
+    EXPECT_EQ(static_cast<size_t>(i + 2),
+              uncancelable_touch_moves_pending_ack_count());
+    EXPECT_EQ(WebInputEvent::TouchStart, all_sent_events()[1].type);
+    EXPECT_TRUE(all_sent_events()[1].cancelable);
+    EXPECT_EQ(2U, GetAndResetSentEventCount());
+    EXPECT_EQ(0U, GetAndResetAckedEventCount());
+
+    SendTouchEventAckWithID(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+                            GetUniqueTouchEventID());
+    EXPECT_EQ(0U, queued_event_count());
+    EXPECT_FALSE(HasPendingAsyncTouchMove());
+    EXPECT_EQ(0U, GetAndResetSentEventCount());
+    EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  }
+
+  EXPECT_EQ(4U, uncancelable_touch_moves_pending_ack_count());
+
+  // When we receive an ack from render we decrease the count.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(3U, uncancelable_touch_moves_pending_ack_count());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+
+  // Do not dispatch the next uncancelable touchmove when we have not received
+  // all the acks back from render.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  MoveTouchPoint(0, 20, 30);
+  EXPECT_TRUE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(3U, uncancelable_touch_moves_pending_ack_count());
+
+  // Once we receive the ack from render, we do not dispatch the
+  // pending_async_touchmove_ until the count is 0.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(2U, uncancelable_touch_moves_pending_ack_count());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_TRUE(HasPendingAsyncTouchMove());
+
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // When we receive this ack from render, and the count is 0, so we can
+  // dispatch the pending_async_touchmove_.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
+  EXPECT_FALSE(sent_event().cancelable);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
+// Ensure that even when we receive the ack from render, we still need to wait
+// for the interval expires to send the next async touchmove once the scroll
+// starts.
+TEST_F(TouchEventQueueTest, DoNotIncreaseIfClientConsumeAsyncTouchMove) {
+  // Process a TouchStart
+  PressTouchPoint(0, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Initiate async touchmove dispatch after the start of a scroll sequence.
+  MoveTouchPoint(0, 0, 5);
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, 0, 10);
+  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Dispatch the touch move event when sufficient time has passed.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  MoveTouchPoint(0, 0, 40);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_FALSE(sent_event().cancelable);
+  // When we dispatch an async touchmove, we do not put it back to the queue
+  // any more and we will ack to client right away.
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, uncancelable_touch_moves_pending_ack_count());
+
+  // We receive an ack back from render but the time interval is not expired,
+  // so we do not dispatch the touch move event.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, uncancelable_touch_moves_pending_ack_count());
+  MoveTouchPoint(0, 0, 50);
+  EXPECT_TRUE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Dispatch the touch move when sufficient time has passed. Becasue the event
+  // is consumed by client already, we would not increase the count and ack to
+  // client again.
+  AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
+  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  MoveTouchPoint(0, 0, 50);
+  EXPECT_FALSE(HasPendingAsyncTouchMove());
+  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
+  EXPECT_FALSE(sent_event().cancelable);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, uncancelable_touch_moves_pending_ack_count());
 }
 
 TEST_F(TouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
@@ -2005,7 +2309,6 @@ TEST_F(TouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
 
   // Touch move event is throttled.
   MoveTouchPoint(0, 60, 5);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 }
@@ -2015,58 +2318,58 @@ TEST_F(TouchEventQueueTest, TouchStartCancelableDuringScroll) {
   // active scroll sequence.
   PressTouchPoint(0, 1);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   MoveTouchPoint(0, 20, 5);
   EXPECT_TRUE(sent_event().cancelable);
   SendGestureEvent(blink::WebInputEvent::GestureScrollBegin);
   SendGestureEvent(blink::WebInputEvent::GestureScrollUpdate);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // Even though scrolling has begun, touchstart events should be cancelable,
   // allowing, for example, customized pinch processing.
   PressTouchPoint(10, 11);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // As the touch start was consumed, touchmoves should no longer be throttled.
   MoveTouchPoint(1, 11, 11);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // With throttling disabled, touchend and touchmove events should also be
   // cancelable.
   MoveTouchPoint(1, 12, 12);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
   ReleaseTouchPoint(1);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // If subsequent touchmoves aren't consumed, the generated scroll events
   // will restore async touch dispatch.
   MoveTouchPoint(0, 25, 5);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendGestureEvent(blink::WebInputEvent::GestureScrollUpdate);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
   AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
   MoveTouchPoint(0, 30, 5);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_IGNORED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // The touchend will be uncancelable during an active scroll sequence.
   ReleaseTouchPoint(0);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_FALSE(sent_event().cancelable);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
 }
 
 TEST_F(TouchEventQueueTest, UnseenTouchPointerIdsNotForwarded) {
@@ -2218,14 +2521,14 @@ TEST_F(TouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
   // Move 1st touch point.
   MoveTouchPoint(0, 10, 10);
   EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // TouchMove should be allowed and test for touches state.
   const WebTouchEvent& event1 = sent_event();
   EXPECT_EQ(WebInputEvent::TouchMove, event1.type);
   EXPECT_EQ(WebTouchPoint::StateMoved, event1.touches[0].state);
   EXPECT_EQ(WebTouchPoint::StateStationary, event1.touches[1].state);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Do not really move any touch points, but use previous values.
   MoveTouchPoint(0, 10, 10);
@@ -2248,14 +2551,14 @@ TEST_F(TouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
   MoveTouchPoint(1, 3, 3);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // TouchMove should be allowed and test for touches state.
   const WebTouchEvent& event2 = sent_event();
   EXPECT_EQ(WebInputEvent::TouchMove, event2.type);
   EXPECT_EQ(WebTouchPoint::StateStationary, event2.touches[0].state);
   EXPECT_EQ(WebTouchPoint::StateMoved, event2.touches[1].state);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
 }  // namespace content

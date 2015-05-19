@@ -18,8 +18,6 @@
 #include "content/common/input/input_event_stream_validator.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
-struct InputHostMsg_HandleInputEvent_ACK_Params;
-
 namespace IPC {
 class Sender;
 }
@@ -34,6 +32,7 @@ class InputAckHandler;
 class InputRouterClient;
 class OverscrollController;
 struct DidOverscrollParams;
+struct InputEventAck;
 
 // A default implementation for browser input event routing.
 class CONTENT_EXPORT InputRouterImpl
@@ -124,7 +123,7 @@ private:
                        bool is_keyboard_shortcut);
 
   // IPC message handlers
-  void OnInputEventAck(const InputHostMsg_HandleInputEvent_ACK_Params& ack);
+  void OnInputEventAck(const InputEventAck& ack);
   void OnDidOverscroll(const DidOverscrollParams& params);
   void OnMsgMoveCaretAck();
   void OnSelectMessageAck();
@@ -145,6 +144,7 @@ private:
   void ProcessInputEventAck(blink::WebInputEvent::Type event_type,
                             InputEventAckState ack_result,
                             const ui::LatencyInfo& latency_info,
+                            uint32 unique_touch_event_id,
                             AckSource ack_source);
 
   // Dispatches the ack'ed event to |ack_handler_|.
@@ -169,7 +169,8 @@ private:
   // Forwards the event ack to |touch_event_queue_|, potentially triggering
   // dispatch of queued touch events, or the creation of gesture events.
   void ProcessTouchAck(InputEventAckState ack_result,
-                       const ui::LatencyInfo& latency);
+                       const ui::LatencyInfo& latency,
+                       uint32 unique_touch_event_id);
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input

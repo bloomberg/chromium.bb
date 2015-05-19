@@ -445,9 +445,17 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void SendInputEventACK(WebInputEvent::Type type,
       InputEventAckState ack_result) {
-    InputHostMsg_HandleInputEvent_ACK_Params ack;
-    ack.type = type;
-    ack.state = ack_result;
+    DCHECK(!WebInputEvent::isTouchEventType(type));
+    InputEventAck ack(type, ack_result);
+    InputHostMsg_HandleInputEvent_ACK response(0, ack);
+    widget_host_->OnMessageReceived(response);
+  }
+
+  void SendTouchEventACK(WebInputEvent::Type type,
+                         InputEventAckState ack_result,
+                         uint32 event_id) {
+    DCHECK(WebInputEvent::isTouchEventType(type));
+    InputEventAck ack(type, ack_result, event_id);
     InputHostMsg_HandleInputEvent_ACK response(0, ack);
     widget_host_->OnMessageReceived(response);
   }
@@ -468,10 +476,12 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       return;
     }
 
-    if (WebInputEventTraits::IgnoresAckDisposition(*get<0>(params)))
+    if (!WebInputEventTraits::WillReceiveAckFromRenderer(*get<0>(params)))
       return;
 
-    SendInputEventACK(get<0>(params)->type, ack_result);
+    const blink::WebInputEvent* event = get<0>(params);
+    SendTouchEventACK(event->type, ack_result,
+        WebInputEventTraits::GetUniqueTouchEventId(*event));
   }
 
  protected:
@@ -698,25 +708,24 @@ class RenderWidgetHostViewAuraOverscrollTest
     return overscroll_delegate_.get();
   }
 
-  void SendTouchEvent() {
+  uint32 SendTouchEvent() {
+    uint32 touch_event_id = touch_event_.uniqueTouchEventId;
     widget_host_->ForwardTouchEventWithLatencyInfo(touch_event_,
                                                    ui::LatencyInfo());
     touch_event_.ResetPoints();
+    return touch_event_id;
   }
 
   void PressTouchPoint(int x, int y) {
     touch_event_.PressPoint(x, y);
-    SendTouchEvent();
   }
 
   void MoveTouchPoint(int index, int x, int y) {
     touch_event_.MovePoint(index, x, y);
-    SendTouchEvent();
   }
 
   void ReleaseTouchPoint(int index) {
     touch_event_.ReleasePoint(index);
-    SendTouchEvent();
   }
 
   SyntheticWebTouchEvent touch_event_;
@@ -1104,9 +1113,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
 
   // Ack'ing the outstanding event should flush the pending touch queue.
-  InputHostMsg_HandleInputEvent_ACK_Params ack;
-  ack.type = blink::WebInputEvent::TouchStart;
-  ack.state = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  InputEventAck ack(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                    press.unique_event_id());
   widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 
@@ -1138,8 +1147,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
                         ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press0);
-  SendInputEventACK(blink::WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED,
+                    press0.unique_event_id());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
   EXPECT_EQ(1U, view_->touch_event_->touchesLength);
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
@@ -1148,8 +1158,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
                        ui::EventTimeForNow());
 
   view_->OnTouchEvent(&move0);
-  SendInputEventACK(blink::WebInputEvent::TouchMove,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventACK(blink::WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED,
+                    move0.unique_event_id());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
   EXPECT_EQ(1U, view_->touch_event_->touchesLength);
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
@@ -1160,8 +1171,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
                         ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press1);
-  SendInputEventACK(blink::WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED,
+                    press1.unique_event_id());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
   EXPECT_EQ(2U, view_->touch_event_->touchesLength);
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
@@ -1172,8 +1184,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
                        ui::EventTimeForNow());
 
   view_->OnTouchEvent(&move1);
-  SendInputEventACK(blink::WebInputEvent::TouchMove,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventACK(blink::WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED,
+                    move1.unique_event_id());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
   EXPECT_EQ(2U, view_->touch_event_->touchesLength);
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
@@ -1184,8 +1197,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
                        ui::EventTimeForNow());
 
   view_->OnTouchEvent(&move2);
-  SendInputEventACK(blink::WebInputEvent::TouchMove,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventACK(blink::WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED,
+                    move2.unique_event_id());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
   EXPECT_EQ(2U, view_->touch_event_->touchesLength);
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
@@ -2868,14 +2882,16 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
 
   // The test sends an intermingled sequence of touch and gesture events.
   PressTouchPoint(0, 1);
-  SendInputEventACK(WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  uint32 touch_press_event_id1 = SendTouchEvent();
+  SendTouchEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED, touch_press_event_id1);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   MoveTouchPoint(0, 20, 5);
+  uint32 touch_move_event_id1 = SendTouchEvent();
+  SendTouchEventACK(WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED, touch_move_event_id1);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  SendInputEventACK(WebInputEvent::TouchMove,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
@@ -2894,6 +2910,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   // started yet.  Note that touch events sent during the scroll period may
   // not require an ack (having been marked uncancelable).
   MoveTouchPoint(0, 65, 10);
+  SendTouchEvent();
   AckLastSentInputEventIfNecessary(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
@@ -2910,6 +2927,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   // Send another touch event. The page should get the touch-move event, even
   // though overscroll has started.
   MoveTouchPoint(0, 55, 5);
+  SendTouchEvent();
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
   EXPECT_EQ(65.f, overscroll_delta_x());
@@ -2927,6 +2945,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
 
   PressTouchPoint(255, 5);
+  SendTouchEvent();
   AckLastSentInputEventIfNecessary(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
@@ -2941,9 +2960,11 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   // The touch-end/cancel event should always reach the renderer if the page has
   // touch handlers.
   ReleaseTouchPoint(1);
+  SendTouchEvent();
   AckLastSentInputEventIfNecessary(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   ReleaseTouchPoint(0);
+  SendTouchEvent();
   AckLastSentInputEventIfNecessary(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
@@ -3400,14 +3421,14 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
       ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0, ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press1);
-  SendInputEventACK(blink::WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED, press1.unique_event_id());
 
   ui::TouchEvent press2(
       ui::ET_TOUCH_PRESSED, gfx::Point(20, 20), 1, ui::EventTimeForNow());
   view_->OnTouchEvent(&press2);
-  SendInputEventACK(blink::WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED, press2.unique_event_id());
 
   EXPECT_EQ(2U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 }

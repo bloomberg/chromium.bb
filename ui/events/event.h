@@ -518,7 +518,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // The id of the pointer this event modifies.
   int touch_id() const { return touch_id_; }
   // A unique identifier for this event.
-  uint64 unique_event_id() const { return unique_event_id_; }
+  uint32 unique_event_id() const { return unique_event_id_; }
   // If we aren't provided with a radius on one axis, use the
   // information from the other axis.
   float radius_x() const { return radius_x_ > 0 ? radius_x_ : radius_y_; }
@@ -558,7 +558,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   const int touch_id_;
 
   // A unique identifier for the touch event.
-  const uint64 unique_event_id_;
+  const uint32 unique_event_id_;
 
   // Radius of the X (major) axis of the touch ellipse. 0.0 if unknown.
   float radius_x_;

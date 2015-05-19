@@ -25,7 +25,10 @@ class CONTENT_EXPORT WebInputEventTraits {
                           const blink::WebInputEvent& event);
   static void Coalesce(const blink::WebInputEvent& event_to_coalesce,
                        blink::WebInputEvent* event);
-  static bool IgnoresAckDisposition(const blink::WebInputEvent& event);
+  static bool WillReceiveAckFromRenderer(const blink::WebInputEvent& event);
+
+  // Return uniqueTouchEventId for WebTouchEvent, otherwise return 0.
+  static uint32 GetUniqueTouchEventId(const blink::WebInputEvent& event);
 };
 
 }  // namespace content
