@@ -1069,7 +1069,7 @@ bool test_isatty(const char *test_file) {
   // TODO(sbc): isatty() in glibc is not yet hooked up to the IRT
   // interfaces. Remove this conditional once this gets addressed:
   // https://code.google.com/p/nativeclient/issues/detail?id=3709
-#if defined(__GLIBC__)
+#if defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 9
   return true;
 #endif
 
@@ -1105,7 +1105,7 @@ bool test_isatty(const char *test_file) {
 bool test_gethostname() {
   char hostname[256];
   ASSERT_EQ(gethostname(hostname, 1), -1);
-#ifdef __GLIBC__
+#if defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 9
   // glibc only provides a stub gethostbyname() that returns
   // ENOSYS in all cases.
   ASSERT_EQ(errno, ENOSYS);
@@ -1160,7 +1160,7 @@ bool testSuite(const char *test_file) {
 // TODO(sbc): remove this restriction once glibc's truncate calls
 // is hooked up to the IRT dev-filename-0.2 interface:
 // https://code.google.com/p/nativeclient/issues/detail?id=3709
-#if !defined(__GLIBC__)
+#if !(defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 9)
   ret &= test_truncate(test_file);
 #endif
   ret &= test_utimes(test_file);
