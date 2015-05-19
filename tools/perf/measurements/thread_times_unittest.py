@@ -41,21 +41,6 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
         cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
         self.assertEquals(len(cpu_time), 1)
 
-  def testBasicForPageWithNoGesture(self):
-    ps = self.CreateEmptyPageSet()
-    ps.AddUserStory(AnimatedPage(ps))
-
-    measurement = thread_times.ThreadTimes()
-    timeline_options = self._options
-    results = self.RunMeasurement(measurement, ps, options = timeline_options)
-    self.assertEquals(0, len(results.failures))
-
-    for interval in timeline.IntervalNames:
-      for category in timeline.TimelineThreadCategories.values():
-        cpu_time_name = timeline.ThreadCpuTimeResultName(category, interval)
-        cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
-        self.assertEquals(len(cpu_time), 1)
-
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testWithSilkDetails(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')

@@ -6,6 +6,7 @@ from itertools import starmap
 from collections import defaultdict
 from telemetry.core import util
 from telemetry.core import exceptions
+from telemetry.page import action_runner
 from telemetry.page import page_test
 from telemetry.value import scalar
 
@@ -28,15 +29,16 @@ class BlinkStyle(page_test.PageTest):
       self._controller.CleanUp(tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    tab.ExecuteJavaScript('console.time("wait-for-quiescence");')
-    try:
-      util.WaitFor(tab.HasReachedQuiescence, 15)
-    except exceptions.TimeoutException:
-      # Some sites never reach quiesence. As this benchmark normalizes/
-      # categories results, it shouldn't be necessary to reach the same
-      # state on every run.
-      pass
-    tab.ExecuteJavaScript('console.timeEnd("wait-for-quiescence");')
+    runner = action_runner.ActionRunner(tab)
+    with runner.CreateInteraction('wait-for-quiescence'):
+      tab.ExecuteJavaScript('console.time("");')
+      try:
+        util.WaitFor(tab.HasReachedQuiescence, 15)
+      except exceptions.TimeoutException:
+        # Some sites never reach quiesence. As this benchmark normalizes/
+        # categories results, it shouldn't be necessary to reach the same
+        # state on every run.
+        pass
 
     tab.ExecuteJavaScript(
         'console.time("style-update");'

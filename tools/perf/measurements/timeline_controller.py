@@ -5,6 +5,7 @@
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
 from telemetry.page import action_runner
+from telemetry.page import page_test
 from telemetry.timeline.model import TimelineModel
 from telemetry.value import trace
 from telemetry.web_perf import smooth_gesture_util
@@ -15,13 +16,14 @@ RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
 
 
 class TimelineController(object):
-  def __init__(self):
+  def __init__(self, enable_auto_issuing_record=True):
     super(TimelineController, self).__init__()
     self.trace_categories = None
     self._model = None
     self._renderer_process = None
     self._smooth_records = []
     self._interaction = None
+    self._enable_auto_issuing_record = enable_auto_issuing_record
 
   def SetUp(self, page, tab):
     """Starts gathering timeline data.
@@ -43,13 +45,15 @@ class TimelineController(object):
   def Start(self, tab):
     # Start the smooth marker for all actions.
     runner = action_runner.ActionRunner(tab)
-    self._interaction = runner.CreateInteraction(
-        RUN_SMOOTH_ACTIONS)
-    self._interaction.Begin()
+    if self._enable_auto_issuing_record:
+      self._interaction = runner.CreateInteraction(
+          RUN_SMOOTH_ACTIONS)
+      self._interaction.Begin()
 
   def Stop(self, tab, results):
     # End the smooth marker for all actions.
-    self._interaction.End()
+    if self._enable_auto_issuing_record:
+      self._interaction.End()
     # Stop tracing.
     timeline_data = tab.browser.platform.tracing_controller.Stop()
     results.AddValue(trace.TraceValue(
@@ -80,6 +84,9 @@ class TimelineController(object):
     # page sets are responsible for issueing the markers themselves.
     if len(self._smooth_records) == 0 and run_smooth_actions_record:
       self._smooth_records = [run_smooth_actions_record]
+
+    if len(self._smooth_records) == 0:
+      raise page_test.Failure('No interaction record was created.')
 
 
   def CleanUp(self, tab):
