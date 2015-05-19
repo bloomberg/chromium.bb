@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.02",
+  "version": "8.03",
   "entries": [
     {
       "id": 1,
@@ -510,13 +510,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 42,
-      "cr_bugs": [290876],
+      "cr_bugs": [290876, 488463],
       "description": "Framebuffer discarding causes flickering on older IMG drivers",
       "os": {
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR SGX 540",
+      "gl_renderer": "PowerVR SGX 5.*",
       "features": [
         "disable_discard_framebuffer"
       ]
