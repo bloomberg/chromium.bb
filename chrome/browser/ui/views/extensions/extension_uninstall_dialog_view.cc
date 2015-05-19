@@ -80,6 +80,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
  private:
   // views::DialogDelegate:
   views::View* CreateExtraView() override;
+  bool GetExtraViewPadding(int* padding) override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   int GetDefaultDialogButton() const override {
     // Default to accept when triggered via chrome://extensions page.
@@ -199,6 +200,13 @@ views::View* ExtensionUninstallDialogDelegateView::CreateExtraView() {
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE));
   }
   return report_abuse_checkbox_;
+}
+
+bool ExtensionUninstallDialogDelegateView::GetExtraViewPadding(int* padding) {
+  // We want a little more padding between the "report abuse" checkbox and the
+  // buttons.
+  *padding = views::kUnrelatedControlLargeHorizontalSpacing;
+  return true;
 }
 
 base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(

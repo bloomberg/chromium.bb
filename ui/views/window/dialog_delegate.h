@@ -49,6 +49,12 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // Overrides may construct the view; this will only be called once per dialog.
   virtual View* CreateExtraView();
 
+  // Override this function to adjust the padding between the extra view and
+  // the confirm/cancel buttons. Note that if there are no buttons, this will
+  // not be used.
+  // If a custom padding should be used, returns true and populates |padding|.
+  virtual bool GetExtraViewPadding(int* padding);
+
   // Override this function to display an extra view in the titlebar.
   // Overrides may construct the view; this will only be called once per dialog.
   // Note: this only works for new style dialogs.

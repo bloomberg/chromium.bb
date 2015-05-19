@@ -59,6 +59,11 @@ class DialogClientViewTest : public ViewsTestBase,
   // DialogDelegateView implementation.
   View* GetContentsView() override { return contents_.get(); }
   View* CreateExtraView() override { return extra_view_; }
+  bool GetExtraViewPadding(int* padding) override {
+    if (extra_view_padding_)
+      *padding = *extra_view_padding_;
+    return extra_view_padding_.get() != nullptr;
+  }
   View* CreateFootnoteView() override { return footnote_view_; }
   int GetDialogButtons() const override { return dialog_buttons_; }
 
@@ -93,6 +98,13 @@ class DialogClientViewTest : public ViewsTestBase,
     client_view_->CreateExtraViews();
   }
 
+  // Sets the extra view padding.
+  void SetExtraViewPadding(int padding) {
+    DCHECK(!extra_view_padding_);
+    extra_view_padding_.reset(new int(padding));
+    client_view_->Layout();
+  }
+
   // Sets the footnote view.
   void SetFootnoteView(View* view) {
     DCHECK(!footnote_view_);
@@ -110,6 +122,7 @@ class DialogClientViewTest : public ViewsTestBase,
   // The bitmask of buttons to show in the dialog.
   int dialog_buttons_;
   View* extra_view_;  // weak
+  scoped_ptr<int> extra_view_padding_;  // Null by default.
   View* footnote_view_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientViewTest);
@@ -182,7 +195,13 @@ TEST_F(DialogClientViewTest, LayoutWithButtons) {
   SetExtraView(extra_view);
   CheckContentsIsSetToPreferredSize();
   EXPECT_GT(client_view()->bounds().height(), no_extra_view_size.height());
+  int width_of_dialog = client_view()->bounds().width();
   int width_of_extra_view = extra_view->bounds().width();
+
+  // Try with an adjusted padding for the extra view.
+  SetExtraViewPadding(250);
+  CheckContentsIsSetToPreferredSize();
+  EXPECT_GT(client_view()->bounds().width(), width_of_dialog);
 
   // Visibility of extra view is respected.
   extra_view->SetVisible(false);
@@ -194,7 +213,7 @@ TEST_F(DialogClientViewTest, LayoutWithButtons) {
   extra_view->SetVisible(true);
   client_view()->SetBoundsRect(gfx::Rect(gfx::Point(0, 0), no_extra_view_size));
   client_view()->Layout();
-  DCHECK_GT(width_of_extra_view, extra_view->bounds().width());
+  EXPECT_GT(width_of_extra_view, extra_view->bounds().width());
 }
 
 // Test the effect of the footnote view on layout.

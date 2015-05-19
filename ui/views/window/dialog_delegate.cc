@@ -77,6 +77,10 @@ View* DialogDelegate::CreateExtraView() {
   return NULL;
 }
 
+bool DialogDelegate::GetExtraViewPadding(int* padding) {
+  return false;
+}
+
 View* DialogDelegate::CreateTitlebarExtraView() {
   return NULL;
 }

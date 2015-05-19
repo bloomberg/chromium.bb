@@ -177,13 +177,16 @@ void DialogClientView::OnDidChangeFocus(View* focused_before,
 
 gfx::Size DialogClientView::GetPreferredSize() const {
   // Initialize the size to fit the buttons and extra view row.
+  int extra_view_padding = 0;
+  if (!GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
+    extra_view_padding = kRelatedButtonHSpacing;
   gfx::Size size(
       (ok_button_ ? ok_button_->GetPreferredSize().width() : 0) +
       (cancel_button_ ? cancel_button_->GetPreferredSize().width() : 0) +
       (cancel_button_ && ok_button_ ? kRelatedButtonHSpacing : 0) +
       (ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().width() : 0) +
       (ShouldShow(extra_view_) && has_dialog_buttons() ?
-           kRelatedButtonHSpacing : 0),
+           extra_view_padding : 0),
       0);
 
   int buttons_height = GetButtonsAndExtraViewRowHeight();
@@ -239,6 +242,14 @@ void DialogClientView::Layout() {
       LayoutButton(cancel_button_, &row_bounds);
     }
     if (extra_view_) {
+      int custom_padding = 0;
+      if (has_dialog_buttons() &&
+          GetDialogDelegate()->GetExtraViewPadding(&custom_padding)) {
+        // The call to LayoutButton() will already have accounted for some of
+        // the padding.
+        custom_padding -= kRelatedButtonHSpacing;
+        row_bounds.set_width(row_bounds.width() - custom_padding);
+      }
       row_bounds.set_width(std::min(row_bounds.width(),
           extra_view_->GetPreferredSize().width()));
       extra_view_->SetBoundsRect(row_bounds);
