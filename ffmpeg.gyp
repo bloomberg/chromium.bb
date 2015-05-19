@@ -281,12 +281,6 @@
                 '-fno-signed-zeros',
                 '-fno-tree-vectorize',
               ],
-              'cflags!': [
-                # Ensure the symbols are exported.
-                #
-                # TODO(ajwong): Manually tag the API that we use to be
-                # exported.
-              ],
               'link_settings': {
                 'ldflags': [
                   '-L<(shared_generated_dir)',
@@ -343,7 +337,6 @@
                 ],
               },
               'xcode_settings': {
-                'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',  # Adds -fvisibility=hidden
                 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
                 'LIBRARY_SEARCH_PATHS': [
                   '<(shared_generated_dir)'

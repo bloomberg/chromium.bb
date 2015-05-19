@@ -667,7 +667,17 @@ BRANCH_INSTR jz, je, jnz, jne, jl, jle, jnl, jnle, jg, jge, jng, jnge, ja, jae, 
 %macro cglobal_internal 2-3+
     %if %1
         %xdefine %%FUNCTION_PREFIX private_prefix
-        %xdefine %%VISIBILITY hidden
+        ; Chromium patch to ensure symbols are correctly hidden for macho files,
+        ; normal yasm does not have a private_extern flag.
+        %ifidn __OUTPUT_FORMAT__,macho
+            %xdefine %%VISIBILITY private_extern
+        %elifidn __OUTPUT_FORMAT__,macho32
+            %xdefine %%VISIBILITY private_extern
+        %elifidn __OUTPUT_FORMAT__,macho64
+            %xdefine %%VISIBILITY private_extern
+        %else
+            %xdefine %%VISIBILITY hidden
+        %endif
     %else
         %xdefine %%FUNCTION_PREFIX public_prefix
         %xdefine %%VISIBILITY
@@ -678,7 +688,19 @@ BRANCH_INSTR jz, je, jnz, jne, jl, jle, jnl, jnle, jg, jge, jng, jnge, ja, jae, 
         CAT_XDEFINE cglobaled_, %2, 1
     %endif
     %xdefine current_function %2
+    ; Chromium patch to ensure symbols are correctly hidden for macho files,
+    ; normal yasm does not have a private_extern flag.
     %ifidn __OUTPUT_FORMAT__,elf
+        global %2:function %%VISIBILITY
+    %elifidn __OUTPUT_FORMAT__,elf32
+        global %2:function %%VISIBILITY
+    %elifidn __OUTPUT_FORMAT__,elf64
+        global %2:function %%VISIBILITY
+    %elifidn __OUTPUT_FORMAT__,macho
+        global %2:function %%VISIBILITY
+    %elifidn __OUTPUT_FORMAT__,macho32
+        global %2:function %%VISIBILITY
+    %elifidn __OUTPUT_FORMAT__,macho64
         global %2:function %%VISIBILITY
     %else
         global %2
