@@ -12,7 +12,7 @@
 #include "base/trace_event/trace_event_impl.h"
 
 // The GetProcAddress technique is borrowed from
-// https://github.com/randomascii/main/tree/master/xperf/ETWProviders
+// https://github.com/google/UIforETW/tree/master/ETWProviders
 //
 // EVNTAPI is used in evntprov.h which is included by chrome_events_win.h.
 // We define EVNTAPI without the DECLSPEC_IMPORT specifier so that we can
@@ -51,6 +51,7 @@ ULONG EVNTAPI EventRegister(LPCGUID ProviderId,
   if (EventRegisterProc)
     return EventRegisterProc(ProviderId, EnableCallback, CallbackContext,
                              RegHandle);
+  *RegHandle = 0;
   return 0;
 }
 
