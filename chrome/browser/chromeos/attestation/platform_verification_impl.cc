@@ -5,27 +5,30 @@
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace chromeos {
 namespace attestation {
 
+using media::interfaces::PlatformVerification;
+
 // static
 void PlatformVerificationImpl::Create(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<media::interfaces::PlatformVerification> request) {
+    mojo::InterfaceRequest<PlatformVerification> request) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(render_frame_host);
 
-  // The created object is bound to (and owned by) the pipe.
-  mojo::BindToRequest(new PlatformVerificationImpl(render_frame_host),
-                      &request);
+  // The created object is strongly bound to (and owned by) the pipe.
+  new PlatformVerificationImpl(render_frame_host, request.Pass());
 }
 
 PlatformVerificationImpl::PlatformVerificationImpl(
-    content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host), weak_factory_(this) {
+    content::RenderFrameHost* render_frame_host,
+    mojo::InterfaceRequest<PlatformVerification> request)
+    : binding_(this, request.Pass()),
+      render_frame_host_(render_frame_host),
+      weak_factory_(this) {
   DCHECK(render_frame_host);
 }
 

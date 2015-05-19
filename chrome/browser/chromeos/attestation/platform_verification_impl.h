@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/mojo/interfaces/platform_verification.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace chromeos {
 namespace attestation {
@@ -22,14 +22,15 @@ namespace attestation {
 // PlatformVerificationFlow. Can only be used on the UI thread because
 // PlatformVerificationFlow lives on the UI thread.
 class PlatformVerificationImpl
-    : public mojo::InterfaceImpl<media::interfaces::PlatformVerification> {
+    : public media::interfaces::PlatformVerification {
  public:
   static void Create(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<media::interfaces::PlatformVerification> request);
 
-  explicit PlatformVerificationImpl(
-      content::RenderFrameHost* render_frame_host);
+  PlatformVerificationImpl(
+      content::RenderFrameHost* render_frame_host,
+      mojo::InterfaceRequest<PlatformVerification> request);
   ~PlatformVerificationImpl() override;
 
   // mojo::InterfaceImpl<PlatformVerification> implementation.
@@ -45,6 +46,8 @@ class PlatformVerificationImpl
                             const std::string& signed_data,
                             const std::string& signature,
                             const std::string& platform_key_certificate);
+
+  mojo::StrongBinding<media::interfaces::PlatformVerification> binding_;
 
   content::RenderFrameHost* const render_frame_host_;
 
