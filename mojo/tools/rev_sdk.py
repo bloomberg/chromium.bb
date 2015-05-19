@@ -23,6 +23,7 @@ sdk_dirs_to_clone = [
 sdk_dirs_to_not_clone = [
   "mojo/public/cpp/application",
   "mojo/public/interfaces/application",
+  "third_party/mojo/src/mojo/public/java/application",
 ]
 
 # Individual files to preserve within the target repository during roll. These
