@@ -17,6 +17,22 @@ namespace test {
 
 namespace {
 
+class TestSoftwareMirroringController
+    : public DisplayConfigurator::SoftwareMirroringController {
+ public:
+  TestSoftwareMirroringController() : is_enabled_(false) {}
+  ~TestSoftwareMirroringController() override {}
+
+  // DisplayConfigurator::SoftwareMirroringController:
+  void SetSoftwareMirroring(bool enabled) override { is_enabled_ = enabled; }
+  bool SoftwareMirroringEnabled() const override { return is_enabled_; }
+
+ private:
+  bool is_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSoftwareMirroringController);
+};
+
 class TestDisplayLayoutManager : public DisplayLayoutManager {
  public:
   TestDisplayLayoutManager()
@@ -33,10 +49,16 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
     power_state_ = state;
   }
 
+  void set_software_mirroring_controller(
+      scoped_ptr<DisplayConfigurator::SoftwareMirroringController>
+          software_mirroring_controller) {
+    software_mirroring_controller_ = software_mirroring_controller.Pass();
+  }
+
   // DisplayConfigurator::DisplayLayoutManager:
   DisplayConfigurator::SoftwareMirroringController*
   GetSoftwareMirroringController() const override {
-    return nullptr;
+    return software_mirroring_controller_.get();
   }
 
   DisplayConfigurator::StateController* GetStateController() const override {
@@ -108,6 +130,9 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
   MultipleDisplayState display_state_;
 
   chromeos::DisplayPowerState power_state_;
+
+  scoped_ptr<DisplayConfigurator::SoftwareMirroringController>
+      software_mirroring_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayLayoutManager);
 };
@@ -368,6 +393,83 @@ TEST_F(UpdateDisplayConfigurationTaskTest, SingleChangePowerConfiguration) {
                                               nullptr).c_str(),
                   GetCrtcAction(displays_[0], nullptr, gfx::Point()).c_str(),
                   kUngrab, NULL),
+      log_.GetActionsAndClear());
+}
+
+TEST_F(UpdateDisplayConfigurationTaskTest, NoopSoftwareMirrorConfiguration) {
+  layout_manager_.set_should_mirror(false);
+  layout_manager_.set_software_mirroring_controller(
+      make_scoped_ptr(new TestSoftwareMirroringController()));
+  UpdateDisplays(2);
+
+  {
+    UpdateDisplayConfigurationTask task(
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+        chromeos::DISPLAY_POWER_ALL_ON, 0, 0, false,
+        base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
+                   base::Unretained(this)));
+    task.Run();
+  }
+
+  log_.GetActionsAndClear();
+
+  {
+    UpdateDisplayConfigurationTask task(
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+        chromeos::DISPLAY_POWER_ALL_ON, 0, 0, false,
+        base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
+                   base::Unretained(this)));
+    task.Run();
+  }
+
+  EXPECT_TRUE(configuration_status_);
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED, display_state_);
+  EXPECT_TRUE(layout_manager_.GetSoftwareMirroringController()
+              ->SoftwareMirroringEnabled());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_.GetActionsAndClear());
+}
+
+TEST_F(UpdateDisplayConfigurationTaskTest,
+       ForceConfigurationWhileGoingToSoftwareMirror) {
+  layout_manager_.set_should_mirror(false);
+  layout_manager_.set_software_mirroring_controller(
+      make_scoped_ptr(new TestSoftwareMirroringController()));
+  UpdateDisplays(2);
+
+  {
+    UpdateDisplayConfigurationTask task(
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+        chromeos::DISPLAY_POWER_ALL_ON, 0, 0, false,
+        base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
+                   base::Unretained(this)));
+    task.Run();
+  }
+
+  log_.GetActionsAndClear();
+
+  {
+    UpdateDisplayConfigurationTask task(
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+        chromeos::DISPLAY_POWER_ALL_ON, 0, 0, true /* force_configure */,
+        base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
+                   base::Unretained(this)));
+    task.Run();
+  }
+
+  EXPECT_TRUE(configuration_status_);
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED, display_state_);
+  EXPECT_TRUE(layout_manager_.GetSoftwareMirroringController()
+              ->SoftwareMirroringEnabled());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab, GetFramebufferAction(gfx::Size(big_mode_.size().width(),
+                                                small_mode_.size().height() +
+                                                    big_mode_.size().height()),
+                                      &displays_[0], &displays_[1]).c_str(),
+          GetCrtcAction(displays_[0], &small_mode_, gfx::Point()).c_str(),
+          GetCrtcAction(displays_[1], &big_mode_,
+                        gfx::Point(0, small_mode_.size().height())).c_str(),
+          kUngrab, NULL),
       log_.GetActionsAndClear());
 }
 

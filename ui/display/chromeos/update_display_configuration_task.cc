@@ -111,7 +111,8 @@ void UpdateDisplayConfigurationTask::OnStateEntered(
     if (!success && new_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
       if (layout_manager_->GetDisplayState() !=
               MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED ||
-          layout_manager_->GetPowerState() != new_power_state_) {
+          layout_manager_->GetPowerState() != new_power_state_ ||
+          force_configure_) {
         new_display_state_ = MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
         EnterState(base::Bind(
             &UpdateDisplayConfigurationTask::OnEnableSoftwareMirroring,
