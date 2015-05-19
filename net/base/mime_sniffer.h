@@ -57,6 +57,13 @@ NET_EXPORT bool SniffMimeTypeFromLocalData(const char* content,
                                            size_t content_size,
                                            std::string* result);
 
+// Returns true if |content| contains bytes that are control codes that do
+// not usually appear in plain text.
+// @param content A buffer contains bytes that may be binary.
+// @param size    The number of bytes in the |content| buffer.
+// @return Returns true if |content| looks like binary.
+NET_EXPORT_PRIVATE bool LooksLikeBinary(const char* content, size_t size);
+
 }  // namespace net
 
 #endif  // NET_BASE_MIME_SNIFFER_H__

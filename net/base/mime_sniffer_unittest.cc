@@ -8,6 +8,11 @@
 #include "url/gurl.h"
 
 namespace net {
+namespace {
+
+using ::testing::Range;
+using ::testing::Values;
+using ::net::SniffMimeType;  // It is shadowed by SniffMimeType(), below.
 
 struct SnifferTest {
   const char* content;
@@ -484,4 +489,66 @@ TEST(MimeSnifferTest, AudioVideoTest) {
   mime_type.clear();
 }
 
+// The tests need char parameters, but the ranges to test include 0xFF, and some
+// platforms have signed chars and are noisy about it. Using an int parameter
+// and casting it to char inside the test case solves both these problems.
+class MimeSnifferBinaryTest : public ::testing::TestWithParam<int> {};
+
+// From https://mimesniff.spec.whatwg.org/#binary-data-byte :
+// A binary data byte is a byte in the range 0x00 to 0x08 (NUL to BS), the byte
+// 0x0B (VT), a byte in the range 0x0E to 0x1A (SO to SUB), or a byte in the
+// range 0x1C to 0x1F (FS to US).
+TEST_P(MimeSnifferBinaryTest, IsBinaryControlCode) {
+  char param = static_cast<char>(GetParam());
+  EXPECT_TRUE(LooksLikeBinary(&param, 1));
+}
+
+// ::testing::Range(a, b) tests an open-ended range, ie. "b" is not included.
+INSTANTIATE_TEST_CASE_P(MimeSnifferBinaryTestRange1,
+                        MimeSnifferBinaryTest,
+                        Range(0x00, 0x09));
+
+INSTANTIATE_TEST_CASE_P(MimeSnifferBinaryTestByte0x0B,
+                        MimeSnifferBinaryTest,
+                        Values(0x0B));
+
+INSTANTIATE_TEST_CASE_P(MimeSnifferBinaryTestRange2,
+                        MimeSnifferBinaryTest,
+                        Range(0x0E, 0x1B));
+
+INSTANTIATE_TEST_CASE_P(MimeSnifferBinaryTestRange3,
+                        MimeSnifferBinaryTest,
+                        Range(0x1C, 0x20));
+
+class MimeSnifferPlainTextTest : public ::testing::TestWithParam<int> {};
+
+TEST_P(MimeSnifferPlainTextTest, NotBinaryControlCode) {
+  char param = static_cast<char>(GetParam());
+  EXPECT_FALSE(LooksLikeBinary(&param, 1));
+}
+
+INSTANTIATE_TEST_CASE_P(MimeSnifferPlainTextTestPlainTextControlCodes,
+                        MimeSnifferPlainTextTest,
+                        Values(0x09, 0x0A, 0x0C, 0x0D, 0x1B));
+
+INSTANTIATE_TEST_CASE_P(MimeSnifferPlainTextTestNotControlCodeRange,
+                        MimeSnifferPlainTextTest,
+                        Range(0x20, 0x100));
+
+class MimeSnifferControlCodesEdgeCaseTest
+    : public ::testing::TestWithParam<const char*> {};
+
+TEST_P(MimeSnifferControlCodesEdgeCaseTest, EdgeCase) {
+  const char* param = GetParam();
+  EXPECT_TRUE(LooksLikeBinary(param, strlen(param)));
+}
+
+INSTANTIATE_TEST_CASE_P(MimeSnifferControlCodesEdgeCaseTest,
+                        MimeSnifferControlCodesEdgeCaseTest,
+                        Values("\x01__",  // first byte is binary
+                               "__\x03",  // last byte is binary
+                               "_\x02_"   // a byte in the middle is binary
+                               ));
+
+}  // namespace
 }  // namespace net

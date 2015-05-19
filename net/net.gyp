@@ -455,6 +455,7 @@
         'net_test_support',
       ],
       'sources': [
+        'base/mime_sniffer_perftest.cc',
         'cookies/cookie_monster_perftest.cc',
         'disk_cache/blockfile/disk_cache_perftest.cc',
         'extras/sqlite/sqlite_persistent_cookie_store_perftest.cc',

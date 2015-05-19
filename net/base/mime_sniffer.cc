@@ -647,27 +647,6 @@ static const MagicNumber kByteOrderMark[] = {
   MAGIC_NUMBER("text/plain", "\xEF\xBB\xBF")  // UTF-8
 };
 
-// Whether a given byte looks like it might be part of binary content.
-// Source: HTML5 spec
-static char kByteLooksBinary[] = {
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,  // 0x00 - 0x0F
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,  // 0x10 - 0x1F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x20 - 0x2F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x30 - 0x3F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x40 - 0x4F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x50 - 0x5F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x60 - 0x6F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x70 - 0x7F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x80 - 0x8F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x90 - 0x9F
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xA0 - 0xAF
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xB0 - 0xBF
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xC0 - 0xCF
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xD0 - 0xDF
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xE0 - 0xEF
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xF0 - 0xFF
-};
-
 // Returns true and sets result to "application/octet-stream" if the content
 // appears to be binary data. Otherwise, returns false and sets "text/plain".
 // Clears have_enough_content if more data could possibly change the result.
@@ -700,12 +679,9 @@ static bool SniffBinary(const char* content,
   }
 
   // Next we look to see if any of the bytes "look binary."
-  for (size_t i = 0; i < size; ++i) {
-    // If we a see a binary-looking byte, we think the content is binary.
-    if (kByteLooksBinary[static_cast<unsigned char>(content[i])]) {
-      result->assign("application/octet-stream");
-      return true;
-    }
+  if (LooksLikeBinary(content, size)) {
+    result->assign("application/octet-stream");
+    return true;
   }
 
   // No evidence either way. Default to non-binary and, if truncated, clear
@@ -963,6 +939,24 @@ bool SniffMimeTypeFromLocalData(const char* content,
   // Finally check the original table.
   return CheckForMagicNumbers(content, size, kMagicNumbers,
                               arraysize(kMagicNumbers), NULL, result);
+}
+
+bool LooksLikeBinary(const char* content, size_t size) {
+  // The definition of "binary bytes" is from the spec at
+  // https://mimesniff.spec.whatwg.org/#binary-data-byte
+  //
+  // The bytes which are considered to be "binary" are all < 0x20. Encode them
+  // one bit per byte, with 1 for a "binary" bit, and 0 for a "text" bit. The
+  // least-significant bit represents byte 0x00, the most-significant bit
+  // represents byte 0x1F.
+  const uint32 kBinaryBits =
+      ~(1u << '\t' | 1u << '\n' | 1u << '\r' | 1u << '\f' | 1u << '\x1b');
+  for (size_t i = 0; i < size; ++i) {
+    uint8 byte = static_cast<uint8>(content[i]);
+    if (byte < 0x20 && (kBinaryBits & (1u << byte)))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace net
