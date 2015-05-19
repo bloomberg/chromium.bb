@@ -2199,7 +2199,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param didFinishLoad Whether WebContentsObserver::DidFinishLoad() has
      *         already been called.
      */
-    protected void swapContentViewCore(ContentViewCore newContentViewCore,
+    public void swapContentViewCore(ContentViewCore newContentViewCore,
             boolean deleteOldNativeWebContents, boolean didStartLoad, boolean didFinishLoad) {
         int originalWidth = 0;
         int originalHeight = 0;
