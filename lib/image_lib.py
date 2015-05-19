@@ -204,9 +204,10 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
 
     # If we are in a summarize stage, properly format and display the output.
     if self._stage_name == self.SUMMARIZE_STAGE and not self._done:
+      summarize_stage_prefix = 'INFO    : '
       for line in output.split('\n'):
-        if 'INFO    : ' in line:
-          line = line.replace('INFO    : ', '')
+        if summarize_stage_prefix in line:
+          line = line.replace(summarize_stage_prefix, '')
           logging.notice(line)
 
 
