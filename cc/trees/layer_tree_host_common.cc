@@ -2598,6 +2598,36 @@ static bool ApproximatelyEqual(const gfx::Transform& a,
   return true;
 }
 
+template <typename LayerType>
+void VerifyPropertyTreeValuesForLayer(LayerType* current_layer,
+                                      PropertyTrees* property_trees) {
+  const bool visible_rects_match =
+      ApproximatelyEqual(current_layer->visible_content_rect(),
+                         current_layer->visible_rect_from_property_trees());
+  CHECK(visible_rects_match)
+      << "expected: " << current_layer->visible_content_rect().ToString()
+      << " actual: "
+      << current_layer->visible_rect_from_property_trees().ToString();
+
+  const bool draw_transforms_match =
+      ApproximatelyEqual(current_layer->draw_transform(),
+                         DrawTransformFromPropertyTrees(
+                             current_layer, property_trees->transform_tree));
+  CHECK(draw_transforms_match)
+      << "expected: " << current_layer->draw_transform().ToString()
+      << " actual: "
+      << DrawTransformFromPropertyTrees(
+             current_layer, property_trees->transform_tree).ToString();
+
+  const bool draw_opacities_match =
+      current_layer->draw_opacity() ==
+      DrawOpacityFromPropertyTrees(current_layer, property_trees->opacity_tree);
+  CHECK(draw_opacities_match)
+      << "expected: " << current_layer->draw_opacity()
+      << " actual: " << DrawOpacityFromPropertyTrees(
+                            current_layer, property_trees->opacity_tree);
+}
+
 void VerifyPropertyTreeValues(
     LayerTreeHostCommon::CalcDrawPropsMainInputs* inputs) {
   LayerIterator<Layer> it, end;
@@ -2607,42 +2637,21 @@ void VerifyPropertyTreeValues(
     Layer* current_layer = *it;
     if (!it.represents_itself() || !current_layer->DrawsContent())
       continue;
-
-    const bool visible_rects_match =
-        ApproximatelyEqual(current_layer->visible_content_rect(),
-                           current_layer->visible_rect_from_property_trees());
-    CHECK(visible_rects_match)
-        << "expected: " << current_layer->visible_content_rect().ToString()
-        << " actual: "
-        << current_layer->visible_rect_from_property_trees().ToString();
-
-    const bool draw_transforms_match = ApproximatelyEqual(
-        current_layer->draw_transform(),
-        DrawTransformFromPropertyTrees(current_layer,
-                                       inputs->property_trees->transform_tree));
-    CHECK(draw_transforms_match)
-        << "expected: " << current_layer->draw_transform().ToString()
-        << " actual: "
-        << DrawTransformFromPropertyTrees(
-               current_layer, inputs->property_trees->transform_tree)
-               .ToString();
-
-    const bool draw_opacities_match =
-        current_layer->draw_opacity() ==
-        DrawOpacityFromPropertyTrees(current_layer,
-                                     inputs->property_trees->opacity_tree);
-    CHECK(draw_opacities_match)
-        << "expected: " << current_layer->draw_opacity() << " actual: "
-        << DrawOpacityFromPropertyTrees(current_layer,
-                                        inputs->property_trees->opacity_tree);
+    VerifyPropertyTreeValuesForLayer(current_layer, inputs->property_trees);
   }
 }
 
 void VerifyPropertyTreeValues(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
-  // TODO(enne): need to synchronize compositor thread changes
-  // for animation and scrolling to the property trees before these
-  // can be correct.
+  LayerIterator<LayerImpl> it, end;
+  for (it = LayerIterator<LayerImpl>::Begin(inputs->render_surface_layer_list),
+      end = LayerIterator<LayerImpl>::End(inputs->render_surface_layer_list);
+       it != end; ++it) {
+    LayerImpl* current_layer = *it;
+    if (!it.represents_itself() || !current_layer->DrawsContent())
+      continue;
+    VerifyPropertyTreeValuesForLayer(current_layer, inputs->property_trees);
+  }
 }
 
 enum PropertyTreeOption {
