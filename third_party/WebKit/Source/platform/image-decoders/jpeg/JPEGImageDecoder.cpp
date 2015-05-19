@@ -312,21 +312,18 @@ public:
     {
         memset(&m_info, 0, sizeof(jpeg_decompress_struct));
 
-        // We set up the normal JPEG error routines, then override error_exit.
+        // Set up the normal JPEG error routines, then override error_exit.
         m_info.err = jpeg_std_error(&m_err.pub);
         m_err.pub.error_exit = error_exit;
 
         // Allocate and initialize JPEG decompression object.
         jpeg_create_decompress(&m_info);
 
-        decoder_source_mgr* src = 0;
-        // FIXME: why would m_info.src be anything but null at decompressor creation time?
-        if (!m_info.src) {
-            src = (decoder_source_mgr*)fastZeroedMalloc(sizeof(decoder_source_mgr));
-            if (!src) {
-                m_state = JPEG_ERROR;
-                return;
-            }
+        ASSERT(!m_info.src);
+        decoder_source_mgr* src = (decoder_source_mgr*)fastZeroedMalloc(sizeof(decoder_source_mgr));
+        if (!src) {
+            m_state = JPEG_ERROR;
+            return;
         }
 
         m_info.src = (jpeg_source_mgr*)src;
@@ -343,7 +340,6 @@ public:
         // Retain ICC color profile markers for color management.
         setup_read_icc_profile(&m_info);
 #endif
-
         // Keep APP1 blocks, for obtaining exif data.
         jpeg_save_markers(&m_info, exifMarker, 0xFFFF);
     }
