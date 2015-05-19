@@ -20,10 +20,13 @@ class FakeAccountTrackerService : public AccountTrackerService {
  public:
   static KeyedService* Build(content::BrowserContext* context);
 
-  void FakeUserInfoFetchSuccess(const std::string& account_id,
-                                const std::string& email,
+  void FakeUserInfoFetchSuccess(const std::string& email,
                                 const std::string& gaia,
-                                const std::string& hosted_domain);
+                                const std::string& hosted_domain,
+                                const std::string& full_name,
+                                const std::string& given_name,
+                                const std::string& locale,
+                                const std::string& picture_url);
 
  private:
   FakeAccountTrackerService();

@@ -6,194 +6,105 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile_downloader_delegate.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/fake_account_tracker_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/test_signin_client_builder.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/test_signin_client.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-void GetJSonData(const std::string& full_name,
-                 const std::string& given_name,
-                 const std::string& url,
-                 const std::string& locale,
-                 const std::string& hosted_domain,
-                 bool include_empty_hosted_domain,
-                 base::DictionaryValue* dict) {
-  if (!full_name.empty())
-    dict->SetString("name", full_name);
-
-  if (!given_name.empty())
-    dict->SetString("given_name", given_name);
-
-  if (!url.empty())
-    dict->SetString("picture", url);
-
-  if (!locale.empty())
-    dict->SetString("locale", locale);
-
-  if (!hosted_domain.empty() || include_empty_hosted_domain)
-    dict->SetString("hd", hosted_domain);
-}
+const std::string kTestEmail = "test@example.com";
+const std::string kTestGaia = "gaia";
+const std::string kTestHostedDomain = "google.com";
+const std::string kTestFullName = "full_name";
+const std::string kTestGivenName = "given_name";
+const std::string kTestLocale = "locale";
+const std::string kTestPictureURL = "http://www.google.com/";
 
 } // namespace
 
-class ProfileDownloaderTest : public testing::Test {
+class ProfileDownloaderTest : public testing::Test,
+                              public ProfileDownloaderDelegate {
  protected:
-  ProfileDownloaderTest() {
-  }
-
+  ProfileDownloaderTest()
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   ~ProfileDownloaderTest() override {}
 
-  void VerifyWithAccountData(const std::string& full_name,
-                             const std::string& given_name,
-                             const std::string& url,
-                             const std::string& expected_url,
-                             const std::string& locale,
-                             const std::string& hosted_domain,
-                             bool include_empty_hosted_domain,
-                             bool is_valid) {
-    base::string16 parsed_full_name;
-    base::string16 parsed_given_name;
-    std::string parsed_url;
-    std::string parsed_locale;
-    base::string16 parsed_hosted_domain;
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    GetJSonData(full_name, given_name, url, locale, hosted_domain,
-                include_empty_hosted_domain, dict.get());
-    bool result = ProfileDownloader::ParseProfileJSON(
-        dict.get(),
-        &parsed_full_name,
-        &parsed_given_name,
-        &parsed_url,
-        32,
-        &parsed_locale,
-        &parsed_hosted_domain);
-    EXPECT_EQ(is_valid, result);
-    std::string parsed_full_name_utf8 = base::UTF16ToUTF8(parsed_full_name);
-    std::string parsed_given_name_utf8 = base::UTF16ToUTF8(parsed_given_name);
-    std::string parsed_hosted_domain_utf8 =
-        base::UTF16ToUTF8(parsed_hosted_domain);
+  void SetUp() override {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              &BuildAutoIssuingFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(AccountTrackerServiceFactory::GetInstance(),
+                              FakeAccountTrackerService::Build);
+    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
+                              signin::BuildTestSigninClient);
 
-    EXPECT_EQ(full_name, parsed_full_name_utf8);
-    EXPECT_EQ(given_name, parsed_given_name_utf8);
-    EXPECT_EQ(expected_url, parsed_url);
-    EXPECT_EQ(locale, parsed_locale);
-    EXPECT_EQ(hosted_domain, parsed_hosted_domain_utf8);
+    profile_ = builder.Build();
+    account_tracker_service_ = static_cast<FakeAccountTrackerService*>(
+        AccountTrackerServiceFactory::GetForProfile(profile_.get()));
+    signin_client_ = static_cast<TestSigninClient*>(
+        ChromeSigninClientFactory::GetForProfile(profile_.get()));
+    signin_client_->SetURLRequestContext(profile_->GetRequestContext());
+    profile_downloader_.reset(new ProfileDownloader(this));
   }
+
+  bool NeedsProfilePicture() const override { return true; };
+  int GetDesiredImageSideLength() const override { return 128; };
+  std::string GetCachedPictureURL() const override { return ""; };
+  Profile* GetBrowserProfile() override { return profile_.get(); };
+  void OnProfileDownloadSuccess(ProfileDownloader* downloader) override {
+
+  }
+  void OnProfileDownloadFailure(
+      ProfileDownloader* downloader,
+      ProfileDownloaderDelegate::FailureReason reason) override {}
+
+  void SimulateUserInfoSuccess() {
+    account_tracker_service_->FakeUserInfoFetchSuccess(
+      kTestEmail,
+      kTestGaia,
+      kTestHostedDomain,
+      kTestFullName,
+      kTestGivenName,
+      kTestLocale,
+      kTestPictureURL);
+  }
+
+  FakeAccountTrackerService* account_tracker_service_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestSigninClient* signin_client_;
+  scoped_ptr<Profile> profile_;
+  scoped_ptr<ProfileDownloader> profile_downloader_;
 };
 
-TEST_F(ProfileDownloaderTest, ParseData) {
-  // URL without size specified.
-  VerifyWithAccountData(
-      "Pat Smith",
-      "Pat",
-      "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg",
-      "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s32-c/photo.jpg",
-      "en-US",
-      "google.com",
-      false,
-      true);
+TEST_F(ProfileDownloaderTest, AccountInfoReady) {
+  account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
+  SimulateUserInfoSuccess();
 
-  // URL with size specified.
-  VerifyWithAccountData(
-      "Pat Smith",
-      "Pat",
-      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s64-c/1234567890.jpg",
-      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s32-c/1234567890.jpg",
-      "en-US",
-      "google.com",
-      false,
-      true);
+  ASSERT_EQ(ProfileDownloader::PICTURE_FAILED,
+            profile_downloader_->GetProfilePictureStatus());
+  profile_downloader_->StartForAccount(kTestEmail);
+  profile_downloader_->StartFetchingImage();
+  ASSERT_EQ(kTestPictureURL, profile_downloader_->GetProfilePictureURL());
+}
 
-  // URL with unknown format.
-  VerifyWithAccountData("Pat Smith",
-                        "Pat",
-                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
-                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
-                        "en-US",
-                        "google.com",
-                        false,
-                        true);
+TEST_F(ProfileDownloaderTest, AccountInfoNotReady) {
+  account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
 
-  // Try different locales. URL with size specified.
-  VerifyWithAccountData(
-      "Pat Smith",
-      "Pat",
-      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s64-c/1234567890.jpg",
-      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s32-c/1234567890.jpg",
-      "jp",
-      "google.com",
-      false,
-      true);
-
-  // URL with unknown format.
-  VerifyWithAccountData("Pat Smith",
-                        "Pat",
-                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
-                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
-                        "fr",
-                        "",
-                        false,
-                        true);
-
-  // Data with only name.
-  VerifyWithAccountData("Pat Smith",
-                        "Pat",
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        false,
-                        true);
-
-  // Data with only name and a blank but present hosted domain.
-  VerifyWithAccountData("Pat Smith",
-                        "Pat",
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        true,
-                        true);
-
-  // Data with only URL.
-  VerifyWithAccountData(
-      std::string(),
-      std::string(),
-      "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg",
-      "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s32-c/photo.jpg",
-      std::string(),
-      std::string(),
-      false,
-      true);
-
-  // Data with only locale.
-  VerifyWithAccountData(std::string(),
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        "fr",
-                        std::string(),
-                        false,
-                        false);
-
-  // Data without name or URL or locale.
-  VerifyWithAccountData(std::string(),
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        false,
-                        false);
-
-  // Data with an invalid URL.
-  VerifyWithAccountData(std::string(),
-                        std::string(),
-                        "invalid url",
-                        std::string(),
-                        std::string(),
-                        std::string(),
-                        false,
-                        false);
+  ASSERT_EQ(ProfileDownloader::PICTURE_FAILED,
+            profile_downloader_->GetProfilePictureStatus());
+  profile_downloader_->StartForAccount(kTestEmail);
+  profile_downloader_->StartFetchingImage();
+  SimulateUserInfoSuccess();
+  ASSERT_EQ(kTestPictureURL, profile_downloader_->GetProfilePictureURL());
 }
 
 TEST_F(ProfileDownloaderTest, DefaultURL) {

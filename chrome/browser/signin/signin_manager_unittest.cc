@@ -276,8 +276,6 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
         AccountTrackerServiceFactory::GetForProfile(profile()));
   account_tracker_service->SeedAccountInfo(gaia_id, email);
   account_tracker_service->EnableNetworkFetches();
-  std::string account_id = account_tracker_service->PickAccountIdForAccount(
-      gaia_id, email);
 
   ASSERT_TRUE(signin_client()->get_signed_in_password().empty());
 
@@ -291,8 +289,13 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
   // PostSignedIn is not called until the AccountTrackerService returns.
   ASSERT_EQ("", signin_client()->get_signed_in_password());
 
-  account_tracker_service->FakeUserInfoFetchSuccess(
-      account_id, email, gaia_id, "google.com");
+  account_tracker_service->FakeUserInfoFetchSuccess(email,
+                                                    gaia_id,
+                                                    "google.com",
+                                                    "full_name",
+                                                    "given_name",
+                                                    "locale",
+                                                    "http://www.google.com");
 
   // AccountTracker and SigninManager are both done and PostSignedIn was called.
   ASSERT_EQ("password", signin_client()->get_signed_in_password());

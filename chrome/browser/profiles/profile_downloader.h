@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,11 +27,11 @@ class URLFetcher;
 
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
-class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
-                          public net::URLFetcherDelegate,
+class ProfileDownloader : public net::URLFetcherDelegate,
                           public ImageDecoder::ImageRequest,
                           public OAuth2TokenService::Observer,
-                          public OAuth2TokenService::Consumer {
+                          public OAuth2TokenService::Consumer,
+                          public AccountTrackerService::Observer {
  public:
   enum PictureStatus {
     PICTURE_SUCCESS,
@@ -82,14 +82,11 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
 
  private:
   friend class ProfileDownloaderTest;
-  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, ParseData);
+  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, AccountInfoReady);
+  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, AccountInfoNotReady);
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, DefaultURL);
 
-  // gaia::GaiaOAuthClient::Delegate implementation.
-  void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) override;
-  void OnOAuthError() override;
-  void OnNetworkError(int response_code) override;
+  void FetchImageData();
 
   // Overriden from net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -108,16 +105,11 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
-  // Parses the entry response and gets the name, profile image URL and locale.
-  // |data| should be the JSON formatted data return by the response.
-  // Returns false to indicate a parsing error.
-  static bool ParseProfileJSON(base::DictionaryValue* root_dictionary,
-                               base::string16* full_name,
-                               base::string16* given_name,
-                               std::string* url,
-                               int image_size,
-                               std::string* profile_locale,
-                               base::string16* hosted_domain);
+
+  // Implementation of AccountTrackerService::Observer.
+  void OnAccountUpdated(
+      const AccountTrackerService::AccountInfo& info) override;
+
   // Returns true if the image url is url of the default profile picture.
   static bool IsDefaultProfileImageURL(const std::string& url);
 
@@ -134,16 +126,13 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   ProfileDownloaderDelegate* delegate_;
   std::string account_id_;
   std::string auth_token_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_client_;
   scoped_ptr<net::URLFetcher> profile_image_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
-  base::string16 profile_hosted_domain_;
-  base::string16 profile_full_name_;
-  base::string16 profile_given_name_;
-  std::string profile_locale_;
+  AccountTrackerService::AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;
-  std::string picture_url_;
+  AccountTrackerService* account_tracker_service_;
+  bool waiting_for_account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDownloader);
 };

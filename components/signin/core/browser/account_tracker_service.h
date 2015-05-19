@@ -46,6 +46,9 @@ class AccountTrackerService : public KeyedService,
   // Value representing no hosted domain in the kProfileHostedDomain preference.
   static const char kNoHostedDomainFound[];
 
+  // Value representing no picture URL associated with an account.
+  static const char kNoPictureURLFound[];
+
   // Information about a specific account.
   struct AccountInfo {
     AccountInfo();
@@ -58,11 +61,10 @@ class AccountTrackerService : public KeyedService,
     std::string given_name;
     std::string hosted_domain;
     std::string locale;
+    std::string picture_url;
     std::vector<std::string> service_flags;
-    // TODO(rogerta): eventually this structure will include other information
-    // about the account, like full name, profile picture URL, etc.
 
-    bool IsValid();
+    bool IsValid() const;
   };
 
   // Clients of AccountTrackerService can implement this interface and register
@@ -125,6 +127,7 @@ class AccountTrackerService : public KeyedService,
   // value PickAccountIdForAccount() when given the same arguments.
   std::string SeedAccountInfo(const std::string& gaia,
                               const std::string& email);
+  void SeedAccountInfo(AccountInfo info);
 
   AccountIdMigrationState GetMigrationState();
   static AccountIdMigrationState GetMigrationState(PrefService* pref_service);

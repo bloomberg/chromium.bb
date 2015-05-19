@@ -29,7 +29,8 @@ const std::string kTokenInfoResponseFormat =
       \"hd\": \"\",           \
       \"name\": \"%s\",       \
       \"given_name\": \"%s\", \
-      \"locale\": \"%s\"      \
+      \"locale\": \"%s\",     \
+      \"picture\": \"%s\"     \
     }";
 
 const std::string kTokenInfoIncompleteResponseFormat =
@@ -66,6 +67,10 @@ std::string AccountIdToGivenName(const std::string account_id) {
 
 std::string AccountIdToLocale(const std::string account_id) {
   return "locale-" + account_id;
+}
+
+std::string AccountIdToPictureURL(const std::string account_id) {
+  return "picture_url-" + account_id;
 }
 
 void CheckAccountDetails(const std::string account_id,
@@ -291,7 +296,8 @@ class AccountTrackerServiceTest : public testing::Test {
         AccountIdToEmail(account_id).c_str(),
         AccountIdToFullName(account_id).c_str(),
         AccountIdToGivenName(account_id).c_str(),
-        AccountIdToLocale(account_id).c_str());
+        AccountIdToLocale(account_id).c_str(),
+        AccountIdToPictureURL(account_id).c_str());
   }
 
   std::string GenerateIncompleteTokenInfoResponse(

@@ -34,6 +34,7 @@ const char kAccountHostedDomainPath[] = "hd";
 const char kAccountFullNamePath[] = "full_name";
 const char kAccountGivenNamePath[] = "given_name";
 const char kAccountLocalePath[] = "locale";
+const char kAccountPictureURLPath[] = "picture_url";
 const char kAccountServiceFlagsPath[] = "service_flags";
 
 const base::TimeDelta kRefreshFromTokenServiceDelay =
@@ -52,6 +53,9 @@ bool IsRefreshTokenDeviceIdExperimentEnabled() {
 
 // This must be a string which can never be a valid domain.
 const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
+
+// This must be a string which can never be a valid picture URL.
+const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 
 class AccountInfoFetcher : public OAuth2TokenService::Consumer,
                            public gaia::GaiaOAuthClient::Delegate,
@@ -230,10 +234,10 @@ void AccountInfoFetcher::OnNetworkError(int response_code) {
 AccountTrackerService::AccountInfo::AccountInfo() {}
 AccountTrackerService::AccountInfo::~AccountInfo() {}
 
-bool AccountTrackerService::AccountInfo::IsValid() {
+bool AccountTrackerService::AccountInfo::IsValid() const {
   return !account_id.empty() && !email.empty() && !gaia.empty() &&
          !hosted_domain.empty() && !full_name.empty() && !given_name.empty() &&
-         !locale.empty();
+         !locale.empty() && !picture_url.empty();
 }
 
 
@@ -520,6 +524,13 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
     user_info->GetString("given_name", &state.info.given_name);
     user_info->GetString("locale", &state.info.locale);
 
+    std::string picture_url;
+    if(user_info->GetString("picture", &picture_url)) {
+      state.info.picture_url = picture_url;
+    } else {
+      state.info.picture_url = kNoPictureURLFound;
+    }
+
     state.info.service_flags = *service_flags;
 
     NotifyAccountUpdated(state);
@@ -578,6 +589,8 @@ void AccountTrackerService::LoadFromPrefs() {
           state.info.given_name = base::UTF16ToUTF8(value);
         if (dict->GetString(kAccountLocalePath, &value))
           state.info.locale = base::UTF16ToUTF8(value);
+        if (dict->GetString(kAccountPictureURLPath, &value))
+          state.info.picture_url = base::UTF16ToUTF8(value);
 
         const base::ListValue* service_flags_list;
         if (dict->GetList(kAccountServiceFlagsPath, &service_flags_list)) {
@@ -626,6 +639,7 @@ void AccountTrackerService::SaveToPrefs(const AccountState& state) {
   dict->SetString(kAccountFullNamePath, state.info.full_name);
   dict->SetString(kAccountGivenNamePath, state.info.given_name);
   dict->SetString(kAccountLocalePath, state.info.locale);
+  dict->SetString(kAccountPictureURLPath, state.info.picture_url);
 
   scoped_ptr<base::ListValue> service_flags_list;
   service_flags_list.reset(new base::ListValue);
@@ -758,4 +772,23 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
            << " email=" << email;
 
   return account_id;
+}
+
+void AccountTrackerService::SeedAccountInfo(
+    AccountTrackerService::AccountInfo info) {
+  info.account_id = PickAccountIdForAccount(info.gaia, info.email);
+  if (info.hosted_domain.empty()) {
+    info.hosted_domain = kNoHostedDomainFound;
+  }
+
+  if(info.IsValid()) {
+    if(!ContainsKey(accounts_, info.account_id)) {
+      SeedAccountInfo(info.gaia, info.email);
+    }
+
+    AccountState& state = accounts_[info.account_id];
+    state.info = info;
+    NotifyAccountUpdated(state);
+    SaveToPrefs(state);
+  }
 }

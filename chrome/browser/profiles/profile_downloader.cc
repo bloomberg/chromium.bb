@@ -13,18 +13,21 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -38,20 +41,6 @@ namespace {
 // Template for optional authorization header when using an OAuth access token.
 const char kAuthorizationHeader[] =
     "Authorization: Bearer %s";
-
-// Path in JSON dictionary to user's photo thumbnail URL.
-const char kPhotoThumbnailURLPath[] = "picture";
-
-// Path in JSON dictionary to user's hosted domain.
-const char kHostedDomainPath[] = "hd";
-
-// From the user info API, this field corresponds to the full name of the user.
-const char kFullNamePath[] = "name";
-
-const char kGivenNamePath[] = "given_name";
-
-// Path in JSON dictionary to user's preferred locale.
-const char kLocalePath[] = "locale";
 
 // Path format for specifying thumbnail's size.
 const char kThumbnailSizeFormat[] = "s%d-c";
@@ -126,47 +115,6 @@ bool GetImageURLWithSize(const GURL& old_url, int size, GURL* new_url) {
 
 }  // namespace
 
-// Parses the entry response and gets the name and profile image URL.
-// |data| should be the JSON formatted data return by the response.
-// Returns false to indicate a parsing error.
-bool ProfileDownloader::ParseProfileJSON(base::DictionaryValue* root_dictionary,
-                                         base::string16* full_name,
-                                         base::string16* given_name,
-                                         std::string* url,
-                                         int image_size,
-                                         std::string* profile_locale,
-                                         base::string16* hosted_domain) {
-  DCHECK(full_name);
-  DCHECK(given_name);
-  DCHECK(url);
-  DCHECK(profile_locale);
-  DCHECK(hosted_domain);
-
-  *full_name = base::string16();
-  *given_name = base::string16();
-  *url = std::string();
-  *profile_locale = std::string();
-  *hosted_domain = base::string16();
-
-  root_dictionary->GetString(kFullNamePath, full_name);
-  root_dictionary->GetString(kGivenNamePath, given_name);
-  root_dictionary->GetString(kLocalePath, profile_locale);
-  root_dictionary->GetString(kHostedDomainPath, hosted_domain);
-
-  std::string url_string;
-  if (root_dictionary->GetString(kPhotoThumbnailURLPath, &url_string)) {
-    GURL new_url;
-    if (!GetImageURLWithSize(GURL(url_string), image_size, &new_url)) {
-      LOG(ERROR) << "GetImageURLWithSize failed for url: " << url_string;
-      return false;
-    }
-    *url = new_url.spec();
-  }
-
-  // The profile data is considered valid as long as it has a name or a picture.
-  return !full_name->empty() || !url->empty();
-}
-
 // static
 bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) {
   if (url.empty())
@@ -195,8 +143,13 @@ bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) {
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
     : OAuth2TokenService::Consumer("profile_downloader"),
       delegate_(delegate),
-      picture_status_(PICTURE_FAILED) {
+      picture_status_(PICTURE_FAILED),
+      account_tracker_service_(
+          AccountTrackerServiceFactory::GetForProfile(
+              delegate_->GetBrowserProfile())),
+      waiting_for_account_info_(false) {
   DCHECK(delegate_);
+  account_tracker_service_->AddObserver(this);
 }
 
 void ProfileDownloader::Start() {
@@ -223,27 +176,26 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
   account_id_ =
       account_id.empty() ?
           signin_manager->GetAuthenticatedAccountId() : account_id;
-  if (service->RefreshTokenIsAvailable(account_id_)) {
+  if (service->RefreshTokenIsAvailable(account_id_))
     StartFetchingOAuth2AccessToken();
-  } else {
+  else
     service->AddObserver(this);
-  }
 }
 
 base::string16 ProfileDownloader::GetProfileHostedDomain() const {
-  return profile_hosted_domain_;
+  return base::UTF8ToUTF16(account_info_.hosted_domain);
 }
 
 base::string16 ProfileDownloader::GetProfileFullName() const {
-  return profile_full_name_;
+  return base::UTF8ToUTF16(account_info_.full_name);
 }
 
 base::string16 ProfileDownloader::GetProfileGivenName() const {
-  return profile_given_name_;
+  return base::UTF8ToUTF16(account_info_.given_name);
 }
 
 std::string ProfileDownloader::GetProfileLocale() const {
-  return profile_locale_;
+  return account_info_.locale;
 }
 
 SkBitmap ProfileDownloader::GetProfilePicture() const {
@@ -256,14 +208,23 @@ ProfileDownloader::PictureStatus ProfileDownloader::GetProfilePictureStatus()
 }
 
 std::string ProfileDownloader::GetProfilePictureURL() const {
-  return picture_url_;
+  GURL url;
+  if (GetImageURLWithSize(GURL(account_info_.picture_url),
+                          delegate_->GetDesiredImageSideLength(),
+                          &url)) {
+    return url.spec();
+  }
+  return account_info_.picture_url;
 }
 
 void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
-  gaia_client_.reset(new gaia::GaiaOAuthClient(
-      delegate_->GetBrowserProfile()->GetRequestContext()));
-  gaia_client_->GetUserInfo(auth_token_, 0, this);
+  account_info_ = account_tracker_service_->GetAccountInfo(account_id_);
+
+  if (account_info_.IsValid())
+    FetchImageData();
+  else
+    waiting_for_account_info_ = true;
 }
 
 void ProfileDownloader::StartFetchingOAuth2AccessToken() {
@@ -287,65 +248,47 @@ ProfileDownloader::~ProfileDownloader() {
           delegate_->GetBrowserProfile());
   if (service)
     service->RemoveObserver(this);
+
+  account_tracker_service_->RemoveObserver(this);
 }
 
-void ProfileDownloader::OnGetUserInfoResponse(
-    scoped_ptr<base::DictionaryValue> user_info) {
-  std::string image_url;
-  if (!ParseProfileJSON(user_info.get(),
-                        &profile_full_name_,
-                        &profile_given_name_,
-                        &image_url,
-                        delegate_->GetDesiredImageSideLength(),
-                        &profile_locale_,
-                        &profile_hosted_domain_)) {
-    delegate_->OnProfileDownloadFailure(
-        this, ProfileDownloaderDelegate::SERVICE_ERROR);
-    return;
-  }
+void ProfileDownloader::FetchImageData() {
+  DCHECK(account_info_.IsValid());
+  std::string image_url_with_size = GetProfilePictureURL();
+
   if (!delegate_->NeedsProfilePicture()) {
     VLOG(1) << "Skipping profile picture download";
     delegate_->OnProfileDownloadSuccess(this);
     return;
   }
-  if (IsDefaultProfileImageURL(image_url)) {
+  if (IsDefaultProfileImageURL(image_url_with_size)) {
     VLOG(1) << "User has default profile picture";
     picture_status_ = PICTURE_DEFAULT;
     delegate_->OnProfileDownloadSuccess(this);
     return;
   }
-  if (!image_url.empty() && image_url == delegate_->GetCachedPictureURL()) {
+  if (!image_url_with_size.empty() &&
+      image_url_with_size == delegate_->GetCachedPictureURL()) {
     VLOG(1) << "Picture URL matches cached picture URL";
     picture_status_ = PICTURE_CACHED;
     delegate_->OnProfileDownloadSuccess(this);
     return;
   }
-  VLOG(1) << "Fetching profile image from " << image_url;
-  picture_url_ = image_url;
-  profile_image_fetcher_ =
-      net::URLFetcher::Create(GURL(image_url), net::URLFetcher::GET, this);
+
+  VLOG(1) << "Fetching profile image from " << image_url_with_size;
+  profile_image_fetcher_ = net::URLFetcher::Create(
+      GURL(image_url_with_size), net::URLFetcher::GET, this);
   profile_image_fetcher_->SetRequestContext(
       delegate_->GetBrowserProfile()->GetRequestContext());
   profile_image_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                        net::LOAD_DO_NOT_SAVE_COOKIES);
+
   if (!auth_token_.empty()) {
     profile_image_fetcher_->SetExtraRequestHeaders(
         base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
   }
+
   profile_image_fetcher_->Start();
-}
-
-void ProfileDownloader::OnOAuthError() {
-  LOG(WARNING) << "OnOAuthError: Fetching profile data failed";
-  delegate_->OnProfileDownloadFailure(
-      this, ProfileDownloaderDelegate::SERVICE_ERROR);
-}
-
-void ProfileDownloader::OnNetworkError(int response_code) {
-  LOG(WARNING) << "OnNetworkError: Fetching profile data failed";
-  DVLOG(1) << "  Response code: " << response_code;
-  delegate_->OnProfileDownloadFailure(
-      this, ProfileDownloaderDelegate::NETWORK_ERROR);
 }
 
 void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -360,14 +303,15 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "  Error: " << source->GetStatus().error();
     DVLOG(1) << "  Response code: " << source->GetResponseCode();
     DVLOG(1) << "  Url: " << source->GetURL().spec();
+    profile_image_fetcher_.reset();
     delegate_->OnProfileDownloadFailure(this, network_error ?
         ProfileDownloaderDelegate::NETWORK_ERROR :
         ProfileDownloaderDelegate::SERVICE_ERROR);
-    return;
+  } else {
+    profile_image_fetcher_.reset();
+    VLOG(1) << "Decoding the image...";
+    ImageDecoder::Start(this, data);
   }
-
-  VLOG(1) << "Decoding the image...";
-  ImageDecoder::Start(this, data);
 }
 
 void ProfileDownloader::OnImageDecoded(const SkBitmap& decoded_image) {
@@ -421,4 +365,18 @@ void ProfileDownloader::OnGetTokenFailure(
                << error.ToString();
   delegate_->OnProfileDownloadFailure(
       this, ProfileDownloaderDelegate::TOKEN_ERROR);
+}
+
+void ProfileDownloader::OnAccountUpdated(
+    const AccountTrackerService::AccountInfo& info) {
+  if (info.account_id == account_id_ && info.IsValid()) {
+    account_info_ = info;
+
+    // If the StartFetchingImage was called before we had valid info, the
+    // downloader has been waiting so we need to fetch the image data now.
+    if (waiting_for_account_info_) {
+      FetchImageData();
+      waiting_for_account_info_ = false;
+    }
+  }
 }
