@@ -58,10 +58,12 @@ protected:
 
 class PLATFORM_EXPORT PlatformSpeechSynthesizer : public GarbageCollectedFinalized<PlatformSpeechSynthesizer> {
     WTF_MAKE_NONCOPYABLE(PlatformSpeechSynthesizer);
+    USING_PRE_FINALIZER(PlatformSpeechSynthesizer, dispose);
 public:
     static PlatformSpeechSynthesizer* create(PlatformSpeechSynthesizerClient*);
 
     virtual ~PlatformSpeechSynthesizer();
+    void dispose();
 
     const HeapVector<Member<PlatformSpeechSynthesisVoice>>& voiceList() const { return m_voiceList; }
     virtual void speak(PlatformSpeechSynthesisUtterance*);
