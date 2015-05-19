@@ -41,12 +41,13 @@ function onUnmountRequested(options, onSuccess, onError) {
   chrome.fileSystemProvider.unmount(
       {fileSystemId: options.fileSystemId},
       function() {
+        if (chrome.runtime.lastError) {
+          onError(chrome.runtime.lastError.message);
+          return;
+        }
         delete volumes[options.fileSystemId];
         saveState(); // Remove volume from local storage state.
         onSuccess();
-      },
-      function() {
-        onError('FAILED');
       });
 };
 
@@ -202,8 +203,14 @@ chrome.app.runtime.onLaunched.addListener(function(event) {
             volumes[displayPath] = new Volume(item.entry, metadata);
             chrome.fileSystemProvider.mount(
                 {fileSystemId: displayPath, displayName: item.entry.name},
-                function() { saveState(); },
-                function() { console.error('Failed to mount.'); });
+                function() {
+                  if (chrome.runtime.lastError) {
+                    console.error('Failed to mount because of: ' +
+                        chrome.runtime.lastError.message);
+                    return;
+                  };
+                  saveState();
+                });
           });
         },
         function(error) {
