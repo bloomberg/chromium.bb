@@ -41,7 +41,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     : public base::RefCounted<BluetoothAdapter> {
  public:
   // Interface for observing changes from bluetooth adapters.
-  class Observer {
+  class DEVICE_BLUETOOTH_EXPORT Observer {
    public:
     virtual ~Observer() {}
 
