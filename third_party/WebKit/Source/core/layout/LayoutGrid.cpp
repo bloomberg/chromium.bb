@@ -371,11 +371,11 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
 
         minLogicalWidth += minTrackBreadth;
         maxLogicalWidth += maxTrackBreadth;
-
-        LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
-        maxLogicalWidth += scrollbarWidth;
-        minLogicalWidth += scrollbarWidth;
     }
+
+    LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
+    minLogicalWidth += scrollbarWidth;
+    maxLogicalWidth += scrollbarWidth;
 }
 
 void LayoutGrid::computePreferredLogicalWidths()
