@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"

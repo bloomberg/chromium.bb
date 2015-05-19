@@ -5,7 +5,8 @@
 #include "chrome/browser/ui/android/autofill/card_unmask_prompt_view_android.h"
 
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
+#include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/CardUnmaskBridge_jni.h"
 #include "ui/android/view_android.h"
@@ -13,17 +14,16 @@
 
 namespace autofill {
 
-CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
-    CardUnmaskPromptController* controller) {
-  CardUnmaskPromptViewAndroid* view =
-      new CardUnmaskPromptViewAndroid(controller);
-  view->Show();
-  return view;
+CardUnmaskPromptView* CreateCardUnmaskPromptView(
+    CardUnmaskPromptController* controller,
+    content::WebContents* web_contents) {
+  return new CardUnmaskPromptViewAndroid(controller, web_contents);
 }
 
 CardUnmaskPromptViewAndroid::CardUnmaskPromptViewAndroid(
-    CardUnmaskPromptController* controller)
-    : controller_(controller) {
+    CardUnmaskPromptController* controller,
+    content::WebContents* web_contents)
+    : controller_(controller), web_contents_(web_contents) {
 }
 
 CardUnmaskPromptViewAndroid::~CardUnmaskPromptViewAndroid() {
@@ -33,8 +33,7 @@ CardUnmaskPromptViewAndroid::~CardUnmaskPromptViewAndroid() {
 
 void CardUnmaskPromptViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ui::ViewAndroid* view_android =
-      controller_->GetWebContents()->GetNativeView();
+  ui::ViewAndroid* view_android = web_contents_->GetNativeView();
 
   ScopedJavaLocalRef<jstring> dialog_title =
       base::android::ConvertUTF16ToJavaString(env,

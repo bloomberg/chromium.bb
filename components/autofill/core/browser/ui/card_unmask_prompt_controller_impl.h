@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
-#define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
+
+#include <string>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 
 namespace autofill {
 
@@ -24,14 +26,14 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
       RiskDataCallback;
 
   CardUnmaskPromptControllerImpl(
-      content::WebContents* web_contents,
       const RiskDataCallback& risk_data_callback,
       PrefService* pref_service,
       bool is_off_the_record);
   virtual ~CardUnmaskPromptControllerImpl();
 
   // Functions called by ChromeAutofillClient.
-  void ShowPrompt(const CreditCard& card,
+  void ShowPrompt(CardUnmaskPromptView* view,
+                  const CreditCard& card,
                   base::WeakPtr<CardUnmaskDelegate> delegate);
   // The CVC the user entered went through validation.
   void OnVerificationResult(AutofillClient::GetRealPanResult result);
@@ -43,7 +45,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
                         const base::string16& exp_year,
                         bool should_store_pan) override;
   void NewCardLinkClicked() override;
-  content::WebContents* GetWebContents() override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;
   int GetCvcImageRid() const override;
@@ -57,7 +58,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
  protected:
   // Virtual so tests can suppress it.
-  virtual CardUnmaskPromptView* CreateAndShowView();
   virtual void LoadRiskFingerprint();
 
   // Protected so tests can call it.
@@ -71,7 +71,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   void LogOnCloseEvents();
   AutofillMetrics::UnmaskPromptEvent GetCloseReasonEvent();
 
-  content::WebContents* web_contents_;
   RiskDataCallback risk_data_callback_;
   PrefService* pref_service_;
   bool new_card_link_clicked_;
@@ -96,4 +95,4 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_

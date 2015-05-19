@@ -7,13 +7,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/risk_util.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view_tester.h"
+#include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
@@ -53,8 +54,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   TestCardUnmaskPromptController(
       content::WebContents* contents,
       scoped_refptr<content::MessageLoopRunner> runner)
-      : CardUnmaskPromptControllerImpl(contents,
-            base::Bind(&LoadRiskData, 0, contents),
+      : CardUnmaskPromptControllerImpl(base::Bind(&LoadRiskData, 0, contents),
             user_prefs::UserPrefs::Get(contents->GetBrowserContext()), false),
         runner_(runner),
         weak_factory_(this) {}
@@ -89,13 +89,14 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     runner_ = new content::MessageLoopRunner;
-    controller_.reset(new TestCardUnmaskPromptController(
-        browser()->tab_strip_model()->GetActiveWebContents(), runner_));
+    contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+    controller_.reset(new TestCardUnmaskPromptController(contents_, runner_));
     delegate_.reset(new TestCardUnmaskDelegate());
   }
 
   void FreeDelegate() { delegate_.reset(); }
 
+  content::WebContents* contents() { return contents_; }
   TestCardUnmaskPromptController* controller() { return controller_.get(); }
   TestCardUnmaskDelegate* delegate() { return delegate_.get(); }
 
@@ -104,6 +105,7 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
   scoped_refptr<content::MessageLoopRunner> runner_;
 
  private:
+  content::WebContents* contents_;
   scoped_ptr<TestCardUnmaskPromptController> controller_;
   scoped_ptr<TestCardUnmaskDelegate> delegate_;
 
@@ -111,7 +113,8 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
-  controller()->ShowPrompt(test::GetMaskedServerCard(),
+  controller()->ShowPrompt(CreateCardUnmaskPromptView(controller(), contents()),
+                           test::GetMaskedServerCard(),
                            delegate()->GetWeakPtr());
 }
 
@@ -121,7 +124,8 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
 // message is showing.
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
                        EarlyCloseAfterSuccess) {
-  controller()->ShowPrompt(test::GetMaskedServerCard(),
+  controller()->ShowPrompt(CreateCardUnmaskPromptView(controller(), contents()),
+                           test::GetMaskedServerCard(),
                            delegate()->GetWeakPtr());
   controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
                                  base::ASCIIToUTF16("10"),
@@ -144,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
 // https://crbug.com/484376
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
                        CloseTabWhileDialogShowing) {
-  controller()->ShowPrompt(test::GetMaskedServerCard(),
+  controller()->ShowPrompt(CreateCardUnmaskPromptView(controller(), contents()),
+                           test::GetMaskedServerCard(),
                            delegate()->GetWeakPtr());
   // Simulate AutofillManager (the delegate in production code) being destroyed
   // before CardUnmaskPromptViewBridge::OnConstrainedWindowClosed() is called.

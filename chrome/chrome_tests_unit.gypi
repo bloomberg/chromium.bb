@@ -1059,7 +1059,6 @@
       'browser/ui/autofill/account_chooser_model_unittest.cc',
       'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
       'browser/ui/autofill/autofill_dialog_i18n_input_unittest.cc',
-      'browser/ui/autofill/card_unmask_prompt_controller_impl_unittest.cc',
       'browser/ui/autofill/country_combobox_model_unittest.cc',
       'browser/ui/autofill/data_model_wrapper_unittest.cc',
       'browser/ui/autofill/mock_address_validator.cc',

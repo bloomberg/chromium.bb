@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_H_
-#define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_H_
 
 #include "base/strings/string16.h"
 
 namespace base {
 class TimeDelta;
-}
-
-namespace content {
-class WebContents;
 }
 
 namespace autofill {
@@ -28,7 +24,6 @@ class CardUnmaskPromptController {
   virtual void NewCardLinkClicked() = 0;
 
   // State.
-  virtual content::WebContents* GetWebContents() = 0;
   virtual base::string16 GetWindowTitle() const = 0;
   virtual base::string16 GetInstructionsMessage() const = 0;
   virtual int GetCvcImageRid() const = 0;
@@ -45,4 +40,4 @@ class CardUnmaskPromptController {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_H_

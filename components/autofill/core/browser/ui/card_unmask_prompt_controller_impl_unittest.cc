@@ -2,24 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "chrome/browser/autofill/risk_util.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
 
@@ -52,32 +47,30 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
 
 class TestCardUnmaskPromptView : public CardUnmaskPromptView {
  public:
+  void Show() override {}
   void ControllerGone() override {}
   void DisableAndWaitForVerification() override {}
   void GotVerificationResult(const base::string16& error_message,
                              bool allow_retry) override {}
 };
 
+void TestGetRiskData(const base::Callback<void(const std::string&)>& callback) {
+  callback.Run("some risk data");
+}
+
 class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
  public:
-  TestCardUnmaskPromptController(
-      content::WebContents* contents,
-      TestCardUnmaskPromptView* test_unmask_prompt_view,
-      scoped_refptr<content::MessageLoopRunner> runner)
-      : CardUnmaskPromptControllerImpl(contents,
-            base::Bind(&LoadRiskData, 0, contents),
-            user_prefs::UserPrefs::Get(contents->GetBrowserContext()), false),
-        test_unmask_prompt_view_(test_unmask_prompt_view),
+  explicit TestCardUnmaskPromptController(
+      TestingPrefServiceSimple* pref_service)
+      : CardUnmaskPromptControllerImpl(
+            base::Bind(&TestGetRiskData), pref_service, false),
         can_store_locally_(true),
-        runner_(runner),
         weak_factory_(this) {}
 
-  CardUnmaskPromptView* CreateAndShowView() override {
-    return test_unmask_prompt_view_;
-  }
   void LoadRiskFingerprint() override {
     OnDidLoadRiskFingerprint("risk aversion");
   }
+
   bool CanStoreLocally() const override { return can_store_locally_; }
 
   void set_can_store_locally(bool can) { can_store_locally_ = can; }
@@ -87,40 +80,35 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   }
 
  private:
-  TestCardUnmaskPromptView* test_unmask_prompt_view_;
   bool can_store_locally_;
-  scoped_refptr<content::MessageLoopRunner> runner_;
   base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskPromptController);
 };
 
-class CardUnmaskPromptControllerImplTest
-    : public ChromeRenderViewHostTestHarness {
+class CardUnmaskPromptControllerImplTest : public testing::Test {
  public:
   CardUnmaskPromptControllerImplTest() {}
   ~CardUnmaskPromptControllerImplTest() override {}
 
   void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
     test_unmask_prompt_view_.reset(new TestCardUnmaskPromptView());
-    controller_.reset(new TestCardUnmaskPromptController(
-        web_contents(), test_unmask_prompt_view_.get(), runner_));
+    pref_service_.reset(new TestingPrefServiceSimple());
+    controller_.reset(new TestCardUnmaskPromptController(pref_service_.get()));
     delegate_.reset(new TestCardUnmaskDelegate());
-    SetImportCheckboxState(false);
-  }
-
-  void TearDown() override {
-    ChromeRenderViewHostTestHarness::TearDown();
+    pref_service_->registry()->RegisterBooleanPref(
+        prefs::kAutofillWalletImportStorageCheckboxState, false);
   }
 
   void ShowPrompt() {
-    controller_->ShowPrompt(test::GetMaskedServerCard(),
+    controller_->ShowPrompt(test_unmask_prompt_view_.get(),
+                            test::GetMaskedServerCard(),
                             delegate_->GetWeakPtr());
   }
 
   void ShowPromptAmex() {
-    controller_->ShowPrompt(test::GetMaskedServerCardAmex(),
+    controller_->ShowPrompt(test_unmask_prompt_view_.get(),
+                            test::GetMaskedServerCardAmex(),
                             delegate_->GetWeakPtr());
   }
 
@@ -132,20 +120,18 @@ class CardUnmaskPromptControllerImplTest
                                   should_store_pan);
     EXPECT_EQ(
         should_store_pan,
-        user_prefs::UserPrefs::Get(web_contents()->GetBrowserContext())
-            ->GetBoolean(prefs::kAutofillWalletImportStorageCheckboxState));
+        pref_service_->GetBoolean(
+            prefs::kAutofillWalletImportStorageCheckboxState));
   }
 
  protected:
   void SetImportCheckboxState(bool value) {
-    user_prefs::UserPrefs::Get(web_contents()->GetBrowserContext())
-        ->SetBoolean(prefs::kAutofillWalletImportStorageCheckboxState, value);
+    pref_service_->SetBoolean(
+        prefs::kAutofillWalletImportStorageCheckboxState, value);
   }
 
-  // This member must outlive the controller.
-  scoped_refptr<content::MessageLoopRunner> runner_;
-
   scoped_ptr<TestCardUnmaskPromptView> test_unmask_prompt_view_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<TestCardUnmaskPromptController> controller_;
   scoped_ptr<TestCardUnmaskDelegate> delegate_;
 
@@ -197,8 +183,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskRetriable) {
       1);
 }
 
-TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskNonRetriable)
-    {
+TEST_F(CardUnmaskPromptControllerImplTest,
+       LogClosedFailedToUnmaskNonRetriable) {
   ShowPromptAndSimulateResponse(false);
   controller_->OnVerificationResult(AutofillClient::PERMANENT_FAILURE);
   base::HistogramTester histogram_tester;

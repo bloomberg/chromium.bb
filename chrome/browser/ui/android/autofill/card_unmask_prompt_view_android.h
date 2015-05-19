@@ -10,15 +10,18 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace autofill {
 
 class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
  public:
-  explicit CardUnmaskPromptViewAndroid(CardUnmaskPromptController* controller);
-
-  void Show();
+  explicit CardUnmaskPromptViewAndroid(CardUnmaskPromptController* controller,
+                                       content::WebContents* web_contents);
 
   bool CheckUserInputValidity(JNIEnv* env, jobject obj, jstring response);
   void OnUserInput(JNIEnv* env,
@@ -30,6 +33,7 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
   void PromptDismissed(JNIEnv* env, jobject obj);
 
   // CardUnmaskPromptView implementation.
+  void Show() override;
   void ControllerGone() override;
   void DisableAndWaitForVerification() override;
   void GotVerificationResult(const base::string16& error_message,
@@ -44,6 +48,7 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   CardUnmaskPromptController* controller_;
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViewAndroid);
 };

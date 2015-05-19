@@ -18,7 +18,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
+#include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -30,6 +30,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/user_prefs/user_prefs.h"
@@ -51,7 +52,6 @@ namespace autofill {
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       unmask_controller_(
-          web_contents,
           base::Bind(&LoadRiskData, 0, web_contents),
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
@@ -147,7 +147,9 @@ void ChromeAutofillClient::ShowAutofillSettings() {
 void ChromeAutofillClient::ShowUnmaskPrompt(
     const CreditCard& card,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
-  unmask_controller_.ShowPrompt(card, delegate);
+  unmask_controller_.ShowPrompt(
+      CreateCardUnmaskPromptView(&unmask_controller_, web_contents()),
+      card, delegate);
 }
 
 void ChromeAutofillClient::OnUnmaskVerificationResult(GetRealPanResult result) {

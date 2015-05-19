@@ -2,31 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "grit/theme_resources.h"
+#include "grit/components_scaled_resources.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
 CardUnmaskPromptControllerImpl::CardUnmaskPromptControllerImpl(
-    content::WebContents* web_contents,
     const RiskDataCallback& risk_data_callback,
     PrefService* pref_service,
     bool is_off_the_record)
-    : web_contents_(web_contents),
-      risk_data_callback_(risk_data_callback),
+    : risk_data_callback_(risk_data_callback),
       pref_service_(pref_service),
       new_card_link_clicked_(false),
       is_off_the_record_(is_off_the_record),
@@ -43,6 +40,7 @@ CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
 }
 
 void CardUnmaskPromptControllerImpl::ShowPrompt(
+    CardUnmaskPromptView* card_unmask_view,
     const CreditCard& card,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
   if (card_unmask_view_)
@@ -52,9 +50,10 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   shown_timestamp_ = base::Time::Now();
   pending_response_ = CardUnmaskDelegate::UnmaskResponse();
   LoadRiskFingerprint();
+  card_unmask_view_ = card_unmask_view;
   card_ = card;
   delegate_ = delegate;
-  card_unmask_view_ = CreateAndShowView();
+  card_unmask_view_->Show();
   unmasking_result_ = AutofillClient::NONE;
   unmasking_number_of_attempts_ = 0;
   unmasking_initial_should_store_pan_ = GetStoreLocallyStartState();
@@ -168,15 +167,14 @@ CardUnmaskPromptControllerImpl::GetCloseReasonEvent() {
 
   if (unmasking_result_ == AutofillClient::SUCCESS) {
     return unmasking_number_of_attempts_ == 1
-               ? AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT
-               : AutofillMetrics::
-                     UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS;
+        ? AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT
+        : AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS;
   } else {
     return AllowsRetry(unmasking_result_)
-               ? AutofillMetrics::
-                     UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE
-               : AutofillMetrics::
-                     UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE;
+        ? AutofillMetrics::
+            UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE
+        : AutofillMetrics::
+            UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE;
   }
 }
 
@@ -213,10 +211,6 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
 
 void CardUnmaskPromptControllerImpl::NewCardLinkClicked() {
   new_card_link_clicked_ = true;
-}
-
-content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
-  return web_contents_;
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
@@ -308,10 +302,6 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
     const {
   return base::TimeDelta::FromMilliseconds(500);
-}
-
-CardUnmaskPromptView* CardUnmaskPromptControllerImpl::CreateAndShowView() {
-  return CardUnmaskPromptView::CreateAndShow(this);
 }
 
 void CardUnmaskPromptControllerImpl::LoadRiskFingerprint() {

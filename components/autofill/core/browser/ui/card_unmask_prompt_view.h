@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_H_
-#define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_VIEW_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_VIEW_H_
 
 #include "base/strings/string16.h"
 
@@ -16,9 +16,7 @@ class CardUnmaskPromptController;
 // lifetime.
 class CardUnmaskPromptView {
  public:
-  static CardUnmaskPromptView* CreateAndShow(
-      CardUnmaskPromptController* controller);
-
+  virtual void Show() = 0;
   virtual void ControllerGone() = 0;
   virtual void DisableAndWaitForVerification() = 0;
   virtual void GotVerificationResult(const base::string16& error_message,
@@ -34,4 +32,4 @@ class CardUnmaskPromptView {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_VIEW_H_

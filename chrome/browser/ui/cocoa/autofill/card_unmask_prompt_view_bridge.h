@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
-#define CHROME_BROWSER_UI_COCOA_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
+#ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
+#define CHROME_BROWSER_UI_COCOA_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 
 namespace content {
-class NavigationController;
+class WebContents;
 }
 
 @class CardUnmaskPromptViewCocoa;
@@ -21,10 +21,12 @@ namespace autofill {
 class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
                                    public ConstrainedWindowMacDelegate {
  public:
-  explicit CardUnmaskPromptViewBridge(CardUnmaskPromptController* controller);
+  explicit CardUnmaskPromptViewBridge(CardUnmaskPromptController* controller,
+                                      content::WebContents* web_contents);
   ~CardUnmaskPromptViewBridge() override;
 
   // CardUnmaskPromptView implementation:
+  void Show() override;
   void ControllerGone() override;
   void DisableAndWaitForVerification() override;
   void GotVerificationResult(const base::string16& error_message,
@@ -43,10 +45,11 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
   // The controller |this| queries for logic and state.
   CardUnmaskPromptController* controller_;
 
+  content::WebContents* web_contents_;
   base::WeakPtrFactory<CardUnmaskPromptViewBridge> weak_ptr_factory_;
 };
 
-}  // autofill
+}  // namespace autofill
 
 @interface CardUnmaskPromptViewCocoa
     : NSViewController<NSWindowDelegate, NSTextFieldDelegate>
@@ -61,4 +64,4 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
+#endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_

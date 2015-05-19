@@ -7,7 +7,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_pop_up_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
@@ -20,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/spinner_view.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -56,20 +56,28 @@ const SkColor kSubtleBorderColor = SkColorSetRGB(0xdf, 0xdf, 0xdf);
 
 namespace autofill {
 
-// static
-CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
-    CardUnmaskPromptController* controller) {
-  return new CardUnmaskPromptViewBridge(controller);
+CardUnmaskPromptView* CreateCardUnmaskPromptView(
+    CardUnmaskPromptController* controller,
+    content::WebContents* web_contents) {
+  return new CardUnmaskPromptViewBridge(controller, web_contents);
 }
 
 #pragma mark CardUnmaskPromptViewBridge
 
 CardUnmaskPromptViewBridge::CardUnmaskPromptViewBridge(
-    CardUnmaskPromptController* controller)
-    : controller_(controller), weak_ptr_factory_(this) {
+    CardUnmaskPromptController* controller,
+    content::WebContents* web_contents)
+    : controller_(controller),
+      web_contents_(web_contents),
+      weak_ptr_factory_(this) {
   view_controller_.reset(
       [[CardUnmaskPromptViewCocoa alloc] initWithBridge:this]);
+}
 
+CardUnmaskPromptViewBridge::~CardUnmaskPromptViewBridge() {
+}
+
+void CardUnmaskPromptViewBridge::Show() {
   // Setup the constrained window that will show the view.
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
@@ -77,10 +85,7 @@ CardUnmaskPromptViewBridge::CardUnmaskPromptViewBridge(
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
   constrained_window_.reset(
-      new ConstrainedWindowMac(this, controller_->GetWebContents(), sheet));
-}
-
-CardUnmaskPromptViewBridge::~CardUnmaskPromptViewBridge() {
+      new ConstrainedWindowMac(this, web_contents_, sheet));
 }
 
 void CardUnmaskPromptViewBridge::ControllerGone() {

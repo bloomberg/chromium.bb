@@ -6,13 +6,17 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_CARD_UNMASK_PROMPT_VIEWS_H_
 
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace views {
 class Checkbox;
@@ -33,13 +37,12 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               views::LinkListener,
                               gfx::AnimationDelegate {
  public:
-  explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller);
-
+  CardUnmaskPromptViews(CardUnmaskPromptController* controller,
+                        content::WebContents* web_contents);
   ~CardUnmaskPromptViews() override;
 
-  void Show();
-
   // CardUnmaskPromptView
+  void Show() override;
   void ControllerGone() override;
   void DisableAndWaitForVerification() override;
   void GotVerificationResult(const base::string16& error_message,
@@ -117,6 +120,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void ClosePrompt();
 
   CardUnmaskPromptController* controller_;
+  content::WebContents* web_contents_;
 
   views::View* main_contents_;
 

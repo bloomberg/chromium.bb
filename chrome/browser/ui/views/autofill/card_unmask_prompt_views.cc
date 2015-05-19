@@ -7,10 +7,11 @@
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
+#include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -41,17 +42,17 @@ const int kEdgePadding = 19;
 
 SkColor kGreyTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
-// static
-CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
-    CardUnmaskPromptController* controller) {
-  CardUnmaskPromptViews* view = new CardUnmaskPromptViews(controller);
-  view->Show();
-  return view;
+CardUnmaskPromptView* CreateCardUnmaskPromptView(
+    CardUnmaskPromptController* controller,
+    content::WebContents* web_contents) {
+  return new CardUnmaskPromptViews(controller, web_contents);
 }
 
 CardUnmaskPromptViews::CardUnmaskPromptViews(
-    CardUnmaskPromptController* controller)
+    CardUnmaskPromptController* controller,
+    content::WebContents* web_contents)
     : controller_(controller),
+      web_contents_(web_contents),
       main_contents_(nullptr),
       instructions_(nullptr),
       permanent_error_label_(nullptr),
@@ -77,8 +78,7 @@ CardUnmaskPromptViews::~CardUnmaskPromptViews() {
 }
 
 void CardUnmaskPromptViews::Show() {
-  constrained_window::ShowWebModalDialogViews(this,
-                                              controller_->GetWebContents());
+  constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
 
 void CardUnmaskPromptViews::ControllerGone() {
@@ -171,12 +171,12 @@ void CardUnmaskPromptViews::SetRetriableErrorMessage(
   }
 
   // Update the dialog's size.
-  if (GetWidget() && controller_->GetWebContents()) {
+  if (GetWidget() && web_contents_) {
     constrained_window::UpdateWebContentsModalDialogPosition(
-        GetWidget(), web_modal::WebContentsModalDialogManager::FromWebContents(
-                         controller_->GetWebContents())
-                         ->delegate()
-                         ->GetWebContentsModalDialogHost());
+        GetWidget(),
+        web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_)
+            ->delegate()
+            ->GetWebContentsModalDialogHost());
   }
 
   Layout();
