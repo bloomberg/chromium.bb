@@ -134,8 +134,8 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 	args.in.alignment = alloc_buffer->phys_alignment;
 
 	/* Set the placement. */
-	args.in.domains = heap & AMDGPU_GEM_DOMAIN_MASK;
-	args.in.domain_flags = alloc_buffer->flags & AMDGPU_GEM_CREATE_CPU_GTT_MASK;
+	args.in.domains = heap;
+	args.in.domain_flags = alloc_buffer->flags;
 
 	/* Allocate the buffer with the preferred heap. */
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_CREATE,
