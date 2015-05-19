@@ -430,7 +430,9 @@ void FileManagerPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     int64 bytes_used) {
   if (error == drive::FILE_ERROR_OK) {
     const uint64 bytes_total_unsigned = bytes_total;
-    const uint64 bytes_remaining_unsigned = bytes_total - bytes_used;
+    // bytes_used can be larger than bytes_total (over quota).
+    const uint64 bytes_remaining_unsigned =
+        std::max(bytes_total - bytes_used, int64(0));
     GetSizeStatsCallback(&bytes_total_unsigned,
                          &bytes_remaining_unsigned);
   } else {
