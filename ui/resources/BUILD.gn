@@ -77,7 +77,7 @@ if (!is_mac) {
 #              (copy_ui_test_pak action)
 if (is_ios || is_mac) {
   group("ui_test_pak") {
-    public_deps = [
+    deps = [
       ":repack_ui_test_pak",
       ":repack_ui_test_mac_locale_pack",
     ]
@@ -90,7 +90,7 @@ if (is_ios || is_mac) {
     outputs = [
       "$root_out_dir/ui/en-US.pak",
     ]
-    public_deps = [
+    deps = [
       ":repack_ui_test_pak",
     ]
   }

@@ -95,7 +95,6 @@ source_set("automation_client_lib") {
   sources += get_target_outputs(":embed_user_data_dir_in_cpp")
 
   deps = [
-    ":embed_extension_in_cpp",
     ":embed_js_in_cpp",
     ":embed_user_data_dir_in_cpp",
     "//base",

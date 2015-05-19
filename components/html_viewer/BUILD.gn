@@ -197,7 +197,6 @@ mojo_application_package("html_viewer") {
       "$root_build_dir/natives_blob.bin",
       "$root_build_dir/snapshot_blob.bin",
     ]
-    deps += [ "//gin" ]
   }
 }
 

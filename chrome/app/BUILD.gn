@@ -158,9 +158,6 @@ action("make_generated_resources_map") {
 # specifying it manually. This doesn't happen in the GYP build.
 source_set("generated_resources_map") {
   sources = get_target_outputs(":make_generated_resources_map")
-  deps = [
-    ":make_generated_resources_map",
-  ]
 }
 
 # GYP version: chrome/chrome_resources.gyp:chrome_strings
