@@ -138,10 +138,10 @@ class DataReductionProxyConfig
   void ReloadConfig();
 
   // Returns true if a Data Reduction Proxy was used for the given |request|.
-  // If true, |proxy_info.proxy_servers.first| will contain the name of the
-  // proxy that was used. |proxy_info.proxy_servers.second| will contain the
-  // name of the data reduction proxy server that would be used if
-  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
+  // If true, |proxy_info.proxy_servers.front()| will contain the name of the
+  // proxy that was used. Subsequent entries in |proxy_info.proxy_servers| will
+  // contain the names of the Data Reduction Proxy servers that would be used if
+  // |proxy_info.proxy_servers.front()| is bypassed, if any exist. In addition,
   // |proxy_info| will note if the proxy used was a fallback, an alternative,
   // or a proxy for ssl; these are not mutually exclusive. |proxy_info| can be
   // NULL if the caller isn't interested in its values.
@@ -150,13 +150,14 @@ class DataReductionProxyConfig
       DataReductionProxyTypeInfo* proxy_info) const;
 
   // Returns true if the specified |host_port_pair| matches a Data Reduction
-  // Proxy. If true, |proxy_info.proxy_servers.first| will contain the name of
-  // the proxy that matches. |proxy_info.proxy_servers.second| will contain the
-  // name of the data reduction proxy server that would be used if
-  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
-  // |proxy_info| will note if the proxy was a fallback, an alternative, or a
-  // proxy for ssl; these are not mutually exclusive. |proxy_info| can be NULL
-  // if the caller isn't interested in its values. Virtual for testing.
+  // Proxy. If true, |proxy_info.proxy_servers.front()| will contain the name of
+  // the proxy that matches. Subsequent entries in |proxy_info.proxy_servers|
+  // will contain the name of the Data Reduction Proxy servers that would be
+  // used if |proxy_info.proxy_servers.front()| is bypassed, if any exist. In
+  // addition, |proxy_info| will note if the proxy was a fallback, an
+  // alternative, or a proxy for ssl; these are not mutually exclusive.
+  // |proxy_info| can be NULL if the caller isn't interested in its values.
+  // Virtual for testing.
   virtual bool IsDataReductionProxy(
       const net::HostPortPair& host_port_pair,
       DataReductionProxyTypeInfo* proxy_info) const;

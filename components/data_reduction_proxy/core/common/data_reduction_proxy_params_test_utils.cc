@@ -39,6 +39,12 @@ bool TestDataReductionProxyParams::init_result() const {
   return init_result_;
 }
 
+void TestDataReductionProxyParams::SetProxiesForHttp(
+    const std::vector<net::ProxyServer>& proxies,
+    const std::vector<net::ProxyServer>& alt_proxies) {
+  proxies_for_http_ = proxies;
+  alt_proxies_for_http_ = alt_proxies;
+}
 // Test values to replace the values specified in preprocessor defines.
 std::string TestDataReductionProxyParams::DefaultDevOrigin() {
   return kDefaultDevOrigin;
@@ -94,15 +100,6 @@ std::string TestDataReductionProxyParams::FlagAltFallbackOrigin() {
 
 std::string TestDataReductionProxyParams::FlagSecureProxyCheckURL() {
   return kFlagSecureProxyCheckURL;
-}
-
-void TestDataReductionProxyParams::set_origin(const net::ProxyServer& origin) {
-  origin_ = origin;
-}
-
-void TestDataReductionProxyParams::set_fallback_origin(
-    const net::ProxyServer& fallback_origin) {
- fallback_origin_ = fallback_origin;
 }
 
 std::string TestDataReductionProxyParams::GetDefaultDevOrigin() const {

@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,6 +16,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
@@ -48,6 +50,22 @@ const char kUMAProxySecureProxyCheckLatency[] =
 void RecordNetworkChangeEvent(DataReductionProxyNetworkChangeEvent event) {
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.NetworkChangeEvents", event,
                             CHANGE_EVENT_COUNT);
+}
+
+// Looks for an instance of |host_port_pair| in |proxy_list|, and returns true
+// if found. Also sets |index| to the index at which the matching address was
+// found.
+bool FindProxyInList(const std::vector<net::ProxyServer>& proxy_list,
+                     const net::HostPortPair& host_port_pair,
+                     int* index) {
+  for (size_t proxy_index = 0; proxy_index < proxy_list.size(); ++proxy_index) {
+    const net::ProxyServer& proxy = proxy_list[proxy_index];
+    if (proxy.is_valid() && proxy.host_port_pair().Equals(host_port_pair)) {
+      *index = proxy_index;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -171,7 +189,61 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
     const net::HostPortPair& host_port_pair,
     DataReductionProxyTypeInfo* proxy_info) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return config_values_->IsDataReductionProxy(host_port_pair, proxy_info);
+
+  int proxy_index = 0;
+  if (FindProxyInList(config_values_->proxies_for_http(false), host_port_pair,
+                      &proxy_index)) {
+    if (proxy_info) {
+      const std::vector<net::ProxyServer>& proxy_list =
+          config_values_->proxies_for_http(false);
+      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
+          proxy_list.begin() + proxy_index, proxy_list.end());
+      proxy_info->is_fallback = (proxy_index != 0);
+    }
+    return true;
+  }
+
+  if (FindProxyInList(config_values_->proxies_for_http(true), host_port_pair,
+                      &proxy_index)) {
+    if (proxy_info) {
+      const std::vector<net::ProxyServer>& proxy_list =
+          config_values_->proxies_for_http(true);
+      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
+          proxy_list.begin() + proxy_index, proxy_list.end());
+      proxy_info->is_fallback = (proxy_index != 0);
+      proxy_info->is_alternative = true;
+    }
+    return true;
+  }
+
+  if (FindProxyInList(config_values_->proxies_for_https(false), host_port_pair,
+                      &proxy_index)) {
+    if (proxy_info) {
+      const std::vector<net::ProxyServer>& proxy_list =
+          config_values_->proxies_for_https(false);
+      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
+          proxy_list.begin() + proxy_index, proxy_list.end());
+      proxy_info->is_fallback = (proxy_index != 0);
+      proxy_info->is_ssl = true;
+    }
+    return true;
+  }
+
+  if (FindProxyInList(config_values_->proxies_for_https(true), host_port_pair,
+                      &proxy_index)) {
+    if (proxy_info) {
+      const std::vector<net::ProxyServer>& proxy_list =
+          config_values_->proxies_for_https(true);
+      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
+          proxy_list.begin() + proxy_index, proxy_list.end());
+      proxy_info->is_fallback = (proxy_index != 0);
+      proxy_info->is_alternative = true;
+      proxy_info->is_ssl = true;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
@@ -372,33 +444,14 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
                                                   bool at_startup) {
   DCHECK(configurator_);
   LogProxyState(enabled, secure_proxy_allowed, at_startup);
-  // The alternative is only configured if the standard configuration is
-  // is enabled.
-  std::string origin;
-  std::string fallback_origin;
-  std::string ssl_origin;
-  bool fallback_allowed = false;
-  if (enabled && !disabled_on_vpn_ && !config_values_->holdback()) {
-    if (alternative_enabled) {
-      fallback_allowed = config_values_->alternative_fallback_allowed();
-      if (config_values_->alt_origin().is_valid())
-        origin = config_values_->alt_origin().ToURI();
-      if (config_values_->ssl_origin().is_valid())
-        ssl_origin = config_values_->ssl_origin().ToURI();
-    } else {
-      fallback_allowed = config_values_->fallback_allowed();
-      if (config_values_->origin().is_valid())
-        origin = config_values_->origin().ToURI();
-      if (config_values_->fallback_origin().is_valid())
-        fallback_origin = config_values_->fallback_origin().ToURI();
-    }
-  }
-
-  // TODO(jeremyim): Enable should take std::vector<net::ProxyServer> as its
-  // parameters.
-  if (!origin.empty() || !fallback_origin.empty() || !ssl_origin.empty()) {
-    configurator_->Enable(!secure_proxy_allowed, !fallback_allowed, origin,
-                          fallback_origin, ssl_origin);
+  std::vector<net::ProxyServer> proxies_for_http =
+      config_values_->proxies_for_http(alternative_enabled);
+  std::vector<net::ProxyServer> proxies_for_https =
+      config_values_->proxies_for_https(alternative_enabled);
+  if (enabled && !disabled_on_vpn_ && !config_values_->holdback() &&
+      (!proxies_for_http.empty() || !proxies_for_https.empty())) {
+    configurator_->Enable(!secure_proxy_allowed, proxies_for_http,
+                          proxies_for_https);
   } else {
     configurator_->Disable();
   }

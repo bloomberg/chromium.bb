@@ -6,11 +6,13 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIGURATOR_TEST_UTILS_H_
 
 #include <string>
+#include <vector>
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
 namespace net {
 class NetLog;
+class ProxyServer;
 }
 
 namespace data_reduction_proxy {
@@ -26,11 +28,9 @@ class TestDataReductionProxyConfigurator
   ~TestDataReductionProxyConfigurator() override;
 
   // Overrides of DataReductionProxyConfigurator
-  void Enable(bool restricted,
-              bool fallback_restricted,
-              const std::string& primary_origin,
-              const std::string& fallback_origin,
-              const std::string& ssl_origin) override;
+  void Enable(bool secure_transport_restricted,
+              const std::vector<net::ProxyServer>& proxies_for_http,
+              const std::vector<net::ProxyServer>& proxies_for_https) override;
 
   void Disable() override;
 
@@ -46,20 +46,12 @@ class TestDataReductionProxyConfigurator
     return restricted_;
   }
 
-  bool fallback_restricted() const {
-    return fallback_restricted_;
+  const std::vector<net::ProxyServer>& proxies_for_http() const {
+    return proxies_for_http_;
   }
 
-  const std::string& origin() const {
-    return origin_;
-  }
-
-  const std::string& fallback_origin() const {
-    return fallback_origin_;
-  }
-
-  const std::string& ssl_origin() const {
-    return ssl_origin_;
+  const std::vector<net::ProxyServer>& proxies_for_https() const {
+    return proxies_for_https_;
   }
 
  private:
@@ -68,18 +60,13 @@ class TestDataReductionProxyConfigurator
   bool enabled_;
 
   // Describes whether the proxy has been put in a restricted mode. True if
-  // |Enable| is called with |restricted| set to true. Defaults to false.
+  // |Enable| is called with |secure_transport_restricted| set to true. Defaults
+  // to false.
   bool restricted_;
 
-  // Describes whether the proxy has been put in a mode where the fallback
-  // configuration has been disallowed. True if |Enable| is called with
-  // |fallback_restricted| set to true. Defaults to false.
-  bool fallback_restricted_;
-
   // The origins that are passed to |Enable|.
-  std::string origin_;
-  std::string fallback_origin_;
-  std::string ssl_origin_;
+  std::vector<net::ProxyServer> proxies_for_http_;
+  std::vector<net::ProxyServer> proxies_for_https_;
 };
 
 }  // namespace data_reduction_proxy

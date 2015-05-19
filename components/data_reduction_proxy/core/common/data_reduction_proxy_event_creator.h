@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_CREATOR_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/macros.h"
@@ -24,6 +25,7 @@ class Value;
 
 namespace net {
 class BoundNetLog;
+class ProxyServer;
 }
 
 namespace data_reduction_proxy {
@@ -43,12 +45,11 @@ class DataReductionProxyEventCreator {
 
   // Adds the DATA_REDUCTION_PROXY_ENABLED event (with enabled=true) to the
   // event store.
-  void AddProxyEnabledEvent(net::NetLog* net_log,
-                            bool primary_restricted,
-                            bool fallback_restricted,
-                            const std::string& primary_origin,
-                            const std::string& fallback_origin,
-                            const std::string& ssl_origin);
+  void AddProxyEnabledEvent(
+      net::NetLog* net_log,
+      bool secure_transport_restricted,
+      const std::vector<net::ProxyServer>& proxies_for_http,
+      const std::vector<net::ProxyServer>& proxies_for_https);
 
   // Adds the DATA_REDUCTION_PROXY_ENABLED event (with enabled=false) to the
   // event store.

@@ -4,6 +4,9 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
+#include <string>
+#include <vector>
+
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
@@ -25,38 +28,40 @@ DataReductionProxyConfigurator::~DataReductionProxyConfigurator() {
 }
 
 void DataReductionProxyConfigurator::Enable(
-    bool primary_restricted,
-    bool fallback_restricted,
-    const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin) {
+    bool secure_transport_restricted,
+    const std::vector<net::ProxyServer>& proxies_for_http,
+    const std::vector<net::ProxyServer>& proxies_for_https) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<std::string> proxies;
-  if (!primary_restricted) {
-    std::string trimmed_primary;
-    base::TrimString(primary_origin, "/", &trimmed_primary);
-    if (!trimmed_primary.empty())
-      proxies.push_back(trimmed_primary);
-  }
-  if (!fallback_restricted) {
-    std::string trimmed_fallback;
-    base::TrimString(fallback_origin, "/", &trimmed_fallback);
-    if (!trimmed_fallback.empty())
-      proxies.push_back(trimmed_fallback);
-  }
-  if (proxies.empty()) {
-    Disable();
-    return;
-  }
-
-  std::string trimmed_ssl;
-  base::TrimString(ssl_origin, "/", &trimmed_ssl);
-
-  std::string server = "http=" + JoinString(proxies, ",") + ",direct://;"
-      + (ssl_origin.empty() ? "" : ("https=" + trimmed_ssl + ",direct://;"));
-
   net::ProxyConfig config;
-  config.proxy_rules().ParseFromString(server);
+  config.proxy_rules().type =
+      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+
+  for (const auto& http_proxy : proxies_for_http) {
+    if (!secure_transport_restricted ||
+        (http_proxy.scheme() != net::ProxyServer::SCHEME_HTTPS &&
+         http_proxy.scheme() != net::ProxyServer::SCHEME_QUIC)) {
+      config.proxy_rules().proxies_for_http.AddProxyServer(http_proxy);
+    }
+  }
+
+  if (!config.proxy_rules().proxies_for_http.IsEmpty()) {
+    config.proxy_rules().proxies_for_http.AddProxyServer(
+        net::ProxyServer::Direct());
+  }
+
+  for (const auto& https_proxy : proxies_for_https) {
+    if (!secure_transport_restricted ||
+        (https_proxy.scheme() != net::ProxyServer::SCHEME_HTTPS &&
+         https_proxy.scheme() != net::ProxyServer::SCHEME_QUIC)) {
+      config.proxy_rules().proxies_for_https.AddProxyServer(https_proxy);
+    }
+  }
+
+  if (!config.proxy_rules().proxies_for_https.IsEmpty()) {
+    config.proxy_rules().proxies_for_https.AddProxyServer(
+        net::ProxyServer::Direct());
+  }
+
   config.proxy_rules().bypass_rules.ParseFromString(
       JoinString(bypass_rules_, ", "));
   // The ID is set to a bogus value. It cannot be left uninitialized, else the
@@ -64,8 +69,8 @@ void DataReductionProxyConfigurator::Enable(
   net::ProxyConfig::ID unused_id = 1;
   config.set_id(unused_id);
   data_reduction_proxy_event_creator_->AddProxyEnabledEvent(
-      net_log_, primary_restricted, fallback_restricted, primary_origin,
-      fallback_origin, ssl_origin);
+      net_log_, secure_transport_restricted, proxies_for_http,
+      proxies_for_https);
   config_ = config;
 }
 

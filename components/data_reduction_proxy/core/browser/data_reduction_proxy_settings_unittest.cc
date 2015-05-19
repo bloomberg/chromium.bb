@@ -409,8 +409,9 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
                    SyntheticFieldTrialRegistrationCallback,
                    base::Unretained(this)));
 
-    EXPECT_EQ(enable_quic,
-              test_context_->config()->test_params()->origin().is_quic()) << i;
+    net::ProxyServer origin =
+        test_context_->config()->test_params()->proxies_for_http(false).front();
+    EXPECT_EQ(enable_quic, origin.is_quic()) << i;
   }
 }
 

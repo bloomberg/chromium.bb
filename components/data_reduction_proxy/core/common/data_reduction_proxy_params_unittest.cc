@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
 #include <map>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -12,6 +13,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/proxy/proxy_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_reduction_proxy {
@@ -36,12 +38,43 @@ class DataReductionProxyParamsTest : public testing::Test {
                    const std::string& expected_alt_origin,
                    const std::string& expected_alt_fallback_origin,
                    const std::string& expected_secure_proxy_check_url) {
-    EXPECT_EQ(expected_origin, params.origin().ToURI());
-    EXPECT_EQ(expected_fallback_origin, params.fallback_origin().ToURI());
-    EXPECT_EQ(expected_ssl_origin, params.ssl_origin().ToURI());
-    EXPECT_EQ(expected_alt_origin, params.alt_origin().ToURI());
-    EXPECT_EQ(expected_alt_fallback_origin,
-              params.alt_fallback_origin().ToURI());
+    std::vector<net::ProxyServer> proxies_for_http;
+    std::vector<net::ProxyServer> proxies_for_https;
+    std::vector<net::ProxyServer> alt_proxies_for_http;
+    std::vector<net::ProxyServer> alt_proxies_for_https;
+    if (!expected_origin.empty()) {
+      proxies_for_http.push_back(net::ProxyServer::FromURI(
+          expected_origin, net::ProxyServer::SCHEME_HTTP));
+    }
+
+    if (!expected_fallback_origin.empty()) {
+      proxies_for_http.push_back(net::ProxyServer::FromURI(
+          expected_fallback_origin, net::ProxyServer::SCHEME_HTTP));
+    }
+
+    if (!expected_alt_origin.empty()) {
+      alt_proxies_for_http.push_back(net::ProxyServer::FromURI(
+          expected_alt_origin, net::ProxyServer::SCHEME_HTTP));
+    }
+
+    if (!expected_alt_fallback_origin.empty()) {
+      alt_proxies_for_http.push_back(net::ProxyServer::FromURI(
+          expected_alt_fallback_origin, net::ProxyServer::SCHEME_HTTP));
+    }
+
+    if (!expected_ssl_origin.empty()) {
+      alt_proxies_for_https.push_back(net::ProxyServer::FromURI(
+          expected_ssl_origin, net::ProxyServer::SCHEME_HTTP));
+    }
+
+    EXPECT_THAT(proxies_for_http,
+                testing::ContainerEq(params.proxies_for_http(false)));
+    EXPECT_THAT(proxies_for_https,
+                testing::ContainerEq(params.proxies_for_https(false)));
+    EXPECT_THAT(alt_proxies_for_http,
+                testing::ContainerEq(params.proxies_for_http(true)));
+    EXPECT_THAT(alt_proxies_for_https,
+                testing::ContainerEq(params.proxies_for_https(true)));
     EXPECT_EQ(GURL(expected_secure_proxy_check_url),
               params.secure_proxy_check_url());
   }
@@ -54,12 +87,9 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING);
   CheckParams(params, true, true, true, false, true);
-  CheckValues(params,
-              TestDataReductionProxyParams::DefaultDevOrigin(),
+  CheckValues(params, TestDataReductionProxyParams::DefaultDevOrigin(),
               TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
-              TestDataReductionProxyParams::DefaultSSLOrigin(),
-              TestDataReductionProxyParams::DefaultAltOrigin(),
-              TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
+              std::string(), std::string(), std::string(),
               TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
 }
 
@@ -72,12 +102,9 @@ TEST_F(DataReductionProxyParamsTest, NoDevOrigin) {
       ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
       ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
   CheckParams(params, true, true, true, false, true);
-  CheckValues(params,
-              TestDataReductionProxyParams::DefaultOrigin(),
+  CheckValues(params, TestDataReductionProxyParams::DefaultOrigin(),
               TestDataReductionProxyParams::DefaultFallbackOrigin(),
-              TestDataReductionProxyParams::DefaultSSLOrigin(),
-              TestDataReductionProxyParams::DefaultAltOrigin(),
-              TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
+              std::string(), std::string(), std::string(),
               TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
 }
 
@@ -107,12 +134,10 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING);
   CheckParams(params, true, true, true, true, true);
-  CheckValues(params,
-              TestDataReductionProxyParams::FlagOrigin(),
+  CheckValues(params, TestDataReductionProxyParams::FlagOrigin(),
               TestDataReductionProxyParams::FlagFallbackOrigin(),
               TestDataReductionProxyParams::FlagSSLOrigin(),
-              TestDataReductionProxyParams::FlagAltOrigin(),
-              TestDataReductionProxyParams::FlagAltFallbackOrigin(),
+              TestDataReductionProxyParams::FlagAltOrigin(), std::string(),
               TestDataReductionProxyParams::FlagSecureProxyCheckURL());
 }
 
@@ -530,237 +555,6 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
   }
 }
 
-TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
-  const struct {
-    net::HostPortPair host_port_pair;
-    bool fallback_allowed;
-    bool alt_fallback_allowed;
-    bool set_dev_origin;
-    bool expected_result;
-    net::HostPortPair expected_first;
-    net::HostPortPair expected_second;
-    bool expected_is_fallback;
-    bool expected_is_alternative;
-    bool expected_is_ssl;
-  } tests[]  = {
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        true,
-        true,
-        false,
-        true,
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        false,
-        false,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        false,
-        false,
-        false,
-        true,
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        net::HostPortPair::FromURL(GURL()),
-        false,
-        false,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        true,
-        true,
-        false,
-        true,
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        net::HostPortPair::FromURL(GURL()),
-        true,
-        false,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        false,
-        false,
-        false,
-        false,
-        net::HostPortPair::FromURL(GURL()),
-        net::HostPortPair::FromURL(GURL()),
-        false,
-        false,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        true,
-        true,
-        false,
-        true,
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        false,
-        true,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        false,
-        false,
-        false,
-        true,
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        net::HostPortPair::FromURL(GURL()),
-        false,
-        true,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        true,
-        true,
-        false,
-        true,
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        net::HostPortPair::FromURL(GURL()),
-        true,
-        true,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        false,
-        false,
-        false,
-        false,
-        net::HostPortPair::FromURL(GURL()),
-        net::HostPortPair::FromURL(GURL()),
-        false,
-        false,
-        false
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultSSLOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        true,
-        true,
-        false,
-        true,
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultSSLOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        net::HostPortPair::FromURL(GURL()),
-        false,
-        false,
-        true
-      },
-      {
-        net::ProxyServer::FromURI(
-            TestDataReductionProxyParams::DefaultDevOrigin(),
-            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        true,
-        true,
-        true,
-        true,
-          net::ProxyServer::FromURI(
-              TestDataReductionProxyParams::DefaultDevOrigin(),
-              net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-          net::ProxyServer::FromURI(
-              TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
-              net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        false,
-        false,
-        false
-      },
-      {
-          net::ProxyServer::FromURI(
-              TestDataReductionProxyParams::DefaultOrigin(),
-              net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-        true,
-        true,
-        true,
-        false,
-        net::HostPortPair::FromURL(GURL()),
-        net::HostPortPair::FromURL(GURL()),
-        false,
-        false,
-        false
-      },
-  };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    int flags = DataReductionProxyParams::kAllowed |
-                DataReductionProxyParams::kAlternativeAllowed;
-    if (tests[i].fallback_allowed)
-      flags |= DataReductionProxyParams::kFallbackAllowed;
-    if (tests[i].alt_fallback_allowed)
-      flags |= DataReductionProxyParams::kAlternativeFallbackAllowed;
-    unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
-    if (!tests[i].set_dev_origin) {
-      has_definitions &= ~TestDataReductionProxyParams::HAS_DEV_ORIGIN;
-      has_definitions &= ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN;
-    }
-    TestDataReductionProxyParams params(flags, has_definitions);
-    DataReductionProxyTypeInfo proxy_type_info;
-    EXPECT_EQ(tests[i].expected_result,
-              params.IsDataReductionProxy(
-                  tests[i].host_port_pair, &proxy_type_info)) << i;
-    EXPECT_EQ(net::ProxyServer::FromURI(
-        tests[i].expected_first.ToString(),
-        net::ProxyServer::SCHEME_HTTP).is_valid(),
-              proxy_type_info.proxy_servers.first.is_valid()) << i;
-    if (proxy_type_info.proxy_servers.first.is_valid()) {
-      EXPECT_TRUE(tests[i].expected_first.Equals(
-          proxy_type_info.proxy_servers.first.host_port_pair())) << i;
-    }
-    EXPECT_EQ(net::ProxyServer::FromURI(
-        tests[i].expected_second.ToString(),
-        net::ProxyServer::SCHEME_HTTP).is_valid(),
-              proxy_type_info.proxy_servers.second.is_valid()) << i;
-    if (proxy_type_info.proxy_servers.second.is_valid()) {
-      EXPECT_TRUE(tests[i].expected_second.Equals(
-          proxy_type_info.proxy_servers.second.host_port_pair())) << i;
-    }
-
-    EXPECT_EQ(tests[i].expected_is_fallback, proxy_type_info.is_fallback) << i;
-    EXPECT_EQ(tests[i].expected_is_alternative, proxy_type_info.is_alternative)
-        << i;
-    EXPECT_EQ(tests[i].expected_is_ssl, proxy_type_info.is_ssl) << i;
-  }
-}
-
 TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
   EXPECT_TRUE(DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
       "google/sprout/sprout:4.4.4/KPW53/1379542:user/release-keys"));
@@ -820,9 +614,8 @@ TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
 }
 
 TEST_F(DataReductionProxyParamsTest, PopulateConfigResponse) {
-  DataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kAlternativeAllowed);
+  DataReductionProxyParams params(DataReductionProxyParams::kAllowed |
+                                  DataReductionProxyParams::kFallbackAllowed);
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue());
   params.PopulateConfigResponse(values.get());
   base::DictionaryValue* proxy_config;
@@ -834,15 +627,17 @@ TEST_F(DataReductionProxyParamsTest, PopulateConfigResponse) {
   EXPECT_TRUE(proxy_servers->GetDictionary(0, &server));
   std::string host;
   int port;
+  const std::vector<net::ProxyServer>& proxies_for_http =
+      params.proxies_for_http(false);
   EXPECT_TRUE(server->GetString("host", &host));
   EXPECT_TRUE(server->GetInteger("port", &port));
-  EXPECT_EQ(params.origin().host_port_pair().host(), host);
-  EXPECT_EQ(params.origin().host_port_pair().port(), port);
+  EXPECT_EQ(proxies_for_http[0].host_port_pair().host(), host);
+  EXPECT_EQ(proxies_for_http[0].host_port_pair().port(), port);
   EXPECT_TRUE(proxy_servers->GetDictionary(1, &server));
   EXPECT_TRUE(server->GetString("host", &host));
   EXPECT_TRUE(server->GetInteger("port", &port));
-  EXPECT_EQ(params.fallback_origin().host_port_pair().host(), host);
-  EXPECT_EQ(params.fallback_origin().host_port_pair().port(), port);
+  EXPECT_EQ(proxies_for_http[1].host_port_pair().host(), host);
+  EXPECT_EQ(proxies_for_http[1].host_port_pair().port(), port);
 }
 
 }  // namespace data_reduction_proxy

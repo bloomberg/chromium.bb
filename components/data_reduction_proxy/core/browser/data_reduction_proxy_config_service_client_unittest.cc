@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +19,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,6 +88,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     context_.Init();
     ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
+    enabled_proxies_for_http_ =
+        test_context_->test_params()->proxies_for_http(false /* alternative */);
   }
 
   void SetDataReductionProxyEnabled(bool enabled) {
@@ -112,10 +116,15 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   }
 
   void VerifyRemoteSuccess() {
+    std::vector<net::ProxyServer> expected_http_proxies;
+    expected_http_proxies.push_back(net::ProxyServer::FromURI(
+        kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
+    expected_http_proxies.push_back(net::ProxyServer::FromURI(
+        kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
     EXPECT_EQ(base::TimeDelta::FromMinutes(1), config_client()->GetDelay());
-    EXPECT_EQ(kSuccessOrigin, configurator()->origin());
-    EXPECT_EQ(kSuccessFallback, configurator()->fallback_origin());
-    EXPECT_TRUE(configurator()->ssl_origin().empty());
+    EXPECT_THAT(expected_http_proxies,
+                testing::ContainerEq(configurator()->proxies_for_http()));
+    EXPECT_TRUE(configurator()->proxies_for_https().empty());
     EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
   }
 
@@ -135,6 +144,10 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->mock_request_options();
   }
 
+  const std::vector<net::ProxyServer>& enabled_proxies_for_http() const {
+    return enabled_proxies_for_http_;
+  }
+
   void RunUntilIdle() {
     test_context_->RunUntilIdle();
   }
@@ -150,6 +163,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyRequestOptions> request_options_;
+  std::vector<net::ProxyServer> enabled_proxies_for_http_;
 };
 
 TEST_F(DataReductionProxyConfigServiceClientTest, TestConstructStaticResponse) {
@@ -167,9 +181,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
       base::TimeDelta::FromDays(1));
   SetDataReductionProxyEnabled(true);
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_))
       .Times(2)
       .WillRepeatedly(
@@ -177,19 +190,17 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
                           &RequestOptionsPopulator::PopulateResponse));
   config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromDays(1), config_client()->GetDelay());
-  EXPECT_EQ(params()->origin().ToURI(), configurator()->origin());
-  EXPECT_EQ(params()->fallback_origin().ToURI(),
-            configurator()->fallback_origin());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_THAT(enabled_proxies_for_http(),
+              testing::ContainerEq(configurator()->proxies_for_http()));
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   config_client()->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromDays(1)
                           + base::TimeDelta::FromSeconds(5));
   config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromDays(1) - base::TimeDelta::FromSeconds(5),
             config_client()->GetDelay());
-  EXPECT_EQ(params()->origin().ToURI(), configurator()->origin());
-  EXPECT_EQ(params()->fallback_origin().ToURI(),
-            configurator()->fallback_origin());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_THAT(enabled_proxies_for_http(),
+              testing::ContainerEq(configurator()->proxies_for_http()));
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
@@ -199,40 +210,35 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromSeconds(1));
   SetDataReductionProxyEnabled(true);
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_))
       .Times(1)
       .WillOnce(testing::Invoke(&populator,
                                 &RequestOptionsPopulator::PopulateResponse));
   config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromSeconds(10), config_client()->GetDelay());
-  EXPECT_EQ(params()->origin().ToURI(), configurator()->origin());
-  EXPECT_EQ(params()->fallback_origin().ToURI(),
-            configurator()->fallback_origin());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_THAT(enabled_proxies_for_http(),
+              testing::ContainerEq(configurator()->proxies_for_http()));
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   // Use a local/static config.
   config_client()->SetConfigServiceURL(GURL());
   SetDataReductionProxyEnabled(true);
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_))
       .Times(2)
       .WillRepeatedly(testing::Invoke(&PopulateResponseFailure));
   config_client()->RetrieveConfig();
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
   config_client()->RetrieveConfig();
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_EQ(base::TimeDelta::FromSeconds(40), config_client()->GetDelay());
 }
 
@@ -243,17 +249,15 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ConfigDisabled) {
       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
       base::TimeDelta::FromDays(1));
   SetDataReductionProxyEnabled(false);
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_))
       .Times(1)
       .WillOnce(testing::Invoke(&populator,
                                 &RequestOptionsPopulator::PopulateResponse));
   config_client()->RetrieveConfig();
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_EQ(base::TimeDelta::FromDays(1), config_client()->GetDelay());
 }
 
@@ -293,9 +297,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
   config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
   SetDataReductionProxyEnabled(true);
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_)).Times(0);
   config_client()->RetrieveConfig();
   RunUntilIdle();
@@ -328,16 +331,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 
   config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
   SetDataReductionProxyEnabled(true);
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_)).Times(0);
   config_client()->RetrieveConfig();
   RunUntilIdle();
   EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
-  EXPECT_TRUE(configurator()->origin().empty());
-  EXPECT_TRUE(configurator()->fallback_origin().empty());
-  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
   config_client()->RetrieveConfig();
   RunUntilIdle();

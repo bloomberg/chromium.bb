@@ -35,34 +35,28 @@ int64 GetExpirationTicks(int bypass_seconds) {
   return (expiration_ticks - base::TimeTicks()).InMilliseconds();
 }
 
-// The following method creates a string resembling the output of
-// net::ProxyServer::ToURI().
-std::string GetNormalizedProxyString(const std::string& proxy_origin) {
-  net::ProxyServer proxy_server =
-      net::ProxyServer::FromURI(proxy_origin, net::ProxyServer::SCHEME_HTTP);
-  if (proxy_server.is_valid())
-    return proxy_origin;
-
-  return std::string();
-}
-
 // A callback which creates a base::Value containing information about enabling
 // the Data Reduction Proxy. Ownership of the base::Value is passed to the
 // caller.
 base::Value* EnableDataReductionProxyCallback(
-    bool primary_restricted,
-    bool fallback_restricted,
-    const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin,
+    bool secure_transport_restricted,
+    const std::vector<net::ProxyServer>& proxies_for_http,
+    const std::vector<net::ProxyServer>& proxies_for_https,
     net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean("enabled", true);
-  dict->SetBoolean("primary_restricted", primary_restricted);
-  dict->SetBoolean("fallback_restricted", fallback_restricted);
-  dict->SetString("primary_origin", GetNormalizedProxyString(primary_origin));
-  dict->SetString("fallback_origin", GetNormalizedProxyString(fallback_origin));
-  dict->SetString("ssl_origin", GetNormalizedProxyString(ssl_origin));
+  dict->SetBoolean("secure_transport_restricted", secure_transport_restricted);
+  scoped_ptr<base::ListValue> http_proxy_list(new base::ListValue());
+  for (const auto& proxy : proxies_for_http)
+    http_proxy_list->AppendString(proxy.ToURI());
+
+  scoped_ptr<base::ListValue> https_proxy_list(new base::ListValue());
+  for (const auto& proxy : proxies_for_https)
+    https_proxy_list->AppendString(proxy.ToURI());
+
+  dict->Set("http_proxy_list", http_proxy_list.Pass());
+  dict->Set("https_proxy_list", https_proxy_list.Pass());
+
   return dict;
 }
 
@@ -166,15 +160,13 @@ DataReductionProxyEventCreator::~DataReductionProxyEventCreator() {
 
 void DataReductionProxyEventCreator::AddProxyEnabledEvent(
     net::NetLog* net_log,
-    bool primary_restricted,
-    bool fallback_restricted,
-    const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin) {
+    bool secure_transport_restricted,
+    const std::vector<net::ProxyServer>& proxies_for_http,
+    const std::vector<net::ProxyServer>& proxies_for_https) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const net::NetLog::ParametersCallback& parameters_callback = base::Bind(
-      &EnableDataReductionProxyCallback, primary_restricted,
-      fallback_restricted, primary_origin, fallback_origin, ssl_origin);
+  const net::NetLog::ParametersCallback& parameters_callback =
+      base::Bind(&EnableDataReductionProxyCallback, secure_transport_restricted,
+                 proxies_for_http, proxies_for_https);
   PostEnabledEvent(net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,
                    true, parameters_callback);
 }

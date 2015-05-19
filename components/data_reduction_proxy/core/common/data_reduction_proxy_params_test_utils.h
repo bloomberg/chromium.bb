@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PARAMS_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PARAMS_TEST_UTILS_H_
 
+#include <vector>
+
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
 namespace base {
@@ -39,6 +41,9 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
                                unsigned int has_definitions);
   bool init_result() const;
 
+  void SetProxiesForHttp(const std::vector<net::ProxyServer>& proxies,
+                         const std::vector<net::ProxyServer>& alt_proxies);
+
   // Test values to replace the values specified in preprocessor defines.
   static std::string DefaultDevOrigin();
   static std::string DefaultDevFallbackOrigin();
@@ -55,9 +60,6 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   static std::string FlagAltOrigin();
   static std::string FlagAltFallbackOrigin();
   static std::string FlagSecureProxyCheckURL();
-
-  void set_origin(const net::ProxyServer& origin);
-  void set_fallback_origin(const net::ProxyServer& fallback_origin);
 
  protected:
   std::string GetDefaultDevOrigin() const override;
@@ -85,4 +87,3 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
 };
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PARAMS_TEST_UTILS_H_
-

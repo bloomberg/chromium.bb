@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -14,6 +16,7 @@
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
+#include "net/proxy/proxy_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_reduction_proxy {
@@ -59,10 +62,10 @@ class DataReductionProxyEventStoreTest : public testing::Test {
 
 TEST_F(DataReductionProxyEventStoreTest, TestAddProxyEnabledEvent) {
   EXPECT_EQ(0u, event_store()->stored_events_.size());
-  event_creator()->AddProxyEnabledEvent(
-      net_log(), false, false, TestDataReductionProxyParams::DefaultOrigin(),
-      TestDataReductionProxyParams::DefaultFallbackOrigin(),
-      TestDataReductionProxyParams::DefaultSSLOrigin());
+  std::vector<net::ProxyServer> proxies_for_http;
+  std::vector<net::ProxyServer> proxies_for_https;
+  event_creator()->AddProxyEnabledEvent(net_log(), false, proxies_for_http,
+                                        proxies_for_https);
   EXPECT_EQ(1u, event_store()->stored_events_.size());
   net::TestNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,

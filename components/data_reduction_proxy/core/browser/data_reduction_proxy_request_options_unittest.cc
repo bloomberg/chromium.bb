@@ -136,7 +136,11 @@ void SetHeaderExpectations(const std::string& session,
 class DataReductionProxyRequestOptionsTest : public testing::Test {
  public:
   DataReductionProxyRequestOptionsTest() {
-    test_context_ = DataReductionProxyTestContext::Builder().Build();
+    test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithParamsFlags(
+                 DataReductionProxyParams::kAllowAllProxyConfigurations)
+            .Build();
   }
 
   void CreateRequestOptions(const std::string& version) {

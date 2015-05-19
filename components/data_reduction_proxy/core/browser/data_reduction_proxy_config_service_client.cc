@@ -305,14 +305,9 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   if (proxies.empty())
     return false;
 
-  net::ProxyServer origin = proxies[0];
-  net::ProxyServer fallback_origin;
-  if (proxies.size() > 1)
-    fallback_origin = proxies[1];
-
   if (!use_local_config_) {
     request_options_->SetSecureSession(config.session_key());
-    config_values_->UpdateValues(origin, fallback_origin);
+    config_values_->UpdateValues(proxies);
     config_->ReloadConfig();
     return true;
   }
@@ -325,7 +320,7 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   }
 
   request_options_->SetCredentials(session, credentials);
-  config_values_->UpdateValues(origin, fallback_origin);
+  config_values_->UpdateValues(proxies);
   config_->ReloadConfig();
   return true;
 }

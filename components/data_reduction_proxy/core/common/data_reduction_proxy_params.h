@@ -6,7 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PARAMS_H_
 
 #include <string>
-#include <utility>
+#include <vector>
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "net/proxy/proxy_server.h"
@@ -24,14 +24,15 @@ class ProxyServer;
 
 namespace data_reduction_proxy {
 
-// Contains information about a given proxy server. |proxy_servers| contains
-// the configured data reduction proxy servers. |is_fallback|, |is_alternative|
-// and |is_ssl| note whether the given proxy is a fallback, an alternative,
-// or a proxy for ssl; these are not mutually exclusive.
+// Contains information about a given proxy server. |proxies_for_http| and
+// |proxies_for_https| contain the configured data reduction proxy servers.
+// |is_fallback|, |is_alternative| and |is_ssl| note whether the given proxy is
+// a fallback, an alternative, or a proxy for ssl; these are not mutually
+// exclusive.
 struct DataReductionProxyTypeInfo {
   DataReductionProxyTypeInfo();
   ~DataReductionProxyTypeInfo();
-  std::pair<net::ProxyServer, net::ProxyServer> proxy_servers;
+  std::vector<net::ProxyServer> proxy_servers;
   bool is_fallback;
   bool is_alternative;
   bool is_ssl;
@@ -150,19 +151,11 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // Overrides of |DataReductionProxyConfigValues|
   bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const override;
 
-  bool IsDataReductionProxy(
-      const net::HostPortPair& host_port_pair,
-      DataReductionProxyTypeInfo* proxy_info) const override;
+  const std::vector<net::ProxyServer>& proxies_for_http(
+      bool use_alternative_configuration) const override;
 
-  const net::ProxyServer& origin() const override;
-
-  const net::ProxyServer& fallback_origin() const override;
-
-  const net::ProxyServer& ssl_origin() const override;
-
-  const net::ProxyServer& alt_origin() const override;
-
-  const net::ProxyServer& alt_fallback_origin() const override;
+  const std::vector<net::ProxyServer>& proxies_for_https(
+      bool use_alternative_configuration) const override;
 
   const GURL& secure_proxy_check_url() const override;
 
@@ -207,13 +200,18 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   virtual std::string GetDefaultSecureProxyCheckURL() const;
   virtual std::string GetDefaultWarmupURL() const;
 
-  net::ProxyServer origin_;
-  net::ProxyServer fallback_origin_;
+  std::vector<net::ProxyServer> proxies_for_http_;
+  std::vector<net::ProxyServer> proxies_for_https_;
+  std::vector<net::ProxyServer> alt_proxies_for_http_;
+  std::vector<net::ProxyServer> alt_proxies_for_https_;
 
  private:
+  net::ProxyServer origin_;
+  net::ProxyServer fallback_origin_;
   net::ProxyServer ssl_origin_;
   net::ProxyServer alt_origin_;
   net::ProxyServer alt_fallback_origin_;
+
   GURL secure_proxy_check_url_;
   GURL warmup_url_;
 

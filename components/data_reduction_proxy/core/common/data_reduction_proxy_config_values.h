@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_CONFIG_VALUES_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_CONFIG_VALUES_H_
 
+#include <vector>
+
 class GURL;
 
 namespace net {
@@ -47,32 +49,15 @@ class DataReductionProxyConfigValues {
   // proxying.
   virtual bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const = 0;
 
-  // Returns true if the specified |host_port_pair| matches a data reduction
-  // proxy. If true, |proxy_info.proxy_servers.first| will contain the name of
-  // the proxy that matches. |proxy_info.proxy_servers.second| will contain the
-  // name of the data reduction proxy server that would be used if
-  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
-  // |proxy_info| will note if the proxy was a fallback, an alternative, or a
-  // proxy for ssl; these are not mutually exclusive. |proxy_info| can be NULL
-  // if the caller isn't interested in its values. Virtual for testing.
-  virtual bool IsDataReductionProxy(const net::HostPortPair& host_port_pair,
-    DataReductionProxyTypeInfo* proxy_info) const = 0;
+  // Returns the HTTP proxy servers to be used. |use_alternative_configuration|
+  // is a temporary feature whilst DataReductionProxyParams is still in use.
+  virtual const std::vector<net::ProxyServer>& proxies_for_http(
+      bool use_alternative_configuration) const = 0;
 
-  // Returns the data reduction proxy primary origin.
-  virtual const net::ProxyServer& origin() const = 0;
-
-  // Returns the data reduction proxy fallback origin.
-  virtual const net::ProxyServer& fallback_origin() const = 0;
-
-  // Returns the alternative data reduction proxy primary origin.
-  virtual const net::ProxyServer& alt_origin() const = 0;
-
-  // Returns the alternative data reduction proxy fallback origin.
-  virtual const net::ProxyServer& alt_fallback_origin() const = 0;
-
-  // Returns the data reduction proxy ssl origin that is used with the
-  // alternative proxy configuration.
-  virtual const net::ProxyServer& ssl_origin() const = 0;
+  // Returns the HTTPS proxy servers to be used. |use_alternative_configuration|
+  // is a temporary feature whilst DataReductionProxyParams is still in use.
+  virtual const std::vector<net::ProxyServer>& proxies_for_https(
+      bool use_alternative_configuration) const = 0;
 
   // Returns the URL to check to decide if the secure proxy origin should be
   // used.

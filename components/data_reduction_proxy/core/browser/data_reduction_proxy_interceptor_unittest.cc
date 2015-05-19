@@ -94,11 +94,11 @@ class CountingURLRequestInterceptor : public net::URLRequestInterceptor {
 class TestURLRequestContextWithDataReductionProxy
     : public net::TestURLRequestContext {
  public:
-  TestURLRequestContextWithDataReductionProxy(
-      TestDataReductionProxyConfig* config, net::NetworkDelegate* delegate)
+  TestURLRequestContextWithDataReductionProxy(const net::ProxyServer& origin,
+                                              net::NetworkDelegate* delegate)
       : net::TestURLRequestContext(true) {
-    std::string proxy = config->test_params()->origin().ToURI();
-    context_storage_.set_proxy_service(net::ProxyService::CreateFixed(proxy));
+    context_storage_.set_proxy_service(
+        net::ProxyService::CreateFixed(origin.ToURI()));
     set_network_delegate(delegate);
   }
 
@@ -113,9 +113,9 @@ class DataReductionProxyInterceptorTest : public testing::Test {
             .WithParamsFlags(DataReductionProxyParams::kAllowed)
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
             .Build();
-    default_context_.reset(
-        new TestURLRequestContextWithDataReductionProxy(
-            test_context_->config(), &default_network_delegate_));
+    default_context_.reset(new TestURLRequestContextWithDataReductionProxy(
+        test_context_->config()->test_params()->proxies_for_http(false).front(),
+        &default_network_delegate_));
     default_context_->set_network_delegate(&default_network_delegate_);
     default_context_->set_net_log(test_context_->net_log());
   }
@@ -204,10 +204,13 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
             .Build();
     std::string spec;
     base::TrimString(proxy_.GetURL("/").spec(), "/", &spec);
-    test_context_->config()->test_params()->set_origin(
-        net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP));
-    std::string proxy_name =
-        test_context_->config()->test_params()->origin().ToURI();
+    net::ProxyServer origin =
+        net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP);
+    std::vector<net::ProxyServer> proxies_for_http;
+    proxies_for_http.push_back(origin);
+    test_context_->config()->test_params()->SetProxiesForHttp(
+        proxies_for_http, std::vector<net::ProxyServer>());
+    std::string proxy_name = origin.ToURI();
     proxy_service_.reset(
         net::ProxyService::CreateFixedFromPacResult(
             "PROXY " + proxy_name + "; DIRECT"));
@@ -320,6 +323,10 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
     return drp_test_context_->config();
   }
 
+  net::ProxyServer origin() const {
+    return config()->test_params()->proxies_for_http(false).front();
+  }
+
  private:
   base::MessageLoopForIO message_loop_;
   net::TestDelegate delegate_;
@@ -348,7 +355,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, ResponseWithoutRetry) {
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_EQ(config()->test_params()->origin().host_port_pair().ToString(),
+  EXPECT_EQ(origin().host_port_pair().ToString(),
             request->proxy_server().ToString());
 }
 
@@ -382,7 +389,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithoutRetry) {
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_EQ(config()->test_params()->origin().host_port_pair().ToString(),
+  EXPECT_EQ(origin().host_port_pair().ToString(),
             request->proxy_server().ToString());
   // The redirect should have been processed and followed normally.
   EXPECT_EQ(1, delegate().received_redirect_count());

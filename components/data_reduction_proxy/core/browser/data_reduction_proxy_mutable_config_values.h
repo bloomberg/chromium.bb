@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_MUTABLE_CONFIG_VALUES_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_MUTABLE_CONFIG_VALUES_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -28,10 +30,10 @@ class DataReductionProxyMutableConfigValues
 
   ~DataReductionProxyMutableConfigValues() override;
 
-  // Updates |origin_| and  |fallback_origin_| with the provided values.
+  // Updates |proxies_for_http_| with the provided values.
   // Virtual for testing.
-  virtual void UpdateValues(const net::ProxyServer& origin,
-                            const net::ProxyServer& fallback_origin);
+  virtual void UpdateValues(
+      const std::vector<net::ProxyServer>& proxies_for_http);
 
   // Overrides of |DataReductionProxyConfigValues|
   bool promo_allowed() const override;
@@ -41,27 +43,23 @@ class DataReductionProxyMutableConfigValues
   bool alternative_allowed() const override;
   bool alternative_fallback_allowed() const override;
   bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const override;
-  bool IsDataReductionProxy(
-      const net::HostPortPair& host_port_pair,
-      DataReductionProxyTypeInfo* proxy_info) const override;
-  const net::ProxyServer& origin() const override;
-  const net::ProxyServer& fallback_origin() const override;
-  const net::ProxyServer& alt_origin() const override;
-  const net::ProxyServer& alt_fallback_origin() const override;
-  const net::ProxyServer& ssl_origin() const override;
+  const std::vector<net::ProxyServer>& proxies_for_http(
+      bool use_alternative_configuration) const override;
+  const std::vector<net::ProxyServer>& proxies_for_https(
+      bool use_alternative_configuration) const override;
   const GURL& secure_proxy_check_url() const override;
 
  protected:
   DataReductionProxyMutableConfigValues();
 
  private:
-  net::ProxyServer empty_origin_;
   bool promo_allowed_;
   bool holdback_;
   bool allowed_;
   bool fallback_allowed_;
-  net::ProxyServer origin_;
-  net::ProxyServer fallback_origin_;
+  std::vector<net::ProxyServer> empty_proxies_;
+  std::vector<net::ProxyServer> proxies_for_http_;
+  std::vector<net::ProxyServer> proxies_for_https_;
   GURL secure_proxy_check_url_;
 
   // Enforce usage on the IO thread.

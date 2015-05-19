@@ -15,6 +15,7 @@
 namespace net {
 class NetLog;
 class ProxyInfo;
+class ProxyServer;
 class ProxyService;
 }
 
@@ -35,12 +36,11 @@ class DataReductionProxyConfigurator {
   virtual ~DataReductionProxyConfigurator();
 
   // Constructs a proxy configuration suitable for enabling the Data Reduction
-  // proxy.
-  virtual void Enable(bool primary_restricted,
-                      bool fallback_restricted,
-                      const std::string& primary_origin,
-                      const std::string& fallback_origin,
-                      const std::string& ssl_origin);
+  // proxy. If true, |secure_transport_restricted| indicates that proxies going
+  // over secure transports (HTTPS) should/can not be used.
+  virtual void Enable(bool secure_transport_restricted,
+                      const std::vector<net::ProxyServer>& proxies_for_http,
+                      const std::vector<net::ProxyServer>& proxies_for_https);
 
   // Constructs a proxy configuration suitable for disabling the Data Reduction
   // proxy.

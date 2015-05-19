@@ -11,34 +11,27 @@ TestDataReductionProxyConfigurator::TestDataReductionProxyConfigurator(
     DataReductionProxyEventCreator* event_creator)
     : DataReductionProxyConfigurator(net_log, event_creator),
       enabled_(false),
-      restricted_(false),
-      fallback_restricted_(false) {
+      restricted_(false) {
 }
 
 TestDataReductionProxyConfigurator::~TestDataReductionProxyConfigurator() {
 }
 
 void TestDataReductionProxyConfigurator::Enable(
-    bool restricted,
-    bool fallback_restricted,
-    const std::string& primary_origin,
-    const std::string& fallback_origin,
-    const std::string& ssl_origin) {
+    bool secure_transport_restricted,
+    const std::vector<net::ProxyServer>& proxies_for_http,
+    const std::vector<net::ProxyServer>& proxies_for_https) {
   enabled_ = true;
-  restricted_ = restricted;
-  fallback_restricted_ = fallback_restricted;
-  origin_ = primary_origin;
-  fallback_origin_ = fallback_origin;
-  ssl_origin_ = ssl_origin;
+  restricted_ = secure_transport_restricted;
+  proxies_for_http_ = proxies_for_http;
+  proxies_for_https_ = proxies_for_https;
 }
 
 void TestDataReductionProxyConfigurator::Disable() {
   enabled_ = false;
   restricted_ = false;
-  fallback_restricted_ = false;
-  origin_ = std::string();
-  fallback_origin_ = std::string();
-  ssl_origin_ = std::string();
+  proxies_for_http_ = std::vector<net::ProxyServer>();
+  proxies_for_https_ = std::vector<net::ProxyServer>();
 }
 
 }  // namespace data_reduction_proxy

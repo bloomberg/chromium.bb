@@ -36,10 +36,11 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
           .Build();
   TestDataReductionProxyConfig* config = test_context->config();
 
+  net::ProxyServer origin =
+      config->test_params()->proxies_for_http(false).front();
   net::ProxyConfig data_reduction_proxy_config;
   data_reduction_proxy_config.proxy_rules().ParseFromString(
-      "http=" + config->test_params()->origin().host_port_pair().ToString() +
-          ",direct://");
+      "http=" + origin.host_port_pair().ToString() + ",direct://");
   data_reduction_proxy_config.proxy_rules().bypass_rules.ParseFromString(
       "localbypass.com");
 
@@ -52,69 +53,81 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
     DataReductionProxyRequestType expected_request_type;
   };
   const TestCase test_cases[] = {
-    { GURL("http://foo.com"),
-      config->test_params()->origin(),
-      base::TimeDelta(),
-      net::LOAD_NORMAL,
-      "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      VIA_DATA_REDUCTION_PROXY,
-    },
-    { GURL("https://foo.com"),
-      net::ProxyServer::Direct(),
-      base::TimeDelta(),
-      net::LOAD_NORMAL,
-      "HTTP/1.1 200 OK\r\n\r\n",
-      HTTPS,
-    },
-    { GURL("http://foo.com"),
-      net::ProxyServer::Direct(),
-      base::TimeDelta::FromSeconds(1),
-      net::LOAD_NORMAL,
-      "HTTP/1.1 200 OK\r\n\r\n",
-      SHORT_BYPASS,
-    },
-    { GURL("http://foo.com"),
-      net::ProxyServer::Direct(),
-      base::TimeDelta::FromMinutes(60),
-      net::LOAD_NORMAL,
-      "HTTP/1.1 200 OK\r\n\r\n",
-      LONG_BYPASS,
-    },
-    // Requests with LOAD_BYPASS_PROXY (e.g. block-once) should be classified as
-    // SHORT_BYPASS.
-    { GURL("http://foo.com"),
-      net::ProxyServer::Direct(),
-      base::TimeDelta(),
-      net::LOAD_BYPASS_PROXY,
-      "HTTP/1.1 200 OK\r\n\r\n",
-      SHORT_BYPASS,
-    },
-    // Another proxy overriding the Data Reduction Proxy should be classified as
-    // SHORT_BYPASS.
-    { GURL("http://foo.com"),
-      net::ProxyServer::FromPacString("PROXY otherproxy.net:80"),
-      base::TimeDelta(),
-      net::LOAD_NORMAL,
-      "HTTP/1.1 200 OK\r\n\r\n",
-      SHORT_BYPASS,
-    },
-    // Bypasses due to local bypass rules should be classified as SHORT_BYPASS.
-    { GURL("http://localbypass.com"),
-      net::ProxyServer::Direct(),
-      base::TimeDelta(),
-      net::LOAD_NORMAL,
-      "HTTP/1.1 200 OK\r\n\r\n",
-      SHORT_BYPASS,
-    },
-    // Responses that seem like they should have come through the Data Reduction
-    // Proxy, but did not, should be classified as UNKNOWN_TYPE.
-    { GURL("http://foo.com"),
-      net::ProxyServer::Direct(),
-      base::TimeDelta(),
-      net::LOAD_NORMAL,
-      "HTTP/1.1 200 OK\r\n\r\n",
-      UNKNOWN_TYPE,
-    },
+      {
+       GURL("http://foo.com"),
+       origin,
+       base::TimeDelta(),
+       net::LOAD_NORMAL,
+       "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       VIA_DATA_REDUCTION_PROXY,
+      },
+      {
+       GURL("https://foo.com"),
+       net::ProxyServer::Direct(),
+       base::TimeDelta(),
+       net::LOAD_NORMAL,
+       "HTTP/1.1 200 OK\r\n\r\n",
+       HTTPS,
+      },
+      {
+       GURL("http://foo.com"),
+       net::ProxyServer::Direct(),
+       base::TimeDelta::FromSeconds(1),
+       net::LOAD_NORMAL,
+       "HTTP/1.1 200 OK\r\n\r\n",
+       SHORT_BYPASS,
+      },
+      {
+       GURL("http://foo.com"),
+       net::ProxyServer::Direct(),
+       base::TimeDelta::FromMinutes(60),
+       net::LOAD_NORMAL,
+       "HTTP/1.1 200 OK\r\n\r\n",
+       LONG_BYPASS,
+      },
+      // Requests with LOAD_BYPASS_PROXY (e.g. block-once) should be classified
+      // as
+      // SHORT_BYPASS.
+      {
+       GURL("http://foo.com"),
+       net::ProxyServer::Direct(),
+       base::TimeDelta(),
+       net::LOAD_BYPASS_PROXY,
+       "HTTP/1.1 200 OK\r\n\r\n",
+       SHORT_BYPASS,
+      },
+      // Another proxy overriding the Data Reduction Proxy should be classified
+      // as
+      // SHORT_BYPASS.
+      {
+       GURL("http://foo.com"),
+       net::ProxyServer::FromPacString("PROXY otherproxy.net:80"),
+       base::TimeDelta(),
+       net::LOAD_NORMAL,
+       "HTTP/1.1 200 OK\r\n\r\n",
+       SHORT_BYPASS,
+      },
+      // Bypasses due to local bypass rules should be classified as
+      // SHORT_BYPASS.
+      {
+       GURL("http://localbypass.com"),
+       net::ProxyServer::Direct(),
+       base::TimeDelta(),
+       net::LOAD_NORMAL,
+       "HTTP/1.1 200 OK\r\n\r\n",
+       SHORT_BYPASS,
+      },
+      // Responses that seem like they should have come through the Data
+      // Reduction
+      // Proxy, but did not, should be classified as UNKNOWN_TYPE.
+      {
+       GURL("http://foo.com"),
+       net::ProxyServer::Direct(),
+       base::TimeDelta(),
+       net::LOAD_NORMAL,
+       "HTTP/1.1 200 OK\r\n\r\n",
+       UNKNOWN_TYPE,
+      },
   };
 
   for (const TestCase& test_case : test_cases) {
