@@ -268,10 +268,13 @@ CGFloat GetScreenHeight() {
   }];
 
   // Cancel button goes last, to match other browsers.
+  void (^cancelHandler)(UIAlertAction*) = ^(UIAlertAction* action) {
+    [weakSelf setVisible:NO];
+  };
   UIAlertAction* cancel_action =
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
                                style:UIAlertActionStyleCancel
-                             handler:nil];
+                             handler:cancelHandler];
   [alert addAction:cancel_action];
 
   // Present sheet/popover using controller that is added to view hierarchy.
