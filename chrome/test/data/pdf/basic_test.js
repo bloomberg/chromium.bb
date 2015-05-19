@@ -12,8 +12,8 @@ var tests = [
       'viewer-toolbar',
       'viewer-page-indicator',
       'viewer-progress-bar',
-      'viewer-password-screen',
-      'viewer-error-screen'
+      'viewer-password-screen-legacy',
+      'viewer-error-screen-legacy'
     ];
     for (var i = 0; i < elementNames.length; i++) {
       var elements = document.querySelectorAll(elementNames[i]);
