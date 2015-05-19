@@ -1307,6 +1307,9 @@ input_handle_pointer_leave(void *data, struct wl_pointer *pointer,
 {
 	struct wayland_input *input = data;
 
+	if (!input->output)
+		return;
+
 	if (input->output->frame) {
 		frame_pointer_leave(input->output->frame, input);
 
@@ -1326,6 +1329,9 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 	int32_t fx, fy;
 	enum theme_location location;
+
+	if (!input->output)
+		return;
 
 	if (input->output->frame) {
 		location = frame_pointer_motion(input->output->frame, input,
@@ -1368,6 +1374,9 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 	enum frame_button_state fstate;
 	enum theme_location location;
 
+	if (!input->output)
+		return;
+
 	if (input->output->frame) {
 		fstate = state == WL_POINTER_BUTTON_STATE_PRESSED ?
 			FRAME_BUTTON_PRESSED : FRAME_BUTTON_RELEASED;
@@ -1384,8 +1393,15 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 			return;
 		}
 
-		if (frame_status(input->output->frame) & FRAME_STATUS_CLOSE)
-			wl_display_terminate(input->compositor->base.wl_display);
+		if (frame_status(input->output->frame) & FRAME_STATUS_CLOSE) {
+			wayland_output_destroy(&input->output->base);
+			input->output = input->keyboard_focus = NULL;
+
+			if (wl_list_empty(&input->compositor->base.output_list))
+				wl_display_terminate(input->compositor->base.wl_display);
+
+			return;
+		}
 
 		if (frame_status(input->output->frame) & FRAME_STATUS_REPAINT)
 			weston_output_schedule_repaint(&input->output->base);
@@ -1521,7 +1537,7 @@ input_handle_keyboard_leave(void *data,
 
 	focus = input->keyboard_focus;
 	if (!focus)
-		return; /* This shouldn't happen */
+		return;
 
 	focus->keyboard_count--;
 	if (!focus->keyboard_count && focus->frame) {
