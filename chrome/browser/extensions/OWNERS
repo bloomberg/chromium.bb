@@ -9,13 +9,14 @@
 # a unique random sort (sort -R) of these owners.
 #   chrome/browser/chromeos/extensions/OWNERS
 #   chrome/browser/renderer_host/OWNERS
+#   chrome/browser/resources/webstore_app/OWNERS
 #   chrome/common/extensions/OWNERS
 #   chrome/renderer/extensions/OWNERS
 #   chrome/renderer/resources/extensions/OWNERS
+#   chrome/utility/extensions/OWNERS
 #   extensions/OWNERS
 asargent@chromium.org
 kalman@chromium.org
-scheib@chromium.org
 miket@chromium.org
 benwells@chromium.org
 rdevlin.cronin@chromium.org
