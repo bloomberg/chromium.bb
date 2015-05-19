@@ -839,7 +839,8 @@ create_client_and_test_surface(int x, int y, int width, int height)
 }
 
 static const char*
-output_path(void) {
+output_path(void)
+{
 	char *path = getenv("WESTON_TEST_OUTPUT_PATH");
 
 	if (!path)
@@ -848,7 +849,8 @@ output_path(void) {
 	}
 
 char*
-screenshot_output_filename(const char *basename, uint32_t seq) {
+screenshot_output_filename(const char *basename, uint32_t seq)
+{
 	char *filename;
 
 	if (asprintf(&filename, "%s/%s-%02d.png",
@@ -858,7 +860,8 @@ screenshot_output_filename(const char *basename, uint32_t seq) {
 }
 
 static const char*
-reference_path(void) {
+reference_path(void)
+{
 	char *path = getenv("WESTON_TEST_REFERENCE_PATH");
 
 	if (!path)
@@ -867,7 +870,8 @@ reference_path(void) {
 }
 
 char*
-screenshot_reference_filename(const char *basename, uint32_t seq) {
+screenshot_reference_filename(const char *basename, uint32_t seq)
+{
 	char *filename;
 
 	if (asprintf(&filename, "%s/%s-%02d.png",
