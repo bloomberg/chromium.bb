@@ -3864,7 +3864,7 @@
                   # and make sure a 32-bit-on-64-bit build picks up the
                   # right files.
                   # For android build, use NDK headers instead of host headers
-                  ['host_arch!="ia32" and OS!="android"', {
+                  ['host_arch!="ia32" and OS!="android" and use_sysroot!=1', {
                     'include_dirs+': [
                       '/usr/include32',
                     ],
