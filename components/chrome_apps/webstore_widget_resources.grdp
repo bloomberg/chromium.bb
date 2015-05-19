@@ -17,5 +17,4 @@
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_CWS_WIDGET_CONTAINER_JS" file="webstore_widget/cws_widget/cws_widget_container.js" type="BINDATA" />
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_CWS_WIDGET_CONTAINER_ERROR_DIALOG_JS" file="webstore_widget/cws_widget/cws_widget_container_error_dialog.js" type="BINDATA" />
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_CWS_WIDGET_CONTAINER_CSS" file="webstore_widget/cws_widget/cws_widget_container.css" type="BINDATA" />
-  <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_SPINNER" file="webstore_widget/cws_widget/spinner.svg" type="BINDATA" />
 </grit-part>

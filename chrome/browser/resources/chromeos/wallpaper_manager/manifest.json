@@ -19,6 +19,7 @@
   "permissions": [
     "alarms",
     "app.window.alpha",
+    "chrome://resources/",
     "experimental",
     "storage",
     "unlimitedStorage",
@@ -34,7 +35,8 @@
         "js/util.js",
         "js/event_page.js"
       ]
-    }
+    },
+    "content_security_policy": "img-src 'self' data: chrome://resources;"
   },
   "display_in_launcher": false
 }

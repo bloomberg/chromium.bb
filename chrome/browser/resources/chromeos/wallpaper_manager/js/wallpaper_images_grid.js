@@ -290,7 +290,7 @@ cr.define('wallpapers', function() {
           }, ShowSpinnerDelayMs);
         }
       } else {
-        // Sets dataModel to null should hide spinner immedidately.
+        // Sets dataModel to null should hide spinner immediately.
         $('spinner-container').hidden = true;
       }
 
