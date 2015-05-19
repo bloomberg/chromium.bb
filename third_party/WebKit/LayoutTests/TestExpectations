@@ -1579,14 +1579,6 @@ crbug.com/450706 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ P
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ MountainLion Mavericks Retina ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/lineboxcontain/parsing-invalid.html [ NeedsRebaseline ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/margin-collapse/104.html [ NeedsRebaseline ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/margin-collapse/empty-clear-blocks.html [ NeedsRebaseline ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/051.html [ NeedsRebaseline ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/fixed-positioning-scrollbar-bug.html [ NeedsRebaseline ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-lr/002.html [ NeedsRebaseline ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-rl/002.html [ NeedsRebaseline ]
-
 crbug.com/417782 [ Win Linux ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Pass ImageOnlyFailure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
