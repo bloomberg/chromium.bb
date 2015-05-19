@@ -140,6 +140,21 @@ struct WebContextMenuData {
     // Whether context is editable.
     bool isEditable;
 
+    enum InputFieldType {
+        // Not an input field.
+        InputFieldTypeNone,
+        // type = text, tel, search, number, email, url
+        InputFieldTypePlainText,
+        // type = password
+        InputFieldTypePassword,
+        // type = <etc.>
+        InputFieldTypeOther,
+        InputFieldTypeLast = InputFieldTypeOther
+    };
+
+    // If this node is an input field, the type of that field.
+    InputFieldType inputFieldType;
+
     enum CheckableMenuItemFlags {
         CheckableMenuItemDisabled = 0x0,
         CheckableMenuItemEnabled = 0x1,

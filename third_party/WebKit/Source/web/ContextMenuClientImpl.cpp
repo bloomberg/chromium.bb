@@ -395,6 +395,19 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
             data.referrerPolicy = WebReferrerPolicyNever;
     }
 
+    // Find the input field type.
+    if (isHTMLInputElement(r.innerNode())) {
+        HTMLInputElement* element = toHTMLInputElement(r.innerNode());
+        if (element->type() == InputTypeNames::password)
+            data.inputFieldType = WebContextMenuData::InputFieldTypePassword;
+        else if (element->isTextField())
+            data.inputFieldType = WebContextMenuData::InputFieldTypePlainText;
+        else
+            data.inputFieldType = WebContextMenuData::InputFieldTypeOther;
+    } else {
+        data.inputFieldType = WebContextMenuData::InputFieldTypeNone;
+    }
+
     data.node = r.innerNodeOrImageMapImage();
 
     WebLocalFrameImpl* selectedWebFrame = WebLocalFrameImpl::fromFrame(selectedFrame);
