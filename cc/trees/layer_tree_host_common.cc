@@ -1359,6 +1359,12 @@ void LayerTreeHostCommon::PreCalculateMetaInformation(Layer* root_layer) {
   PreCalculateMetaInformationInternal(root_layer, &recursive_data);
 }
 
+void LayerTreeHostCommon::PreCalculateMetaInformationForTesting(
+    LayerImpl* root_layer) {
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformationInternal(root_layer, &recursive_data);
+}
+
 template <typename LayerType>
 struct SubtreeGlobals {
   int max_texture_size;

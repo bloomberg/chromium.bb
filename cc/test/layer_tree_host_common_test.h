@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/trees/property_tree.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gfx {
@@ -103,6 +104,9 @@ class LayerTreeHostCommonTestBase {
                                    page_scale_factor,
                                    page_scale_application_layer, false, false);
   }
+
+  void ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* layer);
+  void ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* layer);
 
   RenderSurfaceLayerList* render_surface_layer_list() const {
     return render_surface_layer_list_.get();

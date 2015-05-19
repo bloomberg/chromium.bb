@@ -132,6 +132,7 @@ class CC_EXPORT LayerTreeImpl {
   void SetPropertyTrees(const PropertyTrees& property_trees) {
     property_trees_ = property_trees;
   }
+  PropertyTrees* property_trees() { return &property_trees_; }
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 

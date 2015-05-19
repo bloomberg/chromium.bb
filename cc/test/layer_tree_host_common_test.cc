@@ -7,6 +7,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_common.h"
 
 namespace cc {
@@ -78,6 +79,50 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+}
+
+void LayerTreeHostCommonTestBase::
+    ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* root_layer) {
+  DCHECK(root_layer->layer_tree_host());
+  LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
+
+  gfx::Transform identity_transform;
+  bool preserves_2d_axis_alignment = false;
+  bool can_render_to_separate_surface = true;
+  LayerTreeHostCommon::UpdateRenderSurfaces(
+      root_layer, can_render_to_separate_surface, identity_transform,
+      preserves_2d_axis_alignment);
+
+  Layer* page_scale_layer = nullptr;
+  float page_scale_factor = 1.f;
+  float device_scale_factor = 1.f;
+  gfx::Size device_viewport_size =
+      gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                root_layer->bounds().height() * device_scale_factor);
+  LayerList update_layer_list;
+  BuildPropertyTreesAndComputeVisibleRects(
+      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      gfx::Rect(device_viewport_size), identity_transform,
+      root_layer->layer_tree_host()->property_trees(), &update_layer_list);
+}
+
+void LayerTreeHostCommonTestBase::
+    ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* root_layer) {
+  DCHECK(root_layer->layer_tree_impl());
+  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer);
+
+  gfx::Transform identity_transform;
+  LayerImpl* page_scale_layer = nullptr;
+  float page_scale_factor = 1.f;
+  float device_scale_factor = 1.f;
+  gfx::Size device_viewport_size =
+      gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                root_layer->bounds().height() * device_scale_factor);
+  std::vector<LayerImpl*> update_layer_list;
+  BuildPropertyTreesAndComputeVisibleRects(
+      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      gfx::Rect(device_viewport_size), identity_transform,
+      root_layer->layer_tree_impl()->property_trees(), &update_layer_list);
 }
 
 void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(

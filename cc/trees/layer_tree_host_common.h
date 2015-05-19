@@ -121,6 +121,7 @@ class CC_EXPORT LayerTreeHostCommon {
                                   bool* animation_preserves_axis_alignment);
   static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
   static void PreCalculateMetaInformation(Layer* root_layer);
+  static void PreCalculateMetaInformationForTesting(LayerImpl* root_layer);
 
   typedef CalcDrawPropsInputs<LayerImpl, LayerImplList> CalcDrawPropsImplInputs;
   typedef CalcDrawPropsInputsForTesting<LayerImpl, LayerImplList>
