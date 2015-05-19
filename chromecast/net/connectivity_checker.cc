@@ -21,12 +21,12 @@ namespace chromecast {
 
 namespace {
 
-// How often connectivity checks are performed in seconds
+// How often connectivity checks are performed in seconds.
 const unsigned int kConnectivityPeriodSeconds = 1;
 
-// Number of consecutive bad responses received before connectivity status is
-// changed to offline
-const unsigned int kNumBadResponses = 3;
+// Number of consecutive connectivity check errors before status is changed
+// to offline.
+const unsigned int kNumErrorsToNotifyOffline = 3;
 
 // Default url for connectivity checking.
 const char kDefaultConnectivityCheckUrl[] =
@@ -40,7 +40,7 @@ ConnectivityChecker::ConnectivityChecker(
           new ObserverListThreadSafe<ConnectivityObserver>()),
       loop_proxy_(loop_proxy),
       connected_(false),
-      bad_responses_(0) {
+      check_errors_(0) {
   DCHECK(loop_proxy_.get());
   loop_proxy->PostTask(FROM_HERE,
                        base::Bind(&ConnectivityChecker::Initialize, this));
@@ -105,7 +105,7 @@ void ConnectivityChecker::Check() {
   }
   DCHECK(url_request_context_.get());
 
-  // Don't check connectivity if network is offline, because internet could be
+  // Don't check connectivity if network is offline, because Internet could be
   // accessible via netifs ignored.
   if (net::NetworkChangeNotifier::IsOffline())
     return;
@@ -151,19 +151,29 @@ void ConnectivityChecker::OnResponseStarted(net::URLRequest* request) {
 
   if (http_response_code < 400) {
     VLOG(1) << "Connectivity check succeeded";
-    bad_responses_ = 0;
+    check_errors_ = 0;
     SetConnectivity(true);
     return;
   }
-
   VLOG(1) << "Connectivity check failed: " << http_response_code;
-  ++bad_responses_;
-  if (bad_responses_ > kNumBadResponses) {
-    bad_responses_ = kNumBadResponses;
+  OnUrlRequestError();
+}
+
+void ConnectivityChecker::OnSSLCertificateError(net::URLRequest* request,
+                                                const net::SSLInfo& ssl_info,
+                                                bool fatal) {
+  LOG(ERROR) << "OnSSLCertificateError";
+  OnUrlRequestError();
+}
+
+void ConnectivityChecker::OnUrlRequestError() {
+  ++check_errors_;
+  if (check_errors_ > kNumErrorsToNotifyOffline) {
+    check_errors_ = kNumErrorsToNotifyOffline;
     SetConnectivity(false);
   }
-
-  // Check again
+  url_request_.reset(NULL);
+  // Check again.
   loop_proxy_->PostDelayedTask(
       FROM_HERE, base::Bind(&ConnectivityChecker::Check, this),
       base::TimeDelta::FromSeconds(kConnectivityPeriodSeconds));

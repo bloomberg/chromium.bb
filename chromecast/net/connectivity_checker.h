@@ -18,6 +18,7 @@ class MessageLoopProxy;
 }
 
 namespace net {
+class SSLInfo;
 class URLRequestContext;
 }
 
@@ -65,6 +66,9 @@ class ConnectivityChecker
   // UrlRequest::Delegate implementation:
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal) override;
 
   // Initializes ConnectivityChecker
   void Initialize();
@@ -82,6 +86,9 @@ class ConnectivityChecker
   // Sets connectivity and alerts observers if it has changed
   void SetConnectivity(bool connected);
 
+  // Called when URL request failed.
+  void OnUrlRequestError();
+
   scoped_ptr<GURL> connectivity_check_url_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::URLRequest> url_request_;
@@ -89,7 +96,8 @@ class ConnectivityChecker
       connectivity_observer_list_;
   const scoped_refptr<base::MessageLoopProxy> loop_proxy_;
   bool connected_;
-  unsigned int bad_responses_;
+  // Number of connectivity check errors.
+  unsigned int check_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectivityChecker);
 };
