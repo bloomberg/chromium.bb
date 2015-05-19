@@ -1796,34 +1796,29 @@ public class ContentViewCore implements
      * are overridden, so that View's mScrollX and mScrollY will be unchanged at
      * (0, 0). This is critical for drawing ContentView correctly.
      */
-    public void scrollBy(int xPix, int yPix) {
-        if (mNativeContentViewCore != 0) {
-            nativeScrollBy(mNativeContentViewCore,
-                    SystemClock.uptimeMillis(), 0, 0, xPix, yPix);
-        }
+    public void scrollBy(float dxPix, float dyPix) {
+        if (mNativeContentViewCore == 0) return;
+        if (dxPix == 0 && dyPix == 0) return;
+        long time = SystemClock.uptimeMillis();
+        // It's a very real (and valid) possibility that a fling may still
+        // be active when programatically scrolling. Cancelling the fling in
+        // such cases ensures a consistent gesture event stream.
+        if (mPotentiallyActiveFlingCount > 0) nativeFlingCancel(mNativeContentViewCore, time);
+        nativeScrollBegin(mNativeContentViewCore, time, 0, 0, -dxPix, -dyPix);
+        nativeScrollBy(mNativeContentViewCore, time, 0, 0, dxPix, dyPix);
+        nativeScrollEnd(mNativeContentViewCore, time);
     }
 
     /**
      * @see View#scrollTo(int, int)
      */
-    public void scrollTo(int xPix, int yPix) {
+    public void scrollTo(float xPix, float yPix) {
         if (mNativeContentViewCore == 0) return;
         final float xCurrentPix = mRenderCoordinates.getScrollXPix();
         final float yCurrentPix = mRenderCoordinates.getScrollYPix();
         final float dxPix = xPix - xCurrentPix;
         final float dyPix = yPix - yCurrentPix;
-        if (dxPix != 0 || dyPix != 0) {
-            long time = SystemClock.uptimeMillis();
-            // It's a very real (and valid) possibility that a fling may still
-            // be active when programatically scrolling. Cancelling the fling in
-            // such cases ensures a consistent gesture event stream.
-            if (mPotentiallyActiveFlingCount > 0) nativeFlingCancel(mNativeContentViewCore, time);
-            nativeScrollBegin(mNativeContentViewCore, time,
-                    xCurrentPix, yCurrentPix, -dxPix, -dyPix);
-            nativeScrollBy(mNativeContentViewCore,
-                    time, xCurrentPix, yCurrentPix, dxPix, dyPix);
-            nativeScrollEnd(mNativeContentViewCore, time);
-        }
+        scrollBy(dxPix, dyPix);
     }
 
     // NOTE: this can go away once ContentView.getScrollX() reports correct values.

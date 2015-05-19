@@ -136,6 +136,15 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         });
     }
 
+    private void scrollBy(final int dx, final int dy) throws Throwable {
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentViewCore().getContainerView().scrollBy(dx, dy);
+            }
+        });
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -181,7 +190,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
-    public void testScroll() throws Throwable {
+    public void testScrollTo() throws Throwable {
         // Vertical scroll to lower-left.
         scrollTo(0, 2500);
         assertWaitForScroll(true, false);
@@ -200,6 +209,38 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
 
         // Diagonal scroll to bottom-right.
         scrollTo(2500, 2500);
+        assertWaitForScroll(false, false);
+    }
+
+    @SmallTest
+    @RerunWithUpdatedContainerView
+    @Feature({"Main"})
+    public void testScrollBy() throws Throwable {
+        scrollTo(0, 0);
+        assertWaitForScroll(true, true);
+
+        // No scroll
+        scrollBy(0, 0);
+        assertWaitForScroll(true, true);
+
+        // Vertical scroll to lower-left.
+        scrollBy(0, 2500);
+        assertWaitForScroll(true, false);
+
+        // Horizontal scroll to lower-right.
+        scrollBy(2500, 0);
+        assertWaitForScroll(false, false);
+
+        // Vertical scroll to upper-right.
+        scrollBy(0, -2500);
+        assertWaitForScroll(false, true);
+
+        // Horizontal scroll to top-left.
+        scrollBy(-2500, 0);
+        assertWaitForScroll(true, true);
+
+        // Diagonal scroll to bottom-right.
+        scrollBy(2500, 2500);
         assertWaitForScroll(false, false);
     }
 
