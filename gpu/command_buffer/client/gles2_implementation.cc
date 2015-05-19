@@ -5301,8 +5301,18 @@ void GLES2Implementation::RetireSyncPointCHROMIUM(GLuint sync_point) {
 
 namespace {
 
-bool ValidImageFormat(GLenum internalformat) {
+bool ValidImageFormat(GLenum internalformat,
+                      const Capabilities& capabilities) {
   switch (internalformat) {
+    case GL_ATC_RGB_AMD:
+    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+      return capabilities.texture_format_atc;
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+      return capabilities.texture_format_dxt1;
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+      return capabilities.texture_format_dxt5;
+    case GL_ETC1_RGB8_OES:
+      return capabilities.texture_format_etc1;
     case GL_R8:
     case GL_RGB:
     case GL_RGBA:
@@ -5339,7 +5349,7 @@ GLuint GLES2Implementation::CreateImageCHROMIUMHelper(ClientBuffer buffer,
     return 0;
   }
 
-  if (!ValidImageFormat(internalformat)) {
+  if (!ValidImageFormat(internalformat, capabilities_)) {
     SetGLError(GL_INVALID_VALUE, "glCreateImageCHROMIUM", "invalid format");
     return 0;
   }
@@ -5401,7 +5411,7 @@ GLuint GLES2Implementation::CreateGpuMemoryBufferImageCHROMIUMHelper(
     return 0;
   }
 
-  if (!ValidImageFormat(internalformat)) {
+  if (!ValidImageFormat(internalformat, capabilities_)) {
     SetGLError(GL_INVALID_VALUE,
                "glCreateGpuMemoryBufferImageCHROMIUM",
                "invalid format");

@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modifed Date: Oct 7, 2014
+    Last Modifed Date: May 13, 2015
 
 Dependencies
 
@@ -45,8 +45,10 @@ New Procedures and Functions
 
     INVALID_VALUE is generated if <width> or <height> is nonpositive.
 
-    INVALID_ENUM is generated if <internalformat> is not one of
-    R8, RGB, RGBA or BGRA_EXT.
+    INVALID_VALUE is generated if <internalformat> is not one of
+    R8, RGB, RGBA, BGRA_EXT, ATC_RGB_AMD, ATC_RGBA_INTERPOLATED_ALPHA_AMD,
+    COMPRESSED_RGB_S3TC_DXT1_EXT, COMPRESSED_RGBA_S3TC_DXT5_EXT or
+    ETC1_RGB8_OES.
 
     void DestroyImageCHROMIUM(GLuint image_id)
 
@@ -64,6 +66,23 @@ Dependencies on ARB_texture_rg
     If ARB_texture_rg is not supported:
      * delete any reference to the R8 format.
 
+Dependencies on AMD_compressed_ATC_texture
+
+    If AMD_compressed_ATC_texture is not supported:
+     * delete any reference to the ATC_RGB_AMD and
+       ATC_RGBA_INTERPOLATED_ALPHA_AMD formats.
+
+Dependencies on EXT_texture_compression_s3tc
+
+    If EXT_texture_compression_s3tc is not supported:
+     * delete any reference to the COMPRESSED_RGB_S3TC_DXT1_EXT and
+       COMPRESSED_RGBA_S3TC_DXT5_EXT formats.
+
+Dependencies on OES_compressed_ETC1_RGB8_texture
+
+    If OES_compressed_ETC1_RGB8_texture is not supported:
+     * delete any reference to the ETC1_RGB8_OES format.
+
 Errors
 
     None.
@@ -79,3 +98,4 @@ Revision History
     10/7/2014   Remove map/unmap API.
     4/6/2015    Add BGRA_EXT format.
     2/7/2015    Add R8 format.
+    5/13/2015   Add compressed formats.

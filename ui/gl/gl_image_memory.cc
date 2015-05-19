@@ -19,6 +19,11 @@ namespace {
 
 bool ValidInternalFormat(unsigned internalformat) {
   switch (internalformat) {
+    case GL_ATC_RGB_AMD:
+    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    case GL_ETC1_RGB8_OES:
     case GL_R8:
     case GL_RGBA:
     case GL_BGRA_EXT:
