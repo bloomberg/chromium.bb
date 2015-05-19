@@ -342,6 +342,24 @@ typedef struct _drmSetVersion {
 	int drm_dd_minor;
 } drmSetVersion, *drmSetVersionPtr;
 
+/**
+ * Structure to a general pci gpu device
+ *
+ * \sa drmGetDevices()
+ *
+*/
+typedef struct _drmPciDevice {
+		uint16_t domain;
+		uint8_t bus;
+		uint8_t dev;
+		uint8_t func;
+		uint16_t vendor_id;
+		uint16_t device_id;
+		uint16_t subvendor_id;
+		uint16_t subdevice_id;
+		uint8_t revision_id;
+} drmPciDevice, *drmPciDevicePtr;
+
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
 
 #define DRM_LOCK_HELD  0x80000000U /**< Hardware lock is held */
@@ -552,6 +570,7 @@ do {	register unsigned int __old __asm("o0");		\
 /* General user-level programmer's API: unprivileged */
 extern int           drmAvailable(void);
 extern int           drmOpen(const char *name, const char *busid);
+extern int           drmGetPciDevices(drmPciDevicePtr devSet, uint16_t vendorId);
 
 #define DRM_NODE_PRIMARY 0
 #define DRM_NODE_CONTROL 1

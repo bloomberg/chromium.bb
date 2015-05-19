@@ -95,12 +95,15 @@ SUBDIRS = \
 libdrm_la_LTLIBRARIES = libdrm.la
 libdrm_ladir = $(libdir)
 libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
-libdrm_la_LIBADD = @CLOCK_LIB@
+libdrm_la_LIBADD = \
+		@CLOCK_LIB@ \
+		@LIBUDEV_LIBS@
 
 libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
-	$(VALGRIND_CFLAGS)
+	$(VALGRIND_CFLAGS) \
+	$(LIBUDEV_CFLAGS)
 
 libdrm_la_SOURCES = $(LIBDRM_FILES)
 

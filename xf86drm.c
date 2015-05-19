@@ -63,6 +63,7 @@
 
 #include "xf86drm.h"
 #include "libdrm_macros.h"
+#include "libudev.h"
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 #define DRM_MAJOR 145
@@ -2816,4 +2817,103 @@ char *drmGetPrimaryDeviceNameFromFd(int fd)
 char *drmGetRenderDeviceNameFromFd(int fd)
 {
 	return drmGetMinorNameForFD(fd, DRM_NODE_RENDER);
+}
+
+/**
+* Enumerate the GPU devices on the system
+*
+* \param devs device array set to return the device information
+* (if NULL, the number of device is returned)
+* \param vendor the vendor ID for GPU devices to list
+* (optional, if not specified, all GPU devices are returned)
+*
+* \return the number of GPU devices
+*/
+int drmGetPciDevices(drmPciDevicePtr devSet, uint16_t vendorId)
+{
+	struct udev *udev = NULL;
+	struct udev_enumerate *udev_enumerate;
+	struct udev_list_entry *list_entry;
+	struct udev_device *device;
+	int drmDevCount = 0;
+	int vendor = 0;
+	int devid = 0;
+	int subvendor = 0;
+	int subdevid = 0;
+	int revid = 0xff;
+	int domain = 0;
+	int bus = 0;
+	int dev = 0;
+	int func = 0;
+	char config[64] = {0};
+	char node[128] = {'\0'};
+	char slot[] = "0000:00:00.0";
+	const char *info = NULL;
+	int fd = 0;
+	int ret = 0;
+
+	udev = udev_new();
+	if (udev == NULL) {
+		fprintf(stderr, "no context\n");
+		return -EINVAL;
+	}
+	udev_enumerate = udev_enumerate_new(udev);
+	if (udev_enumerate == NULL)
+		return -EINVAL;
+	udev_enumerate_add_match_subsystem(udev_enumerate, "drm");
+	udev_enumerate_add_match_property(udev_enumerate, "DEVTYPE", "drm_minor");
+
+	udev_enumerate_scan_devices(udev_enumerate);
+
+	udev_list_entry_foreach(list_entry, udev_enumerate_get_list_entry(udev_enumerate)) {
+		device = udev_device_new_from_syspath(udev_enumerate_get_udev(udev_enumerate),
+						      udev_list_entry_get_name(list_entry));
+		if (device != NULL) {
+			info = udev_device_get_property_value(device, "MINOR");
+			if (!strcmp(info, "0")) {
+			strcpy(node, udev_device_get_syspath(device));
+			info = strstr(node, "/drm");
+			strncpy(slot, info - strlen(slot), strlen(slot));
+			if (sscanf(slot, "%4x:%2x:%2x.%1x", &domain, &bus, &dev, &func) != 4) {
+				domain = 0;
+				bus = 0;
+				dev = 0;
+				func = 0;
+			}
+			strcpy(node + strlen(node), "/device/config");
+
+			fd = open(node, O_RDONLY);
+			if (fd >= 0) {
+				ret = read(fd, config, 64);
+				if (ret == 64) {
+					vendor = config[0] + (config[1] << 8);
+					devid = config[2] + (config[3] << 8);
+					revid = config[8];
+					subdevid = config[44] + (config[45] << 8);
+				}
+				close(fd);
+			}
+
+			if((vendorId == 0) || (vendorId == vendor)) {
+				if(devSet != NULL) {
+					devSet[drmDevCount].domain = domain;
+					devSet[drmDevCount].bus = bus;
+					devSet[drmDevCount].dev = dev;
+					devSet[drmDevCount].func = func;
+					devSet[drmDevCount].vendor_id = vendor;
+					devSet[drmDevCount].device_id = devid;
+					devSet[drmDevCount].subdevice_id = subdevid;
+					devSet[drmDevCount].subvendor_id = subvendor;
+					devSet[drmDevCount].revision_id = revid;
+				}
+				drmDevCount++;
+			}
+		}
+		}
+		udev_device_unref(device);
+	}
+	udev_enumerate_unref(udev_enumerate);
+	udev_unref(udev);
+
+	return drmDevCount;
 }
