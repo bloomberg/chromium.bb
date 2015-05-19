@@ -204,32 +204,15 @@ def _FindThirdPartyDirs():
   # Please don't add here paths that have problems with license files,
   # as they will end up included in Android WebView snapshot.
   # Instead, add them into known_issues.py.
-  prune_paths = [
-    # Temporary until we figure out how not to check out quickoffice on the
-    # Android license check bot. Tracked in crbug.com/350472.
-    os.path.join('chrome', 'browser', 'resources', 'chromeos', 'quickoffice'),
-    # Placeholder directory, no third-party code.
-    os.path.join('third_party', 'adobe'),
+  prune_paths = set([
     # Apache 2.0 license. See
     # https://code.google.com/p/chromium/issues/detail?id=140478.
     os.path.join('third_party', 'bidichecker'),
-    # Isn't checked out on clients
-    os.path.join('third_party', 'gles2_conform'),
-    # The llvm-build doesn't exist for non-clang builder
-    os.path.join('third_party', 'llvm-build'),
-    # Binaries doesn't apply to android
-    os.path.join('third_party', 'widevine'),
-    # third_party directories in this tree aren't actually third party, but
-    # provide a way to shadow experimental buildfiles into those directories.
-    os.path.join('build', 'secondary'),
-    # Not shipped, Chromium code
-    os.path.join('tools', 'swarming_client'),
     # Not shipped, only relates to Chrome for Android, but not to WebView
     os.path.join('clank'),
-    # Bots only, is not a part of the build
-    os.path.join('isolate_deps_dir'),
-  ]
-  third_party_dirs = licenses.FindThirdPartyDirs(prune_paths, REPOSITORY_ROOT)
+  ])
+  third_party_dirs = licenses.FindThirdPartyDirs(
+    prune_paths | licenses.PRUNE_PATHS, REPOSITORY_ROOT)
   return licenses.FilterDirsWithFiles(third_party_dirs, REPOSITORY_ROOT)
 
 
