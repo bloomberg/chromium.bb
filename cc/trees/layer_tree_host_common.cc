@@ -2753,14 +2753,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   CalculateDrawPropertiesAndVerify(inputs, BUILD_PROPERTY_TREES_IF_NEEDED);
 }
 
-PropertyTrees* GetPropertyTrees(Layer* layer,
-                                PropertyTrees* trees_from_inputs) {
+PropertyTrees* GetPropertyTrees(Layer* layer) {
   return layer->layer_tree_host()->property_trees();
 }
 
-PropertyTrees* GetPropertyTrees(LayerImpl* layer,
-                                PropertyTrees* trees_from_inputs) {
-  return trees_from_inputs;
+PropertyTrees* GetPropertyTrees(LayerImpl* layer) {
+  return layer->layer_tree_impl()->property_trees();
 }
 
 }  // namespace cc
