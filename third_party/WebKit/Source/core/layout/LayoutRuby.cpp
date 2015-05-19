@@ -34,70 +34,16 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutRubyRun.h"
-#include "core/style/ComputedStyle.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
 // === generic helper functions to avoid excessive code duplication ===
 
-static inline bool isAnonymousRubyInlineBlock(const LayoutObject* object)
-{
-    ASSERT(!object
-        || !object->parent()->isRuby()
-        || object->isRubyRun()
-        || (object->isInline() && (object->isBeforeContent() || object->isAfterContent()))
-        || (object->isAnonymous() && object->isLayoutBlock() && object->style()->display() == INLINE_BLOCK));
-
-    return object
-        && object->parent()->isRuby()
-        && object->isLayoutBlock()
-        && !object->isRubyRun();
-}
-
-static inline bool isRubyBeforeBlock(const LayoutObject* object)
-{
-    return isAnonymousRubyInlineBlock(object)
-        && !object->previousSibling()
-        && toLayoutBlock(object)->firstChild()
-        && toLayoutBlock(object)->firstChild()->style()->styleType() == BEFORE;
-}
-
-static inline bool isRubyAfterBlock(const LayoutObject* object)
-{
-    return isAnonymousRubyInlineBlock(object)
-        && !object->nextSibling()
-        && toLayoutBlock(object)->firstChild()
-        && toLayoutBlock(object)->firstChild()->style()->styleType() == AFTER;
-}
-
-static inline LayoutBlock* rubyBeforeBlock(const LayoutObject* ruby)
-{
-    LayoutObject* child = ruby->slowFirstChild();
-    return isRubyBeforeBlock(child) ? toLayoutBlock(child) : 0;
-}
-
-static inline LayoutBlock* rubyAfterBlock(const LayoutObject* ruby)
-{
-    LayoutObject* child = ruby->slowLastChild();
-    return isRubyAfterBlock(child) ? toLayoutBlock(child) : 0;
-}
-
-static LayoutBlockFlow* createAnonymousRubyInlineBlock(LayoutObject* ruby)
-{
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(ruby->styleRef(), INLINE_BLOCK);
-    LayoutBlockFlow* newBlock = LayoutBlockFlow::createAnonymous(&ruby->document());
-    newBlock->setStyle(newStyle.release());
-    return newBlock;
-}
-
 static LayoutRubyRun* lastRubyRun(const LayoutObject* ruby)
 {
     LayoutObject* child = ruby->slowLastChild();
-    if (child && !child->isRubyRun())
-        child = child->previousSibling();
-    ASSERT(!child || child->isRubyRun() || child->isBeforeContent() || child == rubyBeforeBlock(ruby));
-    return child && child->isRubyRun() ? toLayoutRubyRun(child) : 0;
+    ASSERT(!child || child->isRubyRun());
+    return toLayoutRubyRun(child);
 }
 
 static inline LayoutRubyRun* findRubyRunParent(LayoutObject* child)
@@ -127,45 +73,13 @@ void LayoutRubyAsInline::styleDidChange(StyleDifference diff, const ComputedStyl
 
 void LayoutRubyAsInline::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
-    // Insert :before and :after content before/after the LayoutRubyRun(s)
-    if (child->isBeforeContent()) {
-        if (child->isInline()) {
-            // Add generated inline content normally
-            LayoutInline::addChild(child, firstChild());
-        } else {
-            // Wrap non-inline content with an anonymous inline-block.
-            LayoutBlock* beforeBlock = rubyBeforeBlock(this);
-            if (!beforeBlock) {
-                beforeBlock = createAnonymousRubyInlineBlock(this);
-                LayoutInline::addChild(beforeBlock, firstChild());
-            }
-            beforeBlock->addChild(child);
-        }
-        return;
-    }
-    if (child->isAfterContent()) {
-        if (child->isInline()) {
-            // Add generated inline content normally
-            LayoutInline::addChild(child);
-        } else {
-            // Wrap non-inline content with an anonymous inline-block.
-            LayoutBlock* afterBlock = rubyAfterBlock(this);
-            if (!afterBlock) {
-                afterBlock = createAnonymousRubyInlineBlock(this);
-                LayoutInline::addChild(afterBlock);
-            }
-            afterBlock->addChild(child);
-        }
-        return;
-    }
-
     // If the child is a ruby run, just add it normally.
     if (child->isRubyRun()) {
         LayoutInline::addChild(child, beforeChild);
         return;
     }
 
-    if (beforeChild && !isAfterContent(beforeChild)) {
+    if (beforeChild) {
         // insert child into run
         LayoutObject* run = beforeChild;
         while (run && !run->isRubyRun())
@@ -194,19 +108,10 @@ void LayoutRubyAsInline::addChild(LayoutObject* child, LayoutObject* beforeChild
 
 void LayoutRubyAsInline::removeChild(LayoutObject* child)
 {
-    // If the child's parent is *this (must be a ruby run or generated content or anonymous block),
-    // just use the normal remove method.
+    // If the child's parent is *this (must be a ruby run), just use the normal remove method.
     if (child->parent() == this) {
-        ASSERT(child->isRubyRun() || child->isBeforeContent() || child->isAfterContent() || isAnonymousRubyInlineBlock(child));
+        ASSERT(child->isRubyRun());
         LayoutInline::removeChild(child);
-        return;
-    }
-    // If the child's parent is an anoymous block (must be generated :before/:after content)
-    // just use the block's remove method.
-    if (isAnonymousRubyInlineBlock(child->parent())) {
-        ASSERT(child->isBeforeContent() || child->isAfterContent());
-        child->parent()->removeChild(child);
-        removeChild(child->parent());
         return;
     }
 
@@ -236,45 +141,13 @@ void LayoutRubyAsBlock::styleDidChange(StyleDifference diff, const ComputedStyle
 
 void LayoutRubyAsBlock::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
-    // Insert :before and :after content before/after the LayoutRubyRun(s)
-    if (child->isBeforeContent()) {
-        if (child->isInline()) {
-            // Add generated inline content normally
-            LayoutBlockFlow::addChild(child, firstChild());
-        } else {
-            // Wrap non-inline content with an anonymous inline-block.
-            LayoutBlock* beforeBlock = rubyBeforeBlock(this);
-            if (!beforeBlock) {
-                beforeBlock = createAnonymousRubyInlineBlock(this);
-                LayoutBlockFlow::addChild(beforeBlock, firstChild());
-            }
-            beforeBlock->addChild(child);
-        }
-        return;
-    }
-    if (child->isAfterContent()) {
-        if (child->isInline()) {
-            // Add generated inline content normally
-            LayoutBlockFlow::addChild(child);
-        } else {
-            // Wrap non-inline content with an anonymous inline-block.
-            LayoutBlock* afterBlock = rubyAfterBlock(this);
-            if (!afterBlock) {
-                afterBlock = createAnonymousRubyInlineBlock(this);
-                LayoutBlockFlow::addChild(afterBlock);
-            }
-            afterBlock->addChild(child);
-        }
-        return;
-    }
-
     // If the child is a ruby run, just add it normally.
     if (child->isRubyRun()) {
         LayoutBlockFlow::addChild(child, beforeChild);
         return;
     }
 
-    if (beforeChild && !isAfterContent(beforeChild)) {
+    if (beforeChild) {
         // insert child into run
         LayoutObject* run = beforeChild;
         while (run && !run->isRubyRun())
@@ -303,19 +176,10 @@ void LayoutRubyAsBlock::addChild(LayoutObject* child, LayoutObject* beforeChild)
 
 void LayoutRubyAsBlock::removeChild(LayoutObject* child)
 {
-    // If the child's parent is *this (must be a ruby run or generated content or anonymous block),
-    // just use the normal remove method.
+    // If the child's parent is *this (must be a ruby run), just use the normal remove method.
     if (child->parent() == this) {
-        ASSERT(child->isRubyRun() || child->isBeforeContent() || child->isAfterContent() || isAnonymousRubyInlineBlock(child));
+        ASSERT(child->isRubyRun());
         LayoutBlockFlow::removeChild(child);
-        return;
-    }
-    // If the child's parent is an anoymous block (must be generated :before/:after content)
-    // just use the block's remove method.
-    if (isAnonymousRubyInlineBlock(child->parent())) {
-        ASSERT(child->isBeforeContent() || child->isAfterContent());
-        child->parent()->removeChild(child);
-        removeChild(child->parent());
         return;
     }
 
