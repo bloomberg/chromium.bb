@@ -11,6 +11,9 @@ class PixelExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('Pixel.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    self.Fail('Pixel.Canvas2DRedBox', bug=485183)
-    self.Fail('Pixel.CSS3DBlueBox', bug=485183)
-    self.Fail('Pixel.WebGLGreenTriangle', bug=485183)
+    self.Fail('Pixel.Canvas2DRedBox',
+              [ 'linux', ('nvidia', 0x104a)], bug=489424)
+    self.Fail('Pixel.CSS3DBlueBox',
+              [ 'linux', ('nvidia', 0x104a)], bug=489424)
+    self.Fail('Pixel.WebGLGreenTriangle',
+              [ 'linux', ('nvidia', 0x104a)], bug=489424)
