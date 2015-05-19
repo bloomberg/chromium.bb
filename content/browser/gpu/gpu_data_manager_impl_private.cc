@@ -1037,8 +1037,14 @@ void GpuDataManagerImplPrivate::UpdatePreliminaryBlacklistedFeatures() {
 
 void GpuDataManagerImplPrivate::UpdateGpuSwitchingManager(
     const gpu::GPUInfo& gpu_info) {
-  ui::GpuSwitchingManager::GetInstance()->SetGpuCount(
-      gpu_info.secondary_gpus.size() + 1);
+  // The vendor IDs might be 0 on non-PCI devices (like Android), but
+  // the length of the vector is all we care about in most cases.
+  std::vector<uint32> vendor_ids;
+  vendor_ids.push_back(gpu_info.gpu.vendor_id);
+  for (const auto& device : gpu_info.secondary_gpus) {
+    vendor_ids.push_back(device.vendor_id);
+  }
+  ui::GpuSwitchingManager::GetInstance()->SetGpuVendorIds(vendor_ids);
 
   if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
     if (gpu_driver_bugs_.count(gpu::FORCE_DISCRETE_GPU) == 1)
