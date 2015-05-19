@@ -29,6 +29,8 @@ function testStore()
     evalAndExpectException("deletedStore.delete(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedStore.get(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedStore.get(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
+    evalAndExpectException("deletedStore.getAll(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
+    evalAndExpectException("deletedStore.getAll(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedStore.clear()", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedStore.openCursor()", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedStore.openCursor(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");

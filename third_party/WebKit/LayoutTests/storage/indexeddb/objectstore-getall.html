@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<title>IndexedDB: Test IDBObjectStore.getAll.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/testharness-helpers.js"></script>
+<script>
+
+function createStore(t, connection, keyType) {
+    if (keyType == 'generated') {
+        connection.createObjectStore('store name',
+            {autoIncrement: true, keyPath: 'id'});
+    } else if (keyType == 'out-of-line') {
+        connection.createObjectStore('store name', null);
+    } else {
+        assert_unreached('Incorrect key type: ' + keyType);
+    }
+}
+
+function createGetAllRequest(t, connection, range, maxCount) {
+    var transaction = connection.transaction('store name', 'readonly');
+    var store = transaction.objectStore('store name');
+    // TODO(cmumford): Simplify once crbug.com/335871 is closed.
+    var req = maxCount !== undefined ? store.getAll(range, maxCount) :
+              range !== undefined ? store.getAll(range) :  store.getAll();
+    req.onerror = t.unreached_func('getAll request should succeed');
+    return req;
+}
+
+function addValues(t, connection, keyType) {
+    var transaction = connection.transaction('store name', 'readwrite');
+    transaction.onabort = t.unreached_func('transaction should not abort');
+
+    var store = transaction.objectStore('store name');
+    var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    for (var i = 0; i < alphabet.length; i++) {
+        var request;
+        if (keyType == 'generated') {
+            request = store.add({ch: alphabet[i]});
+        } else if (keyType == 'out-of-line') {
+            request = store.add(alphabet[i], alphabet[i]);
+        } else {
+            assert_unreached('Incorrect key type: ' + keyType);
+        }
+        request.onerror = t.unreached_func('add request should succeed');
+    }
+}
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection, 'c');
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result, ['c']);
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Single item get');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'generated');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'generated');
+      var req = createGetAllRequest(t, connection, 3);
+      req.onsuccess = t.step_func(function(evt) {
+          var data = evt.target.result;
+          assert_true(Array.isArray(data));
+          assert_equals(data.length, 1);
+          assert_object_equals(data[0], {ch: 'c', id: 3});
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Single item get (generated key)');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      var req = createGetAllRequest(t, connection);
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result, [],
+              'getAll() on empty object store should return an empty array');
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: getAll on empty object store');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection);
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result,
+              'abcdefghijklmnopqrstuvwxyz'.split(''));
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Get all values');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection, undefined, 10);
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result,
+              ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Test maxCount');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection, IDBKeyRange.bound('g', 'm'));
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result,
+              ['g', 'h', 'i', 'j', 'k', 'l', 'm']);
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Get bound range');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection,
+          IDBKeyRange.bound('g', 'm'), 3);
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result, ['g', 'h', 'i']);
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Get bound range with maxCount');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection,
+          IDBKeyRange.bound('g', 'k', false, true));
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result, ['g', 'h', 'i', 'j']);
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Get upper excluded');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection,
+          IDBKeyRange.bound('g', 'k', true, false));
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result, ['h', 'i', 'j', 'k']);
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Get lower excluded');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'generated');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'generated');
+      var req = createGetAllRequest(t, connection, IDBKeyRange.bound(4, 15), 3);
+      req.onsuccess = t.step_func(function(evt) {
+          var data = evt.target.result;
+          assert_true(Array.isArray(data));
+          assert_equals(data.length, 3);
+          assert_object_equals(data[0], {ch: 'd', id: 4});
+          assert_object_equals(data[1], {ch: 'e', id: 5});
+          assert_object_equals(data[2], {ch: 'f', id: 6});
+          t.done();
+      });
+  }, 'IDBObjectStore.getAll: Get bound range (generated) with maxCount');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var req = createGetAllRequest(t, connection, "Doesn't exist");
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result, [],
+              'getAll() using a nonexistent key should return an empty array');
+          t.done();
+      });
+      req.onerror = t.unreached_func('getAll request should succeed');
+  }, 'IDBObjectStore.getAll: Non existent key');
+
+indexeddb_test(
+  function(t, connection) {
+      createStore(t, connection, 'out-of-line');
+  },
+  function(t, connection) {
+      addValues(t, connection, 'out-of-line');
+      var transaction = connection.transaction('store name', 'readonly');
+      var store = transaction.objectStore('store name');
+      assert_throws(new TypeError(), function () {
+        store.getAll(undefined, 0);
+      }, 'getAll() with maxCount=0 should throw TypeError');
+      t.done();
+  }, 'IDBObjectStore.getAll: zero maxCount');
+
+</script>

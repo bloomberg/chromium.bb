@@ -2996,6 +2996,7 @@ interface IDBObjectStore
     method delete
     method deleteIndex
     method get
+    method getAll
     method index
     method openCursor
     method openKeyCursor
@@ -6658,6 +6659,7 @@ interface webkitIDBObjectStore
     method delete
     method deleteIndex
     method get
+    method getAll
     method index
     method openCursor
     method openKeyCursor
