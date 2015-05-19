@@ -629,6 +629,30 @@ TEST(PictureLayerTilingTest, SkewportLimits) {
   EXPECT_TRUE(move_skewport_far.Contains(gfx::Rect(0, 5000, 100, 100)));
 }
 
+TEST(PictureLayerTilingTest, ComputeSkewportExtremeCases) {
+  FakePictureLayerTilingClient client;
+
+  gfx::Size layer_bounds(200, 200);
+  client.SetTileSize(gfx::Size(100, 100));
+  LayerTreeSettings settings;
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_ptr<TestablePictureLayerTiling> tiling =
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
+                                         settings);
+
+  gfx::Rect viewport1(-1918, 255860, 4010, 2356);
+  gfx::Rect viewport2(-7088, -91738, 14212, 8350);
+  gfx::Rect viewport3(-12730024, -158883296, 24607540, 14454512);
+  double time = 1.0;
+  tiling->ComputeTilePriorityRects(viewport1, 1.f, time, Occlusion());
+  time += 0.016;
+  EXPECT_TRUE(tiling->ComputeSkewport(time, viewport2).Contains(viewport2));
+  tiling->ComputeTilePriorityRects(viewport2, 1.f, time, Occlusion());
+  time += 0.016;
+  EXPECT_TRUE(tiling->ComputeSkewport(time, viewport3).Contains(viewport3));
+}
+
 TEST(PictureLayerTilingTest, ComputeSkewport) {
   FakePictureLayerTilingClient client;
 

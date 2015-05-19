@@ -552,6 +552,13 @@ gfx::Rect PictureLayerTiling::ComputeSkewport(
   // union in case intersecting would have left the empty rect.
   skewport.Intersect(max_skewport);
 
+  // Due to limits in int's representation, it is possible that the two
+  // operations above (union and intersect) result in an empty skewport. To
+  // avoid any unpleasant situations like that, union the visible rect again to
+  // ensure that skewport.Contains(visible_rect_in_content_space) is always
+  // true.
+  skewport.Union(visible_rect_in_content_space);
+
   return skewport;
 }
 
