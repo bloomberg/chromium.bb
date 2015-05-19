@@ -217,7 +217,7 @@
           # In generated bindings code: 'switch contains default but no case'.
           # Disable c4267 warnings until we fix size_t to int truncations.
           # 4701 and 4702 are disabled because of issues in Bison-generated
-          # XPathGrammar.cpp and CSSGrammar.cpp.
+          # XPathGrammar.cpp.cpp.
           'msvs_disabled_warnings': [ 4065, 4267, 4701, 4702 ],
         }],
         ['OS in ("linux", "android") and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines', {
@@ -774,7 +774,7 @@
               # case'.
               # Disable c4267 warnings until we fix size_t to int truncations.
               # 4701 and 4702 are disabled because of issues in Bison-generated
-              # XPathGrammar.cpp and CSSGrammar.cpp.
+              # XPathGrammar.cpp.cpp.
               # Disable c4267 warnings until we fix size_t to int truncations.
               'msvs_disabled_warnings': [ 4065, 4267, 4305, 4334, 4701, 4702 ],
               # Disable incremental link when building debug binary to avoid

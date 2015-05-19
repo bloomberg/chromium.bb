@@ -3496,10 +3496,8 @@ void CSSPropertyParser::maybeParseGridLineNames(CSSParserValueList& inputList, C
     if (!lineNames)
         lineNames = CSSGridLineNamesValue::create();
     while (CSSParserValue* identValue = identList->current()) {
-        if (identValue->unit != CSSPrimitiveValue::CSS_IDENT) {
-            ASSERT(RuntimeEnabledFeatures::newCSSParserEnabled());
+        if (identValue->unit != CSSPrimitiveValue::CSS_IDENT)
             return;
-        }
         RefPtrWillBeRawPtr<CSSPrimitiveValue> lineName = createPrimitiveCustomIdentValue(identValue);
         lineNames->append(lineName.release());
         identList->next();
@@ -5307,9 +5305,7 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         while (color.length() < 6)
             color = "0" + color;
         return fastParseColor(c, color, false);
-    } else if (value->unit == CSSParserValue::HexColor
-        || value->unit == CSSPrimitiveValue::CSS_IDENT
-        || (acceptQuirkyColors && value->unit == CSSParserValue::Dimension)) {
+    } else if (value->unit == CSSParserValue::HexColor || value->unit == CSSPrimitiveValue::CSS_IDENT) {
         if (!fastParseColor(c, value->string, !acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_IDENT))
             return false;
     } else if (value->unit == CSSParserValue::Function &&
@@ -7033,26 +7029,13 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
         if (!arg)
             return nullptr;
 
-        double imageScaleFactor = 0;
-        if (arg->unit == CSSParserValue::Dimension) {
-            const String& string = arg->string;
-            unsigned length = string.length();
-            if (!length)
-                return nullptr;
-            if (string.is8Bit()) {
-                const LChar* start = string.characters8();
-                parseDouble(start, start + length, 'x', imageScaleFactor);
-            } else {
-                const UChar* start = string.characters16();
-                parseDouble(start, start + length, 'x', imageScaleFactor);
-            }
-        } else if (arg->unit == CSSParserValue::DimensionList) {
-            ASSERT(arg->valueList->valueAt(0)->unit == CSSPrimitiveValue::CSS_NUMBER);
-            ASSERT(arg->valueList->valueAt(1)->unit == CSSPrimitiveValue::CSS_IDENT);
-            if (String(arg->valueList->valueAt(1)->string) != "x")
-                return nullptr;
-            imageScaleFactor = arg->valueList->valueAt(0)->fValue;
-        }
+        if (arg->unit != CSSParserValue::DimensionList)
+            return nullptr;
+        ASSERT(arg->valueList->valueAt(0)->unit == CSSPrimitiveValue::CSS_NUMBER);
+        ASSERT(arg->valueList->valueAt(1)->unit == CSSPrimitiveValue::CSS_IDENT);
+        if (String(arg->valueList->valueAt(1)->string) != "x")
+            return nullptr;
+        double imageScaleFactor = arg->valueList->valueAt(0)->fValue;
         if (imageScaleFactor <= 0)
             return nullptr;
         imageSet->append(cssValuePool().createValue(imageScaleFactor, CSSPrimitiveValue::CSS_NUMBER));

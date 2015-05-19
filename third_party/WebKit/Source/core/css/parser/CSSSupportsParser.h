@@ -5,8 +5,6 @@
 #ifndef CSSSupportsParser_h
 #define CSSSupportsParser_h
 
-#include "core/css/parser/BisonCSSParser.h"
-
 namespace blink {
 
 class CSSParserImpl;

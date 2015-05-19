@@ -28,12 +28,12 @@ class CORE_EXPORT CSSParser {
     STATIC_ONLY(CSSParser);
 public:
     // As well as regular rules, allows @import and @namespace but not @charset
-    static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, StyleSheetContents*, const String&);
+    static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, const String&);
     // TODO(timloh): Split into parseSheet and parseSheetForInspector
-    static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&, const TextPosition& startPosition, CSSParserObserver*, bool logErrors = false);
+    static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&, CSSParserObserver*);
     static void parseSelector(const CSSParserContext&, const String&, CSSSelectorList&);
     // TODO(timloh): Split into parseDeclarationList and parseDeclarationListForInspector
-    static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
+    static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&, CSSParserObserver*);
     // Returns whether anything was changed.
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, CSSParserMode, StyleSheetContents*);
 
@@ -45,7 +45,7 @@ public:
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
 
     static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
-    static PassRefPtrWillBeRawPtr<StyleRuleKeyframe> parseKeyframeRule(const CSSParserContext&, StyleSheetContents*, const String&);
+    static PassRefPtrWillBeRawPtr<StyleRuleKeyframe> parseKeyframeRule(const CSSParserContext&, const String&);
 
     static bool parseSupportsCondition(const String&);
 

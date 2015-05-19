@@ -156,7 +156,6 @@
       ],
       'sources': [
         # bison rule
-        'css/parser/CSSGrammar.y',
         'xml/XPathGrammar.y',
       ],
       'actions': [
@@ -692,40 +691,6 @@
             'xml/xmlattrs.in',
             '--output_dir',
             '<(blink_core_output_dir)',
-          ],
-        },
-        {
-          'action_name': 'MakeTokenMatcher',
-          'inputs': [
-            '<@(scripts_for_in_files)',
-            '../build/scripts/make_token_matcher.py',
-            '../core/css/parser/BisonCSSTokenizer-in.cpp',
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/BisonCSSTokenizer.cpp',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/make_token_matcher.py',
-            '../core/css/parser/BisonCSSTokenizer-in.cpp',
-            '<(blink_core_output_dir)/BisonCSSTokenizer.cpp',
-          ],
-        },
-        {
-          'action_name': 'MakeParser',
-          'inputs': [
-            '<@(scripts_for_in_files)',
-            '../build/scripts/make_token_matcher.py',
-            '../core/css/parser/BisonCSSParser-in.cpp',
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/BisonCSSParser.cpp',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/make_token_matcher.py',
-            '../core/css/parser/BisonCSSParser-in.cpp',
-            '<(blink_core_output_dir)/BisonCSSParser.cpp',
           ],
         },
         {

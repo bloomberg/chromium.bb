@@ -123,7 +123,7 @@ void CSSKeyframesRule::appendRule(const String& ruleText)
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
-    RefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe = CSSParser::parseKeyframeRule(context, styleSheet ? styleSheet->contents() : 0, ruleText);
+    RefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe = CSSParser::parseKeyframeRule(context, ruleText);
     if (!keyframe)
         return;
 

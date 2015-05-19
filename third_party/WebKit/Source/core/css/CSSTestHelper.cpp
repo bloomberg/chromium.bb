@@ -63,7 +63,7 @@ void CSSTestHelper::addCSSRules(const char* cssText)
 {
     TextPosition position;
     unsigned sheetLength = m_styleSheet->length();
-    m_styleSheet->contents()->parseStringAtPosition(cssText, position, true);
+    m_styleSheet->contents()->parseStringAtPosition(cssText, position);
     ASSERT_TRUE(m_styleSheet->length() > sheetLength);
 }
 

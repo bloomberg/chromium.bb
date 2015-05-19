@@ -158,7 +158,6 @@ void StyleSheetContents::parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase> 
     }
 
     if (rule->isNamespaceRule()) {
-        ASSERT(RuntimeEnabledFeatures::newCSSParserEnabled());
         // Parser enforces that @namespace rules come before anything else
         ASSERT(m_childRules.isEmpty());
         StyleRuleNamespace& namespaceRule = toStyleRuleNamespace(*rule);
@@ -294,7 +293,7 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     }
 
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
-    CSSParser::parseSheet(context, this, sheetText, TextPosition::minimumPosition(), 0, true);
+    CSSParser::parseSheet(context, this, sheetText, nullptr);
 
     // If we're loading a stylesheet cross-origin, and the MIME type is not standard, require the CSS
     // to at least start with a syntactically valid CSS rule.
@@ -310,13 +309,13 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
 
 void StyleSheetContents::parseString(const String& sheetText)
 {
-    parseStringAtPosition(sheetText, TextPosition::minimumPosition(), false);
+    parseStringAtPosition(sheetText, TextPosition::minimumPosition());
 }
 
-void StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition, bool createdByParser)
+void StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition)
 {
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
-    CSSParser::parseSheet(context, this, sheetText, startPosition, 0, createdByParser);
+    CSSParser::parseSheet(context, this, sheetText, 0);
 }
 
 bool StyleSheetContents::isLoading() const
@@ -462,7 +461,6 @@ static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<Re
         case StyleRuleBase::Charset:
         case StyleRuleBase::Import:
         case StyleRuleBase::Namespace:
-        case StyleRuleBase::Unknown:
             ASSERT_NOT_REACHED();
         case StyleRuleBase::Page:
         case StyleRuleBase::Keyframes:

@@ -33,7 +33,7 @@
 # found in the LICENSE file.
 
 # usage: rule_bison.py INPUT_FILE OUTPUT_DIR [BISON_EXE]
-# INPUT_FILE is a path to either CSSGrammar.y or XPathGrammar.y.
+# INPUT_FILE is a path to either XPathGrammar.y.
 # OUTPUT_DIR is where the bison-generated .cpp and .h files should be placed.
 
 import errno
@@ -58,8 +58,8 @@ if pathToBison:
     os.environ['PATH'] = pathToBison + os.pathsep + os.environ['PATH']
 
 inputName = os.path.basename(inputFile)
-assert inputName == 'CSSGrammar.y' or inputName == 'XPathGrammar.y'
-prefix = {'CSSGrammar.y': 'cssyy', 'XPathGrammar.y': 'xpathyy'}[inputName]
+assert inputName == 'XPathGrammar.y'
+prefix = {'XPathGrammar.y': 'xpathyy'}[inputName]
 
 (inputRoot, inputExt) = os.path.splitext(inputName)
 

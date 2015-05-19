@@ -39,7 +39,6 @@ class CORE_EXPORT StyleRuleBase : public RefCountedWillBeGarbageCollectedFinaliz
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleBase);
 public:
     enum Type {
-        Unknown,
         Charset,
         Style,
         Import,

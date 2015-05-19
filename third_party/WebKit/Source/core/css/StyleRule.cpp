@@ -89,8 +89,6 @@ DEFINE_TRACE(StyleRuleBase)
     case Viewport:
         toStyleRuleViewport(this)->traceAfterDispatch(visitor);
         return;
-    case Unknown:
-        break;
     }
     ASSERT_NOT_REACHED();
 }
@@ -130,8 +128,6 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
         return;
     case Viewport:
         toStyleRuleViewport(this)->~StyleRuleViewport();
-        return;
-    case Unknown:
         return;
     }
     ASSERT_NOT_REACHED();
@@ -173,8 +169,6 @@ void StyleRuleBase::destroy()
     case Viewport:
         delete toStyleRuleViewport(this);
         return;
-    case Unknown:
-        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -203,7 +197,6 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
     case Charset:
     case Keyframe:
     case Namespace:
-    case Unknown:
         ASSERT_NOT_REACHED();
         return nullptr;
     }
@@ -243,7 +236,6 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet*
     case Keyframe:
     case Namespace:
     case Charset:
-    case Unknown:
         ASSERT_NOT_REACHED();
         return nullptr;
     }

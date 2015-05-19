@@ -274,18 +274,6 @@ void CSSParserValueList::addValue(const CSSParserValue& v)
     m_values.append(v);
 }
 
-void CSSParserValueList::insertValueAt(unsigned i, const CSSParserValue& v)
-{
-    m_values.insert(i, v);
-}
-
-void CSSParserValueList::stealValues(CSSParserValueList& valueList)
-{
-    for (unsigned i = 0; i < valueList.size(); ++i)
-        m_values.append(*(valueList.valueAt(i)));
-    valueList.clearAndLeakValues();
-}
-
 CSSParserSelector::CSSParserSelector()
     : m_selector(adoptPtr(new CSSSelector()))
 {

@@ -68,7 +68,7 @@ public:
 
     void parseAuthorStyleSheet(const CSSStyleSheetResource*, const SecurityOrigin*);
     void parseString(const String&);
-    void parseStringAtPosition(const String&, const TextPosition&, bool);
+    void parseStringAtPosition(const String&, const TextPosition&);
 
     bool isCacheable() const;
 

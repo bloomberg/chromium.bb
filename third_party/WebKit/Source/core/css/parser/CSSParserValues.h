@@ -65,21 +65,11 @@ struct CSSParserString {
         }
     }
 
-    void clear()
-    {
-        m_data.characters8 = 0;
-        m_length = 0;
-        m_is8Bit = true;
-    }
-
     bool is8Bit() const { return m_is8Bit; }
     const LChar* characters8() const { ASSERT(is8Bit()); return m_data.characters8; }
     const UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }
-    template <typename CharacterType>
-    const CharacterType* characters() const;
 
     unsigned length() const { return m_length; }
-    void setLength(unsigned length) { m_length = length; }
 
     UChar operator[](unsigned i) const
     {
@@ -101,8 +91,6 @@ struct CSSParserString {
     operator String() const { return is8Bit() ? String(m_data.characters8, m_length) : StringImpl::create8BitIfPossible(m_data.characters16, m_length); }
     operator AtomicString() const { return is8Bit() ? AtomicString(m_data.characters8, m_length) : AtomicString(m_data.characters16, m_length); }
 
-    bool isFunction() const { return length() > 0 && (*this)[length() - 1] == '('; }
-
     union {
         const LChar* characters8;
         const UChar* characters16;
@@ -110,12 +98,6 @@ struct CSSParserString {
     unsigned m_length;
     bool m_is8Bit;
 };
-
-template <>
-inline const LChar* CSSParserString::characters<LChar>() const { return characters8(); }
-
-template <>
-inline const UChar* CSSParserString::characters<UChar>() const { return characters16(); }
 
 struct CSSParserFunction;
 class CSSParserValueList;
@@ -136,8 +118,6 @@ struct CSSParserValue {
         ValueList = 0x100002,
         Q_EMS     = 0x100003,
         HexColor = 0x100004,
-        // Represents a dimension as an unparsed string, only used by the Bison parser
-        Dimension = 0x100005,
         // Represents a dimension by a list of two values, a CSS_NUMBER and an CSS_IDENT
         DimensionList = 0x100006,
     };
@@ -160,8 +140,6 @@ public:
     ~CSSParserValueList();
 
     void addValue(const CSSParserValue&);
-    void insertValueAt(unsigned, const CSSParserValue&);
-    void stealValues(CSSParserValueList&);
 
     unsigned size() const { return m_values.size(); }
     unsigned currentIndex() { return m_current; }

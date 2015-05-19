@@ -637,11 +637,12 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
     return styleSheet;
 }
 
+// TODO(timloh): Remove createdByParser
 PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
 {
     RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet = nullptr;
     styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().characterSet());
-    styleSheet->contents()->parseStringAtPosition(text, startPosition, createdByParser);
+    styleSheet->contents()->parseStringAtPosition(text, startPosition);
     return styleSheet;
 }
 

@@ -469,7 +469,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseKeywordValue(CSSPropertyID property
         if (lowerCaseString != "initial" && lowerCaseString != "inherit")
             return nullptr;
 
-        // Parse initial/inherit shorthands using the BisonCSSParser.
+        // Parse initial/inherit shorthands using the CSSPropertyParser.
         if (shorthandForProperty(propertyId).length())
             return nullptr;
     }

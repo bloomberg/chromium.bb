@@ -96,17 +96,10 @@
       # Generated from MediaTypeNames.in
       '<(blink_core_output_dir)/MediaTypeNames.cpp',
 
-      # Generated from BisonCSSTokenizer-in.cpp
-      '<(blink_core_output_dir)/BisonCSSTokenizer.cpp',
-
-      # Generated from BisonCSSParser-in.cpp
-      '<(blink_core_output_dir)/BisonCSSParser.cpp',
-
       # Generated from HTMLMetaElement-in.cpp
       '<(blink_core_output_dir)/HTMLMetaElement.cpp',
 
       # Additional .cpp files from the make_core_generated rules.
-      '<(blink_core_output_dir)/CSSGrammar.cpp',
       '<(blink_core_output_dir)/XPathGrammar.cpp',
 
       # Additional .cpp files from the inspector_protocol_sources list.
