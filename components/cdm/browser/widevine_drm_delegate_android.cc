@@ -51,7 +51,6 @@ const int kPsshSystemIdSize = 16;
 const int kPsshKidCountSize = 4;
 const int kPsshKidSize = 16;
 const int kPsshDataSizeSize = 4;
-const uint32_t kTencType = 0x74656e63;
 const uint32_t kPsshType = 0x70737368;
 
 const uint8_t kWidevineUuid[16] = {
@@ -64,7 +63,7 @@ const uint8_t kWidevineUuid[16] = {
 // Notes:
 // 1, If multiple PSSH boxes are found,the "Data" of the first matching PSSH box
 // will be set in |pssh_data|.
-// 2, Only PSSH and TENC boxes are allowed in |data|. TENC boxes are skipped.
+// 2, Only PSSH boxes are allowed in |data|.
 bool GetPsshData(const std::vector<uint8_t>& data,
                  std::vector<uint8_t>* pssh_data) {
   int bytes_left = base::checked_cast<int>(data.size());
@@ -97,14 +96,8 @@ bool GetPsshData(const std::vector<uint8_t>& data,
     if (data_end < box_end)
       return false;
 
-    if (type == kTencType) {
-      // Skip 'tenc' box.
-      cur = box_end;
-      bytes_left = data_end - cur;
-      continue;
-    } else if (type != kPsshType) {
+    if (type != kPsshType)
       return false;
-    }
 
     const int kPsshBoxMinimumSize =
         kPsshVersionFlagSize + kPsshSystemIdSize + kPsshDataSizeSize;
