@@ -72,6 +72,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="3892641579809465218">Internal Display</translation>
 <translation id="7823564328645135659">The language has changed from &quot;<ph name="FROM_LOCALE"/>&quot; to &quot;<ph name="TO_LOCALE"/>&quot; after syncing your settings.</translation>
+<translation id="7113420380180868673">Casting $1</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="8654520615680304441">Turn Wi-Fi on...</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME"/> via Remote Assistance.</translation>
@@ -96,6 +97,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% remaining</translation>
 <translation id="9089416786594320554">Input methods</translation>
 <translation id="2700058918926273959">Session ends in <ph name="SESSION_TIME_REMAINING"/>. You will be signed out.</translation>
+<translation id="5807965672380739016">Cast desktop to</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="1747827819627189109">On-screen keyboard enabled</translation>
@@ -124,6 +126,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="4527045527269911712">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
+<translation id="703171847531699602">No cast devices</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Connecting...</translation>
 <translation id="6062360702481658777">You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Unknown Display</translation>
@@ -206,6 +209,7 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3147142846278915599">Launcher (syncing apps...)</translation>
 <translation id="6911468394164995108">Join other ...</translation>
+<translation id="4373966964907728675">Casting desktop</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>m until full</translation>
 <translation id="3077734595579995578">shift</translation>

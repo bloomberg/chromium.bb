@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Căutați imaginea cu <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Adaugă o adresă</translation>
 <translation id="4816465935029283692">Tipuri de date</translation>
+<translation id="5098185943924922330">Trimite la Google informații despre fișierele, aplicațiile și serviciile care rulează când te confrunți cu o blocare, pentru a ne ajuta să stabilim la care funcții și îmbunătățiri ar trebui să lucrăm.
+
+        Statisticile de utilizare includ informații precum preferințele, clicurile pe butoane și utilizarea memoriei. Acestea nu includ adresele URL ale paginilor web sau alte informații personale. Rapoartele de blocare includ informații despre sistem din momentul blocării și pot include adresele URL ale paginilor web sau informații personale, în funcție de ceea ce s-a întâmplat în momentul blocării.</translation>
 <translation id="4042870126885713738">Afișează sugestii atunci când o adresă web nu se rezolvă sau nu poate fi stabilită o conexiune</translation>
 <translation id="8237438615979997762">Datele stocate pe acest dispozitiv, precum și datele stocate în Contul Google se vor păstra în ambele locații. Cu toate acestea, datele noi sau modificările datelor nu se vor sincroniza între aceste locații.</translation>
 <translation id="6831043979455480757">Tradu</translation>
@@ -92,6 +95,7 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, aplicație web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Înlocuiește un fișier</translation>
 <translation id="5595485650161345191">Editează adresa</translation>
+<translation id="8413385045638830869">Mai întâi întreabă (recomandat)</translation>
 <translation id="2100273922101894616">Conectare automată</translation>
 <translation id="5313967007315987356">Adaugă un site</translation>
 <translation id="5733727110006255111">Când această funcție este activată, Chrome va utiliza serverele Google pentru a comprima paginile pe care le accesezi, înainte de a le descărca. Paginile SSL și incognito nu vor fi incluse.</translation>
@@ -157,6 +161,7 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="6857778194843072568">Trimite numai prin Wi-Fi</translation>
 <translation id="5380554235172449987">Nu trimite niciodată</translation>
 <translation id="5715468759630044318">Alege contul</translation>
+<translation id="5000922062037820727">Blocată (recomandat)</translation>
 <translation id="544291274896356069">Vei părăsi modul incognito dacă acest link este deschis într-o aplicație externă. Continui?</translation>
 <translation id="3917783807003067648">Accesul la locație este blocat</translation>
 <translation id="1379156015317873965">Îmbunătățește performanța de încărcare a paginii</translation>
@@ -228,6 +233,7 @@ Atinge butonul Înapoi pentru a ieși.</translation>
 <translation id="3254409185687681395">Marcați această pagină</translation>
 <translation id="907015151729920253">Card inteligent</translation>
 <translation id="2482878487686419369">Notificări</translation>
+<translation id="857943718398505171">Acordată (recomandat)</translation>
 <translation id="4412992751769744546">Permite cookie-urile terță parte</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Salvați videoclipul</translation>
@@ -262,7 +268,6 @@ Atinge butonul Înapoi pentru a ieși.</translation>
 <translation id="748127970106343339">Confirmă ștergerea datelor de conectare de pe dispozitiv</translation>
 <translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
 <translation id="5899349522111170522">Creează un fișier</translation>
-<translation id="1082482054625560856">Gestionează parolele salvate în <ph name="BEGIN_LINK"/>Contul Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Permite afișarea imaginilor pe site-urile pe care le specifici în timp ce le blochezi pe cele de pe restul site-urilor</translation>
 <translation id="2360035970720276770">Se poate descărca numai de la adresele URL http sau https</translation>
 <translation id="6570560778840017462">Nu vei fi deconectat(ă) de la <ph name="BEGIN_LINK"/>Conturile Google<ph name="END_LINK"/></translation>

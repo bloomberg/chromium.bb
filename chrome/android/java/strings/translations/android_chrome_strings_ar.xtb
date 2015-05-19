@@ -93,6 +93,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME"/>، تطبيق ويب. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">استبدال ملف</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
+<translation id="8413385045638830869">السؤال أولاً (موصى به)</translation>
 <translation id="2100273922101894616">تسجيل الدخول التلقائي</translation>
 <translation id="5313967007315987356">إضافة موقع ويب</translation>
 <translation id="5733727110006255111">‏عند تشغيل هذه الميزة، سيستخدم Chrome خوادم Google لضغط الصفحات التي تزورها قبل تنزيلها. ولن يتضمن هذا صفحات وضعي SSL والتصفح المتخفي.</translation>
@@ -158,6 +159,7 @@
 <translation id="6857778194843072568">‏الإرسال عبر Wi-Fi فقط</translation>
 <translation id="5380554235172449987">عدم الإرسال مطلقًا</translation>
 <translation id="5715468759630044318">اختر حسابًا</translation>
+<translation id="5000922062037820727">محظور (موصى به)</translation>
 <translation id="544291274896356069">ستتم مغادرة وضع التصفح المتخفي إذا تم فتح هذا الرابط في تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="3917783807003067648">تم حظر الموقع</translation>
 <translation id="1379156015317873965">تحسين أداء تحميل الصفحة</translation>
@@ -229,6 +231,7 @@
 <translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
 <translation id="907015151729920253">البطاقة الذكية</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
+<translation id="857943718398505171">مسموح به (موصى به)</translation>
 <translation id="4412992751769744546">السماح لملفات تعريف ارتباط الجهات الخارجية</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
@@ -263,7 +266,6 @@
 <translation id="748127970106343339">تأكيد حذف بيانات اعتماد الجهاز</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="5899349522111170522">إنشاء ملف جديد</translation>
-<translation id="1082482054625560856">‏إدارة كلمات المرور المحفوظة في <ph name="BEGIN_LINK"/>حساب Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">السماح بالصور على المواقع التي تحددها بينما يتم حظرها على بقية مواقع الويب</translation>
 <translation id="2360035970720276770">‏يمكن تنزيل عناوين URL بالبادئة &quot;http&quot; أو &quot;https&quot; فقط</translation>
 <translation id="6570560778840017462">‏لن يتم تسجيل خروجك من <ph name="BEGIN_LINK"/>حسابات Google<ph name="END_LINK"/></translation>

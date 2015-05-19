@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="4816465935029283692">Typy danych</translation>
+<translation id="5098185943924922330">Pomóż nam określić najważniejsze funkcje i ulepszenia, nad którymi powinniśmy pracować, wysyłając do Google przy każdej awarii informacje o plikach, aplikacjach oraz uruchomionych usługach.
+
+        Statystyki użytkowania obejmują np. dane o ustawieniach, kliknięciach przycisków i wykorzystaniu pamięci. Nie zawierają one adresów URL stron internetowych ani żadnych informacji osobistych. Raporty o awariach zawierają informacje systemowe z chwili awarii i mogą obejmować adresy URL stron internetowych lub informacje osobiste w zależności od okoliczności awarii.</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
 <translation id="8237438615979997762">Dane przechowywane na tym urządzeniu oraz na Twoim koncie Google pozostaną w obu tych miejscach. Jednak nowe dane i przyszłe zmiany nie będą już synchronizowane z kontem.</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
@@ -92,6 +95,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="2206488550163399966"><ph name="APP_NAME"/> – aplikacja internetowa. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Zastąp plik</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
+<translation id="8413385045638830869">Najpierw zapytaj (zalecane)</translation>
 <translation id="2100273922101894616">Autologowanie</translation>
 <translation id="5313967007315987356">Dodaj stronę</translation>
 <translation id="5733727110006255111">Kiedy ta funkcja jest włączona, Chrome korzysta z serwerów Google, by kompresować strony przed ich pobraniem. Nie dotyczy to stron SSL ani trybu incognito.</translation>
@@ -157,6 +161,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="6857778194843072568">Wysyłaj tylko przez Wi-Fi</translation>
 <translation id="5380554235172449987">Nigdy nie wysyłaj</translation>
 <translation id="5715468759630044318">Wybierz konto</translation>
+<translation id="5000922062037820727">Zablokowane (zalecane)</translation>
 <translation id="544291274896356069">Jeśli otworzysz ten link w aplikacji zewnętrznej, opuścisz tryb incognito. Kontynuować?</translation>
 <translation id="3917783807003067648">Lokalizacja jest zablokowana</translation>
 <translation id="1379156015317873965">Popraw szybkość wczytywania stron</translation>
@@ -228,6 +233,7 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
 <translation id="907015151729920253">Karta inteligentna</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
+<translation id="857943718398505171">Dozwolone (zalecane)</translation>
 <translation id="4412992751769744546">Zezwalaj na pliki cookie innych firm</translation>
 <translation id="5016205925109358554">Szeryfowa</translation>
 <translation id="3063601790762993062">Zapisz film</translation>
@@ -262,7 +268,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="748127970106343339">Potwierdź usunięcie z urządzenia danych logowania</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
 <translation id="5899349522111170522">Utwórz nowy plik</translation>
-<translation id="1082482054625560856">Zarządzaj zapisanymi hasłami na swoim <ph name="BEGIN_LINK"/>koncie Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Zezwalaj na obrazy na określonych stronach i blokuj je wszędzie indziej</translation>
 <translation id="2360035970720276770">Pobieranie jest możliwe tylko z URL-i „http” i „https”</translation>
 <translation id="6570560778840017462">Nie spowoduje to wylogowania Cię z <ph name="BEGIN_LINK"/>kont Google<ph name="END_LINK"/></translation>

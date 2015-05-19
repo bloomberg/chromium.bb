@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Обавезно</translation>
 <translation id="2958431318199492670">Конфигурација мреже није у складу са ONC стандардом. Делови конфигурације не могу да се увезу.</translation>
 <translation id="3583757800736429874">&amp;Понови премештање</translation>
+<translation id="7887683347370398519">Проверите CVC и покушајте поново</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Недостаје евиденција уређаја</translation>
 <translation id="1491151370853475546">Поново учитај ову страницу</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Увек преводи <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Сакриј вредност</translation>
 <translation id="6753269504797312559">Вредност смерница</translation>
+<translation id="3369366829301677151">Ажурирајте и верификујте <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Омогућавање аутоматског попуњавања контактима…</translation>
 <translation id="7275334191706090484">Обележивачи којим се управља</translation>
 <translation id="7400418766976504921">URL адреса</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Област</translation>
 <translation id="1871208020102129563">Прокси је подешен да користи фиксне прокси сервере, а не URL адресу .pac скрипте.</translation>
+<translation id="8988760548304185580">Унесите датум истека и троцифрени CVC који се налази на полеђини картице</translation>
 <translation id="8940229512486821554">Покрените <ph name="EXTENSION_NAME"/> команду: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Непозната грешка</translation>
 <translation id="112840717907525620">Кеш смерница је у реду</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Грешка при потврди ваљаности: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Превод на <ph name="TARGET_LANGUAGE"/> није успео.</translation>
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
+<translation id="3219579145727097045">Унесите датум истека и четвороцифрени CVC који се налази на предњој страни картице</translation>
 <translation id="3667681724235208644">Прикажи оригинал</translation>
 <translation id="4079302484614802869">Конфигурација проксија је подешена да користи URL адресу .pac скрипте, а не фиксне прокси сервере.</translation>
 <translation id="5540224163453853">Нисмо пронашли захтевани чланак.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Желите ли да преведете са језика <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Додељена локација:</translation>
 <translation id="3542684924769048008">Користи лозинку за:</translation>
+<translation id="2855922900409897335">Верификујте <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Ова страница је преведена са језика:<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Емират</translation>
+<translation id="6646897916597483132">Унесите четвороцифрени CVC који се налази на предњој страни картице</translation>
 <translation id="5145883236150621069">Кôд грешке је присутан у одговору на смернице</translation>
 <translation id="7983301409776629893">Увек преводи са језика: <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Дистрикт</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Не управља</translation>
 <translation id="3712624925041724820">Нема више лиценци</translation>
 <translation id="4926049483395192435">Мора да буде наведено.</translation>
+<translation id="1455235771979731432">Дошло је до проблема при верификацији картице. Проверите интернет везу и покушајте поново.</translation>
 <translation id="7542995811387359312">Онемогућено је аутоматско попуњавање кредитне картице зато што овај образац не користи безбедну везу.</translation>
 <translation id="5179510805599951267">Није <ph name="ORIGINAL_LANGUAGE"/>? Пријавите ову грешку</translation>
 <translation id="8088680233425245692">Прегледање чланка није успело.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Активно</translation>
 <translation id="7568593326407688803">Ова страница је на језику:<ph name="ORIGINAL_LANGUAGE"/>Желите ли да је преведете?</translation>
 <translation id="8876793034577346603">Рашчлањивање конфигурације мреже није успело.</translation>
+<translation id="4800132727771399293">Проверите датум истека и CVC и покушајте поново</translation>
 <translation id="4171400957073367226">Неисправан потпис за верификацију</translation>
+<translation id="9125941078353557812">Унесите троцифрени CVC који се налази на полеђини картице</translation>
 <translation id="106701514854093668">Обележивачи на рачунару</translation>
 <translation id="6154808779448689242">Враћени токен смерница се не подудара са тренутним токеном</translation>
 <translation id="7995512525968007366">Није наведено</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Опозови промену редоследа</translation>
 <translation id="20817612488360358">Подешено је да се користе системска подешавања проксија, али је наведена експлицитна конфигурација проксија.</translation>
 <translation id="2639739919103226564">Статус:</translation>
+<translation id="8824019021993735287">Chrome овог пута није успео да верификује картицу. Покушајте поново касније.</translation>
 <translation id="4968547170521245791">Пренос није могућ</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4196861286325780578">&amp;Понови премештање</translation>

@@ -8,19 +8,23 @@
 <translation id="1005274289863221750">உங்கள் மைக்ரோஃபோன் மற்றும் கேமராவைப் பயன்படுத்தலாம்</translation>
 <translation id="2857834222104759979">அமைப்புக் கோப்பு  செல்லுபடியாகாதது.</translation>
 <translation id="6384275966486438344">உங்கள் தேடல் அமைப்புகளை இதற்கு மாற்றவும்: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB சாதனத்தைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="1445572445564823378">இந்த நீட்டிப்பு, <ph name="PRODUCT_NAME"/> ஐ மந்தமாக்குகிறது. <ph name="PRODUCT_NAME"/> இன்
 செயல்திறனை மீட்டமைக்க, இதை நீங்கள் முடக்க வேண்டும்.</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME"/> அனுப்பிய <ph name="PRODUCT_ID"/> தயாரிப்பை அறிய முடியவில்லை</translation>
 <translation id="1033780634303702874">உங்கள் தொடர் சாதனங்களை அணுகலாம்</translation>
 <translation id="288042212351694283">உங்கள் யுனிவர்சல் 2ஆம் நிலை சாதனங்களை அணுகும்</translation>
+<translation id="3163201441334626963"><ph name="VENDOR_ID"/> அனுப்பிய <ph name="PRODUCT_ID"/> தயாரிப்பை அறிய முடியவில்லை.</translation>
+<translation id="6027032947578871493"><ph name="VENDOR_NAME"/> அனுப்பிய <ph name="PRODUCT_ID"/> (சீரியல் எண் <ph name="SERIAL_NUMBER"/>) தயாரிப்பை அறிய முடியவில்லை</translation>
 <translation id="4115165561519362854">இந்தச் சாதனத்தின் நிர்வாகிக்கு <ph name="EXTENSION_NAME"/> இன் குறைந்தபட்ச பதிப்பான <ph name="EXTENSION_VERSION"/> தேவை. இது அந்தப் பதிப்பிற்குப் (அல்லது சமீபத்திய பதிப்பு) புதுப்பிக்கப்படும் வரை இயக்கமுடியாது.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> எனப் பெயரிடப்பட்ட சாதனத்துடன் தரவைப் பரிமாறவும்</translation>
 <translation id="5971037678316050792">புளூடூத் அடாப்டரின் நிலையையும், இணைத்தலையும் கட்டுப்படுத்துதல்</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">உங்கள் கணினியுடன் இணைக்கப்பட்ட புளூடூத் சாதனங்கள் பற்றிய தகவலை அணுகுதல் மற்றும் அருகிலுள்ள புளூடூத் சாதனங்களைக் கண்டறிதல்.</translation>
 <translation id="8749863574775030885">அறியப்படாத விற்பனையாளரிடமிருந்து USB சாதனங்களை அணுகு</translation>
+<translation id="3115238746683532089"><ph name="VENDOR_ID"/> விற்பனையாளர் அனுப்பிய <ph name="PRODUCT_ID"/> (சீரியல் எண் <ph name="SERIAL_NUMBER"/>) தயாரிப்பை அறிய முடியவில்லை</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> இன் <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT"/>' என்ற பின்புல ஸ்கிரிப்டை ஏற்ற முடியவில்லை.</translation>
+<translation id="6068932090455285721">விற்பனையாளர் <ph name="VENDOR_ID"/> அனுப்பிய <ph name="PRODUCT_NAME"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">புளூடூத் சாதனங்களுக்குச் செய்திகளை அனுப்புதல் மற்றும் அதிலிருந்து செய்திகளைப் பெறுதல்.</translation>
 <translation id="5678955352098267522">உங்கள் தரவை <ph name="WEBSITE_1"/> இல் படிக்கவும்</translation>
@@ -32,7 +36,6 @@
 <translation id="8712265948125780616">எக்ஸ்டன்ஷன் அன்பேக்கர்</translation>
 <translation id="149347756975725155">நீட்டிப்புப் படவுரு '<ph name="ICON"/>' ஐ ஏற்ற முடியவில்லை.</translation>
 <translation id="8825366169884721447">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் &quot;<ph name="HEADER_NAME"/>&quot; கோரிக்கை மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
-<translation id="4776856853352853275">USB சாதனங்களைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="6731255991101203740">இதன் ஜிப்பை திறப்பதற்குக் கோப்பகத்தை உருவாக்க முடியவில்லை: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="388442998277590542">'<ph name="OPTIONS_PAGE"/>' என்ற விருப்பங்கள் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
@@ -49,6 +52,7 @@
 <translation id="8047248493720652249">இந்த நீட்டிப்பு, பதிவிறக்கத்திற்கு &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; என்று பெயரிடுவதில் தோல்வி, ஏனெனில் மற்றொரு நீட்டிப்பு (<ph name="EXTENSION_NAME"/>) வேறொரு கோப்புப்பெயரை &quot;<ph name="ACTUAL_FILENAME"/>&quot; நிர்ணயித்து விட்டது.</translation>
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> வழங்கும் தெரியாத சாதனங்கள்</translation>
 <translation id="5026754133087629784">இணையப்பார்வை: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (சீரியல் எண் <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">முறையற்ற பாதை (சரியான அல்லது இதனுடன் தொடர்புடையவை '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">எல்லா <ph name="WEBSITE_1"/> தளங்களும்</translation>
 <translation id="8662911384982557515">உங்கள் முகப்புப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="HOME_PAGE"/></translation>
@@ -85,6 +89,7 @@
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' என்ற பின்புலப் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="2988488679308982380">இந்த தொகுப்பை நிறுவமுடியாது: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">உங்கள் சாதனங்களின் ஒன்றின் அணுகலை &quot;<ph name="APP_NAME"/>&quot; கோருகிறது.</translation>
+<translation id="3466070586188012397">விற்பனையாளர் <ph name="VENDOR_ID"/> அனுப்பிய <ph name="PRODUCT_NAME"/> (சீரியல் எண் <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">விருப்பங்கள்: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">தொகுப்பு செல்லாதது. விவரங்கள்: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">பல இணையதளங்களில் உங்கள் தரவைப் படித்தல்</translation>

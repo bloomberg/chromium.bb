@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Obbligatoria</translation>
 <translation id="2958431318199492670">La configurazione di rete non è conforme allo standard ONC. Parti della configurazione potrebbero non essere importate.</translation>
 <translation id="3583757800736429874">&amp;Ripeti spostamento</translation>
+<translation id="7887683347370398519">Controlla il tuo codice CVC e riprova</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Record del dispositivo mancante</translation>
 <translation id="1491151370853475546">Ricarica questa pagina</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Traduci sempre <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Nascondi valore</translation>
 <translation id="6753269504797312559">Valore norma</translation>
+<translation id="3369366829301677151">Aggiorna e verifica la tua carta <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Attiva Compilazione automatica utilizzando Contatti…</translation>
 <translation id="7275334191706090484">Preferiti gestiti</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="1871208020102129563">L'impostazione del proxy prevede l'utilizzo di server proxy fissi, non di un URL script .pac.</translation>
+<translation id="8988760548304185580">Inserisci la data di scadenza e il codice CVC di tre cifre indicato sul retro della carta</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/>: esegui comando <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Errore sconosciuto</translation>
 <translation id="112840717907525620">Cache dei criteri integra</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Errore di convalida. <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Traduzione in <ph name="TARGET_LANGUAGE"/> non riuscita.</translation>
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
+<translation id="3219579145727097045">Inserisci la data di scadenza e il codice CVC di quattro cifre indicato sul retro della carta</translation>
 <translation id="3667681724235208644">Visualizza originale</translation>
 <translation id="4079302484614802869">L'impostazione della configurazione proxy prevede l'utilizzo di un URL script .pac, non di server proxy fissi.</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Tradurre da <ph name="ORIGINAL_LANGUAGE"/> in <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Posizione assegnata:</translation>
 <translation id="3542684924769048008">Utilizza password per:</translation>
+<translation id="2855922900409897335">Verifica la carta <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Questa pagina è stata tradotta da<ph name="ORIGINAL_LANGUAGE"/>a<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirato</translation>
+<translation id="6646897916597483132">Inserisci il codice CVC di quattro cifre indicato sulla parte anteriore della carta</translation>
 <translation id="5145883236150621069">Codice di errore presente nella risposta del criterio</translation>
 <translation id="7983301409776629893">Traduci sempre <ph name="ORIGINAL_LANGUAGE"/> in <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distretto</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Non gestito</translation>
 <translation id="3712624925041724820">Licenze esaurite</translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
+<translation id="1455235771979731432">Si è verificato un problema durante la verifica della carta. Controlla la connessione Internet e riprova.</translation>
 <translation id="7542995811387359312">La compilazione automatica della carta di credito è disattivata perché questo modulo non utilizza una connessione sicura.</translation>
 <translation id="5179510805599951267">Non in <ph name="ORIGINAL_LANGUAGE"/>? Segnala questo errore</translation>
 <translation id="8088680233425245692">Impossibile visualizzare l'articolo.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Attivo</translation>
 <translation id="7568593326407688803">Questa pagina è in<ph name="ORIGINAL_LANGUAGE"/>Vuoi tradurla?</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>
+<translation id="4800132727771399293">Controlla la data di scadenza e il codice CVC, poi riprova</translation>
 <translation id="4171400957073367226">Firma di verifica non valida</translation>
+<translation id="9125941078353557812">Inserisci il codice CVC di tre cifre indicato sul retro della carta</translation>
 <translation id="106701514854093668">Preferiti desktop</translation>
 <translation id="6154808779448689242">Il token del criterio restituito non corrisponde al token corrente</translation>
 <translation id="7995512525968007366">Non specificato</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Annulla ridisposizione</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
 <translation id="2639739919103226564">Stato:</translation>
+<translation id="8824019021993735287">Al momento non è possibile verificare la carta in Chrome. Riprova più tardi.</translation>
 <translation id="4968547170521245791">Impossibile eseguire il proxy</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>

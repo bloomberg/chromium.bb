@@ -12,15 +12,19 @@
 <translation id="8480209185614411573">Wysoki kontrast.</translation>
 <translation id="1588438908519853928">Normalny</translation>
 <translation id="4954450790315188152">Gdy przeglądanie przy użyciu kursora jest włączone:</translation>
+<translation id="1591070050619849194">Wyłącz wszystkie animacje obrazów.</translation>
 <translation id="2965611304828530558">&lt;p&gt;Gdy najedziesz na link lub element sterujący, staną się one automatycznie aktywne.   Naciśnij &lt;span class='key'&gt;Enter&lt;/span&gt;, by kliknąć link lub przycisk. &lt;/p&gt; &lt;p&gt;   Gdy element sterujący, który jest aktywny, (np. pole tekstowe lub pole listy) przechwytuje   klawisze strzałek, naciśnij &lt;span class='key'&gt;Esc&lt;/span&gt;, a następnie   strzałkę w lewo lub prawo, by kontynuować przeglądanie przy użyciu kursora. &lt;/p&gt; &lt;p&gt;   Możesz też nacisnąć &lt;span class='key'&gt;Tab&lt;/span&gt;, by przejść do   następnego elementu sterującego, który można aktywować. &lt;/p&gt;</translation>
 <translation id="5041932793799765940">Dostosowanie kolorów</translation>
 <translation id="2394933097471027016">Wypróbuj teraz – przeglądanie przy użyciu kursora jest zawsze włączone na tej stronie.</translation>
 <translation id="3622586652998721735">Ustaw jako schemat domyślny</translation>
+<translation id="4937901943818762779">Zezwalaj na wyświetlanie animowanych obrazów, ale tylko raz.</translation>
 <translation id="2179565792157161713">Otwórz długi opis w nowej karcie</translation>
 <translation id="7942349550061667556">Czerwony</translation>
 <translation id="1555130319947370107">Niebieski</translation>
 <translation id="2471847333270902538">Schemat kolorów dla <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Kliknij prawym przyciskiem myszy dowolny element z atrybutem „longdesc” lub „aria-describedat”, by zobaczyć długi opis.</translation>
+<translation id="6838518108677880446">Konfiguracja:</translation>
+<translation id="5594989420907487559">Uruchamiaj animacje tylko raz lub wyłącz je całkowicie.</translation>
 <translation id="786423340267544509">Dodaj obramowanie do elementów z atrybutem aria-describedat lub longdesc.</translation>
 <translation id="690628312087070417">Gdy kursor przeskoczy o dużą odległość:</translation>
 <translation id="1996252509865389616">Włączyć?</translation>
@@ -37,16 +41,23 @@
 <translation id="1287053896835709737">Żółty tekst na czarnym tle</translation>
 <translation id="4896660567607030658">Brak potwierdzenia – po prostu wyświetl kursor.</translation>
 <translation id="5631241868147802353">Domyślny schemat kolorów:</translation>
+<translation id="1791496371305830581">Zezwalaj na wszystkie animowane obrazy.</translation>
 <translation id="5173942593318174089">Oznacz pozycję kursora przy użyciu animacji.</translation>
 <translation id="7379645913608427028">Stopień</translation>
+<translation id="3252573918265662711">Konfiguracja</translation>
 <translation id="894241283505723656">Długie opisy w menu kontekstowym</translation>
 <translation id="5555153510860501336">Wysoki kontrast jest wyłączony</translation>
+<translation id="2808027189040546825">Krok 1 – wybierz wiersz zawierający najbledsze gwiazdki:</translation>
+<translation id="8321034316479930120">Zasady animacji</translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="1703735871906654364">Przeglądanie przy użyciu kursora</translation>
+<translation id="145360476452865422">Zasady animacji:</translation>
 <translation id="7384431257964758081">Wysoki kontrast jest włączony</translation>
 <translation id="6550675742724504774">Opcje</translation>
 <translation id="5650358096585648000">Potwierdzenie wizualne</translation>
 <translation id="4388820049312272371">Oznacz pozycję kursora przy użyciu krótkiego błysku.</translation>
+<translation id="7586636300921797327">Krok 2 – przesuń suwak, by wszystkie gwiazdki w wybranym wierszu
+        były widoczne</translation>
 <translation id="2223143012868735942">Dostosowywany filtr kolorów, który działa na stronach internetowych i poprawia widoczność kolorów.</translation>
 <translation id="4023902424053835668">Przeglądaj tekst na stronach internetowych, używając klawiszy strzałek.</translation>
 <translation id="2795227192542594043">To rozszerzenie dodaje ruchomy kursor na stronie internetowej, dzięki czemu możesz zaznaczać tekst, używając klawiatury.</translation>

@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Wajib</translation>
 <translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
 <translation id="3583757800736429874">&amp;Buat Semula Pindahkan</translation>
+<translation id="7887683347370398519">Semak CVC anda dan cuba lagi</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Tiada rekod peranti</translation>
 <translation id="1491151370853475546">Muatkan semula Halaman Ini</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Sembunyikan nilai</translation>
 <translation id="6753269504797312559">Nilai dasar</translation>
+<translation id="3369366829301677151">Kemaskinikan dan sahkan <ph name="CREDIT_CARD"/> anda</translation>
 <translation id="8834246243508017242">Dayakan Auto-Isian menggunakan Kenalan ...</translation>
 <translation id="7275334191706090484">Penanda Halaman Terurus</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Kawasan</translation>
 <translation id="1871208020102129563">Proksi ditetapkan untuk menggunakan pelayan proksi tetap, bukannya URL skrip .pac.</translation>
+<translation id="8988760548304185580">Masukkan tarikh tamat tempoh dan CVC 3 digit dari bahagian belakang kad anda</translation>
 <translation id="8940229512486821554">Jalankan perintah <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Ralat tidak diketahui</translation>
 <translation id="112840717907525620">Cache dasar OK</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Ralat pengesahan: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Terjemahan kepada <ph name="TARGET_LANGUAGE"/> gagal.</translation>
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
+<translation id="3219579145727097045">Masukkan tarikh tamat tempoh dan CVC 4 digit dari bahagian depan kad anda</translation>
 <translation id="3667681724235208644">Lihat Yang Asal</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Terjemahkan daripada <ph name="ORIGINAL_LANGUAGE"/> kepada <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Lokasi yang Ditentukan:</translation>
 <translation id="3542684924769048008">Gunakan kata laluan untuk:</translation>
+<translation id="2855922900409897335">Mengesahkan <ph name="CREDIT_CARD"/> anda</translation>
 <translation id="7186367841673660872">Halaman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE"/>ke<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emiriah</translation>
+<translation id="6646897916597483132">Masukkan CVC 4 digit dari bahagian depan kad anda</translation>
 <translation id="5145883236150621069">Terdapat kod ralat dalam balasan dasar</translation>
 <translation id="7983301409776629893">Sentiasa terjemahkan <ph name="ORIGINAL_LANGUAGE"/> ke <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Daerah</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Tidak Diurus</translation>
 <translation id="3712624925041724820">Kehabisan lesen</translation>
 <translation id="4926049483395192435">Mesti ditentukan.</translation>
+<translation id="1455235771979731432">Terdapat masalah mengesahkan kad anda. Semak sambungan internet anda dan cuba lagi.</translation>
 <translation id="7542995811387359312">Pengisian kad kredit automatik dilumpuhkan kerana borang ini tidak menggunakan sambungan selamat.</translation>
 <translation id="5179510805599951267">Bukan dalam <ph name="ORIGINAL_LANGUAGE"/>? Laporkan ralat ini</translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Aktif</translation>
 <translation id="7568593326407688803">Halaman ini adalah dalam<ph name="ORIGINAL_LANGUAGE"/>Adakah anda ingin menterjemahkannya?</translation>
 <translation id="8876793034577346603">Konfigurasi rangkaian gagal dihuraikan.</translation>
+<translation id="4800132727771399293">Semak tarikh tamat tempoh serta CVC anda dan cuba lagi</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
+<translation id="9125941078353557812">Masukkan CVC 3 digit dari bahagian belakang kad anda</translation>
 <translation id="106701514854093668">Penanda Halaman Desktop</translation>
 <translation id="6154808779448689242">Token dasar yang dikembalikan tidak sepadan dengan token semasa</translation>
 <translation id="7995512525968007366">Tidak Ditentukan</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
 <translation id="20817612488360358">Tetapan proksi sistem telah sedia untuk digunakan tetapi konfigurasi proksi jelas juga telah ditentukan.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="8824019021993735287">Chrome tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi kemudian.</translation>
 <translation id="4968547170521245791">Tidak boleh Proksi</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="4196861286325780578">&amp;Buat semula pindahkan</translation>

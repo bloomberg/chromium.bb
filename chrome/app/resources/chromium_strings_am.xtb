@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">እርግጠኛ ነዎት Chromiumን ማራገፍ ይፈልጋሉ?</translation>
 <translation id="6510925080656968729">Chromiumን ያራግፉ</translation>
 <translation id="2615699638672665509">ይህ ኮምፒውተር ሃርድዌሩ ከአሁን በኋላ ስለማይደገፍ በቅርቡ የChromium ዝማኔዎችን መቀበሉን ያቆማል።</translation>
-<translation id="5532301346661895910">Chromium ይህን በእርስዎ የ|Google የተቀመጡ የይለፍ ቃሎች| ያስቀምጥ እና በሚቀጥለው ጊዜ በሚፈልጉት ጊዜ ያስታውሰዋል።</translation>
 <translation id="6893813176749746474">Chromium ተዘምኗል፣ ግን ቢያንስ ለ30 ቀኖች አልተጠቀሙበትም።</translation>
 <translation id="421369550622382712">ለChromium ምርጥ መተግበሪያዎችን፣ ጨዋታዎችን፣ ቅጥያዎችን እና ገጽታዎችን ያግኙ።</translation>
 <translation id="2732467638532545152">ኮምፒውተርዎ የዚህ ድር ጣቢያ ደህንነት እውቅና ማረጋገጫ ማስሄድ የማይችል የድሮ የMicrosoft Windows ስሪት አያሄደ ነው። በዚህ ችግር ምክንያት Chromium የእውቅና ማረጋገጫው ከ<ph name="SITE"/> ይሁን ወይም በአውታረ መረብዎ ላይ ያለ <ph name="SITE"/>ን ከሚያስመስል ሰው ይሁን የመጣው መለየት አይችልም። እባክዎ ኮምፒውተርዎን ይበልጥ የቅርብ ጊዜ ወደሆነ የWindows ስሪት ያዘምኑ።</translation>
@@ -59,7 +58,6 @@
 <translation id="7064610482057367130">ምንም የሚዘምን የChromium ጭነት አልተገኘም።</translation>
 <translation id="872034308864968620">Chromium ጀርባ ላይ ያሂድ</translation>
 <translation id="459535195905078186">የChromium መተግበሪያዎች</translation>
-<translation id="5109068449432240255">አዎ ከChromium ውጣ</translation>
 <translation id="8134284582177628525">ይህን ኮምፒውተር ከ<ph name="PROFILE_NAME"/> ጋር የሚጋሩ ከሆኑ ተለይተው ለማሰስ እራስዎን Chromium ላይ ያክሉ። አለበለዚያ የGoogle መለያቸውን ያላቅቁት።</translation>
 <translation id="1480489203462860648">ይሞክሩት፣ አስቀድሞ ተጭኗል</translation>
 <translation id="3032787606318309379">ወደ Chromium በማከል ላይ...</translation>
@@ -78,7 +76,6 @@
 <translation id="734373864078049451">የእርስዎ ድር፣ ዕልባቶች እና ሌሎች የChromium ነገሮች እዚህ ይኖራሉ።</translation>
 <translation id="3197823471738295152">መሣሪያዎ የተዘመነ ነው።</translation>
 <translation id="8551886023433311834">የተዘመነ ለመሆን ጥቂት ብቻ ቀርቷል! ዝማኔውን ለማጠናቀቅ መሣሪያዎን ዳግም ያስጀምሩት።</translation>
-<translation id="8353224596138547809">Chromium የዚህ ጣቢያ ይለፍ ቃልዎን እንዲያስቀምጥልዎ ይፈልጋሉ?</translation>
 <translation id="8738058698779197622">ደህንነቱ የተጠበቀ ግንኙነት ለመመስረት፣ የእርስዎ ሰዓት በትክክል መቀናበር ያስፈልገዋል። ይህን የሆነበት ምክንያት የድር ጣቢያዎች ራሳቸውን ለማሳወቅ የሚጠቀሙባቸው የምስክር ወረቀቶች የሚሰሩት ለተወሰኑ ክፍለ ጊዜያቶች ብቻ ስለሆነ ነው። የእርስዎ መሣሪያ ሰዓት ልክ እንዳለመሆኑ መጠን Chromium እነዚህን ምስክር ወረቀቶች ሊያረጋግጣቸው አይችልም።</translation>
 <translation id="7339898014177206373">አዲሰ መስኮት</translation>
 <translation id="7463979740390522693">Chromium - ማሳወቂያዎች (<ph name="QUANTITY"/> ያልተነበቡ)</translation>
@@ -135,7 +132,6 @@
 <translation id="4365115785552740256">Chromium በ<ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>  ክፍት ምንጭ ፕሮጀክት እና በሌላ <ph name="BEGIN_LINK_OSS"/>ክፍት ምንጭ ሶፍትዌር<ph name="END_LINK_OSS"/> እውን ሊሆን ችሏል።</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">እንግዳዎች ማንኛውንም ነገር ወደኋላ ሳይተዉ Chromium መጠቀም ይችላሉ።</translation>
-<translation id="3487263810738775861">አንድ ቅጥያ Chromiumን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
 <translation id="5877064549588274448">ሰርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>
 <translation id="7549178288319965365">ስለ Chromium OS</translation>
 <translation id="6248213926982192922">Chromium ነባሪውን አሳሽ ያድርጉ።</translation>
@@ -207,7 +203,8 @@
 <translation id="1414495520565016063">ወደ Chromium ገብተዋል!</translation>
 <translation id="2158734852934720349">Chromium OS የክፍት ምንጭ ፈቃዶች</translation>
 <translation id="2966088006374919794">Chromium የ<ph name="SCHEME"/> አገናኞችን ለማስተናገድ አንድ ውጫዊ መተግበሪያ ማስጀመር አለበት። የተጠየቀው አገናኝ <ph name="PROTOLINK"/> ነው።</translation>
-<translation id="2558235863893655150">Chromium የይለፍ ቃልዎን እንዲያስቀምጥልዎት ይፈልጋሉ?</translation>
+<translation id="7205698830395646142">በChromium ምናሌ ውስጥ ደብቅ</translation>
+<translation id="7979877361127045932">በChromium ምናሌ ውስጥ ደብቅ</translation>
 <translation id="6485906693002546646">የChromium ነገሮችዎን ለማመሳሰል <ph name="PROFILE_EMAIL"/>ን እየተጠቀሙ ነው። የማመሳሰል ምርጫዎን ለማዘመን ወይም Chromium ያለGoogle መለያ መጠቀም የሚፈልጉ ከሆኑ <ph name="SETTINGS_LINK"/>ን ይጎብኙ።</translation>
 <translation id="705851970750939768">Chromiumን አዘምን</translation>
 <translation id="5772805321386874569">(የChromium <ph name="BEGIN_BUTTON"/>ዳግም መጀመር<ph name="END_BUTTON"/> ያስፈልገዋል)</translation>
@@ -234,7 +231,6 @@
 <translation id="2119636228670142020">&amp;ስለChromium ስርዓተ ክወና</translation>
 <translation id="1708666629004767631">አዲስና ደህንነቱ ይበልጥ የተጠበቀ የChromium ስሪት አለ።</translation>
 <translation id="378917192836375108">Chromium ድር ላይ ያለ ስልክ ቁጥር ጠቅ እንዲያደርጉትና በSkype እንዲደውሉበት ያስችልዎታል!</translation>
-<translation id="8724049448828509830">አንድ ውርድ አሁን በሂደት ላይ ነው። ከChromium ወጥተው ውርዱን ይቅር ማለት ይፈልጋሉ?</translation>
 <translation id="608189560609172163">በመለያ ሲገባ በነበረ ስህተት ምክንያት Chromium ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="4888717733111232871">Chromium ለmDNS ትራፊክ ለመፍቀድ የውስጥ ደንብ።</translation>
 <translation id="151962892725702025">ማመሳሰል ለጎራዎ ስለማይገኝ Chromium OS ውሂብዎን ማመሳሰል አይችልም።</translation>
@@ -242,7 +238,6 @@
 <translation id="8985587603644336029">የሆነ ሰው ከዚህ ቀደም በዚህ ኮምፒውተር ላይ እንደ <ph name="ACCOUNT_EMAIL_LAST"/> ሆኖ ወደ Chromium ገብቶ ነበር። ያ መለያዎ ካልሆነ መረጃዎን ለይተው ለማስቀመጥ አዲስ የChromium ተጠቃሚ ይፍጠሩ።
 
 ዝም ብሎ መግባት እንደ ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች ያሉ የChromium መረጃዎችን ከ<ph name="ACCOUNT_EMAIL_NEW"/> ጋር ያዋህዳቸዋል።</translation>
-<translation id="2739631515503418643">ውርዶች በአሁኑ ጊዜ በሂደት ላይ ናቸው። ከChromium መውጣትና ውርዶቹን ይቅር ማለት ይፈልጋሉ?</translation>
 <translation id="9013262824292842194">Chromium Windows Vista ወይም Windows XP ከSP2 ወይም ከዚያ በላይ ይፈልጋል።</translation>
 <translation id="1967743265616885482">ተመሳሳይ ስም ያለው ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="7962572577636132072">Chromium በራስ-ሰር ይዘመናል፣ ስለዚህ ሁልጊዜ አዲሱ ስሪት ይኖርዎታል።</translation>
@@ -255,6 +250,7 @@
 <translation id="7318036098707714271">የምርጫዎች ፋይልዎ የተበላሸ ወይም ልክ ያልሆነ ነው።
 
 Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
+<translation id="5531349711857992002">የዚህ የድርጣቢያ የዕውቅና ማረጋገጫ ሰንሰለት ቢያንስ አንድ ውድቅ የተደረገ የSHA-1 በመጠቀም የተገባበት ዕውቅና መስጫ።</translation>
 <translation id="918373042641772655">የ<ph name="USERNAME"/> ግንኙነትን ማቋረጥ ታሪክዎን፣ እልባቶችዎን፣ ቅንብሮችዎንና በዚህ መሳሪያ ላይ የተከማቹ ሌሎች የChromium ውሂቦችን ያጸዳል። በGoogle መለያዎ ውስጥ ያለ ውሂብ የማይጸዳ ሲሆን በ<ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/> ላይ መተዳደር ይችላል።</translation>
 <translation id="6403826409255603130">Chromium ድረ-ገጾችን እና መተግበሪያዎችን እጅግ በጣም ፈጣን በሆነ ፍጥነት የሚያሄድ ድር አሳሽ ነው። ፈጣን፣ የረጋ እና ለመጠቀም ቀላል ነው። Chromium ውስጥ አብሮ በተሰራላቸው የተንኮል-አዘል ሶፍትዌር እና የማስገሪያ መከላከያዎች አማካኝነት ደህንነትዎ ይበልጥ በተጠበቀ ሁኔታ ድሩን ያስሱ።</translation>
 <translation id="4230135487732243613">የChromium ውሂዎ ከዚህ መለያ ጋር ይገናኝ?</translation>

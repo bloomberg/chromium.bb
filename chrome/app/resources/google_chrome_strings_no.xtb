@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">Deler du datamaskinen din med andre? Nå kan du konfigurere Chrome akkurat slik du vil.</translation>
 <translation id="6236285698028833233">Google Chrome oppdateres ikke lenger og har mistet støtten for denne versjonen av operativsystemet ditt.</translation>
 <translation id="5453904507266736060">La Google Chrome kjøre i bakgrunnen</translation>
-<translation id="3454512769850953877">Ja, avslutt Chrome</translation>
 <translation id="4167057906098955729">Du kan se alle varslene dine fra Chrome-apper, -utvidelser og -nettsteder her.</translation>
 <translation id="2704356438731803243">Hvis du foretrekker å holde eksisterende Chrome-data separat, kan du opprette en ny Chrome-bruker for <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Lukk alle Google Chrome-vinduer og prøv på nytt.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">Chrome lagrer informasjonen din sikkert, slik at du slipper å skrive den inn på nytt. Du må imidlertid bekrefte kortets sikkerhetskode ved fremtidig bruk.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
-<translation id="8838365799985821335">En utvidelse har endret hvilken side som vises når du starter Chrome.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="7781002470561365167">En ny versjon av Google Chrome er tilgjengelig.</translation>
@@ -61,7 +59,6 @@
 <translation id="4743926867934016338">Godta og søk</translation>
 <translation id="1393853151966637042">Oppsøk brukerstøtten</translation>
 <translation id="7398801000654795464">Du ble logget på Chrome som <ph name="USER_EMAIL_ADDRESS"/>. Du må logge deg på igjen med samme konto.</translation>
-<translation id="5338943029751206389">Dette nettstedet bruker utdaterte sikkerhetsinnstillinger som kan føre til at fremtidige versjoner av Chrome ikke kan opprette sikre tilkoblinger til det.</translation>
 <translation id="4513711165509885787">Faktureringsdetaljene dine er lagret i Chrome.</translation>
 <translation id="5253588388888612165">Hvis du deler denne datamaskinen med <ph name="PROFILE_NAME"/>, kan du legge deg selv til i Chrome for å holde surfingen atskilt. Eventuelt kan du koble fra vedkommendes Google-konto.</translation>
 <translation id="7098166902387133879">Google Chrome bruker mikrofonen din.</translation>
@@ -79,6 +76,7 @@
 <translation id="3089968997497233615">En ny, sikrere versjon av Google Chrome er tilgjengelig</translation>
 <translation id="5037239767309817516">For at endringen skal tre i kraft, må du lukke alle vinduer og starte Google Chrome på nytt.</translation>
 <translation id="225614027745146050">Velkommen</translation>
+<translation id="3398288718845740432">Skjul i Chrome-menyen</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="3149510190863420837">Chrome-apper</translation>
 <translation id="8851136666856101339">main</translation>
@@ -155,7 +153,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="103396972844768118">Viktig informasjon om Chrome-dataene dine</translation>
 <translation id="6757767188268205357">Ikke spør meg igjen</translation>
 <translation id="2290095356545025170">Er du sikker på at du vil avinstallere Google Chrome?</translation>
-<translation id="7062966102157262887">Du har en aktiv nedlasting. Vil du avslutte Google Chrome og avbryte nedlastingen?</translation>
 <translation id="4273752058983339720">Google Chrome er konfigurert til å åpnes automatisk når du starter datamaskinen.</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="415994390253732730">Oppfører Chrome seg merkelig?</translation>
@@ -169,6 +166,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="6883876366448858277">sender et ord og den omkringliggende konteksten til Google Søk. Definisjoner, bilder og andre søkeresultater blir sendt tilbake.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på Internett og ringe ved bruk av Skype!</translation>
+<translation id="4631713731678262610">Skjul i Chrome-menyen</translation>
 <translation id="3612333635265770873">Det er kjent at en modul med samme navn har vært i konflikt med Google Chrome.</translation>
 <translation id="2665296953892887393">Bidra til å gjøre Google Chrome bedre ved å sende programstopprapporter og <ph name="UMA_LINK"/> til Google</translation>
 <translation id="7761834446675418963">Klikk på navnet ditt for å åpne Chrome og starte surfingen.</translation>
@@ -197,8 +195,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du starte på nytt nå?</translation>
 <translation id="2681064822612051220">En motstridende installasjon av Google Chrome ble oppdaget i systemet. Avinstaller denne og prøv igjen.</translation>
 <translation id="2252923619938421629">Bidra til å gjøre Google Chrome bedre ved å rapportere gjeldende innstillinger</translation>
-<translation id="6126631249883707068">Vil du at Google Chrome skal lagre passordet?</translation>
-<translation id="7773845170078702898">Vil du at Google Chrome skal lagre passordet du bruker på dette nettstedet?</translation>
 <translation id="4251615635259297716">Vil du koble Chrome-dataene dine til denne kontoen?</translation>
 <translation id="7125719106133729027">Chrome kan ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må installere Chrome på nytt manuelt.</translation>
 <translation id="5940385492829620908">Her finner du nettinnholdet, bokmerkene og de andre Chrome-tingene dine.</translation>
@@ -211,7 +207,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="7396375882099008034">Tillat at Chrome bruker nettverket i brannmur- eller antivirusinnstillingene dine.</translation>
 <translation id="9102715433345326100">Denne filen er skadelig, og Chrome har blokkert den.</translation>
 <translation id="8205111949707227942">Valgfritt: Bidra til å gjøre Chrome OS bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
-<translation id="7253415505590551024">Du har aktive nedlastinger. Vil du avslutte Google Chrome og avbryte nedlastingene?</translation>
 <translation id="487887346205285304">Oppfører Chrome seg merkelig?</translation>
 <translation id="3622797965165704966">Nå er det enklere å bruke Chrome med Google-kontoen din og på datamaskiner du deler med andre.</translation>
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
@@ -241,7 +236,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="3360895254066713204">Chrome-hjelper</translation>
 <translation id="1877026089748256423">Chrome er utdatert</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dataene dine. Dette skyldes at påloggingsopplysningene for kontoen din er foreldede.</translation>
-<translation id="7810280330588098283">Chrome lagrer dette i de |Google-lagrede passordene| dine og husker det neste gang du trenger det.</translation>
 <translation id="6991142834212251086">Koble Chrome-dataene mine til denne kontoen.</translation>
 <translation id="3451115285585441894">Legger til i Chrome …</translation>
 <translation id="3047079729301751317">Hvis du kobler fra <ph name="USERNAME"/>, slettes loggen din, bokmerkene, innstillingene og andre Chrome-data som er lagret på denne enheten. Data som er lagret i Google-kontoen din, blir ikke tømt og kan administreres på <ph name="GOOGLE_DASHBOARD_LINK"/>Google Oversikt<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -257,6 +251,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="1698376642261615901">Google Chrome er en nettleser som kjører nettsider og programmer i ekspressfart. Den er rask, stabil og enkel å bruke. Google Chrome har innebygd beskyttelse mot skadelig programvare og svindelforsøk (nettfisking), slik at du kan føle deg tryggere når du surfer på nettet.</translation>
 <translation id="853189717709780425">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME"/>. Du kan slette disse dataene via Google Konto-oversikten, men du kan ikke knytte disse dataene til en annen konto.</translation>
 <translation id="699076943483372849">Dette nettstedet bruker det gamle Chromium Frame-programtillegget. Dette programtillegget kommer ikke lenger til å motta sikkerhets- og stabilitetsoppdateringer, og du bør derfor avinstallere det og oppgradere til en nyere nettleser.</translation>
+<translation id="5531349711857992002">Sertifikatkjeden for dette nettstedet inneholder minst ett sertifikat som ble signert med en avviklet signaturalgoritme som er basert på SHA-1.</translation>
 <translation id="6049075767726609708">En administrator har installert Google Chrome på dette systemet, og det er tilgjengelig for alle brukere. Systemnivåinstallasjonen av Google Chrome vil erstatte brukernivåinstallasjonen nå.</translation>
 <translation id="1818142563254268765">Chrome kan ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må oppdatere Chrome.</translation>
 <translation id="7408085963519505752">Vilkår for Chrome OS</translation>

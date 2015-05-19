@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Obligatoire</translation>
 <translation id="2958431318199492670">La configuration du réseau ne respecte pas les normes de l'ONC. Il est possible que des parties de la configuration ne soient pas importées.</translation>
 <translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
+<translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Enregistrement de l'appareil manquant.</translation>
 <translation id="1491151370853475546">Actualiser cette page</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Masquer la valeur</translation>
 <translation id="6753269504797312559">Valeur de la règle</translation>
+<translation id="3369366829301677151">Mettre à jour votre <ph name="CREDIT_CARD"/> et la valider</translation>
 <translation id="8834246243508017242">Activer la saisie automatique à l'aide de la fonctionnalité Contacts</translation>
 <translation id="7275334191706090484">Favoris gérés</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Région</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
+<translation id="8988760548304185580">Saisissez la date d'expiration et le code CVC à trois chiffres figurant au dos de votre carte.</translation>
 <translation id="8940229512486821554">Exécuter la commande <ph name="EXTENSION_NAME"/> : <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Erreur inconnue.</translation>
 <translation id="112840717907525620">Cache de la règle valide.</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Erreur de validation : <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="7108649287766967076">Échec de la traduction en <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
+<translation id="3219579145727097045">Saisissez la date d'expiration et le code CVC à quatre chiffres figurant au recto de votre carte.</translation>
 <translation id="3667681724235208644">Afficher la page d'origine</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
 <translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Traduire en <ph name="TARGET_LANGUAGE"/> cette page affichée en <ph name="ORIGINAL_LANGUAGE"/> ?</translation>
 <translation id="8218327578424803826">Position attribuée :</translation>
 <translation id="3542684924769048008">Utiliser un mot de passe pour :</translation>
+<translation id="2855922900409897335">Valider votre <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Cette page en<ph name="ORIGINAL_LANGUAGE"/>a été traduite en<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Émirat</translation>
+<translation id="6646897916597483132">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte.</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
 <translation id="7983301409776629893">Toujours traduire en <ph name="TARGET_LANGUAGE"/> les pages en <ph name="ORIGINAL_LANGUAGE"/></translation>
 <translation id="6970216967273061347">District</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Non géré</translation>
 <translation id="3712624925041724820">Licences épuisées.</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
+<translation id="1455235771979731432">Un problème est survenu lors de la validation de votre carte. Veuillez vérifier votre connexion Internet et réessayer.</translation>
 <translation id="7542995811387359312">La saisie automatique des numéros de carte de paiement est désactivée, car la connexion utilisée par ce formulaire n'est pas sécurisée.</translation>
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE"/> ? Signaler l'erreur</translation>
 <translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Actif</translation>
 <translation id="7568593326407688803">Cette page est en<ph name="ORIGINAL_LANGUAGE"/>Voulez-vous la traduire ?</translation>
 <translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
+<translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
 <translation id="4171400957073367226">Signature de validation non valide.</translation>
+<translation id="9125941078353557812">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte.</translation>
 <translation id="106701514854093668">Favoris sur l'ordinateur</translation>
 <translation id="6154808779448689242">Le jeton de la règle renvoyé ne correspond pas au jeton actuel.</translation>
 <translation id="7995512525968007366">Non spécifié</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Annuler la réorganisation</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
 <translation id="2639739919103226564">État :</translation>
+<translation id="8824019021993735287">Impossible de valider votre carte pour le moment. Veuillez réessayer ultérieurement.</translation>
 <translation id="4968547170521245791">Proxy impossible</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>

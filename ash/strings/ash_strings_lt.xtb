@@ -72,6 +72,7 @@
 <translation id="2509468283778169019">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas</translation>
 <translation id="3892641579809465218">Vidinė pateiktis</translation>
 <translation id="7823564328645135659">Po nustatymų sinchronizavimo kalba pakeista iš <ph name="FROM_LOCALE"/> į <ph name="TO_LOCALE"/>.</translation>
+<translation id="7113420380180868673">Perduodama (1 USD)</translation>
 <translation id="3606978283550408104">Brailio ekranas prijungtas.</translation>
 <translation id="8654520615680304441">Įjungti „Wi-Fi“...</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME"/> gali valdyti jūsų ekraną naudodamas (-a) Nuotolinę pagalbą.</translation>
@@ -96,6 +97,7 @@
 <translation id="3626637461649818317">Liko <ph name="PERCENTAGE"/> proc.</translation>
 <translation id="9089416786594320554">Įvesties metodai</translation>
 <translation id="2700058918926273959">Sesija baigsis po <ph name="SESSION_TIME_REMAINING"/>. Būsite atjungti.</translation>
+<translation id="5807965672380739016">Perduoti darbalaukį į</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Garsiakalbis (vidinis)</translation>
 <translation id="1747827819627189109">Ekrano klaviatūra įgalinta</translation>
@@ -105,6 +107,7 @@
 <translation id="544691375626129091">Prie šio seanso jau pridėti visi galimi naudotojai.</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="2204305834655267233">Tinklo informacija</translation>
+<translation id="137180024469554212">Išjungti pasukimo užrakinimą</translation>
 <translation id="1621499497873603021">Laikas, likęs iki akumuliatoriaus išsikrovimo: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Išeiti iš svečio režimo</translation>
 <translation id="8308637677604853869">Ankstesnis meniu</translation>
@@ -112,6 +115,7 @@
 <translation id="3625258641415618104">Ekrano kopijos išjungtos</translation>
 <translation id="1346748346194534595">Dešinė</translation>
 <translation id="8528322925433439945">Mobilusis...</translation>
+<translation id="3157169093162779309">Įgalinti pasukimo užrakinimą</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="2372145515558759244">Sinchronizuojamos programos...</translation>
 <translation id="1987317783729300807">Paskyros</translation>
@@ -122,6 +126,7 @@
 <translation id="4527045527269911712">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME"/>“ prašo leidimo susieti.</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
 <translation id="1923539912171292317">Automatiniai paspaudimai</translation>
+<translation id="703171847531699602">Nėra perdavimo įrenginių</translation>
 <translation id="2692809339924654275">„<ph name="BLUETOOTH"/>“: jungiamasi...</translation>
 <translation id="6062360702481658777">Būsite automatiškai atjungti po <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Nežinoma pateiktis</translation>
@@ -131,6 +136,7 @@
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Užrakinti</translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
+<translation id="8697119993436624257">Nauja prisijungimo NS IŠJUNGTA</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="3433830597744061105">Valdyti paskyras</translation>
 <translation id="742594950370306541">Kamera naudojama.</translation>
@@ -149,6 +155,7 @@
 <translation id="5977415296283489383">Ausinės</translation>
 <translation id="225680501294068881">Ieškoma įrenginių...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/>, <ph name="SHORT_WEEKDAY"/></translation>
+<translation id="3527846106059622359">Nauja prisijungimo NS ĮJUNGTA</translation>
 <translation id="5978382165065462689">Leidžiama valdyti jūsų ekraną naudojant Nuotolinę pagalbą.</translation>
 <translation id="737451040872859086">Mikrofonas (vidinis)</translation>
 <translation id="2475982808118771221">Įvyko klaida</translation>
@@ -202,6 +209,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="3009178788565917040">Išvestis</translation>
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="6911468394164995108">Prisijungti prie kito...</translation>
+<translation id="4373966964907728675">Perduodamas darbalaukis</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> val. <ph name="MINUTE"/> min. iki visiško įkrovimo</translation>
 <translation id="3077734595579995578">shift</translation>

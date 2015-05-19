@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
+<translation id="5098185943924922330">Ajude-nos a dar prioridade às funcionalidades e às melhorias nas quais devemos trabalhar ao enviar à Google informações sobre os ficheiros, as aplicações e os serviços em execução sempre que ocorrer uma falha.
+
+        As estatísticas de utilização incluem informações como preferências, cliques em botões e utilização da memória. Estas não incluem URLs de páginas Web nem quaisquer informações pessoais. Os relatórios de falhas contêm informações do sistema no momento em que as falhas ocorreram e podem conter URLs de páginas Web ou informações pessoais, consoante as operações em curso no momento da falha.</translation>
 <translation id="4042870126885713738">Mostrar sugestões quando um endereço Web não responder ou não for possível estabelecer ligação</translation>
 <translation id="8237438615979997762">Os dados armazenados neste dispositivo, bem como os dados armazenados na sua Conta Google, permanecem em ambos os locais. No entanto, os novos dados ou as alterações efetuadas aos dados não são sincronizados entre si.</translation>
 <translation id="6831043979455480757">Traduzir</translation>
@@ -92,6 +95,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, aplicação Web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Substituir ficheiro</translation>
 <translation id="5595485650161345191">Editar morada</translation>
+<translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="5313967007315987356">Adicionar site</translation>
 <translation id="5733727110006255111">Com esta funcionalidade ativada, o Chrome utiliza os servidores da Google para comprimir as páginas visitadas antes de as transferir. As páginas SSL e de navegação anónima não são incluídas.</translation>
@@ -157,6 +161,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="6857778194843072568">Enviar apenas em Wi-Fi</translation>
 <translation id="5380554235172449987">Nunca enviar</translation>
 <translation id="5715468759630044318">Escolher conta</translation>
+<translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="544291274896356069">Abandonar o modo de navegação anónima se este link estiver aberto numa aplicação externa. Deseja continuar?</translation>
 <translation id="3917783807003067648">A localização está bloqueada</translation>
 <translation id="1379156015317873965">Melhorar o desempenho de carregamento de páginas</translation>
@@ -228,6 +233,7 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="3254409185687681395">Marcar esta página</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="2482878487686419369">Notificações</translation>
+<translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
@@ -262,7 +268,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="748127970106343339">Confirmar a eliminação das credenciais do dispositivo</translation>
 <translation id="3089395242580810162">Abrir no separador de navegação anónima</translation>
 <translation id="5899349522111170522">Criar novo ficheiro</translation>
-<translation id="1082482054625560856">Gerir palavras-passe guardadas na sua <ph name="BEGIN_LINK"/>Conta Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Permitir imagens em site especificados e bloqueá-las no resto da Web</translation>
 <translation id="2360035970720276770">Só é possível transferir URLs com http ou https</translation>
 <translation id="6570560778840017462">A sessão nas suas <ph name="BEGIN_LINK"/>Contas Google<ph name="END_LINK"/> não é terminada</translation>

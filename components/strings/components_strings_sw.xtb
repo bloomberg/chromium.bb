@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Lazima</translation>
 <translation id="2958431318199492670">Usanidi wa mtandao hautii kiwango cha ONC. Sehemu za usanidi haziwezi kuingizwa.</translation>
 <translation id="3583757800736429874">Rudia Hatua</translation>
+<translation id="7887683347370398519">Angalia CVC yako na ujaribu tena</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Rekodi ya kifaa inayokosekana</translation>
 <translation id="1491151370853475546">Pakia Ukurasa huu Upya</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Tafsiri <ph name="LANGUAGE"/> kila wakati</translation>
 <translation id="1227633850867390598">Ficha thamani</translation>
 <translation id="6753269504797312559">Thamani ya sera</translation>
+<translation id="3369366829301677151">Sasisha na uthibitishe kadi yako ya <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Washa Kujaza Otomatiki ukitumia Anwani…</translation>
 <translation id="7275334191706090484">Alamisho Zinazosimamiwa</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Eneo</translation>
 <translation id="1871208020102129563">Proksi imewekwa ili kutumia seva za proksi thabiti, siyo URL ya hati .pac.</translation>
+<translation id="8988760548304185580">Weka tarehe kuisha muda na CVC yenye tarakimu 3 kutoka nyuma ya kadi yako</translation>
 <translation id="8940229512486821554">Endesha amri ya <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Hitilafu isiyojulikana</translation>
 <translation id="112840717907525620">Akiba ya sera ni SAWA</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Hitilafu ya uthibitishaji: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Tafsiri kwenda <ph name="TARGET_LANGUAGE"/> imeshindwa.</translation>
 <translation id="4103249731201008433">Namabari tambulishi ya kifaa ni batili</translation>
+<translation id="3219579145727097045">Weka tarehe ya kuisha muda na CVC yenye tarakimu 4 kutoka mbele ya kadi yako</translation>
 <translation id="3667681724235208644">Angalia Asili</translation>
 <translation id="4079302484614802869">Usanidi wa proksi umewekwa kutumia URL hati ya .pac, siyo seva proksi za kudumu.</translation>
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Je, ungependa kutafsiri kutoka <ph name="ORIGINAL_LANGUAGE"/> kwenda <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Mahali Palipohawilishwa:</translation>
 <translation id="3542684924769048008">Tumia nenosiri kwa:</translation>
+<translation id="2855922900409897335">Thibitisha kadi yako ya <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Ukurasa huu umetafsiriwa kutoka<ph name="ORIGINAL_LANGUAGE"/>hadi<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirate</translation>
+<translation id="6646897916597483132">Weka CVC yenye tarakimu 4 kutoka mbele ya kadi yako</translation>
 <translation id="5145883236150621069">Msimbo wa hitilafu uko katika jibu la sera</translation>
 <translation id="7983301409776629893">Tafsiri kutoka <ph name="ORIGINAL_LANGUAGE"/> hadi <ph name="TARGET_LANGUAGE"/> kila wakati</translation>
 <translation id="6970216967273061347">Wilaya</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Haidhibitiwi</translation>
 <translation id="3712624925041724820">Leseni zimekwisha</translation>
 <translation id="4926049483395192435">Sharti ibainishwe.</translation>
+<translation id="1455235771979731432">Kulikuwa na tatizo wakati wa kuthibitisha kadi yako. Angalia muunganisho wako wa intaneti na ujaribu tena.</translation>
 <translation id="7542995811387359312">Mjazo otomatiki wa kadi ya mkopo umelemazwa kwa sababu fomu hii haitumii muunganisho salama.</translation>
 <translation id="5179510805599951267">Haiko katika <ph name="ORIGINAL_LANGUAGE"/>? Ripoti hitilafu hii</translation>
 <translation id="8088680233425245692">Haikufaulu kuangalia makala.</translation>
@@ -212,7 +219,9 @@
 <translation id="5565735124758917034">Inatumika</translation>
 <translation id="7568593326407688803">Ukurasa huu umeandikwa kwa<ph name="ORIGINAL_LANGUAGE"/>Je, ungependa kuutafsiri?</translation>
 <translation id="8876793034577346603">Usanidi wa mtandao umekosa kuchanganuliwa.</translation>
+<translation id="4800132727771399293">Angalia tarehe yako ya kuisha muda na CVC na ujaribu tena</translation>
 <translation id="4171400957073367226">Sahihi mbaya ya uthibitishaji</translation>
+<translation id="9125941078353557812">Weka CVC yenye tarakimu 3 kutoka nyuma ya kadi yako</translation>
 <translation id="106701514854093668">Alamisho za Eneokazi</translation>
 <translation id="6154808779448689242">Ishara ya sera iliyorejeshwa hailingani na ishara ya sasa</translation>
 <translation id="7995512525968007366">Hakijabainishwa</translation>
@@ -229,6 +238,7 @@
 <translation id="3270847123878663523">Tendua Kupanga upya</translation>
 <translation id="20817612488360358">Mipangilio ya mfumo ya proksi imewekwa ili kutumiwa lakini usanidi dhahiri wa proksi pia umebainishwa.</translation>
 <translation id="2639739919103226564">Hali:</translation>
+<translation id="8824019021993735287">Chrome haikuthibitisha kadi yako wakati huu. Tafadhali jaribu tena baadaye.</translation>
 <translation id="4968547170521245791">Haiwezi Kuwakilisha</translation>
 <translation id="385051799172605136">Nyuma</translation>
 <translation id="4196861286325780578">Rudia hatua</translation>

@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">Membagikan komputer? Kini Anda dapat menyiapkan Chrome seperti yang Anda inginkan.</translation>
 <translation id="6236285698028833233">Google Chrome telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi Anda ini.</translation>
 <translation id="5453904507266736060">Jalankan Google Chrome di Latar Belakang</translation>
-<translation id="3454512769850953877">Ya, keluar dari Chrome</translation>
 <translation id="4167057906098955729">Anda dapat melihat semua pemberitahuan dari aplikasi, ekstensi, dan situs web Chrome di sini.</translation>
 <translation id="2704356438731803243">Jika Anda memilih untuk menjaga data Chrome yang sudah ada tetap terpisah, Anda dapat membuat pengguna Chrome baru untuk <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">Chrome akan menyimpan informasi dengan aman sehingga Anda tidak harus mengetiknya lagi, tapi Anda masih harus memverifikasi kode keamanan kartu untuk pembayaran di masa mendatang.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="7400722733683201933">Tentang Google Chrome</translation>
-<translation id="8838365799985821335">Sebuah ekstensi telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chrome.</translation>
 <translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
 <translation id="7781002470561365167">Tersedia Google Chrome versi baru.</translation>
@@ -61,7 +59,6 @@
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
 <translation id="1393853151966637042">Dapatkan bantuan tentang penggunaan Chrome</translation>
 <translation id="7398801000654795464">Anda telah masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS"/>. Gunakan akun yang sama untuk masuk kembali.</translation>
-<translation id="5338943029751206389">Situs ini menggunakan setelan keamanan usang yang dapat mencegah versi Chrome di masa mendatang mengaksesnya dengan aman.</translation>
 <translation id="4513711165509885787">Detail penagihan Anda telah disimpan di Chrome.</translation>
 <translation id="5253588388888612165">Jika Anda membagikan komputer ini dengan <ph name="PROFILE_NAME"/>, tambahkan diri Anda ke Chrome untuk menjelajah secara terpisah. Jika tidak, putuskan dari Akun Google-nya.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
@@ -79,6 +76,7 @@
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
 <translation id="5037239767309817516">Harap tutup semua jendela Google Chrome dan luncurkan kembali agar perubahan ini berlaku.</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
+<translation id="3398288718845740432">Sembunyikan di Menu Chrome</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="3149510190863420837">Aplikasi Chrome</translation>
 <translation id="8851136666856101339">main</translation>
@@ -156,7 +154,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="103396972844768118">Informasi penting terkait data Chrome Anda</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
-<translation id="7062966102157262887">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Google Chrome dan membatalkan unduhan?</translation>
 <translation id="4273752058983339720">Google Chrome dikonfigurasikan untuk diluncurkan secara otomatis ketika Anda memulai komputer.</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="415994390253732730">Chrome Berperilaku Aneh?</translation>
@@ -170,6 +167,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="6883876366448858277">mengirim kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, dan hasil penelusuran lain.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
+<translation id="4631713731678262610">Sembunyikan di menu Chrome</translation>
 <translation id="3612333635265770873">Modul dengan nama yang sama biasanya konflik dengan Google Chrome.</translation>
 <translation id="2665296953892887393">Bantu Google Chrome jadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK"/> ke Google</translation>
 <translation id="7761834446675418963">Klik nama Anda untuk membuka Chrome dan mulai menjelajah.</translation>
@@ -200,8 +198,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="2681064822612051220">Terjadi konflik pemasangan Google Chrome pada sistem. Hapus pemasangan dan coba lagi.</translation>
 <translation id="2252923619938421629">Bantu menjadikan Google Chrome lebih baik dengan melaporkan setelan saat ini</translation>
-<translation id="6126631249883707068">Ingin Google Chrome menyimpan sandi Anda?</translation>
-<translation id="7773845170078702898">Ingin Google Chrome menyimpan sandi Anda untuk situs ini?</translation>
 <translation id="4251615635259297716">Tautkan data Chrome Anda ke akun ini?</translation>
 <translation id="7125719106133729027">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda melewatkan perbaikan keamanan dan fitur baru yang keren. Anda perlu memasang ulang Chrome secara manual.</translation>
 <translation id="5940385492829620908">Web, bookmark, dan file Chrome Anda lainnya tersedia di sini.</translation>
@@ -215,7 +211,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
         Anda.</translation>
 <translation id="9102715433345326100">File ini berbahaya dan Chrome memblokirnya.</translation>
 <translation id="8205111949707227942">Opsional: Bantu kami membuat Chrome OS lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis.</translation>
-<translation id="7253415505590551024">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Google Chrome dan membatalkan unduhan?</translation>
 <translation id="487887346205285304">Chrome berperilaku aneh?</translation>
 <translation id="3622797965165704966">Kini, menggunakan Chrome dengan Akun Google Anda dan di komputer bersama jadi lebih mudah.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>
@@ -245,7 +240,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
-<translation id="7810280330588098283">Chrome akan menyimpannya pada |sandi yang disimpan Google| dan mengingatnya saat Anda membutuhkannya lagi.</translation>
 <translation id="6991142834212251086">Tautkan data Chrome saya ke akun ini</translation>
 <translation id="3451115285585441894">Menambahkan ke Chrome...</translation>
 <translation id="3047079729301751317">Memutuskan sambungan <ph name="USERNAME"/> akan menghapus riwayat, bookmark, setelan, dan data Chrome Anda lainnya yang tersimpan di perangkat. Data tersimpan di Akun Google tidak akan dihapus dan dapat dikelola di <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dasbor<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -261,6 +255,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="1698376642261615901">Google Chrome adalah browser web yang menjalankan laman dan aplikasi web secepat kilat. Cepat, stabil, dan mudah digunakan. Jelajahi web secara lebih aman dengan perlindungan terhadap perangkat lunak perusak dan phishing yang disertakan dalam Google Chrome.</translation>
 <translation id="853189717709780425">Anda masuk dengan akun yang dikelola dan memberikan administratornya kendali atas profil Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME"/>. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain.</translation>
 <translation id="699076943483372849">Situs ini menggunakan plugin Chrome Frame yang sudah tidak digunakan serta tidak lagi menerima pembaruan keamanan dan stabilitas. Copot pemasangannya dan tingkatkan versinya ke browser modern.</translation>
+<translation id="5531349711857992002">Rantai sertifikat untuk situs web ini setidaknya berisi satu sertifikat yang telah ditandatangani dengan algoritme tanda tangan yang sudah usang berdasarkan SHA-1.</translation>
 <translation id="6049075767726609708">Administrator telah menginstal Google Chrome di sistem ini dan tersedia bagi seluruh pengguna. Sekarang tingkat sistem Google Chrome akan mengganti penginstalan tingkat pengguna Anda.</translation>
 <translation id="1818142563254268765">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memperbarui Chrome.</translation>
 <translation id="7408085963519505752">Persyaratan Chrome OS</translation>

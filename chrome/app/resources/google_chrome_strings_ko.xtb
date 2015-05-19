@@ -13,7 +13,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="4921569541910214635">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="6236285698028833233">Chrome에서 업데이트를 중단했으며 이 버전의 운영체제를 더 이상 지원하지 않습니다.</translation>
 <translation id="5453904507266736060">백그라운드에서 Chrome을 실행</translation>
-<translation id="3454512769850953877">예, Chrome 종료</translation>
 <translation id="4167057906098955729">Chrome 앱, 확장 프로그램 및 웹사이트의 모든 알림을 여기에서 볼 수 있습니다.</translation>
 <translation id="2704356438731803243">기존 Chrome 데이터를 별도로 보관하려는 경우 <ph name="USER_NAME"/>의 새 Chrome 사용자를 만들 수 있습니다.</translation>
 <translation id="386202838227397562">Chrome 창을 모두 닫고 다시 시도해 보세요.</translation>
@@ -21,7 +20,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="1225016890511909183">Chromium은 사용자의 정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없지만 향후 결제 시 카드의 보안 코드는 확인해야 합니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="7400722733683201933">Chrome 정보</translation>
-<translation id="8838365799985821335">Chrome을 시작하면 표시되는 페이지가 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
@@ -67,7 +65,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="1393853151966637042">Chrome 사용에 대한 도움말</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS"/>(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
-<translation id="5338943029751206389">사이트에서 오래된 보안 설정을 사용하고 있으므로 향후 Chrome 버전에서 안전하게 액세스하지 못할 수 있습니다.</translation>
 <translation id="4513711165509885787">결제 세부정보가 Chrome에 저장되었습니다.</translation>
 <translation id="5253588388888612165"><ph name="PROFILE_NAME"/>님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chrome에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
 <translation id="7098166902387133879">Chrome에서 마이크를 사용 중입니다.</translation>
@@ -85,6 +82,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3089968997497233615">새롭고 안전한 Chrome의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="5037239767309817516">변경사항을 적용하려면 모든 Chrome 창을 닫은 다음 다시 시작하시기 바랍니다.</translation>
 <translation id="225614027745146050">환영합니다.</translation>
+<translation id="3398288718845740432">Chrome 메뉴에서 숨기기</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="3149510190863420837">Chrome 앱</translation>
 <translation id="8851136666856101339">main</translation>
@@ -162,7 +160,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="103396972844768118">Chrome 데이터 관련 중요 정보</translation>
 <translation id="6757767188268205357">더 이상 묻지 않음</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
-<translation id="7062966102157262887">현재 한 개의 다운로드가 진행 중입니다. Chrome을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="4273752058983339720">컴퓨터를 시작하면 Chrome을 자동으로 실행하도록 설정됩니다.</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="415994390253732730">Chrome이 올바르게 작동하지 않습니까?</translation>
@@ -176,6 +173,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>
 <translation id="4990567037958725628">Chrome 카나리아</translation>
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
+<translation id="4631713731678262610">Chrome 메뉴에서 숨기기</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="2665296953892887393">오류 보고서와 <ph name="UMA_LINK"/>을(를) Google로 전송하여 Chrome 개선에 참여합니다.</translation>
 <translation id="7761834446675418963">Chrome을 열고 탐색을 시작하려면 내 이름을 클릭하세요.</translation>
@@ -205,8 +203,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8614913330719544658">Chrome이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="2681064822612051220">Chrome을 시스템에 설치하던 중 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 보세요.</translation>
 <translation id="2252923619938421629">현재 설정을 보고하여 더 나은 Chrome을 만드는 데 도움 주기</translation>
-<translation id="6126631249883707068">Chrome에서 비밀번호를 저장하도록 하시겠습니까?</translation>
-<translation id="7773845170078702898">Chrome이 이 사이트에서 비밀번호를 저장하도록 하시겠습니까?</translation>
 <translation id="4251615635259297716">Chrome 데이터를 이 계정에 연결하시겠습니까?</translation>
 <translation id="7125719106133729027">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 직접 다시 설치해야 합니다.</translation>
 <translation id="5940385492829620908">웹, 북마크 및 기타 Chrome 콘텐츠가 여기에 저장됩니다.</translation>
@@ -220,7 +216,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
         네트워크에 액세스할 수 있도록 허용합니다.</translation>
 <translation id="9102715433345326100">이 파일은 악성 파일이므로 Chrome에서 차단했습니다.</translation>
 <translation id="8205111949707227942"/>
-<translation id="7253415505590551024">현재 여러 개의 다운로드가 진행 중입니다. Chrome을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="487887346205285304">Chrome이 올바르게 작동하지 않습니까?</translation>
 <translation id="3622797965165704966">이제 Google 계정으로 공유 컴퓨터에서 Chrome을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
@@ -249,7 +244,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3360895254066713204">Chrome 도우미</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
 <translation id="7592736734348559088">계정의 로그인 세부정보가 오래되어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
-<translation id="7810280330588098283">Chrome은 비밀번호를 |Google에 저장된 비밀번호|에 저장하여 다음에 필요할 때 제공합니다.</translation>
 <translation id="6991142834212251086">내 Chrome 데이터를 이 계정에 연결</translation>
 <translation id="3451115285585441894">Chrome에 추가하는 중...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/>의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 기타 Chrome 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK"/>Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK"/>에서 관리될 수 있습니다.</translation>
@@ -265,6 +259,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="1698376642261615901">Chrome은 웹페이지와 애플리케이션을 빠르게 실행하는 웹 브라우저입니다. 또한 빠르고 안정적이며 사용하기 쉽습니다. Chrome에 기본적으로 제공되는 악성코드 및 피싱 방지 기능으로 웹을 더 안전하게 탐색하세요.</translation>
 <translation id="853189717709780425">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 이렇게 하면 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME"/>에 영구적으로 연결됩니다. Google 계정 대시보드를 통해 이 데이터를 삭제할 수 있지만 다른 계정에 연결할 수는 없습니다.</translation>
 <translation id="699076943483372849">사이트에서 사용 중인 Chrome 프레임 플러그인의 보안 및 안정성 업데이트가 중단되었습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
+<translation id="5531349711857992002">이 웹사이트에 대한 인증서 체인이 SHA-1을 기반으로 하는 지원 중단된 서명 알고리즘을 사용해 서명된 인증서를 적어도 하나 포함하고 있습니다.</translation>
 <translation id="6049075767726609708">시스템에 모든 사용자용 Chrome이 설치되었습니다. 기존의 사용자 수준 Chrome 대신 설치된 시스템 수준 Chrome이 사용됩니다.</translation>
 <translation id="1818142563254268765">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 업데이트해야 합니다.</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>

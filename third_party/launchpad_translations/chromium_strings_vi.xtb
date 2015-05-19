@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">Bạn có chắc chắn muốn gỡ cài đặt Chromium không?</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
 <translation id="2615699638672665509">Máy tính này sẽ sớm ngừng nhận bản cập nhật của Chromium vì phần cứng của máy không được hỗ trợ nữa.</translation>
-<translation id="5532301346661895910">Chromium sẽ lưu trữ mật khẩu này trong |Các mật khẩu đã lưu trên Google| của bạn và ghi nhớ mật khẩu này vào lần sau bạn cần đến.</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
 <translation id="421369550622382712">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Chromium.</translation>
 <translation id="2732467638532545152">Máy tính của bạn đang chạy phiên bản Microsoft Windows cũ. Phiên bản này không thể xử lý chứng chỉ bảo mật của trang web này. Do sự cố này, Chromium không thể biết chứng chỉ đến từ <ph name="SITE"/> hay từ ai đó trên mạng của bạn giả làm <ph name="SITE"/>. Vui lòng cập nhật máy tính của bạn lên phiên bản Windows mới hơn.</translation>
@@ -58,7 +57,6 @@
 <translation id="7064610482057367130">Không tìm thấy bản cài đặt Chromium cần cập nhật.</translation>
 <translation id="872034308864968620">Cho phép Chromium chạy dưới nền</translation>
 <translation id="459535195905078186">Ứng dụng Chromium</translation>
-<translation id="5109068449432240255">Có, thoát Chromium</translation>
 <translation id="8134284582177628525">Nếu bạn chia sẻ máy tính này với <ph name="PROFILE_NAME"/>, hãy thêm chính mình vào Chromium để duyệt web riêng biệt. Nếu không, hãy ngắt kết nối tài khoản Google của họ.</translation>
 <translation id="1480489203462860648">Hãy dùng thử, ứng dụng đã được cài đặt</translation>
 <translation id="3032787606318309379">Đang thêm vào Chromium...</translation>
@@ -77,7 +75,6 @@
 <translation id="734373864078049451">Web, dấu trang và các nội dung khác của bạn trên Chromium đều có ở đây.</translation>
 <translation id="3197823471738295152">Thiết bị của bạn đã được cập nhật.</translation>
 <translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
-<translation id="8353224596138547809">Bạn có muốn Chromium lưu mật khẩu của bạn cho trang web này không?</translation>
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="7463979740390522693">Chromium - Thông báo (<ph name="QUANTITY"/> thông báo chưa đọc)</translation>
@@ -134,7 +131,6 @@
 <translation id="4365115785552740256">Chromium trở nên khả thi là nhờ dự án nguồn mở <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> và các <ph name="BEGIN_LINK_OSS"/>phần mềm nguồn mở<ph name="END_LINK_OSS"/> khác.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Khách có thể sử dụng Chromium mà không phải thoát khỏi bất cứ nội dung nào.</translation>
-<translation id="3487263810738775861">Một tiện ích đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="7549178288319965365">Giới thiệu về Chromium OS</translation>
 <translation id="6248213926982192922">Đặt Chromium làm trình duyệt mặc định</translation>
@@ -205,7 +201,8 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="1414495520565016063">Bạn đã đăng nhập vào Chromium!</translation>
 <translation id="2158734852934720349">Giấy phép nguồn mở Chromium OS</translation>
 <translation id="2966088006374919794">Chromium cần chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
-<translation id="2558235863893655150">Bạn có muốn Chromium lưu mật khẩu của bạn không?</translation>
+<translation id="7205698830395646142">Ẩn trong menu Chromium</translation>
+<translation id="7979877361127045932">Ẩn trong menu Chromium</translation>
 <translation id="6485906693002546646">Bạn đang sử dụng <ph name="PROFILE_EMAIL"/> để đồng bộ hóa nội dung Chromium của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chromium mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="5772805321386874569">(yêu cầu Chromium <ph name="BEGIN_BUTTON"/>khởi động lại<ph name="END_BUTTON"/>)</translation>
@@ -232,7 +229,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
-<translation id="8724049448828509830">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Chromium và hủy tải xuống không?</translation>
 <translation id="608189560609172163">Chromium không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
 <translation id="4888717733111232871">Quy tắc kết nối để Chromium cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="151962892725702025">Chromium OS không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng với miền của bạn.</translation>
@@ -240,7 +236,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="8985587603644336029">Ai đó trước đây đã đăng nhập vào Chromium trên máy tính này là <ph name="ACCOUNT_EMAIL_LAST"/>. Nếu đó không phải là tài khoản của bạn, hãy tạo một người dùng Chromium mới để giữ thông tin của bạn riêng biệt.
 
 Đăng nhập bằng mọi cách sẽ kết hợp thông tin Chromium như dấu trang, lịch sử và các cài đặt khác vào <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
-<translation id="2739631515503418643">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Chromium và hủy tải xuống không?</translation>
 <translation id="9013262824292842194">Chromium yêu cầu Windows Vista hoặc Windows XP có SP2 trở lên.</translation>
 <translation id="1967743265616885482">Một mô-đun có cùng tên đã được xác định là xung đột với Chromium.</translation>
 <translation id="7962572577636132072">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất.</translation>
@@ -253,6 +248,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="7318036098707714271">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. 
 
 Chromium không thể khôi phục cài đặt của bạn.</translation>
+<translation id="5531349711857992002">Chuỗi chứng chỉ cho trang web này chứa ít nhất một chứng chỉ đã được ký bằng thuật toán chữ ký không dùng nữa dựa trên SHA-1.</translation>
 <translation id="918373042641772655">Ngắt kết nối <ph name="USERNAME"/> sẽ xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chromium khác của bạn trên thiết bị này. Dữ liệu được lưu trữ trong tài khoản Google của bạn sẽ không bị xóa và có thể được quản lý trên <ph name="GOOGLE_DASHBOARD_LINK"/>Trang tổng quan của Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium là trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Đây là một trình duyệt web nhanh, ổn định và dễ sử dụng. Duyệt web trở nên an toàn hơn với tính năng bảo vệ chống lại phần mềm độc hại và lừa đảo được tích hợp sẵn vào Chromium.</translation>
 <translation id="4230135487732243613">Bạn muốn liên kết dữ liệu Chromium của bạn với tài khoản này?</translation>

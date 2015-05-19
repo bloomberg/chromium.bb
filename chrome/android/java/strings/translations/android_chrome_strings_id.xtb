@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE"/> untuk gambar ini</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
 <translation id="4816465935029283692">Jenis data</translation>
+<translation id="5098185943924922330">Bantu kami memprioritaskan fitur dan penyempurnaan yang harus dikerjakan dengan mengirimkan informasi tentang file, aplikasi, dan layanan yang sedang berjalan kepada Google kapan pun aplikasi mogok.
+
+        Statistik penggunaan mencakup informasi seperti preferensi, klik tombol, dan penggunaan memori. Statistik ini tidak mencakup URL laman web atau informasi pribadi apa pun. Laporan kerusakan berisi informasi sistem saat terjadi mogok dan dapat berisi URL laman web atau informasi pribadi, bergantung pada apa yang terjadi saat aplikasi mogok.</translation>
 <translation id="4042870126885713738">Tampilkan saran saat alamat web tidak dapat menyelesaikan masalah atau sambungan tidak dapat dibuat</translation>
 <translation id="8237438615979997762">Data yang tersimpan di perangkat ini, serta data yang tersimpan di Akun Google, akan tetap berada di tempatnya masing-masing. Namun, data baru atau perubahan yang dibuat pada data tidak akan disinkronkan di antara keduanya.</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
@@ -92,6 +95,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, aplikasi web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Ganti file</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
+<translation id="8413385045638830869">Tanya dulu (disarankan)</translation>
 <translation id="2100273922101894616">Masuk Otomatis</translation>
 <translation id="5313967007315987356">Tambahkan situs</translation>
 <translation id="5733727110006255111">Saat fitur ini diaktifkan, Chrome akan menggunakan server Google untuk mengompresi laman yang Anda kunjungi sebelum mengunduhnya. Laman penyamaran dan SSL tidak akan disertakan.</translation>
@@ -157,6 +161,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="6857778194843072568">Hanya kirim pada Wi-Fi</translation>
 <translation id="5380554235172449987">Jangan pernah mengirim</translation>
 <translation id="5715468759630044318">Pilih akun</translation>
+<translation id="5000922062037820727">Diblokir (disarankan)</translation>
 <translation id="544291274896356069">Mode penyamaran akan ditutup jika tautan ini dibuka di aplikasi eksternal. Lanjutkan?</translation>
 <translation id="3917783807003067648">Lokasi diblokir</translation>
 <translation id="1379156015317873965">Meningkatkan kinerja muatan laman</translation>
@@ -228,6 +233,7 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="3254409185687681395">Bookmark laman ini</translation>
 <translation id="907015151729920253">Kartu cerdas</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
+<translation id="857943718398505171">Diizinkan (disarankan)</translation>
 <translation id="4412992751769744546">Izinkan cookie pihak ketiga</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Simpan video</translation>
@@ -262,7 +268,6 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="748127970106343339">Mengonfirmasi penghapusan kredensial perangkat</translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
 <translation id="5899349522111170522">Buat file baru</translation>
-<translation id="1082482054625560856">Kelola sandi yang tersimpan di <ph name="BEGIN_LINK"/>Akun Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Mengizinkan gambar pada situs web yang Anda tentukan dan memblokirnya untuk web lainnya</translation>
 <translation id="2360035970720276770">Hanya dapat mengunduh URL http atau https</translation>
 <translation id="6570560778840017462">Anda tidak akan keluar dari <ph name="BEGIN_LINK"/>Akun Google<ph name="END_LINK"/></translation>

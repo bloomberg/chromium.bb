@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">Вы действительно хотите удалить Chromium?</translation>
 <translation id="6510925080656968729">Удаление Chromium</translation>
 <translation id="2615699638672665509">Обновление Chromium вскоре будет прекращено на этом компьютере, поскольку его аппаратное обеспечение больше не поддерживается.</translation>
-<translation id="5532301346661895910">Chromium добавит его к другим |сохраненным паролям| и запомнит его для следующих визитов.</translation>
 <translation id="6893813176749746474">Chromium был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
 <translation id="421369550622382712">Широкий выбор приложений, игр, расширений и тем для Chromium.</translation>
 <translation id="2732467638532545152">На вашем компьютере установлена старая версия Microsoft Windows, которая не может обработать сертификат безопасности сайта. Из-за этого Chromium не удается определить, действительно ли он принадлежит <ph name="SITE"/> или кто-то пытается выдать себя за <ph name="SITE"/>. Обновите операционную систему.</translation>
@@ -51,7 +50,6 @@
 <translation id="7064610482057367130">Невозможно выполнить обновление, так как приложение Chromium не найдено</translation>
 <translation id="872034308864968620">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="459535195905078186">Приложения Chromium</translation>
-<translation id="5109068449432240255">Да, закрыть Chromium</translation>
 <translation id="8134284582177628525">Если вы работаете за одним компьютером с пользователем <ph name="PROFILE_NAME"/>, добавьте свой аккаунт в Chromium для персонального использования браузера. В противном случае выйдите из чужого аккаунта Google.</translation>
 <translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="3032787606318309379">Добавление в Chromium...</translation>
@@ -70,7 +68,6 @@
 <translation id="734373864078049451">Все веб-страницы, закладки и другие данные Chromium можно найти здесь.</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
-<translation id="8353224596138547809">Сохранить пароль для этого сайта в Chromium?</translation>
 <translation id="8738058698779197622">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chromium не может проверить актуальность этих сертификатов.</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7463979740390522693">Chromium - Оповещения (новых: <ph name="QUANTITY"/>)</translation>
@@ -125,7 +122,6 @@
 <translation id="4365115785552740256">Chromium обязан своим появлением проекту с открытым исходным кодом <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> и другому <ph name="BEGIN_LINK_OSS"/>программному обеспечению с открытым исходным кодом<ph name="END_LINK_OSS"/>.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Используйте Chromium в гостевом режиме, если не хотите сохранять данные о посещенных сайтах.</translation>
-<translation id="3487263810738775861">Расширение изменило стартовую страницу Chromium.</translation>
 <translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
 <translation id="7549178288319965365">О Chromium OS</translation>
 <translation id="6248213926982192922">Назначить Chromium браузером по умолчанию</translation>
@@ -193,7 +189,8 @@
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
 <translation id="2158734852934720349">Лицензии Chromium OS на ПО с открытым исходным кодом</translation>
 <translation id="2966088006374919794">Chromium требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрашиваемая ссылка: <ph name="PROTOLINK"/>.</translation>
-<translation id="2558235863893655150">Сохранить пароль в Chromium?</translation>
+<translation id="7205698830395646142">Не показывать в Меню Chromium</translation>
+<translation id="7979877361127045932">Не показывать в меню Chromium</translation>
 <translation id="6485906693002546646">Для синхронизации данных Chromium используется аккаунт <ph name="PROFILE_EMAIL"/>. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Обновить Chromium</translation>
 <translation id="5772805321386874569">(необходимо <ph name="BEGIN_BUTTON"/>перезапустить<ph name="END_BUTTON"/> Chromium)</translation>
@@ -219,7 +216,6 @@
 <translation id="2119636228670142020">О &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Доступна новая, еще более быстрая версия Chromium.</translation>
 <translation id="378917192836375108">В Chromium вы можете нажать на любой номер телефона и позвонить на него через Skype.</translation>
-<translation id="8724049448828509830">Выполняется скачивание. Отменить и закрыть Chromium?</translation>
 <translation id="608189560609172163">Chromium не удалось синхронизировать данные из-за ошибки входа в систему.</translation>
 <translation id="4888717733111232871">Разрешить в Chromium передачу входящего трафика по протоколу mDNS</translation>
 <translation id="151962892725702025">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
@@ -227,7 +223,6 @@
 <translation id="8985587603644336029">Ранее вход в Chromium на этом компьютере выполнялся с помощью аккаунта <ph name="ACCOUNT_EMAIL_LAST"/>. Если это не ваш аккаунт и вы хотите закрыть доступ к ранее сохраненным в Chromium данным, создайте новый профиль Chromium. 
 
 Если войти в систему сейчас, закладки, история и прочие данные Chromium будут синхронизированы с новым аккаунтом: <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
-<translation id="2739631515503418643">Выполняется скачивание. Отменить и закрыть Chromium?</translation>
 <translation id="9013262824292842194">Для установки Chromium требуется ОС Windows Vista или Windows XP SP2 или более поздней версии.</translation>
 <translation id="1967743265616885482">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="7962572577636132072">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>
@@ -238,6 +233,7 @@
 <translation id="4224199872375172890">Вы используете актуальную версию Chromium.</translation>
 <translation id="5862307444128926510">Добро пожаловать в Chromium</translation>
 <translation id="7318036098707714271">Файл настроек поврежден или недействителен. Chromium не может восстановить ваши параметры.</translation>
+<translation id="5531349711857992002">В цепочке сертификатов этого веб-сайта есть по меньшей мере один был подписан с использованием устаревшего алгоритма подписи на основе SHA-1.</translation>
 <translation id="918373042641772655">Если вы отключите аккаунт <ph name="USERNAME"/>, все сохраненные на этом устройстве закладки, настройки, история и другие данные Chromium будут удалены. Данные в вашем аккаунте Google сохранятся, и вы сможете управлять ими в <ph name="GOOGLE_DASHBOARD_LINK"/>Личном кабинете Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium – браузер, который открывает веб-страницы и приложения за секунды. Он быстр, стабилен в работе и прост в использовании. Встроенная в Chromium защита от мошенничества и вредоносного ПО обеспечивает максимально безопасную работу в Интернете.</translation>
 <translation id="4230135487732243613">Связать данные Chromium с этим аккаунтом?</translation>

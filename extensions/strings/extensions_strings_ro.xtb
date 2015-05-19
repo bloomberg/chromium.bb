@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Utilizează microfonul și camera foto</translation>
 <translation id="2857834222104759979">Fișierul manifest nu este valid.</translation>
 <translation id="6384275966486438344">Schimbați setările de căutare la: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Selectează un dispozitiv USB</translation>
 <translation id="1445572445564823378">Această extensie încetinește <ph name="PRODUCT_NAME"/>. Vă recomandăm să o dezactivați pentru a restabili performanțele produsului <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="7003844668372540529">Produs necunoscut <ph name="PRODUCT_ID"/> de la <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Accesează dispozitivele seriale</translation>
 <translation id="288042212351694283">Accesează dispozitivele Universal 2nd Factor</translation>
+<translation id="3163201441334626963">Produs necunoscut <ph name="PRODUCT_ID"/> de la furnizorul <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Produs necunoscut <ph name="PRODUCT_ID"/> de la <ph name="VENDOR_NAME"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Administratorul acestui computer solicită ca versiunea minimă pentru <ph name="EXTENSION_NAME"/> să fie <ph name="EXTENSION_VERSION"/>. Extensia poate fi activată doar după actualizarea la acea versiune (sau una superioară).</translation>
 <translation id="6075907793831890935">Fă schimb de date cu dispozitivul numit <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Controlează starea și conectarea adaptorului Bluetooth</translation>
 <translation id="677806580227005219">Handler MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accesează informațiile despre dispozitivele Bluetooth conectate cu sistemul dvs. și descoperă dispozitivele Bluetooth din apropiere.</translation>
 <translation id="8749863574775030885">Accesează dispozitive USB de la un producător necunoscut</translation>
+<translation id="3115238746683532089">Produs necunoscut <ph name="PRODUCT_ID"/> de la furnizorul <ph name="VENDOR_ID"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de la <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Scriptul de fundal „<ph name="BACKGROUND_SCRIPT"/>” nu a putut fi încărcat.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> de la furnizorul <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Trimite mesaje către dispozitivele Bluetooth și primește mesaje de la acestea.</translation>
 <translation id="5678955352098267522">Citește datele de pe <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Instrument de despachetare a extensiilor</translation>
 <translation id="149347756975725155">Nu se poate încărca pictograma „<ph name="ICON"/>” a extensiei.</translation>
 <translation id="8825366169884721447">Această extensie nu a putut modifica antetul de solicitare „<ph name="HEADER_NAME"/>” al unei solicitări din rețea, deoarece modificarea era în conflict cu o altă extensie (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Selectează dispozitivele USB</translation>
 <translation id="6731255991101203740">Nu s-a putut crea directorul pentru dezarhivare: „<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">Pagina informativă „<ph name="ABOUT_PAGE"/>” nu s-a putut încărca.</translation>
 <translation id="388442998277590542">Nu se poate încărca pagina cu opțiuni „<ph name="OPTIONS_PAGE"/>”.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Această extensie nu a reușit să denumească fișierul descărcat „<ph name="ATTEMPTED_FILENAME"/>”, deoarece altă extensie (<ph name="EXTENSION_NAME"/>) a stabilit alt nume de fișier, „<ph name="ACTUAL_FILENAME"/>”.</translation>
 <translation id="452039078290142656">dispozitive necunoscute de la <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">Afișare web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Cale nevalidă (absolută sau relativă cu „..”): „<ph name="IMAGE_PATH"/>”</translation>
 <translation id="8284279544186306258">toate site-urile <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Schimbă pagina de pornire la: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Nu se poate încărca pagina de fundal „<ph name="BACKGROUND_PAGE"/>”.</translation>
 <translation id="2988488679308982380">Nu s-a putut instala pachetul: „<ph name="ERROR_CODE"/>”</translation>
 <translation id="5751530153776468604">Aplicația „<ph name="APP_NAME"/>” solicită accesul la unul dintre dispozitivele tale.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> de la furnizorul <ph name="VENDOR_ID"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Opțiuni: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Pachetul nu este valid. Detalii: „<ph name="ERROR_MESSAGE"/>”.</translation>
 <translation id="344630545793878684">Citește datele de pe un număr de site-uri</translation>

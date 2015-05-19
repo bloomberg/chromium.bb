@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">আপনি কি Chromium আনইনস্টল করার ব্যাপারে নিশ্চিত?</translation>
 <translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>
 <translation id="2615699638672665509">এই কম্পিউটারটি শীঘ্রই Chromium এর আপডেটগুলি গ্রহণ করা বন্ধ করবে কারণ এটির হার্ডওয়্যার আর সমর্থিত নয়৷</translation>
-<translation id="5532301346661895910">Chromium এটিকে আপনার |Google এর সংরক্ষিত পাসওয়ার্ডগুলি|-এ সংরক্ষণ করবে এবং পরবর্তী সময় যখন আপনার এটির প্রয়োজন হবে তখন এটি মনে করাবে৷</translation>
 <translation id="6893813176749746474"> Chromium আপডেট করা হয়েছে৷ কিন্তু আপনি এটি অন্ততঃপক্ষে 30 দিন ব্যবহার করতে পারবেন না৷</translation>
 <translation id="421369550622382712">Chromium-এর জন্য খুব ভালো অ্যাপ্লিকেশান, গেম, এক্সটেনশন এবং থিমসমূহ আবিষ্কার করুন৷</translation>
 <translation id="2732467638532545152">আপনার কম্পিউটার Microsoft Windows এর একটি পুরনো সংস্করণে চলছে যেটি এই ওয়েবসাইটের নিরাপত্তা শংসাপত্র প্রক্রিয়া করতে পারছে না। এই সমস্যার কারণে Chromium বলতে পারছে না যে শংসাপত্রটি <ph name="SITE"/> এর কাছ থেকে এসেছে নাকি আপনার নেটওয়ার্কের কেউ নিজেকে <ph name="SITE"/> বলে দাবী করছে এমন কারো কাছ থেকে এসেছে। দয়া করে আপনার Windows আরো সাম্প্রতিক এক সংস্করণে আপডেট করুন।</translation>
@@ -57,7 +56,6 @@
 <translation id="7064610482057367130">আপডেট করার জন্য Chromium এর কোনো ইনস্টলশান পাওয়া যায়নি৷</translation>
 <translation id="872034308864968620">Chromium-কে পটভূমিতে চলতে দিন</translation>
 <translation id="459535195905078186">Chromium অ্যাপ্লিকেশানগুলি</translation>
-<translation id="5109068449432240255">হ্যাঁ, Chromium থেকে প্রস্থান করুন</translation>
 <translation id="8134284582177628525">যদি আপনি <ph name="PROFILE_NAME"/> এর সাথে এই কম্পিউটারটি ভাগ করেন, তবে আলাদাভাবে ব্রাউজ করার জন্য নিজেকে Chromium এ যোগ করুন৷ অন্যথায় তাদের Google অ্যাকাউন্ট থেকে সংযোগ বিচ্ছিন্ন করুন৷</translation>
 <translation id="1480489203462860648">এটি ব্যবহার করে দেখুন, ইতিমধ্যেই এটি ইনস্টল করা হয়েছে</translation>
 <translation id="3032787606318309379">Chromium-এ জুড়ছে...</translation>
@@ -76,7 +74,6 @@
 <translation id="734373864078049451">আপনার ওয়েব, বুকমার্ক, এবং Chromium এর অন্যান্য জিনিস এখানে রয়েছে৷</translation>
 <translation id="3197823471738295152">আপনার ডিভাইসটি আপ-টু-ডেট আছে৷</translation>
 <translation id="8551886023433311834">প্রায় আপ-টু-ডেট! আপডেট সমাপ্ত করতে আপনার ডিভাইস পুনরারম্ভ করুন৷</translation>
-<translation id="8353224596138547809">আপনি কি চান যে Chromium এই সাইটের জন্য আপনার পাসওয়ার্ড সংরক্ষণ করুক?</translation>
 <translation id="8738058698779197622">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে৷ নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের সনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে৷ যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Chromium সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারে না৷</translation>
 <translation id="7339898014177206373">নতুন উইন্ডো</translation>
 <translation id="7463979740390522693">Chromium - বিজ্ঞপ্তিগুলি (<ph name="QUANTITY"/>টি অপঠিত)</translation>
@@ -133,7 +130,6 @@
 <translation id="4365115785552740256">Chromium  <ph name="BEGIN_LINK_CHROMIUM"/> Chromium<ph name="END_LINK_CHROMIUM"/> ওপেন সোর্স প্রকল্প এবং অন্যান্য <ph name="BEGIN_LINK_OSS"/>ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_OSS"/> দ্বারা করা সম্ভব হয়েছে৷</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">অতিথিগণ কোনো কিছুর জন্য অভাব বোধ না করেই Chromium ব্যবহার করতে পারবেন৷</translation>
-<translation id="3487263810738775861">আপনি যখন Chromium শুরু করেন তখন কোন পৃষ্ঠা দেখানো হবে তা একটি এক্সটেনশান দ্বারা পরিবর্তন করা হয়েছে।</translation>
 <translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস পুনরায় শুরু করুন৷</translation>
 <translation id="7549178288319965365">Chromium OS সম্পর্কে</translation>
 <translation id="6248213926982192922">Chromium-কে ডিফল্ট ব্রাউজার করুন</translation>
@@ -202,7 +198,8 @@
 <translation id="1414495520565016063">আপনি Chromium এ সাইন ইন করেছেন!</translation>
 <translation id="2158734852934720349">Chromium OS মুক্ত উৎসে লাইসেন্সগুলি</translation>
 <translation id="2966088006374919794">Chromiumএকটি বহিঃস্থ অ্যপ্লিকেশন আরম্ভ করার জন্য <ph name="SCHEME"/> সংযোগগুলি নিয়ন্ত্রণ করে৷ অনুরোধকৃত লিংকটি হল <ph name="PROTOLINK"/>৷</translation>
-<translation id="2558235863893655150">আপনি কি আপনার পাসওয়ার্ড সংরক্ষণ করতে Chromium চান?</translation>
+<translation id="7205698830395646142">Chromium মেনুর মধ্যে লুকান</translation>
+<translation id="7979877361127045932">Chromium মেনুর মধ্যে লুকান</translation>
 <translation id="6485906693002546646">আপনার Chromium জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL"/> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chromium ব্যবহার করতে <ph name="SETTINGS_LINK"/> এ যান৷</translation>
 <translation id="705851970750939768">Chromium আপডেট করুন</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON"/>পুনরায় চালু করা<ph name="END_BUTTON"/> প্রয়োজন)</translation>
@@ -229,7 +226,6 @@
 <translation id="2119636228670142020">&amp;Chromium OS সম্পর্কে</translation>
 <translation id="1708666629004767631">Chromium-এর একটি নতুন, নিরাপদ সংস্করণ উপলব্ধ আছে৷</translation>
 <translation id="378917192836375108">Chromium আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
-<translation id="8724049448828509830">একটি ডাউনলোড বর্তমানে চলছে৷ আপনি কি Chromium থেকে প্রস্থান আর ডাউনলোড বাতিল করতে চান?</translation>
 <translation id="608189560609172163">সাইন ইনে ত্রুটির কারণে Chromium আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="4888717733111232871">mDNS ট্রাফিকের অনুমতি দিতে Chromium এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="151962892725702025">আপনার ডোমেনে সিঙ্ক উপলব্ধ না থাকার কারণে Chromium OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
@@ -237,7 +233,6 @@
 <translation id="8985587603644336029">আগে কোনো একজন এই কম্পিউটারে <ph name="ACCOUNT_EMAIL_LAST"/> হিসাবে Chromium এ সাইন ইন করেছেন৷ যদি সেটি আপনার অ্যাকাউন্ট না হয়, তাহলে আপনার তথ্য আলাদা করে রাখতে একটি নতুন Chromium ব্যবহারকারী তৈরি করুন৷
 
 যেকোনো উপায়ে সাইন ইন করা হলে তা বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংসের মত Chromium তথ্যকে <ph name="ACCOUNT_EMAIL_NEW"/> এ মার্জ করবে৷</translation>
-<translation id="2739631515503418643">ডাউনলোডগুলি বর্তমানে চলছে৷ আপনি কি Chromium থেকে প্রস্থান আর ডাউনলোড বাতিল করতে চান?</translation>
 <translation id="9013262824292842194">Windows Vista বা SP2 সহ Windows XP বা উন্নততর Chromium প্রয়োজন৷</translation>
 <translation id="1967743265616885482">একই নামের একটি মডিউল Chromium সঙ্গে বিরোধে জ্ঞাত হয়েছে৷</translation>
 <translation id="7962572577636132072">Chromium স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনি সবসময় নবীনতম সংস্করণটি পান৷</translation>
@@ -250,6 +245,7 @@
 <translation id="7318036098707714271">আপনার অভিরুচিসমূহ ফাইল দূষিত অথবা অবৈধ৷
 
 Chromium আপনার সেটিংস পুনরুদ্ধার করতে অক্ষম৷</translation>
+<translation id="5531349711857992002">এই ওয়েবসাইটের শংসাপত্রের শ্রেণীতে অন্ততপক্ষে একটি শংসাপত্র আছে যাতে SHA-1 এর উপর ভিত্তি করে একটি অননুমোদিত স্বাক্ষরের অ্যালগোরিদম ব্যবহার করে সাইন করেছে।</translation>
 <translation id="918373042641772655"><ph name="USERNAME"/> সংযোগ বিচ্ছিন্ন করলে তা আপনার ইতিহাস, বুকমার্ক, সেটিংস, এবং এই ডিভাইসে সঞ্চিত অন্যান্য Chromium ডেটা মুছে দেবে। আপনার Google অ্যাকাউন্টে সঞ্চিত ডেটা সাফ করা হবে না এবং <ph name="GOOGLE_DASHBOARD_LINK"/>Google ড্যাশবোর্ড <ph name="END_GOOGLE_DASHBOARD_LINK"/> এ তা পরিচালনা করা যেতে পারে।</translation>
 <translation id="6403826409255603130">Chromium হল একটি ওয়েব ব্রাউজার যা ওয়েব পৃষ্ঠার গতি এবং অ্যাপ্লিকেশনগুলিকে আলোকের গতিতে সঞ্চালিত করে৷ এটা দ্রুত, স্থিতিশীল, এবং সহজে ব্যবহারের যোগ্য৷ Chromium নির্মিত ম্যালওয়ার এবং ফিশিং সুরক্ষার সাহায্যে আরো সুরক্ষিত ভাবে ওয়েব ব্রাউজ করুন৷</translation>
 <translation id="4230135487732243613">এই অ্যাকাউন্টে আপনার Chromium ডেটা লিঙ্ক করবেন?</translation>

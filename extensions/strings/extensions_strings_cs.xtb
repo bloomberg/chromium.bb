@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Používat mikrofon a fotoaparát</translation>
 <translation id="2857834222104759979">Soubor manifestu je neplatný.</translation>
 <translation id="6384275966486438344">Změňte nastavení vyhledávání na: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Vyberte zařízení USB</translation>
 <translation id="1445572445564823378">Toto rozšíření zpomaluje prohlížeč <ph name="PRODUCT_NAME"/>. Chcete-li výkon prohlížeče <ph name="PRODUCT_NAME"/> obnovit, měli byste rozšíření zakázat.</translation>
+<translation id="7003844668372540529">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Přistupovat k zařízením připojeným pomocí sériového portu</translation>
 <translation id="288042212351694283">Přístup k zařízením s univerzálním druhým faktorem</translation>
+<translation id="3163201441334626963">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_NAME"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Správce tohoto zařízení vyžaduje, aby rozšíření <ph name="EXTENSION_NAME"/> mělo verzi alespoň <ph name="EXTENSION_VERSION"/>. Dokud nebude aktualizováno na tuto (nebo vyšší) verzi, nelze jej povolit.</translation>
 <translation id="6075907793831890935">Výměna dat se zařízením <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Ovládání stavu a párování adaptéru Bluetooth</translation>
 <translation id="677806580227005219">Obslužná rutina typu MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Přístup k informacím o zařízeních Bluetooth spárovaných s vaším systémem a objevování zařízení Bluetooth v okolí</translation>
 <translation id="8749863574775030885">Přístup k zařízením USB od neznámého dodavatele</translation>
+<translation id="3115238746683532089">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_ID"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223">Zařízení <ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nelze načíst skript pozadí <ph name="BACKGROUND_SCRIPT"/>.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Odesílání zpráv do zařízení Bluetooth a přijímání zpráv ze zařízení Bluetooth</translation>
 <translation id="5678955352098267522">Čtení vašich dat na webu <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Rozbalovač rozšíření</translation>
 <translation id="149347756975725155">Nelze načíst ikonu rozšíření <ph name="ICON"/>.</translation>
 <translation id="8825366169884721447">Tomuto rozšíření se nepodařilo změnit záhlaví <ph name="HEADER_NAME"/> síťového požadavku, protože změna byla v konfliktu s jiným rozšířením (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Výběr zařízení USB</translation>
 <translation id="6731255991101203740">Nepodařilo se vytvořit adresář pro rozbalení: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Načtení stránky s informacemi <ph name="ABOUT_PAGE"/> se nezdařilo.</translation>
 <translation id="388442998277590542">Nelze načíst stránku možností „<ph name="OPTIONS_PAGE"/>“.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Tomuto rozšíření se nepodařilo pojmenovat stahovaný soubor „<ph name="ATTEMPTED_FILENAME"/>“, protože jiné rozšíření (<ph name="EXTENSION_NAME"/>) vybralo jiný název souboru „<ph name="ACTUAL_FILENAME"/>“.</translation>
 <translation id="452039078290142656">neznámá zařízení od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Neplatná cesta (absolutní nebo relativní s „..“): <ph name="IMAGE_PATH"/></translation>
 <translation id="8284279544186306258">všechny weby <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Změnit domovskou stránku na: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Nelze načíst stránku pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="2988488679308982380">Nepodařilo se nainstalovat balíček: <ph name="ERROR_CODE"/></translation>
 <translation id="5751530153776468604">Aplikace <ph name="APP_NAME"/> žádá o přístup k jednomu z vašich zařízení.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_ID"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Balíček je neplatný. Podrobnosti: <ph name="ERROR_MESSAGE"/></translation>
 <translation id="344630545793878684">Čtení vašich dat na mnoha webech</translation>

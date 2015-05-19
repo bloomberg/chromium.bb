@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE"/> 搜尋這張圖片</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="4816465935029283692">資料類型</translation>
+<translation id="5098185943924922330">發生當機情形時，如果您將當下正在執行的檔案、應用程式和服務的相關資訊傳送給 Google，即可協助我們優先提供重要的功能與改進項目。
+
+        使用統計資料包括偏好設定、按鈕點擊次數和記憶體使用量等資訊，不含網頁網址或任何個人資訊。當機報告則包括當機時的系統資訊；而且根據當機時發生的狀況，可能會包含網頁網址和個人資訊。</translation>
 <translation id="4042870126885713738">在無法解析網址或建立連線時顯示建議</translation>
 <translation id="8237438615979997762">儲存在這個裝置上和 Google 帳戶中的資料將各自保持原狀，但當您新增資料或變更資料時，兩者之間的資料將不會保持同步。</translation>
 <translation id="6831043979455480757">翻譯</translation>
@@ -92,6 +95,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME"/>，網路應用程式。<ph name="APP_URL"/></translation>
 <translation id="200669432486043882">取代檔案</translation>
 <translation id="5595485650161345191">編輯地址</translation>
+<translation id="8413385045638830869">先詢問我 (建議)</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="5313967007315987356">新增網站</translation>
 <translation id="5733727110006255111">啟用這項擴充功能後，Chrome 會先使用 Google 伺服器壓縮您要瀏覽的網頁，然後再下載這些網頁 (SSL 和無痕式網頁內容除外)。</translation>
@@ -157,6 +161,7 @@
 <translation id="6857778194843072568">僅於使用 Wi-Fi 連線時傳送</translation>
 <translation id="5380554235172449987">一律不傳送</translation>
 <translation id="5715468759630044318">選擇帳戶</translation>
+<translation id="5000922062037820727">已封鎖 (建議)</translation>
 <translation id="544291274896356069">如果使用外部應用程式開啟這個連結，無痕模式就會結束。要繼續嗎？</translation>
 <translation id="3917783807003067648">位置資訊遭到封鎖</translation>
 <translation id="1379156015317873965">改善網頁載入效能</translation>
@@ -228,6 +233,7 @@
 <translation id="3254409185687681395">把此頁加入書籤</translation>
 <translation id="907015151729920253">智慧卡</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="857943718398505171">已允許 (建議)</translation>
 <translation id="4412992751769744546">允許第三方 Cookie</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">儲存影片</translation>
@@ -262,7 +268,6 @@
 <translation id="748127970106343339">確認刪除裝置憑證</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="5899349522111170522">建立新檔案</translation>
-<translation id="1082482054625560856">管理您的 <ph name="BEGIN_LINK"/>Google 帳戶<ph name="END_LINK"/>中儲存的密碼</translation>
 <translation id="7232255641409319872">允許在您指定的網站上顯示圖片，但禁止其他網站顯示</translation>
 <translation id="2360035970720276770">只能透過 http 或 https 網址下載檔案</translation>
 <translation id="6570560778840017462">您不會因此登出 <ph name="BEGIN_LINK"/>Google 帳戶<ph name="END_LINK"/></translation>

@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Обязательная</translation>
 <translation id="2958431318199492670">Некоторые элементы сетевой конфигурации невозможно импортировать, поскольку она не соответствует стандарту ONC.</translation>
 <translation id="3583757800736429874">&amp;Повторить перемещение</translation>
+<translation id="7887683347370398519">Проверьте CVC-код и повторите попытку</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Устройство не зарегистрировано</translation>
 <translation id="1491151370853475546">Обновить страницу</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Всегда переводить <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Скрыть значение</translation>
 <translation id="6753269504797312559">Значение правила</translation>
+<translation id="3369366829301677151">Обновите данные карты <ph name="CREDIT_CARD"/> и подтвердите ее</translation>
 <translation id="8834246243508017242">Включить автозаполнение контактов…</translation>
 <translation id="7275334191706090484">Управляемые закладки</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Административный район</translation>
 <translation id="1871208020102129563">Выбрано использование фиксированных прокси-серверов, а не URL PAC-скрипта.</translation>
+<translation id="8988760548304185580">Введите срок действия и трехзначный CVC-код, указанный на обратной стороне карты.</translation>
 <translation id="8940229512486821554">Выполнить команду расширения <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Неизвестная ошибка</translation>
 <translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Ошибка проверки: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Не удалось выполнить перевод на <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Серийный номер устройства недействителен</translation>
+<translation id="3219579145727097045">Введите срок действия и четырехзначный CVC-код, указанный на лицевой стороне карты.</translation>
 <translation id="3667681724235208644">Смотреть оригинал</translation>
 <translation id="4079302484614802869">Конфигурация прокси-сервера предусматривает использование URL PAC-скриптов вместо фиксированных прокси-серверов.</translation>
 <translation id="5540224163453853">Не удалось найти указанную статью</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Выполнить перевод (<ph name="ORIGINAL_LANGUAGE"/> &gt; <ph name="TARGET_LANGUAGE"/>)?</translation>
 <translation id="8218327578424803826">Назначенное местоположение:</translation>
 <translation id="3542684924769048008">Использовать пароль для:</translation>
+<translation id="2855922900409897335">Подтвердите данные карты <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Эта страница была переведена автоматически<ph name="ORIGINAL_LANGUAGE"/>&gt;<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Эмират</translation>
+<translation id="6646897916597483132">Введите четырехзначный CVC-код, указанный на лицевой стороне карты.</translation>
 <translation id="5145883236150621069">При проверке политики возвращен код ошибки</translation>
 <translation id="7983301409776629893">Всегда переводить <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Район</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Не управляется</translation>
 <translation id="3712624925041724820">Недостаточно лицензий</translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
+<translation id="1455235771979731432">Не удалось подтвердить данные карты. Проверьте подключение к Интернету и повторите попытку.</translation>
 <translation id="7542995811387359312">Автозаполнение данных банковской карты отключено, так как на сайте используется незащищенное соединение.</translation>
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE"/>? Сообщите об ошибке</translation>
 <translation id="8088680233425245692">Не удалось показать статью</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Активен</translation>
 <translation id="7568593326407688803">Язык этой страницы<ph name="ORIGINAL_LANGUAGE"/>Хотите перевести ее?</translation>
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>
+<translation id="4800132727771399293">Проверьте срок действия и CVC-код, а затем повторите попытку</translation>
 <translation id="4171400957073367226">Подтверждающая подпись недействительна</translation>
+<translation id="9125941078353557812">Введите трехзначный CVC-код, указанный на обратной стороне карты.</translation>
 <translation id="106701514854093668">Закладки на компьютере</translation>
 <translation id="6154808779448689242">Возвращенный токен не соответствует имеющемуся</translation>
 <translation id="7995512525968007366">Не указано</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Отменить изменение порядка</translation>
 <translation id="20817612488360358">Включены системные настройки прокси-сервера, но при этом его конфигурация задана явным образом.</translation>
 <translation id="2639739919103226564">Состояние:</translation>
+<translation id="8824019021993735287">Не удалось проверить данные карты. Повторите попытку позже.</translation>
 <translation id="4968547170521245791">Невозможно использовать прокси-сервер</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4196861286325780578">&amp;Повторить перемещение</translation>

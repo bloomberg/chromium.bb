@@ -19,7 +19,7 @@
 <translation id="5578795271662203820">Tafuta picha hii kwenye <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Ongeza anwani</translation>
 <translation id="4816465935029283692">Aina za data</translation>
-<translation id="5098185943924922330">Tusaidie kuweka kipaumbele vipengele na maboresho tunayopaswa kushughulikia kwa kutumia Google maelezo kuhusu faili, programu, na huduma kuendelea unapokumbwa na hitilafu ya kuacha kufanya kazi.
+<translation id="5098185943924922330">Tusaidie kuweka kipaumbele katika vipengele na maboresho tunayopaswa kushughulikia kwa kuitumia Google maelezo kuhusu faili, programu, na huduma zinazofanya kazi unapokumbwa na hitilafu ya kuacha kufanya kazi.
 
         Takwimu za matumizi zinajumuisha maelezo kama vile mapendeleo, mibofyo ya vitufe, na matumuzi ya hifadhi. Hazijumuishi URL za ukurasa wa wavuti au maelezo yoyote ya kibinafsi. Ripoti za kuacha kufanya kazi zina maelezo ya mfumo ya wakati wa kuacha kufanya kazi, na zinaweza kuwa na URL za ukurasa wa wavuti au maelezo ya kibinafsi, kutegemea na kilichokuwa kikitendeka wakati wa kuacha kufanya kazi.</translation>
 <translation id="4042870126885713738">Onyesha mapendekezo wakati anwani ya wavuti inaposhindwa kutatuliwa au muunganisho ukiwa hauwezi kufanyika</translation>
@@ -95,6 +95,7 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, programu ya wavuti. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Badilisha faili</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>
+<translation id="8413385045638830869">Uliza kwanza (imependekezwa)</translation>
 <translation id="2100273922101894616">Ingia katika Akaunti Kiotomatiki</translation>
 <translation id="5313967007315987356">Ongeza tovuti</translation>
 <translation id="5733727110006255111">Kipengele hiki kikiwashwa, Chrome itatumia seva za Google kushindilia kurasa unazotembelea kabla ya kuzipakua. Kurasa za SSL na za hali fiche hazitajumuishwa.</translation>
@@ -160,6 +161,7 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="6857778194843072568">Tuma kwenye Wi-Fi pekee</translation>
 <translation id="5380554235172449987">Usiwahi kutuma</translation>
 <translation id="5715468759630044318">Chagua akaunti</translation>
+<translation id="5000922062037820727">Imezuiwa (imependekezwa)</translation>
 <translation id="544291274896356069">Inaacha katika hali fiche ikiwa kiungo hiki kinafunguliwa katika programu ya nje. Je, ungependa kuendelea?</translation>
 <translation id="3917783807003067648">Mahali pamezuiwa</translation>
 <translation id="1379156015317873965">Boresha utendaji wa kupakia ukurasa</translation>
@@ -231,6 +233,7 @@ Gonga kitufe cha nyuma ili uondoke.</translation>
 <translation id="3254409185687681395">Alamisha ukurasa huu</translation>
 <translation id="907015151729920253">Kadi mahiri</translation>
 <translation id="2482878487686419369">Arifa</translation>
+<translation id="857943718398505171">Imeruhusiwa (inapendekezwa)</translation>
 <translation id="4412992751769744546">Ruhusu vidakuzi vingine</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Hifadhi video</translation>
@@ -265,7 +268,6 @@ Gonga kitufe cha nyuma ili uondoke.</translation>
 <translation id="748127970106343339">Thibitisha ufutaji wa kitambulisho cha kifaa</translation>
 <translation id="3089395242580810162">Fungua kwenye kichupo fiche</translation>
 <translation id="5899349522111170522">Unda faili mpya</translation>
-<translation id="1082482054625560856">Dhibiti manenosiri yaliyohifadhiwa katika <ph name="BEGIN_LINK"/>Akaunti yako ya Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Ruhusu picha kwenye tovuti unazobainisha huku ukizizuia kwenye wavuti mwingine wote</translation>
 <translation id="2360035970720276770">Inaweza kupakua http au https URL</translation>
 <translation id="6570560778840017462">Hutaondolewa katika <ph name="BEGIN_LINK"/>Akaunti zako za Google<ph name="END_LINK"/></translation>

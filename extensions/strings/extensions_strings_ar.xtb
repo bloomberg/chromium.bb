@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">استخدام الميكروفون والكاميرا</translation>
 <translation id="2857834222104759979">ملف البيان غير صالح.</translation>
 <translation id="6384275966486438344">تغيير إعدادات البحث لـ: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">‏تحديد جهاز USB</translation>
 <translation id="1445572445564823378">تتسبب هذه الإضافة في بطء <ph name="PRODUCT_NAME"/>. يجب تعطيلها لاستعادة أداء <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="7003844668372540529">المنتج غير معروف <ph name="PRODUCT_ID"/> من <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">الوصول إلى الأجهزة التسلسلية</translation>
 <translation id="288042212351694283">الوصول إلى أجهزة العامل الثاني العالمي</translation>
+<translation id="3163201441334626963">المنتج غير معروف <ph name="PRODUCT_ID"/> من المورّد‬ <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">المنتج غير معروف <ph name="PRODUCT_ID"/> من <ph name="VENDOR_NAME"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">يطلب مشرف هذا الجهاز <ph name="EXTENSION_NAME"/> الحصول على الحد الأدنى لإصدار <ph name="EXTENSION_VERSION"/>. ولا يمكن تمكينه حتى يتم تحديثه إلى هذا الإصدار (أو أعلى).</translation>
 <translation id="6075907793831890935">تبادل البيانات مع الجهاز المسمى <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">التحكم في حالة محول بلوتوث وإقرانه</translation>
 <translation id="677806580227005219">‏معالج Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">الوصول إلى معلومات حول أجهزة البلوتوث المقترنة بنظامك واكتشاف أجهزة البلوتوث القريبة.</translation>
 <translation id="8749863574775030885">‏الدخول إلى أجهزة USB من مورد غير معروف</translation>
+<translation id="3115238746683532089">المنتج غير معروف <ph name="PRODUCT_ID"/> من المورّد <ph name="VENDOR_ID"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> من <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">تعذر تحميل النص البرمجي للخلفية '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> من المورّد <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">إرسال الرسائل إلى أجهزة البلوتوث واستلامها منها.</translation>
 <translation id="5678955352098267522">قراءة بياناتك على <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">أداة فك ضغط الإضافات</translation>
 <translation id="149347756975725155">تعذر تحميل رمز الإضافة '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">أخفقت الإضافة في تعديل عنوان الطلب &quot;<ph name="HEADER_NAME"/>&quot; لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">‏تحديد أجهزة USB</translation>
 <translation id="6731255991101203740">تعذر إنشاء دليل لفك ضغط: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">تعذر تحميل حول الصفحة &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">تعذر تحميل صفحة الخيارات &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">أخفقت هذه الإضافة في تسمية التنزيل &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; نظرًا لأن هناك إضافة أخرى (<ph name="EXTENSION_NAME"/>) قد حددت اسم ملف آخر &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="452039078290142656">أجهزة غير معروفة من <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">عرض الويب: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">مسار غير قانوني (أساسي أو منتسب مع '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">جميع مواقع <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">تغيير الصفحة الرئيسية إلى: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">تعذر تحميل صفحة الخلفية '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">تعذر تثبيت الحزمة: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد من أجهزتك.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> من المورّد <ph name="VENDOR_ID"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">الحزمة غير صالحة. التفاصيل: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">قراءة بياناتك على عدد من مواقع الويب</translation>

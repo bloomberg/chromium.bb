@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">अनिवार्य</translation>
 <translation id="2958431318199492670">नेटवर्क कॉन्फिगरेशन ONC मानकाचे पालन करत नाही. कॉन्फिगरेशनचे भाग आयात केले जाऊ शकत नाहीत.</translation>
 <translation id="3583757800736429874">&amp;हलवा पुन्हा करा</translation>
+<translation id="7887683347370398519">आपले CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">डिव्हाइस रेकॉर्ड गहाळ</translation>
 <translation id="1491151370853475546">हे पृष्ठ रीलोड करा</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">नेहमी अनुवाद करा <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">मूल्य लपवा</translation>
 <translation id="6753269504797312559">धोरण मूल्य</translation>
+<translation id="3369366829301677151">आपले <ph name="CREDIT_CARD"/> अद्यतनित आणि सत्यापित करा</translation>
 <translation id="8834246243508017242">संपर्क वापरून स्वयं-भरण सक्षम करा...</translation>
 <translation id="7275334191706090484">व्यवस्थापित केलेले बुकमार्क</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
+<translation id="8988760548304185580">आपल्या कार्डच्या पाठीमागे असलेली कालबाह्यता तारीख आणि 3-अंकी CVC प्रविष्ट करा</translation>
 <translation id="8940229512486821554">Run <ph name="EXTENSION_NAME"/> कमांडः <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">अज्ञात त्रुटी</translation>
 <translation id="112840717907525620">धोरण कॅशे ठीक</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">प्रमाणीकरण त्रुटी: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> मध्ये भाषांतर अयशस्वी झाले.</translation>
 <translation id="4103249731201008433">डिव्हाइस सिरीयल क्रमांक अवैध आहे</translation>
+<translation id="3219579145727097045">आपल्या कार्डच्या समोरच्या भागावरील कालबाह्यता तारीख आणि 4-अंकी CVC प्रविष्ट करा</translation>
 <translation id="3667681724235208644">मूळ पहा</translation>
 <translation id="4079302484614802869">प्रॉक्सी कॉन्फिगरेशन .pac स्क्रिप्ट URL वापरण्‍यास सेट करण्‍यात आले आहे, निश्चित प्रॉक्सी सर्व्हर नव्हे.</translation>
 <translation id="5540224163453853">विनंती केलेला लेख शोधू शकलो नाही.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> मधून <ph name="TARGET_LANGUAGE"/> मध्ये भाषांतरित करायचे?</translation>
 <translation id="8218327578424803826">नियुक्त केलेले स्थान:</translation>
 <translation id="3542684924769048008">यासाठी संकेतशब्द वापरा:</translation>
+<translation id="2855922900409897335">आपले <ph name="CREDIT_CARD"/> सत्यापित करा</translation>
 <translation id="7186367841673660872">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE"/>मधून<ph name="LANGUAGE_LANGUAGE"/>मध्ये अनुवादित केले गेले आहे</translation>
 <translation id="7139724024395191329">अमिरात</translation>
+<translation id="6646897916597483132">आपल्या कार्डच्या पुढील भागावर असलेले 4-अंकी CVC प्रविष्ट करा</translation>
 <translation id="5145883236150621069">धोरण प्रतिसादामध्ये त्रुटी कोड अस्तित्वात आहे</translation>
 <translation id="7983301409776629893"> नेहमी <ph name="ORIGINAL_LANGUAGE"/> मधून <ph name="TARGET_LANGUAGE"/> मध्ये अनुवाद करा</translation>
 <translation id="6970216967273061347">‍जिल्‍हा</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">व्यवस्थापित न केलेले</translation>
 <translation id="3712624925041724820">परवाने संपुष्टात</translation>
 <translation id="4926049483395192435">निर्दिष्‍ट केले जाणे आवश्‍यक आहे.</translation>
+<translation id="1455235771979731432">आपले कार्ड सत्यापित करताना समस्या आली. आपले इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="7542995811387359312">स्वयंचलित क्रेडिट कार्ड भरणे अक्षम झाले आहे कारण हा फॉर्म सुरक्षित कनेक्शन वापरत नाही.</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/> मध्ये नाही? या त्रुटीचा अहवाल नोंदवा</translation>
 <translation id="8088680233425245692">लेख पाहण्यात अयशस्वी.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">सक्रिय</translation>
 <translation id="7568593326407688803">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE"/>मध्ये आहे आपण याचा अनुवाद करु इच्छिता?</translation>
 <translation id="8876793034577346603">विश्लेषण करण्यात नेटवर्क कॉन्फिगरेशन अयशस्वी.</translation>
+<translation id="4800132727771399293">आपली कालबाह्यता तारीख आणि CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="4171400957073367226">खराब सत्यापन स्वाक्षरी</translation>
+<translation id="9125941078353557812">आपल्या कार्डच्या पाठीमागे असलेले 3-अंकी CVC प्रविष्ट करा</translation>
 <translation id="106701514854093668">डेस्‍कटॉप बुकमार्क</translation>
 <translation id="6154808779448689242">परत केलेले धोरण टोकन वर्तमान टोकनशी जुळत नाही</translation>
 <translation id="7995512525968007366">निर्दिष्ट केलेले नाही</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="20817612488360358">सिस्टम प्रॉक्सी सेटिंग्ज वापरण्‍यास सेट करण्‍यात आल्या परंतु एक सुस्पष्‍ट प्रॉक्सी कॉन्फिगरेशन देखील निर्दिष्‍ट करण्‍यात आले.</translation>
 <translation id="2639739919103226564">स्थिती:</translation>
+<translation id="8824019021993735287">Chrome यावेळी आपले कार्ड सत्यापित करण्यात अक्षम होते. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="4968547170521245791">प्रॉक्सी करू शकत नाही</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>

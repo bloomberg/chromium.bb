@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="4816465935029283692">Datatyper</translation>
+<translation id="5098185943924922330">Hjælp os med at prioritere de funktioner og forbedringer, vi bør arbejde på, ved at sende oplysninger til Google om, hvilke filer, applikationer og tjenester, der kører, når du oplever et nedbrud.
+
+        Brugsstatistik indeholder oplysninger såsom indstillinger, antal klik på knappen og hukommelsesforbrug. De omfatter ikke webadresser eller personlige oplysninger. Nedbrudsrapporter indeholder systemoplysninger på tidspunktet for nedbruddet og kan indeholde webadresser eller personlige oplysninger, afhængigt af hvad der skete på tidspunktet for nedbruddet.</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
 <translation id="8237438615979997762">De data, som er gemt på denne enhed og på din Google-konto, vil fortsat være gemt begge steder. Nye data eller ændringer, som du foretager, synkroniseres dog ikke imellem de to.</translation>
 <translation id="6831043979455480757">Oversæt</translation>
@@ -92,6 +95,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, webapp. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Erstat fil</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
+<translation id="8413385045638830869">Spørg først (anbefales)</translation>
 <translation id="2100273922101894616">Automatisk login</translation>
 <translation id="5313967007315987356">Tilføj website</translation>
 <translation id="5733727110006255111">Når denne funktion er aktiveret, vil Chrome bruge Googles servere til at komprimere de sider, du besøger, før de downloades. SSL- og inkognitosider medtages ikke.</translation>
@@ -157,6 +161,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="6857778194843072568">Send kun via Wi-Fi</translation>
 <translation id="5380554235172449987">Send aldrig</translation>
 <translation id="5715468759630044318">Vælg konto</translation>
+<translation id="5000922062037820727">Blokeret (anbefales)</translation>
 <translation id="544291274896356069">Du forlader inkognitotilstand, hvis dette link åbnes i en ekstern applikation. Vil du fortsætte?</translation>
 <translation id="3917783807003067648">Placeringen er blokeret</translation>
 <translation id="1379156015317873965">Gør indlæsningen af siden bedre</translation>
@@ -228,6 +233,7 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="2482878487686419369">Underretninger</translation>
+<translation id="857943718398505171">Tilladt (anbefales)</translation>
 <translation id="4412992751769744546">Tillad tredjepartscookies</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Gem video</translation>
@@ -262,7 +268,6 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="748127970106343339">Bekræft sletning af loginoplysningerne for enheden</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="5899349522111170522">Opret en ny fil</translation>
-<translation id="1082482054625560856">Administrer gemte adgangskoder på din <ph name="BEGIN_LINK"/>Google-konto<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Tillad billeder på de websites, du angiver, mens det blokeres på resten af internettet</translation>
 <translation id="2360035970720276770">Der kan kun downloades webadresser med &quot;http&quot; eller &quot;https&quot;</translation>
 <translation id="6570560778840017462">Du bliver ikke logget ud af dine <ph name="BEGIN_LINK"/>Google-konti<ph name="END_LINK"/></translation>

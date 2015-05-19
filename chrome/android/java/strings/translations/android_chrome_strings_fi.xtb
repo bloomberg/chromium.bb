@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="4816465935029283692">Tietotyypit</translation>
+<translation id="5098185943924922330">Voit auttaa Googlea suunnittelemaan ominaisuuksien ja parannuksien tärkeysjärjestystä, jos lähetät meille jokaisen kaatumisen jälkeen tietoja käynnissä olleista tiedostoista, sovelluksista palveluista.
+
+        Käyttötilastot sisältävät tietoja esimerkiksi asetuksista, painetuista painikkeista ja muistin käytöstä. Ne eivät sisällä verkkosivujen URL-osoitteita tai henkilötietoja. Virheraportit sisältävät tietoja järjestelmästä virheen aikana, ja niihin voi sisältyä verkkosivujen URL-osoitteita tai henkilökohtaisia tietoja riippuen siitä, mitä virheen aikana tapahtui.</translation>
 <translation id="4042870126885713738">Näytä ehdotuksia, jos verkko-osoitetta ei tunnisteta tai yhteyttä ei voi muodostaa.</translation>
 <translation id="8237438615979997762">Tälle laitteelle sekä Google-tiliisi tallennetut tiedot säilyvät molemmissa paikoissa. Uusia tietoja tai tietoihin tekemiäsi muutoksia ei kuitenkaan synkronoida.</translation>
 <translation id="6831043979455480757">Käännä</translation>
@@ -92,6 +95,7 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, verkkosovellus. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Korvaa tiedosto.</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
+<translation id="8413385045638830869">Kysy ensin (suositus)</translation>
 <translation id="2100273922101894616">Automaattinen kirjautuminen</translation>
 <translation id="5313967007315987356">Lisää sivusto</translation>
 <translation id="5733727110006255111">Kun tämä toiminto on käytössä, Chrome pakkaa lukemasi sivut Googlen palvelimilla ennen niiden lataamista. SSL- ja incognito-sivuja ei pakata.</translation>
@@ -157,6 +161,7 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="6857778194843072568">Lähetä vain Wi-Fi-yhteydellä</translation>
 <translation id="5380554235172449987">Älä lähetä koskaan</translation>
 <translation id="5715468759630044318">Valitse tili.</translation>
+<translation id="5000922062037820727">Estetty (suositus)</translation>
 <translation id="544291274896356069">Incognito-tilasta poistutaan, jos avaat tämän linkin ulkoisessa sovelluksessa. Haluatko jatkaa?</translation>
 <translation id="3917783807003067648">Sijainnin käyttö on estetty.</translation>
 <translation id="1379156015317873965">Paranna sivun lataustehokkuutta</translation>
@@ -228,6 +233,7 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
 <translation id="907015151729920253">Älykortti</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
+<translation id="857943718398505171">Sallittu (suositus)</translation>
 <translation id="4412992751769744546">Salli kolmannen osapuolen evästeet</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Tallenna video</translation>
@@ -262,7 +268,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="748127970106343339">Vahvista laitteen kirjautumistietojen poisto</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
 <translation id="5899349522111170522">Luo uusi tiedosto.</translation>
-<translation id="1082482054625560856">Hallinnoi <ph name="BEGIN_LINK"/>Google-tiliin<ph name="END_LINK"/> tallennettuja salasanojasi</translation>
 <translation id="7232255641409319872">Salli kuvat määrittämissäsi sivustoissa mutta estä ne muissa sivustoissa.</translation>
 <translation id="2360035970720276770">Vain http- tai https-alkuisista URL-osoitteista voi ladata.</translation>
 <translation id="6570560778840017462">Sinua ei kirjata ulos <ph name="BEGIN_LINK"/>Google-tileistäsi<ph name="END_LINK"/>.</translation>

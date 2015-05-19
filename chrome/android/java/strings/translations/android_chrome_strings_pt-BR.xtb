@@ -95,6 +95,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, aplicativo da Web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Substituir arquivo</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
+<translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="2100273922101894616">Login automático</translation>
 <translation id="5313967007315987356">Adicionar site</translation>
 <translation id="5733727110006255111">Quando este elemento está ativado, o Chrome usa os servidores do Google para compactar as páginas que você visita antes de fazer o download delas. Páginas no modo anônimo e em SSL não são incluídas.</translation>
@@ -160,6 +161,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="6857778194843072568">Enviar somente em Wi-Fi</translation>
 <translation id="5380554235172449987">Nunca enviar</translation>
 <translation id="5715468759630044318">Escolher conta</translation>
+<translation id="5000922062037820727">Bloqueada (recomendado)</translation>
 <translation id="544291274896356069">Se este link for aberto em um aplicativo externo, você sairá do modo de navegação anônima. Continuar?</translation>
 <translation id="3917783807003067648">O local está bloqueado</translation>
 <translation id="1379156015317873965">Melhorar o desempenho de carregamento da página</translation>
@@ -231,6 +233,7 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="3254409185687681395">Adicionar esta página aos favoritos</translation>
 <translation id="907015151729920253">Cartão inteligente</translation>
 <translation id="2482878487686419369">Notificações</translation>
+<translation id="857943718398505171">Permitida (recomendado)</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Salvar vídeo</translation>
@@ -265,7 +268,6 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
 <translation id="3089395242580810162">Abrir em guia anônima</translation>
 <translation id="5899349522111170522">Criar novo arquivo</translation>
-<translation id="1082482054625560856">Gerenciar senhas salvas na sua <ph name="BEGIN_LINK"/>Conta do Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Permitir imagens em websites que você especificar, bloqueando-as para o restante da Web</translation>
 <translation id="2360035970720276770">Só é permitido o download de URLs http ou https</translation>
 <translation id="6570560778840017462">Você não será desconectado das suas <ph name="BEGIN_LINK"/>Contas do Google<ph name="END_LINK"/></translation>

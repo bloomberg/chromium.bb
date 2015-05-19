@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Uporabi <ph name="SEARCH_ENGINE"/> za to sliko</translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="4816465935029283692">Vrste podatkov</translation>
+<translation id="5098185943924922330">Pomagajte nam izdelati prednostni seznam funkcij in izboljšav, ki naj jih razvijamo, tako da pošiljate Googlu podatke o datotekah, aplikacijah in storitvah, ki se izvajajo, ko pride do zrušitve.
+
+        Statistični podatki o uporabi vključujejo podatke, kot so nastavitve, kliki gumbov in uporaba pomnilnika. Ne vključujejo URL-jev spletnih mest ali kakršnih koli osebnih podatkov. Poročila o zrušitvah vsebujejo podatke o sistemu v trenutku zrušitve in glede na dogajanje v trenutku zrušitve morda vsebujejo tudi URL-je spletnih strani ali osebne podatke.</translation>
 <translation id="4042870126885713738">Pokaži predloge, ko spletnega naslova ni mogoče razrešiti ali povezave ni mogoče vzpostaviti</translation>
 <translation id="8237438615979997762">Podatki, shranjeni v tej napravi, in podatki v Google Računu bodo ostali na obeh mestih, pri čemer novi ali spremenjeni podatki ne bodo sinhronizirani z njima.</translation>
 <translation id="6831043979455480757">Prevedi</translation>
@@ -92,6 +95,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, spletna aplikacija. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Zamenjava datoteke</translation>
 <translation id="5595485650161345191">Uredi naslov</translation>
+<translation id="8413385045638830869">Najprej vprašaj (priporočeno)</translation>
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="5313967007315987356">Dodajanje mesta</translation>
 <translation id="5733727110006255111">Ko je ta funkcija vklopljena, Chrome strani, ki jih obiščete, pred prenosom stisne z uporabo Googlovih strežnikov. To ne velja za strani, ki uporabljajo povezavo SSL ali jih obiščete v načinu brez beleženja zgodovine.</translation>
@@ -157,6 +161,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="6857778194843072568">Pošlji samo v omrežju Wi-Fi</translation>
 <translation id="5380554235172449987">Nikoli ne pošlji</translation>
 <translation id="5715468759630044318">Izbira računa</translation>
+<translation id="5000922062037820727">Blokirano (priporočeno)</translation>
 <translation id="544291274896356069">Če je ta povezava odprta v zunanji aplikaciji, boste ustavili način brez beleženja zgodovine. Želite nadaljevati?</translation>
 <translation id="3917783807003067648">Lokacija je blokirana</translation>
 <translation id="1379156015317873965">Izboljšanje učinkovitosti nalaganja strani</translation>
@@ -228,6 +233,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="3254409185687681395">Zaznamujte to stran</translation>
 <translation id="907015151729920253">Pametna kartica</translation>
 <translation id="2482878487686419369">Obvestila</translation>
+<translation id="857943718398505171">Dovoljeno (priporočeno)</translation>
 <translation id="4412992751769744546">Omogočanje piškotkov drugih spletnih mest</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Shrani videoposnetek</translation>
@@ -262,7 +268,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="748127970106343339">Potrditev izbrisa poverilnice naprave</translation>
 <translation id="3089395242580810162">Odpri v zavihku brez beleženja zgodovine</translation>
 <translation id="5899349522111170522">Ustvari novo datoteko</translation>
-<translation id="1082482054625560856">Upravljanje shranjenih gesel v <ph name="BEGIN_LINK"/>Google Računu<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Dovoli slike na spletnih mestih, ki jih določite, drugod po spletu pa jih blokira.</translation>
 <translation id="2360035970720276770">Prenesete lahko samo URL-je »http« ali »https«</translation>
 <translation id="6570560778840017462">Iz <ph name="BEGIN_LINK"/>Google Računov<ph name="END_LINK"/> ne boste odjavljeni</translation>

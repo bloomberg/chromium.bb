@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Kinakailangan</translation>
 <translation id="2958431318199492670">Hindi sumusunod ang configuration ng network sa pamantayan ng ONC. Hindi maaaring i-import ang mga bahagi ng configuration.</translation>
 <translation id="3583757800736429874">&amp;Gawing Muli ang Paglilipat</translation>
+<translation id="7887683347370398519">Tingnan ang iyong CVC at subukang muli</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Nawawalang tala ng device</translation>
 <translation id="1491151370853475546">I-reload ang Pahinang Ito</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Itago ang halaga</translation>
 <translation id="6753269504797312559">Halaga ng patakaran</translation>
+<translation id="3369366829301677151">I-update at i-verify ang iyong <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">I-enable ang Autofill gamit ang Mga Contact…</translation>
 <translation id="7275334191706090484">Mga Pinamamahalaang Bookmark</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Lugar</translation>
 <translation id="1871208020102129563">Nakatakda ang proxy upang gumamit ng mga hindi nababagong proxy server, hindi ng isang .pac script URL.</translation>
+<translation id="8988760548304185580">Ilagay ang petsa ng pag-expire at ang CVC na may 3 digit mula sa likod ng iyong card</translation>
 <translation id="8940229512486821554">Patakbuhin ang <ph name="EXTENSION_NAME"/> na command: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Hindi kilalang error</translation>
 <translation id="112840717907525620">OK ang cache ng patakaran</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Error sa pagpapatunay: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Nabigo ang pag-translate sa <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
+<translation id="3219579145727097045">Ilagay ang petsa ng pag-expire at ang CVC na may 4 na digit mula sa harap ng iyong card</translation>
 <translation id="3667681724235208644">Tingnan ang Orihinal</translation>
 <translation id="4079302484614802869">Nakatakda ang configuration ng proxy upang gumamit ng isang .pac script URL, hindi ng mga hindi nababagong proxy server.</translation>
 <translation id="5540224163453853">Hindi mahanap ang hiniling na artikulo.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">I-translate mula <ph name="ORIGINAL_LANGUAGE"/> patungong <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Itinakdang Lokasyon:</translation>
 <translation id="3542684924769048008">Gamitin ang password para sa:</translation>
+<translation id="2855922900409897335">I-verify ang iyong <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Naisalin ang pahinang ito mula sa<ph name="ORIGINAL_LANGUAGE"/>sa<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirate</translation>
+<translation id="6646897916597483132">Ilagay ang CVC na may 4 na digit mula sa harap ng iyong card</translation>
 <translation id="5145883236150621069">May code ng error sa tugon sa patakaran</translation>
 <translation id="7983301409776629893">Palaging isalin ang <ph name="ORIGINAL_LANGUAGE"/> sa <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distrito</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
 <translation id="3712624925041724820">Naubos na ang mga lisensya</translation>
 <translation id="4926049483395192435">Dapat na tukuyin.</translation>
+<translation id="1455235771979731432">Nagkaroon ng problema sa pag-verify ng iyong card. Tingnan ang koneksyon sa internet at subukang muli.</translation>
 <translation id="7542995811387359312">Hindi pinagana ang awtomatikong pagpuno ng credit card dahil ang form na ito ay hindi gumagamit ng secure na koneksyon.</translation>
 <translation id="5179510805599951267">Wala sa <ph name="ORIGINAL_LANGUAGE"/>? Iulat ang error na ito</translation>
 <translation id="8088680233425245692">Hindi natingnan ang artikulo.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Aktibo</translation>
 <translation id="7568593326407688803">Ang pahinang ito ay nasa<ph name="ORIGINAL_LANGUAGE"/>Gusto mong isalin ito?</translation>
 <translation id="8876793034577346603">Nabigong ma-parse ang configuration ng network.</translation>
+<translation id="4800132727771399293">Tingnan ang iyong petsa ng pag-expire at CVC at subukang muli</translation>
 <translation id="4171400957073367226">Hindi wasto ang signature sa pag-verify</translation>
+<translation id="9125941078353557812">Ilagay ang CVC na may 3 digit mula sa likod ng iyong card</translation>
 <translation id="106701514854093668">Mga Bookmark sa Desktop</translation>
 <translation id="6154808779448689242">Hindi tumutugma ang ibinalik na token sa patakaran sa kasalukuyang token</translation>
 <translation id="7995512525968007366">Hindi Tinukoy</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;I-undo ang Pagbabago sa Ayos</translation>
 <translation id="20817612488360358">Itinatakda ang mga setting ng proxy ng system upang magamit ngunit tinutukoy rin ang isang tahasang configuration ng proxy.</translation>
 <translation id="2639739919103226564">Katayuan:</translation>
+<translation id="8824019021993735287">Hindi na-verify ng Chrome ang iyong card sa oras na ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="4968547170521245791">Hindi Mapo-proxy</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="4196861286325780578">&amp;Gawing muli ang paglilipat</translation>

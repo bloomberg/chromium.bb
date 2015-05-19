@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Задължително</translation>
 <translation id="2958431318199492670">Конфигурацията на мрежата не спазва стандарта на ONC. Възможно е части от нея да не са импортирани.</translation>
 <translation id="3583757800736429874">&amp;Възстановяване на преместването</translation>
+<translation id="7887683347370398519">Прегледайте кода за проверка и опитайте отново</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Липсващ запис за устройството</translation>
 <translation id="1491151370853475546">Презареждане на тази страница</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Скриване на стойността</translation>
 <translation id="6753269504797312559">Стойност за правилото</translation>
+<translation id="3369366829301677151">Актуализиране и потвърждаване на <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Активиране на използването на контактите при автоматично попълване…</translation>
 <translation id="7275334191706090484">Управлявани отметки</translation>
 <translation id="7400418766976504921">URL адрес</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Район</translation>
 <translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
+<translation id="8988760548304185580">Въведете датата на валидност и трицифрения код за проверка от гърба на картата си</translation>
 <translation id="8940229512486821554">Изпълнете командата за <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Неизвестна грешка</translation>
 <translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Грешка при потвърждаването: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Преводът на <ph name="TARGET_LANGUAGE"/> не бе успешен.</translation>
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
+<translation id="3219579145727097045">Въведете датата на валидност и четирицифрения код за проверка от лицевата страна на картата си</translation>
 <translation id="3667681724235208644">Преглед на оригинала</translation>
 <translation id="4079302484614802869">За конфигурацията на прокси сървъра е зададено да използва URL адрес на скрипт във формат .pac, а не фиксирани прокси сървъри.</translation>
 <translation id="5540224163453853">Заявената статия не можа да бъде намерена.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Зададено местоположение:</translation>
 <translation id="3542684924769048008">Използване на паролата за:</translation>
+<translation id="2855922900409897335">Потвърждаване на <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Емирство</translation>
+<translation id="6646897916597483132">Въведете четирицифрения код за проверка от лицевата страна на картата си</translation>
 <translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
 <translation id="7983301409776629893">Винаги да се превежда от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Окръг</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Не се управлява</translation>
 <translation id="3712624925041724820">Лицензите са изчерпани</translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
+<translation id="1455235771979731432">При потвърждаването на картата ви възникна проблем. Проверете връзката си с интернет и опитайте отново.</translation>
 <translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE"/>? Подайте сигнал за тази грешка</translation>
 <translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Активно</translation>
 <translation id="7568593326407688803">Тази страница е на<ph name="ORIGINAL_LANGUAGE"/>Искате ли да я преведете?</translation>
 <translation id="8876793034577346603">Синтактичният анализ на конфигурацията на мрежата не бе успешен.</translation>
+<translation id="4800132727771399293">Прегледайте датата на валидност и кода за проверка и оптитайте отново</translation>
 <translation id="4171400957073367226">Невалиден подпис за потвърждаване</translation>
+<translation id="9125941078353557812">Въведете трицифрения код за проверка от гърба на картата си</translation>
 <translation id="106701514854093668">Настолни отметки</translation>
 <translation id="6154808779448689242">Изведеното означение на правилото не съответства на текущото</translation>
 <translation id="7995512525968007366">Не е посочено</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Отмяна на пренареждането</translation>
 <translation id="20817612488360358">За използване са зададени системни настройки за прокси сървъра, но е посочена и изрична конфигурация.</translation>
 <translation id="2639739919103226564">Състояние:</translation>
+<translation id="8824019021993735287">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
 <translation id="4968547170521245791">Работата като прокси сървър не е възможна</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>

@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE"/> ang larawan</translation>
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="4816465935029283692">Mga uri ng data</translation>
+<translation id="5098185943924922330">Tulungan kaming unahin ang mga feature at pagpapahusay na dapat naming gawin sa pamamagitan ng pagpapadala sa Google ng impormasyon tungkol sa mga file, application at serbisyo na tumatakbo kapag nakaranas ka ng pag-crash.
+
+        Kasama sa mga istatistika sa paggamit ang impormasyon tulad ng mga kagustuhan, pag-click ng button at paggamit ng memory. Hindi kasama sa mga ito ang mga URL ng webpage o anumang personal na impormasyon. Naglalaman ang mga ulat ng pag-crash ng mga impormasyon ng system sa oras ng pag-crash, at maaaring maglaman ng mga URL ng web page o personal na impormasyon, depende sa kung ano ang nangyayari sa oras ng pag-crash.</translation>
 <translation id="4042870126885713738">Magpakita ng mga suhestyon kapag hindi ma-resolve ang isang website o kung hindi makakonekta</translation>
 <translation id="8237438615979997762">Ang data na nakaimbak sa device na ito pati na rin ang data na nakaimbak sa iyong Google Account ay mananatili sa dalawang lugar. Gayunpaman, hindi isi-synchronize sa pagitan ng mga ito ang bagong data o mga pagbabagong gagawin mo sa iyong data.</translation>
 <translation id="6831043979455480757">I-translate</translation>
@@ -92,6 +95,7 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, web app. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Magpalit ng file</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
+<translation id="8413385045638830869">Magtanong muna (inirerekomenda)</translation>
 <translation id="2100273922101894616">Awtomatikong Mag-sign in</translation>
 <translation id="5313967007315987356">Magdagdag ng site</translation>
 <translation id="5733727110006255111">Kapag naka-on ang feature na ito, gagamitin ng Chrome ang mga server ng Google para i-compress ang mga binibisita mong page bago sila i-download. Hindi isasama ang mga page na gumagamit ng SSL at incognito mode.</translation>
@@ -157,6 +161,7 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="6857778194843072568">Ipadala lang gamit ang Wi-Fi</translation>
 <translation id="5380554235172449987">Huwag na huwag ipadala</translation>
 <translation id="5715468759630044318">Pumili ng account</translation>
+<translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
 <translation id="544291274896356069">Aalis ka sa incognito mode kung bubuksan mo ang link na ito sa isang panlabas na application. Gusto mo bang magpatuloy?</translation>
 <translation id="3917783807003067648">Na-block ang lokasyon</translation>
 <translation id="1379156015317873965">Pabilisin ang pag-load ng page</translation>
@@ -228,6 +233,7 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="3254409185687681395">Mag-bookmark sa pahinang ito</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
+<translation id="857943718398505171">Pinapayagan (inirerekomenda)</translation>
 <translation id="4412992751769744546">Payagan ang third-party na cookies</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">I-save ang video</translation>
@@ -262,7 +268,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="748127970106343339">Kumpirmahin ang pagde-delete ng kredensyal ng device</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="5899349522111170522">Gumawa ng bagong file</translation>
-<translation id="1082482054625560856">Pamahalaan ang mga naka-save na password sa iyong <ph name="BEGIN_LINK"/>Google Account<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Pahintulutan ang mga larawan sa mga website na iyong tinukoy habang naba-block ang mga ito sa iba pang bahagi ng web</translation>
 <translation id="2360035970720276770">Mga URL na http o https lang ang mada-download</translation>
 <translation id="6570560778840017462">Hindi ka masa-sign out sa iyong <ph name="BEGIN_LINK"/>Mga Google Account<ph name="END_LINK"/></translation>

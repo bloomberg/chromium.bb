@@ -72,6 +72,7 @@
 <translation id="2509468283778169019">Kláves CAPS LOCK je zapnutý</translation>
 <translation id="3892641579809465218">Interný displej</translation>
 <translation id="7823564328645135659">Po synchronizácii vašich nastavení bol zmenený jazyk „<ph name="FROM_LOCALE"/>“ na jazyk „<ph name="TO_LOCALE"/>“.</translation>
+<translation id="7113420380180868673">Prenáša sa karta $1</translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
 <translation id="8654520615680304441">Zapnúť sieť Wi-Fi...</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME"/>.</translation>
@@ -96,6 +97,7 @@
 <translation id="3626637461649818317">Zostáva <ph name="PERCENTAGE"/> %</translation>
 <translation id="9089416786594320554">Metódy vstupu</translation>
 <translation id="2700058918926273959">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING"/>. Následne budete odhlásený/-á.</translation>
+<translation id="5807965672380739016">Prenášať pracovnú plochu na</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Reproduktor (vnútorný)</translation>
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
@@ -124,6 +126,7 @@
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME"/> žiada o povolenie párovania.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatické kliknutia</translation>
+<translation id="703171847531699602">Žiadne zariadenia na prenos</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: pripája sa...</translation>
 <translation id="6062360702481658777">Odhlásenie prebehne automaticky o <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Neznáma obrazovka</translation>
@@ -206,6 +209,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3147142846278915599">Spúšťač (synchronizujú sa aplikácie...)</translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
+<translation id="4373966964907728675">Prenáša sa pracovná plocha</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>min do nabitia</translation>
 <translation id="3077734595579995578">shift</translation>

@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">શું તમે ખરેખર તમે Chromium ને અનઇન્સ્ટોલ કરવા માંગો છો?</translation>
 <translation id="6510925080656968729">Chromium ને અનઇન્સ્ટોલ કરો</translation>
 <translation id="2615699638672665509">આ કમ્પ્યુટર ટૂંક સમયમાં Chromium અપડેટ્સ પ્રાપ્ત કરવાનું બંધ કરશે કારણ કે તેના હાર્ડવેરને હવે સમર્થન નથી.</translation>
-<translation id="5532301346661895910">Chromium આને તમારા |Google સાચવેલા પાસવર્ડ્સ| માં સાચવશે અને આગલી વખતે તમને તેની જરૂર પડે ત્યારે યાદ રાખશે.</translation>
 <translation id="6893813176749746474">Chromium અપડેટ કરવામાં આવ્યું હતું, પણ તમે તેનો 30 દિવસ સુધી ઉપયોગ કર્યો નથી.</translation>
 <translation id="421369550622382712">Chromium માટે શ્રેષ્ઠ એપ્લીકેશન્સ, રમતો, એક્સટેન્શન્સ અને થીમ્સ શોધો.</translation>
 <translation id="2732467638532545152">તમારું કમ્પ્યુટર Microsoft Windows ના એક જૂના સંસ્કરણ પર ચાલી રહ્યું છે જે આ વેબસાઇટના સુરક્ષા પ્રમાણપત્ર પર પ્રક્રિયા કરી શકતું નથી. આ સમસ્યાને કારણે, Chromium કહી શકતું નથી કે પ્રમાણપત્ર <ph name="SITE"/> માંથી છે કે તમારા નેટવર્ક પર <ph name="SITE"/> હોવાનો ડોળ કરનાર કોઈ વ્યક્તિ તરફથી છે. કૃપા કરીને તમારા કમ્પ્યુટરને Windows ના વધુ તાજેતરનાં સંસ્કરણ પર અપડેટ કરો.</translation>
@@ -58,7 +57,6 @@
 <translation id="7064610482057367130">અપડેટ કરવા માટે Chromium નું ઇન્સ્ટોલેશન મળ્યું નથી.</translation>
 <translation id="872034308864968620">Chromium ને પૃષ્ઠભૂમિમાં ચાલવા દો</translation>
 <translation id="459535195905078186">Chromium એપ્લિકેશન્સ</translation>
-<translation id="5109068449432240255">હા, Chromium થી બહાર નીકળો</translation>
 <translation id="8134284582177628525">જો તમે <ph name="PROFILE_NAME"/> સાથે આ કમ્પ્યુટર શેર કરો છો, તો અલગથી બ્રાઉઝ કરવા માટે તમને પોતાને Chromium પર ઉમેરો. અન્યથા તેઓનું Google એકાઉન્ટ ડિસ્કનેક્ટ કરો.</translation>
 <translation id="1480489203462860648">તેને અજમાવી જુઓ, તે પહેલેથી જ ઇન્સ્ટોલ કરેલ છે</translation>
 <translation id="3032787606318309379">Chromium માં ઉમેરી રહ્યું છે...</translation>
@@ -77,7 +75,6 @@
 <translation id="734373864078049451">તમારું વેબ, બુકમાર્ક્સ, અને અન્ય Chromium સામગ્રી અહીં રહે છે.</translation>
 <translation id="3197823471738295152">તમારું ઉપકરણ અપ ટૂ ડેટ છે.</translation>
 <translation id="8551886023433311834">લગભગ અપ-ટૂ-ડેટ! અપડેટ કરવાનું સમાપ્ત કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
-<translation id="8353224596138547809">શું તમે ઇચ્છો છો કે Chromium આ સાઇટ માટે તમારો પાસવર્ડ સાચવે?</translation>
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="7339898014177206373">નવી વિંડો</translation>
 <translation id="7463979740390522693">Chromium - સૂચનાઓ (<ph name="QUANTITY"/> ન વાંચેલ)</translation>
@@ -134,7 +131,6 @@
 <translation id="4365115785552740256">Chromium એ <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ઓપન સ્રોત પ્રોજેક્ટ અને અન્ય <ph name="BEGIN_LINK_OSS"/>ઓપન સ્રોત સૉફ્ટવેર<ph name="END_LINK_OSS"/> દ્વારા શક્ય બનાવ્યું છે.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">અતિથિઓ કંઈપણ પાછળ છોડ્યાં વિના Chromium નો ઉપયોગ કરી શકે છે.</translation>
-<translation id="3487263810738775861">જ્યારે તમે Chromium શરૂ કરો છો ત્યારે જે પૃષ્ઠ બતાવવામાં આવે છે તે કોઈ એક્સટેન્શને બદલ્યું છે.</translation>
 <translation id="5877064549588274448">ચેનલ બદલી. ફેરફારો લાગુ કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
 <translation id="7549178288319965365">Chromium OS વિશે</translation>
 <translation id="6248213926982192922">Chromium ને ડિફોલ્ટ બ્રાઉઝર બનાવો</translation>
@@ -204,7 +200,8 @@
 <translation id="1414495520565016063">તમે Chromium માં સાઇન ઇન કર્યું છે!</translation>
 <translation id="2158734852934720349">Chromium OS ખુલ્લા સ્ત્રોત લાઇસેંસેસ</translation>
 <translation id="2966088006374919794">Chromium <ph name="SCHEME"/> લિંક્સને હેન્ડલ કરવા માટે કોઈ બાહ્ય એપ્લિકેશન શરૂ કરવાની જરૂર છે. વિનંતી કરેલી લિંક <ph name="PROTOLINK"/> છે.</translation>
-<translation id="2558235863893655150">શું તમે ઈચ્છો છો કે Chromium તમારો પાસવર્ડ સાચવે?</translation>
+<translation id="7205698830395646142">Chromium મેનૂમાં છુપાવો</translation>
+<translation id="7979877361127045932">Chromium મેનૂમાં છુપાવો</translation>
 <translation id="6485906693002546646">તમે તમારી Chromium સામગ્રીનું સમન્વયન કરવા માટે <ph name="PROFILE_EMAIL"/> નો ઉપયોગ કરી રહ્યાં છો. તમારી સમન્વયન પસંદગીને અપડેટ કરવા માટે અથવા Chromium ને Google એકાઉન્ટ વગર ઉપયોગ કરવા માટે, <ph name="SETTINGS_LINK"/> ની મુલાકાત લો.</translation>
 <translation id="705851970750939768">Chromium ને અપડેટ કરો</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON"/>પુનઃપ્રારંભ કરવું<ph name="END_BUTTON"/> આવશ્યક છે)</translation>
@@ -231,7 +228,6 @@
 <translation id="2119636228670142020">&amp;Chromium OS વિશે</translation>
 <translation id="1708666629004767631">Chromium નું નવું, સલામત સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="378917192836375108">Chromium થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
-<translation id="8724049448828509830">હાલમાં એક ડાઉનલોડ પ્રક્રિયામાં છે. શું તમે Chromium થી બહાર નીકળવા અને ડાઉનલોડને રદ કરવા માગો છો?</translation>
 <translation id="608189560609172163">સાઇન ઇનમાં ભૂલ આવવાને કારણે Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="4888717733111232871">mDNS ટ્રાફિકને મંજૂરી આપવા Chromium માટે ઇનબાઉન્ડ નિયમ.</translation>
 <translation id="151962892725702025">Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી કારણ કે તમારા ડોમેન માટે સમન્વયન ઉપલબ્ધ નથી.</translation>
@@ -239,7 +235,6 @@
 <translation id="8985587603644336029">કોઇએ પહેલાં Chromium માં આ કમ્પ્યુટર પર <ph name="ACCOUNT_EMAIL_LAST"/> તરીકે સાઇન ઇન કર્યું છે. જો તે તમારું એકાઉન્ટ નથી, તો તમારી માહિતીને અલગ રાખવા માટે નવો Chromium વપરાશકર્તા બનાવો.
 
 કોઈપણ રીતે સાઇન ઇન કરવું બુકમાર્ક્સ, ઇતિહાસ, અને અન્ય સેટિંગ્સ જેવી Chromium માહિતીને <ph name="ACCOUNT_EMAIL_NEW"/> માં મર્જ કરશે.</translation>
-<translation id="2739631515503418643">હાલમાં ડાઉનલોડ્સ પ્રક્રિયામાં છે. શું તમે Chromium થી બહાર નીકળવા અને ડાઉનલોડ્સને રદ કરવા માગો છો?</translation>
 <translation id="9013262824292842194">Chromium ને Windows Vista અથવા SP1 વાળા Windows XP અથવા તે પછીનાની આવશ્યકતા છે.</translation>
 <translation id="1967743265616885482">આ જ નામનું એક મોડ્યુલ Chromium સાથે વિરોધાભાસમાં જાણમાં આવ્યું છે.</translation>
 <translation id="7962572577636132072">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા સૌથી તાજું સંસ્કરણ રહે છે.</translation>
@@ -252,6 +247,7 @@
 <translation id="7318036098707714271">તમારી પસંદગીઓ ફાઇલ દૂષિત અથવા અમાન્ય છે.
 
 Chromium તમારી સેટિંગ્સને પુનઃપ્રાપ્ત કરવામાં અક્ષમ છે.</translation>
+<translation id="5531349711857992002">આ વેબસાઇટ માટેની પ્રમાણપત્ર શૃંખલા ઓછામાં ઓછું એક એવું પ્રમાણપત્ર ધરાવે છે જેને SHA-1 પર આધારિત નાપસંદ કરેલ સિગ્નેચર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરવામાં આવ્યું હતું.</translation>
 <translation id="918373042641772655"><ph name="USERNAME"/> ને ડિસ્કનેક્ટ કરવું આ ઉપકરણ પર સંગ્રહિત તમારા ઇતિહાસ, બુકમાર્ક્સ, સેટિંગ્સ અને અન્ય Chromium ડેટાને સાફ કરશે. તમારા Google એકાઉન્ટમાં સંગ્રહિત ડેટા સાફ થશે નહીં અને તે <ph name="GOOGLE_DASHBOARD_LINK"/>Google ડેશબોર્ડ<ph name="END_GOOGLE_DASHBOARD_LINK"/> પર સંચાલિત કરી શકાય છે.</translation>
 <translation id="6403826409255603130">Chromium એ એક એવું વેબ બ્રાઉઝર છે જે પ્રકાશની ગતિએ વેબપૃષ્ઠો અને એપ્લિકેશંસને ચલાવે છે. તે ઝડપી, સ્થિર અને ઉપયોગમાં સરળ છે. Google Chromium માં નિર્મિત મૉલવેર અને ફિશીંગ સુરક્ષા સાથે વેબને વધુ સુરક્ષિત રૂપે બ્રાઉઝ કરો.</translation>
 <translation id="4230135487732243613">તમારા Chromium ડેટાને આ એકાઉન્ટ સાથે લિંક કરીએ?</translation>

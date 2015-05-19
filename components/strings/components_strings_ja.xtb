@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">必須</translation>
 <translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
 <translation id="3583757800736429874">移動のやり直し（&amp;R）</translation>
+<translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">デバイス レコードがありません</translation>
 <translation id="1491151370853475546">このページを再読み込み</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE"/>を常に翻訳</translation>
 <translation id="1227633850867390598">値を非表示</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
+<translation id="3369366829301677151"><ph name="CREDIT_CARD"/> の更新と確認</translation>
 <translation id="8834246243508017242">連絡先からの自動入力を有効にする...</translation>
 <translation id="7275334191706090484">管理対象のブックマーク</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">地域</translation>
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
+<translation id="8988760548304185580">カードの裏面に記載されている有効期限と 3 桁の CVC を入力します</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> コマンドを実行: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">不明なエラー</translation>
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>に翻訳できませんでした。</translation>
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
+<translation id="3219579145727097045">カードの表側に記載されている有効期限と 4 桁の CVC を入力します</translation>
 <translation id="3667681724235208644">元のページを表示</translation>
 <translation id="4079302484614802869">プロキシは固定プロキシ サーバーではなく .pac スクリプト URL を使用するように設定されています。</translation>
 <translation id="5540224163453853">リクエストされた記事が見つかりませんでした。</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
 <translation id="8218327578424803826">割り当てられた場所:</translation>
 <translation id="3542684924769048008">次のパスワードを使用:</translation>
+<translation id="2855922900409897335"><ph name="CREDIT_CARD"/> の確認</translation>
 <translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE"/>から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました</translation>
 <translation id="7139724024395191329">管轄区域</translation>
+<translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
 <translation id="7983301409776629893">常に<ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳する</translation>
 <translation id="6970216967273061347">地区</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">管理されていません</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
 <translation id="4926049483395192435">指定する必要があります。</translation>
+<translation id="1455235771979731432">カードの確認中に問題が発生しました。インターネット接続を確認してから、もう一度お試しください。</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>でない場合はこのエラーを報告する</translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">有効</translation>
 <translation id="7568593326407688803">これは<ph name="ORIGINAL_LANGUAGE"/>のページです。翻訳しますか？</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
+<translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
 <translation id="4171400957073367226">確認用の署名に問題があります</translation>
+<translation id="9125941078353557812">カードの裏面に記載されている 3 桁の CVC を入力します</translation>
 <translation id="106701514854093668">パソコンのブックマーク</translation>
 <translation id="6154808779448689242">返されたポリシー トークンは現在のトークンと一致しません</translation>
 <translation id="7995512525968007366">指定なし</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">順序変更の取り消し（&amp;U）</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
 <translation id="2639739919103226564">ステータス:</translation>
+<translation id="8824019021993735287">現在、Chrome でカードを確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="4968547170521245791">プロキシ不可</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>

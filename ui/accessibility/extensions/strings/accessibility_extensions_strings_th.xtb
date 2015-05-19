@@ -12,15 +12,19 @@
 <translation id="8480209185614411573">ความเปรียบต่างสูง</translation>
 <translation id="1588438908519853928">ปกติ</translation>
 <translation id="4954450790315188152">เมื่อเปิดใช้การเรียกดูด้วยแป้นพิมพ์</translation>
+<translation id="1591070050619849194">ปิดใช้ภาพเคลื่อนไหวทั้งหมด</translation>
 <translation id="2965611304828530558">&lt;p&gt;เมื่อคุณจะเข้าถึงลิงก์หรือการควบคุม จะมีการโฟกัสโดยอัตโนมัติ   กด &lt;span class='key'&gt;Enter&lt;/span&gt; เพื่อคลิกลิงก์หรือปุ่ม &lt;/p&gt; &lt;p&gt;   เมื่อการควบคุมที่โฟกัส (เช่น ช่องข้อความหรือช่องรายการ) กำลังตรวจจับ   คีย์ลูกศร ให้กด &lt;span class='key'&gt;Esc&lt;/span&gt; ตามด้วย   ลูกศรซ้ายหรือขวาเพื่อดำเนินการเรียกดูด้วยแป้นพิมพ์ต่อไป&lt;/p&gt; &lt;p&gt;   นอกจากนี้ ให้กด &lt;span class='key'&gt;Tab&lt;/span&gt; เพื่อเลื่อนไปยัง   การควบคุมโฟกัสได้ถัดไป&lt;/p&gt;</translation>
 <translation id="5041932793799765940">การปรับสี</translation>
 <translation id="2394933097471027016">ลองใช้งานเลย การเรียกดูด้วยแป้นพิมพ์จะเปิดใช้บนหน้านี้เสมอ!</translation>
 <translation id="3622586652998721735">ตั้งค่าเป็นรูปแบบเริ่มต้น</translation>
+<translation id="4937901943818762779">อนุญาตภาพเคลื่อนไหว แต่ครั้งเดียวเท่านั้น</translation>
 <translation id="2179565792157161713">เปิดคำอธิบายแบบยาวในแท็บใหม่</translation>
 <translation id="7942349550061667556">สีแดง</translation>
 <translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="2471847333270902538">รูปแบบชุดสีสำหรับ <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">คลิกขวาที่ใดก็ได้ด้วยแอตทริบิวต์ &quot;longdesc&quot; หรือ &quot;aria-describedat&quot; เพื่อเข้าถึงคำอธิบายแบบยาว</translation>
+<translation id="6838518108677880446">การตั้งค่า:</translation>
+<translation id="5594989420907487559">เรียกใช้ภาพเคลื่อนไหวเพียงครั้งเดียว หรือปิดใช้ภาพเคลื่อนไหวอย่างสมบูรณ์</translation>
 <translation id="786423340267544509">เพิ่มขอบให้กับองค์ประกอบด้วยแอตทริบิวต์ aria-describedat หรือ longdesc</translation>
 <translation id="690628312087070417">เมื่อเครื่องหมาย caret ข้ามไปยังระยะที่ห่างมาก</translation>
 <translation id="1996252509865389616">เปิดใช้ไหม</translation>
@@ -37,16 +41,23 @@
 <translation id="1287053896835709737">สีเหลืองบนสีดำ</translation>
 <translation id="4896660567607030658">ไม่มีการตอบสนอง แสดงเคอร์เซอร์เท่านั้น</translation>
 <translation id="5631241868147802353">รูปแบบชุดสีเริ่มต้น:</translation>
+<translation id="1791496371305830581">อนุญาตภาพเคลื่อนไหวทั้งหมด</translation>
 <translation id="5173942593318174089">ไฮไลต์ตำแหน่งเคอร์เซอร์ที่มีภาพเคลื่อนไหว</translation>
 <translation id="7379645913608427028">ระดับ</translation>
+<translation id="3252573918265662711">ตั้งค่า</translation>
 <translation id="894241283505723656">คำอธิบายแบบยาวในเมนูบริบท</translation>
 <translation id="5555153510860501336">ปิดความเปรียบต่างสูงอยู่</translation>
+<translation id="2808027189040546825">ขั้นตอนที่ 1: เลือกแถวที่มีดาวสว่างน้อยที่สุด:</translation>
+<translation id="8321034316479930120">นโยบายภาพเคลื่อนไหว</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="1703735871906654364">การเรียกดูด้วยแป้นพิมพ์</translation>
+<translation id="145360476452865422">นโยบายภาพเคลื่อนไหว</translation>
 <translation id="7384431257964758081">เปิดความเปรียบต่างอยู่</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="5650358096585648000">การตอบสนองที่เป็นภาพ</translation>
 <translation id="4388820049312272371">ไฮไลต์ตำแหน่งเคอร์เซอร์ด้วยการกะพริบเร็วๆ</translation>
+<translation id="7586636300921797327">ขั้นตอนที่ 2: ปรับแถบเลื่อนจนสามารถเห็นดาวทั้งหมดได้ใน
+        แถวที่เลือก</translation>
 <translation id="2223143012868735942">ฟิลเตอร์สีแบบกำหนดค่าได้ซึ่งใช้กับหน้าเว็บเพื่อปรับปรุงการรับรู้สี</translation>
 <translation id="4023902424053835668">เรียกดูข้อความของหน้าเว็บโดยใช้แป้นลูกศร</translation>
 <translation id="2795227192542594043">ส่วนขยายนี้จะให้คุณมีเคอร์เซอร์ที่เลื่อนไปยังที่ต่างๆ ได้ในหน้าเว็บ ซึ่งทำให้คุณสามารถเลือกข้อความด้วยแป้นพิมพ์ได้</translation>

@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Povinné</translation>
 <translation id="2958431318199492670">Konfigurácia siete nie je v súlade so štandardom ONC. Niektoré časti konfigurácie sa nemusia importovať.</translation>
 <translation id="3583757800736429874">&amp;Znova presunúť</translation>
+<translation id="7887683347370398519">Skontrolujte svoj kód CVC a skúste to znova</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Chýbajúci záznam zariadenia</translation>
 <translation id="1491151370853475546">Znova načítať stránku</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Vždy preložiť nasledujúci jazyk: <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Skryť hodnotu</translation>
 <translation id="6753269504797312559">Hodnota pravidla</translation>
+<translation id="3369366829301677151">Aktualizácia a overenie karty <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Povoliť automatické dopĺňanie pomocou Kontaktov…</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Oblasť</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
+<translation id="8988760548304185580">Zadajte dátum vypršania platnosti a trojmiestny kód CVC zo zadnej strany svojej karty</translation>
 <translation id="8940229512486821554">Spustiť príkaz rozšírenia <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Neznáma chyba</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Chyba overenia: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Preklad do jazyka <ph name="TARGET_LANGUAGE"/> zlyhal.</translation>
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
+<translation id="3219579145727097045">Zadajte dátum vypršania platnosti a štvormiestny kód CVC z prednej strany svojej karty</translation>
 <translation id="3667681724235208644">Zobraziť pôvodnú stránku</translation>
 <translation id="4079302484614802869">Konfigurácia proxy je nastavená na použitie skriptu PAC webovej adresy, nie pevne daných serverov proxy.</translation>
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Preložiť z jazyka <ph name="ORIGINAL_LANGUAGE"/> do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Pridelená poloha:</translation>
 <translation id="3542684924769048008">Použiť heslo pre:</translation>
+<translation id="2855922900409897335">Overenie karty <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Táto stránka bola preložená z jazyka<ph name="ORIGINAL_LANGUAGE"/>do jazyka<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirát</translation>
+<translation id="6646897916597483132">Zadajte štvormiestny kód CVC z prednej strany svojej karty</translation>
 <translation id="5145883236150621069">V odpovedi na pravidlo sa nachádza kód chyby</translation>
 <translation id="7983301409776629893">Vždy preložiť jazyk <ph name="ORIGINAL_LANGUAGE"/> do jazyka <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Obvod</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Nespravované</translation>
 <translation id="3712624925041724820">Vyčerpané licencie</translation>
 <translation id="4926049483395192435">Musí byť určená.</translation>
+<translation id="1455235771979731432">Pri overovaní karty sa vyskytol problém. Skontrolujte svoje pripojenie k internetu a skúste to znova.</translation>
 <translation id="7542995811387359312">Automatické dopĺňanie údajov o kreditnej karte je zakázané, pretože tento formulár nepoužíva zabezpečené pripojenie.</translation>
 <translation id="5179510805599951267">Text sa nezobrazil v jazyku <ph name="ORIGINAL_LANGUAGE"/>? Nahláste túto chybu</translation>
 <translation id="8088680233425245692">Článok sa nepodarilo zobraziť.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Aktívne</translation>
 <translation id="7568593326407688803">Táto stránka je v jazyku<ph name="ORIGINAL_LANGUAGE"/>Chceli by ste ju preložiť?</translation>
 <translation id="8876793034577346603">Konfiguráciu siete sa nepodarilo analyzovať.</translation>
+<translation id="4800132727771399293">Skontrolujte dátum vypršania platnosti aj kód CVC a skúste to znova</translation>
 <translation id="4171400957073367226">Nesprávny overovací podpis</translation>
+<translation id="9125941078353557812">Zadajte trojmiestny kód CVC zo zadnej strany svojej karty</translation>
 <translation id="106701514854093668">Záložky plochy</translation>
 <translation id="6154808779448689242">Vrátený token pravidla sa nezhoduje s aktuálnym tokenom</translation>
 <translation id="7995512525968007366">Nie je upresnené</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Vrátiť späť zmenu poradia</translation>
 <translation id="20817612488360358">Používanie systémových nastavení servera proxy je nastavené, avšak je určená aj explicitná konfigurácia servera proxy.</translation>
 <translation id="2639739919103226564">Stav:</translation>
+<translation id="8824019021993735287">Prehliadaču Chrome sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="4968547170521245791">Nie je možné smerovať cez proxy server</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="4196861286325780578">&amp;Znova presunúť</translation>

@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Sử dụng micrô và máy ảnh của bạn</translation>
 <translation id="2857834222104759979">Tệp kê khai không hợp lệ.</translation>
 <translation id="6384275966486438344">Thay đổi cài đặt tìm kiếm của bạn thành: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Chọn thiết bị USB</translation>
 <translation id="1445572445564823378">Tiện ích này đang làm chậm <ph name="PRODUCT_NAME"/>. Bạn phải tắt tiện ích để khôi phục hiệu suất của <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="7003844668372540529">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Truy cập thiết bị tuần tự của bạn</translation>
 <translation id="288042212351694283">Truy cập thiết bị Universal 2nd Factor</translation>
+<translation id="3163201441334626963">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ nhà cung cấp <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ <ph name="VENDOR_NAME"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Quản trị viên của máy này yêu cầu <ph name="EXTENSION_NAME"/> có phiên bản tối thiểu của <ph name="EXTENSION_VERSION"/>. Không thể kích hoạt phiên bản cho đến khi máy cập nhật lên phiên bản đó (hoặc phiên bản cao hơn).</translation>
 <translation id="6075907793831890935">Trao đổi dữ liệu với thiết bị có tên <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Kiểm soát ghép nối và trạng thái bộ đổi nguồn Bluetooth</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Truy cập thông tin về thiết bị Bluetooth được ghép nối với hệ thống của bạn và khám phá các thiết bị Bluetooth lân cận.</translation>
 <translation id="8749863574775030885">Truy cập thiết bị USB từ nhà cung cấp không xác định</translation>
+<translation id="3115238746683532089">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ nhà cung cấp <ph name="VENDOR_ID"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> từ <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Không thể tải tập lệnh nền '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> từ nhà cung cấp <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Gửi tin nhắn tới và nhận tin nhắn từ thiết bị Bluetooth.</translation>
 <translation id="5678955352098267522">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Trình giải nén tiện ích</translation>
 <translation id="149347756975725155">Không thể tải biểu tượng tiện ích '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Tiện ích này không thể sửa đổi tiêu đề yêu cầu &quot;<ph name="HEADER_NAME"/>&quot; của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích khác (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Chọn thiết bị USB</translation>
 <translation id="6731255991101203740">Không thể tạo thư mục để giải nén: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Không thể tải trang giới thiệu '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Không thể tải trang tùy chọn '<ph name="OPTIONS_PAGE"/>'.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Tiện ích này không thể đặt tên cho bản tải xuống &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; vì một tiện ích khác (<ph name="EXTENSION_NAME"/>) đã xác định tên tệp khác &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="452039078290142656">thiết bị không xác định từ <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">Chế độ xem web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Đường dẫn không hợp lệ (tuyệt đối hoặc tương đối với '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">tất cả trang web <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Thay đổi trang chủ của bạn thành: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Không thể tải trang nền '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">Không thể cài đặt gói: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">Ứng dụng &quot;<ph name="APP_NAME"/>&quot; đang yêu cầu quyền truy cập vào một trong các thiết bị của bạn.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> từ nhà cung cấp <ph name="VENDOR_ID"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Tùy chọn: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Gói không hợp lệ. Chi tiết: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Đọc dữ liệu của bạn trên một số trang web</translation>

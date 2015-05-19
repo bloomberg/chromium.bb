@@ -72,6 +72,7 @@
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="3892641579809465218">内部显示</translation>
 <translation id="7823564328645135659">同步了您的设置后，该语言已由“<ph name="FROM_LOCALE"/>”更改为“<ph name="TO_LOCALE"/>”。</translation>
+<translation id="7113420380180868673">正在投射“$1”</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
 <translation id="8654520615680304441">启用 Wi-Fi...</translation>
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME"/>共享您屏幕的控制权限。</translation>
@@ -96,6 +97,7 @@
 <translation id="3626637461649818317">剩余电量：<ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">输入法</translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING"/>后结束，到时您将自动退出。</translation>
+<translation id="5807965672380739016">将桌面投射至</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">扬声器（内部）</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
@@ -105,6 +107,7 @@
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="2204305834655267233">网络信息</translation>
+<translation id="137180024469554212">停用旋转锁定</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT"/>后耗尽</translation>
 <translation id="5980301590375426705">退出访客模式</translation>
 <translation id="8308637677604853869">上一菜单</translation>
@@ -112,6 +115,7 @@
 <translation id="3625258641415618104">已停用屏幕截图</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="8528322925433439945">移动...</translation>
+<translation id="3157169093162779309">启用旋转锁定</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="2372145515558759244">正在同步应用...</translation>
 <translation id="1987317783729300807">帐户</translation>
@@ -122,6 +126,7 @@
 <translation id="4527045527269911712">蓝牙设备“<ph name="DEVICE_NAME"/>”需要配对许可。</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">自动点击</translation>
+<translation id="703171847531699602">无任何投射设备</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>：正在连接...</translation>
 <translation id="6062360702481658777">您将在<ph name="LOGOUT_TIME_LEFT"/>后自动退出。</translation>
 <translation id="252373100621549798">未知展示广告</translation>
@@ -131,6 +136,7 @@
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME"/>，<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">锁定</translation>
 <translation id="2805756323405976993">应用</translation>
+<translation id="8697119993436624257">新版登录界面处于停用状态</translation>
 <translation id="2872961005593481000">关闭</translation>
 <translation id="3433830597744061105">管理帐户</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
@@ -149,6 +155,7 @@
 <translation id="5977415296283489383">耳机</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
+<translation id="3527846106059622359">新版登录界面处于启用状态</translation>
 <translation id="5978382165065462689">正在通过远程协助共享您屏幕的控制权限。</translation>
 <translation id="737451040872859086">麦克风（内部）</translation>
 <translation id="2475982808118771221">出现错误</translation>
@@ -202,6 +209,7 @@
 <translation id="3009178788565917040">输出</translation>
 <translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
+<translation id="4373966964907728675">正在投射桌面</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>
 <translation id="3077734595579995578">shift</translation>

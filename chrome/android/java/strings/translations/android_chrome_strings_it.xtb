@@ -95,6 +95,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, app web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Sostituisci file</translation>
 <translation id="5595485650161345191">Modifica indirizzo</translation>
+<translation id="8413385045638830869">Chiedi prima (opzione consigliata)</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="5313967007315987356">Aggiungi sito</translation>
 <translation id="5733727110006255111">Quando questa funzione è attiva, Chrome utilizza i server di Google per comprimere le pagine che visiti prima di scaricarle. Le pagine SSL e di navigazione in incognito non vengono incluse.</translation>
@@ -160,6 +161,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="6857778194843072568">Invia solo su Wi-Fi</translation>
 <translation id="5380554235172449987">Non inviare mai</translation>
 <translation id="5715468759630044318">Scegli account</translation>
+<translation id="5000922062037820727">Bloccata (opzione consigliata)</translation>
 <translation id="544291274896356069">Se apri questo link in un'applicazione esterna uscirai dalla modalità di navigazione in incognito. Continuare?</translation>
 <translation id="3917783807003067648">Localizzazione bloccata</translation>
 <translation id="1379156015317873965">Migliora le prestazioni di caricamento delle pagine</translation>
@@ -231,6 +233,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="2482878487686419369">Notifiche</translation>
+<translation id="857943718398505171">Consentita (opzione consigliata)</translation>
 <translation id="4412992751769744546">Consenti cookie di terze parti</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Salva video</translation>
@@ -265,7 +268,6 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="748127970106343339">Conferma eliminazione credenziali dispositivo</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
 <translation id="5899349522111170522">Crea nuovo file</translation>
-<translation id="1082482054625560856">Gestisci le password salvate nel tuo <ph name="BEGIN_LINK"/>account Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Consenti le immagini sui siti web da te specificati e bloccale per tutti gli altri siti web</translation>
 <translation id="2360035970720276770">È possibile scaricare soltanto URL http o https</translation>
 <translation id="6570560778840017462">Non uscirai dai tuoi <ph name="BEGIN_LINK"/>account Google<ph name="END_LINK"/></translation>

@@ -95,6 +95,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, ứng dụng web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Thay thế tệp</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
+<translation id="8413385045638830869">Hỏi trước (được đề xuất)</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
 <translation id="5313967007315987356">Thêm trang web</translation>
 <translation id="5733727110006255111">Khi bạn bật tính năng này, Chrome sẽ sử dụng máy chủ Google để nén các trang mà bạn truy cập trước khi tải trang xuống. Trang ẩn danh và SSL sẽ không được bao gồm.</translation>
@@ -160,6 +161,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="6857778194843072568">Chỉ gửi trên Wi-Fi</translation>
 <translation id="5380554235172449987">Không bao giờ gửi</translation>
 <translation id="5715468759630044318">Chọn tài khoản</translation>
+<translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
 <translation id="544291274896356069">Rời khỏi chế độ ẩn danh nếu liên kết này đã được mở trong một ứng dụng bên ngoài. Tiếp tục?</translation>
 <translation id="3917783807003067648">Vị trí bị chặn</translation>
 <translation id="1379156015317873965">Cải thiện hiệu suất tải của trang</translation>
@@ -231,6 +233,7 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
 <translation id="907015151729920253">Thẻ thông minh</translation>
 <translation id="2482878487686419369">Thông báo</translation>
+<translation id="857943718398505171">Được phép (được đề xuất)</translation>
 <translation id="4412992751769744546">Cho phép cookie của bên thứ ba</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Lưu video</translation>
@@ -265,7 +268,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="748127970106343339">Xác nhận xóa thông tin đăng nhập thiết bị</translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="5899349522111170522">Tạo tệp mới</translation>
-<translation id="1082482054625560856">Quản lý mật khẩu đã lưu trong <ph name="BEGIN_LINK"/>tài khoản Google<ph name="END_LINK"/> của bạn</translation>
 <translation id="7232255641409319872">Cho phép hình ảnh trên các trang web bạn chỉ định trong khi chặn đối với các phần web khác</translation>
 <translation id="2360035970720276770">Chỉ có thể tải xuống URL http hoặc https</translation>
 <translation id="6570560778840017462">Bạn sẽ không bị đăng xuất khỏi <ph name="BEGIN_LINK"/>Tài khoản Google<ph name="END_LINK"/> của mình</translation>

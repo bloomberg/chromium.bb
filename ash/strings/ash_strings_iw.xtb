@@ -72,6 +72,7 @@
 <translation id="2509468283778169019">‏CAPS LOCK מופעל</translation>
 <translation id="3892641579809465218">תצוגה פנימית</translation>
 <translation id="7823564328645135659">‏שפת Chrome השתנתה מ&quot;<ph name="FROM_LOCALE"/>&quot; ל&quot;<ph name="TO_LOCALE"/>&quot; לאחר סנכרון ההגדרות.</translation>
+<translation id="7113420380180868673">מעביר את $1</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
 <translation id="8654520615680304441">‏הפעל את ה-Wi-Fi...</translation>
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME"/> דרך סיוע מרחוק.</translation>
@@ -96,6 +97,7 @@
 <translation id="3626637461649818317">‏<ph name="PERCENTAGE"/>%‎ נותרו</translation>
 <translation id="9089416786594320554">שיטות קלט</translation>
 <translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING"/>. תנותק מהחשבון.</translation>
+<translation id="5807965672380739016">העברת שולחן העבודה אל</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
 <translation id="3963445509666917109">רמקול (פנימי)</translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
@@ -124,6 +126,7 @@
 <translation id="4527045527269911712">‏מכשיר ה-Bluetooth ‏&quot;<ph name="DEVICE_NAME"/>&quot; מבקש הרשאה לבצע התאמה.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">לחיצות אוטומטיות</translation>
+<translation id="703171847531699602">אין מכשירי העברה</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: מתחבר...</translation>
 <translation id="6062360702481658777">תצא באופן אוטומטי בעוד <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">תצוגה לא ידועה</translation>
@@ -205,6 +208,7 @@
 <translation id="3009178788565917040">פלט</translation>
 <translation id="3147142846278915599">מפעיל היישומים (מסנכרן יישומים...)</translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
+<translation id="4373966964907728675">מעביר את שולחן העבודה</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>‏: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> שעות ו-<ph name="MINUTE"/> דקות עד לטעינה מלאה</translation>
 <translation id="3077734595579995578">shift</translation>

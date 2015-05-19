@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE"/>中搜索此图片</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="4816465935029283692">数据类型</translation>
+<translation id="5098185943924922330">将发生崩溃时正在运行的文件、应用和服务的相关信息发送给 Google，协助我们确定应优先处理哪些功能和改进方面的事宜。
+
+        使用情况统计信息包含偏好设置、按钮点击次数和内存使用情况之类的信息，但不包含网页网址或任何个人信息。崩溃报告包含发生崩溃时的系统信息，并可能包含网页网址或个人信息，具体取决于发生崩溃时的情况。</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="8237438615979997762">此设备中以及您的 Google 帐户中存储的数据都会保留在原位置。但是，新的数据或您对数据进行的更改将不会在此设备和您的 Google 帐户之间同步。</translation>
 <translation id="6831043979455480757">翻译</translation>
@@ -92,6 +95,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME"/>，网络应用。<ph name="APP_URL"/></translation>
 <translation id="200669432486043882">替换文件</translation>
 <translation id="5595485650161345191">修改地址</translation>
+<translation id="8413385045638830869">先询问（推荐）</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="5313967007315987356">添加网站</translation>
 <translation id="5733727110006255111">此功能处于开启状态时，Chrome 会在加载您要访问的网页之前使用 Google 服务器对其进行压缩。采用 SSL 加密的网页和以隐身模式浏览的网页不在此列。</translation>
@@ -157,6 +161,7 @@
 <translation id="6857778194843072568">仅在使用 Wi-Fi 网络时发送</translation>
 <translation id="5380554235172449987">一律不发送</translation>
 <translation id="5715468759630044318">选择帐户</translation>
+<translation id="5000922062037820727">已阻止（推荐）</translation>
 <translation id="544291274896356069">如果在外部应用中打开此链接，您将退出隐身模式。是否继续？</translation>
 <translation id="3917783807003067648">禁止访问位置信息</translation>
 <translation id="1379156015317873965">提高网页加载速度</translation>
@@ -228,6 +233,7 @@
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="907015151729920253">智能卡</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">保存视频</translation>
@@ -262,7 +268,6 @@
 <translation id="748127970106343339">确认删除设备凭据</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="5899349522111170522">创建新文件</translation>
-<translation id="1082482054625560856">管理您的 <ph name="BEGIN_LINK"/>Google 帐户<ph name="END_LINK"/>中保存的密码</translation>
 <translation id="7232255641409319872">允许在您指定的网站上使用图片，同时禁止在其他网站上使用图片</translation>
 <translation id="2360035970720276770">只能从 http 或 https 网址下载</translation>
 <translation id="6570560778840017462">您不会因此而退出自己的 <ph name="BEGIN_LINK"/>Google 帐户<ph name="END_LINK"/></translation>

@@ -95,6 +95,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, webová aplikace <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Nahradit soubor</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
+<translation id="8413385045638830869">Nejprve se dotázat (doporučeno)</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="5313967007315987356">Přidat web</translation>
 <translation id="5733727110006255111">Je-li tato funkce zapnutá, Chrome navštívené stránky před stažením zkomprimuje pomocí serverů Google. Stránky SSL a stránky navštívené v anonymním režimu nebudou zahrnuty.</translation>
@@ -160,6 +161,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="6857778194843072568">Odesílat pouze v sítích Wi-Fi</translation>
 <translation id="5380554235172449987">Nikdy neodesílat</translation>
 <translation id="5715468759630044318">Zvolit účet</translation>
+<translation id="5000922062037820727">Blokováno (doporučeno)</translation>
 <translation id="544291274896356069">Pokud tento odkaz otevřete v externí aplikaci, opustíte anonymní režim. Chcete pokračovat?</translation>
 <translation id="3917783807003067648">Přístup k poloze je blokován</translation>
 <translation id="1379156015317873965">Zlepšit výkon při načítání stránek</translation>
@@ -231,6 +233,7 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="3254409185687681395">Přidat stránku do záložek</translation>
 <translation id="907015151729920253">Čipová karta</translation>
 <translation id="2482878487686419369">Oznámení</translation>
+<translation id="857943718398505171">Povoleno (doporučeno)</translation>
 <translation id="4412992751769744546">Povolit cookies třetích stran</translation>
 <translation id="5016205925109358554">Patková</translation>
 <translation id="3063601790762993062">Uložit video</translation>
@@ -265,7 +268,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="748127970106343339">Potvrdit vymazání identifikačních údajů zařízení</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="5899349522111170522">Vytvořit nový soubor</translation>
-<translation id="1082482054625560856">Spravovat uložená hesla v <ph name="BEGIN_LINK"/>účtu Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Povolit obrázky na webech, které uvedete, ale na zbytku webu jej blokovat</translation>
 <translation id="2360035970720276770">Lze stahovat jen adresy URL typu http nebo https</translation>
 <translation id="6570560778840017462">Od svých <ph name="BEGIN_LINK"/>účtů Google<ph name="END_LINK"/> nebudete odhlášeni</translation>

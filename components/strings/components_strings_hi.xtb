@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">आवश्यक</translation>
 <translation id="2958431318199492670">नेटवर्क कॉन्फ़िगरेशन ONC मानक का पालन नहीं करता. कॉन्फ़िगरेशन के कुछ भाग आयात नहीं किए जा सकते हैं.</translation>
 <translation id="3583757800736429874">&amp;ले जाना फिर से करें</translation>
+<translation id="7887683347370398519">अपना CVC जांचें और पुन: प्रयास करें</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">डिवाइस का रिकॉर्ड लापता है</translation>
 <translation id="1491151370853475546">यह पृष्ठ पुन: लोड करें</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> का हमेशा अनुवाद करें</translation>
 <translation id="1227633850867390598">मान छिपाएं</translation>
 <translation id="6753269504797312559">नीति मान</translation>
+<translation id="3369366829301677151">अपना <ph name="CREDIT_CARD"/> अपडेट करें और सत्‍यापित करें</translation>
 <translation id="8834246243508017242">संपर्कों का स्वत:-भरण सक्षम करें…</translation>
 <translation id="7275334191706090484">प्रबंधित बुकमार्क</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="1871208020102129563">प्रॉक्‍सी को फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर का उपयोग करने के लिए सेट किया गया है, .pac स्‍क्रिप्‍ट फ़ाइल का उपयोग करने के लिए नहीं.</translation>
+<translation id="8988760548304185580">अवधि समाप्‍ति दिनांक और अपने कार्ड के पीछे दिया गया 3 अंकों वाला CVC डालें</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> आदेश चलाएं: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">अज्ञात त्रुटि</translation>
 <translation id="112840717907525620">नीति संचय ठीक है</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">सत्‍यापन त्रुटि: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> में अनुवाद विफल रहा.</translation>
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या अमान्य है</translation>
+<translation id="3219579145727097045">अवधि समाप्‍ति दिनांक और अपने कार्ड के सामने की ओर दिया गया 4 अंकों वाला CVC डालें</translation>
 <translation id="3667681724235208644">मौलिक देखें</translation>
 <translation id="4079302484614802869">प्रॉक्‍सी कॉन्‍फ़िगरेशन को .pac स्‍क्रिप्‍ट URL का उपयोग करने के लिए सेट किया जाता है, फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर के लिए नहीं.</translation>
 <translation id="5540224163453853">अनुरोध किया गया लेख नहीं ढूंढा जा सका.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> से <ph name="TARGET_LANGUAGE"/> में अनुवाद करें?</translation>
 <translation id="8218327578424803826">सौंपा गया स्‍थान:</translation>
 <translation id="3542684924769048008">इसके लिए पासवर्ड का उपयोग करें:</translation>
+<translation id="2855922900409897335">अपना <ph name="CREDIT_CARD"/> सत्‍यापित करें</translation>
 <translation id="7186367841673660872">इस पृष्ठ का <ph name="ORIGINAL_LANGUAGE"/>से<ph name="LANGUAGE_LANGUAGE"/> में अनुवाद कर दिया गया है</translation>
 <translation id="7139724024395191329">अमीरात</translation>
+<translation id="6646897916597483132">अपने कार्ड के सामने की ओर दिया गया 4 अंकों वाला CVC डालें</translation>
 <translation id="5145883236150621069">नीति प्रतिसाद में त्रुटि कोड मौजूद है</translation>
 <translation id="7983301409776629893">हमेशा <ph name="ORIGINAL_LANGUAGE"/> से <ph name="TARGET_LANGUAGE"/> में अनुवाद करें</translation>
 <translation id="6970216967273061347">जिला</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">अप्रबंधित</translation>
 <translation id="3712624925041724820">लाइसेंस समाप्त हो गए</translation>
 <translation id="4926049483395192435">निर्दिष्ट किया जाना चाहिए.</translation>
+<translation id="1455235771979731432">आपका कार्ड सत्‍यापित करते समय समस्‍या हुई थी. अपना इंटरनेट कनेक्‍शन जांचें और पुन: प्रयास करें.</translation>
 <translation id="7542995811387359312">स्वतः क्रेडिट कार्ड भरना अक्षम किया गया है क्योंकि यह फ़ॉर्म किसी सुरक्षित कनेक्शन का उपयोग नहीं करता है.</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/> में नहीं है? इस त्रुटि की रिपोर्ट करें</translation>
 <translation id="8088680233425245692">लेख देखने में विफल रहा.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">सक्रिय</translation>
 <translation id="7568593326407688803">यह पृष्ठ<ph name="ORIGINAL_LANGUAGE"/>में है क्या आप इसका अनुवाद करना चाहेंगे?</translation>
 <translation id="8876793034577346603">नेटवर्क कॉन्फ़िगरेशन पार्स होने में विफल रहा.</translation>
+<translation id="4800132727771399293">अपना अवधि समाप्‍ति दिनांक और CVC जांचें और पुन: प्रयास करें</translation>
 <translation id="4171400957073367226">गलत सत्यापन हस्ताक्षर</translation>
+<translation id="9125941078353557812">अपने कार्ड के पीछे दिया गया 3 अंकों वाला CVC डालें</translation>
 <translation id="106701514854093668">डेस्कटॉप बुकमार्क</translation>
 <translation id="6154808779448689242">वापस लौटे नीति टोकन का मिलान वर्तमान टोकन से नहीं होता</translation>
 <translation id="7995512525968007366">निर्दिष्‍ट नहीं किया गया</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;पुन: क्रमित करना वापस लाएं</translation>
 <translation id="20817612488360358">सिस्‍टम प्रॉक्‍सी सेटिंग उपयोग किए जाने के लिए सेट हैं लेकिन कोई स्पष्‍ट प्रॉक्‍सी कॉन्फ़िगरेशन भी निर्दिष्ट है.</translation>
 <translation id="2639739919103226564">स्थिति:</translation>
+<translation id="8824019021993735287">Chrome इस समय आपका कार्ड सत्‍यापित नहीं कर सका. कृपया बाद में पुन: प्रयास करें.</translation>
 <translation id="4968547170521245791">प्रॉक्‍सी नहीं कर सकते</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>

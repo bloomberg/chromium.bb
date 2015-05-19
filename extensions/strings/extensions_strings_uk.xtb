@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Використовувати ваш мікрофон і камеру</translation>
 <translation id="2857834222104759979">Файл маніфесту недійсний.</translation>
 <translation id="6384275966486438344">Використовувати пошукову систему <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Вибрати пристрій USB</translation>
 <translation id="1445572445564823378">Це розширення сповільнює <ph name="PRODUCT_NAME"/>. Щоб відновити ефективність <ph name="PRODUCT_NAME"/>, потрібно його вимкнути.</translation>
+<translation id="7003844668372540529">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Отримувати доступ до серійних пристроїв</translation>
 <translation id="288042212351694283">Доступ до ваших пристроїв Universal 2nd Factor</translation>
+<translation id="3163201441334626963">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/> принаймні такої версії: <ph name="EXTENSION_VERSION"/>. Ви не зможете ввімкнути це розширення, доки не оновите його до цієї версії (або новішої).</translation>
 <translation id="6075907793831890935">Обмінюватися даними з пристроєм із назвою <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Керувати станом і під’єднанням адаптера Bluetooth</translation>
 <translation id="677806580227005219">Обробник MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Переглядати інформацію про пристрої Bluetooth, підключені до вашої системи, і знаходити пристрої Bluetooth поблизу.</translation>
 <translation id="8749863574775030885">Отримувати доступ до пристроїв USB від невідомого постачальника</translation>
+<translation id="3115238746683532089">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Не вдалося завантажити фоновий сценарій &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Обмінюватися повідомленнями на пристроях Bluetooth.</translation>
 <translation id="5678955352098267522">Переглядати ваші дані на веб-сайті <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Засіб розпакування розширень</translation>
 <translation id="149347756975725155">Не вдалося завантажити піктограму розширення &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Це розширення не змінило заголовок запиту &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Вибрати пристрої USB</translation>
 <translation id="6731255991101203740">Не вдалося створити каталог для розпакування: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Не вдалося завантажити сторінку параметрів &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження &quot;<ph name="ATTEMPTED_FILENAME"/>&quot;, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) визначило іншу назву файлу &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="452039078290142656">невідомі пристрої від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">Веб-перегляд: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Заборонений шлях (узагалі або у зв’язку з &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">усі сайти <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Зробити <ph name="HOME_PAGE"/> домашньою сторінкою</translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Не вдалося завантажити фонову сторінку &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Неможливо встановити пакет: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">Додаток <ph name="APP_NAME"/> запитує доступ до одного з ваших пристроїв.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Пакет недійсний. Деталі: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Переглядати ваші дані на декількох веб-сайтах</translation>

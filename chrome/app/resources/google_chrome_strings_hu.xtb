@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">Közösen használ valakivel egy számítógépet? Mostantól úgy állíthatja be a Chrome-ot, ahogy Ön szeretné.</translation>
 <translation id="6236285698028833233">A Google Chrome a továbbiakban nem frissül, és már nem támogatja az Ön operációs rendszerének ezen verzióját.</translation>
 <translation id="5453904507266736060">A Google Chrome futhat a háttérben</translation>
-<translation id="3454512769850953877">Igen, kilépek a Chrome-ból.</translation>
 <translation id="4167057906098955729">Itt tekintheti meg a Chrome-alkalmazások és -bővítmények, illetve a webhelyek értesítéseit.</translation>
 <translation id="2704356438731803243">Ha meglévő Chrome-adatait külön szeretné tárolni, új Chrome-felhasználót hozhat létre <ph name="USER_NAME"/> számára.</translation>
 <translation id="386202838227397562">Zárjon be minden Google Chrome-ablakot, és próbálkozzon újra.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">A Chrome biztonságosan tárolja az adatait, így nem kell újra begépelnie azokat, de kártyája biztonsági kódját igazolnia kell majd a későbbi kifizetésekhez.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="7400722733683201933">A Google Chrome névjegye</translation>
-<translation id="8838365799985821335">Egy bővítmény módosította, hogy melyik oldal jelenik meg a Chrome elindításakor.</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="1065672644894730302">A beállításait nem sikerült olvasni. Egyes funkciókat esetleg nem ér el, és a beállításaiban végrehajtott módosításokat nem menti a rendszer.</translation>
 <translation id="7781002470561365167">Elérhető a Google Chrome új verziója</translation>
@@ -61,7 +59,6 @@
 <translation id="4743926867934016338">Elfogadás és keresés</translation>
 <translation id="1393853151966637042">A Chrome használatával kapcsolatos súgó</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS"/> néven volt bejelentkezve a Chrome-ba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
-<translation id="5338943029751206389">A webhely elavult biztonsági beállításokat használ, ami megakadályozhatja, hogy a Chrome biztonságosan hozzá tudjon férni a jövőben.</translation>
 <translation id="4513711165509885787">Számlázási adatait a Chrome mentette.</translation>
 <translation id="5253588388888612165">Ha közösen használja ezt a számítógépet <ph name="PROFILE_NAME"/> felhasználóval, adja hozzá magát a Chrome-hoz, hogy külön böngészhessen. Máskülönben válassza le az ő Google-fiókját.</translation>
 <translation id="7098166902387133879">A Google Chrome használja a mikrofont.</translation>
@@ -79,6 +76,7 @@
 <translation id="3089968997497233615">Elérhető a Google Chrome új, biztonságosabb verziója.</translation>
 <translation id="5037239767309817516">Ahhoz, hogy a módosítás hatályba lépjen, zárja be az összes Google Chrome ablakot, és indítsa újra az alkalmazást.</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
+<translation id="3398288718845740432">Elrejtés a Chrome-menüben</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="3149510190863420837">Chrome-alkalmazások</translation>
 <translation id="8851136666856101339">fő</translation>
@@ -155,7 +153,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="103396972844768118">Fontos információ az Ön Chrome-adatairól</translation>
 <translation id="6757767188268205357">Ne zavarjanak ezzel</translation>
 <translation id="2290095356545025170">Biztos benne, hogy eltávolítja a Google Chrome-ot?</translation>
-<translation id="7062966102157262887">Folyamatban van egy letöltés. Szeretne kilépni a Google Chrome-ból, és megszakítja a letöltést?</translation>
 <translation id="4273752058983339720">A Google Chrome úgy van beállítva, hogy automatikusan elinduljon a számítógép indításakor.</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="415994390253732730">Furcsán viselkedik a Chrome?</translation>
@@ -169,6 +166,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="6883876366448858277">a szót és annak szövegkörnyezetét elküldi a Google Keresésnek, amely meghatározásokat, képeket és egyéb keresési eredményeket küld vissza.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">A Google Chrome egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-pal!</translation>
+<translation id="4631713731678262610">Elrejtés a Chrome-menüben</translation>
 <translation id="3612333635265770873">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Google Chrome-mal.</translation>
 <translation id="2665296953892887393">Segítse a Google Chrome fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK"/></translation>
 <translation id="7761834446675418963">Kattintson a nevére a Chrome megnyitásához és a böngészés megkezdéséhez.</translation>
@@ -197,8 +195,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="8614913330719544658">A Google Chrome nem válaszol. Újraindítja most?</translation>
 <translation id="2681064822612051220">Már telepítve van a Google Chrome a rendszeren, és ez ütközést okoz. Kérjük, távolítsa el, majd próbálkozzon újra.</translation>
 <translation id="2252923619938421629">Segítsen a Google Chrome fejlesztésében a jelenlegi beállítások elküldésével</translation>
-<translation id="6126631249883707068">Szeretné, hogy a Google Chrome mentse a jelszavát?</translation>
-<translation id="7773845170078702898">Szeretné, hogy a Google Chrome mentse az oldalhoz tartozó jelszót?</translation>
 <translation id="4251615635259297716">Társítja Chrome-adatait ezzel a fiókkal?</translation>
 <translation id="7125719106133729027">A Chrome nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chrome kézi újratelepítése szükséges.</translation>
 <translation id="5940385492829620908">Az Ön könyvjelzői, valamint az internetezéssel és a Chrome-mal kapcsolatos egyéb dolgai vannak itt.</translation>
@@ -212,7 +208,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
         beállításokban.</translation>
 <translation id="9102715433345326100">Ez a fájl rosszindulatú, ezért a Chrome letiltotta.</translation>
 <translation id="8205111949707227942">Opcionális: Segítse a Chrome OS fejlesztését azzal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google részére</translation>
-<translation id="7253415505590551024">Folyamatban van több letöltés. Szeretne kilépni a Google Chrome-ból, és megszakítja a letöltéseket?</translation>
 <translation id="487887346205285304">Furcsán viselkedik a Chrome?</translation>
 <translation id="3622797965165704966">Google-fiókjával most még egyszerűbben használhatja a Chrome-ot közösen használt számítógépeken.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
@@ -242,7 +237,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="3360895254066713204">Chrome segéd</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="7592736734348559088">A Google Chrome nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
-<translation id="7810280330588098283">A Chrome ezt a |mentett Google-jelszavak| közt fogja eltárolni, és megjegyzi a következő alkalomra.</translation>
 <translation id="6991142834212251086">Chrome-adataim társítása ehhez a fiókhoz</translation>
 <translation id="3451115285585441894">Hozzáadás a Chrome-hoz...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/> összekapcsolásának megszüntetésével törli az eszközön tárolt előzményeket, könyvjelzőket, beállításokat és egyéb Chrome-adatokat. A Google-fiókban tárolt adatokat a rendszer nem törli, és azokat Ön a <ph name="GOOGLE_DASHBOARD_LINK"/>Google Irányítópulton<ph name="END_GOOGLE_DASHBOARD_LINK"/> kezelheti.</translation>
@@ -258,6 +252,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="1698376642261615901">A Google Chrome olyan böngésző, amely villámgyorsan futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és a kártékony programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
 <translation id="853189717709780425">Felügyelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, ám más fiókhoz nem társíthatja őket.</translation>
 <translation id="699076943483372849">Ez a webhely az időközben megszűnt Chrome Frame beépülő modult használja, amelyhez már nem érkezik több biztonsági és stabilitási frissítés. Kérjük, távolítsa el, és frissítsen egy modern böngészőre.</translation>
+<translation id="5531349711857992002">A webhely tanúsítványlánca legalább egy olyan tanúsítványt tartalmaz, amelyet a megszüntetett SHA-1-alapú aláíró algoritmussal írtak alá.</translation>
 <translation id="6049075767726609708">A rendszergazda már telepítette a Google Chrome böngészőt a rendszeren, így az elérhető minden felhasználó számára. A felhasználói szintű telepítését le fogjuk cserélni a Google Chrome rendszerszintű változatára.</translation>
 <translation id="1818142563254268765">A Chrome nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chrome frissítése szükséges.</translation>
 <translation id="7408085963519505752">Chrome OS – Szerződési Feltételek</translation>

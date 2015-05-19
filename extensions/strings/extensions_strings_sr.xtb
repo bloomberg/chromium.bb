@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Коришћење микрофона и камере</translation>
 <translation id="2857834222104759979">Датотека манифеста је неважећа.</translation>
 <translation id="6384275966486438344">Промените подешавања претраге на: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Изаберите USB уређај</translation>
 <translation id="1445572445564823378">Овај додатак успорава <ph name="PRODUCT_NAME"/>. Требало би да га онемогућите да би се учинак производа <ph name="PRODUCT_NAME"/> вратио.</translation>
+<translation id="7003844668372540529">Непознати производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Приступ серијским уређајима</translation>
 <translation id="288042212351694283">Приступ универзалним уређајима за 2. фактор</translation>
+<translation id="3163201441334626963">Непознати производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Непознати производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_NAME"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Администратор овог рачунара захтева да <ph name="EXTENSION_NAME"/> има минималну верзију <ph name="EXTENSION_VERSION"/>. Не можете да га омогућите док га не ажурирате на ту верзију (или новију).</translation>
 <translation id="6075907793831890935">Размена података са уређајем под називом <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Контрола стања и упаривања Bluetooth адаптера</translation>
 <translation id="677806580227005219">Руковалац за MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Приступање информацијама о Bluetooth уређајима упареним са вашим системом и откривање оближњих Bluetooth уређаја.</translation>
 <translation id="8749863574775030885">Приступ USB уређајима непознатог продавца</translation>
+<translation id="3115238746683532089">Непознати производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_ID"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> продавца <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Није могуће учитати скрипту у позадини „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> продавца <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Слање порука на Bluetooth уређаје и примање порука са њих.</translation>
 <translation id="5678955352098267522">Читање ваших података на <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Распакивање додатака</translation>
 <translation id="149347756975725155">Није могуће учитати икону додатка „<ph name="ICON"/>“.</translation>
 <translation id="8825366169884721447">Овај додатак није успео да измени заглавље захтева „<ph name="HEADER_NAME"/>“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Изаберите USB уређаје</translation>
 <translation id="6731255991101203740">Није могуће направити директоријум за распакивање: „<ph name="DIRECTORY_PATH"/>“</translation>
 <translation id="4233778200880751280">Није могуће учитати страницу са основним подацима „<ph name="ABOUT_PAGE"/>“.</translation>
 <translation id="388442998277590542">Није могуће учитати страницу опција „<ph name="OPTIONS_PAGE"/>“.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Овај додатак није успео да преузетој датотеци дâ назив „<ph name="ATTEMPTED_FILENAME"/>“ зато што је један други додатак (<ph name="EXTENSION_NAME"/>) одредио другачији назив датотеке „<ph name="ACTUAL_FILENAME"/>“.</translation>
 <translation id="452039078290142656">непознати уређаји продавца <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">Веб-приказ: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Неисправна путања (апсолутна или релативна вредност једнака вредности „..“): „<ph name="IMAGE_PATH"/>“</translation>
 <translation id="8284279544186306258">сви <ph name="WEBSITE_1"/> сајтови</translation>
 <translation id="8662911384982557515">Промените почетну страницу у: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Није могуће учитати страницу у позадини „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="2988488679308982380">Инсталација пакета није била могућа: „<ph name="ERROR_CODE"/>“</translation>
 <translation id="5751530153776468604">Апликација „<ph name="APP_NAME"/>“ захтева приступ неком од уређаја.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> продавца <ph name="VENDOR_ID"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Опције: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Пакет је неважећи. Детаљи: „<ph name="ERROR_MESSAGE"/>“.</translation>
 <translation id="344630545793878684">Читање ваших података на више веб-сајтова</translation>

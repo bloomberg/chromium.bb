@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Obligāti</translation>
 <translation id="2958431318199492670">Tīkla konfigurācija neatbilst standartam ONC. Iespējams, konfigurācijas daļas netiks importētas.</translation>
 <translation id="3583757800736429874">&amp;Pārvietošanas atsaukuma atcelšana</translation>
+<translation id="7887683347370398519">Pārbaudiet CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Trūkst ierīces ieraksta.</translation>
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Vienmēr tulkot <ph name="LANGUAGE"/> valodas saturu</translation>
 <translation id="1227633850867390598">Slēpt vērtību</translation>
 <translation id="6753269504797312559">Politikas vērtība</translation>
+<translation id="3369366829301677151">Atjauniniet un verificējiet kredītkartes <ph name="CREDIT_CARD"/> informāciju</translation>
 <translation id="8834246243508017242">Iespējot automātisko aizpildi, izmantojot kontaktpersonas...</translation>
 <translation id="7275334191706090484">Pārvaldītās grāmatzīmes</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Apgabals</translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
+<translation id="8988760548304185580">Ievadiet derīguma termiņu un 3 ciparu CVC kodu, kas ir norādīts jūsu kredītkartes aizmugurē.</translation>
 <translation id="8940229512486821554">Izpildīt <ph name="EXTENSION_NAME"/> komandu: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Nezināma kļūda</translation>
 <translation id="112840717907525620">Politikas kešatmiņa ir labā stāvoklī.</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Validācijas kļūda: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Neizdevās tulkot šādā valodā: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Ierīces sērijas numurs nav derīgs.</translation>
+<translation id="3219579145727097045">Ievadiet derīguma termiņu un 4 ciparu CVC kodu, kas ir norādīts jūsu kredītkartes priekšpusē.</translation>
 <translation id="3667681724235208644">Skatīt sākotnējo</translation>
 <translation id="4079302484614802869">Starpniekserveris ir iestatīts, lai tas lietotu .pac skripta URL, nevis fiksētus starpniekserverus.</translation>
 <translation id="5540224163453853">Pieprasīto rakstu nevarēja atrast.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Vai tulkot no <ph name="ORIGINAL_LANGUAGE"/> valodas <ph name="TARGET_LANGUAGE"/> valodā?</translation>
 <translation id="8218327578424803826">Piešķirtā atrašanās vieta:</translation>
 <translation id="3542684924769048008">Izmantot paroli:</translation>
+<translation id="2855922900409897335">Verificējiet kredītkarti <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Šī lapa ir tulkota no<ph name="ORIGINAL_LANGUAGE"/>valodas<ph name="LANGUAGE_LANGUAGE"/>valodā</translation>
 <translation id="7139724024395191329">Emirāts</translation>
+<translation id="6646897916597483132">Ievadiet 4 ciparu CVC kodu, kas norādīts jūsu kredītkartes priekšpusē.</translation>
 <translation id="5145883236150621069">Politikas atbildē ir kļūdas kods.</translation>
 <translation id="7983301409776629893">Vienmēr tulkot no <ph name="ORIGINAL_LANGUAGE"/> valodas <ph name="TARGET_LANGUAGE"/> valodā</translation>
 <translation id="6970216967273061347">Rajons</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Netiek pārvaldīts</translation>
 <translation id="3712624925041724820">Nav pietiekami daudz licenču.</translation>
 <translation id="4926049483395192435">Jābūt norādītai.</translation>
+<translation id="1455235771979731432">Verificējot jūsu karti, radās problēma. Pārbaudiet interneta savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="7542995811387359312">Automātiska kredītkartes numura ievadīšana ir atspējota, jo šai veidlapai netiek izmantots drošs savienojums.</translation>
 <translation id="5179510805599951267">Vai nav valodā: <ph name="ORIGINAL_LANGUAGE"/>? Ziņot par šo kļūdu</translation>
 <translation id="8088680233425245692">Rakstu neizdevās skatīt.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Aktīvs</translation>
 <translation id="7568593326407688803">Šī lapa ir rakstīta<ph name="ORIGINAL_LANGUAGE"/>valodā. Vai vēlaties to tulkot?</translation>
 <translation id="8876793034577346603">Neizdevās parsēt tīkla konfigurāciju.</translation>
+<translation id="4800132727771399293">Pārbaudiet derīguma termiņu un CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="4171400957073367226">Verifikācijas paraksts nav derīgs.</translation>
+<translation id="9125941078353557812">Ievadiet 3 ciparu CVC kodu, kas norādīts jūsu kredītkartes aizmugurē.</translation>
 <translation id="106701514854093668">Datora grāmatzīmes</translation>
 <translation id="6154808779448689242">Atgrieztais politikas marķieris neatbilst pašreizējam marķierim.</translation>
 <translation id="7995512525968007366">Nav norādīts</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Pārkārtošanas atsaukšana</translation>
 <translation id="20817612488360358">Ir iestatīta datora starpniekserveru iestatījumu lietošana, bet ir norādīta arī atklāta starpniekservera konfigurācija.</translation>
 <translation id="2639739919103226564">Statuss:</translation>
+<translation id="8824019021993735287">Pārlūks Chrome pašlaik nevarēja verificēt jūsu karti. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="4968547170521245791">Nevar apstrādāt, izmantojot starpniekserveri</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="4196861286325780578">&amp;Atcelt pārvietošanas atsaukšanu</translation>

@@ -12,15 +12,19 @@
 <translation id="8480209185614411573">Korkea kontrasti</translation>
 <translation id="1588438908519853928">Normaali</translation>
 <translation id="4954450790315188152">Kun Näppäimistöselaaminen on käytössä:</translation>
+<translation id="1591070050619849194">Poista kaikki kuva-animaatiot käytöstä.</translation>
 <translation id="2965611304828530558">&lt;p&gt;Löytämäsi linkki tai käytettävä kohde keskitetään automaattisesti. Klikkaa linkkiä tai painiketta painamalla &lt;span class='key'&gt;enter&lt;/span&gt;. &lt;/p&gt; &lt;p&gt;  Kun keskitetty kohde (kuten tekstikenttä tai luettelokenttä) kuuntelee nuolinäppäimien painalluksia, jatka Näppäimistöselaamisen käyttöä painamalla &lt;span class='key'&gt;esc&lt;/span&gt; ja sen jälkeen vasenta tai oikeaa nuolta. &lt;/p&gt; &lt;p&gt;   Voit myös siirtyä seuraavaan keskitettävään kohteeseen painamalla &lt;span class='key'&gt;sarkainta&lt;/span&gt;. &lt;/p&gt;</translation>
 <translation id="5041932793799765940">Värien säätö</translation>
 <translation id="2394933097471027016">Kokeile heti – Näppäimistöselaaminen on aina käytössä tällä sivulla!</translation>
 <translation id="3622586652998721735">Aseta oletusteemaksi</translation>
+<translation id="4937901943818762779">Salli kuvien animointi, mutta vain kerran.</translation>
 <translation id="2179565792157161713">Avaa pitkä kuvaus uudella välilehdellä</translation>
 <translation id="7942349550061667556">Punainen</translation>
 <translation id="1555130319947370107">Sininen</translation>
 <translation id="2471847333270902538">Sivuston <ph name="SITE"/> väriteema:</translation>
 <translation id="381767806621926835">Klikkaa hiiren kakkospainikkeella longdesc- tai aria-describedat-attribuutin sisältäviä kohteita, jos haluat nähdä niiden pitkän kuvauksen.</translation>
+<translation id="6838518108677880446">Määritys:</translation>
+<translation id="5594989420907487559">Näytä animaatiot vain kerran, tai poista animaatiot kokonaan käytöstä.</translation>
 <translation id="786423340267544509">Lisää reunus elementteihin, joissa on aria-describedat- tai longdesc-attribuutteja.</translation>
 <translation id="690628312087070417">Kun osoitin siirtyy pitkän välimatkan:</translation>
 <translation id="1996252509865389616">Otetaanko käyttöön?</translation>
@@ -37,16 +41,23 @@
 <translation id="1287053896835709737">Keltainen mustalla pohjalla</translation>
 <translation id="4896660567607030658">Ei palautetta, näytä osoitin.</translation>
 <translation id="5631241868147802353">Oletusvärimalli:</translation>
+<translation id="1791496371305830581">Salli kaikki animoidut kuvat.</translation>
 <translation id="5173942593318174089">Korosta osoittimen paikka animaatiolla.</translation>
 <translation id="7379645913608427028">Aste</translation>
+<translation id="3252573918265662711">Määritä</translation>
 <translation id="894241283505723656">Pitkät kuvaukset kontekstivalikossa</translation>
 <translation id="5555153510860501336">Korkea kontrasti on pois käytöstä</translation>
+<translation id="2808027189040546825">Vaihe 1: valitse rivi, jolla on haaleimmat tähdet:</translation>
+<translation id="8321034316479930120">Animaatiokäytäntö</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="1703735871906654364">Näppäimistöselaaminen</translation>
+<translation id="145360476452865422">Animaatiokäytäntö:</translation>
 <translation id="7384431257964758081">Korkea kontrasti on käytössä</translation>
 <translation id="6550675742724504774">Asetukset</translation>
 <translation id="5650358096585648000">Visuaalinen palaute</translation>
 <translation id="4388820049312272371">Korosta osoittimen paikka nopealla välähdyksellä.</translation>
+<translation id="7586636300921797327">Vaihe 2: liikuta liukusäädintä, kunnes kaikki tähdet ovat näkyvissä
+        valitulla rivillä.</translation>
 <translation id="2223143012868735942">Muokattavissa oleva värisuodatin, joka helpottaa värien näkemistä verkkosivuilla.</translation>
 <translation id="4023902424053835668">Selaa verkkosivujen tekstiä nuolinäppäimillä.</translation>
 <translation id="2795227192542594043">Tämä laajennus lisää verkkosivulle liikuteltavan osoittimen, jonka avulla voit valita tekstiä näppäimistöllä.</translation>

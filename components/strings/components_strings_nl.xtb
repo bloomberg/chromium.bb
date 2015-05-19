@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Verplicht</translation>
 <translation id="2958431318199492670">De netwerkconfiguratie voldoet niet aan de ONC-standaard. Delen van de configuratie worden mogelijk niet geïmporteerd.</translation>
 <translation id="3583757800736429874">&amp;Opnieuw verplaatsen</translation>
+<translation id="7887683347370398519">Controleer je CVC-code en probeer het opnieuw</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Apparaatrecord ontbreekt</translation>
 <translation id="1491151370853475546">Deze pagina opnieuw laden</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> altijd vertalen</translation>
 <translation id="1227633850867390598">Waarde verbergen</translation>
 <translation id="6753269504797312559">Beleidswaarde</translation>
+<translation id="3369366829301677151">Je <ph name="CREDIT_CARD"/> updaten en verifiëren</translation>
 <translation id="8834246243508017242">Automatisch aanvullen inschakelen met contacten…</translation>
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Gebied</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
+<translation id="8988760548304185580">Geef de vervaldatum en driecijferige CVC-code op die op de achterkant van je kaart staan</translation>
 <translation id="8940229512486821554">Opdracht van <ph name="SEARCH_TERMS"/> uitvoeren: <ph name="EXTENSION_NAME"/></translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Validatiefout: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">De vertaling naar het <ph name="TARGET_LANGUAGE"/> is mislukt.</translation>
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
+<translation id="3219579145727097045">Geef de vervaldatum en viercijferige CVC-code op die op de voorkant van je kaart staan</translation>
 <translation id="3667681724235208644">Origineel weergeven</translation>
 <translation id="4079302484614802869">Proxyconfiguratie is ingesteld op het gebruik van een pac-script-URL, niet op het gebruik van vaste proxyservers.</translation>
 <translation id="5540224163453853">Kan het gevraagde artikel niet vinden.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Vertalen uit het <ph name="ORIGINAL_LANGUAGE"/> naar het <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Toegewezen locatie:</translation>
 <translation id="3542684924769048008">Wachtwoord gebruiken voor:</translation>
+<translation id="2855922900409897335">Je <ph name="CREDIT_CARD"/> verifiëren</translation>
 <translation id="7186367841673660872">Deze pagina is vertaald van het<ph name="ORIGINAL_LANGUAGE"/>in het<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emiraat</translation>
+<translation id="6646897916597483132">Geef de viercijferige CVC-code op die op de voorkant van je kaart staat</translation>
 <translation id="5145883236150621069">Foutcode aanwezig in de beleidsreactie</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE"/> altijd vertalen in het <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">District</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Niet-beheerd</translation>
 <translation id="3712624925041724820">Licenties zijn verbruikt</translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
+<translation id="1455235771979731432">Er is een probleem opgetreden bij het verifiëren van je kaart. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="7542995811387359312">Het automatisch invullen van creditcardnummers is uitgeschakeld, omdat dit formulier geen beveiligde verbinding gebruikt.</translation>
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE"/>? Deze fout melden</translation>
 <translation id="8088680233425245692">Kan artikel niet bekijken.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Actief</translation>
 <translation id="7568593326407688803">Deze pagina is geschreven in het<ph name="ORIGINAL_LANGUAGE"/>Wil je deze laten vertalen?</translation>
 <translation id="8876793034577346603">Netwerkconfiguratie kan niet worden geparseerd.</translation>
+<translation id="4800132727771399293">Controleer je vervaldatum en CVC-code en probeer het opnieuw</translation>
 <translation id="4171400957073367226">Onjuiste verificatiehandtekening</translation>
+<translation id="9125941078353557812">Geef de driecijferige CVC-code op die op de achterkant van je kaart staat</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
 <translation id="6154808779448689242">Geretourneerde beleidstoken komt niet overeen met huidige token</translation>
 <translation id="7995512525968007366">Niet opgegeven</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="20817612488360358">De proxyinstellingen van het systeem moeten worden gebruikt, maar er is ook een expliciete proxyconfiguratie opgegeven.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="8824019021993735287">Chrome kan je kaart momenteel niet verifiëren. Probeer het later opnieuw.</translation>
 <translation id="4968547170521245791">Kan niet overdragen via proxy</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>

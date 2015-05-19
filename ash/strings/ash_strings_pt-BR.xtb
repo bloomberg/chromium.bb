@@ -72,6 +72,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="3892641579809465218">Display interno</translation>
 <translation id="7823564328645135659">O idioma foi alterado de &quot;<ph name="FROM_LOCALE"/>&quot; para &quot;<ph name="TO_LOCALE"/>&quot; após a sincronização de suas configurações.</translation>
+<translation id="7113420380180868673">Transmitindo $1</translation>
 <translation id="3606978283550408104">Display em braille conectado.</translation>
 <translation id="8654520615680304441">Ativar Wi-Fi...</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME"/> via Assistência remota.</translation>
@@ -96,6 +97,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% restante</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING"/>. Você será desconectado.</translation>
+<translation id="5807965672380739016">Transmitir área de trabalho para</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Alto-falante (interno)</translation>
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
@@ -124,6 +126,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; deseja permissão para realizar o pareamento.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
+<translation id="703171847531699602">Nenhum dispositivo de transmissão</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: conectando...</translation>
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Exibição desconhecida</translation>
@@ -205,6 +208,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3147142846278915599">Tela de início (sincronizando aplicativos...)</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
+<translation id="4373966964907728675">Transmitindo área de trabalho</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h<ph name="MINUTE"/>m até a carga total</translation>
 <translation id="3077734595579995578">shift</translation>

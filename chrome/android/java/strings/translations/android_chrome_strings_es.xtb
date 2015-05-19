@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Añadir dirección</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
+<translation id="5098185943924922330">Ayúdanos a priorizar las funciones y las mejoras en las que debemos trabajar enviando información a Google sobre los archivos, las aplicaciones y los servicios utilizados cuando se produce un error.
+
+Las estadísticas de uso incluyen información como, por ejemplo, preferencias, clics en botones y uso de la memoria. No incluyen las URL de páginas web ni información personal. Los informes sobre fallos contienen información del sistema en el momento del error y pueden incluir las URL de páginas web o información personal, en función de lo que haya sucedido en el momento del fallo.</translation>
 <translation id="4042870126885713738">Muestra sugerencias cuando no se puede resolver una dirección web o no se puede establecer una conexión</translation>
 <translation id="8237438615979997762">Los datos almacenados en este dispositivo y los datos asociados a tu cuenta de Google se mantendrán en ambos sitios. Sin embargo, los datos nuevos o los cambios que realices en tus datos no se sincronizarán entre ellos.</translation>
 <translation id="6831043979455480757">Traducir</translation>
@@ -92,6 +95,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, una aplicación web disponible en <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Sustituir archivo</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
+<translation id="8413385045638830869">Preguntar antes (recomendado)</translation>
 <translation id="2100273922101894616">Iniciar sesión automáticamente</translation>
 <translation id="5313967007315987356">Añadir sitio</translation>
 <translation id="5733727110006255111">Si se activa esta función, Chrome utiliza los servidores de Google para comprimir las páginas que visitas antes de descargarlas. No se incluyen páginas en modo incógnito ni SSL.</translation>
@@ -157,6 +161,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="6857778194843072568">Enviar solo por Wi-Fi</translation>
 <translation id="5380554235172449987">No enviar nunca</translation>
 <translation id="5715468759630044318">Seleccionar cuenta</translation>
+<translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="544291274896356069">Saldrás del modo incógnito si este enlace se abre en una aplicación externa. ¿Quieres continuar?</translation>
 <translation id="3917783807003067648">La ubicación está bloqueada</translation>
 <translation id="1379156015317873965">Mejorar rendimiento de carga de páginas</translation>
@@ -228,6 +233,7 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="3254409185687681395">Añadir esta página a marcadores</translation>
 <translation id="907015151729920253">Tarjeta inteligente</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
+<translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
@@ -262,7 +268,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
 <translation id="5899349522111170522">Crear archivo nuevo</translation>
-<translation id="1082482054625560856">Administra contraseñas guardadas en tu <ph name="BEGIN_LINK"/>cuenta de Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Permite mostrar imágenes en los sitios web especificados y bloquearlas en el resto de la Web</translation>
 <translation id="2360035970720276770">Solo se pueden descargar URL de tipo http o https</translation>
 <translation id="6570560778840017462">No saldrás de tus <ph name="BEGIN_LINK"/>cuentas de Google<ph name="END_LINK"/></translation>

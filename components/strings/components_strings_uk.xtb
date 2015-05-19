@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Обов’язкове</translation>
 <translation id="2958431318199492670">Конфігурація мережі не відповідає стандарту ONC. Вона може імпортуватися частково.</translation>
 <translation id="3583757800736429874">&amp;Повторити переміщення</translation>
+<translation id="7887683347370398519">Перевірте код CVC й повторіть спробу</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Відсутній запис пристрою</translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Сховати значення</translation>
 <translation id="6753269504797312559">Значення правила</translation>
+<translation id="3369366829301677151">Оновіть і підтвердьте дані своєї картки <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Увімкнути &quot;Автозаповнення за допомогою контактів&quot;…</translation>
 <translation id="7275334191706090484">Закладки, якими керує адміністратор</translation>
 <translation id="7400418766976504921">URL-адреса</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Регіон або територія</translation>
 <translation id="1871208020102129563">Проксі-сервер налаштовано на використання фіксованих проксі-серверів, а не URL-адреси сценарію .pac.</translation>
+<translation id="8988760548304185580">Введіть дату закінчення терміну дії та код CVC з 3 цифр, розташований на звороті вашої картки</translation>
 <translation id="8940229512486821554">Запустити команду розширення <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Невідома помилка</translation>
 <translation id="112840717907525620">Кеш-пам’ять правила не пошкоджено</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Помилка перевірки: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Помилка перекладу такою мовою: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
+<translation id="3219579145727097045">Введіть дату закінчення терміну дії та код CVC з 4 цифр, розташований на звороті вашої картки</translation>
 <translation id="3667681724235208644">Переглянути оригінальну сторінку</translation>
 <translation id="4079302484614802869">Конфігурацію проксі-сервера налаштовано на використання URL-адреси сценарію .pac, а не фіксованих проксі-серверів.</translation>
 <translation id="5540224163453853">Не вдалося знайти потрібну статтю.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Перекласти цю мовну пару: <ph name="ORIGINAL_LANGUAGE"/> – <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Указане місцезнаходження:</translation>
 <translation id="3542684924769048008">Використовувати пароль для:</translation>
+<translation id="2855922900409897335">Підтвердьте дані своєї картки <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Цю сторінку перекладено. Мова оригіналу:<ph name="ORIGINAL_LANGUAGE"/>мова перекладу:<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Емірат</translation>
+<translation id="6646897916597483132">Введіть код CVC з 4 цифр, розташований на звороті вашої картки</translation>
 <translation id="5145883236150621069">Відповідь правила містить код помилки</translation>
 <translation id="7983301409776629893">Завжди перекладати цю мовну пару: <ph name="ORIGINAL_LANGUAGE"/> – <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Район або округ</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Некерований клієнт</translation>
 <translation id="3712624925041724820">Ліцензії вичерпано</translation>
 <translation id="4926049483395192435">Потрібно вказати.</translation>
+<translation id="1455235771979731432">Не вдалося підтвердити дані картки. Перевірте з’єднання з Інтернетом і повторіть спробу.</translation>
 <translation id="7542995811387359312">Автоматичне заповнення кредитної картки вимкнено, оскільки ця форма не використовує безпечне з'єднання.</translation>
 <translation id="5179510805599951267">Це не <ph name="ORIGINAL_LANGUAGE"/>? Повідомте про помилку</translation>
 <translation id="8088680233425245692">Не вдалося переглянути статтю.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Активний клієнт</translation>
 <translation id="7568593326407688803">Мова цієї сторінки:<ph name="ORIGINAL_LANGUAGE"/>Перекласти її?</translation>
 <translation id="8876793034577346603">Помилка аналізу конфігурації мережі.</translation>
+<translation id="4800132727771399293">Перевірте дату закінчення терміну дії та код CVC та повторіть спробу</translation>
 <translation id="4171400957073367226">Недійсний підпис для підтвердження</translation>
+<translation id="9125941078353557812">Введіть код CVC з 3 цифр, розташований на звороті вашої картки</translation>
 <translation id="106701514854093668">Закладки для настільного комп’ютера</translation>
 <translation id="6154808779448689242">Отриманий маркер правила не збігається з поточним маркером</translation>
 <translation id="7995512525968007366">Не вказано</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Відмінити перевпорядкування</translation>
 <translation id="20817612488360358">Системні параметри проксі-сервера налаштовано для використання, але чітко вказано налаштування проксі-сервера.</translation>
 <translation id="2639739919103226564">Статус:</translation>
+<translation id="8824019021993735287">Не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
 <translation id="4968547170521245791">Не вдається відкрити</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4196861286325780578">&amp;Повторити переміщення</translation>

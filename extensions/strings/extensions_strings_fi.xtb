@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Käyttää mikrofonia ja kameraa</translation>
 <translation id="2857834222104759979">Luettelotiedosto on virheellinen.</translation>
 <translation id="6384275966486438344">Ota käyttöön seuraava hakukone: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Valitse USB-laite</translation>
 <translation id="1445572445564823378">Tämä laajennus hidastaa tuotetta <ph name="PRODUCT_NAME"/>. Poista laajennus käytöstä tehostaaksesi tuotteen <ph name="PRODUCT_NAME"/> toimintaa.</translation>
+<translation id="7003844668372540529">Tuntematon tuote <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Käyttää sarjaporttilaitteitasi</translation>
 <translation id="288042212351694283">Käytä Universal 2nd Factor -laitteita</translation>
+<translation id="3163201441334626963">Tuntematon tuote <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Tuntematon laite <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Tämän laitteen järjestelmänvalvoja edellyttää laajennuksen <ph name="EXTENSION_NAME"/> version olevan vähintään <ph name="EXTENSION_VERSION"/>. Laajennusta ei voida ottaa käyttöön ennen kuin se on päivitetty kyseiseen tai sitä uudempaan versioon.</translation>
 <translation id="6075907793831890935">Vaihtaa tietoja isäntää <ph name="HOSTNAME"/> käyttävän laitteen kanssa.</translation>
 <translation id="5971037678316050792">Hallinnoida Bluetooth-sovittimen tilaa ja laiteparin muodostusta.</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Käyttää järjestelmäsi kanssa laitepariksi liitettyjen Bluetooth-laitteiden tietoja ja löytää lähellä olevia Bluetooth-laitteita.</translation>
 <translation id="8749863574775030885">Käyttää tuntemattoman myyjän USB-laitteita.</translation>
+<translation id="3115238746683532089">Tuntematon tuote <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_ID"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> myyjältä <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Taustakoodin <ph name="BACKGROUND_SCRIPT"/> lataaminen epäonnistui.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> toimittajalta <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Lähettää viestejä Bluetooth-laitteisiin ja vastaanottaa viestejä Bluetooth-laitteilta.</translation>
 <translation id="5678955352098267522">Lukea tietojasi sivustossa <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Laajennuksien purkaja</translation>
 <translation id="149347756975725155">Laajennuskuvakkeen <ph name="ICON"/> lataaminen ei onnistunut.</translation>
 <translation id="8825366169884721447">Tämä laajennus ei muokannut verkkopyynnön otsikkoa <ph name="HEADER_NAME"/>, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME"/>) kanssa.</translation>
-<translation id="4776856853352853275">Valitse USB-laitteita</translation>
 <translation id="6731255991101203740">Ei voitu luoda hakemistoa <ph name="DIRECTORY_PATH"/> laajennuksen purkamista varten:</translation>
 <translation id="4233778200880751280">Tietosivun <ph name="ABOUT_PAGE"/> lataus epäonnistui.</translation>
 <translation id="388442998277590542">Asetussivun <ph name="OPTIONS_PAGE"/> lataaminen epäonnistui.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Laajennus ei voinut antaa lataukselle nimeä <ph name="ATTEMPTED_FILENAME"/>, koska toinen laajennus (<ph name="EXTENSION_NAME"/>) määritti toisen tiedostonimen (<ph name="ACTUAL_FILENAME"/>).</translation>
 <translation id="452039078290142656">myyjän <ph name="VENDOR_NAME"/> tuntemattomat laitteet</translation>
 <translation id="5026754133087629784">Verkkonäkymä: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Luvaton polku (absoluuttinen tai kohteeseen '..' liittyvä): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">kaikki verkkotunnuksen <ph name="WEBSITE_1"/> sivustot</translation>
 <translation id="8662911384982557515">Vaihda aloitussivuksi <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Taustasivun <ph name="BACKGROUND_PAGE"/> lataaminen ei onnistunut.</translation>
 <translation id="2988488679308982380">Paketin <ph name="ERROR_CODE"/> asentaminen epäonnistui.</translation>
 <translation id="5751530153776468604">Sovellus <ph name="APP_NAME"/> pyytää käyttöoikeutta yhteen laitteistasi.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> toimittajalta <ph name="VENDOR_ID"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Vaihtoehdot: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Paketti on virheellinen. Tietoja: <ph name="ERROR_MESSAGE"/>.</translation>
 <translation id="344630545793878684">Lukea tietojasi useissa sivustoissa</translation>

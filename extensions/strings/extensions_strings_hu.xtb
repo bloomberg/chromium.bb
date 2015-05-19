@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Mikrofon és kamera használata</translation>
 <translation id="2857834222104759979">A jegyzékfájl érvénytelen.</translation>
 <translation id="6384275966486438344">A keresési beállítások módosítása a következőre: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB-eszköz kiválasztása</translation>
 <translation id="1445572445564823378">Ez a bővítmény lassítja a <ph name="PRODUCT_NAME"/> működését. Kapcsolja ki a <ph name="PRODUCT_NAME"/> teljesítményének visszaállításához.</translation>
+<translation id="7003844668372540529">Ismeretlen termék (<ph name="PRODUCT_ID"/>) a következő forgalmazótól: <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Hozzáférés a soros eszközökhöz</translation>
 <translation id="288042212351694283">U2F (Universal 2nd Factor) eszközökhöz való hozzáférés</translation>
+<translation id="3163201441334626963">Ismeretlen termék (<ph name="PRODUCT_ID"/>) a következő forgalmazótól: <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Ismeretlen termék (<ph name="PRODUCT_ID"/>) a következő szolgáltatótól: <ph name="VENDOR_NAME"/> (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">A gép rendszergazdája előírta, hogy a(z) <ph name="EXTENSION_NAME"/> bővítmény verziója legalább <ph name="EXTENSION_VERSION"/> legyen. Nem kapcsolható be addig, amíg nincs frissítve erre a verzióra (vagy újabbra).</translation>
 <translation id="6075907793831890935">Adatok cseréje a(z) <ph name="HOSTNAME"/> nevű eszközzel</translation>
 <translation id="5971037678316050792">Bluetooth-adapter állapotának és párosításának vezérlése</translation>
 <translation id="677806580227005219">MIME-kezelő: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">A rendszerrel párosított Bluetooth-eszközökkel kapcsolatos információk elérése és a közeli Bluetooth-eszközök felderítése.</translation>
 <translation id="8749863574775030885">Ismeretlen szolgáltatótól származó USB-eszközök elérése</translation>
+<translation id="3115238746683532089">Ismeretlen termék (<ph name="PRODUCT_ID"/>) <ph name="VENDOR_ID"/> szolgáltatótól (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> (<ph name="VENDOR_NAME"/>)</translation>
 <translation id="657064425229075395">Nem sikerült betölteni a következő háttérszkriptet: &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/>, forgalmazó: <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Üzenetek küldése és fogadása Bluetooth-eszközöknek, illetve Bluetooth-eszközöktől.</translation>
 <translation id="5678955352098267522">Adatok beolvasása a következő webhelyen: <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Bővítmény-kicsomagoló</translation>
 <translation id="149347756975725155">A(z) '<ph name="ICON"/>' bővítményikon betöltése nem sikerült.</translation>
 <translation id="8825366169884721447">A bővítmény nem tudta módosítani egy hálózati kérés „<ph name="HEADER_NAME"/>” kérésfejlécét, mert a módosítás ütközik egy másik bővítménnyel (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">USB-eszközök kiválasztása</translation>
 <translation id="6731255991101203740">Nem sikerült könyvtárat létrehozni a kicsomagoláshoz: „<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">A(z) „<ph name="ABOUT_PAGE"/>” névjegyoldal betöltése sikertelen volt.</translation>
 <translation id="388442998277590542">Nem lehet betölteni a(z) &quot;<ph name="OPTIONS_PAGE"/>&quot; opcióoldalt.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Ez a bővítmény nem tudta elnevezni a(z) „<ph name="ATTEMPTED_FILENAME"/>” letöltést, mert egy másik bővítmény (<ph name="EXTENSION_NAME"/>) eltérő fájlnevet határozott meg: „<ph name="ACTUAL_FILENAME"/>”.</translation>
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> szolgáltatótól származó ismeretlen eszközök</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Szabálytalan útvonal (abszolút vagy relatív „..” taggal): „<ph name="IMAGE_PATH"/>”</translation>
 <translation id="8284279544186306258">minden <ph name="WEBSITE_1"/> webhelyen</translation>
 <translation id="8662911384982557515">Kezdőlap módosítása a következőre: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Nem lehet betölteni a(z) '<ph name="BACKGROUND_PAGE"/>' háttéroldalt.</translation>
 <translation id="2988488679308982380">Nem sikerült a következő csomag telepítése: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">A(z) „<ph name="APP_NAME"/>” alkalmazás hozzáférést kér egyik eszközéhez.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> termék a következő forgalmazótól: <ph name="VENDOR_ID"/> (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Lehetőségek: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">A csomag érvénytelen. Részletek: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Adatok beolvasása számos webhelyen</translation>

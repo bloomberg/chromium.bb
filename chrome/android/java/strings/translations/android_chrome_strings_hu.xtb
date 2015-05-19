@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE"/> keresővel</translation>
 <translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="4816465935029283692">Adattípusok</translation>
+<translation id="5098185943924922330">Segítsen nekünk annak eldöntésében, hogy mely funkciókon és fejlesztéseken kell előbb dolgoznunk – küldje el a Google-nak a böngésző lefagyásakor éppen futó fájlokkal, alkalmazásokkal és szolgáltatásokkal kapcsolatos információkat.
+
+        A használati statisztika részét alkotják például a beállítások, a gombokra kattintások és a memóriahasználat. Nem tartalmazzák weboldalak URL-jeit és semmilyen személyes adatot. A hibajelentések a hiba időpontjában aktuális rendszer-információkat tartalmazzák, de tartalmazhatják weboldalak URL-címeit vagy személyes adatokat is, attól függően, hogy mi történt a hiba időpontjában.</translation>
 <translation id="4042870126885713738">Javaslatok megjelenítése, ha egy internetcímet nem lehet feloldani, vagy nem lehet kapcsolódni</translation>
 <translation id="8237438615979997762">A jelen eszközön, valamint az Ön Google-fiókjában tárolt adatok mindkét helyen megmaradnak, azonban az új adatok, illetve a meglévő adatokban végrehajtott módosítások nem lesznek szinkronizálva.</translation>
 <translation id="6831043979455480757">Fordítás</translation>
@@ -92,6 +95,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, internetes alkalmazás. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Fájl cseréje</translation>
 <translation id="5595485650161345191">Cím szerkesztése</translation>
+<translation id="8413385045638830869">Kérdezzen rá (ajánlott)</translation>
 <translation id="2100273922101894616">Automatikus bejelentkezés</translation>
 <translation id="5313967007315987356">Webhely hozzáadása</translation>
 <translation id="5733727110006255111">Amikor ezt a funkciót bekapcsolja, a Chrome a Google-szerverek segítségével tömöríti az Ön által meglátogatott oldalakat, mielőtt letöltené azokat. Az SSL használatával, illetve az inkognitómódban megtekintett oldalakat ez nem érinti.</translation>
@@ -157,6 +161,7 @@
 <translation id="6857778194843072568">Csak Wi-Fi-hálózaton keresztül küldjön</translation>
 <translation id="5380554235172449987">Soha ne küldjön</translation>
 <translation id="5715468759630044318">Fiók választása</translation>
+<translation id="5000922062037820727">Letiltva (ajánlott)</translation>
 <translation id="544291274896356069">Ha ezt a linket külső alkalmazásban nyitja meg, elhagyja az inkognitómódot. Folytatja?</translation>
 <translation id="3917783807003067648">A hely le van tiltva</translation>
 <translation id="1379156015317873965">Oldal betöltési idejének javítása</translation>
@@ -228,6 +233,7 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="3254409185687681395">Könyvjelző hozzáadása ehhez az oldalhoz</translation>
 <translation id="907015151729920253">Intelligens kártya</translation>
 <translation id="2482878487686419369">Értesítések</translation>
+<translation id="857943718398505171">Engedélyezve (ajánlott)</translation>
 <translation id="4412992751769744546">Harmadik felektől származó cookie-k engedélyezése</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Videó mentése</translation>
@@ -262,7 +268,6 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
 <translation id="5899349522111170522">Új fájl létrehozása</translation>
-<translation id="1082482054625560856">Mentett jelszavak kezelése a <ph name="BEGIN_LINK"/>Google-fiókjában<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Képek engedélyezése az Ön által megadott webhelyeken, míg az internet egyéb helyein azok letiltása</translation>
 <translation id="2360035970720276770">Csak „http” vagy „https” URL-ekről tölthet le</translation>
 <translation id="6570560778840017462">A rendszer nem fogja kijelentkeztetni <ph name="BEGIN_LINK"/>Google-fiókjaiból<ph name="END_LINK"/></translation>

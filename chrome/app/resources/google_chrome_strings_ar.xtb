@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chrome بالطريقة التي تعجبك تمامًا.</translation>
 <translation id="6236285698028833233">‏توقف تحديث Google Chrome ولم يعد متوافقًا مع هذا الإصدار من نظام التشغيل.</translation>
 <translation id="5453904507266736060">‏دع Google Chrome يعمل في الخلفية</translation>
-<translation id="3454512769850953877">‏نعم، الخروج من Chrome</translation>
 <translation id="4167057906098955729">‏يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chrome والإضافات ومواقع الويب هنا.</translation>
 <translation id="2704356438731803243">‏إذا كنت تفضل الإبقاء على بيانات Chrome الحالية بشكل منفصل، فيمكنك إنشاء حساب مستخدم Chrome جديد للمستخدم <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">‏الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">‏سيخزن Chrome معلوماتك في مكان آمن ولذلك لن تحتاج إلى كتابتها مرة أخرى، ولكن سيظل يلزمك التحقق من رمز الأمان في بطاقتك لإجراء عمليات دفع مستقبلية.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="7400722733683201933">‏معلومات عن Google Chrome</translation>
-<translation id="8838365799985821335">‏غيّرت إحدى الإضافات الصفحة التي تظهر عند تشغيل Chrome.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="7781002470561365167">‏يتوفر إصدار جديد من متصفح Google Chrome.</translation>
@@ -63,7 +61,6 @@
 <translation id="4743926867934016338">موافقة وبحث</translation>
 <translation id="1393853151966637042">‏الحصول على مساعدة بشأن استخدام Chrome</translation>
 <translation id="7398801000654795464">‏تم تسجيل دخولك إلى Chrome باعتبارك <ph name="USER_EMAIL_ADDRESS"/>. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
-<translation id="5338943029751206389">‏يستخدم هذا الموقع إعدادات أمان غير محدّثة قد تمنع إصدارات Chrome القادمة من الوصول إليها بأمان.</translation>
 <translation id="4513711165509885787">‏تم حفظ تفاصيل الفوترة في Chrome.</translation>
 <translation id="5253588388888612165">‏إذا كنت تشارك جهاز الكمبيوتر هذا مع <ph name="PROFILE_NAME"/>، فأضف نفسك إلى Chrome للتصفح بشكلٍ منفصل. أو ألغِ ربط حسابك بحسابه في Google.</translation>
 <translation id="7098166902387133879">‏يستخدم Google Chrome الميكروفون.</translation>
@@ -81,6 +78,7 @@
 <translation id="3089968997497233615">‏يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
 <translation id="5037239767309817516">‏الرجاء إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
 <translation id="225614027745146050">مرحبًا</translation>
+<translation id="3398288718845740432">‏الإخفاء في قائمة Chrome</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
 <translation id="8851136666856101339">main</translation>
@@ -163,7 +161,6 @@
 <translation id="103396972844768118">‏معلومات مهمة بخصوص بياناتك في Chrome</translation>
 <translation id="6757767188268205357">عدم المطالبة مرة أخرى</translation>
 <translation id="2290095356545025170">‏هل تريد بالتأكيد إزالة Google Chrome؟</translation>
-<translation id="7062966102157262887">‏هناك تنزيل قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيل؟</translation>
 <translation id="4273752058983339720">‏تمت تهيئة Google Chrome لإطلاقه تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="415994390253732730">‏هل يتصرف Chrome على نحو غريب؟</translation>
@@ -177,6 +174,7 @@
 <translation id="6883876366448858277">‏إرسال الكلمة والسياق المحيط بها إلى بحث Google وعرض التعريفات والصور ونتائج البحث الأخرى.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">‏يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
+<translation id="4631713731678262610">‏الإخفاء في قائمة Chrome</translation>
 <translation id="3612333635265770873">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK"/> إلى Google</translation>
 <translation id="7761834446675418963">‏انقر على اسمك لفتح Chrome وبدء التصفح.</translation>
@@ -205,8 +203,6 @@
 <translation id="8614913330719544658">‏لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="2681064822612051220">‏تم العثور على تثبيت متضارب لـ Google Chrome على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="2252923619938421629">‏ساعد في تحسين Google Chrome بالإبلاغ عن الإعدادات الحالية</translation>
-<translation id="6126631249883707068">‏هل تريد من Google Chrome حفظ كلمة المرور؟</translation>
-<translation id="7773845170078702898">‏هل تريد من Google Chrome حفظ كلمة المرور لهذا الموقع؟</translation>
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="7125719106133729027">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك إعادة تثبيت Chrome يدويًا.</translation>
 <translation id="5940385492829620908">‏الويب والإشارات المرجعية وغيرها من عناصر Chrome توجد هنا.</translation>
@@ -220,7 +216,6 @@
         برنامج مكافحة الفيروسات.</translation>
 <translation id="9102715433345326100">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chrome حظره.</translation>
 <translation id="8205111949707227942">‏اختياري: ساعد في تحسين Chrome OS عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
-<translation id="7253415505590551024">‏هناك تنزيلات قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيلات؟</translation>
 <translation id="487887346205285304">‏هل يتصرف Chrome على نحو غريب؟</translation>
 <translation id="3622797965165704966">‏الآن أصبح استخدام Chrome مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
@@ -250,7 +245,6 @@
 <translation id="3360895254066713204">‏مساعد Chrome</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="7592736734348559088">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
-<translation id="7810280330588098283">‏سيخزن Chrome هذا في |كلمات مرور Google المحفوظة لديك| وتذكرها عند احتياجك إليها في المرة القادمة.</translation>
 <translation id="6991142834212251086">‏ربط بياناتي في Chrome بهذا الحساب</translation>
 <translation id="3451115285585441894">‏جارٍ الإضافة إلى Chrome...</translation>
 <translation id="3047079729301751317">‏سيؤدي قطع اتصال <ph name="USERNAME"/> إلى مسح السجّل والإشارات المرجعية والإعدادات وبيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK"/>لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -266,6 +260,7 @@
 <translation id="1698376642261615901">‏إن Google Chrome هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة خاطفة. فهذا المتصفح سريع ويتميز بالثبات وسهولة الاستخدام، ويمكنك من خلاله تصفح الويب بقدر أكبر من الأمان من خلال وجود حماية مضمنة داخله ضد البرامج الضارة والتصيّد.</translation>
 <translation id="853189717709780425">‏أنت تسجل الدخول بحساب يخضع لإدارة شخص آخر وتمنح مشرفه إمكانية التحكم في ملفك الشخصي في Google Chrome. سيتم ربط بياناتك في Chrome دائمًا بالحساب <ph name="USER_NAME"/> مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر.</translation>
 <translation id="699076943483372849">‏يستخدم هذا الموقع المكوّن الإضافي Chrome Frame الذي تم إيقافه ولم يعد يتلقى تحديثات الأمان والاستقرار. الرجاء إزالته والترقية إلى متصفح حديث.</translation>
+<translation id="5531349711857992002">‏تتضمن سلسلة الشهادات لموقع الويب هذا شهادة واحدة على الأقل تم توقيعها باستخدام خوارزمية توقيع موقوفة‬ استنادًا إلى SHA-1.</translation>
 <translation id="6049075767726609708">‏قام أحد المشرفين بتثبيت Google Chrome على هذا الجهاز، وهو متاح لجميع المستخدمين. سيحل Google Chrome على مستوى النظام محل النسخة المثبتة على مستوى المستخدم لديك الآن.</translation>
 <translation id="1818142563254268765">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chrome.</translation>
 <translation id="7408085963519505752">‏بنود نظام التشغيل Chrome</translation>

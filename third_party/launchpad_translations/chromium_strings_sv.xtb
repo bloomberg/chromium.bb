@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">Vill du avinstallera Chromium?</translation>
 <translation id="6510925080656968729">Avinstallera Chromium</translation>
 <translation id="2615699638672665509">Den här datorn slutar snart att få uppdateringar för Chromium eftersom maskinvaran inte längre stöds.</translation>
-<translation id="5532301346661895910">Chromium sparar detta i dina |lösenord som Google sparat| och kommer ihåg det nästa gång du behöver det.</translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="421369550622382712">Upptäck fantastiska appar, spel, tillägg och teman för Chromium.</translation>
 <translation id="2732467638532545152">En gammal version av Microsoft Windows som inte kan behandla webbplatsens säkerhetscertifikat körs på datorn. På grund av detta kan inte Chromium avgöra om certifikatet kommer från <ph name="SITE"/> eller från någon i ditt nätverk som utger sig för att vara <ph name="SITE"/>. Uppdatera datorn till en nyare version av Windows.</translation>
@@ -60,7 +59,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="7064610482057367130">Det finns ingen installation av Chromium att uppdatera.</translation>
 <translation id="872034308864968620">Låt Chromium köras i bakgrunden</translation>
 <translation id="459535195905078186">Chromium-appar</translation>
-<translation id="5109068449432240255">Ja, avsluta Chromium</translation>
 <translation id="8134284582177628525">Om du delar den här datorn med <ph name="PROFILE_NAME"/> lägger du till dig själv i Chromium så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
 <translation id="1480489203462860648">Testa, webbläsaren är redan installerad</translation>
 <translation id="3032787606318309379">Lägger till i Chromium ...</translation>
@@ -79,7 +77,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="734373864078049451">Här finns webben, bokmärken och allt annat du använder Chromium till.</translation>
 <translation id="3197823471738295152">Enheten är uppdaterad.</translation>
 <translation id="8551886023433311834">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
-<translation id="8353224596138547809">Vill du att Chromium sparar lösenordet för den här webbplatsen?</translation>
 <translation id="8738058698779197622">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig endast är giltiga under vissa tidsperioder. Chromium kan inte verifiera certifikaten eftersom klockan på enheten inte stämmer.</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="7463979740390522693">Chromium – meddelanden (<ph name="QUANTITY"/> olästa)</translation>
@@ -136,7 +133,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4365115785552740256">Chromium finns tack vare projektet <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> med öppen källkod och <ph name="BEGIN_LINK_OSS"/>andra program med öppen källkod<ph name="END_LINK_OSS"/>.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Gäster kan använda Chromium utan att lämna spår efter sig.</translation>
-<translation id="3487263810738775861">Ett tillägg har ändrat vilken sida som visas när du startar Chromium.</translation>
 <translation id="5877064549588274448">Kanalen har ändrats. Starta om enheten om du vill tillämpa ändringarna.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="6248213926982192922">Använd Chromium som standardwebbläsare</translation>
@@ -207,7 +203,8 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
 <translation id="2158734852934720349">Licenser för öppen källkod för Chromium OS</translation>
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME"/>-länkar. Den länk som efterfrågas är <ph name="PROTOLINK"/>.</translation>
-<translation id="2558235863893655150">Vill du att Chromium ska spara ditt lösenord?</translation>
+<translation id="7205698830395646142">Dölj i Chromium-menyn</translation>
+<translation id="7979877361127045932">Dölj i Chromium-menyn</translation>
 <translation id="6485906693002546646">Du synkroniserar dina grejer i Chromium med <ph name="PROFILE_EMAIL"/>. Om du vill ändra synkroniseringsinställningen eller använda Chromium utan ett Google-konto besöker du <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Uppdatera Chromium</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON"/>startas om<ph name="END_BUTTON"/>)</translation>
@@ -234,7 +231,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
 <translation id="378917192836375108">I Chromium kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
-<translation id="8724049448828509830">En nedladdning pågår. Vill du avsluta Chromium och avbryta nedladdningen?</translation>
 <translation id="608189560609172163">Chromium kunde inte synkronisera data på grund av ett fel vid inloggningen.</translation>
 <translation id="4888717733111232871">Regel som tillåter inkommande mDNS-trafik för Chromium.</translation>
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>
@@ -242,7 +238,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="8985587603644336029">Någon har tidigare loggat in i Chromium på den här datorn som <ph name="ACCOUNT_EMAIL_LAST"/>. Om det inte är ditt konto skapar du en ny Chromium-användare för att hålla din information privat för dig.
 
 Om du loggar in ändå kommer information som bokmärken, historik och andra inställningar i Chromium att synkroniseras med <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
-<translation id="2739631515503418643">Nedladdningar pågår. Vill du avsluta Chromium och avbryta nedladdningar?</translation>
 <translation id="9013262824292842194">För Chromium krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
 <translation id="1967743265616885482">En modul med samma namn har tidigare varit i konflikt med Chromium.</translation>
 <translation id="7962572577636132072">Chromium uppdateras automatiskt så att du alltid har den senaste versionen.</translation>
@@ -255,6 +250,7 @@ Om du loggar in ändå kommer information som bokmärken, historik och andra ins
 <translation id="7318036098707714271">Inställningsfilen är skadad eller ogiltig.
 
 Chromium kan inte återställa dina inställningar.</translation>
+<translation id="5531349711857992002">Certifikatkedjan för den här webbplatsen innehåller minst ett certifikat som signerades med en utfasad signaturalgoritm som baseras på SHA-1.</translation>
 <translation id="918373042641772655">Om du kopplar från <ph name="USERNAME"/> rensas din historik, dina bokmärken, dina inställningar och annan Chromium-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK"/>Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium är en webbläsare som kör webbsidor och appar blixtsnabbt. Den är snabb, stabil och lätt att använda. Surfa säkrare med Chromiums skydd mot skadliga program och lösenordsfiske.</translation>
 <translation id="4230135487732243613">Vill du koppla dina uppgifter i Chromium till det här kontot?</translation>

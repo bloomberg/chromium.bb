@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Obrigatório</translation>
 <translation id="2958431318199492670">A configuração de rede não cumpre a norma ONC. Partes da configuração podem não ser importadas.</translation>
 <translation id="3583757800736429874">&amp;Refazer movimentação</translation>
+<translation id="7887683347370398519">Verifique o Código de Segurança/CVC e tente novamente</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Registo do dispositivo em falta</translation>
 <translation id="1491151370853475546">Atualizar esta Página</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Esconder o valor</translation>
 <translation id="6753269504797312559">Valor da política</translation>
+<translation id="3369366829301677151">Atualizar e validar o <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Ativar preenchimento automático utilizando os contactos...</translation>
 <translation id="7275334191706090484">Marcadores Geridos</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
+<translation id="8988760548304185580">Introduza a data de validade e o Código de Segurança/CVC de três dígitos no verso do cartão</translation>
 <translation id="8940229512486821554">Executar o comando: <ph name="EXTENSION_NAME"/><ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Erro desconhecido</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">A tradução para <ph name="TARGET_LANGUAGE"/> falhou.</translation>
 <translation id="4103249731201008433">Número de série do dispositivo é inválido</translation>
+<translation id="3219579145727097045">Introduza a data de validade e o Código de Segurança/CVC de quatro dígitos que se encontram na parte da frente do cartão</translation>
 <translation id="3667681724235208644">Ver original</translation>
 <translation id="4079302484614802869">A configuração do proxy está definida para utilizar um URL de script .pac e não servidores proxy fixos.</translation>
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Traduzir de <ph name="ORIGINAL_LANGUAGE"/> para <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Localização atribuída:</translation>
 <translation id="3542684924769048008">Utilizar palavra-passe para:</translation>
+<translation id="2855922900409897335">Valide o seu cartão <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Esta página foi traduzida de<ph name="ORIGINAL_LANGUAGE"/>para<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirado</translation>
+<translation id="6646897916597483132">Introduza o Código de Segurança/CVC de quatro dígitos que se encontra na parte da frente do cartão</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
 <translation id="7983301409776629893">Traduzir sempre do <ph name="ORIGINAL_LANGUAGE"/> para o <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distrito</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Não gerido</translation>
 <translation id="3712624925041724820">Licenças esgotadas</translation>
 <translation id="4926049483395192435">Tem de ser especificado.</translation>
+<translation id="1455235771979731432">Ocorreu um erro ao validar o cartão. Verifique a sua ligação à Internet e tente novamente.</translation>
 <translation id="7542995811387359312">O preenchimento automático de cartões de crédito está desactivado, porque este formulário não utiliza uma ligação segura.</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE"/>? Comunicar este erro</translation>
 <translation id="8088680233425245692">Falha ao ver o artigo.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Ativo</translation>
 <translation id="7568593326407688803">Esta página está em<ph name="ORIGINAL_LANGUAGE"/>Pretende traduzi-la?</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
+<translation id="4800132727771399293">Verifique a data de validade e o Código de Segurança/CVC e tente novamente</translation>
 <translation id="4171400957073367226">Assinatura de verificação incorreta</translation>
+<translation id="9125941078353557812">Introduza o Código de Segurança/CVC de três dígitos que se encontra no verso do cartão</translation>
 <translation id="106701514854093668">Marcadores do Ambiente de Trabalho</translation>
 <translation id="6154808779448689242">O token da política devolvido não corresponde ao token atual</translation>
 <translation id="7995512525968007366">Não especificado</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Anular reordenação</translation>
 <translation id="20817612488360358">As definições de proxy do sistema estão definidas para serem utilizadas, mas também está especificada uma configuração de proxy explícita.</translation>
 <translation id="2639739919103226564">Estado:</translation>
+<translation id="8824019021993735287">Neste momento o Chrome não consegue validar o seu cartão. Tente novamente mais tarde.</translation>
 <translation id="4968547170521245791">Não é possível utilizar com proxy</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="4196861286325780578">&amp;Refazer movimentação</translation>

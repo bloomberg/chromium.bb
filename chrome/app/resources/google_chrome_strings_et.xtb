@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">Kas jagage arvutit? Saate nüüd seadistada Chrome'i just nii, nagu teile meeldib.</translation>
 <translation id="6236285698028833233">Google Chrome'i värskendamine peatati ja teie operatsioonisüsteemi seda versiooni ei toetata enam.</translation>
 <translation id="5453904507266736060">Luba Google Chrome'i töötamine taustal</translation>
-<translation id="3454512769850953877">Jah, välju Chrome'ist</translation>
 <translation id="4167057906098955729">Siin näete kõiki Chrome'i rakendustest, laiendustest ja veebisaitidelt pärinevaid märguandeid.</translation>
 <translation id="2704356438731803243">Kui soovite olemasolevad Chrome'i andmed eraldi hoida, võite kasutajale <ph name="USER_NAME"/> luua uue Chrome'i kasutaja.</translation>
 <translation id="386202838227397562">Sulgege kõik Google Chrome'i aknad ja proovige uuesti.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">Chrome salvestab turvaliselt teie teabe, nii et te ei pea seda uuesti sisestama, kuid peate ka tulevaste maksete puhul kinnitama oma kaardi turvakoodi.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
-<translation id="8838365799985821335">Laiendus muutis Chrome'i käivitamisel kuvatavat lehte.</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="1065672644894730302">Teie eelistusi ei saa lugeda. Mõned funktsioonid ei pruugi saadaval olla ja eelistuste muudatusi ei salvestata.</translation>
 <translation id="7781002470561365167">Saadaval on uus Google Chrome'i versioon.</translation>
@@ -63,7 +61,6 @@
 <translation id="4743926867934016338">Nõustun, otsi</translation>
 <translation id="1393853151966637042">Hankige abi Chrome'i kasutamise kohta</translation>
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS"/>. Kasutage uuesti sisselogimiseks sama kontot.</translation>
-<translation id="5338943029751206389">Sait kasutab aegunud turvaseadeid, mis võivad takistada Chrome'i tulevastel versioonidel sellele turvalist juurdepääsu.</translation>
 <translation id="4513711165509885787">Teie arvelduse detailid on salvestatud Chrome'i.</translation>
 <translation id="5253588388888612165">Kui jagate seda arvutit kasutajaga <ph name="PROFILE_NAME"/>, lisage ennast Chrome'i, et saaksite eraldi sirvida. Muidu katkestage ühendus nende Google'i kontoga.</translation>
 <translation id="7098166902387133879">Google Chrome kasutab teie mikrofoni.</translation>
@@ -81,6 +78,7 @@
 <translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
 <translation id="5037239767309817516">Muudatuse rakendamiseks sulgege kõik Google Chrome'i aknad ja taaskäivitage Chrome.</translation>
 <translation id="225614027745146050">Tere tulemast</translation>
+<translation id="3398288718845740432">Chrome'i menüüs peitmine</translation>
 <translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="3149510190863420837">Chrome'i rakendused</translation>
 <translation id="8851136666856101339">pea</translation>
@@ -160,7 +158,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="103396972844768118">Oluline teave teie Chrome'i andmete kohta</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="2290095356545025170">Olete kindel, et soovite Google Chrome'i desinstallida?</translation>
-<translation id="7062966102157262887">Allalaadimine on pooleli. Kas soovite Google Chrome'ist väljuda ja allalaadimise tühistada?</translation>
 <translation id="4273752058983339720">Google Chrome on seadistatud arvuti käivitamisel automaatselt avanema.</translation>
 <translation id="2316129865977710310">Ei, aitäh</translation>
 <translation id="415994390253732730">Kas Chrome käitub veidralt?</translation>
@@ -174,6 +171,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="6883876366448858277">saadab sõna ja ümbritseva konteksti Google'i otsingule, tagastades definitsioonid, kujutised, otsingutulemused ja muud otsingutulemused.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i abil helistada!</translation>
+<translation id="4631713731678262610">Chrome'i menüüs peitmine</translation>
 <translation id="3612333635265770873">Samanimeline moodul on teadaolevalt Google Chrome'iga vastuolus.</translation>
 <translation id="2665296953892887393">Aidake Google Chrome'i täiustada, saates Googl'ile krahhiaruandeid ja lingi <ph name="UMA_LINK"/></translation>
 <translation id="7761834446675418963">Chrome'i avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
@@ -204,8 +202,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="2681064822612051220">Süsteemist leiti Google Chrome'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="2252923619938421629">Aidake muuta Google Chrome paremaks, teavitades meid praegustest seadetest</translation>
-<translation id="6126631249883707068">Kas soovite, et Google Chrome salvestaks teie parooli?</translation>
-<translation id="7773845170078702898">Kas soovite, et Google Chrome salvestaks parooli, mida selle saidi jaoks kasutate?</translation>
 <translation id="4251615635259297716">Kas soovite linkida Chrome'i andmed selle kontoga?</translation>
 <translation id="7125719106133729027">Chrome ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chrome'i käsitsi uuesti installima.</translation>
 <translation id="5940385492829620908">Siin asuvad teie veeb, järjehoidjad ja muu Chrome'i kraam.</translation>
@@ -219,7 +215,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
         Chrome.</translation>
 <translation id="9102715433345326100">See fail on pahatahtlik ja Chrome on selle blokeerinud.</translation>
 <translation id="8205111949707227942">Valikuline: aidake muuta Chrome OS paremaks, saates Google'ile automaatselt kasutusstatistikat ja kokkujooksuaruandeid.</translation>
-<translation id="7253415505590551024">Allalaadimised on pooleli. Kas soovite Google Chrome'ist väljuda ja allalaadimised tühistada?</translation>
 <translation id="487887346205285304">Kas Chrome käitub veidralt?</translation>
 <translation id="3622797965165704966">Nüüd on Chrome'i lihtsam kasutada Google'i kontoga ja jagatud arvutites.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
@@ -249,7 +244,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
 <translation id="1877026089748256423">Chrome on aegunud</translation>
 <translation id="7592736734348559088">Google Chrome ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
-<translation id="7810280330588098283">Chrome salvestab selle teie |Google'i salvestatud paroolide| hulka ja peab seda meeles, kui seda järgmine kord vajate.</translation>
 <translation id="6991142834212251086">Lingi minu Chrome'i andmed selle kontoga</translation>
 <translation id="3451115285585441894">Chrome'i lisamine ...</translation>
 <translation id="3047079729301751317">Kui katkestate ühenduse kasutajaga <ph name="USERNAME"/>, siis kustutatakse sellesse seadmesse salvestatud ajalugu, järjehoidjad, seaded ja muud Chrome'i andmed. Google'i kontole salvestatud andmeid ei kustutata ja neid saab hallata <ph name="GOOGLE_DASHBOARD_LINK"/>Google'i juhtpaneelil<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -265,6 +259,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="1698376642261615901">Google Chrome on veebibrauser, mis käitab veebilehti ja rakendusi välgukiirusel. See on kiire, töökindel ja lihtsalt kasutatav. Veebi sirvimine on turvalisem tänu Google Chrome'i sisseehitatud pahavara- ja andmepüügivastasele kaitsele.</translation>
 <translation id="853189717709780425">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, nagu rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded, jäävad püsivalt seotuks kasutajaga <ph name="USER_NAME"/>. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid andmeid seostada teise kontoga.</translation>
 <translation id="699076943483372849">See sait kasutab aegunud pistikprogrammi Chrome Frame, millele ei edastata enam turva- ja stabiilsusvärskendusi. Desinstallige see ja täiendage moodsale brauserile.</translation>
+<translation id="5531349711857992002">Selle veebisaidi sertifikaadiahel sisaldab vähemalt ühte sertifikaati, mis allkirjastati ebasoovitatava allkirja algoritmiga, mis põhineb SHA-1-l.</translation>
 <translation id="6049075767726609708">Administraator on installinud Google Chrome'i sellesse süsteemi ja see on saadaval kõigile kasutajatele. Süsteemitasandi Google Chrome asendab nüüd teie kasutajatasandi installi.</translation>
 <translation id="1818142563254268765">Chrome ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chrome'i värskendama.</translation>
 <translation id="7408085963519505752">Chrome OS-i tingimused</translation>

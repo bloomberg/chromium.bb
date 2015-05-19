@@ -24,7 +24,7 @@
 <translation id="2471847333270902538">Combinación de colores para <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Haz clic con el botón secundario en cualquier elemento con un atributo &quot;longdesc&quot; o &quot;aria-describedat&quot; para acceder a una descripción larga.</translation>
 <translation id="6838518108677880446">Configuración:</translation>
-<translation id="5594989420907487559">Ejecutar animaciones solo una vez o inhabilitar las animaciones por completo</translation>
+<translation id="5594989420907487559">Ejecuta animaciones solo una vez o las inhabilita por completo.</translation>
 <translation id="786423340267544509">Agregar límite a elementos con atributos aria-describedat o longdesc</translation>
 <translation id="690628312087070417">Cuando el cursor de texto avanza a una parte alejada:</translation>
 <translation id="1996252509865389616">¿Habilitar?</translation>
@@ -47,7 +47,7 @@
 <translation id="3252573918265662711">Configuración</translation>
 <translation id="894241283505723656">Descripciones largas en el menú contextual</translation>
 <translation id="5555153510860501336">El alto contraste está inhabilitado.</translation>
-<translation id="2808027189040546825">Paso 1: Selecciona la fila con las estrellas más tenues:</translation>
+<translation id="2808027189040546825">Paso 1. Selecciona la fila con las estrellas más tenues:</translation>
 <translation id="8321034316479930120">Política de animaciones</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="1703735871906654364">Navegación por cursor de texto</translation>
@@ -56,7 +56,7 @@
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="5650358096585648000">Comentarios visuales</translation>
 <translation id="4388820049312272371">Resaltar la posición del cursor con un parpadeo rápido</translation>
-<translation id="7586636300921797327">Paso 2: Ajusta el control deslizante hasta que todas las estrellas sean visibles en la
+<translation id="7586636300921797327">Paso 2. Ajusta el control deslizante hasta que todas las estrellas sean visibles en la
         fila seleccionada.</translation>
 <translation id="2223143012868735942">Un filtro de color personalizable aplicado a las páginas web para mejorar la percepción del color</translation>
 <translation id="4023902424053835668">Explorar el texto o las páginas web con las teclas de flecha</translation>

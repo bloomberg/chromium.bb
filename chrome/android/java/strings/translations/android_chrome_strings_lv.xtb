@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>
 <translation id="4816465935029283692">Datu tipi</translation>
+<translation id="5098185943924922330">Nosūtot Google serveriem informāciju par failiem, lietojumprogrammām un pakalpojumiem, kuri darbojas brīdī, kad notiek avārija, palīdziet mums noteikt to funkciju un uzlabojumu prioritāti, pie kā mums ir jāstrādā.
+
+        Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, klikšķi uz pogām un atmiņas lietojums. Datos netiek ietverti tīmekļa lapu URL un nekāda veida personas informācija. Avāriju pārskatos tiek ietverta avārijas brīdī pieejamā informācija par sistēmu, kā arī var tikt ietverti tīmekļa lapu URL vai personas informācija atkarībā no tā, kas avārijas brīdī ir noticis.</translation>
 <translation id="4042870126885713738">Rādīt ieteikumus, ja nedarbojas tīmekļa adrese vai nevar izveidot savienojumu.</translation>
 <translation id="8237438615979997762">Šajā ierīcē un Google kontā glabātie dati joprojām būs pieejami abās vietās, taču jauni dati vai datos veiktās izmaiņas netiks sinhronizētas.</translation>
 <translation id="6831043979455480757">Tulkot</translation>
@@ -92,6 +95,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="2206488550163399966">Tīmekļa lietotne <ph name="APP_NAME"/>. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Aizstāt failu</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
+<translation id="8413385045638830869">Vispirms jautāt (ieteicams)</translation>
 <translation id="2100273922101894616">Automātiski pierakstīties</translation>
 <translation id="5313967007315987356">Pievienot vietni</translation>
 <translation id="5733727110006255111">Ja šī funkcija ir ieslēgta, Chrome izmantos Google serverus, lai saspiestu jūsu apmeklētās lapas pirms to lejupielādes. Netiks ietvertas lapas, kas atvērtas, izmantojot SSL vai inkognito režīmu.</translation>
@@ -157,6 +161,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="6857778194843072568">Sūtīt tikai Wi-Fi tīklā</translation>
 <translation id="5380554235172449987">Nekad nesūtīt</translation>
 <translation id="5715468759630044318">Izvēlieties kontu</translation>
+<translation id="5000922062037820727">Bloķēta (ieteicams)</translation>
 <translation id="544291274896356069">Atverot šo saiti ārējā lietojumprogrammā, tiks aizvērts inkognito režīms. Vai turpināt?</translation>
 <translation id="3917783807003067648">Bloķēta piekļuve atrašanās vietas informācijai</translation>
 <translation id="1379156015317873965">Uzlabot lapu ielādes veiktspēju</translation>
@@ -228,6 +233,7 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="3254409185687681395">Grāmatot šo lapu</translation>
 <translation id="907015151729920253">Viedkarte</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
+<translation id="857943718398505171">Atļauta (ieteicams)</translation>
 <translation id="4412992751769744546">Atļaut trešo pušu sīkfailus</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Saglabāt videoklipu</translation>
@@ -262,7 +268,6 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="748127970106343339">Ierīces akreditācijas datu dzēšanas apstiprināšana</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
 <translation id="5899349522111170522">Izveidot jaunu failu</translation>
-<translation id="1082482054625560856">Pārvaldiet saglabātās paroles savā <ph name="BEGIN_LINK"/>Google kontā<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Atļaujiet attēlu rādīšanu jūsu norādītās vietnēs, vienlaicīgi bloķējot tos pārējās vietnēs.</translation>
 <translation id="2360035970720276770">Var lejupielādēt tikai tos URL, kuri sākas ar “http” vai “https”.</translation>
 <translation id="6570560778840017462">Jūs netiksiet izrakstīts no saviem <ph name="BEGIN_LINK"/>Google kontiem<ph name="END_LINK"/></translation>

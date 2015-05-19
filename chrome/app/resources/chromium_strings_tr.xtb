@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">Chromium'u kaldırmak istediğinizden emin misiniz?</translation>
 <translation id="6510925080656968729">Chromium'u Kaldır</translation>
 <translation id="2615699638672665509">Bu bilgisayarın donanımı artık desteklenmediğinden, Chromium güncellemelerini alması yakında duracak.</translation>
-<translation id="5532301346661895910">Chromium bunu |Google tarafından kaydedilen şifrelerinize| ekler ve bir dahaki sefere ihtiyacınız olduğunda hatırlar.</translation>
 <translation id="6893813176749746474">Chromium güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
 <translation id="421369550622382712">Chromium'a özgü harika uygulamaları, oyunları, uzantıları ve temaları keşfedin.</translation>
 <translation id="2732467638532545152">Bilgisayarınız, bu web sitesinin güvenlik sertifikasını işleyemeyen eski bir Microsoft Windows sürümünü çalıştırıyor. Bu sorundan dolayı Chromium, sertifikanın <ph name="SITE"/> sitesinden mi, yoksa ağınızdaki <ph name="SITE"/> gibi görünen başka bir kişiden mi gönderildiğini bildiremiyor. Lütfen bilgisayarınızı daha yeni bir Windows sürümüne güncelleyin.</translation>
@@ -55,7 +54,6 @@
 <translation id="7064610482057367130">Chromium'un güncellenecek yüklemesi bulunamadı.</translation>
 <translation id="872034308864968620">Chromium'un Arka Planda Çalışmasına İzin Ver</translation>
 <translation id="459535195905078186">Chromium Uygulamaları</translation>
-<translation id="5109068449432240255">Evet, Chromium'dan çık</translation>
 <translation id="8134284582177628525">Bu bilgisayarı <ph name="PROFILE_NAME"/> ile paylaşıyorsanız bağımsız olarak web taraması yapmak üzere kendinizi Chrome'a ekleyin. Olmazsa diğer kullanıcıların Google Hesaplarının bağlantısını kesin.</translation>
 <translation id="1480489203462860648">Deneyin, zaten yüklü!</translation>
 <translation id="3032787606318309379">Chromium'a ekleniyor ...</translation>
@@ -74,7 +72,6 @@
 <translation id="734373864078049451">Web, yer işaretleri ve diğer Chromium bilgileriniz burada bulunur.</translation>
 <translation id="3197823471738295152">Cihazınız güncel.</translation>
 <translation id="8551886023433311834">Güncelleme neredeyse tamamlandı! Güncellemenin tamamlanması için cihazınızı yeniden başlatın.</translation>
-<translation id="8353224596138547809">Chromium'un bu site için şifrenizi kaydetmesini ister misiniz?</translation>
 <translation id="8738058698779197622">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Chromium bu sertifikaları doğrulayamaz.</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="7463979740390522693">Chromium - Bildirimler (<ph name="QUANTITY"/> okunmamış)</translation>
@@ -129,7 +126,6 @@
 <translation id="4365115785552740256">Chromium, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> açık kaynak projesi ve diğer <ph name="BEGIN_LINK_OSS"/>açık kaynak yazılımlar<ph name="END_LINK_OSS"/> ile hazırlanmıştır.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Misafirler Chromium'u geride hiçbir şey bırakmadan kullanabilir.</translation>
-<translation id="3487263810738775861">Bir uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
 <translation id="7549178288319965365">Chromium OS hakkında</translation>
 <translation id="6248213926982192922">Chromium varsayılan tarayıcı olsun</translation>
@@ -199,7 +195,8 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="1414495520565016063">Chromium'da oturum açtınız!</translation>
 <translation id="2158734852934720349">Chromium OS açık kaynak lisansları</translation>
 <translation id="2966088006374919794">Chromium'un, <ph name="SCHEME"/> bağlantılarını kullanabilmek için harici bir uygulamayı başlatması gerekiyor. İstenen bağlantı: <ph name="PROTOLINK"/>.</translation>
-<translation id="2558235863893655150">Chromium'un şifrenizi kaydetmesini istiyor musunuz?</translation>
+<translation id="7205698830395646142">Chromium Menüsünde Gizle</translation>
+<translation id="7979877361127045932">Chromium menüsünde gizle</translation>
 <translation id="6485906693002546646">Chromium öğelerinizi senkronize etmek için <ph name="PROFILE_EMAIL"/> adresini kullanıyorsunuz. Senkronizasyon tercihinizi güncellemek veya Chromium'u bir Google Hesabı olmadan kullanmak için şurayı ziyaret edin: <ph name="SETTINGS_LINK"/></translation>
 <translation id="705851970750939768">Chromium'u güncelle</translation>
 <translation id="5772805321386874569">(Chromium'un <ph name="BEGIN_BUTTON"/>yeniden başlatılmasını<ph name="END_BUTTON"/> gerektirir)</translation>
@@ -226,7 +223,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="2119636228670142020">&amp;Chromium OS hakkında</translation>
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="378917192836375108">Chromium Web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
-<translation id="8724049448828509830">Şu anda devam eden bir indirme işlemi var. Chromium'dan çıkmak ve indirme işlemini iptal etmek istiyor musunuz?</translation>
 <translation id="608189560609172163">Oturum açma sırasındaki bir hata nedeniyle Chromium, verilerinizi senkronize edemedi.</translation>
 <translation id="4888717733111232871">Chromium'un mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="151962892725702025">Senkronizasyon alan adınızda kullanılamadığından Chromium OS, verilerinizi senkronize edemedi.</translation>
@@ -234,7 +230,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8985587603644336029">Bu bilgisayarda daha önce birisi <ph name="ACCOUNT_EMAIL_LAST"/> olarak Chromium'da oturum açmış. Bu sizin hesabınız değilse, bilgilerinizi ayrı tutmak için yeni bir Chromium kullanıcısı oluşturun.
 
 Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarlarınız gibi Chromium bilgileriniz <ph name="ACCOUNT_EMAIL_NEW"/> ile birleştirilecektir.</translation>
-<translation id="2739631515503418643">Şu anda devam eden indirme işlemleri var. Chromium'dan çıkmak ve indirme işlemlerini iptal etmek istiyor musunuz?</translation>
 <translation id="9013262824292842194">Chromium; Windows Vista veya Windows XP SP2 ya da daha ileri bir sürümü gerektirir.</translation>
 <translation id="1967743265616885482">Aynı isme sahip bir modülün Chromium'la çakıştığı bilinmektedir.</translation>
 <translation id="7962572577636132072">Chromium otomatik olarak güncellenir, böylece her zaman en yeni sürüme sahip olursunuz.</translation>
@@ -247,6 +242,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="7318036098707714271">Tercihler dosyanız bozuk veya geçersiz.
 
 Chromium ayarlarınızı kurtaramıyor.</translation>
+<translation id="5531349711857992002">Bu web sitesinin sertifika zincirinde, kullanımdan kaldırılmış SHA-1'e dayalı imza algoritması ile imzalanmış en az bir sertifika var.</translation>
 <translation id="918373042641772655"><ph name="USERNAME"/> kullanıcısının bağlantısını kesmek, geçmişinizi, yer işaretlerinizi, ayarlarınızı ve bu cihazda depolanan diğer Chromium verilerinizi temizler. Google Hesabınızda depolanan veriler temizlenmez ve <ph name="GOOGLE_DASHBOARD_LINK"/>Google Hesap Özeti<ph name="END_GOOGLE_DASHBOARD_LINK"/>'nden yönetilebilir.</translation>
 <translation id="6403826409255603130">Chromium, Web sayfalarını ve uygulamaları yıldırım hızıyla çalıştıran bir Web tarayıcısıdır. Hızlı ve kararlı çalışır, kolay kullanılır. Chromium'da dahili olarak bulunan zararlı yazılım ve kimlik avı koruması sayesinde Web'de daha güvenli gezinin.</translation>
 <translation id="4230135487732243613">Chromium verileriniz bu hesaba bağlansın mı?</translation>

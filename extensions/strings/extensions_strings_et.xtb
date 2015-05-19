@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Mikrofoni ja kaamera kasutamine</translation>
 <translation id="2857834222104759979">Manifestifail on kehtetu.</translation>
 <translation id="6384275966486438344">Muutke oma otsinguseadeid: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB-seadme valimine</translation>
 <translation id="1445572445564823378">Laiendus aeglustab rakendust <ph name="PRODUCT_NAME"/>. Peaksite selle keelama, et taastada rakenduse <ph name="PRODUCT_NAME"/> toimivus.</translation>
+<translation id="7003844668372540529">Tundmatu toode <ph name="PRODUCT_ID"/> teenusepakkujalt <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Juurdepääs jadaseadmetele</translation>
 <translation id="288042212351694283">Juurdepääs teie Universal 2nd Factori seadmetele</translation>
+<translation id="3163201441334626963">Tundmatu toode <ph name="PRODUCT_ID"/> teenusepakkujalt <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Tundmatu toode <ph name="PRODUCT_ID"/> teenusepakkujalt <ph name="VENDOR_NAME"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Seadme administraator nõuab, et kasutaksite laienduse <ph name="EXTENSION_NAME"/> puhul vähemalt versiooni <ph name="EXTENSION_VERSION"/>. Laiendust ei saa lubada enne, kui see on värskendatud sellele versioonile (või uuemale versioonile).</translation>
 <translation id="6075907793831890935">Vaheta andmeid seadmega <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Bluetoothi adapteri oleku ja sidumise juhtimine</translation>
 <translation id="677806580227005219">Mime-töötleja: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Juurdepääs teie süsteemiga seotud Bluetoothi seadmete teabele ja läheduses olevate Bluetoothi seadmete tuvastamine.</translation>
 <translation id="8749863574775030885">Juurdepääs tundmatu müüja USB-seadmetele</translation>
+<translation id="3115238746683532089">Tundmatu toode <ph name="PRODUCT_ID"/> teenusepakkujalt <ph name="VENDOR_ID"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> teenusepakkujalt <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Taustaskripti „<ph name="BACKGROUND_SCRIPT"/>” ei õnnestunud laadida.</translation>
+<translation id="6068932090455285721">Toode <ph name="PRODUCT_NAME"/> teenusepakkujalt <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Bluetoothi seadmetele sõnumite saatmine ja nendelt sõnumite vastuvõtmine.</translation>
 <translation id="5678955352098267522">Lugege oma andmeid veebisaidil <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Laienduse lahtipakkija</translation>
 <translation id="149347756975725155">Laienduse ikooni <ph name="ICON"/> ei õnnestunud laadida.</translation>
 <translation id="8825366169884721447">Laiendusel ei õnnestunud muuta võrgutaotluse päist „<ph name="HEADER_NAME"/>”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">USB-seadmete valimine</translation>
 <translation id="6731255991101203740">Lahtipakkimiseks ei saanud kataloogi luua: „<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">Teabelehte „<ph name="ABOUT_PAGE"/>” ei õnnestunud laadida.</translation>
 <translation id="388442998277590542">Valikute lehte <ph name="OPTIONS_PAGE"/> ei õnnestunud laadida.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Laiendus ei saanud määrata allalaaditavale failile nimeks „<ph name="ATTEMPTED_FILENAME"/>”, sest teine laiendus (<ph name="EXTENSION_NAME"/>) määras teise failinime „<ph name="ACTUAL_FILENAME"/>”.</translation>
 <translation id="452039078290142656">müüja <ph name="VENDOR_NAME"/> tundmatud seadmed</translation>
 <translation id="5026754133087629784">Veebivaade: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Keelatud tee (absoluutne või suhteline üksusega '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">kõik domeeni <ph name="WEBSITE_1"/> saidid</translation>
 <translation id="8662911384982557515">Määrake avaleheks <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Tagaplaanilehte <ph name="BACKGROUND_PAGE"/> ei õnnestunud laadida.</translation>
 <translation id="2988488679308982380">Paketti ei saanud installida: „<ph name="ERROR_CODE"/>”</translation>
 <translation id="5751530153776468604">Rakendus „<ph name="APP_NAME"/>” taotleb juurdepääsu ühele teie seadmele.</translation>
+<translation id="3466070586188012397">Toode <ph name="PRODUCT_NAME"/> teenusepakkujalt <ph name="VENDOR_ID"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Valikud: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Vale pakett. Üksikasjad: „<ph name="ERROR_MESSAGE"/>”.</translation>
 <translation id="344630545793878684">Lugege oma andmeid mitmel veebisaidil</translation>

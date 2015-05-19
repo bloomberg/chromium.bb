@@ -72,6 +72,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="2509468283778169019">CAPS LOCK is ingeschakeld</translation>
 <translation id="3892641579809465218">Interne display</translation>
 <translation id="7823564328645135659">Na het synchroniseren met je instellingen, is de taal gewijzigd van '<ph name="FROM_LOCALE"/>' in '<ph name="TO_LOCALE"/>'.</translation>
+<translation id="7113420380180868673">$1 casten</translation>
 <translation id="3606978283550408104">Braillescherm gekoppeld.</translation>
 <translation id="8654520615680304441">Wifi inschakelen...</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME"/> via externe ondersteuning.</translation>
@@ -96,6 +97,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% resterend</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>
 <translation id="2700058918926273959">Sessie loopt af over <ph name="SESSION_TIME_REMAINING"/>. Je wordt uitgelogd.</translation>
+<translation id="5807965672380739016">Bureaublad casten naar</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Luidspreker (intern)</translation>
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
@@ -124,6 +126,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen.</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
+<translation id="703171847531699602">Geen cast-apparaten</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: verbinden...</translation>
 <translation id="6062360702481658777">Je wordt automatisch uitgelogd over <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Onbekend display</translation>
@@ -206,6 +209,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="3009178788565917040">Uitgang</translation>
 <translation id="3147142846278915599">Launcher (apps synchroniseren...)</translation>
 <translation id="6911468394164995108">Verbinding met ander netwerk maken...</translation>
+<translation id="4373966964907728675">Bureaublad casten</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>u <ph name="MINUTE"/>m tot volledig opgeladen</translation>
 <translation id="3077734595579995578">shift</translation>

@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Kötelező</translation>
 <translation id="2958431318199492670">A hálózati konfiguráció nem felel meg az ONC szabványnak. A konfiguráció egyes részeit nem lehet importálni.</translation>
 <translation id="3583757800736429874">&amp;Áthelyezés újra</translation>
+<translation id="7887683347370398519">Ellenőrizze a CVC-t, majd próbálja újra</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Hiányzó eszközrekord</translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> - mindig legyen lefordítva</translation>
 <translation id="1227633850867390598">Érték elrejtése</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
+<translation id="3369366829301677151">Aktualizálja és igazolja a következő kártyáját: <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Az Ismerősöket felhasználó Automatikus kitöltés engedélyezése…</translation>
 <translation id="7275334191706090484">Kezelt könyvjelzők</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Körzet</translation>
 <translation id="1871208020102129563">A proxy fix proxyszerverek használatára van beállítva, nem pedig .pac típusú szkript URL címének használatára.</translation>
+<translation id="8988760548304185580">Adja meg a lejárati dátumot, és a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> futtatása a következő paranccsal: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Ismeretlen hiba</translation>
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">A(z) <ph name="TARGET_LANGUAGE"/> nyelvre fordítás sikertelen volt.</translation>
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
+<translation id="3219579145727097045">Adja meg a lejárati dátumot, és a kártya elején szereplő négyjegyű CVC-kódot</translation>
 <translation id="3667681724235208644">Eredeti megtekintése</translation>
 <translation id="4079302484614802869">A proxykonfiguráció a .pac típusú szkript URL-cím, nem pedig a fix proxyszerverek használatára van beállítva.</translation>
 <translation id="5540224163453853">A kért cikk nem található.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE"/> nyelvről <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
 <translation id="8218327578424803826">Hozzárendelt helyszín:</translation>
 <translation id="3542684924769048008">Jelszó használata a következőre:</translation>
+<translation id="2855922900409897335">A(z) <ph name="CREDIT_CARD"/> kártya igazolása</translation>
 <translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE"/>nyelvről<ph name="LANGUAGE_LANGUAGE"/>nyelvre fordítottuk</translation>
 <translation id="7139724024395191329">Emírség</translation>
+<translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>
 <translation id="5145883236150621069">Az irányelv válasza hibakódot tartalmaz</translation>
 <translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE"/> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE"/> nyelvre</translation>
 <translation id="6970216967273061347">Kerület</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Nem kezelt</translation>
 <translation id="3712624925041724820">Az engedélyek elfogytak</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
+<translation id="1455235771979731432">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, és próbálja újra.</translation>
 <translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
 <translation id="5179510805599951267">Nem <ph name="ORIGINAL_LANGUAGE"/> nyelven van? Hiba bejelentése</translation>
 <translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Aktív</translation>
 <translation id="7568593326407688803">Az oldal nyelve<ph name="ORIGINAL_LANGUAGE"/>Kívánja lefordítani?</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
+<translation id="4800132727771399293">Ellenőrizze a lejárati dátumot és a CVC-t, majd próbálja újra</translation>
 <translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
+<translation id="9125941078353557812">Adja meg a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
 <translation id="106701514854093668">Asztali könyvjelzők</translation>
 <translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
 <translation id="7995512525968007366">Nincs megadva</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Átrendezés visszavonása</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
 <translation id="2639739919103226564">Állapot:</translation>
+<translation id="8824019021993735287">A Chrome ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
 <translation id="4968547170521245791">A helyettesítés (proxy) nem hajtható végre</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="4196861286325780578">&amp;Áthelyezés újra</translation>

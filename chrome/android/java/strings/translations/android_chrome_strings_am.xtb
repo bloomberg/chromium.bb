@@ -95,6 +95,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME"/>፣ የድር መተግበሪያ። <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">ፋይል ተካ</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
+<translation id="8413385045638830869">በመጀመሪያ ጠይቅ (የሚመከር)</translation>
 <translation id="2100273922101894616">በራስ-ግባ</translation>
 <translation id="5313967007315987356">ጣቢያ አክል</translation>
 <translation id="5733727110006255111">ይህ ባህሪ ሲበራ Chrome የጎበኟቸውን ገጾች ከማውረዱ በፊት ለመጭመቅ የGoogle አገልጋዮችን ይጠቀማል። SSL እና ማንነት የማያሳውቁ ገጾች አይካተቱም።</translation>
@@ -160,6 +161,7 @@
 <translation id="6857778194843072568">በWi-Fi ላይ ሲሆን ብቻ ላክ</translation>
 <translation id="5380554235172449987">በጭራሽ አትላክ</translation>
 <translation id="5715468759630044318">መለያ ይምረጡ</translation>
+<translation id="5000922062037820727">ታግዷል (የሚመከር)</translation>
 <translation id="544291274896356069">ይህ አገናኝ በውጫዊ መተግበሪያ ከተከፈተ ከማንነት የማያሳውቅ ሁነታ ይወጣል። ይቀጥሉ?</translation>
 <translation id="3917783807003067648">መገኛ አካባቢ ታግዷል</translation>
 <translation id="1379156015317873965">የገጽ መጫን አፈጻጸም ያሻሽሉ</translation>
@@ -231,6 +233,7 @@
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
 <translation id="907015151729920253">ስማርት ካርድ</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
+<translation id="857943718398505171">ተፈቅዷል (የሚመከር)</translation>
 <translation id="4412992751769744546">የሶስተኛ ወገን ኩኪዎችን ፍቀድ</translation>
 <translation id="5016205925109358554">ሰሪፍ</translation>
 <translation id="3063601790762993062">ቪዲዮ አስቀምጥ</translation>
@@ -265,7 +268,6 @@
 <translation id="748127970106343339">የመሣሪያ ምስክርነት ስረዛን ያረጋግጡ</translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
 <translation id="5899349522111170522">አዲስ ፋይል ይፍጠሩ</translation>
-<translation id="1082482054625560856">የተቀመጡ የይለፍ ቃላት በእርስዎ <ph name="BEGIN_LINK"/>Google መለያ<ph name="END_LINK"/> ውስጥ ያቀናብሩ</translation>
 <translation id="7232255641409319872">ለተቀረው ድር እንደታገዱ ሆነው በጠቀሱዋቸው ድርጣቢያዎች ላይ ምስሎትችን ይፍቀዱ</translation>
 <translation id="2360035970720276770">የኤችቲቲፒ ወይም ኤችቲቲፒኤስ ዩአርኤሎችን ብቻ ነው ማውረድ የሚቻለው</translation>
 <translation id="6570560778840017462">ከእርስዎ የ<ph name="BEGIN_LINK"/>Google መለያዎች<ph name="END_LINK"/> እንዲወጡ አይደረጉም።</translation>

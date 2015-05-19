@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Χρήση του μικροφώνου και της κάμεράς σας</translation>
 <translation id="2857834222104759979">Το αρχείο δήλωσης δεν είναι έγκυρο.</translation>
 <translation id="6384275966486438344">Αλλαγή των ρυθμίσεων αναζήτησης σε: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Επιλέξτε μία συσκευή USB</translation>
 <translation id="1445572445564823378">Αυτή η επέκταση επιβραδύνει το <ph name="PRODUCT_NAME"/>. Πρέπει να την απενεργοποιήσετε για να επαναφέρετε την απόδοση του <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="7003844668372540529">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
 <translation id="288042212351694283">Πρόσβαση στις συσκευές με Universal 2nd Factor</translation>
+<translation id="3163201441334626963">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από τον προμηθευτή <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από <ph name="VENDOR_NAME"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Ο διαχειριστής αυτού του μηχανήματος απαιτεί από το <ph name="EXTENSION_NAME"/> να διαθέτει τουλάχιστον την έκδοση <ph name="EXTENSION_VERSION"/>. Δεν μπορεί να ενεργοποιηθεί έως ότου ενημερωθεί σε αυτήν την έκδοση (ή σε μεταγενέστερη).</translation>
 <translation id="6075907793831890935">Ανταλλαγή δεδομένων με τη συσκευή με την ονομασία <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Έλεγχος κατάστασης προσαρμογέα Bluetooth και σύζευξη</translation>
 <translation id="677806580227005219">Χειρισμός mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Πρόσβαση σε πληροφορίες σχετικά με τις συσκευές Bluetooth που βρίσκονται σε ζεύξη με το σύστημά σας και εντοπισμός κοντινών συσκευών Bluetooth.</translation>
 <translation id="8749863574775030885">Πρόσβαση σε συσκευές USB από έναν άγνωστο προμηθευτή</translation>
+<translation id="3115238746683532089">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από τον προμηθευτή <ph name="VENDOR_ID"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> της <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Δεν ήταν δυνατή η φόρτωση του σεναρίου παρασκηνίου '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> από τον προμηθευτή <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Αποστολή και λήψη μηνυμάτων από συσκευές Bluetooth.</translation>
 <translation id="5678955352098267522">Ανάγνωση των δεδομένων σας στο <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Εργαλείο αποσυσκευασίας επεκτάσεων</translation>
 <translation id="149347756975725155">Δεν ήταν δυνατή η φόρτωση του εικονιδίου επέκτασης &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Επιλέξτε συσκευές USB</translation>
 <translation id="6731255991101203740">Δεν ήταν δυνατή η δημιουργία καταλόγου για την αποσυμπίεση: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Δεν ήταν δυνατή η φόρτωση της σελίδας πληροφοριών &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Δεν ήταν δυνατή η φόρτωση της σελίδας επιλογών &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) καθόρισε ένα διαφορετικό όνομα &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="452039078290142656">άγνωστες συσκευές από τον προμηθευτή <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (σειριακός ρυθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Παράνομη διαδρομή (απόλυτη ή σχετική με &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">όλους τους ιστότοπους <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Αλλαγή της αρχικής σελίδας σε: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Δεν ήταν δυνατή η φόρτωση της σελίδας φόντου &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Δεν ήταν δυνατή η εγκατάσταση του πακέτου: '<ph name="ERROR_CODE"/>'</translation>
 <translation id="5751530153776468604">Η εφαρμογή &quot;<ph name="APP_NAME"/>&quot; ζητάει πρόσβαση σε μία από τις συσκευές σας.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> από τον προμηθευτή <ph name="VENDOR_ID"/> (σειριακός ρυθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Μη έγκυρο πακέτο. Λεπτομέρειες: '<ph name="ERROR_MESSAGE"/>'.</translation>
 <translation id="344630545793878684">Ανάγνωση των δεδομένων σας σε ορισμένους ιστότοπους</translation>

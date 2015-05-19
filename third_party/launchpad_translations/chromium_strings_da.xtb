@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">Er du sikker på, at du vil afinstallere Chromium?</translation>
 <translation id="6510925080656968729">Afinstaller Chromium</translation>
 <translation id="2615699638672665509">Denne computer vil snart stoppe med at modtage Chromium-opdateringer, fordi dens hardware ikke understøttes længere.</translation>
-<translation id="5532301346661895910">Chromium gemmer denne blandt dine |gemte Google-adgangskoder| og husker den, næste gang du skal bruge den.</translation>
 <translation id="6893813176749746474">Chromium er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
 <translation id="421369550622382712">Find fantastiske apps, spil, udvidelser og temaer til Chromium.</translation>
 <translation id="2732467638532545152">Din computer kører en gammel version af Microsoft Windows, som ikke kan behandle sikkerhedscertifikatet for dette website. Som følge af dette problem, kan Chromium ikke afgøre, om certifikatet kom fra <ph name="SITE"/> eller fra en bruger på dit netværk,, som udgav sig for at være <ph name="SITE"/>. Opdater din computer til en nyere version af Windows.</translation>
@@ -58,7 +57,6 @@
 <translation id="7064610482057367130">Der blev ikke fundet nogen opdateringsinstallation til Chromium.</translation>
 <translation id="872034308864968620">Lad Chromium køre i baggrunden</translation>
 <translation id="459535195905078186">Chromium-apps</translation>
-<translation id="5109068449432240255">Ja, afslut Chromium</translation>
 <translation id="8134284582177628525">Hvis du deler denne computer med <ph name="PROFILE_NAME"/>, kan du tilføje dig selv i Chromium for at browse individuelt. Alternativt kan du afbryde vedkommendes Google-konto.</translation>
 <translation id="1480489203462860648">Prøv det, det er allerede installeret</translation>
 <translation id="3032787606318309379">Føjer til Chromium...</translation>
@@ -77,7 +75,6 @@
 <translation id="734373864078049451">Dit webindhold, dine bogmærker og andre Chromium-ting kan findes her.</translation>
 <translation id="3197823471738295152">Din enhed er opdateret.</translation>
 <translation id="8551886023433311834">Den er næsten opdateret. Genstart din enhed for at fuldføre opdateringen.</translation>
-<translation id="8353224596138547809">Skal Chromium gemme din adgangskode til dette website?</translation>
 <translation id="8738058698779197622">For at kunne oprette en sikker forbindelse skal dit ur være indstillet korrekt. Det er vigtigt, da de certifikater, som websites bruger til at identificere sig selv, kun er gyldige i bestemte tidsperioder. Da uret på din enhed går forkert, kan Chromium ikke bekræfte disse certifikater.</translation>
 <translation id="7339898014177206373">Nyt vindue</translation>
 <translation id="7463979740390522693">Chromium – Underretninger (<ph name="QUANTITY"/> ulæste)</translation>
@@ -134,7 +131,6 @@
 <translation id="4365115785552740256">Chromium er realiseret ved hjælp af <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>-open source-projektet og anden <ph name="BEGIN_LINK_OSS"/>open source-software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Gæster kan bruge Chromium uden at efterlade noget.</translation>
-<translation id="3487263810738775861">En udvidelse har ændret din startside i Chromium.</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="6248213926982192922">Gør Chromium til din standardbrowser</translation>
@@ -205,7 +201,8 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="1414495520565016063">Du er logget ind på Chromium.</translation>
 <translation id="2158734852934720349">Chromium OS open source-licenser</translation>
 <translation id="2966088006374919794">Chromium skal starte en ekstern applikation for at håndtere <ph name="SCHEME"/>-links. Det link, der er anmodet om, er <ph name="PROTOLINK"/>.</translation>
-<translation id="2558235863893655150">Skal Chromium gemme din adgangskode?</translation>
+<translation id="7205698830395646142">Skjul i Chromium-menuen</translation>
+<translation id="7979877361127045932">Skjul i Chromium-menuen</translation>
 <translation id="6485906693002546646">Du bruger <ph name="PROFILE_EMAIL"/> til at synkronisere dine Chromium-ting med. Gå til <ph name="SETTINGS_LINK"/>, hvis du vil opdatere dine synkroniseringspræference eller bruge Chromium uden en Google-konto.</translation>
 <translation id="705851970750939768">Opdater Chromium</translation>
 <translation id="5772805321386874569">(kræver en <ph name="BEGIN_BUTTON"/>genstart<ph name="END_BUTTON"/> af Chromium)</translation>
@@ -232,7 +229,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Der findes en ny og mere sikker version af Chromium.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
-<translation id="8724049448828509830">En download er i øjeblikket i gang. Vil du afslutte Chromium og annullere downloaden?</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
 <translation id="4888717733111232871">Indgående regel for Chromium om at tillade mDNS-trafik.</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængeligt på dit domæne.</translation>
@@ -240,7 +236,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="8985587603644336029">Nogen har tidligere logget ind på Chromium som <ph name="ACCOUNT_EMAIL_LAST"/> på denne computer. Hvis dette ikke er din konto, skal du oprette en nye Chromium-bruger for at holde oplysningerne adskilt.
 
 Hvis du logger ind alligevel, flettes Chromium-oplysninger, som f.eks. bogmærker, historik og andre indstillinger, med <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
-<translation id="2739631515503418643">Downloads er i øjeblikket i gang. Vil du afslutte Chromium og annullere downloads?</translation>
 <translation id="9013262824292842194">Chromium kræver Windows Vista eller Windows XP med SP2 eller højere.</translation>
 <translation id="1967743265616885482">Et modul med samme navn er i strid med Chromium.</translation>
 <translation id="7962572577636132072">Chromium opdateres automatisk, så du altid har den nyeste version.</translation>
@@ -253,6 +248,7 @@ Hvis du logger ind alligevel, flettes Chromium-oplysninger, som f.eks. bogmærke
 <translation id="7318036098707714271">Din præferencefil er beskadiget eller ugyldig.
 
 Chromium kan ikke gendanne dine præferencer.</translation>
+<translation id="5531349711857992002">Certifikatskæden for dette website indeholder mindst ét certifikat, der blev signeret ved hjælp af en forældet signaturalgoritme baseret på SHA-1.</translation>
 <translation id="918373042641772655">Hvis du afbryder forbindelsen for <ph name="USERNAME"/>, slettes din historik, dine bogmærker, dine indstillinger og andre Chromium-data, der er gemt på denne enhed. Data, der er gemt på din Google-konto, slettes ikke og kan administreres i <ph name="GOOGLE_DASHBOARD_LINK"/>Google Betjeningspanel<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium er en webbrowser, der kører websider og applikationer med lynets hast. Den er hurtig, stabil og brugervenlig. Beskyttelse mod malware og phishing er indbygget i Chromium, så du kan søge mere sikkert på internettet.</translation>
 <translation id="4230135487732243613">Vil du knytte dine Chromium-data til denne konto?</translation>

@@ -72,6 +72,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
 <translation id="3892641579809465218">Intern skærm</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
+<translation id="7113420380180868673">Caster $1</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME"/> via Fjernsupport.</translation>
@@ -96,6 +97,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % tilbage</translation>
 <translation id="9089416786594320554">Indtastningsmetoder</translation>
 <translation id="2700058918926273959">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>. Du vil blive logget af.</translation>
+<translation id="5807965672380739016">Cast skrivebord til</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Højttaler (indbygget)</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
@@ -105,6 +107,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="2204305834655267233">Netværksoplysninger</translation>
+<translation id="137180024469554212">Deaktiver låsning af rotation</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Afslut gæstesession</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
@@ -112,6 +115,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3625258641415618104">Skærmbilleder er deaktiveret</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="8528322925433439945">Mobil...</translation>
+<translation id="3157169093162779309">Aktivér låsning af rotation</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="2372145515558759244">Synkroniserer apps...</translation>
 <translation id="1987317783729300807">Konti</translation>
@@ -122,6 +126,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="4527045527269911712">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
+<translation id="703171847531699602">Ingen Cast-enheder</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Opretter forbindelse...</translation>
 <translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
@@ -131,6 +136,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2761704814324807722">Statusbakke, tid <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="2805756323405976993">Apps</translation>
+<translation id="8697119993436624257">Ny brugergrænseflade for login er slået FRA</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="3433830597744061105">Administrer konti</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
@@ -149,6 +155,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5977415296283489383">Hovedtelefon</translation>
 <translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
+<translation id="3527846106059622359">Ny brugergrænseflade for login er slået TIL</translation>
 <translation id="5978382165065462689">Skærmdeling via Fjernsupport.</translation>
 <translation id="737451040872859086">Mikrofon (indbygget)</translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
@@ -202,6 +209,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
+<translation id="4373966964907728675">Caster skrivebord</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> t <ph name="MINUTE"/> m, indtil det er fuldt opladet</translation>
 <translation id="3077734595579995578">shift</translation>

@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Obligatòria</translation>
 <translation id="2958431318199492670">La configuració de la xarxa no compleix l'estàndard ONC. Pot ser que algunes opcions de configuració no s'hagin importat.</translation>
 <translation id="3583757800736429874">&amp;Refés el moviment</translation>
+<translation id="7887683347370398519">Comproveu el CVC i torneu-ho a provar</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Falta el registre del dispositiu</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Tradueix sempre l'idioma <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Amaga el valor</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
+<translation id="3369366829301677151">Actualitzeu i verifiqueu <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Activa l'emplenament automàtic mitjançant els contactes...</translation>
 <translation id="7275334191706090484">Adreces d'interès gestionades</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Àrea</translation>
 <translation id="1871208020102129563">El servidor intermediari està configurat perquè utilitzi servidors intermediaris fixos, en lloc d'un URL d'script .pac.</translation>
+<translation id="8988760548304185580">Introduïu la data de caducitat i el CVC de tres dígits que trobareu a la part posterior de la targeta</translation>
 <translation id="8940229512486821554">Executa l'ordre <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Error desconegut</translation>
 <translation id="112840717907525620">La memòria cau de la política està en bon estat</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Error de validació: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">La traducció a <ph name="TARGET_LANGUAGE"/> ha fallat.</translation>
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
+<translation id="3219579145727097045">Introduïu la data de caducitat i el CVC de quatre dígits que trobareu a la part davantera de la targeta</translation>
 <translation id="3667681724235208644">Mostra l'original</translation>
 <translation id="4079302484614802869">La configuració del servidor intermediari s'ha definit perquè utilitzi un URL d'script .pac, en lloc de servidors intermedis fixos.</translation>
 <translation id="5540224163453853">No s'ha pogut trobar l'article sol·licitat.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Voleu traduir de <ph name="ORIGINAL_LANGUAGE"/> a <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Ubicació assignada:</translation>
 <translation id="3542684924769048008">Utilitzar la contrasenya per a:</translation>
+<translation id="2855922900409897335">Verifica la targeta <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Aquesta pàgina s'ha traduït de:<ph name="ORIGINAL_LANGUAGE"/>a:<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirat</translation>
+<translation id="6646897916597483132">Introduïu el CVC de quatre dígits que trobareu a la part davantera de la targeta</translation>
 <translation id="5145883236150621069">Hi ha un codi d'error en la resposta a la política</translation>
 <translation id="7983301409776629893">Tradueix sempre de: <ph name="ORIGINAL_LANGUAGE"/> a: <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Districte</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Sense gestionar</translation>
 <translation id="3712624925041724820">Llicències exhaurides</translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
+<translation id="1455235771979731432">S'ha produït un problema en verificar la targeta. Comproveu la connexió a Internet i torneu-ho a provar.</translation>
 <translation id="7542995811387359312">L'emplenament automàtic de targetes de crèdit està desactivat perquè el formulari no utilitza una connexió segura.</translation>
 <translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE"/>? Informa d'aquest error</translation>
 <translation id="8088680233425245692">No s'ha pogut consultar l'article.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Actiu</translation>
 <translation id="7568593326407688803">Aquesta pàgina està en<ph name="ORIGINAL_LANGUAGE"/>Voleu traduir-la?</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
+<translation id="4800132727771399293">Comproveu la data de caducitat i el CVC i torneu-ho a provar</translation>
 <translation id="4171400957073367226">La signatura de verificació és incorrecta</translation>
+<translation id="9125941078353557812">Introduïu el CVC de tres dígits que trobareu a la part posterior de la targeta</translation>
 <translation id="106701514854093668">Adreces d'interès d'escriptori</translation>
 <translation id="6154808779448689242">El testimoni de la política que s'ha retornat no coincideix amb el testimoni actual</translation>
 <translation id="7995512525968007366">No especificat</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Desfés el canvi d'ordre</translation>
 <translation id="20817612488360358">S'ha definit la configuració del servidor intermediari del sistema perquè es pugui utilitzar, però també s'ha especificat una configuració del servidor intermediari explícita.</translation>
 <translation id="2639739919103226564">Estat:</translation>
+<translation id="8824019021993735287">Chrome no ha pogut verificar la vostra targeta. Torneu-ho a provar més tard.</translation>
 <translation id="4968547170521245791">No es pot utilitzar el servidor intermediari</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="4196861286325780578">&amp;Refés el moviment</translation>

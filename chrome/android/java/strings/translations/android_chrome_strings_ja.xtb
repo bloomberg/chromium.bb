@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE"/> で検索</translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="4816465935029283692">データタイプ</translation>
+<translation id="5098185943924922330">Google では優先度の高い機能から順に開発や改善に取り組みたいと考えています。そのため、障害が発生した場合は、実行していたファイル、アプリケーション、サービスに関する情報を Google に送信していただけますと幸いです。
+
+使用統計データには、設定、ボタンのクリック数、メモリの使用状況などの情報が含まれ、ウェブページの URL や個人情報は含まれません。障害レポートには、障害発生時のシステム情報が含まれ、障害発生時の状況によってはウェブページの URL や個人情報が含まれることもあります。</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
 <translation id="8237438615979997762">このデバイスに保存されているデータと Google アカウントに保存されているデータはそのまま残ります。ただし、データを追加したり変更したりしてもデバイス間での同期は行われません。</translation>
 <translation id="6831043979455480757">翻訳</translation>
@@ -92,6 +95,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME"/> はウェブアプリです（<ph name="APP_URL"/>）。</translation>
 <translation id="200669432486043882">ファイルを交換</translation>
 <translation id="5595485650161345191">住所の編集</translation>
+<translation id="8413385045638830869">最初に確認する（推奨）</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="5313967007315987356">サイトを追加</translation>
 <translation id="5733727110006255111">この機能が有効になっている場合、訪問先のページはダウンロード前に Google サーバーで圧縮されます。SSL 対応のページとシークレット モードのページは対象外です。</translation>
@@ -157,6 +161,7 @@
 <translation id="6857778194843072568">Wi-Fi のみで送信</translation>
 <translation id="5380554235172449987">送信しない</translation>
 <translation id="5715468759630044318">アカウントを選択</translation>
+<translation id="5000922062037820727">ブロック（推奨）</translation>
 <translation id="544291274896356069">このリンクを外部アプリケーションで開くと、シークレット モードが解除されます。続行しますか？</translation>
 <translation id="3917783807003067648">位置情報はブロック</translation>
 <translation id="1379156015317873965">ページの表示速度が向上します</translation>
@@ -228,6 +233,7 @@
 <translation id="3254409185687681395">このページをブックマークに追加します</translation>
 <translation id="907015151729920253">スマート カード</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="857943718398505171">許可（推奨）</translation>
 <translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">動画を保存</translation>
@@ -262,7 +268,6 @@
 <translation id="748127970106343339">デバイス認証情報の削除を確認する</translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="5899349522111170522">新しいファイルを作成</translation>
-<translation id="1082482054625560856"><ph name="BEGIN_LINK"/>Google アカウント<ph name="END_LINK"/>の保存パスワードを管理</translation>
 <translation id="7232255641409319872">指定するウェブサイト上で画像を許可し、その他のウェブサイト上ではブロックします</translation>
 <translation id="2360035970720276770">ダウンロードできるのは http または https の URL のみです</translation>
 <translation id="6570560778840017462"><ph name="BEGIN_LINK"/>Google アカウント<ph name="END_LINK"/>へのログイン状態は維持されます</translation>

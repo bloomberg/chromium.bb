@@ -95,6 +95,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, webová aplikácia: <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Nahradiť súbor</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
+<translation id="8413385045638830869">Najprv sa opýtať (odporúčané)</translation>
 <translation id="2100273922101894616">Automaticky prihlásiť</translation>
 <translation id="5313967007315987356">Pridať stránky</translation>
 <translation id="5733727110006255111">Keď je táto funkcia zapnutá, Chrome navštívené stránky pred stiahnutím komprimuje pomocou serverov Google. Funkcia nemá vplyv na stránky používajúce protokol SSL a stránky navštívené v režime Inkognito.</translation>
@@ -160,6 +161,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="6857778194843072568">Odosielať len v sieťach Wi-Fi</translation>
 <translation id="5380554235172449987">Nikdy neodosielať</translation>
 <translation id="5715468759630044318">Vybrať účet</translation>
+<translation id="5000922062037820727">Blokované (odporúčané)</translation>
 <translation id="544291274896356069">Ak tento odkaz otvoríte v externej aplikácii, opustíte režim inkognito. Chcete pokračovať?</translation>
 <translation id="3917783807003067648">Poloha je zablokovaná</translation>
 <translation id="1379156015317873965">Zlepšite výkonnosť načítania stránok</translation>
@@ -231,6 +233,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="3254409185687681395">Vytvoriť záložku pre túto stránku</translation>
 <translation id="907015151729920253">Karta Smart card</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
+<translation id="857943718398505171">Povolené (odporúčané)</translation>
 <translation id="4412992751769744546">Povoliť súbory cookie tretích strán</translation>
 <translation id="5016205925109358554">Pätkové</translation>
 <translation id="3063601790762993062">Uložiť video</translation>
@@ -265,7 +268,6 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="748127970106343339">Potvrdiť odstránenie poverení zariadenia</translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
 <translation id="5899349522111170522">Vytvoriť nový súbor</translation>
-<translation id="1082482054625560856">Spravovať uložené heslá vo vašom <ph name="BEGIN_LINK"/>účte Google<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Povoľte obrázky na vybraných stránkach a zakážte ich na ostatných miestach internetu.</translation>
 <translation id="2360035970720276770">Stiahnuť sa dajú len webové adresy typu http alebo https</translation>
 <translation id="6570560778840017462">Nebudete odhlásený/-á zo svojich <ph name="BEGIN_LINK"/>účtov Google<ph name="END_LINK"/></translation>

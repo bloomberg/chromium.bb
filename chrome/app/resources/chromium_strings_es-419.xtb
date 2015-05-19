@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">¿Estás seguro de que deseas desinstalar Chromium?</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="2615699638672665509">Debido a que ya no se admite su hardware, esta computadora dejará de recibir actualizaciones de Chromium en breve.</translation>
-<translation id="5532301346661895910">Chromium la almacenará en tus |contraseñas guardadas por Google| y la recordará la próxima vez que la necesites.</translation>
 <translation id="6893813176749746474">Chromium fue actualizado, pero no lo has utilizado en los últimos 30 días.</translation>
 <translation id="421369550622382712">Descubre aplicaciones, juegos, extensiones y temas increíbles para Chromium.</translation>
 <translation id="2732467638532545152">La computadora utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Chromium no puede saber si el certificado procede de <ph name="SITE"/> o de un atacante de tu red que quiere hacerse pasar por <ph name="SITE"/>. Instala una versión más reciente de Windows en la computadora.</translation>
@@ -58,7 +57,6 @@
 <translation id="7064610482057367130">No se encontraron actualizaciones de Chromium.</translation>
 <translation id="872034308864968620">Permitir que Chromium se ejecute en segundo plano</translation>
 <translation id="459535195905078186">Aplicaciones de Chromium</translation>
-<translation id="5109068449432240255">Sí, salir de Chromium</translation>
 <translation id="8134284582177628525">Si compartes esta computadora con <ph name="PROFILE_NAME"/>, agrégate a Chromium para navegar de manera independiente. De lo contrario, desconecta la cuenta de Google del otro usuario.</translation>
 <translation id="1480489203462860648">Pruébalo, ya está instalado</translation>
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
@@ -77,7 +75,6 @@
 <translation id="734373864078049451">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chromium.</translation>
 <translation id="3197823471738295152">El dispositivo está actualizado.</translation>
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
-<translation id="8353224596138547809">¿Quieres que Chromium guarde tu contraseña para este sitio?</translation>
 <translation id="8738058698779197622">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Chromium no puede verificar estos certificados.</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7463979740390522693">Chromium: notificaciones (<ph name="QUANTITY"/> sin leer)</translation>
@@ -132,7 +129,6 @@
 <translation id="4365115785552740256">Chromium es posible gracias al proyecto de código abierto <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> y otro <ph name="BEGIN_LINK_OSS"/>software de código abierto<ph name="END_LINK_OSS"/>.</translation>
 <translation id="9190841055450128916">Chromium (tráfico mDNS entrante)</translation>
 <translation id="4987820182225656817">Los invitados pueden utilizar Chromium sin dejar nada detrás.</translation>
-<translation id="3487263810738775861">Una extensión modificó la página que se muestra al iniciar Chromium.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="7549178288319965365">Acerca de Chromium OS</translation>
 <translation id="6248213926982192922">Establecer Chromium como navegador predeterminado</translation>
@@ -201,7 +197,8 @@
 <translation id="1414495520565016063">Accediste a Chromium.</translation>
 <translation id="2158734852934720349">Licencias de código abierto del Sistema operativo Chromium</translation>
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para utilizar vínculos <ph name="SCHEME"/>. El vínculo solicitado es <ph name="PROTOLINK"/>.</translation>
-<translation id="2558235863893655150">¿Quieres que Chromium guarde tu contraseña?</translation>
+<translation id="7205698830395646142">Ocultar en el menú de Chromium</translation>
+<translation id="7979877361127045932">Ocultar en el menú de Chromium</translation>
 <translation id="6485906693002546646">Estás utilizando <ph name="PROFILE_EMAIL"/> para sincronizar los datos de Chromium. Si quieres actualizar las preferencias de sincronización o utilizar Chromium sin una cuenta de Google, accede a <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Actualizar Chromium</translation>
 <translation id="5772805321386874569">(Es necesario <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chromium).</translation>
@@ -227,7 +224,6 @@
 <translation id="2119636228670142020">Acerca de &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hay una versión nueva y más segura de Chromium disponible.</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y comunicarte con este por Skype.</translation>
-<translation id="8724049448828509830">Hay una descarga en curso. ¿Quieres salir de Chromium y cancelarla?</translation>
 <translation id="608189560609172163">Chromium no pudo sincronizar los datos porque se produjo un error de acceso.</translation>
 <translation id="4888717733111232871">Regla de entrada para que Chromium permita el tráfico mDNS.</translation>
 <translation id="151962892725702025">El Sistema operativo Chromium no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
@@ -235,7 +231,6 @@
 <translation id="8985587603644336029">Alguien accedió anteriormente a Chromium en esta computadora como <ph name="ACCOUNT_EMAIL_LAST"/>. Si esta no es tu cuenta, crea un nuevo usuario de Chromium para mantener tu información por separado.
 
 Si accedes de todos modos, se fusionará la información de Chromium, como los marcadores, el historial y otros parámetros de configuración en <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
-<translation id="2739631515503418643">Actualmente hay descargas en curso. ¿Quieres salir de Chromium y cancelarlas?</translation>
 <translation id="9013262824292842194">Para usar Chromium Frame, se necesita Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="1967743265616885482">Un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>
@@ -246,6 +241,7 @@ Si accedes de todos modos, se fusionará la información de Chromium, como los m
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
 <translation id="5862307444128926510">Bienvenido a Chromium</translation>
 <translation id="7318036098707714271">Tu archivo de preferencias está dañado o no es válido. Chromium no puede recuperar tu configuración.</translation>
+<translation id="5531349711857992002">La cadena del certificado de este sitio web contiene, al menos, un certificado que se firmó con un algoritmo de firma basado en SHA-1 que dejó de estar disponible.</translation>
 <translation id="918373042641772655">Si desconectas <ph name="USERNAME"/>, se borrará el historial, los marcadores, la configuración y otros datos de Chromium almacenados en este dispositivo. Los datos almacenados en la cuenta de Google no se borrarán y se pueden administrar en el <ph name="GOOGLE_DASHBOARD_LINK"/>Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium es un navegador web que ejecuta páginas web y aplicaciones con la velocidad de la luz. Es rápido, estable y fácil de usar. Navega por la Web con seguridad y protección integrada contra software mailicioso y suplantación de identidad.</translation>
 <translation id="4230135487732243613">¿Quieres vincular los datos de Chromium a esta cuenta?</translation>

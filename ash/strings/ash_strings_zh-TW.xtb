@@ -72,6 +72,7 @@
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
 <translation id="3892641579809465218">內部畫面</translation>
 <translation id="7823564328645135659">同步處理您的設定後，系統已將語言從「<ph name="FROM_LOCALE"/>」變更為「<ph name="TO_LOCALE"/>」。</translation>
+<translation id="7113420380180868673">正在投放「$1」</translation>
 <translation id="3606978283550408104">已連接點字顯示器。</translation>
 <translation id="8654520615680304441">開啟 Wi-Fi...</translation>
 <translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME"/>分享螢幕控制功能。</translation>
@@ -96,6 +97,7 @@
 <translation id="3626637461649818317">剩餘電量：<ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">輸入法</translation>
 <translation id="2700058918926273959">這個工作階段將在 <ph name="SESSION_TIME_REMAINING"/>後結束，屆時系統會將您登出。</translation>
+<translation id="5807965672380739016">將桌面投放至</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">喇叭 (內部)</translation>
 <translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
@@ -105,6 +107,7 @@
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="2204305834655267233">網路資訊</translation>
+<translation id="137180024469554212">停用旋轉鎖定</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">結束訪客工作階段</translation>
 <translation id="8308637677604853869">前一個選單</translation>
@@ -112,6 +115,7 @@
 <translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="8528322925433439945">行動服務 ...</translation>
+<translation id="3157169093162779309">啟用旋轉鎖定</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="2372145515558759244">正在同步處理應用程式...</translation>
 <translation id="1987317783729300807">帳戶</translation>
@@ -122,6 +126,7 @@
 <translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限。</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">自動點擊</translation>
+<translation id="703171847531699602">沒有投放裝置</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>：正在連線...</translation>
 <translation id="6062360702481658777">您將於 <ph name="LOGOUT_TIME_LEFT"/>後自動登出。</translation>
 <translation id="252373100621549798">顯示器不明</translation>
@@ -131,6 +136,7 @@
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME"/>，<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">鎖定</translation>
 <translation id="2805756323405976993">應用程式</translation>
+<translation id="8697119993436624257">新版登入使用者介面已「關閉」</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="3433830597744061105">管理帳戶</translation>
 <translation id="742594950370306541">攝影機正在使用中。</translation>
@@ -149,6 +155,7 @@
 <translation id="5977415296283489383">耳機</translation>
 <translation id="225680501294068881">正在掃描裝置...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
+<translation id="3527846106059622359">新版登入使用者介面已「開啟」</translation>
 <translation id="5978382165065462689">透過遠端協助分享螢幕控制功能。</translation>
 <translation id="737451040872859086">麥克風 (內部)</translation>
 <translation id="2475982808118771221">發生錯誤</translation>
@@ -202,6 +209,7 @@
 <translation id="3009178788565917040">輸出</translation>
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
+<translation id="4373966964907728675">正在投放桌面</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘才能充滿電</translation>
 <translation id="3077734595579995578">Shift</translation>

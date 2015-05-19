@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE"/> üzerinde ara</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="4816465935029283692">Veri türleri</translation>
+<translation id="5098185943924922330">Bir kilitlenme yaşadığınız her defasında, çalışan dosyalarla, uygulamalarla ve hizmetlerle ilgili bilgileri Google'a göndererek, üzerinde çalışmamız gereken özellikler ve iyileştirmelerle ilgili öncelikleri belirlememize yardım edin.
+
+        Kullanım istatistikleri; tercihler, tıklanan düğmeler ve bellek kullanımı gibi bilgileri içerir. Web sayfası URL'lerini veya hiçbir kişisel bilgiyi içermez. Kilitlenme raporları, kilitlenme sırasında geçerli olan sistem bilgilerini kapsar ve kilitlenme sırasında olanlara bağlı olarak web sayfası URL'lerini veya kişisel bilgilerinizi içerebilir.</translation>
 <translation id="4042870126885713738">Bir web adresi çözümlenemezse veya bağlantı yapılamazsa öneriler göster</translation>
 <translation id="8237438615979997762">Bu cihazda ve Google Hesabınızda depolanan veriler her iki yerde de kalır. Ancak, yeni veriler veya verilerinizde yapacağınız değişiklikler bu ikisi arasında senkronize edilmez.</translation>
 <translation id="6831043979455480757">Çevir</translation>
@@ -92,6 +95,7 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, web uygulaması. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Dosyayı değiştir</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
+<translation id="8413385045638830869">Önce sor (önerilir)</translation>
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
 <translation id="5313967007315987356">Site ekle</translation>
 <translation id="5733727110006255111">Bu özellik açık olduğunda, Chrome, ziyaret ettiğiniz sayfaları indirmeden önce sıkıştırmak için Google sunucularını kullanır. SSL kullanan veya Gizli modda erişilen sayfalar dahil edilmez.</translation>
@@ -157,6 +161,7 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="6857778194843072568">Yalnızca kablosuz ağda gönder</translation>
 <translation id="5380554235172449987">Hiçbir zaman gönderme</translation>
 <translation id="5715468759630044318">Hesap seçin</translation>
+<translation id="5000922062037820727">Engellendi (önerilir)</translation>
 <translation id="544291274896356069">Bu bağlantı harici bir uygulamada açılırsa gizli moddan çıkılacak. Devam edilsin mi?</translation>
 <translation id="3917783807003067648">Konum engellendi</translation>
 <translation id="1379156015317873965">Sayfa yükleme performansını iyileştirme</translation>
@@ -228,6 +233,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3254409185687681395">Bu sayfaya yer işareti koy</translation>
 <translation id="907015151729920253">Akıllı kart</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
+<translation id="857943718398505171">İzin verildi (önerilir)</translation>
 <translation id="4412992751769744546">Üçüncü taraf çerezlere izin ver</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Videoyu kaydet</translation>
@@ -262,7 +268,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="748127970106343339">Cihazın kimlik bilgilerini silmeyi onaylayın</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
 <translation id="5899349522111170522">Yeni dosya oluştur</translation>
-<translation id="1082482054625560856"><ph name="BEGIN_LINK"/>Google Hesabınızda<ph name="END_LINK"/> kayıtlı şifrelerinizi yönetin.</translation>
 <translation id="7232255641409319872">Belirttiğiniz web sitelerinde resimlere izin verirken web'in geri kalanında engelleyin</translation>
 <translation id="2360035970720276770">Yalnızca http veya https URL'leri indirilebilir</translation>
 <translation id="6570560778840017462"><ph name="BEGIN_LINK"/>Google Hesaplarınızdaki<ph name="END_LINK"/> oturumlarınız kapatılmaz</translation>

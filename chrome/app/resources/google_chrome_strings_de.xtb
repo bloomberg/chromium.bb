@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">Sie nutzen einen Computer gemeinsam mit anderen? Jetzt können Sie Chrome nach Ihren Wünschen einrichten.</translation>
 <translation id="6236285698028833233">Chrome wird nicht mehr aktualisiert und unterstützt Ihre Betriebssystemversion nicht länger.</translation>
 <translation id="5453904507266736060">Google Chrome im Hintergrund ausführen</translation>
-<translation id="3454512769850953877">Ja, Chrome beenden</translation>
 <translation id="4167057906098955729">Hier finden Sie alle Benachrichtigungen von Chrome-Apps, Erweiterungen und Websites.</translation>
 <translation id="2704356438731803243">Wenn Sie Ihre bestehenden Chrome-Daten getrennt verwenden möchten, können Sie einen neuen Chrome-Nutzer für <ph name="USER_NAME"/> erstellen.</translation>
 <translation id="386202838227397562">Schließen Sie alle Google Chrome-Fenster und versuchen Sie es erneut.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">Ihre Informationen werden von Chrome sicher gespeichert. Dadurch brauchen Sie sie nicht erneut einzugeben. Sie müssen aber bei zukünftigen Zahlungen immer noch den Sicherheitscode Ihrer Karte bestätigen.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
 <translation id="7400722733683201933">Über Google Chrome</translation>
-<translation id="8838365799985821335">Die beim Start von Chrome angezeigte Seite wurde durch eine Erweiterung geändert.</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="1065672644894730302">Ihre Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
 <translation id="7781002470561365167">Eine neue Version von Google Chrome ist verfügbar.</translation>
@@ -61,7 +59,6 @@
 <translation id="4743926867934016338">Akzeptieren und suchen</translation>
 <translation id="1393853151966637042">Hilfe für Chrome aufrufen</translation>
 <translation id="7398801000654795464">Sie waren in Chrome als <ph name="USER_EMAIL_ADDRESS"/> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
-<translation id="5338943029751206389">Die Website verwendet veraltete Sicherheitseinstellungen, aufgrund derer künftige Chrome-Versionen möglicherweise nicht mehr sicher auf sie zugreifen können.</translation>
 <translation id="4513711165509885787">Ihre Zahlungsangaben wurden in Chrome gespeichert.</translation>
 <translation id="5253588388888612165">Wenn Sie diesen Computer gemeinsam mit <ph name="PROFILE_NAME"/> nutzen, fügen Sie Ihr eigenes Profil zu Chrome hinzu, um separat zu surfen. Trennen Sie andernfalls die Verbindung zu dem Google-Konto der Person.</translation>
 <translation id="7098166902387133879">Google Chrome verwendet Ihr Mikrofon.</translation>
@@ -79,6 +76,7 @@
 <translation id="3089968997497233615">Es gibt eine neue, sicherere Version von Google Chrome.</translation>
 <translation id="5037239767309817516">Schließen Sie alle Google Chrome-Fenster und starten Sie die App neu, damit diese Änderung wirksam wird.</translation>
 <translation id="225614027745146050">Willkommen</translation>
+<translation id="3398288718845740432">Im Chrome-Menü ausblenden</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="8851136666856101339">main</translation>
@@ -148,7 +146,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="103396972844768118">Wichtige Informationen zu Ihren Chrome-Daten</translation>
 <translation id="6757767188268205357">Keine Anfragen mehr</translation>
 <translation id="2290095356545025170">Möchten Sie Google Chrome wirklich deinstallieren?</translation>
-<translation id="7062966102157262887">Momentan wird ein Download durchgeführt. Möchten Sie Google Chrome beenden und den Download abbrechen?</translation>
 <translation id="4273752058983339720">Google Chrome ist so konfiguriert, dass es beim Hochfahren Ihres Computers automatisch gestartet wird.</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="415994390253732730">Verhält Chrome sich ungewöhnlich?</translation>
@@ -162,6 +159,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="6883876366448858277">sendet ein Wort und den Kontext an die Google-Suche. Als Ergebnis werden Definitionen, Bilder, Suchergebnisse und andere Details zurückgegeben.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">In Google Chrome können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
+<translation id="4631713731678262610">Im Chrome-Menü ausblenden</translation>
 <translation id="3612333635265770873">Es ist bekannt, dass ein Modul mit dem gleichen Namen in Konflikt mit Google Chrome steht.</translation>
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK"/> zur Verbesserung von Google Chrome an Google senden</translation>
 <translation id="7761834446675418963">Klicken Sie auf Ihren Namen, um Chrome zu öffnen und im Web zu surfen.</translation>
@@ -190,8 +188,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="8614913330719544658">Google Chrome reagiert nicht. Jetzt neu starten?</translation>
 <translation id="2681064822612051220">Auf dem System wurde eine Installation von Google Chrome gefunden, die einen Konflikt verursacht. Deinstallieren Sie sie und versuchen Sie es erneut.</translation>
 <translation id="2252923619938421629">Tragen Sie zur Verbesserung von Google Chrome bei, indem Sie die aktuellen Einstellungen melden.</translation>
-<translation id="6126631249883707068">Möchten Sie, dass Ihr Passwort von Google Chrome gespeichert wird?</translation>
-<translation id="7773845170078702898">Soll Google Chrome Ihr Passwort für diese Website speichern?</translation>
 <translation id="4251615635259297716">Ihre Chrome-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="7125719106133729027">Chrome konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Installieren Sie Chrome manuell neu.</translation>
 <translation id="5940385492829620908">Hier können Sie im Web surfen und Ihre Lesezeichen und andere Chrome-Inhalte speichern.</translation>
@@ -204,7 +200,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="7396375882099008034">Erlauben Sie Chrome in Ihren Firewall- und Virenschutzeinstellungen den Zugriff auf das Netzwerk.</translation>
 <translation id="9102715433345326100">Diese Datei ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="8205111949707227942">Optional: Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome OS automatisch an Google senden</translation>
-<translation id="7253415505590551024">Momentan werden Downloads durchgeführt. Möchten Sie Google Chrome beenden und die Downloads abbrechen?</translation>
 <translation id="487887346205285304">Verhält Chrome sich ungewöhnlich?</translation>
 <translation id="3622797965165704966">Sie können Chrome jetzt noch einfacher mit Ihrem Google-Konto und auf gemeinsam genutzten Computern verwenden.</translation>
 <translation id="7196020411877309443">Warum wird diese Meldung angezeigt?</translation>
@@ -225,7 +220,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome ist veraltet.</translation>
 <translation id="7592736734348559088">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>
-<translation id="7810280330588098283">Chrome fügt dies Ihren |in Google gespeicherten Passwörtern| hinzu, sodass es bei Bedarf verfügbar ist.</translation>
 <translation id="6991142834212251086">Meine Chrome-Daten mit diesem Konto verknüpfen</translation>
 <translation id="3451115285585441894">Wird zu Chrome hinzugefügt...</translation>
 <translation id="3047079729301751317">Wenn Sie die Verbindung zu <ph name="USERNAME"/> trennen, werden Ihr Verlauf sowie Ihre Lesezeichen, Einstellungen und sonstigen auf diesem Gerät gespeicherten Chrome-Daten gelöscht. In Ihrem Google-Konto gespeicherte Daten bleiben erhalten und können über das <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/> verwaltet werden.</translation>
@@ -241,6 +235,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="1698376642261615901">Google Chrome ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
 <translation id="853189717709780425">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME"/> verknüpft. Sie können diese Daten über das Google Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen.</translation>
 <translation id="699076943483372849">Diese Website verwendet das eingestellte Chrome Frame-Plug-in, für das es keine Sicherheits- und Stabilitätsupdates mehr gibt. Deinstallieren Sie das Plug-in und führen Sie ein Upgrade auf einen neueren Browser aus.</translation>
+<translation id="5531349711857992002">Die Zertifikatskette für diese Website enthält mindestens ein Zertifikat, das einen veralteten Signaturalgorithmus auf Basis von SHA-1 verwendet.</translation>
 <translation id="6049075767726609708">Ein Administrator hat Google Chrome auf diesem System installiert. Es ist für alle Nutzer verfügbar. Durch die Installation von Google Chrome auf Systemebene wird Ihre Installation auf Nutzerebene jetzt ersetzt.</translation>
 <translation id="1818142563254268765">Chrome konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Aktualisieren Sie Chrome manuell.</translation>
 <translation id="7408085963519505752">Chrome OS-Nutzungsbedingungen</translation>

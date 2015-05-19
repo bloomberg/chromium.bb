@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Mandatory</translation>
 <translation id="2958431318199492670">The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.</translation>
 <translation id="3583757800736429874">&amp;Redo Move</translation>
+<translation id="7887683347370398519">Check your CVC and try again</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Missing device record</translation>
 <translation id="1491151370853475546">Reload this Page</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Hide value</translation>
 <translation id="6753269504797312559">Policy Value</translation>
+<translation id="3369366829301677151">Update and verify your <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Enable Autofill using Contacts…</translation>
 <translation id="7275334191706090484">Managed Bookmarks</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
+<translation id="8988760548304185580">Enter the expiry date and 3-digit CVC from the back of your card</translation>
 <translation id="8940229512486821554">Run <ph name="EXTENSION_NAME"/> command: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Unknown error</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">The translation to <ph name="TARGET_LANGUAGE"/> failed.</translation>
 <translation id="4103249731201008433">Device serial number is invalid</translation>
+<translation id="3219579145727097045">Enter the expiration date and 4-digit CVC from the front of your card</translation>
 <translation id="3667681724235208644">View Original</translation>
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
 <translation id="5540224163453853">Could not find the requested article.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Translate from <ph name="ORIGINAL_LANGUAGE"/> to <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Assigned Location:</translation>
 <translation id="3542684924769048008">Use password for:</translation>
+<translation id="2855922900409897335">Verify your <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE"/>to<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirate</translation>
+<translation id="6646897916597483132">Enter the 4-digit CVC from the front of your card</translation>
 <translation id="5145883236150621069">Error code present in the policy response</translation>
 <translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE"/> to <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">District</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="3712624925041724820">Licenses exhausted</translation>
 <translation id="4926049483395192435">Must be specified.</translation>
+<translation id="1455235771979731432">There was a problem verifying your card. Check your Internet connection and try again.</translation>
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
 <translation id="5179510805599951267">Not in <ph name="ORIGINAL_LANGUAGE"/>? Report this error</translation>
 <translation id="8088680233425245692">Failed to view article.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Active</translation>
 <translation id="7568593326407688803">This page is in<ph name="ORIGINAL_LANGUAGE"/>Would you like to translate it?</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
+<translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
+<translation id="9125941078353557812">Enter the 3-digit CVC from the back of your card</translation>
 <translation id="106701514854093668">Desktop Bookmarks</translation>
 <translation id="6154808779448689242">Returned policy token doesn't match current token</translation>
 <translation id="7995512525968007366">Not Specified</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Undo Reorder</translation>
 <translation id="20817612488360358">System proxy settings are set to be used but an explicit proxy configuration is also specified.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="8824019021993735287">Chrome was unable to verify your card at this time. Please try again later.</translation>
 <translation id="4968547170521245791">Cannot Proxy</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>

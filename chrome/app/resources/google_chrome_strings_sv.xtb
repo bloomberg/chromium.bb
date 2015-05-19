@@ -13,7 +13,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="4921569541910214635">Delar du dator? Nu kan du konfigurera Chrome precis som du vill.</translation>
 <translation id="6236285698028833233">Google Chrome uppdateras inte längre och har inte längre stöd för den här versionen av ditt operativsystem.</translation>
 <translation id="5453904507266736060">Låt Google Chrome köras i bakgrunden</translation>
-<translation id="3454512769850953877">Ja, avsluta Chrome</translation>
 <translation id="4167057906098955729">Alla dina meddelanden från Chrome-appar, tillägg och webbplatser visas här.</translation>
 <translation id="2704356438731803243">Om du vill ha dina befintliga uppgifter för Chrome separat kan du skapa en ny Chrome-användare för <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Stäng alla Google Chrome-fönster och försök igen.</translation>
@@ -21,7 +20,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="1225016890511909183">Chrome lagrar din information på ett säkert sätt så att du inte behöver ange den igen, men du måste fortfarande bekräfta kortets säkerhetskod för framtida betalningar.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
-<translation id="8838365799985821335">Ett tillägg har ändrat vilken sida som visas när du startar Chrome.</translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="1065672644894730302">Det går inte att läsa inställningarna.
 
@@ -67,7 +65,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4743926867934016338">Acceptera och sök</translation>
 <translation id="1393853151966637042">Få hjälp med att använda Chrome</translation>
 <translation id="7398801000654795464">Du var inloggad i Chrome som <ph name="USER_EMAIL_ADDRESS"/>. Använd samma konto när du loggar in igen.</translation>
-<translation id="5338943029751206389">På den här webbplatsen används föråldrade säkerhetsinställningar som kan förhindra att framtida versioner av Chrome kan besöka den säkert.</translation>
 <translation id="4513711165509885787">Dina faktureringsuppgifter har sparats i Chrome.</translation>
 <translation id="5253588388888612165">Om du delar den här datorn med <ph name="PROFILE_NAME"/> lägger du till dig själv i Chrome så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
 <translation id="7098166902387133879">Google Chrome använder din mikrofon.</translation>
@@ -85,6 +82,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
 <translation id="5037239767309817516">Stäng alla fönster i Google Chrome och starta om så att ändringen genomförs.</translation>
 <translation id="225614027745146050">Välkommen</translation>
+<translation id="3398288718845740432">Dölj i Chrome-menyn</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="3149510190863420837">Chrome-appar</translation>
 <translation id="8851136666856101339">huvud</translation>
@@ -164,7 +162,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="103396972844768118">Viktig information om uppgifter i Chrome</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
-<translation id="7062966102157262887">En nedladdning pågår. Vill du avsluta Google Chrome och avbryta nedladdningen?</translation>
 <translation id="4273752058983339720">Google Chrome är konfigurerad för att starta automatiskt när du startar datorn.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="415994390253732730">Fungerar Chrome konstigt?</translation>
@@ -178,6 +175,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="6883876366448858277">skickar ett ord med omgivande sammanhang till Google Sök och returnerar definitioner, bilder och andra sökresultat.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
+<translation id="4631713731678262610">Dölj i Chrome-menyn</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK"/> till Google.</translation>
 <translation id="7761834446675418963">Öppna Chrome genom att klicka på ditt namn och börja surfa.</translation>
@@ -208,8 +206,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="8614913330719544658">Google Chrome svarar inte. Vill du starta om nu?</translation>
 <translation id="2681064822612051220">Det finns en annan installation av Google Chrome på datorn. Avinstallera den och försök igen.</translation>
 <translation id="2252923619938421629">Hjälp oss att förbättra Google Chrome genom att rapportera dina aktuella inställningar</translation>
-<translation id="6126631249883707068">Vill du att Google Chrome ska spara ditt lösenord?</translation>
-<translation id="7773845170078702898">Vill du att Google Chrome sparar lösenordet för den här webbplatsen?</translation>
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
 <translation id="7125719106133729027">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste installera om Chrome manuellt.</translation>
 <translation id="5940385492829620908">Här finns webben, bokmärken och allt annat du använder Chrome till.</translation>
@@ -223,7 +219,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
         antivirusprogrammet.</translation>
 <translation id="9102715433345326100">Filen är skadlig och har blockerats av Chrome.</translation>
 <translation id="8205111949707227942">Valfritt: Hjälp till att göra Chrome bättre genom att automatiskt skicka användningsstatistik och kraschrapporter till Google.</translation>
-<translation id="7253415505590551024">Nedladdningar pågår. Vill du avsluta Google Chrome och avbryta nedladdningarna?</translation>
 <translation id="487887346205285304">Fungerar Chrome konstigt?</translation>
 <translation id="3622797965165704966">Nu är det enklare att använda Chrome med ditt Google-konto och på delade datorer.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
@@ -253,7 +248,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
 <translation id="7592736734348559088">Google Chrome kunde inte synkronisera data eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
-<translation id="7810280330588098283">Chrome sparar det i dina |lösenord som Google sparat| och kommer ihåg det nästa gång du behöver det.</translation>
 <translation id="6991142834212251086">Koppla mina uppgifter i Chrome till det här kontot</translation>
 <translation id="3451115285585441894">Lägger till i Chrome ...</translation>
 <translation id="3047079729301751317">Om du kopplar från <ph name="USERNAME"/> rensas din historik, dina bokmärken, dina inställningar och annan Chrome-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK"/>Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -269,6 +263,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="1698376642261615901">Google Chrome är en webbläsare som kör webbsidor och program med ljusets hastighet. Den är snabb, stabil och lätt att använda. Surfa säkrare med Google Chrome, som har inbyggt skydd mot skadlig programvara och nätfiske.</translation>
 <translation id="853189717709780425">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din profil i Google Chrome. Dina uppgifter i Chrome, till exempel appar, bokmärken, historik, lösenord och andra inställningar, kopplas permanent till <ph name="USER_NAME"/>. Du kan ta bort dessa uppgifter i översikten för ditt Google-konto, men du kan inte koppla dem till något annat konto.</translation>
 <translation id="699076943483372849">Den här webbplatsen använder Chrome Frame. Denna plugin är inaktuell och inga nya säkerhets- eller stabilitetsuppdateringar släpps. Du bör avinstallera den och uppgradera till en modern webbläsare.</translation>
+<translation id="5531349711857992002">Certifikatkedjan för den här webbplatsen innehåller minst ett certifikat som signerades med en utfasad signaturalgoritm som baseras på SHA-1.</translation>
 <translation id="6049075767726609708">En administratör har installerat Google Chrome på systemet så att det är tillgängligt för alla användare. Systemnivåversionen av Google Chrome ersätter nu installationen på användarnivå.</translation>
 <translation id="1818142563254268765">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste uppdatera Chrome.</translation>
 <translation id="7408085963519505752">Villkor för Chrome OS</translation>

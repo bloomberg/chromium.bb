@@ -19,6 +19,9 @@
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE"/> efter denna bild</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="4816465935029283692">Datatyper</translation>
+<translation id="5098185943924922330">Hjälp oss att prioritera vilka funktioner och förbättringar vi ska arbeta med genom att skicka information om vilka filer, program och tjänster som körs när en krasch inträffar.
+
+        Användningsstatistiken innehåller information som inställningar, knappklick och minnesanvändning. De innehåller inte webbadresser eller personliga uppgifter. Felrapporter innehåller information om systemet vid tidpunkten för kraschen och kan innehålla webbadresser eller personliga uppgifter beroende på vad som hände vid kraschen.</translation>
 <translation id="4042870126885713738">Visa förslag när det inte går att öppna en webbadress eller upprätta en anslutning</translation>
 <translation id="8237438615979997762">Data som sparats på enheten och data som sparats i Google-kontot finns kvar på båda ställena. Ny data och ändringar som du gör kommer dock inte att synkroniseras dem emellan.</translation>
 <translation id="6831043979455480757">Översätt</translation>
@@ -92,6 +95,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, webbapp. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Ersätt fil</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
+<translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="5313967007315987356">Lägg till webbplats</translation>
 <translation id="5733727110006255111">När den här funktionen är aktiverad komprimerar Chrome sidor som du besöker med hjälp av Googles servrar innan de laddas ned. SSL- och inkognitosidor inkluderas inte.</translation>
@@ -157,6 +161,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="6857778194843072568">Skicka endast via Wi-Fi</translation>
 <translation id="5380554235172449987">Skicka aldrig</translation>
 <translation id="5715468759630044318">Välj konto</translation>
+<translation id="5000922062037820727">Blockerad (rekommenderas)</translation>
 <translation id="544291274896356069">Om den här länken öppnas i ett externt program sker inte det i inkognitoläge. Vill du fortsätta?</translation>
 <translation id="3917783807003067648">Platsen är blockerad</translation>
 <translation id="1379156015317873965">Förbättra sidinläsning</translation>
@@ -228,6 +233,7 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="3254409185687681395">Lägg till bokmärke för den här sidan</translation>
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
+<translation id="857943718398505171">Tillåten (rekommenderas)</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Spara video</translation>
@@ -262,7 +268,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="5899349522111170522">Skapa ny fil</translation>
-<translation id="1082482054625560856">Hantera sparade lösenord i ditt <ph name="BEGIN_LINK"/>Google-konto<ph name="END_LINK"/></translation>
 <translation id="7232255641409319872">Tillåt bilder på webbplatser som du anger och blockera dem för resten av webben</translation>
 <translation id="2360035970720276770">Bara adresser med http eller https kan hämtas</translation>
 <translation id="6570560778840017462">Du loggas inte ut från dina <ph name="BEGIN_LINK"/>Google-konton<ph name="END_LINK"/></translation>

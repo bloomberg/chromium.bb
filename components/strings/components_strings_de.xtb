@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Verbindlich</translation>
 <translation id="2958431318199492670">Die Netzwerkkonfiguration stimmt nicht mit dem ONC-Standard überein. Die Konfiguration wird unter Umständen nicht vollständig importiert.</translation>
 <translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
+<translation id="7887683347370398519">Prüfen Sie Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> immer übersetzen</translation>
 <translation id="1227633850867390598">Wert ausblenden</translation>
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
+<translation id="3369366829301677151"><ph name="CREDIT_CARD"/> aktualisieren und bestätigen</translation>
 <translation id="8834246243508017242">AutoFill aktivieren und dazu die Kontakte verwenden…</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
+<translation id="8988760548304185580">Geben Sie das Ablaufdatum und den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/>-Befehl ausführen: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Unbekannter Fehler</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Fehler bei der Überprüfung: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Bei der Übersetzung (<ph name="TARGET_LANGUAGE"/>) ist ein Fehler aufgetreten.</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
+<translation id="3219579145727097045">Geben Sie das Ablaufdatum und den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
 <translation id="3667681724235208644">Original ansehen</translation>
 <translation id="4079302484614802869">Die Proxy-Konfiguration ist auf die Verwendung einer PAC-Skript-URL und nicht die von festen Proxyservern eingestellt.</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Übersetzen (<ph name="ORIGINAL_LANGUAGE"/> &gt; <ph name="TARGET_LANGUAGE"/>)?</translation>
 <translation id="8218327578424803826">Zugewiesener Standort:</translation>
 <translation id="3542684924769048008">Passwort verwenden für:</translation>
+<translation id="2855922900409897335"><ph name="CREDIT_CARD"/> bestätigen</translation>
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE"/>in<ph name="LANGUAGE_LANGUAGE"/>übersetzt.</translation>
 <translation id="7139724024395191329">Emirat</translation>
+<translation id="6646897916597483132">Geben Sie den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
 <translation id="5145883236150621069">Fehlercode in der Richtlinienantwort</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE"/> immer auf <ph name="TARGET_LANGUAGE"/> übersetzen</translation>
 <translation id="6970216967273061347">Bezirk</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="3712624925041724820">Lizenzen aufgebraucht</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
+<translation id="1455235771979731432">Beim Bestätigen Ihrer Karte ist ein Problem aufgetreten. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.</translation>
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE"/>? Diesen Fehler melden</translation>
 <translation id="8088680233425245692">Der Artikel kann nicht angezeigt werden.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="7568593326407688803">Diese Seite ist auf<ph name="ORIGINAL_LANGUAGE"/>Soll sie übersetzt werden?</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
+<translation id="4800132727771399293">Prüfen Sie Ihr Ablaufdatum und Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="4171400957073367226">Ungültige Bestätigungssignatur</translation>
+<translation id="9125941078353557812">Geben Sie den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
 <translation id="106701514854093668">Desktop-Lesezeichen</translation>
 <translation id="6154808779448689242">Zurückgegebenes Token der Richtlinie entspricht nicht dem aktuellen Token.</translation>
 <translation id="7995512525968007366">Nicht angegeben</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="8824019021993735287">Ihre Karte konnte momentan nicht überprüft werden. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4968547170521245791">Proxynutzung nicht möglich</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>

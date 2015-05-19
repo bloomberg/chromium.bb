@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">తప్పనిసరి</translation>
 <translation id="2958431318199492670">నెట్‌వర్క్ కాన్ఫిగరేషన్ ONC ప్రమాణానికి అనుకూలంగా లేదు. కాన్ఫిగరేషన్‌లోని భాగాలు దిగుమతి కాకపోయి ఉండకపోవచ్చు.</translation>
 <translation id="3583757800736429874">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>
+<translation id="7887683347370398519">మీ CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
 <translation id="933712198907837967">డైనర్స్ క్లబ్</translation>
 <translation id="277499241957683684">పరికరం రికార్డ్ లేదు</translation>
 <translation id="1491151370853475546">ఈ పేజీని మళ్లీ లోడ్ చేయి</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE"/>ను అనువదించు</translation>
 <translation id="1227633850867390598">విలువను దాచండి</translation>
 <translation id="6753269504797312559">విధానం విలువ</translation>
+<translation id="3369366829301677151">మీ <ph name="CREDIT_CARD"/>ని నవీకరించి, ధృవీకరించండి</translation>
 <translation id="8834246243508017242">పరిచయాలను ఉపయోగించి స్వీయపూర్తిని ప్రారంభించండి…</translation>
 <translation id="7275334191706090484">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">వీసా</translation>
 <translation id="6839929833149231406">ప్రాంతం</translation>
 <translation id="1871208020102129563">ప్రాక్సీ స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించడానికి సెట్ చేయబడింది, .pac స్క్రిప్ట్ URLను కాదు.</translation>
+<translation id="8988760548304185580">మీ కార్డ్ గడువు ముగింపు తేదీ మరియు దాని వెనుకవైపు ఉండే 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> ఆదేశాన్ని అమలు చెయ్యి: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">తెలియని లోపం</translation>
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">ధృవీకరణ లోపం: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>కు అనువాదం విఫలమైంది.</translation>
 <translation id="4103249731201008433">పరికరం క్రమ సంఖ్య చెల్లదు</translation>
+<translation id="3219579145727097045">మీ కార్డ్ గడువు ముగింపు తేదీ మరియు దాని వెనుకవైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="3667681724235208644">అసలైనదాన్ని వీక్షించండి</translation>
 <translation id="4079302484614802869">ప్రాక్సీ కాన్ఫిగరేషన్ స్థిరమైన ప్రాక్సీ సర్వర్‌లను కాకుండా, ఒక .pac స్క్రిప్ట్ URLను ఉపయోగించడానికి సెట్ చేయబడింది.</translation>
 <translation id="5540224163453853">అభ్యర్థించిన కథనాన్ని కనుగొనడం సాధ్యపడలేదు.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> నుండి <ph name="TARGET_LANGUAGE"/>కి అనువదించాలా?</translation>
 <translation id="8218327578424803826">కేటాయించిన స్థానం:</translation>
 <translation id="3542684924769048008">దీని కోసం పాస్‌వర్డ్‌ను ఉపయోగించండి:</translation>
+<translation id="2855922900409897335">మీ <ph name="CREDIT_CARD"/>ని ధృవీకరించండి</translation>
 <translation id="7186367841673660872">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE"/>నుండి<ph name="LANGUAGE_LANGUAGE"/>కు అనువదించబడింది</translation>
 <translation id="7139724024395191329">ఎమిరేట్</translation>
+<translation id="6646897916597483132">మీ కార్డ్ ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="5145883236150621069">విధాన ప్రతిస్పందనలో లోపం కోడ్ ఉంది</translation>
 <translation id="7983301409776629893">ఎల్లప్పుడూ <ph name="ORIGINAL_LANGUAGE"/>ను <ph name="TARGET_LANGUAGE"/>కు అనువదించు</translation>
 <translation id="6970216967273061347">జిల్లా</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">నిర్వహించడం లేదు</translation>
 <translation id="3712624925041724820">లైసెన్స్‌లు అయిపోయాయి</translation>
 <translation id="4926049483395192435">ఖచ్చితంగా పేర్కొనాలి.</translation>
+<translation id="1455235771979731432">మీ కార్డ్‌ను ధృవీకరించడంలో సమస్య ఏర్పడింది. మీ ఇంటర్నెట్ కనెక్షన్ తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7542995811387359312">ఈ ఫారమ్ సురక్షిత కనెక్షన్‌ని ఉపయోగించనందున స్వయంచాలకంగా క్రెడిట్ కార్డ్ పూర్తి చెయ్యడం ఆపివేయబడింది.</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>లో లేదా? ఈ లోపాన్ని నివేదించండి</translation>
 <translation id="8088680233425245692">కథనాన్ని వీక్షించడంలో విఫలమైంది.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">సక్రియం</translation>
 <translation id="7568593326407688803">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE"/>లో ఉంది మీరు దీన్ని అనువదించాలనుకుంటున్నారా?</translation>
 <translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించబడటంలో విఫలమైంది.</translation>
+<translation id="4800132727771399293">మీ గడువు ముగింపు తేదీ మరియు CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
 <translation id="4171400957073367226">ధృవీకరణ సంతకం చెల్లదు</translation>
+<translation id="9125941078353557812">మీ కార్డ్ వెనుకవైపు ఉండే 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="106701514854093668">డెస్క్‌టాప్‌ బుక్‌మార్క్‌లు</translation>
 <translation id="6154808779448689242">అందించబడిన విధాన టోకెన్ ప్రస్తుత టోకెన్‌కు సరిపోలలేదు</translation>
 <translation id="7995512525968007366">పేర్కొనబడలేదు</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
 <translation id="20817612488360358">సిస్టమ్ ప్రాక్సీ సెట్టింగ్‌లు ఉపయోగించడానికి సెట్ చేయబడ్డాయి కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ కూడా పేర్కొనబడింది.</translation>
 <translation id="2639739919103226564">స్థితి: </translation>
+<translation id="8824019021993735287">Chrome ప్రస్తుతం మీ కార్డ్‌ను ధృవీకరించలేకపోయింది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4968547170521245791">ప్రాక్సీ చేయలేనివి</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="4196861286325780578">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>

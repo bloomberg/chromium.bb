@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">ಕಡ್ಡಾಯ</translation>
 <translation id="2958431318199492670">ONC ಪ್ರಮಾಣಿತಕ್ಕೆ ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ಅನುಸರಣೆಯಾಗುವುದಿಲ್ಲ. ಕಾನ್ಫಿಗರೇಶನ್‌ನ ಭಾಗಗಳನ್ನು ಆಮದು ಮಾಡಲಾಗದಿರಬಹುದು.</translation>
 <translation id="3583757800736429874">&amp;ಸರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
+<translation id="7887683347370398519">ನಿಮ್ಮ CVC ಅನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ಸಾಧನದ ರೆಕಾರ್ಡ್ ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="1491151370853475546">ಪುಟ ಮರುಲೋಡ್ ಮಾಡು</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">ಯಾವಾಗಲೂ ಅನುವಾದಿಸಿ <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">ಮೌಲ್ಯವನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="6753269504797312559">ನೀತಿ ಮೌಲ್ಯ</translation>
+<translation id="3369366829301677151">ನಿಮ್ಮ <ph name="CREDIT_CARD"/> ಅನ್ನು ನವೀಕರಿಸಿ ಮತ್ತು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="8834246243508017242">ಸಂಪರ್ಕಗಳನ್ನು ಬಳಸಿಕೊಂಡು ಸ್ವಯಂತುಂಬುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸು…</translation>
 <translation id="7275334191706090484">ನಿರ್ವಹಿಸಿದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">ವೀಸಾ</translation>
 <translation id="6839929833149231406">ಪ್ರದೇಶ</translation>
 <translation id="1871208020102129563">.pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅಲ್ಲದೆ, ನಿಗಧಿತ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸಲು ಪ್ರಾಕ್ಸಿಯನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
+<translation id="8988760548304185580">ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಹಿಂದಿರುವ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು 3-ಅಂಕಿಗಳ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> ಆದೇಶವನ್ನು ಚಾಲನೆಮಾಡಿ: <ph name="SEARCH_TERMS"/> </translation>
 <translation id="3380365263193509176">ಅಜ್ಞಾತ ದೋಷ</translation>
 <translation id="112840717907525620">ನೀತಿಯ ಸಂಗ್ರಹ ಸರಿಯಾಗಿದೆ</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">ಮೌಲ್ಯೀಕರಿಸುವಿಕೆಯ ದೋಷ: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="4103249731201008433">ಸಾಧನದ ಸರಣಿಯ ಸಂಖ್ಯೆ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
+<translation id="3219579145727097045">ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಮುಂಭಾಗದಲ್ಲಿರುವ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು 4-ಅಂಕಿಗಳ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="3667681724235208644">ಮೂಲಪುಟವನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="4079302484614802869">ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಬಳಸುವಂತೆ ಹೊಂದಿಸಲಾಗಿದೆ, ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳಲ್ಲ.</translation>
 <translation id="5540224163453853">ವಿನಂತಿಸಿದ ಲೇಖನವನ್ನು ಹುಡುಕಲು ಸಾಧವಾಗಲಿಲ್ಲ.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> ರಿಂದ <ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದಿಸಬೇಕೇ?</translation>
 <translation id="8218327578424803826">ನಿಯೋಜಿಸಲಾದ ಸ್ಥಳ:</translation>
 <translation id="3542684924769048008">ಇದಕ್ಕೆ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ:</translation>
+<translation id="2855922900409897335">ನಿಮ್ಮ <ph name="CREDIT_CARD"/> ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="7186367841673660872">ಈ ಪುಟವನ್ನು<ph name="ORIGINAL_LANGUAGE"/>ನಿಂದ<ph name="LANGUAGE_LANGUAGE"/>ಗೆ ಭಾಷಾಂತರಿಸಲಾಗಿದೆ</translation>
 <translation id="7139724024395191329">ಎಮಿರೇಟ್</translation>
+<translation id="6646897916597483132">ನಿಮ್ಮ ಕಾರ್ಡ್ ಮುಂಭಾಗದಲ್ಲಿರುವ 4-ಅಂಕಿ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="5145883236150621069">ನೀತಿ ಪ್ರತಿಕ್ರಿಯೆಯಲ್ಲಿ ದೋಷದ ಕೋಡ್ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ</translation>
 <translation id="7983301409776629893">ಯಾವಾಗಲೂ <ph name="ORIGINAL_LANGUAGE"/> ಅನ್ನು <ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದಿಸಿ</translation>
 <translation id="6970216967273061347">ಜಿಲ್ಲೆ</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">ನಿರ್ವಹಣೆಯಲ್ಲಿಲ್ಲ</translation>
 <translation id="3712624925041724820">ಪರವಾನಗಿಗಳು ಬರಿದಾಗಿವೆ</translation>
 <translation id="4926049483395192435">ನಿರ್ದಿಷ್ಟಪಡಿಸಬೇಕಾಗಿದೆ.</translation>
+<translation id="1455235771979731432">ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸುವಲ್ಲಿ ಸಮಸ್ಯೆ ಇದೆ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7542995811387359312">ಈ ಫಾರ್ಮ್ ಸುರಕ್ಷಿತವಾದ ಸಂಪರ್ಕವನ್ನು ಬಳಸುತ್ತಿಲ್ಲವಾದ ಕಾರಣ ಸ್ವಯಂಚಾಲಿತ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಭರ್ತಿ ಮಾಡುವಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/> ರಲ್ಲಿ ಇಲ್ಲವೆ? ಈ ದೋಷವನ್ನು ವರದಿ ಮಾಡಿ</translation>
 <translation id="8088680233425245692">ಲೇಖನವನ್ನು ವೀಕ್ಷಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">ಸಕ್ರಿಯ</translation>
 <translation id="7568593326407688803">ಈ ಪುಟವು<ph name="ORIGINAL_LANGUAGE"/>ನಲ್ಲಿದೆ ನೀವು ಅದನ್ನು ಭಾಷಾಂತರಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="8876793034577346603">ಪಾರ್ಸ್ ಮಾಡಬೇಕಾಗಿರುವ ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="4800132727771399293">ನಿಮ್ಮ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು CVC ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="4171400957073367226">ತಪ್ಪು ಪರಿಶೀಲನೆ ಸಹಿ</translation>
+<translation id="9125941078353557812">ನಿಮ್ಮ ಕಾರ್ಡ್ ಹಿಂಭಾಗದಲ್ಲಿರುವ 3-ಅಂಕಿಗಳ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="106701514854093668">ಡೆಸ್ಕ್‌ಟಾಪ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="6154808779448689242">ಹಿಂತಿರುಗಿಸಲಾದ ನೀತಿಯ ಟೋಕನ್‌ಗೆ ಪ್ರಸ್ತುತ ಟೋಕನ್ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ</translation>
 <translation id="7995512525968007366">ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿಲ್ಲ</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸು</translation>
 <translation id="20817612488360358">ಸಿಸ್ಟಂ ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಲು ಹೊಂದಿಸಲಾಗಿದೆ ಆದರೆ ಬಹಿರಂಗವಾದ ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ಸಹ ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿದೆ.</translation>
 <translation id="2639739919103226564">ಸ್ಥಿತಿ: </translation>
+<translation id="8824019021993735287">ಈ ಸಮಯದಲ್ಲಿ Chrome ಗೆ ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4968547170521245791">ಪ್ರಾಕ್ಸಿ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="4196861286325780578">&amp;ಸರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>

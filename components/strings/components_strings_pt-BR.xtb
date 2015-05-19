@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Obrigatória</translation>
 <translation id="2958431318199492670">A configuração de rede não está de acordo com o padrão ONC. Partes da configuração podem não ser importadas.</translation>
 <translation id="3583757800736429874">&amp;Refazer mover</translation>
+<translation id="7887683347370398519">Verifique seu CVC e tente novamente</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Registro de dispositivo não encontrado</translation>
 <translation id="1491151370853475546">Atualizar esta página</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Sempre traduzir do <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Ocultar valor</translation>
 <translation id="6753269504797312559">Valor da política</translation>
+<translation id="3369366829301677151">Atualize e verifique seu <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Ativar preenchimento automático usando os Contatos.</translation>
 <translation id="7275334191706090484">Favoritos gerenciados</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="1871208020102129563">O proxy foi configurado para utilizar servidores de proxy fixo e não um URL de script .pac.</translation>
+<translation id="8988760548304185580">Insira a data de validade e o CVC de três dígitos que aparece na parte de trás do seu cartão</translation>
 <translation id="8940229512486821554">Executar o comando <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Erro desconhecido</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Falha na tradução para <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">O número de série do dispositivo é inválido</translation>
+<translation id="3219579145727097045">Insira a data de validade e o CVC de quatro dígitos que aparece na parte frontal do seu cartão</translation>
 <translation id="3667681724235208644">Ver original</translation>
 <translation id="4079302484614802869">A configuração do proxy definida utiliza um URL de script .pac, e não servidores proxy fixos.</translation>
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Traduzir de <ph name="ORIGINAL_LANGUAGE"/> para <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Local designado:</translation>
 <translation id="3542684924769048008">Usar senha para:</translation>
+<translation id="2855922900409897335">Verificar seu <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Esta página foi traduzida de<ph name="ORIGINAL_LANGUAGE"/>para<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirado</translation>
+<translation id="6646897916597483132">Digite o CVC de quatro dígitos que aparece na parte frontal do seu cartão</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
 <translation id="7983301409776629893">Sempre traduzir <ph name="ORIGINAL_LANGUAGE"/> para <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distrito</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Não gerenciado</translation>
 <translation id="3712624925041724820">Licenças esgotadas</translation>
 <translation id="4926049483395192435">Deve ser especificado.</translation>
+<translation id="1455235771979731432">Houve um problema na verificação do seu cartão. Verifique a conexão com a Internet e tente novamente.</translation>
 <translation id="7542995811387359312">O preenchimento automático do cartão de crédito está desativado porque este formulário não usa uma conexão segura.</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE"/>? Informe este erro</translation>
 <translation id="8088680233425245692">Falha ao exibir artigo.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Ativo</translation>
 <translation id="7568593326407688803">Esta página está em<ph name="ORIGINAL_LANGUAGE"/>Deseja traduzi-la?</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
+<translation id="4800132727771399293">Verifique sua data de validade e seu CVC e tente novamente</translation>
 <translation id="4171400957073367226">Assinatura de verificação inválida</translation>
+<translation id="9125941078353557812">Digite o CVC de três dígitos encontrados na parte de trás do seu cartão</translation>
 <translation id="106701514854093668">Favoritos do computador</translation>
 <translation id="6154808779448689242">O token da política retornado não corresponde ao token atual</translation>
 <translation id="7995512525968007366">Não especificado</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Desfazer reordenar</translation>
 <translation id="20817612488360358">As configurações de proxy do sistema são definidas para serem utilizadas, mas uma configuração explícita de proxy também foi especificada.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="8824019021993735287">Não foi possível verificar seu cartão com o Chrome neste momento. Tente novamente mais tarde.</translation>
 <translation id="4968547170521245791">Não é possível usar o proxy</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="4196861286325780578">&amp;Refazer mover</translation>

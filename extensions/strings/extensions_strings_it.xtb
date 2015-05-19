@@ -8,18 +8,22 @@
 <translation id="1005274289863221750">Utilizzo del microfono e della fotocamera</translation>
 <translation id="2857834222104759979">File manifest non valido.</translation>
 <translation id="6384275966486438344">Modifica delle impostazioni di ricerca per: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Seleziona un dispositivo USB</translation>
 <translation id="1445572445564823378">Questa estensione sta rallentando <ph name="PRODUCT_NAME"/>. È necessario disabilitarla per ripristinare le prestazioni di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="7003844668372540529">Prodotto sconosciuto <ph name="PRODUCT_ID"/> di <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Accesso ai dispositivi seriali</translation>
 <translation id="288042212351694283">Accesso ai tuoi dispositivi Universal 2nd Factor</translation>
+<translation id="3163201441334626963">Prodotto sconosciuto <ph name="PRODUCT_ID"/> del fornitore <ph name="VENDOR_ID"/></translation>
+<translation id="6027032947578871493">Prodotto sconosciuto <ph name="PRODUCT_ID"/> di <ph name="VENDOR_NAME"/> (numero di serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">L'amministratore di questo computer richiede che <ph name="EXTENSION_NAME"/> abbia almeno la versione <ph name="EXTENSION_VERSION"/>. L'attivazione potrà essere completata solo dopo che è stato eseguito l'aggiornamento a questa versione o a una versione successiva.</translation>
 <translation id="6075907793831890935">Scambio di dati con il dispositivo <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Controllo dello stato e dell'accoppiamento dell'adattatore Bluetooth</translation>
 <translation id="677806580227005219">Gestore MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accedere a informazioni sui dispositivi Bluetooth accoppiati con il sistema e rilevare dispositivi Bluetooth nelle vicinanze.</translation>
 <translation id="8749863574775030885">Accedi a dispositivi USB di fornitori sconosciuti</translation>
+<translation id="3115238746683532089">Prodotto sconosciuto <ph name="PRODUCT_ID"/> del fornitore <ph name="VENDOR_ID"/> (numero di serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> di <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Impossibile caricare lo script in background &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> del fornitore <ph name="VENDOR_ID"/></translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Inviare e ricevere messaggi a/da dispositivi Bluetooth.</translation>
 <translation id="5678955352098267522">Lettura dei dati su <ph name="WEBSITE_1"/></translation>
@@ -31,7 +35,6 @@
 <translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="149347756975725155">Impossibile caricare l'icona estensione &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Questa estensione non è riuscita a modificare l'intestazione della richiesta &quot;<ph name="HEADER_NAME"/>&quot; di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Seleziona dispositivi USB</translation>
 <translation id="6731255991101203740">Impossibile creare la directory per la decompressione: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Impossibile caricare la pagina di informazioni &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Impossibile caricare la pagina delle opzioni &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
@@ -48,6 +51,7 @@
 <translation id="8047248493720652249">Questa estensione non è riuscita a denominare il download &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; perché un'altra estensione (<ph name="EXTENSION_NAME"/>) ha determinato un nome di file diverso &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="452039078290142656">dispositivi sconosciuti di <ph name="VENDOR_NAME"/></translation>
 <translation id="5026754133087629784">Visualizzazione web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (numero di serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="2753617847762399167">Percorso non valido (assoluto o relativo con &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">tutti i siti <ph name="WEBSITE_1"/></translation>
 <translation id="8662911384982557515">Cambio della pagina iniziale con: <ph name="HOME_PAGE"/></translation>
@@ -84,6 +88,7 @@
 <translation id="1803557475693955505">Impossibile caricare la pagina di sfondo &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Impossibile installare il pacchetto: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
 <translation id="5751530153776468604">L'applicazione &quot;<ph name="APP_NAME"/>&quot; richiede accesso a un dispositivo.</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> del fornitore <ph name="VENDOR_ID"/> (numero di serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Opzioni: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Il pacchetto non è valido. Dettagli: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
 <translation id="344630545793878684">Lettura dei dati su una serie di siti web</translation>

@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">Jaatko tietokoneen jonkun kanssa? Nyt voit määrittää Chromen juuri sellaiseksi kuin haluat.</translation>
 <translation id="6236285698028833233">Google Chrome on lakannut päivittymästä, eikä se enää tue käyttöjärjestelmäsi tätä versiota.</translation>
 <translation id="5453904507266736060">Jätä Google Chrome käyntiin taustalle</translation>
-<translation id="3454512769850953877">Kyllä, sulje Chrome</translation>
 <translation id="4167057906098955729">Täällä näet kaikki ilmoituksesi Chrome-sovelluksista, laajennuksista ja verkkosivustoista.</translation>
 <translation id="2704356438731803243">Jos haluat pitää nykyiset Chrome-tietosi erillään, voit luoda käyttäjälle <ph name="USER_NAME"/> uuden Chrome-tunnuksen.</translation>
 <translation id="386202838227397562">Sulje kaikki Chrome-ikkunat ja yritä uudelleen.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">Chrome tallentaa tietosi turvalliseen paikkaan, jottei sinun tarvitse kirjoittaa tietoja uudelleen. Sinun täytyy kuitenkin vahvistaa korttisi turvakoodi tulevien maksujen yhteydessä.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="7400722733683201933">Tietoja Google Chromesta</translation>
-<translation id="8838365799985821335">Laajennus on vaihtanut Chromen aloitussivun.</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="1065672644894730302">Asetuksiasi ei voi lukea. Kaikkia toimintoja ei voi välttämättä käyttää eikä asetuksiin tehtäviä muutoksia tallenneta.</translation>
 <translation id="7781002470561365167">Google Chromen uusi versio on saatavilla.</translation>
@@ -61,7 +59,6 @@
 <translation id="4743926867934016338">Hyväksy ja hae</translation>
 <translation id="1393853151966637042">Apua Chromen käytössä</translation>
 <translation id="7398801000654795464">Chromeen kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS"/>. Kirjaudu uudelleen sisään samalla tilillä.</translation>
-<translation id="5338943029751206389">Tämä sivusto käyttää vanhentuneita suojausasetuksia, joiden vuoksi Chromen tulevat versiot eivät välttämättä voi käyttää sitä turvallisesti.</translation>
 <translation id="4513711165509885787">Laskutustietosi on tallennettu Chromeen.</translation>
 <translation id="5253588388888612165">Jos jaat tämän tietokoneen henkilön <ph name="PROFILE_NAME"/> kanssa, lisää itsesi Chromeen, jotta voitte selata erikseen. Muuten sinun on irrotettava hänen Google-tilinsä.</translation>
 <translation id="7098166902387133879">Google Chrome käyttää mikrofoniasi.</translation>
@@ -79,6 +76,7 @@
 <translation id="3089968997497233615">Google Chromesta on saatavillaa uusi, turvallisempi versio.</translation>
 <translation id="5037239767309817516">Sulje kaikki Chrome-ikkunat ja käynnistä selain uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="225614027745146050">Tervetuloa</translation>
+<translation id="3398288718845740432">Piilota Chrome-valikossa</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="3149510190863420837">Chrome-sovellukset</translation>
 <translation id="8851136666856101339">pää</translation>
@@ -156,7 +154,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="103396972844768118">Tärkeitä tietoja Chrome-tiedoistasi</translation>
 <translation id="6757767188268205357">Älä häiritse</translation>
 <translation id="2290095356545025170">Haluatko varmasti poistaa Google Chromen?</translation>
-<translation id="7062966102157262887">Lataus on käynnissä. Haluatko sulkea Google Chromen ja peruuttaa latauksen?</translation>
 <translation id="4273752058983339720">Google Chrome on asetettu käynnistymään automaattisesti tietokoneen käynnistämisen yhteydessä.</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="415994390253732730">Käyttäytyykö Chrome omituisesti?</translation>
@@ -170,6 +167,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="6883876366448858277">lähettää sanan ja sen kontekstin Google-hakuun ja palauttaa määritelmiä, kuvia ja muita hakutuloksia.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chromen avulla voit klikata puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
+<translation id="4631713731678262610">Piilota Chrome-valikossa</translation>
 <translation id="3612333635265770873">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Google Chromen kanssa.</translation>
 <translation id="2665296953892887393">Auta parantamaan Google Chromea lähettämällä kaatumisilmoitukset ja <ph name="UMA_LINK"/> Googlelle</translation>
 <translation id="7761834446675418963">Avaa Chrome klikkaamalla nimeäsi ja aloita selaaminen.</translation>
@@ -200,8 +198,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="8614913330719544658">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="2681064822612051220">Järjestelmästä löytyi ristiriidan aiheuttava toinen Google Chromen asennus. Poista tuote ja yritä uudelleen.</translation>
 <translation id="2252923619938421629">Auta parantamaan Google Chromea ilmoittamalla nykyiset asetukset.</translation>
-<translation id="6126631249883707068">Haluatko, että Google Chrome tallentaa salasanasi?</translation>
-<translation id="7773845170078702898">Haluatko Google Chromen tallentavan tämän sivuston salasanan?</translation>
 <translation id="4251615635259297716">Linkitetäänkö Chrome-tiedot tähän tiliin?</translation>
 <translation id="7125719106133729027">Chrome ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Asenna Chrome uudelleen manuaalisesti.</translation>
 <translation id="5940385492829620908">Tämä on verkkosi, kirjanmerkkiesi ja muun Chrome-sisältösi koti.</translation>
@@ -214,7 +210,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7396375882099008034">Salli verkon käyttö Chromelle palomuurin tai virustorjunnan asetuksissa.</translation>
 <translation id="9102715433345326100">Tämä tiedosto on haitallinen, ja Chrome on estänyt sen.</translation>
 <translation id="8205111949707227942">Valinnainen: lähetä automaattisesti käyttötilastoja ja virheraportteja Googlelle Chrome-käyttöjärjestelmän kehittämiseksi.</translation>
-<translation id="7253415505590551024">Latauksia on käynnissä. Haluatko sulkea Google Chromen ja peruuttaa lataukset?</translation>
 <translation id="487887346205285304">Käyttäytyykö Chrome omituisesti?</translation>
 <translation id="3622797965165704966">Nyt voit helpommin käyttää Chromea Google-tililläsi ja jaetuilla tietokoneilla.</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
@@ -244,7 +239,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome on vanhentunut</translation>
 <translation id="7592736734348559088">Google Chrome ei voinut synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
-<translation id="7810280330588098283">Chrome tallentaa salasanan |Googlen tallentamiin salasanoihin| ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
 <translation id="6991142834212251086">Linkitä Chrome-tietoni tähän tiliin</translation>
 <translation id="3451115285585441894">Lisätään Chromeen...</translation>
 <translation id="3047079729301751317">Jos irrotat tilin <ph name="USERNAME"/>, historiasi, kirjanmerkkisi ja muut laitteelle tallennetut Chrome-tiedot poistetaan. Google-tiliisi tallennetut tiedot säilyvät ennallaan ja voit hallinnoida niitä <ph name="GOOGLE_DASHBOARD_LINK"/>Google Hallintapaneelin kautta<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -260,6 +254,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="1698376642261615901">Google Chrome on verkkoselain, jolla voit avata verkkosivuja ja sovelluksia salamannopeasti. Se on nopea, vakaa ja helppokäyttöinen. Selaa verkkoa turvallisemmin Google Chromen haittaohjelma- ja tietojenkalastelusuojauksen avulla.</translation>
 <translation id="853189717709780425">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin.</translation>
 <translation id="699076943483372849">Tämä sivusto käyttää vanhaa Chrome-kehyslaajennusta, johon ei ole enää saatavilla tietoturva- ja vakauspäivityksiä. Poista se ja asenna uudempi selain.</translation>
+<translation id="5531349711857992002">Verkkosivuston varmennusketju sisältää ainakin yhden varmenteen, joka on allekirjoitettu vanhentuneella SHA-1-pohjaisella algoritmilla.</translation>
 <translation id="6049075767726609708">Järjestelmänvalvoja on asentanut Google Chromen tähän järjestelmään ja selain on kaikkien käyttäjien käytettävissä. Järjestelmätason Google Chrome korvaa käyttäjätason asennuksen.</translation>
 <translation id="1818142563254268765">Chrome ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Päivitä Chrome.</translation>
 <translation id="7408085963519505752">Chrome-käyttöjärjestelmän käyttöehdot</translation>

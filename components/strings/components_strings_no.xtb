@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="2958431318199492670">Nettverkskonfigurasjonen overholder ikke ONC-standarden. Deler av konfigurasjonen kan muligens ikke importeres.</translation>
 <translation id="3583757800736429874">&amp;Flytt likevel</translation>
+<translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Manglende enhetsoppføring</translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Skjul verdien</translation>
 <translation id="6753269504797312559">Retningslinjeverdi</translation>
+<translation id="3369366829301677151">Oppdater og bekreft følgende kort: <ph name="CREDIT_CARD"/></translation>
 <translation id="8834246243508017242">Aktiver autofyll for Kontakter</translation>
 <translation id="7275334191706090484">Administrerte bokmerker</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
+<translation id="8988760548304185580">Skriv inn utløpsdatoen og den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
 <translation id="8940229512486821554">Kjør <ph name="EXTENSION_NAME"/>-kommando: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Oversettelsen til <ph name="TARGET_LANGUAGE"/> mislyktes.</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
+<translation id="3219579145727097045">Skriv inn utløpsdatoen og den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
 <translation id="3667681724235208644">Se originalen</translation>
 <translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
 <translation id="5540224163453853">Den forespurte artikkelen ble ikke funnet.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">Vil du oversette fra <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">Tilordnet posisjon:</translation>
 <translation id="3542684924769048008">Bruk passord for:</translation>
+<translation id="2855922900409897335">Bekreft følgende kort: <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirat</translation>
+<translation id="6646897916597483132">Skriv inn den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
 <translation id="5145883236150621069">Feilkode i responsen for enhetsinnstillinger</translation>
 <translation id="7983301409776629893">Oversett alltid <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Område</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">Administreres ikke</translation>
 <translation id="3712624925041724820">Lisensene er oppbrukt</translation>
 <translation id="4926049483395192435">Må angis.</translation>
+<translation id="1455235771979731432">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
 <translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
 <translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE"/>? Rapportér denne feilen</translation>
 <translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="7568593326407688803">Denne siden er på<ph name="ORIGINAL_LANGUAGE"/>Vil du ha den oversatt?</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
+<translation id="4800132727771399293">Kontrollér utløpsdatoen og CVC-koden, og prøv igjen.</translation>
 <translation id="4171400957073367226">Ugyldig bekreftelsessignatur</translation>
+<translation id="9125941078353557812">Skriv inn den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
 <translation id="106701514854093668">Bokmerker for skrivebord</translation>
 <translation id="6154808779448689242">Det returnerte tokenet for enhetsinnstillinger samsvarer ikke med det gjeldende tokenet</translation>
 <translation id="7995512525968007366">Ikke spesifisert</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
 <translation id="20817612488360358">Innstillinger for systemmellomtjener er stilt inn på å brukes, men en uttrykkelig mellomtjenerkonfigurasjon er også angitt.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="8824019021993735287">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="4968547170521245791">Kan ikke sende gjennom proxy-tjeneren</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>

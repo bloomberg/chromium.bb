@@ -19,6 +19,9 @@
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE"/>에서 이 이미지 검색</translation>
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="4816465935029283692">데이터 유형</translation>
+<translation id="5098185943924922330">다운이 발생할 때마다 실행 중인 파일, 애플리케이션, 서비스에 관한 정보를 Google에 전송하여 우선적으로 구현해야 할 기능과 개선사항을 정할 수 있도록 도와주세요.
+
+        사용 통계에는 환경설정, 버튼 클릭수, 메모리 사용량과 같은 정보가 포함되며 웹페이지 URL이나 개인정보는 포함되어 있지 않습니다. 오류 보고서에는 문제가 발생했을 당시의 시스템 정보가 포함되며 발생 당시 상황에 따라 웹페이지 URL이나 개인정보가 포함될 수도 있습니다.</translation>
 <translation id="4042870126885713738">웹 주소가 확인되지 않거나 연결되지 않는 경우 추천 주소 표시</translation>
 <translation id="8237438615979997762">이 기기에 저장된 데이터뿐만 아니라 Google 계정에 저장된 데이터도 그대로 유지됩니다. 그러나 데이터에 새로 추가하거나 변경한 사항은 서로 동기화되지 않습니다.</translation>
 <translation id="6831043979455480757">번역</translation>
@@ -92,6 +95,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, 웹 앱. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">파일 바꾸기</translation>
 <translation id="5595485650161345191">주소 수정</translation>
+<translation id="8413385045638830869">우선 확인(권장)</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="5313967007315987356">사이트 추가</translation>
 <translation id="5733727110006255111">이 기능을 사용 설정하면 Chrome은 Google 서버를 이용해 방문한 페이지를 압축한 다음 다운로드합니다. 단, SSL 및 시크릿 페이지에서는 작동하지 않습니다.</translation>
@@ -157,6 +161,7 @@
 <translation id="6857778194843072568">Wi-Fi 연결 시에만 보내기</translation>
 <translation id="5380554235172449987">보내지 않기</translation>
 <translation id="5715468759630044318">계정 선택</translation>
+<translation id="5000922062037820727">차단(권장)</translation>
 <translation id="544291274896356069">이 링크가 외부 애플리케이션에서 열리면 시크릿 모드가 종료됩니다. 계속하시겠습니까?</translation>
 <translation id="3917783807003067648">위치가 차단됨</translation>
 <translation id="1379156015317873965">페이지 로드 성능 개선</translation>
@@ -228,6 +233,7 @@
 <translation id="3254409185687681395">페이지 북마크</translation>
 <translation id="907015151729920253">스마트 카드</translation>
 <translation id="2482878487686419369">알림</translation>
+<translation id="857943718398505171">허용(권장)</translation>
 <translation id="4412992751769744546">타사 쿠키 허용</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">동영상 저장</translation>
@@ -262,7 +268,6 @@
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="5899349522111170522">새 파일 만들기</translation>
-<translation id="1082482054625560856"><ph name="BEGIN_LINK"/>Google 계정<ph name="END_LINK"/>에서 저장된 비밀번호 관리</translation>
 <translation id="7232255641409319872">지정한 웹사이트에서만 이미지를 허용하고 나머지 웹사이트에서는 차단합니다.</translation>
 <translation id="2360035970720276770">'http'나 'https' URL만 다운로드할 수 있습니다.</translation>
 <translation id="6570560778840017462"><ph name="BEGIN_LINK"/>Google 계정<ph name="END_LINK"/>에서 로그아웃되지 않았습니다.</translation>

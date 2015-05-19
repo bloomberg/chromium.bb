@@ -13,7 +13,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="4921569541910214635">ኮምፒውተር ይጋራሉ? አሁን Chromeን ልክ እንደሚፈልጉት አድርገው ማዋቀር ይችላሉ።</translation>
 <translation id="6236285698028833233">Google Chrome ማዘመን አቁሟል፣ እና ከአሁን በኋላ ይህን የስርዓተ ክወናዎን ስሪት አይደግፍም።</translation>
 <translation id="5453904507266736060">Google Chrome ጀርባ ውስጥ ይሂድ</translation>
-<translation id="3454512769850953877">አዎ ከChrome ውጣ</translation>
 <translation id="4167057906098955729">ሁሉም ማሳወቂያዎችዎን እዚህ ካሉት የChrome መተግበሪያዎች፣ ቅጥያዎች፣ እና ድር ጣቢያዎች ሆነው ማየት ይችላሉ።</translation>
 <translation id="2704356438731803243">ነባሩ የChrome ውሂብዎን ለይተው ማስቀመጥ ከፈለጉ ለ<ph name="USER_NAME"/> አዲስ የChrome ተጠቃሚ መፍጠር ይችላሉ።</translation>
 <translation id="386202838227397562">እባክዎ ሁሉንም የChrome መስኮቶች ይዝጉና እንደገና ይሞክሩ።</translation>
@@ -21,7 +20,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="1225016890511909183">Chrome መረጃዎን በድጋሚ መተየብ እንዳይኖርብዎ ደህንነቱ በተጠበቀ ሁኔታ ያስቀምጣል፣ ነገር ግን ለወደፊት ክፍያዎች አሁንም የካርድዎን የደህንነት ኮድ ማረጋገጥ አለብዎ።</translation>
 <translation id="2770231113462710648">ነባሪ አሳሽን ወደዚህ ቀይር፦</translation>
 <translation id="7400722733683201933">ስለ Google Chrome</translation>
-<translation id="8838365799985821335">አንድ ቅጥያ Chromeን ሲጀምሩት የሚታየውን ገጽ ቀይሯል።</translation>
 <translation id="2077129598763517140">ሲገኝ የሃርድዌር ማጣደፍን ተጠቀም</translation>
 <translation id="1065672644894730302">አማራጮችዎ ሊነበቡ አልቻሉም።
 
@@ -67,7 +65,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="4743926867934016338">ተቀበል እና ፈልግ</translation>
 <translation id="1393853151966637042">ስለ Chrome አጠቃቀም ላይ እገዛን ያግኙ</translation>
 <translation id="7398801000654795464">እንደ <ph name="USER_EMAIL_ADDRESS"/> ሆነው ወደ Chrome ገብተዋል። እባክዎ እንደገና ለመግባት ተመሳሳዩን መለያ ይጠቀሙ።</translation>
-<translation id="5338943029751206389">ጣቢያው የወደፊት የChrome ስሪቶችን በጥንቃቄ እንዳይደርሱበት ሊያግዱት የሚችሉ ጊዜ ያለፈባቸው የደህንነት ቅንብሮችን እየተጠቀመ ነው።</translation>
 <translation id="4513711165509885787">የክፍያ መጠየቂያ ዝርዝሮችዎ በChrome ውስጥ ተቀምጠዋል።</translation>
 <translation id="5253588388888612165">ይህን ኮምፒውተር ከ<ph name="PROFILE_NAME"/> ጋር የሚጋሩ ከሆኑ ተለይተው ለማሰስ እራስዎን Chrome ላይ ያክሉ። አለበለዚያ የGoogle መለያቸውን ያላቅቁት።</translation>
 <translation id="7098166902387133879">Google Chrome የእርስዎን ማይክሮፎን እየተጠቀመ ነው።</translation>
@@ -85,6 +82,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="3089968997497233615">አዲስና ደህንነቱ ይበልጥ የተጠበቀ የGoogle Chrome ስሪት ይገኛል።</translation>
 <translation id="5037239767309817516">ለውጡ እንዲተገበር እባክዎ ሁሉንም የGoogle Chrome መስኮቶችን ይዝጉና እንደገና ያስጀምሩት።</translation>
 <translation id="225614027745146050">እንኳን ደህና መጡ</translation>
+<translation id="3398288718845740432">በChrome ምናሌ ውስጥ ደብቅ</translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="3149510190863420837">Chrome መተግበሪያዎች</translation>
 <translation id="8851136666856101339">main</translation>
@@ -163,7 +161,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="103396972844768118">የChrome ውሂብዎን በተመለከተ አስፈላጊ መረጃ</translation>
 <translation id="6757767188268205357">አታርመኝ</translation>
 <translation id="2290095356545025170">እርግጠኛ ነዎት Google Chromeን ማራገፍ ይፈልጋሉ?</translation>
-<translation id="7062966102157262887">አንድ ውርድ አሁን በሂደት ላይ ነው። የውርዱን ማስቀረት ከGoogle Chrome መውጣት ይፈልጋሉ?</translation>
 <translation id="4273752058983339720">ኮምፒውተርዎን ሲያስነሱ Google Chrome በራስ-ሰር እንዲጀምር ተዋቅሯል።</translation>
 <translation id="2316129865977710310">አይ፣ አመሰግናለሁ</translation>
 <translation id="415994390253732730">Chrome ያልተለመደ ባህሪ እያሳየ ነው?</translation>
@@ -177,6 +174,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6883876366448858277">አንድ ቃል እና በዙሪያው ያለውን አውድ ለGoogle ፍለጋ ይልካል፣ እና ትርጓሜዎችን፣ ስዕሎችን፣ እና ሌሎች የፍለጋ ውጤቶችን ይመልሳል።</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ድር ላይ ያለ ስልክ ቁጥር ጠቅ እንዲያደርጉት እና በSkype እንዲደውሉለት ያስችልዎታል!</translation>
+<translation id="4631713731678262610">በChrome ምናሌ ውስጥ ደብቅ</translation>
 <translation id="3612333635265770873">ተመሳሳይ ስም ያለው አንድ ሞዱል ከGoogle Chrome ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="2665296953892887393">የብልሽት ሪፖርቶችን እና <ph name="UMA_LINK"/> ወደ Google በመላክ Google Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ</translation>
 <translation id="7761834446675418963">Chromeን ለመክፈት እና ማሰስ ለመጀመር ስምዎን ጠቅ ያድርጉት።</translation>
@@ -207,8 +205,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8614913330719544658">Google Chrome መልስ አይሰጥም። አሁን ዳግም ይጀምር?</translation>
 <translation id="2681064822612051220">በስርዓቱ ላይ የGoogle Chrome ጭነት ግጭት ተገኝቷል። እባክዎ ያራግፉት እና እንደገና ይሞክሩ።</translation>
 <translation id="2252923619938421629">የአሁኖቹ ቅንብሮችን ሪፖርት በማድረግ Google Chrome የተሻለ እንዲሆን ያግዙ</translation>
-<translation id="6126631249883707068">የይለፍ ቃልዎን Google Chrome እንዲያስቀምጥልዎት ይፈልጋሉ?</translation>
-<translation id="7773845170078702898">Google Chrome የዚህ ጣቢያ ይለፍ ቃልዎን እንዲያስቀምጥልዎት ይፈልጋሉ?</translation>
 <translation id="4251615635259297716">የChrome ውሂብዎ ከዚህ መለያ ጋር ይገናኝ?</translation>
 <translation id="7125719106133729027">Chrome እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ አንዳንድ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ነው። Chromeን እራስዎ ዳግም መጫን ያስፈልግዎታል።</translation>
 <translation id="5940385492829620908">የእርስዎ ድር፣ ዕልባቶች እና ሌሎች የChrome ነገሮች እዚህ ይኖራሉ።</translation>
@@ -222,7 +218,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
         ይፍቀዱለት።</translation>
 <translation id="9102715433345326100">ይህ ፋይል ተንኮል-አዘል ነው፣ እና Chrome አግዶታል።</translation>
 <translation id="8205111949707227942">ከተፈለገ፦ የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶች ለGoogle በመላክ Chrome ስርዓተ ክወና የተሻለ እንዲሆን ያግዙ።</translation>
-<translation id="7253415505590551024">ውርዶች አሁን በሂደት ላይ ናቸው። የውርዱን ማስቀረት ከGoogle Chrome መውጣት ይፈልጋሉ?</translation>
 <translation id="487887346205285304">Chrome ያልተለመደ ባህሪ እያሳየ ነው?</translation>
 <translation id="3622797965165704966">አሁን Chromeን ከGoogle መለያዎ ጋር እና በተጋሩ ኮምፒውተሮች ላይ መጠቀም ይበልጥ ቀላል ነው።</translation>
 <translation id="7196020411877309443">ለምን ይህን አያለሁ?</translation>
@@ -252,7 +247,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="3360895254066713204">Chrome አጋዥ</translation>
 <translation id="1877026089748256423">Chrome ጊዜው አልፎበታል</translation>
 <translation id="7592736734348559088">የመለያዎ መግቢያ ዝርዝሮች ጊዜያቸው ያለፈባቸው ስለሆኑ Google Chrome ውሂብዎን ማመሳሰል አልቻለም።</translation>
-<translation id="7810280330588098283">Chromium ይህን በእርስዎ የ|Google የተቀመጡ የይለፍ ቃሎች| ያስቀምጥ እና በሚቀጥለው ጊዜ በሚፈልጉት ጊዜ ያስታውሰዋል።</translation>
 <translation id="6991142834212251086">የChrome ውሂቤን ከዚህ መለያ ጋር አገናኝ</translation>
 <translation id="3451115285585441894">ወድ Chrome በማከል ላይ...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/>ን ግንኙነት ማቋረጥ ታሪክዎን፣ ቅንበሮችዎን እና ሌሎች በዚህ መሳሪያ ላይ የተቀመጡትን ሌሎች የChrome ውሂብ ያጸዳል። በGoogle መለያዎ ላይ ያለው ውሂብ የማይጸዳ ሲሆን በ<ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/> ላይ መተዳደር ይችላል።</translation>
@@ -268,6 +262,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="1698376642261615901">Google Chrome ድረ-ገፆችን እና መተግበሪያዎችን በሚገርም ፍጥነት ማሄድ የሚችል የድር አሳሽ ነው። ፈጣን፣ የረጋ እና ለመጠቀም ቀላል ነው። Google Chrome ውስጥ አብሮት በተሰራ የአስጋሪና ተንኮል-አዘል ሶፍትዌር መከላከያ አማካኝነት ደህንነትዎ በበለጠ ሁኔታ ተጠብቆ ድሩን ያስሱ።</translation>
 <translation id="853189717709780425">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በGoogle Chrome መገለጫዎ ላይ ቁጥጥር እየሰጡት ነው። እንደ መተግበሪያዎችዎ፣ ዕልባቶችዎ፣ ታሪክዎ፣ የይለፍ ቃላትዎ እና ሌሎች ቅንብሮችዎ ያሉ የGoogle Chrome ውሂብዎ እስከመጨረሻው ከ<ph name="USER_NAME"/> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች ዳሽቦርዱ አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም።</translation>
 <translation id="699076943483372849">ይህ ጣቢያ ከእንግዲህ የደህንነት እና የመረጋጋት ዝማኔዎችን መቀበል የማይችለውን አገልግሎቱ ያበቃውን Chrome ክፈፍ ተሰኪ እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉት።</translation>
+<translation id="5531349711857992002">የዚህ የድርጣቢያ የዕውቅና ማረጋገጫ ሰንሰለት ቢያንስ አንድ ውድቅ የተደረገ የSHA-1 በመጠቀም የተገባበት ዕውቅና መስጫ።</translation>
 <translation id="6049075767726609708">አስተዳዳሪው Google Chromeን በዚህ ስርዓት ላይ ጭኗል፣ ለሁሉም ተጠቃሚዎችም ክፈት ሆኗል። የስርዓተ-ደረጃው Google Chrome የተጠቃሚ ደረጃ ጭነቱን አሁን ይተካዋል።</translation>
 <translation id="1818142563254268765">Chrome እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ አንዳንድ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ነው። Chromeን ማዘመን አለብዎት።</translation>
 <translation id="7408085963519505752">የChrome OS ውል</translation>

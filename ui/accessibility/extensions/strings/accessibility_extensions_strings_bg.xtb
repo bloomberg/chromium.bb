@@ -12,15 +12,19 @@
 <translation id="8480209185614411573">High Contrast</translation>
 <translation id="1588438908519853928">Нормално</translation>
 <translation id="4954450790315188152">Когато функцията Caret Browsing е активирана:</translation>
+<translation id="1591070050619849194">Деактивиране на всички анимирани изображения.</translation>
 <translation id="2965611304828530558">&lt;p&gt;Когато стигнете до връзка или контрола, фокусът автоматично се премества върху нея. Натиснете &lt;span class='key'&gt;Enter&lt;/span&gt;, за да кликнете върху връзка или бутон.&lt;/p&gt; &lt;p&gt;Когато фокусът е върху контрола, която улавя натисканията на клавишите със стрелки (например текстово или списъчно поле), натиснете &lt;span class='key'&gt;Esc&lt;/span&gt; и стрелката за наляво или надясно, за да продължите да сърфирате с клавишите.&lt;/p&gt; &lt;p&gt;Друга възможност е да натиснете &lt;span class='key'&gt;Tab&lt;/span&gt;, за да преместите фокуса върху следващата контрола. &lt;/p&gt;</translation>
 <translation id="5041932793799765940">Коригиране на цветовете</translation>
 <translation id="2394933097471027016">Изпробвайте разширението Caret Browsing още сега – то е винаги активирано на тази страница!</translation>
 <translation id="3622586652998721735">Задаване като стандартна схема</translation>
+<translation id="4937901943818762779">Разрешаване на анимираните изображения, но само веднъж.</translation>
 <translation id="2179565792157161713">Отваряне на дългото описание в нов раздел</translation>
 <translation id="7942349550061667556">червено</translation>
 <translation id="1555130319947370107">синьо</translation>
 <translation id="2471847333270902538">Цветова схема за <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Кликнете с десния бутон на мишката върху всеки елемент с атрибут „aria-describedat“ или „longdesc“, за да осъществите достъп до дългото му описание.</translation>
+<translation id="6838518108677880446">Настройване:</translation>
+<translation id="5594989420907487559">Анимациите се изпълняват само веднъж или се деактивират напълно.</translation>
 <translation id="786423340267544509">Добавяне на контури към елементите с атрибути „aria-describedat“ или „longdesc“.</translation>
 <translation id="690628312087070417">Когато курсорът се премести на голямо разстояние:</translation>
 <translation id="1996252509865389616">Да се активира ли?</translation>
@@ -37,16 +41,23 @@
 <translation id="1287053896835709737">Жълто върху черно</translation>
 <translation id="4896660567607030658">Без обратна връзка – показване само на курсора.</translation>
 <translation id="5631241868147802353">Стандартна цветова схема:</translation>
+<translation id="1791496371305830581">Разрешаване на всички анимирани изображения.</translation>
 <translation id="5173942593318174089">Открояване на позицията на курсора с анимация.</translation>
 <translation id="7379645913608427028">Степен</translation>
+<translation id="3252573918265662711">Настройване</translation>
 <translation id="894241283505723656">Long Descriptions in Context Menu</translation>
 <translation id="5555153510860501336">Разширението High Contrast е деактивирано</translation>
+<translation id="2808027189040546825">Стъпка 1: Изберете реда с най-бледите звезди:</translation>
+<translation id="8321034316479930120">Правило за анимациите</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="1703735871906654364">Caret Browsing</translation>
+<translation id="145360476452865422">Правило за анимациите:</translation>
 <translation id="7384431257964758081">Разширението High Contrast е активирано</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="5650358096585648000">Визуална обратна връзка</translation>
 <translation id="4388820049312272371">Открояване на позицията на курсора с бързо премигване.</translation>
+<translation id="7586636300921797327">Стъпка 2: Местете плъзгача, докато не започнете да виждате всички звезди в
+избрания ред</translation>
 <translation id="2223143012868735942">Цветови филтър, който може да се персонализира и да се прилага за уеб страници с цел подобряване на възприемането на цветовете.</translation>
 <translation id="4023902424053835668">Разглеждайте текста на уеб страниците посредством клавишите със стрелки.</translation>
 <translation id="2795227192542594043">Това разширение ви предоставя курсор, който може да се мести в уеб страниците, и ви позволява да избирате текст с клавиатурата.</translation>

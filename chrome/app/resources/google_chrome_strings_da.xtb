@@ -11,7 +11,6 @@
 <translation id="4921569541910214635">Deler du en computer? Nu kan du konfigurere Chrome, præcist som du vil.</translation>
 <translation id="6236285698028833233">Google Chrome er holdt op med at opdatere og understøtter ikke længere denne version af dit operativsystem.</translation>
 <translation id="5453904507266736060">Lad Google Chrome køre i baggrunden</translation>
-<translation id="3454512769850953877">Ja, afslut Chrome</translation>
 <translation id="4167057906098955729">Her kan du se alle dine underretninger fra apps, udvidelser og websites i Chrome.</translation>
 <translation id="2704356438731803243">Hvis du foretrækker at holde dine eksisterende Chrome-data adskilt, kan du oprette en ny Chromium-bruger for <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Luk alle Google Chrome-vinduer, og prøv igen.</translation>
@@ -19,7 +18,6 @@
 <translation id="1225016890511909183">Chrome vil lagre dine oplysninger på sikker vis, så du ikke behøver at angive dem igen, men du skal stadig bekræfte dit korts sikkerhedskode ved fremtidige betalinger.</translation>
 <translation id="2770231113462710648">Skift standardbrowser til:</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
-<translation id="8838365799985821335">En udvidelse har ændret din startside i Chrome.</translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="1065672644894730302">Dine præferencer kan ikke læses. Visse funktioner er muligvis ikke tilgængelige, og ændringer af præferencer gemmes ikke.</translation>
 <translation id="7781002470561365167">Der er en ny version af Google Chrome til rådighed.</translation>
@@ -61,7 +59,6 @@
 <translation id="4743926867934016338">Acceptér, og søg</translation>
 <translation id="1393853151966637042">Få hjælp til at bruge Chrome</translation>
 <translation id="7398801000654795464">Du loggede ind på Chrome som <ph name="USER_EMAIL_ADDRESS"/>. Brug den samme konto til at logge ind igen.</translation>
-<translation id="5338943029751206389">Websitet bruger forældede sikkerhedsindstillinger, der kan forhindre fremtidige versioner af Chrome i at få sikker adgang til det.</translation>
 <translation id="4513711165509885787">Dine faktureringsoplysninger er nu gemt i Chrome.</translation>
 <translation id="5253588388888612165">Hvis du deler denne computer med <ph name="PROFILE_NAME"/>, kan du tilføje dig selv i Chrome for at browse individuelt. Alternativt kan du afbryde vedkommendes Google-konto.</translation>
 <translation id="7098166902387133879">Google Chrome bruger din mikrofon.</translation>
@@ -79,6 +76,7 @@
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="5037239767309817516">Luk alle vinduer i Google Chrome, og genstart, så denne ændring kan træde i kraft.</translation>
 <translation id="225614027745146050">Velkommen</translation>
+<translation id="3398288718845740432">Skjul i Chrome-menuen</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="8851136666856101339">hovd</translation>
@@ -155,7 +153,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="103396972844768118">Vigtige oplysninger om dine Chrome-data</translation>
 <translation id="6757767188268205357">Spørg mig ikke igen</translation>
 <translation id="2290095356545025170">Er du sikker på, at du vil afinstallere Google Chrome?</translation>
-<translation id="7062966102157262887">En download er i øjeblikket i gang. Vil du afslutte Google Chrome og annullere downloaden?</translation>
 <translation id="4273752058983339720">Google Chrome er konfigureret til at åbne automatisk, når du starter computeren.</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="415994390253732730">Opfører Chrome sig mærkeligt?</translation>
@@ -169,6 +166,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="6883876366448858277">sender et ord og ordets kontekst til Google Søgning, der leverer definitioner, billeder, søgeresultater og andre oplysninger.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
+<translation id="4631713731678262610">Skjul i Chrome-menuen</translation>
 <translation id="3612333635265770873">Et modul med samme navn konflikter med Google Chrome.</translation>
 <translation id="2665296953892887393">Hjælp med at gøre Google Chrome bedre ved at sende fejlrapporter og <ph name="UMA_LINK"/> til Google</translation>
 <translation id="7761834446675418963">Klik på dit navn for at åbne Chrome og gå i gang med at browse.</translation>
@@ -199,8 +197,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du genstarte nu?</translation>
 <translation id="2681064822612051220">Der er registreret en modstridende installation af Google Chrome i dit system. Du skal afinstallere denne og prøve igen.</translation>
 <translation id="2252923619938421629">Hjælp med at gøre Google Chrome bedre ved at rapportere de aktuelle indstillinger</translation>
-<translation id="6126631249883707068">Er du sikker på, at du vil have Google Chrome til at gemme din adgangskode?</translation>
-<translation id="7773845170078702898">Skal Google Chrome gemme din adgangskode til dette website?</translation>
 <translation id="4251615635259297716">Vil du knytte dine Chrome-data til denne konto?</translation>
 <translation id="7125719106133729027">Chrome kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal geninstallere Chrome manuelt.</translation>
 <translation id="5940385492829620908">Dit webindhold, dine bogmærker og andre Chrome-ting kan findes her.</translation>
@@ -214,7 +210,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
        antivirus.</translation>
 <translation id="9102715433345326100">Denne fil er skadelig, og Chrome har blokeret den.</translation>
 <translation id="8205111949707227942">Valgfrit: Vær med til at gøre Chrome OS bedre ved automatisk at sende brugsstatistikker og rapporter om nedbrud til Google.</translation>
-<translation id="7253415505590551024">Downloads er i øjeblikket i gang. Vil du afslutte Google Chrome og annullere disse downloads?</translation>
 <translation id="487887346205285304">Opfører Chrome sig mærkeligt?</translation>
 <translation id="3622797965165704966">Nu er det blevet nemmere at bruge Chrome med din Google-konto og på delte computere.</translation>
 <translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>
@@ -244,7 +239,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
 <translation id="1877026089748256423">Chrome er forældet</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
-<translation id="7810280330588098283">Chrome gemmer denne blandt dine |gemte Google-adgangskoder| og husker den, næste gang du skal bruge den.</translation>
 <translation id="6991142834212251086">Knyt mine Chrome-data til denne konto</translation>
 <translation id="3451115285585441894">Føjer til Chrome...</translation>
 <translation id="3047079729301751317">Hvis du afbryder forbindelsen for <ph name="USERNAME"/>, slettes din historik, dine bogmærker, dine indstillinger og andre Chrome-data, der er gemt på denne enhed. Data, der er gemt på din Google-konto, slettes ikke og kan administreres i <ph name="GOOGLE_DASHBOARD_LINK"/>Google Betjeningspanel<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -260,6 +254,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="1698376642261615901">Google Chrome er en webbrowser, som kører websider og applikationer med lynets hast. Den er hurtig, stabil og nem at bruge. Surf mere sikkert med indbygget beskyttelse mod malware og phishing i Google Chrome.</translation>
 <translation id="853189717709780425">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din Google Chrome-profil. Dine Chrome-data, som f.eks. dine apps, bogmærker, historik, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME"/>. Du kan slette disse data via Betjeningspanelet for Google Konti, men du kan ikke knytte disse data sammen med en anden konto.</translation>
 <translation id="699076943483372849">Dette website anvender Chrome Frame-pluginnet, som ikke længere modtager sikkerheds- og stabilitetsopdateringer. Afinstaller pluginnet, og opgrader til en moderne browser.</translation>
+<translation id="5531349711857992002">Certifikatskæden for dette website indeholder mindst ét certifikat, der blev signeret ved hjælp af en forældet signaturalgoritme baseret på SHA-1.</translation>
 <translation id="6049075767726609708">En administrator har allerede installeret Google Chrome på dette system, og det er tilgængeligt for alle brugere. Google Chrome-programmet på systemniveau vil nu erstatte din installation på brugerniveau.</translation>
 <translation id="1818142563254268765">Chrome kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal opdatere Chrome.</translation>
 <translation id="7408085963519505752">Vilkår for Chrome OS</translation>

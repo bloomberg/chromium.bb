@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">বাধ্যতামূলক</translation>
 <translation id="2958431318199492670">নেটওয়ার্ক কনফিগারেশন ONC মানকের সাথে সম্মত নয়৷ কনফিগারেশনের অংশগুলি আমদানিকৃত নাও হতে পারে৷</translation>
 <translation id="3583757800736429874">&amp;সরানোর কাজটি পুনরায় করুন</translation>
+<translation id="7887683347370398519">আপনার CVC পরীক্ষা করুন এবং আবার চেষ্টা করুন</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ডিভাইস রেকর্ড অনুপস্থিত</translation>
 <translation id="1491151370853475546">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">সর্বদা অনুবাদ করুন <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">মান লুকান</translation>
 <translation id="6753269504797312559">নীতি মান</translation>
+<translation id="3369366829301677151">আপনার <ph name="CREDIT_CARD"/> আপডেট করুন এবং যাচাই করুন</translation>
 <translation id="8834246243508017242">পরিচিতিগুলি ব্যবহার করে স্বতঃপূর্ণ সক্ষম করুন...</translation>
 <translation id="7275334191706090484">পরিচালিত বুকমার্কগুলি</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -48,6 +50,7 @@
 <translation id="6839929833149231406">এলাকা</translation>
 <translation id="1871208020102129563">
 প্রক্সি স্থির প্রক্সি সার্ভারগুলি ব্যবহার করতে সেট করা আছে কোনো .pac স্ক্রিপ্ট URL নয়৷</translation>
+<translation id="8988760548304185580">আপনার কার্ডের পিছনে থাকা ৩ সংখ্যার CVC এবং মেয়াদ শেষের তারিখ লিখুন</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/>আদেশটি <ph name="SEARCH_TERMS"/>চালনা করুন</translation>
 <translation id="3380365263193509176">অজানা ত্রুটি</translation>
 <translation id="112840717907525620">নীতি ক্যাশেটি ঠিক আছে</translation>
@@ -60,6 +63,7 @@
 <translation id="4506176782989081258">যাচাইকরণের ত্রুটি: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> এ অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা অবৈধ</translation>
+<translation id="3219579145727097045">আপনার কার্ডের সামনে থাকা ৪ সংখ্যার CVC এবং মেয়াদ শেষের তারিখ লিখুন</translation>
 <translation id="3667681724235208644">আসলটি দেখুন</translation>
 <translation id="4079302484614802869">প্রক্সি কনফিগারেশনটি .pac স্ক্রিপ্ট URL-এ ব্যবহার করাতে সেট থাকে স্থির প্রক্সি সার্ভারগুলিতে নয়৷</translation>
 <translation id="5540224163453853">অনুরোধকৃত নিবন্ধ খুঁজে পাওয়া যায়নি৷</translation>
@@ -111,8 +115,10 @@
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> থেকে <ph name="TARGET_LANGUAGE"/> তে অনুবাদ করবেন?</translation>
 <translation id="8218327578424803826">নির্ধারিত অবস্থান:</translation>
 <translation id="3542684924769048008">এর জন্য পাসওয়ার্ড ব্যবহার করুন:</translation>
+<translation id="2855922900409897335">আপনার <ph name="CREDIT_CARD"/> যাচাই করুন৷</translation>
 <translation id="7186367841673660872">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>থেকে<ph name="LANGUAGE_LANGUAGE"/>তে অনুবাদ করা হয়েছে</translation>
 <translation id="7139724024395191329">এমিরেট</translation>
+<translation id="6646897916597483132">আপনার কার্ডের সামনে থেকে ৪ সংখ্যার CVC লিখুন</translation>
 <translation id="5145883236150621069">নীতি প্রতিক্রিয়ার মধ্যে ত্রুটি কোড উপস্থিত</translation>
 <translation id="7983301409776629893">সর্বদা <ph name="ORIGINAL_LANGUAGE"/>-কে <ph name="TARGET_LANGUAGE"/>-তে অনুবাদ করুন</translation>
 <translation id="6970216967273061347">জেলা</translation>
@@ -159,6 +165,7 @@
 <translation id="7752995774971033316">অপরিচালিত</translation>
 <translation id="3712624925041724820">লাইসেন্সগুলির মেয়াদ শেষ হয়ে গেছে</translation>
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>
+<translation id="1455235771979731432">আপনার কার্ডটি যাচাই করতে একটি সমস্যা হয়েছিল৷ আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="7542995811387359312">স্বয়ংক্রিয় ক্রেডিট কার্ড পূরণটি অক্ষম রয়েছে কারণ এই ফর্মটি কোনও সুরক্ষিত সংযোগ ব্যবহার করে না৷</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="8088680233425245692">নিবন্ধ দেখতে ব্যর্থ হয়েছে৷</translation>
@@ -217,7 +224,9 @@
 <translation id="5565735124758917034">সক্রিয়</translation>
 <translation id="7568593326407688803">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>ভাষাতে আছে আপনি কি এটিকে অনুবাদ করতে চাইবেন?</translation>
 <translation id="8876793034577346603">নেটওয়ার্ক কনফিগারেশন বিশ্লেষণ করতে ব্যর্থ হয়েছে৷</translation>
+<translation id="4800132727771399293">আপনার মেয়াদ শেষের তারিখ এবং CVC পরীক্ষা করুন এবং আবার চেষ্টা করুন</translation>
 <translation id="4171400957073367226">খারাপ যাচাইকরণের স্বাক্ষর</translation>
+<translation id="9125941078353557812">আপনার কার্ডের পিছনে থাকা ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="106701514854093668">ডেস্কটপ বুকমার্ক</translation>
 <translation id="6154808779448689242">ফিরে পাওয়া নীতি টোকেন বর্তমান টোকেনের সঙ্গে মেলে না</translation>
 <translation id="7995512525968007366">নির্দিষ্ট করে উল্লেখ করা নেই</translation>
@@ -234,6 +243,7 @@
 <translation id="3270847123878663523">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="20817612488360358">সিস্টেম প্রক্সি সেটিংস ব্যবহার করার জন্য সেট আছে কিন্তু একটি সুনির্দিষ্ট প্রক্সি কনফিগারেশনও নির্দিষ্ট করা আছে৷</translation>
 <translation id="2639739919103226564">স্থিতি: </translation>
+<translation id="8824019021993735287">Chrome এই মুহূর্তে আপনার কার্ড যাচাই করতে অক্ষম হয়েছে৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="4968547170521245791">প্রক্সী করা যাবে না</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="4196861286325780578">&amp;সরানোর কাজটি পুনরায় করুন</translation>

@@ -5,7 +5,6 @@
 <translation id="6373523479360886564">Voulez-vous vraiment désinstaller Chromium ?</translation>
 <translation id="6510925080656968729">Désinstaller Chromium</translation>
 <translation id="2615699638672665509">Cet ordinateur ne recevra bientôt plus les mises à jour de Chromium, car ses composants matériels ne sont plus compatibles.</translation>
-<translation id="5532301346661895910">Chromium stockera ce mot de passe avec vos mots de passe Google enregistrés et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
 <translation id="421369550622382712">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Chromium.</translation>
 <translation id="2732467638532545152">La version de Microsoft Windows installée sur votre ordinateur ne permet pas d'analyser le certificat de sécurité de ce site Web. Par conséquent, il est impossible de déterminer dans Chromium si le certificat provient du site <ph name="SITE"/> ou d'un membre de votre réseau se faisant passer pour le site <ph name="SITE"/>. Veuillez installer une version de Windows plus récente.</translation>
@@ -59,7 +58,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="7064610482057367130">Aucune installation de Chromium à mettre à jour.</translation>
 <translation id="872034308864968620">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="459535195905078186">Applications Chromium</translation>
-<translation id="5109068449432240255">Oui, quitter Chromium</translation>
 <translation id="8134284582177628525">Si vous partagez cet ordinateur avec <ph name="PROFILE_NAME"/>, ajoutez-vous en tant qu'utilisateur à Chromium pour naviguer indépendamment. Sinon, déconnectez le compte Google de cette personne.</translation>
 <translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
@@ -78,7 +76,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="734373864078049451">Votre contenu Web, vos favoris et toutes vos données Chromium sont conservés ici.</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
 <translation id="8551886023433311834">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
-<translation id="8353224596138547809">Voulez-vous que Chromium enregistre votre mot de passe pour ce site ?</translation>
 <translation id="8738058698779197622">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chromium n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="7463979740390522693">Notifications – Chromium (<ph name="QUANTITY"/> non lues)</translation>
@@ -135,7 +132,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4365115785552740256">Chromium fonctionne grâce au projet Open Source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> et à <ph name="BEGIN_LINK_OSS"/>d'autres logiciels libres<ph name="END_LINK_OSS"/>.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Les invités peuvent utiliser Chromium sans laisser aucune trace.</translation>
-<translation id="3487263810738775861">Une extension a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="7549178288319965365">À propos de Chromium OS</translation>
 <translation id="6248213926982192922">Définir Chromium en tant que navigateur par défaut</translation>
@@ -206,7 +202,8 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="1414495520565016063">Vous êtes connecté à Chromium.</translation>
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
 <translation id="2966088006374919794">Chromium nécessite le lancement d'une application externe pour gérer les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
-<translation id="2558235863893655150">Souhaitez-vous que Chromium enregistre votre mot de passe ?</translation>
+<translation id="7205698830395646142">Masquer dans le menu Chromium</translation>
+<translation id="7979877361127045932">Masquer dans le menu Chromium</translation>
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL"/> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Mettre à jour Chromium</translation>
 <translation id="5772805321386874569">(nécessite le <ph name="BEGIN_BUTTON"/>redémarrage<ph name="END_BUTTON"/> de Chromium)</translation>
@@ -233,7 +230,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
-<translation id="8724049448828509830">Un téléchargement est actuellement en cours. Voulez-vous quitter Chromium et annuler le téléchargement ?</translation>
 <translation id="608189560609172163">Impossible de synchroniser vos données dans Chromium, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="4888717733111232871">Règle de trafic entrant pour Chromium autorisant le trafic mDNS</translation>
 <translation id="151962892725702025">Impossible de synchroniser vos données dans Chromium OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>
@@ -241,7 +237,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="8985587603644336029">Un utilisateur s'est récemment connecté à Chromium sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST"/>. S'il ne s'agit pas de votre compte, veuillez créer un utilisateur Chromium pour séparer vos informations.
 
 Si vous vous connectez quand même, toutes les informations Chromium, comme les favoris, l'historique et les autres paramètres, seront fusionnées avec <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
-<translation id="2739631515503418643">Des téléchargements sont actuellement en cours. Voulez-vous quitter Chromium et annuler les téléchargements ?</translation>
 <translation id="9013262824292842194">Chromium requiert Windows Vista ou Windows XP avec SP2 ou une version ultérieure.</translation>
 <translation id="1967743265616885482">Nous avons constaté qu'un module du même nom n'est pas compatible avec Chromium.</translation>
 <translation id="7962572577636132072">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>
@@ -254,6 +249,7 @@ Si vous vous connectez quand même, toutes les informations Chromium, comme les
 <translation id="7318036098707714271">Le fichier des préférences est corrompu ou n'est pas valide. 
 
 Chromium ne peut pas récupérer vos paramètres.</translation>
+<translation id="5531349711857992002">La chaîne de certificats associée à ce site Web contient au moins un certificat signé à l'aide d'un algorithme de signature obsolète basé sur SHA-1.</translation>
 <translation id="918373042641772655">La déconnexion de <ph name="USERNAME"/> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chromium stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium est un navigateur Web qui exécute les pages Web et les applications à une vitesse fulgurante. Il est rapide, stable et simple d'utilisation. Naviguez sur le Web en toute sécurité tout en bénéficiant de la protection offerte par Chromium contre les logiciels malveillants et de phishing.</translation>
 <translation id="4230135487732243613">Associer vos données Chromium à ce compte ?</translation>

@@ -26,6 +26,7 @@
 <translation id="7537536606612762813">הכרחי</translation>
 <translation id="2958431318199492670">‏תצורת הרשת אינה תואמת לתקן ONC. ייתכן שחלקים מהתצורה לא ייכללו בייבוא.</translation>
 <translation id="3583757800736429874">&amp;ביצוע מחדש של העברה</translation>
+<translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">חסרה רשומת מכשיר</translation>
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
@@ -34,6 +35,7 @@
 <translation id="1103523840287552314">תרגם <ph name="LANGUAGE"/> תמיד</translation>
 <translation id="1227633850867390598">הסתר ערך</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
+<translation id="3369366829301677151">עדכן ואמת את ה-<ph name="CREDIT_CARD"/> שלך</translation>
 <translation id="8834246243508017242">הפעל מילוי אוטומטי באמצעות 'אנשי קשר'…</translation>
 <translation id="7275334191706090484">סימניות מנוהלות</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
@@ -47,6 +49,7 @@
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">אזור</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
+<translation id="8988760548304185580">‏הזן את תאריך סיום התוקף ו-CVC בן שלוש ספרות המופיע בגב הכרטיס</translation>
 <translation id="8940229512486821554">הרץ את הפקודה של <ph name="EXTENSION_NAME"/>:‏ <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">שגיאה לא ידועה</translation>
 <translation id="112840717907525620">הקובץ השמור של המדיניות תקין</translation>
@@ -59,6 +62,7 @@
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">התרגום ל<ph name="TARGET_LANGUAGE"/> נכשל.</translation>
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
+<translation id="3219579145727097045">‏הזן את תאריך סיום התוקף ו-CVC בן ארבע ספרות המופיע בחזית הכרטיס</translation>
 <translation id="3667681724235208644">הצג את המקור</translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
 <translation id="5540224163453853">לא ניתן היה למצוא את הפריט המבוקש.</translation>
@@ -110,8 +114,10 @@
 <translation id="498957508165411911">האם לתרגם מ<ph name="ORIGINAL_LANGUAGE"/> ל<ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="8218327578424803826">מיקום מוקצה:</translation>
 <translation id="3542684924769048008">השתמש בסיסמה עבור:</translation>
+<translation id="2855922900409897335">אמת את ה-<ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">דף זה תורגם מ<ph name="ORIGINAL_LANGUAGE"/>ל<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">אמירות</translation>
+<translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>
 <translation id="5145883236150621069">קיים קוד שגיאה בתגובת המדיניות</translation>
 <translation id="7983301409776629893">תרגם תמיד <ph name="ORIGINAL_LANGUAGE"/> ל<ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">מחוז</translation>
@@ -158,6 +164,7 @@
 <translation id="7752995774971033316">ללא ניהול</translation>
 <translation id="3712624925041724820">אין מספיק רישיונות</translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
+<translation id="1455235771979731432">הייתה בעיה באימות הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
 <translation id="7542995811387359312">מילוי אוטומטי של פרטי כרטיס אשראי מושבת כיוון שטופס זה אינו משתמש בחיבור מאובטח.</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE"/>? דווח על שגיאה זו</translation>
 <translation id="8088680233425245692">הצגת הפריט נכשלה.</translation>
@@ -216,7 +223,9 @@
 <translation id="5565735124758917034">פעיל</translation>
 <translation id="7568593326407688803">זהו דף ב<ph name="ORIGINAL_LANGUAGE"/>האם ברצונך לתרגם אותו?</translation>
 <translation id="8876793034577346603">ניתוח תצורת הרשת נכשל.</translation>
+<translation id="4800132727771399293">‏בדוק את תאריך התפוגה ואת ה-CVC ונסה שוב</translation>
 <translation id="4171400957073367226">חתימת אימות לא חוקית</translation>
+<translation id="9125941078353557812">‏הזן את ה-CVC בן שלוש הספרות המופיע בגב הכרטיס</translation>
 <translation id="106701514854093668">סימניות שולחן עבודה</translation>
 <translation id="6154808779448689242">אסימון המדיניות שהוחזר אינו תואם לאסימון הנוכחי</translation>
 <translation id="7995512525968007366">לא צוין</translation>
@@ -233,6 +242,7 @@
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
 <translation id="20817612488360358">‏נקבע שימוש בהגדרות שרת Proxy של מערכת אך בנוסף מצוינת גם תצורה מפורשת של שרת Proxy.</translation>
 <translation id="2639739919103226564">סטטוס:</translation>
+<translation id="8824019021993735287">‏Chrome לא הצליח לאמת את כרטיס הפעם. נסה שוב מאוחר יותר.</translation>
 <translation id="4968547170521245791">‏לא ניתן להעביר דרך שרת proxy</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>

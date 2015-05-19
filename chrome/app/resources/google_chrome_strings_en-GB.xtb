@@ -13,7 +13,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="4921569541910214635">Share a computer? Now you can set up Chrome just the way you like it.</translation>
 <translation id="6236285698028833233">Google Chrome has stopped updating and no longer supports this version of your operating system.</translation>
 <translation id="5453904507266736060">Let Google Chrome Run In The Background</translation>
-<translation id="3454512769850953877">Yes, exit Chrome</translation>
 <translation id="4167057906098955729">You can see all your notifications from Chrome apps, extensions and websites here.</translation>
 <translation id="2704356438731803243">If you prefer to keep your existing Chrome data separate, you can create a new Chrome user for <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Please close all Google Chrome windows and try again.</translation>
@@ -21,7 +20,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="1225016890511909183">Chrome will securely store your information so you don't need to type it in again, but you will still need to verify your card's security code for future payments.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="7400722733683201933">About Google Chrome</translation>
-<translation id="8838365799985821335">An extension has changed what page is shown when you start Chrome.</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="1065672644894730302">Your preferences cannot be read.
 
@@ -67,7 +65,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4743926867934016338">Accept &amp; Search</translation>
 <translation id="1393853151966637042">Get help with using Chrome</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS"/>. Please use the same account to sign in again.</translation>
-<translation id="5338943029751206389">The site is using outdated security settings that may prevent future versions of Chrome from being able to safely access it.</translation>
 <translation id="4513711165509885787">Your billing details have been saved in Chrome.</translation>
 <translation id="5253588388888612165">If you share this computer with <ph name="PROFILE_NAME"/>, add yourself to Chrome to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
@@ -85,6 +82,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="5037239767309817516">Please close all Google Chrome windows and relaunch it for this change to take effect.</translation>
 <translation id="225614027745146050">Welcome</translation>
+<translation id="3398288718845740432">Hide in Chrome Menu</translation>
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="8851136666856101339">main</translation>
@@ -163,7 +161,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="103396972844768118">Important information regarding your Chrome data</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
-<translation id="7062966102157262887">A download is currently in progress. Do you want to exit Google Chrome and cancel the download?</translation>
 <translation id="4273752058983339720">Google Chrome is configured to automatically launch when you start your computer.</translation>
 <translation id="2316129865977710310">No, thank you</translation>
 <translation id="415994390253732730">Chrome Behaving Strangely?</translation>
@@ -177,6 +174,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="6883876366448858277">sends a word and its surrounding context to Google Search, returning definitions, pictures and other search results.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
+<translation id="4631713731678262610">Hide in Chrome menu</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2665296953892887393">Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK"/> to Google</translation>
 <translation id="7761834446675418963">Click your name to open Chrome and start browsing.</translation>
@@ -207,8 +205,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="2681064822612051220">A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.</translation>
 <translation id="2252923619938421629">Help make Google Chrome better by reporting the current settings</translation>
-<translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
-<translation id="7773845170078702898">Do you want Google Chrome to save your password for this site?</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
 <translation id="7125719106133729027">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to manually reinstall Chrome.</translation>
 <translation id="5940385492829620908">Your web, bookmarks and other Chrome stuff live here.</translation>
@@ -222,7 +218,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
         settings.</translation>
 <translation id="9102715433345326100">This file is malicious and Chrome has blocked it.</translation>
 <translation id="8205111949707227942">Optional: Help make Chrome OS better by sending usage statistics and crash reports automatically to Google.</translation>
-<translation id="7253415505590551024">Downloads are currently in progress. Do you want to exit Google Chrome and cancel the downloads?</translation>
 <translation id="487887346205285304">Chrome behaving strangely?</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
@@ -252,7 +247,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
-<translation id="7810280330588098283">Chrome will store this in your |Google saved passwords| and remember it the next time you need it.</translation>
 <translation id="6991142834212251086">Link my Chrome data to this account</translation>
 <translation id="3451115285585441894">Adding to Chrome...</translation>
 <translation id="3047079729301751317">Disconnecting <ph name="USERNAME"/> will clear your history, bookmarks, settings and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
@@ -268,6 +262,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="1698376642261615901">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
 <translation id="853189717709780425">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
 <translation id="699076943483372849">This site is using the retired Chrome Frame plug-in which no longer receives security and stability updates. Please uninstall it and upgrade to a modern browser.</translation>
+<translation id="5531349711857992002">The certificate chain for this website contains at least one certificate that was signed using a deprecated signature algorithm based on SHA-1.</translation>
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
 <translation id="1818142563254268765">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chrome.</translation>
 <translation id="7408085963519505752">Chrome OS terms</translation>

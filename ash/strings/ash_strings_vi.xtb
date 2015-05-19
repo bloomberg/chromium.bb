@@ -72,6 +72,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
 <translation id="3892641579809465218">Màn hình nội bộ</translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ &quot;<ph name="FROM_LOCALE"/>&quot; thành &quot;<ph name="TO_LOCALE"/>&quot; sau khi đồng bộ hóa cài đặt của bạn.</translation>
+<translation id="7113420380180868673">Đang truyền $1</translation>
 <translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="8654520615680304441">Bật Wi-Fi...</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME"/> qua Trợ giúp từ xa.</translation>
@@ -96,6 +97,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3626637461649818317">Còn lại <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Phương thức nhập</translation>
 <translation id="2700058918926273959">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING"/>. Bạn sẽ bị đăng xuất.</translation>
+<translation id="5807965672380739016">Truyền màn hình</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Loa (Bên trong)</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
@@ -124,6 +126,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="4527045527269911712">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot;muốn được phép ghép nối.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
+<translation id="703171847531699602">Không có thiết bị truyền nào</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Đang kết nối...</translation>
 <translation id="6062360702481658777">Bạn sẽ tự động được đăng xuất sau <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Màn hình không xác định</translation>
@@ -206,6 +209,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="3009178788565917040">Thiết bị ra</translation>
 <translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
+<translation id="4373966964907728675">Đang truyền màn hình</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>g <ph name="MINUTE"/>p cho đến khi đầy</translation>
 <translation id="3077734595579995578">shift</translation>
