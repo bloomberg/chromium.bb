@@ -12,7 +12,6 @@
 #include "core/layout/svg/SVGMarkerData.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -42,7 +41,6 @@ static SkPath::FillType fillRuleFromStyle(const PaintInfo& paintInfo, const SVGC
 
 void SVGShapePainter::paint(const PaintInfo& paintInfo)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutSVGShape);
     if (paintInfo.phase != PaintPhaseForeground
         || m_layoutSVGShape.style()->visibility() == HIDDEN
         || m_layoutSVGShape.isShapeEmpty())

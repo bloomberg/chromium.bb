@@ -8,7 +8,6 @@
 #include "core/layout/LayoutReplica.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerPainter.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 
@@ -16,8 +15,6 @@ namespace blink {
 
 void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutReplica);
-
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseMask)
         return;
 

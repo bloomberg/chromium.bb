@@ -9,7 +9,6 @@
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/FloatClipRecorder.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
@@ -20,8 +19,6 @@ namespace blink {
 
 void SVGContainerPainter::paint(const PaintInfo& paintInfo)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutSVGContainer);
-
     // Spec: groups w/o children still may render filter content.
     if (!m_layoutSVGContainer.firstChild() && !m_layoutSVGContainer.selfWillPaint())
         return;

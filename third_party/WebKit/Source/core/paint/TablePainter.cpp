@@ -10,7 +10,6 @@
 #include "core/style/CollapsedBorderValue.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"

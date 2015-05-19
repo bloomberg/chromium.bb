@@ -1869,8 +1869,6 @@
             'paint/FramePainter.h',
             'paint/FrameSetPainter.cpp',
             'paint/FrameSetPainter.h',
-            'paint/GraphicsContextAnnotator.cpp',
-            'paint/GraphicsContextAnnotator.h',
             'paint/GridPainter.cpp',
             'paint/GridPainter.h',
             'paint/HTMLCanvasPainter.cpp',

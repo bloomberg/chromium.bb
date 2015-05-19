@@ -9,7 +9,6 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/BlockPainter.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -22,8 +21,6 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     ASSERT(!m_layoutView.needsLayout());
     // LayoutViews should never be called to paint with an offset not on device pixels.
     ASSERT(LayoutPoint(IntPoint(paintOffset.x(), paintOffset.y())) == paintOffset);
-
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutView);
 
     // This avoids painting garbage between columns if there is a column gap.
     // This is legacy WebKit behavior and doesn't work with slimmingpaint. We can remove it once region-based columns are launched.

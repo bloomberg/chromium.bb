@@ -9,7 +9,6 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/BlockPainter.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -20,8 +19,6 @@ namespace blink {
 
 void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutListMarker);
-
     if (paintInfo.phase != PaintPhaseForeground)
         return;
 

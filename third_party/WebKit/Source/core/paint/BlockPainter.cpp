@@ -13,7 +13,6 @@
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineBoxListPainter.h"
@@ -28,8 +27,6 @@ namespace blink {
 void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintInfo localPaintInfo(paintInfo);
-
-    ANNOTATE_GRAPHICS_CONTEXT(localPaintInfo, &m_layoutBlock);
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();
 

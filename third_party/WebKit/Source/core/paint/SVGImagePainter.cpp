@@ -9,7 +9,6 @@
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -23,8 +22,6 @@ namespace blink {
 
 void SVGImagePainter::paint(const PaintInfo& paintInfo)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutSVGImage);
-
     if (paintInfo.phase != PaintPhaseForeground
         || m_layoutSVGImage.style()->visibility() == HIDDEN
         || !m_layoutSVGImage.imageResource()->hasImage())

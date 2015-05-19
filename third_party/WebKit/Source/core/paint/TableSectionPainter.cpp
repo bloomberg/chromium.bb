@@ -10,7 +10,6 @@
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/paint/BoxClipper.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -21,8 +20,6 @@ namespace blink {
 
 void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutTableSection);
-
     ASSERT(!m_layoutTableSection.needsLayout());
     // avoid crashing on bugs that cause us to paint with dirty layout
     if (m_layoutTableSection.needsLayout())

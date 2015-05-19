@@ -10,7 +10,6 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/ObjectPainter.h"
@@ -22,7 +21,6 @@ namespace blink {
 
 void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutInline);
     LineBoxListPainter(*m_layoutInline.lineBoxes()).paint(&m_layoutInline, paintInfo, paintOffset);
 }
 

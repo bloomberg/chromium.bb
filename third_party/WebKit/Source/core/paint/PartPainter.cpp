@@ -8,7 +8,6 @@
 #include "core/layout/LayoutPart.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/RoundedInnerRectClipper.h"
@@ -19,8 +18,6 @@ namespace blink {
 
 void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutPart);
-
     if (!m_layoutPart.shouldPaint(paintInfo, paintOffset))
         return;
 

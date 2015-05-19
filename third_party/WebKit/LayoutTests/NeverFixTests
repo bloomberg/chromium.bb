@@ -209,8 +209,5 @@ virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ WontFix ]
 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ WontFix ]
 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ WontFix ]
 
-# Deferred suite doesn't have impl-side painting, so this doesn't make sense
-virtual/deferred/inspector/tracing/paint-command-log-nodes.html [ WontFix ]
-
 # This test only fails with an ASSERT in Debug build.
 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]

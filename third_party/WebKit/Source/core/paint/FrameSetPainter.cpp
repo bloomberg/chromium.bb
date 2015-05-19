@@ -7,7 +7,6 @@
 
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/layout/LayoutFrameSet.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 
@@ -117,8 +116,6 @@ void FrameSetPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoin
 
 void FrameSetPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutFrameSet);
-
     if (paintInfo.phase != PaintPhaseForeground)
         return;
 

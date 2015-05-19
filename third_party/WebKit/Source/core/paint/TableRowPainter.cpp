@@ -7,7 +7,6 @@
 
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -18,7 +17,6 @@ namespace blink {
 void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(m_layoutTableRow.hasSelfPaintingLayer());
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutTableRow);
 
     paintOutlineForRowIfNeeded(paintInfo, paintOffset);
     for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell()) {

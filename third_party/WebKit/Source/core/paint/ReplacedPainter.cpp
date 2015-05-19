@@ -8,7 +8,6 @@
 #include "core/layout/LayoutReplaced.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -18,8 +17,6 @@ namespace blink {
 
 void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutReplaced);
-
     if (!m_layoutReplaced.shouldPaint(paintInfo, paintOffset))
         return;
 
