@@ -100,7 +100,6 @@ public class ImeAdapter {
 
     static char[] sSingleCharArray = new char[1];
     static KeyCharacterMap sKeyCharacterMap;
-    private static EditorInfo sPreviousOutAttrs;
 
     private long mNativeImeAdapterAndroid;
     private InputMethodManagerWrapper mInputMethodManagerWrapper;
@@ -134,20 +133,7 @@ public class ImeAdapter {
     public static class AdapterInputConnectionFactory {
         public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
                 Editable editable, EditorInfo outAttrs) {
-            AdapterInputConnection conn = new AdapterInputConnection(
-                    view, imeAdapter, editable, outAttrs);
-            // When switching between fields, the keyboard first reverts to a "none" type
-            // before changing to the type of the new field.  This can cause the keyboard
-            // layout to flicker back to the default layout on older Android versions (<5.0).
-            // To avoid this, we remember the previous settings and return those instead.
-            // http://crbug.com/484139
-            if (imeAdapter.getTextInputType() == TextInputType.NONE && sPreviousOutAttrs != null) {
-                outAttrs.inputType = sPreviousOutAttrs.inputType;
-                outAttrs.imeOptions = sPreviousOutAttrs.imeOptions;
-            } else {
-                sPreviousOutAttrs = outAttrs;
-            }
-            return conn;
+            return new AdapterInputConnection(view, imeAdapter, editable, outAttrs);
         }
     }
 
@@ -301,7 +287,6 @@ public class ImeAdapter {
                     unzoomIfNeeded ? mViewEmbedder.getNewShowKeyboardReceiver() : null);
         }
         mViewEmbedder.onDismissInput();
-        sPreviousOutAttrs = null;
     }
 
     private boolean hasInputType() {
