@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,6 +107,24 @@ class BASE_EXPORT Process {
   // Same as WaitForExit() but only waits for up to |timeout|.
   bool WaitForExitWithTimeout(TimeDelta timeout, int* exit_code);
 
+#if defined(OS_MACOSX)
+  // The Mac needs a Mach port in order to manipulate a process's priority,
+  // and there's no good way to get that from base given the pid. These Mac
+  // variants of the IsProcessBackgrounded and SetProcessBackgrounded API take
+  // the Mach port for this reason. See crbug.com/460102
+  //
+  // A process is backgrounded when its priority is lower than normal.
+  // Return true if the process with mach port |task_port| is backgrounded,
+  // false otherwise.
+  bool IsProcessBackgrounded(mach_port_t task_port) const;
+
+  // Set the process with the specified mach port as backgrounded. If value is
+  // true, the priority of the process will be lowered. If value is false, the
+  // priority of the process will be made "normal" - equivalent to default
+  // process priority. Returns true if the priority was changed, false
+  // otherwise.
+  bool SetProcessBackgrounded(mach_port_t task_port, bool value);
+#else
   // A process is backgrounded when it's priority is lower than normal.
   // Return true if this process is backgrounded, false otherwise.
   bool IsProcessBackgrounded() const;
@@ -116,7 +134,7 @@ class BASE_EXPORT Process {
   // will be made "normal" - equivalent to default process priority.
   // Returns true if the priority was changed, false otherwise.
   bool SetProcessBackgrounded(bool value);
-
+#endif  // defined(OS_MACOSX)
   // Returns an integer representing the priority of a process. The meaning
   // of this value is OS dependent.
   int GetPriority() const;
