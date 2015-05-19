@@ -134,6 +134,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     }
 
     ExecutionContext* executionContext = scriptState->executionContext();
+    // FIXME: May be null due to worker termination: http://crbug.com/413518.
+    if (!executionContext)
+        return ScriptPromise();
+
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     String errorMessage;
     if (!executionContext->isPrivilegedContext(errorMessage)) {
@@ -193,6 +197,10 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
     }
 
     ExecutionContext* executionContext = scriptState->executionContext();
+    // FIXME: May be null due to worker termination: http://crbug.com/413518.
+    if (!executionContext)
+        return ScriptPromise();
+
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     String errorMessage;
     if (!executionContext->isPrivilegedContext(errorMessage)) {
