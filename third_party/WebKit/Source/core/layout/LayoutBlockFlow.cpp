@@ -1369,6 +1369,7 @@ LayoutUnit LayoutBlockFlow::clearFloatsIfNeeded(LayoutBox& child, MarginInfo& ma
 
     if (childIsSelfCollapsing) {
         bool childDiscardMargin = mustDiscardMarginBeforeForChild(child) || mustDiscardMarginAfterForChild(child);
+        marginInfo.setDiscardMargin(childDiscardMargin);
 
         // For self-collapsing blocks that clear, they can still collapse their
         // margins with following siblings. Reset the current margins to represent
@@ -1381,7 +1382,6 @@ LayoutUnit LayoutBlockFlow::clearFloatsIfNeeded(LayoutBox& child, MarginInfo& ma
         } else {
             marginInfo.clearMargin();
         }
-        marginInfo.setDiscardMargin(childDiscardMargin);
 
         // CSS2.1 states:
         // "If the top and bottom margins of an element with clearance are adjoining, its margins collapse with
