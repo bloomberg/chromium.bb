@@ -19,6 +19,9 @@ namespace {
 
 bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64* display_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(rfh);
+  DCHECK(display_id);
+
   gfx::NativeView native_view = rfh->GetNativeView();
   gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
   if (!screen)
@@ -61,19 +64,21 @@ OutputProtectionDelegate::GetClientId() {
   if (client_id_ == ui::DisplayConfigurator::kInvalidClientId) {
     content::RenderFrameHost* rfh =
         content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-    if (!GetCurrentDisplayId(rfh, &display_id_))
+    if (!rfh || !GetCurrentDisplayId(rfh, &display_id_))
       return ui::DisplayConfigurator::kInvalidClientId;
 
-    window_ = rfh->GetNativeView();
-    if (!window_)
+    aura::Window* window = rfh->GetNativeView();
+    if (!window)
       return ui::DisplayConfigurator::kInvalidClientId;
 
     ui::DisplayConfigurator* configurator =
         ash::Shell::GetInstance()->display_configurator();
     client_id_ = configurator->RegisterContentProtectionClient();
 
-    if (client_id_ != ui::DisplayConfigurator::kInvalidClientId)
-      window_->AddObserver(this);
+    if (client_id_ != ui::DisplayConfigurator::kInvalidClientId) {
+      window->AddObserver(this);
+      window_ = window;
+    }
   }
   return client_id_;
 }
