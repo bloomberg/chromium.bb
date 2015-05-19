@@ -7,7 +7,9 @@
 from __future__ import print_function
 
 import collections
+import inspect
 import os
+import unittest
 import warnings
 
 from chromite.cbuildbot import binhost
@@ -229,3 +231,21 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       filename = os.path.join(tempdir, 'foo.json')
       pfq_configs.Dump(filename)
       self.assertEqual(pfq_configs, binhost.PrebuiltMapping.Load(filename))
+
+
+def NoIncremental():
+  """Creates a suite containing only non-incremental tests.
+
+  This suite should be used on the Chrome PFQ as we don't need to preserve
+  incremental compatibility of prebuilts.
+
+  Returns:
+    A unittest.TestSuite that does not contain any incremental tests.
+  """
+  suite = unittest.TestSuite()
+  method_names = [f[0] for f in inspect.getmembers(PrebuiltCompatibilityTest,
+                                                   predicate=inspect.ismethod)]
+  for m in method_names:
+    if m.startswith('test') and m != 'testCurrentChromePrebuiltsEnough':
+      suite.addTest(PrebuiltCompatibilityTest(m))
+  return suite

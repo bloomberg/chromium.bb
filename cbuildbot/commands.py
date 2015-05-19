@@ -399,13 +399,18 @@ def VerifyBinpkg(buildroot, board, pkg, packages, extra_env=None):
     raise MissingBinpkg(msg)
 
 
-def RunBinhostTest(buildroot):
+def RunBinhostTest(buildroot, incremental=True):
   """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
 
   Args:
     buildroot: The buildroot of the current build.
+    incremental: If True, run the incremental compatibility test.
   """
   cmd = ['../cbuildbot/binhost_test', '--log-level=debug']
+
+  # Non incremental tests are listed in a special test suite.
+  if not incremental:
+    cmd += ['NoIncremental']
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 

@@ -381,4 +381,7 @@ class BinhostTestStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     # Verify our binhosts.
-    commands.RunBinhostTest(self._build_root)
+    # Don't check for incremental compatibility when we uprev chrome.
+    incremental = not (self._run.config.chrome_rev or
+                       self._run.options.chrome_rev)
+    commands.RunBinhostTest(self._build_root, incremental=incremental)
