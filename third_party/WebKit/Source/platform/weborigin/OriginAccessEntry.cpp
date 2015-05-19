@@ -64,11 +64,10 @@ bool HostIsIPAddress(const String& host)
 
 }
 
-OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting subdomainSetting, IPAddressSetting ipAddressSetting)
+OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting subdomainSetting)
     : m_protocol(protocol.lower())
     , m_host(host.lower())
     , m_subdomainSettings(subdomainSetting)
-    , m_ipAddressSettings(ipAddressSetting)
     , m_hostIsPublicSuffix(false)
 {
     ASSERT(subdomainSetting == AllowSubdomains || subdomainSetting == DisallowSubdomains);
@@ -103,8 +102,8 @@ OriginAccessEntry::MatchResult OriginAccessEntry::matchesOrigin(const SecurityOr
     if (m_subdomainSettings == DisallowSubdomains)
         return DoesNotMatchOrigin;
 
-    // Don't try to do subdomain matching on IP addresses (except for testing).
-    if (m_hostIsIPAddress && m_ipAddressSettings == TreatIPAddressAsIPAddress)
+    // Don't try to do subdomain matching on IP addresses.
+    if (m_hostIsIPAddress)
         return DoesNotMatchOrigin;
 
     // Match subdomains.

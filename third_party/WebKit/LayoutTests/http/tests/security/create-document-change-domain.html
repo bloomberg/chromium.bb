@@ -1,16 +1,27 @@
 <!DOCTYPE html>
-<script src="/js-test-resources/js-test.js"></script>
-<script>
-description('Tests that different documents created using createDocument do not share the underlying domain');
-if (window.internals)
-    internals.settings.setTreatIPAddressAsDomain(true);
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script>
+        if (document.location.hostname == "127.0.0.1") {
+            document.location.hostname = "subdomain.example.test";
+        } else {
+            test(function () {
+                var doc = document.implementation.createDocument(null, 'one', null);
 
-var doc = document.implementation.createDocument(null, 'one', null);
-shouldBeEqualToString('document.domain', '127.0.0.1');
-shouldBeEqualToString('doc.domain', '127.0.0.1');
+                assert_equals(document.domain, 'subdomain.example.test');
+                assert_equals(doc.domain, 'subdomain.example.test');
 
-document.domain = '0.1';
-shouldBeEqualToString('document.domain', '0.1');
-shouldBeEqualToString('doc.domain', '127.0.0.1');
-</script>
+                document.domain = 'example.test';
+                assert_equals(document.domain, 'example.test');
+                assert_equals(doc.domain, 'subdomain.example.test');
+
+                document.domain = 'subdomain.example.test';
+            }, "Documents created using createDocument do not share the underlying domain.");
+        }
+    </script>
+</head>
+<body>
+</body>
 </html>

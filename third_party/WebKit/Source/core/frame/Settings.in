@@ -81,7 +81,6 @@ downloadableBinaryFontsEnabled initial=true
 
 xssAuditorEnabled initial=false
 unsafePluginPastingEnabled initial=false
-treatIPAddressAsDomain initial=false
 
 preferCompositingToLCDTextEnabled initial=false, invalidate=AcceleratedCompositing
 

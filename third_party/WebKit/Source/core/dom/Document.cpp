@@ -3959,8 +3959,7 @@ void Document::setDomain(const String& newDomain, ExceptionState& exceptionState
         return;
     }
 
-    OriginAccessEntry::IPAddressSetting ipAddressSetting = settings() && settings()->treatIPAddressAsDomain() ? OriginAccessEntry::TreatIPAddressAsDomain : OriginAccessEntry::TreatIPAddressAsIPAddress;
-    OriginAccessEntry accessEntry(securityOrigin()->protocol(), newDomain, OriginAccessEntry::AllowSubdomains, ipAddressSetting);
+    OriginAccessEntry accessEntry(securityOrigin()->protocol(), newDomain, OriginAccessEntry::AllowSubdomains);
     OriginAccessEntry::MatchResult result = accessEntry.matchesOrigin(*securityOrigin());
     if (result == OriginAccessEntry::DoesNotMatchOrigin) {
         exceptionState.throwSecurityError("'" + newDomain + "' is not a suffix of '" + domain() + "'.");
@@ -4007,7 +4006,7 @@ const KURL& Document::firstPartyForCookies() const
     // We're intentionally using the URL of each document rather than the document's SecurityOrigin.
     // Sandboxing a document into a unique origin shouldn't effect first-/third-party status for
     // cookies and site data.
-    OriginAccessEntry accessEntry(topDocument().url().protocol(), topDocument().url().host(), OriginAccessEntry::AllowSubdomains, OriginAccessEntry::TreatIPAddressAsIPAddress);
+    OriginAccessEntry accessEntry(topDocument().url().protocol(), topDocument().url().host(), OriginAccessEntry::AllowSubdomains);
     const Document* currentDocument = this;
     while (currentDocument) {
         // Skip over srcdoc documents, as they are always same-origin with their closest non-srcdoc parent.

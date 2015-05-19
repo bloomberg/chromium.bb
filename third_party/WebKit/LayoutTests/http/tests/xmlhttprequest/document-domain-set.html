@@ -1,21 +1,23 @@
+<!DOCTYPE html>
 <html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script>
+        if (document.location.hostname == "127.0.0.1") {
+            document.location.hostname = "subdomain.example.test";
+        } else {
+            test(function () {
+                document.domain = 'example.test';
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'resources/post-echo.cgi', false);
+                xhr.send('PASS');
+                assert_equals(xhr.responseText, "PASS");
+            }, "XMLHttpRequest allowed with document.domain set.");
+        }
+    </script>
+</head>
 <body>
-<pre>
-<script>
-if (window.testRunner)
-  testRunner.dumpAsText();
-
-if (window.internals)
-    internals.settings.setTreatIPAddressAsDomain(true);
-
-document.domain = '0.0.1';
-
-document.write('Waiting...\n');
-var xhr = new XMLHttpRequest();
-xhr.open('POST', 'resources/post-echo.cgi', false);
-xhr.send('PASS: XMLHttpRequest allowed with document.domain set.\n');
-document.write(xhr.responseText);
-</script>
-</pre>
 </body>
 </html>
