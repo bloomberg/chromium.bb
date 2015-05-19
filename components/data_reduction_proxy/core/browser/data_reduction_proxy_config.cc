@@ -536,7 +536,7 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
   if (enabled_by_user_) {
     DCHECK(config_values_->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
-    if (DisableIfVPN())
+    if (MaybeDisableIfVPN())
       return;
     if (alternative_enabled_by_user_ &&
         !config_values_->alternative_fallback_allowed()) {
@@ -613,12 +613,15 @@ void DataReductionProxyConfig::GetNetworkList(
   net::GetNetworkList(interfaces, policy);
 }
 
-bool DataReductionProxyConfig::DisableIfVPN() {
+bool DataReductionProxyConfig::MaybeDisableIfVPN() {
+  if (DataReductionProxyParams::IsIncludedInUseDataSaverOnVPNFieldTrial()) {
+    return false;
+  }
   net::NetworkInterfaceList network_interfaces;
   GetNetworkList(&network_interfaces, 0);
   // VPNs use a "tun" interface, so the presence of a "tun" interface indicates
-  // a VPN is in use.
-  // TODO(kundaji): Verify this works on Windows.
+  // a VPN is in use. This logic only works on Android and Linux platforms.
+  // Data Saver will not be disabled on any other platform on VPN.
   const std::string vpn_interface_name_prefix = "tun";
   for (size_t i = 0; i < network_interfaces.size(); ++i) {
     std::string interface_name = network_interfaces[i].name;

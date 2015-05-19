@@ -131,6 +131,12 @@ std::string DataReductionProxyParams::GetQuicFieldTrialName() {
 }
 
 // static
+bool DataReductionProxyParams::IsIncludedInUseDataSaverOnVPNFieldTrial() {
+  return FieldTrialList::FindFullName("DataReductionProxyUseDataSaverOnVPN") ==
+         kEnabled;
+}
+
+// static
 bool DataReductionProxyParams::IsConfigClientEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyConfigClient);

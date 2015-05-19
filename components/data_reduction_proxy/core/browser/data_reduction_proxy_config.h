@@ -243,6 +243,10 @@ class DataReductionProxyConfig
                            AreProxiesBypassed);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            AreProxiesBypassedRetryDelay);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           TestMaybeDisableIfVPNTrialDisabled);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           TestMaybeDisableIfVPNTrialEnabled);
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
@@ -268,9 +272,10 @@ class DataReductionProxyConfig
   // Adds the default proxy bypass rules for the Data Reduction Proxy.
   void AddDefaultProxyBypassRules();
 
-  // Disables use of the Data Reduction Proxy on VPNs. Returns true if the
-  // Data Reduction Proxy has been disabled.
-  bool DisableIfVPN();
+  // Disables use of the Data Reduction Proxy on VPNs if client is not in the
+  // DataReductionProxyUseDataSaverOnVPN field trial and a TUN network interface
+  // is being used. Returns true if the Data Reduction Proxy has been disabled.
+  bool MaybeDisableIfVPN();
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction

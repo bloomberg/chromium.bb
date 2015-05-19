@@ -114,6 +114,10 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   static std::string GetQuicFieldTrialName();
 
+  // Returns true if this client is part of a field trial that allows Data Saver
+  // to be used on VPN.
+  static bool IsIncludedInUseDataSaverOnVPNFieldTrial();
+
   // Returns true if the Data Reduction Proxy config client should be used.
   static bool IsConfigClientEnabled();
 

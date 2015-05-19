@@ -148,6 +148,26 @@ class DataReductionProxyConfigTest : public testing::Test {
   scoped_ptr<TestDataReductionProxyParams> expected_params_;
 };
 
+TEST_F(DataReductionProxyConfigTest, TestMaybeDisableIfVPNTrialDisabled) {
+  // Simulate a VPN connection.
+  config()->interfaces()->clear();
+  config()->interfaces()->push_back(net::NetworkInterface(
+      "tun0", /* network interface name */
+      "tun0", /* network interface friendly name */
+      0,      /* interface index */
+      net::NetworkChangeNotifier::CONNECTION_WIFI, net::IPAddressNumber(),
+      0,                             /* network prefix */
+      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
+      ));
+  EXPECT_TRUE(config()->MaybeDisableIfVPN());
+}
+
+TEST_F(DataReductionProxyConfigTest, TestMaybeDisableIfVPNTrialEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "force-fieldtrials", "DataReductionProxyUseDataSaverOnVPN/Enabled");
+  EXPECT_FALSE(config()->MaybeDisableIfVPN());
+}
+
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyAlt, params()->DefaultAltOrigin());
