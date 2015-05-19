@@ -20,6 +20,27 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 // Protocol types
+
+message CertLoggerInterstitialInfo {
+  // The different reasons that an SSL warning interstitial could be shown to
+  // a user.
+  enum InterstitialReason {
+    // A standard SSL interstitial
+    INTERSTITIAL_SSL = 1;
+    // An interstitial alerting the user that they are in a captive portal
+    INTERSTITIAL_CAPTIVE_PORTAL = 2;
+    // An interstitial telling the user to update their system clock
+    INTERSTITIAL_CLOCK = 3;
+  }
+
+  // The type of interstitial that was shown
+  optional InterstitialReason interstitial_reason = 1;
+  // True if the user clicked through to the offending website
+  optional bool user_proceeded = 2;
+  // True if the user was shown an option to click through
+  optional bool overridable = 3;
+}
+
 message CertLoggerRequest {
   // The hostname being accessed (required as the cert could be valid for
   // multiple hosts, e.g. a wildcard or a SubjectAltName.
@@ -56,4 +77,8 @@ message CertLoggerRequest {
   // Certificate errors encountered (if any) when validating this
   // certificate chain.
   repeated CertError cert_error = 6;
+
+  // Information about the interstitial that was shown to the user for
+  // this certificate error.
+  optional CertLoggerInterstitialInfo interstitial_info = 7;
 };

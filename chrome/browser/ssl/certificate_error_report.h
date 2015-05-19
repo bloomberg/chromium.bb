@@ -20,6 +20,22 @@ class CertLoggerRequest;
 // chrome_browser_net::CertificateErrorReporter.
 class CertificateErrorReport {
  public:
+  // Describes the type of interstitial that the user was shown for the
+  // error that this report represents. Gets mapped to
+  // |CertLoggerInterstitialInfo::InterstitialReason|.
+  enum InterstitialReason {
+    INTERSTITIAL_SSL,
+    INTERSTITIAL_CAPTIVE_PORTAL,
+    INTERSTITIAL_CLOCK
+  };
+
+  // Whether the user clicked through the interstitial or not.
+  enum ProceedDecision { USER_PROCEEDED, USER_DID_NOT_PROCEED };
+
+  // Whether the user was shown an option to click through the
+  // interstitial.
+  enum Overridable { INTERSTITIAL_OVERRIDABLE, INTERSTITIAL_NOT_OVERRIDABLE };
+
   // Constructs an empty report.
   CertificateErrorReport();
 
@@ -40,6 +56,10 @@ class CertificateErrorReport {
   // CertLoggerRequest protobuf. Returns true if the serialization was
   // successful and false otherwise.
   bool Serialize(std::string* output) const;
+
+  void SetInterstitialInfo(const InterstitialReason& interstitial_reason,
+                           const ProceedDecision& proceed_decision,
+                           const Overridable& overridable);
 
   // Gets the hostname to which this report corresponds.
   const std::string& hostname() const;

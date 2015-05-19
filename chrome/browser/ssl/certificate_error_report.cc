@@ -87,6 +87,32 @@ bool CertificateErrorReport::Serialize(std::string* output) const {
   return cert_report_->SerializeToString(output);
 }
 
+void CertificateErrorReport::SetInterstitialInfo(
+    const InterstitialReason& interstitial_reason,
+    const ProceedDecision& proceed_decision,
+    const Overridable& overridable) {
+  CertLoggerInterstitialInfo* interstitial_info =
+      cert_report_->mutable_interstitial_info();
+
+  switch (interstitial_reason) {
+    case INTERSTITIAL_SSL:
+      interstitial_info->set_interstitial_reason(
+          CertLoggerInterstitialInfo::INTERSTITIAL_SSL);
+      break;
+    case INTERSTITIAL_CAPTIVE_PORTAL:
+      interstitial_info->set_interstitial_reason(
+          CertLoggerInterstitialInfo::INTERSTITIAL_CAPTIVE_PORTAL);
+      break;
+    case INTERSTITIAL_CLOCK:
+      interstitial_info->set_interstitial_reason(
+          CertLoggerInterstitialInfo::INTERSTITIAL_CLOCK);
+      break;
+  }
+
+  interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);
+  interstitial_info->set_overridable(overridable == INTERSTITIAL_OVERRIDABLE);
+}
+
 const std::string& CertificateErrorReport::hostname() const {
   return cert_report_->hostname();
 }

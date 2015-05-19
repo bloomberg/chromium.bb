@@ -588,7 +588,7 @@ void SSLBlockingPage::OnProceed() {
 
   // Finish collecting information about invalid certificates, if the
   // user opted in to.
-  FinishCertCollection();
+  FinishCertCollection(CertificateErrorReport::USER_PROCEEDED);
 
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, true, overridable_);
@@ -602,7 +602,7 @@ void SSLBlockingPage::OnDontProceed() {
 
   // Finish collecting information about invalid certificates, if the
   // user opted in to.
-  FinishCertCollection();
+  FinishCertCollection(CertificateErrorReport::USER_DID_NOT_PROCEED);
 
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed_, false, overridable_);
@@ -651,7 +651,8 @@ std::string SSLBlockingPage::GetSamplingEventName() const {
   return event_name;
 }
 
-void SSLBlockingPage::FinishCertCollection() {
+void SSLBlockingPage::FinishCertCollection(
+    CertificateErrorReport::ProceedDecision user_proceeded) {
   if (!ShouldShowCertificateReporterCheckbox())
     return;
 
@@ -667,6 +668,21 @@ void SSLBlockingPage::FinishCertCollection() {
   if (ShouldReportCertificateError()) {
     std::string serialized_report;
     CertificateErrorReport report(request_url().host(), ssl_info_);
+
+    CertificateErrorReport::InterstitialReason report_interstitial_reason;
+    switch (interstitial_reason_) {
+      case SSL_REASON_SSL:
+        report_interstitial_reason = CertificateErrorReport::INTERSTITIAL_SSL;
+        break;
+      case SSL_REASON_BAD_CLOCK:
+        report_interstitial_reason = CertificateErrorReport::INTERSTITIAL_CLOCK;
+        break;
+    }
+
+    report.SetInterstitialInfo(
+        report_interstitial_reason, user_proceeded,
+        overridable_ ? CertificateErrorReport::INTERSTITIAL_OVERRIDABLE
+                     : CertificateErrorReport::INTERSTITIAL_NOT_OVERRIDABLE);
 
     if (!report.Serialize(&serialized_report)) {
       LOG(ERROR) << "Failed to serialize certificate report.";
