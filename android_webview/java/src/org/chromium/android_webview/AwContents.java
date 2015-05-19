@@ -1301,8 +1301,7 @@ public class AwContents implements SmartClipProvider,
         if (url == null) {
             return;
         }
-        LoadUrlParams params = new LoadUrlParams(url);
-        loadUrl(params);
+        loadUrl(url, null);
     }
 
     /**
