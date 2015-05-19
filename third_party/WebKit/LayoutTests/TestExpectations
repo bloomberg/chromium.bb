@@ -407,6 +407,12 @@ crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-2x.html [ Crash Pass ]
 crbug.com/455879 [ Win ] webaudio/pannernode-basic.html [ Crash Pass ]
 crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-4x.html [ Crash Pass ]
 
+crbug.com/489546 [ Linux ] virtual/slimmingpaint/compositing/fixed-body-background-positioned.html [ Pass Failure ]
+crbug.com/489548 fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
+crbug.com/489548 virtual/pointerevent/fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
+crbug.com/489549 http/tests/security/suborigins/suborigin-change-document-domain.html [ Pass Failure ]
+crbug.com/489556 virtual/pointerevent/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
+
 crbug.com/467649 webaudio/audionode-disconnect-audioparam.html [ Pass Failure ]
 crbug.com/467649 webaudio/audiobuffersource-late-start.html [ Pass Failure ]
 
@@ -1538,9 +1544,9 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/lineboxcontain
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/margin-collapse/104.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/margin-collapse/empty-clear-blocks.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/051.html [ Failure ImageOnlyFailure ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/fixed-positioning-scrollbar-bug.html [ Failure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/fixed-positioning-scrollbar-bug.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-lr/002.html [ Failure ImageOnlyFailure ]
-crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-rl/002.html [ Failure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-rl/002.html [ Failure ImageOnlyFailure ]
 
 crbug.com/417782 [ Win Linux ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Pass ImageOnlyFailure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
