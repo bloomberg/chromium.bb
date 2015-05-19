@@ -55,31 +55,41 @@ class SyncableSettingsStorage : public ValueStore {
   // ExtensionSettings), but with looser guarantees about when the methods
   // can be called.
 
-  // Must only be called if sync isn't already active.
+  // Starts syncing this storage area. Must only be called if sync isn't
+  // already active.
+  // |sync_state| is the current state of the extension settings in sync.
+  // |sync_processor| is used to write out any changes.
+  // Returns any error when trying to sync, or an empty error on success.
   syncer::SyncError StartSyncing(
-      const base::DictionaryValue& sync_state,
+      scoped_ptr<base::DictionaryValue> sync_state,
       scoped_ptr<SettingsSyncProcessor> sync_processor);
 
-  // May be called at any time (idempotent).
+  // Stops syncing this storage area. May be called at any time (idempotent).
   void StopSyncing();
 
-  // May be called at any time; changes will be ignored if sync isn't active.
-  syncer::SyncError ProcessSyncChanges(const SettingSyncDataList& sync_changes);
+  // Pushes a list of sync changes into this storage area. May be called at any
+  // time, changes will be ignored if sync isn't active.
+  // Returns any error when trying to sync, or an empty error on success.
+  syncer::SyncError ProcessSyncChanges(
+      scoped_ptr<SettingSyncDataList> sync_changes);
 
  private:
   // Sends the changes from |result| to sync if it's enabled.
   void SyncResultIfEnabled(const ValueStore::WriteResult& result);
 
-  // Sends all local settings to sync (synced settings assumed to be empty).
+  // Sends all local settings to sync. This assumes that there are no settings
+  // in sync yet.
+  // Returns any error when trying to sync, or an empty error on success.
   syncer::SyncError SendLocalSettingsToSync(
-      const base::DictionaryValue& settings);
+      scoped_ptr<base::DictionaryValue> local_state);
 
   // Overwrites local state with sync state.
+  // Returns any error when trying to sync, or an empty error on success.
   syncer::SyncError OverwriteLocalSettingsWithSync(
-      const base::DictionaryValue& sync_state,
-      const base::DictionaryValue& settings);
+      scoped_ptr<base::DictionaryValue> sync_state,
+      scoped_ptr<base::DictionaryValue> local_state);
 
-  // Called when an Add/Update/Remove comes from sync.  Ownership of Value*s
+  // Called when an Add/Update/Remove comes from sync. Ownership of Value*s
   // are taken.
   syncer::SyncError OnSyncAdd(
       const std::string& key,

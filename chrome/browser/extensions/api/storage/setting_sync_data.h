@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTING_SYNC_DATA_H_
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTING_SYNC_DATA_H_
 
-#include "base/memory/ref_counted.h"
+#include <string>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "sync/api/sync_change.h"
 
@@ -39,52 +42,34 @@ class SettingSyncData {
 
   ~SettingSyncData();
 
-  // Returns the type of the sync change; may be ACTION_INVALID.
-  syncer::SyncChange::SyncChangeType change_type() const;
+  // May return ACTION_INVALID if this object represents sync data that isn't
+  // associated with a sync operation.
+  syncer::SyncChange::SyncChangeType change_type() const {
+    return change_type_;
+  }
+  const std::string& extension_id() const { return extension_id_; }
+  const std::string& key() const { return key_; }
+  // value() cannot be called if PassValue() has been called.
+  const base::Value& value() const { return *value_; }
 
-  // Returns the extension id the setting is for.
-  const std::string& extension_id() const;
-
-  // Returns the settings key.
-  const std::string& key() const;
-
-  // Returns the value of the setting.
-  const base::Value& value() const;
+  // Releases ownership of the value to the caller. Neither value() nor
+  // PassValue() can be after this.
+  scoped_ptr<base::Value> PassValue();
 
  private:
-  // Ref-counted container for the data.
-  // TODO(kalman): Use browser_sync::Immutable<Internal>.
-  class Internal : public base::RefCountedThreadSafe<Internal> {
-   public:
-    Internal(
-      syncer::SyncChange::SyncChangeType change_type,
-      const std::string& extension_id,
-      const std::string& key,
-      scoped_ptr<base::Value> value);
+  // Populates the extension ID, key, and value from |sync_data|. This will be
+  // either an extension or app settings data type.
+  void ExtractSyncData(const syncer::SyncData& sync_data);
 
-    syncer::SyncChange::SyncChangeType change_type_;
-    std::string extension_id_;
-    std::string key_;
-    scoped_ptr<base::Value> value_;
+  syncer::SyncChange::SyncChangeType change_type_;
+  std::string extension_id_;
+  std::string key_;
+  scoped_ptr<base::Value> value_;
 
-   private:
-    friend class base::RefCountedThreadSafe<Internal>;
-    ~Internal();
-  };
-
-  // Initializes internal_ from sync data for an extension or app setting.
-  void Init(syncer::SyncChange::SyncChangeType change_type,
-            const syncer::SyncData& sync_data);
-
-  // Initializes internal_ from extension specifics.
-  void InitFromExtensionSettingSpecifics(
-      syncer::SyncChange::SyncChangeType change_type,
-      const sync_pb::ExtensionSettingSpecifics& specifics);
-
-  scoped_refptr<Internal> internal_;
+  DISALLOW_COPY_AND_ASSIGN(SettingSyncData);
 };
 
-typedef std::vector<SettingSyncData> SettingSyncDataList;
+typedef ScopedVector<SettingSyncData> SettingSyncDataList;
 
 }  // namespace extensions
 

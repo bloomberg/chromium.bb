@@ -28,6 +28,10 @@ void AddAllSyncData(const std::string& extension_id,
   }
 }
 
+scoped_ptr<base::DictionaryValue> EmptyDictionaryValue() {
+  return make_scoped_ptr(new base::DictionaryValue());
+}
+
 }  // namespace
 
 SyncStorageBackend::SyncStorageBackend(
@@ -52,13 +56,12 @@ SyncStorageBackend::~SyncStorageBackend() {}
 
 ValueStore* SyncStorageBackend::GetStorage(const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  base::DictionaryValue empty;
-  return GetOrCreateStorageWithSyncData(extension_id, empty);
+  return GetOrCreateStorageWithSyncData(extension_id, EmptyDictionaryValue());
 }
 
 SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
     const std::string& extension_id,
-    const base::DictionaryValue& sync_data) const {
+    scoped_ptr<base::DictionaryValue> sync_data) const {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
@@ -79,9 +82,9 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
 
   if (sync_processor_.get()) {
     syncer::SyncError error = syncable_storage->StartSyncing(
-        sync_data, CreateSettingsSyncProcessor(extension_id).Pass());
+        sync_data.Pass(), CreateSettingsSyncProcessor(extension_id).Pass());
     if (error.IsSet())
-      syncable_storage.get()->StopSyncing();
+      syncable_storage->StopSyncing();
   }
   return syncable_storage.get();
 }
@@ -110,10 +113,8 @@ std::set<std::string> SyncStorageBackend::GetKnownExtensionIDs() const {
 
   // Storage areas can be in-memory as well as on disk. |storage_objs_| will
   // contain all that are in-memory.
-  for (StorageObjMap::iterator it = storage_objs_.begin();
-       it != storage_objs_.end();
-       ++it) {
-    result.insert(it->first);
+  for (const auto& storage_obj : storage_objs_) {
+    result.insert(storage_obj.first);
   }
 
   // Leveldb databases are directories inside |base_path_|.
@@ -148,7 +149,7 @@ syncer::SyncDataList SyncStorageBackend::GetAllSyncData(syncer::ModelType type)
        it != known_extension_ids.end();
        ++it) {
     ValueStore::ReadResult maybe_settings =
-        GetOrCreateStorageWithSyncData(*it, base::DictionaryValue())->Get();
+        GetOrCreateStorageWithSyncData(*it, EmptyDictionaryValue())->Get();
     if (maybe_settings->HasError()) {
       LOG(WARNING) << "Failed to get settings for " << *it << ": "
                    << maybe_settings->error().message;
@@ -175,54 +176,50 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
   sync_error_factory_ = sync_error_factory.Pass();
 
   // Group the initial sync data by extension id.
-  std::map<std::string, linked_ptr<base::DictionaryValue> > grouped_sync_data;
-  for (syncer::SyncDataList::const_iterator it = initial_sync_data.begin();
-       it != initial_sync_data.end();
-       ++it) {
-    SettingSyncData data(*it);
-    linked_ptr<base::DictionaryValue> sync_data =
-        grouped_sync_data[data.extension_id()];
-    if (!sync_data.get()) {
-      sync_data =
-          linked_ptr<base::DictionaryValue>(new base::DictionaryValue());
-      grouped_sync_data[data.extension_id()] = sync_data;
-    }
-    DCHECK(!sync_data->HasKey(data.key())) << "Duplicate settings for "
-                                           << data.extension_id() << "/"
-                                           << data.key();
-    sync_data->SetWithoutPathExpansion(data.key(), data.value().DeepCopy());
+  // The raw pointers are safe because ownership of each item is passed to
+  // storage->StartSyncing or GetOrCreateStorageWithSyncData.
+  std::map<std::string, base::DictionaryValue*> grouped_sync_data;
+
+  for (const syncer::SyncData& sync_data : initial_sync_data) {
+    SettingSyncData data(sync_data);
+    // Yes this really is a reference to a pointer.
+    base::DictionaryValue*& settings = grouped_sync_data[data.extension_id()];
+    if (!settings)
+      settings = new base::DictionaryValue();
+    DCHECK(!settings->HasKey(data.key())) << "Duplicate settings for "
+                                          << data.extension_id() << "/"
+                                          << data.key();
+    settings->SetWithoutPathExpansion(data.key(), data.PassValue());
   }
 
   // Start syncing all existing storage areas.  Any storage areas created in
   // the future will start being synced as part of the creation process.
-  for (StorageObjMap::iterator it = storage_objs_.begin();
-       it != storage_objs_.end();
-       ++it) {
-    std::map<std::string, linked_ptr<base::DictionaryValue> >::iterator
-        maybe_sync_data = grouped_sync_data.find(it->first);
+  for (const auto& storage_obj : storage_objs_) {
+    const std::string& extension_id = storage_obj.first;
+    SyncableSettingsStorage* storage = storage_obj.second.get();
+
+    auto group = grouped_sync_data.find(extension_id);
     syncer::SyncError error;
-    if (maybe_sync_data != grouped_sync_data.end()) {
-      error = it->second->StartSyncing(
-          *maybe_sync_data->second,
-          CreateSettingsSyncProcessor(it->first).Pass());
-      grouped_sync_data.erase(it->first);
+    if (group != grouped_sync_data.end()) {
+      error = storage->StartSyncing(
+          make_scoped_ptr(group->second),
+          CreateSettingsSyncProcessor(extension_id).Pass());
+      grouped_sync_data.erase(group);
     } else {
-      base::DictionaryValue empty;
-      error = it->second->StartSyncing(
-          empty, CreateSettingsSyncProcessor(it->first).Pass());
+      error = storage->StartSyncing(
+          EmptyDictionaryValue(),
+          CreateSettingsSyncProcessor(extension_id).Pass());
     }
+
     if (error.IsSet())
-      it->second->StopSyncing();
+      storage->StopSyncing();
   }
 
   // Eagerly create and init the rest of the storage areas that have sync data.
   // Under normal circumstances (i.e. not first-time sync) this will be all of
   // them.
-  for (std::map<std::string, linked_ptr<base::DictionaryValue> >::iterator it =
-           grouped_sync_data.begin();
-       it != grouped_sync_data.end();
-       ++it) {
-    GetOrCreateStorageWithSyncData(it->first, *it->second);
+  for (const auto& group : grouped_sync_data) {
+    GetOrCreateStorageWithSyncData(group.first, make_scoped_ptr(group.second));
   }
 
   return syncer::SyncMergeResult(type);
@@ -235,23 +232,24 @@ syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
   DCHECK(sync_processor_.get());
 
   // Group changes by extension, to pass all changes in a single method call.
-  std::map<std::string, SettingSyncDataList> grouped_sync_data;
-  for (syncer::SyncChangeList::const_iterator it = sync_changes.begin();
-       it != sync_changes.end();
-       ++it) {
-    SettingSyncData data(*it);
-    grouped_sync_data[data.extension_id()].push_back(data);
+  // The raw pointers are safe because ownership of each item is passed to
+  // storage->ProcessSyncChanges.
+  std::map<std::string, SettingSyncDataList*> grouped_sync_data;
+
+  for (const syncer::SyncChange& change : sync_changes) {
+    scoped_ptr<SettingSyncData> data(new SettingSyncData(change));
+    SettingSyncDataList*& group = grouped_sync_data[data->extension_id()];
+    if (!group)
+      group = new SettingSyncDataList();
+    group->push_back(data.Pass());
   }
 
   // Create any storage areas that don't exist yet but have sync data.
-  base::DictionaryValue empty;
-  for (std::map<std::string, SettingSyncDataList>::iterator it =
-           grouped_sync_data.begin();
-       it != grouped_sync_data.end();
-       ++it) {
+  for (const auto& group : grouped_sync_data) {
     SyncableSettingsStorage* storage =
-        GetOrCreateStorageWithSyncData(it->first, empty);
-    syncer::SyncError error = storage->ProcessSyncChanges(it->second);
+        GetOrCreateStorageWithSyncData(group.first, EmptyDictionaryValue());
+    syncer::SyncError error =
+        storage->ProcessSyncChanges(make_scoped_ptr(group.second));
     if (error.IsSet())
       storage->StopSyncing();
   }
@@ -264,12 +262,10 @@ void SyncStorageBackend::StopSyncing(syncer::ModelType type) {
   DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
   DCHECK_EQ(sync_type_, type);
 
-  for (StorageObjMap::iterator it = storage_objs_.begin();
-       it != storage_objs_.end();
-       ++it) {
+  for (const auto& storage_obj : storage_objs_) {
     // Some storage areas may have already stopped syncing if they had areas
     // and syncing was disabled, but StopSyncing is safe to call multiple times.
-    it->second->StopSyncing();
+    storage_obj.second->StopSyncing();
   }
 
   sync_processor_.reset();
