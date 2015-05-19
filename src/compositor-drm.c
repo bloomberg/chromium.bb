@@ -1391,7 +1391,7 @@ create_gbm_device(int fd)
 	return gbm;
 }
 
-/* When initializing EGL, if the preferred buffer format isn't availble
+/* When initializing EGL, if the preferred buffer format isn't available
  * we may be able to susbstitute an ARGB format for an XRGB one.
  *
  * This returns 0 if substitution isn't possible, but 0 might be a
