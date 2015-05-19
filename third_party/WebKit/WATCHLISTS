@@ -15,7 +15,7 @@
                   '|AXObjectCache' \
                   '|WebAX'
     },
-    'animations': {
+    'animation': {
       'filepath': '[Aa]nimat|[Tt]ransition',
     },
     'audio': {
@@ -331,14 +331,10 @@
                      'aboxhall@chromium.org',
                      'nektar@chromium.org',
                      'je_julie.kim@chromium.org'],
-    'animations': ['alexis.menard@intel.com',
-                   'dstockwell@chromium.org',
+    'animation': ['alexis.menard@intel.com',
                    'ericwilligers@chromium.org',
-                   'mikelawther@chromium.org',
                    'rjwright@chromium.org',
                    'shans@chromium.org',
-                   'steveblock@chromium.org',
-                   'timloh@chromium.org',
                    'blink-reviews-animation@chromium.org'],
     'audio': ['rtoy@chromium.org'],
     'devtools': [ 'pfeldman+blink@chromium.org',
