@@ -3881,6 +3881,7 @@
             'layout/shapes/BoxShapeTest.cpp',
             'loader/FrameFetchContextTest.cpp',
             'loader/LinkHeaderTest.cpp',
+            'loader/LinkLoaderTest.cpp',
             'loader/MixedContentCheckerTest.cpp',
             'page/ContextMenuControllerTest.cpp',
             'page/NetworkStateNotifierTest.cpp',

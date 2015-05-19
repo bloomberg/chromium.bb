@@ -357,6 +357,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     case Resource::Raw:
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
+    case Resource::LinkPreload:
     case Resource::TextTrack:
     case Resource::ImportResource:
     case Resource::Media:
@@ -435,6 +436,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     case Resource::Raw:
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
+    case Resource::LinkPreload:
         break;
     case Resource::Media:
     case Resource::TextTrack:

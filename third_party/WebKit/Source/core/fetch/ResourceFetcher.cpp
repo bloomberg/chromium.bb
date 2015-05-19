@@ -88,6 +88,8 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
         return new Resource(request, Resource::LinkPrefetch);
     case Resource::LinkSubresource:
         return new Resource(request, Resource::LinkSubresource);
+    case Resource::LinkPreload:
+        return new Resource(request, Resource::LinkPreload);
     case Resource::ImportResource:
         return new RawResource(request, type);
     }
@@ -96,8 +98,9 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
     return 0;
 }
 
-static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest& request)
+ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const FetchRequest& request)
 {
+    // TODO(yoav): Change it here so that priority can be changed even after it was resolved.
     if (request.priority() != ResourceLoadPriorityUnresolved)
         return request.priority();
 
@@ -129,6 +132,7 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
     case Resource::SVGDocument:
         return ResourceLoadPriorityLow;
     case Resource::LinkPrefetch:
+    case Resource::LinkPreload:
         return ResourceLoadPriorityVeryLow;
     case Resource::LinkSubresource:
         return ResourceLoadPriorityLow;
@@ -199,6 +203,10 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
     case Resource::LinkPrefetch:
         return WebURLRequest::RequestContextPrefetch;
     case Resource::LinkSubresource:
+        return WebURLRequest::RequestContextSubresource;
+    case Resource::LinkPreload:
+        // TODO(yoav): We should give preload its own context:
+        // https://github.com/whatwg/fetch/commit/26e5cca8ab5bb4b68a8f238f41dd7364d8c276b3
         return WebURLRequest::RequestContextSubresource;
     case Resource::TextTrack:
         return WebURLRequest::RequestContextTrack;

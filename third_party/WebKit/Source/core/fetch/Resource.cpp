@@ -1034,6 +1034,8 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
         return "Link prefetch resource";
     case Resource::LinkSubresource:
         return "Link subresource";
+    case Resource::LinkPreload:
+        return "Link preload";
     case Resource::TextTrack:
         return "Text track";
     case Resource::ImportResource:
@@ -1069,6 +1071,8 @@ const char* ResourceTypeName(Resource::Type type)
         return "LinkPrefetch";
     case Resource::LinkSubresource:
         return "LinkSubresource";
+    case Resource::LinkPreload:
+        return "LinkPreload";
     case Resource::TextTrack:
         return "TextTrack";
     case Resource::ImportResource:

@@ -66,6 +66,7 @@ public:
     const ResourceLoaderOptions& options() const { return m_options; }
     void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
     ResourceLoadPriority priority() const { return m_priority; }
+    void setPriority(ResourceLoadPriority priority) { m_priority = priority; }
     bool forPreload() const { return m_forPreload; }
     void setForPreload(bool forPreload) { m_forPreload = forPreload; }
     DeferOption defer() const { return m_defer; }

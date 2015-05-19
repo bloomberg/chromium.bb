@@ -144,6 +144,8 @@ public:
 
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
+    static ResourceLoadPriority loadPriority(Resource::Type, const FetchRequest&);
+
     enum ResourceLoadStartType {
         ResourceLoadingFromNetwork,
         ResourceLoadingFromCache
