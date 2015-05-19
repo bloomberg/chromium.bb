@@ -18,13 +18,13 @@
         },
         {
           "comment": "Punctuation",
-          "input": ". , ? ! ; : -",
-          "output": "⠲ ⠂ ⠢ ⠖ ⠆⠀⠒ ⠤"
+          "input": ". , ? ! ; : - …",
+          "output": "⠲ ⠂ ⠢ ⠖ ⠆⠀⠒ ⠤ ⠲⠲⠲"
         },
         {
           "comment": "Symbols",
-          "input": "@ # % & * = + _ / \\ < >",
-          "output": "⠜ ⠐⠼ ⠿ ⠯ ⠔ ⠶⠀⠖ ⠸ ⠌ ⠐⠡ ⠐⠪ ⠐⠕"
+          "input": "@ # % ‰ & * = + _ / \\ < > ~",
+          "output": "⠜ ⠐⠼ ⠿ ⠿⠿ ⠯ ⠔ ⠶⠀⠖ ⠸ ⠌ ⠐⠡ ⠐⠪ ⠐⠕ ⠐⠢"
         },
         {
           "comment": "a accent",
@@ -69,6 +69,10 @@
         {
           "input": "beletselteken ...",
           "output": "⠃⠑⠇⠑⠞⠎⠑⠇⠞⠑⠅⠑⠝ ⠲⠲⠲"
+        },
+        {
+          "input": "Vul in ei of ij: p..n, r..s.",
+          "output": "⠨⠧⠥⠇ ⠊⠝ ⠑⠊ ⠕⠋ ⠊⠚⠒ ⠏⠲⠲⠝⠂ ⠗⠲⠲⠎⠲"
         },
         {
           "input": "'enkele aanhalingstekens'",
@@ -121,6 +125,10 @@
           "output": "⠗⠑⠛⠊⠎⠞⠑⠗⠑⠙ ⠐⠗"
         },
         {
+          "input": "trademark ™",
+          "output": "⠞⠗⠁⠙⠑⠍⠁⠗⠅ ⠐⠞⠍"
+        },
+        {
           "input": "1.234.567,89",
           "output": "⠼⠁⠲⠃⠉⠙⠲⠑⠋⠛⠂⠓⠊"
         },
@@ -161,8 +169,8 @@
           "output": "⠼⠁⠑⠠⠑⠂ ⠼⠃⠛⠎⠞⠑"
         },
         {
-          "input": "10a",
-          "output": "⠼⠁⠚⠠⠁"
+          "input": "10a, 10A",
+          "output": "⠼⠁⠚⠠⠁⠂ ⠼⠁⠚⠨⠁"
         },
         {
           "input": "12.b",
@@ -201,6 +209,14 @@
           "output": "⠼⠁⠑ ⠿"
         },
         {
+          "input": "79,5 ‰",
+          "output": "⠼⠛⠊⠂⠑ ⠿⠿"
+        },
+        {
+          "input": "15‰",
+          "output": "⠼⠁⠑ ⠿⠿"
+        },
+        {
           "input": "37,8° C",
           "output": "⠼⠉⠛⠂⠓⠈⠴ ⠨⠉"
         },
@@ -225,6 +241,18 @@
           "output": "⠘⠉⠕⠡⠆⠤⠥⠊⠞⠎⠞⠕⠕⠞⠒ ⠼⠁⠑⠓ ⠛ ⠘⠉⠕⠡⠆⠌⠅⠍"
         },
         {
+          "input": "Winston Churchill",
+          "output": "⠨⠺⠊⠝⠎⠞⠕⠝ ⠨⠉⠓⠥⠗⠉⠓⠊⠇⠇"
+        },
+        {
+          "input": "MacLean",
+          "output": "⠨⠍⠁⠉⠨⠇⠑⠁⠝"
+        },
+        {
+          "input": "Saint-Etienne of Saint-Étienne",
+          "output": "⠨⠎⠁⠊⠝⠞⠤⠨⠑⠞⠊⠑⠝⠝⠑ ⠕⠋ ⠨⠎⠁⠊⠝⠞⠤⠨⠿⠞⠊⠑⠝⠝⠑"
+        },
+        {
           "input": "Benedictus XVI",
           "output": "⠨⠃⠑⠝⠑⠙⠊⠉⠞⠥⠎ ⠘⠭⠧⠊"
         },
@@ -235,6 +263,10 @@
         {
           "input": "WO II",
           "output": "⠘⠺⠕ ⠘⠊⠊"
+        },
+        {
+          "input": "E.T.A.",
+          "output": "⠘⠑⠲⠞⠲⠁⠲"
         },
         {
           "input": "EEN woord in hoofdletters",
@@ -268,6 +300,14 @@
         {
           "input": "N-VA Nieuw-Vlaamse Alliantie",
           "output": "⠘⠝⠤⠧⠁ ⠨⠝⠊⠑⠥⠺⠤⠨⠧⠇⠁⠁⠍⠎⠑ ⠨⠁⠇⠇⠊⠁⠝⠞⠊⠑"
+        },
+        {
+          "input": "Firma Bossuyt & Zonen",
+          "output": "⠨⠋⠊⠗⠍⠁ ⠨⠃⠕⠎⠎⠥⠽⠞ ⠯ ⠨⠵⠕⠝⠑⠝"
+        },
+        {
+          "input": "C&A",
+          "output": "⠘⠉⠐⠯⠁"
         },
         {
           "input": "CD&V Christen-Democratisch en Vlaams",
@@ -340,6 +380,26 @@
         {
           "input": "É-U",
           "output": "⠘⠿⠤⠥"
+        },
+        {
+          "input": "cañon",
+          "output": "⠉⠁⠻⠕⠝"
+        },
+        {
+          "input": "α β γ"
+          "output": "⠰⠁ ⠰⠃ ⠰⠛"
+        },
+        {
+          "input": "Α Β Γ"
+          "output": "⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛"
+        },
+        {
+          "input": "'s morgens, baby's, Alex' boeken, de jaren '90"
+          "output": "⠄⠎ ⠍⠕⠗⠛⠑⠝⠎⠂ ⠃⠁⠃⠽⠄⠎⠂ ⠨⠁⠇⠑⠭⠄ ⠃⠕⠑⠅⠑⠝⠂ ⠙⠑ ⠚⠁⠗⠑⠝ ⠄⠼⠊⠚"
+        },
+        {
+          "input": "Een typist(e) moet heel precies werken."
+          "output": "⠨⠑⠑⠝ ⠞⠽⠏⠊⠎⠞⠦⠑⠴⠀⠍⠕⠑⠞ ⠓⠑⠑⠇ ⠏⠗⠑⠉⠊⠑⠎ ⠺⠑⠗⠅⠑⠝⠲"
         }
       ]
     }
