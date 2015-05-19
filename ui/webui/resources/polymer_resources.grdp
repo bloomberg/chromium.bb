@@ -766,6 +766,12 @@
     <structure name="IDR_POLYMER_08_MORE_ROUTING_DRIVER_PATH_HTML"
                file="../../../third_party/polymer/v0_8/components-chromium/more-routing/driver/path.html"
                type="chrome_html" />
+    <structure name="IDR_POLYMER_08_MORE_ROUTING_EMITTER_EXTRACTED_JS"
+               file="../../../third_party/polymer/v0_8/components-chromium/more-routing/emitter-extracted.js"
+               type="chrome_html" />
+    <structure name="IDR_POLYMER_08_MORE_ROUTING_EMITTER_HTML"
+               file="../../../third_party/polymer/v0_8/components-chromium/more-routing/emitter.html"
+               type="chrome_html" />
     <structure name="IDR_POLYMER_08_MORE_ROUTING_MORE_ROUTE_EXTRACTED_JS"
                file="../../../third_party/polymer/v0_8/components-chromium/more-routing/more-route-extracted.js"
                type="chrome_html" />
@@ -799,6 +805,12 @@
     <structure name="IDR_POLYMER_08_MORE_ROUTING_MORE_ROUTING_HTML"
                file="../../../third_party/polymer/v0_8/components-chromium/more-routing/more-routing.html"
                type="chrome_html" />
+    <structure name="IDR_POLYMER_08_MORE_ROUTING_PARAMS_EXTRACTED_JS"
+               file="../../../third_party/polymer/v0_8/components-chromium/more-routing/params-extracted.js"
+               type="chrome_html" />
+    <structure name="IDR_POLYMER_08_MORE_ROUTING_PARAMS_HTML"
+               file="../../../third_party/polymer/v0_8/components-chromium/more-routing/params.html"
+               type="chrome_html" />
     <structure name="IDR_POLYMER_08_MORE_ROUTING_ROUTE_EXTRACTED_JS"
                file="../../../third_party/polymer/v0_8/components-chromium/more-routing/route-extracted.js"
                type="chrome_html" />
@@ -810,12 +822,6 @@
                type="chrome_html" />
     <structure name="IDR_POLYMER_08_MORE_ROUTING_ROUTING_HTML"
                file="../../../third_party/polymer/v0_8/components-chromium/more-routing/routing.html"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_08_OBSERVE_JS_HTML"
-               file="../../../third_party/polymer/v0_8/components-chromium/observe-js/observe-js.html"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_08_OBSERVE_JS_JS"
-               file="../../../third_party/polymer/v0_8/components-chromium/observe-js/src/observe.js"
                type="chrome_html" />
   </if>
 </grit-part>

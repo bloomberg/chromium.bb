@@ -14,12 +14,22 @@ var SEPARATOR_CLEANER = /\/\/+/g;
  * TODO(nevir): Docs.
  */
 function Route(path, parent) {
+  // For `MoreRouting.Emitter`; Emits changes for `active`.
+  this.__listeners = [];
+
   this.path     = path;
   this.parent   = parent;
   this.fullPath = path;
   this.compiled = this._compile(this.path);
   this.active   = false;
   this.driver   = null;
+
+  var params = MoreRouting.Params(namedParams(this.compiled), this.parent && this.parent.params);
+  params.__subscribe(this._navigateToParams.bind(this));
+  Object.defineProperty(this, 'params', {
+    get: function() { return params; },
+    set: function() { throw new Error('Route#params cannot be overwritten'); },
+  });
 
   this.parts    = [];
   this.children = [];
@@ -29,20 +39,27 @@ function Route(path, parent) {
   // To make data "binding" easy, `Route` guarantees that `params` will always
   // be the same object; just make a reference to it.
   if (this.parent) {
-    this.params = Object.create(this.parent.params);
     this.parent.children.push(this);
     this.fullPath  = this.parent.fullPath + this.fullPath;
     this.depth     = this.parent.depth + this.compiled.length;
     this.numParams = this.parent.numParams + countParams(this.compiled);
   } else {
-    this.params    = {};
     this.depth     = this.compiled.length;
     this.numParams = countParams(this.compiled);
   }
-
-  this._paramObserver = new ObjectObserver(this.params);
-  this._paramObserver.open(this._navigateToParams.bind(this));
 }
+Route.prototype = Object.create(MoreRouting.Emitter);
+
+Object.defineProperty(Route.prototype, 'active', {
+  get: function() {
+    return this._active;
+  },
+  set: function(value) {
+    if (value !== this._active);
+    this._active = value;
+    this.__notify('active', value);
+  },
+});
 
 Route.isPath = function isPath(pathOrName) {
   return pathOrName.indexOf(PART_SEPARATOR) === 0;
@@ -115,6 +132,10 @@ Route.prototype.partsForParams = function partsForParams(params, silent) {
 Route.prototype.processPathParts = function processPathParts(parts) {
   this.parts  = parts;
   this.active = this.matchesPathParts(parts);
+
+  // We don't want to notify of these changes; they'd be no-op noise.
+  this.params.__silent = true;
+
   if (this.active) {
     var keys = Object.keys(this.params);
     for (var i = 0; i < keys.length; i++) {
@@ -130,7 +151,8 @@ Route.prototype.processPathParts = function processPathParts(parts) {
       this.params[key] = undefined;
     }
   }
-  this._paramObserver.discardChanges();
+
+  delete this.params.__silent;
 };
 
 Route.prototype.matchesPathParts = function matchesPathParts(parts) {
@@ -178,6 +200,15 @@ function countParams(compiled) {
   return compiled.reduce(function(count, part) {
     return count + (part.type === 'param' ? 1 : 0);
   }, 0);
+}
+
+function namedParams(compiled) {
+  var result = [];
+  compiled.forEach(function(part) {
+    if (part.type === 'static') return;
+    result.push(part.name);
+  });
+  return result;
 }
 
 })(window);

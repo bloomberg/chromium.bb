@@ -101,15 +101,15 @@
      * Tracks changes to the routes.
      */
     _observeRoutes: function() {
-      if (this._observer) {
-        this._observer.close();
+      if (this._routeListeners) {
+        for (var i = 0, listener; listener = this._routeListeners[i]; i++) {
+          listener.close();
+        }
       }
-      // TODO(nevir): https://github.com/Polymore/more-routing/issues/24
-      this._observer = new CompoundObserver();
-      for (var i = 0, routeInfo; routeInfo = this._routeInfo[i]; i++) {
-        this._observer.addPath(routeInfo.model, 'active');
-      }
-      this._observer.open(this._evaluate.bind(this));
+
+      this._routeListeners = this._routeInfo.map(function(routeInfo) {
+        return routeInfo.model.__subscribe(this._evaluate.bind(this));
+      }.bind(this));
     },
 
     _evaluate: function() {
