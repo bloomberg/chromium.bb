@@ -786,19 +786,21 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = capabilities_.max_color_attachments;
       return true;
     case GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS:
-      *params = capabilities_.max_combined_fragment_uniform_components;
+      *params = static_cast<GLint>(
+          capabilities_.max_combined_fragment_uniform_components);
       return true;
     case GL_MAX_COMBINED_UNIFORM_BLOCKS:
       *params = capabilities_.max_combined_uniform_blocks;
       return true;
     case GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS:
-      *params = capabilities_.max_combined_vertex_uniform_components;
+      *params = static_cast<GLint>(
+          capabilities_.max_combined_vertex_uniform_components);
       return true;
     case GL_MAX_DRAW_BUFFERS:
       *params = capabilities_.max_draw_buffers;
       return true;
     case GL_MAX_ELEMENT_INDEX:
-      *params = capabilities_.max_element_index;
+      *params = static_cast<GLint>(capabilities_.max_element_index);
       return true;
     case GL_MAX_ELEMENTS_INDICES:
       *params = capabilities_.max_elements_indices;
@@ -822,7 +824,10 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = capabilities_.max_samples;
       return true;
     case GL_MAX_SERVER_WAIT_TIMEOUT:
-      *params = capabilities_.max_server_wait_timeout;
+      *params = static_cast<GLint>(capabilities_.max_server_wait_timeout);
+      return true;
+    case GL_MAX_TEXTURE_LOD_BIAS:
+      *params = static_cast<GLint>(capabilities_.max_texture_lod_bias);
       return true;
     case GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS:
       *params = capabilities_.max_transform_feedback_interleaved_components;
@@ -834,7 +839,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = capabilities_.max_transform_feedback_separate_components;
       return true;
     case GL_MAX_UNIFORM_BLOCK_SIZE:
-      *params = capabilities_.max_uniform_block_size;
+      *params = static_cast<GLint>(capabilities_.max_uniform_block_size);
       return true;
     case GL_MAX_UNIFORM_BUFFER_BINDINGS:
       *params = capabilities_.max_uniform_buffer_bindings;
@@ -888,7 +893,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_DRAW_BUFFER15:
     case GL_DRAW_FRAMEBUFFER_BINDING:
     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT:
-    case GL_MAX_TEXTURE_LOD_BIAS:
     case GL_PACK_ROW_LENGTH:
     case GL_PACK_SKIP_PIXELS:
     case GL_PACK_SKIP_ROWS:
@@ -935,6 +939,13 @@ bool GLES2Implementation::GetBooleanvHelper(GLenum pname, GLboolean* params) {
 
 bool GLES2Implementation::GetFloatvHelper(GLenum pname, GLfloat* params) {
   // TODO(gman): Make this handle pnames that return more than 1 value.
+  switch (pname) {
+    case GL_MAX_TEXTURE_LOD_BIAS:
+      *params = capabilities_.max_texture_lod_bias;
+      return true;
+    default:
+      break;
+  }
   GLint value;
   if (!GetHelper(pname, &value)) {
     return false;
@@ -944,12 +955,30 @@ bool GLES2Implementation::GetFloatvHelper(GLenum pname, GLfloat* params) {
 }
 
 bool GLES2Implementation::GetInteger64vHelper(GLenum pname, GLint64* params) {
-  // TODO(zmo): we limit values to 32-bit, which is OK for now.
+  switch (pname) {
+    case GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS:
+      *params = capabilities_.max_combined_fragment_uniform_components;
+      return true;
+    case GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS:
+      *params = capabilities_.max_combined_vertex_uniform_components;
+      return true;
+    case GL_MAX_ELEMENT_INDEX:
+      *params = capabilities_.max_element_index;
+      return true;
+    case GL_MAX_SERVER_WAIT_TIMEOUT:
+      *params = capabilities_.max_server_wait_timeout;
+      return true;
+    case GL_MAX_UNIFORM_BLOCK_SIZE:
+      *params = capabilities_.max_uniform_block_size;
+      return true;
+    default:
+      break;
+  }
   GLint value;
   if (!GetHelper(pname, &value)) {
     return false;
   }
-  *params = value;
+  *params = static_cast<GLint64>(value);
   return true;
 }
 

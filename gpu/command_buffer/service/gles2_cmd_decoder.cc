@@ -2969,14 +2969,14 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
     DoGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &caps.max_3d_texture_size);
     DoGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &caps.max_array_texture_layers);
     DoGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &caps.max_color_attachments);
-    DoGetIntegerv(GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS,
-                  &caps.max_combined_fragment_uniform_components);
+    DoGetInteger64v(GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS,
+                    &caps.max_combined_fragment_uniform_components);
     DoGetIntegerv(GL_MAX_COMBINED_UNIFORM_BLOCKS,
                   &caps.max_combined_uniform_blocks);
-    DoGetIntegerv(GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS,
-                  &caps.max_combined_vertex_uniform_components);
+    DoGetInteger64v(GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS,
+                    &caps.max_combined_vertex_uniform_components);
     DoGetIntegerv(GL_MAX_DRAW_BUFFERS, &caps.max_draw_buffers);
-    DoGetIntegerv(GL_MAX_ELEMENT_INDEX, &caps.max_element_index);
+    DoGetInteger64v(GL_MAX_ELEMENT_INDEX, &caps.max_element_index);
     DoGetIntegerv(GL_MAX_ELEMENTS_INDICES, &caps.max_elements_indices);
     DoGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &caps.max_elements_vertices);
     DoGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS,
@@ -2987,14 +2987,19 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
                   &caps.max_fragment_uniform_components);
     DoGetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET,
                   &caps.max_program_texel_offset);
-    DoGetIntegerv(GL_MAX_SERVER_WAIT_TIMEOUT, &caps.max_server_wait_timeout);
+    DoGetInteger64v(GL_MAX_SERVER_WAIT_TIMEOUT, &caps.max_server_wait_timeout);
+    // Work around Linux NVIDIA driver bug where GL_TIMEOUT_IGNORED is
+    // returned.
+    if (caps.max_server_wait_timeout < 0)
+      caps.max_server_wait_timeout = 0;
+    DoGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &caps.max_texture_lod_bias);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS,
                   &caps.max_transform_feedback_interleaved_components);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
                   &caps.max_transform_feedback_separate_attribs);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS,
                   &caps.max_transform_feedback_separate_components);
-    DoGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &caps.max_uniform_block_size);
+    DoGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &caps.max_uniform_block_size);
     DoGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS,
                   &caps.max_uniform_buffer_bindings);
     DoGetIntegerv(GL_MAX_VARYING_COMPONENTS, &caps.max_varying_components);

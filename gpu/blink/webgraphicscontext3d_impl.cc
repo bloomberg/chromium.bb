@@ -30,6 +30,7 @@ using blink::WGC3Dint;
 using blink::WGC3Dintptr;
 using blink::WGC3Dsizei;
 using blink::WGC3Dsizeiptr;
+using blink::WGC3Dint64;
 using blink::WGC3Duint64;
 using blink::WGC3Duint;
 using blink::WebGLId;
@@ -453,6 +454,8 @@ DELEGATE_TO_GL_4(getFramebufferAttachmentParameteriv,
                  WGC3Denum, WGC3Denum, WGC3Denum, WGC3Dint*)
 
 DELEGATE_TO_GL_2(getIntegerv, GetIntegerv, WGC3Denum, WGC3Dint*)
+
+DELEGATE_TO_GL_2(getInteger64v, GetInteger64v, WGC3Denum, WGC3Dint64*)
 
 DELEGATE_TO_GL_3(getProgramiv, GetProgramiv, WebGLId, WGC3Denum, WGC3Dint*)
 

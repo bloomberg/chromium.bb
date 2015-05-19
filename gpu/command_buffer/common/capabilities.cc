@@ -39,6 +39,7 @@ Capabilities::Capabilities()
       max_program_texel_offset(0),
       max_samples(0),
       max_server_wait_timeout(0),
+      max_texture_lod_bias(0.f),
       max_transform_feedback_interleaved_components(0),
       max_transform_feedback_separate_attribs(0),
       max_transform_feedback_separate_components(0),

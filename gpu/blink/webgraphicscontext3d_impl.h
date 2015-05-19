@@ -192,6 +192,8 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   virtual void getIntegerv(blink::WGC3Denum pname, blink::WGC3Dint* value);
 
+  virtual void getInteger64v(blink::WGC3Denum pname, blink::WGC3Dint64* value);
+
   virtual void getProgramiv(blink::WebGLId program,
                             blink::WGC3Denum pname,
                             blink::WGC3Dint* value);

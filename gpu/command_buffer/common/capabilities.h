@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_CAPABILITIES_H_
 #define GPU_COMMAND_BUFFER_COMMON_CAPABILITIES_H_
 
+#include <stdint.h>
+
 #include "gpu/gpu_export.h"
 
 // From gl2.h. We want to avoid including gl headers because client-side and
@@ -82,11 +84,11 @@ struct GPU_EXPORT Capabilities {
   int max_3d_texture_size;
   int max_array_texture_layers;
   int max_color_attachments;
-  int max_combined_fragment_uniform_components;
+  int64_t max_combined_fragment_uniform_components;
   int max_combined_uniform_blocks;
-  int max_combined_vertex_uniform_components;
+  int64_t max_combined_vertex_uniform_components;
   int max_draw_buffers;
-  int max_element_index;
+  int64_t max_element_index;
   int max_elements_indices;
   int max_elements_vertices;
   int max_fragment_input_components;
@@ -94,11 +96,12 @@ struct GPU_EXPORT Capabilities {
   int max_fragment_uniform_components;
   int max_program_texel_offset;
   int max_samples;
-  int max_server_wait_timeout;
+  int64_t max_server_wait_timeout;
+  float max_texture_lod_bias;
   int max_transform_feedback_interleaved_components;
   int max_transform_feedback_separate_attribs;
   int max_transform_feedback_separate_components;
-  int max_uniform_block_size;
+  int64_t max_uniform_block_size;
   int max_uniform_buffer_bindings;
   int max_varying_components;
   int max_vertex_output_components;
