@@ -363,25 +363,30 @@ void VideoRendererAlgorithm::EnqueueFrame(
                                                     frame_queue_.end(), frame);
   DCHECK_GE(it - frame_queue_.begin(), 0);
 
-  // If a frame was inserted before the first frame, update the index. On the
-  // next call to Render() it will be dropped.
+  // Drop any frames inserted before or at the last rendered frame if we've
+  // already rendered any frames.
   const size_t new_frame_index = it - frame_queue_.begin();
   if (new_frame_index <= last_frame_index_ && have_rendered_frames_) {
-    if (new_frame_index == last_frame_index_ &&
-        frame->timestamp() ==
-            frame_queue_[last_frame_index_].frame->timestamp()) {
-      DVLOG(2) << "Ignoring frame with the same timestamp as the most recently "
-                  "rendered frame.";
-      ++frames_dropped_during_enqueue_;
-      return;
-    }
-    ++last_frame_index_;
-  } else if (new_frame_index < frame_queue_.size() &&
-             frame->timestamp() ==
-                 frame_queue_[new_frame_index].frame->timestamp()) {
-    DVLOG(2) << "Replacing existing frame with the same timestamp with most "
-             << "recently received frame.";
-    frame_queue_[new_frame_index].frame = frame;
+    DVLOG(2) << "Dropping frame inserted before the last rendered frame.";
+    ++frames_dropped_during_enqueue_;
+    return;
+  }
+
+  // Drop any frames which are less than a millisecond apart in media time (even
+  // those with timestamps matching an already enqueued frame), there's no way
+  // we can reasonably render these frames; it's effectively a 1000fps limit.
+  const base::TimeDelta delta =
+      std::min(new_frame_index < frame_queue_.size()
+                   ? frame_queue_[new_frame_index].frame->timestamp() -
+                         frame->timestamp()
+                   : base::TimeDelta::Max(),
+               new_frame_index > 0
+                   ? frame->timestamp() -
+                         frame_queue_[new_frame_index - 1].frame->timestamp()
+                   : base::TimeDelta::Max());
+  if (delta < base::TimeDelta::FromMilliseconds(1)) {
+    DVLOG(2) << "Dropping frame too close to an already enqueued frame: "
+             << delta.InMicroseconds() << " us";
     ++frames_dropped_during_enqueue_;
     return;
   }

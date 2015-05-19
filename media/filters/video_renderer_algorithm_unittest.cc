@@ -633,9 +633,10 @@ TEST_F(VideoRendererAlgorithmTest, SortedFrameQueue) {
 
   // Since a frame has already been rendered, queuing this frame and calling
   // Render() should result in it being dropped; even though it's a better
-  // candidate for the desired interval.
+  // candidate for the desired interval.  The frame is dropped during enqueue so
+  // it won't show up in frames_queued().
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(1)));
-  EXPECT_EQ(3u, frames_queued());
+  EXPECT_EQ(2u, frames_queued());
   EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
   frame = RenderAndStep(&tg, &frames_dropped);
   EXPECT_EQ(1u, frames_dropped);
@@ -1190,8 +1191,7 @@ TEST_F(VideoRendererAlgorithmTest, EnqueueFrames) {
   algorithm_.EnqueueFrame(frame_1);
   EXPECT_EQ(1u, frames_queued());
 
-  // Enqueuing a frame with the same timestamp should not increase the queue and
-  // just replace the existing frame if we haven't rendered it.
+  // Enqueuing a frame with the same timestamp should always be dropped.
   scoped_refptr<VideoFrame> frame_2 = CreateFrame(tg.interval(0));
   algorithm_.EnqueueFrame(frame_2);
   EXPECT_EQ(1u, frames_queued());
@@ -1200,18 +1200,37 @@ TEST_F(VideoRendererAlgorithmTest, EnqueueFrames) {
   scoped_refptr<VideoFrame> rendered_frame =
       RenderAndStep(&tg, &frames_dropped);
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(frame_2, rendered_frame);
+  EXPECT_EQ(frame_1, rendered_frame);
 
   // The replaced frame should count as dropped.
   EXPECT_EQ(1u, frames_dropped);
 
-  // Trying to replace frame_2 with frame_1 should do nothing.
-  algorithm_.EnqueueFrame(frame_1);
+  // Trying to replace frame_1 with frame_2 should do nothing.
+  algorithm_.EnqueueFrame(frame_2);
   EXPECT_EQ(1u, frames_queued());
 
   rendered_frame = RenderAndStep(&tg, &frames_dropped);
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(frame_2, rendered_frame);
+  EXPECT_EQ(frame_1, rendered_frame);
+  EXPECT_EQ(1u, frames_dropped);
+
+  // Trying to add a frame < 1 ms after the last frame should drop the frame.
+  algorithm_.EnqueueFrame(CreateFrame(base::TimeDelta::FromMicroseconds(999)));
+  rendered_frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(frame_1, rendered_frame);
+  EXPECT_EQ(1u, frames_dropped);
+
+  scoped_refptr<VideoFrame> frame_3 = CreateFrame(tg.interval(1));
+  algorithm_.EnqueueFrame(frame_3);
+  EXPECT_EQ(2u, frames_queued());
+
+  // Trying to add a frame < 1 ms before the last frame should drop the frame.
+  algorithm_.EnqueueFrame(
+      CreateFrame(tg.interval(1) - base::TimeDelta::FromMicroseconds(999)));
+  rendered_frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(frame_3, rendered_frame);
   EXPECT_EQ(1u, frames_dropped);
 }
 
