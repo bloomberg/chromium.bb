@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -66,7 +68,13 @@ public abstract class ChromiumApplication extends ContentApplication {
      * Initiate AndroidEdu device check.
      * @param callback Callback that should receive the results of the AndroidEdu device check.
      */
-    public void checkIsAndroidEduDevice(AndroidEduOwnerCheckCallback callback) {
+    public void checkIsAndroidEduDevice(final AndroidEduOwnerCheckCallback callback) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                callback.onSchoolCheckDone(false);
+            }
+        });
     }
 
     /**
