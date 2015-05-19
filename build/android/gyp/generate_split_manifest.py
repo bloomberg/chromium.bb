@@ -19,6 +19,7 @@ MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="utf-8"?>
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="%(package)s"
     split="%(split)s">
+  <uses-sdk android:minSdkVersion="21" />
   <application android:hasCode="%(has_code)s">
   </application>
 </manifest>
