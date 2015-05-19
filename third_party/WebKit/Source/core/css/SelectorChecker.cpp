@@ -710,11 +710,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         return checkScrollbarPseudoClass(context);
     }
 
-    if (context.hasSelectionPseudo) {
-        if (selector.pseudoType() == CSSSelector::PseudoWindowInactive)
-            return !element.document().page()->focusController().isActive();
-    }
-
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoNot:
         ASSERT_NOT_REACHED();
@@ -1011,6 +1006,10 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
     case CSSSelector::PseudoListBox:
         return context.isUARule && matchesListBoxPseudoClass(element);
+    case CSSSelector::PseudoWindowInactive:
+        if (!context.hasSelectionPseudo)
+            return false;
+        return !element.document().page()->focusController().isActive();
     case CSSSelector::PseudoHorizontal:
     case CSSSelector::PseudoVertical:
     case CSSSelector::PseudoDecrement:
@@ -1021,7 +1020,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
     case CSSSelector::PseudoSingleButton:
     case CSSSelector::PseudoNoButton:
     case CSSSelector::PseudoCornerPresent:
-    case CSSSelector::PseudoWindowInactive:
         return false;
     case CSSSelector::PseudoUnknown:
     case CSSSelector::PseudoNotParsed:
