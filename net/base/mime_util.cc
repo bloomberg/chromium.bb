@@ -59,11 +59,6 @@ class MimeUtil : public PlatformMimeUtil {
 static base::LazyInstance<MimeUtil>::Leaky g_mime_util =
     LAZY_INSTANCE_INITIALIZER;
 
-struct MimeInfo {
-  const char* const mime_type;
-  const char* const extensions;  // comma separated list
-};
-
 static const MimeInfo primary_mappings[] = {
   { "text/html", "html,htm,shtml,shtm" },
   { "text/css", "css" },
@@ -111,12 +106,11 @@ static const MimeInfo secondary_mappings[] = {
   { "application/pkcs7-mime", "p7m,p7c,p7z" },
   { "application/pkcs7-signature", "p7s" },
   { "application/x-mpegurl", "m3u8" },
-  { "application/epub+zip", "epub" },
 };
 
-static const char* FindMimeType(const MimeInfo* mappings,
-                                size_t mappings_len,
-                                const char* ext) {
+const char* FindMimeType(const MimeInfo* mappings,
+                         size_t mappings_len,
+                         const char* ext) {
   size_t ext_len = strlen(ext);
 
   for (size_t i = 0; i < mappings_len; ++i) {
@@ -161,6 +155,12 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
   // Avoids crash when unable to handle a long file path. See crbug.com/48733.
   const unsigned kMaxFilePathSize = 65536;
   if (ext.length() > kMaxFilePathSize)
+    return false;
+
+  // Reject a string which contains null character.
+  base::FilePath::StringType::size_type nul_pos =
+      ext.find(FILE_PATH_LITERAL('\0'));
+  if (nul_pos != base::FilePath::StringType::npos)
     return false;
 
   // We implement the same algorithm as Mozilla for mapping a file extension to

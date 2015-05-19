@@ -12,8 +12,14 @@
 namespace net {
 
 TEST(MimeUtilTest, ExtensionTest) {
+  // String: png\0css
+  base::FilePath::StringType containsNullByte;
+  containsNullByte.append(FILE_PATH_LITERAL("png"));
+  containsNullByte.append(1, FILE_PATH_LITERAL('\0'));
+  containsNullByte.append(FILE_PATH_LITERAL("css"));
+
   const struct {
-    const base::FilePath::CharType* extension;
+    const base::FilePath::StringType extension;
     const char* const mime_type;
     bool valid;
   } tests[] = {
@@ -22,10 +28,16 @@ TEST(MimeUtilTest, ExtensionTest) {
     {FILE_PATH_LITERAL("css"), "text/css", true},
     {FILE_PATH_LITERAL("pjp"), "image/jpeg", true},
     {FILE_PATH_LITERAL("pjpeg"), "image/jpeg", true},
+#if defined(OS_CHROMEOS)
+    // These two are test cases for testing platform mime types on Chrome OS.
+    {FILE_PATH_LITERAL("epub"), "application/epub+zip", true},
+    {FILE_PATH_LITERAL("ics"), "text/calendar", true},
+#endif
 #if defined(OS_ANDROID)
     {FILE_PATH_LITERAL("m3u8"), "application/x-mpegurl", true},
 #endif
     {FILE_PATH_LITERAL("not an extension / for sure"), "", false},
+    {containsNullByte, "", false}
   };
 
   std::string mime_type;
