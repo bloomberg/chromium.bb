@@ -95,4 +95,8 @@ void ANGLEPlatformImpl::histogramSparse(const char* name, int sample) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample);
 }
 
+void ANGLEPlatformImpl::histogramBoolean(const char* name, bool sample) {
+  histogramEnumeration(name, sample ? 1 : 0, 2);
+}
+
 }  // namespace gfx

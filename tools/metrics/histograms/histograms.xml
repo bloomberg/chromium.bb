@@ -12070,12 +12070,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.D3D11CreateDeviceError" units="D3DHresult">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    An extended Windows error code returned from D3D11CreateDevice on error. Can
+    be almost any valid HRESULT or DXGI error code, which are listed at
+    https://msdn.microsoft.com/en-us/library/windows/desktop/bb509553.aspx.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.D3D11CreateDeviceMS" units="milliseconds">
   <owner>jmadill@chromium.org</owner>
   <summary>
     The time that elapses for the initial call to D3D11CreateDevice on D3D11
     ANGLE. A pure system call, with no ANGLE or Chromium code, called once every
     GPU process startup.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ANGLE.D3D11FeatureLevel" units="D3DFeatureLevel">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    The maxmium supported (or currently requested) Direct3D feature level in
+    D3D11 ANGLE. We support as low as 9.3, and as high as 11.1, though Chrome
+    should only use 10.0+ for D3D11. Gives an indication of how new a user's
+    video card is, what features it supports, and it's general speed tier.
   </summary>
 </histogram>
 
@@ -12092,6 +12111,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The result from initializing a D3D9 device in ANGLE. Can be success, or one
     of several error codes which indicate different reasons for failing.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ANGLE.SupportsDXGI1_2" units="BooleanSupported">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    Windows computers running Windows 8+, or running Windows 7 with a platform
+    update, support the newer version of DXGI. This update also indicates the
+    computer is capable of running Direct3D 11.1 if the hardware supports it.
   </summary>
 </histogram>
 
@@ -48465,6 +48493,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Success"/>
 </enum>
 
+<enum name="BooleanSupported" type="int">
+  <int value="0" label="Not Supported"/>
+  <int value="1" label="Supported"/>
+</enum>
+
 <enum name="BooleanSuppressed" type="int">
   <int value="0" label="No suppressions"/>
   <int value="1" label="Suppressed"/>
@@ -49569,6 +49602,51 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="StretchRect from textures not supported"/>
   <int value="6" label="Device lost of out-of-memory error"/>
   <int value="7" label="Other initialization error"/>
+</enum>
+
+<enum name="D3DFeatureLevel" type="int">
+  <int value="0" label="D3D_FEATURE_LEVEL_INVALID"/>
+  <int value="1" label="D3D_FEATURE_LEVEL_9_3"/>
+  <int value="2" label="D3D_FEATURE_LEVEL_10_0"/>
+  <int value="3" label="D3D_FEATURE_LEVEL_10_1"/>
+  <int value="4" label="D3D_FEATURE_LEVEL_11_0"/>
+  <int value="5" label="D3D_FEATURE_LEVEL_11_1"/>
+</enum>
+
+<enum name="D3DHresult" type="int">
+  <int value="-2147467263" label="E_NOTIMPL"/>
+  <int value="-2147467262" label="E_NOINTERFACE"/>
+  <int value="-2147467261" label="E_POINTER"/>
+  <int value="-2147467260" label="E_ABORT"/>
+  <int value="-2147467259" label="E_FAIL"/>
+  <int value="-2147418113" label="E_UNEXPECTED"/>
+  <int value="-2147024891" label="E_ACCESSDENIED"/>
+  <int value="-2147024890" label="E_HANDLE"/>
+  <int value="-2147024882" label="E_OUTOFMEMORY"/>
+  <int value="-2147024809" label="E_INVALIDARG"/>
+  <int value="-2005270527" label="DXGI_ERROR_INVALID_CALL"/>
+  <int value="-2005270526" label="DXGI_ERROR_NOT_FOUND"/>
+  <int value="-2005270525" label="DXGI_ERROR_MORE_DATA"/>
+  <int value="-2005270524" label="DXGI_ERROR_UNSUPPORTED"/>
+  <int value="-2005270523" label="DXGI_ERROR_DEVICE_REMOVED"/>
+  <int value="-2005270522" label="DXGI_ERROR_DEVICE_HUNG"/>
+  <int value="-2005270521" label="DXGI_ERROR_DEVICE_RESET"/>
+  <int value="-2005270518" label="DXGI_ERROR_WAS_STILL_DRAWING"/>
+  <int value="-2005270517" label="DXGI_ERROR_FRAME_STATISTICS_DISJOINT"/>
+  <int value="-2005270516" label="DXGI_ERROR_GRAPHICS_VIDPN_SOURCE_IN_USE"/>
+  <int value="-2005270496" label="DXGI_ERROR_DRIVER_INTERNAL_ERROR"/>
+  <int value="-2005270495" label="DXGI_ERROR_NONEXCLUSIVE"/>
+  <int value="-2005270494" label="DXGI_ERROR_NOT_CURRENTLY_AVAILABLE"/>
+  <int value="-2005270493" label="DXGI_ERROR_REMOTE_CLIENT_DISCONNECTED"/>
+  <int value="-2005270492" label="DXGI_ERROR_REMOTE_OUTOFMEMORY"/>
+  <int value="-2005270490" label="DXGI_ERROR_ACCESS_LOST"/>
+  <int value="-2005270489" label="DXGI_ERROR_WAIT_TIMEOUT"/>
+  <int value="-2005270488" label="DXGI_ERROR_SESSION_DISCONNECTED"/>
+  <int value="-2005270487" label="DXGI_ERROR_RESTRICT_TO_OUTPUT_STALE"/>
+  <int value="-2005270486" label="DXGI_ERROR_CANNOT_PROTECT_CONTENT"/>
+  <int value="-2005270485" label="DXGI_ERROR_ACCESS_DENIED"/>
+  <int value="-2005270484" label="DXGI_ERROR_NAME_ALREADY_EXISTS"/>
+  <int value="-2005270483" label="DXGI_ERROR_SDK_COMPONENT_MISSING"/>
 </enum>
 
 <enum name="DailyEventIntervalType" type="int">

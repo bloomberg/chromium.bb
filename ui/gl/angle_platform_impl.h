@@ -46,6 +46,7 @@ class ANGLEPlatformImpl : public angle::Platform {
                             int sample,
                             int boundary_value) override;
   void histogramSparse(const char* name, int sample) override;
+  void histogramBoolean(const char* name, bool sample) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ANGLEPlatformImpl);
