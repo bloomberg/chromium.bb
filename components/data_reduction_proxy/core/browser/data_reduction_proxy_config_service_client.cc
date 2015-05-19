@@ -24,8 +24,10 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
@@ -50,6 +52,9 @@ const char kUMAConfigServiceFetchLatency[] =
 
 // Default URL for retrieving the Data Reduction Proxy configuration.
 const char kClientConfigURL[] = "";
+
+// Used in all Data Reduction Proxy URLs to specify API Key.
+const char kApiKeyName[] = "key";
 
 // This is the default backoff policy used to communicate with the Data
 // Reduction Proxy configuration service.
@@ -98,6 +103,14 @@ base::TimeDelta CalculateNextConfigRefreshTime(
   return backoff_delay;
 }
 
+GURL AddApiKeyToUrl(const GURL& url) {
+  std::string api_key = google_apis::GetAPIKey();
+  if (api_key.empty())
+    return url;
+
+  return net::AppendQueryParameter(url, kApiKeyName, api_key);
+}
+
 }  // namespace
 
 const net::BackoffEntry::Policy& GetBackoffPolicy() {
@@ -136,8 +149,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       event_creator_(event_creator),
       net_log_(net_log),
       backoff_entry_(&backoff_policy),
-      config_service_url_(
-          GetConfigServiceURL(*base::CommandLine::ForCurrentProcess())),
+      config_service_url_(AddApiKeyToUrl(
+          GetConfigServiceURL(*base::CommandLine::ForCurrentProcess()))),
       use_local_config_(!config_service_url_.is_valid()),
       url_request_context_getter_(nullptr) {
   DCHECK(request_options);
@@ -165,7 +178,12 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
-  event_creator_->BeginConfigRequest(bound_net_log_, config_service_url_);
+  // Strip off query string parameters
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  GURL base_config_service_url =
+      config_service_url_.ReplaceComponents(replacements);
+  event_creator_->BeginConfigRequest(bound_net_log_, base_config_service_url);
   config_fetch_start_time_ = base::Time::Now();
   if (use_local_config_) {
     ReadAndApplyStaticConfig();
