@@ -23,6 +23,8 @@ source_set("heap") {
     "MarkingVisitor.h",
     "MarkingVisitorImpl.h",
     "PageMemory.h",
+    "PagePool.cpp",
+    "PagePool.h",
     "StackFrameDepth.cpp",
     "StackFrameDepth.h",
     "SafePoint.cpp",

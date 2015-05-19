@@ -46,6 +46,8 @@
       'MarkingVisitor.h',
       'MarkingVisitorImpl.h',
       'PageMemory.h',
+      'PagePool.cpp',
+      'PagePool.h',
       'SafePoint.cpp',
       'SafePoint.h',
       'StackFrameDepth.cpp',
