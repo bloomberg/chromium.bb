@@ -4,7 +4,8 @@
 
 #include "chromecast/browser/android/cast_window_android.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/browser/android/cast_window_manager.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -125,7 +126,7 @@ void CastWindowAndroid::CloseContents(content::WebContents* source) {
   // give (and guarantee) the renderer enough time to finish 'onunload'
   // handler (but we don't want to wait any longer than that to delay the
   // starting of next app).
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CastWindowAndroid::Destroy, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kWebContentsDestructionDelayInMs));

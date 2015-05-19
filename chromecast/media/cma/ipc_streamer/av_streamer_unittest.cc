@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
@@ -144,10 +145,9 @@ void AvStreamerTest::Configure(
 }
 
 void AvStreamerTest::Start() {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AvStreamerProxy::Start,
-                 base::Unretained(av_buffer_proxy_.get())));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AvStreamerProxy::Start,
+                            base::Unretained(av_buffer_proxy_.get())));
 
   frame_consumer_->Start(
       base::Bind(&AvStreamerTest::OnTestCompleted,
@@ -165,17 +165,16 @@ void AvStreamerTest::OnTestCompleted() {
 }
 
 void AvStreamerTest::OnFifoWrite() {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&CodedFrameProviderHost::OnFifoWriteEvent,
                  base::Unretained(coded_frame_provider_host_.get())));
 }
 
 void AvStreamerTest::OnFifoRead() {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AvStreamerProxy::OnFifoReadEvent,
-                 base::Unretained(av_buffer_proxy_.get())));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AvStreamerProxy::OnFifoReadEvent,
+                            base::Unretained(av_buffer_proxy_.get())));
 }
 
 TEST_F(AvStreamerTest, FastProviderSlowConsumer) {

@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/media/base/decrypt_context.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/backend/media_clock_device.h"
@@ -124,9 +125,8 @@ bool AvPipelineImpl::StartPlayingFrom(
 
   // Start feeding the pipeline.
   enable_feeding_ = true;
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
 
   return true;
 }
@@ -226,9 +226,8 @@ void AvPipelineImpl::OnNewFrame(
   pending_buffer_ = buffer;
   ProcessPendingBuffer();
 
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
 }
 
 void AvPipelineImpl::ProcessPendingBuffer() {
@@ -237,7 +236,7 @@ void AvPipelineImpl::ProcessPendingBuffer() {
 
   // Initiate a read if there isn't already one.
   if (!pending_buffer_.get() && !pending_read_) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
     return;
@@ -307,9 +306,8 @@ void AvPipelineImpl::OnFramePushed(MediaComponentDevice::FrameStatus status) {
     state_ = kError;
     return;
   }
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AvPipelineImpl::ProcessPendingBuffer, weak_this_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AvPipelineImpl::ProcessPendingBuffer, weak_this_));
 }
 
 void AvPipelineImpl::OnCdmStateChanged() {

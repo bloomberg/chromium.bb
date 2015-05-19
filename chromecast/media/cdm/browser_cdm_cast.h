@@ -19,7 +19,7 @@
 #include "media/cdm/json_web_key.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -101,7 +101,7 @@ class BrowserCdmCastUi : public ::media::BrowserCdm {
  public:
   BrowserCdmCastUi(
       scoped_ptr<BrowserCdmCast> browser_cdm_cast,
-      const scoped_refptr<base::MessageLoopProxy>& cdm_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~BrowserCdmCastUi() override;
 
   // PlayerTracker implementation:
@@ -134,7 +134,7 @@ class BrowserCdmCastUi : public ::media::BrowserCdm {
   ::media::CdmContext* GetCdmContext() override;
 
   scoped_ptr<BrowserCdmCast> browser_cdm_cast_;
-  scoped_refptr<base::MessageLoopProxy> cdm_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::ThreadChecker thread_checker_;
 

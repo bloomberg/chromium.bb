@@ -5,7 +5,7 @@
 #include "chromecast/renderer/media/cma_message_filter_proxy.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromecast/common/media/cma_messages.h"
 #include "ipc/ipc_logging.h"
@@ -46,22 +46,21 @@ CmaMessageFilterProxy* CmaMessageFilterProxy::Get() {
 }
 
 CmaMessageFilterProxy::CmaMessageFilterProxy(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : sender_(NULL),
-      io_message_loop_(io_message_loop) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    : sender_(NULL), io_task_runner_(io_task_runner) {
   DCHECK(!filter_);
   filter_ = this;
 }
 
 int CmaMessageFilterProxy::CreateChannel() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DelegateEntry* entry = new DelegateEntry();
   int id = delegates_.Add(entry);
   return id;
 }
 
 void CmaMessageFilterProxy::DestroyChannel(int id) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DelegateEntry* entry = delegates_.Lookup(id);
   if (!entry)
     return;
@@ -71,7 +70,7 @@ void CmaMessageFilterProxy::DestroyChannel(int id) {
 
 bool CmaMessageFilterProxy::SetMediaDelegate(
     int id, const MediaDelegate& media_delegate) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DelegateEntry* entry = delegates_.Lookup(id);
   if (!entry)
     return false;
@@ -81,7 +80,7 @@ bool CmaMessageFilterProxy::SetMediaDelegate(
 
 bool CmaMessageFilterProxy::SetAudioDelegate(
     int id, const AudioDelegate& audio_delegate) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DelegateEntry* entry = delegates_.Lookup(id);
   if (!entry)
     return false;
@@ -91,7 +90,7 @@ bool CmaMessageFilterProxy::SetAudioDelegate(
 
 bool CmaMessageFilterProxy::SetVideoDelegate(
     int id, const VideoDelegate& video_delegate) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DelegateEntry* entry = delegates_.Lookup(id);
   if (!entry)
     return false;
@@ -100,7 +99,7 @@ bool CmaMessageFilterProxy::SetVideoDelegate(
 }
 
 bool CmaMessageFilterProxy::Send(scoped_ptr<IPC::Message> message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!sender_)
     return false;
   bool status = sender_->Send(message.release());

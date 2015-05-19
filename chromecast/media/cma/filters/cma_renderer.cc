@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/filters/demuxer_stream_adapter.h"
@@ -253,11 +254,8 @@ void CmaRenderer::InitializeAudioPipeline() {
       base::Bind(&CmaRenderer::OnStatisticsUpdated, weak_this_));
   audio_pipeline_->SetClient(av_pipeline_client);
 
-  scoped_ptr<CodedFrameProvider> frame_provider(
-      new DemuxerStreamAdapter(
-          base::MessageLoopProxy::current(),
-          media_task_runner_factory_,
-          stream));
+  scoped_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
+      base::ThreadTaskRunnerHandle::Get(), media_task_runner_factory_, stream));
 
   const ::media::AudioDecoderConfig& config = stream->audio_decoder_config();
   if (config.codec() == ::media::kCodecAAC)
@@ -314,11 +312,8 @@ void CmaRenderer::InitializeVideoPipeline() {
       base::Bind(&CmaRenderer::OnNaturalSizeChanged, weak_this_));
   video_pipeline_->SetClient(client);
 
-  scoped_ptr<CodedFrameProvider> frame_provider(
-      new DemuxerStreamAdapter(
-          base::MessageLoopProxy::current(),
-          media_task_runner_factory_,
-          stream));
+  scoped_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
+      base::ThreadTaskRunnerHandle::Get(), media_task_runner_factory_, stream));
 
   const ::media::VideoDecoderConfig& config = stream->video_decoder_config();
   if (config.codec() == ::media::kCodecH264)

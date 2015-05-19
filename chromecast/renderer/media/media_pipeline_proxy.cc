@@ -8,7 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "chromecast/common/media/cma_messages.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/renderer/media/audio_pipeline_proxy.h"
@@ -149,44 +149,40 @@ void MediaPipelineProxyInternal::OnStateChanged(
   base::ResetAndReturn(&status_cb_).Run(status);
 }
 
-
-// A macro runs current member function on |io_message_loop_proxy_| thread.
-#define FORWARD_ON_IO_THREAD(param_fn, ...) \
-  io_message_loop_proxy_->PostTask( \
-      FROM_HERE, \
-      base::Bind(&MediaPipelineProxyInternal::param_fn, \
-                 base::Unretained(proxy_.get()), ##__VA_ARGS__))
+// A macro runs current member function on |io_task_runner_| thread.
+#define FORWARD_ON_IO_THREAD(param_fn, ...)                        \
+  io_task_runner_->PostTask(                                       \
+      FROM_HERE, base::Bind(&MediaPipelineProxyInternal::param_fn, \
+                            base::Unretained(proxy_.get()), ##__VA_ARGS__))
 
 MediaPipelineProxy::MediaPipelineProxy(
     int render_frame_id,
-    scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     LoadType load_type)
-    : io_message_loop_proxy_(io_message_loop_proxy),
+    : io_task_runner_(io_task_runner),
       render_frame_id_(render_frame_id),
       media_channel_proxy_(new MediaChannelProxy),
       proxy_(new MediaPipelineProxyInternal(media_channel_proxy_)),
       has_audio_(false),
       has_video_(false),
-      audio_pipeline_(new AudioPipelineProxy(
-          io_message_loop_proxy, media_channel_proxy_)),
-      video_pipeline_(new VideoPipelineProxy(
-          io_message_loop_proxy, media_channel_proxy_)),
+      audio_pipeline_(
+          new AudioPipelineProxy(io_task_runner, media_channel_proxy_)),
+      video_pipeline_(
+          new VideoPipelineProxy(io_task_runner, media_channel_proxy_)),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&MediaChannelProxy::Open, media_channel_proxy_,
-                 load_type));
+      base::Bind(&MediaChannelProxy::Open, media_channel_proxy_, load_type));
   thread_checker_.DetachFromThread();
 }
 
 MediaPipelineProxy::~MediaPipelineProxy() {
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&MediaPipelineProxyInternal::Release, base::Passed(&proxy_)));
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaChannelProxy::Close, media_channel_proxy_));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MediaChannelProxy::Close, media_channel_proxy_));
 }
 
 void MediaPipelineProxy::SetClient(

@@ -14,8 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/base/decrypt_context.h"
@@ -237,18 +238,16 @@ void AudioVideoPipelineDeviceTest::Start() {
   pause_pattern_idx_ = 0;
 
   for (size_t i = 0; i < component_device_feeders_.size(); i++) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaComponentDeviceFeederForTest::Feed,
-                   base::Unretained(component_device_feeders_[i])));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&MediaComponentDeviceFeederForTest::Feed,
+                              base::Unretained(component_device_feeders_[i])));
   }
 
   media_clock_device_->SetState(MediaClockDevice::kStateRunning);
 
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioVideoPipelineDeviceTest::MonitorLoop,
-                 base::Unretained(this)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AudioVideoPipelineDeviceTest::MonitorLoop,
+                            base::Unretained(this)));
 }
 
 void AudioVideoPipelineDeviceTest::MonitorLoop() {
@@ -265,19 +264,17 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
         pause_pattern_[pause_pattern_idx_].length.InMilliseconds() << "ms";
 
     // Wait for pause finish
-    base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AudioVideoPipelineDeviceTest::OnPauseCompleted,
-                   base::Unretained(this)),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&AudioVideoPipelineDeviceTest::OnPauseCompleted,
+                              base::Unretained(this)),
         pause_pattern_[pause_pattern_idx_].length);
     return;
   }
 
   // Check state again in a little while
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AudioVideoPipelineDeviceTest::MonitorLoop,
-                 base::Unretained(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&AudioVideoPipelineDeviceTest::MonitorLoop,
+                            base::Unretained(this)),
       kMonitorLoopDelay);
 }
 

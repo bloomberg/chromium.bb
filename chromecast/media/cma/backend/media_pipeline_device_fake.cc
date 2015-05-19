@@ -12,7 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/backend/audio_pipeline_device.h"
 #include "chromecast/media/cma/backend/media_clock_device.h"
 #include "chromecast/media/cma/backend/media_component_device.h"
@@ -244,7 +245,7 @@ bool MediaComponentDeviceFake::SetState(State new_state) {
   if (state_ == kStateRunning) {
     if (!scheduled_rendering_task_) {
       scheduled_rendering_task_ = true;
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&MediaComponentDeviceFake::RenderTask, weak_this_));
     }
@@ -307,7 +308,7 @@ void MediaComponentDeviceFake::RenderTask() {
   base::TimeDelta media_time = media_clock_device_->GetTime();
   if (media_time == ::media::kNoTimestamp()) {
     scheduled_rendering_task_ = true;
-    base::MessageLoopProxy::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&MediaComponentDeviceFake::RenderTask, weak_this_),
         base::TimeDelta::FromMilliseconds(50));
@@ -336,9 +337,8 @@ void MediaComponentDeviceFake::RenderTask() {
   }
 
   scheduled_rendering_task_ = true;
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&MediaComponentDeviceFake::RenderTask, weak_this_),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&MediaComponentDeviceFake::RenderTask, weak_this_),
       base::TimeDelta::FromMilliseconds(50));
 }
 

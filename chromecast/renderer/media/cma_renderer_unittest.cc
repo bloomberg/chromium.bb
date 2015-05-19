@@ -41,13 +41,12 @@ class CmaRendererTest : public testing::Test {
         base::Bind(&MockCB::OnFrameReceived, base::Unretained(&mock_)),
         message_loop_.task_runner()));
 
-    cma_proxy_ = new CmaMessageFilterProxy(message_loop_.message_loop_proxy());
+    cma_proxy_ = new CmaMessageFilterProxy(message_loop_.task_runner());
     cma_proxy_->OnFilterAdded(&ipc_sink_);
 
     renderer_.reset(new CmaRenderer(
-        scoped_ptr<MediaPipelineProxy>(
-            new MediaPipelineProxy(0, message_loop_.message_loop_proxy(),
-                                   LoadType::kLoadTypeMediaSource)),
+        scoped_ptr<MediaPipelineProxy>(new MediaPipelineProxy(
+            0, message_loop_.task_runner(), LoadType::kLoadTypeMediaSource)),
         null_sink_.get()));
   }
 

@@ -16,7 +16,7 @@
 #include "media/base/serial_runner.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace chromecast {
@@ -28,10 +28,9 @@ class VideoPipelineProxy;
 
 class MediaPipelineProxy : public MediaPipeline {
  public:
-  MediaPipelineProxy(
-      int render_frame_id,
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-      LoadType load_type);
+  MediaPipelineProxy(int render_frame_id,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                     LoadType load_type);
   ~MediaPipelineProxy() override;
 
   // MediaPipeline implementation.
@@ -58,7 +57,7 @@ class MediaPipelineProxy : public MediaPipeline {
 
   base::ThreadChecker thread_checker_;
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   const int render_frame_id_;
 

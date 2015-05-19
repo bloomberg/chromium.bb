@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace chromecast {
@@ -58,7 +58,7 @@ class CastMetricsHelper {
   static CastMetricsHelper* GetInstance();
 
   explicit CastMetricsHelper(
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~CastMetricsHelper();
 
   // This function updates the info and stores the startup time of the current
@@ -134,7 +134,7 @@ class CastMetricsHelper {
   void LogMediumTimeHistogramEvent(const std::string& name,
                                    const base::TimeDelta& value);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Start time of the most recent app.
   base::TimeTicks app_start_time_;

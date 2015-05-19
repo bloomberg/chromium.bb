@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "chromecast/browser/media/cma_message_loop.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "media/base/bind_to_current_loop.h"
@@ -36,7 +36,7 @@ scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
   }
 
   if (browser_cdm) {
-    CmaMessageLoop::GetMessageLoopProxy()->PostTask(
+    CmaMessageLoop::GetTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&BrowserCdmCast::Initialize,
                    base::Unretained(browser_cdm.get()),
@@ -45,9 +45,8 @@ scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
                    ::media::BindToCurrentLoop(legacy_session_error_cb),
                    ::media::BindToCurrentLoop(session_keys_change_cb),
                    ::media::BindToCurrentLoop(session_expiration_update_cb)));
-    return make_scoped_ptr(
-        new BrowserCdmCastUi(browser_cdm.Pass(),
-                             CmaMessageLoop::GetMessageLoopProxy()));
+    return make_scoped_ptr(new BrowserCdmCastUi(
+        browser_cdm.Pass(), CmaMessageLoop::GetTaskRunner()));
   }
 
   LOG(INFO) << "No matching key system found.";

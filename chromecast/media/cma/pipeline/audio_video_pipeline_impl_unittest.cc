@@ -9,7 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/backend/audio_pipeline_device.h"
 #include "chromecast/media/cma/backend/media_clock_device.h"
@@ -138,7 +139,7 @@ void AudioVideoPipelineImplTest::Initialize(
                  base::Passed(&frame_provider_base),
                  next_task);
 
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE, task);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
 }
 
 void AudioVideoPipelineImplTest::StartPlaying(
@@ -159,10 +160,9 @@ void AudioVideoPipelineImplTest::Flush(
   ::media::PipelineStatusCB next_task =
       base::Bind(&AudioVideoPipelineImplTest::Stop, base::Unretained(this),
                  done_cb);
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&MediaPipeline::Flush,
-                 base::Unretained(media_pipeline_.get()),
+      base::Bind(&MediaPipeline::Flush, base::Unretained(media_pipeline_.get()),
                  next_task));
 }
 

@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chromecast/base/metrics/cast_histograms.h"
@@ -19,12 +19,12 @@ namespace chromecast {
 namespace metrics {
 
 // A useful macro to make sure current member function runs on the valid thread.
-#define MAKE_SURE_THREAD(callback, ...)                    \
-  if (!message_loop_proxy_->BelongsToCurrentThread()) {    \
-    message_loop_proxy_->PostTask(FROM_HERE, base::Bind(   \
-        &CastMetricsHelper::callback,                      \
-        base::Unretained(this), ##__VA_ARGS__));           \
-    return;                                                \
+#define MAKE_SURE_THREAD(callback, ...)                                        \
+  if (!task_runner_->BelongsToCurrentThread()) {                               \
+    task_runner_->PostTask(FROM_HERE,                                          \
+                           base::Bind(&CastMetricsHelper::callback,            \
+                                      base::Unretained(this), ##__VA_ARGS__)); \
+    return;                                                                    \
   }
 
 namespace {
@@ -93,11 +93,11 @@ CastMetricsHelper* CastMetricsHelper::GetInstance() {
 }
 
 CastMetricsHelper::CastMetricsHelper(
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy)
-    : message_loop_proxy_(message_loop_proxy),
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner),
       metrics_sink_(NULL),
       record_action_callback_(base::Bind(&base::RecordComputedAction)) {
-  DCHECK(message_loop_proxy_.get());
+  DCHECK(task_runner_.get());
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -251,7 +251,7 @@ void CastMetricsHelper::LogFramesPer5Seconds(int displayed_frames,
 std::string CastMetricsHelper::GetMetricsNameWithAppName(
     const std::string& prefix,
     const std::string& suffix) const {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   std::string metrics_name(prefix);
   if (!app_id_.empty()) {
     if (!metrics_name.empty())
@@ -273,7 +273,7 @@ void CastMetricsHelper::SetMetricsSink(MetricsSink* delegate) {
 
 void CastMetricsHelper::SetRecordActionCallback(
       const RecordActionCallback& callback) {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   record_action_callback_ = callback;
 }
 

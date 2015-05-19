@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
@@ -97,10 +98,9 @@ void DummyDemuxerStream::Read(const ReadCB& read_cb) {
   }
 
   if ((frame_count_ % cycle_count_) < delayed_frame_count_) {
-    base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&DummyDemuxerStream::DoRead, base::Unretained(this),
-                   read_cb),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&DummyDemuxerStream::DoRead,
+                              base::Unretained(this), read_cb),
         base::TimeDelta::FromMilliseconds(20));
     return;
   }
@@ -197,11 +197,9 @@ DemuxerStreamAdapterTest::~DemuxerStreamAdapterTest() {
 
 void DemuxerStreamAdapterTest::Initialize(
     ::media::DemuxerStream* demuxer_stream) {
-  coded_frame_provider_.reset(
-      new DemuxerStreamAdapter(
-          base::MessageLoopProxy::current(),
-          scoped_refptr<BalancedMediaTaskRunnerFactory>(),
-          demuxer_stream));
+  coded_frame_provider_.reset(new DemuxerStreamAdapter(
+      base::ThreadTaskRunnerHandle::Get(),
+      scoped_refptr<BalancedMediaTaskRunnerFactory>(), demuxer_stream));
 }
 
 void DemuxerStreamAdapterTest::Start() {

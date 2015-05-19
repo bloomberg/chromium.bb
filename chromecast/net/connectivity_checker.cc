@@ -35,15 +35,15 @@ const char kDefaultConnectivityCheckUrl[] =
 }  // namespace
 
 ConnectivityChecker::ConnectivityChecker(
-    const scoped_refptr<base::MessageLoopProxy>& loop_proxy)
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : connectivity_observer_list_(
           new ObserverListThreadSafe<ConnectivityObserver>()),
-      loop_proxy_(loop_proxy),
+      task_runner_(task_runner),
       connected_(false),
       check_errors_(0) {
-  DCHECK(loop_proxy_.get());
-  loop_proxy->PostTask(FROM_HERE,
-                       base::Bind(&ConnectivityChecker::Initialize, this));
+  DCHECK(task_runner_.get());
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(&ConnectivityChecker::Initialize, this));
 }
 
 void ConnectivityChecker::Initialize() {
@@ -61,16 +61,16 @@ void ConnectivityChecker::Initialize() {
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  loop_proxy_->PostTask(FROM_HERE,
-                        base::Bind(&ConnectivityChecker::Check, this));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&ConnectivityChecker::Check, this));
 }
 
 ConnectivityChecker::~ConnectivityChecker() {
-  DCHECK(loop_proxy_.get());
+  DCHECK(task_runner_.get());
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-  loop_proxy_->DeleteSoon(FROM_HERE, url_request_context_.release());
-  loop_proxy_->DeleteSoon(FROM_HERE, url_request_.release());
+  task_runner_->DeleteSoon(FROM_HERE, url_request_context_.release());
+  task_runner_->DeleteSoon(FROM_HERE, url_request_.release());
 }
 
 void ConnectivityChecker::AddConnectivityObserver(
@@ -98,9 +98,9 @@ void ConnectivityChecker::SetConnectivity(bool connected) {
 }
 
 void ConnectivityChecker::Check() {
-  if (!loop_proxy_->BelongsToCurrentThread()) {
-    loop_proxy_->PostTask(FROM_HERE,
-                          base::Bind(&ConnectivityChecker::Check, this));
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&ConnectivityChecker::Check, this));
     return;
   }
   DCHECK(url_request_context_.get());
@@ -174,7 +174,7 @@ void ConnectivityChecker::OnUrlRequestError() {
   }
   url_request_.reset(NULL);
   // Check again.
-  loop_proxy_->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&ConnectivityChecker::Check, this),
       base::TimeDelta::FromSeconds(kConnectivityPeriodSeconds));
 }

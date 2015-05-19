@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/media/base/media_caps.h"
@@ -58,9 +59,8 @@ void PlatformPollFreemem(void) {
   }
 
   // Setup next poll.
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PlatformPollFreemem),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&PlatformPollFreemem),
       base::TimeDelta::FromMilliseconds(kPollingIntervalMS));
 }
 #endif

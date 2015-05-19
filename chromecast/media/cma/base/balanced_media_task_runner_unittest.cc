@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
@@ -100,7 +101,7 @@ void BalancedMediaTaskRunnerTest::SetupTest(
   for (size_t k = 0; k < n; k++) {
     contexts_[k].media_task_runner =
         media_task_runner_factory_->CreateMediaTaskRunner(
-            base::MessageLoopProxy::current());
+            base::ThreadTaskRunnerHandle::Get());
     contexts_[k].is_pending_task = false;
     contexts_[k].task_index = 0;
     contexts_[k].task_timestamp_list.resize(
@@ -149,10 +150,9 @@ void BalancedMediaTaskRunnerTest::ScheduleTask() {
   if (context.task_index >= context.task_timestamp_list.size() ||
       context.is_pending_task) {
     pattern_index_ = next_pattern_index;
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&BalancedMediaTaskRunnerTest::ScheduleTask,
-                   base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BalancedMediaTaskRunnerTest::ScheduleTask,
+                              base::Unretained(this)));
     return;
   }
 
@@ -177,10 +177,9 @@ void BalancedMediaTaskRunnerTest::ScheduleTask() {
 
   context.task_index++;
   pattern_index_ = next_pattern_index;
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BalancedMediaTaskRunnerTest::ScheduleTask,
-                 base::Unretained(this)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BalancedMediaTaskRunnerTest::ScheduleTask,
+                            base::Unretained(this)));
 }
 
 void BalancedMediaTaskRunnerTest::Task(

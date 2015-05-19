@@ -135,12 +135,9 @@ TEST(MediaMessageFifoTest, AlternateWriteRead) {
       false));
 
   base::WaitableEvent event(false, false);
-  thread->message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&MsgProducerConsumer,
-                 base::Passed(&producer_fifo),
-                 base::Passed(&consumer_fifo),
-                 &event));
+  thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MsgProducerConsumer, base::Passed(&producer_fifo),
+                            base::Passed(&consumer_fifo), &event));
   event.Wait();
 
   thread.reset();
@@ -170,18 +167,12 @@ TEST(MediaMessageFifoTest, MultiThreaded) {
   base::WaitableEvent consumer_event_done(false, false);
 
   const int msg_count = 2048;
-  producer_thread->message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&MsgProducer,
-                 base::Passed(&producer_fifo),
-                 msg_count,
-                 &producer_event_done));
-  consumer_thread->message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&MsgConsumer,
-                 base::Passed(&consumer_fifo),
-                 msg_count,
-                 &consumer_event_done));
+  producer_thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MsgProducer, base::Passed(&producer_fifo),
+                            msg_count, &producer_event_done));
+  consumer_thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MsgConsumer, base::Passed(&consumer_fifo),
+                            msg_count, &consumer_event_done));
 
   producer_event_done.Wait();
   consumer_event_done.Wait();

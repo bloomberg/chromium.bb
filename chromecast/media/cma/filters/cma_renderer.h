@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {

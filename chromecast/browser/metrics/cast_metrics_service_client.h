@@ -15,7 +15,7 @@
 class PrefService;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class TaskRunner;
 }
 
@@ -92,7 +92,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
 #if defined(OS_LINUX)
   ExternalMetrics* external_metrics_;
 #endif  // defined(OS_LINUX)
-  const scoped_refptr<base::MessageLoopProxy> metrics_service_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
   scoped_ptr< ::metrics::MetricsService> metrics_service_;
   net::URLRequestContextGetter* const request_context_;

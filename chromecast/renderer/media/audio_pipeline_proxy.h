@@ -15,7 +15,7 @@
 #include "media/base/pipeline_status.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class SharedMemory;
 }
 
@@ -33,9 +33,8 @@ class MediaChannelProxy;
 
 class AudioPipelineProxy : public AudioPipeline {
  public:
-  AudioPipelineProxy(
-      scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy,
-      scoped_refptr<MediaChannelProxy> media_channel_proxy);
+  AudioPipelineProxy(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                     scoped_refptr<MediaChannelProxy> media_channel_proxy);
   ~AudioPipelineProxy() override;
 
   void Initialize(
@@ -60,7 +59,7 @@ class AudioPipelineProxy : public AudioPipeline {
   void OnPipeWrite();
   void OnPipeRead();
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |proxy_| main goal is to convert function calls to IPC messages.
   scoped_ptr<AudioPipelineProxyInternal> proxy_;

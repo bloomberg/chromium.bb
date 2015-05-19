@@ -14,7 +14,7 @@
 class GURL;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -46,7 +46,7 @@ class ConnectivityChecker
   };
 
   explicit ConnectivityChecker(
-      const scoped_refptr<base::MessageLoopProxy>& loop_proxy);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   void AddConnectivityObserver(ConnectivityObserver* observer);
   void RemoveConnectivityObserver(ConnectivityObserver* observer);
@@ -94,7 +94,7 @@ class ConnectivityChecker
   scoped_ptr<net::URLRequest> url_request_;
   const scoped_refptr<ObserverListThreadSafe<ConnectivityObserver> >
       connectivity_observer_list_;
-  const scoped_refptr<base::MessageLoopProxy> loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool connected_;
   // Number of connectivity check errors.
   unsigned int check_errors_;

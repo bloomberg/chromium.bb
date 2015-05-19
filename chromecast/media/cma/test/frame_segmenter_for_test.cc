@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/port.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer.h"
@@ -307,7 +308,7 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
   CHECK(data_source.Initialize(filepath));
 
   ::media::FFmpegDemuxer demuxer(
-      base::MessageLoopProxy::current(), &data_source,
+      base::ThreadTaskRunnerHandle::Get(), &data_source,
       base::Bind(&OnEncryptedMediaInitData), new ::media::MediaLog());
   ::media::WaitableMessageLoopEvent init_event;
   demuxer.Initialize(&fake_demuxer_host,

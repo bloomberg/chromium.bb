@@ -187,22 +187,20 @@ void VideoPipelineProxyInternal::OnStateChanged(
   base::ResetAndReturn(&status_cb_).Run(status);
 }
 
-
-// A macro runs current member function on |io_message_loop_proxy_| thread.
-#define FORWARD_ON_IO_THREAD(param_fn, ...) \
-  io_message_loop_proxy_->PostTask( \
-      FROM_HERE, \
-      base::Bind(&VideoPipelineProxyInternal::param_fn, \
-                 base::Unretained(proxy_.get()), ##__VA_ARGS__))
+// A macro runs current member function on |io_task_runner_| thread.
+#define FORWARD_ON_IO_THREAD(param_fn, ...)                        \
+  io_task_runner_->PostTask(                                       \
+      FROM_HERE, base::Bind(&VideoPipelineProxyInternal::param_fn, \
+                            base::Unretained(proxy_.get()), ##__VA_ARGS__))
 
 VideoPipelineProxy::VideoPipelineProxy(
-    scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<MediaChannelProxy> media_channel_proxy)
-    : io_message_loop_proxy_(io_message_loop_proxy),
+    : io_task_runner_(io_task_runner),
       proxy_(new VideoPipelineProxyInternal(media_channel_proxy)),
       video_streamer_(new AvStreamerProxy()),
       weak_factory_(this) {
-  DCHECK(io_message_loop_proxy_.get());
+  DCHECK(io_task_runner_.get());
   weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
@@ -210,7 +208,7 @@ VideoPipelineProxy::VideoPipelineProxy(
 VideoPipelineProxy::~VideoPipelineProxy() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Release the underlying object on the right thread.
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoPipelineProxyInternal::Release, base::Passed(&proxy_)));
 }

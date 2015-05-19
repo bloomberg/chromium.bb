@@ -14,7 +14,7 @@
 #include "media/base/pipeline_status.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class SharedMemory;
 }
 
@@ -32,9 +32,8 @@ class MediaChannelProxy;
 
 class VideoPipelineProxy : public VideoPipeline {
  public:
-  VideoPipelineProxy(
-      scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy,
-      scoped_refptr<MediaChannelProxy> media_channel_proxy);
+  VideoPipelineProxy(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                     scoped_refptr<MediaChannelProxy> media_channel_proxy);
   ~VideoPipelineProxy() override;
 
   void Initialize(const ::media::VideoDecoderConfig& config,
@@ -57,7 +56,7 @@ class VideoPipelineProxy : public VideoPipeline {
   void OnPipeWrite();
   void OnPipeRead();
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |proxy_| main goal is to convert function calls to IPC messages.
   scoped_ptr<VideoPipelineProxyInternal> proxy_;

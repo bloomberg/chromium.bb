@@ -8,7 +8,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
 #include "chromecast/media/cma/ipc/media_message.h"
@@ -78,15 +79,15 @@ class FifoOwnedMemory : public MediaMemoryChunk {
   DISALLOW_COPY_AND_ASSIGN(FifoOwnedMemory);
 };
 
-FifoOwnedMemory::FifoOwnedMemory(
-    void* data, size_t size,
-    const scoped_refptr<MediaMessageFlag>& flag,
-    const base::Closure& release_msg_cb)
-  : task_runner_(base::MessageLoopProxy::current()),
-    release_msg_cb_(release_msg_cb),
-    data_(data),
-    size_(size),
-    flag_(flag) {
+FifoOwnedMemory::FifoOwnedMemory(void* data,
+                                 size_t size,
+                                 const scoped_refptr<MediaMessageFlag>& flag,
+                                 const base::Closure& release_msg_cb)
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      release_msg_cb_(release_msg_cb),
+      data_(data),
+      size_(size),
+      flag_(flag) {
 }
 
 FifoOwnedMemory::~FifoOwnedMemory() {

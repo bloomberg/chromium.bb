@@ -19,7 +19,7 @@
 #include "media/base/pipeline_status.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace chromecast {
@@ -59,7 +59,7 @@ class CmaMessageFilterProxy : public IPC::MessageFilter {
   };
 
   explicit CmaMessageFilterProxy(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // Getter for the one CmaMessageFilterHost object.
   static CmaMessageFilterProxy* Get();
@@ -124,7 +124,7 @@ class CmaMessageFilterProxy : public IPC::MessageFilter {
 
   IPC::Sender* sender_;
 
-  scoped_refptr<base::MessageLoopProxy> const io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> const io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CmaMessageFilterProxy);
 };

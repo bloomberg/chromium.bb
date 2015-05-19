@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/cdm/player_tracker_impl.h"
@@ -101,24 +101,22 @@ void BrowserCdmCast::OnSessionKeysChange(
   player_tracker_impl_->NotifyNewKey();
 }
 
-// A macro runs current member function on |cdm_loop_| thread.
+// A macro runs current member function on |task_runner_| thread.
 #define FORWARD_ON_CDM_THREAD(param_fn, ...) \
-  cdm_loop_->PostTask( \
-      FROM_HERE, \
-      base::Bind(&BrowserCdmCast::param_fn, \
+  task_runner_->PostTask(                    \
+      FROM_HERE,                             \
+      base::Bind(&BrowserCdmCast::param_fn,  \
                  base::Unretained(browser_cdm_cast_.get()), ##__VA_ARGS__))
-
 
 BrowserCdmCastUi::BrowserCdmCastUi(
     scoped_ptr<BrowserCdmCast> browser_cdm_cast,
-    const scoped_refptr<base::MessageLoopProxy>& cdm_loop)
-    : browser_cdm_cast_(browser_cdm_cast.Pass()),
-      cdm_loop_(cdm_loop) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : browser_cdm_cast_(browser_cdm_cast.Pass()), task_runner_(task_runner) {
 }
 
 BrowserCdmCastUi::~BrowserCdmCastUi() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  cdm_loop_->DeleteSoon(FROM_HERE, browser_cdm_cast_.release());
+  task_runner_->DeleteSoon(FROM_HERE, browser_cdm_cast_.release());
 }
 
 int BrowserCdmCastUi::RegisterPlayer(const base::Closure& new_key_cb,

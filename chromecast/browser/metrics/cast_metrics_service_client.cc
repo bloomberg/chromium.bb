@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/browser/metrics/platform_metrics_providers.h"
 #include "chromecast/common/chromecast_switches.h"
@@ -162,12 +163,10 @@ base::TimeDelta CastMetricsServiceClient::GetStandardUploadInterval() {
 }
 
 void CastMetricsServiceClient::EnableMetricsService(bool enabled) {
-  if (!metrics_service_loop_->BelongsToCurrentThread()) {
-    metrics_service_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&CastMetricsServiceClient::EnableMetricsService,
-                   base::Unretained(this),
-                   enabled));
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&CastMetricsServiceClient::EnableMetricsService,
+                              base::Unretained(this), enabled));
     return;
   }
 
@@ -188,7 +187,7 @@ CastMetricsServiceClient::CastMetricsServiceClient(
 #if !defined(OS_ANDROID)
       external_metrics_(NULL),
 #endif  // !defined(OS_ANDROID)
-      metrics_service_loop_(base::MessageLoopProxy::current()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       request_context_(request_context) {
 }
 

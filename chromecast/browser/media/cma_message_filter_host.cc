@@ -140,7 +140,7 @@ void UpdateVideoSurfaceHost(int surface_id, const gfx::QuadF& quad) {
 CmaMessageFilterHost::CmaMessageFilterHost(int render_process_id)
     : content::BrowserMessageFilter(CastMediaMsgStart),
       process_id_(render_process_id),
-      task_runner_(CmaMessageLoop::GetMessageLoopProxy()),
+      task_runner_(CmaMessageLoop::GetTaskRunner()),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }

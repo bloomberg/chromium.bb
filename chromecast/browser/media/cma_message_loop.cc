@@ -10,11 +10,6 @@ namespace chromecast {
 namespace media {
 
 // static
-scoped_refptr<base::MessageLoopProxy> CmaMessageLoop::GetMessageLoopProxy() {
-  return GetInstance()->thread_->message_loop_proxy();
-}
-
-// static
 scoped_refptr<base::SingleThreadTaskRunner> CmaMessageLoop::GetTaskRunner() {
   return GetInstance()->thread_->task_runner();
 }

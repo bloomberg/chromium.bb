@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/cast_sys_info_util.h"
@@ -236,7 +237,7 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
   cast_browser_process_->SetMetricsHelper(make_scoped_ptr(
-      new metrics::CastMetricsHelper(base::MessageLoopProxy::current())));
+      new metrics::CastMetricsHelper(base::ThreadTaskRunnerHandle::Get())));
 
 #if defined(OS_ANDROID)
   base::MessageLoopForUI::current()->Start();
