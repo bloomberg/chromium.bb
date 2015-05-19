@@ -129,8 +129,10 @@ def RunTestCaseOnWebsite((website, test_case, config)):
         result = tests.RunTest(config.chrome_path, config.chromedriver_path,
                                profile_path, config.passwords_path,
                                website, test_case)[0]
-      if timeout != timeout.EXECUTED:
-        result =  (website, test_case, False, "Timeout")
+      if timeout.state != timeout.EXECUTED:
+        result =  (website, test_case, False,
+                   "Got %d as timeout state (see stopit.ThreadingTimeout for"
+                   "the meaning of the number)" % timeout.state)
       _, _, success, _ = result
       if success:
         return result
