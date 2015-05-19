@@ -288,7 +288,7 @@ class ChromeProxyExpDirective(ChromeProxyValidation):
     options.AppendExtraBrowserArgs('--data-reduction-proxy-experiment=test')
 
   def AddResults(self, tab, results):
-    self._metrics.AddResultsForBypass(tab, results)
+    self._metrics.AddResultsForBypass(tab, results, url_pattern='/exptest/')
 
 
 class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
