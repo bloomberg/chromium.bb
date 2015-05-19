@@ -17,9 +17,6 @@
 
 namespace {
 
-// Singleton to provide state for swizzled Objective C methods.
-ui::test::EventGenerator* g_active_generator = NULL;
-
 // Set (and always cleared) in EmulateSendEvent() to provide an answer for
 // [NSApp currentEvent].
 NSEvent* g_current_event = nil;
@@ -234,6 +231,9 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
     return swizzle_current_event_->GetOriginalImplementation();
   }
 
+  NSWindow* window() { return window_.get(); }
+  ui::test::EventGenerator* owner() { return owner_; }
+
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override { return true; }
   ui::EventTarget* GetParentTarget() override { return NULL; }
@@ -283,6 +283,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   ui::test::EventGenerator* owner_;
   base::scoped_nsobject<NSWindow> window_;
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
+  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_location_;
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_current_event_;
   base::scoped_nsobject<NSMenu> fake_menu_;
 
@@ -327,8 +328,6 @@ EventGeneratorDelegateMac::GetChildIterator() const {
 }
 
 void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
-  // For mouse drag events, ensure the swizzled methods return the right flags.
-  base::AutoReset<ui::test::EventGenerator*> reset(&g_active_generator, owner_);
   NSEvent* ns_event = CreateMouseEventInWindow(window_,
                                                event->type(),
                                                event->location(),
@@ -363,6 +362,7 @@ void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
                                            gfx::NativeWindow root_window,
                                            gfx::NativeWindow window) {
   swizzle_pressed_.reset();
+  swizzle_location_.reset();
   swizzle_current_event_.reset();
   owner_ = owner;
 
@@ -384,6 +384,8 @@ void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
         [NSEvent class],
         [NSEventDonor class],
         @selector(pressedMouseButtons)));
+    swizzle_location_.reset(new base::mac::ScopedObjCClassSwizzler(
+        [NSEvent class], [NSEventDonor class], @selector(mouseLocation)));
     swizzle_current_event_.reset(new base::mac::ScopedObjCClassSwizzler(
         [NSApplication class],
         [NSApplicationDonor class],
@@ -403,6 +405,11 @@ gfx::Point EventGeneratorDelegateMac::CenterOfWindow(
   return gfx::ScreenRectFromNSRect([window frame]).CenterPoint();
 }
 
+// Return the current owner of the EventGeneratorDelegate. May be null.
+ui::test::EventGenerator* GetActiveGenerator() {
+  return EventGeneratorDelegateMac::GetInstance()->owner();
+}
+
 }  // namespace
 
 namespace views {
@@ -420,10 +427,11 @@ void InitializeMacEventGeneratorDelegate() {
 // Donate +[NSEvent pressedMouseButtons] by retrieving the flags from the
 // active generator.
 + (NSUInteger)pressedMouseButtons {
-  if (!g_active_generator)
+  ui::test::EventGenerator* generator = GetActiveGenerator();
+  if (!generator)
     return [NSEventDonor pressedMouseButtons];  // Call original implementation.
 
-  int flags = g_active_generator->flags();
+  int flags = generator->flags();
   NSUInteger bitmask = 0;
   if (flags & ui::EF_LEFT_MOUSE_BUTTON)
     bitmask |= 1;
@@ -432,6 +440,20 @@ void InitializeMacEventGeneratorDelegate() {
   if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
     bitmask |= 1 << 2;
   return bitmask;
+}
+
+// Donate +[NSEvent mouseLocation] by retrieving the current position on screen.
++ (NSPoint)mouseLocation {
+  ui::test::EventGenerator* generator = GetActiveGenerator();
+  if (!generator)
+    return [NSEventDonor mouseLocation];  // Call original implementation.
+
+  // The location is the point in the root window which, for desktop widgets, is
+  // the widget itself.
+  gfx::Point point_in_root = generator->current_location();
+  NSWindow* window = EventGeneratorDelegateMac::GetInstance()->window();
+  NSPoint point_in_window = ConvertRootPointToTarget(window, point_in_root);
+  return [window convertBaseToScreen:point_in_window];
 }
 
 @end

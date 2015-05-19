@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/strings/string16.h"
+#import "ui/base/cocoa/tool_tip_base_view.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 namespace ui {
@@ -21,7 +23,7 @@ class View;
 // a views::RootView present. Bridges requests from Cocoa to the hosted
 // views::View.
 @interface BridgedContentView
-    : NSView<NSTextInputClient, NSUserInterfaceValidations> {
+    : ToolTipBaseView<NSTextInputClient, NSUserInterfaceValidations> {
  @private
   // Weak. The hosted RootView, owned by hostedView_->GetWidget().
   views::View* hostedView_;
@@ -31,10 +33,13 @@ class View;
   ui::TextInputClient* textInputClient_;
 
   // A tracking area installed to enable mouseMoved events.
-  ui::ScopedCrTrackingArea trackingArea_;
+  ui::ScopedCrTrackingArea cursorTrackingArea_;
 
   // Whether the view is reacting to a keyDown event on the view.
   BOOL inKeyDown_;
+
+  // The last tooltip text, used to limit updates.
+  base::string16 lastTooltipText_;
 }
 
 @property(readonly, nonatomic) views::View* hostedView;
@@ -48,6 +53,12 @@ class View;
 
 // Process a mouse event captured while the widget had global mouse capture.
 - (void)processCapturedMouseEvent:(NSEvent*)theEvent;
+
+// Mac's version of views::corewm::TooltipController::UpdateIfRequired().
+// Updates the tooltip on the ToolTipBaseView if the text needs to change.
+// |locationInContent| is the position from the top left of the window's
+// contentRect (also this NSView's frame), as given by a ui::LocatedEvent.
+- (void)updateTooltipIfRequiredAt:(const gfx::Point&)locationInContent;
 
 @end
 

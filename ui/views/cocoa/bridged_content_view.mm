@@ -58,10 +58,6 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 
 @interface BridgedContentView ()
 
-// Translates the location of |theEvent| to toolkit-views coordinates and passes
-// the event to NativeWidgetMac for handling.
-- (void)handleMouseEvent:(NSEvent*)theEvent;
-
 // Translates keycodes and modifiers on |theEvent| to ui::KeyEvents and passes
 // the event to the InputMethod for dispatch.
 - (void)handleKeyEvent:(NSEvent*)theEvent;
@@ -110,21 +106,21 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 
     // Apple's documentation says that NSTrackingActiveAlways is incompatible
     // with NSTrackingCursorUpdate, so use NSTrackingActiveInActiveApp.
-    trackingArea_.reset([[CrTrackingArea alloc]
+    cursorTrackingArea_.reset([[CrTrackingArea alloc]
         initWithRect:NSZeroRect
              options:NSTrackingMouseMoved | NSTrackingCursorUpdate |
                      NSTrackingActiveInActiveApp | NSTrackingInVisibleRect
                owner:self
             userInfo:nil]);
-    [self addTrackingArea:trackingArea_.get()];
+    [self addTrackingArea:cursorTrackingArea_.get()];
   }
   return self;
 }
 
 - (void)clearView {
   hostedView_ = NULL;
-  [trackingArea_.get() clearOwner];
-  [self removeTrackingArea:trackingArea_.get()];
+  [cursorTrackingArea_.get() clearOwner];
+  [self removeTrackingArea:cursorTrackingArea_.get()];
 }
 
 - (void)processCapturedMouseEvent:(NSEvent*)theEvent {
@@ -137,7 +133,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 
   // If it's the view's window, process normally.
   if ([target isEqual:source]) {
-    [self handleMouseEvent:theEvent];
+    [self mouseEvent:theEvent];
     return;
   }
 
@@ -147,15 +143,24 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   hostedView_->GetWidget()->OnMouseEvent(&event);
 }
 
-// BridgedContentView private implementation.
+- (void)updateTooltipIfRequiredAt:(const gfx::Point&)locationInContent {
+  DCHECK(hostedView_);
+  base::string16 newTooltipText;
 
-- (void)handleMouseEvent:(NSEvent*)theEvent {
-  if (!hostedView_)
-    return;
-
-  ui::MouseEvent event(theEvent);
-  hostedView_->GetWidget()->OnMouseEvent(&event);
+  views::View* view = hostedView_->GetTooltipHandlerForPoint(locationInContent);
+  if (view) {
+    gfx::Point viewPoint = locationInContent;
+    views::View::ConvertPointToTarget(hostedView_, view, &viewPoint);
+    if (!view->GetTooltipText(viewPoint, &newTooltipText))
+      DCHECK(newTooltipText.empty());
+  }
+  if (newTooltipText != lastTooltipText_) {
+    std::swap(newTooltipText, lastTooltipText_);
+    [self setToolTipAtMousePoint:base::SysUTF16ToNSString(lastTooltipText_)];
+  }
 }
+
+// BridgedContentView private implementation.
 
 - (void)handleKeyEvent:(NSEvent*)theEvent {
   if (!hostedView_)
@@ -243,6 +248,28 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
+// BaseView implementation.
+
+// Don't use tracking areas from BaseView. BridgedContentView's tracks
+// NSTrackingCursorUpdate and Apple's documentation suggests it's incompatible.
+- (void)enableTracking {
+}
+
+// Translates the location of |theEvent| to toolkit-views coordinates and passes
+// the event to NativeWidgetMac for handling.
+- (void)mouseEvent:(NSEvent*)theEvent {
+  if (!hostedView_)
+    return;
+
+  ui::MouseEvent event(theEvent);
+
+  // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
+  // Mac hooks in here.
+  [self updateTooltipIfRequiredAt:event.location()];
+
+  hostedView_->GetWidget()->OnMouseEvent(&event);
+}
+
 // NSView implementation.
 
 - (BOOL)acceptsFirstResponder {
@@ -309,49 +336,6 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   inKeyDown_ = YES;
   [self interpretKeyEvents:@[ theEvent ]];
   inKeyDown_ = NO;
-}
-
-- (void)mouseDown:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)rightMouseDown:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseDown:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)mouseUp:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)rightMouseUp:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseUp:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)mouseDragged:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)rightMouseDragged:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseDragged:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
-}
-
-- (void)mouseMoved:(NSEvent*)theEvent {
-  // Note: mouseEntered: and mouseExited: are not handled separately.
-  // |hostedView_| is responsible for converting the move events into entered
-  // and exited events for the view heirarchy.
-  [self handleMouseEvent:theEvent];
 }
 
 - (void)scrollWheel:(NSEvent*)theEvent {

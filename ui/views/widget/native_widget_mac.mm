@@ -173,8 +173,10 @@ void* NativeWidgetMac::GetNativeWindowProperty(const char* name) const {
 }
 
 TooltipManager* NativeWidgetMac::GetTooltipManager() const {
-  NOTIMPLEMENTED();
-  return NULL;
+  if (bridge_)
+    return bridge_->tooltip_manager();
+
+  return nullptr;
 }
 
 void NativeWidgetMac::SetCapture() {

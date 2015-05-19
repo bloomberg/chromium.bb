@@ -38,6 +38,8 @@
       'cocoa/cocoa_mouse_capture_delegate.h',
       'cocoa/native_widget_mac_nswindow.h',
       'cocoa/native_widget_mac_nswindow.mm',
+      'cocoa/tooltip_manager_mac.h',
+      'cocoa/tooltip_manager_mac.mm',
       'cocoa/views_nswindow_delegate.h',
       'cocoa/views_nswindow_delegate.mm',
       'cocoa/widget_owner_nswindow_adapter.h',

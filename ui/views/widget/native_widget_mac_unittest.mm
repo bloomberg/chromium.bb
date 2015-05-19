@@ -9,11 +9,13 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "testing/gtest_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/test/test_widget_observer.h"
@@ -424,6 +426,76 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   EXPECT_TRUE(child_observer.widget_closed());
 
   EXPECT_EQ(0u, [[native_parent childWindows] count]);
+}
+
+// Use Native APIs to query the tooltip text that would be shown once the
+// tooltip delay had elapsed.
+base::string16 TooltipTextForWidget(Widget* widget) {
+  // For Mac, the actual location doesn't matter, since there is only one native
+  // view and it fills the window. This just assumes the window is at least big
+  // big enough for a constant coordinate to be within it.
+  NSPoint point = NSMakePoint(30, 30);
+  NSView* view = [widget->GetNativeView() hitTest:point];
+  NSString* text =
+      [view view:view stringForToolTip:0 point:point userData:nullptr];
+  return base::SysNSStringToUTF16(text);
+}
+
+// Tests tooltips. The test doesn't wait for tooltips to appear. That is, the
+// test assumes Cocoa calls stringForToolTip: at appropriate times and that,
+// when a tooltip is already visible, changing it causes an update. These were
+// tested manually by inserting a base::RunLoop.Run().
+TEST_F(NativeWidgetMacTest, Tooltips) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+  gfx::Rect screen_rect(50, 50, 100, 100);
+  widget->SetBounds(screen_rect);
+
+  const base::string16 tooltip_back = base::ASCIIToUTF16("Back");
+  const base::string16 tooltip_front = base::ASCIIToUTF16("Front");
+  const base::string16 long_tooltip(2000, 'W');
+
+  // Create a nested layout to test corner cases.
+  LabelButton* back = new LabelButton(nullptr, base::string16());
+  back->SetBounds(10, 10, 80, 80);
+  widget->GetContentsView()->AddChildView(back);
+  widget->Show();
+
+  ui::test::EventGenerator event_generator(GetContext(),
+                                           widget->GetNativeWindow());
+
+  // Initially, there should be no tooltip.
+  event_generator.MoveMouseTo(gfx::Point(50, 50));
+  EXPECT_TRUE(TooltipTextForWidget(widget).empty());
+
+  // Create a new button for the "front", and set the tooltip, but don't add it
+  // to the view hierarchy yet.
+  LabelButton* front = new LabelButton(nullptr, base::string16());
+  front->SetBounds(20, 20, 40, 40);
+  front->SetTooltipText(tooltip_front);
+
+  // Changing the tooltip text shouldn't require an additional mousemove to take
+  // effect.
+  EXPECT_TRUE(TooltipTextForWidget(widget).empty());
+  back->SetTooltipText(tooltip_back);
+  EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget));
+
+  // Adding a new view under the mouse should also take immediate effect.
+  back->AddChildView(front);
+  EXPECT_EQ(tooltip_front, TooltipTextForWidget(widget));
+
+  // A long tooltip will be wrapped by Cocoa, but the full string should appear.
+  // Note that render widget hosts clip at 1024 to prevent DOS, but in toolkit-
+  // views the UI is more trusted.
+  front->SetTooltipText(long_tooltip);
+  EXPECT_EQ(long_tooltip, TooltipTextForWidget(widget));
+
+  // Move the mouse to a different view - tooltip should change.
+  event_generator.MoveMouseTo(gfx::Point(15, 15));
+  EXPECT_EQ(tooltip_back, TooltipTextForWidget(widget));
+
+  // Move the mouse off of any view, tooltip should clear.
+  event_generator.MoveMouseTo(gfx::Point(5, 5));
+  EXPECT_TRUE(TooltipTextForWidget(widget).empty());
 }
 
 }  // namespace test

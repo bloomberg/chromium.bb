@@ -59,9 +59,6 @@ chrome/utility/importer/nss_decryptor_win.h
 chrome/tools/test/generate_mime_tests.pl
 # Copyright Alf Watt; BSD license. Not used on Android.
 content/browser/geolocation/osx_wifi.h
-# Copyright The Chromium Authors, Apple Inc and Graham Dennis; BSD license. Not
-# used on Android.
-content/browser/renderer_host/render_widget_host_view_mac.mm
 # Copyright Apple Inc and Torch Mobile Inc; BSD license. Moved from
 # third_party/WebKit/.
 content/renderer/history_controller.h
@@ -171,6 +168,9 @@ tools/win/sizeviewer/clike.js
 tools/win/sizeviewer/codemirror.js
 # Copyright The Chromium Authors, Apple Inc; BSD license. Not used on Android.
 ui/base/clipboard/clipboard_util_win.cc
+# Copyright The Chromium Authors, Apple Inc and Graham Dennis; BSD license. Not
+# used on Android.
+ui/base/cocoa/tool_tip_base_view.mm
 # Copyright The Chromium Authors, Apple Inc; BSD license. Not used on Android.
 ui/base/dragdrop/os_exchange_data_provider_win.cc
 # Copyright The Chromium Authors, Michael Emmel, Google Inc; BSD license. This

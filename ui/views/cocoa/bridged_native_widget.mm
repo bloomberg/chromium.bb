@@ -20,6 +20,7 @@
 #include "ui/gfx/screen.h"
 #import "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#include "ui/views/cocoa/tooltip_manager_mac.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -196,6 +197,11 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
   // Widgets for UI controls (usually layered above web contents) start visible.
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     SetVisibilityState(SHOW_INACTIVE);
+
+  // Tooltip Widgets shouldn't have their own tooltip manager, but tooltips are
+  // native on Mac, so nothing should ever want one in Widget form.
+  DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
+  tooltip_manager_.reset(new TooltipManagerMac(this));
 }
 
 void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {

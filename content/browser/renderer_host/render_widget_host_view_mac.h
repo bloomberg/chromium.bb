@@ -31,8 +31,8 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/io_surface_layer.h"
-#include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#import "ui/base/cocoa/tool_tip_base_view.h"
 #include "ui/gfx/display_observer.h"
 
 namespace content {
@@ -49,7 +49,6 @@ class Layer;
 
 @class FullscreenWindowManager;
 @protocol RenderWidgetHostViewMacDelegate;
-@class ToolTip;
 
 @protocol RenderWidgetHostViewMacOwner
 - (content::RenderWidgetHostViewMac*)renderWidgetHostViewMac;
@@ -60,9 +59,9 @@ class Layer;
 // but that means that the view needs to own the delegate and will dispose of it
 // when it's removed from the view system.
 @interface RenderWidgetHostViewCocoa
-    : BaseView <RenderWidgetHostViewMacBase,
-                RenderWidgetHostViewMacOwner,
-                NSTextInputClient> {
+    : ToolTipBaseView<RenderWidgetHostViewMacBase,
+                      RenderWidgetHostViewMacOwner,
+                      NSTextInputClient> {
  @private
   scoped_ptr<content::RenderWidgetHostViewMac> renderWidgetHostView_;
   // This ivar is the cocoa delegate of the NSResponder.
@@ -73,12 +72,6 @@ class Layer;
   BOOL opaque_;
   scoped_ptr<content::RenderWidgetHostViewMacEditCommandHelper>
       editCommand_helper_;
-
-  // These are part of the magic tooltip code from WebKit's WebHTMLView:
-  id trackingRectOwner_;              // (not retained)
-  void* trackingRectUserData_;
-  NSTrackingRectTag lastToolTipTag_;
-  base::scoped_nsobject<NSString> toolTip_;
 
   // Is YES if there was a mouse-down as yet unbalanced with a mouse-up.
   BOOL hasOpenMouseDown_;
@@ -194,7 +187,6 @@ class Layer;
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setOpaque:(BOOL)opaque;
-- (void)setToolTipAtMousePoint:(NSString *)string;
 // True for always-on-top special windows (e.g. Balloons and Panels).
 - (BOOL)acceptsMouseEventsWhenInactive;
 // Cancel ongoing composition (abandon the marked text).

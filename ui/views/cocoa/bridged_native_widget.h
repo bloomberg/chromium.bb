@@ -150,6 +150,8 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   BridgedContentView* ns_view() { return bridged_view_; }
   NSWindow* ns_window() { return window_; }
 
+  TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
+
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
   // parent will close children before the parent closes, and children will be
   // raised above their parent when window z-order changes.
@@ -228,6 +230,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   scoped_ptr<ui::InputMethod> input_method_;
   scoped_ptr<CocoaMouseCapture> mouse_capture_;
+  scoped_ptr<TooltipManager> tooltip_manager_;
   FocusManager* focus_manager_;  // Weak. Owned by our Widget.
   Widget::InitParams::Type widget_type_;
 
