@@ -132,6 +132,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
   void RequestIDBDatabaseGetAll(int32 ipc_database_id,
                                 int64 transaction_id,
                                 int64 object_store_id,
+                                int64 index_id,
                                 const IndexedDBKeyRange& key_range,
                                 int64 max_count,
                                 blink::WebIDBCallbacks* callbacks);

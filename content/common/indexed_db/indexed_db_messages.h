@@ -136,6 +136,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGetAll_Params)
   IPC_STRUCT_MEMBER(int64, transaction_id)
   // The object store's id.
   IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The index id.
+  IPC_STRUCT_MEMBER(int64, index_id)
   // The serialized key range.
   IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
   // The max number of values to retrieve.

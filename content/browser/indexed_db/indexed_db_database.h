@@ -124,6 +124,7 @@ class CONTENT_EXPORT IndexedDBDatabase
            scoped_refptr<IndexedDBCallbacks> callbacks);
   void GetAll(int64 transaction_id,
               int64 object_store_id,
+              int64 index_id,
               scoped_ptr<IndexedDBKeyRange> key_range,
               int64 max_count,
               scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -206,6 +207,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                     scoped_refptr<IndexedDBCallbacks> callbacks,
                     IndexedDBTransaction* transaction);
   void GetAllOperation(int64 object_store_id,
+                       int64 index_id,
                        scoped_ptr<IndexedDBKeyRange> key_range,
                        int64 max_count,
                        scoped_refptr<IndexedDBCallbacks> callbacks,

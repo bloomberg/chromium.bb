@@ -535,6 +535,7 @@ void IndexedDBDatabase::Abort(int64 transaction_id,
 
 void IndexedDBDatabase::GetAll(int64 transaction_id,
                                int64 object_store_id,
+                               int64 index_id,
                                scoped_ptr<IndexedDBKeyRange> key_range,
                                int64 max_count,
                                scoped_refptr<IndexedDBCallbacks> callbacks) {
@@ -548,7 +549,7 @@ void IndexedDBDatabase::GetAll(int64 transaction_id,
 
   transaction->ScheduleTask(
       base::Bind(&IndexedDBDatabase::GetAllOperation, this, object_store_id,
-                 Passed(&key_range), max_count, callbacks));
+                 index_id, Passed(&key_range), max_count, callbacks));
 }
 
 void IndexedDBDatabase::Get(int64 transaction_id,
@@ -739,6 +740,7 @@ void IndexedDBDatabase::GetOperation(
 
 void IndexedDBDatabase::GetAllOperation(
     int64 object_store_id,
+    int64 index_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
     int64 max_count,
     scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -754,10 +756,19 @@ void IndexedDBDatabase::GetAllOperation(
 
   leveldb::Status s;
 
-  scoped_ptr<IndexedDBBackingStore::Cursor> cursor =
-      backing_store_->OpenObjectStoreCursor(
-          transaction->BackingStoreTransaction(), id(), object_store_id,
-          *key_range, blink::WebIDBCursorDirectionNext, &s);
+  scoped_ptr<IndexedDBBackingStore::Cursor> cursor;
+
+  if (index_id == IndexedDBIndexMetadata::kInvalidId) {
+    // ObjectStore
+    cursor = backing_store_->OpenObjectStoreCursor(
+        transaction->BackingStoreTransaction(), id(), object_store_id,
+        *key_range, blink::WebIDBCursorDirectionNext, &s);
+  } else {
+    // Index
+    cursor = backing_store_->OpenIndexCursor(
+        transaction->BackingStoreTransaction(), id(), object_store_id, index_id,
+        *key_range, blink::WebIDBCursorDirectionNext, &s);
+  }
 
   if (!s.ok()) {
     DLOG(ERROR) << "Unable to open cursor operation: " << s.ToString();

@@ -122,15 +122,13 @@ void WebIDBDatabaseImpl::getAll(long long transaction_id,
                                 long long max_count,
                                 bool key_only,
                                 WebIDBCallbacks* callbacks) {
-  // TODO(cmumford): Remove DCHECK's for index_id/key_only once IDBIndex.getAll
-  //                 is implemented.
-  static const int64 kInvalidId = -1;
-  DCHECK_EQ(kInvalidId, index_id);
+  // TODO(cmumford): Remove DCHECK for key_only once IDBIndex.getAllKeys is
+  //                 implemented.
   DCHECK(!key_only);
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBDatabaseGetAll(
-      ipc_database_id_, transaction_id, object_store_id,
+      ipc_database_id_, transaction_id, object_store_id, index_id,
       IndexedDBKeyRangeBuilder::Build(key_range), max_count, callbacks);
 }
 

@@ -660,7 +660,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGetAll(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->GetAll(
       parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      make_scoped_ptr(new IndexedDBKeyRange(params.key_range)),
+      params.index_id, make_scoped_ptr(new IndexedDBKeyRange(params.key_range)),
       params.max_count, callbacks);
 }
 
