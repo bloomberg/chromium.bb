@@ -66,9 +66,14 @@ function detectVideo(videoElementName, predicate, callback) {
   var width = VIDEO_TAG_WIDTH;
   var height = VIDEO_TAG_HEIGHT;
   var videoElement = $(videoElementName);
-  var canvas = $(videoElementName + '-canvas');
   var oldPixels = [];
+  var startTimeMs = new Date().getTime();
   var waitVideo = setInterval(function() {
+    var canvas = $(videoElementName + '-canvas');
+    if (canvas == null) {
+      console.log('Waiting for ' + videoElementName + '-canvas' + ' to appear');
+      return;
+    }
     var context = canvas.getContext('2d');
     context.drawImage(videoElement, 0, 0, width, height);
     var pixels = context.getImageData(0, 0 , width, height / 3).data;
@@ -82,6 +87,11 @@ function detectVideo(videoElementName, predicate, callback) {
       callback(videoElement.videoWidth, videoElement.videoHeight);
     }
     oldPixels = pixels;
+    var elapsedTime = new Date().getTime() - startTimeMs;
+    if (elapsedTime > 3000) {
+      startTimeMs = new Date().getTime();
+      console.log('Still waiting for video to satisfy ' + predicate.toString());
+    }
   }, 200);
 }
 
@@ -186,16 +196,24 @@ function isVideoPlaying(pixels, previousPixels) {
   return false;
 }
 
+// Checks if the frame is black. |pixels| is in RGBA (i.e. pixels[0] is the R
+// value for the first pixel).
 function isVideoBlack(pixels) {
-  for (var i = 0; i < pixels.length; i++) {
-    // |pixels| is in RGBA. Ignore the alpha channel.
-    // We allow it to be off by 1, to account for rounding errors in YUV
-    // conversion.
-    if (pixels[i] != 0 && pixels[i] != 1 && (i + 1) % 4 != 0) {
+  var threshold = 20;
+  var accumulatedLuma = 0;
+  for (var i = 0; i < pixels.length; i += 4) {
+    // Ignore the alpha channel.
+    accumulatedLuma += rec702Luma_(pixels[i], pixels[i + 1], pixels[i + 2]);
+    if (accumulatedLuma > threshold * (i / 4 + 1))
       return false;
-    }
   }
   return true;
+}
+
+// Use Luma as in Rec. 709: Y′709 = 0.2126R + 0.7152G + 0.0722B;
+// See http://en.wikipedia.org/wiki/Rec._709.
+function rec702Luma_(r, g, b) {
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
 // This function matches |left| and |right| and fails the test if the
