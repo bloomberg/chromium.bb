@@ -290,6 +290,7 @@
       'renderer/pepper/pepper_file_chooser_host_unittest.cc',
       'renderer/pepper/pepper_graphics_2d_host_unittest.cc',
       'renderer/pepper/pepper_url_request_unittest.cc',
+      'renderer/pepper/pepper_webplugin_impl_browsertest.cc',
       'renderer/pepper/plugin_power_saver_helper_browsertest.cc',
       'test/ppapi/ppapi_browsertest.cc',
       'test/ppapi/ppapi_test.cc',

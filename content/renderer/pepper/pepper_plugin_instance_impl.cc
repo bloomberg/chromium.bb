@@ -670,6 +670,13 @@ void PepperPluginInstanceImpl::Delete() {
 
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
+
+  // It is important to destroy the throttler before anything else.
+  // The plugin instance may flush its graphics pipeline during its postmortem
+  // spasm, causing the throttler to engage and obtain new dangling reference
+  // to the plugin container being destroyed.
+  throttler_.reset();
+
   // Force the MessageChannel to release its "passthrough object" which should
   // release our last reference to the "InstanceObject" and will probably
   // destroy it. We want to do this prior to calling DidDestroy in case the

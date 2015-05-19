@@ -4,10 +4,14 @@
 
 #include "content/renderer/pepper/plugin_power_saver_helper.h"
 
+#include <string>
+
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -60,7 +64,17 @@ PluginPowerSaverHelper::PeripheralPlugin::~PeripheralPlugin() {
 }
 
 PluginPowerSaverHelper::PluginPowerSaverHelper(RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {
+    : RenderFrameObserver(render_frame)
+    , override_for_testing_(Normal) {
+  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+  std::string override_for_testing = command_line.GetSwitchValueASCII(
+      switches::kOverridePluginPowerSaverForTesting);
+  if (override_for_testing == "never")
+    override_for_testing_ = Never;
+  else if (override_for_testing == "ignore-list")
+    override_for_testing_ = IgnoreList;
+  else if (override_for_testing == "always")
+    override_for_testing_ = Always;
 }
 
 PluginPowerSaverHelper::~PluginPowerSaverHelper() {
@@ -123,8 +137,12 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
 
   // This feature has only been tested throughly with Flash thus far.
   // It is also enabled for the Power Saver test plugin for browser tests.
-  if (plugin_module_name != content::kFlashPluginName &&
-      plugin_module_name != ppapi::kPowerSaverTestPluginName) {
+  if (override_for_testing_ == Always) {
+    return true;
+  } else if (override_for_testing_ == Never) {
+    return false;
+  } else if (override_for_testing_ == Normal &&
+             plugin_module_name != content::kFlashPluginName) {
     return false;
   }
 

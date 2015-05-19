@@ -99,6 +99,8 @@ class PluginPowerSaverBrowserTest : virtual public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnablePluginPowerSaver);
     command_line->AppendSwitch(switches::kEnablePepperTesting);
     command_line->AppendSwitch(switches::kEnablePluginPlaceholderTesting);
+    command_line->AppendSwitchASCII(
+        switches::kOverridePluginPowerSaverForTesting, "ignore-list");
 
     ASSERT_TRUE(ppapi::RegisterPowerSaverTestPlugin(command_line));
   }

@@ -68,6 +68,13 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
     base::Closure unthrottle_callback;
   };
 
+  enum OverrideForTesting {
+    Normal,
+    Never,
+    IgnoreList,
+    Always
+  };
+
   // RenderFrameObserver implementation.
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
@@ -75,6 +82,8 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
 
   void OnUpdatePluginContentOriginWhitelist(
       const std::set<GURL>& origin_whitelist);
+
+  OverrideForTesting override_for_testing_;
 
   // Local copy of the whitelist for the entire tab.
   std::set<GURL> origin_whitelist_;
