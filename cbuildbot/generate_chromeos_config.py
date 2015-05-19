@@ -3036,6 +3036,7 @@ _waterfall_config_map = {
       # Experimental Paladins
       'daisy_freon-paladin',
       'nyan_freon-paladin',
+      'smaug-paladin',
       'tricky-paladin',
       'whirlwind-paladin',
       'x86-alex_freon-paladin',

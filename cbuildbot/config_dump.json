@@ -54959,6 +54959,7 @@
         "vm_tests": []
     },
     "smaug-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "smaug"
         ],
