@@ -1359,6 +1359,8 @@
     # Files used on iOS. iOS uses only these files and does not share other
     # lists, so a file may appear here and in the non_ios_sources also.
     'chrome_browser_ui_ios_sources': [
+      'browser/ui/passwords/password_bubble_experiment.cc',
+      'browser/ui/passwords/password_bubble_experiment.h',
       'browser/ui/profile_error_dialog.cc',
       'browser/ui/profile_error_dialog.h',
     ],
