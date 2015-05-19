@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 
 #import <UIKit/UIKit.h>
+#import <cmath>
 
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
@@ -58,6 +59,9 @@ const NSTimeInterval kRecurringPumpDelay = .01;
 - (void)processPumpResult:(BOOL)finished
               scrollPoint:(CGPoint)scrollPoint
         completionHandler:(ProceduralBlock)completionHandler;
+// Prevent scrolling past the end of the page.
+- (CGPoint)limitOverscroll:(CRWWebViewScrollViewProxy*)scrollViewProxy
+                   atPoint:(CGPoint)point;
 // Returns the associated web state. May be null.
 - (web::WebState*)webState;
 @end
@@ -133,11 +137,24 @@ const NSTimeInterval kRecurringPumpDelay = .01;
   return [_webViewProxy scrollViewProxy];
 }
 
+- (CGPoint)limitOverscroll:(CRWWebViewScrollViewProxy*)scrollViewProxy
+                   atPoint:(CGPoint)point {
+  CGFloat contentHeight = scrollViewProxy.contentSize.height;
+  CGFloat frameHeight = scrollViewProxy.frame.size.height;
+  CGFloat maxScroll = std::max<CGFloat>(0, contentHeight - frameHeight);
+  if (point.y > maxScroll) {
+    point.y = maxScroll;
+  }
+  return point;
+}
+
 - (void)processPumpResult:(BOOL)finished
               scrollPoint:(CGPoint)scrollPoint
         completionHandler:(ProceduralBlock)completionHandler {
   if (finished) {
     [_delegate willAdjustScrollPosition];
+    scrollPoint = [self limitOverscroll:[_webViewProxy scrollViewProxy]
+                                atPoint:scrollPoint];
     [[_webViewProxy scrollViewProxy] setContentOffset:scrollPoint animated:YES];
     if (completionHandler)
       completionHandler();
@@ -199,6 +216,8 @@ const NSTimeInterval kRecurringPumpDelay = .01;
     base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
     if (finished) {
       [[strongSelf delegate] willAdjustScrollPosition];
+      point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
+                                  atPoint:point];
       [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
     }
     completionHandler(finished);
@@ -212,12 +231,8 @@ const NSTimeInterval kRecurringPumpDelay = .01;
   [_findInPageJsManager nextMatchWithCompletionHandler:^(CGPoint point) {
     base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
     [[strongSelf delegate] willAdjustScrollPosition];
-    CGFloat contentHeight = [strongSelf webViewScrollView].contentSize.height;
-    CGFloat frameHeight = [strongSelf webViewScrollView].frame.size.height;
-    CGFloat maxScroll = fmax(0, contentHeight - frameHeight);
-    if (point.y > maxScroll) {
-      point.y = maxScroll;
-    }
+    point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
+                                atPoint:point];
     [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
     if (completionHandler)
       completionHandler();
@@ -232,6 +247,8 @@ const NSTimeInterval kRecurringPumpDelay = .01;
   [_findInPageJsManager previousMatchWithCompletionHandler:^(CGPoint point) {
     base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
     [[strongSelf delegate] willAdjustScrollPosition];
+    point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
+                                atPoint:point];
     [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
     if (completionHandler)
       completionHandler();
