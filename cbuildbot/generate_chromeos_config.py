@@ -2178,6 +2178,7 @@ _CONFIG.AddConfig(internal_incremental, 'mario-incremental',
 
 _CONFIG.AddConfig(internal_incremental, 'lakitu-incremental',
   _base_configs['lakitu'],
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
 )
 
 _CONFIG.AddConfig(
@@ -2521,6 +2522,10 @@ _CONFIG.AddConfig(_release, 'whirlwind-release',
   afdo_use=True,
   dev_installer_prebuilts=True,
 )
+
+_CONFIG.AddConfig(_release, 'lakitu-release',
+                  _base_configs['lakitu'],
+                  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE])
 
 ### Per-chipset release groups
 

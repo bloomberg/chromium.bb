@@ -25805,7 +25805,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lakitu-no-vmtest-pre-cq": {
         "archive": false,
@@ -25957,7 +25959,9 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lakitu-release-afdo": {
         "afdo_generate_min": true,
