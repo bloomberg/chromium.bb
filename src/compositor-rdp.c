@@ -1263,5 +1263,11 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	};
 
 	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
+	if (!config.rdp_key && (!config.server_cert || !config.server_key)) {
+		weston_log("the RDP compositor requires keys and an optional certificate for RDP or TLS security ("
+				"--rdp4-key or --rdp-tls-cert/--rdp-tls-key)\n");
+		return NULL;
+	}
+
 	return rdp_compositor_create(display, &config, argc, argv, wconfig);
 }
