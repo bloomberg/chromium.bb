@@ -153,7 +153,7 @@
     }
   ],
   "file_system_provider_capabilities": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
   "homepage_url": {
