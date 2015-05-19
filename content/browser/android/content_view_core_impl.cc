@@ -53,6 +53,7 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/screen.h"
@@ -799,7 +800,7 @@ void ContentViewCoreImpl::MoveRangeSelectionExtent(const gfx::PointF& extent) {
   if (!web_contents_)
     return;
 
-  web_contents_->MoveRangeSelectionExtent(gfx::Point(extent.x(), extent.y()));
+  web_contents_->MoveRangeSelectionExtent(gfx::ToRoundedPoint(extent));
 }
 
 void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& base,
@@ -807,8 +808,8 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& base,
   if (!web_contents_)
     return;
 
-  gfx::Point base_point = gfx::Point(base.x(), base.y());
-  gfx::Point extent_point = gfx::Point(extent.x(), extent.y());
+  gfx::Point base_point = gfx::ToRoundedPoint(base);
+  gfx::Point extent_point = gfx::ToRoundedPoint(extent);
   if (base_point == extent_point)
     return;
 
