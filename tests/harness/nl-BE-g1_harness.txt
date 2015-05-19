@@ -7,259 +7,100 @@
     {
       "data": [
         {
-          "input": "a ä â à á",
-          "ascii-output": "a ` 1 { {",
-          "output": "⠁ ⠜ ⠡ ⠷ ⠷"
+          "comment": "Lowercase letters",
+          "input": "a b c d e f g h i j k l m n o p q r s t u v w x y z",
+          "output": "⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓⠀⠊⠀⠚⠀⠅⠀⠇ ⠍⠀⠝⠀⠕⠀⠏ ⠟⠀⠗⠀⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵"
         },
         {
-          "input": "b",
-          "ascii-output": "b",
-          "output": "⠃"
+          "comment": "Single digits",
+          "input": "1 2 3 4 5 6 7 8 9 0",
+          "output": "⠼⠁ ⠼⠃ ⠼⠉ ⠼⠙ ⠼⠑ ⠼⠋ ⠼⠛ ⠼⠓⠀⠼⠊⠀⠼⠚"
         },
         {
-          "input": "c ç",
-          "ascii-output": "c &",
-          "output": "⠉ ⠯"
+          "comment": "Punctuation",
+          "input": ". , ? ! ; : -",
+          "output": "⠲ ⠂ ⠢ ⠖ ⠆⠀⠒ ⠤"
         },
         {
-          "input": "d",
-          "ascii-output": "d",
-          "output": "⠙"
+          "comment": "Symbols",
+          "input": "@ # % & * = + _ / \\ < >",
+          "output": "⠜ ⠐⠼ ⠿ ⠯ ⠔ ⠶⠀⠖ ⠸ ⠌ ⠐⠡ ⠐⠪ ⠐⠕"
         },
         {
-          "input": "e ë ê è é",
-          "ascii-output": "e 6 2 ~ %",
-          "output": "⠑ ⠫ ⠣ ⠮ ⠿"
+          "comment": "a accent",
+          "input": "ä â à á",
+          "output": "⠜ ⠡ ⠷ ⠷"
         },
         {
-          "input": "f",
-          "ascii-output": "f",
-          "output": "⠋"
+          "comment": "c accent",
+          "input": "ç",
+          "output": "⠯"
         },
         {
-          "input": "g",
-          "ascii-output": "g",
-          "output": "⠛"
+          "comment": "e accent",
+          "input": "ë ê è é",
+          "output": "⠫ ⠣ ⠮ ⠿"
         },
         {
-          "input": "h",
-          "ascii-output": "h",
-          "output": "⠓"
+          "comment": "i accent",
+          "input": "ï î ì í",
+          "output": "⠻ ⠩ ⠌ ⠌"
         },
         {
-          "input": "i ï î ì í",
-          "ascii-output": "i 7 3 | |",
-          "output": "⠊ ⠻ ⠩ ⠌ ⠌"
+          "comment": "n accent",
+          "input": "ñ",
+          "output": "⠻"
         },
         {
-          "input": "j",
-          "ascii-output": "j",
-          "output": "⠚"
+          "comment": "o accent",
+          "input": "ö ô ò ó",
+          "output": "⠪ ⠹ ⠬ ⠬"
         },
         {
-          "input": "k",
-          "ascii-output": "k",
-          "output": "⠅"
+          "comment": "s accent",
+          "input": "ß",
+          "output": "⠮"
         },
         {
-          "input": "l",
-          "ascii-output": "l",
-          "output": "⠇"
-        },
-        {
-          "input": "m",
-          "ascii-output": "m",
-          "output": "⠍"
-        },
-        {
-          "input": "n ñ",
-          "ascii-output": "n 7",
-          "output": "⠝ ⠻"
-        },
-        {
-          "input": "o ö ô ò ó",
-          "ascii-output": "o 9 4 0 0",
-          "output": "⠕ ⠪ ⠹ ⠬ ⠬"
-        },
-        {
-          "input": "p",
-          "ascii-output": "p",
-          "output": "⠏"
-        },
-        {
-          "input": "q",
-          "ascii-output": "q",
-          "output": "⠟"
-        },
-        {
-          "input": "r",
-          "ascii-output": "r",
-          "output": "⠗"
-        },
-        {
-          "input": "s ß",
-          "ascii-output": "s ~",
-          "output": "⠎ ⠮"
-        },
-        {
-          "input": "t",
-          "ascii-output": "t",
-          "output": "⠞"
-        },
-        {
-          "input": "u ü û ù ú",
-          "ascii-output": "u 8 5 } }",
-          "output": "⠥ ⠳ ⠱ ⠾ ⠾"
-        },
-        {
-          "input": "v",
-          "ascii-output": "v",
-          "output": "⠧"
-        },
-        {
-          "input": "w",
-          "ascii-output": "w",
-          "output": "⠺"
-        },
-        {
-          "input": "x",
-          "ascii-output": "x",
-          "output": "⠭"
-        },
-        {
-          "input": "y",
-          "ascii-output": "y",
-          "output": "⠽"
-        },
-        {
-          "input": "z",
-          "ascii-output": "z",
-          "output": "⠵"
-        },
-        {
-          "input": "punt .",
-          "ascii-output": "punt /",
-          "output": "⠏⠥⠝⠞ ⠲"
-        },
-        {
-          "input": "komma ,",
-          "ascii-output": "komma ,",
-          "output": "⠅⠕⠍⠍⠁ ⠂"
-        },
-        {
-          "input": "puntkomma ;",
-          "ascii-output": "puntkomma ;",
-          "output": "⠏⠥⠝⠞⠅⠕⠍⠍⠁ ⠆"
-        },
-        {
-          "input": "dubbele punt :",
-          "ascii-output": "dubbele punt :",
-          "output": "⠙⠥⠃⠃⠑⠇⠑ ⠏⠥⠝⠞ ⠒"
-        },
-        {
-          "input": "vraagteken ?",
-          "ascii-output": "vraagteken ?",
-          "output": "⠧⠗⠁⠁⠛⠞⠑⠅⠑⠝ ⠢"
-        },
-        {
-          "input": "uitroepteken !",
-          "ascii-output": "uitroepteken +",
-          "output": "⠥⠊⠞⠗⠕⠑⠏⠞⠑⠅⠑⠝ ⠖"
-        },
-        {
-          "input": "schuine streep /",
-          "ascii-output": "schuine streep |",
-          "output": "⠎⠉⠓⠥⠊⠝⠑ ⠎⠞⠗⠑⠑⠏ ⠌"
-        },
-        {
-          "input": "liggend streepje -",
-          "ascii-output": "liggend streepje -",
-          "output": "⠇⠊⠛⠛⠑⠝⠙ ⠎⠞⠗⠑⠑⠏⠚⠑ ⠤"
+          "comment": "u accent",
+          "input": "ü û ù ú",
+          "output": "⠳ ⠱ ⠾ ⠾"
         },
         {
           "input": "beletselteken ...",
-          "ascii-output": "beletselteken ///",
           "output": "⠃⠑⠇⠑⠞⠎⠑⠇⠞⠑⠅⠑⠝ ⠲⠲⠲"
         },
         {
-          "input": "(ronde haakjes)",
-          "ascii-output": "(ronde haakjes)",
-          "output": "⠦⠗⠕⠝⠙⠑ ⠓⠁⠁⠅⠚⠑⠎⠴"
-        },
-        {
-          "input": "“dubbele aanhalingstekens”",
-          "ascii-output": "=dubbele aanhalingstekens=",
-          "output": "⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶"
-        },
-        {
           "input": "'enkele aanhalingstekens'",
-          "ascii-output": ".enkele aanhalingstekens.",
           "output": "⠄⠑⠝⠅⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠄"
         },
         {
+          "input": "\"dubbele aanhalingstekens\"",
+          "output": "⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶"
+        },
+        {
+          "input": "“dubbele aanhalingstekens”",
+          "output": "⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶"
+        },
+        {
+          "input": "(ronde haakjes)",
+          "output": "⠦⠗⠕⠝⠙⠑ ⠓⠁⠁⠅⠚⠑⠎⠴"
+        },
+        {
           "input": "[vierkante haakjes]",
-          "ascii-output": "{vierkante haakjes}",
           "output": "⠷⠧⠊⠑⠗⠅⠁⠝⠞⠑ ⠓⠁⠁⠅⠚⠑⠎⠾"
         },
         {
-          "input": "ampersand &",
-          "ascii-output": "ampersand &",
-          "output": "⠁⠍⠏⠑⠗⠎⠁⠝⠙ ⠯"
-        },
-        {
-          "input": "asterisk *",
-          "ascii-output": "asterisk *",
-          "output": "⠁⠎⠞⠑⠗⠊⠎⠅ ⠔"
-        },
-        {
-          "input": "at @",
-          "ascii-output": "at `",
-          "output": "⠁⠞ ⠜"
-        },
-        {
-          "input": "backslash \\",
-          "ascii-output": "backslash !1",
-          "output": "⠃⠁⠉⠅⠎⠇⠁⠎⠓ ⠐⠡"
-        },
-        {
           "input": "copyright ©",
-          "ascii-output": "copyright !c",
           "output": "⠉⠕⠏⠽⠗⠊⠛⠓⠞ ⠐⠉"
         },
         {
           "input": "dollar $",
-          "ascii-output": "dollar d",
           "output": "⠙⠕⠇⠇⠁⠗ ⠙"
         },
         {
           "input": "euro €",
-          "ascii-output": "euro e",
           "output": "⠑⠥⠗⠕ ⠑"
-        },
-        {
-          "input": "gelijkheidsteken =",
-          "ascii-output": "gelijkheidsteken =",
-          "output": "⠛⠑⠇⠊⠚⠅⠓⠑⠊⠙⠎⠞⠑⠅⠑⠝ ⠶"
-        },
-        {
-          "input": "groter dan >",
-          "ascii-output": "groter dan !o",
-          "output": "⠛⠗⠕⠞⠑⠗ ⠙⠁⠝ ⠐⠕"
-        },
-        {
-          "input": "hekje #",
-          "ascii-output": "hekje !#",
-          "output": "⠓⠑⠅⠚⠑ ⠐⠼"
-        },
-        {
-          "input": "kleiner dan <",
-          "ascii-output": "kleiner dan !9",
-          "output": "⠅⠇⠑⠊⠝⠑⠗ ⠙⠁⠝ ⠐⠪"
-        },
-        {
-          "input": "paragraaf §",
-          "ascii-output": "paragraaf 0",
-          "output": "⠏⠁⠗⠁⠛⠗⠁⠁⠋ ⠬"
         },
         {
           "input": "pond £",
@@ -267,350 +108,237 @@
           "output": "⠏⠕⠝⠙ ⠏"
         },
         {
-          "input": "registered ®",
-          "ascii-output": "registered !r",
-          "output": "⠗⠑⠛⠊⠎⠞⠑⠗⠑⠙ ⠐⠗"
-        },
-        {
-          "input": "underscore _",
-          "ascii-output": "underscore _",
-          "output": "⠥⠝⠙⠑⠗⠎⠉⠕⠗⠑ ⠸"
-        },
-        {
           "input": "yen ¥",
           "ascii-output": "yen y",
           "output": "⠽⠑⠝ ⠽"
         },
         {
-          "input": "1",
-          "ascii-output": "#a",
-          "output": "⠼⠁"
+          "input": "paragraaf §",
+          "output": "⠏⠁⠗⠁⠛⠗⠁⠁⠋ ⠬"
         },
         {
-          "input": "2",
-          "ascii-output": "#b",
-          "output": "⠼⠃"
-        },
-        {
-          "input": "3",
-          "ascii-output": "#c",
-          "output": "⠼⠉"
-        },
-        {
-          "input": "4",
-          "ascii-output": "#d",
-          "output": "⠼⠙"
-        },
-        {
-          "input": "5",
-          "ascii-output": "#e",
-          "output": "⠼⠑"
-        },
-        {
-          "input": "6",
-          "ascii-output": "#f",
-          "output": "⠼⠋"
-        },
-        {
-          "input": "7",
-          "ascii-output": "#g",
-          "output": "⠼⠛"
-        },
-        {
-          "input": "8",
-          "ascii-output": "#h",
-          "output": "⠼⠓"
-        },
-        {
-          "input": "9",
-          "ascii-output": "#i",
-          "output": "⠼⠊"
-        },
-        {
-          "input": "0",
-          "ascii-output": "#j",
-          "output": "⠼⠚"
+          "input": "registered ®",
+          "output": "⠗⠑⠛⠊⠎⠞⠑⠗⠑⠙ ⠐⠗"
         },
         {
           "input": "1.234.567,89",
-          "ascii-output": "#a/bcd/efg,hi",
           "output": "⠼⠁⠲⠃⠉⠙⠲⠑⠋⠛⠂⠓⠊"
         },
         {
           "input": "050-12 34 56",
-          "ascii-output": "#jej-#ab #cd #ef",
           "output": "⠼⠚⠑⠚⠤⠼⠁⠃ ⠼⠉⠙ ⠼⠑⠋"
         },
         {
           "input": "050/78 90 12",
-          "ascii-output": "#jej|#gh #ij #ab",
           "output": "⠼⠚⠑⠚⠌⠼⠛⠓ ⠼⠊⠚ ⠼⠁⠃"
         },
         {
           "input": "050-34.56.78",
-          "ascii-output": "#jej-#cd/ef/gh",
           "output": "⠼⠚⠑⠚⠤⠼⠉⠙⠲⠑⠋⠲⠛⠓"
         },
         {
           "input": "BE03 4747 0637 8184",
-          "ascii-output": ">be#jc #dgdg #jfcg #hahd",
           "output": "⠘⠃⠑⠼⠚⠉ ⠼⠙⠛⠙⠛ ⠼⠚⠋⠉⠛ ⠼⠓⠁⠓⠙"
         },
         {
           "input": "+ 32 11 32 43 54",
-          "ascii-output": "+ #cb #aa #cb #dc #ed",
           "output": "⠖ ⠼⠉⠃ ⠼⠁⠁ ⠼⠉⠃ ⠼⠙⠉ ⠼⠑⠙"
         },
         {
           "input": "1e, 1ste",
-          "ascii-output": "#a'e, #aste",
           "output": "⠼⠁⠠⠑⠂ ⠼⠁⠎⠞⠑"
         },
         {
           "input": "2e, 2de",
-          "ascii-output": "#b'e, #b'de",
           "output": "⠼⠃⠠⠑⠂ ⠼⠃⠠⠙⠑"
         },
         {
           "input": "3e, 3de",
-          "ascii-output": "#c'e, #c'de",
           "output": "⠼⠉⠠⠑⠂ ⠼⠉⠠⠙⠑"
         },
         {
           "input": "15e, 27ste",
-          "ascii-output": "#ae'e, #bgste",
           "output": "⠼⠁⠑⠠⠑⠂ ⠼⠃⠛⠎⠞⠑"
         },
         {
           "input": "10a",
-          "ascii-output": "#aj'a",
           "output": "⠼⠁⠚⠠⠁"
         },
         {
           "input": "12.b",
-          "ascii-output": "#ab/'b",
           "output": "⠼⠁⠃⠲⠠⠃"
         },
         {
           "input": "1 + 2 = 3",
-          "ascii-output": "#a + #b = #c",
           "output": "⠼⠁ ⠖ ⠼⠃ ⠶ ⠼⠉"
         },
         {
           "input": "9 - 5 = 4",
-          "ascii-output": "#i - #e = #d",
           "output": "⠼⠊ ⠤ ⠼⠑ ⠶ ⠼⠙"
         },
         {
           "input": "3 × 3 = 9",
-          "ascii-output": "#c ( #c = #i",
           "output": "⠼⠉ ⠦ ⠼⠉ ⠶ ⠼⠊"
         },
         {
           "input": "8 ÷ 4 = 2",
-          "ascii-output": "#h / #d = #b",
           "output": "⠼⠓ ⠲ ⠼⠙ ⠶ ⠼⠃"
         },
         {
           "input": "65+-kaart",
-          "ascii-output": "#fe!+-kaart",
           "output": "⠼⠋⠑⠐⠖⠤⠅⠁⠁⠗⠞"
         },
         {
           "input": "40-jarige",
-          "ascii-output": "#dj-jarige",
           "output": "⠼⠙⠚⠤⠚⠁⠗⠊⠛⠑"
         },
         {
           "input": "79,5 %",
-          "ascii-output": "#gi,e %",
           "output": "⠼⠛⠊⠂⠑ ⠿"
         },
         {
           "input": "15%",
-          "ascii-output": "#ae %",
           "output": "⠼⠁⠑ ⠿"
         },
         {
           "input": "37,8° C",
-          "ascii-output": "#cg,h\") $c",
           "output": "⠼⠉⠛⠂⠓⠈⠴ ⠨⠉"
         },
         {
           "input": "65 m²",
-          "ascii-output": "#fe m|#b",
           "output": "⠼⠋⠑ ⠍⠌⠼⠃"
         },
         {
           "input": "1.000 cm³",
-          "ascii-output": "#a/jjj cm|#c",
           "output": "⠼⠁⠲⠚⠚⠚ ⠉⠍⠌⠼⠉"
         },
         {
           "input": "½ kg - 1/2 kg",
-          "ascii-output": "#a|#b kg - #a|#b kg",
           "output": "⠼⠁⠌⠼⠃ ⠅⠛ ⠤ ⠼⠁⠌⠼⠃ ⠅⠛"
         },
         {
           "input": "¼ l - 1/4 l",
-          "ascii-output": "#a|#d l - #a|#d l",
           "output": "⠼⠁⠌⠼⠙ ⠇ ⠤ ⠼⠁⠌⠼⠙ ⠇"
         },
         {
           "input": "CO₂-uitstoot: 158 g CO₂/km",
-          "ascii-output": ">co1;-uitstoot: #aeh g >co1;|km",
           "output": "⠘⠉⠕⠡⠆⠤⠥⠊⠞⠎⠞⠕⠕⠞⠒ ⠼⠁⠑⠓ ⠛ ⠘⠉⠕⠡⠆⠌⠅⠍"
         },
         {
           "input": "Benedictus XVI",
-          "ascii-output": "$benedictus >xvi",
           "output": "⠨⠃⠑⠝⠑⠙⠊⠉⠞⠥⠎ ⠘⠭⠧⠊"
         },
         {
           "input": "Jozef II-straat",
-          "ascii-output": "$jozef >ii-'straat",
           "output": "⠨⠚⠕⠵⠑⠋ ⠘⠊⠊⠤⠠⠎⠞⠗⠁⠁⠞"
         },
         {
           "input": "WO II",
-          "ascii-output": ">wo >ii",
           "output": "⠘⠺⠕ ⠘⠊⠊"
         },
         {
           "input": "EEN woord in hoofdletters",
-          "ascii-output": ">een woord in hoofdletters",
           "output": "⠘⠑⠑⠝ ⠺⠕⠕⠗⠙ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
         },
         {
           "input": "TWEE WOORDEN in hoofdletters",
-          "ascii-output": ">twee >woorden in hoofdletters",
           "output": "⠘⠞⠺⠑⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
         },
         {
           "input": "DRIE WOORDEN IN hoofdletters",
-          "ascii-output": ">drie >woorden >in hoofdletters",
           "output": "⠘⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠘⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
         },
         {
           "input": "MEER DAN DRIE WOORDEN in hoofdletters",
-          "ascii-output": ">>meer dan drie >woorden in hoofdletters",
           "output": "⠘⠘⠍⠑⠑⠗ ⠙⠁⠝ ⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎",
           "xfail": "Fails because ?"
         },
         {
           "input": "BTW-TARIEF volledig in hoofdletters",
-          "ascii-output": ">btw-tarief volledig in hoofdletters",
           "output": "⠘⠃⠞⠺⠤⠞⠁⠗⠊⠑⠋ ⠧⠕⠇⠇⠑⠙⠊⠛ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
         },
         {
           "input": "BTW-tarief alleen btw in hoofdletters",
-          "ascii-output": ">btw-'tarief alleen btw in hoofdletters",
           "output": "⠘⠃⠞⠺⠤⠠⠞⠁⠗⠊⠑⠋ ⠁⠇⠇⠑⠑⠝ ⠃⠞⠺ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
         },
         {
           "input": "P+R park and ride",
-          "ascii-output": ">p!+r park and ride",
           "output": "⠘⠏⠐⠖⠗ ⠏⠁⠗⠅ ⠁⠝⠙ ⠗⠊⠙⠑"
         },
         {
           "input": "N-VA Nieuw-Vlaamse Alliantie",
-          "ascii-output": ">n-va $nieuw-$vlaamse $alliantie",
           "output": "⠘⠝⠤⠧⠁ ⠨⠝⠊⠑⠥⠺⠤⠨⠧⠇⠁⠁⠍⠎⠑ ⠨⠁⠇⠇⠊⠁⠝⠞⠊⠑"
         },
         {
           "input": "CD&V Christen-Democratisch en Vlaams",
-          "ascii-output": ">cd!&v $christen-$democratisch en $vlaams",
           "output": "⠘⠉⠙⠐⠯⠧ ⠨⠉⠓⠗⠊⠎⠞⠑⠝⠤⠨⠙⠑⠍⠕⠉⠗⠁⠞⠊⠎⠉⠓ ⠑⠝ ⠨⠧⠇⠁⠁⠍⠎"
         },
         {
           "input": "W.F. Hermans",
-          "ascii-output": ">w/f/ $hermans",
           "output": "⠘⠺⠲⠋⠲ ⠨⠓⠑⠗⠍⠁⠝⠎"
         },
         {
           "input": "FAQ's",
-          "ascii-output": ">faq.'s",
           "output": "⠘⠋⠁⠟⠄⠠⠎"
         },
         {
           "input": "VTM'er",
-          "ascii-output": ">vtm.'er",
           "output": "⠘⠧⠞⠍⠄⠠⠑⠗"
         },
         {
           "input": "65+'er",
-          "ascii-output": "#fe!+.er",
           "output": "⠼⠋⠑⠐⠖⠄⠑⠗"
         },
         {
-          "input": "SLAAT DE VLAM IN DE PAN, DEK DE VUURHAARD DAN AF MET EEN BRANDWERENDE DEKEN OF EEN VOCHTIGE DOEK.",
-          "ascii-output": ">>slaat de vlam in de pan, dek de vuurhaard dan af met een brandwerende deken of een vochtige >doek/",
-          "output": "⠘⠘⠎⠇⠁⠁⠞ ⠙⠑ ⠧⠇⠁⠍ ⠊⠝ ⠙⠑ ⠏⠁⠝⠂ ⠙⠑⠅ ⠙⠑ ⠧⠥⠥⠗⠓⠁⠁⠗⠙ ⠙⠁⠝ ⠁⠋ ⠍⠑⠞ ⠑⠑⠝ ⠃⠗⠁⠝⠙⠺⠑⠗⠑⠝⠙⠑ ⠙⠑⠅⠑⠝ ⠕⠋ ⠑⠑⠝ ⠧⠕⠉⠓⠞⠊⠛⠑ ⠘⠙⠕⠑⠅⠲",
-          "xfail": "Fails because ?"
-        },
-        {
           "input": "lisa_dirk@yahoo.com",
-          "ascii-output": "lisa_dirk`yahoo/com",
           "output": "⠇⠊⠎⠁⠸⠙⠊⠗⠅⠜⠽⠁⠓⠕⠕⠲⠉⠕⠍"
         },
         {
-          "input": "http://www.avh.asso.fr",
-          "ascii-output": "http:||www/avh/asso/fr",
-          "output": "⠓⠞⠞⠏⠒⠌⠌⠺⠺⠺⠲⠁⠧⠓⠲⠁⠎⠎⠕⠲⠋⠗"
+          "input": "http://www.avh.asso.fr/",
+          "output": "⠓⠞⠞⠏⠒⠌⠌⠺⠺⠺⠲⠁⠧⠓⠲⠁⠎⠎⠕⠲⠋⠗⠌"
         },
         {
           "input": "C:\\Documents and Settings",
-          "ascii-output": "$c:!1$documents and $settings",
           "output": "⠨⠉⠒⠐⠡⠨⠙⠕⠉⠥⠍⠑⠝⠞⠎ ⠁⠝⠙ ⠨⠎⠑⠞⠞⠊⠝⠛⠎"
         },
         {
           "input": "€ 12,35",
-          "ascii-output": "e#ab,ce",
           "output": "⠑⠼⠁⠃⠂⠉⠑"
         },
         {
           "input": "€12,35",
-          "ascii-output": "e#ab,ce",
           "output": "⠑⠼⠁⠃⠂⠉⠑"
         },
         {
           "input": "$ 10,00",
-          "ascii-output": "d#aj,jj",
           "output": "⠙⠼⠁⠚⠂⠚⠚"
         },
         {
           "input": "$10,00",
-          "ascii-output": "d#aj,jj",
           "output": "⠙⠼⠁⠚⠂⠚⠚"
         },
         {
           "input": "£ 65,47",
-          "ascii-output": "p#fe,dg",
           "output": "⠏⠼⠋⠑⠂⠙⠛"
         },
         {
           "input": "£65,47",
-          "ascii-output": "p#fe,dg",
           "output": "⠏⠼⠋⠑⠂⠙⠛"
         },
         {
           "input": "¥ 100.000",
-          "ascii-output": "y#ajj/jjj",
           "output": "⠽⠼⠁⠚⠚⠲⠚⠚⠚"
         },
         {
           "input": "¥100.000",
-          "ascii-output": "y#ajj/jjj",
           "output": "⠽⠼⠁⠚⠚⠲⠚⠚⠚"
         },
         {
           "input": "Eén",
-          "ascii-output": "$%%n",
           "output": "⠨⠿⠿⠝"
         },
         {
           "input": "É-U",
-          "ascii-output": ">%-u",
           "output": "⠘⠿⠤⠥"
         }
       ]
