@@ -29,11 +29,11 @@
 #define WorkerScriptLoaderClient_h
 
 #include "core/CoreExport.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-class ContentSecurityPolicy;
 class ResourceResponse;
 
 class CORE_EXPORT WorkerScriptLoaderClient {
