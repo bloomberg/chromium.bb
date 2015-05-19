@@ -1132,8 +1132,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
 
+// Fails on official cros trunk build. http://crbug.com/480491
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_TabindexOpenDialog DISABLED_TabindexOpenDialog
+#else
+#define MAYBE_TabindexOpenDialog TabindexOpenDialog
+#endif
 INSTANTIATE_TEST_CASE_P(
-    TabindexOpenDialog,
+    MAYBE_TabindexOpenDialog,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDrive"),
