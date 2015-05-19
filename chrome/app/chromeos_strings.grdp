@@ -2343,6 +2343,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_MIRRORING_DISPLAY_NAME" desc="The text shown at display name field when mirroring.">
     Mirroring
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ENABLE_UNIFIED_DESKTOP" desc="The section title for the option to enable unified desktop mode.">
+    Enable Unified Desktop
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY" desc="Button label to set a display primary.">
     Make primary
   </message>
