@@ -58,7 +58,7 @@ void StashedMessagePort::dispatchMessages()
     if (!isEntangled())
         return;
     ASSERT(executionContext()->isServiceWorkerGlobalScope());
-    RefPtr<StashedPortCollection> stashedPorts = toServiceWorkerGlobalScope(executionContext())->ports();
+    RefPtrWillBeRawPtr<StashedPortCollection> stashedPorts = toServiceWorkerGlobalScope(executionContext())->ports();
 
     RefPtr<SerializedScriptValue> message;
     OwnPtr<MessagePortChannelArray> channels;

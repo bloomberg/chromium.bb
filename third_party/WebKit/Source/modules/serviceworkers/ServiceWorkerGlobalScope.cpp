@@ -214,6 +214,7 @@ DEFINE_TRACE(ServiceWorkerGlobalScope)
 {
     visitor->trace(m_clients);
     visitor->trace(m_registration);
+    visitor->trace(m_ports);
     WorkerGlobalScope::trace(visitor);
 }
 

@@ -53,6 +53,7 @@ ExecutionContext* StashedPortCollection::executionContext() const
 
 DEFINE_TRACE(StashedPortCollection)
 {
+    visitor->trace(m_ports);
     EventTargetWithInlineData::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
