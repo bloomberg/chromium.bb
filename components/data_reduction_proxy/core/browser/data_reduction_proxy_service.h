@@ -110,10 +110,6 @@ class DataReductionProxyService
     return compression_stats_.get();
   }
 
-  DataReductionProxySettings* settings() const {
-    return settings_;
-  }
-
   DataReductionProxyEventStore* event_store() const {
     return event_store_.get();
   }
