@@ -273,7 +273,10 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const ui::KeyEvent& event) {
 #if defined(OS_WIN)
   if (event.HasNativeEvent()) {
     // Key events require no translation by the aura system.
-    return MakeWebKeyboardEventFromNativeEvent(event.native_event());
+    blink::WebKeyboardEvent webkit_event(
+        MakeWebKeyboardEventFromNativeEvent(event.native_event()));
+    webkit_event.domCode = static_cast<int>(event.code());
+    return webkit_event;
   }
 #endif
   return MakeWebKeyboardEventFromAuraEvent(event);

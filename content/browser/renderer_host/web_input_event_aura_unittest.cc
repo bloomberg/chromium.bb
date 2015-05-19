@@ -32,6 +32,8 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
     // However, modifier bit for Control in |webkit_event| should be set.
     EXPECT_EQ(blink::WebInputEvent::ControlKey | blink::WebInputEvent::IsLeft,
               webkit_event.modifiers);
+    EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_LEFT),
+              webkit_event.domCode);
   }
   {
     // Release Ctrl.
@@ -40,6 +42,8 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
     // However, modifier bit for Control in |webkit_event| shouldn't be set.
     EXPECT_EQ(blink::WebInputEvent::IsLeft, webkit_event.modifiers);
+    EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_LEFT),
+              webkit_event.domCode);
   }
 #if defined(USE_X11)
   const int kLocationModifiers =
