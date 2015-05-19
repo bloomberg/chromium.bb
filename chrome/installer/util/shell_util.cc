@@ -11,6 +11,7 @@
 
 #include <windows.h>
 #include <shlobj.h>
+#include <shobjidl.h>
 
 #include <limits>
 #include <string>
@@ -872,6 +873,25 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
     InstallUtil::ExecuteExeAsAdmin(cmd, &ret_val);
     if (ret_val == 0)
       return true;
+  }
+  return false;
+}
+
+// Launches the Windows 'settings' modern app with the 'default apps' view
+// focused. This only works for Windows 8 and Windows 10. The appModelId
+// looks arbitrary but it is the same in Win8 and Win10 previews. There
+// is no easy way to retrieve the appModelId from the registry.
+bool LaunchDefaultAppsSettingsModernDialog() {
+  base::win::ScopedComPtr<IApplicationActivationManager> activator;
+  HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
+  if (SUCCEEDED(hr)) {
+    DWORD pid = 0;
+    CoAllowSetForegroundWindow(activator.get(), nullptr);
+    hr = activator->ActivateApplication(
+        L"windows.immersivecontrolpanel_cw5n1h2txyewy"
+        L"!microsoft.windows.immersivecontrolpanel",
+        L"page=SettingsPageAppsDefaults", AO_NONE, &pid);
+    return SUCCEEDED(hr);
   }
   return false;
 }
@@ -2061,13 +2081,22 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(
   bool succeeded = true;
   bool is_default = (GetChromeDefaultState() == IS_DEFAULT);
   if (!is_default) {
-    // On Windows 8, you can't set yourself as the default handler
-    // programatically. In other words IApplicationAssociationRegistration
-    // has been rendered useless. What you can do is to launch
-    // "Set Program Associations" section of the "Default Programs"
-    // control panel, which is a mess, or pop the concise "How you want to open
-    // webpages?" dialog.  We choose the latter.
-    succeeded = LaunchSelectDefaultProtocolHandlerDialog(L"http");
+    if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+      // On Windows 8, you can't set yourself as the default handler
+      // programatically. In other words IApplicationAssociationRegistration
+      // has been rendered useless. What you can do is to launch
+      // "Set Program Associations" section of the "Default Programs"
+      // control panel, which is a mess, or pop the concise "How you want to
+      // open webpages?" dialog.  We choose the latter.
+      succeeded = LaunchSelectDefaultProtocolHandlerDialog(L"http");
+    } else {
+      // On Windows 10, you can't even launch the associations dialog.
+      // So we launch the settings dialog. Quoting from MSDN: "The Open With
+      // dialog box can no longer be used to change the default program used to
+      // open a file extension. You can only use SHOpenWithDialog to open
+      // a single file."
+      succeeded = LaunchDefaultAppsSettingsModernDialog();
+    }
     is_default = (succeeded && GetChromeDefaultState() == IS_DEFAULT);
   }
   if (succeeded && is_default)
