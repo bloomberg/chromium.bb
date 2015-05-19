@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2211,15 +2211,14 @@ void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
     return;
 #endif  // OS_WIN
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Same as below, but bound to an experiment (http://crbug.com/458594 on
-  // Windows, http://crbug.com/398103 on the Mac). Enabled by default in the
-  // absence of field trials to get coverage on the perf waterfall.
+#if defined(OS_WIN)
+  // Same as below, but bound to an experiment (http://crbug.com/458594)
+  // initially on Windows. Enabled by default in the asbence of field trials to
+  // get coverage on the perf waterfall.
   base::FieldTrial* trial =
       base::FieldTrialList::Find("BackgroundRendererProcesses");
-  if (!trial || !StartsWithASCII(trial->group_name(), "Disallow", true)) {
+  if (!trial || trial->group_name() != "Disallow")
     child_process_launcher_->SetProcessBackgrounded(backgrounded);
-  }
 #else
   // Control the background state from the browser process, otherwise the task
   // telling the renderer to "unbackground" itself may be preempted by other
