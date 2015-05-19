@@ -32,10 +32,11 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
-#include "core/fetch/ResourceLoaderHost.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/Timer.h"
+#include "platform/network/ResourceError.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
@@ -65,18 +66,12 @@ class ResourceLoaderSet;
 // RefPtr<ResourceFetcher> for their lifetime (and will create one if they
 // are initialized without a LocalFrame), so a Document can keep a ResourceFetcher
 // alive past detach if scripts still reference the Document.
-class CORE_EXPORT ResourceFetcher final : public RefCountedWillBeGarbageCollectedFinalized<ResourceFetcher>, public ResourceLoaderHost {
+class CORE_EXPORT ResourceFetcher : public RefCountedWillBeGarbageCollectedFinalized<ResourceFetcher> {
     WTF_MAKE_NONCOPYABLE(ResourceFetcher); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ResourceFetcher);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ResourceFetcher);
 public:
     static PassRefPtrWillBeRawPtr<ResourceFetcher> create(PassOwnPtrWillBeRawPtr<FetchContext> context) { return adoptRefWillBeNoop(new ResourceFetcher(context)); }
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
-
-#if !ENABLE(OILPAN)
-    using RefCounted<ResourceFetcher>::ref;
-    using RefCounted<ResourceFetcher>::deref;
-#endif
 
     ResourcePtr<Resource> fetchSynchronously(FetchRequest&);
     ResourcePtr<ImageResource> fetchImage(FetchRequest&);
@@ -124,29 +119,28 @@ public:
     void stopFetching();
     bool isFetching() const;
 
-    // ResourceLoaderHost
-    virtual void didLoadResource() override;
-    virtual void redirectReceived(Resource*, const ResourceResponse&) override;
-    virtual void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength) override;
-    virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority, int intraPriorityValue) override;
-    virtual void didFailLoading(const Resource*, const ResourceError&) override;
-    virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&) override;
-    virtual void didReceiveResponse(const Resource*, const ResourceResponse&) override;
-    virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength) override;
-    virtual void didDownloadData(const Resource*, int dataLength, int encodedDataLength) override;
-    virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) override;
-    virtual void didInitializeResourceLoader(ResourceLoader*) override;
-    virtual void willStartLoadingResource(Resource*, ResourceRequest&) override;
-    virtual bool defersLoading() const override;
-    virtual bool isLoadedBy(ResourceLoaderHost*) const override;
-    virtual bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&) override;
-    virtual bool canAccessResource(Resource*, SecurityOrigin*, const KURL&, AccessControlLoggingDecision) const override;
-    virtual bool isControlledByServiceWorker() const override;
+    void didLoadResource();
+    void redirectReceived(Resource*, const ResourceResponse&);
+    void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength);
+    void didChangeLoadingPriority(const Resource*, ResourceLoadPriority, int intraPriorityValue);
+    void didFailLoading(const Resource*, const ResourceError&);
+    void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+    void didReceiveResponse(const Resource*, const ResourceResponse&);
+    void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength);
+    void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
+    void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*);
+    void didInitializeResourceLoader(ResourceLoader*);
+    void willStartLoadingResource(Resource*, ResourceRequest&);
+    bool defersLoading() const;
+    bool isLoadedBy(ResourceFetcher*) const;
 
-#if !ENABLE(OILPAN)
-    virtual void refResourceLoaderHost() override;
-    virtual void derefResourceLoaderHost() override;
-#endif
+    enum AccessControlLoggingDecision {
+        ShouldLogAccessControlErrors,
+        ShouldNotLogAccessControlErrors
+    };
+    bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&);
+    bool canAccessResource(Resource*, SecurityOrigin*, const KURL&, AccessControlLoggingDecision) const;
+    bool isControlledByServiceWorker() const;
 
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
@@ -158,10 +152,6 @@ public:
     static const ResourceLoaderOptions& defaultResourceOptions();
 
     String getCacheIdentifier() const;
-
-    virtual ResourceLoaderHost::LoaderHostType objectType() const override { return ResourceFetcherType; };
-
-    static ResourceFetcher* toResourceFetcher(ResourceLoaderHost*);
 
 private:
     friend class ResourceCacheValidationSuppressor;

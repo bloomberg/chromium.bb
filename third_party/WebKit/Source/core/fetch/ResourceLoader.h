@@ -41,12 +41,12 @@ namespace blink {
 class Resource;
 class KURL;
 class ResourceError;
-class ResourceLoaderHost;
+class ResourceFetcher;
 class ThreadedDataReceiver;
 
 class ResourceLoader final : public RefCountedWillBeGarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
-    static PassRefPtrWillBeRawPtr<ResourceLoader> create(ResourceLoaderHost*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
+    static PassRefPtrWillBeRawPtr<ResourceLoader> create(ResourceFetcher*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
     DECLARE_TRACE();
 
@@ -81,14 +81,13 @@ public:
     void didDownloadData(WebURLLoader*, int, int) override;
 
     const KURL& url() const { return m_request.url(); }
-    bool isLoadedBy(ResourceLoaderHost*) const;
+    bool isLoadedBy(ResourceFetcher*) const;
 
     bool reachedTerminalState() const { return m_state == Terminated; }
     const ResourceRequest& request() const { return m_request; }
-    ResourceLoaderHost* host() const { return m_host.get(); }
 
 private:
-    ResourceLoader(ResourceLoaderHost*, Resource*, const ResourceLoaderOptions&);
+    ResourceLoader(ResourceFetcher*, Resource*, const ResourceLoaderOptions&);
 
     void init(const ResourceRequest&);
     void requestSynchronously();
@@ -100,7 +99,7 @@ private:
     ResourceRequest& applyOptions(ResourceRequest&) const;
 
     OwnPtr<WebURLLoader> m_loader;
-    RefPtrWillBeMember<ResourceLoaderHost> m_host;
+    RefPtrWillBeMember<ResourceFetcher> m_fetcher;
 
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.

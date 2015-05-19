@@ -1157,7 +1157,7 @@ bool ResourceFetcher::defersLoading() const
     return context().defersLoading();
 }
 
-bool ResourceFetcher::isLoadedBy(ResourceLoaderHost* possibleOwner) const
+bool ResourceFetcher::isLoadedBy(ResourceFetcher* possibleOwner) const
 {
     return this == possibleOwner;
 }
@@ -1184,18 +1184,6 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
         return false;
     return true;
 }
-
-#if !ENABLE(OILPAN)
-void ResourceFetcher::refResourceLoaderHost()
-{
-    ref();
-}
-
-void ResourceFetcher::derefResourceLoaderHost()
-{
-    deref();
-}
-#endif
 
 #if PRELOAD_DEBUG
 void ResourceFetcher::printPreloadStats()
@@ -1299,13 +1287,6 @@ DEFINE_TRACE(ResourceFetcher)
     visitor->trace(m_archiveResourceCollection);
     visitor->trace(m_loaders);
     visitor->trace(m_nonBlockingLoaders);
-    ResourceLoaderHost::trace(visitor);
-}
-
-ResourceFetcher* ResourceFetcher::toResourceFetcher(ResourceLoaderHost* host)
-{
-    ASSERT(host->objectType() == ResourceLoaderHost::ResourceFetcherType);
-    return static_cast<ResourceFetcher*>(host);
 }
 
 }
