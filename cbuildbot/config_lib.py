@@ -184,6 +184,27 @@ class BuildConfig(dict):
 
     return new_config
 
+  def HideDefaults(self, default):
+    """Create a duplicate BuildConfig with default values missing.
+
+    Args:
+      default: Dictionary of key/value pairs to remove, if present.
+
+    Returns:
+      A copy BuildConfig, that only contains values different from defaults.
+    """
+    d = BuildConfig()
+    for k, v in self.iteritems():
+      # Recurse to children.
+      if k == 'child_configs':
+        v = [child.HideDefaults(default) for child in v]
+
+      # Only store a value if it's different from default.
+      if k not in default or default[k] != v:
+        d[k] = v
+
+    return d
+
 
 class HWTestConfig(object):
   """Config object for hardware tests suites.
@@ -330,10 +351,36 @@ class Config(dict):
     child_configs = [self.GetDefault().derive(x, grouped=True) for x in args]
     return self.AddConfig(args[0], name, child_configs=child_configs, **kwargs)
 
+  def SaveConfigToFile(self, config_file):
+    """Save this Config to a Json file.
 
+    Args:
+      config_file: The file to write too.
+    """
+    json_string = self.SaveConfigToString()
+    osutils.WriteFile(config_file, json_string)
+
+  def SaveConfigToString(self):
+    """Save this Config object to a Json format string."""
+    default = self.GetDefault()
+
+    config_dict = {}
+    for k, v in self.iteritems():
+      config_dict[k] = v.HideDefaults(default)
+
+    config_dict['_default'] = default
+
+    class _JSONEncoder(json.JSONEncoder):
+      """Json Encoder that encodes objects as their dictionaries."""
+      # pylint: disable=E0202
+      def default(self, obj):
+        return self.encode(obj.__dict__)
+
+    return json.dumps(config_dict, cls=_JSONEncoder,
+                      sort_keys=True, indent=4, separators=(',', ': '))
 
 #
-# Methods related to loading/saving to Json.
+# Methods related to loading/saving Json.
 #
 
 def CreateConfigFromFile(config_file):
@@ -360,7 +407,7 @@ def CreateConfigFromString(json_string):
 
   return result
 
-
+# TODO(dgarrett): Remove Decode methods when we prove unicde strings work.
 def _DecodeList(data):
   """Convert a JSON result list from unicode to utf-8."""
   rv = []

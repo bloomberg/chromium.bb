@@ -150,3 +150,75 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
 
 class ConfigClassTest(cros_test_lib.TestCase):
   """Config tests."""
+
+  def testSaveLoadEmpty(self):
+    config = config_lib.Config()
+
+    config_str = config.SaveConfigToString()
+    self.assertEqual(config_str, """{
+    "_default": {}
+}""")
+
+    loaded = config_lib.CreateConfigFromString(config_str)
+    loaded_str = loaded.SaveConfigToString()
+
+    self.assertEqual(config, loaded)
+    self.assertEqual(config_str, loaded_str)
+
+  def testSaveLoadComplex(self):
+
+    # pylint: disable=line-too-long
+    src_str = """{
+    "_default": {
+        "bar": true,
+        "child_configs": [],
+        "foo": false,
+        "hw_tests": []
+    },
+    "diff_build": {
+        "bar": false,
+        "foo": true
+    },
+    "match_build": {},
+    "parent_build": {
+        "child_configs": [
+            {},
+            {
+                "bar": false,
+                "hw_tests": [
+                    "{\\n    \\"async\\": true,\\n    \\"blocking\\": false,\\n    \\"critical\\": false,\\n    \\"file_bugs\\": true,\\n    \\"max_retries\\": null,\\n    \\"minimum_duts\\": 4,\\n    \\"num\\": 2,\\n    \\"pool\\": \\"bvt\\",\\n    \\"priority\\": \\"PostBuild\\",\\n    \\"retry\\": false,\\n    \\"suite\\": \\"bvt-perbuild\\",\\n    \\"suite_min_duts\\": 1,\\n    \\"timeout\\": 13200,\\n    \\"warn_only\\": false\\n}"
+                ]
+            }
+        ]
+    }
+}"""
+
+    config = config_lib.CreateConfigFromString(src_str)
+    config_str = config.SaveConfigToString()
+
+    # Verify that the dumped string matches the source string.
+    self.assertEqual(src_str, config_str)
+
+    # Verify assorted stuff in the loaded config to make sure it matches
+    # expectations.
+    self.assertFalse(config['match_build'].foo)
+    self.assertTrue(config['match_build'].bar)
+    self.assertTrue(config['diff_build'].foo)
+    self.assertFalse(config['diff_build'].bar)
+    self.assertTrue(config['parent_build'].bar)
+    self.assertTrue(config['parent_build'].child_configs[0].bar)
+    self.assertFalse(config['parent_build'].child_configs[1].bar)
+    self.assertEqual(
+        config['parent_build'].child_configs[1].hw_tests[0],
+        config_lib.HWTestConfig(
+            suite='bvt-perbuild',
+            async=True, file_bugs=True, max_retries=None,
+            minimum_duts=4, num=2, priority='PostBuild',
+            retry=False, suite_min_duts=1))
+
+    # Load an save again, just to make sure there are no changes.
+    loaded = config_lib.CreateConfigFromString(config_str)
+    loaded_str = loaded.SaveConfigToString()
+
+    self.assertEqual(config, loaded)
+    self.assertEqual(config_str, loaded_str)

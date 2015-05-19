@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import copy
-import json
 
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
@@ -622,13 +621,6 @@ def GetSlavesForMaster(master_config, options=None):
 
   return slave_configs
 
-
-class _JSONEncoder(json.JSONEncoder):
-  """Json Encoder that encodes objects as their dictionaries."""
-
-  # pylint: disable=method-hidden
-  def default(self, obj):
-    return self.encode(obj.__dict__)
 
 class HWTestList(object):
   """Container for methods to generate HWTest lists."""
