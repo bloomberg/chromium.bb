@@ -56,7 +56,7 @@ KNOWN_INCOMPATIBLE = {
 
         # Code we don't want to build/include by accident from the main chromium
         # src/ directory.
-        'third_party/libjpeg/*.[ch]',
+        'third_party/libjpeg/',
     ],
     'third_party/icu': [
         # Incompatible code from ICU's repository.
