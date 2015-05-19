@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.sync;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -13,10 +15,14 @@ import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.shell.R;
@@ -202,6 +208,64 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertEquals(keystoreView, listView.getSelectedView());
     }
 
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPassphraseCreation() throws Exception {
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        startSync();
+        final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                fragment.onPassphraseTypeSelected(PassphraseType.CUSTOM_PASSPHRASE);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+        PassphraseCreationDialogFragment pcdf = getPassphraseCreationDialogFragment();
+        AlertDialog dialog = (AlertDialog) pcdf.getDialog();
+        Button okButton = dialog.getButton(Dialog.BUTTON_POSITIVE);
+        EditText enterPassphrase = (EditText) dialog.findViewById(R.id.passphrase);
+        EditText confirmPassphrase = (EditText) dialog.findViewById(R.id.confirm_passphrase);
+
+        // Error if you try to submit empty passphrase.
+        assertNull(confirmPassphrase.getError());
+        clickButton(okButton);
+        assertTrue(pcdf.isResumed());
+        assertNotNull(confirmPassphrase.getError());
+
+        // Error if you try to submit with only the first box filled.
+        clearError(confirmPassphrase);
+        setText(enterPassphrase, "foo");
+        clickButton(okButton);
+        assertTrue(pcdf.isResumed());
+        assertNotNull(confirmPassphrase.getError());
+
+        // Error if you try to submit with only the second box filled.
+        setText(enterPassphrase, "");
+        clearError(confirmPassphrase);
+        setText(confirmPassphrase, "foo");
+        clickButton(okButton);
+        assertTrue(pcdf.isResumed());
+        assertNotNull(confirmPassphrase.getError());
+
+        // Error if text doesn't match without button press.
+        setText(enterPassphrase, "foo");
+        clearError(confirmPassphrase);
+        setText(confirmPassphrase, "bar");
+        assertNotNull(confirmPassphrase.getError());
+
+        // Error if you try to submit unmatching text.
+        clearError(confirmPassphrase);
+        clickButton(okButton);
+        assertTrue(pcdf.isResumed());
+        assertNotNull(confirmPassphrase.getError());
+
+        // Success if text matches.
+        setText(confirmPassphrase, "foo");
+        clickButton(okButton);
+        assertFalse(pcdf.isResumed());
+    }
+
     private SyncCustomizationFragment startSyncCustomizationFragment() {
         SyncCustomizationFragment fragment = new SyncCustomizationFragment();
         Bundle args = new Bundle();
@@ -257,6 +321,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_PASSWORD_TYPE);
     }
 
+    private PassphraseCreationDialogFragment getPassphraseCreationDialogFragment() {
+        return (PassphraseCreationDialogFragment) mActivity.getFragmentManager()
+                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_CUSTOM_PASSWORD);
+    }
+
     private void assertDefaultSyncOnState(SyncCustomizationFragment fragment) {
         assertTrue("The sync switch should be on.", getSyncSwitch(fragment).isChecked());
         assertTrue("The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
@@ -307,6 +376,8 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         });
     }
 
+    // UI interaction convenience methods.
+
     private void togglePreference(final TwoStatePreference pref) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -325,6 +396,36 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             @Override
             public void run() {
                 pref.getOnPreferenceClickListener().onPreferenceClick(pref);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+    }
+
+    private void clickButton(final Button button) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                button.performClick();
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+    }
+
+    private void setText(final TextView textView, final String text) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(text);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+    }
+
+    private void clearError(final TextView textView) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                textView.setError(null);
             }
         });
         getInstrumentation().waitForIdleSync();
