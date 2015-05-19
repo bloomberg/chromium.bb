@@ -445,9 +445,11 @@ template("grit") {
     # depend on us.
     sources = grit_outputs
 
-    # Deps set on the template invocation will go on the grit script running
-    # target rather than this library.
-    deps = [
+    # Deps set on the template invocation will go on the action that runs
+    # grit above rather than this library. This target needs to depend on the
+    # action publicly so other scripts can take the outputs from the grit
+    # script as inputs.
+    public_deps = [
       ":$grit_custom_target",
     ]
     public_configs = [ ":$grit_config" ]

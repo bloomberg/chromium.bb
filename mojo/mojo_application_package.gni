@@ -20,13 +20,18 @@ template("mojo_application_package") {
       output_name = invoker.output_name
     }
 
-    copy("copy_mojo_application_resources") {
+    copy_step_name = "${target_name}__copy_resources"
+    copy(copy_step_name) {
       sources = invoker.resources
       outputs = [
         "$root_out_dir/$output_name/resources/{{source_file_part}}",
       ]
+      if (defined(invoker.testonly)) {
+        testonly = invoker.testonly
+      }
+      deps = mojo_deps
     }
-    mojo_deps += [ ":copy_mojo_application_resources" ]
+    mojo_deps += [ ":$copy_step_name" ]
   }
 
   mojo_native_application(target_name) {
