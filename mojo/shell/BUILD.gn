@@ -45,7 +45,6 @@ source_set("shell") {
     "//third_party/mojo/src/mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/util:filename_util",
-    "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
 }
 

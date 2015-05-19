@@ -72,7 +72,6 @@ source_set("sources") {
     "//mojo/services/network:lib",
     "//mojo/services/tracing:lib",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
-    "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
 
   if (!is_android) {

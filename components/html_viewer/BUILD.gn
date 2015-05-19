@@ -137,7 +137,6 @@ source_set("lib") {
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     "//third_party/mojo/src/mojo/public/cpp/utility",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
-    "//third_party/mojo_services/src/content_handler/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/events",
     "//ui/events:gesture_detection",

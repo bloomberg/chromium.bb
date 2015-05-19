@@ -2,13 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/module_args/mojo.gni")
+import("$mojo_sdk_root/mojo/public/tools/bindings/mojom.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_base.gyp:mojo_application_bindings
 mojom("interfaces") {
   sources = [
     "application.mojom",
+    "content_handler.mojom",
     "service_provider.mojom",
     "shell.mojom",
+  ]
+
+  import_dirs = [ mojo_network_service_root ]
+
+  deps = [
+    "//mojo/services/network/public/interfaces",
   ]
 }

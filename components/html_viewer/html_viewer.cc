@@ -17,12 +17,12 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
+#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
 
 using mojo::ApplicationConnection;
 using mojo::Array;

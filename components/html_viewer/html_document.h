@@ -19,12 +19,12 @@
 #include "mojo/application/public/cpp/lazy_interface_ptr.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
+#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
-#include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
 
 namespace base {
 class MessageLoopProxy;

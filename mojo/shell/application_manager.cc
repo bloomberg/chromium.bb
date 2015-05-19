@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/shell/fetcher.h"
@@ -19,7 +20,6 @@
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/shell_impl.h"
 #include "mojo/shell/switches.h"
-#include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
 
 namespace mojo {
 namespace shell {
