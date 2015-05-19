@@ -355,7 +355,7 @@ struct drm_output {
 	int disable_pending;
 
 	struct drm_fb *gbm_cursor_fb[2];
-	struct weston_plane cursor_plane;
+	struct drm_plane *cursor_plane;
 	struct weston_view *cursor_view;
 	int current_cursor;
 
@@ -649,7 +649,7 @@ drm_property_info_free(struct drm_property_info *info, int num_props)
 }
 
 static void
-drm_output_set_cursor(struct drm_output *output);
+drm_output_set_cursor(struct drm_output_state *output_state);
 
 static void
 drm_output_update_msc(struct drm_output *output, unsigned int seq);
@@ -1091,6 +1091,23 @@ drm_plane_state_put_back(struct drm_plane_state *state)
 }
 
 /**
+ * Return a plane state from a drm_output_state.
+ */
+static struct drm_plane_state *
+drm_output_state_get_existing_plane(struct drm_output_state *state_output,
+				    struct drm_plane *plane)
+{
+	struct drm_plane_state *ps;
+
+	wl_list_for_each(ps, &state_output->plane_list, link) {
+		if (ps->plane == plane)
+			return ps;
+	}
+
+	return NULL;
+}
+
+/**
  * Return a plane state from a drm_output_state, either existing or
  * freshly allocated.
  */
@@ -1100,10 +1117,9 @@ drm_output_state_get_plane(struct drm_output_state *state_output,
 {
 	struct drm_plane_state *ps;
 
-	wl_list_for_each(ps, &state_output->plane_list, link) {
-		if (ps->plane == plane)
-			return ps;
-	}
+	ps = drm_output_state_get_existing_plane(state_output, plane);
+	if (ps)
+		return ps;
 
 	return drm_plane_state_alloc(state_output, plane);
 }
@@ -1631,8 +1647,8 @@ drm_output_repaint(struct weston_output *output_base,
 	 */
 	if (output->base.disable_planes) {
 		output->cursor_view = NULL;
-		output->cursor_plane.x = INT32_MIN;
-		output->cursor_plane.y = INT32_MIN;
+		output->cursor_plane->base.x = INT32_MIN;
+		output->cursor_plane->base.y = INT32_MIN;
 	}
 
 	drm_output_render(state, damage);
@@ -1673,7 +1689,7 @@ drm_output_repaint(struct weston_output *output_base,
 		wl_event_source_timer_update(output->pageflip_timer,
 		                             backend->pageflip_timeout);
 
-	drm_output_set_cursor(output);
+	drm_output_set_cursor(state);
 
 	/*
 	 * Now, update all the sprite surfaces
@@ -2185,60 +2201,6 @@ err:
 	return NULL;
 }
 
-static struct weston_plane *
-drm_output_prepare_cursor_view(struct drm_output_state *output_state,
-			       struct weston_view *ev)
-{
-	struct drm_output *output = output_state->output;
-	struct drm_backend *b = to_drm_backend(output->base.compositor);
-	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
-	struct wl_shm_buffer *shmbuf;
-	float x, y;
-
-	if (b->cursors_are_broken)
-		return NULL;
-
-	if (output->cursor_view)
-		return NULL;
-
-	/* Don't import buffers which span multiple outputs. */
-	if (ev->output_mask != (1u << output->base.id))
-		return NULL;
-
-	/* We use GBM to import SHM buffers. */
-	if (b->gbm == NULL)
-		return NULL;
-
-	if (ev->surface->buffer_ref.buffer == NULL)
-		return NULL;
-	shmbuf = wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource);
-	if (!shmbuf)
-		return NULL;
-	if (wl_shm_buffer_get_format(shmbuf) != WL_SHM_FORMAT_ARGB8888)
-		return NULL;
-
-	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
-		return NULL;
-	if (ev->transform.enabled &&
-	    (ev->transform.matrix.type > WESTON_MATRIX_TRANSFORM_TRANSLATE))
-		return NULL;
-	if (viewport->buffer.scale != output->base.current_scale)
-		return NULL;
-	if (ev->geometry.scissor_enabled)
-		return NULL;
-
-	if (ev->surface->width > b->cursor_width ||
-	    ev->surface->height > b->cursor_height)
-		return NULL;
-
-	output->cursor_view = ev;
-	weston_view_to_global_float(ev, 0, 0, &x, &y);
-	output->cursor_plane.x = x;
-	output->cursor_plane.y = y;
-
-	return &output->cursor_plane;
-}
-
 /**
  * Update the image for the current cursor surface
  *
@@ -2276,44 +2238,156 @@ cursor_bo_update(struct drm_backend *b, struct gbm_bo *bo,
 		weston_log("failed update cursor: %m\n");
 }
 
-static void
-drm_output_set_cursor(struct drm_output *output)
+static struct weston_plane *
+drm_output_prepare_cursor_view(struct drm_output_state *output_state,
+			       struct weston_view *ev)
 {
-	struct weston_view *ev = output->cursor_view;
+	struct drm_output *output = output_state->output;
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
-	EGLint handle;
-	struct gbm_bo *bo;
+	struct drm_plane *plane = output->cursor_plane;
+	struct drm_plane_state *plane_state;
+	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+	struct wl_shm_buffer *shmbuf;
+	bool needs_update = false;
 	float x, y;
 
-	if (ev == NULL) {
+	if (!plane)
+		return NULL;
+
+	if (b->cursors_are_broken)
+		return NULL;
+
+	if (!plane->state_cur->complete)
+		return NULL;
+
+	if (plane->state_cur->output && plane->state_cur->output != output)
+		return NULL;
+
+	/* Don't import buffers which span multiple outputs. */
+	if (ev->output_mask != (1u << output->base.id))
+		return NULL;
+
+	/* We use GBM to import SHM buffers. */
+	if (b->gbm == NULL)
+		return NULL;
+
+	if (ev->surface->buffer_ref.buffer == NULL)
+		return NULL;
+	shmbuf = wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource);
+	if (!shmbuf)
+		return NULL;
+	if (wl_shm_buffer_get_format(shmbuf) != WL_SHM_FORMAT_ARGB8888)
+		return NULL;
+
+	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
+		return NULL;
+	if (ev->transform.enabled &&
+	    (ev->transform.matrix.type > WESTON_MATRIX_TRANSFORM_TRANSLATE))
+		return NULL;
+	if (viewport->buffer.scale != output->base.current_scale)
+		return NULL;
+	if (ev->geometry.scissor_enabled)
+		return NULL;
+
+	if (ev->surface->width > b->cursor_width ||
+	    ev->surface->height > b->cursor_height)
+		return NULL;
+
+	plane_state =
+		drm_output_state_get_plane(output_state, output->cursor_plane);
+
+	if (plane_state && plane_state->fb)
+		return NULL;
+
+	/* Since we're setting plane state up front, we need to work out
+	 * whether or not we need to upload a new cursor. We can't use the
+	 * plane damage, since the planes haven't actually been calculated
+	 * yet: instead try to figure it out directly. KMS cursor planes are
+	 * pretty unique here, in that they lie partway between a Weston plane
+	 * (direct scanout) and a renderer. */
+	if (ev != output->cursor_view ||
+	    pixman_region32_not_empty(&ev->surface->damage)) {
+		output->current_cursor++;
+		output->current_cursor =
+			output->current_cursor %
+				ARRAY_LENGTH(output->gbm_cursor_fb);
+		needs_update = true;
+	}
+
+	output->cursor_view = ev;
+	weston_view_to_global_float(ev, 0, 0, &x, &y);
+	plane->base.x = x;
+	plane->base.y = y;
+
+	plane_state->fb =
+		drm_fb_ref(output->gbm_cursor_fb[output->current_cursor]);
+	plane_state->output = output;
+	plane_state->src_x = 0;
+	plane_state->src_y = 0;
+	plane_state->src_w = b->cursor_width << 16;
+	plane_state->src_h = b->cursor_height << 16;
+	plane_state->dest_x = (x - output->base.x) * output->base.current_scale;
+	plane_state->dest_y = (y - output->base.y) * output->base.current_scale;
+	plane_state->dest_w = b->cursor_width;
+	plane_state->dest_h = b->cursor_height;
+
+	if (needs_update)
+		cursor_bo_update(b, plane_state->fb->bo, ev);
+
+	return &plane->base;
+}
+
+static void
+drm_output_set_cursor(struct drm_output_state *output_state)
+{
+	struct drm_output *output = output_state->output;
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
+	struct drm_plane *plane = output->cursor_plane;
+	struct drm_plane_state *state;
+	EGLint handle;
+	struct gbm_bo *bo;
+
+	if (!plane)
+		return;
+
+	state = drm_output_state_get_existing_plane(output_state, plane);
+	if (!state)
+		return;
+
+	if (!state->fb) {
+		pixman_region32_fini(&plane->base.damage);
+		pixman_region32_init(&plane->base.damage);
 		drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
 		return;
 	}
 
-	if (pixman_region32_not_empty(&output->cursor_plane.damage)) {
-		pixman_region32_fini(&output->cursor_plane.damage);
-		pixman_region32_init(&output->cursor_plane.damage);
-		output->current_cursor ^= 1;
-		bo = output->gbm_cursor_fb[output->current_cursor]->bo;
+	assert(state->fb == output->gbm_cursor_fb[output->current_cursor]);
+	assert(!plane->state_cur->output || plane->state_cur->output == output);
 
-		cursor_bo_update(b, bo, ev);
+	if (plane->state_cur->fb != state->fb) {
+		bo = state->fb->bo;
 		handle = gbm_bo_get_handle(bo).s32;
 		if (drmModeSetCursor(b->drm.fd, output->crtc_id, handle,
-				b->cursor_width, b->cursor_height)) {
+				     b->cursor_width, b->cursor_height)) {
 			weston_log("failed to set cursor: %m\n");
-			b->cursors_are_broken = 1;
+			goto err;
 		}
 	}
 
-	x = (output->cursor_plane.x - output->base.x) *
-		output->base.current_scale;
-	y = (output->cursor_plane.y - output->base.y) *
-		output->base.current_scale;
+	pixman_region32_fini(&plane->base.damage);
+	pixman_region32_init(&plane->base.damage);
 
-	if (drmModeMoveCursor(b->drm.fd, output->crtc_id, x, y)) {
+	if (drmModeMoveCursor(b->drm.fd, output->crtc_id,
+	                      state->dest_x, state->dest_y)) {
 		weston_log("failed to move cursor: %m\n");
-		b->cursors_are_broken = 1;
+		goto err;
 	}
+
+	return;
+
+err:
+	b->cursors_are_broken = 1;
+	drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
 }
 
 static void
@@ -2323,6 +2397,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct drm_pending_state *pending_state = repaint_data;
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_output_state *state;
+	struct drm_plane_state *plane_state;
 	struct weston_view *ev, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
@@ -2348,10 +2423,6 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	 */
 	pixman_region32_init(&overlap);
 	primary = &output_base->compositor->primary_plane;
-
-	output->cursor_view = NULL;
-	output->cursor_plane.x = INT32_MIN;
-	output->cursor_plane.y = INT32_MIN;
 
 	wl_list_for_each_safe(ev, next, &output_base->compositor->view_list, link) {
 		struct weston_surface *es = ev->surface;
@@ -2405,7 +2476,8 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 					      &ev->transform.boundingbox);
 
 		if (next_plane == primary ||
-		    next_plane == &output->cursor_plane) {
+		    (output->cursor_plane &&
+		     next_plane == &output->cursor_plane->base)) {
 			/* cursor plane involves a copy */
 			ev->psf_flags = 0;
 		} else {
@@ -2418,6 +2490,19 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 		pixman_region32_fini(&surface_overlap);
 	}
 	pixman_region32_fini(&overlap);
+
+	/* We rely on output->cursor_view being both an accurate reflection of
+	 * the cursor plane's state, but also being maintained across repaints
+	 * to avoid unnecessary damage uploads, per the comment in
+	 * drm_output_prepare_cursor_view. In the event that we go from having
+	 * a cursor view to not having a cursor view, we need to clear it. */
+	if (output->cursor_view) {
+		plane_state =
+			drm_output_state_get_existing_plane(state,
+							    output->cursor_plane);
+		if (!plane_state || !plane_state->fb)
+			output->cursor_view = NULL;
+	}
 }
 
 /**
@@ -2685,19 +2770,30 @@ init_pixman(struct drm_backend *b)
  * Creates one drm_plane structure for a hardware plane, and initialises its
  * properties and formats.
  *
+ * In the absence of universal plane support, where KMS does not explicitly
+ * expose the primary and cursor planes to userspace, this may also create
+ * an 'internal' plane for internal management.
+ *
  * This function does not add the plane to the list of usable planes in Weston
  * itself; the caller is responsible for this.
  *
  * Call drm_plane_destroy to clean up the plane.
  *
+ * @sa drm_output_find_special_plane
  * @param b DRM compositor backend
- * @param kplane DRM plane to create
+ * @param kplane DRM plane to create, or NULL if creating internal plane
+ * @param output Output to create internal plane for, or NULL
+ * @param type Type to use when creating internal plane, or invalid
+ * @param format Format to use for internal planes, or 0
  */
 static struct drm_plane *
-drm_plane_create(struct drm_backend *b, const drmModePlane *kplane)
+drm_plane_create(struct drm_backend *b, const drmModePlane *kplane,
+		 struct drm_output *output, enum wdrm_plane_type type,
+		 uint32_t format)
 {
 	struct drm_plane *plane;
 	drmModeObjectProperties *props;
+	int num_formats = (kplane) ? kplane->count_formats : 1;
 
 	static struct drm_property_enum_info plane_type_enums[] = {
 		[WDRM_PLANE_TYPE_PRIMARY] = {
@@ -2718,41 +2814,152 @@ drm_plane_create(struct drm_backend *b, const drmModePlane *kplane)
 		},
 	};
 
-	plane = zalloc(sizeof(*plane) + ((sizeof(uint32_t)) *
-					  kplane->count_formats));
+	plane = zalloc(sizeof(*plane) +
+		       (sizeof(uint32_t) * num_formats));
 	if (!plane) {
 		weston_log("%s: out of memory\n", __func__);
 		return NULL;
 	}
 
 	plane->backend = b;
-	plane->possible_crtcs = kplane->possible_crtcs;
-	plane->plane_id = kplane->plane_id;
-	plane->count_formats = kplane->count_formats;
 	plane->state_cur = drm_plane_state_alloc(NULL, plane);
 	plane->state_cur->complete = true;
-	memcpy(plane->formats, kplane->formats,
-	       kplane->count_formats * sizeof(kplane->formats[0]));
 
-	props = drmModeObjectGetProperties(b->drm.fd, kplane->plane_id,
-					   DRM_MODE_OBJECT_PLANE);
-	if (!props) {
-		weston_log("couldn't get plane properties\n");
-		free(plane);
-		return NULL;
+	if (kplane) {
+		plane->possible_crtcs = kplane->possible_crtcs;
+		plane->plane_id = kplane->plane_id;
+		plane->count_formats = kplane->count_formats;
+		memcpy(plane->formats, kplane->formats,
+		       kplane->count_formats * sizeof(kplane->formats[0]));
+
+		props = drmModeObjectGetProperties(b->drm.fd, kplane->plane_id,
+						   DRM_MODE_OBJECT_PLANE);
+		if (!props) {
+			weston_log("couldn't get plane properties\n");
+			goto err;
+		}
+		drm_property_info_populate(b, plane_props, plane->props,
+					   WDRM_PLANE__COUNT, props);
+		plane->type =
+			drm_property_get_value(&plane->props[WDRM_PLANE_TYPE],
+					       props,
+					       WDRM_PLANE_TYPE__COUNT);
+		drmModeFreeObjectProperties(props);
 	}
-	drm_property_info_populate(b, plane_props, plane->props,
-				   WDRM_PLANE__COUNT, props);
-	plane->type =
-		drm_property_get_value(&plane->props[WDRM_PLANE_TYPE],
-				       props,
-				       WDRM_PLANE_TYPE_OVERLAY);
-	drmModeFreeObjectProperties(props);
+	else {
+		plane->possible_crtcs = (1 << output->pipe);
+		plane->plane_id = 0;
+		plane->count_formats = 1;
+		plane->formats[0] = format;
+		plane->type = type;
+	}
+
+	if (plane->type == WDRM_PLANE_TYPE__COUNT)
+		goto err_props;
+
+	/* With universal planes, everything is a DRM plane; without
+	 * universal planes, the only DRM planes are overlay planes.
+	 * Everything else is a fake plane. */
+	if (b->universal_planes) {
+		assert(kplane);
+	} else {
+		if (kplane)
+			assert(plane->type == WDRM_PLANE_TYPE_OVERLAY);
+		else
+			assert(plane->type != WDRM_PLANE_TYPE_OVERLAY &&
+			       output);
+	}
 
 	weston_plane_init(&plane->base, b->compositor, 0, 0);
 	wl_list_insert(&b->plane_list, &plane->link);
 
 	return plane;
+
+err_props:
+	drm_property_info_free(plane->props, WDRM_PLANE__COUNT);
+err:
+	drm_plane_state_free(plane->state_cur, true);
+	free(plane);
+	return NULL;
+}
+
+/**
+ * Find, or create, a special-purpose plane
+ *
+ * Primary and cursor planes are a special case, in that before universal
+ * planes, they are driven by non-plane API calls. Without universal plane
+ * support, the only way to configure a primary plane is via drmModeSetCrtc,
+ * and the only way to configure a cursor plane is drmModeSetCursor2.
+ *
+ * Although they may actually be regular planes in the hardware, without
+ * universal plane support, these planes are not actually exposed to
+ * userspace in the regular plane list.
+ *
+ * However, for ease of internal tracking, we want to manage all planes
+ * through the same drm_plane structures. Therefore, when we are running
+ * without universal plane support, we create fake drm_plane structures
+ * to track these planes.
+ *
+ * @param b DRM backend
+ * @param output Output to use for plane
+ * @param type Type of plane
+ */
+static struct drm_plane *
+drm_output_find_special_plane(struct drm_backend *b, struct drm_output *output,
+			      enum wdrm_plane_type type)
+{
+	struct drm_plane *plane;
+
+	if (!b->universal_planes) {
+		uint32_t format;
+
+		switch (type) {
+		case WDRM_PLANE_TYPE_CURSOR:
+			format = GBM_FORMAT_ARGB8888;
+			break;
+		default:
+			assert(!"invalid type in drm_output_find_special_plane");
+			break;
+		}
+
+		return drm_plane_create(b, NULL, output, type, format);
+	}
+
+	wl_list_for_each(plane, &b->plane_list, link) {
+		struct drm_output *tmp;
+		bool found_elsewhere = false;
+
+		if (plane->type != type)
+			continue;
+		if (!drm_plane_is_available(plane, output))
+			continue;
+
+		/* On some platforms, primary/cursor planes can roam
+		 * between different CRTCs, so make sure we don't claim the
+		 * same plane for two outputs. */
+		wl_list_for_each(tmp, &b->compositor->pending_output_list,
+				 base.link) {
+			if (tmp->cursor_plane == plane) {
+				found_elsewhere = true;
+				break;
+			}
+		}
+		wl_list_for_each(tmp, &b->compositor->output_list,
+				 base.link) {
+			if (tmp->cursor_plane == plane) {
+				found_elsewhere = true;
+				break;
+			}
+		}
+
+		if (found_elsewhere)
+			continue;
+
+		plane->possible_crtcs = (1 << output->pipe);
+		return plane;
+	}
+
+	return NULL;
 }
 
 /**
@@ -2766,8 +2973,9 @@ drm_plane_create(struct drm_backend *b, const drmModePlane *kplane)
 static void
 drm_plane_destroy(struct drm_plane *plane)
 {
-	drmModeSetPlane(plane->backend->drm.fd, plane->plane_id, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0);
+	if (plane->type == WDRM_PLANE_TYPE_OVERLAY)
+		drmModeSetPlane(plane->backend->drm.fd, plane->plane_id,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	drm_plane_state_free(plane->state_cur, true);
 	drm_property_info_free(plane->props, WDRM_PLANE__COUNT);
 	weston_plane_release(&plane->base);
@@ -2804,7 +3012,8 @@ create_sprites(struct drm_backend *b)
 		if (!kplane)
 			continue;
 
-		drm_plane = drm_plane_create(b, kplane);
+		drm_plane = drm_plane_create(b, kplane, NULL,
+		                             WDRM_PLANE_TYPE__COUNT, 0);
 		drmModeFreePlane(kplane);
 		if (!drm_plane)
 			continue;
@@ -3069,6 +3278,10 @@ static int
 drm_output_init_cursor_egl(struct drm_output *output, struct drm_backend *b)
 {
 	unsigned int i;
+
+	/* No point creating cursors if we don't have a plane for them. */
+	if (!output->cursor_plane)
+		return 0;
 
 	for (i = 0; i < ARRAY_LENGTH(output->gbm_cursor_fb); i++) {
 		struct gbm_bo *bo;
@@ -3659,11 +3872,15 @@ drm_output_enable(struct weston_output *base)
 	output->base.gamma_size = output->original_crtc->gamma_size;
 	output->base.set_gamma = drm_output_set_gamma;
 
-	weston_plane_init(&output->cursor_plane, b->compositor,
-			  INT32_MIN, INT32_MIN);
 	weston_plane_init(&output->scanout_plane, b->compositor, 0, 0);
 
-	weston_compositor_stack_plane(b->compositor, &output->cursor_plane, NULL);
+	if (output->cursor_plane)
+		weston_compositor_stack_plane(b->compositor,
+					      &output->cursor_plane->base,
+					      NULL);
+	else
+		b->cursors_are_broken = 1;
+
 	weston_compositor_stack_plane(b->compositor, &output->scanout_plane,
 				      &b->compositor->primary_plane);
 
@@ -3706,10 +3923,17 @@ drm_output_deinit(struct weston_output *base)
 		drm_output_fini_egl(output);
 
 	weston_plane_release(&output->scanout_plane);
-	weston_plane_release(&output->cursor_plane);
 
-	/* Turn off hardware cursor */
-	drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
+	/* Since our planes are no longer in use anywhere, remove their base
+	 * weston_plane's link from the plane stacking list, unless we're
+	 * shutting down, in which case the plane has already been
+	 * destroyed. */
+	if (output->cursor_plane && !b->shutting_down) {
+		wl_list_remove(&output->cursor_plane->base.link);
+		wl_list_init(&output->cursor_plane->base.link);
+		/* Turn off hardware cursor */
+		drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
+	}
 }
 
 static void
@@ -3728,6 +3952,23 @@ drm_output_destroy(struct weston_output *base)
 
 	if (output->base.enabled)
 		drm_output_deinit(&output->base);
+
+	if (!b->universal_planes && !b->shutting_down) {
+		/* With universal planes, the 'special' planes are allocated at
+		 * startup, freed at shutdown, and live on the plane list in
+		 * between. We want the planes to continue to exist and be freed
+		 * up for other outputs.
+		 *
+		 * Without universal planes, our special planes are
+		 * pseudo-planes allocated at output creation, freed at output
+		 * destruction, and not usable by other outputs.
+		 *
+		 * On the other hand, if the compositor is already shutting down,
+		 * the plane has already been destroyed.
+		 */
+		if (output->cursor_plane)
+			drm_plane_destroy(output->cursor_plane);
+	}
 
 	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
 			      base.link) {
@@ -3888,6 +4129,12 @@ create_output_for_connector(struct drm_backend *b,
 			return -1;
 		}
 	}
+
+	/* Failing to find a cursor plane is not fatal, as we'll fall back
+	 * to software cursor. */
+	output->cursor_plane =
+		drm_output_find_special_plane(b, output,
+					      WDRM_PLANE_TYPE_CURSOR);
 
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
@@ -4129,7 +4376,9 @@ session_notify(struct wl_listener *listener, void *data)
 
 		wl_list_for_each(output, &compositor->output_list, base.link) {
 			output->base.repaint_needed = false;
-			drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
+			if (output->cursor_plane)
+				drmModeSetCursor(b->drm.fd, output->crtc_id,
+						 0, 0, 0);
 		}
 
 		output = container_of(compositor->output_list.next,
