@@ -22,6 +22,7 @@ RemoteCommandsService::RemoteCommandsService(
     scoped_ptr<RemoteCommandsFactory> factory,
     CloudPolicyClient* client)
     : factory_(factory.Pass()), client_(client), weak_factory_(this) {
+  DCHECK(client_);
   queue_.AddObserver(this);
 }
 
@@ -30,7 +31,7 @@ RemoteCommandsService::~RemoteCommandsService() {
 }
 
 bool RemoteCommandsService::FetchRemoteCommands() {
-  if (!client_ || !client_->is_registered())
+  if (!client_->is_registered())
     return false;
 
   if (command_fetch_in_progress_) {

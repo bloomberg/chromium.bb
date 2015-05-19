@@ -49,6 +49,7 @@ void CloudPolicyCore::Disconnect() {
     FOR_EACH_OBSERVER(Observer, observers_, OnCoreDisconnecting(this));
   refresh_delay_.reset();
   refresh_scheduler_.reset();
+  remote_commands_service_.reset();
   service_.reset();
   client_.reset();
 }
