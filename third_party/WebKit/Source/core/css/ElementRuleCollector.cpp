@@ -246,10 +246,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
 
     // Now transfer the set of matched rules over to our list of declarations.
     for (unsigned i = 0; i < m_matchedRules.size(); i++) {
-        // FIXME: Matching should not modify the style directly.
         const RuleData* ruleData = m_matchedRules[i].ruleData();
-        if (m_style && ruleData->containsUncommonAttributeSelector())
-            m_style->setUnique();
         m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
     }
 }
@@ -307,6 +304,9 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, Cascad
             ++ruleRange.lastRuleIndex;
             if (ruleRange.firstRuleIndex == -1)
                 ruleRange.firstRuleIndex = ruleRange.lastRuleIndex;
+
+            if (m_style && ruleData.containsUncommonAttributeSelector())
+                m_style->setUnique();
 
             // Add this rule to our list of matched rules.
             addMatchedRule(&ruleData, result.specificity, cascadeOrder, matchRequest.styleSheetIndex, matchRequest.styleSheet);
