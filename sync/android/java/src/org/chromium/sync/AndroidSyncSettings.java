@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncStatusObserver;
+import android.os.Bundle;
 import android.os.StrictMode;
 
 import org.chromium.base.ObserverList;
@@ -221,6 +222,9 @@ public class AndroidSyncSettings {
         // Make account syncable if there is one.
         if (shouldBeSyncable) {
             mSyncContentResolverDelegate.setIsSyncable(mAccount, mContractAuthority, 1);
+            // This reduces unnecessary resource usage. See http://crbug.com/480688 for details.
+            mSyncContentResolverDelegate.removePeriodicSync(
+                    mAccount, mContractAuthority, Bundle.EMPTY);
         }
 
         // Disable the syncability of Chrome for all other accounts. Don't use
