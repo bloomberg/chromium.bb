@@ -141,7 +141,7 @@ private:
             collectRuleIfMatches(rule, cascadeOrder, matchRequest, ruleRange);
     }
 
-    bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::MatchResult*);
+    bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::MatchResult&);
 
     CSSRuleList* nestedRuleList(CSSRule*);
     template<class CSSRuleCollection>

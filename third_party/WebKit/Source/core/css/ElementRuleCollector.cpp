@@ -251,7 +251,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
     }
 }
 
-inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const ContainerNode* scope, SelectorChecker::MatchResult* result)
+inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const ContainerNode* scope, SelectorChecker::MatchResult& result)
 {
     SelectorChecker selectorChecker(m_mode);
     SelectorChecker::SelectorCheckingContext context(ruleData.selector(), m_context.element(), SelectorChecker::VisitedMatchEnabled);
@@ -264,7 +264,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
     context.scopeContainsLastMatchedElement = m_scopeContainsLastMatchedElement;
     if (!selectorChecker.match(context, result))
         return false;
-    if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != result->dynamicPseudo)
+    if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != result.dynamicPseudo)
         return false;
     return true;
 }
@@ -282,7 +282,7 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, Cascad
         return;
 
     SelectorChecker::MatchResult result;
-    if (ruleMatches(ruleData, matchRequest.scope, &result)) {
+    if (ruleMatches(ruleData, matchRequest.scope, result)) {
         // FIXME: Exposing the non-standard getMatchedCSSRules API to web is the only reason this is needed.
         if (m_sameOriginOnly && !ruleData.hasDocumentSecurityOrigin())
             return;

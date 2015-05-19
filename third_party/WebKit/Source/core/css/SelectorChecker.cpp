@@ -227,9 +227,15 @@ static int nthLastOfTypeIndex(Element& element, const QualifiedName& type)
     return index;
 }
 
-bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult* result) const
+bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult& result) const
 {
     return matchSelector(context, result) == SelectorMatches;
+}
+
+bool SelectorChecker::match(const SelectorCheckingContext& context) const
+{
+    MatchResult ignoreResult;
+    return match(context, ignoreResult);
 }
 
 // Recursive check of selectors and combinators
@@ -238,7 +244,7 @@ bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult*
 // * SelectorFailsLocally     - the selector fails for the element e
 // * SelectorFailsAllSiblings - the selector fails for e and any sibling of e
 // * SelectorFailsCompletely  - the selector fails for e and any sibling or ancestor of e
-SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingContext& context, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingContext& context, MatchResult& result) const
 {
     // first selector has to match
     unsigned specificity = 0;
@@ -260,16 +266,15 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
                 return SelectorFailsLocally;
 
             PseudoId pseudoId = CSSSelector::pseudoId(context.selector->pseudoType());
-            if (pseudoId != NOPSEUDO && m_mode != SharingRules && result)
-                result->dynamicPseudo = pseudoId;
+            if (pseudoId != NOPSEUDO && m_mode != SharingRules)
+                result.dynamicPseudo = pseudoId;
         }
     }
 
     // Prepare next selector
     if (context.selector->isLastInTagHistory()) {
         if (scopeContainsLastMatchedElement(context)) {
-            if (result)
-                result->specificity += specificity;
+            result.specificity += specificity;
             return SelectorMatches;
         }
         return SelectorFailsLocally;
@@ -282,23 +287,17 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
             return SelectorFailsCompletely;
 
         // Bail-out if this selector is irrelevant for the pseudoId
-        if (context.pseudoId != NOPSEUDO && (!result || context.pseudoId != result->dynamicPseudo))
+        if (context.pseudoId != NOPSEUDO && context.pseudoId != result.dynamicPseudo)
             return SelectorFailsCompletely;
 
-        if (result) {
-            TemporaryChange<PseudoId> dynamicPseudoScope(result->dynamicPseudo, NOPSEUDO);
-            match = matchForRelation(context, result);
-        } else {
-            return matchForRelation(context, 0);
-        }
+        TemporaryChange<PseudoId> dynamicPseudoScope(result.dynamicPseudo, NOPSEUDO);
+        match = matchForRelation(context, result);
     } else {
         match = matchForSubSelector(context, result);
     }
-    if (match != SelectorMatches || !result)
-        return match;
-
-    result->specificity += specificity;
-    return SelectorMatches;
+    if (match == SelectorMatches)
+        result.specificity += specificity;
+    return match;
 }
 
 static inline SelectorChecker::SelectorCheckingContext prepareNextContextForRelation(const SelectorChecker::SelectorCheckingContext& context)
@@ -314,11 +313,11 @@ static inline bool isOpenShadowRoot(const Node* node)
     return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRoot::OpenShadowRoot;
 }
 
-SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorCheckingContext& context, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorCheckingContext& context, MatchResult& result) const
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
 
-    PseudoId dynamicPseudo = result ? result->dynamicPseudo : NOPSEUDO;
+    PseudoId dynamicPseudo = result.dynamicPseudo;
     // a selector is invalid if something follows a pseudo-element
     // We make an exception for scrollbar pseudo elements and allow a set of pseudo classes (but nothing else)
     // to follow the pseudo elements.
@@ -345,14 +344,14 @@ static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(
     return toElement(parent);
 }
 
-SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheckingContext& context, const ContainerNode* node, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheckingContext& context, const ContainerNode* node, MatchResult& result) const
 {
     if (!isOpenShadowRoot(node))
         return SelectorFailsCompletely;
     return matchSelector(context, result);
 }
 
-SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, MatchResult& result) const
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
     nextContext.previousElement = context.element;
@@ -381,7 +380,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
 
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
-            Match match = this->matchSelector(nextContext, result);
+            Match match = matchSelector(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsCompletely)
                 return match;
             if (nextSelectorExceedsScope(nextContext))
@@ -433,7 +432,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
         for (; nextContext.element; nextContext.element = ElementTraversal::previousSibling(*nextContext.element)) {
-            Match match = this->matchSelector(nextContext, result);
+            Match match = matchSelector(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsAllSiblings || match == SelectorFailsCompletely)
                 return match;
         };
@@ -451,7 +450,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.element = shadowHost;
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            return this->matchSelector(nextContext, result);
+            return matchSelector(nextContext, result);
         }
 
     case CSSSelector::ShadowDeep:
@@ -467,7 +466,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
             for (nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*nextContext.element)) {
-                Match match = this->matchSelector(nextContext, result);
+                Match match = matchSelector(nextContext, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
                 if (nextSelectorExceedsScope(nextContext))
@@ -484,7 +483,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     return SelectorFailsCompletely;
 }
 
-SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const SelectorCheckingContext& context, const Element& element, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const SelectorCheckingContext& context, const Element& element, MatchResult& result) const
 {
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
     collectDestinationInsertionPoints(element, insertionPoints);
@@ -496,7 +495,7 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Selector
         // TODO(esprehn): Why does SharingRules have a special case?
         if (m_mode == SharingRules)
             nextContext.scope = insertionPoint->containingShadowRoot();
-        if (matchSelector(nextContext, result) == SelectorMatches)
+        if (match(nextContext, result))
             return SelectorMatches;
     }
     return SelectorFailsLocally;
@@ -846,7 +845,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
             subContext.isSubSelector = true;
             ASSERT(selector.selectorList());
             for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-                if (matchSelector(subContext) == SelectorMatches)
+                if (match(subContext))
                     return true;
             }
         }
@@ -1041,7 +1040,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context)
         const CSSSelector* contextSelector = context.selector;
         ASSERT(contextSelector);
         for (subContext.selector = contextSelector->selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-            if (matchSelector(subContext) == SelectorMatches)
+            if (match(subContext))
                 return true;
         }
         return false;
@@ -1086,7 +1085,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, un
         do {
             MatchResult subResult;
             hostContext.element = nextElement;
-            if (matchSelector(hostContext, &subResult) == SelectorMatches) {
+            if (match(hostContext, subResult)) {
                 matched = true;
                 // Consider div:host(div:host(div:host(div:host...))).
                 maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
