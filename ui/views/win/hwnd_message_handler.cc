@@ -571,6 +571,10 @@ void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {
     case ui::SHOW_STATE_NORMAL:
       native_show_state = SW_SHOWNORMAL;
       break;
+    case ui::SHOW_STATE_FULLSCREEN:
+      native_show_state = SW_SHOWNORMAL;
+      SetFullscreen(true);
+      break;
     default:
       native_show_state = delegate_->GetInitialShowState();
       break;

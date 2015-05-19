@@ -669,8 +669,8 @@ bool WindowsCreateFunction::RunSync() {
   if (create_params.initial_show_state == ui::SHOW_STATE_MINIMIZED)
     new_window->window()->Minimize();
 #endif
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_WIN)
-  // On Desktop Linux and Windows, managers don't handle fullscreen state to
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // On Desktop Linux managers don't handle fullscreen state to
   // create window for now.
   if (create_params.initial_show_state == ui::SHOW_STATE_FULLSCREEN)
     controller->SetFullscreenMode(true, extension()->url());
