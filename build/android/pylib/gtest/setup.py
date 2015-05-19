@@ -15,6 +15,7 @@ from pylib.base import base_setup
 from pylib.base import base_test_result
 from pylib.base import test_dispatcher
 from pylib.device import device_utils
+from pylib.gtest import gtest_test_instance
 from pylib.gtest import test_package_apk
 from pylib.gtest import test_package_exe
 from pylib.gtest import test_runner
@@ -240,8 +241,7 @@ def Setup(test_options, devices):
     tests = unittest_util.FilterTestNames(tests, test_options.gtest_filter)
 
   # Coalesce unit tests into a single test per device
-  if (test_options.suite_name != 'content_browsertests' and
-      test_options.suite_name != 'components_browsertests'):
+  if test_options.suite_name not in gtest_test_instance.BROWSER_TEST_SUITES:
     num_devices = len(devices)
     tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
     tests = [t for t in tests if t]

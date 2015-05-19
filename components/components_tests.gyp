@@ -1205,17 +1205,6 @@
           'includes': [ '../build/android/jinja_template.gypi' ],
         },
         {
-          'target_name': 'components_browsertests_jni_headers',
-          'type': 'none',
-          'sources': [
-            'test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsActivity.java',
-          ],
-          'variables': {
-            'jni_gen_package': 'content/shell',
-          },
-          'includes': [ '../build/jni_generator.gypi' ],
-        },
-        {
           # TODO(GN)
           'target_name': 'components_browsertests_apk',
           'type': 'none',
@@ -1229,14 +1218,13 @@
             'components_browsertests',
           ],
           'variables': {
-            'apk_name': 'components_browsertests',
+            'test_suite_name': 'components_browsertests',
             'java_in_dir': 'test/android/browsertests_apk',
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/components_browsertests_manifest/AndroidManifest.xml',
             'resource_dir': 'test/android/browsertests_apk/res',
-            'native_lib_target': 'libcomponents_browsertests',
             'asset_location': '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets',
           },
-          'includes': [ '../build/java_apk.gypi' ],
+          'includes': [ '../build/apk_browsertest.gypi' ],
         },
       ],
     }],
@@ -1322,16 +1310,13 @@
           'conditions': [
             ['OS == "android"', {
               'sources' : [
-                'test/android/browsertests_apk/components_browser_tests_android.cc',
-                'test/android/browsertests_apk/components_browser_tests_android.h',
                 'test/android/browsertests_apk/components_browser_tests_jni_onload.cc',
               ],
               'sources!': [
                 'autofill/content/browser/risk/fingerprint_browsertest.cc',
               ],
               'dependencies': [
-                '../testing/android/native_test.gyp:native_test_util',
-                'components_browsertests_jni_headers',
+                '../testing/android/native_test.gyp:native_test_support',
               ],
             }],
             ['OS == "linux"', {

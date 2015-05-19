@@ -10,7 +10,6 @@ import("//third_party/icu/config.gni")
 generate_jni("content_shell_jni_headers") {
   jni_package = "content/shell"
   sources = [
-    "browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java",
     "java/src/org/chromium/content_shell/Shell.java",
     "java/src/org/chromium/content_shell/ShellLayoutTestUtils.java",
     "java/src/org/chromium/content_shell/ShellManager.java",

@@ -7,7 +7,13 @@
 
 #include <jni.h>
 
+namespace testing {
+namespace android {
+
 void InstallHandlers();
 bool RegisterNativeTestJNI(JNIEnv* env);
+
+}  // namespace android
+}  // namespace testing
 
 #endif  // TESTING_ANDROID_NATIVE_TEST_LAUNCHER_H_

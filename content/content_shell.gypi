@@ -1005,7 +1005,6 @@
           'target_name': 'content_shell_jni_headers',
           'type': 'none',
           'sources': [
-            'shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java',
             'shell/android/java/src/org/chromium/content_shell/ShellLayoutTestUtils.java',
             'shell/android/java/src/org/chromium/content_shell/ShellMojoTestUtils.java',
             'shell/android/java/src/org/chromium/content_shell/ShellManager.java',

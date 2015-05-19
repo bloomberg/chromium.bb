@@ -268,8 +268,6 @@
     'content_browsertests_android_sources': [
       'browser/accessibility/android_granularity_movement_browsertest.cc',
       'browser/accessibility/android_hit_testing_browsertest.cc',
-      'shell/android/browsertests_apk/content_browser_tests_android.cc',
-      'shell/android/browsertests_apk/content_browser_tests_android.h',
       'shell/android/browsertests_apk/content_browser_tests_jni_onload.cc',
     ],
     'content_browsertests_webrtc_sources': [
@@ -1441,7 +1439,7 @@
               'dependencies': [
                 'content_shell_jni_headers',
                 'content_shell_lib',
-                '../testing/android/native_test.gyp:native_test_util',
+                '../testing/android/native_test.gyp:native_test_support',
               ],
             }],
             ['OS=="mac"', {
@@ -1803,11 +1801,10 @@
             'content_shell_java',
           ],
           'variables': {
-            'apk_name': 'content_browsertests',
+            'test_suite_name': 'content_browsertests',
             'java_in_dir': 'shell/android/browsertests_apk',
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/content_browsertests_manifest/AndroidManifest.xml',
             'resource_dir': 'shell/android/browsertests_apk/res',
-            'native_lib_target': 'libcontent_browsertests',
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
             'conditions': [
@@ -1824,7 +1821,7 @@
               }],
             ],
           },
-          'includes': [ '../build/java_apk.gypi' ],
+          'includes': [ '../build/apk_browsertest.gypi' ],
         },
         {
           # TODO(GN)

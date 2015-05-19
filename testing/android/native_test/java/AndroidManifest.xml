@@ -22,7 +22,7 @@ found in the LICENSE file.
 
     <application android:label="NativeTests"
             android:name="org.chromium.base.BaseChromiumApplication">
-        <activity android:name=".NativeTestActivity"
+        <activity android:name=".NativeUnitTestActivity"
                 android:label="NativeTest"
                 android:configChanges="orientation|keyboardHidden">
             <intent-filter>

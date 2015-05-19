@@ -17,6 +17,12 @@ sys.path.append(os.path.join(
 import unittest_util
 
 
+BROWSER_TEST_SUITES = [
+  'components_browsertests',
+  'content_browsertests',
+]
+
+
 # Used for filtering large data deps at a finer grain than what's allowed in
 # isolate files since pushing deps to devices is expensive.
 # Wildcards are allowed.
@@ -92,16 +98,9 @@ class GtestTestInstance(test_instance.TestInstance):
       raise ValueError('Platform mode currently supports only 1 gtest suite')
     self._suite = args.suite_name[0]
 
-    if (self._suite == 'content_browsertests' or
-        self._suite == 'components_browsertests'):
-      error_func('%s are not currently supported '
-                 'in platform mode.' % self._suite)
-      self._apk_path = os.path.join(
-          constants.GetOutDirectory(), 'apks', '%s.apk' % self._suite)
-    else:
-      self._apk_path = os.path.join(
-          constants.GetOutDirectory(), '%s_apk' % self._suite,
-          '%s-debug.apk' % self._suite)
+    self._apk_path = os.path.join(
+        constants.GetOutDirectory(), '%s_apk' % self._suite,
+        '%s-debug.apk' % self._suite)
     self._exe_path = os.path.join(constants.GetOutDirectory(),
                                   self._suite)
     if not os.path.exists(self._apk_path):

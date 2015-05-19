@@ -28,13 +28,11 @@
 #include "jni/NativeTestActivity_jni.h"
 #include "testing/android/native_test/native_test_util.h"
 
-using testing::native_test_util::ArgsToArgv;
-using testing::native_test_util::ParseArgsFromCommandLineFile;
-using testing::native_test_util::ParseArgsFromString;
-using testing::native_test_util::ScopedMainEntryLogger;
-
 // The main function of the program to be wrapped as a test apk.
 extern int main(int argc, char** argv);
+
+namespace testing {
+namespace android {
 
 namespace {
 
@@ -123,7 +121,7 @@ static void RunTests(JNIEnv* env,
       exit(EXIT_FAILURE);
     }
   }
-  if (!base::android::RedirectStream(stdout, stdout_file_path, "w")) {
+  if (!base::android::RedirectStream(stdout, stdout_file_path, "w+")) {
     AndroidLog(ANDROID_LOG_ERROR, "Failed to redirect stream to file: %s: %s\n",
                stdout_file_path.value().c_str(), strerror(errno));
     exit(EXIT_FAILURE);
@@ -145,7 +143,6 @@ bool RegisterNativeTestJNI(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-
 // TODO(nileshagrawal): now that we're using FIFO, test scripts can detect EOF.
 // Remove the signal handlers.
 void InstallHandlers() {
@@ -159,3 +156,6 @@ void InstallHandlers() {
     sigaction(kExceptionSignals[i], &sa, &g_old_sa[kExceptionSignals[i]]);
   }
 }
+
+}  // namespace android
+}  // namespace testing

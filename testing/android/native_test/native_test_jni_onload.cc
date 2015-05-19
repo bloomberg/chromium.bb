@@ -10,11 +10,11 @@
 namespace {
 
 bool RegisterJNI(JNIEnv* env) {
-  return RegisterNativeTestJNI(env);
+  return testing::android::RegisterNativeTestJNI(env);
 }
 
 bool Init() {
-  InstallHandlers();
+  testing::android::InstallHandlers();
   return true;
 }
 
