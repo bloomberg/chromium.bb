@@ -6,7 +6,6 @@ package org.chromium.sync;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -30,7 +29,6 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         private int mGetIsSyncableCalls;
         private int mSetIsSyncableCalls;
         private int mSetSyncAutomaticallyCalls;
-        private int mRemovePeriodicSyncCalls;
 
         @Override
         public boolean getMasterSyncAutomatically() {
@@ -60,12 +58,6 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         public void setSyncAutomatically(Account account, String authority, boolean sync) {
             mSetSyncAutomaticallyCalls++;
             super.setSyncAutomatically(account, authority, sync);
-        }
-
-        @Override
-        public void removePeriodicSync(Account account, String authority, Bundle extras) {
-            mRemovePeriodicSyncCalls++;
-            super.removePeriodicSync(account, authority, extras);
         }
     }
 
@@ -141,22 +133,6 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 AndroidSyncSettings.disableChromeSync(mContext);
             }
         });
-    }
-
-    @SmallTest
-    @Feature({"Sync"})
-    public void testAccountInitialization() throws InterruptedException {
-        // mAccount was set to be syncable and not have periodic syncs.
-        assertEquals(1, mSyncContentResolverDelegate.mSetIsSyncableCalls);
-        assertEquals(1, mSyncContentResolverDelegate.mRemovePeriodicSyncCalls);
-        mAndroid.updateAccount(null);
-        // mAccount was set to be not syncable.
-        assertEquals(2, mSyncContentResolverDelegate.mSetIsSyncableCalls);
-        assertEquals(1, mSyncContentResolverDelegate.mRemovePeriodicSyncCalls);
-        mAndroid.updateAccount(mAlternateAccount);
-        // mAlternateAccount was set to be syncable and not have periodic syncs.
-        assertEquals(3, mSyncContentResolverDelegate.mSetIsSyncableCalls);
-        assertEquals(2, mSyncContentResolverDelegate.mRemovePeriodicSyncCalls);
     }
 
     @SmallTest

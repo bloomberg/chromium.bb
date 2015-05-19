@@ -9,7 +9,6 @@ import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.SyncStatusObserver;
 import android.os.AsyncTask;
-import android.os.Bundle;
 
 import junit.framework.Assert;
 
@@ -143,10 +142,6 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
                 return -1;
             }
         }
-    }
-
-    @Override
-    public void removePeriodicSync(Account account, String authority, Bundle extras) {
     }
 
     private static String createKey(Account account, String authority) {
