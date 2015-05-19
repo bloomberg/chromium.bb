@@ -2048,10 +2048,14 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   view_->InitAsChild(NULL);
 
-  size_t max_renderer_frames =
-      RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
-  ASSERT_LE(2u, max_renderer_frames);
-  size_t renderer_count = max_renderer_frames;
+  // The test logic below relies on having max_renderer_frames > 2.  By default,
+  // this value is calculated from total physical memory and causes the test to
+  // fail when run on hardware with < 256MB of RAM.
+  const size_t kMaxRendererFrames = 5;
+  RendererFrameManager::GetInstance()->set_max_number_of_saved_frames(
+      kMaxRendererFrames);
+
+  size_t renderer_count = kMaxRendererFrames;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
   DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());

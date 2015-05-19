@@ -41,6 +41,9 @@ class CONTENT_EXPORT RendererFrameManager {
   size_t GetMaxNumberOfSavedFrames() const;
 
   // For testing only
+  void set_max_number_of_saved_frames(size_t max_number_of_saved_frames) {
+    max_number_of_saved_frames_ = max_number_of_saved_frames;
+  }
   void set_max_handles(float max_handles) { max_handles_ = max_handles; }
 
  private:
