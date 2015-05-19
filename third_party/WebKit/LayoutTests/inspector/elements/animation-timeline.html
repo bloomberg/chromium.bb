@@ -29,10 +29,9 @@ function startAnimationWithStepTiming()
 function test()
 {
     InspectorTest.selectNodeWithId("node", step1);
-    // Ensure the timeline is set up
-    var sidebarPane = WebInspector.panels.elements.sidebarPanes.animations;
-    sidebarPane.expand();
-    InspectorTest.animationModel.ensureEnabled();
+    var stylesPane = WebInspector.panels.elements.sidebarPanes.styles;
+    stylesPane._toggleAnimationsControlPane();
+    var timeline = stylesPane._animationTimeline;
     // Override timeline width for testing
     WebInspector.AnimationTimeline.prototype.width = function() { return 1000; }
     // Override animation color for testing
@@ -48,8 +47,8 @@ function test()
     function step2()
     {
         InspectorTest.addResult(">>>> Animation with start delay only");
-        InspectorTest.dumpAnimationTimeline();
-        sidebarPane._timeline._reset();
+        InspectorTest.dumpAnimationTimeline(timeline);
+        timeline._reset();
         InspectorTest.waitForAnimationAdded(step3);
         InspectorTest.evaluateInPage("startAnimationWithEndDelay()");
     }
@@ -57,8 +56,8 @@ function test()
     function step3()
     {
         InspectorTest.addResult(">>>> Animation with start and end delay");
-        InspectorTest.dumpAnimationTimeline();
-        InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "cancelAnimation", step4);
+        InspectorTest.dumpAnimationTimeline(timeline);
+        InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "_cancelAnimation", step4);
         InspectorTest.evaluateInPage("cancelAnimation()");
     }
 
@@ -66,9 +65,9 @@ function test()
     {
         InspectorTest.addResult(">>>> Animation canceled");
         // Force redraw since the draw is async scheduled
-        sidebarPane._timeline._redraw();
-        InspectorTest.dumpAnimationTimeline();
-        sidebarPane._timeline._reset();
+        timeline._redraw();
+        InspectorTest.dumpAnimationTimeline(timeline);
+        timeline._reset();
         InspectorTest.waitForAnimationAdded(step5);
         InspectorTest.evaluateInPage("startAnimationWithStepTiming()");
     }
@@ -76,7 +75,7 @@ function test()
     function step5()
     {
         InspectorTest.addResult(">>>> Animation with step timing function");
-        InspectorTest.dumpAnimationTimeline();
+        InspectorTest.dumpAnimationTimeline(timeline);
         InspectorTest.completeTest();
     }
 }
