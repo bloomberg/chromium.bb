@@ -176,11 +176,6 @@ enum {
                       aborted:(BOOL)aborted;
 @end
 
-@protocol NSWindowDelegateFullScreenAdditions
-- (void)windowDidFailToEnterFullScreen:(NSWindow*)window;
-- (void)windowDidFailToExitFullScreen:(NSWindow*)window;
-@end
-
 enum {
   CBPeripheralStateDisconnected = 0,
   CBPeripheralStateConnecting,

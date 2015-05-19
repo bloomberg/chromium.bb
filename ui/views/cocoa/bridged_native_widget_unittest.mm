@@ -17,6 +17,7 @@
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
+#import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/view.h"
@@ -489,7 +490,8 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
   // Cocoa follows up with a failure message sent to the NSWindowDelegate (there
   // is no equivalent notification for failure). Called via id so that this
   // compiles on 10.6.
-  id window_delegate = [window delegate];
+  ViewsNSWindowDelegate* window_delegate =
+      base::mac::ObjCCast<ViewsNSWindowDelegate>([window delegate]);
   [window_delegate windowDidFailToEnterFullScreen:window];
   EXPECT_FALSE(bridge()->target_fullscreen_state());
 

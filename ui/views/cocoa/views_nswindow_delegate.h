@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 class NativeWidgetMac;
@@ -16,6 +17,7 @@ class BridgedNativeWidget;
 
 // The delegate set on the NSWindow when a views::BridgedNativeWidget is
 // initialized.
+VIEWS_EXPORT
 @interface ViewsNSWindowDelegate : NSObject<NSWindowDelegate> {
  @private
   views::BridgedNativeWidget* parent_;  // Weak. Owns this.
@@ -51,6 +53,11 @@ class BridgedNativeWidget;
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)returnCode
         contextInfo:(void*)contextInfo;
+
+// Redeclare methods defined in the protocol NSWindowDelegate which are only
+// available on OSX 10.7+.
+- (void)windowDidFailToEnterFullScreen:(NSWindow*)window;
+- (void)windowDidFailToExitFullScreen:(NSWindow*)window;
 
 @end
 
