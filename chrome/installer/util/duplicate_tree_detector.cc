@@ -23,8 +23,8 @@ bool IsIdenticalFileHierarchy(const base::FilePath& src_path,
     if (!src_info.is_directory && !dest_info.is_directory) {
       // Two files are "identical" if the file sizes are equivalent.
       is_identical = src_info.size == dest_info.size;
-#ifndef NDEBUG
-      // For Debug builds, also check last modification time (to make sure
+#if !defined(OFFICIAL_BUILD)
+      // For developer builds, also check last modification time (to make sure
       // version dir DLLs are replaced on over-install even if the tested change
       // doesn't happen to change a given DLL's size).
       if (is_identical)
