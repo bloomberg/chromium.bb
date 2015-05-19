@@ -240,9 +240,11 @@ if test "x$with_cairo" = "ximage"; then
 else
 if test "x$with_cairo" = "xgl"; then
 	cairo_modules="cairo-gl"
+	AC_MSG_WARN([The --with-cairo=gl option can cause increased resource usage and potential instability, and thus is not recommended.  It is needed only for a few special demo programs.])
 else
 if test "x$with_cairo" = "xglesv2"; then
 	cairo_modules="cairo-glesv2"
+	AC_MSG_WARN([The --with-cairo=gles2 option can cause increased resource usage and potential instability, and thus is not recommended.  It is needed only for a few special demo programs.])
 else
 	AC_ERROR([Unknown cairo renderer requested])
 fi
