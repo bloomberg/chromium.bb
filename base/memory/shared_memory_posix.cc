@@ -15,6 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/safe_strerror_posix.h"
@@ -402,7 +403,7 @@ bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
     }
   }
 
-  mapped_file_ = dup(fileno(fp.get()));
+  mapped_file_ = HANDLE_EINTR(dup(fileno(fp.get())));
   if (mapped_file_ == -1) {
     if (errno == EMFILE) {
       LOG(WARNING) << "Shared memory creation failed; out of file descriptors";
@@ -481,7 +482,7 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
       break;
   }
 
-  const int new_fd = dup(handle_to_dup);
+  const int new_fd = HANDLE_EINTR(dup(handle_to_dup));
   if (new_fd < 0) {
     DPLOG(ERROR) << "dup() failed.";
     return false;
