@@ -29,3 +29,7 @@
   opacity: 1.0;
 }
 
+:host([disabled]) {
+  cursor: default;
+}
+
