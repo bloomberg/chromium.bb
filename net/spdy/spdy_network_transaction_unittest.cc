@@ -272,7 +272,8 @@ class SpdyNetworkTransactionTest
         EXPECT_TRUE(provider->AllReadDataConsumed());
         EXPECT_TRUE(provider->AllWriteDataConsumed());
       }
-      for (const SocketDataProvider* provider : deterministic_data_vector_) {
+      for (const DeterministicSocketData* provider :
+           deterministic_data_vector_) {
         EXPECT_TRUE(provider->AllReadDataConsumed());
         EXPECT_TRUE(provider->AllWriteDataConsumed());
       }
@@ -286,7 +287,8 @@ class SpdyNetworkTransactionTest
         EXPECT_FALSE(provider->AllReadDataConsumed());
         EXPECT_FALSE(provider->AllWriteDataConsumed());
       }
-      for (const SocketDataProvider* provider : deterministic_data_vector_) {
+      for (const DeterministicSocketData* provider :
+           deterministic_data_vector_) {
         EXPECT_FALSE(provider->AllReadDataConsumed());
         EXPECT_FALSE(provider->AllWriteDataConsumed());
       }

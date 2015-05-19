@@ -606,8 +606,10 @@ SequencedSocketData::~SequencedSocketData() {
 }
 
 DeterministicSocketData::DeterministicSocketData(MockRead* reads,
-    size_t reads_count, MockWrite* writes, size_t writes_count)
-    : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
+                                                 size_t reads_count,
+                                                 MockWrite* writes,
+                                                 size_t writes_count)
+    : helper_(reads, reads_count, writes, writes_count),
       sequence_number_(0),
       current_read_(),
       current_write_(),
@@ -667,7 +669,7 @@ void DeterministicSocketData::StopAfter(int seq) {
 }
 
 MockRead DeterministicSocketData::OnRead() {
-  current_read_ = helper()->PeekRead();
+  current_read_ = helper_.PeekRead();
 
   // Synchronous read while stopped is an error
   if (stopped() && current_read_.mode == SYNCHRONOUS) {
@@ -691,7 +693,7 @@ MockRead DeterministicSocketData::OnRead() {
   }
 
   NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Read "
-                         << read_index();
+                         << helper_.read_index();
   if (print_debug_)
     DumpMockReadWrite(current_read_);
 
@@ -700,13 +702,13 @@ MockRead DeterministicSocketData::OnRead() {
     NextStep();
 
   DCHECK_NE(ERR_IO_PENDING, current_read_.result);
-  StaticSocketDataProvider::OnRead();
 
+  helper_.AdvanceRead();
   return current_read_;
 }
 
 MockWriteResult DeterministicSocketData::OnWrite(const std::string& data) {
-  const MockWrite& next_write = helper()->PeekWrite();
+  const MockWrite& next_write = helper_.PeekWrite();
   current_write_ = next_write;
 
   // Synchronous write while stopped is an error
@@ -725,7 +727,7 @@ MockWriteResult DeterministicSocketData::OnWrite(const std::string& data) {
     }
   } else {
     NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Write "
-                           << write_index();
+                           << helper_.write_index();
   }
 
   if (print_debug_)
@@ -736,15 +738,26 @@ MockWriteResult DeterministicSocketData::OnWrite(const std::string& data) {
   if (next_write.mode == SYNCHRONOUS)
     NextStep();
 
-  // This is either a sync write for this step, or an async write.
-  return StaticSocketDataProvider::OnWrite(data);
+  // Check that what we are writing matches the expectation.
+  // Then give the mocked return value.
+  if (!helper_.VerifyWriteData(data))
+    return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
+
+  helper_.AdvanceWrite();
+
+  // In the case that the write was successful, return the number of bytes
+  // written. Otherwise return the error code.
+  int result =
+      next_write.result == OK ? next_write.data_len : next_write.result;
+  return MockWriteResult(next_write.mode, result);
 }
 
-void DeterministicSocketData::Reset() {
-  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Reset()";
-  sequence_number_ = 0;
-  StaticSocketDataProvider::Reset();
-  NOTREACHED();
+bool DeterministicSocketData::AllReadDataConsumed() const {
+  return helper_.AllReadDataConsumed();
+}
+
+bool DeterministicSocketData::AllWriteDataConsumed() const {
+  return helper_.AllWriteDataConsumed();
 }
 
 void DeterministicSocketData::InvokeCallbacks() {
@@ -1391,16 +1404,6 @@ const BoundNetLog& DeterministicMockUDPClientSocket::NetLog() const {
   return helper_.net_log();
 }
 
-void DeterministicMockUDPClientSocket::OnReadComplete(const MockRead& data) {}
-
-void DeterministicMockUDPClientSocket::OnWriteComplete(int rv) {
-}
-
-void DeterministicMockUDPClientSocket::OnConnectComplete(
-    const MockConnect& data) {
-  NOTIMPLEMENTED();
-}
-
 DeterministicMockTCPClientSocket::DeterministicMockTCPClientSocket(
     net::NetLog* net_log,
     DeterministicSocketData* data)
@@ -1487,14 +1490,6 @@ bool DeterministicMockTCPClientSocket::WasNpnNegotiated() const {
 bool DeterministicMockTCPClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   return false;
 }
-
-void DeterministicMockTCPClientSocket::OnReadComplete(const MockRead& data) {}
-
-void DeterministicMockTCPClientSocket::OnWriteComplete(int rv) {
-}
-
-void DeterministicMockTCPClientSocket::OnConnectComplete(
-    const MockConnect& data) {}
 
 // static
 void MockSSLClientSocket::ConnectCallback(

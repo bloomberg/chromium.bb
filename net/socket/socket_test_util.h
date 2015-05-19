@@ -498,7 +498,7 @@ class DeterministicMockTCPClientSocket;
 //
 // For examples of how to use this class, see:
 //   deterministic_socket_data_unittests.cc
-class DeterministicSocketData : public StaticSocketDataProvider {
+class DeterministicSocketData {
  public:
   // The Delegate is an abstract interface which handles the communication from
   // the DeterministicSocketData to the Deterministic MockSocket.  The
@@ -530,7 +530,7 @@ class DeterministicSocketData : public StaticSocketDataProvider {
                           size_t reads_count,
                           MockWrite* writes,
                           size_t writes_count);
-  ~DeterministicSocketData() override;
+  ~DeterministicSocketData();
 
   // Consume all the data up to the give stop point (via SetStop()).
   void Run();
@@ -539,29 +539,31 @@ class DeterministicSocketData : public StaticSocketDataProvider {
   void RunFor(int steps);
 
   // Stop at step |seq|, which must be in the future.
-  virtual void SetStop(int seq);
+  void SetStop(int seq);
 
   // Stop |seq| steps after the current step.
-  virtual void StopAfter(int seq);
+  void StopAfter(int seq);
+
   bool stopped() const { return stopped_; }
   void SetStopped(bool val) { stopped_ = val; }
   MockRead& current_read() { return current_read_; }
   MockWrite& current_write() { return current_write_; }
   int sequence_number() const { return sequence_number_; }
   void set_delegate(base::WeakPtr<Delegate> delegate) { delegate_ = delegate; }
-
-  // StaticSocketDataProvider:
+  MockConnect connect_data() const { return connect_; }
+  void set_connect_data(const MockConnect& connect) { connect_ = connect; }
 
   // When the socket calls Read(), that calls OnRead(), and expects either
   // ERR_IO_PENDING or data.
-  MockRead OnRead() override;
+  MockRead OnRead();
 
   // When the socket calls Write(), it always completes synchronously. OnWrite()
   // checks to make sure the written data matches the expected data. The
   // callback will not be invoked until its sequence number is reached.
-  MockWriteResult OnWrite(const std::string& data) override;
-  void Reset() override;
-  void CompleteRead() override {}
+  MockWriteResult OnWrite(const std::string& data);
+
+  bool AllReadDataConsumed() const;
+  bool AllWriteDataConsumed() const;
 
  private:
   // Invoke the read and write callbacks, if the timing is appropriate.
@@ -573,7 +575,8 @@ class DeterministicSocketData : public StaticSocketDataProvider {
                                     size_t reads_count,
                                     MockWrite* writes,
                                     size_t writes_count);
-
+  StaticSocketDataHelper helper_;
+  MockConnect connect_;
   int sequence_number_;
   MockRead current_read_;
   MockWrite current_write_;
@@ -836,7 +839,6 @@ class DeterministicSocketHelper {
 // Mock UDP socket to be used in conjunction with DeterministicSocketData.
 class DeterministicMockUDPClientSocket
     : public DatagramClientSocket,
-      public AsyncSocket,
       public DeterministicSocketData::Delegate,
       public base::SupportsWeakPtr<DeterministicMockUDPClientSocket> {
  public:
@@ -869,11 +871,6 @@ class DeterministicMockUDPClientSocket
   // DatagramClientSocket implementation.
   int Connect(const IPEndPoint& address) override;
 
-  // AsyncSocket implementation.
-  void OnReadComplete(const MockRead& data) override;
-  void OnWriteComplete(int rv) override;
-  void OnConnectComplete(const MockConnect& data) override;
-
   void set_source_port(uint16 port) { source_port_ = port; }
 
  private:
@@ -888,7 +885,6 @@ class DeterministicMockUDPClientSocket
 // Mock TCP socket to be used in conjunction with DeterministicSocketData.
 class DeterministicMockTCPClientSocket
     : public MockClientSocket,
-      public AsyncSocket,
       public DeterministicSocketData::Delegate,
       public base::SupportsWeakPtr<DeterministicMockTCPClientSocket> {
  public:
@@ -919,11 +915,6 @@ class DeterministicMockTCPClientSocket
   bool UsingTCPFastOpen() const override;
   bool WasNpnNegotiated() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
-
-  // AsyncSocket:
-  void OnReadComplete(const MockRead& data) override;
-  void OnWriteComplete(int rv) override;
-  void OnConnectComplete(const MockConnect& data) override;
 
  private:
   DeterministicSocketHelper helper_;
