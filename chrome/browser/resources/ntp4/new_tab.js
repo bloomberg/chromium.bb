@@ -56,12 +56,6 @@ cr.define('ntp', function() {
   var shouldShowLoginBubble = false;
 
   /**
-   * The 'other-sessions-menu-button' element.
-   * @type {!ntp.OtherSessionsMenuButton|undefined}
-   */
-  var otherSessionsButton;
-
-  /**
    * The time when all sections are ready.
    * @type {number|undefined}
    * @private
@@ -147,15 +141,6 @@ cr.define('ntp', function() {
     notificationContainer = getRequiredElement('notification-container');
     notificationContainer.addEventListener(
         'webkitTransitionEnd', onNotificationTransitionEnd);
-
-    if (loadTimeData.getBoolean('showOtherSessionsMenu')) {
-      otherSessionsButton = /** @type {!ntp.OtherSessionsMenuButton} */(
-          getRequiredElement('other-sessions-menu-button'));
-      cr.ui.decorate(otherSessionsButton, ntp.OtherSessionsMenuButton);
-      otherSessionsButton.initialize(loadTimeData.getBoolean('isUserSignedIn'));
-    } else {
-      getRequiredElement('other-sessions-menu-button').hidden = true;
-    }
 
     if (loadTimeData.getBoolean('showMostvisited')) {
       var mostVisited = new ntp.MostVisitedPage();
@@ -575,10 +560,6 @@ cr.define('ntp', function() {
     } else if (loginBubble) {
       loginBubble.reposition();
     }
-    if (otherSessionsButton) {
-      otherSessionsButton.updateSignInState(isUserSignedIn);
-      layoutFooter();
-    }
   }
 
   /**
@@ -664,13 +645,6 @@ cr.define('ntp', function() {
     newTabView.enterRearrangeMode();
   }
 
-  function setForeignSessions(sessionList, isTabSyncEnabled) {
-    if (otherSessionsButton) {
-      otherSessionsButton.setForeignSessions(sessionList, isTabSyncEnabled);
-      layoutFooter();
-    }
-  }
-
   /**
    * Callback invoked by chrome with the apps available.
    *
@@ -736,7 +710,6 @@ cr.define('ntp', function() {
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
-    setForeignSessions: setForeignSessions,
     setMostVisitedPages: setMostVisitedPages,
     setFaviconDominantColor: setFaviconDominantColor,
     showNotification: showNotification,

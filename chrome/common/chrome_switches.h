@@ -83,7 +83,6 @@ extern const char kDisableJavaScriptHarmonyShipping[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNewBookmarkApps[];
 extern const char kDisableNewOfflineErrorPage[];
-extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableOfflineAutoReload[];
 extern const char kDisableOfflineAutoReloadVisibleOnly[];
 extern const char kDisableOutOfProcessPac[];

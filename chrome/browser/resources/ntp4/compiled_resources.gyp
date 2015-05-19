@@ -38,7 +38,6 @@
           'page_switcher.js',
           'page_list_view.js',
           'nav_dot.js',
-          'other_sessions.js',
           'new_tab.js',
         ],
         'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],

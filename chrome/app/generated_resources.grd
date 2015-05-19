@@ -656,6 +656,18 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_ENTRY_SUMMARY" desc="Summary of all the fields in a history entry (time, whether the entry is bookmarked, title, and domain).">
         <ph name="TIME"><ex>3:14</ex>$1</ph> <ph name="BOOKMARKED"><ex>bookmarked</ex>$2</ph> <ph name="TITLE"><ex>PI: The Magical Number</ex>$3</ph> <ph name="DOMAIN"><ex>pi.com</ex>$4</ph>
       </message>
+      <message name="IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL" desc="In the 'Other Sessions' menu on the history page, the label for the command to open all tabs and windows from a session.">
+        Open all
+      </message>
+      <message name="IDS_HISTORY_OTHER_DEVICES_X_MORE" desc="In the 'Other Sessions' section of the history page, the label for showing that X more tabs are available for a session.">
+        <ph name="NUM_TABS_MORE">$1<ex>42</ex></ph> more...
+      </message>
+      <message name="IDS_HISTORY_OTHER_SESSIONS_COLLAPSE_SESSION" desc="In the 'Other Sessions' menu on the history page, the label for the command to collapse (hide) the list of windows and tabs in a session.">
+        Collapse list
+      </message>
+      <message name="IDS_HISTORY_OTHER_SESSIONS_EXPAND_SESSION" desc="In the 'Other Sessions' menu on the history page, the label for the command to expand (uncollapse) the list of windows and tabs in a session.">
+        Expand list
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_OK" desc="Used for OK on buttons">
@@ -11702,17 +11714,6 @@ Dead Jim feedback.
                  desc="Default name for stand alone web page to serve as an App launcher when the new tab doesn't show apps.">
           Apps
         </message>
-        <message name="IDS_NEW_TAB_OTHER_SESSIONS_LABEL"
-                 desc="The label for the 'Other Sessions' menu on the New Tab Page, which lists tabs that are open in browsing sessions on other devices.">
-          Other devices
-        </message>
-        <message name="IDS_NEW_TAB_OTHER_SESSIONS_EMPTY"
-                 desc="The message for the 'Other Sessions' menu on the New Tab Page, when there are no other sessions.">
-          Access your open tabs on all of your devices.
-        </message>
-        <message name="IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL" desc="URL of help center page explaining what the 'Other Sessions' menu is.">
-          https://support.google.com/chrome/bin/answer.py?answer=185277&amp;hl=[GRITLANGCODE]
-        </message>
         <message name="IDS_NEW_TAB_OTR_HEADING"
                  desc="Heading used when a person opens an OTR window">
           You’ve gone incognito
@@ -11770,24 +11771,6 @@ Dead Jim feedback.
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK"
                desc="The link that restores previously removed thumbnails. Context is 'Thumbnail removed. Undo | Restore all'">
         Restore all
-      </message>
-
-      <!-- chrome://history and chrome://ntp -->
-      <message name="IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL"
-               desc="In the 'Other Sessions' menu on the New Tab Page, the label for the command to open all tabs and windows from a session.">
-        Open all
-      </message>
-      <message name="IDS_OTHER_DEVICES_X_MORE"
-               desc="In the 'Other Sessions' section of the history page, the label for showing that X more tabs are available for a session.">
-        <ph name="NUM_TABS_MORE">$1<ex>42</ex></ph> more...
-      </message>
-      <message name="IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION"
-               desc="In the 'Other Sessions' menu on the New Tab Page, the label for the command to collapse (hide) the list of windows and tabs in a session.">
-        Collapse list
-      </message>
-      <message name="IDS_NEW_TAB_OTHER_SESSIONS_EXPAND_SESSION"
-               desc="In the 'Other Sessions' menu on the New Tab Page, the label for the command to expand (uncollapse) the list of windows and tabs in a session.">
-        Expand list
       </message>
 
       <message name="IDS_NEW_TAB_ATTRIBUTION_INTRO"

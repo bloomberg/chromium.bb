@@ -461,12 +461,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
   load_time_data.SetBoolean("shouldShowSyncLogin",
                             NTPLoginHandler::ShouldShow(profile_));
-  load_time_data.SetString("otherSessions",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LABEL));
-  load_time_data.SetString("otherSessionsEmpty",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_EMPTY));
-  load_time_data.SetString("otherSessionsLearnMoreUrl",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL));
   load_time_data.SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
@@ -475,12 +469,6 @@ void NTPResourceCache::CreateNewTabHTML() {
           GURL(extension_urls::GetWebstoreLaunchURL()), app_locale).spec());
   load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
-  load_time_data.SetString("collapseSessionMenuItemText",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION));
-  load_time_data.SetString("expandSessionMenuItemText",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_EXPAND_SESSION));
-  load_time_data.SetString("restoreSessionMenuItemText",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL));
   load_time_data.SetString("learn_more",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   load_time_data.SetString("tile_grid_screenreader_accessible_description",
@@ -549,12 +537,6 @@ void NTPResourceCache::CreateNewTabHTML() {
     }
   }
 
-  // Determine whether to show the menu for accessing tabs on other devices.
-  bool show_other_sessions_menu =
-      should_show_other_devices_menu_ &&
-     !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNTPOtherSessionsMenu);
-  load_time_data.SetBoolean("showOtherSessionsMenu", show_other_sessions_menu);
   load_time_data.SetBoolean(
       "isUserSignedIn",
       SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());

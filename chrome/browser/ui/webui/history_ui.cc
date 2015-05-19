@@ -74,7 +74,7 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #endif
 
@@ -128,12 +128,12 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
   source->AddBoolean("isUserSignedIn", is_authenticated);
   source->AddLocalizedString("collapseSessionMenuItemText",
-      IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION);
+      IDS_HISTORY_OTHER_SESSIONS_COLLAPSE_SESSION);
   source->AddLocalizedString("expandSessionMenuItemText",
-      IDS_NEW_TAB_OTHER_SESSIONS_EXPAND_SESSION);
+      IDS_HISTORY_OTHER_SESSIONS_EXPAND_SESSION);
   source->AddLocalizedString("restoreSessionMenuItemText",
-      IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL);
-  source->AddLocalizedString("xMore", IDS_OTHER_DEVICES_X_MORE);
+      IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL);
+  source->AddLocalizedString("xMore", IDS_HISTORY_OTHER_DEVICES_X_MORE);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
   source->AddLocalizedString("newest", IDS_HISTORY_NEWEST);

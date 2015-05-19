@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
-#include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
@@ -40,6 +39,7 @@
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_THEMES)
 #include "chrome/browser/ui/webui/theme_handler.h"
@@ -92,7 +92,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
 
   Profile* profile = GetProfile();
   if (!profile->IsOffTheRecord()) {
-    web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new MostVisitedHandler());
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
@@ -215,7 +214,6 @@ void NewTabUI::RegisterProfilePrefs(
   CoreAppLauncherHandler::RegisterProfilePrefs(registry);
   NewTabPageHandler::RegisterProfilePrefs(registry);
   MostVisitedHandler::RegisterProfilePrefs(registry);
-  browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
 }
 
 // static

@@ -12571,7 +12571,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="HistoryPage.OtherDevicesMenu" enum="NtpOtherSessionsType">
+<histogram name="HistoryPage.OtherDevicesMenu" enum="OtherSessionsActions">
   <owner>mad@chromium.org</owner>
   <owner>rpop@google.com</owner>
   <summary>
@@ -25168,8 +25168,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.OtherSessionsMenu" enum="NtpOtherSessionsType">
+<histogram name="NewTabPage.OtherSessionsMenu" enum="OtherSessionsActions">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated 05/2015. Feature was removed.
+  </obsolete>
   <summary>
     Histogram for usage of the menu on the NTP that allows the user to access
     tabs from other devices.
@@ -59078,18 +59081,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="13" label="Other action"/>
 </enum>
 
-<enum name="NtpOtherSessionsType" type="int">
-  <int value="0" label="Menu initialized"/>
-  <int value="1" label="Menu shown"/>
-  <int value="2" label="Link clicked"/>
-  <int value="3" label="Link context menu shown"/>
-  <int value="4" label="Device context menu shown"/>
-  <int value="5" label="Unused/previous device context menu shown"/>
-  <int value="6" label="Collapse Session"/>
-  <int value="7" label="Expand Session"/>
-  <int value="8" label="Open All"/>
-</enum>
-
 <enum name="NtpPaneType" type="int">
   <int value="1" label="MostVisited"/>
   <int value="2" label="Apps"/>
@@ -59542,6 +59533,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Other possible usernames present, but none were shown"/>
   <int value="3" label="Other possible username was shown, but not selected"/>
   <int value="4" label="Other possible username was selected"/>
+</enum>
+
+<enum name="OtherSessionsActions" type="int">
+  <int value="0" label="Menu initialized"/>
+  <int value="1" label="Menu shown"/>
+  <int value="2" label="Link clicked"/>
+  <int value="3" label="Link context menu shown"/>
+  <int value="4" label="Device context menu shown"/>
+  <int value="5" label="Unused/previous device context menu shown"/>
+  <int value="6" label="Collapse Session"/>
+  <int value="7" label="Expand Session"/>
+  <int value="8" label="Open All"/>
 </enum>
 
 <enum name="OverscrollMode" type="int">

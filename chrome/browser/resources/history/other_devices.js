@@ -14,7 +14,6 @@
 /** @const */ var NB_ENTRIES_OTHER_ROWS_COLUMN = 0;
 
 // Histogram buckets for UMA tracking of menu usage.
-// Using the same values as the Other Devices button in the NTP.
 /** @const */ var HISTOGRAM_EVENT = {
   INITIALIZED: 0,
   SHOW_MENU: 1,
@@ -43,10 +42,6 @@ function recordUmaEvent_(eventId) {
 
 /**
  * Controller for the context menu for device names in the list of sessions.
- * This class is designed to be used as a singleton. Also copied from existing
- * other devices button in NTP.
- * TODO(mad): Should we extract/reuse/share with ntp4/other_sessions.js?
- *
  * @constructor
  */
 function DeviceContextMenuController() {
@@ -563,10 +558,10 @@ function load() {
     return;
 
   // We must use this namespace to reuse the handler code for foreign session
-  // and login.
+  // and login. TODO(estade): change the call site in ntp_login_handler.cc so
+  // this hack isn't necessary.
   cr.define('ntp', function() {
     return {
-      setForeignSessions: setForeignSessions,
       updateLogin: updateLogin
     };
   });

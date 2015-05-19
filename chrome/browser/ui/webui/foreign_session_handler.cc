@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/foreign_session_handler.h"
 
 #include <algorithm>
 #include <string>
@@ -280,8 +280,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
     }
   }
   base::FundamentalValue tab_sync_enabled(IsTabSyncEnabled());
-  web_ui()->CallJavascriptFunction("ntp.setForeignSessions",
-                                   session_list,
+  web_ui()->CallJavascriptFunction("setForeignSessions", session_list,
                                    tab_sync_enabled);
 }
 
