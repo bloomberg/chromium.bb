@@ -1106,6 +1106,11 @@ const char kProfileGAIAInfoPictureURL[] = "profile.gaia_info_picture_url";
 const char kProfileAvatarTutorialShown[] =
     "profile.avatar_bubble_tutorial_shown";
 
+// Boolean that specifies if the user has already dismissed the right-click user
+// switching tutorial.
+const char kProfileAvatarRightClickTutorialDismissed[] =
+    "profile.avatar_bubble_right_click_tutorial_dismissed";
+
 // Indicates if we've already shown a notification that high contrast
 // mode is on, recommending high-contrast extensions and themes.
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";

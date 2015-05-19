@@ -878,6 +878,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // Builds the profile chooser view.
 - (NSView*)buildProfileChooserView;
 
+- (NSView*)buildTutorialViewIfNeededForItem:(const AvatarMenu::Item&)item;
+
 // Builds a tutorial card with a title label using |titleMessage|, a content
 // label using |contentMessage|, a link using |linkMessage|, and a button using
 // |buttonMessage|. If |stackButton| is YES, places the button above the link.
@@ -897,7 +899,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // Builds a tutorial card to introduce an upgrade user to the new avatar menu if
 // needed. |tutorial_shown| indicates if the tutorial has already been shown in
 // the previous active view. |avatar_item| refers to the current profile.
-- (NSView*)buildWelcomeUpgradeTutorialViewIfNeeded;
+- (NSView*)buildWelcomeUpgradeTutorialView:(const AvatarMenu::Item&)item;
+
+// Builds a tutorial card to inform the user about right-click user switching if
+// needed.
+- (NSView*)buildRightClickTutorialView;
 
 // Builds a tutorial card to have the user confirm the last Chrome signin,
 // Chrome sync will be delayed until the user either dismisses the tutorial, or
@@ -1129,6 +1135,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         signin_ui_util::kUpgradeWelcomeTutorialShowMax + 1);
   }
 
+  if(tutorialMode_ == profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING) {
+    PrefService* localState = g_browser_process->local_state();
+    localState->SetBoolean(
+        prefs::kProfileAvatarRightClickTutorialDismissed, true);
+  }
+
   tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
@@ -1270,6 +1282,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   bool displayLock = false;
   bool isFastProfileChooser =
       viewMode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
+  if (isFastProfileChooser) {
+    // The user is using right-click switching, no need to tell them about it.
+    PrefService* localState = g_browser_process->local_state();
+    localState->SetBoolean(
+        prefs::kProfileAvatarRightClickTutorialDismissed, true);
+  }
 
   // Loop over the profiles in reverse, so that they are sorted by their
   // y-coordinate, and separate them into active and "other" profiles.
@@ -1277,18 +1295,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
       if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-        switch (tutorialMode_) {
-          case profiles::TUTORIAL_MODE_NONE:
-          case profiles::TUTORIAL_MODE_WELCOME_UPGRADE:
-            tutorialView =
-                [self buildWelcomeUpgradeTutorialViewIfNeeded];
-            break;
-          case profiles::TUTORIAL_MODE_CONFIRM_SIGNIN:
-            tutorialView = [self buildSigninConfirmationView];
-            break;
-          case profiles::TUTORIAL_MODE_SHOW_ERROR:
-            tutorialView = [self buildSigninErrorView];
-        }
+        tutorialView = [self buildTutorialViewIfNeededForItem:item];
       }
       currentProfileView = [self createCurrentProfileView:item];
       displayLock = item.signed_in &&
@@ -1425,24 +1432,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                        buttonAction:nil];
 }
 
-- (NSView*)buildWelcomeUpgradeTutorialViewIfNeeded {
-  Profile* profile = browser_->profile();
-  const AvatarMenu::Item& avatarItem =
-      avatarMenu_->GetItemAt(avatarMenu_->GetActiveProfileIndex());
-
-  const int showCount = profile->GetPrefs()->GetInteger(
-      prefs::kProfileAvatarTutorialShown);
-  // Do not show the tutorial if user has dismissed it.
-  if (showCount > signin_ui_util::kUpgradeWelcomeTutorialShowMax)
-    return nil;
-
-  if (tutorialMode_ != profiles::TUTORIAL_MODE_WELCOME_UPGRADE) {
-    if (showCount == signin_ui_util::kUpgradeWelcomeTutorialShowMax)
-      return nil;
-    profile->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown, showCount + 1);
-  }
-
+- (NSView*)buildWelcomeUpgradeTutorialView:(const AvatarMenu::Item&)item {
   ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
       ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW);
 
@@ -1451,9 +1441,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSString* contentMessage = l10n_util::GetNSString(
       IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT);
   // For local profiles, the "Not you" link doesn't make sense.
-  NSString* linkMessage = avatarItem.signed_in ?
+  NSString* linkMessage = item.signed_in ?
       ElideMessage(
-          l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU, avatarItem.name),
+          l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU, item.name),
           kFixedMenuWidth - 2 * kHorizontalSpacing) :
       nil;
   NSString* buttonMessage = l10n_util::GetNSString(
@@ -1467,6 +1457,52 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                      hasCloseButton:YES
                          linkAction:@selector(showSwitchUserView:)
                        buttonAction:@selector(seeWhatsNew:)];
+}
+
+- (NSView*)buildRightClickTutorialView {
+  NSString* titleMessage = l10n_util::GetNSString(
+      IDS_PROFILES_RIGHT_CLICK_TUTORIAL_TITLE);
+  NSString* contentMessage = l10n_util::GetNSString(
+      IDS_PROFILES_RIGHT_CLICK_TUTORIAL_CONTENT_TEXT);
+  NSString* buttonMessage = l10n_util::GetNSString(
+      IDS_PROFILES_TUTORIAL_OK_BUTTON);
+
+  return
+      [self tutorialViewWithMode:profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING
+                             titleMessage:titleMessage
+                           contentMessage:contentMessage
+                              linkMessage:nil
+                            buttonMessage:buttonMessage
+                              stackButton:NO
+                           hasCloseButton:NO
+                               linkAction:nil
+                             buttonAction:@selector(dismissTutorial:)];
+}
+
+- (NSView*)buildTutorialViewIfNeededForItem:(const AvatarMenu::Item&)item {
+  if (tutorialMode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN)
+    return [self buildSigninConfirmationView];
+
+  if (tutorialMode_ == profiles::TUTORIAL_MODE_SHOW_ERROR)
+    return [self buildSigninErrorView];
+
+  if (profiles::ShouldShowWelcomeUpgradeTutorial(
+      browser_->profile(), tutorialMode_)) {
+    if (tutorialMode_ != profiles::TUTORIAL_MODE_WELCOME_UPGRADE) {
+      Profile* profile = browser_->profile();
+      const int showCount = profile->GetPrefs()->GetInteger(
+          prefs::kProfileAvatarTutorialShown);
+      profile->GetPrefs()->SetInteger(
+          prefs::kProfileAvatarTutorialShown, showCount + 1);
+    }
+
+    return [self buildWelcomeUpgradeTutorialView:item];
+  }
+
+  if (profiles::ShouldShowRightClickTutorial(browser_->profile()))
+    return [self buildRightClickTutorialView];
+
+  return nil;
 }
 
 - (NSView*)tutorialViewWithMode:(profiles::TutorialMode)mode

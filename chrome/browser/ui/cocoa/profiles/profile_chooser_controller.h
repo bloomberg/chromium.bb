@@ -131,6 +131,7 @@ class GaiaWebContentsDelegate;
              viewMode:(profiles::BubbleViewMode)viewMode
          tutorialMode:(profiles::TutorialMode)tutorialMode
           serviceType:(signin::GAIAServiceType)GAIAServiceType;
+- (IBAction)dismissTutorial:(id)sender;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_CHOOSER_CONTROLLER_H_

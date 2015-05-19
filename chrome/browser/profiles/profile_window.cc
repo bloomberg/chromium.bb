@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -312,7 +313,7 @@ bool HasProfileSwitchTargets(Profile* profile) {
   size_t min_profiles = profile->IsGuestSession() ? 1 : 2;
   size_t number_of_profiles =
       g_browser_process->profile_manager()->GetNumberOfProfiles();
-  return number_of_profiles < min_profiles;
+  return number_of_profiles >= min_profiles;
 }
 
 void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
@@ -523,6 +524,28 @@ void BubbleViewModeFromAvatarBubbleMode(
     default:
       *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
   }
+}
+
+bool ShouldShowWelcomeUpgradeTutorial(
+    Profile* profile, TutorialMode tutorial_mode) {
+  const int show_count = profile->GetPrefs()->GetInteger(
+      prefs::kProfileAvatarTutorialShown);
+  // Do not show the tutorial if user has dismissed it.
+  if (show_count > signin_ui_util::kUpgradeWelcomeTutorialShowMax)
+    return false;
+
+  return tutorial_mode == TUTORIAL_MODE_WELCOME_UPGRADE ||
+         show_count != signin_ui_util::kUpgradeWelcomeTutorialShowMax;
+}
+
+bool ShouldShowRightClickTutorial(Profile* profile) {
+  PrefService* local_state = g_browser_process->local_state();
+  const bool dismissed = local_state->GetBoolean(
+      prefs::kProfileAvatarRightClickTutorialDismissed);
+
+  // Don't show the tutorial if it's already been dismissed or if right-clicking
+  // wouldn't show any targets.
+  return !dismissed && HasProfileSwitchTargets(profile);
 }
 
 }  // namespace profiles

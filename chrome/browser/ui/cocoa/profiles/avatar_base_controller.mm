@@ -192,7 +192,7 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
     // It has to happen here to prevent the view system from creating an empty
     // container.
     if (viewMode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER &&
-        profiles::HasProfileSwitchTargets(browser_->profile())) {
+        !profiles::HasProfileSwitchTargets(browser_->profile())) {
       return;
     }
 

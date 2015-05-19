@@ -12045,6 +12045,12 @@ Dead Jim feedback.
       <message name="IDS_PROFILES_GUEST_PROFILE_NAME" desc="Name of the guest profile.">
         Guest
       </message>
+      <message name="IDS_PROFILES_RIGHT_CLICK_TUTORIAL_CONTENT_TEXT" desc="Content of the tutorial bubble informing users about right-click user switching.">
+        Right click on the button above to view other people.
+      </message>
+      <message name="IDS_PROFILES_RIGHT_CLICK_TUTORIAL_TITLE" desc="Title of the tutorial bubble informing users about right-click user switching.">
+        Switch people faster
+      </message>
       <message name="IDS_DEFAULT_PROFILE_NAME" desc="The default name given to a profile. Displayed in wrench menu and settings UI.">
         First user
       </message>

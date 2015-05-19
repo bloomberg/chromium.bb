@@ -167,19 +167,22 @@ class ProfileChooserView : public content::WebContentsDelegate,
   void DismissTutorial();
 
   // Creates a tutorial card to introduce an upgrade user to the new avatar
-  // menu if needed. |tutorial_shown| indicates if the tutorial has already been
-  // shown in the previous active view. |avatar_item| refers to the current
-  // profile.
-  views::View* CreateWelcomeUpgradeTutorialViewIfNeeded(
-      bool tutorial_shown, const AvatarMenu::Item& avatar_item);
+  // menu. |avatar_item| refers to the current profile.
+  views::View* CreateWelcomeUpgradeTutorialView(
+      const AvatarMenu::Item& avatar_item);
 
   // Creates a tutorial card to have the user confirm the last Chrome signin,
   // Chrome sync will be delayed until the user either dismisses the tutorial,
   // or configures sync through the "Settings" link.
   views::View* CreateSigninConfirmationView();
 
-  // Creates a a tutorial card to show the errors in the last Chrome signin.
+  // Creates a tutorial card to show the errors in the last Chrome signin.
   views::View* CreateSigninErrorView();
+
+  // Creates a tutorial card telling the user about right-click user switching.
+  views::View* CreateRightClickTutorialView();
+
+  views::View* CreateTutorialViewIfNeeded(const AvatarMenu::Item& item);
 
   // Creates a tutorial card. If |stack_button| is true, places the button above
   // the link otherwise places both on the same row with the link left aligned

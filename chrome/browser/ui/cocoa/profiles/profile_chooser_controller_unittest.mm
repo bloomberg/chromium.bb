@@ -80,15 +80,47 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   }
 
   void StartProfileChooserController() {
+    StartProfileChooserControllerWithTutorialMode(profiles::TUTORIAL_MODE_NONE);
+  }
+
+  void StartProfileChooserControllerWithTutorialMode(
+      profiles::TutorialMode mode) {
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
     controller_.reset([[ProfileChooserController alloc]
         initWithBrowser:browser()
              anchoredAt:point
                viewMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER
-           tutorialMode:profiles::TUTORIAL_MODE_NONE
+           tutorialMode:mode
             serviceType:signin::GAIA_SERVICE_TYPE_NONE]);
     [controller_ showWindow:nil];
+  }
+
+  void AssertRightClickTutorialShown() {
+    NSArray* subviews = [[[controller() window] contentView] subviews];
+    ASSERT_EQ(2U, [subviews count]);
+    subviews = [[subviews objectAtIndex:0] subviews];
+
+    // There should be 4 views: the tutorial, the active profile card, a
+    // separator and the options view.
+    ASSERT_EQ(4U, [subviews count]);
+
+    // The tutorial is the topmost view, so the last in the array. It should
+    // contain 3 views: the title, the content text and the OK button.
+    NSArray* tutorialSubviews = [[subviews objectAtIndex:3] subviews];
+    ASSERT_EQ(3U, [tutorialSubviews count]);
+
+    NSTextField* tutorialTitle = base::mac::ObjCCastStrict<NSTextField>(
+        [tutorialSubviews objectAtIndex:2]);
+    EXPECT_GT([[tutorialTitle stringValue] length], 0U);
+
+    NSTextField* tutorialContent = base::mac::ObjCCastStrict<NSTextField>(
+        [tutorialSubviews objectAtIndex:1]);
+    EXPECT_GT([[tutorialContent stringValue] length], 0U);
+
+    NSButton* tutorialOKButton = base::mac::ObjCCastStrict<NSButton>(
+        [tutorialSubviews objectAtIndex:0]);
+    EXPECT_GT([[tutorialOKButton title] length], 0U);
   }
 
   void EnableFastUserSwitching() {
@@ -173,6 +205,69 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
   NSTextField* promo = base::mac::ObjCCast<NSTextField>(
       [linksSubviews objectAtIndex:1]);
   EXPECT_GT([[promo stringValue] length], 0U);
+}
+
+TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterWelcome) {
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
+  // The welcome upgrade tutorial takes precedence so show it then dismiss it.
+  // The right click tutorial should be shown right away.
+  StartProfileChooserControllerWithTutorialMode(
+      profiles::TUTORIAL_MODE_WELCOME_UPGRADE);
+
+  [controller() dismissTutorial:nil];
+  AssertRightClickTutorialShown();
+}
+
+TEST_F(ProfileChooserControllerTest, RightClickTutorialShownAfterReopen) {
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
+  // The welcome upgrade tutorial takes precedence so show it then close the
+  // menu. Reopening the menu should show the tutorial.
+  StartProfileChooserController();
+
+  [controller() close];
+  StartProfileChooserController();
+  AssertRightClickTutorialShown();
+
+  // The tutorial must be manually dismissed so it should still be shown after
+  // closing and reopening the menu,
+  [controller() close];
+  StartProfileChooserController();
+  AssertRightClickTutorialShown();
+}
+
+TEST_F(ProfileChooserControllerTest, RightClickTutorialNotShownAfterDismiss) {
+  switches::EnableNewAvatarMenuForTesting(
+      base::CommandLine::ForCurrentProcess());
+  // The welcome upgrade tutorial takes precedence so show it then close the
+  // menu. Reopening the menu should show the tutorial.
+  StartProfileChooserController();
+
+  [controller() close];
+  StartProfileChooserControllerWithTutorialMode(
+      profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING);
+  AssertRightClickTutorialShown();
+
+  // Dismissing the tutorial should prevent it from being shown forever.
+  [controller() dismissTutorial:nil];
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  ASSERT_EQ(2U, [subviews count]);
+  subviews = [[subviews objectAtIndex:0] subviews];
+
+  // There should be 3 views since there's no tutorial
+  ASSERT_EQ(3U, [subviews count]);
+
+  // Closing and reopening the menu shouldn't show the tutorial.
+  [controller() close];
+  StartProfileChooserControllerWithTutorialMode(
+      profiles::TUTORIAL_MODE_RIGHT_CLICK_SWITCHING);
+  subviews = [[[controller() window] contentView] subviews];
+  ASSERT_EQ(2U, [subviews count]);
+  subviews = [[subviews objectAtIndex:0] subviews];
+
+  // There should be 3 views since there's no tutorial
+  ASSERT_EQ(3U, [subviews count]);
 }
 
 TEST_F(ProfileChooserControllerTest, InitialLayoutWithFastUserSwitcher) {

@@ -92,6 +92,13 @@ bool SetActiveProfileToGuestIfLocked();
 // a BrowsingDataRemover to delete all the Profile's data.
 void RemoveBrowsingDataForProfile(const base::FilePath& profile_path);
 
+// Marks the right-click user switching tutorial dismissed state as |dismissed|.
+void SetFastUserSwitchingTutorialDismissedState(bool dismissed);
+
+// Returns true if the right-click user switching tutorial was previously
+// dismissed by a user, false otherwise.
+bool GetFastUserSwitchingTutorialDismissedState();
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_
