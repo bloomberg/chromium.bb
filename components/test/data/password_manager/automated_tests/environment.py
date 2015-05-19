@@ -113,8 +113,7 @@ class Environment:
     time".
     """
 
-    self.driver.get("chrome://settings/clearBrowserData")
-    self.driver.switch_to_frame("settings")
+    self.driver.get("chrome://settings-frame/clearBrowserData")
 
     time_range_selector = "#clear-browser-data-time-period"
     # TODO(vabr): Wait until time_range_selector is displayed instead.
@@ -161,8 +160,7 @@ class Environment:
     # TODO(melandory): We should check why it's off in a first place.
     # TODO(melandory): Investigate, maybe there is no need to enable it that
     # often.
-    self.driver.get("chrome://settings")
-    self.driver.switch_to_frame("settings")
+    self.driver.get("chrome://settings-frame")
     script = "document.getElementById('advanced-settings-expander').click();"
     self.driver.execute_script(script)
     # TODO(vabr): Wait until element is displayed instead.
