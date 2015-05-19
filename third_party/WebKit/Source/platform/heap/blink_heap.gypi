@@ -45,6 +45,7 @@
       'InlinedGlobalMarkingVisitor.h',
       'MarkingVisitor.h',
       'MarkingVisitorImpl.h',
+      'PageMemory.h',
       'SafePoint.cpp',
       'SafePoint.h',
       'StackFrameDepth.cpp',
