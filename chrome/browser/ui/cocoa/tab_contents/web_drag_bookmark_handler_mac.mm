@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/cocoa/tab_contents/web_drag_bookmark_handler_mac.h"
 
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;

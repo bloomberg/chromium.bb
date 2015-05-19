@@ -13,8 +13,8 @@
 #include "base/task_runner_util.h"
 #import "media/base/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/video_capture_device_avfoundation_mac.h"
-#include "media/video/capture/mac/video_capture_device_mac.h"
 #import "media/video/capture/mac/video_capture_device_decklink_mac.h"
+#include "media/video/capture/mac/video_capture_device_mac.h"
 #import "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
 namespace media {

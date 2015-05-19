@@ -4,12 +4,12 @@
 
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios.h"
 
-#include "base/run_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"

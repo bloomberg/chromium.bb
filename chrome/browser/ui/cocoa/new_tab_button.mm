@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
+
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

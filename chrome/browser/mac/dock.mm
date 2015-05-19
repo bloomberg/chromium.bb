@@ -5,8 +5,8 @@
 #import "chrome/browser/mac/dock.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#import <Foundation/Foundation.h>
 #include <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 #include <signal.h>
 
 #include "base/logging.h"

@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include <gtest/gtest.h>
 #include <gtest/internal/gtest-port.h>
 #include <gtest/internal/gtest-string.h>
-#include <gtest/gtest.h>
 
 #ifdef GTEST_OS_MAC
 

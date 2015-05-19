@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_hover_state.h"
+
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 
 @interface BookmarkBarFolderHoverState(Private)

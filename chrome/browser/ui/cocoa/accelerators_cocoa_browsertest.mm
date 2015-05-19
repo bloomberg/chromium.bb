@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "testing/gtest_mac.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
-#include "testing/gtest_mac.h"
 
 typedef InProcessBrowserTest AcceleratorsCocoaBrowserTest;
 

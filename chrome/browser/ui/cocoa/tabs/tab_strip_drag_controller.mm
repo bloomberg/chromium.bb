@@ -10,10 +10,10 @@
 #import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
 
 const CGFloat kTearDistance = 36.0;

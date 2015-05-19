@@ -5,8 +5,8 @@
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_controller.h"
 
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/media/fake_desktop_media_list.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

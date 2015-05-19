@@ -6,8 +6,8 @@
 
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/ui/browser.h"
-#import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/download/download_item_mac.h"
+#import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 
 DownloadShelfMac::DownloadShelfMac(Browser* browser,
                                    DownloadShelfController* controller)

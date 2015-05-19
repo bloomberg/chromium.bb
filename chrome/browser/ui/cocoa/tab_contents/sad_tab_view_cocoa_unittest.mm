@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view_cocoa.h"
+
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 namespace {

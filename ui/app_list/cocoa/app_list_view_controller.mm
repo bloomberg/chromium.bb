@@ -15,8 +15,8 @@
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
-#import "ui/base/cocoa/flipped_view.h"
 #include "ui/app_list/search_box_model.h"
+#import "ui/base/cocoa/flipped_view.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {

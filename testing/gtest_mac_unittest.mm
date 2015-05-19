@@ -11,8 +11,8 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "testing/gtest/include/gtest/internal/gtest-port.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest/include/gtest/internal/gtest-port.h"
 
 TEST(GTestMac, ExpectNSEQ) {
   base::mac::ScopedNSAutoreleasePool pool;

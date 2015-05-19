@@ -7,9 +7,9 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
-#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/grit/generated_resources.h"

@@ -4,8 +4,8 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "ui/gfx/font.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/font.h"
 
 TEST(PlatformFontMacTest, DeriveFont) {
   // Use a base font that support all traits.

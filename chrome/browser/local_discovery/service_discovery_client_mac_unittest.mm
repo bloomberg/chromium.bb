@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "testing/gtest_mac.h"
 
 @interface TestNSNetService : NSNetService {

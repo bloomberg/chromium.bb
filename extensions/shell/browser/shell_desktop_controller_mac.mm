@@ -5,8 +5,8 @@
 #include "extensions/shell/browser/shell_desktop_controller_mac.h"
 
 #include "extensions/browser/app_window/native_app_window.h"
-#include "extensions/shell/browser/shell_app_window_client.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
+#include "extensions/shell/browser/shell_app_window_client.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/screen.h"

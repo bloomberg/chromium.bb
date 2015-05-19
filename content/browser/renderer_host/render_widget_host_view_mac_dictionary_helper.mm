@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/sys_string_conversions.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
+
+#include "base/strings/sys_string_conversions.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 namespace content {

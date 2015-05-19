@@ -9,13 +9,13 @@
 #include <CoreServices/CoreServices.h>
 
 #include "base/bind.h"
-#include "base/files/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #import "base/mac/mac_util.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/mac/scoped_aedesc.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_thread.h"

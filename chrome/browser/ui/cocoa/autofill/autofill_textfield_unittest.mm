@@ -6,8 +6,8 @@
 
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 

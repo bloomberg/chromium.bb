@@ -5,9 +5,9 @@
 #import "chrome/browser/ui/cocoa/toolbar/reload_button_cocoa.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/command_updater.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"

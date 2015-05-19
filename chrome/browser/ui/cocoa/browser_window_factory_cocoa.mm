@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser_window_controller.h"
 
 // Create the controller for the Browser, which handles loading the browser
 // window from the nib. The controller takes ownership of |browser|.

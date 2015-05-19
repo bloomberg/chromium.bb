@@ -4,8 +4,8 @@
 
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
 
-#import <Foundation/Foundation.h>
 #import <arpa/inet.h>
+#import <Foundation/Foundation.h>
 #import <net/if_dl.h>
 
 #include "base/memory/singleton.h"

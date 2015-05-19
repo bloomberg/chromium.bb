@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-#import <Carbon/Carbon.h>  // kVK_Return.
-
 #import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
+
+#import <Carbon/Carbon.h>  // kVK_Return.
+#import <Cocoa/Cocoa.h>
 
 #include "base/mac/bundle_locations.h"
 #include "base/prefs/pref_service.h"

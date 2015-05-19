@@ -18,9 +18,9 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#import "ui/base/cocoa/controls/hyperlink_text_view.h"
 
 using content::SiteInstance;
 using content::WebContents;

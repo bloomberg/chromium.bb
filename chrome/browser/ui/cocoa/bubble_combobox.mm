@@ -4,8 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 
-#include "ui/base/models/combobox_model.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ui/base/models/combobox_model.h"
 
 @implementation BubbleCombobox
 

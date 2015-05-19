@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "third_party/decklink/mac/include/DeckLinkAPI.h"
 
 namespace {

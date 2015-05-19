@@ -4,8 +4,8 @@
 
 #include "components/wifi/wifi_service.h"
 
-#import <netinet/in.h>
 #import <CoreWLAN/CoreWLAN.h>
+#import <netinet/in.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
 #include "base/bind.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/cocoa/base_view.h"
+
 #include "base/mac/mac_util.h"
 
 NSString* kViewDidBecomeFirstResponder =

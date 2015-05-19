@@ -33,8 +33,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import <AvailabilityMacros.h>
 #import <AppKit/AppKit.h>
+#import <AvailabilityMacros.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>

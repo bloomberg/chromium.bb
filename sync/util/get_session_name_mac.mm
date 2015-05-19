@@ -4,8 +4,8 @@
 
 #include "sync/util/get_session_name_mac.h"
 
-#import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #include <sys/sysctl.h>
+#import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"

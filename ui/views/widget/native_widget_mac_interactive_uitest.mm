@@ -6,8 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "ui/views/test/widget_test.h"
 #include "ui/views/test/test_widget_observer.h"
+#include "ui/views/test/widget_test.h"
 
 namespace views {
 namespace test {

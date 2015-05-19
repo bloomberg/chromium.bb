@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/critical_closure.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

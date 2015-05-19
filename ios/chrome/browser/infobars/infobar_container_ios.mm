@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_container_view.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 InfoBarContainerIOS::InfoBarContainerIOS(
     infobars::InfoBarContainer::Delegate* delegate)

@@ -5,10 +5,10 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 
 #include "base/logging.h"
+#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
-#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #import "content/public/browser/render_widget_host_view_mac_base.h"
 
 typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);

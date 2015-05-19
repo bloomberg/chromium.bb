@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Foundation/Foundation.h>
 #include <asl.h>
+#import <Foundation/Foundation.h>
 #include <libgen.h>
 #include <stdarg.h>
 #include <stdio.h>

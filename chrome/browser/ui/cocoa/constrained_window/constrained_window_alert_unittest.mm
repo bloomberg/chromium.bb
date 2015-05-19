@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
+
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "testing/gtest_mac.h"
 

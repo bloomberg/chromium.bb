@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper.h"
 
 #include "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
-#import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 @interface HistorySwiper (MacHistorySwiperTest)
 - (BOOL)systemSettingsAllowHistorySwiping:(NSEvent*)event;

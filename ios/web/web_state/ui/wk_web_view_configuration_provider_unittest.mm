@@ -11,8 +11,8 @@
 #include "ios/web/public/test/web_test_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/js/page_script_util.h"
-#include "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace web {

@@ -9,8 +9,8 @@
 
 #import "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
-#import "base/time/time.h"
 #import "base/test/ios/wait_util.h"
+#import "base/time/time.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 

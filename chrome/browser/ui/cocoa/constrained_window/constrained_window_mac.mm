@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #import "chrome/browser/ui/cocoa/single_web_contents_dialog_manager_cocoa.h"
 #include "components/guest_view/browser/guest_view_base.h"

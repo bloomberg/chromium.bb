@@ -4,10 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_header.h"
 
-#import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 
 namespace {
