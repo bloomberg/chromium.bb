@@ -334,7 +334,12 @@ IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
       chromeos::kAccountsPrefShowUserNamesOnSignIn, false);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GaiaAuthOffline DISABLED_GaiaAuthOffline
+#else
+#define MAYBE_GaiaAuthOffline GaiaAuthOffline
+#endif
+IN_PROC_BROWSER_TEST_F(LoginTest, MAYBE_GaiaAuthOffline) {
   PrepareOfflineLogin();
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
