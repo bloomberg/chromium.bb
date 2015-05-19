@@ -448,6 +448,8 @@
           'sources': [
             'android/cast_jni_registrar.cc',
             'android/cast_jni_registrar.h',
+            'android/cast_metrics_helper_android.cc',
+            'android/cast_metrics_helper_android.h',
             'android/chromecast_config_android.cc',
             'android/chromecast_config_android.h',
             'android/platform_jni_loader.h',
@@ -532,6 +534,7 @@
           'type': 'none',
           'sources': [
             'browser/android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java',
+            'browser/android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java',
           ],
