@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -96,7 +97,7 @@ struct CC_EXPORT TransformNodeData {
   gfx::Vector2dF sublayer_scale;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
-  gfx::Vector2dF scroll_offset;
+  gfx::ScrollOffset scroll_offset;
 
   // We scroll snap where possible, but this has an effect on scroll
   // compensation: the snap is yet more scrolling that must be compensated for.

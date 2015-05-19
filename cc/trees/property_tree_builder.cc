@@ -282,10 +282,8 @@ bool AddTransformNodeIfNeeded(
                                            layer->transform_origin());
   }
 
-  if (!layer->scroll_parent()) {
-    node->data.scroll_offset =
-        gfx::ScrollOffsetToVector2dF(layer->CurrentScrollOffset());
-  }
+  if (!layer->scroll_parent())
+    node->data.scroll_offset = layer->CurrentScrollOffset();
 
   node->data.local = layer->transform();
   node->data.update_pre_local_transform(layer->transform_origin());

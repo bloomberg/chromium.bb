@@ -811,8 +811,7 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index())) {
     if (transform_node->owner_id == id()) {
-      transform_node->data.scroll_offset =
-          gfx::ScrollOffsetToVector2dF(CurrentScrollOffset());
+      transform_node->data.scroll_offset = CurrentScrollOffset();
       transform_node->data.needs_local_transform_update = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
       SetNeedsCommitNoRebuild();
@@ -851,8 +850,7 @@ void Layer::SetScrollOffsetFromImplSide(
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index())) {
     if (transform_node->owner_id == id()) {
-      transform_node->data.scroll_offset =
-          gfx::ScrollOffsetToVector2dF(CurrentScrollOffset());
+      transform_node->data.scroll_offset = CurrentScrollOffset();
       transform_node->data.needs_local_transform_update = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
       needs_rebuild = false;
