@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
-#define COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
+#ifndef COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
+#define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/native_viewport/platform_viewport.h"
+#include "components/view_manager/native_viewport/platform_viewport.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -83,4 +83,4 @@ class PlatformViewportAndroid : public PlatformViewport {
 
 }  // namespace native_viewport
 
-#endif  // COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
+#endif  // COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_

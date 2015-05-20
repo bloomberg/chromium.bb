@@ -8,6 +8,7 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "animations.mojom",
+    "native_viewport.mojom",
     "view_manager.mojom",
     "view_manager_constants.mojom",
     "view_manager_root.mojom",
@@ -16,7 +17,7 @@ mojom("interfaces") {
   import_dirs = [ get_path_info("../../../..", "abspath") ]
 
   deps = [
-    "//components/native_viewport/public/interfaces",
+    "//components/gpu/public/interfaces",
     "//components/surfaces/public/interfaces:surface_id",
     "//mojo/application/public/interfaces",
     "//ui/mojo/events:interfaces",

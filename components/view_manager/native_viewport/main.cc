@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "components/native_viewport/native_viewport_application_delegate.h"
+#include "components/view_manager/native_viewport/native_viewport_application_delegate.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 

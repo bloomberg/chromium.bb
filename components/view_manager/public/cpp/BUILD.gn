@@ -8,6 +8,8 @@ import("//third_party/mojo/src/mojo/public/mojo_sdk.gni")
 mojo_sdk_source_set("cpp") {
   restrict_external_deps = false
   sources = [
+    "args.h",
+    "lib/args.cc",
     "lib/view.cc",
     "lib/view_manager_client_factory.cc",
     "lib/view_manager_client_impl.cc",

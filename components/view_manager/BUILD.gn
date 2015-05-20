@@ -75,10 +75,10 @@ source_set("view_manager_lib") {
     "//base",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//components/native_viewport/public/interfaces",
     "//components/surfaces/public/interfaces",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
+    "//components/view_manager/native_viewport",
     "//mojo/application",
     "//mojo/application/public/interfaces",
     "//mojo/common",
@@ -94,10 +94,7 @@ source_set("view_manager_lib") {
     "//ui/gfx/geometry",
   ]
 
-  data_deps = [
-    "//components/native_viewport",
-    "//components/surfaces",
-  ]
+  data_deps = [ "//components/surfaces" ]
 }
 
 source_set("test_support") {
@@ -138,7 +135,6 @@ test("tests") {
     ":view_manager_lib",
     "//base",
     "//base/test:test_config",
-    "//components/native_viewport/public/cpp:args",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
     "//mojo/application/public/interfaces",

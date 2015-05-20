@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
-#define COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
+#ifndef COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
+#define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
+#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/mojo/events/input_events.mojom.h"
@@ -46,4 +46,4 @@ class PlatformViewport {
 
 }  // namespace native_viewport
 
-#endif  // COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
+#endif  // COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_

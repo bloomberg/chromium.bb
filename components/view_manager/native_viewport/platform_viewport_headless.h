@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_HEADLESS_H_
-#define COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_HEADLESS_H_
+#ifndef COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_HEADLESS_H_
+#define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_HEADLESS_H_
 
 #include "base/macros.h"
-#include "components/native_viewport/platform_viewport.h"
+#include "components/view_manager/native_viewport/platform_viewport.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace native_viewport {
@@ -36,4 +36,4 @@ class PlatformViewportHeadless : public PlatformViewport {
 
 }  // namespace native_viewport
 
-#endif  // COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_HEADLESS_H_
+#endif  // COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_HEADLESS_H_

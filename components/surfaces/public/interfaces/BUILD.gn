@@ -17,7 +17,6 @@ mojom("interfaces") {
   deps = [
     ":surface_id",
     "//components/gpu/public/interfaces",
-    "//components/native_viewport/public/interfaces",
     "//ui/mojo/geometry:interfaces",
   ]
 }

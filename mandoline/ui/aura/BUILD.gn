@@ -31,7 +31,6 @@ source_set("aura") {
     "//cc",
     "//cc/surfaces",
     "//components/gpu/public/interfaces",
-    "//components/native_viewport/public/interfaces",
     "//components/surfaces/public/interfaces",
     "//components/view_manager/public/cpp",
     "//skia",

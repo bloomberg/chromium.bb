@@ -76,8 +76,8 @@ source_set("sources") {
 
   if (!is_android) {
     deps += [
-      "//components/native_viewport:lib",
-      "//components/native_viewport/public/cpp:args",
+      "//components/view_manager/native_viewport:lib",
+      "//components/view_manager/public/cpp",
       "//mandoline/ui/omnibox:lib",
     ]
   }

@@ -6,7 +6,7 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 source_set("gles2") {
   visibility = [
-    "//components/native_viewport:*",
+    "//components/view_manager/native_viewport:*",
     "//mojo/runner:lib",  # For android
   ]
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NATIVE_VIEWPORT_NATIVE_VIEWPORT_APPLICATION_DELEGATE_H_
-#define COMPONENTS_NATIVE_VIEWPORT_NATIVE_VIEWPORT_APPLICATION_DELEGATE_H_
+#ifndef COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_NATIVE_VIEWPORT_APPLICATION_DELEGATE_H_
+#define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_NATIVE_VIEWPORT_APPLICATION_DELEGATE_H_
 
 #include "base/macros.h"
 #include "components/gles2/gpu_impl.h"
-#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
+#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "mojo/application/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
@@ -57,4 +57,4 @@ class NativeViewportApplicationDelegate
 
 }  // namespace native_viewport
 
-#endif  // COMPONENTS_NATIVE_VIEWPORT_NATIVE_VIEWPORT_APPLICATION_DELEGATE_H_
+#endif  // COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_NATIVE_VIEWPORT_APPLICATION_DELEGATE_H_

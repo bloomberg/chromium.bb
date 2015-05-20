@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NATIVE_VIEWPORT_NATIVE_VIEWPORT_IMPL_H_
-#define COMPONENTS_NATIVE_VIEWPORT_NATIVE_VIEWPORT_IMPL_H_
+#ifndef COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_NATIVE_VIEWPORT_IMPL_H_
+#define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_NATIVE_VIEWPORT_IMPL_H_
 
 #include <set>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gpu/public/interfaces/gpu.mojom.h"
-#include "components/native_viewport/onscreen_context_provider.h"
-#include "components/native_viewport/platform_viewport.h"
-#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
+#include "components/view_manager/native_viewport/onscreen_context_provider.h"
+#include "components/view_manager/native_viewport/platform_viewport.h"
+#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "mojo/application/app_lifetime_helper.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/gfx/geometry/rect.h"
@@ -91,4 +91,4 @@ class NativeViewportImpl : public mojo::NativeViewport,
 
 }  // namespace native_viewport
 
-#endif  // COMPONENTS_NATIVE_VIEWPORT_NATIVE_VIEWPORT_IMPL_H_
+#endif  // COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_NATIVE_VIEWPORT_IMPL_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/native_viewport/native_viewport_application_delegate.h"
+#include "components/view_manager/native_viewport/native_viewport_application_delegate.h"
 
 #include "base/command_line.h"
-#include "components/native_viewport/native_viewport_impl.h"
-#include "components/native_viewport/public/cpp/args.h"
+#include "components/view_manager/native_viewport/native_viewport_impl.h"
+#include "components/view_manager/public/cpp/args.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "ui/events/event_switches.h"
