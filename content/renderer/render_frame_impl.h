@@ -346,11 +346,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebPluginParams&) override;
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params);
-  // TODO(jrummell): Remove this method once blink updated.
-  virtual blink::WebMediaPlayer* createMediaPlayer(
-      blink::WebLocalFrame* frame,
-      const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client);
   virtual blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,

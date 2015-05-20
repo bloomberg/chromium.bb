@@ -1972,13 +1972,6 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
-    blink::WebMediaPlayerClient* client) {
-  return createMediaPlayer(frame, url, client, nullptr);
-}
-
-blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
-    blink::WebLocalFrame* frame,
-    const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
 #if defined(VIDEO_HOLE)
