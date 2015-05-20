@@ -15,6 +15,7 @@ PixelTestOutputSurface::PixelTestOutputSurface(
     bool flipped_output_surface)
     : OutputSurface(context_provider, worker_context_provider),
       external_stencil_test_(false) {
+  capabilities_.adjust_deadline_for_parent = false;
   capabilities_.flipped_output_surface = flipped_output_surface;
 }
 
