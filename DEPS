@@ -350,7 +350,7 @@ deps_os = {
 
     # class-dump utility to generate header files for undocumented SDKs
     'src/testing/iossim/third_party/class-dump':
-     Var('chromium_git') + '/chromium/deps/class-dump.git' + '@' + '89bd40883c767584240b4dade8b74e6f57b9bdab',
+     Var('chromium_git') + '/external/github.com/nygard/class-dump.git' + '@' + '77fb7f0a2953f10501768c7551aad261fa1310b9',
 
     # Code that's not needed due to not building everything
     'src/chrome/test/data/perf/canvas_bench': None,
