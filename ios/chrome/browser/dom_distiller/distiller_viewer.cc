@@ -7,6 +7,7 @@
 #include <string>
 
 #include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -17,12 +18,53 @@
 
 namespace dom_distiller {
 
+namespace {
+
+class IOSContentDataCallback : public DistillerDataCallback {
+ public:
+  IOSContentDataCallback(
+      const GURL& url,
+      const DistillerViewer::DistillationFinishedCallback& callback,
+      DistillerViewer* distiller_viewer_handle);
+  ~IOSContentDataCallback() override{};
+  void RunCallback(std::string& data) override;
+
+ private:
+  // Extra param needed by the callback specified below.
+  GURL url_;
+  // The callback to be run.
+  const DistillerViewer::DistillationFinishedCallback callback_;
+  // A handle to the DistillerViewer object.
+  DistillerViewer* distiller_viewer_handle_;
+};
+
+IOSContentDataCallback::IOSContentDataCallback(
+    const GURL& url,
+    const DistillerViewer::DistillationFinishedCallback& callback,
+    DistillerViewer* distiller_viewer_handle)
+    : url_(url),
+      callback_(callback),
+      distiller_viewer_handle_(distiller_viewer_handle) {
+}
+
+void IOSContentDataCallback::RunCallback(std::string& data) {
+  std::string htmlAndScript(data);
+  htmlAndScript += "<script>" +
+                   distiller_viewer_handle_->GetJavaScriptBuffer() +
+                   "</script>";
+
+  callback_.Run(url_, htmlAndScript);
+}
+
+}  // namespace
+
 DistillerViewer::DistillerViewer(ios::ChromeBrowserState* browser_state,
                                  const GURL& url,
                                  const DistillationFinishedCallback& callback)
-    : url_(url),
-      callback_(callback),
-      distilled_page_prefs_(new DistilledPagePrefs(browser_state->GetPrefs())) {
+    : DomDistillerRequestViewBase(
+          scoped_ptr<DistillerDataCallback>(
+              new IOSContentDataCallback(url, callback, this)).Pass(),
+          new DistilledPagePrefs(browser_state->GetPrefs())) {
   DCHECK(browser_state);
   DCHECK(url.is_valid());
   dom_distiller::DomDistillerService* distillerService =
@@ -36,22 +78,12 @@ DistillerViewer::DistillerViewer(ios::ChromeBrowserState* browser_state,
 DistillerViewer::~DistillerViewer() {
 }
 
-void DistillerViewer::OnArticleReady(
-    const DistilledArticleProto* article_proto) {
-  const std::string html = viewer::GetUnsafeArticleTemplateHtml(
-      &article_proto->pages(0), distilled_page_prefs_->GetTheme(),
-      distilled_page_prefs_->GetFontFamily());
+void DistillerViewer::SendJavaScript(const std::string& buffer) {
+  js_buffer_ += buffer;
+}
 
-  std::string content_js = viewer::GetUnsafeArticleContentJs(article_proto);
-  // TODO(noyau): This can be done better with changes to the
-  // DistillationFinishedCallback. http://crbug.com/472805
-  std::string htmlAndScript(html);
-  htmlAndScript += "<script>" + content_js + "</script>";
-
-  callback_.Run(url_, htmlAndScript);
-
-  // No need to hold on to the ViewerHandle now that distillation is complete.
-  viewer_handle_.reset();
+std::string DistillerViewer::GetJavaScriptBuffer() {
+  return js_buffer_;
 }
 
 }  // namespace dom_distiller

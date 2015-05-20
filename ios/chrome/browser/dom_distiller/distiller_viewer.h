@@ -5,7 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_DOM_DISTILLER_DISTILLER_VIEWER_H_
 #define IOS_CHROME_BROWSER_DOM_DISTILLER_DISTILLER_VIEWER_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
+#include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/task_tracker.h"
 
 class GURL;
@@ -21,7 +24,7 @@ class DistilledPagePrefs;
 // A very simple and naive implementation of the dom_distiller
 // ViewRequestDelegate: From an URL it builds an HTML string and notifies when
 // finished.
-class DistillerViewer : public dom_distiller::ViewRequestDelegate {
+class DistillerViewer : public DomDistillerRequestViewBase {
  public:
   typedef base::Callback<void(const GURL&, const std::string&)>
       DistillationFinishedCallback;
@@ -31,20 +34,17 @@ class DistillerViewer : public dom_distiller::ViewRequestDelegate {
                   const DistillationFinishedCallback& callback);
   ~DistillerViewer() override;
 
-  // ViewRequestDelegate.
-  void OnArticleUpdated(
-      dom_distiller::ArticleDistillationUpdate article_update) override {}
-  void OnArticleReady(const DistilledArticleProto* article_proto) override;
+  void SendJavaScript(const std::string& buffer) override;
+
+  std::string GetJavaScriptBuffer();
 
  private:
   // The url of the distilled page.
   const GURL url_;
-  // Callback to invoke when the page is finished.
-  DistillationFinishedCallback callback_;
   // Interface for accessing preferences for distilled pages.
   scoped_ptr<DistilledPagePrefs> distilled_page_prefs_;
-  // Keeps the distiller going until the view is released.
-  scoped_ptr<dom_distiller::ViewerHandle> viewer_handle_;
+  // JavaScript buffer.
+  std::string js_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(DistillerViewer);
 };
