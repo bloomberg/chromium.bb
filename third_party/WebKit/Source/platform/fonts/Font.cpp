@@ -571,17 +571,6 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
     return data;
 }
 
-bool Font::primaryFontHasGlyphForCharacter(UChar32 character) const
-{
-    ASSERT(primaryFont());
-    unsigned pageNumber = (character / GlyphPage::size);
-
-    GlyphPageTreeNode* node = GlyphPageTreeNode::getNormalRootChild(primaryFont(), pageNumber);
-    GlyphPage* page = node->page();
-
-    return page && page->glyphForCharacter(character);
-}
-
 // FIXME: This function may not work if the emphasis mark uses a complex script, but none of the
 // standard emphasis marks do so.
 bool Font::getEmphasisMarkGlyphData(const AtomicString& mark, GlyphData& glyphData) const

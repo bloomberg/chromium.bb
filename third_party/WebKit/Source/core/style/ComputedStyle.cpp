@@ -1128,7 +1128,9 @@ const AtomicString& ComputedStyle::hyphenString() const
     // FIXME: This should depend on locale.
     DEFINE_STATIC_LOCAL(AtomicString, hyphenMinusString, (&hyphenMinusCharacter, 1));
     DEFINE_STATIC_LOCAL(AtomicString, hyphenString, (&hyphenCharacter, 1));
-    return font().primaryFontHasGlyphForCharacter(hyphenCharacter) ? hyphenString : hyphenMinusString;
+    const SimpleFontData* primaryFont = font().primaryFont();
+    ASSERT(primaryFont);
+    return primaryFont->glyphForCharacter(hyphenCharacter) ? hyphenString : hyphenMinusString;
 }
 
 const AtomicString& ComputedStyle::textEmphasisMarkString() const

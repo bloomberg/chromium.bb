@@ -123,8 +123,6 @@ public:
     const FontData* fontDataAt(unsigned) const;
 
     GlyphData glyphDataForCharacter(UChar32&, bool mirror, bool normalizeSpace = false, FontDataVariant = AutoVariant) const;
-    bool primaryFontHasGlyphForCharacter(UChar32) const;
-
     CodePath codePath(const TextRunPaintInfo&) const;
 
 private:
