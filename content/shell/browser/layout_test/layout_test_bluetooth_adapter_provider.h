@@ -9,6 +9,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
+#include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
 
 namespace content {
 
@@ -23,29 +24,24 @@ class LayoutTestBluetoothAdapterProvider {
  private:
   // Returns "EmptyAdapter" fake BluetoothAdapter with the following
   // characteristics:
-  //  - |StartDiscoverySession| invokes |SuccessfulDiscoverySession|.
+  //  - |StartDiscoverySession| runs the first argument with |DiscoverySession|
+  //    as argument.
   //  - |GetDevices| returns an empty list of devices.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetEmptyAdapter();
 
   // Returns "SingleEmptyDevice" fake BluetoothAdapter with the following
   // characteristics:
-  //  - |StartDiscoverySession| invokes |SuccessfulDiscoverySession|.
+  //  - |StartDiscoverySession| runs the first argument with |DiscoverySession|
+  //    as argument.
   //  - |GetDevices| returns a list with an |EmptyDevice|.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetSingleEmptyDeviceAdapter();
 
-  // Calls |callback| with a DiscoverySession with the following
-  // characteristics:
-  //  - |Stop| will invoke |SuccessfulDiscoverySessionStop|.
-  static void SuccessfulDiscoverySession(
-      const device::BluetoothAdapter::DiscoverySessionCallback& callback,
-      const device::BluetoothAdapter::ErrorCallback& error_callback);
-
-  // Calls |callback|.
-  static void SuccessfulDiscoverySessionStop(
-      const base::Closure& callback,
-      const base::Closure& error_callback);
+  // Returns a fake DiscoverySession with the following characteristics:
+  //  - |Stop| runs the first argument.
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothDiscoverySession>>
+  GetDiscoverySession();
 
   // Returns an |EmptyDevice| with the following characeteristics:
   //  - |GetAddress| returns "Empty Mock Device instanceID".

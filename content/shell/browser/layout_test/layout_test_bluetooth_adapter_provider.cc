@@ -25,6 +25,23 @@ using testing::Return;
 using testing::NiceMock;
 using testing::_;
 
+namespace {
+// Invokes Run() on the k-th argument of the function with no arguments.
+ACTION_TEMPLATE(RunCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_0_VALUE_PARAMS()) {
+  return ::testing::get<k>(args).Run();
+}
+
+// Invokes Run() on the k-th argument of the function with the result
+// of |func| as an argument.
+ACTION_TEMPLATE(RunCallbackWithResult,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(func)) {
+  return ::testing::get<k>(args).Run(func());
+}
+}
+
 namespace content {
 
 // static
@@ -54,11 +71,15 @@ LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
       new NiceMock<MockBluetoothAdapter>());
 
   ON_CALL(*adapter, StartDiscoverySession(_, _))
-      .WillByDefault(Invoke(
-          &LayoutTestBluetoothAdapterProvider::SuccessfulDiscoverySession));
+      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
+          []() { return GetDiscoverySession(); }));
 
+  // Using Invoke allows the adapter returned from this method to be futher
+  // modified and have devices added to it. The call to ::GetDevices will
+  // invoke ::GetConstMockDevices, returning all devices added up to that time.
   ON_CALL(*adapter, GetDevices())
-      .WillByDefault(Return(adapter->GetConstMockDevices()));
+      .WillByDefault(
+          Invoke(adapter.get(), &MockBluetoothAdapter::GetConstMockDevices));
 
   return adapter.Pass();
 }
@@ -66,17 +87,9 @@ LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
 // static
 scoped_refptr<NiceMock<MockBluetoothAdapter>>
 LayoutTestBluetoothAdapterProvider::GetSingleEmptyDeviceAdapter() {
-  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(
-      new NiceMock<MockBluetoothAdapter>());
-
-  ON_CALL(*adapter, StartDiscoverySession(_, _))
-      .WillByDefault(Invoke(
-          &LayoutTestBluetoothAdapterProvider::SuccessfulDiscoverySession));
+  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(GetEmptyAdapter());
 
   adapter->AddMockDevice(GetEmptyDevice(adapter.get()));
-
-  ON_CALL(*adapter, GetDevices())
-      .WillByDefault(Return(adapter->GetConstMockDevices()));
 
   return adapter.Pass();
 }
@@ -105,24 +118,15 @@ LayoutTestBluetoothAdapterProvider::GetEmptyDevice(
 }
 
 // static
-void LayoutTestBluetoothAdapterProvider::SuccessfulDiscoverySession(
-    const BluetoothAdapter::DiscoverySessionCallback& callback,
-    const BluetoothAdapter::ErrorCallback& error_callback) {
+scoped_ptr<NiceMock<MockBluetoothDiscoverySession>>
+LayoutTestBluetoothAdapterProvider::GetDiscoverySession() {
   scoped_ptr<NiceMock<MockBluetoothDiscoverySession>> discovery_session(
       new NiceMock<MockBluetoothDiscoverySession>());
 
   ON_CALL(*discovery_session, Stop(_, _))
-      .WillByDefault(Invoke(
-          &LayoutTestBluetoothAdapterProvider::SuccessfulDiscoverySessionStop));
+      .WillByDefault(RunCallback<0 /* success_callback */>());
 
-  callback.Run(discovery_session.Pass());
-}
-
-// static
-void LayoutTestBluetoothAdapterProvider::SuccessfulDiscoverySessionStop(
-    const base::Closure& callback,
-    const base::Closure& error_callback) {
-  callback.Run();
+  return discovery_session.Pass();
 }
 
 }  // namespace content
