@@ -2741,9 +2741,7 @@ _AddGroupConfig('strago', 'strago', (
 
 # oak-based boards
 _AddGroupConfig('oak', 'oak', (
-    ),
-    important=False,
-)
+))
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
 # for these release builders should go here.
@@ -3057,7 +3055,6 @@ _waterfall_config_map = {
       'daisy_winter-release',
       'kayle-release',
       'nyan_freon-release',
-      'oak-release-group',
       'panther_moblab-release',
       'rush_ryu-release',
       'smaug-release',
