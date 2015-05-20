@@ -21,10 +21,47 @@ from chromite.lib import portage_util
 from chromite.lib import retry_util
 
 
+# Version of the Manifest file being generated for SDK artifacts. Should be
+# incremented for major format changes.
+PACKAGE_MANIFEST_VERSION = '1'
+
+# Paths excluded when packaging SDK artifacts. These are relative to the target
+# build root where SDK packages are being installed (e.g. /build/amd64-host).
+PACKAGE_EXCLUDED_PATHS = (
+    'usr/lib/debug',
+    constants.AUTOTEST_BUILD_PATH,
+    'packages',
+    'tmp'
+)
+
+# Names of various packaged artifacts.
+SDK_TARBALL_NAME = 'built-sdk.tar.xz'
+
+
 def SdkPerfPath(buildroot):
   """Return the path to the perf file for sdk stages."""
   return os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR, 'tmp',
                       'cros-sdk.perf')
+
+
+def CreateTarball(source_root, tarball_path, exclude_paths=None):
+  """Packs |source_root| into |tarball_path|.
+
+  Args:
+    source_root: Path to the directory we want to package.
+    tarball_path: Path of the tarball that should be created.
+    exclude_paths: Subdirectories to exclude.
+  """
+  # TODO(zbehan): We cannot use xz from the chroot unless it's
+  # statically linked.
+  extra_args = None
+  if exclude_paths is not None:
+    extra_args = ['--exclude=%s/*' % path for path in exclude_paths]
+  # Options for maximum compression.
+  extra_env = {'XZ_OPT': '-e9'}
+  cros_build_lib.CreateTarball(
+      tarball_path, source_root, sudo=True, extra_args=extra_args,
+      debug_level=logging.INFO, extra_env=extra_env)
 
 
 class SDKBuildToolchainsStage(generic_stages.BuilderStage):
@@ -67,27 +104,19 @@ class SDKBuildToolchainsStage(generic_stages.BuilderStage):
 class SDKPackageStage(generic_stages.BuilderStage):
   """Stage that performs preparing and packaging SDK files"""
 
-  # Version of the Manifest file being generated. Should be incremented for
-  # Major format changes.
-  MANIFEST_VERSION = '1'
-  _EXCLUDED_PATHS = ('usr/lib/debug', constants.AUTOTEST_BUILD_PATH,
-                     'packages', 'tmp')
-
   def __init__(self, builder_run, version=None, **kwargs):
     self.sdk_version = version
     super(SDKPackageStage, self).__init__(builder_run, **kwargs)
 
   def PerformStage(self):
-    tarball_name = 'built-sdk.tar.xz'
-    tarball_location = os.path.join(self._build_root, tarball_name)
+    tarball_location = os.path.join(self._build_root, SDK_TARBALL_NAME)
     chroot_location = os.path.join(self._build_root,
                                    constants.DEFAULT_CHROOT_DIR)
     board_location = os.path.join(chroot_location, 'build/amd64-host')
-    manifest_location = os.path.join(self._build_root,
-                                     '%s.Manifest' % tarball_name)
+    manifest_location = tarball_location + '.Manifest'
 
     # Create a tarball of the latest SDK.
-    self.CreateSDKTarball(chroot_location, board_location, tarball_location)
+    CreateTarball(board_location, tarball_location)
 
     # Create a package manifest for the tarball.
     self.CreateManifestFromSDK(board_location, manifest_location)
@@ -97,23 +126,6 @@ class SDKPackageStage(generic_stages.BuilderStage):
     cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
 
     self.SendPerfValues(tarball_location)
-
-  def CreateSDKTarball(self, _chroot, sdk_path, dest_tarball):
-    """Creates an SDK tarball from a given source chroot.
-
-    Args:
-      chroot: A chroot used for finding compression tool.
-      sdk_path: Path to the root of newly generated SDK image.
-      dest_tarball: Path of the tarball that should be created.
-    """
-    # TODO(zbehan): We cannot use xz from the chroot unless it's
-    # statically linked.
-    extra_args = ['--exclude=%s/*' % path for path in self._EXCLUDED_PATHS]
-    # Options for maximum compression.
-    extra_env = {'XZ_OPT': '-e9'}
-    cros_build_lib.CreateTarball(
-        dest_tarball, sdk_path, sudo=True, extra_args=extra_args,
-        debug_level=logging.INFO, extra_env=extra_env)
 
   def CreateManifestFromSDK(self, sdk_path, dest_manifest):
     """Creates a manifest from a given source chroot.
@@ -130,7 +142,7 @@ class SDKPackageStage(generic_stages.BuilderStage):
 
   def _WriteManifest(self, data, manifest):
     """Encode manifest into a json file."""
-    json_input = dict(version=self.MANIFEST_VERSION, packages=data)
+    json_input = dict(version=PACKAGE_MANIFEST_VERSION, packages=data)
     osutils.WriteFile(manifest, json.dumps(json_input))
 
   @staticmethod
@@ -188,7 +200,7 @@ class SDKTestStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     new_chroot_dir = 'new-sdk-chroot'
-    tarball_location = os.path.join(self._build_root, 'built-sdk.tar.xz')
+    tarball_location = os.path.join(self._build_root, SDK_TARBALL_NAME)
     new_chroot_args = ['--chroot', new_chroot_dir]
     if self._run.options.chrome_root:
       new_chroot_args += ['--chrome_root', self._run.options.chrome_root]
