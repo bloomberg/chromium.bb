@@ -50,7 +50,7 @@ class ConnectionSecurityHelper {
   // Returns a security level describing the overall security state of
   // the given |WebContents|.
   static SecurityLevel GetSecurityLevelForWebContents(
-      content::WebContents* web_contents);
+      const content::WebContents* web_contents);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ConnectionSecurityHelper);

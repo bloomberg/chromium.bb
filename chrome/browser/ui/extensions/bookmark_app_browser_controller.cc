@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/connection_security_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -82,6 +83,11 @@ bool BookmarkAppBrowserController::ShouldShowLocationBar() {
   // Don't show a location bar until a navigation has occurred.
   if (web_contents->GetLastCommittedURL().is_empty())
     return false;
+
+  ConnectionSecurityHelper::SecurityLevel security_level =
+      ConnectionSecurityHelper::GetSecurityLevelForWebContents(web_contents);
+  if (security_level == ConnectionSecurityHelper::SECURITY_ERROR)
+    return true;
 
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
   return !(IsSameOriginOrMoreSecure(launch_url,

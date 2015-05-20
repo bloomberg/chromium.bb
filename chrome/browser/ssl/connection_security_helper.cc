@@ -57,7 +57,7 @@ GetSecurityLevelForNonSecureFieldTrial() {
 
 ConnectionSecurityHelper::SecurityLevel
 ConnectionSecurityHelper::GetSecurityLevelForWebContents(
-    content::WebContents* web_contents) {
+    const content::WebContents* web_contents) {
   if (!web_contents)
     return NONE;
 
