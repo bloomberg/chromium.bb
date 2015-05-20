@@ -237,9 +237,41 @@ function testInteractiveSelectClient1() {
                       [data.client_1]);
 }
 
-function testMatchResult() {
+function testMatchResultCA1() {
   chrome.platformKeys.selectClientCertificates(
       {interactive: false, request: requestCA1()},
+      callbackPass(function(matches) {
+        var expectedAlgorithm = {
+          modulusLength: 2048,
+          name: "RSASSA-PKCS1-v1_5",
+          publicExponent: new Uint8Array([0x01, 0x00, 0x01])
+        };
+        var actualAlgorithm = matches[0].keyAlgorithm;
+        assertEq(
+            expectedAlgorithm, actualAlgorithm,
+            'Member algorithm of Match does not equal the expected algorithm');
+      }));
+}
+
+function testMatchResultECDSA() {
+  var requestECDSA = {
+    certificateTypes: ['ecdsaSign'],
+    certificateAuthorities: []
+  };
+  chrome.platformKeys.selectClientCertificates(
+      {interactive: false, request: requestECDSA},
+      callbackPass(function(matches) {
+        assertEq(0, matches.length, 'No matches expected.');
+      }));
+}
+
+function testMatchResultRSA() {
+  var requestRSA = {
+    certificateTypes: ['rsaSign'],
+    certificateAuthorities: []
+  };
+  chrome.platformKeys.selectClientCertificates(
+      {interactive: false, request: requestRSA},
       callbackPass(function(matches) {
         var expectedAlgorithm = {
           modulusLength: 2048,
@@ -433,7 +465,9 @@ var testSuites = {
       testBackgroundInteractiveSelect,
       testSelectCA1Certs,
       testInteractiveSelectNoCerts,
-      testMatchResult,
+      testMatchResultCA1,
+      testMatchResultECDSA,
+      testMatchResultRSA,
       testGetKeyPairMissingAlgorithName,
       testGetKeyPairRejectsRSAPSS,
       testGetKeyPair,

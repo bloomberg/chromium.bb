@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/cert/x509_certificate.h"
-#include "net/ssl/ssl_client_cert_type.h"
 
 namespace content {
 class BrowserContext;
@@ -47,7 +46,7 @@ struct ClientCertificateRequest {
 
   // The list of the types of certificates requested, sorted in order of the
   // server's preference.
-  std::vector<net::SSLClientCertType> certificate_key_types;
+  std::vector<net::X509Certificate::PublicKeyType> certificate_key_types;
 
   // List of distinguished names of certificate authorities allowed by the
   // server. Each entry must be a DER-encoded X.509 DistinguishedName.
@@ -105,11 +104,14 @@ typedef base::Callback<void(scoped_ptr<net::CertificateList> matches,
                             const std::string& error_message)>
     SelectCertificatesCallback;
 
-// Returns the list of all certificates that match |request|. |callback| will be
-// invoked with these matches or an error message.
-void SelectClientCertificates(const ClientCertificateRequest& request,
-                              const SelectCertificatesCallback& callback,
-                              content::BrowserContext* browser_context);
+// Returns the list of all certificates that were issued by one of the
+// |certificate_authorities|. If |certificate_authorities| is empty, all
+// certificates will be returned. |callback| will be invoked with the matches or
+// an error message.
+void SelectClientCertificates(
+    const std::vector<std::string>& certificate_authorities,
+    const SelectCertificatesCallback& callback,
+    content::BrowserContext* browser_context);
 
 }  // namespace subtle
 

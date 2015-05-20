@@ -758,15 +758,20 @@ void SignRSAPKCS1Raw(const std::string& token_id,
                   browser_context, state_ptr);
 }
 
-void SelectClientCertificates(const ClientCertificateRequest& request,
-                              const SelectCertificatesCallback& callback,
-                              content::BrowserContext* browser_context) {
+void SelectClientCertificates(
+    const std::vector<std::string>& certificate_authorities,
+    const SelectCertificatesCallback& callback,
+    content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
       new net::SSLCertRequestInfo);
-  cert_request_info->cert_key_types = request.certificate_key_types;
-  cert_request_info->cert_authorities = request.certificate_authorities;
+
+  // Currently we do not pass down the requested certificate type to the net
+  // layer, as it does not support filtering certificates by type. Rather, we
+  // do not constrain the certificate type here, instead the caller has to apply
+  // filtering afterwards.
+  cert_request_info->cert_authorities = certificate_authorities;
 
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(

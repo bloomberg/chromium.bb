@@ -23,7 +23,6 @@ namespace platformKeys {
 
   enum ClientCertificateType {
     rsaSign,
-    dssSign,
     ecdsaSign
   };
 
@@ -31,7 +30,9 @@ namespace platformKeys {
   // See http://tools.ietf.org/html/rfc4346#section-7.4.4 .
   dictionary ClientCertificateRequest {
     // This field is a list of the types of certificates requested, sorted in
-    // order of the server's preference.
+    // order of the server's preference. Only certificates of a type contained
+    // in this list will be retrieved. If <code>certificateTypes</code> is the
+    // empty list, however, certificates of any type will be returned.
     ClientCertificateType[] certificateTypes;
 
     // List of distinguished names of certificate authorities allowed by the

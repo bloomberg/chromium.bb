@@ -481,7 +481,7 @@ class PlatformKeysService::SelectTask : public Task {
   // |GotMatchingCerts()|.
   void GetMatchingCerts() {
     platform_keys::subtle::SelectClientCertificates(
-        request_,
+        request_.certificate_authorities,
         base::Bind(&SelectTask::GotMatchingCerts, weak_factory_.GetWeakPtr()),
         service_->browser_context_);
   }
@@ -498,7 +498,30 @@ class PlatformKeysService::SelectTask : public Task {
       DoStep();
       return;
     }
-    matches_.swap(*matches);
+
+    // If the type field does not contain any entries, certificates of all types
+    // shall be returned.
+    if (request_.certificate_key_types.size() == 0) {
+      matches_.swap(*matches);
+      DoStep();
+      return;
+    }
+
+    // Filter the retrieved certificates returning only those whose type is
+    // equal to one of the entries in the type field of the certificate request.
+    for (scoped_refptr<net::X509Certificate>& certificate : *matches) {
+      net::X509Certificate::PublicKeyType actual_key_type =
+          net::X509Certificate::kPublicKeyTypeUnknown;
+      size_t unused_key_size = 0;
+      net::X509Certificate::GetPublicKeyInfo(
+          certificate->os_cert_handle(), &unused_key_size, &actual_key_type);
+      const std::vector<net::X509Certificate::PublicKeyType>& accepted_types =
+          request_.certificate_key_types;
+      if (std::find(accepted_types.begin(), accepted_types.end(),
+                    actual_key_type) != accepted_types.end()) {
+        matches_.push_back(certificate.Pass());
+      }
+    }
     DoStep();
   }
 

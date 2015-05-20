@@ -168,6 +168,21 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
     request.certificate_authorities.push_back(
         std::string(cert_authority.begin(), cert_authority.end()));
   }
+  for (const api_pk::ClientCertificateType& cert_type :
+       params->details.request.certificate_types) {
+    switch (cert_type) {
+      case api_pk::CLIENT_CERTIFICATE_TYPE_ECDSASIGN:
+        request.certificate_key_types.push_back(
+            net::X509Certificate::kPublicKeyTypeECDSA);
+        break;
+      case api_pk::CLIENT_CERTIFICATE_TYPE_RSASIGN:
+        request.certificate_key_types.push_back(
+            net::X509Certificate::kPublicKeyTypeRSA);
+        break;
+      case api_pk::CLIENT_CERTIFICATE_TYPE_NONE:
+        NOTREACHED();
+    }
+  }
   content::WebContents* web_contents = nullptr;
   if (params->details.interactive) {
     web_contents = GetSenderWebContents();
