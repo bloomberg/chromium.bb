@@ -24,9 +24,8 @@ NetworkConditions::~NetworkConditions() {}
 Status FindPresetNetwork(std::string network_name,
                          NetworkConditions* network_conditions) {
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  scoped_ptr<base::Value> networks_value;
-  networks_value.reset(json_reader.ReadToValue(kNetworks));
-  if (!networks_value.get())
+  scoped_ptr<base::Value> networks_value = json_reader.ReadToValue(kNetworks);
+  if (!networks_value)
     return Status(kUnknownError,
                   "could not parse network list because " +
                   json_reader.GetErrorMessage());
@@ -38,7 +37,6 @@ Status FindPresetNetwork(std::string network_name,
   for (base::ListValue::iterator it = networks->begin();
        it != networks->end();
        ++it) {
-
     base::DictionaryValue* network = NULL;
     if (!(*it)->GetAsDictionary(&network)) {
       return Status(kUnknownError,

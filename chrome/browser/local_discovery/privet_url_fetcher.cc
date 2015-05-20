@@ -303,10 +303,7 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
   }
 
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  scoped_ptr<base::Value> value;
-
-  value.reset(json_reader.ReadToValue(response_str));
-
+  scoped_ptr<base::Value> value = json_reader.ReadToValue(response_str);
   if (!value) {
     delegate_->OnError(this, JSON_PARSE_ERROR);
     return;

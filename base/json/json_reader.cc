@@ -6,6 +6,7 @@
 
 #include "base/json/json_parser.h"
 #include "base/logging.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -99,8 +100,8 @@ std::string JSONReader::ErrorCodeToString(JsonParseError error_code) {
   }
 }
 
-Value* JSONReader::ReadToValue(const std::string& json) {
-  return parser_->Parse(json);
+scoped_ptr<Value> JSONReader::ReadToValue(const std::string& json) {
+  return make_scoped_ptr(parser_->Parse(json));
 }
 
 JSONReader::JsonParseError JSONReader::error_code() const {

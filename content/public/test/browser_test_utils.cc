@@ -150,8 +150,8 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
     return true;
 
   base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  result->reset(reader.ReadToValue(json));
-  if (!result->get()) {
+  *result = reader.ReadToValue(json);
+  if (!*result) {
     DLOG(ERROR) << reader.GetErrorMessage();
     return false;
   }

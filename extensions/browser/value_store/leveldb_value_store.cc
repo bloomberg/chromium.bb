@@ -146,12 +146,13 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
-    base::Value* value = json_reader.ReadToValue(it->value().ToString());
+    scoped_ptr<base::Value> value =
+        json_reader.ReadToValue(it->value().ToString());
     if (!value) {
       return MakeReadResult(
           Error::Create(CORRUPTION, kInvalidJson, util::NewKey(key)));
     }
-    settings->SetWithoutPathExpansion(key, value);
+    settings->SetWithoutPathExpansion(key, value.Pass());
   }
 
   if (it->status().IsNotFound()) {
@@ -357,11 +358,11 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::ReadFromDb(
   if (!s.ok())
     return ToValueStoreError(s, util::NewKey(key));
 
-  base::Value* value = base::JSONReader().ReadToValue(value_as_json);
+  scoped_ptr<base::Value> value = base::JSONReader().ReadToValue(value_as_json);
   if (!value)
     return Error::Create(CORRUPTION, kInvalidJson, util::NewKey(key));
 
-  setting->reset(value);
+  *setting = value.Pass();
   return util::NoError();
 }
 

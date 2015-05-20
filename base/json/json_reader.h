@@ -115,7 +115,7 @@ class BASE_EXPORT JSONReader {
   static std::string ErrorCodeToString(JsonParseError error_code);
 
   // Parses an input string into a Value that is owned by the caller.
-  Value* ReadToValue(const std::string& json);
+  scoped_ptr<Value> ReadToValue(const std::string& json);
 
   // Returns the error code if the last call to ReadToValue() failed.
   // Returns JSON_NO_ERROR otherwise.
