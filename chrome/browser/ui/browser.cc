@@ -1114,8 +1114,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
   if (entry_count > 0) {
     // Send out notification so that observers are updated appropriately.
     new_contents->GetController().NotifyEntryChanged(
-        new_contents->GetController().GetEntryAtIndex(entry_count - 1),
-        entry_count - 1);
+        new_contents->GetController().GetEntryAtIndex(entry_count - 1));
   }
 
   if (session_service) {

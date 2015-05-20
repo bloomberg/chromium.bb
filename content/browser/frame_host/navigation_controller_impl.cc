@@ -1910,11 +1910,12 @@ void NavigationControllerImpl::LoadIfNecessary() {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-void NavigationControllerImpl::NotifyEntryChanged(const NavigationEntry* entry,
-                                                  int index) {
+void NavigationControllerImpl::NotifyEntryChanged(
+    const NavigationEntry* entry) {
   EntryChangedDetails det;
   det.changed_entry = entry;
-  det.index = index;
+  det.index = GetIndexOfEntry(
+      NavigationEntryImpl::FromNavigationEntry(entry));
   NotificationService::current()->Notify(
       NOTIFICATION_NAV_ENTRY_CHANGED,
       Source<NavigationController>(this),

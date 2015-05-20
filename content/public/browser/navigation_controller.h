@@ -410,9 +410,8 @@ class NavigationController {
   virtual bool IsInitialNavigation() const = 0;
 
   // Broadcasts the NOTIFICATION_NAV_ENTRY_CHANGED notification for the given
-  // entry (which must be at the given index). This will keep things in sync
-  // like the saved session.
-  virtual void NotifyEntryChanged(const NavigationEntry* entry, int index) = 0;
+  // entry. This will keep things in sync like the saved session.
+  virtual void NotifyEntryChanged(const NavigationEntry* entry) = 0;
 
   // Copies the navigation state from the given controller to this one. This
   // one should be empty (just created).

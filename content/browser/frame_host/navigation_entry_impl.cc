@@ -51,6 +51,11 @@ NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
   return static_cast<NavigationEntryImpl*>(entry);
 }
 
+const NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
+    const NavigationEntry* entry) {
+  return static_cast<const NavigationEntryImpl*>(entry);
+}
+
 NavigationEntryImpl::NavigationEntryImpl()
     : NavigationEntryImpl(nullptr, -1, GURL(), Referrer(), base::string16(),
                           ui::PAGE_TRANSITION_LINK, false) {

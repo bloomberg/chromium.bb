@@ -3634,17 +3634,16 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   // leaving a page, in which case our state may have already been moved to
   // the next page. The navigation controller will look up the appropriate
   // NavigationEntry and update it when it is notified via the delegate.
-
-  int entry_index = controller_.GetEntryIndexWithPageID(
+  NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       rvh->GetSiteInstance(), page_id);
-  if (entry_index < 0)
+
+  if (!entry)
     return;
-  NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
 
   if (page_state == entry->GetPageState())
     return;  // Nothing to update.
   entry->SetPageState(page_state);
-  controller_.NotifyEntryChanged(entry, entry_index);
+  controller_.NotifyEntryChanged(entry);
 }
 
 void WebContentsImpl::UpdateTargetURL(RenderViewHost* render_view_host,

@@ -50,6 +50,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   };
 
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
+  static const NavigationEntryImpl* FromNavigationEntry(
+      const NavigationEntry* entry);
 
   // The value of bindings() before it is set during commit.
   static int kInvalidBindings;

@@ -81,7 +81,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   void Reload(bool check_for_repost) override;
   void ReloadIgnoringCache(bool check_for_repost) override;
   void ReloadOriginalRequestURL(bool check_for_repost) override;
-  void NotifyEntryChanged(const NavigationEntry* entry, int index) override;
+  void NotifyEntryChanged(const NavigationEntry* entry) override;
   void CopyStateFrom(const NavigationController& source) override;
   void CopyStateFromAndPrune(NavigationController* source,
                              bool replace_entry) override;
