@@ -954,13 +954,6 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
     layout->AddView(CreateSupervisedUserDisclaimerView());
   }
 
-  if (IsProfileChooser(view_mode_)) {
-    layout->StartRow(1, 0);
-    if (switches::IsFastUserSwitching()) {
-      layout->AddView(CreateOtherProfilesView(other_profiles));
-    }
-  }
-
   layout->StartRow(0, 0);
   layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 

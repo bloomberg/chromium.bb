@@ -123,9 +123,16 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     EXPECT_GT([[tutorialOKButton title] length], 0U);
   }
 
-  void EnableFastUserSwitching() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kFastUserSwitching);
+  void StartFastUserSwitcher() {
+    NSRect frame = [test_window() frame];
+    NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
+    controller_.reset([[ProfileChooserController alloc]
+        initWithBrowser:browser()
+             anchoredAt:point
+               viewMode:profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER
+           tutorialMode:profiles::TUTORIAL_MODE_NONE
+            serviceType:signin::GAIA_SERVICE_TYPE_NONE]);
+    [controller_ showWindow:nil];
   }
 
   ProfileChooserController* controller() { return controller_; }
@@ -270,74 +277,9 @@ TEST_F(ProfileChooserControllerTest, RightClickTutorialNotShownAfterDismiss) {
   ASSERT_EQ(3U, [subviews count]);
 }
 
-TEST_F(ProfileChooserControllerTest, InitialLayoutWithFastUserSwitcher) {
-  switches::EnableNewAvatarMenuForTesting(
-      base::CommandLine::ForCurrentProcess());
-  EnableFastUserSwitching();
-  StartProfileChooserController();
-
-  NSArray* subviews = [[[controller() window] contentView] subviews];
-  ASSERT_EQ(2U, [subviews count]);
-  subviews = [[subviews objectAtIndex:0] subviews];
-
-  // Three profiles means we should have one active card and a
-  // fast user switcher which has two "other" profiles and 2 separators, and
-  // an option buttons view with its separator. We also have a promo for
-  // the new avatar menu.
-  // TODO(noms): Enforcing 8U fails on the waterfall debug bots, but it's not
-  // reproducible anywhere else.
-  ASSERT_GE([subviews count], 7U);
-
-  // There should be two buttons and a separator in the option buttons view.
-  // These buttons are tested in InitialLayoutWithNewMenu.
-  NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
-  ASSERT_EQ(3U, [buttonSubviews count]);
-
-  // There should be a separator.
-  EXPECT_TRUE([[subviews objectAtIndex:1] isKindOfClass:[NSBox class]]);
-
-  // There should be two "other profiles" items. The items are drawn from the
-  // bottom up, so in the opposite order of those in the AvatarMenu.
-  int profileIndex = 1;
-  for (int i = 5; i >= 2; i -= 2) {
-    // Each profile button has a separator.
-    EXPECT_TRUE([[subviews objectAtIndex:i] isKindOfClass:[NSBox class]]);
-
-    NSButton* button = base::mac::ObjCCast<NSButton>(
-        [subviews objectAtIndex:i-1]);
-    EXPECT_EQ(menu()->GetItemAt(profileIndex).name,
-              base::SysNSStringToUTF16([button title]));
-    EXPECT_EQ(profileIndex, [button tag]);
-    EXPECT_EQ(@selector(switchToProfile:), [button action]);
-    EXPECT_EQ(controller(), [button target]);
-    profileIndex++;
-  }
-
-  // There should be the profile avatar, name and links container in the active
-  // card view. The links displayed in the container are checked separately.
-  NSArray* activeCardSubviews = [[subviews objectAtIndex:6] subviews];
-  ASSERT_EQ(3U, [activeCardSubviews count]);
-
-  // Profile icon.
-  NSView* activeProfileImage = [activeCardSubviews objectAtIndex:2];
-  EXPECT_TRUE([activeProfileImage isKindOfClass:[NSButton class]]);
-
-  // Profile name.
-  NSView* activeProfileName = [activeCardSubviews objectAtIndex:1];
-  EXPECT_TRUE([activeProfileName isKindOfClass:[NSButton class]]);
-  EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
-      [base::mac::ObjCCast<NSButton>(activeProfileName) title]));
-
-  // Profile links. This is a local profile, so there should be a signin button
-  // and a signin promo. These are also tested in InitialLayoutWithNewMenu.
-  NSArray* linksSubviews = [[activeCardSubviews objectAtIndex:0] subviews];
-  EXPECT_EQ(2U, [linksSubviews count]);
-}
-
 TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
   switches::EnableNewAvatarMenuForTesting(
       base::CommandLine::ForCurrentProcess());
-  EnableFastUserSwitching();
 
   // Add two extra profiles, to make sure sorting is alphabetical and not
   // by order of creation.
@@ -349,7 +291,7 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
       CreateTestingProfile("test4", scoped_ptr<PrefServiceSyncable>(),
                            base::ASCIIToUTF16("Another Test"), 1, std::string(),
                            TestingProfile::TestingFactories());
-  StartProfileChooserController();
+  StartFastUserSwitcher();
 
   NSArray* subviews = [[[controller() window] contentView] subviews];
   ASSERT_EQ(2U, [subviews count]);
@@ -358,19 +300,15 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
                               @"New Profile",
                               @"Test 1",
                               @"Test 2" };
-  // There are four "other" profiles, each with a button and a separator, an
-  // active profile card, and an option buttons view with a separator. We
-  // also have an update promo for the new avatar menu.
-  // TODO(noms): Enforcing 12U fails on the waterfall debug bots, but it's not
-  // reproducible anywhere else.
-  ASSERT_GE([subviews count], 11U);
+  // There are four "other" profiles, each with a button and a separator.
+  ASSERT_EQ([subviews count], 8U);
   // There should be four "other profiles" items, sorted alphabetically. The
   // "other profiles" start at index 2 (after the option buttons view and its
   // separator), and each have a separator. We need to iterate through the
   // profiles in the order displayed in the bubble, which is opposite from the
   // drawn order.
   int sortedNameIndex = 0;
-  for (int i = 9; i >= 2; i -= 2) {
+  for (int i = 7; i > 0; i -= 2) {
     // The item at index i is the separator.
     NSButton* button = base::mac::ObjCCast<NSButton>(
         [subviews objectAtIndex:i-1]);

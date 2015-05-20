@@ -137,11 +137,6 @@ bool IsExtensionsMultiAccount() {
                    STATE_ACCOUNT_CONSISTENCY);
 }
 
-bool IsFastUserSwitching() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kFastUserSwitching);
-}
-
 bool IsGoogleProfileInfo() {
   return CheckFlag(switches::kGoogleProfileInfo, STATE_NEW_AVATAR_MENU);
 }

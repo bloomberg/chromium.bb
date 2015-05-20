@@ -42,10 +42,6 @@ extern const char kEnableRefreshTokenAnnotationRequest[] =
 // Enables multiple account versions of chrome.identity APIs.
 const char kExtensionsMultiAccount[] = "extensions-multi-account";
 
-// Allows displaying the list of existing profiles in the avatar bubble for
-// fast switching between profiles.
-const char kFastUserSwitching[] = "fast-user-switching";
-
 // Enables using GAIA information to populate profile name and icon.
 const char kGoogleProfileInfo[] = "google-profile-info";
 

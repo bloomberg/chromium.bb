@@ -1555,13 +1555,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableAccountConsistency)
   },
   {
-    "enable-fast-user-switching",
-    IDS_FLAGS_ENABLE_FAST_USER_SWITCHING_NAME,
-    IDS_FLAGS_ENABLE_FAST_USER_SWITCHING_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kFastUserSwitching)
-  },
-  {
     "enable-new-avatar-menu",
     IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_NAME,
     IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_DESCRIPTION,

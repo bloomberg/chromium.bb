@@ -875,6 +875,23 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 @end
 
 @interface ProfileChooserController ()
+// Adds an horizontal separator to |container| at |yOffset| and returns the
+// yOffset corresponding to after the separator.
+- (CGFloat)addSeparatorToContainer:(NSView*)container
+                         atYOffset:(CGFloat)yOffset;
+
+// Builds the right-click profile switcher.
+- (void)buildFastUserSwitcherViewWithProfiles:(NSMutableArray*)otherProfiles
+                                    atYOffset:(CGFloat)yOffset
+                                  inContainer:(NSView*)container;
+
+// Builds the regular profile chooser view.
+- (void)buildProfileChooserViewWithProfileView:(NSView*)currentProfileView
+                                  tutorialView:(NSView*)tutorialView
+                                     atYOffset:(CGFloat)yOffset
+                                   inContainer:(NSView*)container
+                                   displayLock:(bool)displayLock;
+
 // Builds the profile chooser view.
 - (NSView*)buildProfileChooserView;
 
@@ -1270,6 +1287,90 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       NSMakeSize(NSWidth([subView frame]), NSHeight([subView frame])));
 }
 
+- (CGFloat)addSeparatorToContainer:(NSView*)container
+                         atYOffset:(CGFloat)yOffset {
+  NSBox* separator = [self horizontalSeparatorWithFrame:NSMakeRect(
+      0, yOffset, kFixedMenuWidth, 0)];
+  [container addSubview:separator];
+  return NSMaxY([separator frame]);
+}
+
+// Builds the fast user switcher view in |container| at |yOffset| and populates
+// it with the entries for every profile in |otherProfiles|. Returns the new
+// yOffset after adding the elements.
+- (void)buildFastUserSwitcherViewWithProfiles:(NSMutableArray*)otherProfiles
+                                    atYOffset:(CGFloat)yOffset
+                                  inContainer:(NSView*)container {
+  // Other profiles switcher. The profiles have already been sorted
+  // by their y-coordinate, so they can be added in the existing order.
+  for (NSView* otherProfileView in otherProfiles) {
+   [otherProfileView setFrameOrigin:NSMakePoint(0, yOffset)];
+   [container addSubview:otherProfileView];
+   yOffset = NSMaxY([otherProfileView frame]);
+
+   yOffset = [self addSeparatorToContainer:container atYOffset: yOffset];
+  }
+
+  [container setFrameSize:NSMakeSize(kFixedMenuWidth, yOffset)];
+}
+
+- (void)buildProfileChooserViewWithProfileView:(NSView*)currentProfileView
+                                  tutorialView:(NSView*)tutorialView
+                                     atYOffset:(CGFloat)yOffset
+                                   inContainer:(NSView*)container
+                                   displayLock:(bool)displayLock {
+  // Option buttons.
+  NSRect rect = NSMakeRect(0, yOffset, kFixedMenuWidth, 0);
+  NSView* optionsView = [self createOptionsViewWithRect:rect
+                                            displayLock:displayLock];
+  [container addSubview:optionsView];
+  rect.origin.y = NSMaxY([optionsView frame]);
+
+  NSBox* separator = [self horizontalSeparatorWithFrame:rect];
+  [container addSubview:separator];
+  yOffset = NSMaxY([separator frame]);
+
+  // For supervised users, add the disclaimer text.
+  if (browser_->profile()->IsSupervised()) {
+    yOffset += kSmallVerticalSpacing;
+    NSView* disclaimerContainer = [self createSupervisedUserDisclaimerView];
+    [disclaimerContainer setFrameOrigin:NSMakePoint(0, yOffset)];
+    [container addSubview:disclaimerContainer];
+    yOffset = NSMaxY([disclaimerContainer frame]);
+    yOffset += kSmallVerticalSpacing;
+
+    yOffset = [self addSeparatorToContainer:container atYOffset: yOffset];
+  }
+
+  if (viewMode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
+    NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
+        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+    [container addSubview:currentProfileAccountsView];
+    yOffset = NSMaxY([currentProfileAccountsView frame]);
+
+    yOffset = [self addSeparatorToContainer:container atYOffset: yOffset];
+  }
+
+  // Active profile card.
+  if (currentProfileView) {
+    yOffset += kVerticalSpacing;
+    [currentProfileView setFrameOrigin:NSMakePoint(0, yOffset)];
+    [container addSubview:currentProfileView];
+    yOffset = NSMaxY([currentProfileView frame]) + kVerticalSpacing;
+  }
+
+  if (tutorialView) {
+    [tutorialView setFrameOrigin:NSMakePoint(0, yOffset)];
+    [container addSubview:tutorialView];
+    yOffset = NSMaxY([tutorialView frame]);
+    //TODO(mlerman): update UMA stats for the new tutorials.
+  } else {
+    tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
+  }
+
+  [container setFrameSize:NSMakeSize(kFixedMenuWidth, yOffset)];
+}
+
 - (NSView*)buildProfileChooserView {
   base::scoped_nsobject<NSView> container(
       [[NSView alloc] initWithFrame:NSZeroRect]);
@@ -1312,80 +1413,18 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // overlap the bubble's rounded corners.
   CGFloat yOffset = 1;
 
-  if (!isFastProfileChooser) {
-    // Option buttons.
-    NSRect rect = NSMakeRect(0, yOffset, kFixedMenuWidth, 0);
-    NSView* optionsView = [self createOptionsViewWithRect:rect
-                                              displayLock:displayLock];
-    [container addSubview:optionsView];
-    rect.origin.y = NSMaxY([optionsView frame]);
-
-    NSBox* separator = [self horizontalSeparatorWithFrame:rect];
-    [container addSubview:separator];
-    yOffset = NSMaxY([separator frame]);
-  }
-
-  if ((viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
-       switches::IsFastUserSwitching()) || isFastProfileChooser) {
-    // Other profiles switcher. The profiles have already been sorted
-    // by their y-coordinate, so they can be added in the existing order.
-    for (NSView *otherProfileView in otherProfiles.get()) {
-      [otherProfileView setFrameOrigin:NSMakePoint(0, yOffset)];
-      [container addSubview:otherProfileView];
-      yOffset = NSMaxY([otherProfileView frame]);
-
-      NSBox* separator = [self horizontalSeparatorWithFrame:NSMakeRect(
-          0, yOffset, kFixedMenuWidth, 0)];
-      [container addSubview:separator];
-      yOffset = NSMaxY([separator frame]);
-    }
-  }
-
-  // For supervised users, add the disclaimer text.
-  if (browser_->profile()->IsSupervised()) {
-    yOffset += kSmallVerticalSpacing;
-    NSView* disclaimerContainer = [self createSupervisedUserDisclaimerView];
-    [disclaimerContainer setFrameOrigin:NSMakePoint(0, yOffset)];
-    [container addSubview:disclaimerContainer];
-    yOffset = NSMaxY([disclaimerContainer frame]);
-    yOffset += kSmallVerticalSpacing;
-
-    NSBox* separator = [self horizontalSeparatorWithFrame:NSMakeRect(
-        0, yOffset, kFixedMenuWidth, 0)];
-    [container addSubview:separator];
-    yOffset = NSMaxY([separator frame]);
-  }
-
-  if (viewMode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
-    NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
-        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
-    [container addSubview:currentProfileAccountsView];
-    yOffset = NSMaxY([currentProfileAccountsView frame]);
-
-    NSBox* accountsSeparator = [self horizontalSeparatorWithFrame:
-        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
-    [container addSubview:accountsSeparator];
-    yOffset = NSMaxY([accountsSeparator frame]);
-  }
-
-  // Active profile card.
-  if (!isFastProfileChooser && currentProfileView) {
-    yOffset += kVerticalSpacing;
-    [currentProfileView setFrameOrigin:NSMakePoint(0, yOffset)];
-    [container addSubview:currentProfileView];
-    yOffset = NSMaxY([currentProfileView frame]) + kVerticalSpacing;
-  }
-
-  if (!isFastProfileChooser && tutorialView) {
-    [tutorialView setFrameOrigin:NSMakePoint(0, yOffset)];
-    [container addSubview:tutorialView];
-    yOffset = NSMaxY([tutorialView frame]);
-    //TODO(mlerman): update UMA stats for the new tutorials.
+  if (isFastProfileChooser) {
+    [self buildFastUserSwitcherViewWithProfiles:otherProfiles.get()
+                                      atYOffset:yOffset
+                                    inContainer:container.get()];
   } else {
-    tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
+    [self buildProfileChooserViewWithProfileView:currentProfileView
+                                    tutorialView:tutorialView
+                                       atYOffset:yOffset
+                                     inContainer:container.get()
+                                     displayLock:displayLock];
   }
 
-  [container setFrameSize:NSMakeSize(kFixedMenuWidth, yOffset)];
   return container.autorelease();
 }
 

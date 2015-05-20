@@ -25,9 +25,6 @@ bool IsEnableWebviewBasedSignin();
 // Whether the chrome.identity API should be multi-account.
 bool IsExtensionsMultiAccount();
 
-// Checks whether the flag for fast user switching is enabled.
-bool IsFastUserSwitching();
-
 // Enables using GAIA information to populate profile name and icon.
 bool IsGoogleProfileInfo();
 

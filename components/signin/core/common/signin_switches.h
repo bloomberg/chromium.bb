@@ -24,7 +24,6 @@ extern const char kEnableNewAvatarMenu[];
 extern const char kEnableNewProfileManagement[];
 extern const char kEnableRefreshTokenAnnotationRequest[];
 extern const char kExtensionsMultiAccount[];
-extern const char kFastUserSwitching[];
 extern const char kGoogleProfileInfo[];
 
 }  // namespace switches
