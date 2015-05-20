@@ -11,7 +11,6 @@ layer at (8,28) size 380x380
   LayoutBlockFlow (relative positioned) {DIV} at (0,20) size 380x380 [border: (20px solid #00000000)]
     LayoutBlockFlow {DIV} at (90,40) size 250x220 [border: (10px solid #00000000)]
       LayoutInline {SPAN} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (228,78) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (220,50) size 100x100 [bgcolor=#FF0000]
 layer at (228,78) size 100x100
