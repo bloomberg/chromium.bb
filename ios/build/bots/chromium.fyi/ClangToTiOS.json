@@ -3,9 +3,9 @@
     "hans"
   ],
   "comments": [
-    "Clang tip-of-tree builder for iOS"
+    "Clang tip-of-tree builder for iOS."
   ],
-  "xcode version": "6.2",
+  "xcode version": "6.3",
   "GYP_DEFINES": {
     "chromium_ios_signing": "0",
     "clang_use_chrome_plugins": "0",
@@ -17,7 +17,7 @@
   },
   "compiler": "ninja",
   "configuration": "Release",
-  "sdk": "iphoneos8.2",
+  "sdk": "iphoneos8.3",
   "tests": [
   ]
 }
