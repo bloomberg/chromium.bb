@@ -49,7 +49,7 @@ namespace {
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=95626";
 static const char kWeakDHKeyLearnMoreUrl[] =
-    "http://sites.google.com/a/chromium.org/dev/"
+    "https://www.chromium.org/administrators/"
     "err_ssl_weak_server_ephemeral_dh_key";
 #if defined(OS_CHROMEOS)
 static const char kAppWarningLearnMoreUrl[] =
