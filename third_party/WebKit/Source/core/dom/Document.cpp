@@ -5764,7 +5764,7 @@ DEFINE_TRACE(Document)
     DocumentLifecycleNotifier::trace(visitor);
 }
 
-template class WillBeHeapSupplement<Document>;
+template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;
 
 } // namespace blink
 

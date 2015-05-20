@@ -74,14 +74,14 @@ const WrapperTypeInfo* DOMTypedArray<WTFTypedArray, V8TypedArray>::wrapperTypeIn
     return &DOMTypedArrayTraits<DOMTypedArray<WTFTypedArray, V8TypedArray>>::Type::wrapperTypeInfo;
 }
 
-template class CORE_EXPORT DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
-template class CORE_EXPORT DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
-template class CORE_EXPORT DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
-template class CORE_EXPORT DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
-template class CORE_EXPORT DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
-template class CORE_EXPORT DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
-template class CORE_EXPORT DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
-template class CORE_EXPORT DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
-template class CORE_EXPORT DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
 
 } // namespace blink

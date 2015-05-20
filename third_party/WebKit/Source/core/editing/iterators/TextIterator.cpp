@@ -1104,7 +1104,7 @@ String plainText(const PositionInComposedTree& start, const PositionInComposedTr
     return createPlainText<EditingInComposedTreeStrategy>(start, end, behavior);
 }
 
-template class CORE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
-template class CORE_EXPORT TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink

@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/MessagePort.h"
+#include "modules/ModulesExport.h"
 
 namespace blink {
 class ExecutionContext;
@@ -16,7 +17,7 @@ using StashedMessagePortArray = WillBeHeapVector<RefPtrWillBeMember<StashedMessa
 
 // Represents a message port that has been stashed. Overrides messageAvailable
 // to dispatch messages as a global event instead of as events on this port.
-class StashedMessagePort final : public MessagePort {
+class MODULES_EXPORT StashedMessagePort final : public MessagePort {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(StashedMessagePort);
 public:

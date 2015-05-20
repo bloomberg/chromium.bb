@@ -53,7 +53,7 @@ String plainText(const PositionInComposedTree& start, const PositionInComposedTr
 // chunks so as to optimize for performance of the iteration.
 
 template<typename Strategy>
-class TextIteratorAlgorithm {
+class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
     // [start, end] indicates the document range that the iteration should take place within (both ends inclusive).
@@ -185,8 +185,8 @@ private:
     TextIteratorTextState m_textState;
 };
 
-extern template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
-extern template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 
 using TextIterator = TextIteratorAlgorithm<EditingStrategy>;
 using TextIteratorInComposedTree = TextIteratorAlgorithm<EditingInComposedTreeStrategy>;

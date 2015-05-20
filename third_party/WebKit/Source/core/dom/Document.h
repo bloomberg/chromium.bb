@@ -1425,7 +1425,7 @@ private:
     ClientHintsPreferences m_clientHintsPreferences;
 };
 
-extern template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;
 
 inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)
 {

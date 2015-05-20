@@ -32,9 +32,11 @@
 #ifndef PrerenderClient_h
 #define PrerenderClient_h
 
+#include "platform/PlatformExport.h"
+
 namespace blink {
 
-class PrerenderClient {
+class PLATFORM_EXPORT PrerenderClient {
 public:
     virtual ~PrerenderClient() { }
 

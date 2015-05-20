@@ -54,7 +54,7 @@ enum PositionMoveType {
 };
 
 template <typename Strategy>
-class PositionAlgorithm {
+class CORE_TEMPLATE_CLASS_EXPORT PositionAlgorithm {
     DISALLOW_ALLOCATION();
 public:
     using PositionType = typename Strategy::PositionType;
@@ -260,6 +260,9 @@ private:
     bool m_isLegacyEditingPosition;
 };
 
+extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInComposedTreeStrategy>;
+
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
@@ -444,9 +447,6 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::lastPositionInOrAft
         return PositionType();
     return Strategy::editingIgnoresContent(node) ? afterNode(node) : lastPositionInNode(node);
 }
-
-extern template class CORE_TEMPLATE_EXPORT PositionAlgorithm<EditingStrategy>;
-extern template class CORE_TEMPLATE_EXPORT PositionAlgorithm<EditingInComposedTreeStrategy>;
 
 PositionInComposedTree toPositionInComposedTree(const Position&);
 Position toPositionInDOMTree(const PositionInComposedTree&);

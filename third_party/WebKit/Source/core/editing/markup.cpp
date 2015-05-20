@@ -710,6 +710,6 @@ String createStyledMarkupForNavigationTransition(Node* node)
     return documentMarkup + serializer.takeResults();
 }
 
-template class CORE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 
 }

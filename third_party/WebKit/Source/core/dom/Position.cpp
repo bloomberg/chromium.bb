@@ -1511,8 +1511,8 @@ void PositionAlgorithm<Strategy>::showTreeForThisInComposedTree() const
 
 #endif
 
-template class CORE_EXPORT PositionAlgorithm<EditingStrategy>;
-template class CORE_EXPORT PositionAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT PositionAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT PositionAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink
 

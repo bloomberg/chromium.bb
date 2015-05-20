@@ -7,6 +7,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
+#include "modules/ModulesExport.h"
 #include "modules/serviceworkers/StashedMessagePort.h"
 #include "wtf/RefCounted.h"
 
@@ -15,7 +16,7 @@ class ScriptState;
 class ScriptValue;
 class ServiceWorkerGlobalScope;
 
-class StashedPortCollection final
+class MODULES_EXPORT StashedPortCollection final
     : public EventTargetWithInlineData
     , public RefCountedWillBeNoBase<StashedPortCollection>
     , public ContextLifecycleObserver {

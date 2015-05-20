@@ -270,7 +270,7 @@ private:
     OwnPtrWillBeMember<FrameHost> m_frameHost;
 };
 
-extern template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;
 
 } // namespace blink
 

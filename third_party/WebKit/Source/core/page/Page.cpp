@@ -599,6 +599,6 @@ Page::PageClients::~PageClients()
 {
 }
 
-template class WillBeHeapSupplement<Page>;
+template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;
 
 } // namespace blink

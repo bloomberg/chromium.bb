@@ -64,14 +64,14 @@ void replaceChildrenWithFragment(ContainerNode*, PassRefPtrWillBeRawPtr<Document
 void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
 template <typename Strategy>
-class CreateMarkupAlgorithm {
+class CORE_TEMPLATE_CLASS_EXPORT CreateMarkupAlgorithm {
 public:
     using PositionType = typename Strategy::PositionType;
 
     static String createMarkup(const PositionType& startPosition, const PositionType& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 };
 
-extern template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 
 CORE_EXPORT String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);

@@ -22,7 +22,7 @@
 namespace blink {
 
 template<typename WTFTypedArray, typename V8TypedArray>
-class DOMTypedArray final : public DOMArrayBufferView {
+class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final : public DOMArrayBufferView {
     typedef DOMTypedArray<WTFTypedArray, V8TypedArray> ThisType;
     DECLARE_WRAPPERTYPEINFO();
 public:
@@ -78,15 +78,15 @@ private:
         : DOMArrayBufferView(bufferView, domArrayBuffer) { }
 };
 
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
-extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
 
 typedef DOMTypedArray<WTF::Int8Array, v8::Int8Array> DOMInt8Array;
 typedef DOMTypedArray<WTF::Int16Array, v8::Int16Array> DOMInt16Array;
