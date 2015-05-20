@@ -91,10 +91,9 @@ def LogResultsOfTestRun(config, results):
   for result in results:
     website, test_case, success, reason = result
     if not (config.save_only_fails and success):
-      logger.debug("Test case %s has %s on Website %s", test_case,
-                  website, {True: "passed", False: "failed"}[success])
       if not success:
-        logger.debug("Reason of failure: %s", reason)
+        logger.debug("%s.%s failed with reason: %s",
+                     website, test_case, reason)
 
     if not success:
       failed_tests.append("%s.%s" % (website, test_case))
@@ -120,7 +119,7 @@ def RunTestCaseOnWebsite((website, test_case, config)):
     logger.log(SCRIPT_DEBUG, "Run of test case %s of website %s started",
                test_case, website)
     try:
-      with stopit.ThreadingTimeout(100) as timeout:
+      with stopit.ThreadingTimeout(seconds=100) as timeout:
         logger.log(SCRIPT_DEBUG,
                    "Run test with parameters: %s %s %s %s %s %s",
                    config.chrome_path, config.chromedriver_path,
@@ -132,7 +131,7 @@ def RunTestCaseOnWebsite((website, test_case, config)):
       if timeout.state != timeout.EXECUTED:
         result =  (website, test_case, False,
                    "Got %d as timeout state (see stopit.ThreadingTimeout for"
-                   "the meaning of the number)" % timeout.state)
+                   " the meaning of the number)" % timeout.state)
       _, _, success, _ = result
       if success:
         return result
