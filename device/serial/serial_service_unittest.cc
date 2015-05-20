@@ -74,14 +74,13 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
     if (!io_handler_.get())
       io_handler_ = new TestSerialIoHandler;
     mojo::InterfacePtr<serial::SerialService> service;
-    mojo::BindToProxy(
-        new SerialServiceImpl(
-            new SerialConnectionFactory(
-                base::Bind(&SerialServiceTest::ReturnIoHandler,
-                           base::Unretained(this)),
-                base::ThreadTaskRunnerHandle::Get()),
-            scoped_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator)),
-        &service);
+    new SerialServiceImpl(
+        new SerialConnectionFactory(
+            base::Bind(&SerialServiceTest::ReturnIoHandler,
+                       base::Unretained(this)),
+            base::ThreadTaskRunnerHandle::Get()),
+        scoped_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator),
+        mojo::GetProxy(&service));
     mojo::InterfacePtr<serial::Connection> connection;
     mojo::InterfacePtr<serial::DataSink> sink;
     mojo::InterfacePtr<serial::DataSource> source;

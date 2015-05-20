@@ -12,16 +12,17 @@
 #include "device/serial/serial.mojom.h"
 #include "device/serial/serial_connection_factory.h"
 #include "device/serial/serial_device_enumerator.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
-class SerialServiceImpl : public mojo::InterfaceImpl<serial::SerialService> {
+class SerialServiceImpl : public serial::SerialService {
  public:
-  explicit SerialServiceImpl(
-      scoped_refptr<SerialConnectionFactory> connection_factory);
   SerialServiceImpl(scoped_refptr<SerialConnectionFactory> connection_factory,
-                    scoped_ptr<SerialDeviceEnumerator> device_enumerator);
+                    mojo::InterfaceRequest<serial::SerialService> request);
+  SerialServiceImpl(scoped_refptr<SerialConnectionFactory> connection_factory,
+                    scoped_ptr<SerialDeviceEnumerator> device_enumerator,
+                    mojo::InterfaceRequest<serial::SerialService> request);
   ~SerialServiceImpl() override;
 
   static void Create(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -33,7 +34,7 @@ class SerialServiceImpl : public mojo::InterfaceImpl<serial::SerialService> {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       mojo::InterfaceRequest<serial::SerialService> request);
 
-  // mojo::InterfaceImpl<SerialService> overrides.
+  // SerialService overrides.
   void GetDevices(
       const mojo::Callback<void(mojo::Array<serial::DeviceInfoPtr>)>& callback)
       override;
@@ -51,6 +52,7 @@ class SerialServiceImpl : public mojo::InterfaceImpl<serial::SerialService> {
 
   scoped_ptr<SerialDeviceEnumerator> device_enumerator_;
   scoped_refptr<SerialConnectionFactory> connection_factory_;
+  mojo::StrongBinding<serial::SerialService> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialServiceImpl);
 };

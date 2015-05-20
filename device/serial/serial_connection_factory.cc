@@ -125,10 +125,8 @@ void SerialConnectionFactory::ConnectTask::OnConnected(bool success) {
     return;
   }
 
-  mojo::BindToRequest(
-      new SerialConnection(io_handler_, sink_.Pass(), source_.Pass(),
-                           source_client_.Pass()),
-      &connection_request_);
+  new SerialConnection(io_handler_, sink_.Pass(), source_.Pass(),
+                       source_client_.Pass(), connection_request_.Pass());
 }
 
 }  // namespace device

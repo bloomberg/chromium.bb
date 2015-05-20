@@ -436,14 +436,13 @@ class SerialApiTest : public ApiTestBase {
 
   void CreateSerialService(
       mojo::InterfaceRequest<device::serial::SerialService> request) {
-    mojo::BindToRequest(new device::SerialServiceImpl(
-                            new device::SerialConnectionFactory(
-                                base::Bind(&SerialApiTest::GetIoHandler,
-                                           base::Unretained(this)),
-                                base::ThreadTaskRunnerHandle::Get()),
-                            scoped_ptr<device::SerialDeviceEnumerator>(
-                                new FakeSerialDeviceEnumerator)),
-                        &request);
+    new device::SerialServiceImpl(
+        new device::SerialConnectionFactory(
+            base::Bind(&SerialApiTest::GetIoHandler, base::Unretained(this)),
+            base::ThreadTaskRunnerHandle::Get()),
+        scoped_ptr<device::SerialDeviceEnumerator>(
+            new FakeSerialDeviceEnumerator),
+        request.Pass());
   }
 
   DISALLOW_COPY_AND_ASSIGN(SerialApiTest);

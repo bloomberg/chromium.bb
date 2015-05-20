@@ -138,9 +138,8 @@ void CreateTestSerialServiceOnFileThread(
           content::BrowserThread::IO));
   scoped_ptr<device::SerialDeviceEnumerator> device_enumerator(
       new FakeSerialDeviceEnumerator);
-  mojo::BindToRequest(new device::SerialServiceImpl(connection_factory,
-                                                    device_enumerator.Pass()),
-                      &request);
+  new device::SerialServiceImpl(connection_factory, device_enumerator.Pass(),
+                                request.Pass());
 }
 
 void CreateTestSerialService(

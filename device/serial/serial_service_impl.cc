@@ -11,15 +11,18 @@
 namespace device {
 
 SerialServiceImpl::SerialServiceImpl(
-    scoped_refptr<SerialConnectionFactory> connection_factory)
-    : connection_factory_(connection_factory) {
+    scoped_refptr<SerialConnectionFactory> connection_factory,
+    mojo::InterfaceRequest<serial::SerialService> request)
+    : connection_factory_(connection_factory), binding_(this, request.Pass()) {
 }
 
 SerialServiceImpl::SerialServiceImpl(
     scoped_refptr<SerialConnectionFactory> connection_factory,
-    scoped_ptr<SerialDeviceEnumerator> device_enumerator)
+    scoped_ptr<SerialDeviceEnumerator> device_enumerator,
+    mojo::InterfaceRequest<serial::SerialService> request)
     : device_enumerator_(device_enumerator.Pass()),
-      connection_factory_(connection_factory) {
+      connection_factory_(connection_factory),
+      binding_(this, request.Pass()) {
 }
 
 SerialServiceImpl::~SerialServiceImpl() {
@@ -30,12 +33,12 @@ void SerialServiceImpl::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     mojo::InterfaceRequest<serial::SerialService> request) {
-  mojo::BindToRequest(
-      new SerialServiceImpl(new SerialConnectionFactory(
+  new SerialServiceImpl(
+      new SerialConnectionFactory(
           base::Bind(SerialIoHandler::Create,
                      base::ThreadTaskRunnerHandle::Get(), ui_task_runner),
-          io_task_runner)),
-      &request);
+          io_task_runner),
+      request.Pass());
 }
 
 // static

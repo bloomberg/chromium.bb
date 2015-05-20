@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/serial/serial.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
@@ -18,15 +18,16 @@ class ReadOnlyBuffer;
 class SerialIoHandler;
 class WritableBuffer;
 
-class SerialConnection : public mojo::InterfaceImpl<serial::Connection> {
+class SerialConnection : public serial::Connection {
  public:
   SerialConnection(scoped_refptr<SerialIoHandler> io_handler,
                    mojo::InterfaceRequest<serial::DataSink> sink,
                    mojo::InterfaceRequest<serial::DataSource> source,
-                   mojo::InterfacePtr<serial::DataSourceClient> source_client);
+                   mojo::InterfacePtr<serial::DataSourceClient> source_client,
+                   mojo::InterfaceRequest<serial::Connection> request);
   ~SerialConnection() override;
 
-  // mojo::InterfaceImpl<serial::Connection> overrides.
+  // serial::Connection overrides.
   void GetInfo(
       const mojo::Callback<void(serial::ConnectionInfoPtr)>& callback) override;
   void SetOptions(serial::ConnectionOptionsPtr options,
@@ -46,6 +47,8 @@ class SerialConnection : public mojo::InterfaceImpl<serial::Connection> {
   scoped_refptr<SerialIoHandler> io_handler_;
   scoped_refptr<DataSinkReceiver> receiver_;
   scoped_refptr<DataSourceSender> sender_;
+
+  mojo::StrongBinding<serial::Connection> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialConnection);
 };
