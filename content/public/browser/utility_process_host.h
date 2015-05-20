@@ -80,8 +80,8 @@ class UtilityProcessHost : public IPC::Sender,
   // Starts the utility process in Mojo mode.
   virtual bool StartMojoMode() = 0;
 
-  // Returns the ServiceRegistry for this process. Only valid to call this if
-  // the process was started with StartMojoMode().
+  // Returns the ServiceRegistry for this process. Will return nullptr if
+  // the process was not started with StartMojoMode().
   virtual ServiceRegistry* GetServiceRegistry() = 0;
 
   // Set the name of the process to appear in the task manager.

@@ -10,4 +10,8 @@ bool BrowserChildProcessHostDelegate::CanShutdown() {
   return true;
 }
 
+ServiceRegistry* BrowserChildProcessHostDelegate::GetServiceRegistry() {
+  return nullptr;
+}
+
 }  // namespace content

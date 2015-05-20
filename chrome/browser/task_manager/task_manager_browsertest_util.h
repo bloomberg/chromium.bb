@@ -58,6 +58,9 @@ base::string16 MatchPrint(const char* title);       // "Print: " + title
 base::string16 MatchAnyPrint();                     // "Print: *"
 base::string16 MatchSubframe(const char* title);    // "Subframe: " + title
 base::string16 MatchAnySubframe();                  // "Subframe: *"
+// "Utility: " + title
+base::string16 MatchUtility(const base::string16& title);
+base::string16 MatchAnyUtility();                   // "Utility: *"
 
 }  // namespace browsertest_util
 }  // namespace task_manager

@@ -135,6 +135,7 @@
         }],
         ['OS!="android"', {
           'dependencies': [
+            'common_mojo_bindings',
             '../net/net.gyp:net_utility_services',
           ],
           'sources': [

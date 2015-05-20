@@ -10,6 +10,8 @@
 
 namespace content {
 
+class ServiceRegistry;
+
 // Interface that all users of BrowserChildProcessHost need to provide.
 class CONTENT_EXPORT BrowserChildProcessHostDelegate : public IPC::Listener {
  public:
@@ -32,6 +34,9 @@ class CONTENT_EXPORT BrowserChildProcessHostDelegate : public IPC::Listener {
   // process crashed (for posix, as returned from waitpid(), for Windows, as
   // returned from GetExitCodeProcess()).
   virtual void OnProcessCrashed(int exit_code) {}
+
+  // Returns the ServiceRegistry for this child process.
+  virtual ServiceRegistry* GetServiceRegistry();
 };
 
 };  // namespace content

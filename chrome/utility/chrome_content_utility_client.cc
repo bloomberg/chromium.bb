@@ -31,8 +31,11 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/common/resource_usage_reporter.mojom.h"
 #include "chrome/utility/profile_import_handler.h"
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"
+#include "net/proxy/proxy_resolver_v8.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #endif
 
 #if defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
@@ -89,6 +92,34 @@ void CreateProxyResolverFactory(
   // other end (in the browser process), or by a connection error, this object
   // will be destroyed.
   new net::MojoProxyResolverFactoryImpl(request.Pass());
+}
+
+class ResourceUsageReporterImpl : public ResourceUsageReporter {
+ public:
+  explicit ResourceUsageReporterImpl(
+      mojo::InterfaceRequest<ResourceUsageReporter> req)
+      : binding_(this, req.Pass()) {}
+  ~ResourceUsageReporterImpl() override {}
+
+ private:
+  void GetUsageData(
+      const mojo::Callback<void(ResourceUsageDataPtr)>& callback) override {
+    ResourceUsageDataPtr data = ResourceUsageData::New();
+    size_t total_heap_size = net::ProxyResolverV8::GetTotalHeapSize();
+    if (total_heap_size) {
+      data->reports_v8_stats = true;
+      data->v8_bytes_allocated = total_heap_size;
+      data->v8_bytes_used = net::ProxyResolverV8::GetUsedHeapSize();
+    }
+    callback.Run(data.Pass());
+  }
+
+  mojo::StrongBinding<ResourceUsageReporter> binding_;
+};
+
+void CreateResourceUsageReporter(
+    mojo::InterfaceRequest<ResourceUsageReporter> request) {
+  new ResourceUsageReporterImpl(request.Pass());
 }
 #endif  // OS_ANDROID
 
@@ -192,6 +223,8 @@ void ChromeContentUtilityClient::RegisterMojoServices(
 #if !defined(OS_ANDROID)
   registry->AddService<net::interfaces::ProxyResolverFactory>(
       base::Bind(CreateProxyResolverFactory));
+  registry->AddService<ResourceUsageReporter>(
+      base::Bind(CreateResourceUsageReporter));
 #endif
 }
 

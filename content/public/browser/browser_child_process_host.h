@@ -25,6 +25,7 @@ namespace content {
 class BrowserChildProcessHostDelegate;
 class ChildProcessHost;
 class SandboxedProcessLauncherDelegate;
+class ServiceRegistry;
 struct ChildProcessData;
 
 // This represents child processes of the browser process, i.e. plugins. They
@@ -37,6 +38,11 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   static BrowserChildProcessHost* Create(
       content::ProcessType process_type,
       BrowserChildProcessHostDelegate* delegate);
+
+  // Returns the child process host with unique id |child_process_id|, or
+  // nullptr if it doesn't exist. |child_process_id| is NOT the process ID, but
+  // is the same unique ID as |ChildProcessData::id|.
+  static BrowserChildProcessHost* FromID(int child_process_id);
 
   ~BrowserChildProcessHost() override {}
 
@@ -71,6 +77,10 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // they need to call this method so that the process handle is associated with
   // this object.
   virtual void SetHandle(base::ProcessHandle handle) = 0;
+
+  // Get the Mojo service registry connected to the child process. Returns
+  // nullptr if no service registry exists.
+  virtual ServiceRegistry* GetServiceRegistry() = 0;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Returns a PortProvider used to get process metrics for child processes.

@@ -7,14 +7,18 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/nacl/common/nacl_process_type.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/common/service_registry.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -43,6 +47,10 @@ class ChildProcessResource : public Resource {
   Type GetType() const override;
   bool SupportNetworkUsage() const override;
   void SetSupportNetworkUsage() override;
+  void Refresh() override;
+  bool ReportsV8MemoryStats() const override;
+  size_t GetV8MemoryAllocated() const override;
+  size_t GetV8MemoryUsed() const override;
 
   // Returns the pid of the child process.
   int process_id() const { return pid_; }
@@ -52,6 +60,12 @@ class ChildProcessResource : public Resource {
   // process would be "Plugin: Flash" when name is "Flash".
   base::string16 GetLocalizedTitle() const;
 
+  static mojo::InterfacePtrInfo<ResourceUsageReporter>
+  GetProcessUsageOnIOThread(int id);
+
+  void OnGetProcessUsageDone(
+      mojo::InterfacePtrInfo<ResourceUsageReporter> info);
+
   int process_type_;
   base::string16 name_;
   base::ProcessHandle handle_;
@@ -59,27 +73,48 @@ class ChildProcessResource : public Resource {
   int unique_process_id_;
   mutable base::string16 title_;
   bool network_usage_support_;
+  scoped_ptr<ProcessResourceUsage> resource_usage_;
 
   // The icon painted for the child processs.
   // TODO(jcampan): we should have plugin specific icons for well-known
   // plugins.
   static gfx::ImageSkia* default_icon_;
 
+  base::WeakPtrFactory<ChildProcessResource> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ChildProcessResource);
 };
 
 gfx::ImageSkia* ChildProcessResource::default_icon_ = NULL;
 
-ChildProcessResource::ChildProcessResource(
-    int process_type,
-    const base::string16& name,
-    base::ProcessHandle handle,
-    int unique_process_id)
+// static
+mojo::InterfacePtrInfo<ResourceUsageReporter>
+ChildProcessResource::GetProcessUsageOnIOThread(int id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  content::BrowserChildProcessHost* host =
+      content::BrowserChildProcessHost::FromID(id);
+  if (!host)
+    return mojo::InterfacePtrInfo<ResourceUsageReporter>();
+
+  content::ServiceRegistry* registry = host->GetServiceRegistry();
+  if (!registry)
+    return mojo::InterfacePtrInfo<ResourceUsageReporter>();
+
+  ResourceUsageReporterPtr service;
+  registry->ConnectToRemoteService(&service);
+  return service.PassInterface().Pass();
+}
+
+ChildProcessResource::ChildProcessResource(int process_type,
+                                           const base::string16& name,
+                                           base::ProcessHandle handle,
+                                           int unique_process_id)
     : process_type_(process_type),
       name_(name),
       handle_(handle),
       unique_process_id_(unique_process_id),
-      network_usage_support_(false) {
+      network_usage_support_(false),
+      weak_factory_(this) {
   // We cache the process id because it's not cheap to calculate, and it won't
   // be available when we get the plugin disconnected notification.
   pid_ = base::GetProcId(handle);
@@ -88,9 +123,25 @@ ChildProcessResource::ChildProcessResource(
     default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
     // TODO(jabdelmalek): use different icon for web workers.
   }
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ChildProcessResource::GetProcessUsageOnIOThread,
+                 unique_process_id),
+      base::Bind(&ChildProcessResource::OnGetProcessUsageDone,
+                 weak_factory_.GetWeakPtr()));
 }
 
 ChildProcessResource::~ChildProcessResource() {
+}
+
+void ChildProcessResource::OnGetProcessUsageDone(
+    mojo::InterfacePtrInfo<ResourceUsageReporter> info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (info.is_valid()) {
+    ResourceUsageReporterPtr service;
+    service.Bind(info.Pass());
+    resource_usage_.reset(new ProcessResourceUsage(service.Pass()));
+  }
 }
 
 // Resource methods:
@@ -198,6 +249,29 @@ base::string16 ChildProcessResource::GetLocalizedTitle() const {
   }
 
   return title;
+}
+
+void ChildProcessResource::Refresh() {
+  if (resource_usage_)
+    resource_usage_->Refresh();
+}
+
+bool ChildProcessResource::ReportsV8MemoryStats() const {
+  if (resource_usage_)
+    return resource_usage_->ReportsV8MemoryStats();
+  return false;
+}
+
+size_t ChildProcessResource::GetV8MemoryAllocated() const {
+  if (resource_usage_)
+    return resource_usage_->GetV8MemoryAllocated();
+  return 0;
+}
+
+size_t ChildProcessResource::GetV8MemoryUsed() const {
+  if (resource_usage_)
+    return resource_usage_->GetV8MemoryUsed();
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

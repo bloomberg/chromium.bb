@@ -30,6 +30,7 @@ namespace content {
 class BrowserChildProcessHostIterator;
 class BrowserChildProcessObserver;
 class BrowserMessageFilter;
+class ServiceRegistry;
 
 // Plugins/workers and other child processes that live on the IO thread use this
 // class. RenderProcessHostImpl is the main exception that doesn't use this
@@ -61,6 +62,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
                                                int* exit_code) override;
   void SetName(const base::string16& name) override;
   void SetHandle(base::ProcessHandle handle) override;
+  ServiceRegistry* GetServiceRegistry() override;
 
   // ChildProcessHostDelegate implementation:
   bool CanShutdown() override;

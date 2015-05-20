@@ -618,6 +618,8 @@
       'browser/prerender/prerender_util.h',
       'browser/process_info_snapshot.h',
       'browser/process_info_snapshot_mac.cc',
+      'browser/process_resource_usage.cc',
+      'browser/process_resource_usage.h',
       'browser/process_singleton.h',
       'browser/process_singleton_win.cc',
       'browser/push_messaging/push_messaging_app_identifier.cc',
@@ -3147,6 +3149,7 @@
         ['OS != "ios"', {
           'dependencies': [
             'apps',
+            'common_mojo_bindings',
             'debugger',
             'installer_util',
             '../third_party/re2/re2.gyp:re2',

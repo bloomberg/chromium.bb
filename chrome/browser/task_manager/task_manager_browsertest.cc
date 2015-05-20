@@ -55,10 +55,12 @@ using task_manager::browsertest_util::MatchAnyApp;
 using task_manager::browsertest_util::MatchAnyExtension;
 using task_manager::browsertest_util::MatchAnySubframe;
 using task_manager::browsertest_util::MatchAnyTab;
+using task_manager::browsertest_util::MatchAnyUtility;
 using task_manager::browsertest_util::MatchApp;
 using task_manager::browsertest_util::MatchExtension;
 using task_manager::browsertest_util::MatchSubframe;
 using task_manager::browsertest_util::MatchTab;
+using task_manager::browsertest_util::MatchUtility;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 using task_manager::browsertest_util::WaitForTaskManagerStatToExceed;
 
@@ -124,6 +126,26 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserTest);
+};
+
+class TaskManagerUtilityProcessBrowserTest : public TaskManagerBrowserTest {
+ public:
+  TaskManagerUtilityProcessBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    TaskManagerBrowserTest::SetUpCommandLine(command_line);
+
+    // Enable out-of-process proxy resolver. Use a trivial PAC script to ensure
+    // that some javascript is being executed.
+    command_line->AppendSwitch(switches::kV8PacMojoOutOfProcess);
+    command_line->AppendSwitchASCII(
+        switches::kProxyPacUrl,
+        "data:,function FindProxyForURL(url, host){return \"DIRECT;\";}");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerUtilityProcessBrowserTest);
 };
 
 // Parameterized variant of TaskManagerBrowserTest which runs with/without
@@ -839,6 +861,29 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
       minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+}
+
+// Checks that task manager counts utility process JS heap size.
+IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
+                       UtilityJSHeapMemory) {
+  ShowTaskManager();
+  ui_test_utils::NavigateToURL(browser(), GetTestURL());
+  // The PAC script is trivial, so don't expect a large heap.
+  size_t minimal_heap_size = 1024;
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchUtility(
+          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME)),
+      task_manager::browsertest_util::V8_MEMORY,
+      minimal_heap_size));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchUtility(
+          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME)),
+      task_manager::browsertest_util::V8_MEMORY_USED,
+      minimal_heap_size));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyUtility()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      1, MatchUtility(l10n_util::GetStringUTF16(
+          IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME))));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {

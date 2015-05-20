@@ -36,7 +36,10 @@ static_library("utility") {
       defines += [ "USE_SECCOMP_BPF" ]
     }
   } else {
-    deps += [ "//net:net_utility_services" ]
+    deps += [
+      "//chrome/common:mojo_bindings",
+      "//net:net_utility_services",
+    ]
     sources +=
         rebase_path(gypi_values.chrome_utility_importer_sources, ".", "..")
   }

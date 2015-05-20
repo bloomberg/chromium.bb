@@ -66,6 +66,17 @@ BrowserChildProcessHost* BrowserChildProcessHost::Create(
   return new BrowserChildProcessHostImpl(process_type, delegate);
 }
 
+BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserChildProcessHostImpl::BrowserChildProcessList* process_list =
+      g_child_process_list.Pointer();
+  for (BrowserChildProcessHostImpl* host : *process_list) {
+    if (host->GetData().id == child_process_id)
+      return host;
+  }
+  return nullptr;
+}
+
 #if defined(OS_MACOSX)
 base::ProcessMetrics::PortProvider* BrowserChildProcessHost::GetPortProvider() {
   return MachBroker::GetInstance();
@@ -185,6 +196,11 @@ void BrowserChildProcessHostImpl::SetName(const base::string16& name) {
 void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   data_.handle = handle;
+}
+
+ServiceRegistry* BrowserChildProcessHostImpl::GetServiceRegistry() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return delegate_->GetServiceRegistry();
 }
 
 void BrowserChildProcessHostImpl::ForceShutdown() {

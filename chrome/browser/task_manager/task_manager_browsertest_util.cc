@@ -251,5 +251,13 @@ base::string16 MatchAnySubframe() {
   return MatchSubframe("*");
 }
 
+base::string16 MatchUtility(const base::string16& title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX, title);
+}
+
+base::string16 MatchAnyUtility() {
+  return MatchUtility(base::ASCIIToUTF16("*"));
+}
+
 }  // namespace browsertest_util
 }  // namespace task_manager
