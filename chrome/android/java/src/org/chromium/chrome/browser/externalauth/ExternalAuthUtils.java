@@ -11,8 +11,12 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Binder;
 import android.text.TextUtils;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromiumApplication;
 
@@ -26,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ExternalAuthUtils {
     public static final int FLAG_SHOULD_BE_GOOGLE_SIGNED = 1 << 0;
     public static final int FLAG_SHOULD_BE_SYSTEM = 1 << 1;
-    private static final String TAG = "ExternalAuthUtils";
+    private static final String TAG = Log.makeTag("ExternalAuthUtils");
 
     // Use an AtomicReference since getInstance() can be called from multiple threads.
     private static AtomicReference<ExternalAuthUtils> sInstance =
@@ -148,5 +152,31 @@ public class ExternalAuthUtils {
      */
     public boolean isCallerValid(Context context, int authRequirements) {
         return isCallerValid(context, authRequirements, "");
+    }
+
+    /**
+     * Checks whether Google Play Services can be used, applying the specified error-handling
+     * policy if a user-recoverable error occurs. To avoid undue burden on the user, the error
+     * handling policy will be applied at most one time per browser startup (i.e., a dialog or
+     * a system notification).
+     * This method is threadsafe. If the specified error-handling policy requires UI interaction,
+     * an asynchronous task will be posted to the main thread to perform such interaction.
+     * @param context The current context.
+     * @param errorHandler How to handle user-recoverable errors; must be non-null.
+     * @return true if and only if Google Play Services can be used
+     */
+    public boolean canUseGooglePlayServices(
+            final Context context, final UserRecoverableErrorHandler errorHandler) {
+        final int errorCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+        if (errorCode == ConnectionResult.SUCCESS) {
+            return true; // Hooray!
+        }
+        // The rest of the method is error-handling bits.
+        Log.v(TAG, "Unable to use Google Play Services: %s",
+                GooglePlayServicesUtil.getErrorString(errorCode));
+        if (GooglePlayServicesUtil.isUserRecoverableError(errorCode)) {
+            ThreadUtils.runOnUiThread(errorHandler);
+        }
+        return false;
     }
 }
