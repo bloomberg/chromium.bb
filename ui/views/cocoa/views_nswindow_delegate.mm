@@ -116,4 +116,14 @@
   parent_->OnFullscreenTransitionComplete(false);
 }
 
+// Allow non-resizable windows (without NSResizableWindowMask) to fill the
+// screen in fullscreen mode. This only happens when
+// -[NSWindow toggleFullscreen:] is called since non-resizable windows have no
+// fullscreen button. Without this they would only enter fullscreen at their
+// current size.
+- (NSSize)window:(NSWindow*)window
+    willUseFullScreenContentSize:(NSSize)proposedSize {
+  return proposedSize;
+}
+
 @end

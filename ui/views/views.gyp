@@ -911,6 +911,7 @@
             '../../base/base.gyp:test_support_base',
             '../../skia/skia.gyp:skia',
             '../../testing/gtest.gyp:gtest',
+            '../base/ui_base.gyp:ui_base_test_support',
             '../compositor/compositor.gyp:compositor_test_support',
             '../resources/ui_resources.gyp:ui_resources',
             '../resources/ui_resources.gyp:ui_test_pak',

@@ -563,6 +563,8 @@ component("base") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test/nswindow_fullscreen_notification_waiter.h",
+    "test/nswindow_fullscreen_notification_waiter.mm",
     "test/test_clipboard.cc",
     "test/test_clipboard.h",
     "test/ui_controls.h",

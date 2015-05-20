@@ -667,6 +667,7 @@ if (!is_android) {
       "//third_party/safe_browsing:test_support",
       "//third_party/widevine/cdm:version_h",
       "//ui/accessibility:test_support",
+      "//ui/base:test_support",
       "//ui/compositor:test_support",
       "//ui/resources",
       "//ui/web_dialogs:test_support",

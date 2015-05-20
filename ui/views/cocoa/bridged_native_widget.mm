@@ -394,8 +394,12 @@ void BridgedNativeWidget::OnFullscreenTransitionStart(
 void BridgedNativeWidget::OnFullscreenTransitionComplete(
     bool actual_fullscreen_state) {
   in_fullscreen_transition_ = false;
-  if (target_fullscreen_state_ == actual_fullscreen_state)
+
+  if (target_fullscreen_state_ == actual_fullscreen_state) {
+    // Ensure constraints are re-applied when completing a transition.
+    OnSizeConstraintsChanged();
     return;
+  }
 
   // First update to reflect reality so that OnTargetFullscreenStateChanged()
   // expects the change.
@@ -438,13 +442,13 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
     return;  // TODO(tapted): Implement this for Snow Leopard.
   }
 
-  // Since fullscreen requests are ignored if the collection behavior does not
-  // allow it, save the collection behavior and restore it after.
-  NSWindowCollectionBehavior behavior = [window_ collectionBehavior];
-  [window_ setCollectionBehavior:behavior |
-                                 NSWindowCollectionBehaviorFullScreenPrimary];
+  // Enable fullscreen collection behavior because:
+  // 1: -[NSWindow toggleFullscreen:] would otherwise be ignored,
+  // 2: the fullscreen button must be enabled so the user can leave fullscreen.
+  // This will be reset when a transition out of fullscreen completes.
+  gfx::SetNSWindowCanFullscreen(window_, true);
+
   [window_ toggleFullScreen:nil];
-  [window_ setCollectionBehavior:behavior];
 }
 
 void BridgedNativeWidget::OnSizeChanged() {
@@ -529,7 +533,12 @@ void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
 }
 
 void BridgedNativeWidget::OnSizeConstraintsChanged() {
-  NSWindow* window = ns_window();
+  // Don't modify the size constraints or fullscreen collection behavior while
+  // in fullscreen or during a transition. OnFullscreenTransitionComplete will
+  // reset these after leaving fullscreen.
+  if (target_fullscreen_state_ || in_fullscreen_transition_)
+    return;
+
   Widget* widget = native_widget_mac()->GetWidget();
   gfx::Size min_size = widget->GetMinimumSize();
   gfx::Size max_size = widget->GetMaximumSize();
@@ -539,7 +548,7 @@ void BridgedNativeWidget::OnSizeConstraintsChanged() {
   bool shows_fullscreen_controls =
       is_resizable && widget->widget_delegate()->CanMaximize();
 
-  gfx::ApplyNSWindowSizeConstraints(window, min_size, max_size,
+  gfx::ApplyNSWindowSizeConstraints(window_, min_size, max_size,
                                     shows_resize_controls,
                                     shows_fullscreen_controls);
 }

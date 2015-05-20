@@ -21,7 +21,9 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
+#import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
 
+using extensions::AppWindow;
 using extensions::PlatformAppBrowserTest;
 
 namespace {
@@ -60,11 +62,11 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   extensions::AppWindowRegistry::AppWindowList windows =
       extensions::AppWindowRegistry::Get(profile())->app_windows();
 
-  extensions::AppWindow* app_window = windows.front();
+  AppWindow* app_window = windows.front();
   extensions::NativeAppWindow* native_window = app_window->GetBaseWindow();
   NSWindow* ns_window = native_window->GetNativeWindow();
 
-  extensions::AppWindow* other_app_window = windows.back();
+  AppWindow* other_app_window = windows.back();
   extensions::NativeAppWindow* other_native_window =
       other_app_window->GetBaseWindow();
   NSWindow* other_ns_window = other_native_window->GetNativeWindow();
@@ -72,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   // Normal Hide/Show.
   app_window->Hide();
   EXPECT_FALSE([ns_window isVisible]);
-  app_window->Show(extensions::AppWindow::SHOW_ACTIVE);
+  app_window->Show(AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
 
   // Normal Hide/ShowWithApp.
@@ -93,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   EXPECT_FALSE([ns_window isVisible]);
 
   // Return to shown state.
-  app_window->Show(extensions::AppWindow::SHOW_ACTIVE);
+  app_window->Show(AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
 
   // HideWithApp the other window.
@@ -104,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   // HideWithApp, Show shows all windows for this app.
   native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
-  app_window->Show(extensions::AppWindow::SHOW_ACTIVE);
+  app_window->Show(AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
   EXPECT_TRUE([other_ns_window isVisible]);
 
@@ -163,12 +165,12 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
     return;
 
   SetUpAppWithWindows(1);
-  extensions::AppWindow* app_window = GetFirstAppWindow();
+  AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
   NSWindow* ns_window = app_window->GetNativeWindow();
   base::scoped_nsobject<ScopedNotificationWatcher> watcher;
 
-  EXPECT_EQ(extensions::AppWindow::FULLSCREEN_TYPE_NONE,
+  EXPECT_EQ(AppWindow::FULLSCREEN_TYPE_NONE,
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
@@ -179,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   [ns_window toggleFullScreen:nil];
   [watcher waitForNotification];
   EXPECT_TRUE(app_window->fullscreen_types_for_test() &
-      extensions::AppWindow::FULLSCREEN_TYPE_OS);
+              AppWindow::FULLSCREEN_TYPE_OS);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
 
@@ -189,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   app_window->Restore();
   EXPECT_FALSE(window->IsFullscreenOrPending());
   [watcher waitForNotification];
-  EXPECT_EQ(extensions::AppWindow::FULLSCREEN_TYPE_NONE,
+  EXPECT_EQ(AppWindow::FULLSCREEN_TYPE_NONE,
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
@@ -201,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   EXPECT_TRUE(window->IsFullscreenOrPending());
   [watcher waitForNotification];
   EXPECT_TRUE(app_window->fullscreen_types_for_test() &
-      extensions::AppWindow::FULLSCREEN_TYPE_WINDOW_API);
+              AppWindow::FULLSCREEN_TYPE_WINDOW_API);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
 
@@ -210,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
                  andObject:ns_window]);
   [ns_window toggleFullScreen:nil];
   [watcher waitForNotification];
-  EXPECT_EQ(extensions::AppWindow::FULLSCREEN_TYPE_NONE,
+  EXPECT_EQ(AppWindow::FULLSCREEN_TYPE_NONE,
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
@@ -219,8 +221,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
 // Test that, in frameless windows, the web contents has the same size as the
 // window.
 IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Frameless) {
-  extensions::AppWindow* app_window =
-      CreateTestAppWindow("{\"frame\": \"none\"}");
+  AppWindow* app_window = CreateTestAppWindow("{\"frame\": \"none\"}");
   NSWindow* ns_window = app_window->GetNativeWindow();
   NSView* web_contents = app_window->web_contents()->GetNativeView();
   EXPECT_TRUE(NSEqualSizes(NSMakeSize(512, 384), [web_contents frame].size));
@@ -246,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Frameless) {
 namespace {
 
 // Test that resize and fullscreen controls are correctly enabled/disabled.
-void TestControls(extensions::AppWindow* app_window) {
+void TestControls(AppWindow* app_window) {
   NSWindow* ns_window = app_window->GetNativeWindow();
 
   // The window is resizable.
@@ -295,6 +296,24 @@ void TestControls(extensions::AppWindow* app_window) {
   EXPECT_FALSE([ns_window styleMask] & NSResizableWindowMask);
   if (base::mac::IsOSSnowLeopard())
     EXPECT_FALSE([ns_window showsResizeIndicator]);
+
+  // If a window is made fullscreen by the API, fullscreen should be enabled so
+  // the user can exit fullscreen.
+  if (base::mac::IsOSLionOrLater()) {
+    base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter([
+        [NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
+    app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, true);
+    [waiter waitForEnterCount:1 exitCount:0];
+    EXPECT_TRUE([ns_window collectionBehavior] &
+                NSWindowCollectionBehaviorFullScreenPrimary);
+    EXPECT_EQ(NSWidth([[ns_window contentView] frame]),
+              NSWidth([ns_window frame]));
+    // Once it leaves fullscreen, it is disabled again.
+    app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, false);
+    [waiter waitForEnterCount:1 exitCount:1];
+    EXPECT_FALSE([ns_window collectionBehavior] &
+                 NSWindowCollectionBehaviorFullScreenPrimary);
+  }
 }
 
 }  // namespace

@@ -669,6 +669,8 @@
             'ime/dummy_input_method.h',
             'ime/dummy_text_input_client.cc',
             'ime/dummy_text_input_client.h',
+            'test/nswindow_fullscreen_notification_waiter.h',
+            'test/nswindow_fullscreen_notification_waiter.mm',
           ],
         }],
         ['use_aura==1', {

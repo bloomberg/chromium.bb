@@ -8,93 +8,8 @@
 
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
-#include "base/run_loop.h"
+#import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
 #include "ui/views/test/widget_test.h"
-
-@interface NativeWidgetMacNotificationWaiter : NSObject {
- @private
-  scoped_ptr<base::RunLoop> runLoop_;
-  base::scoped_nsobject<NSWindow> window_;
-  int enterCount_;
-  int exitCount_;
-  int targetEnterCount_;
-  int targetExitCount_;
-}
-
-@property(readonly, nonatomic) int enterCount;
-@property(readonly, nonatomic) int exitCount;
-
-// Initialize for the given window and start tracking notifications.
-- (id)initWithWindow:(NSWindow*)window;
-
-// Keep spinning a run loop until the enter and exit counts match.
-- (void)waitForEnterCount:(int)enterCount exitCount:(int)exitCount;
-
-// private:
-// Exit the RunLoop if there is one and the counts being tracked match.
-- (void)maybeQuitForChangedArg:(int*)changedArg;
-
-- (void)onEnter:(NSNotification*)notification;
-- (void)onExit:(NSNotification*)notification;
-
-@end
-
-@implementation NativeWidgetMacNotificationWaiter
-
-@synthesize enterCount = enterCount_;
-@synthesize exitCount = exitCount_;
-
-- (id)initWithWindow:(NSWindow*)window {
-  if ((self = [super init])) {
-    window_.reset([window retain]);
-    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-    [defaultCenter addObserver:self
-                      selector:@selector(onEnter:)
-                          name:NSWindowDidEnterFullScreenNotification
-                        object:window];
-    [defaultCenter addObserver:self
-                      selector:@selector(onExit:)
-                          name:NSWindowDidExitFullScreenNotification
-                        object:window];
-  }
-  return self;
-}
-
-- (void)dealloc {
-  DCHECK(!runLoop_);
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
-}
-
-- (void)waitForEnterCount:(int)enterCount exitCount:(int)exitCount {
-  if (enterCount_ >= enterCount && exitCount_ >= exitCount)
-    return;
-
-  targetEnterCount_ = enterCount;
-  targetExitCount_ = exitCount;
-  runLoop_.reset(new base::RunLoop);
-  runLoop_->Run();
-  runLoop_.reset();
-}
-
-- (void)maybeQuitForChangedArg:(int*)changedArg {
-  ++*changedArg;
-  if (!runLoop_)
-    return;
-
-  if (enterCount_ >= targetEnterCount_ && exitCount_ >= targetExitCount_)
-    runLoop_->Quit();
-}
-
-- (void)onEnter:(NSNotification*)notification {
-  [self maybeQuitForChangedArg:&enterCount_];
-}
-
-- (void)onExit:(NSNotification*)notification {
-  [self maybeQuitForChangedArg:&exitCount_];
-}
-
-@end
 
 namespace views {
 
@@ -139,8 +54,9 @@ TEST_F(BridgedNativeWidgetUITest, FullscreenSynchronousState) {
       setCollectionBehavior:[test_window() collectionBehavior] |
                             NSWindowCollectionBehaviorFullScreenPrimary];
 
-  base::scoped_nsobject<NativeWidgetMacNotificationWaiter> waiter(
-      [[NativeWidgetMacNotificationWaiter alloc] initWithWindow:test_window()]);
+  base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
+      [[NSWindowFullscreenNotificationWaiter alloc]
+          initWithWindow:test_window()]);
   const gfx::Rect restored_bounds = widget_->GetRestoredBounds();
 
   // First show the widget. A user shouldn't be able to initiate fullscreen
@@ -186,8 +102,9 @@ TEST_F(BridgedNativeWidgetUITest, FullscreenSynchronousState) {
 // Test fullscreen without overlapping calls and without changing collection
 // behavior on the test window.
 TEST_F(BridgedNativeWidgetUITest, FullscreenEnterAndExit) {
-  base::scoped_nsobject<NativeWidgetMacNotificationWaiter> waiter(
-      [[NativeWidgetMacNotificationWaiter alloc] initWithWindow:test_window()]);
+  base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
+      [[NSWindowFullscreenNotificationWaiter alloc]
+          initWithWindow:test_window()]);
 
   EXPECT_FALSE(widget_->IsFullscreen());
   const gfx::Rect restored_bounds = widget_->GetRestoredBounds();
