@@ -67,6 +67,10 @@
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
 #endif
 
+#ifndef DRM_CLIENT_CAP_UNIVERSAL_PLANES
+#define DRM_CLIENT_CAP_UNIVERSAL_PLANES 2
+#endif
+
 #ifndef DRM_CAP_CURSOR_WIDTH
 #define DRM_CAP_CURSOR_WIDTH 0x8
 #endif
@@ -78,6 +82,24 @@
 #ifndef GBM_BO_USE_CURSOR
 #define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
 #endif
+
+/**
+ * List of properties attached to DRM planes
+ */
+enum wdrm_plane_property {
+	WDRM_PLANE_TYPE = 0,
+	WDRM_PLANE__COUNT
+};
+
+/**
+ * Possible values for the WDRM_PLANE_TYPE property.
+ */
+enum wdrm_plane_type {
+	WDRM_PLANE_TYPE_PRIMARY = 0,
+	WDRM_PLANE_TYPE_CURSOR,
+	WDRM_PLANE_TYPE_OVERLAY,
+	WDRM_PLANE_TYPE__COUNT
+};
 
 /**
  * List of properties attached to a DRM connector
@@ -149,6 +171,8 @@ struct drm_backend {
 	int sprites_hidden;
 
 	int cursors_are_broken;
+
+	bool universal_planes;
 
 	int use_pixman;
 
@@ -223,9 +247,13 @@ struct drm_plane {
 	struct drm_output *output;
 	struct drm_backend *backend;
 
+	enum wdrm_plane_type type;
+
 	uint32_t possible_crtcs;
 	uint32_t plane_id;
 	uint32_t count_formats;
+
+	struct drm_property_info props[WDRM_PLANE__COUNT];
 
 	/* The last framebuffer submitted to the kernel for this plane. */
 	struct drm_fb *fb_current;
@@ -1974,6 +2002,11 @@ init_kms_caps(struct drm_backend *b)
 	else
 		b->cursor_height = 64;
 
+	ret = drmSetClientCap(b->drm.fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+	b->universal_planes = (ret == 0);
+	weston_log("DRM: %s universal planes\n",
+		   b->universal_planes ? "supports" : "does not support");
+
 	return 0;
 }
 
@@ -2087,6 +2120,26 @@ static struct drm_plane *
 drm_plane_create(struct drm_backend *b, const drmModePlane *kplane)
 {
 	struct drm_plane *plane;
+	drmModeObjectProperties *props;
+
+	static struct drm_property_enum_info plane_type_enums[] = {
+		[WDRM_PLANE_TYPE_PRIMARY] = {
+			.name = "Primary",
+		},
+		[WDRM_PLANE_TYPE_OVERLAY] = {
+			.name = "Overlay",
+		},
+		[WDRM_PLANE_TYPE_CURSOR] = {
+			.name = "Cursor",
+		},
+	};
+	static const struct drm_property_info plane_props[] = {
+		[WDRM_PLANE_TYPE] = {
+			.name = "type",
+			.enum_values = plane_type_enums,
+			.num_enum_values = WDRM_PLANE_TYPE__COUNT,
+		},
+	};
 
 	plane = zalloc(sizeof(*plane) + ((sizeof(uint32_t)) *
 					  kplane->count_formats));
@@ -2101,6 +2154,21 @@ drm_plane_create(struct drm_backend *b, const drmModePlane *kplane)
 	plane->count_formats = kplane->count_formats;
 	memcpy(plane->formats, kplane->formats,
 	       kplane->count_formats * sizeof(kplane->formats[0]));
+
+	props = drmModeObjectGetProperties(b->drm.fd, kplane->plane_id,
+					   DRM_MODE_OBJECT_PLANE);
+	if (!props) {
+		weston_log("couldn't get plane properties\n");
+		free(plane);
+		return NULL;
+	}
+	drm_property_info_populate(b, plane_props, plane->props,
+				   WDRM_PLANE__COUNT, props);
+	plane->type =
+		drm_property_get_value(&plane->props[WDRM_PLANE_TYPE],
+				       props,
+				       WDRM_PLANE_TYPE_OVERLAY);
+	drmModeFreeObjectProperties(props);
 
 	weston_plane_init(&plane->base, b->compositor, 0, 0);
 	wl_list_insert(&b->sprite_list, &plane->link);
@@ -2123,6 +2191,7 @@ drm_plane_destroy(struct drm_plane *plane)
 			0, 0, 0, 0, 0, 0, 0, 0);
 	assert(!plane->fb_last);
 	assert(!plane->fb_pending);
+	drm_property_info_free(plane->props, WDRM_PLANE__COUNT);
 	drm_fb_unref(plane->fb_current);
 	weston_plane_release(&plane->base);
 	wl_list_remove(&plane->link);
@@ -2162,6 +2231,12 @@ create_sprites(struct drm_backend *b)
 		drmModeFreePlane(kplane);
 		if (!drm_plane)
 			continue;
+
+		/* Ignore non-overlay planes for now. */
+		if (drm_plane->type != WDRM_PLANE_TYPE_OVERLAY) {
+			drm_plane_destroy(drm_plane);
+			continue;
+		}
 
 		weston_compositor_stack_plane(b->compositor, &drm_plane->base,
 					      &b->compositor->primary_plane);
