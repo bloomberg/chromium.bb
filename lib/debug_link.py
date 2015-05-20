@@ -17,12 +17,13 @@ from chromite.lib import timeout_util
 _HOST_IP = '169.254.100.1'
 # TODO(thieule): Change debug link VID/PID to actual values once we have
 # working hardware (brbug.com/444).
-_VENDOR_ID = '13b1'
-_PRODUCT_ID = '0041'
+_VENDOR_ID = '0101'
+_PRODUCT_ID = '0202'
 _PROPERTY_VENDOR_ID = 'ID_VENDOR_ID'
 _PROPERTY_PRODUCT_ID = 'ID_MODEL_ID'
 
-_MAX_VETH_SUFFIX = 99
+_IFNAME_PREFIX = 'usb'
+_MAX_SUFFIX = 99
 
 
 class DebugLinkException(Exception):
@@ -182,7 +183,7 @@ class NetworkInterface(object):
 
 
 def _ConfigureDebugLink(interface):
-  """Renames interface to veth*, assigns IP address and brings it up.
+  """Renames interface to usb*, assigns IP address and brings it up.
 
   Args:
     interface: Network interface to configure.
@@ -191,19 +192,19 @@ def _ConfigureDebugLink(interface):
     IP address of |interface|.
 
   Raises:
-    DebugLinkInitializationFailedError if no veth* name is available.
+    DebugLinkInitializationFailedError if no usb* name is available.
   """
 
-  if not interface.ifname.startswith('veth'):
+  if not interface.ifname.startswith(_IFNAME_PREFIX):
     interface.BringDown()
-    for index in range(_MAX_VETH_SUFFIX + 1):
+    for index in range(_MAX_SUFFIX + 1):
       try:
-        interface.Rename('veth%d' % index)
+        interface.Rename('%s%d' % (_IFNAME_PREFIX, index))
         break
       except InterfaceNameExistsError:
-        if index == _MAX_VETH_SUFFIX:
+        if index == _MAX_SUFFIX:
           raise DebugLinkInitializationFailedError(
-              'No more veth* names available')
+              'No more %s* names available' % _IFNAME_PREFIX)
 
   interface.BringUp(_HOST_IP)
   return _HOST_IP

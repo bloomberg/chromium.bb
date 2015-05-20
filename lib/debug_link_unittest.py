@@ -17,6 +17,10 @@ from chromite.lib import partial_mock
 # pylint: disable=protected-access
 
 
+_IFNAME0 = '%s0' % debug_link._IFNAME_PREFIX
+_IFNAME1 = '%s1' % debug_link._IFNAME_PREFIX
+
+
 class NetworkInterfaceTest(cros_build_lib_unittest.RunCommandTestCase):
   """Tests for NetworkInterface."""
 
@@ -57,16 +61,17 @@ class ConfigureDebugLinkRenameTest(cros_test_lib.MockTestCase):
   def testCollision(self):
     """Test that rename collisions are handled."""
     def _RenameSideEffect(new_ifname):
-      if new_ifname == 'veth0':
+      if new_ifname == _IFNAME0:
         raise debug_link.InterfaceNameExistsError()
 
     interface = debug_link.NetworkInterface('eth0')
     self.PatchObject(interface, 'Rename', side_effect=_RenameSideEffect)
     debug_link._ConfigureDebugLink(interface)
-    interface.Rename.assert_has_calls([mock.call('veth0'), mock.call('veth1')])
+    interface.Rename.assert_has_calls([mock.call(_IFNAME0),
+                                       mock.call(_IFNAME1)])
 
   def testExhaustNames(self):
-    """Test to make sure exception is thrown if all veth* names are in use."""
+    """Test to make sure exception is thrown if all usb* names are in use."""
     interface = debug_link.NetworkInterface('eth0')
     self.PatchObject(
         interface, 'Rename', side_effect=debug_link.InterfaceNameExistsError())
@@ -116,20 +121,20 @@ class InitializeDebugLinkTest(cros_test_lib.MockTestCase):
     self.assertEqual(ip, debug_link._HOST_IP)
     intf = interfaces['eth1']
     intf.BringDown.assert_called_once_with(intf)
-    intf.Rename.assert_called_once_with(intf, 'veth0')
+    intf.Rename.assert_called_once_with(intf, _IFNAME0)
     intf.BringUp.assert_called_once_with(intf, debug_link._HOST_IP)
 
   def testOneDebugLinkAlreadyInitialized(self):
     """Test one Debug Link that is already initialized."""
     # Mock out one interesting device that is already configured.
     interfaces = self._MockNetworkDevices([
-        ('veth0', {debug_link._PROPERTY_PRODUCT_ID: debug_link._PRODUCT_ID,
-                   debug_link._PROPERTY_VENDOR_ID: debug_link._VENDOR_ID},
+        (_IFNAME0, {debug_link._PROPERTY_PRODUCT_ID: debug_link._PRODUCT_ID,
+                    debug_link._PROPERTY_VENDOR_ID: debug_link._VENDOR_ID},
          True, True)])
 
     ip = debug_link.InitializeDebugLink()
     self.assertEqual(ip, debug_link._HOST_IP)
-    intf = interfaces['veth0']
+    intf = interfaces[_IFNAME0]
     self.assertFalse(intf.BringDown.called)
     self.assertFalse(intf.Rename.called)
 
