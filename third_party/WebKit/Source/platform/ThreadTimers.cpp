@@ -111,6 +111,7 @@ void ThreadTimers::sharedTimerFired()
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "Sleeping");
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void ThreadTimers::sharedTimerFiredInternal()
 {
     // Do a re-entrancy check.
