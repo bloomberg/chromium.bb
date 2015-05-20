@@ -119,15 +119,6 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
     DCHECK(input_frame == &captured_frame_);
     DCHECK(frame_.get());
 
-    const int64_t timestamp_ns = frame_->timestamp().InMicroseconds() *
-                                 base::Time::kNanosecondsPerMicrosecond;
-
-    if (frame_->format() == media::VideoFrame::NATIVE_TEXTURE) {
-      return new cricket::WebRtcVideoFrame(
-          new rtc::RefCountedObject<VideoFrameWrapper>(frame_),
-          captured_frame_.elapsed_time, timestamp_ns);
-    }
-
     // Create a centered cropped visible rect that preservers aspect ratio for
     // cropped natural size.
     gfx::Rect visible_rect = frame_->visible_rect();
@@ -140,6 +131,9 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
         media::VideoFrame::WrapVideoFrame(
             frame_, visible_rect, output_size,
             base::Bind(&ReleaseOriginalFrame, frame_));
+
+    const int64_t timestamp_ns = frame_->timestamp().InMicroseconds() *
+                                 base::Time::kNanosecondsPerMicrosecond;
 
     // If no scaling is needed, return a wrapped version of |frame_| directly.
     if (video_frame->natural_size() == video_frame->visible_rect().size()) {
@@ -263,8 +257,10 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("video", "WebRtcVideoCapturerAdapter::OnFrameCaptured");
   if (!(media::VideoFrame::I420 == frame->format() ||
-        media::VideoFrame::YV12 == frame->format() ||
-        media::VideoFrame::NATIVE_TEXTURE == frame->format())) {
+        media::VideoFrame::YV12 == frame->format())) {
+    // Some types of sources support textures as output. Since connecting
+    // sources and sinks do not check the format, we need to just ignore
+    // formats that we can not handle.
     NOTREACHED();
     return;
   }
