@@ -721,8 +721,9 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
 // Tests that frame timestamps are "lightly pushed" back towards the original
 // presentation event times, which tells us the AnimatedContentSampler can
 // account for sources of timestamp drift and correct the drift.
+// flaky: http://crbug.com/487491
 TEST_P(AnimatedContentSamplerParameterizedTest,
-       FrameTimestampsConvergeTowardsEventTimes) {
+       DISABLED_FrameTimestampsConvergeTowardsEventTimes) {
   const int max_drift_increment_millis = 3;
 
   // Generate a full minute of events.
