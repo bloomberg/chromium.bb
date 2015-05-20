@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/memory_details.h"
@@ -78,7 +79,7 @@ class MemoryInternalsProxy
 
   MemoryInternalsHandler* handler_;
   base::DictionaryValue* information_;
-  RendererDetails* renderer_details_;
+  scoped_ptr<RendererDetails> renderer_details_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInternalsProxy);
 };

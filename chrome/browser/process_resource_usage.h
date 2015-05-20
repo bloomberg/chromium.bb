@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_PROCESS_RESOURCE_USAGE_H_
 #define CHROME_BROWSER_PROCESS_RESOURCE_USAGE_H_
 
+#include <deque>
+
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
 
@@ -34,8 +38,9 @@ class ProcessResourceUsage {
   explicit ProcessResourceUsage(ResourceUsageReporterPtr service);
   ~ProcessResourceUsage();
 
-  // Refresh the resource usage information.
-  void Refresh();
+  // Refresh the resource usage information. |callback| is invoked when the
+  // usage data is updated, or when the IPC connection is lost.
+  void Refresh(const base::Closure& callback);
 
   // Get V8 memory usage information.
   bool ReportsV8MemoryStats() const;
@@ -43,14 +48,20 @@ class ProcessResourceUsage {
   size_t GetV8MemoryUsed() const;
 
  private:
+  class ErrorHandler;
+
   // Mojo IPC callback.
   void OnRefreshDone(ResourceUsageDataPtr data);
 
+  void RunPendingRefreshCallbacks();
+
   ResourceUsageReporterPtr service_;
   bool update_in_progress_;
+  std::deque<base::Closure> refresh_callbacks_;
 
   ResourceUsageDataPtr stats_;
 
+  scoped_ptr<ErrorHandler> error_handler_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessResourceUsage);

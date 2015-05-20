@@ -246,6 +246,7 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'common',
+        'common_mojo_bindings',
         'common_net',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',

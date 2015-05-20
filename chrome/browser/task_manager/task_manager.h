@@ -281,7 +281,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // changes to the model.
   void ModelChanged();
 
-   // Updates the values for all rows.
+  // Updates the values for all rows.
   void Refresh();
 
   void NotifyResourceTypeStats(
@@ -290,10 +290,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   void NotifyVideoMemoryUsageStats(
       const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
-
-  void NotifyV8HeapStats(base::ProcessId renderer_id,
-                         size_t v8_memory_allocated,
-                         size_t v8_memory_used);
 
   void NotifyBytesRead(const net::URLRequest& request, int bytes_read);
 

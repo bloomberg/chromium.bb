@@ -253,7 +253,7 @@ base::string16 ChildProcessResource::GetLocalizedTitle() const {
 
 void ChildProcessResource::Refresh() {
   if (resource_usage_)
-    resource_usage_->Refresh();
+    resource_usage_->Refresh(base::Closure());
 }
 
 bool ChildProcessResource::ReportsV8MemoryStats() const {

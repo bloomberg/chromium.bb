@@ -79,7 +79,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
                         OnUpdatedCacheStats)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
@@ -159,32 +158,6 @@ void ChromeRenderMessageFilter::OnUpdatedCacheStats(
     const WebCache::UsageStats& stats) {
   web_cache::WebCacheManager::GetInstance()->ObserveStats(
       render_process_id_, stats);
-}
-
-void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
-                                              int v8_memory_used) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ChromeRenderMessageFilter::OnV8HeapStats, this,
-                   v8_memory_allocated, v8_memory_used));
-    return;
-  }
-
-  base::ProcessId renderer_id = peer_pid();
-
-#if defined(ENABLE_TASK_MANAGER)
-  TaskManager::GetInstance()->model()->NotifyV8HeapStats(
-      renderer_id,
-      static_cast<size_t>(v8_memory_allocated),
-      static_cast<size_t>(v8_memory_used));
-#endif  // defined(ENABLE_TASK_MANAGER)
-
-  V8HeapStatsDetails details(v8_memory_allocated, v8_memory_used);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
-      content::Source<const base::ProcessId>(&renderer_id),
-      content::Details<const V8HeapStatsDetails>(&details));
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(

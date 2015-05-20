@@ -254,13 +254,6 @@ enum NotificationType {
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
 
-  // Task Manager ------------------------------------------------------------
-
-  // Sent when a renderer process is notified of new v8 heap statistics. The
-  // source is the ID of the renderer process, and the details are a
-  // V8HeapStatsDetails object.
-  NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
-
   // Non-history storage services --------------------------------------------
 
   // The state of a web resource has been changed. A resource may have been

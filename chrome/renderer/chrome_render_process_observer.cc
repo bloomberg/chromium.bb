@@ -25,17 +25,20 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/resource_usage_reporter.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/variations/variations_util.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -110,98 +113,87 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
 static const int kWaitForWorkersStatsTimeoutMS = 20;
 
-class HeapStatisticsCollector {
+class ResourceUsageReporterImpl : public ResourceUsageReporter {
  public:
-  HeapStatisticsCollector() : round_id_(0) {}
-
-  void InitiateCollection();
-  static HeapStatisticsCollector* Instance();
+  explicit ResourceUsageReporterImpl(
+      mojo::InterfaceRequest<ResourceUsageReporter> req)
+      : binding_(this, req.Pass()), weak_factory_(this) {}
+  ~ResourceUsageReporterImpl() override {}
 
  private:
-  void CollectOnWorkerThread(scoped_refptr<base::TaskRunner> master,
-                             int round_id);
-  void ReceiveStats(int round_id, size_t total_size, size_t used_size);
-  void SendStatsToBrowser(int round_id);
+  static void CollectOnWorkerThread(
+      const scoped_refptr<base::TaskRunner>& master,
+      base::WeakPtr<ResourceUsageReporterImpl> impl) {
+    size_t total_bytes = 0;
+    size_t used_bytes = 0;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    if (isolate) {
+      v8::HeapStatistics heap_stats;
+      isolate->GetHeapStatistics(&heap_stats);
+      total_bytes = heap_stats.total_heap_size();
+      used_bytes = heap_stats.used_heap_size();
+    }
+    master->PostTask(FROM_HERE,
+                     base::Bind(&ResourceUsageReporterImpl::ReceiveStats, impl,
+                                total_bytes, used_bytes));
+  }
 
-  size_t total_bytes_;
-  size_t used_bytes_;
+  void ReceiveStats(size_t total_bytes, size_t used_bytes) {
+    usage_data_->v8_bytes_allocated += total_bytes;
+    usage_data_->v8_bytes_used += used_bytes;
+    workers_to_go_--;
+    if (!workers_to_go_)
+      SendResults();
+  }
+
+  void SendResults() {
+    if (!callback_.is_null())
+      callback_.Run(usage_data_.Pass());
+    callback_.reset();
+    weak_factory_.InvalidateWeakPtrs();
+    workers_to_go_ = 0;
+  }
+
+  void GetUsageData(
+      const mojo::Callback<void(ResourceUsageDataPtr)>& callback) override {
+    DCHECK(callback_.is_null());
+    weak_factory_.InvalidateWeakPtrs();
+    usage_data_ = ResourceUsageData::New();
+    usage_data_->reports_v8_stats = true;
+    callback_ = callback;
+
+    v8::HeapStatistics heap_stats;
+    v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
+    usage_data_->v8_bytes_allocated = heap_stats.total_heap_size();
+    usage_data_->v8_bytes_used = heap_stats.used_heap_size();
+    base::Closure collect = base::Bind(
+        &ResourceUsageReporterImpl::CollectOnWorkerThread,
+        base::MessageLoopProxy::current(), weak_factory_.GetWeakPtr());
+    workers_to_go_ = RenderThread::Get()->PostTaskToAllWebWorkers(collect);
+    if (workers_to_go_) {
+      // The guard task to send out partial stats
+      // in case some workers are not responsive.
+      base::MessageLoopProxy::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&ResourceUsageReporterImpl::SendResults,
+                                weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kWaitForWorkersStatsTimeoutMS));
+    } else {
+      // No worker threads so just send out the main thread data right away.
+      SendResults();
+    }
+  }
+
+  ResourceUsageDataPtr usage_data_;
+  mojo::Callback<void(ResourceUsageDataPtr)> callback_;
   int workers_to_go_;
-  int round_id_;
+  mojo::StrongBinding<ResourceUsageReporter> binding_;
+
+  base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
 };
 
-HeapStatisticsCollector* HeapStatisticsCollector::Instance() {
-  CR_DEFINE_STATIC_LOCAL(HeapStatisticsCollector, instance, ());
-  return &instance;
-}
-
-void HeapStatisticsCollector::InitiateCollection() {
-  v8::HeapStatistics heap_stats;
-  v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
-  total_bytes_ = heap_stats.total_heap_size();
-  used_bytes_ = heap_stats.used_heap_size();
-  base::Closure collect = base::Bind(
-      &HeapStatisticsCollector::CollectOnWorkerThread,
-      base::Unretained(this),
-      base::MessageLoopProxy::current(),
-      round_id_);
-  workers_to_go_ = RenderThread::Get()->PostTaskToAllWebWorkers(collect);
-  if (workers_to_go_) {
-    // The guard task to send out partial stats
-    // in case some workers are not responsive.
-    base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&HeapStatisticsCollector::SendStatsToBrowser,
-                   base::Unretained(this),
-                   round_id_),
-        base::TimeDelta::FromMilliseconds(kWaitForWorkersStatsTimeoutMS));
-  } else {
-    // No worker threads so just send out the main thread data right away.
-    SendStatsToBrowser(round_id_);
-  }
-}
-
-void HeapStatisticsCollector::CollectOnWorkerThread(
-    scoped_refptr<base::TaskRunner> master,
-    int round_id) {
-
-  size_t total_bytes = 0;
-  size_t used_bytes = 0;
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  if (isolate) {
-    v8::HeapStatistics heap_stats;
-    isolate->GetHeapStatistics(&heap_stats);
-    total_bytes = heap_stats.total_heap_size();
-    used_bytes = heap_stats.used_heap_size();
-  }
-  master->PostTask(
-      FROM_HERE,
-      base::Bind(&HeapStatisticsCollector::ReceiveStats,
-                 base::Unretained(this),
-                 round_id,
-                 total_bytes,
-                 used_bytes));
-}
-
-void HeapStatisticsCollector::ReceiveStats(int round_id,
-                                           size_t total_bytes,
-                                           size_t used_bytes) {
-  if (round_id != round_id_)
-    return;
-  total_bytes_ += total_bytes;
-  used_bytes_ += used_bytes;
-  if (!--workers_to_go_)
-    SendStatsToBrowser(round_id);
-}
-
-void HeapStatisticsCollector::SendStatsToBrowser(int round_id) {
-  if (round_id != round_id_)
-    return;
-  // TODO(alph): Do caching heap stats and use the cache if we haven't got
-  //             reply from a worker.
-  //             Currently a busy worker stats are not counted.
-  RenderThread::Get()->Send(new ChromeViewHostMsg_V8HeapStats(
-      total_bytes_, used_bytes_));
-  ++round_id_;
+void CreateResourceUsageReporter(
+    mojo::InterfaceRequest<ResourceUsageReporter> request) {
+  new ResourceUsageReporterImpl(request.Pass());
 }
 
 }  // namespace
@@ -230,6 +222,12 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
+
+  content::ServiceRegistry* service_registry = thread->GetServiceRegistry();
+  if (service_registry) {
+    service_registry->AddService<ResourceUsageReporter>(
+        base::Bind(CreateResourceUsageReporter));
+  }
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
@@ -261,7 +259,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsIncognitoProcess,
                         OnSetIsIncognitoProcess)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetV8HeapStats, OnGetV8HeapStats)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetCacheResourceStats,
                         OnGetCacheResourceStats)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingRules,
@@ -319,10 +316,6 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
   // marked as activated.
   trial->group();
   chrome_variations::SetChildProcessLoggingVariationList();
-}
-
-void ChromeRenderProcessObserver::OnGetV8HeapStats() {
-  HeapStatisticsCollector::Instance()->InitiateCollection();
 }
 
 const RendererContentSettingRules*

@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_proxy.h"
 
+#include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -17,6 +21,7 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -29,13 +34,11 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/service_registry.h"
 
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -118,34 +121,52 @@ void GetAllWebContents(std::set<content::WebContents*>* web_contents) {
 
 }  // namespace
 
-class RendererDetails : public content::NotificationObserver {
+class RendererDetails {
  public:
   typedef base::Callback<void(const base::ProcessId pid,
                               const size_t v8_allocated,
                               const size_t v8_used)> V8DataCallback;
 
   explicit RendererDetails(const V8DataCallback& callback)
-      : callback_(callback) {
-    registrar_.Add(this, chrome::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
-                   content::NotificationService::AllSources());
-  }
-  ~RendererDetails() override {}
+      : callback_(callback), weak_factory_(this) {}
+  ~RendererDetails() {}
 
   void Request() {
     for (std::set<content::WebContents*>::iterator iter = web_contents_.begin();
-         iter != web_contents_.end(); ++iter)
-      (*iter)->GetRenderViewHost()->Send(new ChromeViewMsg_GetV8HeapStats);
+         iter != web_contents_.end(); ++iter) {
+      auto rph = (*iter)->GetRenderViewHost()->GetProcess();
+      auto resource_usage = resource_usage_reporters_[(*iter)];
+      DCHECK(resource_usage.get());
+      resource_usage->Refresh(base::Bind(&RendererDetails::OnRefreshDone,
+                                         weak_factory_.GetWeakPtr(), *iter,
+                                         base::GetProcId(rph->GetHandle())));
+    }
   }
 
   void AddWebContents(content::WebContents* content) {
     web_contents_.insert(content);
+
+    auto rph = content->GetRenderViewHost()->GetProcess();
+    content::ServiceRegistry* service_registry = rph->GetServiceRegistry();
+    ResourceUsageReporterPtr service;
+    if (service_registry)
+      service_registry->ConnectToRemoteService(&service);
+    resource_usage_reporters_.insert(std::make_pair(
+        content, make_linked_ptr(new ProcessResourceUsage(service.Pass()))));
+    DCHECK_EQ(web_contents_.size(), resource_usage_reporters_.size());
   }
 
   void Clear() {
     web_contents_.clear();
+    resource_usage_reporters_.clear();
+    weak_factory_.InvalidateWeakPtrs();
   }
 
   void RemoveWebContents(base::ProcessId) {
+    // This function should only be called once for each WebContents, so this
+    // should be non-empty every time it's called.
+    DCHECK(!web_contents_.empty());
+
     // We don't have to detect which content is the caller of this method.
     if (!web_contents_.empty())
       web_contents_.erase(web_contents_.begin());
@@ -156,23 +177,19 @@ class RendererDetails : public content::NotificationObserver {
   }
 
  private:
-  // NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    const base::ProcessId* pid =
-        content::Source<const base::ProcessId>(source).ptr();
-    const ChromeRenderMessageFilter::V8HeapStatsDetails* v8_heap =
-        content::Details<const ChromeRenderMessageFilter::V8HeapStatsDetails>(
-            details).ptr();
-    callback_.Run(*pid,
-                  v8_heap->v8_memory_allocated(),
-                  v8_heap->v8_memory_used());
+  void OnRefreshDone(content::WebContents* content, const base::ProcessId pid) {
+    auto iter = resource_usage_reporters_.find(content);
+    DCHECK(iter != resource_usage_reporters_.end());
+    linked_ptr<ProcessResourceUsage> usage = iter->second;
+    callback_.Run(pid, usage->GetV8MemoryAllocated(), usage->GetV8MemoryUsed());
   }
 
   V8DataCallback callback_;
-  content::NotificationRegistrar registrar_;
   std::set<content::WebContents*> web_contents_;  // This class does not own
+  std::map<content::WebContents*, linked_ptr<ProcessResourceUsage>>
+      resource_usage_reporters_;
+
+  base::WeakPtrFactory<RendererDetails> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererDetails);
 };

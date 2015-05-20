@@ -6,8 +6,6 @@ struct ResourceUsageData {
   bool reports_v8_stats = false;
   uint64 v8_bytes_allocated = 0;
   uint64 v8_bytes_used = 0;
-
-  // TODO(amistry): Consider using this for the renderer process.
 };
 
 interface ResourceUsageReporter {

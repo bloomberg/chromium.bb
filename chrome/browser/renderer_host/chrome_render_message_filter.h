@@ -35,19 +35,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
  public:
   ChromeRenderMessageFilter(int render_process_id, Profile* profile);
 
-  class V8HeapStatsDetails {
-   public:
-    V8HeapStatsDetails(size_t v8_memory_allocated,
-                       size_t v8_memory_used)
-        : v8_memory_allocated_(v8_memory_allocated),
-          v8_memory_used_(v8_memory_used) {}
-    size_t v8_memory_allocated() const { return v8_memory_allocated_; }
-    size_t v8_memory_used() const { return v8_memory_used_; }
-   private:
-    size_t v8_memory_allocated_;
-    size_t v8_memory_used_;
-  };
-
   // content::BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OverrideThreadForMessage(const IPC::Message& message,
@@ -63,7 +50,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnPreconnect(const GURL& url, int count);
   void OnResourceTypeStats(const blink::WebCache::ResourceTypeStats& stats);
   void OnUpdatedCacheStats(const blink::WebCache::UsageStats& stats);
-  void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
 
   void OnAllowDatabase(int render_frame_id,
                        const GURL& origin_url,

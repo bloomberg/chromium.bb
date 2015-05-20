@@ -238,9 +238,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
                      std::string /* field trial name */,
                      std::string /* group name that was assigned. */)
 
-// Asks the renderer to send back V8 heap stats.
-IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetV8HeapStats)
-
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetPageSequenceNumber,
                     int /* page_seq_no */)
 
@@ -484,11 +481,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetSearchProviderInstallState,
                            GURL /* page url */,
                            GURL /* inquiry url */,
                            search_provider::InstallState /* install */)
-
-// Sends back stats about the V8 heap.
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
-                     int /* size of heap (allocated from the OS) */,
-                     int /* bytes in use */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,

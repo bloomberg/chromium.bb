@@ -5,19 +5,57 @@
 #include "chrome/browser/process_resource_usage.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
+
+class ProcessResourceUsage::ErrorHandler : public mojo::ErrorHandler {
+ public:
+  ErrorHandler(ProcessResourceUsage* usage) : usage_(usage) {}
+
+  // mojo::ErrorHandler implementation:
+  void OnConnectionError() override;
+
+ private:
+  ProcessResourceUsage* usage_;  // Not owned.
+};
+
+void ProcessResourceUsage::ErrorHandler::OnConnectionError() {
+  usage_->RunPendingRefreshCallbacks();
+}
 
 ProcessResourceUsage::ProcessResourceUsage(ResourceUsageReporterPtr service)
-    : service_(service.Pass()), update_in_progress_(false) {
+    : service_(service.Pass()),
+      update_in_progress_(false),
+      error_handler_(new ErrorHandler(this)) {
+  service_.set_error_handler(error_handler_.get());
 }
 
 ProcessResourceUsage::~ProcessResourceUsage() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void ProcessResourceUsage::Refresh() {
+void ProcessResourceUsage::RunPendingRefreshCallbacks() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!update_in_progress_ && service_) {
+  auto message_loop = base::MessageLoopProxy::current();
+  for (const auto& callback : refresh_callbacks_)
+    message_loop->PostTask(FROM_HERE, callback);
+  refresh_callbacks_.clear();
+}
+
+void ProcessResourceUsage::Refresh(const base::Closure& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!service_ || service_.encountered_error()) {
+    if (!callback.is_null())
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
+    return;
+  }
+
+  if (!callback.is_null())
+    refresh_callbacks_.push_back(callback);
+
+  if (!update_in_progress_) {
     update_in_progress_ = true;
     service_->GetUsageData(base::Bind(&ProcessResourceUsage::OnRefreshDone,
                                       base::Unretained(this)));
@@ -28,6 +66,7 @@ void ProcessResourceUsage::OnRefreshDone(ResourceUsageDataPtr data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   update_in_progress_ = false;
   stats_ = data.Pass();
+  RunPendingRefreshCallbacks();
 }
 
 bool ProcessResourceUsage::ReportsV8MemoryStats() const {

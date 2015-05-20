@@ -32,6 +32,7 @@ static_library("renderer") {
   deps = [
     "//base/allocator",
     "//chrome/common",
+    "//chrome/common:mojo_bindings",
     "//chrome/common/net",
     "//chrome:resources",
     "//chrome:strings",

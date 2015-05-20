@@ -1216,17 +1216,6 @@ void TaskManagerModel::NotifyVideoMemoryUsageStats(
   pending_video_memory_usage_stats_update_ = false;
 }
 
-void TaskManagerModel::NotifyV8HeapStats(base::ProcessId renderer_id,
-                                         size_t v8_memory_allocated,
-                                         size_t v8_memory_used) {
-  for (ResourceList::iterator it = resources_.begin();
-       it != resources_.end(); ++it) {
-    if (base::GetProcId((*it)->GetProcess()) == renderer_id) {
-      (*it)->NotifyV8HeapStats(v8_memory_allocated, v8_memory_used);
-    }
-  }
-}
-
 void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
                                        int byte_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

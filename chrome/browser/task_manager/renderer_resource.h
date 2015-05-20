@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_TASK_MANAGER_RENDERER_RESOURCE_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_manager/resource_provider.h"
+
+class ProcessResourceUsage;
 
 namespace content {
 class RenderViewHost;
@@ -44,16 +47,12 @@ class RendererResource : public Resource {
   void NotifyResourceTypeStats(
       const blink::WebCache::ResourceTypeStats& stats) override;
 
-  void NotifyV8HeapStats(size_t v8_memory_allocated,
-                         size_t v8_memory_used) override;
-
   content::RenderViewHost* render_view_host() const {
     return render_view_host_;
   }
 
  private:
   base::ProcessHandle process_;
-  int pid_;
   int unique_process_id_;
 
   // RenderViewHost we use to fetch stats.
@@ -64,10 +63,7 @@ class RendererResource : public Resource {
   // This flag is true if we are waiting for the renderer to report its stats.
   bool pending_stats_update_;
 
-  // We do a similar dance to gather the V8 memory usage in a process.
-  size_t v8_memory_allocated_;
-  size_t v8_memory_used_;
-  bool pending_v8_memory_allocated_update_;
+  scoped_ptr<ProcessResourceUsage> process_resource_usage_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererResource);
 };
