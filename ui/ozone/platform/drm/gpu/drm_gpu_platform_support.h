@@ -88,7 +88,7 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
   DrmDeviceManager* drm_device_manager_;  // Not owned.
   ScreenManager* screen_manager_;         // Not owned.
 
-  scoped_ptr<DrmGpuDisplayManager> ndd_;
+  scoped_ptr<DrmGpuDisplayManager> display_manager_;
   ScopedVector<GpuPlatformSupport> handlers_;
   scoped_refptr<IPC::MessageFilter> filter_;
 };

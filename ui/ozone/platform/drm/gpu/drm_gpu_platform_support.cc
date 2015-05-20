@@ -167,11 +167,11 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 DrmGpuPlatformSupport::DrmGpuPlatformSupport(
     DrmDeviceManager* drm_device_manager,
     ScreenManager* screen_manager,
-    scoped_ptr<DrmGpuDisplayManager> ndd)
+    scoped_ptr<DrmGpuDisplayManager> display_manager)
     : sender_(NULL),
       drm_device_manager_(drm_device_manager),
       screen_manager_(screen_manager),
-      ndd_(ndd.Pass()) {
+      display_manager_(display_manager.Pass()) {
   filter_ = new DrmGpuPlatformSupportMessageFilter(
       screen_manager, base::Bind(&DrmGpuPlatformSupport::SetIOTaskRunner,
                                  base::Unretained(this)),
@@ -261,7 +261,8 @@ void DrmGpuPlatformSupport::OnCursorMove(gfx::AcceleratedWidget widget,
 }
 
 void DrmGpuPlatformSupport::OnRefreshNativeDisplays() {
-  sender_->Send(new OzoneHostMsg_UpdateNativeDisplays(ndd_->GetDisplays()));
+  sender_->Send(
+      new OzoneHostMsg_UpdateNativeDisplays(display_manager_->GetDisplays()));
 }
 
 void DrmGpuPlatformSupport::OnConfigureNativeDisplay(
@@ -269,20 +270,20 @@ void DrmGpuPlatformSupport::OnConfigureNativeDisplay(
     const DisplayMode_Params& mode_param,
     const gfx::Point& origin) {
   sender_->Send(new OzoneHostMsg_DisplayConfigured(
-      id, ndd_->ConfigureDisplay(id, mode_param, origin)));
+      id, display_manager_->ConfigureDisplay(id, mode_param, origin)));
 }
 
 void DrmGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {
-  sender_->Send(
-      new OzoneHostMsg_DisplayConfigured(id, ndd_->DisableDisplay(id)));
+  sender_->Send(new OzoneHostMsg_DisplayConfigured(
+      id, display_manager_->DisableDisplay(id)));
 }
 
 void DrmGpuPlatformSupport::OnTakeDisplayControl() {
-  ndd_->TakeDisplayControl();
+  display_manager_->TakeDisplayControl();
 }
 
 void DrmGpuPlatformSupport::OnRelinquishDisplayControl() {
-  ndd_->RelinquishDisplayControl();
+  display_manager_->RelinquishDisplayControl();
 }
 
 void DrmGpuPlatformSupport::OnAddGraphicsDevice(
@@ -298,7 +299,7 @@ void DrmGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
 void DrmGpuPlatformSupport::OnSetGammaRamp(
     int64_t id,
     const std::vector<GammaRampRGBEntry>& lut) {
-  ndd_->SetGammaRamp(id, lut);
+  display_manager_->SetGammaRamp(id, lut);
 }
 
 void DrmGpuPlatformSupport::RelinquishGpuResources(
@@ -308,14 +309,14 @@ void DrmGpuPlatformSupport::RelinquishGpuResources(
 
 void DrmGpuPlatformSupport::OnGetHDCPState(int64_t display_id) {
   HDCPState state = HDCP_STATE_UNDESIRED;
-  bool success = ndd_->GetHDCPState(display_id, &state);
+  bool success = display_manager_->GetHDCPState(display_id, &state);
   sender_->Send(new OzoneHostMsg_HDCPStateReceived(display_id, success, state));
 }
 
 void DrmGpuPlatformSupport::OnSetHDCPState(int64_t display_id,
                                            HDCPState state) {
   sender_->Send(new OzoneHostMsg_HDCPStateUpdated(
-      display_id, ndd_->SetHDCPState(display_id, state)));
+      display_id, display_manager_->SetHDCPState(display_id, state)));
 }
 
 void DrmGpuPlatformSupport::SetIOTaskRunner(
