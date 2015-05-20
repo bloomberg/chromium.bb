@@ -27,7 +27,7 @@ class CastConfigDelegateChromeos : public ash::CastConfigDelegate {
   void GetReceiversAndActivities(
       const ReceiversAndActivitesCallback& callback) override;
   void CastToReceiver(const std::string& receiver_id) override;
-  void StopCasting(const std::string& activity_id) override;
+  void StopCasting() override;
   void LaunchCastOptions() override;
 
   DISALLOW_COPY_AND_ASSIGN(CastConfigDelegateChromeos);

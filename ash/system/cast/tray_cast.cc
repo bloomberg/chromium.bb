@@ -38,28 +38,6 @@ namespace ash {
 
 namespace {
 const int kStopButtonRightPadding = 18;
-
-// Callback helper for StopCast().
-void StopCastCallback(
-    CastConfigDelegate* cast_config,
-    const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
-  for (auto& item : receivers_activities) {
-    CastConfigDelegate::Activity activity = item.second.activity;
-    if (activity.allow_stop && activity.id.empty() == false)
-      cast_config->StopCasting(activity.id);
-  }
-}
-
-// Stops currently casting device.
-void StopCast() {
-  CastConfigDelegate* cast_config =
-      Shell::GetInstance()->system_tray_delegate()->GetCastConfigDelegate();
-  if (cast_config && cast_config->HasCastExtension()) {
-    cast_config->GetReceiversAndActivities(
-        base::Bind(&StopCastCallback, cast_config));
-  }
-}
-
 }  // namespace
 
 namespace tray {
@@ -182,12 +160,16 @@ CastCastView::CastCastView(CastConfigDelegate* cast_config_delegate)
   title_ = new views::Label;
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetFontList(bundle.GetFontList(ui::ResourceBundle::BoldFont));
+  title_->SetText(
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_UNKNOWN_CAST_TYPE));
   label_container_->AddChildView(title_);
 
   details_ = new views::Label;
   details_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   details_->SetMultiLine(false);
   details_->SetEnabledColor(kHeaderTextColorNormal);
+  details_->SetText(
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_UNKNOWN_RECEIVER));
   label_container_->AddChildView(details_);
 
   AddChildView(label_container_);
@@ -270,7 +252,7 @@ void CastCastView::UpdateLabelCallback(
 void CastCastView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   DCHECK(sender == stop_button_);
-  StopCast();
+  cast_config_delegate_->StopCasting();
 }
 
 // This view by itself does very little. It acts as a front-end for managing

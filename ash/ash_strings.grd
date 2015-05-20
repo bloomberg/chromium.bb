@@ -278,6 +278,12 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_CAST_STOP" desc="The label used in the tray popup to stop casting.">
         Stop
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_UNKNOWN_CAST_TYPE" desc="The label used when we have detected we are casting but do not know if we are casting a tab or the desktop.">
+        Casting
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_UNKNOWN_RECEIVER" desc="The label used when we have detected we are casting but do not know the name of the receiver.">
+        Unknown receiver
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth

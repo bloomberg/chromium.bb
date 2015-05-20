@@ -83,13 +83,8 @@ class CastConfigDelegate {
   // Cast to a receiver specified by |receiver_id|.
   virtual void CastToReceiver(const std::string& receiver_id) = 0;
 
-  // Stop ongoing cast. The |activity_id| is the unique identifier associated
-  // with the ongoing cast. Each receiver has only one possible activity
-  // associated with it. The |activity_id| is available by invoking
-  // GetReceiversAndActivities(); if the receiver is currently casting, then the
-  // associated activity data will have an id. This id can be used to stop the
-  // cast in this method.
-  virtual void StopCasting(const std::string& activity_id) = 0;
+  // Stop an ongoing cast.
+  virtual void StopCasting() = 0;
 
   // Opens Options page for cast.
   virtual void LaunchCastOptions() = 0;
