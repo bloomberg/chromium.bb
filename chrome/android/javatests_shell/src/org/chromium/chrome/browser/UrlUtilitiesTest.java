@@ -43,6 +43,7 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
                 "https://user:pass@:awesome.com:9000/bad-scheme:#fake:"));
         assertTrue(UrlUtilities.isDownloadableScheme("http://awesome.example.com/"));
         assertTrue(UrlUtilities.isDownloadableScheme("filesystem://awesome.example.com/"));
+        assertTrue(UrlUtilities.isDownloadableScheme("blob:https%3A//awesome.example.com/"));
 
         assertFalse(UrlUtilities.isDownloadableScheme("inline:skates.co.uk"));
         assertFalse(UrlUtilities.isDownloadableScheme("javascript:alert(1)"));
