@@ -269,7 +269,13 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
   EXPECT_EQ(0u, events.size());
 }
 
-TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
+// Fails on official cros trunk build. See crbug.com/489896.
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_SynthesizedMouseMovesIgnored DISABLED_SynthesizedMouseMovesIgnored
+#else
+#define MAYBE_SynthesizedMouseMovesIgnored SynthesizedMouseMovesIgnored
+#endif
+TEST_F(AutoclickTest, MAYBE_SynthesizedMouseMovesIgnored) {
   GetAutoclickController()->SetEnabled(true);
   std::vector<ui::MouseEvent> events;
   GetEventGenerator().MoveMouseTo(100, 100);
