@@ -382,7 +382,7 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   node->data.scroll_snap = translation;
 }
 
-PropertyTrees::PropertyTrees() : needs_rebuild(true) {
+PropertyTrees::PropertyTrees() : needs_rebuild(true), sequence_number(0) {
 }
 
 }  // namespace cc

@@ -9597,5 +9597,32 @@ TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {
   EXPECT_EQ(root->num_layer_or_descendants_with_input_handler(), 0);
 }
 
+TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
+  gfx::Transform identity;
+  gfx::Transform translate_z;
+  translate_z.Translate3d(0, 0, 10);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(800, 800), true, false);
+
+  scoped_refptr<Layer> child = Layer::Create();
+  SetLayerPropertiesForTesting(child.get(), translate_z, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+
+  root->AddChild(child);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_NE(-1, child->transform_tree_index());
+
+  child->RemoveFromParent();
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_EQ(-1, child->transform_tree_index());
+}
+
 }  // namespace
 }  // namespace cc

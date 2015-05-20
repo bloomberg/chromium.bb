@@ -38,6 +38,7 @@ struct DataForRecursion {
   bool ancestor_clips_subtree;
   const gfx::Transform* device_transform;
   gfx::Vector2dF scroll_compensation_adjustment;
+  int sequence_number;
 };
 
 template <typename LayerType>
@@ -148,7 +149,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
         data_for_children->clip_tree->Insert(node, parent_id);
   }
 
-  layer->set_clip_tree_index(
+  layer->SetClipTreeIndex(
       has_unclipped_surface ? 0 : data_for_children->clip_tree_parent);
 
   // TODO(awoloszyn): Right now when we hit a node with a replica, we reset the
@@ -233,14 +234,14 @@ bool AddTransformNodeIfNeeded(
                                           local_offset);
     layer->set_should_flatten_transform_from_property_tree(
         data_from_ancestor.should_flatten);
-    layer->set_transform_tree_index(parent_index);
+    layer->SetTransformTreeIndex(parent_index);
     return false;
   }
 
   data_for_children->transform_tree->Insert(TransformNode(), parent_index);
 
   TransformNode* node = data_for_children->transform_tree->back();
-  layer->set_transform_tree_index(node->id);
+  layer->SetTransformTreeIndex(node->id);
 
   node->data.scrolls = is_scrollable;
   node->data.flattens_inherited_transform = data_for_children->should_flatten;
@@ -326,7 +327,7 @@ void AddOpacityNodeIfNeeded(
   int parent_id = data_from_ancestor.opacity_tree_parent;
 
   if (!requires_node) {
-    layer->set_opacity_tree_index(parent_id);
+    layer->SetOpacityTreeIndex(parent_id);
     data_for_children->opacity_tree_parent = parent_id;
     return;
   }
@@ -336,13 +337,14 @@ void AddOpacityNodeIfNeeded(
   node.data = layer->opacity();
   data_for_children->opacity_tree_parent =
       data_for_children->opacity_tree->Insert(node, parent_id);
-  layer->set_opacity_tree_index(data_for_children->opacity_tree_parent);
+  layer->SetOpacityTreeIndex(data_for_children->opacity_tree_parent);
 }
 
 template <typename LayerType>
 void BuildPropertyTreesInternal(
     LayerType* layer,
     const DataForRecursion<LayerType>& data_from_parent) {
+  layer->set_property_tree_sequence_number(data_from_parent.sequence_number);
   DataForRecursion<LayerType> data_for_children(data_from_parent);
   if (layer->render_surface())
     data_for_children.render_target = layer;
@@ -383,6 +385,8 @@ void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
                                         const gfx::Rect& viewport,
                                         const gfx::Transform& device_transform,
                                         PropertyTrees* property_trees) {
+  property_trees->sequence_number++;
+
   DataForRecursion<LayerType> data_for_recursion;
   data_for_recursion.transform_tree = &property_trees->transform_tree;
   data_for_recursion.clip_tree = &property_trees->clip_tree;
@@ -403,6 +407,7 @@ void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
   data_for_recursion.transform_tree->clear();
   data_for_recursion.clip_tree->clear();
   data_for_recursion.opacity_tree->clear();
+  data_for_recursion.sequence_number = property_trees->sequence_number;
 
   ClipNode root_clip;
   root_clip.data.clip = viewport;

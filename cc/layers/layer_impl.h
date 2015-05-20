@@ -151,20 +151,15 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return scroll_children_.get();
   }
 
-  void set_transform_tree_index(int index) {
-    transform_tree_index_ = index;
-    SetNeedsPushProperties();
-  }
-  void set_clip_tree_index(int index) {
-    clip_tree_index_ = index;
-    SetNeedsPushProperties();
-  }
-  void set_opacity_tree_index(int index) {
-    opacity_tree_index_ = index;
-    SetNeedsPushProperties();
-  }
-  int clip_tree_index() const { return clip_tree_index_; }
+  void set_property_tree_sequence_number(int sequence_number) {}
+
+  void SetTransformTreeIndex(int index);
   int transform_tree_index() const { return transform_tree_index_; }
+
+  void SetClipTreeIndex(int index);
+  int clip_tree_index() const { return clip_tree_index_; }
+
+  void SetOpacityTreeIndex(int index);
   int opacity_tree_index() const { return opacity_tree_index_; }
 
   void set_offset_to_transform_parent(const gfx::Vector2dF& offset) {

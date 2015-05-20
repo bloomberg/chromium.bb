@@ -53,6 +53,7 @@ Layer::Layer()
       transform_tree_index_(-1),
       opacity_tree_index_(-1),
       clip_tree_index_(-1),
+      property_tree_sequence_number_(-1),
       num_layer_or_descendants_with_copy_request_(0),
       num_layer_or_descendants_with_input_handler_(0),
       should_flatten_transform_from_property_tree_(false),
@@ -256,6 +257,9 @@ void Layer::SetParent(Layer* layer) {
 
   if (!layer_tree_host_)
     return;
+
+  layer_tree_host_->property_trees()->needs_rebuild = true;
+
   const LayerTreeSettings& settings = layer_tree_host_->settings();
   if (!settings.layer_transforms_should_scale_layer_contents)
     return;
@@ -982,6 +986,57 @@ void Layer::Set3dSortingContextId(int id) {
   SetNeedsCommit();
 }
 
+void Layer::SetTransformTreeIndex(int index) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (transform_tree_index_ == index)
+    return;
+  transform_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
+int Layer::transform_tree_index() const {
+  if (!layer_tree_host_ ||
+      layer_tree_host_->property_trees()->sequence_number !=
+          property_tree_sequence_number_) {
+    return -1;
+  }
+  return transform_tree_index_;
+}
+
+void Layer::SetClipTreeIndex(int index) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (clip_tree_index_ == index)
+    return;
+  clip_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
+int Layer::clip_tree_index() const {
+  if (!layer_tree_host_ ||
+      layer_tree_host_->property_trees()->sequence_number !=
+          property_tree_sequence_number_) {
+    return -1;
+  }
+  return clip_tree_index_;
+}
+
+void Layer::SetOpacityTreeIndex(int index) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (opacity_tree_index_ == index)
+    return;
+  opacity_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
+int Layer::opacity_tree_index() const {
+  if (!layer_tree_host_ ||
+      layer_tree_host_->property_trees()->sequence_number !=
+          property_tree_sequence_number_) {
+    return -1;
+  }
+  return opacity_tree_index_;
+}
+
 void Layer::SetShouldFlattenTransform(bool should_flatten) {
   DCHECK(IsPropertyChangeAllowed());
   if (should_flatten_transform_ == should_flatten)
@@ -1126,9 +1181,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
-  layer->set_transform_tree_index(transform_tree_index_);
-  layer->set_opacity_tree_index(opacity_tree_index_);
-  layer->set_clip_tree_index(clip_tree_index_);
+  layer->SetTransformTreeIndex(transform_tree_index());
+  layer->SetOpacityTreeIndex(opacity_tree_index());
+  layer->SetClipTreeIndex(clip_tree_index());
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);

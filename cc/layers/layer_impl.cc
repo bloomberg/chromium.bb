@@ -208,6 +208,21 @@ void LayerImpl::SetClipChildren(std::set<LayerImpl*>* children) {
   SetNeedsPushProperties();
 }
 
+void LayerImpl::SetTransformTreeIndex(int index) {
+  transform_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
+void LayerImpl::SetClipTreeIndex(int index) {
+  clip_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
+void LayerImpl::SetOpacityTreeIndex(int index) {
+  opacity_tree_index_ = index;
+  SetNeedsPushProperties();
+}
+
 void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
   if (requests->empty())
     return;
@@ -552,9 +567,9 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
 
-  layer->set_transform_tree_index(transform_tree_index_);
-  layer->set_opacity_tree_index(opacity_tree_index_);
-  layer->set_clip_tree_index(clip_tree_index_);
+  layer->SetTransformTreeIndex(transform_tree_index_);
+  layer->SetClipTreeIndex(clip_tree_index_);
+  layer->SetOpacityTreeIndex(opacity_tree_index_);
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   LayerImpl* scroll_parent = nullptr;

@@ -476,27 +476,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void Set3dSortingContextId(int id);
   int sorting_context_id() const { return sorting_context_id_; }
 
-  void set_transform_tree_index(int index) {
-    if (transform_tree_index_ == index)
-      return;
-    transform_tree_index_ = index;
-    SetNeedsPushProperties();
+  void set_property_tree_sequence_number(int sequence_number) {
+    property_tree_sequence_number_ = sequence_number;
   }
-  void set_clip_tree_index(int index) {
-    if (clip_tree_index_ == index)
-      return;
-    clip_tree_index_ = index;
-    SetNeedsPushProperties();
-  }
-  void set_opacity_tree_index(int index) {
-    if (opacity_tree_index_ == index)
-      return;
-    opacity_tree_index_ = index;
-    SetNeedsPushProperties();
-  }
-  int clip_tree_index() const { return clip_tree_index_; }
-  int transform_tree_index() const { return transform_tree_index_; }
-  int opacity_tree_index() const { return opacity_tree_index_; }
+
+  void SetTransformTreeIndex(int index);
+  int transform_tree_index() const;
+
+  void SetClipTreeIndex(int index);
+  int clip_tree_index() const;
+
+  void SetOpacityTreeIndex(int index);
+  int opacity_tree_index() const;
 
   void set_offset_to_transform_parent(gfx::Vector2dF offset) {
     if (offset_to_transform_parent_ == offset)
@@ -709,6 +700,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int transform_tree_index_;
   int opacity_tree_index_;
   int clip_tree_index_;
+  int property_tree_sequence_number_;
   int num_layer_or_descendants_with_copy_request_;
   int num_layer_or_descendants_with_input_handler_;
   gfx::Vector2dF offset_to_transform_parent_;
