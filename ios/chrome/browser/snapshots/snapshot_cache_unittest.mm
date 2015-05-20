@@ -377,7 +377,8 @@ TEST_F(SnapshotCacheTest, HandleLowMemory) {
   [set addObject:secondPinnedID];
   cache.pinnedIDs = set;
 
-  [cache handleLowMemory];
+  if (!IsIPadIdiom())
+    [cache handleLowMemory];
 
   BOOL expectedValue = YES;
   if (IsIPadIdiom()) {
@@ -430,7 +431,9 @@ TEST_F(SnapshotCacheTest, CreateGreyCacheFromDisk) {
 
   // Remove color images from in-memory cache.
   SnapshotCache* cache = GetSnapshotCache();
-  [cache handleLowMemory];
+
+  if (!IsIPadIdiom())
+    [cache handleLowMemory];
 
   // Request the creation of a grey image cache for all images.
   [cache createGreyCache:testSessions_];
@@ -471,7 +474,8 @@ TEST_F(SnapshotCacheTest, MostRecentGreyBlock) {
   LoadColorImagesIntoCache(kNumImages, true);
   // Make sure the color images are only on disk, to ensure the background
   // thread is slow enough to queue up the requests.
-  [cache handleLowMemory];
+  if (!IsIPadIdiom())
+    [cache handleLowMemory];
 
   // Enable the grey image cache.
   [cache createGreyCache:sessionIDs];
@@ -542,7 +546,8 @@ TEST_F(SnapshotCacheTest, SizeAndScalePreservation) {
   NSString* const kSession = @"foo";
   [cache setImage:image withSessionID:kSession];
   FlushRunLoops();  // ensure the file is written to disk.
-  [cache handleLowMemory];
+  if (!IsIPadIdiom())
+    [cache handleLowMemory];
 
   // Retrive the image and have the callback verify the size and scale.
   __block BOOL callbackComplete = NO;
@@ -578,7 +583,8 @@ TEST_F(SnapshotCacheTest, DeleteRetinaImages) {
   NSString* const kSession = @"foo";
   [cache setImage:image withSessionID:kSession];
   FlushRunLoops();  // ensure the file is written to disk.
-  [cache handleLowMemory];
+  if (!IsIPadIdiom())
+    [cache handleLowMemory];
 
   // Verify the file was writted with @2x in the file name.
   base::FilePath retinaFile = [SnapshotCache imagePathForSessionID:kSession];
