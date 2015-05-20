@@ -55,6 +55,7 @@ public:
     {
     }
 
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     bool isHeapObjectAlive() { return m_trace; }
 
     virtual ~PersistentNode()
@@ -126,6 +127,7 @@ public:
 template<typename RootsAccessor, typename Owner>
 class PersistentBase : public PersistentNode {
 public:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     ~PersistentBase()
     {
         typename RootsAccessor::Lock lock;

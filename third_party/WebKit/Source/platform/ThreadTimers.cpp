@@ -31,6 +31,7 @@
 #include "platform/SharedTimer.h"
 #include "platform/Timer.h"
 #include "platform/TraceEvent.h"
+#include "platform/heap/AddressSanitizer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
@@ -78,6 +79,7 @@ void ThreadTimers::setSharedTimer(PassOwnPtr<SharedTimer> sharedTimer)
     }
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void ThreadTimers::updateSharedTimer()
 {
     if (!m_sharedTimer)
@@ -148,4 +150,3 @@ void ThreadTimers::sharedTimerFiredInternal()
 }
 
 } // namespace blink
-
