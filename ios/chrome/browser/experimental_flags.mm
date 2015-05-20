@@ -31,7 +31,10 @@ bool IsAlertOnBackgroundUploadEnabled() {
 
 bool IsOpenFromClipboardEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableIOSOpenFromClipboard);
+  if (command_line->HasSwitch(switches::kEnableIOSOpenFromClipboard))
+    return true;
+  return base::FieldTrialList::FindFullName("IOSOpenFromClipboard") ==
+         "Enabled";
 }
 
 bool IsWKWebViewEnabled() {
