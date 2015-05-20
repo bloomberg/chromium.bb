@@ -532,6 +532,11 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
 
   // Add virtual keyboard.
   AddKeyboardApp();
+
+#if defined(ENABLE_PLUGINS)
+  Add(pdf_extension_util::GetManifest(),
+      base::FilePath(FILE_PATH_LITERAL("pdf")));
+#endif
 }
 
 void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
