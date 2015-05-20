@@ -10,13 +10,19 @@ import gc
 import glob
 import multiprocessing
 import os
+import sys
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import image_lib
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import partial_mock
+
+
+class FakeException(Exception):
+  """Fake exception used for testing exception handling."""
 
 
 class LoopbackPartitions(object):
@@ -276,3 +282,27 @@ class BrilloImageOperationTest(cros_test_lib.ProgressBarTestCase,
 
     # Check that the logs contain the INFO message in func.
     self.AssertLogsContain(logs, 'foo')
+
+  def testExceptionHandling(self):
+    """Test exception handling of BrilloImageOperation."""
+    def func(queue):
+      queue.get()
+      print('foo')
+      print('bar', file=sys.stderr)
+      raise FakeException()
+
+    queue = multiprocessing.Queue()
+    op = BrilloImageOperationFake(queue)
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.OutputCapturer():
+        try:
+          op.Run(func, queue)
+        except parallel.BackgroundFailure as e:
+          if not e.HasFailureType(FakeException):
+            raise e
+
+    self.AssertOutputContainsLine('foo')
+    self.AssertOutputContainsLine('bar', check_stderr='True')
+    self.AssertLogsContain(logs, 'The output directory has been automatically '
+                           'deleted. To keep it around, please re-run the '
+                           'command with --log-level info.')

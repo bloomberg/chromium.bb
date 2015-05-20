@@ -210,6 +210,16 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
           line = line.replace(summarize_stage_prefix, '')
           logging.notice(line)
 
+  def Run(self, func, *args, **kwargs):
+    """Run function for BrilloImageOperation."""
+    try:
+      super(BrilloImageOperation, self).Run(func, *args, **kwargs)
+    except:
+      logging.error('The output directory has been automatically deleted. '
+                    'To keep it around, please re-run the command with '
+                    '--log-level info.')
+      raise
+
 
 def BuildImage(board, adjust_part=None, boot_args=None, enable_bootcache=False,
                enable_rootfs_verification=True, output_root=None,
