@@ -46,7 +46,9 @@ class GCMSocketStreamTest : public testing::Test {
   void WaitForData(int msg_size);
 
   base::MessageLoop* message_loop() { return &message_loop_; };
-  net::DelayedSocketData* data_provider() { return data_provider_.get(); }
+  net::StaticSocketDataProvider* data_provider() {
+    return data_provider_.get();
+  }
   SocketInputStream* input_stream() { return socket_input_stream_.get(); }
   SocketOutputStream* output_stream() { return socket_output_stream_.get(); }
   net::StreamSocket* socket() { return socket_.get(); }
@@ -61,7 +63,7 @@ class GCMSocketStreamTest : public testing::Test {
   // SocketStreams and their data providers.
   ReadList mock_reads_;
   WriteList mock_writes_;
-  scoped_ptr<net::DelayedSocketData> data_provider_;
+  scoped_ptr<net::StaticSocketDataProvider> data_provider_;
   scoped_ptr<SocketInputStream> socket_input_stream_;
   scoped_ptr<SocketOutputStream> socket_output_stream_;
 
@@ -86,8 +88,7 @@ void GCMSocketStreamTest::BuildSocket(const ReadList& read_list,
   mock_reads_ = read_list;
   mock_writes_ = write_list;
   data_provider_.reset(
-      new net::DelayedSocketData(
-          0,
+      new net::StaticSocketDataProvider(
           vector_as_array(&mock_reads_), mock_reads_.size(),
           vector_as_array(&mock_writes_), mock_writes_.size()));
   socket_factory_.AddSocketDataProvider(data_provider_.get());
@@ -231,17 +232,10 @@ TEST_F(GCMSocketStreamTest, ReadAsync) {
   int second_read_len = kReadDataSize - first_read_len;
   ReadList read_list;
   read_list.push_back(
-      net::MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING));
-  read_list.push_back(
       net::MockRead(net::ASYNC, kReadData, first_read_len));
   read_list.push_back(
       net::MockRead(net::ASYNC, &kReadData[first_read_len], second_read_len));
   BuildSocket(read_list, WriteList());
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&net::DelayedSocketData::ForceNextRead,
-                 base::Unretained(data_provider())));
   WaitForData(kReadDataSize);
   ASSERT_EQ(std::string(kReadData, kReadDataSize),
             DoInputStreamRead(kReadDataSize));

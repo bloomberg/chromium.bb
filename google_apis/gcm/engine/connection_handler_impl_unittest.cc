@@ -118,7 +118,9 @@ class GCMConnectionHandlerImplTest : public testing::Test {
     return connection_handler_.get();
   }
   base::MessageLoop* message_loop() { return &message_loop_; };
-  net::DelayedSocketData* data_provider() { return data_provider_.get(); }
+  net::StaticSocketDataProvider* data_provider() {
+    return data_provider_.get();
+  }
   int last_error() const { return last_error_; }
 
   // Initialize the connection handler, setting |dst_proto| as the destination
@@ -136,7 +138,7 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   // SocketStreams and their data provider.
   ReadList mock_reads_;
   WriteList mock_writes_;
-  scoped_ptr<net::DelayedSocketData> data_provider_;
+  scoped_ptr<net::StaticSocketDataProvider> data_provider_;
 
   // The connection handler being tested.
   scoped_ptr<ConnectionHandlerImpl> connection_handler_;
@@ -169,9 +171,9 @@ net::StreamSocket* GCMConnectionHandlerImplTest::BuildSocket(
   mock_reads_ = read_list;
   mock_writes_ = write_list;
   data_provider_.reset(
-      new net::DelayedSocketData(0,
-                                 &(mock_reads_[0]), mock_reads_.size(),
-                                 &(mock_writes_[0]), mock_writes_.size()));
+      new net::StaticSocketDataProvider(
+          &(mock_reads_[0]), mock_reads_.size(),
+          &(mock_writes_[0]), mock_writes_.size()));
   socket_factory_.AddSocketDataProvider(data_provider_.get());
 
   socket_ = socket_factory_.CreateTransportClientSocket(
@@ -571,9 +573,6 @@ TEST_F(GCMConnectionHandlerImplTest, ReadTimeout) {
   EXPECT_FALSE(received_message.get());
   EXPECT_EQ(net::ERR_TIMED_OUT, last_error());
   EXPECT_FALSE(connection_handler()->CanSendMessage());
-
-  // Finish the socket read. Should have no effect.
-  data_provider()->ForceNextRead();
 }
 
 // Receive a message with zero data bytes.
