@@ -9,11 +9,15 @@
   width: 100%;
 }
 
-#idle-dialog .kd-modaldialog,
-#auth-dialog .kd-modaldialog {
+.app-remoting .kd-modaldialog {
   /*
    * kd-modaldialog uses outline, which doesn't affect the bounding box, and so
    * doesn't work well when adjusting the window shape.
    */
   border: 1px solid gray;
+}
+
+#connection-dropped-dialog {
+  margin: 0px;
+  position: absolute;
 }

@@ -180,9 +180,8 @@ remoting.AppRemotingActivity.prototype.onDisconnected = function(error) {
   if (error.isNone()) {
     chrome.app.window.current().close();
   } else {
-    this.showErrorMessage_(error);
+    this.onConnectionDropped_();
   }
-  this.cleanup_();
 };
 
 /**
@@ -192,6 +191,32 @@ remoting.AppRemotingActivity.prototype.onConnectionFailed = function(error) {
   remoting.LoadingWindow.close();
   this.showErrorMessage_(error);
   this.cleanup_();
+};
+
+/** @private */
+remoting.AppRemotingActivity.prototype.onConnectionDropped_ = function() {
+  var rootElement = /** @type {HTMLDialogElement} */ (
+      document.getElementById('connection-dropped-dialog'));
+
+  var dialog = new remoting.Html5ModalDialog({
+    dialog: rootElement,
+    primaryButton: rootElement.querySelector('.restart-button'),
+    secondaryButton: rootElement.querySelector('.close-button'),
+    closeOnEscape: false
+  });
+
+  var that = this;
+  dialog.show().then(function(/** remoting.MessageDialog.Result */ result) {
+    if (result === remoting.MessageDialog.Result.PRIMARY) {
+      // Hide the windows of the remote application with setDesktopRects([])
+      // before tearing down the plugin.
+      remoting.windowShape.setDesktopRects([]);
+      that.cleanup_();
+      that.start();
+    } else {
+      chrome.app.window.current().close();
+    }
+  });
 };
 
 /**

@@ -158,6 +158,99 @@ remoting.MessageDialog.prototype.onClicked_ = function(result) {
   this.dispose();
 };
 
+
+
+/**
+ * A promise-based dialog implementation using the <dialog> element.
+ *
+ * @param {remoting.Html5ModalDialog.Params} params
+ * @constructor
+ *
+ * @implements {remoting.WindowShape.ClientUI}
+ * @implements {base.Disposable}
+ */
+remoting.Html5ModalDialog = function(params) {
+  /** @private */
+  this.dialog_ = params.dialog;
+
+  /** @private {base.Disposables} */
+  this.eventHooks_ = new base.Disposables(
+      new base.DomEventHook(
+          this.dialog_, 'cancel', this.onCancel_.bind(this), false),
+      new base.DomEventHook(
+          params.primaryButton, 'click',
+          this.close.bind(this, remoting.MessageDialog.Result.PRIMARY), false)
+  );
+
+  if (params.secondaryButton) {
+    this.eventHooks_.add(new base.DomEventHook(
+        params.secondaryButton, 'click',
+        this.close.bind(this, remoting.MessageDialog.Result.SECONDARY), false));
+  }
+
+  /** @private */
+  this.closeOnEscape_ = Boolean(params.closeOnEscape);
+
+  /** @private {base.Deferred} */
+  this.deferred_ = null;
+};
+
+remoting.Html5ModalDialog.prototype.dispose = function() {
+  base.dispose(this.eventHooks_);
+  this.eventHookes_ = null;
+};
+
+/**
+ * @return {Promise<remoting.MessageDialog.Result>}  Promise that resolves with
+ * the button clicked.
+ */
+remoting.Html5ModalDialog.prototype.show = function() {
+  base.debug.assert(this.deferred_ === null);
+  this.deferred_ = new base.Deferred();
+  this.dialog_.showModal();
+  remoting.windowShape.registerClientUI(this);
+  remoting.windowShape.centerToDesktop(this.dialog_);
+  return this.deferred_.promise();
+};
+
+/** @param {Event} e */
+remoting.Html5ModalDialog.prototype.onCancel_ = function(e) {
+  e.preventDefault();
+  if (this.closeOnEscape_) {
+    this.close(remoting.MessageDialog.Result.CANCEL);
+  }
+};
+
+/**
+ * @param {remoting.MessageDialog.Result} result
+ */
+remoting.Html5ModalDialog.prototype.close = function(result) {
+  if (!this.dialog_.open) {
+    return;
+  }
+  this.dialog_.close();
+  this.deferred_.resolve(result);
+  this.deferred_ = null;
+  remoting.windowShape.unregisterClientUI(this);
+};
+
+remoting.Html5ModalDialog.prototype.addToRegion = function(rects) {
+  var rect = /** @type {ClientRect} */(this.dialog_.getBoundingClientRect());
+
+  // If the dialog is repositioned by setting the left and top, it takes a while
+  // for getBoundingClientRect() to update the rectangle.
+  var left = this.dialog_.style.left;
+  var top = this.dialog_.style.top;
+
+  rects.push({
+    left: (left === '') ? rect.left : parseInt(left, 10),
+    top: (top === '') ? rect.top : parseInt(top, 10),
+    width: rect.width,
+    height: rect.height
+  });
+};
+
+
 /**
  * @param {Function} cancelCallback The callback to invoke when the user clicks
  *     on the cancel button.
@@ -194,5 +287,28 @@ remoting.ConnectingDialog.prototype.hide = function() {
  */
 remoting.MessageDialog.Result = {
   PRIMARY: 0,
-  SECONDARY: 1
+  SECONDARY: 1,
+  CANCEL: 2 // User presses the escape button.
 };
+
+/**
+ * Parameters for the remoting.Html5ModalDialog constructor.  Unless otherwise
+ * noted, all parameters are optional.
+ *
+ * dialog: (required) The HTML dialog element.
+ *
+ * primaryButton: (required) The HTML element of the primary button.
+ *
+ * secondaryButton: The HTML element of the secondary button.
+ *
+ * closeOnEscape: Whether the user can dismiss the dialog by pressing the escape
+ *     key. Default to false.
+ *
+ * @typedef {{
+ *   dialog: HTMLDialogElement,
+ *   primaryButton:HTMLElement,
+ *   secondaryButton:(HTMLElement|undefined),
+ *   closeOnEscape:(boolean|undefined)
+ * }}
+ */
+remoting.Html5ModalDialog.Params;

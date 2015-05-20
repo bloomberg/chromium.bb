@@ -90,8 +90,8 @@ remoting.WindowShape.prototype.centerToDesktop = function(element) {
   var rect = element.getBoundingClientRect();
   var left = (desktop.right - desktop.left - rect.width) / 2 + desktop.left;
   var top = (desktop.bottom - desktop.top - rect.height) / 2 + desktop.top;
-  element.style.left = left + 'px';
-  element.style.top = top + 'px';
+  element.style.left = Math.round(left) + 'px';
+  element.style.top = Math.round(top) + 'px';
   this.updateClientWindowShape();
 };
 

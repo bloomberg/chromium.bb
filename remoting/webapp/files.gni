@@ -520,6 +520,7 @@ ar_main_template = "app_remoting/html/template_lg.html"
 
 ar_main_template_files = [
   "base/html/client_plugin.html",
+  "base/html/connection_dropped_dialog.html",
   "app_remoting/html/context_menu.html",
   "app_remoting/html/idle_dialog.html",
 ]

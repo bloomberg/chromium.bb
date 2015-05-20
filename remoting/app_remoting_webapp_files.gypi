@@ -47,6 +47,7 @@
       '<(DEPTH)/remoting/webapp/app_remoting/html/template_lg.html',
     'ar_main_template_files': [
       'webapp/base/html/client_plugin.html',
+      'webapp/base/html/connection_dropped_dialog.html',
       'webapp/app_remoting/html/context_menu.html',
       'webapp/app_remoting/html/idle_dialog.html',
     ],

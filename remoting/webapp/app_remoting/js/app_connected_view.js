@@ -74,8 +74,9 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
       this.onDesktopSizeChanged_.bind(this));
 
   /** @private */
-  this.disposables_ = new base.Disposables(
-      baseView, windowShapeHook, desktopSizeHook, this.contextMenu_);
+  this.disposables_ =
+      new base.Disposables(baseView, windowShapeHook, desktopSizeHook,
+                           this.contextMenu_, menuAdapter);
 
   /** @private */
   this.supportsGoogleDrive_ = this.plugin_.hasCapability(

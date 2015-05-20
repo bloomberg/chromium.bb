@@ -563,6 +563,12 @@
       <message desc="Button to allow the user to indicate that they are no longer using the service." name="IDS_IDLE_DISCONNECT">
         Disconnect now
       </message>
+      <message desc="Button to restart the app after the connection is dropped." name="IDS_RESTART_BUTTON">
+        Restart
+      </message>
+      <message desc="Message show to the user when the connection is dropped." name="IDS_ERROR_CONNECTION_DROPPED">
+        Connection to the remote server has been lost.  This app is not available offline.
+      </message>
 
       <if expr="is_android or is_ios">
         <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">

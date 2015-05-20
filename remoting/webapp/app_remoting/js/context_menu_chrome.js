@@ -18,7 +18,9 @@ var remoting = remoting || {};
  */
 remoting.ContextMenuChrome = function() {};
 
-remoting.ContextMenuChrome.prototype.dispose = function() {};
+remoting.ContextMenuChrome.prototype.dispose = function() {
+  chrome.contextMenus.removeAll();
+};
 
 /**
  * @param {string} id An identifier for the menu entry.
