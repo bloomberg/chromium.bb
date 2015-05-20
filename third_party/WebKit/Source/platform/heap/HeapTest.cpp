@@ -1867,6 +1867,52 @@ TEST(HeapTest, LazySweepingLargeObjectPages)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     EXPECT_EQ(22, LargeHeapObject::s_destructorCalls);
 }
+
+class SimpleFinalizedEagerObjectBase : public GarbageCollectedFinalized<SimpleFinalizedEagerObjectBase> {
+public:
+    virtual ~SimpleFinalizedEagerObjectBase() { }
+    DEFINE_INLINE_TRACE() { }
+protected:
+    SimpleFinalizedEagerObjectBase() { }
+};
+
+class SimpleFinalizedEagerObject : public SimpleFinalizedEagerObjectBase {
+public:
+    static SimpleFinalizedEagerObject* create()
+    {
+        return new SimpleFinalizedEagerObject();
+    }
+
+    virtual ~SimpleFinalizedEagerObject()
+    {
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+private:
+    SimpleFinalizedEagerObject() { }
+};
+
+int SimpleFinalizedEagerObject::s_destructorCalls = 0;
+
+EAGERLY_SWEEP(SimpleFinalizedEagerObjectBase);
+
+TEST(HeapTest, EagerlySweepingPages)
+{
+    clearOutOldGarbage();
+
+    SimpleFinalizedObject::s_destructorCalls = 0;
+    SimpleFinalizedEagerObject::s_destructorCalls = 0;
+    EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+    EXPECT_EQ(0, SimpleFinalizedEagerObject::s_destructorCalls);
+    for (int i = 0; i < 1000; i++)
+        SimpleFinalizedObject::create();
+    for (int i = 0; i < 100; i++)
+        SimpleFinalizedEagerObject::create();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep, Heap::ForcedGC);
+    EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+    EXPECT_EQ(100, SimpleFinalizedEagerObject::s_destructorCalls);
+}
 #endif
 
 TEST(HeapTest, Finalization)

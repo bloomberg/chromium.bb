@@ -910,6 +910,7 @@ void ThreadState::preSweep()
     } else {
         // The default behavior is lazy sweeping.
         setGCState(Sweeping);
+        eagerSweep();
         scheduleIdleLazySweep();
     }
 #else
@@ -922,6 +923,29 @@ void ThreadState::preSweep()
 #if ENABLE(GC_PROFILING)
     snapshotFreeListIfNecessary();
 #endif
+}
+
+void ThreadState::eagerSweep()
+{
+    // Some objects need to be finalized promptly and cannot be handled
+    // by lazy sweeping. Keep those in a designated heap and sweep it
+    // eagerly.
+    ASSERT(isSweepingInProgress());
+
+    // Mirroring the completeSweep() condition; see its comment.
+    if (sweepForbidden())
+        return;
+
+    ThreadState::SweepForbiddenScope scope(this);
+    {
+        if (isMainThread())
+            ScriptForbiddenScope::enter();
+
+        m_heaps[EagerSweepHeapIndex]->completeSweep();
+
+        if (isMainThread())
+            ScriptForbiddenScope::exit();
+    }
 }
 
 void ThreadState::completeSweep()

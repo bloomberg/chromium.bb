@@ -1075,23 +1075,51 @@ protected:
     }
 };
 
-// We use sized heaps for normal pages to improve memory locality.
+// Assigning class types to their heaps.
+//
+// We use sized heaps for most 'normal' objcts to improve memory locality.
 // It seems that the same type of objects are likely to be accessed together,
-// which means that we want to group objects by type. That's why we provide
-// dedicated heaps for popular types (e.g., Node, CSSValue), but it's not
-// practical to prepare dedicated heaps for all types. Thus we group objects
-// by their sizes, hoping that it will approximately group objects
-// by their types.
-static int heapIndexForNormalHeap(size_t size)
-{
-    if (size < 64) {
-        if (size < 32)
-            return NormalPage1HeapIndex;
-        return NormalPage2HeapIndex;
+// which means that we want to group objects by type. That's one reason
+// why we provide dedicated heaps for popular types (e.g., Node, CSSValue),
+// but it's not practical to prepare dedicated heaps for all types.
+// Thus we group objects by their sizes, hoping that this will approximately
+// group objects by their types.
+//
+// An exception to the use of sized heaps is made for class types that
+// require prompt finalization after a garbage collection. That is, their
+// instances have to be finalized early and cannot be delayed until lazy
+// sweeping kicks in for their heap and page. The EAGERLY_SWEEP()
+// macro is used to declare a class (and its derived classes) as being
+// in need of 'eager sweeping'.
+//
+// TODO(Oilpan): the notion of eagerly swept object is at least needed
+// during the transition to enabling Oilpan always. Once passed, re-evaluate
+// if there is a need to keep this facility.
+//
+template<typename T, typename Enabled = void>
+class HeapIndexTrait {
+public:
+    static int heapIndexForObject(size_t size)
+    {
+        if (size < 64) {
+            if (size < 32)
+                return NormalPage1HeapIndex;
+            return NormalPage2HeapIndex;
+        }
+        if (size < 128)
+            return NormalPage3HeapIndex;
+        return NormalPage4HeapIndex;
     }
-    if (size < 128)
-        return NormalPage3HeapIndex;
-    return NormalPage4HeapIndex;
+};
+
+#define EAGERLY_SWEEP(TYPE)                 \
+template<typename T>                        \
+class HeapIndexTrait<T, typename WTF::EnableIf<WTF::IsSubclass<T, TYPE>::value>::Type> { \
+public:                                     \
+    static int heapIndexForObject(size_t)   \
+    {                                       \
+        return EagerSweepHeapIndex;         \
+    }                                       \
 }
 
 NO_SANITIZE_ADDRESS inline
@@ -1212,7 +1240,7 @@ template<typename T>
 Address Heap::allocate(size_t size)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return Heap::allocateOnHeapIndex(state, size, heapIndexForNormalHeap(size), GCInfoTrait<T>::index());
+    return Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::heapIndexForObject(size), GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1226,7 +1254,7 @@ Address Heap::reallocate(void* previous, size_t size)
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     // TODO(haraken): reallocate() should use the heap that the original object
     // is using. This won't be a big deal since reallocate() is rarely used.
-    Address address = Heap::allocateOnHeapIndex(state, size, heapIndexForNormalHeap(size), GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::heapIndexForObject(size), GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;

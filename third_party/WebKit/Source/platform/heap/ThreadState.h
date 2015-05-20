@@ -141,6 +141,7 @@ enum HeapIndices {
     NormalPage2HeapIndex,
     NormalPage3HeapIndex,
     NormalPage4HeapIndex,
+    EagerSweepHeapIndex,
     Vector1HeapIndex,
     Vector2HeapIndex,
     Vector3HeapIndex,
@@ -632,6 +633,8 @@ private:
     bool shouldSchedulePreciseGC();
     bool shouldForceConservativeGC();
     void runScheduledGC(StackState);
+
+    void eagerSweep();
 
     // When ThreadState is detaching from non-main thread its
     // heap is expected to be empty (because it is going away).
