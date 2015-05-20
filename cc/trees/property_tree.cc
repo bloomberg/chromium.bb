@@ -58,7 +58,8 @@ TransformNodeData::TransformNodeData()
       node_and_ancestors_are_flat(true),
       scrolls(false),
       needs_sublayer_scale(false),
-      layer_scale_factor(1.0f) {
+      layer_scale_factor(1.0f),
+      post_local_scale_factor(1.0f) {
 }
 
 TransformNodeData::~TransformNodeData() {
