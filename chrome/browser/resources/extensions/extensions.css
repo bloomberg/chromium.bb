@@ -380,6 +380,7 @@ html[dir=rtl] .extension-commands-config {
   right: -8px;
   top: 6px;
   transition: opacity 200ms;
+  vertical-align: top;
 }
 
 html[dir='rtl'] #extension-settings .trash {
