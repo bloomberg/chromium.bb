@@ -132,6 +132,8 @@ HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
   CHECK(memory->Map(size));
+  // Close file descriptor to avoid running out.
+  memory->Close();
   return make_scoped_ptr(new DiscardableMemoryImpl(
       memory.Pass(),
       base::Bind(
@@ -245,6 +247,11 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
 
   bytes_allocated_ = checked_bytes_allocated.ValueOrDie();
   BytesAllocatedChanged(bytes_allocated_);
+
+#if !defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
+  // Close file descriptor to avoid running out.
+  memory->Close();
+#endif
 
   scoped_refptr<MemorySegment> segment(new MemorySegment(memory.Pass()));
   process_segments[id] = segment.get();
@@ -374,6 +381,7 @@ void HostDiscardableSharedMemoryManager::ReleaseMemory(
   // Note: We intentionally leave the segment in the |segments| vector to
   // avoid reconstructing the heap. The element will be removed from the heap
   // when its last usage time is older than all other segments.
+  memory->Unmap();
   memory->Close();
 }
 

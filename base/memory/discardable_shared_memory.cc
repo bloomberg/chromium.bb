@@ -157,6 +157,14 @@ bool DiscardableSharedMemory::Map(size_t size) {
   return true;
 }
 
+bool DiscardableSharedMemory::Unmap() {
+  if (!shared_memory_.Unmap())
+    return false;
+
+  mapped_size_ = 0;
+  return true;
+}
+
 DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
     size_t offset, size_t length) {
   DCHECK_EQ(AlignToPageSize(offset), offset);
@@ -212,10 +220,11 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
 
 #if defined(OS_ANDROID)
   SharedMemoryHandle handle = shared_memory_.handle();
-  DCHECK(SharedMemory::IsHandleValid(handle));
-  if (ashmem_pin_region(
-          handle.fd, AlignToPageSize(sizeof(SharedState)) + offset, length)) {
-    return PURGED;
+  if (SharedMemory::IsHandleValid(handle)) {
+    if (ashmem_pin_region(
+            handle.fd, AlignToPageSize(sizeof(SharedState)) + offset, length)) {
+      return PURGED;
+    }
   }
 #endif
 
@@ -237,10 +246,11 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
 
 #if defined(OS_ANDROID)
   SharedMemoryHandle handle = shared_memory_.handle();
-  DCHECK(SharedMemory::IsHandleValid(handle));
-  if (ashmem_unpin_region(
-          handle.fd, AlignToPageSize(sizeof(SharedState)) + offset, length)) {
-    DPLOG(ERROR) << "ashmem_unpin_region() failed";
+  if (SharedMemory::IsHandleValid(handle)) {
+    if (ashmem_unpin_region(
+            handle.fd, AlignToPageSize(sizeof(SharedState)) + offset, length)) {
+      DPLOG(ERROR) << "ashmem_unpin_region() failed";
+    }
   }
 #endif
 
@@ -336,9 +346,7 @@ bool DiscardableSharedMemory::IsMemoryResident() const {
 }
 
 void DiscardableSharedMemory::Close() {
-  shared_memory_.Unmap();
   shared_memory_.Close();
-  mapped_size_ = 0;
 }
 
 #if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)

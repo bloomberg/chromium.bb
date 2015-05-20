@@ -48,6 +48,11 @@ class BASE_EXPORT DiscardableSharedMemory {
   // Returns true on success, false otherwise.
   bool Map(size_t size);
 
+  // Unmaps the discardable shared memory from the caller's address space.
+  // Returns true if successful; returns false on error or if the memory is
+  // not mapped.
+  bool Unmap();
+
   // The actual size of the mapped memory (may be larger than requested).
   size_t mapped_size() const { return mapped_size_; }
 

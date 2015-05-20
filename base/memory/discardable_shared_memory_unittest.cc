@@ -306,9 +306,32 @@ TEST(DiscardableSharedMemoryTest, MappedSize) {
 
   EXPECT_LE(kDataSize, memory.mapped_size());
 
-  // Mapped size should be 0 after memory segment has been closed.
-  memory.Close();
+  // Mapped size should be 0 after memory segment has been unmapped.
+  rv = memory.Unmap();
+  EXPECT_TRUE(rv);
   EXPECT_EQ(0u, memory.mapped_size());
+}
+
+TEST(DiscardableSharedMemoryTest, Close) {
+  const uint32 kDataSize = 1024;
+
+  TestDiscardableSharedMemory memory;
+  bool rv = memory.CreateAndMap(kDataSize);
+  ASSERT_TRUE(rv);
+
+  // Mapped size should be unchanged after memory segment has been closed.
+  memory.Close();
+  EXPECT_LE(kDataSize, memory.mapped_size());
+
+  // Memory is initially locked. Unlock it.
+  memory.SetNow(Time::FromDoubleT(1));
+  memory.Unlock(0, 0);
+
+  // Lock and unlock memory.
+  auto lock_rv = memory.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
+  memory.SetNow(Time::FromDoubleT(2));
+  memory.Unlock(0, 0);
 }
 
 #if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
