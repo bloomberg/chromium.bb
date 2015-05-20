@@ -295,67 +295,7 @@ public class AndroidSyncSettings {
         }
     }
 
-    // TODO(maxbogue): make private once downstream uses are removed.
-    @Deprecated
-    public String getContractAuthority() {
+    private String getContractAuthority() {
         return mApplicationContext.getPackageName();
-    }
-
-    // Deprecated section; to be removed once downstream no longer uses them.
-
-    @Deprecated
-    public static AndroidSyncSettings get(Context context) {
-        ensureInitialized(context);
-        return sInstance;
-    }
-
-    @Deprecated
-    public boolean isSyncEnabled() {
-        return mMasterSyncEnabled && mChromeSyncEnabled;
-    }
-
-    @Deprecated
-    public boolean isChromeSyncEnabled() {
-        return mChromeSyncEnabled;
-    }
-
-    @Deprecated
-    public boolean isMasterSyncEnabled() {
-        return mMasterSyncEnabled;
-    }
-
-    @Deprecated
-    public void enableChromeSync() {
-        setChromeSyncEnabled(true);
-    }
-
-    @Deprecated
-    public void disableChromeSync() {
-        setChromeSyncEnabled(false);
-    }
-
-    @Deprecated
-    public void updateAccount(Account account) {
-        synchronized (mLock) {
-            mAccount = account;
-            updateSyncability();
-        }
-        if (updateCachedSettings()) {
-            notifyObservers();
-        }
-    }
-
-    @Deprecated
-    public void registerObserver(AndroidSyncSettingsObserver observer) {
-        synchronized (mLock) {
-            mObservers.addObserver(observer);
-        }
-    }
-
-    @Deprecated
-    public void unregisterObserver(AndroidSyncSettingsObserver observer) {
-        synchronized (mLock) {
-            mObservers.removeObserver(observer);
-        }
     }
 }
