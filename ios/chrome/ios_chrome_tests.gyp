@@ -62,6 +62,8 @@
         'browser/geolocation/test_location_manager.mm',
         'browser/net/mock_image_fetcher.h',
         'browser/net/mock_image_fetcher.mm',
+        'browser/sync/sync_setup_service_mock.cc',
+        'browser/sync/sync_setup_service_mock.h',
         'test/ios_chrome_unit_test_suite.cc',
         'test/ios_chrome_unit_test_suite.h',
         'test/run_all_unittests.cc',

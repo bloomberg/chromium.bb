@@ -19,10 +19,12 @@ include_rules = [
   "+components/variations",
   "+components/web_resource",
   "+components/webp_transcode",
+  "+google_apis",
   "+ios/net",
   "+ios/public/provider/chrome",
   "+ios/web/public",
   "+net",
+  "+sync",
   "+third_party/google_toolbox_for_mac",
   "+ui",
 
