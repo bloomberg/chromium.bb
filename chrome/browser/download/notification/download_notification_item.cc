@@ -112,22 +112,34 @@ DownloadNotificationItem::~DownloadNotificationItem() {
 }
 
 void DownloadNotificationItem::OnNotificationClick() {
-  if (openable_) {
-    if (item_->IsDone()) {
+  if (item_->IsDangerous()) {
+#if defined(FULL_SAFE_BROWSING)
+    DownloadCommands(item_).ExecuteCommand(
+        DownloadCommands::LEARN_MORE_SCANNING);
+#else
+    CloseNotificationByUser();
+#endif
+    return;
+  }
+
+  switch (item_->GetState()) {
+    case content::DownloadItem::IN_PROGRESS:
+      item_->SetOpenWhenComplete(!item_->GetOpenWhenComplete());  // Toggle
+      break;
+    case content::DownloadItem::CANCELLED:
+    case content::DownloadItem::INTERRUPTED:
+      GetBrowser()->OpenURL(content::OpenURLParams(
+          GURL(chrome::kChromeUIDownloadsURL), content::Referrer(),
+          NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+          false /* is_renderer_initiated */));
+      CloseNotificationByUser();
+      break;
+    case content::DownloadItem::COMPLETE:
       item_->OpenDownload();
       CloseNotificationByUser();
-    } else {
-      item_->SetOpenWhenComplete(!item_->GetOpenWhenComplete());  // Toggle
-    }
-  } else if (item_->GetState() == content::DownloadItem::INTERRUPTED ||
-             item_->GetState() == content::DownloadItem::CANCELLED) {
-    GetBrowser()->OpenURL(content::OpenURLParams(
-        GURL(chrome::kChromeUIDownloadsURL), content::Referrer(),
-        NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-        false /* is_renderer_initiated */));
-    CloseNotificationByUser();
-  } else if (item_->IsDone()) {
-    CloseNotificationByUser();
+      break;
+    case content::DownloadItem::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
   }
 }
 
@@ -266,20 +278,15 @@ void DownloadNotificationItem::UpdateNotificationData(
 
   std::vector<message_center::ButtonInfo> notification_actions;
   scoped_ptr<std::vector<DownloadCommands::Command>> actions(
-      GetPossibleActions().Pass());
+      GetExtraActions().Pass());
 
-  openable_ = false;
   button_actions_.reset(new std::vector<DownloadCommands::Command>);
   for (auto it = actions->begin(); it != actions->end(); it++) {
-    if (*it == DownloadCommands::OPEN_WHEN_COMPLETE) {
-      openable_ = true;
-    } else {
-      button_actions_->push_back(*it);
-      message_center::ButtonInfo button_info =
-          message_center::ButtonInfo(GetCommandLabel(*it));
-      button_info.icon = command.GetCommandIcon(*it);
-      notification_actions.push_back(button_info);
-    }
+    button_actions_->push_back(*it);
+    message_center::ButtonInfo button_info =
+        message_center::ButtonInfo(GetCommandLabel(*it));
+    button_info.icon = command.GetCommandIcon(*it);
+    notification_actions.push_back(button_info);
   }
   notification_->set_buttons(notification_actions);
 
@@ -348,7 +355,7 @@ NotificationUIManager* DownloadNotificationItem::notification_ui_manager()
 }
 
 scoped_ptr<std::vector<DownloadCommands::Command>>
-DownloadNotificationItem::GetPossibleActions() const {
+DownloadNotificationItem::GetExtraActions() const {
   scoped_ptr<std::vector<DownloadCommands::Command>> actions(
       new std::vector<DownloadCommands::Command>());
 
@@ -360,7 +367,6 @@ DownloadNotificationItem::GetPossibleActions() const {
 
   switch (item_->GetState()) {
     case content::DownloadItem::IN_PROGRESS:
-      actions->push_back(DownloadCommands::OPEN_WHEN_COMPLETE);
       if (!item_->IsPaused())
         actions->push_back(DownloadCommands::PAUSE);
       else
@@ -373,7 +379,6 @@ DownloadNotificationItem::GetPossibleActions() const {
         actions->push_back(DownloadCommands::RESUME);
       break;
     case content::DownloadItem::COMPLETE:
-      actions->push_back(DownloadCommands::OPEN_WHEN_COMPLETE);
       actions->push_back(DownloadCommands::SHOW_IN_FOLDER);
       break;
     case content::DownloadItem::MAX_DOWNLOAD_STATE:

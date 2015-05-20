@@ -102,9 +102,9 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
 
   Browser* GetBrowser();
 
-  scoped_ptr<std::vector<DownloadCommands::Command>> GetPossibleActions() const;
+  // Returns the list of possible extra (all except the default) actions.
+  scoped_ptr<std::vector<DownloadCommands::Command>> GetExtraActions() const;
 
-  bool openable_ = false;
   int image_resource_id_ = 0;
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
