@@ -296,8 +296,16 @@ bool MediaDrmBridge::SetSecurityLevel(SecurityLevel security_level) {
 void MediaDrmBridge::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  promise->reject(NOT_SUPPORTED_ERROR, 0,
-                  "SetServerCertificate() is not supported.");
+  DCHECK(!certificate.empty());
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_certificate;
+  if (Java_MediaDrmBridge_setServerCertificate(env, j_media_drm_.obj(),
+                                               j_certificate.obj())) {
+    promise->resolve();
+  } else {
+    promise->reject(INVALID_ACCESS_ERROR, 0, "Set server certificate failed.");
+  }
 }
 
 void MediaDrmBridge::CreateSessionAndGenerateRequest(

@@ -10,10 +10,10 @@ import android.media.MediaDrm;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -58,6 +58,7 @@ public class MediaDrmBridge {
 
     private static final String TAG = "MediaDrmBridge";
     private static final String SECURITY_LEVEL = "securityLevel";
+    private static final String SERVER_CERTIFICATE = "serviceCertificate";
     private static final String PRIVACY_MODE = "privacyMode";
     private static final String SESSION_SHARING = "sessionSharing";
     private static final String ENABLE = "enable";
@@ -339,6 +340,26 @@ public class MediaDrmBridge {
         }
 
         Log.e(TAG, "Security level " + securityLevel + " not supported!");
+        return false;
+    }
+
+    /**
+     * Set the server certificate.
+     *
+     * @param certificate Server certificate to be set.
+     * @return whether the server certificate was successfully set.
+     */
+    @CalledByNative
+    private boolean setServerCertificate(byte[] certificate) {
+        try {
+            mMediaDrm.setPropertyByteArray(SERVER_CERTIFICATE, certificate);
+            return true;
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.e(TAG, "Failed to set server certificate", e);
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to set server certificate", e);
+        }
+
         return false;
     }
 
