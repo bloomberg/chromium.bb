@@ -329,8 +329,6 @@
             'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
           },
           'sources': [
-            'overrides/talk/media/webrtc/webrtcexport.h',
-
             '<(libjingle_source)/talk/app/webrtc/audiotrack.cc',
             '<(libjingle_source)/talk/app/webrtc/audiotrack.h',
             '<(libjingle_source)/talk/app/webrtc/audiotrackrenderer.cc',
