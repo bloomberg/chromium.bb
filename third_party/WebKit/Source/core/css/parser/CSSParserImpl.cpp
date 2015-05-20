@@ -64,7 +64,7 @@ static inline void filterProperties(bool important, const WillBeHeapVector<CSSPr
     }
 }
 
-static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> createStylePropertySet(const WillBeHeapVector<CSSProperty, 256>& parsedProperties, CSSParserMode mode)
+static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> createStylePropertySet(WillBeHeapVector<CSSProperty, 256>& parsedProperties, CSSParserMode mode)
 {
     BitArray<numCSSProperties> seenProperties;
     size_t unusedEntries = parsedProperties.size();
@@ -73,7 +73,9 @@ static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> createStylePropertySet(
     filterProperties(true, parsedProperties, results, unusedEntries, seenProperties);
     filterProperties(false, parsedProperties, results, unusedEntries, seenProperties);
 
-    return ImmutableStylePropertySet::create(results.data() + unusedEntries, results.size() - unusedEntries, mode);
+    RefPtrWillBeRawPtr<ImmutableStylePropertySet> result = ImmutableStylePropertySet::create(results.data() + unusedEntries, results.size() - unusedEntries, mode);
+    parsedProperties.clear();
+    return result.release();
 }
 
 PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParserImpl::parseInlineStyleDeclaration(const String& string, Element* element)
@@ -443,10 +445,7 @@ PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSS
     }
 
     consumeDeclarationList(block, StyleRule::Viewport);
-    RefPtrWillBeRawPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
-    rule->setProperties(createStylePropertySet(m_parsedProperties, CSSViewportRuleMode));
-    m_parsedProperties.clear();
-    return rule.release();
+    return StyleRuleViewport::create(createStylePropertySet(m_parsedProperties, CSSViewportRuleMode));
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
@@ -463,14 +462,11 @@ PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSS
         m_observerWrapper->observer().endRuleBody(endOffset, false);
     }
 
-    consumeDeclarationList(block, StyleRule::FontFace);
-
-    RefPtrWillBeRawPtr<StyleRuleFontFace> rule = StyleRuleFontFace::create();
-    rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
-    m_parsedProperties.clear();
     if (m_styleSheet)
         m_styleSheet->setHasFontFaceRule(true);
-    return rule.release();
+
+    consumeDeclarationList(block, StyleRule::FontFace);
+    return StyleRuleFontFace::create(createStylePropertySet(m_parsedProperties, m_context.mode()));
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block)
@@ -550,17 +546,14 @@ PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTo
     }
 
     selector->setForPage();
-
-    RefPtrWillBeRawPtr<StyleRulePage> pageRule = StyleRulePage::create();
     Vector<OwnPtr<CSSParserSelector>> selectorVector;
     selectorVector.append(selector.release());
-    pageRule->parserAdoptSelectorVector(selectorVector);
+    CSSSelectorList selectorList;
+    selectorList.adoptSelectorVector(selectorVector);
 
     consumeDeclarationList(block, StyleRule::Style);
-    pageRule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
-    m_parsedProperties.clear();
 
-    return pageRule.release();
+    return StyleRulePage::create(selectorList, createStylePropertySet(m_parsedProperties, m_context.mode()));
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
@@ -569,11 +562,7 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParserImpl::consumeKeyframeStyleRul
     if (!keyList)
         return nullptr;
     consumeDeclarationList(block, StyleRule::Keyframes);
-    RefPtrWillBeRawPtr<StyleRuleKeyframe> rule = StyleRuleKeyframe::create();
-    rule->setKeys(keyList.release());
-    rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
-    m_parsedProperties.clear();
-    return rule.release();
+    return StyleRuleKeyframe::create(keyList.release(), createStylePropertySet(m_parsedProperties, m_context.mode()));
 }
 
 static void observeSelectors(CSSParserObserverWrapper& wrapper, CSSParserTokenRange selectors)
@@ -610,11 +599,7 @@ PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserToken
 
     consumeDeclarationList(block, StyleRule::Style);
 
-    RefPtrWillBeRawPtr<StyleRule> rule = StyleRule::create();
-    rule->wrapperAdoptSelectorList(selectorList);
-    rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
-    m_parsedProperties.clear();
-    return rule.release();
+    return StyleRule::create(selectorList, createStylePropertySet(m_parsedProperties, m_context.mode()));
 }
 
 void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule::Type ruleType)

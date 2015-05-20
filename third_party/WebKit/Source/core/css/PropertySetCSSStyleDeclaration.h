@@ -26,7 +26,6 @@
 #ifndef PropertySetCSSStyleDeclaration_h
 #define PropertySetCSSStyleDeclaration_h
 
-#include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"

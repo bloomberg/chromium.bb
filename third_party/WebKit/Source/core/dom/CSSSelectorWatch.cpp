@@ -153,10 +153,7 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
         if (!allCompound(selectorList))
             continue;
 
-        RefPtrWillBeRawPtr<StyleRule> rule = StyleRule::create();
-        rule->wrapperAdoptSelectorList(selectorList);
-        rule->setProperties(callbackPropertySet);
-        m_watchedCallbackSelectors.append(rule.release());
+        m_watchedCallbackSelectors.append(StyleRule::create(selectorList, callbackPropertySet));
     }
     document().changedSelectorWatch();
 }

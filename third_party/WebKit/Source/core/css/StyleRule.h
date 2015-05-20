@@ -25,6 +25,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaList.h"
+#include "core/css/StylePropertySet.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
@@ -32,8 +33,6 @@ namespace blink {
 
 class CSSRule;
 class CSSStyleSheet;
-class MutableStylePropertySet;
-class StylePropertySet;
 
 class CORE_EXPORT StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleBase);
@@ -105,7 +104,11 @@ private:
 class StyleRule : public StyleRuleBase {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRule);
 public:
-    static PassRefPtrWillBeRawPtr<StyleRule> create() { return adoptRefWillBeNoop(new StyleRule()); }
+    // Adopts the selector list
+    static PassRefPtrWillBeRawPtr<StyleRule> create(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+    {
+        return adoptRefWillBeNoop(new StyleRule(selectorList, properties));
+    }
 
     ~StyleRule();
 
@@ -113,9 +116,7 @@ public:
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    void parserAdoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectors) { m_selectorList.adoptSelectorVector(selectors); }
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
-    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     PassRefPtrWillBeRawPtr<StyleRule> copy() const { return adoptRefWillBeNoop(new StyleRule(*this)); }
 
@@ -124,7 +125,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRule();
+    StyleRule(CSSSelectorList&, PassRefPtrWillBeRawPtr<StylePropertySet>);
     StyleRule(const StyleRule&);
 
     RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null.
@@ -133,21 +134,22 @@ private:
 
 class StyleRuleFontFace : public StyleRuleBase {
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleFontFace> create() { return adoptRefWillBeNoop(new StyleRuleFontFace); }
+    static PassRefPtrWillBeRawPtr<StyleRuleFontFace> create(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+    {
+        return adoptRefWillBeNoop(new StyleRuleFontFace(properties));
+    }
 
     ~StyleRuleFontFace();
 
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
-
     PassRefPtrWillBeRawPtr<StyleRuleFontFace> copy() const { return adoptRefWillBeNoop(new StyleRuleFontFace(*this)); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleFontFace();
+    StyleRuleFontFace(PassRefPtrWillBeRawPtr<StylePropertySet>);
     StyleRuleFontFace(const StyleRuleFontFace&);
 
     RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null.
@@ -155,7 +157,11 @@ private:
 
 class StyleRulePage : public StyleRuleBase {
 public:
-    static PassRefPtrWillBeRawPtr<StyleRulePage> create() { return adoptRefWillBeNoop(new StyleRulePage); }
+    // Adopts the selector list
+    static PassRefPtrWillBeRawPtr<StyleRulePage> create(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+    {
+        return adoptRefWillBeNoop(new StyleRulePage(selectorList, properties));
+    }
 
     ~StyleRulePage();
 
@@ -163,16 +169,14 @@ public:
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    void parserAdoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectors) { m_selectorList.adoptSelectorVector(selectors); }
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
-    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     PassRefPtrWillBeRawPtr<StyleRulePage> copy() const { return adoptRefWillBeNoop(new StyleRulePage(*this)); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRulePage();
+    StyleRulePage(CSSSelectorList&, PassRefPtrWillBeRawPtr<StylePropertySet>);
     StyleRulePage(const StyleRulePage&);
 
     RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null.
@@ -239,21 +243,22 @@ private:
 
 class StyleRuleViewport : public StyleRuleBase {
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleViewport> create() { return adoptRefWillBeNoop(new StyleRuleViewport); }
+    static PassRefPtrWillBeRawPtr<StyleRuleViewport> create(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+    {
+        return adoptRefWillBeNoop(new StyleRuleViewport(properties));
+    }
 
     ~StyleRuleViewport();
 
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
 
-    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
-
     PassRefPtrWillBeRawPtr<StyleRuleViewport> copy() const { return adoptRefWillBeNoop(new StyleRuleViewport(*this)); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleViewport();
+    StyleRuleViewport(PassRefPtrWillBeRawPtr<StylePropertySet>);
     StyleRuleViewport(const StyleRuleViewport&);
 
     RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null

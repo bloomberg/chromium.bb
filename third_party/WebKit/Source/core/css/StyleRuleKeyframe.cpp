@@ -12,8 +12,10 @@
 
 namespace blink {
 
-StyleRuleKeyframe::StyleRuleKeyframe()
+StyleRuleKeyframe::StyleRuleKeyframe(PassOwnPtr<Vector<double>> keys, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
 : StyleRuleBase(Keyframe)
+, m_properties(properties)
+, m_keys(*keys)
 {
 }
 
@@ -49,23 +51,11 @@ const Vector<double>& StyleRuleKeyframe::keys() const
     return m_keys;
 }
 
-void StyleRuleKeyframe::setKeys(PassOwnPtr<Vector<double>> keys)
-{
-    ASSERT(keys && !keys->isEmpty());
-    m_keys = *keys;
-}
-
 MutableStylePropertySet& StyleRuleKeyframe::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
     return *toMutableStylePropertySet(m_properties.get());
-}
-
-void StyleRuleKeyframe::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
-{
-    ASSERT(properties);
-    m_properties = properties;
 }
 
 String StyleRuleKeyframe::cssText() const

@@ -16,9 +16,9 @@ class StylePropertySet;
 class StyleRuleKeyframe final : public StyleRuleBase {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleKeyframe);
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleKeyframe> create()
+    static PassRefPtrWillBeRawPtr<StyleRuleKeyframe> create(PassOwnPtr<Vector<double>> keys, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     {
-        return adoptRefWillBeNoop(new StyleRuleKeyframe());
+        return adoptRefWillBeNoop(new StyleRuleKeyframe(keys, properties));
     }
 
     // Exposed to JavaScript.
@@ -27,12 +27,9 @@ public:
 
     // Used by StyleResolver.
     const Vector<double>& keys() const;
-    // Used by the CSS parser when constructing a new StyleRuleKeyframe.
-    void setKeys(PassOwnPtr<Vector<double>>);
 
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
-    void setProperties(PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     String cssText() const;
 
@@ -41,7 +38,7 @@ public:
     static PassOwnPtr<Vector<double>> createKeyList(CSSParserValueList*);
 
 private:
-    StyleRuleKeyframe();
+    StyleRuleKeyframe(PassOwnPtr<Vector<double>>, PassRefPtrWillBeRawPtr<StylePropertySet>);
 
     RefPtrWillBeMember<StylePropertySet> m_properties;
     Vector<double> m_keys;

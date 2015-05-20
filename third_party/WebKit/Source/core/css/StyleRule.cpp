@@ -30,7 +30,6 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/CSSViewportRule.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
 #include "core/css/StyleRuleNamespace.h"
@@ -249,9 +248,11 @@ unsigned StyleRule::averageSizeInBytes()
     return sizeof(StyleRule) + sizeof(CSSSelector) + StylePropertySet::averageSizeInBytes();
 }
 
-StyleRule::StyleRule()
+StyleRule::StyleRule(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     : StyleRuleBase(Style)
+    , m_properties(properties)
 {
+    m_selectorList.adopt(selectorList);
 }
 
 StyleRule::StyleRule(const StyleRule& o)
@@ -272,20 +273,17 @@ MutableStylePropertySet& StyleRule::mutableProperties()
     return *toMutableStylePropertySet(m_properties.get());
 }
 
-void StyleRule::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
-{
-    m_properties = properties;
-}
-
 DEFINE_TRACE_AFTER_DISPATCH(StyleRule)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRulePage::StyleRulePage()
+StyleRulePage::StyleRulePage(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     : StyleRuleBase(Page)
+    , m_properties(properties)
 {
+    m_selectorList.adopt(selectorList);
 }
 
 StyleRulePage::StyleRulePage(const StyleRulePage& o)
@@ -306,19 +304,15 @@ MutableStylePropertySet& StyleRulePage::mutableProperties()
     return *toMutableStylePropertySet(m_properties.get());
 }
 
-void StyleRulePage::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
-{
-    m_properties = properties;
-}
-
 DEFINE_TRACE_AFTER_DISPATCH(StyleRulePage)
 {
     visitor->trace(m_properties);
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleFontFace::StyleRuleFontFace()
+StyleRuleFontFace::StyleRuleFontFace(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     : StyleRuleBase(FontFace)
+    , m_properties(properties)
 {
 }
 
@@ -337,11 +331,6 @@ MutableStylePropertySet& StyleRuleFontFace::mutableProperties()
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
     return *toMutableStylePropertySet(m_properties);
-}
-
-void StyleRuleFontFace::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
-{
-    m_properties = properties;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleFontFace)
@@ -413,8 +402,9 @@ StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
 {
 }
 
-StyleRuleViewport::StyleRuleViewport()
+StyleRuleViewport::StyleRuleViewport(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     : StyleRuleBase(Viewport)
+    , m_properties(properties)
 {
 }
 
@@ -433,11 +423,6 @@ MutableStylePropertySet& StyleRuleViewport::mutableProperties()
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
     return *toMutableStylePropertySet(m_properties);
-}
-
-void StyleRuleViewport::setProperties(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
-{
-    m_properties = properties;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleViewport)

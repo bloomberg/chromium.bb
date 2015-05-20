@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/KeyframeStyleRuleCSSStyleDeclaration.h"
 
+#include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 
 namespace blink {
