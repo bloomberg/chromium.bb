@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
@@ -34,11 +35,15 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/storage_monitor/storage_info.h"
+#include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -59,6 +64,8 @@ using storage::FileSystemURL;
 
 namespace extensions {
 namespace {
+
+const char kRootPath[] = "/";
 
 // Retrieves total and remaining available size on |mount_path|.
 void GetSizeStatsOnBlockingPool(const std::string& mount_path,
@@ -410,6 +417,29 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
         base::Bind(&FileManagerPrivateGetSizeStatsFunction::
                        GetDriveAvailableSpaceCallback,
                    this));
+  } else if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
+    // Resolve storage_name.
+    storage_monitor::StorageMonitor* storage_monitor =
+        storage_monitor::StorageMonitor::GetInstance();
+    storage_monitor::StorageInfo info;
+    storage_monitor->GetStorageInfoForPath(volume->mount_path(), &info);
+    std::string storage_name;
+    base::RemoveChars(info.location(), kRootPath, &storage_name);
+    DCHECK(!storage_name.empty());
+
+    // Get MTP StorageInfo.
+    // TODO(yawano) Implement GetStorageInfoFromDevice on chrome side. Currently
+    //     it returns stale storage info at the mount time.
+    device::MediaTransferProtocolManager* manager =
+        storage_monitor->media_transfer_protocol_manager();
+    const MtpStorageInfo* mtp_storage_info =
+        manager->GetStorageInfo(storage_name);
+    if (!mtp_storage_info)
+      return false;
+
+    const uint64 max_capacity = mtp_storage_info->max_capacity();
+    const uint64 free_space_in_bytes = mtp_storage_info->free_space_in_bytes();
+    GetSizeStatsCallback(&max_capacity, &free_space_in_bytes);
   } else {
     uint64* total_size = new uint64(0);
     uint64* remaining_size = new uint64(0);
