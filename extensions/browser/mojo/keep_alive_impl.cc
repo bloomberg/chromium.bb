@@ -12,12 +12,13 @@ namespace extensions {
 void KeepAliveImpl::Create(content::BrowserContext* context,
                            const Extension* extension,
                            mojo::InterfaceRequest<KeepAlive> request) {
-  mojo::BindToRequest(new KeepAliveImpl(context, extension), &request);
+  new KeepAliveImpl(context, extension, request.Pass());
 }
 
 KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
-                             const Extension* extension)
-    : context_(context), extension_(extension) {
+                             const Extension* extension,
+                             mojo::InterfaceRequest<KeepAlive> request)
+    : context_(context), extension_(extension), binding_(this, request.Pass()) {
   ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(extension_);
 }
 

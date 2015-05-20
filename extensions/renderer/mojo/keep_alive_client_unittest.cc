@@ -5,7 +5,7 @@
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "extensions/renderer/api_test_base.h"
 #include "grit/extensions_renderer_resources.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 // A test launcher for tests for the stash client defined in
 // extensions/test/data/keep_alive_client_unittest.js.
@@ -15,22 +15,24 @@ namespace {
 
 // A KeepAlive implementation that calls provided callbacks on creation and
 // destruction.
-class TestKeepAlive : public mojo::InterfaceImpl<KeepAlive> {
+class TestKeepAlive : public KeepAlive {
  public:
-  explicit TestKeepAlive(const base::Closure& on_destruction)
-      : on_destruction_(on_destruction) {}
+  TestKeepAlive(const base::Closure& on_destruction,
+                mojo::InterfaceRequest<KeepAlive> keep_alive)
+      : on_destruction_(on_destruction), binding_(this, keep_alive.Pass()) {}
 
   ~TestKeepAlive() override { on_destruction_.Run(); }
 
   static void Create(const base::Closure& on_creation,
                      const base::Closure& on_destruction,
                      mojo::InterfaceRequest<KeepAlive> keep_alive) {
-    mojo::BindToRequest(new TestKeepAlive(on_destruction), &keep_alive);
+    new TestKeepAlive(on_destruction, keep_alive.Pass());
     on_creation.Run();
   }
 
  private:
   const base::Closure on_destruction_;
+  mojo::StrongBinding<KeepAlive> binding_;
 };
 
 }  // namespace

@@ -49,12 +49,15 @@ mojo::Map<mojo::String, mojo::String> CreateResponseHeadersMap(
 void MimeHandlerServiceImpl::Create(
     base::WeakPtr<StreamContainer> stream_container,
     mojo::InterfaceRequest<mime_handler::MimeHandlerService> request) {
-  mojo::BindToRequest(new MimeHandlerServiceImpl(stream_container), &request);
+  new MimeHandlerServiceImpl(stream_container, request.Pass());
 }
 
 MimeHandlerServiceImpl::MimeHandlerServiceImpl(
-    base::WeakPtr<StreamContainer> stream_container)
-    : stream_(stream_container), weak_factory_(this) {
+    base::WeakPtr<StreamContainer> stream_container,
+    mojo::InterfaceRequest<mime_handler::MimeHandlerService> request)
+    : stream_(stream_container),
+      binding_(this, request.Pass()),
+      weak_factory_(this) {
 }
 
 MimeHandlerServiceImpl::~MimeHandlerServiceImpl() {

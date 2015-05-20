@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 class BrowserContext;
@@ -18,7 +19,7 @@ class Extension;
 
 // An RAII mojo service implementation for extension keep alives. This adds a
 // keep alive on construction and removes it on destruction.
-class KeepAliveImpl : public mojo::InterfaceImpl<KeepAlive> {
+class KeepAliveImpl : public KeepAlive {
  public:
   // Create a keep alive for |extension| running in |context| and connect it to
   // |request|. When the requester closes its pipe, the keep alive ends.
@@ -27,11 +28,14 @@ class KeepAliveImpl : public mojo::InterfaceImpl<KeepAlive> {
                      mojo::InterfaceRequest<KeepAlive> request);
 
  private:
-  KeepAliveImpl(content::BrowserContext* context, const Extension* extension);
+  KeepAliveImpl(content::BrowserContext* context,
+                const Extension* extension,
+                mojo::InterfaceRequest<KeepAlive> request);
   ~KeepAliveImpl() override;
 
   content::BrowserContext* context_;
   const Extension* extension_;
+  mojo::StrongBinding<KeepAlive> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveImpl);
 };
