@@ -16,11 +16,11 @@ from chromite.cbuildbot import generate_chromeos_config
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.builders import generic_builders
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 
+# pylint: disable=protected-access
 
 CHROMIUM_WATCHING_URL = (
     'http://src.chromium.org/chrome/trunk/tools/build/masters/'
@@ -33,16 +33,16 @@ class ConfigDumpTest(cros_test_lib.TestCase):
 
   def testDump(self):
     """Make sure the json & config are kept in sync"""
-    cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cbuildbot_view_config'),
-           '-d', '-s', '--pretty']
+    new_dump = generate_chromeos_config._CONFIG.SaveConfigToString()
+
     dump_file_path = os.path.join(constants.CHROMITE_DIR, 'cbuildbot',
                                   'config_dump.json')
-    new_dump = cros_build_lib.RunCommand(cmd, capture_output=True).output
-    old_dump = osutils.ReadFile(dump_file_path)
+
+    old_dump = osutils.ReadFile(dump_file_path).rstrip()
     self.assertTrue(
         new_dump == old_dump, 'config_dump.json does not match the '
         'configs defined in generate_chromeos_config.py. Run '
-        'bin/cbuildbot_view_config -d -s --pretty > cbuildbot/config_dump.json')
+        'bin/cbuildbot_view_config > cbuildbot/config_dump.json')
 
 
 class ConfigPickleTest(cros_test_lib.TestCase):
