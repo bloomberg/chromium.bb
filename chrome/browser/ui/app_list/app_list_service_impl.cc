@@ -210,6 +210,16 @@ void RecordAppListDiscoverability(PrefService* local_state,
                             AppListService::ENABLE_NUM_ENABLE_SOURCES);
 }
 
+// Checks whether a profile name is valid for the app list. Returns false if the
+// name is empty, or represents a guest profile.
+bool IsValidProfileName(const std::string& profile_name) {
+  if (profile_name.empty())
+    return false;
+
+  return profile_name !=
+         base::FilePath(chrome::kGuestProfileDir).AsUTF8Unsafe();
+}
+
 }  // namespace
 
 void AppListServiceImpl::RecordAppListLaunch() {
@@ -301,14 +311,20 @@ void AppListServiceImpl::SetProfilePath(const base::FilePath& profile_path) {
 void AppListServiceImpl::CreateShortcut() {}
 
 std::string AppListServiceImpl::GetProfileName() {
-  const std::string app_list_profile =
+  std::string app_list_profile =
       local_state_->GetString(prefs::kAppListProfile);
-  if (!app_list_profile.empty())
+  if (IsValidProfileName(app_list_profile))
     return app_list_profile;
 
   // If the user has no profile preference for the app launcher, default to the
   // last browser profile used.
-  return profile_store_->GetLastUsedProfileName();
+  app_list_profile = profile_store_->GetLastUsedProfileName();
+  if (IsValidProfileName(app_list_profile))
+    return app_list_profile;
+
+  // If the last profile used was invalid (ie, guest profile), use the initial
+  // profile.
+  return chrome::kInitialProfile;
 }
 
 void AppListServiceImpl::OnProfileWillBeRemoved(

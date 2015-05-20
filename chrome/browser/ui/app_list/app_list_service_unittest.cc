@@ -169,6 +169,31 @@ TEST_F(AppListServiceUnitTest,
   EXPECT_EQ(0, service_->destroy_app_list_call_count());
 }
 
+TEST_F(AppListServiceUnitTest, RefusesToLoadGuestAppListProfile) {
+  // Unlikely, but if somehow the user's app_list.profile pref was set to the
+  // guest profile, make sure we refuse to load it (or it would crash).
+  local_state_->SetString(
+      prefs::kAppListProfile,
+      base::FilePath(chrome::kGuestProfileDir).MaybeAsASCII());
+  local_state_->SetString(prefs::kProfileLastUsed, "last-used");
+  base::FilePath last_used_profile_path =
+      user_data_dir_.AppendASCII("last-used");
+  EXPECT_EQ(last_used_profile_path,
+            service_->GetProfilePath(profile_store_->GetUserDataDir()));
+}
+
+TEST_F(AppListServiceUnitTest, RefusesToLoadGuestLastUsedProfile) {
+  // If the user's most recent browser session was a guest session, make sure we
+  // do not open a guest profile in the launcher (which would crash).
+  local_state_->SetString(
+      prefs::kProfileLastUsed,
+      base::FilePath(chrome::kGuestProfileDir).MaybeAsASCII());
+  base::FilePath initial_profile_path =
+      user_data_dir_.AppendASCII(chrome::kInitialProfile);
+  EXPECT_EQ(initial_profile_path,
+            service_->GetProfilePath(profile_store_->GetUserDataDir()));
+}
+
 TEST_F(AppListServiceUnitTest, SwitchingProfilesPersists) {
   profile_store_->LoadProfile(profile1_.get());
   profile_store_->LoadProfile(profile2_.get());

@@ -271,6 +271,12 @@ void AppListServiceWin::ShowForProfile(Profile* requested_profile) {
 }
 
 void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
+  // App list profiles should not be off-the-record. It is currently possible to
+  // get here in an off-the-record profile via the Web Store
+  // (http://crbug.com/416380).
+  // TODO(mgiuca): DCHECK that requested_profile->IsOffTheRecord() and
+  // requested_profile->IsGuestSession() are false, once that is resolved.
+
   if (!IsWarmupNeeded())
     return;
 
