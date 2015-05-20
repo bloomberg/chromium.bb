@@ -2,21 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# =============================================================================
-# BUILD FLAGS
-# =============================================================================
-#
-# This block lists input arguments to the build, along with their default
-# values. GN requires listing them explicitly so it can validate input and have
-# a central place to manage the build flags.
-#
-# If a value is specified on the command line, it will overwrite the defaults
-# given here, otherwise the default will be injected into the root scope.
-#
-# KEEP IN ALPHABETICAL ORDER and write a good description for everything.
-# Use "is_*" names for intrinsic platform descriptions and build modes, and
-# "use_*" names for optional features libraries, and configurations.
-
 if (target_os == "") {
   target_os = host_os
 }
@@ -39,6 +24,59 @@ if (current_cpu == "") {
 if (current_os == "") {
   current_os = target_os
 }
+
+# =============================================================================
+# BUILD FLAGS
+# =============================================================================
+#
+# This block lists input arguments to the build, along with their default
+# values.
+#
+# If a value is specified on the command line, it will overwrite the defaults
+# given in a declare_args block, otherwise the default will be used.
+#
+# YOU SHOULD ALMOST NEVER NEED TO ADD FLAGS TO THIS FILE. GN allows any file in
+# the build to declare build flags. If you need a flag for a single component,
+# you can just declare it in the corresponding BUILD.gn file. If you need a
+# flag in multiple components, there are a few options:
+#
+# - If your feature is a single target, say //components/foo, and the targets
+#   depending on foo need to have some define set if foo is enabled: (1) Write
+#   a declare_args block in foo's BUILD.gn file listing your enable_foo build
+#   flag. (2) Write a config in that file listing the define, and list that
+#   config in foo's public_configs. This will propagate that define to all the
+#   targets depending on foo. (3) When foo is not enabled, just make it expand
+#   to an empty group (or whatever's appropriate for the "off" state of your
+#   feature.
+#
+# - If a semi-random set of targets need to know about a define: (1) In the
+#   lowest level of the build that knows about this feature, add a declare_args
+#   block in the build file for your enable flag. (2) Write a config that adds
+#   a define conditionally based on that build flags. (3) Manually add that
+#   config to the "configs" applying to the targets that need the define.
+#
+# - If a semi-random set of targets need to know about the build flag (to do
+#   file inclusion or exclusion, more than just defines): (1) Write a .gni file
+#   in the lowest-level directory that knows about the feature. (2) Put the
+#   declare_args block with your build flag in that .gni file. (3) Import that
+#   .gni file from the BUILD.gn files that need the flag.
+#
+# Other advice:
+#
+# - Use boolean values when possible. If you need a default value that expands
+#   to some complex thing in the default case (like the location of the
+#   compiler which would be computed by a script), use a default value of -1 or
+#   the empty string. Outside of the declare_args block, conditionally expand
+#   the default value as necessary.
+#
+# - Use a name like "use_foo" or "is_foo" (whatever is more appropriate for
+#   your feature) rather than just "foo".
+#
+# - Write good comments directly above the declaration with no blank line.
+#   These comments will appear as documentation in "gn args --list".
+#
+# - Don't call exec_script inside declare_args. This will execute the script
+#   even if the value is overridden, which is wasteful. See first bullet.
 
 declare_args() {
   # How many symbols to include in the build. This affects the performance of
@@ -93,6 +131,8 @@ declare_args() {
     # toolchains.
     cros_use_custom_toolchain = false
   }
+
+  # DON'T ADD MORE FLAGS HERE. Read the comment above.
 }
 
 # =============================================================================

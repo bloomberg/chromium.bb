@@ -6,6 +6,10 @@
 #
 # TODO(brettw) this should probably be moved to src/crypto or somewhere, and
 # the global build dependency on it should be removed.
+#
+# PLEASE TRY TO AVOID ADDING FLAGS TO THIS FILE in cases where grit isn't
+# required. See the declare_args block of BUILDCONFIG.gn for advice on how
+# to set up feature flags.
 
 declare_args() {
   # Use OpenSSL instead of NSS. This is used for Android, Mac, NaCl untrusted

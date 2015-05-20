@@ -2,14 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file contains UI-related build flags. It should theoretically be in the
-# src/ui directory and only things that depend on the ui module should get the
-# definitions.
+# This file contains UI-related build flags (see features.gni for Chrome
+# feature-related ones). These should theoretically be moved to the ui
+# directory.
 #
 # However, today we have many "bad" dependencies on some of these flags from,
-# e.g. base, so they need to be global.
+# e.g. base, so they need to be global to match the GYP configuration. Also,
+# anything that needs a grit define must be in either this file or features.gni.
 #
-# See also build/config/features.gni
+# PLEASE TRY TO AVOID ADDING FLAGS TO THIS FILE in cases where grit isn't
+# required. See the declare_args block of BUILDCONFIG.gn for advice on how
+# to set up feature flags.
 
 declare_args() {
   # Indicates if Ash is enabled. Ash is the Aura Shell which provides a
