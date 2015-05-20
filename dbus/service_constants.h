@@ -1831,6 +1831,7 @@ const char kMtpdServiceError[] = "org.chromium.Mtpd.Error";
 // Methods.
 const char kEnumerateStorages[] = "EnumerateStorages";
 const char kGetStorageInfo[] = "GetStorageInfo";
+const char kGetStorageInfoFromDevice[] = "GetStorageInfoFromDevice";
 const char kOpenStorage[] = "OpenStorage";
 const char kCloseStorage[] = "CloseStorage";
 const char kReadDirectoryEntryIds[] = "ReadDirectoryEntryIds";
