@@ -13,13 +13,7 @@ from chromite.lib import commandline
 from chromite.lib import image_lib
 
 
-# argparse does not behave well with nargs='*', default and choices
-# (http://bugs.python.org/issue9625). We need to add ['test'] (the default) as
-# a possible choice to:
-# * avoid argparse complaining about the default being illegal.
-# * ensure image_types is always a list.
-IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install',
-               ['test']]
+IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install']
 
 
 @command.CommandDecorator('image')
@@ -58,10 +52,21 @@ class ImageCommand(command.CliCommand):
     parser.add_argument('--kernel_log_level', default=7, type=int,
                         help="The log level to add to the kernel command line.")
     parser.add_argument('image_types', nargs='*', choices=IMAGE_TYPES,
-                        default=['test'], help="The image types to build.")
+                        default='test', help="The image types to build.")
 
   def Run(self):
     commandline.RunInsideChroot(self, auto_detect_brick=True)
+
+    # argparse does not behave well with nargs='*', default, and choices
+    # (http://bugs.python.org/issue9625). Before freezing options, we need to
+    # check if image_types is a string rather than an array.  If it is, then
+    # no argument was supplied and the default value is being used, so convert
+    # it into an array.  Doing this will:
+    # * Allow --help to parse correctly, which it won't do when adding ['test']
+    #   as one of the choices.
+    # * ensure image_types is always a list.
+    if isinstance(self.options.image_types, str):
+      self.options.image_types = [self.options.image_types]
 
     self.options.Freeze()
 

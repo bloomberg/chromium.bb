@@ -123,7 +123,7 @@ class ImageCommandParserTest(cros_test_lib.TestCase):
     self.assertEqual(instance.options.disk_layout, None)
     self.assertEqual(instance.options.enable_serial, None)
     self.assertEqual(instance.options.kernel_log_level, 7)
-    self.assertEqual(instance.options.image_types, ['test'])
+    self.assertEqual(instance.options.image_types, 'test')
 
   def testParserSetValues(self):
     """Tests that the parser reads in values correctly."""
