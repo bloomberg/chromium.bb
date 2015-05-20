@@ -73,7 +73,13 @@ TEST(FontListTest, ParseDescription) {
                                           &size_pixels));
 }
 
-TEST(FontListTest, Fonts_FromDescString) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_FromDescString DISABLED_Fonts_FromDescString
+#else
+#define MAYBE_Fonts_FromDescString Fonts_FromDescString
+#endif
+TEST(FontListTest, MAYBE_Fonts_FromDescString) {
   // Test init from font name size string.
   FontList font_list = FontList("arial, Courier New, 13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
@@ -82,7 +88,15 @@ TEST(FontListTest, Fonts_FromDescString) {
   EXPECT_EQ("Courier New|13", FontToString(fonts[1]));
 }
 
-TEST(FontListTest, Fonts_FromDescStringInFlexibleFormat) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_FromDescStringInFlexibleFormat \
+    DISABLED_Fonts_FromDescStringInFlexibleFormat
+#else
+#define MAYBE_Fonts_FromDescStringInFlexibleFormat \
+    Fonts_FromDescStringInFlexibleFormat
+#endif
+TEST(FontListTest, MAYBE_Fonts_FromDescStringInFlexibleFormat) {
   // Test init from font name size string with flexible format.
   FontList font_list = FontList("  arial   ,   Courier New ,   13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
@@ -91,7 +105,15 @@ TEST(FontListTest, Fonts_FromDescStringInFlexibleFormat) {
   EXPECT_EQ("Courier New|13", FontToString(fonts[1]));
 }
 
-TEST(FontListTest, Fonts_FromDescStringWithStyleInFlexibleFormat) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat \
+    DISABLED_Fonts_FromDescStringWithStyleInFlexibleFormat
+#else
+#define MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat \
+    Fonts_FromDescStringWithStyleInFlexibleFormat
+#endif
+TEST(FontListTest, MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat) {
   // Test init from font name style size string with flexible format.
   FontList font_list = FontList("  arial  ,  Courier New ,  Bold   "
                                 "  Italic   13px");
@@ -101,7 +123,13 @@ TEST(FontListTest, Fonts_FromDescStringWithStyleInFlexibleFormat) {
   EXPECT_EQ("Courier New|13|bold|italic", FontToString(fonts[1]));
 }
 
-TEST(FontListTest, Fonts_FromFont) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_FromFont DISABLED_Fonts_FromFont
+#else
+#define MAYBE_Fonts_FromFont Fonts_FromFont
+#endif
+TEST(FontListTest, MAYBE_Fonts_FromFont) {
   // Test init from Font.
   Font font("Arial", 8);
   FontList font_list = FontList(font);
@@ -110,7 +138,14 @@ TEST(FontListTest, Fonts_FromFont) {
   EXPECT_EQ("Arial|8", FontToString(fonts[0]));
 }
 
-TEST(FontListTest, Fonts_FromFontWithNonNormalStyle) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_FromFontWithNonNormalStyle \
+    DISABLED_Fonts_FromFontWithNonNormalStyle
+#else
+#define MAYBE_Fonts_FromFontWithNonNormalStyle Fonts_FromFontWithNonNormalStyle
+#endif
+TEST(FontListTest, MAYBE_Fonts_FromFontWithNonNormalStyle) {
   // Test init from Font with non-normal style.
   Font font("Arial", 8);
   FontList font_list = FontList(font.Derive(2, Font::BOLD));
@@ -124,7 +159,13 @@ TEST(FontListTest, Fonts_FromFontWithNonNormalStyle) {
   EXPECT_EQ("Arial|6|italic", FontToString(fonts[0]));
 }
 
-TEST(FontListTest, Fonts_FromFontVector) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_FromFontVector DISABLED_Fonts_FromFontVector
+#else
+#define MAYBE_Fonts_FromFontVector Fonts_FromFontVector
+#endif
+TEST(FontListTest, MAYBE_Fonts_FromFontVector) {
   // Test init from Font vector.
   Font font("Arial", 8);
   Font font_1("Courier New", 10);
@@ -152,7 +193,13 @@ TEST(FontListTest, FontDescString_GetStyle) {
   EXPECT_EQ(Font::BOLD | Font::ITALIC, font_list.GetFontStyle());
 }
 
-TEST(FontListTest, Fonts_GetStyle) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_GetStyle DISABLED_Fonts_GetStyle
+#else
+#define MAYBE_Fonts_GetStyle Fonts_GetStyle
+#endif
+TEST(FontListTest, MAYBE_Fonts_GetStyle) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 8));
   fonts.push_back(gfx::Font("Sans serif", 8));
@@ -164,7 +211,13 @@ TEST(FontListTest, Fonts_GetStyle) {
   EXPECT_EQ(Font::ITALIC | Font::BOLD, font_list.GetFontStyle());
 }
 
-TEST(FontListTest, Fonts_Derive) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_Derive DISABLED_Fonts_Derive
+#else
+#define MAYBE_Fonts_Derive Fonts_Derive
+#endif
+TEST(FontListTest, MAYBE_Fonts_Derive) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 8));
   fonts.push_back(gfx::Font("Courier New", 8));
@@ -178,7 +231,13 @@ TEST(FontListTest, Fonts_Derive) {
   EXPECT_EQ("Courier New|13|bold|underline", FontToString(derived_fonts[1]));
 }
 
-TEST(FontListTest, Fonts_DeriveWithSizeDelta) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_DeriveWithSizeDelta DISABLED_Fonts_DeriveWithSizeDelta
+#else
+#define MAYBE_Fonts_DeriveWithSizeDelta Fonts_DeriveWithSizeDelta
+#endif
+TEST(FontListTest, MAYBE_Fonts_DeriveWithSizeDelta) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 18).Derive(0, Font::ITALIC));
   fonts.push_back(gfx::Font("Courier New", 18).Derive(0, Font::ITALIC));
@@ -192,7 +251,13 @@ TEST(FontListTest, Fonts_DeriveWithSizeDelta) {
   EXPECT_EQ("Courier New|13|italic", FontToString(derived_fonts[1]));
 }
 
-TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_GetHeight_GetBaseline DISABLED_Fonts_GetHeight_GetBaseline
+#else
+#define MAYBE_Fonts_GetHeight_GetBaseline Fonts_GetHeight_GetBaseline
+#endif
+TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
   // If a font list has only one font, the height and baseline must be the same.
   Font font1("Arial", 16);
   ASSERT_EQ("arial",
@@ -222,7 +287,14 @@ TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
             font_list_mix.GetHeight() - font_list_mix.GetBaseline());
 }
 
-TEST(FontListTest, Fonts_DeriveWithHeightUpperBound) {
+// TODO(489354): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_Fonts_DeriveWithHeightUpperBound \
+    DISABLED_Fonts_DeriveWithHeightUpperBound
+#else
+#define MAYBE_Fonts_DeriveWithHeightUpperBound Fonts_DeriveWithHeightUpperBound
+#endif
+TEST(FontListTest, MAYBE_Fonts_DeriveWithHeightUpperBound) {
   std::vector<Font> fonts;
 
   fonts.push_back(gfx::Font("Arial", 18));
