@@ -4602,33 +4602,6 @@ TEST_F(PictureLayerImplTest, PendingOrActiveTwinLayer) {
   EXPECT_FALSE(active_layer_->GetPendingOrActiveTwinLayer());
 }
 
-TEST_F(PictureLayerImplTest, RecycledTwinLayer) {
-  gfx::Size tile_size(102, 102);
-  gfx::Size layer_bounds(1000, 1000);
-
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  SetupPendingTree(pile);
-  EXPECT_FALSE(pending_layer_->GetRecycledTwinLayer());
-
-  ActivateTree();
-  EXPECT_TRUE(active_layer_->GetRecycledTwinLayer());
-  EXPECT_EQ(old_pending_layer_, active_layer_->GetRecycledTwinLayer());
-
-  SetupPendingTree(pile);
-  EXPECT_FALSE(pending_layer_->GetRecycledTwinLayer());
-  EXPECT_FALSE(active_layer_->GetRecycledTwinLayer());
-
-  ActivateTree();
-  EXPECT_TRUE(active_layer_->GetRecycledTwinLayer());
-  EXPECT_EQ(old_pending_layer_, active_layer_->GetRecycledTwinLayer());
-
-  // Make an empty pending tree.
-  host_impl_.CreatePendingTree();
-  host_impl_.pending_tree()->DetachLayerTree();
-  EXPECT_FALSE(active_layer_->GetRecycledTwinLayer());
-}
-
 void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);

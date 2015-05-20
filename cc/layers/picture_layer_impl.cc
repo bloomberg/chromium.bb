@@ -490,12 +490,6 @@ PictureLayerImpl* PictureLayerImpl::GetPendingOrActiveTwinLayer() const {
   return twin_layer_;
 }
 
-PictureLayerImpl* PictureLayerImpl::GetRecycledTwinLayer() const {
-  if (!twin_layer_ || twin_layer_->IsOnActiveOrPendingTree())
-    return nullptr;
-  return twin_layer_;
-}
-
 void PictureLayerImpl::UpdateRasterSource(
     scoped_refptr<RasterSource> raster_source,
     Region* new_invalidation,
@@ -1037,19 +1031,9 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   }
 
   PictureLayerTilingSet* twin_set = twin ? twin->tilings_.get() : nullptr;
-  // TODO(vmpstr): See if this step is required without tile sharing.
-  PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
-  PictureLayerTilingSet* recycled_twin_set =
-      recycled_twin ? recycled_twin->tilings_.get() : nullptr;
-
-  tilings_->CleanUpTilings(min_acceptable_high_res_scale,
-                           max_acceptable_high_res_scale, used_tilings,
-                           layer_tree_impl()->create_low_res_tiling(), twin_set,
-                           recycled_twin_set);
-
-  if (recycled_twin_set && recycled_twin_set->num_tilings() == 0)
-    recycled_twin->ResetRasterScale();
-
+  tilings_->CleanUpTilings(
+      min_acceptable_high_res_scale, max_acceptable_high_res_scale,
+      used_tilings, layer_tree_impl()->create_low_res_tiling(), twin_set);
   DCHECK_GT(tilings_->num_tilings(), 0u);
   SanityCheckTilingState();
 }
@@ -1117,10 +1101,6 @@ bool PictureLayerImpl::CanHaveTilings() const {
 
 void PictureLayerImpl::SanityCheckTilingState() const {
 #if DCHECK_IS_ON()
-  // Recycle tree doesn't have any restrictions.
-  if (layer_tree_impl()->IsRecycleTree())
-    return;
-
   if (!CanHaveTilings()) {
     DCHECK_EQ(0u, tilings_->num_tilings());
     return;

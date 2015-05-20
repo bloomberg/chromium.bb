@@ -52,8 +52,7 @@ class CC_EXPORT PictureLayerTilingSet {
                       float max_acceptable_high_res_scale,
                       const std::vector<PictureLayerTiling*>& needed_tilings,
                       bool should_have_low_res,
-                      PictureLayerTilingSet* twin_set,
-                      PictureLayerTilingSet* recycled_twin_set);
+                      PictureLayerTilingSet* twin_set);
   void RemoveNonIdealTilings();
 
   // This function is called on the active tree during activation.

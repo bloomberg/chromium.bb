@@ -107,24 +107,16 @@ class LayerTreeHostPictureTestTwinLayer
               active_picture_impl->GetPendingOrActiveTwinLayer());
     EXPECT_EQ(active_picture_impl,
               pending_picture_impl->GetPendingOrActiveTwinLayer());
-    EXPECT_EQ(nullptr, active_picture_impl->GetRecycledTwinLayer());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* active_root_impl = impl->active_tree()->root_layer();
-    LayerImpl* recycle_root_impl = impl->recycle_tree()->root_layer();
-
     if (active_root_impl->children().empty()) {
       EXPECT_EQ(2, activates_);
     } else {
       FakePictureLayerImpl* active_picture_impl =
           static_cast<FakePictureLayerImpl*>(active_root_impl->children()[0]);
-      FakePictureLayerImpl* recycle_picture_impl =
-          static_cast<FakePictureLayerImpl*>(recycle_root_impl->children()[0]);
-
       EXPECT_EQ(nullptr, active_picture_impl->GetPendingOrActiveTwinLayer());
-      EXPECT_EQ(recycle_picture_impl,
-                active_picture_impl->GetRecycledTwinLayer());
     }
 
     ++activates_;
@@ -228,27 +220,15 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
     LayerImpl* child = impl->active_tree()->root_layer()->children()[0];
     FakePictureLayerImpl* picture_impl =
         static_cast<FakePictureLayerImpl*>(child);
-    FakePictureLayerImpl* recycled_impl = static_cast<FakePictureLayerImpl*>(
-        picture_impl->GetRecycledTwinLayer());
-
     switch (++frame_) {
       case 1: {
         PictureLayerTiling* tiling = picture_impl->HighResTiling();
-        PictureLayerTiling* recycled_tiling = recycled_impl->HighResTiling();
         int num_tiles_y = tiling->TilingDataForTesting().num_tiles_y();
 
         // There should be tiles at the top of the picture layer but not at the
         // bottom.
         EXPECT_TRUE(tiling->TileAt(0, 0));
         EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
-
-        // The recycled tiling has no tiles.
-        EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
-        EXPECT_FALSE(recycled_tiling->TileAt(0, num_tiles_y));
-
-        // The live tiles rect matches on the recycled tree.
-        EXPECT_EQ(tiling->live_tiles_rect(),
-                  recycled_tiling->live_tiles_rect());
 
         // Make the bottom of the layer visible.
         picture_impl->SetPosition(gfx::PointF(0.f, -100000.f + 100.f));
@@ -257,14 +237,9 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
       }
       case 2: {
         PictureLayerTiling* tiling = picture_impl->HighResTiling();
-        PictureLayerTiling* recycled_tiling = recycled_impl->HighResTiling();
 
         // There not be tiles at the top of the layer now.
         EXPECT_FALSE(tiling->TileAt(0, 0));
-
-        // The recycled twin tiling should not have unshared tiles at the top
-        // either.
-        EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
 
         // Make the top of the layer visible again.
         picture_impl->SetPosition(gfx::PointF());
@@ -273,20 +248,11 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
       }
       case 3: {
         PictureLayerTiling* tiling = picture_impl->HighResTiling();
-        PictureLayerTiling* recycled_tiling = recycled_impl->HighResTiling();
         int num_tiles_y = tiling->TilingDataForTesting().num_tiles_y();
 
         // There should be tiles at the top of the picture layer again.
         EXPECT_TRUE(tiling->TileAt(0, 0));
         EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
-
-        // The recycled tiling should have no tiles.
-        EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
-        EXPECT_FALSE(recycled_tiling->TileAt(0, num_tiles_y));
-
-        // The live tiles rect matches on the recycled tree.
-        EXPECT_EQ(tiling->live_tiles_rect(),
-                  recycled_tiling->live_tiles_rect());
 
         // Make a new main frame without changing the picture layer at all, so
         // it won't need to update or push properties.
