@@ -16,16 +16,12 @@ test("mojo_view_manager_lib_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
-
-    # TODO(vtl): These non-public deps are illegal here. This should be
-    # converted to an apptest.
+    "//components/view_manager/public/cpp",
     "//mojo/application/public/cpp",
-    "//mojo/edk/system",
-    "//mojo/public/cpp/system",
-    "//mojo/services/geometry/public/cpp",
-    "//mojo/services/geometry/public/interfaces",
-    "//mojo/services/view_manager/public/cpp",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//ui/mojo/geometry:interfaces",
   ]
 
   if (use_x11) {
