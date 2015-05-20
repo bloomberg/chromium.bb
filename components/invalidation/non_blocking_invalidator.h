@@ -55,7 +55,7 @@ class INVALIDATION_EXPORT_PRIVATE NonBlockingInvalidator
 
   // Invalidator implementation.
   void RegisterHandler(InvalidationHandler* handler) override;
-  void UpdateRegisteredIds(InvalidationHandler* handler,
+  bool UpdateRegisteredIds(InvalidationHandler* handler,
                            const ObjectIdSet& ids) override;
   void UnregisterHandler(InvalidationHandler* handler) override;
   InvalidatorState GetInvalidatorState() const override;

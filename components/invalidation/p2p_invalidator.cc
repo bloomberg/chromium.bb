@@ -158,7 +158,7 @@ void P2PInvalidator::RegisterHandler(InvalidationHandler* handler) {
   registrar_.RegisterHandler(handler);
 }
 
-void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
+bool P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                          const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ObjectIdSet new_ids;
@@ -167,12 +167,14 @@ void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                       old_ids.begin(), old_ids.end(),
                       std::inserter(new_ids, new_ids.end()),
                       ObjectIdLessThan());
-  registrar_.UpdateRegisteredIds(handler, ids);
+  if (!registrar_.UpdateRegisteredIds(handler, ids))
+    return false;
   const P2PNotificationData notification_data(
       invalidator_client_id_,
       send_notification_target_,
       ObjectIdInvalidationMap::InvalidateAll(ids));
   SendNotificationData(notification_data);
+  return true;
 }
 
 void P2PInvalidator::UnregisterHandler(InvalidationHandler* handler) {

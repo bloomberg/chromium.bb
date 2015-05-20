@@ -40,7 +40,7 @@ class P2PInvalidationService : public base::NonThreadSafe,
   // It is an error to have registered handlers when the service is destroyed.
   void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  void UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
+  bool UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
                                        const syncer::ObjectIdSet& ids) override;
   void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;

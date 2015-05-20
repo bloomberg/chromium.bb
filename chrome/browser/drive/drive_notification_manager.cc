@@ -135,7 +135,7 @@ void DriveNotificationManager::RegisterDriveNotifications() {
   ids.insert(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
       kDriveInvalidationObjectId));
-  invalidation_service_->UpdateRegisteredInvalidationIds(this, ids);
+  CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(this, ids));
   push_notification_registered_ = true;
   OnInvalidatorStateChange(invalidation_service_->GetInvalidatorState());
 

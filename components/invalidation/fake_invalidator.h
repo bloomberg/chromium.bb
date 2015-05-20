@@ -31,7 +31,7 @@ class FakeInvalidator : public Invalidator {
       const ObjectIdInvalidationMap& invalidation_map);
 
   void RegisterHandler(InvalidationHandler* handler) override;
-  void UpdateRegisteredIds(InvalidationHandler* handler,
+  bool UpdateRegisteredIds(InvalidationHandler* handler,
                            const ObjectIdSet& ids) override;
   void UnregisterHandler(InvalidationHandler* handler) override;
   InvalidatorState GetInvalidatorState() const override;

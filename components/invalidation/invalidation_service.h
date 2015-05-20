@@ -76,12 +76,12 @@ class InvalidationService {
 
   // Updates the set of ObjectIds associated with |handler|.  |handler| must
   // not be NULL, and must already be registered.  An ID must be registered for
-  // at most one handler.
+  // at most one handler.  If ID is already registered function returns false.
   //
   // Registered IDs are persisted across restarts of sync.
-  virtual void UpdateRegisteredInvalidationIds(
+  virtual bool UpdateRegisteredInvalidationIds(
       syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) = 0;
+      const syncer::ObjectIdSet& ids) WARN_UNUSED_RESULT = 0;
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
   // it must already be registered.  Note that this doesn't unregister the IDs

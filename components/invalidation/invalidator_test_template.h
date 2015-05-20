@@ -146,7 +146,7 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   ObjectIdSet ids;
   ids.insert(this->id1);
   ids.insert(this->id2);
-  invalidator->UpdateRegisteredIds(&handler, ids);
+  EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler, ids));
 
   this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
@@ -161,7 +161,7 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
 
   ids.erase(this->id1);
   ids.insert(this->id3);
-  invalidator->UpdateRegisteredIds(&handler, ids);
+  EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler, ids));
 
   expected_invalidations = ObjectIdInvalidationMap();
   expected_invalidations.Insert(Invalidation::Init(this->id2, 2, "2"));
@@ -210,13 +210,13 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
     ObjectIdSet ids;
     ids.insert(this->id1);
     ids.insert(this->id2);
-    invalidator->UpdateRegisteredIds(&handler1, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler1, ids));
   }
 
   {
     ObjectIdSet ids;
     ids.insert(this->id3);
-    invalidator->UpdateRegisteredIds(&handler2, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler2, ids));
   }
 
   // Don't register any IDs for handler3.
@@ -224,7 +224,7 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
   {
     ObjectIdSet ids;
     ids.insert(this->id4);
-    invalidator->UpdateRegisteredIds(&handler4, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler4, ids));
   }
 
   invalidator->UnregisterHandler(&handler4);
@@ -272,6 +272,28 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
   invalidator->UnregisterHandler(&handler1);
 }
 
+// Multiple registrations by different handlers on the same object ID should
+// return false.
+TYPED_TEST_P(InvalidatorTest, MultipleRegistrations) {
+  Invalidator* const invalidator = this->CreateAndInitializeInvalidator();
+
+  FakeInvalidationHandler handler1;
+  FakeInvalidationHandler handler2;
+
+  invalidator->RegisterHandler(&handler1);
+  invalidator->RegisterHandler(&handler2);
+
+  // Registering both handlers for the same ObjectId. First call should succeed,
+  // second should fail.
+  ObjectIdSet ids;
+  ids.insert(this->id1);
+  EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler1, ids));
+  EXPECT_FALSE(invalidator->UpdateRegisteredIds(&handler2, ids));
+
+  invalidator->UnregisterHandler(&handler2);
+  invalidator->UnregisterHandler(&handler1);
+}
+
 // Make sure that passing an empty set to UpdateRegisteredIds clears the
 // corresponding entries for the handler.
 TYPED_TEST_P(InvalidatorTest, EmptySetUnregisters) {
@@ -289,18 +311,18 @@ TYPED_TEST_P(InvalidatorTest, EmptySetUnregisters) {
     ObjectIdSet ids;
     ids.insert(this->id1);
     ids.insert(this->id2);
-    invalidator->UpdateRegisteredIds(&handler1, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler1, ids));
   }
 
   {
     ObjectIdSet ids;
     ids.insert(this->id3);
-    invalidator->UpdateRegisteredIds(&handler2, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler2, ids));
   }
 
   // Unregister the IDs for the first observer. It should not receive any
   // further invalidations.
-  invalidator->UpdateRegisteredIds(&handler1, ObjectIdSet());
+  EXPECT_TRUE(invalidator->UpdateRegisteredIds(&handler1, ObjectIdSet()));
 
   this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler1.GetInvalidatorState());
@@ -369,7 +391,10 @@ TYPED_TEST_P(InvalidatorTest, GetInvalidatorStateAlwaysCurrent) {
 }
 
 REGISTER_TYPED_TEST_CASE_P(InvalidatorTest,
-                           Basic, MultipleHandlers, EmptySetUnregisters,
+                           Basic,
+                           MultipleHandlers,
+                           MultipleRegistrations,
+                           EmptySetUnregisters,
                            GetInvalidatorStateAlwaysCurrent);
 
 }  // namespace syncer

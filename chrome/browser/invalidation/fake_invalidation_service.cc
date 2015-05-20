@@ -26,10 +26,10 @@ void FakeInvalidationService::RegisterInvalidationHandler(
   invalidator_registrar_.RegisterHandler(handler);
 }
 
-void FakeInvalidationService::UpdateRegisteredInvalidationIds(
-      syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) {
-  invalidator_registrar_.UpdateRegisteredIds(handler, ids);
+bool FakeInvalidationService::UpdateRegisteredInvalidationIds(
+    syncer::InvalidationHandler* handler,
+    const syncer::ObjectIdSet& ids) {
+  return invalidator_registrar_.UpdateRegisteredIds(handler, ids);
 }
 
 void FakeInvalidationService::UnregisterInvalidationHandler(

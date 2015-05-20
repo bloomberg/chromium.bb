@@ -39,9 +39,9 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
 
   // Updates the set of ObjectIds associated with |handler|.  |handler| must
   // not be NULL, and must already be registered.  An ID must be registered for
-  // at most one handler.
-  void UpdateRegisteredIds(InvalidationHandler* handler,
-                           const ObjectIdSet& ids);
+  // at most one handler. If ID is already registered function returns false.
+  bool UpdateRegisteredIds(InvalidationHandler* handler,
+                           const ObjectIdSet& ids) WARN_UNUSED_RESULT;
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
   // it must already be registered.  Note that this doesn't unregister the IDs

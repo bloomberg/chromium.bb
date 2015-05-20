@@ -318,9 +318,8 @@ scoped_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
 
 void SyncBackendHostImpl::UnregisterInvalidationIds() {
   if (invalidation_handler_registered_) {
-    invalidator_->UpdateRegisteredInvalidationIds(
-        this,
-        syncer::ObjectIdSet());
+    CHECK(invalidator_->UpdateRegisteredInvalidationIds(this,
+                                                        syncer::ObjectIdSet()));
   }
 }
 
@@ -624,9 +623,8 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
     return;
 
   if (invalidator_) {
-    invalidator_->UpdateRegisteredInvalidationIds(
-        this,
-        ModelTypeSetToObjectIdSet(enabled_types));
+    CHECK(invalidator_->UpdateRegisteredInvalidationIds(
+        this, ModelTypeSetToObjectIdSet(enabled_types)));
   }
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458406 is

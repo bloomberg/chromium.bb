@@ -445,8 +445,8 @@ int SyncClientMain(int argc, char* argv[]) {
   invalidator->UpdateCredentials(credentials.email, credentials.sync_token);
   scoped_ptr<InvalidatorShim> shim(new InvalidatorShim(sync_manager.get()));
   invalidator->RegisterHandler(shim.get());
-  invalidator->UpdateRegisteredIds(
-      shim.get(), ModelTypeSetToObjectIdSet(model_types));
+  CHECK(invalidator->UpdateRegisteredIds(
+      shim.get(), ModelTypeSetToObjectIdSet(model_types)));
   sync_manager->StartSyncingNormally(routing_info, base::Time());
 
   sync_loop.Run();

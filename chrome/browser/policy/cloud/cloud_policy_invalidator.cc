@@ -308,16 +308,15 @@ void CloudPolicyInvalidator::Register(const invalidation::ObjectId& object_id) {
   // Update registration with the invalidation service.
   syncer::ObjectIdSet ids;
   ids.insert(object_id);
-  invalidation_service_->UpdateRegisteredInvalidationIds(this, ids);
+  CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(this, ids));
 }
 
 void CloudPolicyInvalidator::Unregister() {
   if (is_registered_) {
     if (invalid_)
       AcknowledgeInvalidation();
-    invalidation_service_->UpdateRegisteredInvalidationIds(
-        this,
-        syncer::ObjectIdSet());
+    CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(
+        this, syncer::ObjectIdSet()));
     invalidation_service_->UnregisterInvalidationHandler(this);
     is_registered_ = false;
     UpdateInvalidationsEnabled();

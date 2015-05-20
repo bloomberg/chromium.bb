@@ -38,14 +38,15 @@ void InvalidationServiceAndroid::RegisterInvalidationHandler(
   logger_.OnRegistration(handler->GetOwnerName());
 }
 
-void InvalidationServiceAndroid::UpdateRegisteredInvalidationIds(
+bool InvalidationServiceAndroid::UpdateRegisteredInvalidationIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
 
-  invalidator_registrar_.UpdateRegisteredIds(handler, ids);
+  if (!invalidator_registrar_.UpdateRegisteredIds(handler, ids))
+    return false;
   const syncer::ObjectIdSet& registered_ids =
       invalidator_registrar_.GetAllRegisteredIds();
 
@@ -66,6 +67,7 @@ void InvalidationServiceAndroid::UpdateRegisteredInvalidationIds(
       base::android::ToJavaArrayOfStrings(env, names).obj());
 
   logger_.OnUpdateIds(invalidator_registrar_.GetSanitizedHandlersIdsMap());
+  return true;
 }
 
 void InvalidationServiceAndroid::UnregisterInvalidationHandler(

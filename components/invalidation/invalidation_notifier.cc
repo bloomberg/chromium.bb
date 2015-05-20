@@ -44,11 +44,13 @@ void InvalidationNotifier::RegisterHandler(InvalidationHandler* handler) {
   registrar_.RegisterHandler(handler);
 }
 
-void InvalidationNotifier::UpdateRegisteredIds(InvalidationHandler* handler,
+bool InvalidationNotifier::UpdateRegisteredIds(InvalidationHandler* handler,
                                                const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
-  registrar_.UpdateRegisteredIds(handler, ids);
+  if (!registrar_.UpdateRegisteredIds(handler, ids))
+    return false;
   invalidation_listener_.UpdateRegisteredIds(registrar_.GetAllRegisteredIds());
+  return true;
 }
 
 void InvalidationNotifier::UnregisterHandler(InvalidationHandler* handler) {

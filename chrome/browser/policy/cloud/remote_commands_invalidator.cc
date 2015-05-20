@@ -138,13 +138,13 @@ void RemoteCommandsInvalidator::Register(
   // Update registration with the invalidation service.
   syncer::ObjectIdSet ids;
   ids.insert(object_id);
-  invalidation_service_->UpdateRegisteredInvalidationIds(this, ids);
+  CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(this, ids));
 }
 
 void RemoteCommandsInvalidator::Unregister() {
   if (is_registered_) {
-    invalidation_service_->UpdateRegisteredInvalidationIds(
-        this, syncer::ObjectIdSet());
+    CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(
+        this, syncer::ObjectIdSet()));
     invalidation_service_->UnregisterInvalidationHandler(this);
     is_registered_ = false;
     UpdateInvalidationsEnabled();

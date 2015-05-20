@@ -30,10 +30,10 @@ void FakeServerInvalidationService::RegisterInvalidationHandler(
   invalidator_registrar_.RegisterHandler(handler);
 }
 
-void FakeServerInvalidationService::UpdateRegisteredInvalidationIds(
+bool FakeServerInvalidationService::UpdateRegisteredInvalidationIds(
       syncer::InvalidationHandler* handler,
       const syncer::ObjectIdSet& ids) {
-  invalidator_registrar_.UpdateRegisteredIds(handler, ids);
+  return invalidator_registrar_.UpdateRegisteredIds(handler, ids);
 }
 
 void FakeServerInvalidationService::UnregisterInvalidationHandler(

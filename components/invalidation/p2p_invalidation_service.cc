@@ -46,10 +46,10 @@ void P2PInvalidationService::RegisterInvalidationHandler(
   invalidator_->RegisterHandler(handler);
 }
 
-void P2PInvalidationService::UpdateRegisteredInvalidationIds(
+bool P2PInvalidationService::UpdateRegisteredInvalidationIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
-  invalidator_->UpdateRegisteredIds(handler, ids);
+  return invalidator_->UpdateRegisteredIds(handler, ids);
 }
 
 void P2PInvalidationService::UnregisterInvalidationHandler(

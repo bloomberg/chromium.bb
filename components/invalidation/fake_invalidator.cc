@@ -42,9 +42,9 @@ void FakeInvalidator::RegisterHandler(InvalidationHandler* handler) {
   registrar_.RegisterHandler(handler);
 }
 
-void FakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
+bool FakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                           const ObjectIdSet& ids) {
-  registrar_.UpdateRegisteredIds(handler, ids);
+  return registrar_.UpdateRegisteredIds(handler, ids);
 }
 
 void FakeInvalidator::UnregisterHandler(InvalidationHandler* handler) {

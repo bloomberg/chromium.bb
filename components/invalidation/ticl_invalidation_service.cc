@@ -108,9 +108,8 @@ void TiclInvalidationService::InitForTest(
   invalidator_.reset(invalidator);
 
   invalidator_->RegisterHandler(this);
-  invalidator_->UpdateRegisteredIds(
-      this,
-      invalidator_registrar_->GetAllRegisteredIds());
+  CHECK(invalidator_->UpdateRegisteredIds(
+      this, invalidator_registrar_->GetAllRegisteredIds()));
 }
 
 void TiclInvalidationService::RegisterInvalidationHandler(
@@ -121,18 +120,19 @@ void TiclInvalidationService::RegisterInvalidationHandler(
   logger_.OnRegistration(handler->GetOwnerName());
 }
 
-void TiclInvalidationService::UpdateRegisteredInvalidationIds(
+bool TiclInvalidationService::UpdateRegisteredInvalidationIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Registering ids: " << ids.size();
-  invalidator_registrar_->UpdateRegisteredIds(handler, ids);
+  if (!invalidator_registrar_->UpdateRegisteredIds(handler, ids))
+    return false;
   if (invalidator_) {
-    invalidator_->UpdateRegisteredIds(
-        this,
-        invalidator_registrar_->GetAllRegisteredIds());
+    CHECK(invalidator_->UpdateRegisteredIds(
+        this, invalidator_registrar_->GetAllRegisteredIds()));
   }
   logger_.OnUpdateIds(invalidator_registrar_->GetSanitizedHandlersIdsMap());
+  return true;
 }
 
 void TiclInvalidationService::UnregisterInvalidationHandler(
@@ -141,9 +141,8 @@ void TiclInvalidationService::UnregisterInvalidationHandler(
   DVLOG(2) << "Unregistering";
   invalidator_registrar_->UnregisterHandler(handler);
   if (invalidator_) {
-    invalidator_->UpdateRegisteredIds(
-        this,
-        invalidator_registrar_->GetAllRegisteredIds());
+    CHECK(invalidator_->UpdateRegisteredIds(
+        this, invalidator_registrar_->GetAllRegisteredIds()));
   }
   logger_.OnUnregistration(handler->GetOwnerName());
 }
@@ -402,9 +401,8 @@ void TiclInvalidationService::StartInvalidator(
   UpdateInvalidatorCredentials();
 
   invalidator_->RegisterHandler(this);
-  invalidator_->UpdateRegisteredIds(
-      this,
-      invalidator_registrar_->GetAllRegisteredIds());
+  CHECK(invalidator_->UpdateRegisteredIds(
+      this, invalidator_registrar_->GetAllRegisteredIds()));
 }
 
 void TiclInvalidationService::UpdateInvalidationNetworkChannel() {

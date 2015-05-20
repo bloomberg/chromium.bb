@@ -28,9 +28,8 @@ void InvalidatorRegistrar::RegisterHandler(InvalidationHandler* handler) {
   handlers_.AddObserver(handler);
 }
 
-void InvalidatorRegistrar::UpdateRegisteredIds(
-    InvalidationHandler* handler,
-    const ObjectIdSet& ids) {
+bool InvalidatorRegistrar::UpdateRegisteredIds(InvalidationHandler* handler,
+                                               const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
@@ -47,11 +46,13 @@ void InvalidatorRegistrar::UpdateRegisteredIds(
         ids.begin(), ids.end(),
         std::inserter(intersection, intersection.end()),
         ObjectIdLessThan());
-    CHECK(intersection.empty())
-        << "Duplicate registration: trying to register "
-        << ObjectIdToString(*intersection.begin()) << " for "
-        << handler << " when it's already registered for "
-        << it->first;
+    if (!intersection.empty()) {
+      LOG(ERROR) << "Duplicate registration: trying to register "
+                 << ObjectIdToString(*intersection.begin()) << " for "
+                 << handler << " when it's already registered for "
+                 << it->first;
+      return false;
+    }
   }
 
   if (ids.empty()) {
@@ -59,6 +60,7 @@ void InvalidatorRegistrar::UpdateRegisteredIds(
   } else {
     handler_to_ids_map_[handler] = ids;
   }
+  return true;
 }
 
 void InvalidatorRegistrar::UnregisterHandler(InvalidationHandler* handler) {

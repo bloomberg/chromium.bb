@@ -134,7 +134,7 @@ TYPED_TEST_P(InvalidationServiceTest, Basic) {
   syncer::ObjectIdSet ids;
   ids.insert(this->id1);
   ids.insert(this->id2);
-  invalidator->UpdateRegisteredInvalidationIds(&handler, ids);
+  EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler, ids));
 
   this->delegate_.TriggerOnInvalidatorStateChange(
       syncer::INVALIDATIONS_ENABLED);
@@ -150,7 +150,7 @@ TYPED_TEST_P(InvalidationServiceTest, Basic) {
 
   ids.erase(this->id1);
   ids.insert(this->id3);
-  invalidator->UpdateRegisteredInvalidationIds(&handler, ids);
+  EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler, ids));
 
   expected_invalidations = syncer::ObjectIdInvalidationMap();
   expected_invalidations.Insert(syncer::Invalidation::Init(this->id2, 2, "2"));
@@ -201,13 +201,13 @@ TYPED_TEST_P(InvalidationServiceTest, MultipleHandlers) {
     syncer::ObjectIdSet ids;
     ids.insert(this->id1);
     ids.insert(this->id2);
-    invalidator->UpdateRegisteredInvalidationIds(&handler1, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler1, ids));
   }
 
   {
     syncer::ObjectIdSet ids;
     ids.insert(this->id3);
-    invalidator->UpdateRegisteredInvalidationIds(&handler2, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler2, ids));
   }
 
   // Don't register any IDs for handler3.
@@ -215,7 +215,7 @@ TYPED_TEST_P(InvalidationServiceTest, MultipleHandlers) {
   {
     syncer::ObjectIdSet ids;
     ids.insert(this->id4);
-    invalidator->UpdateRegisteredInvalidationIds(&handler4, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler4, ids));
   }
 
   invalidator->UnregisterInvalidationHandler(&handler4);
@@ -272,6 +272,29 @@ TYPED_TEST_P(InvalidationServiceTest, MultipleHandlers) {
   invalidator->UnregisterInvalidationHandler(&handler1);
 }
 
+// Multiple registrations by different handlers on the same object ID should
+// return false.
+TYPED_TEST_P(InvalidationServiceTest, MultipleRegistrations) {
+  invalidation::InvalidationService* const invalidator =
+      this->CreateAndInitializeInvalidationService();
+
+  syncer::FakeInvalidationHandler handler1;
+  syncer::FakeInvalidationHandler handler2;
+
+  invalidator->RegisterInvalidationHandler(&handler1);
+  invalidator->RegisterInvalidationHandler(&handler2);
+
+  // Registering both handlers for the same ObjectId. First call should succeed,
+  // second should fail.
+  syncer::ObjectIdSet ids;
+  ids.insert(this->id1);
+  EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler1, ids));
+  EXPECT_FALSE(invalidator->UpdateRegisteredInvalidationIds(&handler2, ids));
+
+  invalidator->UnregisterInvalidationHandler(&handler2);
+  invalidator->UnregisterInvalidationHandler(&handler1);
+}
+
 // Make sure that passing an empty set to UpdateRegisteredInvalidationIds clears
 // the corresponding entries for the handler.
 TYPED_TEST_P(InvalidationServiceTest, EmptySetUnregisters) {
@@ -290,19 +313,19 @@ TYPED_TEST_P(InvalidationServiceTest, EmptySetUnregisters) {
     syncer::ObjectIdSet ids;
     ids.insert(this->id1);
     ids.insert(this->id2);
-    invalidator->UpdateRegisteredInvalidationIds(&handler1, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler1, ids));
   }
 
   {
     syncer::ObjectIdSet ids;
     ids.insert(this->id3);
-    invalidator->UpdateRegisteredInvalidationIds(&handler2, ids);
+    EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(&handler2, ids));
   }
 
   // Unregister the IDs for the first observer. It should not receive any
   // further invalidations.
-  invalidator->UpdateRegisteredInvalidationIds(&handler1,
-                                               syncer::ObjectIdSet());
+  EXPECT_TRUE(invalidator->UpdateRegisteredInvalidationIds(
+      &handler1, syncer::ObjectIdSet()));
 
   this->delegate_.TriggerOnInvalidatorStateChange(
       syncer::INVALIDATIONS_ENABLED);
@@ -381,7 +404,10 @@ TYPED_TEST_P(InvalidationServiceTest, GetInvalidatorStateAlwaysCurrent) {
 }
 
 REGISTER_TYPED_TEST_CASE_P(InvalidationServiceTest,
-                           Basic, MultipleHandlers, EmptySetUnregisters,
+                           Basic,
+                           MultipleHandlers,
+                           MultipleRegistrations,
+                           EmptySetUnregisters,
                            GetInvalidatorStateAlwaysCurrent);
 
 #endif  // COMPONENTS_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_

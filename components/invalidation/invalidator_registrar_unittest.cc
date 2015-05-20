@@ -33,9 +33,9 @@ class RegistrarInvalidator : public Invalidator {
     registrar_.RegisterHandler(handler);
   }
 
-  void UpdateRegisteredIds(InvalidationHandler* handler,
+  bool UpdateRegisteredIds(InvalidationHandler* handler,
                            const ObjectIdSet& ids) override {
-    registrar_.UpdateRegisteredIds(handler, ids);
+    return registrar_.UpdateRegisteredIds(handler, ids);
   }
 
   void UnregisterHandler(InvalidationHandler* handler) override {
@@ -108,43 +108,6 @@ class RegistrarInvalidatorTestDelegate {
 INSTANTIATE_TYPED_TEST_CASE_P(
     RegistrarInvalidatorTest, InvalidatorTest,
     RegistrarInvalidatorTestDelegate);
-
-class InvalidatorRegistrarTest : public testing::Test {};
-
-// Technically the test below can be part of InvalidatorTest, but we
-// want to keep the number of death tests down.
-
-// When we expect a death via CHECK(), we can't match against the
-// CHECK() message since they are removed in official builds.
-
-#if GTEST_HAS_DEATH_TEST
-
-// Multiple registrations by different handlers on the same object ID should
-// cause a CHECK.
-TEST_F(InvalidatorRegistrarTest, MultipleRegistration) {
-  const invalidation::ObjectId id1(ipc::invalidation::ObjectSource::TEST, "a");
-  const invalidation::ObjectId id2(ipc::invalidation::ObjectSource::TEST, "a");
-
-  InvalidatorRegistrar registrar;
-
-  FakeInvalidationHandler handler1;
-  registrar.RegisterHandler(&handler1);
-
-  FakeInvalidationHandler handler2;
-  registrar.RegisterHandler(&handler2);
-
-  ObjectIdSet ids;
-  ids.insert(id1);
-  ids.insert(id2);
-  registrar.UpdateRegisteredIds(&handler1, ids);
-
-  registrar.DetachFromThreadForTest();
-  EXPECT_DEATH({ registrar.UpdateRegisteredIds(&handler2, ids); }, "");
-
-  registrar.UnregisterHandler(&handler2);
-  registrar.UnregisterHandler(&handler1);
-}
-#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace
 

@@ -274,10 +274,11 @@ void NonBlockingInvalidator::RegisterHandler(InvalidationHandler* handler) {
   registrar_.RegisterHandler(handler);
 }
 
-void NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
+bool NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                                  const ObjectIdSet& ids) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  registrar_.UpdateRegisteredIds(handler, ids);
+  if (!registrar_.UpdateRegisteredIds(handler, ids))
+    return false;
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
@@ -286,6 +287,7 @@ void NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
               registrar_.GetAllRegisteredIds()))) {
     NOTREACHED();
   }
+  return true;
 }
 
 void NonBlockingInvalidator::UnregisterHandler(InvalidationHandler* handler) {
