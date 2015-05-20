@@ -149,7 +149,6 @@ public:
 
     void detach();
 
-    void loadDone();
     void finishedParsing();
     void checkCompleted();
 

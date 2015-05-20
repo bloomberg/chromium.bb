@@ -425,11 +425,6 @@ void FrameLoader::finishedParsing()
         scrollToFragmentWithParentBoundary(m_frame->document()->url());
 }
 
-void FrameLoader::loadDone()
-{
-    checkCompleted();
-}
-
 static bool allDescendantsAreComplete(Frame* frame)
 {
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().traverseNext(frame)) {

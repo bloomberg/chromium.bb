@@ -437,7 +437,7 @@ HTMLMediaElement::~HTMLMediaElement()
     // Destroying the player may cause a resource load to be canceled,
     // which could result in Document::dispatchWindowLoadEvent() being
     // called via ResourceFetch::didLoadResource() then
-    // FrameLoader::loadDone(). To prevent load event dispatching during
+    // FrameLoader::checkCompleted(). To prevent load event dispatching during
     // object destruction, we use Document::incrementLoadEventDelayCount().
     // See http://crbug.com/275223 for more details.
     document().incrementLoadEventDelayCount();
