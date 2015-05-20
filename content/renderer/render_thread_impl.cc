@@ -138,6 +138,7 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -340,11 +341,11 @@ void LowMemoryNotificationOnThisThread() {
   isolate->LowMemoryNotification();
 }
 
-class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
+class RenderFrameSetupImpl : public RenderFrameSetup {
  public:
-  RenderFrameSetupImpl()
-      : routing_id_highmark_(-1) {
-  }
+  explicit RenderFrameSetupImpl(
+      mojo::InterfaceRequest<RenderFrameSetup> request)
+      : routing_id_highmark_(-1), binding_(this, request.Pass()) {}
 
   void ExchangeServiceProviders(
       int32_t frame_routing_id,
@@ -371,10 +372,11 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
 
  private:
   int32_t routing_id_highmark_;
+  mojo::StrongBinding<RenderFrameSetup> binding_;
 };
 
 void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
-  mojo::BindToRequest(new RenderFrameSetupImpl(), &request);
+  new RenderFrameSetupImpl(request.Pass());
 }
 
 blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {

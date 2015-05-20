@@ -26,7 +26,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "third_party/mojo/src/mojo/edk/test/test_utils.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/js/constants.h"
 
@@ -60,13 +60,15 @@ bool GetResource(const std::string& id,
   return true;
 }
 
-class BrowserTargetImpl : public mojo::InterfaceImpl<BrowserTarget> {
+class BrowserTargetImpl : public BrowserTarget {
  public:
-  explicit BrowserTargetImpl(base::RunLoop* run_loop) : run_loop_(run_loop) {}
+  BrowserTargetImpl(base::RunLoop* run_loop,
+                    mojo::InterfaceRequest<BrowserTarget> request)
+      : run_loop_(run_loop), binding_(this, request.Pass()) {}
 
   ~BrowserTargetImpl() override {}
 
-  // mojo::InterfaceImpl<BrowserTarget> overrides:
+  // BrowserTarget overrides:
   void Start(const mojo::Closure& closure) override {
     closure.Run();
   }
@@ -79,6 +81,7 @@ class BrowserTargetImpl : public mojo::InterfaceImpl<BrowserTarget> {
   base::RunLoop* run_loop_;
 
  private:
+  mojo::Binding<BrowserTarget> binding_;
   DISALLOW_COPY_AND_ASSIGN(BrowserTargetImpl);
 };
 
@@ -119,8 +122,7 @@ class PingTestWebUIController : public TestWebUIController {
   }
 
   void CreateHandler(mojo::InterfaceRequest<BrowserTarget> request) {
-    browser_target_.reset(mojo::WeakBindToRequest(
-        new BrowserTargetImpl(run_loop_), &request));
+    browser_target_.reset(new BrowserTargetImpl(run_loop_, request.Pass()));
   }
 
  private:
