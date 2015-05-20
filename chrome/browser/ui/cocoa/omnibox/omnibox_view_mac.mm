@@ -219,11 +219,25 @@ void OmniboxViewMac::Update() {
     controller()->GetToolbarModel()->set_url_replacement_enabled(true);
     model()->UpdatePermanentText();
 
+    const bool was_select_all = IsSelectAll();
+    NSTextView* text_view =
+        base::mac::ObjCCastStrict<NSTextView>([field_ currentEditor]);
+    const bool was_reversed =
+        [text_view selectionAffinity] == NSSelectionAffinityUpstream;
+
     // Restore everything to the baseline look.
     RevertAll();
 
-    // TODO(shess): Figure out how this case is used, to make sure
-    // we're getting the selection and popup right.
+    // Only select all when we have focus.  If we don't have focus, selecting
+    // all is unnecessary since the selection will change on regaining focus,
+    // and can in fact cause artifacts, e.g. if the user is on the NTP and
+    // clicks a link to navigate, causing |was_select_all| to be vacuously true
+    // for the empty omnibox, and we then select all here, leading to the
+    // trailing portion of a long URL being scrolled into view.  We could try
+    // and address cases like this, but it seems better to just not muck with
+    // things when the omnibox isn't focused to begin with.
+    if (was_select_all && model()->has_focus())
+      SelectAll(was_reversed);
   } else {
     // TODO(shess): This corresponds to _win and _gtk, except those
     // guard it with a test for whether the security level changed.
@@ -343,13 +357,17 @@ void OmniboxViewMac::GetSelectionBounds(base::string16::size_type* start,
 }
 
 void OmniboxViewMac::SelectAll(bool reversed) {
-  // TODO(shess): Figure out what |reversed| implies.  The gtk version
-  // has it imply inverting the selection front to back, but I don't
-  // even know if that makes sense for Mac.
+  DCHECK(!in_coalesced_update_block_);
+  if (!model()->has_focus())
+    return;
 
-  // TODO(shess): Verify that we should be stealing focus at this
-  // point.
-  SetSelectedRange(NSMakeRange(0, GetTextLength()));
+  NSTextView* text_view =
+      base::mac::ObjCCastStrict<NSTextView>([field_ currentEditor]);
+  NSSelectionAffinity affinity =
+      reversed ? NSSelectionAffinityUpstream : NSSelectionAffinityDownstream;
+  NSRange range = NSMakeRange(0, GetTextLength());
+
+  [text_view setSelectedRange:range affinity:affinity stillSelecting:NO];
 }
 
 void OmniboxViewMac::RevertAll() {

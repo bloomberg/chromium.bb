@@ -1866,3 +1866,88 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   omnibox_view->Update();
   EXPECT_EQ(url_c, omnibox_view->GetText());
 }
+
+namespace {
+
+// Returns the number of characters currently selected in |omnibox_view|.
+size_t GetSelectionSize(OmniboxView* omnibox_view) {
+  size_t start, end;
+  omnibox_view->GetSelectionBounds(&start, &end);
+  if (end >= start)
+    return end - start;
+  return start - end;
+}
+
+}  // namespace
+
+// Test that if the Omnibox has focus, and had everything selected before a
+// non-user-initiated update, then it retains the selection after the update.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  TestToolbarModel* test_toolbar_model = new TestToolbarModel;
+  scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
+  browser()->swap_toolbar_models(&toolbar_model);
+
+  base::string16 url_a(ASCIIToUTF16("http://www.a.com/"));
+  base::string16 url_b(ASCIIToUTF16("http://www.b.com/"));
+  chrome::FocusLocationBar(browser());
+
+  test_toolbar_model->set_text(url_a);
+  omnibox_view->Update();
+  EXPECT_EQ(url_a, omnibox_view->GetText());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+
+  // Updating while selected should retain SelectAll().
+  test_toolbar_model->set_text(url_b);
+  omnibox_view->Update();
+  EXPECT_EQ(url_b, omnibox_view->GetText());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+
+  // Select nothing, then switch back. Shouldn't gain a selection.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, 0));
+  test_toolbar_model->set_text(url_a);
+  omnibox_view->Update();
+  EXPECT_EQ(url_a, omnibox_view->GetText());
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+
+  // Test behavior of the "reversed" attribute of OmniboxView::SelectAll().
+  test_toolbar_model->set_text(ASCIIToUTF16("AB"));
+  omnibox_view->Update();
+  // Should be at the end already. Shift+Left to select "reversed".
+  EXPECT_EQ(0u, GetSelectionSize(omnibox_view));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN));
+  EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+
+  test_toolbar_model->set_text(ASCIIToUTF16("CD"));
+  omnibox_view->Update();
+  EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
+
+  // At the start, so Shift+Left should do nothing.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN));
+  EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
+
+  // And Shift+Right should reduce by one character.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, ui::EF_SHIFT_DOWN));
+  EXPECT_EQ(1u, GetSelectionSize(omnibox_view));
+
+  // No go to start and select all to the right (not reversed).
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, ui::EF_SHIFT_DOWN));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, ui::EF_SHIFT_DOWN));
+  test_toolbar_model->set_text(ASCIIToUTF16("AB"));
+  omnibox_view->Update();
+  EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
+
+  // Now Shift+Right should do nothing, and Shift+Left should reduce.
+  // At the end, so Shift+Right should do nothing.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, ui::EF_SHIFT_DOWN));
+  EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
+
+  // And Left should reduce by one character.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN));
+  EXPECT_EQ(1u, GetSelectionSize(omnibox_view));
+}
