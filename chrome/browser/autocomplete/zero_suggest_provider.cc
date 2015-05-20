@@ -423,7 +423,6 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
       permanent_text_, false, true, current_page_classification_, &match, NULL);
-  match.is_history_what_you_typed_match = false;
   match.allowed_to_be_default_match = true;
 
   // The placeholder suggestion for the current URL has high relevance so

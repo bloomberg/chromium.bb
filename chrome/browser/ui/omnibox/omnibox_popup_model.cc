@@ -141,7 +141,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
     manually_selected_match_.destination_url = match.destination_url;
     manually_selected_match_.provider_affinity = match.provider;
     manually_selected_match_.is_history_what_you_typed_match =
-        match.is_history_what_you_typed_match;
+        match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED;
   }
 
   if (line == selected_line_ && !force)

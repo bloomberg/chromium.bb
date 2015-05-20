@@ -45,7 +45,6 @@ AutocompleteMatch::AutocompleteMatch()
       deletable(false),
       allowed_to_be_default_match(false),
       transition(ui::PAGE_TRANSITION_GENERATED),
-      is_history_what_you_typed_match(false),
       type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
       from_previous(false) {
 }
@@ -60,7 +59,6 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       deletable(deletable),
       allowed_to_be_default_match(false),
       transition(ui::PAGE_TRANSITION_TYPED),
-      is_history_what_you_typed_match(false),
       type(type),
       from_previous(false) {
 }
@@ -83,7 +81,6 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       answer_type(match.answer_type),
       answer(SuggestionAnswer::copy(match.answer.get())),
       transition(match.transition),
-      is_history_what_you_typed_match(match.is_history_what_you_typed_match),
       type(match.type),
       associated_keyword(match.associated_keyword.get() ?
           new AutocompleteMatch(*match.associated_keyword) : NULL),
@@ -121,7 +118,6 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   answer_type = match.answer_type;
   answer = SuggestionAnswer::copy(match.answer.get());
   transition = match.transition;
-  is_history_what_you_typed_match = match.is_history_what_you_typed_match;
   type = match.type;
   associated_keyword.reset(match.associated_keyword.get() ?
       new AutocompleteMatch(*match.associated_keyword) : NULL);

@@ -62,7 +62,7 @@ void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
     if (i->destination_url == match.destination_url && i->type == match.type) {
       found = true;
-      if (i->is_history_what_you_typed_match ||
+      if ((i->type == AutocompleteMatchType::URL_WHAT_YOU_TYPED) ||
           (bookmark_model &&
            bookmark_model->IsBookmarked(i->destination_url))) {
         // We can't get rid of What-You-Typed or Bookmarked matches,

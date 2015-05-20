@@ -21,7 +21,6 @@ struct AutocompleteMatchMojo {
   string contents;
   string description;
   int32 transition;
-  bool is_history_what_you_typed_match;
   bool allowed_to_be_default_match;
   string type;
   string? associated_keyword;

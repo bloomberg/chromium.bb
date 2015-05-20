@@ -135,10 +135,6 @@ define('main', [
         'navigates to).'),
     new PresentationInfoRecord('Starred', '', 'starred', false,
         'A green checkmark indicates that the result has been bookmarked.'),
-    new PresentationInfoRecord(
-        'HWYT', '', 'is_history_what_you_typed_match', false,
-        'A green checkmark indicates that the result is an History What You ' +
-        'Typed Match'),
     new PresentationInfoRecord('Description', '', 'description', false,
         'The page title of the result.'),
     new PresentationInfoRecord('URL', '', 'destination_url', true,

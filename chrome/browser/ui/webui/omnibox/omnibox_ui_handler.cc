@@ -75,8 +75,6 @@ struct TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
     // represents description classification.  i.e., for each character, what
     // type of text it is.
     result->transition = input.transition;
-    result->is_history_what_you_typed_match =
-        input.is_history_what_you_typed_match;
     result->allowed_to_be_default_match = input.allowed_to_be_default_match;
     result->type = AutocompleteMatchType::ToString(input.type);
     if (input.associated_keyword.get() != NULL) {

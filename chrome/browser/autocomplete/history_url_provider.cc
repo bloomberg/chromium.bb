@@ -645,8 +645,6 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
           match.contents.length(), ACMatchClassification::URL,
           &match.contents_class);
     }
-
-    match.is_history_what_you_typed_match = true;
   }
 
   return match;
@@ -778,9 +776,9 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
 
   // Check whether what the user typed appears in history.
   const bool can_check_history_for_exact_match =
-      // Checking what_you_typed_match.is_history_what_you_typed_match tells us
+      // Checking what_you_typed_match.allowed_to_be_default_match tells us
       // whether SuggestExactInput() succeeded in constructing a valid match.
-      params->what_you_typed_match.is_history_what_you_typed_match &&
+      params->what_you_typed_match.allowed_to_be_default_match &&
       // Additionally, in the case where the user has typed "foo.com" and
       // visited (but not typed) "foo/", and the input is "foo", the first pass
       // will fall into the FRONT_HISTORY_MATCH case for "foo.com" but the

@@ -330,10 +330,6 @@ struct AutocompleteMatch {
   // it to GENERATED.
   ui::PageTransition transition;
 
-  // True when this match is the "what you typed" match from the history
-  // system.
-  bool is_history_what_you_typed_match;
-
   // Type of this match.
   Type type;
 

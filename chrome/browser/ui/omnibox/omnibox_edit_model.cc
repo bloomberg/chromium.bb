@@ -54,6 +54,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_match_type.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/keyword_provider.h"
 #include "components/omnibox/search_provider.h"
@@ -697,8 +698,9 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // (e.g. manually retyping the same search query), and it seems wrong to
     // treat this as a reload.
     match.transition = ui::PAGE_TRANSITION_RELOAD;
-  } else if (for_drop || ((paste_state_ != NONE) &&
-                          match.is_history_what_you_typed_match)) {
+  } else if (for_drop ||
+             ((paste_state_ != NONE) &&
+              (match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED))) {
     // When the user pasted in a URL and hit enter, score it like a link click
     // rather than a normal typed URL, so it doesn't get inline autocompleted
     // as aggressively later.
