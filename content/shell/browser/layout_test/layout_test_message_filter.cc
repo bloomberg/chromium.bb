@@ -9,6 +9,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
@@ -167,8 +168,9 @@ void LayoutTestMessageFilter::OnResetPermissions() {
 
 void LayoutTestMessageFilter::OnSetBluetoothAdapter(const std::string& name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(ortuno): Create mock adapter here. See http://crrev.com/1132943002
-  SetBluetoothAdapter(render_process_id_, name);
+  SetBluetoothAdapter(
+      render_process_id_,
+      LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(name));
 }
 
 }  // namespace content

@@ -24,6 +24,7 @@
 #include "content/shell/renderer/test_runner/test_common.h"
 #include "content/shell/renderer/test_runner/web_frame_test_proxy.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
@@ -313,16 +314,17 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
       SetDeviceColorProfileForTesting(color_profile);
 }
 
-void SetBluetoothAdapter(int render_process_id, const std::string& name) {
+void SetBluetoothAdapter(int render_process_id,
+                         scoped_refptr<device::BluetoothAdapter> adapter) {
   RenderProcessHostImpl* render_process_host_impl =
       static_cast<RenderProcessHostImpl*>(
           RenderProcessHost::FromID(render_process_id));
 
-  BluetoothDispatcherHost* dispatcher_host = render_process_host_impl
-      ->GetBluetoothDispatcherHost();
+  BluetoothDispatcherHost* dispatcher_host =
+      render_process_host_impl->GetBluetoothDispatcherHost();
 
   if (dispatcher_host != NULL)
-      dispatcher_host->SetBluetoothAdapterForTesting(name);
+    dispatcher_host->SetBluetoothAdapterForTesting(adapter.Pass());
 }
 
 void SetGeofencingMockProvider(bool service_available) {

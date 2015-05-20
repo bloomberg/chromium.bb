@@ -7,6 +7,7 @@ include_rules = [
   "+chromeos/audio", # For WebRTC tests.
   # Testing utilities can access anything in content/
   "+content",
+  "+device/bluetooth", # For WebBluetooth tests
   # For loading V8's initial snapshot from external files.
   "+gin/v8_initializer.h",
   "+media/audio", # For AudioParameters in WebRTC tests.

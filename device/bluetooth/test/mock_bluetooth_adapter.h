@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
@@ -99,6 +101,14 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       const DiscoverySessionCallback& callback,
       const ErrorCallback& error_callback);
 
+  // BluetoothAdapter is supposed to manage the lifetime of BluetoothDevices.
+  // This methods takes ownership of the BluetoothDevices. This is only for
+  // convenience as far testing is concerned and it's possible to write test
+  // cases without using these functions.
+  void AddMockDevice(scoped_ptr<MockBluetoothDevice> mock_device);
+  BluetoothAdapter::ConstDeviceList GetConstMockDevices();
+  BluetoothAdapter::DeviceList GetMockDevices();
+
  protected:
   void AddDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
                            const base::Closure& callback,
@@ -117,6 +127,8 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
   MOCK_METHOD1(RemovePairingDelegateInternal,
                void(BluetoothDevice::PairingDelegate* pairing_delegate));
+
+  ScopedVector<MockBluetoothDevice> mock_devices_;
 };
 
 }  // namespace device

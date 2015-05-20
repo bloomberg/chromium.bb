@@ -34,7 +34,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                                 BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void SetBluetoothAdapterForTesting(const std::string& name);
+  void SetBluetoothAdapterForTesting(
+      scoped_refptr<device::BluetoothAdapter> mock_adapter);
 
  protected:
   ~BluetoothDispatcherHost() override;
@@ -69,12 +70,11 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnDiscoverySessionStopped(int thread_id, int request_id);
   void OnDiscoverySessionStoppedError(int thread_id, int request_id);
 
+  // Defines how long to scan for.
+  int current_scan_time_;
+
   // A BluetoothAdapter instance representing an adapter of the system.
   scoped_refptr<device::BluetoothAdapter> adapter_;
-
-  enum class MockData { NOT_MOCKING, REJECT, RESOLVE };
-  MockData bluetooth_mock_data_set_;
-  BluetoothError bluetooth_request_device_reject_type_;
 
   // Must be last member, see base/memory/weak_ptr.h documentation
   base::WeakPtrFactory<BluetoothDispatcherHost> weak_ptr_factory_;

@@ -16,16 +16,14 @@ using device::BluetoothAdapterFactory;
 
 namespace content {
 
-const uint32 kUnspecifiedDeviceClass =
-    0x1F00;  // bluetooth.org/en-us/specification/assigned-numbers/baseband
 const int kScanTime = 5;  // 5 seconds of scan time
+const int kTestingScanTime = 0;  // No need to scan for tests
 
 BluetoothDispatcherHost::BluetoothDispatcherHost()
     : BrowserMessageFilter(BluetoothMsgStart),
-      bluetooth_mock_data_set_(MockData::NOT_MOCKING),
-      bluetooth_request_device_reject_type_(BluetoothError::NOT_FOUND),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  current_scan_time_ = kScanTime;
   if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable())
     BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothDispatcherHost::set_adapter,
@@ -56,20 +54,10 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
-    const std::string& name) {
+    scoped_refptr<device::BluetoothAdapter> mock_adapter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (name == "RejectRequestDevice_NotFoundError") {
-    bluetooth_mock_data_set_ = MockData::REJECT;
-    bluetooth_request_device_reject_type_ = BluetoothError::NOT_FOUND;
-  } else if (name == "RejectRequestDevice_SecurityError") {
-    bluetooth_mock_data_set_ = MockData::REJECT;
-    bluetooth_request_device_reject_type_ = BluetoothError::SECURITY;
-  } else if (name == "ResolveRequestDevice_Empty" ||  // TODO(scheib): Remove.
-             name == "Single Empty Device") {
-    bluetooth_mock_data_set_ = MockData::RESOLVE;
-  } else {
-    bluetooth_mock_data_set_ = MockData::NOT_MOCKING;
-  }
+  current_scan_time_ = kTestingScanTime;
+  set_adapter(mock_adapter.Pass());
 }
 
 BluetoothDispatcherHost::~BluetoothDispatcherHost() {
@@ -90,53 +78,21 @@ void BluetoothDispatcherHost::set_adapter(
 
 void BluetoothDispatcherHost::OnRequestDevice(int thread_id, int request_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(scheib) Extend this very simple mock implementation by using
-  // device/bluetooth/test mock adapter and related classes.
-  switch (bluetooth_mock_data_set_) {
-    case MockData::NOT_MOCKING: {
-      // TODO(scheib): Filter devices by services: crbug.com/440594
-      // TODO(scheib): Device selection UI: crbug.com/436280
-      // TODO(scheib): Utilize BluetoothAdapter::Observer::DeviceAdded/Removed.
-      BluetoothAdapter::DeviceList devices;
-
-      if (adapter_.get()) {
-        adapter_->StartDiscoverySession(
-            base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStarted,
-                       weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
-            base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStartedError,
-                       weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
-      } else {
-        DLOG(WARNING) << "No BluetoothAdapter. Can't serve requestDevice.";
-        Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
-                                                 BluetoothError::NOT_FOUND));
-      }
-      return;
-    }
-    case MockData::REJECT: {
-      Send(new BluetoothMsg_RequestDeviceError(
-          thread_id, request_id, bluetooth_request_device_reject_type_));
-      return;
-    }
-    case MockData::RESOLVE: {
-      std::vector<std::string> uuids;
-      uuids.push_back("00001800-0000-1000-8000-00805f9b34fb");
-      uuids.push_back("00001801-0000-1000-8000-00805f9b34fb");
-      content::BluetoothDevice device_ipc(
-          "Empty Mock Device instanceID",                // instance_id
-          base::UTF8ToUTF16("Empty Mock Device name"),   // name
-          kUnspecifiedDeviceClass,                       // device_class
-          device::BluetoothDevice::VENDOR_ID_BLUETOOTH,  // vendor_id_source
-          0xFFFF,                                        // vendor_id
-          1,                                             // product_id
-          2,                                             // product_version
-          true,                                          // paired
-          uuids);                                        // uuids
-      Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
-                                                 device_ipc));
-      return;
-    }
+  // TODO(scheib): Filter devices by services: crbug.com/440594
+  // TODO(scheib): Device selection UI: crbug.com/436280
+  // TODO(scheib): Utilize BluetoothAdapter::Observer::DeviceAdded/Removed.
+  if (adapter_.get()) {
+    adapter_->StartDiscoverySession(
+        base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStarted,
+                   weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+        base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStartedError,
+                   weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
+  } else {
+    DLOG(WARNING) << "No BluetoothAdapter. Can't serve requestDevice.";
+    Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
+                                             BluetoothError::NOT_FOUND));
   }
-  NOTREACHED();
+  return;
 }
 
 void BluetoothDispatcherHost::OnConnectGATT(
@@ -160,7 +116,7 @@ void BluetoothDispatcherHost::OnDiscoverySessionStarted(
       base::Bind(&BluetoothDispatcherHost::StopDiscoverySession,
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
                  base::Passed(&discovery_session)),
-      base::TimeDelta::FromSeconds(kScanTime));
+      base::TimeDelta::FromSeconds(current_scan_time_));
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStartedError(int thread_id,
