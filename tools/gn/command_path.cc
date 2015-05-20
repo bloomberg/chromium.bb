@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/containers/hash_tables.h"
 #include "base/strings/stringprintf.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/setup.h"
@@ -23,6 +24,8 @@ enum DepType {
 // the current target for printing when a match is found.
 using TargetDep = std::pair<const Target*, DepType>;
 using DepStack = std::vector<TargetDep>;
+
+using DepSet = base::hash_set<const Target*>;
 
 void PrintDepStack(const DepStack& stack) {
   // Don't print toolchains unless they differ from the first target.
@@ -50,11 +53,19 @@ void PrintDepStack(const DepStack& stack) {
 
 // Increments *found_count to reflect how many results are found. If print_all
 // is not set, only the first result will be printed.
+//
+// As an optimization, targets that do not have any paths are added to
+// *reject so this function doesn't waste time revisiting them.
 void RecursiveFindPath(const Target* current,
                        const Target* desired,
                        DepStack* stack,
+                       DepSet* reject,
                        int* found_count,
                        bool print_all) {
+  if (reject->find(current) != reject->end())
+    return;
+  int initial_found_count = *found_count;
+
   if (current == desired) {
     (*found_count)++;
     if (print_all || *found_count == 1) {
@@ -67,16 +78,19 @@ void RecursiveFindPath(const Target* current,
 
   stack->push_back(TargetDep(current, DEP_PUBLIC));
   for (const auto& pair : current->public_deps())
-    RecursiveFindPath(pair.ptr, desired, stack, found_count, print_all);
+    RecursiveFindPath(pair.ptr, desired, stack, reject, found_count, print_all);
 
   stack->back().second = DEP_PRIVATE;
   for (const auto& pair : current->private_deps())
-    RecursiveFindPath(pair.ptr, desired, stack, found_count, print_all);
+    RecursiveFindPath(pair.ptr, desired, stack, reject, found_count, print_all);
 
   stack->back().second = DEP_DATA;
   for (const auto& pair : current->data_deps())
-    RecursiveFindPath(pair.ptr, desired, stack, found_count, print_all);
+    RecursiveFindPath(pair.ptr, desired, stack, reject, found_count, print_all);
   stack->pop_back();
+
+  if (*found_count == initial_found_count)
+    reject->insert(current);  // Eliminated this target.
 }
 
 }  // namespace
@@ -132,10 +146,15 @@ int RunPath(const std::vector<std::string>& args) {
   // can only go in one direction without having a cycle, which will have
   // caused a run failure above.
   DepStack stack;
+  DepSet rejected;
   int found = 0;
-  RecursiveFindPath(target1, target2, &stack, &found, print_all);
-  if (found == 0)
-    RecursiveFindPath(target2, target1, &stack, &found, print_all);
+  RecursiveFindPath(target1, target2, &stack, &rejected, &found, print_all);
+  if (found == 0) {
+    // Need to reset the rejected set for a new invocation since the reverse
+    // search will revisit the same targets looking for something else.
+    rejected.clear();
+    RecursiveFindPath(target2, target1, &stack, &rejected, &found, print_all);
+  }
 
   if (found == 0) {
     OutputString("No paths found between these two targets.\n",
