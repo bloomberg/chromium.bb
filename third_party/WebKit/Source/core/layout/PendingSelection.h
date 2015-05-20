@@ -50,10 +50,7 @@ public:
 private:
     PendingSelection();
 
-    Position m_start;
-    Position m_end;
-    Position m_extent;
-    EAffinity m_affinity;
+    VisibleSelection m_selection;
     bool m_hasPendingSelection : 1;
     bool m_shouldShowBlockCursor : 1;
 };

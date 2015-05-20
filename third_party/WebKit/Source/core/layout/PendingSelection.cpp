@@ -30,8 +30,7 @@
 namespace blink {
 
 PendingSelection::PendingSelection()
-    : m_affinity(SEL_DEFAULT_AFFINITY)
-    , m_hasPendingSelection(false)
+    : m_hasPendingSelection(false)
     , m_shouldShowBlockCursor(false)
 {
     clear();
@@ -39,10 +38,7 @@ PendingSelection::PendingSelection()
 
 void PendingSelection::setSelection(const FrameSelection& selection)
 {
-    m_start = selection.start();
-    m_end = selection.end();
-    m_extent = selection.extent();
-    m_affinity = selection.affinity();
+    m_selection = selection.selection();
     m_shouldShowBlockCursor = selection.shouldShowBlockCursor();
     m_hasPendingSelection = true;
 }
@@ -50,54 +46,52 @@ void PendingSelection::setSelection(const FrameSelection& selection)
 void PendingSelection::clear()
 {
     m_hasPendingSelection = false;
-    m_start.clear();
-    m_end.clear();
-    m_extent.clear();
-    m_affinity = SEL_DEFAULT_AFFINITY;
+    m_selection = VisibleSelection();
     m_shouldShowBlockCursor = false;
 }
 
 bool PendingSelection::isInDocument(const Document& document) const
 {
-    if (m_start.isNotNull() && (!m_start.inDocument() || m_start.document() != document))
+    Position start = m_selection.start();
+    if (start.isNotNull() && (!start.inDocument() || start.document() != document))
         return false;
-    if (m_end.isNotNull() && (!m_end.inDocument() || m_end.document() != document))
+    Position end = m_selection.end();
+    if (end.isNotNull() && (!end.inDocument() || end.document() != document))
         return false;
-    if (m_extent.isNotNull() && (!m_extent.inDocument() || m_extent.document() != document))
+    Position extent = m_selection.extent();
+    if (extent.isNotNull() && (!extent.inDocument() || extent.document() != document))
         return false;
     return true;
 }
 
 VisibleSelection PendingSelection::calcVisibleSelection() const
 {
-    SelectionType selectionType = VisibleSelection::selectionType(m_start, m_end);
+    Position start = m_selection.start();
+    Position end = m_selection.end();
+    SelectionType selectionType = VisibleSelection::selectionType(start, end);
+    EAffinity affinity = m_selection.affinity();
 
-    Position start = m_start;
-    Position end = m_end;
-
-    bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(end, m_affinity));
+    bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(end, affinity));
     VisibleSelection selection;
     if (enclosingTextFormControl(start)) {
-        Position endPosition = paintBlockCursor ? m_extent.next() : m_end;
+        Position endPosition = paintBlockCursor ? m_selection.extent().next() : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }
 
-    VisiblePosition visibleStart = VisiblePosition(start, selectionType == SelectionType::RangeSelection ? DOWNSTREAM : m_affinity);
+    VisiblePosition visibleStart = VisiblePosition(start, selectionType == SelectionType::RangeSelection ? DOWNSTREAM : affinity);
     if (paintBlockCursor) {
-        VisiblePosition visibleExtent(end, m_affinity);
+        VisiblePosition visibleExtent(end, affinity);
         visibleExtent = visibleExtent.next(CanSkipOverEditingBoundary);
         return VisibleSelection(visibleStart, visibleExtent);
     }
-    VisiblePosition visibleEnd(end, selectionType == SelectionType::RangeSelection ? UPSTREAM : m_affinity);
+    VisiblePosition visibleEnd(end, selectionType == SelectionType::RangeSelection ? UPSTREAM : affinity);
     return VisibleSelection(visibleStart, visibleEnd);
 }
 
 DEFINE_TRACE(PendingSelection)
 {
-    visitor->trace(m_start);
-    visitor->trace(m_end);
-    visitor->trace(m_extent);
+    visitor->trace(m_selection);
 }
 
 } // namespace blink
