@@ -33,11 +33,11 @@ InProcessWorkerBase::~InProcessWorkerBase()
     m_contextProxy->workerObjectDestroyed();
 }
 
-void InProcessWorkerBase::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void InProcessWorkerBase::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
     ASSERT(m_contextProxy);
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
     m_contextProxy->postMessageToWorkerGlobalScope(message, channels.release());

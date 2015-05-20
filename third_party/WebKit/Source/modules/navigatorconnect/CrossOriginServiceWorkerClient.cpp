@@ -41,7 +41,7 @@ void CrossOriginServiceWorkerClient::postMessage(ExecutionContext* executionCont
 {
     OwnPtr<MessagePortChannelArray> channels;
     if (ports) {
-        channels = MessagePort::disentanglePorts(ports, exceptionState);
+        channels = MessagePort::disentanglePorts(executionContext, ports, exceptionState);
         if (exceptionState.hadException())
             return;
     }

@@ -79,7 +79,7 @@ public:
     static PassOwnPtrWillBeRawPtr<MessagePortArray> toMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&);
 
     // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
-    static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionState&);
+    static PassOwnPtr<MessagePortChannelArray> disentanglePorts(ExecutionContext*, const MessagePortArray*, ExceptionState&);
 
     // Returns 0 if the passed array is 0/empty.
     static PassOwnPtrWillBeRawPtr<MessagePortArray> entanglePorts(ExecutionContext&, PassOwnPtr<MessagePortChannelArray>);

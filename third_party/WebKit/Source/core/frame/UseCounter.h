@@ -692,6 +692,11 @@ public:
         V8SVGSVGElement_ScreenPixelToMillimeterY_AttributeGetter = 777,
         V8SVGSVGElement_GetElementById_Method = 778,
         ElementCreateShadowRootMultiple = 779,
+        V8MessageChannel_Constructor = 780,
+        V8MessagePort_PostMessage_Method = 781,
+        V8MessagePort_Start_Method = 782,
+        V8MessagePort_Close_Method = 783,
+        MessagePortsTransferred = 784,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

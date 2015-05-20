@@ -65,7 +65,7 @@ MessagePort::~MessagePort()
         m_scriptStateForConversion->disposePerContextData();
 }
 
-void MessagePort::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
     if (!isEntangled())
         return;
@@ -82,7 +82,7 @@ void MessagePort::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValu
                 return;
             }
         }
-        channels = MessagePort::disentanglePorts(ports, exceptionState);
+        channels = MessagePort::disentanglePorts(context, ports, exceptionState);
         if (exceptionState.hadException())
             return;
     }
@@ -223,7 +223,7 @@ bool MessagePort::hasPendingActivity() const
     return m_started && isEntangled();
 }
 
-PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessagePortArray* ports, ExceptionState& exceptionState)
+PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionContext* context, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
     if (!ports || !ports->size())
         return nullptr;
@@ -247,6 +247,8 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
         }
         portSet.add(port);
     }
+
+    UseCounter::count(context, UseCounter::MessagePortsTransferred);
 
     // Passed-in ports passed validity checks, so we can disentangle them.
     OwnPtr<MessagePortChannelArray> portArray = adoptPtr(new MessagePortChannelArray(ports->size()));
