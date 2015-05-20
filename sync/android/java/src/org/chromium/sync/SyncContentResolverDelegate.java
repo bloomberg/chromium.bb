@@ -7,6 +7,7 @@ package org.chromium.sync;
 
 import android.accounts.Account;
 import android.content.SyncStatusObserver;
+import android.os.Bundle;
 
 /**
  * Since the ContentResolver in Android has a lot of static methods, it is hard to
@@ -30,4 +31,6 @@ public interface SyncContentResolverDelegate {
     void setIsSyncable(Account account, String authority, int syncable);
 
     int getIsSyncable(Account account, String authority);
+
+    void removePeriodicSync(Account account, String authority, Bundle extras);
 }

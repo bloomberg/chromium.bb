@@ -8,6 +8,7 @@ package org.chromium.sync;
 import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.SyncStatusObserver;
+import android.os.Bundle;
 
 /**
  * A SyncContentResolverDelegate that simply forwards calls to ContentResolver.
@@ -52,5 +53,10 @@ public class SystemSyncContentResolverDelegate implements SyncContentResolverDel
     @Override
     public int getIsSyncable(Account account, String authority) {
         return ContentResolver.getIsSyncable(account, authority);
+    }
+
+    @Override
+    public void removePeriodicSync(Account account, String authority, Bundle extras) {
+        ContentResolver.removePeriodicSync(account, authority, extras);
     }
 }
