@@ -175,6 +175,8 @@ class AdbWrapper(object):
     """Get the list of active attached devices.
 
     Args:
+      is_ready: Whether the devices should be limited to only those that are
+        ready for use.
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
 
