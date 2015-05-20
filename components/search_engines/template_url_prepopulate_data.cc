@@ -35,7 +35,6 @@
 
 namespace TemplateURLPrepopulateData {
 
-
 // Helpers --------------------------------------------------------------------
 
 namespace {
@@ -593,70 +592,7 @@ int GeoIDToCountryID(GEOID geo_id) {
   }
 }
 
-int GetCurrentCountryID() {
-  GEOID geo_id = GetUserGeoID(GEOCLASS_NATION);
-
-  return GeoIDToCountryID(geo_id);
-}
-
-#elif defined(OS_MACOSX)
-
-int GetCurrentCountryID() {
-  base::ScopedCFTypeRef<CFLocaleRef> locale(CFLocaleCopyCurrent());
-  CFStringRef country = (CFStringRef)CFLocaleGetValue(locale.get(),
-                                                      kCFLocaleCountryCode);
-  if (!country)
-    return kCountryIDUnknown;
-
-  UniChar isobuf[2];
-  CFRange char_range = CFRangeMake(0, 2);
-  CFStringGetCharacters(country, char_range, isobuf);
-
-  return CountryCharsToCountryIDWithUpdate(static_cast<char>(isobuf[0]),
-                                           static_cast<char>(isobuf[1]));
-}
-
-#elif defined(OS_ANDROID)
-
-int GetCurrentCountryID() {
-  const std::string& country_code = base::android::GetDefaultCountryCode();
-  return (country_code.size() == 2) ?
-      CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]) :
-      kCountryIDUnknown;
-}
-
-#elif defined(OS_POSIX)
-
-int GetCurrentCountryID() {
-  const char* locale = setlocale(LC_MESSAGES, NULL);
-
-  if (!locale)
-    return kCountryIDUnknown;
-
-  // The format of a locale name is:
-  // language[_territory][.codeset][@modifier], where territory is an ISO 3166
-  // country code, which is what we want.
-  std::string locale_str(locale);
-  size_t begin = locale_str.find('_');
-  if (begin == std::string::npos || locale_str.size() - begin < 3)
-    return kCountryIDUnknown;
-
-  ++begin;
-  size_t end = locale_str.find_first_of(".@", begin);
-  if (end == std::string::npos)
-    end = locale_str.size();
-
-  // The territory part must contain exactly two characters.
-  if (end - begin == 2) {
-    return CountryCharsToCountryIDWithUpdate(
-        base::ToUpperASCII(locale_str[begin]),
-        base::ToUpperASCII(locale_str[begin + 1]));
-  }
-
-  return kCountryIDUnknown;
-}
-
-#endif  // OS_*
+#endif  // defined(OS_WIN)
 
 int GetCountryIDFromPrefs(PrefService* prefs) {
   if (!prefs)
@@ -1180,7 +1116,6 @@ bool SameDomain(const GURL& given_url, const GURL& prepopulated_url) {
 
 }  // namespace
 
-
 // Global functions -----------------------------------------------------------
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -1276,5 +1211,72 @@ SearchEngineType GetEngineType(const GURL& url) {
 
   return SEARCH_ENGINE_OTHER;
 }
+
+#if defined(OS_WIN)
+
+int GetCurrentCountryID() {
+  GEOID geo_id = GetUserGeoID(GEOCLASS_NATION);
+
+  return GeoIDToCountryID(geo_id);
+}
+
+#elif defined(OS_MACOSX)
+
+int GetCurrentCountryID() {
+  base::ScopedCFTypeRef<CFLocaleRef> locale(CFLocaleCopyCurrent());
+  CFStringRef country = (CFStringRef)CFLocaleGetValue(locale.get(),
+                                                      kCFLocaleCountryCode);
+  if (!country)
+    return kCountryIDUnknown;
+
+  UniChar isobuf[2];
+  CFRange char_range = CFRangeMake(0, 2);
+  CFStringGetCharacters(country, char_range, isobuf);
+
+  return CountryCharsToCountryIDWithUpdate(static_cast<char>(isobuf[0]),
+                                           static_cast<char>(isobuf[1]));
+}
+
+#elif defined(OS_ANDROID)
+
+int GetCurrentCountryID() {
+  const std::string& country_code = base::android::GetDefaultCountryCode();
+  return (country_code.size() == 2) ?
+      CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]) :
+      kCountryIDUnknown;
+}
+
+#elif defined(OS_POSIX)
+
+int GetCurrentCountryID() {
+  const char* locale = setlocale(LC_MESSAGES, NULL);
+
+  if (!locale)
+    return kCountryIDUnknown;
+
+  // The format of a locale name is:
+  // language[_territory][.codeset][@modifier], where territory is an ISO 3166
+  // country code, which is what we want.
+  std::string locale_str(locale);
+  size_t begin = locale_str.find('_');
+  if (begin == std::string::npos || locale_str.size() - begin < 3)
+    return kCountryIDUnknown;
+
+  ++begin;
+  size_t end = locale_str.find_first_of(".@", begin);
+  if (end == std::string::npos)
+    end = locale_str.size();
+
+  // The territory part must contain exactly two characters.
+  if (end - begin == 2) {
+    return CountryCharsToCountryIDWithUpdate(
+        base::ToUpperASCII(locale_str[begin]),
+        base::ToUpperASCII(locale_str[begin + 1]));
+  }
+
+  return kCountryIDUnknown;
+}
+
+#endif  // OS_*
 
 }  // namespace TemplateURLPrepopulateData
