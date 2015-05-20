@@ -270,6 +270,7 @@ private:
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : m_started(false)
     , m_terminated(false)
+    , m_shutdown(false)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_webScheduler(nullptr)
@@ -366,8 +367,12 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
 
 void WorkerThread::shutdown()
 {
-    MutexLocker lock(m_threadStateMutex);
     ASSERT(isCurrentThread());
+    {
+        MutexLocker lock(m_threadStateMutex);
+        ASSERT(!m_shutdown);
+        m_shutdown = true;
+    }
 
     PlatformThreadData::current().threadTimers().setSharedTimer(nullptr);
     workerGlobalScope()->dispose();
@@ -439,6 +444,10 @@ void WorkerThread::stopInternal()
     // Signal the thread to notify that the thread's stopping.
     if (m_shutdownEvent)
         m_shutdownEvent->signal();
+
+    // If the thread has already initiated shut down, just return.
+    if (m_shutdown)
+        return;
 
     // If the worker thread was never initialized, complete the termination immediately.
     if (!m_workerGlobalScope) {

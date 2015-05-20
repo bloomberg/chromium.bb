@@ -146,6 +146,7 @@ private:
 
     bool m_started;
     bool m_terminated;
+    bool m_shutdown;
     MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 
