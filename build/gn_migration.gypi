@@ -240,7 +240,7 @@
             '../remoting/remoting_all.gyp:remoting_all',
           ],
         }],
-        ['remoting==1 and chromeos==0', {
+        ['remoting==1 and chromeos==0 and use_x11==1', {
           'dependencies': [
             '../remoting/remoting.gyp:remoting_me2me_host',
             '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
