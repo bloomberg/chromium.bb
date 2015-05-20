@@ -7,6 +7,7 @@
  * and selections.
  */
 
+goog.provide('cvox.ExtraCellsSpan');
 goog.provide('cvox.ValueSelectionSpan');
 goog.provide('cvox.ValueSpan');
 
@@ -63,3 +64,15 @@ cvox.ValueSelectionSpan = function() {
 cvox.Spannable.registerStatelessSerializableSpan(
     cvox.ValueSelectionSpan,
     'cvox.ValueSelectionSpan');
+
+
+/**
+ * Causes raw cells to be added when translating from text to braille.
+ * This is supported by the {@code cvox.ExpandingBrailleTranslator}
+ * class.
+ * @constructor
+ */
+cvox.ExtraCellsSpan = function() {
+  /** @type {ArrayBuffer} */
+  this.cells = new Uint8Array(0).buffer;
+};

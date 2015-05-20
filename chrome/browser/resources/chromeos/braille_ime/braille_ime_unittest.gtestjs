@@ -276,3 +276,36 @@ TEST_F('BrailleImeUnitTest', 'ReplaceText', function() {
   assertFalse(hasSelection);
   assertEquals('Hi, good bye!', text);
 });
+
+TEST_F('BrailleImeUnitTest', 'Uncommitted', function() {
+  var CONTEXT_ID = 1;
+  var text = '';
+  chrome.input.ime.commitText = function(params) {
+    assertEquals(CONTEXT_ID, params.contextID);
+    text += params.text;
+  };
+  var sendSetUncommitted = function(text) {
+    this.port.onMessage.dispatch(
+        {type: 'setUncommitted', contextID: CONTEXT_ID, text: text});
+  }.bind(this);
+  var sendCommitUncommitted = function(contextID) {
+    this.port.onMessage.dispatch(
+        {type: 'commitUncommitted', contextID: contextID});
+  }.bind(this);
+
+  this.activateIme();
+  sendSetUncommitted('Hi');
+  assertEquals('', text);
+  sendSetUncommitted('Hello');
+  sendCommitUncommitted(CONTEXT_ID);
+  assertEquals('Hello', text);
+  sendSetUncommitted(' there!');
+  sendCommitUncommitted(CONTEXT_ID + 1);
+  assertEquals('Hello', text);
+
+  sendSetUncommitted(' you!');
+  assertFalse(this.sendKeyDown('KeyY'));
+  assertEquals('Hello you!', text);
+  assertFalse(this.sendKeyUp('KeyY'));
+  assertEquals('Hello you!', text);
+});

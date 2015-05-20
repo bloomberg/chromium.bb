@@ -69,6 +69,12 @@ cvox.Spannable.prototype.setSpan = function(value, start, end) {
     // Zero-length spans are explicitly allowed, because it is possible to
     // query for position by annotation as well as the reverse.
     this.spans_.push({ value: value, start: start, end: end });
+    this.spans_.sort(function(a, b) {
+      var ret = a.start - b.start;
+      if (ret == 0)
+        ret = a.end - b.end;
+      return ret;
+    });
   } else {
     throw new RangeError('span out of range (start=' + start +
         ', end=' + end + ', len=' + this.string_.length + ')');
@@ -141,6 +147,8 @@ cvox.Spannable.prototype.getSpanInstanceOf = function(constructor) {
 
 /**
  * Returns all span values which are an instance of a given constructor.
+ * Spans are returned in the order of their starting index and ending index
+ * for spans with equals tarting indices.
  * @param {!Function} constructor Constructor.
  * @return {!Array<Object>} Array of object.
  */

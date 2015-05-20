@@ -9,6 +9,7 @@
 
 goog.provide('cvox.ExpandingBrailleTranslator');
 
+goog.require('cvox.ExtraCellsSpan');
 goog.require('cvox.LibLouis');
 goog.require('cvox.Spannable');
 goog.require('cvox.ValueSelectionSpan');
@@ -88,7 +89,12 @@ cvox.ExpandingBrailleTranslator.ExpansionType = {
 cvox.ExpandingBrailleTranslator.prototype.translate =
     function(text, expansionType, callback) {
   var expandRanges = this.findExpandRanges_(text, expansionType);
-  if (expandRanges.length == 0) {
+  var extraCellsSpans = text.getSpansInstanceOf(cvox.ExtraCellsSpan)
+      .filter(function(span) { return span.cells.byteLength > 0;});
+  var extraCellsPositions = extraCellsSpans.map(function(span) {
+    return text.getSpanStart(span);
+  });
+  if (expandRanges.length == 0 && extraCellsSpans.length == 0) {
     this.defaultTranslator_.translate(
         text.toString(),
         cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_(
@@ -97,8 +103,28 @@ cvox.ExpandingBrailleTranslator.prototype.translate =
   }
 
   var chunks = [];
+  function maybeAddChunkToTranslate(translator, start, end) {
+    if (start < end)
+      chunks.push({translator: translator, start: start, end: end});
+  }
+  function addExtraCellsChunk(pos, cells) {
+    var chunk = {translator: null,
+                 start: pos,
+                 end: pos,
+                 cells: cells,
+                 textToBraille: [],
+                 brailleToText: new Array(cells.byteLength)};
+    for (var i = 0; i < cells.byteLength; ++i)
+      chunk.brailleToText[i] = 0;
+    chunks.push(chunk);
+  }
   function addChunk(translator, start, end) {
-    chunks.push({translator: translator, start: start, end: end});
+    while (extraCellsSpans.length > 0 && extraCellsPositions[0] <= end) {
+      maybeAddChunkToTranslate(translator, start, extraCellsPositions[0]);
+      start = extraCellsPositions.shift();
+      addExtraCellsChunk(start, extraCellsSpans.shift().cells);
+    }
+    maybeAddChunkToTranslate(translator, start, end);
   }
   var lastEnd = 0;
   for (var i = 0; i < expandRanges.length; ++i) {
@@ -109,19 +135,19 @@ cvox.ExpandingBrailleTranslator.prototype.translate =
     addChunk(this.uncontractedTranslator_, range.start, range.end);
     lastEnd = range.end;
   }
-  if (lastEnd < text.getLength()) {
-    addChunk(this.defaultTranslator_, lastEnd, text.getLength());
-  }
+  addChunk(this.defaultTranslator_, lastEnd, text.getLength());
 
-  var numPendingCallbacks = chunks.length;
+  var chunksToTranslate = chunks.filter(function(chunk) {
+    return chunk.translator;
+  });
+  var numPendingCallbacks = chunksToTranslate.length;
 
   function chunkTranslated(chunk, cells, textToBraille, brailleToText) {
     chunk.cells = cells;
     chunk.textToBraille = textToBraille;
     chunk.brailleToText = brailleToText;
-    if (--numPendingCallbacks <= 0) {
+    if (--numPendingCallbacks <= 0)
       finish();
-    }
   }
 
   function finish() {
@@ -145,11 +171,15 @@ cvox.ExpandingBrailleTranslator.prototype.translate =
     callback(cells.buffer, textToBraille, brailleToText);
   }
 
-  for (var i = 0, chunk; chunk = chunks[i]; ++i) {
-    chunk.translator.translate(
-        text.toString().substring(chunk.start, chunk.end),
-        cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_(
-            chunk.end - chunk.start, goog.partial(chunkTranslated, chunk)));
+  if (chunksToTranslate.length > 0) {
+    chunksToTranslate.forEach(function(chunk) {
+      chunk.translator.translate(
+          text.toString().substring(chunk.start, chunk.end),
+          cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_(
+              chunk.end - chunk.start, goog.partial(chunkTranslated, chunk)));
+    });
+  } else {
+    finish();
   }
 };
 

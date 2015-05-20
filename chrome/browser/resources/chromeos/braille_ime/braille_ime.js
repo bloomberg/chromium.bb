@@ -18,7 +18,9 @@
  *   Sent on focus/blur to inform ChromeVox of the type of the current field.
  *   In the latter case (blur), context is null.
  * {type: 'reset'}
- *   Sent when the {@code onReset} IME event fires.
+ *   Sent when the {@code onReset} IME event fires or uncommitted text is
+ *   committed without being triggered by ChromeVox (e.g. because of a
+ *   key press).
  * {type: 'brailleDots', dots: number}
  *   Sent when the user typed a braille cell using the standard keyboard.
  *   ChromeVox treats this similarly to entering braille input using the
@@ -35,6 +37,14 @@
  *   and inserts {@code newText}.  {@code contextID} identifies the text field
  *   to apply the update to (no change will happen if focus has moved to a
  *   different field).
+ * {type: 'setUncommitted', contextID: number, text: string}
+ *   Stores text for the field identified by contextID to be committed
+ *   either as a result of a 'commitUncommitted' message or a by the IME
+ *   unhandled key press event.  Unlike 'replaceText', this does not send the
+ *   uncommitted text to the input field, but instead stores it in the IME.
+ * {type: 'commitUncommitted', contextID: number}
+ *   Commits any uncommitted text if it matches the given context ID.
+ *   See 'setUncommitted' above.
  * {type: 'keyEventHandled', requestId: string, result: boolean}
  *   Response to a {@code backspace} message indicating whether the
  *   backspace was handled by ChromeVox or should be allowed to propagate
@@ -131,6 +141,13 @@ BrailleIme.prototype = {
   port_: null,
 
   /**
+   * Uncommitted text and context ID.
+   * @type {?{contextID: number, text: string}}
+   * @private
+   */
+  uncommitted_: null,
+
+  /**
    * Registers event listeners in the chrome IME API.
    */
   init: function() {
@@ -216,9 +233,8 @@ BrailleIme.prototype = {
    */
   onKeyEvent_: function(engineID, event) {
     var result = this.processKey_(event);
-    if (result !== undefined) {
-      chrome.input.ime.keyEventHandled(event.requestId, result);
-    }
+    if (result !== undefined)
+      this.keyEventHandled_(event.requestId, event.type, result);
   },
 
   /**
@@ -356,7 +372,17 @@ BrailleIme.prototype = {
       case 'keyEventHandled':
         message =
             /** @type {{requestId: string, result: boolean}} */ (message);
-        chrome.input.ime.keyEventHandled(message.requestId, message.result);
+        this.keyEventHandled_(message.requestId, 'keydown', message.result);
+        break;
+      case 'setUncommitted':
+        message =
+            /** @type {{contextID: number, text: string}} */ (message);
+        this.setUncommitted_(message.contextID, message.text);
+        break;
+      case 'commitUncommitted':
+        message =
+            /** @type {{contextID: number}} */ (message);
+        this.commitUncommitted_(message.contextID);
         break;
       default:
         console.error('Unknown message from ChromeVox: ' +
@@ -427,6 +453,42 @@ BrailleIme.prototype = {
     } else {
       addText();
     }
+  },
+
+  /**
+   * Responds to an asynchronous key event, indicating whether it was handled
+   * or not.  If it wasn't handled, any uncommitted text is committed
+   * before sending the response to the IME API.
+   * @param {string} requestId Key event request id.
+   * @param {string} type Type of key event being responded to.
+   * @param {boolean} response Whether the IME handled the event.
+   */
+  keyEventHandled_: function(requestId, type, response) {
+    if (!response && type === 'keydown' && this.uncommitted_) {
+      this.commitUncommitted_(this.uncommitted_.contextID);
+      this.sendToChromeVox_({type: 'reset'});
+    }
+    chrome.input.ime.keyEventHandled(requestId, response);
+  },
+
+  /**
+   * Stores uncommitted text that will be committed on any key press or
+   * when {@code commitUncommitted_} is called.
+   * @param {number} contextID of the current field.
+   * @param {string} text to store.
+   */
+  setUncommitted_: function(contextID, text) {
+    this.uncommitted_ = {contextID: contextID, text: text};
+  },
+
+  /**
+   * Commits the last set uncommitted text if it matches the given context id.
+   * @param {number} contextID
+   */
+  commitUncommitted_: function(contextID) {
+    if (this.uncommitted_ && contextID === this.uncommitted_.contextID)
+      chrome.input.ime.commitText(this.uncommitted_);
+    this.uncommitted_ = null;
   },
 
   /**

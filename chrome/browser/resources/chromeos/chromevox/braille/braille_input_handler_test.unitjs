@@ -38,6 +38,10 @@ function FakeEditor(port, inputHandler) {
   this.contextID_ = 0;
   /** @private {boolean} */
   this.allowDeletes_ = false;
+  /** @private {string} */
+  this.uncommittedText_ = '';
+  /** @private {?Array<number>} */
+  this.extraCells_ = [];
   port.postMessage = goog.bind(this.handleMessage_, this);
 }
 
@@ -134,6 +138,25 @@ FakeEditor.prototype.assertContentIs = function(
 
 
 /**
+ * Asserts that the uncommitted text last sent to the IME is the given text.
+ * @param {string} text
+ */
+FakeEditor.prototype.assertUncommittedTextIs = function(text) {
+  assertEquals(text, this.uncommittedText_);
+};
+
+
+/**
+ * Asserts that the input handler has added 'extra cells' for uncommitted
+ * text into the braille content.
+ * @param {string} cells Cells as a space-separated list of numbers.
+ */
+FakeEditor.prototype.assertExtraCellsAre = function(cells) {
+  assertEqualsJSON(cellsToArray(cells), this.extraCells_);
+};
+
+
+/**
  * Sends a message from the IME to the input handler.
  * @param {Object} msg The message to send.
  * @private
@@ -151,9 +174,17 @@ FakeEditor.prototype.message_ = function(msg) {
  * @private
  */
 FakeEditor.prototype.callOnDisplayContentChanged_ = function() {
-  this.inputHandler_.onDisplayContentChanged(
-      cvox.BrailleUtil.createValue(
-          this.text_, this.selectionStart_, this.selectionEnd_));
+  var content = cvox.BrailleUtil.createValue(
+      this.text_, this.selectionStart_, this.selectionEnd_)
+  var grabExtraCells = function() {
+    var span = content.getSpanInstanceOf(cvox.ExtraCellsSpan);
+    assertNotEquals(null, span);
+    // Convert the ArrayBuffer to a normal array for easier comparision.
+    this.extraCells_ = Array.prototype.map.call(new Uint8Array(span.cells),
+                                                function(a) {return a;});
+  }.bind(this);
+  this.inputHandler_.onDisplayContentChanged(content, grabExtraCells);
+  grabExtraCells();
 };
 
 
@@ -186,23 +217,36 @@ FakeEditor.prototype.blur = function() {
  * @private
  */
 FakeEditor.prototype.handleMessage_ = function(msg) {
-  assertEquals('replaceText', msg.type);
   assertEquals(this.contextID_, msg.contextID);
-  var deleteBefore = msg.deleteBefore;
-  var newText = msg.newText;
-  assertTrue(goog.isNumber(deleteBefore));
-  assertTrue(goog.isString(newText));
-  assertTrue(deleteBefore <= this.selectionStart_);
-  if (deleteBefore > 0) {
-    assertTrue(this.allowDeletes_);
-    this.text_ =
-        this.text_.substring(0, this.selectionStart_ - deleteBefore) +
-        this.text_.substring(this.selectionEnd_);
-    this.selectionStart_ -= deleteBefore;
-    this.selectionEnd_ = this.selectionStart_;
-    this.callOnDisplayContentChanged_();
+  switch(msg.type) {
+    case 'replaceText':
+      var deleteBefore = msg.deleteBefore;
+      var newText = msg.newText;
+      assertTrue(goog.isNumber(deleteBefore));
+      assertTrue(goog.isString(newText));
+      assertTrue(deleteBefore <= this.selectionStart_);
+      if (deleteBefore > 0) {
+        assertTrue(this.allowDeletes_);
+        this.text_ =
+            this.text_.substring(0, this.selectionStart_ - deleteBefore) +
+            this.text_.substring(this.selectionEnd_);
+        this.selectionStart_ -= deleteBefore;
+        this.selectionEnd_ = this.selectionStart_;
+        this.callOnDisplayContentChanged_();
+      }
+      this.insert(newText);
+      break;
+    case 'setUncommitted':
+      assertTrue(goog.isString(msg.text));
+      this.uncommittedText_ = msg.text;
+      break;
+    case 'commitUncommitted':
+      this.insert(this.uncommittedText_);
+      this.uncommittedText_ = '';
+      break;
+    default:
+      throw new Error('Unexpected message to IME: ' + JSON.stringify(msg));
   }
-  this.insert(newText);
 };
 
 /*
@@ -362,6 +406,8 @@ FakeTranslatorManager.prototype = {
  *     pattern (dot 1 uses bit 0, etc).
  */
 function cellsToArray(cells) {
+  if (!cells)
+    return [];
   return cells.split(/\s+/).map(function(cellString) {
     var cell = 0;
     assertTrue(cellString.length > 0);
@@ -532,25 +578,32 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
   var editor = this.createEditor();
   this.translatorManager.setTranslators(this.contractedTranslator,
                                         this.uncontractedTranslator);
+  editor.setContent('', 0);
   editor.setActive(true);
   editor.focus('text');
   this.assertExpandingSelection();
 
   // First, type a 'b'.
   assertTrue(this.sendCells('12'));
+  editor.assertContentIs('', 0);
   // Remember that the contracted translator produces uppercase.
-  editor.assertContentIs('BUT', 'BUT'.length);
+  editor.assertUncommittedTextIs('BUT');
+  editor.assertExtraCellsAre('12');
   this.assertExpandingNone();
 
-  // From here on, the input handler needs to replace already entered text.
-  editor.setAllowDeletes(true);
   // Typing 'rl' changes to a different contraction.
   assertTrue(this.sendCells('1235 123'));
-  editor.assertContentIs('BRAILLE', 'BRAILLE'.length);
+  editor.assertUncommittedTextIs('BRAILLE');
+  editor.assertContentIs('', 0);
+  editor.assertExtraCellsAre('12 1235 123');
+  this.assertExpandingNone();
+
   // Now, finish the word.
   assertTrue(this.sendCells('0'));
   editor.assertContentIs('BRAILLE ', 'BRAILLE '.length);
-  this.assertExpandingNone();
+  editor.assertUncommittedTextIs('');
+  editor.assertExtraCellsAre('');
+  this.assertExpandingSelection();
 
   // Move the cursor to the beginning.
   editor.select(0);
@@ -567,15 +620,16 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
   // Move to the end, where contracted typing should work.
   editor.select('bBRAILLEb '.length);
   assertTrue(this.sendCells('1456 0'));  // Symbol for 'this', then space.
-  this.assertExpandingNone();
-  editor.assertContentIs('bBRAILLEb THIS ', 'bBRAILLEb this '.length);
+  this.assertExpandingSelection();
+  editor.assertContentIs('bBRAILLEb THIS ', 'bBRAILLEb THIS '.length);
 
-  // Move between the two words.
+  // Move to between the two words.
   editor.select('bBRAILLEb'.length);
   this.assertExpandingSelection();
-  assertTrue(this.sendCells('0'));
-  assertTrue(this.sendCells('12'));  // 'b' for 'but'
-  editor.assertContentIs('bBRAILLEb BUT THIS ', 'bBRAILLEb BUT'.length);
+  assertTrue(this.sendCells('0 12'));  // Space plus 'b' for 'but'
+  editor.assertUncommittedTextIs('BUT');
+  editor.assertExtraCellsAre('12');
+  editor.assertContentIs('bBRAILLEb  THIS ', 'bBRAILLEb '.length);
   this.assertExpandingNone();
 });
 
@@ -614,19 +668,17 @@ TEST_F('CvoxBrailleInputHandlerUnitTest', 'Backspace', function() {
   // Add some text that we can delete later.
   editor.setContent('Text ', 'Text '.length);
 
-  // The IME needs to delete text, even when typing.
-  editor.setAllowDeletes(true);
   // Type 'brl' to make sure replacement works when deleting text.
   assertTrue(this.sendCells('12 1235 123'));
-  editor.assertContentIs('Text BRAILLE', 'Text BRAILLE'.length);
+  editor.assertUncommittedTextIs('BRAILLE');
 
   // Delete what we just typed, one cell at a time.
   this.sendKeyEvent('Backspace');
-  editor.assertContentIs('Text BR', 'Text BR'.length);
+  editor.assertUncommittedTextIs('BR');
   this.sendKeyEvent('Backspace');
-  editor.assertContentIs('Text BUT', 'Text BUT'.length);
+  editor.assertUncommittedTextIs('BUT');
   this.sendKeyEvent('Backspace');
-  editor.assertContentIs('Text ', 'Text '.length);
+  editor.assertUncommittedTextIs('');
 
   // Now, backspace should be handled as usual, synthetizing key events.
   assertEquals(0, this.keyEvents.length);

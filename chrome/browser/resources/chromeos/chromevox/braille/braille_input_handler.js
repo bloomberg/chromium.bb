@@ -73,9 +73,19 @@ cvox.BrailleInputHandler = function(translatorManager) {
    * @private
    */
   this.entryState_ = null;
+  /**
+   * @type {cvox.ExtraCellsSpan}
+   * @private
+   */
+  this.uncommittedCellsSpan_ = null;
+  /**
+   * @type {function()?}
+   * @private
+   */
+  this.uncommittedCellsChangedListener_ = null;
 
   this.translatorManager_.addChangeListener(
-      this.clearEntryState_.bind(this));
+      this.commitAndClearEntryState_.bind(this));
 };
 
 /**
@@ -122,12 +132,18 @@ cvox.BrailleInputHandler.prototype = {
    * input state according to the new content.
    * @param {cvox.Spannable} text Text, optionally with value and selection
    *     spans.
+   * @param {function()} listener Called when the uncommitted cells
+   *     have changed.
    */
-  onDisplayContentChanged: function(text) {
+  onDisplayContentChanged: function(text, listener) {
     var valueSpan = text.getSpanInstanceOf(cvox.ValueSpan);
     var selectionSpan = text.getSpanInstanceOf(cvox.ValueSelectionSpan);
     if (!(valueSpan && selectionSpan))
       return;
+    // Don't call the old listener any further, since new content is being
+    // set.  If the old listener is not cleared here, it could be called
+    // spuriously if the entry state is cleared below.
+    this.uncommittedCellsChangedListener_ = null;
     // The type casts are ok because the spans are known to exist.
     var valueStart = /** @type {number} */ (text.getSpanStart(valueSpan));
     var valueEnd = /** @type {number} */ (text.getSpanEnd(valueSpan));
@@ -144,6 +160,13 @@ cvox.BrailleInputHandler.prototype = {
       this.entryState_.onTextBeforeChanged(newTextBefore);
     this.currentTextBefore_ = newTextBefore;
     this.currentTextAfter_ = text.toString().substring(selectionEnd, valueEnd);
+    this.uncommittedCellsSpan_ = new cvox.ExtraCellsSpan();
+    text.setSpan(this.uncommittedCellsSpan_, selectionStart, selectionStart);
+    if (this.entryState_ && this.entryState_.usesUncommittedCells) {
+      this.updateUncommittedCells_(
+          new Uint8Array(this.entryState_.cells_).buffer);
+    }
+    this.uncommittedCellsChangedListener_ = listener;
   },
 
   /**
@@ -164,7 +187,7 @@ cvox.BrailleInputHandler.prototype = {
           this.onBackspace_()) {
         return true;
       } else {
-        this.clearEntryState_();
+        this.commitAndClearEntryState_();
         this.sendKeyEventPair_(event);
         return true;
       }
@@ -213,14 +236,8 @@ cvox.BrailleInputHandler.prototype = {
     }
     if (!this.inputContext_)
       return false;
-    // Avoid accumulating cells forever when typing without moving the cursor
-    // by flushing the input when we see a blank cell.
-    // Note that this might switch to contracted if appropriate.
-    if (this.entryState_ && this.entryState_.lastCellIsBlank())
-      this.clearEntryState_();
     if (!this.entryState_) {
-      this.entryState_ = this.createEntryState_();
-      if (!this.entryState_)
+      if (!(this.entryState_ = this.createEntryState_()))
         return false;
     }
     this.entryState_.appendCell(dots);
@@ -255,6 +272,7 @@ cvox.BrailleInputHandler.prototype = {
       return null;
     var uncontractedTranslator =
         this.translatorManager_.getUncontractedTranslator();
+    var constructor = cvox.BrailleInputHandler.EditsEntryState_;
     if (uncontractedTranslator) {
       var textBefore = this.currentTextBefore_;
       var textAfter = this.currentTextAfter_;
@@ -264,10 +282,23 @@ cvox.BrailleInputHandler.prototype = {
           (cvox.BrailleInputHandler.STARTS_WITH_NON_WHITESPACE_RE_.test(
               textAfter))) {
         translator = uncontractedTranslator;
+      } else {
+        constructor = cvox.BrailleInputHandler.LateCommitEntryState_;
       }
     }
 
-    return new cvox.BrailleInputHandler.EditsEntryState_(this, translator);
+    return new constructor(this, translator);
+  },
+
+  /**
+   * Commits the current entry state and clears it, if any.
+   * @private
+   */
+  commitAndClearEntryState_: function() {
+    if (this.entryState_) {
+      this.entryState_.commit();
+      this.clearEntryState_();
+    }
   },
 
   /**
@@ -276,9 +307,22 @@ cvox.BrailleInputHandler.prototype = {
    */
   clearEntryState_: function() {
     if (this.entryState_) {
+      if (this.entryState_.usesUncommittedCells)
+        this.updateUncommittedCells_(new ArrayBuffer(0));
       this.entryState_.inputHandler_ = null;
       this.entryState_ = null;
     }
+  },
+
+  /**
+   * @param {ArrayBuffer} cells
+   * @private
+   */
+  updateUncommittedCells_: function(cells) {
+    if (this.uncommittedCellsSpan_)
+      this.uncommittedCellsSpan_.cells = cells;
+    if (this.uncommittedCellsChangedListener_)
+      this.uncommittedCellsChangedListener_();
   },
 
   /**
@@ -499,9 +543,18 @@ cvox.BrailleInputHandler.EntryState_.prototype = {
     this.inputHandler_.clearEntryState_();
   },
 
-  /** @return {boolean} */
-  lastCellIsBlank: function() {
-    return this.cells_[this.cells_.length - 1] === 0;
+  /**
+   * Makes sure the current text is permanently added to the edit field.
+   * After this call, this object should be abandoned.
+   */
+  commit: function() {
+  },
+
+  /**
+   * @return {boolean} true if the entry state uses uncommitted cells.
+   */
+  get usesUncommittedCells() {
+    return false;
   },
 
   /**
@@ -511,6 +564,9 @@ cvox.BrailleInputHandler.EntryState_.prototype = {
    */
   updateText_: function() {
     var cellsBuffer = new Uint8Array(this.cells_).buffer;
+    var commit = this.lastCellIsBlank_;
+    if (!commit && this.usesUncommittedCells)
+      this.inputHandler_.updateUncommittedCells_(cellsBuffer);
     this.translator_.backTranslate(cellsBuffer, function(result) {
       if (result === null) {
         console.error('Error when backtranslating braille cells');
@@ -520,7 +576,17 @@ cvox.BrailleInputHandler.EntryState_.prototype = {
         return;
       this.sendTextChange_(result);
       this.text_ = result;
+      if (commit)
+        this.inputHandler_.commitAndClearEntryState_();
     }.bind(this));
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  get lastCellIsBlank_() {
+    return this.cells_[this.cells_.length - 1] === 0;
   },
 
   /**
@@ -583,5 +649,44 @@ cvox.BrailleInputHandler.EditsEntryState_.prototype = {
            deleteBefore: deleteLength,
            newText: toInsert});
     }
+  }
+};
+
+/**
+ * Entry state that only updates the edit field when a blank cell is entered.
+ * During the input of a single 'word', the uncommitted text is stored by the
+ * IME.
+ * @param {!cvox.BrailleInputHandler} inputHandler
+ * @param {!cvox.LibLouis.Translator} translator
+ * @constructor
+ * @private
+ * @extends {cvox.BrailleInputHandler.EntryState_}
+ */
+cvox.BrailleInputHandler.LateCommitEntryState_ = function(
+    inputHandler, translator) {
+  cvox.BrailleInputHandler.EntryState_.call(this, inputHandler, translator);
+};
+
+cvox.BrailleInputHandler.LateCommitEntryState_.prototype = {
+  __proto__: cvox.BrailleInputHandler.EntryState_.prototype,
+
+  /** @override */
+  commit: function() {
+    this.inputHandler_.postImeMessage_(
+        {type: 'commitUncommitted',
+         contextID: this.inputHandler_.inputContext_.contextID});
+  },
+
+  /** @override */
+  get usesUncommittedCells() {
+    return true;
+  },
+
+  /** @override */
+  sendTextChange_: function(newText) {
+    this.inputHandler_.postImeMessage_(
+        {type: 'setUncommitted',
+         contextID: this.inputHandler_.inputContext_.contextID,
+         text: newText});
   }
 };
