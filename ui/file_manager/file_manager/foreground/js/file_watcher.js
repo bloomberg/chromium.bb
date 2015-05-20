@@ -29,7 +29,7 @@ FileWatcher.prototype.dispose = function() {
   chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
       this.onDirectoryChangedBound_);
   if (this.watchedDirectoryEntry_)
-    this.resetWatchedEntry_(function() {}, function() {});
+    this.resetWatchedEntry_();
 };
 
 /**
@@ -71,87 +71,80 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
  *
  * @param {!DirectoryEntry|!FakeEntry} entry Directory entry to be tracked, or
  *     the fake entry.
- * @param {function()} callback Completion callback.
+ * @return {!Promise}
  */
-FileWatcher.prototype.changeWatchedDirectory = function(entry, callback) {
-  if (!util.isFakeEntry(entry)) {
-    this.changeWatchedEntry_(
-        /** @type {!DirectoryEntry} */ (entry),
-        callback,
-        function() {
-          console.error(
-              'Unable to change the watched directory to: ' + entry.toURL());
-          callback();
-        });
-  } else {
-    this.resetWatchedEntry_(
-        callback,
-        function() {
-          console.error('Unable to reset the watched directory.');
-          callback();
-        });
-  }
+FileWatcher.prototype.changeWatchedDirectory = function(entry) {
+  if (!util.isFakeEntry(entry))
+    return this.changeWatchedEntry_(/** @type {!DirectoryEntry} */ (entry));
+  else
+    return this.resetWatchedEntry_();
 };
 
 /**
- * Resets the watched entry to the passed directory.
- *
- * @param {function()} onSuccess Success callback.
- * @param {function()} onError Error callback.
+ * Resets the watched entry. It's a best effort method.
+ * @return {!Promise}
  * @private
  */
-FileWatcher.prototype.resetWatchedEntry_ = function(onSuccess, onError) {
+FileWatcher.prototype.resetWatchedEntry_ = function() {
   // Run the tasks in the queue to avoid races.
-  this.queue_.run(function(callback) {
-    // Release the watched directory.
-    if (this.watchedDirectoryEntry_) {
-      chrome.fileManagerPrivate.removeFileWatch(
-          this.watchedDirectoryEntry_.toURL(),
-          function(result) {
-            this.watchedDirectoryEntry_ = null;
-            if (result)
-              onSuccess();
-            else
-              onError();
-            callback();
-          }.bind(this));
-    } else {
-      onSuccess();
-      callback();
-    }
+  return new Promise(function(fulfill, reject) {
+    this.queue_.run(function(callback) {
+      // Release the watched directory.
+      if (this.watchedDirectoryEntry_) {
+        chrome.fileManagerPrivate.removeFileWatch(
+            this.watchedDirectoryEntry_.toURL(),
+            function(result) {
+              if (chrome.runtime.lastError) {
+                console.error('Failed to remove the watcher because of: ' +
+                    chrome.runtime.lastError.message);
+              }
+              // Even on error reset the watcher locally, so at least the
+              // notifications are discarded.
+              this.watchedDirectoryEntry_ = null;
+              fulfill();
+              callback();
+            }.bind(this));
+      } else {
+        fulfill();
+        callback();
+      }
+    }.bind(this));
   }.bind(this));
 };
 
 /**
- * Sets the watched entry to the passed directory.
- *
+ * Sets the watched entry to the passed directory. It's a best effort method.
  * @param {!DirectoryEntry} entry Directory to be watched.
- * @param {function()} onSuccess Success callback.
- * @param {function()} onError Error callback.
+ * @return {!Promise}
  * @private
  */
-FileWatcher.prototype.changeWatchedEntry_ = function(
-    entry, onSuccess, onError) {
-  var setEntryClosure = function() {
-    // Run the tasks in the queue to avoid races.
-    this.queue_.run(function(callback) {
-      chrome.fileManagerPrivate.addFileWatch(
-          entry.toURL(),
-          function(result) {
-            if (!result) {
-              this.watchedDirectoryEntry_ = null;
-              onError();
-            } else {
-              this.watchedDirectoryEntry_ = entry;
-              onSuccess();
-            }
-            callback();
-          }.bind(this));
-    }.bind(this));
-  }.bind(this);
+FileWatcher.prototype.changeWatchedEntry_ = function(entry) {
+  return new Promise(function(fulfill, reject) {
+    var setEntryClosure = function() {
+      // Run the tasks in the queue to avoid races.
+      this.queue_.run(function(callback) {
+        chrome.fileManagerPrivate.addFileWatch(
+            entry.toURL(),
+            function(result) {
+              if (chrome.runtime.lastError) {
+                // Most probably setting the watcher is not supported on the
+                // file system type.
+                console.info('File watchers not supported for: ' +
+                    entry.toURL());
+                this.watchedDirectoryEntry_ = null;
+                fulfill();
+              } else {
+                this.watchedDirectoryEntry_ = assert(entry);
+                fulfill();
+              }
+              callback();
+            }.bind(this));
+      }.bind(this));
+    }.bind(this);
 
-  // Reset the watched directory first, then set the new watched directory.
-  this.resetWatchedEntry_(setEntryClosure, onError);
+    // Reset the watched directory first, then set the new watched directory.
+    return this.resetWatchedEntry_().then(setEntryClosure);
+  }.bind(this));
 };
 
 /**
