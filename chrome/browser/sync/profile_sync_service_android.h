@@ -53,6 +53,10 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   base::android::ScopedJavaLocalRef<jstring> QuerySyncStatusSummary(
       JNIEnv* env, jobject obj);
 
+  // Retrieves all Sync data as JSON. This method is asynchronous; all data is
+  // passed to |callback| upon completion.
+  void GetAllNodes(JNIEnv* env, jobject obj, jobject callback);
+
   // Called from Java early during startup to ensure we use the correct
   // unique machine tag in session sync. Returns true if the machine tag was
   // succesfully set.

@@ -68,6 +68,26 @@ enum ModelTypeSelection {
   AUTOFILL_WALLET = 1 << 15,
 };
 
+// Native callback for the JNI GetAllNodes method. When
+// ProfileSyncService::GetAllNodes completes, this method is called and the
+// results are sent to the Java callback.
+void NativeGetAllNodesCallback(
+    const base::android::ScopedJavaGlobalRef<jobject>& callback,
+    scoped_ptr<base::ListValue> result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::string json_string;
+  if (!result.get() || !base::JSONWriter::Write(*result, &json_string)) {
+    DVLOG(1) << "Writing as JSON failed. Passing empty string to Java code.";
+    json_string = std::string();
+  }
+
+  ScopedJavaLocalRef<jstring> java_json_string =
+      ConvertUTF8ToJavaString(env, json_string);
+  Java_ProfileSyncService_onGetAllNodesResult(env,
+                                              callback.obj(),
+                                              java_json_string.obj());
+}
+
 }  // namespace
 
 ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
@@ -186,6 +206,17 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::QuerySyncStatusSummary(
   DCHECK(profile_);
   std::string status(sync_service_->QuerySyncStatusSummaryString());
   return ConvertUTF8ToJavaString(env, status);
+}
+
+void ProfileSyncServiceAndroid::GetAllNodes(JNIEnv* env,
+                                            jobject obj,
+                                            jobject callback) {
+  base::android::ScopedJavaGlobalRef<jobject> java_callback;
+  java_callback.Reset(env, callback);
+
+  base::Callback<void(scoped_ptr<base::ListValue>)> native_callback =
+      base::Bind(&NativeGetAllNodesCallback, java_callback);
+  sync_service_->GetAllNodes(native_callback);
 }
 
 jboolean ProfileSyncServiceAndroid::SetSyncSessionsId(

@@ -18,6 +18,8 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.sync.internal_api.pub.PassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,6 +48,30 @@ public class ProfileSyncService {
     public interface SyncStateChangedListener {
         // Invoked when the status has changed.
         public void syncStateChanged();
+    }
+
+    /**
+     * Callback for getAllNodes.
+     */
+    public static class GetAllNodesCallback {
+        private String mNodesString;
+        private boolean mHasResult = false;
+
+        // Invoked when getAllNodes completes.
+        public void onResult(String nodesString) {
+            mNodesString = nodesString;
+            mHasResult = true;
+        }
+
+        // Whether this callback contains a result.
+        public boolean hasResult() {
+            return mHasResult;
+        }
+
+        // Returns the result of GetAllNodes as a JSONArray.
+        public JSONArray getNodesAsJsonArray() throws JSONException {
+            return new JSONArray(mNodesString);
+        }
     }
 
     private static final String TAG = "ProfileSyncService";
@@ -586,6 +612,22 @@ public class ProfileSyncService {
                                     prompted);
     }
 
+    /**
+     * Invokes the onResult method of the callback from native code.
+     */
+    @CalledByNative
+    private static void onGetAllNodesResult(GetAllNodesCallback callback, String nodes) {
+        callback.onResult(nodes);
+    }
+
+    /**
+     * Retrieves a JSON version of local Sync data via the native GetAllNodes method.
+     * This method is asynchronous; the result will be sent to the callback.
+     */
+    public void getAllNodes(GetAllNodesCallback callback) {
+        nativeGetAllNodes(mNativeProfileSyncServiceAndroid, callback);
+    }
+
     // Native methods
     private native long nativeInit();
     private native void nativeEnableSync(long nativeProfileSyncServiceAndroid);
@@ -641,4 +683,6 @@ public class ProfileSyncService {
     private native long nativeGetLastSyncedTimeForTest(long nativeProfileSyncServiceAndroid);
     private native void nativeOverrideNetworkResourcesForTest(
             long nativeProfileSyncServiceAndroid, long networkResources);
+    private native void nativeGetAllNodes(
+            long nativeProfileSyncServiceAndroid, GetAllNodesCallback callback);
 }

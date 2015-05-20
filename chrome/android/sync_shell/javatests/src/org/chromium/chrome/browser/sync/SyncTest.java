@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Log;
+import android.util.Pair;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -28,8 +29,9 @@ import org.chromium.sync.protocol.TypedUrlSpecifics;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.base.PageTransition;
+import org.json.JSONObject;
 
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -197,48 +199,12 @@ public class SyncTest extends SyncTestBase {
                 synced);
     }
 
-    /**
-     * Retrieves a local entity count and asserts that {@code expected} entities exist on the client
-     * with the ModelType represented by {@code modelTypeString}.
-     *
-     * TODO(pvalenzuela): Replace modelTypeString with the native ModelType enum or something else
-     * that will avoid callers needing to specify the native string version.
-     */
-    private void assertLocalEntityCount(String modelTypeString, int expected)
-            throws InterruptedException {
-        final SyncTestUtil.AboutSyncInfoGetter aboutInfoGetter =
-                new SyncTestUtil.AboutSyncInfoGetter(getActivity());
-        try {
-            runTestOnUiThread(aboutInfoGetter);
-        } catch (Throwable t) {
-            Log.w(TAG,
-                    "Exception while trying to fetch about sync info from ProfileSyncService.", t);
-            fail("Unable to fetch sync info from ProfileSyncService.");
-        }
-        boolean receivedModelTypeCounts = CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return !aboutInfoGetter.getModelTypeCount().isEmpty();
-                }
-        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
-        assertTrue("No model type counts present. Sync might be disabled.",
-                receivedModelTypeCounts);
-
-        Map<String, Integer> modelTypeCount = aboutInfoGetter.getModelTypeCount();
-        assertTrue("No count for model type: " + modelTypeString,
-                modelTypeCount.containsKey(modelTypeString));
-
-        // Reduce by one to account for type's root entity. This entity is always included but
-        // these tests don't care about its existence.
-        int actual = modelTypeCount.get(modelTypeString) - 1;
-        assertEquals("Expected amount of local client entities did not match.", expected, actual);
-    }
-
     @LargeTest
     @Feature({"Sync"})
-    public void testDownloadTypedUrl() throws InterruptedException {
+    public void testDownloadTypedUrl() throws Exception {
         setupTestAccountAndSignInToSync(CLIENT_ID);
-        assertLocalEntityCount("Typed URLs", 0);
+        assertEquals("No typed URLs should exist on the client by default.",
+                0, SyncTestUtil.getLocalData(mContext, "Typed URLs").size());
 
         String url = "data:text,testDownloadTypedUrl";
         EntitySpecifics specifics = new EntitySpecifics();
@@ -250,27 +216,37 @@ public class SyncTest extends SyncTestBase {
         mFakeServerHelper.injectUniqueClientEntity(url /* name */, specifics);
 
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
-        assertLocalEntityCount("Typed URLs", 1);
 
-        // TODO(pvalenzuela): Also verify that the downloaded typed URL matches the one that was
-        // injected. This data should be retrieved from the Sync node browser data.
+        List<Pair<String, JSONObject>> typedUrls = SyncTestUtil.getLocalData(
+                mContext, "Typed URLs");
+        assertEquals("Only the injected typed URL should exist on the client.",
+                1, typedUrls.size());
+        JSONObject typedUrl = typedUrls.get(0).second;
+        assertEquals("The wrong URL was found for the typed URL.", url, typedUrl.getString("url"));
     }
 
     @LargeTest
     @Feature({"Sync"})
-    public void testDownloadBookmark() throws InterruptedException {
+    public void testDownloadBookmark() throws Exception {
         setupTestAccountAndSignInToSync(CLIENT_ID);
-        // 3 bookmark folders exist by default: Bookmarks Bar, Other Bookmarks, Mobile Bookmarks.
-        assertLocalEntityCount("Bookmarks", 3);
+        assertEquals("No bookmarks should exist on the client by default.",
+                0, SyncTestUtil.getLocalData(mContext, "Bookmarks").size());
 
+        String title = "Title";
+        String url = "http://chromium.org/";
         mFakeServerHelper.injectBookmarkEntity(
-                "Title", "http://chromium.org", mFakeServerHelper.getBookmarkBarFolderId());
+                title, url, mFakeServerHelper.getBookmarkBarFolderId());
 
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
-        assertLocalEntityCount("Bookmarks", 4);
 
-        // TODO(pvalenzuela): Also verify that the downloaded bookmark matches the one that was
-        // injected. This data should be retrieved from the Sync node browser data.
+        List<Pair<String, JSONObject>> bookmarks = SyncTestUtil.getLocalData(
+                mContext, "Bookmarks");
+        assertEquals("Only the injected bookmark should exist on the client.",
+                1, bookmarks.size());
+        JSONObject bookmark = bookmarks.get(0).second;
+        assertEquals("The wrong title was found for the bookmark.", title,
+                bookmark.getString("title"));
+        assertEquals("The wrong URL was found for the bookmark.", url, bookmark.getString("url"));
     }
 
     private static ContentViewCore getContentViewCore(ChromeShellActivity activity) {
