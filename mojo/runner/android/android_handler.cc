@@ -15,6 +15,8 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/runner/android/run_android_application_function.h"
 #include "mojo/runner/native_application_support.h"
+#include "mojo/util/filename_util.h"
+#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -34,15 +36,17 @@ namespace {
 void RunAndroidApplication(JNIEnv* env,
                            jobject j_context,
                            const base::FilePath& app_path,
-                           jint j_handle) {
+                           jint j_handle,
+                           bool is_cached_app) {
   InterfaceRequest<Application> application_request =
       MakeRequest<Application>(MakeScopedHandle(MessagePipeHandle(j_handle)));
 
   // Load the library, so that we can set the application context there if
   // needed.
   // TODO(vtl): We'd use a ScopedNativeLibrary, but it doesn't have .get()!
-  base::NativeLibrary app_library =
-      LoadNativeApplication(app_path, shell::NativeApplicationCleanup::DELETE);
+  base::NativeLibrary app_library = LoadNativeApplication(
+      app_path, is_cached_app ? shell::NativeApplicationCleanup::DONT_DELETE
+                              : shell::NativeApplicationCleanup::DELETE);
   if (!app_library)
     return;
 
@@ -69,6 +73,57 @@ void RunAndroidApplication(JNIEnv* env,
   base::UnloadNativeLibrary(app_library);
 }
 
+// Returns true if |url| denotes a cached app. If true |app_dir| is set to the
+// path of the directory for the app and |path_to_mojo| the path of the app's
+// .mojo file.
+bool IsCachedApp(JNIEnv* env,
+                 const GURL& url,
+                 base::FilePath* app_dir,
+                 base::FilePath* path_to_mojo) {
+  ScopedJavaLocalRef<jstring> j_local_apps_dir =
+      Java_AndroidHandler_getLocalAppsDir(env, GetApplicationContext());
+  const base::FilePath local_apps_fp(
+      ConvertJavaStringToUTF8(env, j_local_apps_dir.obj()));
+  const std::string local_apps(util::FilePathToFileURL(local_apps_fp).spec());
+  const std::string response_url(GURL(url).spec());
+  if (response_url.size() <= local_apps.size() ||
+      local_apps.compare(0u, local_apps.size(), response_url, 0u,
+                         local_apps.size()) != 0) {
+    return false;
+  }
+
+  const std::string mojo_suffix(".mojo");
+  // app_rel_path is either something like html_viewer/html_viewer.mojo, or
+  // html_viewer.mojo, depending upon whether the app has a package.
+  const std::string app_rel_path(response_url.substr(local_apps.size() + 1));
+  const size_t slash_index = app_rel_path.find('/');
+  if (slash_index != std::string::npos) {
+    const std::string tail =
+        app_rel_path.substr(slash_index + 1, std::string::npos);
+    const std::string head = app_rel_path.substr(0, slash_index);
+    if (head.find('/') != std::string::npos ||
+        tail.size() <= mojo_suffix.size() ||
+        tail.compare(tail.size() - mojo_suffix.size(), tail.size(),
+                     mojo_suffix) != 0) {
+      return false;
+    }
+    *app_dir = local_apps_fp.Append(head);
+    *path_to_mojo = app_dir->Append(tail);
+    return true;
+  }
+  if (app_rel_path.find('/') != std::string::npos ||
+      app_rel_path.size() <= mojo_suffix.size() ||
+      app_rel_path.compare(app_rel_path.size() - mojo_suffix.size(),
+                           mojo_suffix.size(), mojo_suffix) != 0) {
+    return false;
+  }
+
+  *app_dir = local_apps_fp.Append(
+      app_rel_path.substr(0, app_rel_path.size() - mojo_suffix.size()));
+  *path_to_mojo = local_apps_fp.Append(app_rel_path);
+  return true;
+}
+
 }  // namespace
 
 AndroidHandler::AndroidHandler() : content_handler_factory_(this) {
@@ -81,13 +136,30 @@ void AndroidHandler::RunApplication(
     InterfaceRequest<Application> application_request,
     URLResponsePtr response) {
   JNIEnv* env = AttachCurrentThread();
+  RunAndroidApplicationFn run_android_application_fn = &RunAndroidApplication;
+  if (!response->url.is_null()) {
+    base::FilePath internal_app_path;
+    base::FilePath path_to_mojo;
+    if (IsCachedApp(env, GURL(response->url), &internal_app_path,
+                    &path_to_mojo)) {
+      ScopedJavaLocalRef<jstring> j_internal_app_path(
+          ConvertUTF8ToJavaString(env, internal_app_path.value()));
+      ScopedJavaLocalRef<jstring> j_path_to_mojo(
+          ConvertUTF8ToJavaString(env, path_to_mojo.value()));
+      Java_AndroidHandler_bootstrapCachedApp(
+          env, GetApplicationContext(), j_path_to_mojo.obj(),
+          j_internal_app_path.obj(),
+          application_request.PassMessagePipe().release().value(),
+          reinterpret_cast<jlong>(run_android_application_fn));
+      return;
+    }
+  }
   ScopedJavaLocalRef<jstring> j_archive_path =
       Java_AndroidHandler_getNewTempArchivePath(env, GetApplicationContext());
   base::FilePath archive_path(
       ConvertJavaStringToUTF8(env, j_archive_path.obj()));
 
   common::BlockingCopyToFile(response->body.Pass(), archive_path);
-  RunAndroidApplicationFn run_android_application_fn = &RunAndroidApplication;
   Java_AndroidHandler_bootstrap(
       env, GetApplicationContext(), j_archive_path.obj(),
       application_request.PassMessagePipe().release().value(),

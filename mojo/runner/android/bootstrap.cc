@@ -17,12 +17,13 @@ void Bootstrap(JNIEnv* env,
                jobject j_context,
                jstring j_native_library_path,
                jint j_handle,
-               jlong j_run_application_ptr) {
+               jlong j_run_application_ptr,
+               jboolean is_cached_app) {
   base::FilePath app_path(
       base::android::ConvertJavaStringToUTF8(env, j_native_library_path));
   RunAndroidApplicationFn run_android_application_fn =
       reinterpret_cast<RunAndroidApplicationFn>(j_run_application_ptr);
-  run_android_application_fn(env, j_context, app_path, j_handle);
+  run_android_application_fn(env, j_context, app_path, j_handle, is_cached_app);
 }
 
 bool RegisterBootstrapJni(JNIEnv* env) {
