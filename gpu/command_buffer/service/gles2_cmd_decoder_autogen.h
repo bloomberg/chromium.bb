@@ -4235,7 +4235,7 @@ error::Error GLES2DecoderImpl::HandleTexStorage2DEXT(
   GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
-  if (!validators_->texture_target.IsValid(target)) {
+  if (!validators_->texture_bind_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage2DEXT", target, "target");
     return error::kNoError;
   }

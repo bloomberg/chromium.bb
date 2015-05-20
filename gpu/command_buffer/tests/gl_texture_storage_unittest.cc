@@ -116,7 +116,7 @@ TEST_F(TextureStorageTest, BadTarget) {
     return;
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  glTexStorage2DEXT(GL_TEXTURE_CUBE_MAP, 1, GL_RGBA8_OES, 4, 4);
+  glTexStorage2DEXT(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 1, GL_RGBA8_OES, 4, 4);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
 }
 

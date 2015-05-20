@@ -2980,7 +2980,8 @@ void GLES2Implementation::TexStorage2DEXT(GLenum target,
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix() << "] glTexStorage2DEXT("
-          << GLES2Util::GetStringTextureTarget(target) << ", " << levels << ", "
+          << GLES2Util::GetStringTextureBindTarget(target) << ", " << levels
+          << ", "
           << GLES2Util::GetStringTextureInternalFormatStorage(internalFormat)
           << ", " << width << ", " << height << ")");
   if (levels < 0) {
