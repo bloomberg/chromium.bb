@@ -145,6 +145,8 @@ void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
 
 bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus corsStatus)
 {
+    if (corsStatus == OpaqueResource)
+        return true;
     return !(securityOrigin()->canRequest(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 

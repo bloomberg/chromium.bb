@@ -362,9 +362,19 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     if (!frame)
         return true;
 
-    AccessControlStatus corsCheck = NotSharableCrossOrigin;
-    if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())))
-        corsCheck = SharableCrossOrigin;
+    AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
+    if (!m_isExternalScript) {
+        accessControlStatus = SharableCrossOrigin;
+    } else if (sourceCode.resource()) {
+        if (sourceCode.resource()->response().wasFetchedViaServiceWorker()) {
+            if (sourceCode.resource()->response().serviceWorkerResponseType() == WebServiceWorkerResponseTypeOpaque)
+                accessControlStatus = OpaqueResource;
+            else
+                accessControlStatus = SharableCrossOrigin;
+        } else if (sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())) {
+            accessControlStatus = SharableCrossOrigin;
+        }
+    }
 
     if (m_isExternalScript) {
         const KURL resourceUrl = sourceCode.resource()->resourceRequest().url();
@@ -384,7 +394,7 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     // Create a script from the script element node, using the script
     // block's source and the script block's type.
     // Note: This is where the script is compiled and actually executed.
-    frame->script().executeScriptInMainWorld(sourceCode, corsCheck, compilationFinishTime);
+    frame->script().executeScriptInMainWorld(sourceCode, accessControlStatus, compilationFinishTime);
 
     if (isHTMLScriptLoader(m_element)) {
         ASSERT(contextDocument->currentScript() == m_element);

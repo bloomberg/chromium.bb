@@ -374,13 +374,13 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptR
 }
 } // namespace
 
-v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
+v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus accessControlStatus, V8CacheOptions cacheOptions)
 {
     if (source.source().length() >= v8::String::kMaxLength) {
         V8ThrowException::throwGeneralError(isolate, "Source file too large.");
         return v8::Local<v8::Script>();
     }
-    return compileScript(v8String(isolate, source.source()), source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, corsStatus, cacheOptions);
+    return compileScript(v8String(isolate, source.source()), source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, accessControlStatus, cacheOptions);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const String& code, const String& fileName, const String& sourceMapUrl, const TextPosition& textPosition, v8::Isolate* isolate, CachedMetadataHandler* cacheMetadataHandler, AccessControlStatus accessControlStatus, V8CacheOptions v8CacheOptions)
@@ -392,7 +392,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const String& code, con
     return compileScript(v8String(isolate, code), fileName, sourceMapUrl, textPosition, isolate, nullptr, nullptr, cacheMetadataHandler, accessControlStatus, v8CacheOptions);
 }
 
-v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> code, const String& fileName, const String& sourceMapUrl, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus corsStatus, V8CacheOptions cacheOptions, bool isInternalScript)
+v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> code, const String& fileName, const String& sourceMapUrl, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus accessControlStatus, V8CacheOptions cacheOptions, bool isInternalScript)
 {
     TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
@@ -406,10 +406,11 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> c
         v8String(isolate, fileName),
         v8::Integer::New(isolate, scriptStartPosition.m_line.zeroBasedInt()),
         v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt()),
-        v8Boolean(corsStatus == SharableCrossOrigin, isolate),
+        v8Boolean(accessControlStatus == SharableCrossOrigin, isolate),
         v8::Local<v8::Integer>(),
         v8Boolean(isInternalScript, isolate),
-        v8String(isolate, sourceMapUrl));
+        v8String(isolate, sourceMapUrl),
+        v8Boolean(accessControlStatus == OpaqueResource, isolate));
 
     OwnPtr<CompileFn> compileFn = streamer
         ? selectCompileFunction(cacheOptions, resource, streamer)

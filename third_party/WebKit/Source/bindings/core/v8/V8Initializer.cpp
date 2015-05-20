@@ -147,7 +147,11 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
     int scriptId = 0;
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
     String resourceName = extractResourceName(message, enteredWindow->document());
-    AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
+    AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
+    if (message->IsOpaque())
+        accessControlStatus = OpaqueResource;
+    else if (message->IsSharedCrossOrigin())
+        accessControlStatus = SharableCrossOrigin;
 
     ScriptState* scriptState = ScriptState::current(isolate);
     String errorMessage = toCoreStringWithNullCheck(message->Get());
@@ -178,9 +182,9 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
         // other isolated worlds (which means that the error events won't fire any event listeners
         // in user's scripts).
         EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
-        enteredWindow->document()->reportException(event.release(), scriptId, callStack, corsStatus);
+        enteredWindow->document()->reportException(event.release(), scriptId, callStack, accessControlStatus);
     } else {
-        enteredWindow->document()->reportException(event.release(), scriptId, callStack, corsStatus);
+        enteredWindow->document()->reportException(event.release(), scriptId, callStack, accessControlStatus);
     }
 }
 

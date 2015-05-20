@@ -9,7 +9,8 @@ namespace blink {
 
 enum AccessControlStatus {
     NotSharableCrossOrigin,
-    SharableCrossOrigin
+    SharableCrossOrigin,
+    OpaqueResource
 };
 
 } // namespace blink
