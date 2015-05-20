@@ -344,7 +344,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
   def testBrilloDeployMergeOperation(self):
     """Test that BrilloDeployOperation works for merge."""
     def func(queue):
-      for event in op._merge_events:
+      for event in op.MERGE_EVENTS:
         queue.get()
         print(event)
 
@@ -356,12 +356,12 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
       op.Run(func, queue)
 
     # Check that the progress bar prints correctly.
-    self.AssertProgressBarAllEvents(len(op._merge_events))
+    self.AssertProgressBarAllEvents(len(op.MERGE_EVENTS))
 
   def testBrilloDeployUnmergeOperation(self):
     """Test that BrilloDeployOperation works for unmerge."""
     def func(queue):
-      for event in op._unmerge_events:
+      for event in op.UNMERGE_EVENTS:
         queue.get()
         print(event)
 
@@ -373,4 +373,4 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
       op.Run(func, queue)
 
     # Check that the progress bar prints correctly.
-    self.AssertProgressBarAllEvents(len(op._unmerge_events))
+    self.AssertProgressBarAllEvents(len(op.UNMERGE_EVENTS))

@@ -46,6 +46,10 @@ class DeployError(Exception):
 
 class BrilloDeployOperation(operation.ProgressBarOperation):
   """ProgressBarOperation specific for brillo deploy."""
+  MERGE_EVENTS = ['NOTICE: Copying', 'NOTICE: Installing',
+                  'Calculating dependencies', '... done!', 'Extracting info',
+                  'Installing (1 of 1)', 'has been installed.']
+  UNMERGE_EVENTS = ['NOTICE: Unmerging', 'has been uninstalled.']
 
   def __init__(self, pkg_count, emerge):
     """Construct BrilloDeployOperation object.
@@ -55,14 +59,10 @@ class BrilloDeployOperation(operation.ProgressBarOperation):
       emerge: True if emerge, False is unmerge.
     """
     super(BrilloDeployOperation, self).__init__()
-    self._merge_events = ['NOTICE: Copying', 'NOTICE: Installing',
-                          'Calculating dependencies', '... done!', 'Extracting '
-                          'info', 'Installing (1 of 1)', 'has been installed.']
-    self._unmerge_events = ['NOTICE: Unmerging', 'has been uninstalled.']
     if emerge:
-      self._events = self._merge_events
+      self._events = self.MERGE_EVENTS
     else:
-      self._events = self._unmerge_events
+      self._events = self.UNMERGE_EVENTS
     self._total = pkg_count * len(self._events)
     self._completed = 0
 
