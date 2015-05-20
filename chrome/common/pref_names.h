@@ -578,6 +578,15 @@ extern const char kSignInPromoShowOnFirstRunAllowed[];
 extern const char kSignInPromoShowNTPBubble[];
 #endif
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+extern const char kCrossDevicePromoOptedOut[];
+extern const char kCrossDevicePromoActive[];
+extern const char kCrossDevicePromoObservedSingleAccountCookie[];
+extern const char kCrossDevicePromoNextFetchListDevicesTime[];
+extern const char kCrossDevicePromoNumDevices[];
+extern const char kCrossDevicePromoLastDeviceActiveTime[];
+#endif
+
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];
 extern const char kWebAppCreateInQuickLaunchBar[];

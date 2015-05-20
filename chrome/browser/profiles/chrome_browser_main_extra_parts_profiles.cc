@@ -112,6 +112,10 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#include "chrome/browser/signin/cross_device_promo_factory.h"
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #endif
@@ -186,6 +190,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettings::Factory::GetInstance();
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+  CrossDevicePromoFactory::GetInstance();
+#endif
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationServiceFactory::GetInstance();
 #endif

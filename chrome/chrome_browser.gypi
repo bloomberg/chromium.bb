@@ -838,6 +838,10 @@
       'browser/profiles/avatar_menu_observer.h',
       'browser/profiles/profile_list_desktop.cc',
       'browser/profiles/profile_list_desktop.h',
+      'browser/signin/cross_device_promo.cc',
+      'browser/signin/cross_device_promo.h',
+      'browser/signin/cross_device_promo_factory.cc',
+      'browser/signin/cross_device_promo_factory.h',
     ],
     # Miscellaneous files that were brought up on iOS before the decision not
     # to use chrome/ for iOS. These, plus a few of the directory-specific

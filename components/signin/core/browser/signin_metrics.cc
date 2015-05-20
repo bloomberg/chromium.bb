@@ -107,4 +107,23 @@ void LogSigninConfirmHistogramValue(int action) {
                             signin_metrics::HISTOGRAM_CONFIRM_MAX);
 }
 
+void LogXDevicePromoEligible(CrossDevicePromoEligibility metric) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Signin.XDevicePromo.Eligibility", metric,
+      NUM_CROSS_DEVICE_PROMO_ELIGIBILITY_METRICS);
+}
+
+void LogXDevicePromoInitialized(CrossDevicePromoInitialized metric) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Signin.XDevicePromo.Initialized", metric,
+      NUM_CROSS_DEVICE_PROMO_INITIALIZED_METRICS);
+}
+
+void LogBrowsingSessionDuration(const base::Time& previous_activity_time) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Signin.XDevicePromo.BrowsingSessionDuration",
+      (base::Time::Now() - previous_activity_time).InMinutes(), 1,
+      base::TimeDelta::FromDays(30).InMinutes(), 50);
+}
+
 }  // namespace signin_metrics

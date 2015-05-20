@@ -1562,6 +1562,7 @@
     ],
     # Everything but Android, ChromeOS and iOS (iOS is handled separately).
     'chrome_unit_tests_non_android_or_chromeos_sources': [
+      'browser/signin/cross_device_promo_unittest.cc',
       'browser/sync/sync_global_error_unittest.cc',
       'browser/upgrade_detector_impl_unittest.cc',
     ],

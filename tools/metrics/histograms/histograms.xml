@@ -37180,6 +37180,49 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Track how a profile gets signed out.</summary>
 </histogram>
 
+<histogram name="Signin.XDevicePromo.BrowsingSessionDuration" units="minutes">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    How long a browsing session was measured to be. Logged when a Browser window
+    becomes active if the previous activation was longer than the minimum
+    configured in the &quot;CrossDevicePromo&quot; experiment. Desktop only.
+  </summary>
+</histogram>
+
+<histogram name="Signin.XDevicePromo.BrowsingSessionDurationComputed"
+    units="minutes">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    How often browsers are considered activated, which in turn triggers the
+    CrossDevicePromo. Logged every time a Browser window becomes active. We need
+    this to estimate QPS for RPC calls. Desktop only.
+  </summary>
+</histogram>
+
+<histogram name="Signin.XDevicePromo.Eligibility"
+    enum="SigninXDevicePromoEligibility">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    The reasons for which a profile is or is not eligible for the Desktop Cross
+    Device Sign In Promo. Logged every time a new Browsing session is detected
+    as part of a Browser window becoming active. Desktop only.
+  </summary>
+</histogram>
+
+<histogram name="Signin.XDevicePromo.Initialized"
+    enum="SigninXDevicePromoInitialized">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Tracks if profiles initialized the XDevicePromo, and if not, why. Logged at
+    Profile startup and (if not initialized then) when a new browsing session is
+    detected during Browser window activation. Desktop only.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
   <owner>gavinp@chromium.org</owner>
   <summary>
@@ -63409,6 +63452,42 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="Devices page"/>
   <int value="11" label="Reauth"/>
   <int value="12" label="Unknown"/>
+</enum>
+
+<enum name="SigninXDevicePromoEligibility" type="int">
+  <int value="0" label="Eligible">The user is eligible for the promo.</int>
+  <int value="1" label="Opted Out">
+    The profile has previously opted out of the promo.
+  </int>
+  <int value="2" label="Signed In">The profile is already signed in.</int>
+  <int value="3" label="Not Single GAIA Account">
+    The profile does not have a single, peristent GAIA cookie.
+  </int>
+  <int value="4" label="Unknown count of devices">
+    Yet to determine how many devices the user has.
+  </int>
+  <int value="5" label="Error fetching device activity">
+    An error was returned trying to determine the account's devices.
+  </int>
+  <int value="6" label="Throttled fetching device activity">
+    The call to get device activity was throttled, and never executed.
+  </int>
+  <int value="7" label="Zero devices found">The user has no devices.</int>
+  <int value="8" label="No devices active">
+    The user has no device that was recently active.
+  </int>
+</enum>
+
+<enum name="SigninXDevicePromoInitialized" type="int">
+  <int value="0" label="Initialized">
+    The promo was initialized successfully.
+  </int>
+  <int value="1" label="Opted Out">
+    The profile is opted out, so the promo didn't initialize.
+  </int>
+  <int value="2" label="No variations config">
+    Unable to read the variations configuration.
+  </int>
 </enum>
 
 <enum name="SimpleCache.EntryCreatedAndStream2Omitted" type="int">

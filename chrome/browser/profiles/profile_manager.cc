@@ -39,6 +39,8 @@
 #include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/cross_device_promo.h"
+#include "chrome/browser/signin/cross_device_promo_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -1246,12 +1248,13 @@ void ProfileManager::FinishDeletingProfile(
     // that the user's data would be removed, do so immediately.
     profiles::RemoveBrowsingDataForProfile(profile_dir);
   } else {
+    // It is safe to delete a not yet loaded Profile from disk.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&NukeProfileFromDisk, profile_dir));
   }
 
-  // Queue even a profile that was Nuked so it will be MarkedForDeletion and so
+  // Queue even a profile that was nuked so it will be MarkedForDeletion and so
   // CreateProfileAsync can't create it.
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
@@ -1376,8 +1379,17 @@ void ProfileManager::UpdateLastUser(Profile* last_active) {
     ProfileInfoCache& cache = GetProfileInfoCache();
     size_t profile_index =
         cache.GetIndexOfProfileWithPath(last_active->GetPath());
-    if (profile_index != std::string::npos)
+    if (profile_index != std::string::npos) {
+#if !defined(OS_CHROMEOS)
+      // Incognito Profiles don't have ProfileKeyedServices.
+      if (!last_active->IsOffTheRecord()) {
+        CrossDevicePromoFactory::GetForProfile(last_active)
+            ->MaybeBrowsingSessionStarted(
+                cache.GetProfileActiveTimeAtIndex(profile_index));
+      }
+#endif
       cache.SetProfileActiveTimeAtIndex(profile_index);
+    }
   }
 }
 
