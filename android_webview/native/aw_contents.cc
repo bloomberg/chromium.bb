@@ -108,6 +108,8 @@ namespace {
 
 bool g_should_download_favicons = false;
 
+bool g_force_auxiliary_bitmap_rendering = false;
+
 const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
 
 class AwContentsUserData : public base::SupportsUserData::Data {
@@ -308,6 +310,13 @@ static jlong Init(JNIEnv* env, jclass, jobject browser_context) {
   // Return an 'uninitialized' instance; most work is deferred until the
   // subsequent SetJavaPeers() call.
   return reinterpret_cast<intptr_t>(new AwContents(web_contents.Pass()));
+}
+
+static void SetForceAuxiliaryBitmapRendering(
+    JNIEnv* env,
+    jclass,
+    jboolean force_auxiliary_bitmap_rendering) {
+  g_force_auxiliary_bitmap_rendering = force_auxiliary_bitmap_rendering;
 }
 
 static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass,
@@ -876,7 +885,8 @@ bool AwContents::OnDraw(JNIEnv* env,
   browser_view_renderer_.PrepareToDraw(
       scroll, gfx::Rect(visible_left, visible_top, visible_right - visible_left,
                         visible_bottom - visible_top));
-  if (is_hardware_accelerated && browser_view_renderer_.attached_to_window()) {
+  if (is_hardware_accelerated && browser_view_renderer_.attached_to_window() &&
+      !g_force_auxiliary_bitmap_rendering) {
     return browser_view_renderer_.OnDrawHardware();
   }
 
@@ -892,8 +902,8 @@ bool AwContents::OnDraw(JNIEnv* env,
   // bitmap). For better performance, get global visible rect, transform it
   // from screen space to view space, then intersect with the webview in
   // viewspace.  Use the resulting rect as the auxiliary bitmap.
-  scoped_ptr<SoftwareCanvasHolder> canvas_holder =
-      SoftwareCanvasHolder::Create(canvas, scroll, view_size);
+  scoped_ptr<SoftwareCanvasHolder> canvas_holder = SoftwareCanvasHolder::Create(
+      canvas, scroll, view_size, g_force_auxiliary_bitmap_rendering);
   if (!canvas_holder || !canvas_holder->GetCanvas()) {
     TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_EmptySize",
                          TRACE_EVENT_SCOPE_THREAD);

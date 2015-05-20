@@ -152,11 +152,15 @@ void RasterHelperSetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table) {
 scoped_ptr<SoftwareCanvasHolder> SoftwareCanvasHolder::Create(
     jobject java_canvas,
     const gfx::Vector2d& scroll_correction,
-    const gfx::Size& auxiliary_bitmap_size) {
+    const gfx::Size& auxiliary_bitmap_size,
+    bool force_auxiliary_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  scoped_ptr<SoftwareCanvasHolder> holder(
-      new JavaCanvasHolder(env, java_canvas, scroll_correction));
-  if (!holder->GetCanvas()) {
+  scoped_ptr<SoftwareCanvasHolder> holder;
+  if (!force_auxiliary_bitmap) {
+    scoped_ptr<SoftwareCanvasHolder> holder(
+        new JavaCanvasHolder(env, java_canvas, scroll_correction));
+  }
+  if (!holder.get() || !holder->GetCanvas()) {
     holder.reset();
     holder.reset(new AuxiliaryCanvasHolder(env, java_canvas, scroll_correction,
                                            auxiliary_bitmap_size));

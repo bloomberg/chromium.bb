@@ -100,6 +100,9 @@ public class AwContents implements SmartClipProvider,
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
 
+    private static final boolean FORCE_AUXILIARY_BITMAP_RENDERING =
+            "goldfish".equals(Build.HARDWARE);
+
     /**
      * WebKit hit test related data structure. These are used to implement
      * getHitTestResult, requestFocusNodeHref, requestImageRef methods in WebView.
@@ -1114,6 +1117,8 @@ public class AwContents implements SmartClipProvider,
 
     public static void setAwDrawSWFunctionTable(long functionTablePointer) {
         nativeSetAwDrawSWFunctionTable(functionTablePointer);
+        // Force auxiliary bitmap rendering in emulators.
+        nativeSetForceAuxiliaryBitmapRendering(FORCE_AUXILIARY_BITMAP_RENDERING);
     }
 
     public static void setAwDrawGLFunctionTable(long functionTablePointer) {
@@ -2714,7 +2719,7 @@ public class AwContents implements SmartClipProvider,
                     mContainerView.getScrollX(), mContainerView.getScrollY(),
                     globalVisibleRect.left, globalVisibleRect.top,
                     globalVisibleRect.right, globalVisibleRect.bottom);
-            if (did_draw && canvas.isHardwareAccelerated()) {
+            if (did_draw && canvas.isHardwareAccelerated() && !FORCE_AUXILIARY_BITMAP_RENDERING) {
                 did_draw = mNativeGLDelegate.requestDrawGL(canvas, false, mContainerView);
             }
             if (!did_draw) {
@@ -2990,6 +2995,8 @@ public class AwContents implements SmartClipProvider,
 
     private static native long nativeInit(AwBrowserContext browserContext);
     private static native void nativeDestroy(long nativeAwContents);
+    private static native void nativeSetForceAuxiliaryBitmapRendering(
+            boolean forceAuxiliaryBitmapRendering);
     private static native void nativeSetAwDrawSWFunctionTable(long functionTablePointer);
     private static native void nativeSetAwDrawGLFunctionTable(long functionTablePointer);
     private static native long nativeGetAwDrawGLFunction();

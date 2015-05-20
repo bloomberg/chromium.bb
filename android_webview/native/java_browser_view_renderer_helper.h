@@ -22,7 +22,8 @@ class SoftwareCanvasHolder {
   static scoped_ptr<SoftwareCanvasHolder> Create(
       jobject java_canvas,
       const gfx::Vector2d& scroll_correction,
-      const gfx::Size& auxiliary_bitmap_size);
+      const gfx::Size& auxiliary_bitmap_size,
+      bool force_auxiliary_bitmap);
 
   virtual ~SoftwareCanvasHolder() {}
 
