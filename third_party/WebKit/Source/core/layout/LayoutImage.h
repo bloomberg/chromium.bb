@@ -42,7 +42,6 @@ public:
 
     LayoutImage(Element*);
     virtual ~LayoutImage();
-    virtual void destroy() override;
 
     static LayoutImage* createAnonymous(Document*);
 
@@ -83,6 +82,8 @@ protected:
     virtual bool updateImageLoadingPriorities() override final;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type); }
+
+    virtual void willBeDestroyed() override;
 
 private:
     virtual bool isImage() const override { return true; }

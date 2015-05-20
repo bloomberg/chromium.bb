@@ -71,11 +71,11 @@ LayoutImage::~LayoutImage()
 {
 }
 
-void LayoutImage::destroy()
+void LayoutImage::willBeDestroyed()
 {
     ASSERT(m_imageResource);
     m_imageResource->shutdown();
-    LayoutReplaced::destroy();
+    LayoutReplaced::willBeDestroyed();
 }
 
 void LayoutImage::setImageResource(PassOwnPtr<LayoutImageResource> imageResource)
