@@ -134,7 +134,6 @@ private:
 
     void didMatchRule(const RuleData&, const SelectorChecker::MatchResult&, CascadeOrder, const MatchRequest&, RuleRange&);
 
-    CSSRuleList* nestedRuleList(CSSRule*);
     template<class CSSRuleCollection>
     CSSRule* findStyleRule(CSSRuleCollection*, StyleRule*);
     void appendCSSOMWrapperForRule(CSSStyleSheet*, StyleRule*);

@@ -195,10 +195,10 @@ CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const
     return rule.get();
 }
 
-CSSRuleList* CSSKeyframesRule::cssRules()
+CSSRuleList* CSSKeyframesRule::cssRules() const
 {
     if (!m_ruleListCSSOMWrapper)
-        m_ruleListCSSOMWrapper = LiveCSSRuleList<CSSKeyframesRule>::create(this);
+        m_ruleListCSSOMWrapper = LiveCSSRuleList<CSSKeyframesRule>::create(const_cast<CSSKeyframesRule*>(this));
     return m_ruleListCSSOMWrapper.get();
 }
 

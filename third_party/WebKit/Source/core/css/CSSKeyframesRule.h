@@ -92,7 +92,7 @@ public:
     String name() const { return m_keyframesRule->name(); }
     void setName(const String&);
 
-    CSSRuleList* cssRules();
+    CSSRuleList* cssRules() const override;
 
     void appendRule(const String& rule);
     void deleteRule(const String& key);

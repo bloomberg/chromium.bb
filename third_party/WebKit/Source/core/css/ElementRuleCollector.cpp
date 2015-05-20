@@ -211,20 +211,6 @@ void ElementRuleCollector::collectMatchingShadowHostRules(const MatchRequest& ma
     collectMatchingRulesForList(matchRequest.ruleSet->shadowHostRules(), cascadeOrder, matchRequest, ruleRange);
 }
 
-CSSRuleList* ElementRuleCollector::nestedRuleList(CSSRule* rule)
-{
-    switch (rule->type()) {
-    case CSSRule::MEDIA_RULE:
-        return toCSSMediaRule(rule)->cssRules();
-    case CSSRule::KEYFRAMES_RULE:
-        return toCSSKeyframesRule(rule)->cssRules();
-    case CSSRule::SUPPORTS_RULE:
-        return toCSSSupportsRule(rule)->cssRules();
-    default:
-        return 0;
-    }
-}
-
 template<class CSSRuleCollection>
 CSSRule* ElementRuleCollector::findStyleRule(CSSRuleCollection* cssRules, StyleRule* styleRule)
 {
@@ -242,7 +228,7 @@ CSSRule* ElementRuleCollector::findStyleRule(CSSRuleCollection* cssRules, StyleR
             CSSImportRule* cssImportRule = toCSSImportRule(cssRule);
             result = findStyleRule(cssImportRule->styleSheet(), styleRule);
         } else {
-            result = findStyleRule(nestedRuleList(cssRule), styleRule);
+            result = findStyleRule(cssRule->cssRules(), styleRule);
         }
     }
     return result;
