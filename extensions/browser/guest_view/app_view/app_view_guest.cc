@@ -207,7 +207,7 @@ void AppViewGuest::CreateWebContents(
                                         callback))));
 
   LazyBackgroundTaskQueue* queue =
-      ExtensionSystem::Get(browser_context())->lazy_background_task_queue();
+      LazyBackgroundTaskQueue::Get(browser_context());
   if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
     queue->AddPendingTask(browser_context(),
                           guest_extension->id(),

@@ -28,7 +28,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/granted_file_entry.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -56,7 +55,6 @@ using extensions::app_file_handler_util::PrepareFilesForWritableApp;
 using extensions::EventRouter;
 using extensions::Extension;
 using extensions::ExtensionHost;
-using extensions::ExtensionSystem;
 using extensions::GrantedFileEntry;
 
 namespace apps {
@@ -261,7 +259,7 @@ class PlatformAppPathLauncher
     // the lazy background task queue is used to load the extension and then
     // call back to us.
     extensions::LazyBackgroundTaskQueue* const queue =
-        ExtensionSystem::Get(profile_)->lazy_background_task_queue();
+        extensions::LazyBackgroundTaskQueue::Get(profile_);
     if (queue->ShouldEnqueueTask(profile_, extension)) {
       queue->AddPendingTask(
           profile_, extension_id,

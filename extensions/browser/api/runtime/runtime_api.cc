@@ -95,13 +95,12 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
           extension_id);
   if (extension && BackgroundInfo::HasPersistentBackgroundPage(extension) &&
       first_call &&
-      system->lazy_background_task_queue()->ShouldEnqueueTask(browser_context,
-                                                              extension)) {
-    system->lazy_background_task_queue()->AddPendingTask(
-        browser_context,
-        extension_id,
-        base::Bind(
-            &DispatchOnStartupEventImpl, browser_context, extension_id, false));
+      LazyBackgroundTaskQueue::Get(browser_context)
+          ->ShouldEnqueueTask(browser_context, extension)) {
+    LazyBackgroundTaskQueue::Get(browser_context)
+        ->AddPendingTask(browser_context, extension_id,
+                         base::Bind(&DispatchOnStartupEventImpl,
+                                    browser_context, extension_id, false));
     return;
   }
 
@@ -404,15 +403,14 @@ void RuntimeEventRouter::OnExtensionUninstalled(
 }
 
 ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
-  ExtensionSystem* system = ExtensionSystem::Get(browser_context());
   ExtensionHost* host = ProcessManager::Get(browser_context())
                             ->GetBackgroundHostForExtension(extension_id());
-  if (system->lazy_background_task_queue()->ShouldEnqueueTask(browser_context(),
-                                                              extension())) {
-    system->lazy_background_task_queue()->AddPendingTask(
-        browser_context(),
-        extension_id(),
-        base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
+  if (LazyBackgroundTaskQueue::Get(browser_context())
+          ->ShouldEnqueueTask(browser_context(), extension())) {
+    LazyBackgroundTaskQueue::Get(browser_context())
+        ->AddPendingTask(
+            browser_context(), extension_id(),
+            base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
   } else if (host) {
     OnPageLoaded(host);
   } else {

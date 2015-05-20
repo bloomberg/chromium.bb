@@ -34,7 +34,6 @@ class EventRouter;
 class Extension;
 class ExtensionSet;
 class InfoMap;
-class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class OneShotEvent;
 class QuotaService;
@@ -82,9 +81,6 @@ class ExtensionSystem : public KeyedService {
 
   // Returns the IO-thread-accessible extension data.
   virtual InfoMap* info_map() = 0;
-
-  // The LazyBackgroundTaskQueue is created at startup.
-  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() = 0;
 
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;

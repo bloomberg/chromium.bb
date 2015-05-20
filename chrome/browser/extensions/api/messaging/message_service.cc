@@ -218,7 +218,7 @@ void MessageService::AllocatePortIdPair(int* port1, int* port2) {
 
 MessageService::MessageService(BrowserContext* context)
     : lazy_background_task_queue_(
-          ExtensionSystem::Get(context)->lazy_background_task_queue()),
+          LazyBackgroundTaskQueue::Get(context)),
       weak_factory_(this) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());

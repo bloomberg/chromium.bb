@@ -32,7 +32,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/extension_set.h"
@@ -349,8 +348,7 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
   } else {
     // We have to wake the handler background page before we proceed.
     extensions::LazyBackgroundTaskQueue* queue =
-        extensions::ExtensionSystem::Get(profile_)->
-        lazy_background_task_queue();
+        extensions::LazyBackgroundTaskQueue::Get(profile_);
     if (!queue->ShouldEnqueueTask(profile_, extension_.get())) {
       ExecuteDoneOnUIThread(false);
       return;

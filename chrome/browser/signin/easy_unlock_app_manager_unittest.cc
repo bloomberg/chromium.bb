@@ -299,7 +299,6 @@ class EasyUnlockAppManagerTest : public testing::Test {
     extension_service_ = test_extension_system->CreateExtensionService(
         &command_line_, base::FilePath() /* install_directory */,
         false /* autoupdate_enabled */);
-    test_extension_system->CreateLazyBackgroundTaskQueue();
 
     extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
         &profile_, &CreateTestProcessManager);

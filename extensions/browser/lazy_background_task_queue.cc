@@ -14,6 +14,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/lazy_background_task_queue_factory.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -37,6 +38,12 @@ LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(
 }
 
 LazyBackgroundTaskQueue::~LazyBackgroundTaskQueue() {
+}
+
+// static
+LazyBackgroundTaskQueue* LazyBackgroundTaskQueue::Get(
+    content::BrowserContext* browser_context) {
+  return LazyBackgroundTaskQueueFactory::GetForBrowserContext(browser_context);
 }
 
 bool LazyBackgroundTaskQueue::ShouldEnqueueTask(

@@ -7,7 +7,6 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -27,13 +26,12 @@ void InspectExtensionHost(ExtensionHost* host) {
 
 void InspectBackgroundPage(const Extension* extension, Profile* profile) {
   DCHECK(extension);
-  ExtensionSystem* system = ExtensionSystem::Get(profile);
   ExtensionHost* host = ProcessManager::Get(profile)
                             ->GetBackgroundHostForExtension(extension->id());
   if (host) {
     InspectExtensionHost(host);
   } else {
-    system->lazy_background_task_queue()->AddPendingTask(
+    LazyBackgroundTaskQueue::Get(profile)->AddPendingTask(
         profile,
         extension->id(),
         base::Bind(&InspectExtensionHost));

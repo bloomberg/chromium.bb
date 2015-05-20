@@ -53,10 +53,6 @@ class TestExtensionSystem : public ExtensionSystem {
 
   void CreateSocketManager();
 
-  // Creates a LazyBackgroundTaskQueue. If not invoked, the
-  // LazyBackgroundTaskQueue is NULL.
-  void CreateLazyBackgroundTaskQueue();
-
   void InitForRegularProfile(bool extensions_enabled) override {}
   void SetExtensionService(ExtensionService* service);
   ExtensionService* extension_service() override;
@@ -67,7 +63,6 @@ class TestExtensionSystem : public ExtensionSystem {
   StateStore* rules_store() override;
   TestingValueStore* value_store() { return value_store_; }
   InfoMap* info_map() override;
-  LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   void SetEventRouter(scoped_ptr<EventRouter> event_router);
   EventRouter* event_router() override;
   QuotaService* quota_service() override;
@@ -94,7 +89,6 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_refptr<InfoMap> info_map_;
-  scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
   scoped_ptr<EventRouter> event_router_;
   scoped_ptr<QuotaService> quota_service_;
   OneShotEvent ready_;

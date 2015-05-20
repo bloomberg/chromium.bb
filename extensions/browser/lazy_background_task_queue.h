@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -32,13 +33,18 @@ class ExtensionRegistry;
 //
 // It is the consumer's responsibility to use this class when appropriate, i.e.
 // only with extensions that have not-yet-loaded lazy background pages.
-class LazyBackgroundTaskQueue : public content::NotificationObserver,
+class LazyBackgroundTaskQueue : public KeyedService,
+                                public content::NotificationObserver,
                                 public ExtensionRegistryObserver {
  public:
   typedef base::Callback<void(ExtensionHost*)> PendingTask;
 
   explicit LazyBackgroundTaskQueue(content::BrowserContext* browser_context);
   ~LazyBackgroundTaskQueue() override;
+
+  // Convenience method to return the LazyBackgroundTaskQueue for a given
+  // |context|.
+  static LazyBackgroundTaskQueue* Get(content::BrowserContext* context);
 
   // Returns the number of extensions having pending tasks.
   size_t extensions_with_pending_tasks() { return pending_tasks_.size(); }

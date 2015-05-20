@@ -42,7 +42,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   SharedUserScriptMaster* shared_user_script_master() override;  // shared
   StateStore* state_store() override;                              // shared
   StateStore* rules_store() override;                              // shared
-  LazyBackgroundTaskQueue* lazy_background_task_queue() override;  // shared
   InfoMap* info_map() override;                                    // shared
   EventRouter* event_router() override;                            // shared
   QuotaService* quota_service() override;  // shared
@@ -85,7 +84,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ManagementPolicy* management_policy();
     SharedUserScriptMaster* shared_user_script_master();
     InfoMap* info_map();
-    LazyBackgroundTaskQueue* lazy_background_task_queue();
     EventRouter* event_router();
     QuotaService* quota_service();
     const OneShotEvent& ready() const { return ready_; }
@@ -102,7 +100,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<StateStore> rules_store_;
     // LazyBackgroundTaskQueue is a dependency of
     // MessageService and EventRouter.
-    scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<EventRouter> event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
     // Shared memory region manager for scripts statically declared in extension

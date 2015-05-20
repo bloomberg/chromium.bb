@@ -46,10 +46,6 @@ InfoMap* MockExtensionSystem::info_map() {
   return nullptr;
 }
 
-LazyBackgroundTaskQueue* MockExtensionSystem::lazy_background_task_queue() {
-  return nullptr;
-}
-
 EventRouter* MockExtensionSystem::event_router() {
   return event_router_;
 }

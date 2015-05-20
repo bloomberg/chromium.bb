@@ -48,10 +48,6 @@ void TestExtensionSystem::Shutdown() {
     extension_service_->Shutdown();
 }
 
-void TestExtensionSystem::CreateLazyBackgroundTaskQueue() {
-  lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
-}
-
 ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
     const base::CommandLine* command_line,
     const base::FilePath& install_directory) {
@@ -133,11 +129,6 @@ StateStore* TestExtensionSystem::rules_store() {
 }
 
 InfoMap* TestExtensionSystem::info_map() { return info_map_.get(); }
-
-LazyBackgroundTaskQueue*
-TestExtensionSystem::lazy_background_task_queue() {
-  return lazy_background_task_queue_.get();
-}
 
 void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {
   event_router_.reset(event_router.release());

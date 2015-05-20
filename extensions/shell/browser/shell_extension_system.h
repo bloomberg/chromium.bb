@@ -26,7 +26,6 @@ namespace extensions {
 class DeclarativeUserScriptManager;
 class EventRouter;
 class InfoMap;
-class LazyBackgroundTaskQueue;
 class ProcessManager;
 class RendererStartupHelper;
 class SharedUserScriptMaster;
@@ -60,7 +59,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   StateStore* state_store() override;
   StateStore* rules_store() override;
   InfoMap* info_map() override;
-  LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   EventRouter* event_router() override;
   QuotaService* quota_service() override;
   void RegisterExtensionWithRequestContexts(
@@ -80,7 +78,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   scoped_refptr<InfoMap> info_map_;
 
   scoped_ptr<RuntimeData> runtime_data_;
-  scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
   scoped_ptr<EventRouter> event_router_;
   scoped_ptr<QuotaService> quota_service_;
 

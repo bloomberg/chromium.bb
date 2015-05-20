@@ -99,7 +99,6 @@ ExtensionSystemImpl::Shared::~Shared() {
 }
 
 void ExtensionSystemImpl::Shared::InitPrefs() {
-  lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
   event_router_.reset(new EventRouter(profile_, ExtensionPrefs::Get(profile_)));
   // Two state stores. The latter, which contains declarative rules, must be
   // loaded immediately so that the rules are ready before we issue network
@@ -431,11 +430,6 @@ InfoMap* ExtensionSystemImpl::Shared::info_map() {
   return extension_info_map_.get();
 }
 
-LazyBackgroundTaskQueue*
-    ExtensionSystemImpl::Shared::lazy_background_task_queue() {
-  return lazy_background_task_queue_.get();
-}
-
 EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
 }
@@ -503,10 +497,6 @@ StateStore* ExtensionSystemImpl::rules_store() {
 }
 
 InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }
-
-LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
-  return shared_->lazy_background_task_queue();
-}
 
 EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();

@@ -638,8 +638,7 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
   if (!CanDispatchEventToBrowserContext(context, extension, event))
     return false;
 
-  LazyBackgroundTaskQueue* queue = ExtensionSystem::Get(
-      context)->lazy_background_task_queue();
+  LazyBackgroundTaskQueue* queue = LazyBackgroundTaskQueue::Get(context);
   if (queue->ShouldEnqueueTask(context, extension)) {
     linked_ptr<Event> dispatched_event(event);
 
@@ -752,8 +751,8 @@ void EventRouter::Observe(int type,
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-        LazyBackgroundTaskQueue* queue = ExtensionSystem::Get(
-            browser_context_)->lazy_background_task_queue();
+        LazyBackgroundTaskQueue* queue =
+            LazyBackgroundTaskQueue::Get(browser_context_);
         queue->AddPendingTask(browser_context_, extension->id(),
                               base::Bind(&DoNothing));
       }

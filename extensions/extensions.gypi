@@ -693,6 +693,8 @@
       'browser/io_thread_extension_message_filter.h',
       'browser/lazy_background_task_queue.cc',
       'browser/lazy_background_task_queue.h',
+      'browser/lazy_background_task_queue_factory.cc',
+      'browser/lazy_background_task_queue_factory.h',
       'browser/load_monitoring_extension_host_queue.cc',
       'browser/load_monitoring_extension_host_queue.h',
       'browser/management_policy.cc',
