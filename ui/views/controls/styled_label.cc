@@ -281,12 +281,10 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
                             text_font_list,
                             chunk_bounds.width(),
                             chunk_bounds.height(),
-                            gfx::IGNORE_LONG_WORDS,
+                            gfx::WRAP_LONG_WORDS,
                             &substrings);
 
-    DCHECK(!substrings.empty());
-    base::string16 chunk = substrings[0];
-    if (chunk.empty()) {
+    if (substrings.empty() || substrings[0].empty()) {
       // Nothing fits on this line. Start a new line.
       // If x is 0, first line may have leading whitespace that doesn't fit in a
       // single line, so try trimming those. Otherwise there is no room for
@@ -305,6 +303,8 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       continue;
     }
 
+    base::string16 chunk = substrings[0];
+
     scoped_ptr<Label> label;
     if (position >= range.start()) {
       const RangeStyleInfo& style_info = current_range->style_info;
@@ -318,7 +318,8 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
         continue;
       }
 
-      chunk = chunk.substr(0, std::min(chunk.size(), range.end() - position));
+      if (chunk.size() > range.end() - position)
+        chunk = chunk.substr(0, range.end() - position);
 
       label = CreateLabelRange(chunk, font_list_, style_info, this);
 
@@ -353,6 +354,16 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     }
     x += view_size.width() - focus_border_insets.width();
     used_width = std::max(used_width, x);
+
+    // If |gfx::ElideRectangleText| returned more than one substring, that
+    // means the whole text did not fit into remaining line width, with text
+    // after |susbtring[0]| spilling into next line. If whole |substring[0]|
+    // was added to the current line (this may not be the case if part of the
+    // substring has different style), proceed to the next line.
+    if (substrings.size() > 1 && chunk.size() == substrings[0].size()) {
+      x = 0;
+      ++line;
+    }
 
     remaining_string = remaining_string.substr(chunk.size());
   }

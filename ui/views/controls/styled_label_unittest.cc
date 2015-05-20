@@ -124,6 +124,32 @@ TEST_F(StyledLabelTest, BasicWrapping) {
   EXPECT_EQ(styled()->height() - 3, styled()->child_at(1)->bounds().bottom());
 }
 
+TEST_F(StyledLabelTest, WrapLongWords) {
+  const std::string text("ThisIsTextAsASingleWord");
+  InitStyledLabel(text);
+  Label label(ASCIIToUTF16(text.substr(0, text.size() * 2 / 3)));
+  gfx::Size label_preferred_size = label.GetPreferredSize();
+  EXPECT_EQ(label_preferred_size.height() * 2,
+            StyledLabelContentHeightForWidth(label_preferred_size.width()));
+
+  styled()->SetBounds(
+      0, 0, styled()->GetInsets().width() + label_preferred_size.width(),
+      styled()->GetInsets().height() + 2 * label_preferred_size.height());
+  styled()->Layout();
+
+  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(gfx::Point(), styled()->bounds().origin());
+  EXPECT_EQ(gfx::Point(), styled()->child_at(0)->bounds().origin());
+  EXPECT_EQ(gfx::Point(0, styled()->height() / 2),
+            styled()->child_at(1)->bounds().origin());
+
+  EXPECT_FALSE(static_cast<Label*>(styled()->child_at(0))->text().empty());
+  EXPECT_FALSE(static_cast<Label*>(styled()->child_at(1))->text().empty());
+  EXPECT_EQ(ASCIIToUTF16(text),
+            static_cast<Label*>(styled()->child_at(0))->text() +
+                static_cast<Label*>(styled()->child_at(1))->text());
+}
+
 TEST_F(StyledLabelTest, CreateLinks) {
   const std::string text("This is a test block of text.");
   InitStyledLabel(text);
