@@ -4,7 +4,7 @@
 
 [
     Exposed=CompositorWorker,
-    Global=(Worker,CompositorWorker),
+    Global=CompositorWorker,
     RuntimeEnabled=CompositorWorker,
     TypeChecking=Interface,
 ] interface CompositorWorkerGlobalScope : WorkerGlobalScope {

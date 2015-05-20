@@ -5,7 +5,7 @@
 [
     Constructor(Element element, DOMString[] attributeArray),
     ConstructorCallWith=ExecutionContext,
-    Exposed=Window,
+    Exposed=(Window,CompositorWorker),
     GarbageCollected,
     RaisesException=Constructor,
     RuntimeEnabled=CompositorWorker,

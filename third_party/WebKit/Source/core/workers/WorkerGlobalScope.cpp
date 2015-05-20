@@ -322,7 +322,7 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
 {
     // FIXME: How should we count features for shared/service workers?
 
-    ASSERT(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope());
+    ASSERT(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope() || isCompositorWorkerGlobalScope());
     // For each deprecated feature, send console message at most once
     // per worker lifecycle.
     if (!m_deprecationWarningBits.hasRecordedMeasurement(feature)) {

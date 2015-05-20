@@ -24,6 +24,8 @@ import cPickle as pickle
 import re
 import sys
 
+from v8_utilities import EXPOSED_EXECUTION_CONTEXT_METHOD
+
 from collections import defaultdict
 from utilities import should_generate_impl_file_from_idl, get_file_contents, idl_filename_to_interface_name, read_file_to_list, write_file, get_interface_extended_attributes_from_idl, get_interface_exposed_arguments, is_callback_interface_from_idl
 
@@ -166,7 +168,7 @@ def main():
         record_global_constructors(idl_filename)
 
     # Check for [Exposed] / [Global] mismatch.
-    known_global_names = frozenset(itertools.chain.from_iterable(interface_name_to_global_names.values()))
+    known_global_names = EXPOSED_EXECUTION_CONTEXT_METHOD.keys()
     exposed_global_names = frozenset(global_name_to_constructors)
     if not exposed_global_names.issubset(known_global_names):
         unknown_global_names = exposed_global_names.difference(known_global_names)
