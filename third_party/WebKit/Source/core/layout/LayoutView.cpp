@@ -40,9 +40,11 @@
 #include "core/paint/ViewPainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/TraceEvent.h"
+#include "platform/TracedValue.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include <inttypes.h>
 
 namespace blink {
 
@@ -81,9 +83,38 @@ bool LayoutView::hitTest(HitTestResult& result)
     return hitTest(result.hitTestRequest(), result.hitTestLocation(), result);
 }
 
+namespace {
+
+PassRefPtr<TracedValue> hitTestInfo(const HitTestRequest& request, const HitTestLocation& location, const HitTestResult& result)
+{
+    RefPtr<TracedValue> value(TracedValue::create());
+    value->setInteger("x", location.roundedPoint().x());
+    value->setInteger("y", location.roundedPoint().y());
+    if (location.isRectBasedTest())
+        value->setBoolean("rect", true);
+    if (location.isRectilinear())
+        value->setBoolean("rectilinear", true);
+    if (request.touchEvent())
+        value->setBoolean("touch", true);
+    if (request.move())
+        value->setBoolean("move", true);
+    if (request.listBased()) {
+        value->setBoolean("listBased", true);
+    } else if (Node* node = result.innerNode()) {
+        value->setString("nodeAddress", String::format("%" PRIx64, static_cast<uint64>(reinterpret_cast<intptr_t>(node))));
+        value->setString("tag", node->nodeName());
+        Element* elem = result.innerElement();
+        if (elem && elem->hasID())
+            value->setString("htmlId", elem->getIdAttribute());
+    }
+    return value;
+}
+
+} // anonymous namespace
+
 bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& location, HitTestResult& result)
 {
-    TRACE_EVENT0("blink", "LayoutView::hitTest");
+    TRACE_EVENT_BEGIN0("blink", "LayoutView::hitTest");
     m_hitTestCount++;
 
     ASSERT(!location.isRectBasedTest() || request.listBased());
@@ -105,6 +136,7 @@ bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     if (Scrollbar* frameScrollbar = frameView()->scrollbarAtFramePoint(framePoint))
         result.setScrollbar(frameScrollbar);
 
+    TRACE_EVENT_END1("blink", "LayoutView::hitTest", "info", hitTestInfo(request, location, result));
     return hitLayer;
 }
 
