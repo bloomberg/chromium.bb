@@ -2587,7 +2587,10 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
   layer_impl->ScrollBy(delta);
   gfx::ScrollOffset scrolled =
       layer_impl->CurrentScrollOffset() - previous_offset;
-  return gfx::Vector2dF(scrolled.x(), scrolled.y());
+  gfx::Vector2dF consumed_scroll(scrolled.x(), scrolled.y());
+  consumed_scroll.Scale(page_scale_factor);
+
+  return consumed_scroll;
 }
 
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,

@@ -1131,6 +1131,75 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, ImplPinchZoomWheelBubbleBetweenViewports) {
+  LayerImpl* inner_scroll_layer =
+      SetupScrollAndContentsLayers(gfx::Size(100, 100));
+
+  // Adjust the content layer to be larger than the outer viewport container so
+  // that we get scrolling in both viewports.
+  LayerImpl* content_layer =
+      host_impl_->OuterViewportScrollLayer()->children().back();
+  LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_clip_layer =
+      host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  inner_clip_layer->SetBounds(gfx::Size(100, 100));
+  inner_clip_layer->SetContentBounds(gfx::Size(100, 100));
+  outer_scroll_layer->SetBounds(gfx::Size(200, 200));
+  outer_scroll_layer->SetContentBounds(gfx::Size(200, 200));
+  content_layer->SetBounds(gfx::Size(200, 200));
+  content_layer->SetContentBounds(gfx::Size(200, 200));
+
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+
+  DrawFrame();
+
+  // Zoom into the page by a 2X factor
+  float min_page_scale = 1.f, max_page_scale = 4.f;
+  float page_scale_factor = 2.f;
+  host_impl_->active_tree()->PushPageScaleFromMainThread(
+      page_scale_factor, min_page_scale, max_page_scale);
+  host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
+
+  // Scroll by a small amount, there should be no bubbling up to the inner
+  // viewport.
+  host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::WHEEL);
+  host_impl_->ScrollBy(gfx::Point(0, 0), gfx::Vector2dF(10.f, 20.f));
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(5, 10),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(),
+      inner_scroll_layer->CurrentScrollOffset());
+
+  // Scroll by the outer viewport's max scroll extent, there the remainder
+  // should bubble up to the inner viewport.
+  host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::WHEEL);
+  host_impl_->ScrollBy(gfx::Point(0, 0), gfx::Vector2dF(200.f, 200.f));
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(100, 100),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(5, 10),
+      inner_scroll_layer->CurrentScrollOffset());
+
+  // Scroll by the inner viewport's max scroll extent, it should all go to the
+  // inner viewport.
+  host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::WHEEL);
+  host_impl_->ScrollBy(gfx::Point(0, 0), gfx::Vector2dF(90.f, 80.f));
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(100, 100),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(50, 50),
+      inner_scroll_layer->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollWithSwapPromises) {
   ui::LatencyInfo latency_info;
   latency_info.trace_id = 1234;
