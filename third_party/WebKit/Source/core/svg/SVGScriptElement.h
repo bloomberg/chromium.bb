@@ -81,9 +81,6 @@ private:
     virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
     virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-    virtual Timer<SVGElement>* svgLoadEventTimer() override { return &m_svgLoadEventTimer; }
-
-    Timer<SVGElement> m_svgLoadEventTimer;
     OwnPtrWillBeMember<ScriptLoader> m_loader;
 };
 

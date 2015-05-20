@@ -35,7 +35,6 @@ namespace blink {
 inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedByParser, bool alreadyStarted)
     : SVGElement(SVGNames::scriptTag, document)
     , SVGURIReference(this)
-    , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
     , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted))
 {
 }
@@ -74,10 +73,8 @@ void SVGScriptElement::didNotifySubtreeInsertionsToDocument()
 {
     m_loader->didNotifySubtreeInsertionsToDocument();
 
-    if (!m_loader->isParserInserted()) {
+    if (!m_loader->isParserInserted())
         m_loader->setHaveFiredLoadEvent(true);
-        sendSVGLoadEventIfPossibleAsynchronously();
-    }
 }
 
 void SVGScriptElement::childrenChanged(const ChildrenChange& change)
