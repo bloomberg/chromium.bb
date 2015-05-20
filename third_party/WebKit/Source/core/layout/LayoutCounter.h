@@ -33,7 +33,6 @@ class LayoutCounter final : public LayoutText {
 public:
     LayoutCounter(Document*, const CounterContent&);
     virtual ~LayoutCounter();
-    virtual void destroy() override;
 
     static void destroyCounterNodes(LayoutObject&);
     static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);

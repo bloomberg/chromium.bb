@@ -357,17 +357,12 @@ LayoutCounter::~LayoutCounter()
 {
 }
 
-void LayoutCounter::destroy()
+void LayoutCounter::willBeDestroyed()
 {
     if (m_counterNode) {
         m_counterNode->removeLayoutObject(this);
         ASSERT(!m_counterNode);
     }
-    LayoutText::destroy();
-}
-
-void LayoutCounter::willBeDestroyed()
-{
     if (view())
         view()->removeLayoutCounter();
     LayoutText::willBeDestroyed();
