@@ -692,6 +692,7 @@ public:
         V8SVGSVGElement_ScreenPixelToMillimeterX_AttributeGetter = 776,
         V8SVGSVGElement_ScreenPixelToMillimeterY_AttributeGetter = 777,
         V8SVGSVGElement_GetElementById_Method = 778,
+        ElementCreateShadowRootMultiple = 779,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
