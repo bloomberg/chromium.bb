@@ -8,10 +8,10 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=233105
+CLANG_REVISION=237739
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=2
+CLANG_SUB_REVISION=1
 
 PACKAGE_VERSION="${CLANG_REVISION}-${CLANG_SUB_REVISION}"
 
@@ -319,6 +319,8 @@ for i in \
       "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc" \
       "${COMPILER_RT_DIR}/test/tsan/signal_segv_handler.cc" \
       "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_coverage_libcdep.cc" \
+      "${COMPILER_RT_DIR}/cmake/config-ix.cmake" \
+      "${COMPILER_RT_DIR}/lib/ubsan/ubsan_platform.h" \
       ; do
   if [[ -e "${i}" ]]; then
     rm -f "${i}"  # For unversioned files.
@@ -401,27 +403,6 @@ EOF
   patch -p0
   popd
 
-  # Cherry-pick r234010 [sancov] Shrink pc array on Android back to 2**24."
-  pushd "${COMPILER_RT_DIR}"
-  cat << 'EOF' |
-diff --git a/lib/sanitizer_common/sanitizer_coverage_libcdep.cc b/lib/sanitizer_common/sanitizer_coverage_libcdep.cc
-index 4b976fc..cfd9e7e 100644
---- a/lib/sanitizer_common/sanitizer_coverage_libcdep.cc
-+++ b/lib/sanitizer_common/sanitizer_coverage_libcdep.cc
-@@ -109,7 +109,8 @@ class CoverageData {
- 
-   // Maximal size pc array may ever grow.
-   // We MmapNoReserve this space to ensure that the array is contiguous.
--  static const uptr kPcArrayMaxSize = FIRST_32_SECOND_64(1 << 26, 1 << 27);
-+  static const uptr kPcArrayMaxSize =
-+      FIRST_32_SECOND_64(1 << (SANITIZER_ANDROID ? 24 : 26), 1 << 27);
-   // The amount file mapping for the pc array is grown by.
-   static const uptr kPcArrayMmapSize = 64 * 1024;
-
-EOF
-  patch -p1
-  popd
-
   # This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
   pushd "${LLVM_DIR}"
   cat << 'EOF' |
@@ -438,6 +419,37 @@ EOF
   patch -p0
   popd
 
+  # The UBSan run-time, which is now bundled with the ASan run-time, doesn't work
+  # on Mac OS X 10.8 (PR23539).
+  pushd "${COMPILER_RT_DIR}"
+  cat << 'EOF' |
+--- a/cmake/config-ix.cmake
++++ b/cmake/config-ix.cmake
+@@ -319,7 +319,7 @@ else()
+ endif()
+ 
+ if (COMPILER_RT_HAS_SANITIZER_COMMON AND UBSAN_SUPPORTED_ARCH AND
+-    OS_NAME MATCHES "Darwin|Linux|FreeBSD")
++    OS_NAME MATCHES "Linux|FreeBSD")
+   set(COMPILER_RT_HAS_UBSAN TRUE)
+ else()
+   set(COMPILER_RT_HAS_UBSAN FALSE)
+diff --git a/lib/ubsan/ubsan_platform.h b/lib/ubsan/ubsan_platform.h
+index 8ba253b..d5dce8d 100644
+--- a/lib/ubsan/ubsan_platform.h
++++ b/lib/ubsan/ubsan_platform.h
+@@ -14,7 +14,7 @@
+ #define UBSAN_PLATFORM_H
+ 
+ // Other platforms should be easy to add, and probably work as-is.
+-#if (defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)) && \
++#if (defined(__linux__) || defined(__FreeBSD__)) && \
+     (defined(__x86_64__) || defined(__i386__) || defined(__arm__) || \
+      defined(__aarch64__) || defined(__mips__) || defined(__powerpc64__))
+ # define CAN_SANITIZE_UB 1
+EOF
+  patch -p1
+  popd
 
 fi
 
