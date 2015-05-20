@@ -329,6 +329,11 @@ static NEVER_INLINE void partitionOutOfMemory(const PartitionRootBase* root)
     IMMEDIATE_CRASH();
 }
 
+static NEVER_INLINE void partitionExcessiveAllocationSize()
+{
+    IMMEDIATE_CRASH();
+}
+
 static void partitionIncreaseCommittedPages(PartitionRootBase* root, size_t len)
 {
     root->totalSizeOfCommittedPages += len;
@@ -717,7 +722,7 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
         if (size > kGenericMaxDirectMapped) {
             if (returnNull)
                 return 0;
-            RELEASE_ASSERT(false);
+            partitionExcessiveAllocationSize();
         }
         void* ptr = partitionDirectMap(root, flags, size);
         if (ptr)
