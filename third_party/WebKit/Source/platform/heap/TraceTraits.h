@@ -202,12 +202,12 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const Backing* backing)
     {
-        visitor->mark(backing, &trace);
+        DefaultTraceTrait<Backing>::mark(visitor, backing);
     }
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
 #if ENABLE(ASSERT)
-        assertObjectHasGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::index());
+        DefaultTraceTrait<Backing>::checkGCInfo(backing);
 #endif
     }
 };
@@ -233,15 +233,12 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const Backing* backing)
     {
-        if (WTF::ShouldBeTraced<Traits>::value || Traits::weakHandlingFlag == WTF::WeakHandlingInCollections)
-            visitor->mark(backing, &trace);
-        else
-            visitor->markNoTracing(backing); // If we know the trace function will do nothing there is no need to call it.
+        DefaultTraceTrait<Backing>::mark(visitor, backing);
     }
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
 #if ENABLE(ASSERT)
-        assertObjectHasGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::index());
+        DefaultTraceTrait<Backing>::checkGCInfo(backing);
 #endif
     }
 };
