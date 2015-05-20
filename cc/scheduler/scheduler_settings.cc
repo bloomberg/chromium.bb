@@ -10,6 +10,7 @@ namespace cc {
 
 SchedulerSettings::SchedulerSettings()
     : use_external_begin_frame_source(false),
+      main_frame_while_swap_throttled_enabled(false),
       main_frame_before_activation_enabled(false),
       impl_side_painting(false),
       timeout_and_draw_when_animation_checkerboards(true),
@@ -28,6 +29,8 @@ SchedulerSettings::AsValue() const {
       new base::trace_event::TracedValue();
   state->SetBoolean("use_external_begin_frame_source",
                     use_external_begin_frame_source);
+  state->SetBoolean("main_frame_while_swap_throttled_enabled",
+                    main_frame_while_swap_throttled_enabled);
   state->SetBoolean("main_frame_before_activation_enabled",
                     main_frame_before_activation_enabled);
   state->SetBoolean("impl_side_painting", impl_side_painting);

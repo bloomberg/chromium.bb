@@ -1380,7 +1380,14 @@ TEST_F(SchedulerTest, NotSkipMainFrameInPreferImplLatencyMode) {
   EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 1, true, true));
 }
 
-TEST_F(SchedulerTest, PollForCommitCompletion) {
+TEST_F(SchedulerTest,
+       Deadlock_NotifyReadyToCommitMakesProgressWhileSwapTrottled) {
+  // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
+  // thread. This prevents the scheduler from receiving any pending swap acks.
+  // This test makes sure that we keep updating the TextureUploader with
+  // DidAnticipatedDrawTimeChange's so that it can make forward progress and
+  // upload all the textures needed for the commit to complete.
+
   // Since we are simulating a long commit, set up a client with draw duration
   // estimates that prevent skipping main frames to get to low latency mode.
   SchedulerClientWithFixedEstimates* client =
@@ -1439,6 +1446,247 @@ TEST_F(SchedulerTest, PollForCommitCompletion) {
                  "DidAnticipatedDrawTimeChange");
     actions_so_far = client->num_actions_();
   }
+}
+
+TEST_F(
+    SchedulerTest,
+    Deadlock_CommitMakesProgressWhileSwapTrottledAndActiveTreeNeedsFirstDraw) {
+  // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
+  // thread. This prevents the scheduler from receiving any pending swap acks.
+
+  // Since we are simulating a long commit, set up a client with draw duration
+  // estimates that prevent skipping main frames to get to low latency mode.
+  SchedulerClientWithFixedEstimates* client =
+      new SchedulerClientWithFixedEstimates(
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromMilliseconds(32),
+          base::TimeDelta::FromMilliseconds(32));
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+
+  // Disables automatic swap acks so this test can force swap ack throttling
+  // to simulate a blocked Browser ui thread.
+  scheduler_->SetMaxSwapsPending(1);
+  client_->SetAutomaticSwapAck(false);
+
+  // Get a new active tree in main-thread high latency mode and put us
+  // in a swap throttled state.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->CommitPending());
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 7);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 7);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 7);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 3, 7);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 4, 7);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 5, 7);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 6, 7);
+
+  // Make sure that we can finish the next commit even while swap throttled.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  EXPECT_SCOPED(AdvanceFrame());
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 5);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 5);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 5);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 3, 5);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 4, 5);
+
+  // Make sure we do not send a BeginMainFrame while swap throttled and
+  // we have both a pending tree and an active tree.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_FALSE(scheduler_->CommitPending());
+  task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
+}
+
+TEST_F(SchedulerTest,
+       Deadlock_NoBeginMainFrameWhileSwapTrottledAndPipelineFull) {
+  // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
+  // thread. This prevents the scheduler from receiving any pending swap acks.
+
+  // This particular test makes sure we do not send a BeginMainFrame while
+  // swap trottled and we have a pending tree and active tree that
+  // still needs to be drawn for the first time.
+
+  // Since we are simulating a long commit, set up a client with draw duration
+  // estimates that prevent skipping main frames to get to low latency mode.
+  SchedulerClientWithFixedEstimates* client =
+      new SchedulerClientWithFixedEstimates(
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromMilliseconds(32),
+          base::TimeDelta::FromMilliseconds(32));
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
+  scheduler_settings_.main_frame_before_activation_enabled = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+
+  // Disables automatic swap acks so this test can force swap ack throttling
+  // to simulate a blocked Browser ui thread.
+  scheduler_->SetMaxSwapsPending(1);
+  client_->SetAutomaticSwapAck(false);
+
+  // Start a new commit in main-thread high latency mode and hold off on
+  // activation.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->CommitPending());
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  scheduler_->DidSwapBuffersComplete();
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 6);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 6);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 6);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 3, 6);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 4, 6);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 5, 6);
+
+  // Start another commit while we still have aa pending tree.
+  // Enter a swap throttled state.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->CommitPending());
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  scheduler_->NotifyBeginMainFrameStarted();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 4);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 4);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 4);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 4);
+
+  // Can't commit yet because there's still a pending tree.
+  client_->Reset();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_NO_ACTION(client_);
+
+  // Activate the pending tree, which also unblocks the commit immediately.
+  client_->Reset();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 1, 2);
+
+  // Make sure we do not send a BeginMainFrame while swap throttled and
+  // we have both a pending tree and an active tree that still needs
+  // it's first draw.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_FALSE(scheduler_->CommitPending());
+  task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
+}
+
+TEST_F(
+    SchedulerTest,
+    CommitMakesProgressWhenIdleAndHasPendingTreeAndActiveTreeNeedsFirstDraw) {
+  // This verifies we don't block commits longer than we need to
+  // for performance reasons - not deadlock reasons.
+
+  // Since we are simulating a long commit, set up a client with draw duration
+  // estimates that prevent skipping main frames to get to low latency mode.
+  SchedulerClientWithFixedEstimates* client =
+      new SchedulerClientWithFixedEstimates(
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromMilliseconds(32),
+          base::TimeDelta::FromMilliseconds(32));
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
+  scheduler_settings_.main_frame_before_activation_enabled = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+
+  // Disables automatic swap acks so this test can force swap ack throttling
+  // to simulate a blocked Browser ui thread.
+  scheduler_->SetMaxSwapsPending(1);
+  client_->SetAutomaticSwapAck(false);
+
+  // Start a new commit in main-thread high latency mode and hold off on
+  // activation.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->CommitPending());
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  scheduler_->DidSwapBuffersComplete();
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 6);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 6);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 6);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 3, 6);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 4, 6);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 5, 6);
+
+  // Start another commit while we still have an active tree.
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->CommitPending());
+  scheduler_->SetNeedsCommit();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->CommitPending());
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  scheduler_->DidSwapBuffersComplete();
+  scheduler_->NotifyBeginMainFrameStarted();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 4);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 4);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 4);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 4);
+
+  // Can't commit yet because there's still a pending tree.
+  client_->Reset();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_NO_ACTION(client_);
+
+  // Activate the pending tree, which also unblocks the commit immediately
+  // while we are in an idle state.
+  client_->Reset();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 1, 2);
 }
 
 TEST_F(SchedulerTest, BeginRetroFrame) {

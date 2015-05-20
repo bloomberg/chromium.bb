@@ -268,6 +268,9 @@ class CC_EXPORT SchedulerStateMachine {
   // True if we need to force activations to make forward progress.
   bool PendingActivationsShouldBeForced() const;
 
+  // TODO(brianderson): Remove this once NPAPI support is removed.
+  bool SendingBeginMainFrameMightCauseDeadlock() const;
+
   bool ShouldAnimate() const;
   bool ShouldBeginOutputSurfaceCreation() const;
   bool ShouldDraw() const;

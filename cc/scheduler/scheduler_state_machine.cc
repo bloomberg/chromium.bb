@@ -402,6 +402,19 @@ bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
   return true;
 }
 
+bool SchedulerStateMachine::SendingBeginMainFrameMightCauseDeadlock() const {
+  // NPAPI is the only case where the UI thread makes synchronous calls to the
+  // Renderer main thread. During that synchronous call, we may not get a
+  // SwapAck for the UI thread, which may prevent BeginMainFrame's from
+  // completing if there's enough back pressure. If the BeginMainFrame can't
+  // make progress, the Renderer can't service the UI thread's synchronous call
+  // and we have deadlock.
+  // This returns true if there's too much backpressure to finish a commit
+  // if we were to initiate a BeginMainFrame.
+  return has_pending_tree_ && active_tree_needs_first_draw_ &&
+         pending_swaps_ >= max_pending_swaps_;
+}
+
 bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!CouldSendBeginMainFrame())
     return false;
@@ -411,6 +424,9 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     return false;
 
   // Only send BeginMainFrame when there isn't another commit pending already.
+  // Other parts of the state machine indirectly defer the BeginMainFrame
+  // by transitioning to WAITING commit states rather than going
+  // immediately to IDLE.
   if (commit_state_ != COMMIT_STATE_IDLE)
     return false;
 
@@ -432,6 +448,9 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
 
   // We need a new commit for the forced redraw. This honors the
   // single commit per interval because the result will be swapped to screen.
+  // TODO(brianderson): Remove this or move it below the
+  // SendingBeginMainFrameMightCauseDeadlock check since  we want to avoid
+  // ever returning true from this method if we might cause deadlock.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT)
     return true;
 
@@ -439,13 +458,21 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!HasInitializedOutputSurface())
     return false;
 
-  // SwapAck throttle the BeginMainFrames unless we just swapped.
-  // TODO(brianderson): Remove this restriction to improve throughput.
-  bool just_swapped_in_deadline =
-      begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
-      did_perform_swap_in_last_draw_;
-  if (pending_swaps_ >= max_pending_swaps_ && !just_swapped_in_deadline)
+  // Make sure the BeginMainFrame can finish eventually if we start it.
+  if (SendingBeginMainFrameMightCauseDeadlock())
     return false;
+
+  if (!settings_.main_frame_while_swap_throttled_enabled) {
+    // SwapAck throttle the BeginMainFrames unless we just swapped to
+    // potentially improve impl-thread latency over main-thread throughput.
+    // TODO(brianderson): Remove this restriction to improve throughput or
+    // make it conditional on impl_latency_takes_priority_.
+    bool just_swapped_in_deadline =
+        begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
+        did_perform_swap_in_last_draw_;
+    if (pending_swaps_ >= max_pending_swaps_ && !just_swapped_in_deadline)
+      return false;
+  }
 
   if (skip_begin_main_frame_to_reduce_latency_)
     return false;
@@ -463,11 +490,14 @@ bool SchedulerStateMachine::ShouldCommit() const {
     return false;
   }
 
-  // Prioritize drawing the previous commit before finishing the next commit.
-  if (active_tree_needs_first_draw_)
-    return false;
+  // If impl-side-painting, commit to the pending tree as soon as we can.
+  if (settings_.impl_side_painting)
+    return true;
 
-  return true;
+  // If we only have an active tree, it is incorrect to replace it
+  // before we've drawn it when we aren't impl-side-painting.
+  DCHECK(!settings_.impl_side_painting);
+  return !active_tree_needs_first_draw_;
 }
 
 bool SchedulerStateMachine::ShouldPrepareTiles() const {
