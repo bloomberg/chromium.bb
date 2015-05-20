@@ -685,6 +685,8 @@ public:
         EncryptedMediaInsecureOrigin = 771,
         PerformanceFrameTiming = 772,
         V8Element_Animate_Method = 773,
+        // The above items are available in M44 branch.
+
         V8SVGSVGElement_PixelUnitToMillimeterX_AttributeGetter = 774,
         V8SVGSVGElement_PixelUnitToMillimeterY_AttributeGetter = 775,
         V8SVGSVGElement_ScreenPixelToMillimeterX_AttributeGetter = 776,
