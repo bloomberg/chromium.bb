@@ -640,10 +640,15 @@ bool DisplayController::UpdateWorkAreaOfDisplayNearestWindow(
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
 #if defined(OS_CHROMEOS)
-  if (GetDisplayManager()->default_multi_display_mode() ==
-      DisplayManager::UNIFIED) {
-    if (primary_display_id == gfx::Display::kInvalidDisplayID)
-      primary_display_id = display.id();
+  // If we're switching from/to offscreen WTH, we need to
+  // create new WTH for primary display instead of reusing.
+  if (primary_tree_host_for_replace_ &&
+      (GetRootWindowSettings(GetWindow(primary_tree_host_for_replace_))
+               ->display_id == DisplayManager::kUnifiedDisplayId ||
+       display.id() == DisplayManager::kUnifiedDisplayId)) {
+    DCHECK_EQ(gfx::Display::kInvalidDisplayID, primary_display_id);
+    primary_display_id = display.id();
+
     AshWindowTreeHost* ash_host =
         AddWindowTreeHostForDisplay(display, AshWindowTreeHostInitParams());
     RootWindowController::CreateForSecondaryDisplay(ash_host);
@@ -656,33 +661,31 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
         ->partial_magnification_controller()
         ->SwitchTargetRootWindow(ash_host->AsWindowTreeHost()->window());
 
-    if (primary_tree_host_for_replace_) {
-      AshWindowTreeHost* to_delete = primary_tree_host_for_replace_;
-      primary_tree_host_for_replace_ = nullptr;
+    AshWindowTreeHost* to_delete = primary_tree_host_for_replace_;
+    primary_tree_host_for_replace_ = nullptr;
 
-      // Show the shelf if the original WTH had a visible system
-      // tray. It may or may not be visible depending on OOBE state.
-      ash::SystemTray* old_tray =
-          GetRootWindowController(to_delete->AsWindowTreeHost()->window())
-              ->GetSystemTray();
-      ash::SystemTray* new_tray =
-          ash::Shell::GetInstance()->GetPrimarySystemTray();
-      if (old_tray->GetWidget()->IsVisible()) {
-        new_tray->SetVisible(true);
-        new_tray->GetWidget()->Show();
-      }
-
-      DeleteHost(to_delete);
-#ifndef NDEBUG
-      auto iter = std::find_if(
-          window_tree_hosts_.begin(), window_tree_hosts_.end(),
-          [to_delete](const std::pair<int64, AshWindowTreeHost*>& pair) {
-            return pair.second == to_delete;
-          });
-      DCHECK(iter == window_tree_hosts_.end());
-#endif
-      // the host has already been removed from the window_tree_host_.
+    // Show the shelf if the original WTH had a visible system
+    // tray. It may or may not be visible depending on OOBE state.
+    ash::SystemTray* old_tray =
+        GetRootWindowController(to_delete->AsWindowTreeHost()->window())
+            ->GetSystemTray();
+    ash::SystemTray* new_tray =
+        ash::Shell::GetInstance()->GetPrimarySystemTray();
+    if (old_tray->GetWidget()->IsVisible()) {
+      new_tray->SetVisible(true);
+      new_tray->GetWidget()->Show();
     }
+
+    DeleteHost(to_delete);
+#ifndef NDEBUG
+    auto iter = std::find_if(
+        window_tree_hosts_.begin(), window_tree_hosts_.end(),
+        [to_delete](const std::pair<int64, AshWindowTreeHost*>& pair) {
+          return pair.second == to_delete;
+        });
+    DCHECK(iter == window_tree_hosts_.end());
+#endif
+    // the host has already been removed from the window_tree_host_.
   } else
 #endif
       // TODO(oshima): It should be possible to consolidate logic for

@@ -141,7 +141,7 @@ DisplayManager::DisplayManager()
     DisplayInfo::SetUse125DSFForUIScaling(true);
 
   if (switches::UnifiedDesktopEnabled())
-    multi_display_mode_ = default_multi_display_mode_ = UNIFIED;
+    default_multi_display_mode_ = UNIFIED;
 
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
@@ -674,6 +674,9 @@ void DisplayManager::UpdateDisplays(
             new_display_info_list.end(),
             DisplayInfoSortFunctor());
 
+  if (multi_display_mode_ != MIRRORING)
+    multi_display_mode_ = default_multi_display_mode_;
+
   CreateSoftwareMirroringDisplayInfo(&new_display_info_list);
 
   // Close the mirroring window if any here to avoid creating two compositor on
@@ -951,9 +954,8 @@ void DisplayManager::SetMirrorMode(bool mirror) {
        ++iter) {
     display_info_list.push_back(GetDisplayInfo(iter->id()));
   }
-
-  SetSoftwareMirroring(mirror);
-  UpdateDisplays(display_info_list);
+  multi_display_mode_ = mirror ? MIRRORING : default_multi_display_mode_;
+  ReconfigureDisplays();
   if (Shell::GetInstance()->display_configurator_animation()) {
     Shell::GetInstance()->display_configurator_animation()->
         StartFadeInAnimation();
@@ -1017,10 +1019,28 @@ void DisplayManager::SetMultiDisplayMode(MultiDisplayMode mode) {
 }
 
 void DisplayManager::SetDefaultMultiDisplayMode(MultiDisplayMode mode) {
-  // TODO(oshima): Remove this constrain.
-  DCHECK_EQ(default_multi_display_mode_, EXTENDED);
-  DCHECK_EQ(mode, UNIFIED);
+  DCHECK_NE(mode, MIRRORING);
   default_multi_display_mode_ = mode;
+}
+
+void DisplayManager::ReconfigureDisplays() {
+  DisplayInfoList display_info_list;
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       (display_info_list.size() < 2 && iter != active_display_list_.end());
+       ++iter) {
+    if (iter->id() == kUnifiedDisplayId)
+      continue;
+    display_info_list.push_back(GetDisplayInfo(iter->id()));
+  }
+  for (auto iter = software_mirroring_display_list_.begin();
+       (display_info_list.size() < 2 &&
+        iter != software_mirroring_display_list_.end());
+       ++iter) {
+    display_info_list.push_back(GetDisplayInfo(iter->id()));
+  }
+  mirroring_display_id_ = gfx::Display::kInvalidDisplayID;
+  software_mirroring_display_list_.clear();
+  UpdateDisplays(display_info_list);
 }
 
 bool DisplayManager::UpdateDisplayBounds(int64 display_id,

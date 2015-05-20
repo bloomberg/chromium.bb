@@ -120,6 +120,14 @@ class NoneCaptureClient : public aura::client::CaptureClient {
   DISALLOW_COPY_AND_ASSIGN(NoneCaptureClient);
 };
 
+DisplayManager::MultiDisplayMode GetCurrentMultiDisplayMode() {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  return display_manager->IsInUnifiedMode()
+             ? DisplayManager::UNIFIED
+             : (display_manager->IsInMirrorMode() ? DisplayManager::MIRRORING
+                                                  : DisplayManager::EXTENDED);
+}
+
 }  // namespace
 
 struct MirrorWindowController::MirroringHostInfo {
@@ -152,6 +160,8 @@ void MirrorWindowController::UpdateWindow(
   const gfx::Display& primary = Shell::GetScreen()->GetPrimaryDisplay();
   const DisplayInfo& source_display_info =
       display_manager->GetDisplayInfo(primary.id());
+
+  multi_display_mode_ = GetCurrentMultiDisplayMode();
 
   gfx::Point mirroring_origin;
   for (const DisplayInfo& display_info : display_info_list) {
@@ -268,13 +278,7 @@ void MirrorWindowController::UpdateWindow() {
 }
 
 void MirrorWindowController::CloseIfNotNecessary() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-
-  DisplayManager::MultiDisplayMode new_mode =
-      display_manager->IsInUnifiedMode()
-          ? DisplayManager::UNIFIED
-          : (display_manager->IsInMirrorMode() ? DisplayManager::MIRRORING
-                                               : DisplayManager::EXTENDED);
+  DisplayManager::MultiDisplayMode new_mode = GetCurrentMultiDisplayMode();
   if (multi_display_mode_ != new_mode)
     Close(true);
   multi_display_mode_ = new_mode;

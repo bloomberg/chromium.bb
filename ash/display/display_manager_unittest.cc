@@ -123,12 +123,8 @@ class DisplayManagerTest : public test::AshTestBase,
 
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override {
-    // TODO(oshima): When moving between unified desktop, the
-    // primary root window can be deleted.
-    if (!display_manager()->IsInUnifiedMode()) {
-      ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
-      root_window_destroyed_ = true;
-    }
+    ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
+    root_window_destroyed_ = true;
   }
 
  private:
@@ -1467,10 +1463,14 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
 TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   if (!SupportsMultipleDisplays())
     return;
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
-  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
-  display_manager()->SetMultiDisplayMode(DisplayManager::UNIFIED);
   UpdateDisplay("300x200,400x500");
+
+  // Switch to unified desktop.
+  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager()->ReconfigureDisplays();
 
   gfx::Screen* screen =
       gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
@@ -1482,18 +1482,26 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   display_manager()->SetMirrorMode(false);
   EXPECT_EQ("700x500", screen->GetPrimaryDisplay().size().ToString());
 
-  // Swithc to single desktop.
+  // Switch to single desktop.
   UpdateDisplay("500x300");
   EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
 
-  // Swithc to unified desktop.
+  // Switch to unified desktop.
   UpdateDisplay("500x300,400x500");
   EXPECT_EQ("900x500", screen->GetPrimaryDisplay().size().ToString());
+
+  // Switch back to extended desktop.
+  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::EXTENDED);
+  display_manager()->ReconfigureDisplays();
+  EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("400x500", ScreenUtil::GetSecondaryDisplay().size().ToString());
 }
 
 TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager()->SetMultiDisplayMode(DisplayManager::UNIFIED);
@@ -1519,6 +1527,8 @@ TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
 TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
   if (!SupportsMultipleDisplays())
     return;
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager()->SetMultiDisplayMode(DisplayManager::UNIFIED);

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_configurator_animation.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
@@ -201,6 +202,10 @@ void DisplayOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(
       "selectedDisplayColorProfile", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE));
+  localized_strings->SetString(
+      "enableUnifiedDesktop",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ENABLE_UNIFIED_DESKTOP));
 }
 
 void DisplayOptionsHandler::InitializePage() {
@@ -237,6 +242,10 @@ void DisplayOptionsHandler::RegisterMessages() {
       "setColorProfile",
       base::Bind(&DisplayOptionsHandler::HandleSetColorProfile,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setUnifiedDesktopEnabled",
+      base::Bind(&DisplayOptionsHandler::HandleSetUnifiedDesktopEnabled,
+                 base::Unretained(this)));
 }
 
 void DisplayOptionsHandler::OnDisplayConfigurationChanging() {
@@ -260,7 +269,10 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
 void DisplayOptionsHandler::SendDisplayInfo(
     const std::vector<gfx::Display>& displays) {
   DisplayManager* display_manager = GetDisplayManager();
-  base::FundamentalValue mirroring(display_manager->IsInMirrorMode());
+  base::FundamentalValue mode(
+      display_manager->IsInMirrorMode() ? DisplayManager::MIRRORING :
+      (display_manager->IsInUnifiedMode() ? DisplayManager::UNIFIED :
+       DisplayManager::EXTENDED));
 
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   base::ListValue js_displays;
@@ -314,14 +326,17 @@ void DisplayOptionsHandler::SendDisplayInfo(
 
   web_ui()->CallJavascriptFunction(
       "options.DisplayOptions.setDisplayInfo",
-      mirroring, js_displays, *layout_value.get(), *offset_value.get());
+      mode, js_displays, *layout_value.get(), *offset_value.get());
 }
 
 void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
   bool enabled = GetDisplayManager()->num_connected_displays() <= 2;
+  bool show_unified_desktop = ash::switches::UnifiedDesktopEnabled();
+
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.enableDisplaySettings",
-      base::FundamentalValue(enabled));
+      base::FundamentalValue(enabled),
+      base::FundamentalValue(show_unified_desktop));
 }
 
 void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
@@ -469,6 +484,17 @@ void DisplayOptionsHandler::HandleSetColorProfile(const base::ListValue* args) {
   GetDisplayManager()->SetColorCalibrationProfile(
       display_id, static_cast<ui::ColorCalibrationProfile>(profile_id));
   SendAllDisplayInfo();
+}
+
+void DisplayOptionsHandler::HandleSetUnifiedDesktopEnabled(
+    const base::ListValue* args) {
+  DCHECK(ash::switches::UnifiedDesktopEnabled());
+  bool enable = false;
+  if (args->GetBoolean(0, &enable)) {
+    GetDisplayManager()->SetDefaultMultiDisplayMode(
+        enable ? DisplayManager::UNIFIED : DisplayManager::EXTENDED);
+    GetDisplayManager()->ReconfigureDisplays();
+  }
 }
 
 }  // namespace options

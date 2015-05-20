@@ -53,6 +53,9 @@ AshWindowTreeHostUnified::AshWindowTreeHostUnified(
 }
 
 AshWindowTreeHostUnified::~AshWindowTreeHostUnified() {
+  for (auto* ash_host : mirroring_hosts_)
+    ash_host->AsWindowTreeHost()->window()->RemoveObserver(this);
+
   DestroyCompositor();
   DestroyDispatcher();
 }

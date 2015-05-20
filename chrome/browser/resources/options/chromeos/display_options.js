@@ -36,6 +36,17 @@ options.SecondaryDisplayLayout = {
   LEFT: 3
 };
 
+/**
+ * Enumeration of multi display mode.  The value has to be same as the
+ * values in ash/display/display_manager..
+ * @enum {number}
+ */
+options.MultiDisplayMode = {
+  EXTENDED: 0,
+  MIRRORING: 1,
+  UNIFIED: 2,
+};
+
 cr.define('options', function() {
   var Page = cr.ui.pageManager.Page;
   var PageManager = cr.ui.pageManager.PageManager;
@@ -115,6 +126,18 @@ cr.define('options', function() {
      * @private
      */
     mirroring_: false,
+
+    /*
+     * Whether the unified desktop is enable or not.
+     * @private
+     */
+    unifiedDesktopEnabled_: false,
+
+    /*
+     * Whether the unified desktop option should be present.
+     * @private
+     */
+    showUnifiedDesktopOption_: false,
 
     /**
      * The current secondary display layout.
@@ -220,6 +243,12 @@ cr.define('options', function() {
       $('display-options-done').onclick = function() {
         PageManager.closeOverlay();
       };
+
+      $('display-options-toggle-unified-desktop').onclick = (function() {
+        this.unifiedDesktopEnabled_ = !this.unifiedDesktopEnabled_;
+        chrome.send('setUnifiedDesktopEnabled',
+                    [this.unifiedDesktopEnabled_]);
+      }).bind(this);
     },
 
     /** @override */
@@ -243,11 +272,16 @@ cr.define('options', function() {
      * Enables or disables the page. When disabled, the page will not be able to
      * open, and will close if currently opened.
      * @param {boolean} enabled Whether the page should be enabled.
+     * @param {boolean} showUnifiedDesktop Whether the unified desktop option
+     *     should be present.
      */
-    setEnabled: function(enabled) {
-      if (this.enabled_ == enabled)
+    setEnabled: function(enabled, showUnifiedDesktop) {
+      if (this.enabled_ == enabled &&
+          this.showUnifiedDesktopOption_ == showUnifiedDesktop) {
         return;
+      }
       this.enabled_ = enabled;
+      this.showUnifiedDesktopOption_ = showUnifiedDesktop;
       if (!enabled && this.visible)
         PageManager.closeOverlay();
     },
@@ -931,14 +965,14 @@ cr.define('options', function() {
 
     /**
      * Called when the display arrangement has changed.
-     * @param {boolean} mirroring Whether current mode is mirroring or not.
+     * @param {options.MultiDisplayMode} multi display mode.
      * @param {Array<options.DisplayInfo>} displays The list of the display
      *     information.
      * @param {options.SecondaryDisplayLayout} layout The layout strategy.
      * @param {number} offset The offset of the secondary display.
      * @private
      */
-    onDisplayChanged_: function(mirroring, displays, layout, offset) {
+    onDisplayChanged_: function(mode, displays, layout, offset) {
       if (!this.visible)
         return;
 
@@ -952,20 +986,25 @@ cr.define('options', function() {
 
       this.layout_ = layout;
 
+      var mirroring = mode == options.MultiDisplayMode.MIRRORING;
+      var unifiedDesktopEnabled = mode == options.MultiDisplayMode.UNIFIED;
+
       $('display-options-toggle-mirroring').textContent =
           loadTimeData.getString(
               mirroring ? 'stopMirroring' : 'startMirroring');
 
       // Focus to the first display next to the primary one when |displays| list
       // is updated.
-      if (mirroring) {
+      if (mirroring || unifiedDesktopEnabled) {
         this.focusedIndex_ = null;
       } else if (this.mirroring_ != mirroring ||
+                 this.unifiedDesktopEnabled_ != unifiedDesktopEnabled ||
                  this.displays_.length != displays.length) {
         this.focusedIndex_ = 0;
       }
 
       this.mirroring_ = mirroring;
+      this.unifiedDesktopEnabled_ = unifiedDesktopEnabled;
       this.displays_ = displays;
 
       this.resetDisplaysView_();
@@ -974,14 +1013,28 @@ cr.define('options', function() {
       else
         this.layoutDisplays_();
 
+      $('display-options-unified-desktop').hidden =
+          !this.showUnifiedDesktopOption_;
+
+      $('display-options-toggle-unified-desktop').checked =
+          this.unifiedDesktopEnabled_;
+
+      var disableUnifiedDesktopOption =
+           (this.mirroring_ ||
+            (!this.unifiedDesktopEnabled_ &&
+              this.displays_.length == 1));
+
+      $('display-options-toggle-unified-desktop').disabled =
+          disableUnifiedDesktopOption;
+
       this.updateSelectedDisplayDescription_();
     }
   };
 
   DisplayOptions.setDisplayInfo = function(
-      mirroring, displays, layout, offset) {
+      mode, displays, layout, offset) {
     DisplayOptions.getInstance().onDisplayChanged_(
-        mirroring, displays, layout, offset);
+        mode, displays, layout, offset);
   };
 
   // Export

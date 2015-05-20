@@ -63,6 +63,7 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   void HandleSetDisplayMode(const base::ListValue* args);
   void HandleSetOrientation(const base::ListValue* args);
   void HandleSetColorProfile(const base::ListValue* args);
+  void HandleSetUnifiedDesktopEnabled(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(DisplayOptionsHandler);
 };

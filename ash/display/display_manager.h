@@ -83,7 +83,7 @@ class ASH_EXPORT DisplayManager
   //    the 2nd display. (Software Mirroring).
   // 3) UNIFIED mode creates single desktop across multiple displays.
   enum MultiDisplayMode {
-    EXTENDED,
+    EXTENDED = 0,
     MIRRORING,
     UNIFIED,
   };
@@ -296,6 +296,11 @@ class ASH_EXPORT DisplayManager
   MultiDisplayMode default_multi_display_mode() const {
     return default_multi_display_mode_;
   }
+
+  // Reconfigure display configuration using the same
+  // physical display. TODO(oshima): Refactor and move this
+  // impl to |SetDefaultMultiDisplayMode|.
+  void ReconfigureDisplays();
 
   // Update the bounds of the display given by |display_id|.
   bool UpdateDisplayBounds(int64 display_id,

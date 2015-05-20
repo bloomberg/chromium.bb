@@ -1699,10 +1699,10 @@ cr.define('options', function() {
      * Enables or disables the Chrome OS display settings button and overlay.
      * @private
      */
-    enableDisplaySettings_: function(enabled) {
+    enableDisplaySettings_: function(enabled, showUnifiedDesktop) {
       if (cr.isChromeOS) {
         $('display-options').disabled = !enabled;
-        DisplayOptions.getInstance().setEnabled(enabled);
+        DisplayOptions.getInstance().setEnabled(enabled, showUnifiedDesktop);
       }
     },
 
