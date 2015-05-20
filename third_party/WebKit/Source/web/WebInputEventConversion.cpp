@@ -662,7 +662,7 @@ static WebTouchPoint toWebTouchPoint(const Touch* touch, const LayoutObject* lay
     point.position = convertAbsoluteLocationForLayoutObjectFloat(touch->absoluteLocation(), *layoutObject);
     point.radiusX = touch->radiusX();
     point.radiusY = touch->radiusY();
-    point.rotationAngle = touch->webkitRotationAngle();
+    point.rotationAngle = touch->rotationAngle();
     point.force = touch->force();
     point.state = state;
     return point;

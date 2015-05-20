@@ -40,14 +40,14 @@
 
     // Touch Events Extensions
     // http://rawgit.com/w3c/touch-events/master/touchevents.html#touch-interface
-    // FIXME: radiusX and radiusY should be float, not double.
-    readonly attribute double radiusX;
-    readonly attribute double radiusY;
+    readonly attribute float radiusX;
+    readonly attribute float radiusY;
+    // readonly attribute float rotationAngle;
     readonly attribute float force;
 
     // Non-standard APIs
-    [MeasureAs=PrefixedTouchRadiusX] readonly attribute double webkitRadiusX;
-    [MeasureAs=PrefixedTouchRadiusY] readonly attribute double webkitRadiusY;
-    [MeasureAs=PrefixedTouchRotationAngle] readonly attribute float webkitRotationAngle;
-    [MeasureAs=PrefixedTouchForce] readonly attribute float webkitForce;
+    [MeasureAs=PrefixedTouchRadiusX, ImplementedAs=radiusX] readonly attribute float webkitRadiusX;
+    [MeasureAs=PrefixedTouchRadiusY, ImplementedAs=radiusY] readonly attribute float webkitRadiusY;
+    [MeasureAs=PrefixedTouchRotationAngle, ImplementedAs=rotationAngle] readonly attribute float webkitRotationAngle;
+    [MeasureAs=PrefixedTouchForce, ImplementedAs=force] readonly attribute float webkitForce;
 };
