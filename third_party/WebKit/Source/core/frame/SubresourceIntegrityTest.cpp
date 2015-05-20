@@ -372,7 +372,7 @@ TEST_F(SubresourceIntegrityTest, ParsingBase64)
 // End-to-end tests of ::CheckSubresourceIntegrity.
 //
 
-TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
+TEST_F(SubresourceIntegrityTest, DISABLED_CheckSubresourceIntegrityInSecureOrigin)
 {
     document->updateSecurityOrigin(secureOrigin->isolatedCopy());
 
@@ -407,7 +407,7 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
     expectIntegrity(kSha256IntegrityWithMimeOption, kBasicScript, secureURL, secureURL, NoCors);
 }
 
-TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
+TEST_F(SubresourceIntegrityTest, DISABLED_CheckSubresourceIntegrityInInsecureOrigin)
 {
     // The same checks as CheckSubresourceIntegrityInSecureOrigin should pass
     // here, with the expection of the NoCors check at the end.
