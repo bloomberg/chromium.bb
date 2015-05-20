@@ -546,6 +546,9 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   // Adds an incognito and guest-mode flags for tests in the guest mode.
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
+  // Installs an extension at the specified |path| using the |manifest_name|
+  // manifest.
+  void InstallExtension(const base::FilePath& path, const char* manifest_name);
   // Loads our testing extension and sends it a string identifying the current
   // test.
   virtual void StartTest();
@@ -621,17 +624,22 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
-void FileManagerBrowserTestBase::StartTest() {
+void FileManagerBrowserTestBase::InstallExtension(const base::FilePath& path,
+                                                  const char* manifest_name) {
   base::FilePath root_path;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
 
   // Launch the extension.
-  const base::FilePath path =
-      root_path.Append(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
+  const base::FilePath absolute_path = root_path.Append(path);
   const extensions::Extension* const extension =
-      LoadExtensionAsComponentWithManifest(path, GetTestManifestName());
+      LoadExtensionAsComponentWithManifest(absolute_path, manifest_name);
   ASSERT_TRUE(extension);
+}
 
+void FileManagerBrowserTestBase::StartTest() {
+  InstallExtension(
+      base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests")),
+      GetTestManifestName());
   RunTestMessageLoop();
 }
 
@@ -782,6 +790,13 @@ void FileManagerBrowserTestBase::OnMessage(const std::string& name,
     ASSERT_TRUE(notification);
 
     notification->delegate()->ButtonClick(index);
+    return;
+  }
+
+  if (name == "installProviderExtension") {
+    InstallExtension(base::FilePath(FILE_PATH_LITERAL(
+                         "ui/file_manager/integration_tests/testing_provider")),
+                     "manifest.json");
     return;
   }
 
@@ -1208,6 +1223,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "showGridViewDrive")));
+
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    Providers,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "requestMount")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
