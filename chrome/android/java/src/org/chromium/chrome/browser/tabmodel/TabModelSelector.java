@@ -158,4 +158,9 @@ public interface TabModelSelector {
      * @return Whether the tab state for this {@link TabModelSelector} has been initialized.
      */
     boolean isTabStateInitialized();
+
+    /**
+     * Destroy all owned {@link TabModel}s and {@link Tab}s referenced by this selector.
+     */
+    void destroy();
 }

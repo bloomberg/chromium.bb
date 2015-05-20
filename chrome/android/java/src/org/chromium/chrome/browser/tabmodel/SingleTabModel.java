@@ -73,7 +73,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public int index() {
-        return 0;
+        return mTab != null ? 0 : INVALID_TAB_INDEX;
     }
 
     @Override
@@ -130,6 +130,12 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
+    public void destroy() {
+        if (mTab != null) mTab.destroy();
+        mTab = null;
+    }
+
+    @Override
     public Tab getNextTabIfClosed(int id) {
         return null;
     }
@@ -173,11 +179,6 @@ public class SingleTabModel implements TabModel {
     @Override
     public void removeObserver(TabModelObserver observer) {
         mObservers.removeObserver(observer);
-    }
-
-    // Below are functions that are overridden but should be moved out of TabModel.
-    @Override
-    public void destroy() {
     }
 
     private static native void nativePermanentlyBlockAllNewWindows(Tab nativeTabAndroid);

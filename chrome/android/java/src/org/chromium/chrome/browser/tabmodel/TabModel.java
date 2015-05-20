@@ -140,6 +140,9 @@ public interface TabModel extends TabList {
     /**
      * To be called when this model should be destroyed.  The model should no longer be used after
      * this.
+     *
+     * <p>
+     * As a result of this call, all {@link Tab}s owned by this model should be destroyed.
      */
     public void destroy();
 

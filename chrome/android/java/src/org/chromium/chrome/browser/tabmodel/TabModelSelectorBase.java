@@ -207,6 +207,11 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         return mTabStateInitialized;
     }
 
+    @Override
+    public void destroy() {
+        for (int i = 0; i < getModels().size(); i++) getModelAt(i).destroy();
+    }
+
     /**
      * Notifies all the listeners that the {@link TabModelSelector} or its {@link TabModel} has
      * changed.
