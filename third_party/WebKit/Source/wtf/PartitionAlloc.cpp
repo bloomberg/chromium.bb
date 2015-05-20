@@ -322,6 +322,11 @@ static NEVER_INLINE void partitionExcessiveAllocationSize()
     IMMEDIATE_CRASH();
 }
 
+static NEVER_INLINE void partitionBucketFull()
+{
+    IMMEDIATE_CRASH();
+}
+
 // TODO(haraken): This is never inlined to investigate issue 479580.
 // Remove this function once the issue is fixed.
 static NEVER_INLINE void partitionInvalidNumPartitionPages()
@@ -586,7 +591,8 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
             ++bucket->numFullPages;
             // numFullPages is a uint16_t for efficient packing so guard against
             // overflow to be safe.
-            RELEASE_ASSERT(bucket->numFullPages);
+            if (!bucket->numFullPages)
+                partitionBucketFull();
             // Not necessary but might help stop accidents.
             page->nextPage = 0;
         }
@@ -955,7 +961,8 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
         return 0;
     }
 
-    RELEASE_ASSERT(newSize <= kGenericMaxDirectMapped);
+    if (newSize > kGenericMaxDirectMapped)
+        partitionExcessiveAllocationSize();
 
     ASSERT(partitionPointerIsValid(partitionCookieFreePointerAdjust(ptr)));
 
