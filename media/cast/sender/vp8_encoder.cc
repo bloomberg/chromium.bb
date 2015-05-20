@@ -215,20 +215,26 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   // The frame duration given to the VP8 codec affects a number of important
   // behaviors, including: per-frame bandwidth, CPU time spent encoding,
   // temporal quality trade-offs, and key/golden/alt-ref frame generation
-  // intervals.  Use the actual amount of time between the current and previous
-  // frames as a prediction for the next frame's duration, but bound the
-  // prediction to account for the fact that the frame rate can be highly
-  // variable, including long pauses in the video stream.
+  // intervals.  Bound the prediction to account for the fact that the frame
+  // rate can be highly variable, including long pauses in the video stream.
   const base::TimeDelta minimum_frame_duration =
       base::TimeDelta::FromSecondsD(1.0 / cast_config_.max_frame_rate);
   const base::TimeDelta maximum_frame_duration =
       base::TimeDelta::FromSecondsD(static_cast<double>(kRestartFramePeriods) /
                                         cast_config_.max_frame_rate);
-  const base::TimeDelta last_frame_duration =
-      video_frame->timestamp() - last_frame_timestamp_;
-  const base::TimeDelta predicted_frame_duration =
+  base::TimeDelta predicted_frame_duration;
+  if (!video_frame->metadata()->GetTimeDelta(
+          media::VideoFrameMetadata::FRAME_DURATION,
+          &predicted_frame_duration) ||
+      predicted_frame_duration <= base::TimeDelta()) {
+    // The source of the video frame did not provide the frame duration.  Use
+    // the actual amount of time between the current and previous frame as a
+    // prediction for the next frame's duration.
+    predicted_frame_duration = video_frame->timestamp() - last_frame_timestamp_;
+  }
+  predicted_frame_duration =
       std::max(minimum_frame_duration,
-               std::min(maximum_frame_duration, last_frame_duration));
+               std::min(maximum_frame_duration, predicted_frame_duration));
   last_frame_timestamp_ = video_frame->timestamp();
 
   // Encode the frame.  The presentation time stamp argument here is fixed to

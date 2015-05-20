@@ -135,7 +135,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                          this,
                          frame_number,
                          base::Passed(&output_buffer),
-                         capture_begin_time);
+                         capture_begin_time,
+                         oracle_.estimated_frame_duration());
   return true;
 }
 
@@ -167,6 +168,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
     scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     base::TimeTicks capture_begin_time,
+    base::TimeDelta estimated_frame_duration,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks timestamp,
     bool success) {
@@ -180,13 +182,14 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
 
   if (success) {
     if (oracle_.CompleteCapture(frame_number, &timestamp)) {
-      // TODO(miu): Use the locked-in frame rate from AnimatedContentSampler.
       frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                    params_.requested_format.frame_rate);
       frame->metadata()->SetTimeTicks(
           media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_begin_time);
       frame->metadata()->SetTimeTicks(
           media::VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
+      frame->metadata()->SetTimeDelta(media::VideoFrameMetadata::FRAME_DURATION,
+                                      estimated_frame_duration);
       client_->OnIncomingCapturedVideoFrame(buffer.Pass(), frame, timestamp);
     }
   }

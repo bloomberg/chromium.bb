@@ -379,6 +379,14 @@ TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
     metadata.Clear();
 
     EXPECT_FALSE(metadata.HasKey(key));
+    metadata.SetTimeDelta(key, base::TimeDelta::FromInternalValue(42 + i));
+    EXPECT_TRUE(metadata.HasKey(key));
+    base::TimeDelta delta_value;
+    EXPECT_TRUE(metadata.GetTimeDelta(key, &delta_value));
+    EXPECT_EQ(base::TimeDelta::FromInternalValue(42 + i), delta_value);
+    metadata.Clear();
+
+    EXPECT_FALSE(metadata.HasKey(key));
     metadata.SetTimeTicks(key, base::TimeTicks::FromInternalValue(~(0LL) + i));
     EXPECT_TRUE(metadata.HasKey(key));
     base::TimeTicks ticks_value;

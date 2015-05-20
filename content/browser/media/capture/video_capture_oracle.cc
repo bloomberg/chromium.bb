@@ -60,20 +60,27 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
   last_event_time_[event] = event_time;
 
   bool should_sample;
+  duration_of_next_frame_ = base::TimeDelta();
   switch (event) {
     case kCompositorUpdate:
       smoothing_sampler_.ConsiderPresentationEvent(event_time);
       content_sampler_.ConsiderPresentationEvent(damage_rect, event_time);
       if (content_sampler_.HasProposal()) {
         should_sample = content_sampler_.ShouldSample();
-        if (should_sample)
+        if (should_sample) {
           event_time = content_sampler_.frame_timestamp();
+          duration_of_next_frame_ = content_sampler_.sampling_period();
+        }
       } else {
         should_sample = smoothing_sampler_.ShouldSample();
+        if (should_sample)
+          duration_of_next_frame_ = smoothing_sampler_.min_capture_period();
       }
       break;
     default:
       should_sample = smoothing_sampler_.IsOverdueForSamplingAt(event_time);
+      if (should_sample)
+        duration_of_next_frame_ = smoothing_sampler_.min_capture_period();
       break;
   }
 

@@ -21,8 +21,19 @@ class MEDIA_EXPORT VideoFrameMetadata {
     CAPTURE_BEGIN_TIME,
     CAPTURE_END_TIME,
 
+    // The estimated duration of this frame (i.e., the amount of time between
+    // the media timestamp of this frame and the next).  Note that this is not
+    // the same information provided by FRAME_RATE as the FRAME_DURATION can
+    // vary unpredictably for every frame.  Consumers can use this to optimize
+    // playback scheduling, make encoding quality decisions, and/or compute
+    // frame-level resource utilization stats.  Use Get/SetTimeDelta() for this
+    // key.
+    FRAME_DURATION,
+
     // Represents either the fixed frame rate, or the maximum frame rate to
-    // expect from a variable-rate source.  Use Get/SetDouble() for this key.
+    // expect from a variable-rate source.  This value generally remains the
+    // same for all frames in the same session.  Use Get/SetDouble() for this
+    // key.
     FRAME_RATE,
 
     NUM_KEYS
@@ -40,6 +51,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void SetInteger(Key key, int value);
   void SetDouble(Key key, double value);
   void SetString(Key key, const std::string& value);
+  void SetTimeDelta(Key key, const base::TimeDelta& value);
   void SetTimeTicks(Key key, const base::TimeTicks& value);
   void SetValue(Key key, scoped_ptr<base::Value> value);
 
@@ -48,6 +60,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
   bool GetInteger(Key key, int* value) const WARN_UNUSED_RESULT;
   bool GetDouble(Key key, double* value) const WARN_UNUSED_RESULT;
   bool GetString(Key key, std::string* value) const WARN_UNUSED_RESULT;
+  bool GetTimeDelta(Key key, base::TimeDelta* value) const WARN_UNUSED_RESULT;
   bool GetTimeTicks(Key key, base::TimeTicks* value) const WARN_UNUSED_RESULT;
 
   // Returns null if |key| was not present.

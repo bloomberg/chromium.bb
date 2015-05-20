@@ -47,13 +47,26 @@ void VideoFrameMetadata::SetString(Key key, const std::string& value) {
       base::BinaryValue::CreateWithCopiedBuffer(value.data(), value.size()));
 }
 
-void VideoFrameMetadata::SetTimeTicks(Key key, const base::TimeTicks& value) {
+namespace {
+template<class TimeType>
+void SetTimeValue(VideoFrameMetadata::Key key,
+                  const TimeType& value,
+                  base::DictionaryValue* dictionary) {
   const int64 internal_value = value.ToInternalValue();
-  dictionary_.SetWithoutPathExpansion(
+  dictionary->SetWithoutPathExpansion(
       ToInternalKey(key),
       base::BinaryValue::CreateWithCopiedBuffer(
           reinterpret_cast<const char*>(&internal_value),
           sizeof(internal_value)));
+}
+}  // namespace
+
+void VideoFrameMetadata::SetTimeDelta(Key key, const base::TimeDelta& value) {
+  SetTimeValue(key, value, &dictionary_);
+}
+
+void VideoFrameMetadata::SetTimeTicks(Key key, const base::TimeTicks& value) {
+  SetTimeValue(key, value, &dictionary_);
 }
 
 void VideoFrameMetadata::SetValue(Key key, scoped_ptr<base::Value> value) {
@@ -83,16 +96,27 @@ bool VideoFrameMetadata::GetString(Key key, std::string* value) const {
   return !!binary_value;
 }
 
-bool VideoFrameMetadata::GetTimeTicks(Key key, base::TimeTicks* value) const {
+namespace {
+template<class TimeType>
+bool ToTimeValue(const base::BinaryValue& binary_value, TimeType* value) {
   DCHECK(value);
+  int64 internal_value;
+  if (binary_value.GetSize() != sizeof(internal_value))
+    return false;
+  memcpy(&internal_value, binary_value.GetBuffer(), sizeof(internal_value));
+  *value = TimeType::FromInternalValue(internal_value);
+  return true;
+}
+}  // namespace
+
+bool VideoFrameMetadata::GetTimeDelta(Key key, base::TimeDelta* value) const {
   const base::BinaryValue* const binary_value = GetBinaryValue(key);
-  if (binary_value && binary_value->GetSize() == sizeof(int64)) {
-    int64 internal_value;
-    memcpy(&internal_value, binary_value->GetBuffer(), sizeof(internal_value));
-    *value = base::TimeTicks::FromInternalValue(internal_value);
-    return true;
-  }
-  return false;
+  return binary_value && ToTimeValue(*binary_value, value);
+}
+
+bool VideoFrameMetadata::GetTimeTicks(Key key, base::TimeTicks* value) const {
+  const base::BinaryValue* const binary_value = GetBinaryValue(key);
+  return binary_value && ToTimeValue(*binary_value, value);
 }
 
 const base::Value* VideoFrameMetadata::GetValue(Key key) const {

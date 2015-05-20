@@ -51,6 +51,13 @@ class CONTENT_EXPORT VideoCaptureOracle {
     return smoothing_sampler_.min_capture_period();
   }
 
+  // Returns the oracle's estimate of the duration of the next frame.  This
+  // should be called just after ObserveEventAndDecideCapture(), and will only
+  // be non-zero if the call returned true.
+  base::TimeDelta estimated_frame_duration() const {
+    return duration_of_next_frame_;
+  }
+
  private:
   // Retrieve/Assign a frame timestamp by capture |frame_number|.
   base::TimeTicks GetFrameTimestamp(int frame_number) const;
@@ -62,6 +69,11 @@ class CONTENT_EXPORT VideoCaptureOracle {
   // Stores the last |event_time| from the last observation/decision.  Used to
   // sanity-check that event times are monotonically non-decreasing.
   base::TimeTicks last_event_time_[kNumEvents];
+
+  // Updated by the last call to ObserveEventAndDecideCapture() with the
+  // estimated duration of the next frame to sample.  This is zero if the method
+  // returned false.
+  base::TimeDelta duration_of_next_frame_;
 
   // Stores the frame number from the last delivered frame.
   int last_delivered_frame_number_;

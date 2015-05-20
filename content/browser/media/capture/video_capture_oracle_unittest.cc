@@ -144,8 +144,11 @@ TEST(VideoCaptureOracleTest, TransitionsSmoothlyBetweenSamplers) {
         t);
     if (require_oracle_says_sample)
       ASSERT_TRUE(oracle_says_sample);
-    if (!oracle_says_sample)
+    if (!oracle_says_sample) {
+      ASSERT_EQ(base::TimeDelta(), oracle.estimated_frame_duration());
       continue;
+    }
+    ASSERT_LT(base::TimeDelta(), oracle.estimated_frame_duration());
 
     const int frame_number = oracle.RecordCapture();
 
