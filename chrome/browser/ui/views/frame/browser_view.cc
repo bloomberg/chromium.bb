@@ -2510,6 +2510,13 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
+void BrowserView::CloseAvatarBubbleFromAvatarButton() {
+  if (switches::IsNewAvatarMenu())
+    ProfileChooserView::Hide();
+  else
+    AvatarMenuBubbleView::Hide();
+}
+
 int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED ||
       !bookmark_bar_view_.get() || !bookmark_bar_view_->IsDetached()) {

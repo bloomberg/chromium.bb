@@ -378,6 +378,9 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) = 0;
 
+  // Closes the avatar bubble on the window frame.
+  virtual void CloseAvatarBubbleFromAvatarButton() = 0;
+
   // Returns the height inset for RenderView when detached bookmark bar is
   // shown.  Invoked when a new RenderHostView is created for a non-NTP
   // navigation entry and the bookmark bar is detached.

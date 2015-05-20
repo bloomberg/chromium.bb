@@ -120,8 +120,14 @@ NewAvatarButton::~NewAvatarButton() {
 }
 
 bool NewAvatarButton::OnMousePressed(const ui::MouseEvent& event) {
-  // Prevent the bubble from being re-shown if it's already showing.
-  suppress_mouse_released_action_ = ProfileChooserView::IsShowing();
+  // Prevent the bubble from being re-shown if it's already showing in the
+  // current browser and Hide it if it's showing in another browser.
+  ProfileChooserView::ShowingType show_type =
+      ProfileChooserView::IsShowingInBrowser(browser_);
+  if (show_type == ProfileChooserView::IS_SHOWING)
+    suppress_mouse_released_action_ = true;
+  else if (show_type == ProfileChooserView::IS_SHOWING_IN_ANOTHER_BROWSER)
+    ProfileChooserView::Hide();
   return LabelButton::OnMousePressed(event);
 }
 

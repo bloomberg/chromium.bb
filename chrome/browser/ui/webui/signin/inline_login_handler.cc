@@ -13,12 +13,16 @@
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "ui/aura/window.h"
 
 InlineLoginHandler::InlineLoginHandler() {}
 
@@ -135,6 +139,17 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
           main_frame_url, signin::kSignInPromoQueryKeyConstrained, "0"),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   chrome::Navigate(&params);
+
+  signin_metrics::Source source = signin::GetSourceForPromoURL(main_frame_url);
+  if (source == signin_metrics::SOURCE_AVATAR_BUBBLE_SIGN_IN ||
+      source == signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
+    // Close the singleton avatar bubble to reveal the full tab UI.
+    Browser* browser = chrome::FindAnyBrowser(
+        profile, false,
+        chrome::GetHostDesktopTypeForNativeView(web_contents->GetNativeView()));
+    if (browser != nullptr)
+      browser->window()->CloseAvatarBubbleFromAvatarButton();
+  }
 
   web_ui()->CallJavascriptFunction("inline.login.closeDialog");
 }
