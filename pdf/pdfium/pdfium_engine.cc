@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include "base/i18n/icu_encoding_detection.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -223,10 +225,22 @@ void* MapFont(struct _FPDF_SYSFONTINFO*, int weight, int italic,
   }
 
   if (i == arraysize(PDFFontSubstitutions)) {
-    // TODO(kochi): Pass the face in UTF-8. If face is not encoded in UTF-8,
-    // convert to UTF-8 before passing.
-    description.set_face(face);
+    // Convert to UTF-8 before calling set_face().
+    std::string face_utf8;
+    if (base::IsStringUTF8(face)) {
+      face_utf8 = face;
+    } else {
+      std::string encoding;
+      if (base::DetectEncoding(face, &encoding)) {
+        // ConvertToUtf8AndNormalize() clears |face_utf8| on failure.
+        base::ConvertToUtf8AndNormalize(face, encoding, &face_utf8);
+      }
+    }
 
+    if (face_utf8.empty())
+      return nullptr;
+
+    description.set_face(face_utf8);
     description.set_weight(WeightToBrowserFontTrustedWeight(weight));
     description.set_italic(italic > 0);
   }
