@@ -313,7 +313,7 @@ void SpeechRecognitionDispatcher::ResetAudioSink() {
 const WebSpeechRecognitionHandle& SpeechRecognitionDispatcher::GetHandleFromID(
     int request_id) {
   HandleMap::iterator iter = handle_map_.find(request_id);
-  DCHECK(iter != handle_map_.end());
+  CHECK(iter != handle_map_.end());
   return iter->second;
 }
 
