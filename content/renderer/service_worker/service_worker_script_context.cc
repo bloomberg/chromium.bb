@@ -54,6 +54,16 @@ void SendCrossOriginMessageToClientOnMainThread(
                              channels.release())));
 }
 
+void StashMessagePortOnMainThread(ThreadSafeSender* sender,
+                                  int routing_id,
+                                  WebMessagePortChannelImpl* channel,
+                                  const base::string16& name) {
+  DCHECK_GE(channel->message_port_id(), 0);
+  channel->set_is_stashed();
+  sender->Send(new ServiceWorkerHostMsg_StashMessagePort(
+      routing_id, channel->message_port_id(), name));
+}
+
 blink::WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
     FetchRequestMode mode) {
   return static_cast<blink::WebURLRequest::FetchRequestMode>(mode);
@@ -120,6 +130,8 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginMessageToWorker,
                         OnCrossOriginMessageToWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SendStashedMessagePorts,
+                        OnSendStashedMessagePorts)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients,
                         OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
@@ -303,6 +315,21 @@ void ServiceWorkerScriptContext::SkipWaiting(
   Send(new ServiceWorkerHostMsg_SkipWaiting(GetRoutingID(), request_id));
 }
 
+void ServiceWorkerScriptContext::StashMessagePort(
+    blink::WebMessagePortChannel* channel,
+    const base::string16& name) {
+  // All internal book-keeping messages for MessagePort are sent from main
+  // thread (with thread hopping), so we need to do the same thread hopping here
+  // not to overtake those messages.
+  WebMessagePortChannelImpl* channel_impl =
+      static_cast<WebMessagePortChannelImpl*>(channel);
+  embedded_context_->main_thread_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&StashMessagePortOnMainThread,
+                 make_scoped_refptr(embedded_context_->thread_safe_sender()),
+                 GetRoutingID(), base::Unretained(channel_impl), name));
+}
+
 void ServiceWorkerScriptContext::Send(IPC::Message* message) {
   embedded_context_->Send(message);
 }
@@ -446,6 +473,21 @@ void ServiceWorkerScriptContext::OnCrossOriginMessageToWorker(
   web_client.targetURL = client.target_url;
   web_client.clientID = client.message_port_id;
   proxy_->dispatchCrossOriginMessageEvent(web_client, message, ports);
+}
+
+void ServiceWorkerScriptContext::OnSendStashedMessagePorts(
+    const std::vector<TransferredMessagePort>& stashed_message_ports,
+    const std::vector<int>& new_routing_ids,
+    const std::vector<base::string16>& port_names) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnSendStashedMessagePorts");
+  blink::WebMessagePortChannelArray ports =
+      WebMessagePortChannelImpl::CreatePorts(
+          stashed_message_ports, new_routing_ids,
+          embedded_context_->main_thread_task_runner());
+  for (blink::WebMessagePortChannel* port : ports)
+    static_cast<WebMessagePortChannelImpl*>(port)->set_is_stashed();
+  proxy_->addStashedMessagePorts(ports, port_names);
 }
 
 void ServiceWorkerScriptContext::OnDidGetClients(

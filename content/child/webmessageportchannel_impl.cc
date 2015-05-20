@@ -29,6 +29,7 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
       route_id_(MSG_ROUTING_NONE),
       message_port_id_(MSG_ROUTING_NONE),
       send_messages_as_values_(false),
+      is_stashed_(false),
       main_thread_task_runner_(main_thread_task_runner) {
   AddRef();
   Init();
@@ -42,6 +43,7 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
       route_id_(route_id),
       message_port_id_(port.id),
       send_messages_as_values_(port.send_messages_as_values),
+      is_stashed_(false),
       main_thread_task_runner_(main_thread_task_runner) {
   AddRef();
   Init();
@@ -58,7 +60,9 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
     message_queue_.pop();
   }
 
-  if (message_port_id_ != MSG_ROUTING_NONE)
+  // TODO(mek): Figure out if in case of a stashed port any messages remaining
+  // in the queue need to be send back to the browser process.
+  if (message_port_id_ != MSG_ROUTING_NONE && !is_stashed_)
     Send(new MessagePortHostMsg_DestroyMessagePort(message_port_id_));
 
   if (route_id_ != MSG_ROUTING_NONE)

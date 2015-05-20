@@ -126,6 +126,8 @@ class EmbeddedWorkerContextClient
   virtual void skipWaiting(
       blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
   virtual void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);
+  virtual void stashMessagePort(blink::WebMessagePortChannel* channel,
+                                const blink::WebString& name);
 
   // TODO: Implement DevTools related method overrides.
 

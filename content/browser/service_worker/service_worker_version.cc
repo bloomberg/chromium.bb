@@ -22,6 +22,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "content/browser/service_worker/stashed_port_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -159,6 +160,12 @@ void RunErrorCrossOriginConnectCallback(
     const ServiceWorkerVersion::CrossOriginConnectCallback& callback,
     ServiceWorkerStatusCode status) {
   callback.Run(status, false /* accept_connection */);
+}
+
+void RunErrorSendStashedPortsCallback(
+    const ServiceWorkerVersion::SendStashedPortsCallback& callback,
+    ServiceWorkerStatusCode status) {
+  callback.Run(status, std::vector<int>());
 }
 
 using WindowOpenedCallback = base::Callback<void(int, int)>;
@@ -359,6 +366,21 @@ bool IsInstalled(ServiceWorkerVersion::Status status) {
   }
   NOTREACHED() << "Unexpected status: " << status;
   return false;
+}
+
+scoped_refptr<StashedPortManager> GetStashedPortManagerOnUIThread(
+    const scoped_refptr<ServiceWorkerContextWrapper>& context_wrapper) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return context_wrapper->storage_partition()->GetStashedPortManager();
+}
+
+void StashPortImpl(
+    const scoped_refptr<ServiceWorkerVersion>& service_worker,
+    int message_port_id,
+    const base::string16& name,
+    const scoped_refptr<StashedPortManager>& stashed_port_manager) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  stashed_port_manager->AddPort(service_worker.get(), message_port_id, name);
 }
 
 }  // namespace
@@ -812,6 +834,32 @@ void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
   RunSoon(base::Bind(callback, status));
 }
 
+void ServiceWorkerVersion::SendStashedMessagePorts(
+    const std::vector<TransferredMessagePort>& stashed_message_ports,
+    const std::vector<base::string16>& port_names,
+    const SendStashedPortsCallback& callback) {
+  if (running_status() != RUNNING) {
+    // Schedule calling this method after starting the worker.
+    StartWorker(base::Bind(
+        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+        base::Bind(&RunErrorSendStashedPortsCallback, callback),
+        base::Bind(&self::SendStashedMessagePorts, weak_factory_.GetWeakPtr(),
+                   stashed_message_ports, port_names, callback)));
+    return;
+  }
+
+  MessagePortMessageFilter* filter =
+      embedded_worker_->message_port_message_filter();
+  std::vector<int> new_routing_ids(stashed_message_ports.size());
+  for (size_t i = 0; i < stashed_message_ports.size(); ++i)
+    new_routing_ids[i] = filter->GetNextRoutingID();
+
+  ServiceWorkerStatusCode status =
+      embedded_worker_->SendMessage(ServiceWorkerMsg_SendStashedMessagePorts(
+          stashed_message_ports, new_routing_ids, port_names));
+  RunSoon(base::Bind(callback, status, new_routing_ids));
+}
+
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   const std::string& uuid = provider_host->client_uuid();
@@ -1066,6 +1114,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
                         OnClaimClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_Pong, OnPongFromWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_StashMessagePort,
+                        OnStashMessagePort)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1543,6 +1593,26 @@ void ServiceWorkerVersion::OnClaimClients(int request_id) {
 
 void ServiceWorkerVersion::OnPongFromWorker() {
   ClearTick(&ping_time_);
+}
+
+void ServiceWorkerVersion::OnStashMessagePort(int message_port_id,
+                                              const base::string16& name) {
+  // Just abort if we are shutting down.
+  if (!context_)
+    return;
+
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  if (!registration)
+    return;
+
+  // TODO(mek): Figure out a way to avoid this round-trip through the UI thread.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetStashedPortManagerOnUIThread,
+                 make_scoped_refptr(context_->wrapper())),
+      base::Bind(&StashPortImpl, make_scoped_refptr(this), message_port_id,
+                 name));
 }
 
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(

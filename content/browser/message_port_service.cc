@@ -74,6 +74,22 @@ void MessagePortService::UpdateMessagePort(int message_port_id,
   port.route_id = routing_id;
 }
 
+void MessagePortService::GetMessagePortInfo(int message_port_id,
+                                            MessagePortDelegate** delegate,
+                                            int* routing_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!message_ports_.count(message_port_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  const MessagePort& port = message_ports_[message_port_id];
+  if (delegate)
+    *delegate = port.delegate;
+  if (routing_id)
+    *routing_id = port.route_id;
+}
+
 void MessagePortService::OnMessagePortDelegateClosing(
     MessagePortDelegate* delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -180,6 +196,10 @@ void MessagePortService::PostMessageTo(
     }
     entangled_port.queued_messages.push_back(
         std::make_pair(message, sent_message_ports));
+
+    if (entangled_port.delegate)
+      entangled_port.delegate->MessageWasHeld(entangled_port.route_id);
+
     return;
   }
 

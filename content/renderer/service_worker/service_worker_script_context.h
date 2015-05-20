@@ -91,6 +91,8 @@ class ServiceWorkerScriptContext {
                    blink::WebServiceWorkerClientCallbacks* callback);
   void SkipWaiting(blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
   void ClaimClients(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);
+  void StashMessagePort(blink::WebMessagePortChannel* channel,
+                        const base::string16& name);
 
   // Send a message to the browser. Takes ownership of |message|.
   void Send(IPC::Message* message);
@@ -133,6 +135,10 @@ class ServiceWorkerScriptContext {
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
+  void OnSendStashedMessagePorts(
+      const std::vector<TransferredMessagePort>& stashed_message_ports,
+      const std::vector<int>& new_routing_ids,
+      const std::vector<base::string16>& port_names);
   void OnDidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnOpenWindowResponse(int request_id,

@@ -381,7 +381,8 @@ StoragePartitionImpl::StoragePartitionImpl(
     HostZoomLevelContext* host_zoom_level_context,
     NavigatorConnectContextImpl* navigator_connect_context,
     PlatformNotificationContextImpl* platform_notification_context,
-    BackgroundSyncContextImpl* background_sync_context)
+    BackgroundSyncContextImpl* background_sync_context,
+    StashedPortManager* stashed_port_manager)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -398,6 +399,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       navigator_connect_context_(navigator_connect_context),
       platform_notification_context_(platform_notification_context),
       background_sync_context_(background_sync_context),
+      stashed_port_manager_(stashed_port_manager),
       browser_context_(browser_context) {
 }
 
@@ -433,6 +435,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetBackgroundSyncContext())
     GetBackgroundSyncContext()->Shutdown();
+
+  if (GetStashedPortManager())
+    GetStashedPortManager()->Shutdown();
 }
 
 StoragePartitionImpl* StoragePartitionImpl::Create(
@@ -529,6 +534,10 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new BackgroundSyncContextImpl();
   background_sync_context->Init(service_worker_context);
 
+  scoped_refptr<StashedPortManager> stashed_port_manager =
+      new StashedPortManager(service_worker_context);
+  stashed_port_manager->Init();
+
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
       context, partition_path, quota_manager.get(), appcache_service.get(),
       filesystem_context.get(), database_tracker.get(),
@@ -537,7 +546,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       webrtc_identity_store.get(), special_storage_policy.get(),
       geofencing_manager.get(), host_zoom_level_context.get(),
       navigator_connect_context.get(), platform_notification_context.get(),
-      background_sync_context.get());
+      background_sync_context.get(), stashed_port_manager.get());
 
   service_worker_context->set_storage_partition(storage_partition);
 
@@ -619,6 +628,10 @@ StoragePartitionImpl::GetPlatformNotificationContext() {
 
 BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
   return background_sync_context_.get();
+}
+
+StashedPortManager* StoragePartitionImpl::GetStashedPortManager() {
+  return stashed_port_manager_.get();
 }
 
 void StoragePartitionImpl::ClearDataImpl(

@@ -421,6 +421,13 @@ void EmbeddedWorkerContextClient::claim(
   script_context_->ClaimClients(callbacks);
 }
 
+void EmbeddedWorkerContextClient::stashMessagePort(
+    blink::WebMessagePortChannel* channel,
+    const blink::WebString& name) {
+  DCHECK(script_context_);
+  script_context_->StashMessagePort(channel, name);
+}
+
 void EmbeddedWorkerContextClient::OnMessageToWorker(
     int thread_id,
     int embedded_worker_id,

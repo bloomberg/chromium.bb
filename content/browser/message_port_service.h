@@ -49,6 +49,13 @@ class CONTENT_EXPORT MessagePortService {
                          MessagePortDelegate* delegate,
                          int routing_id);
 
+  // Returns the current information by which a message port can be reached.
+  // Either |delegate| or |routing_id| can be null, in which case that bit of
+  // information is not returned.
+  void GetMessagePortInfo(int message_port_id,
+                          MessagePortDelegate** delegate,
+                          int* routing_id);
+
   // The message port is being transferred to a new renderer process, but the
   // code doing that isn't able to immediately update the message port with a
   // new filter and routing_id. This queues up all messages sent to this port
