@@ -673,33 +673,35 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, unsigned*
     return true;
 }
 
+bool SelectorChecker::checkPseudoNot(const SelectorCheckingContext& context) const
+{
+    const CSSSelector& selector = *context.selector;
+
+    SelectorCheckingContext subContext(context);
+    subContext.isSubSelector = true;
+    ASSERT(selector.selectorList());
+    for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = subContext.selector->tagHistory()) {
+        // :not cannot nest. I don't really know why this is a
+        // restriction in CSS3, but it is, so let's honor it.
+        // the parser enforces that this never occurs
+        ASSERT(subContext.selector->pseudoType() != CSSSelector::PseudoNot);
+        // We select between :visited and :link when applying. We don't know which one applied (or not) yet.
+        if (subContext.selector->pseudoType() == CSSSelector::PseudoVisited || (subContext.selector->pseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
+            return true;
+        // context.scope is not available if m_mode == SharingRules.
+        // We cannot determine whether :host or :scope matches a given element or not.
+        if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
+            return true;
+        if (!checkOne(subContext))
+            return true;
+    }
+    return false;
+}
+
 bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, unsigned* specificity) const
 {
     Element& element = *context.element;
     const CSSSelector& selector = *context.selector;
-
-    // Handle :not up front.
-    if (selector.pseudoType() == CSSSelector::PseudoNot) {
-        SelectorCheckingContext subContext(context);
-        subContext.isSubSelector = true;
-        ASSERT(selector.selectorList());
-        for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = subContext.selector->tagHistory()) {
-            // :not cannot nest. I don't really know why this is a
-            // restriction in CSS3, but it is, so let's honor it.
-            // the parser enforces that this never occurs
-            ASSERT(subContext.selector->pseudoType() != CSSSelector::PseudoNot);
-            // We select between :visited and :link when applying. We don't know which one applied (or not) yet.
-            if (subContext.selector->pseudoType() == CSSSelector::PseudoVisited || (subContext.selector->pseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
-                return true;
-            // context.scope is not available if m_mode == SharingRules.
-            // We cannot determine whether :host or :scope matches a given element or not.
-            if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
-                return true;
-            if (!checkOne(subContext))
-                return true;
-        }
-        return false;
-    }
 
     if (context.hasScrollbarPseudo) {
         // CSS scrollbars match a specific subset of pseudo classes, and they have specialized rules for each
@@ -709,8 +711,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
 
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoNot:
-        ASSERT_NOT_REACHED();
-        break; // Already handled up above.
+        return checkPseudoNot(context);
     case CSSSelector::PseudoEmpty:
         {
             bool result = true;
@@ -1118,6 +1119,9 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
     LayoutScrollbar* scrollbar = context.scrollbar;
     ScrollbarPart part = context.scrollbarPart;
 
+    if (selector.pseudoType() == CSSSelector::PseudoNot)
+        return checkPseudoNot(context);
+
     // FIXME: This is a temporary hack for resizers and scrollbar corners. Eventually :window-inactive should become a real
     // pseudo class and just apply to everything.
     if (selector.pseudoType() == CSSSelector::PseudoWindowInactive)
@@ -1126,7 +1130,6 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
     if (!scrollbar)
         return false;
 
-    ASSERT(selector.match() == CSSSelector::PseudoClass);
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoEnabled:
         return scrollbar->enabled();

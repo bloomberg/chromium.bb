@@ -116,6 +116,7 @@ private:
     bool checkPseudoElement(const SelectorCheckingContext&) const;
     bool checkScrollbarPseudoClass(const SelectorCheckingContext&) const;
     bool checkPseudoHost(const SelectorCheckingContext&, unsigned*) const;
+    bool checkPseudoNot(const SelectorCheckingContext&) const;
 
     Mode m_mode;
 };
