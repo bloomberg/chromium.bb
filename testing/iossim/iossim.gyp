@@ -83,7 +83,7 @@
             }],  # xcode_version
           ],  # conditions
           'dependencies': [
-            'class-dump.gyp:class-dump#host',
+            'third_party/class-dump/class-dump.gyp:class-dump#host',
           ],
           'include_dirs': [
             '<(INTERMEDIATE_DIR)/iossim',
