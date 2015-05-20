@@ -179,7 +179,7 @@
                   '|Source/core/loader/FrameFetchContext*' \
                   '|Source/core/fetch/FetchContext*' \
                   '|Source/core/fetch/ImageResource*' \
-                  '|Source/core/fetch/ResourceFetcher*' 
+                  '|Source/core/fetch/ResourceFetcher*'
     },
     'track': {
       'filepath': 'Source/core/html/track/' \
@@ -339,7 +339,6 @@
                    'blink-reviews-animation@chromium.org'],
     'audio': ['rtoy@chromium.org'],
     'devtools': [ 'pfeldman+blink@chromium.org',
-                  'aandrey+blink@chromium.org',
                   'apavlov+blink@chromium.org',
                   'lushnikov+blink@chromium.org',
                   'yurys+blink@chromium.org',
@@ -353,8 +352,7 @@
                   'vivekg@chromium.org',
                   'vivek.vg@samsung.com' ],
     'bluetooth': [ 'scheib+watch@chromium.org' ],
-    'canvas': [ 'cabanier@adobe.com', 
-                'aandrey+blink@chromium.org',
+    'canvas': [ 'cabanier@adobe.com',
                 'dongseong.hwang@intel.com',
                 'junov@chromium.org' ],
     'clipboard': [ 'dcheng@chromium.org', ],
@@ -390,7 +388,6 @@
                  'horo+watch@chromium.org',
                  'falken@chromium.org' ],
     'wtf': [ 'mikhail.pozdnyakov@intel.com',
-             'aandrey+blink@chromium.org',
              'blink-reviews-wtf@chromium.org' ],
     'indexed_db': ['dgrogan@chromium.org',
                    'jsbell+idb@chromium.org', 'cmumford@chromium.org'],
