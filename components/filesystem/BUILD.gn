@@ -1,0 +1,53 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+
+mojo_native_application("filesystem") {
+  sources = [
+    "directory_impl.cc",
+    "directory_impl.h",
+    "file_impl.cc",
+    "file_impl.h",
+    "files_impl.cc",
+    "files_impl.h",
+    "futimens.h",
+    "futimens_android.cc",
+    "main.cc",
+    "shared_impl.cc",
+    "shared_impl.h",
+    "util.cc",
+    "util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/filesystem/public/interfaces",
+    "//mojo/application/public/cpp",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+  ]
+}
+
+mojo_native_application("apptests") {
+  output_name = "files_apptests"
+
+  testonly = true
+
+  sources = [
+    "directory_impl_unittest.cc",
+    "file_impl_unittest.cc",
+    "files_test_base.cc",
+    "files_test_base.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/filesystem/public/interfaces",
+    "//mojo/application/public/cpp:test_support",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+  ]
+}
