@@ -13,8 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "net/base/net_export.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace net {
 
