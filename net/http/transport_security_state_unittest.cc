@@ -71,6 +71,64 @@ class TransportSecurityStateTest : public testing::Test {
   }
 };
 
+TEST_F(TransportSecurityStateTest, DomainNameOddities) {
+  TransportSecurityState state;
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+
+  // DNS suffix search tests. Some DNS resolvers allow a terminal "." to
+  // indicate not perform DNS suffix searching. Ensure that regardless
+  // of how this is treated at the resolver layer, or at the URL/origin
+  // layer (that is, whether they are treated as equivalent or distinct),
+  // ensure that for policy matching, something lacking a terminal "."
+  // is equivalent to something with a terminal "."
+  EXPECT_FALSE(state.ShouldUpgradeToSSL("example.com"));
+
+  state.AddHSTS("example.com", expiry, true /* include_subdomains */);
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("example.com"));
+  // Trailing '.' should be equivalent; it's just a resolver hint
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("example.com."));
+  // Leading '.' should be invalid
+  EXPECT_FALSE(state.ShouldUpgradeToSSL(".example.com"));
+  // Subdomains should work regardless
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("sub.example.com"));
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("sub.example.com."));
+  // But invalid subdomains should be rejected
+  EXPECT_FALSE(state.ShouldUpgradeToSSL("sub..example.com"));
+  EXPECT_FALSE(state.ShouldUpgradeToSSL("sub..example.com."));
+
+  // Now try the inverse form
+  TransportSecurityState state2;
+  state2.AddHSTS("example.net.", expiry, true /* include_subdomains */);
+  EXPECT_TRUE(state2.ShouldUpgradeToSSL("example.net."));
+  EXPECT_TRUE(state2.ShouldUpgradeToSSL("example.net"));
+  EXPECT_TRUE(state2.ShouldUpgradeToSSL("sub.example.net."));
+  EXPECT_TRUE(state2.ShouldUpgradeToSSL("sub.example.net"));
+
+  // Finally, test weird things
+  TransportSecurityState state3;
+  state3.AddHSTS("", expiry, true /* include_subdomains */);
+  EXPECT_FALSE(state3.ShouldUpgradeToSSL(""));
+  EXPECT_FALSE(state3.ShouldUpgradeToSSL("."));
+  EXPECT_FALSE(state3.ShouldUpgradeToSSL("..."));
+  // Make sure it didn't somehow apply HSTS to the world
+  EXPECT_FALSE(state3.ShouldUpgradeToSSL("example.org"));
+
+  TransportSecurityState state4;
+  state4.AddHSTS(".", expiry, true /* include_subdomains */);
+  EXPECT_FALSE(state4.ShouldUpgradeToSSL(""));
+  EXPECT_FALSE(state4.ShouldUpgradeToSSL("."));
+  EXPECT_FALSE(state4.ShouldUpgradeToSSL("..."));
+  EXPECT_FALSE(state4.ShouldUpgradeToSSL("example.org"));
+
+  // Now do the same for preloaded entries
+  TransportSecurityState state5;
+  EXPECT_TRUE(state5.ShouldUpgradeToSSL("accounts.google.com"));
+  EXPECT_TRUE(state5.ShouldUpgradeToSSL("accounts.google.com."));
+  EXPECT_FALSE(state5.ShouldUpgradeToSSL("accounts..google.com"));
+  EXPECT_FALSE(state5.ShouldUpgradeToSSL("accounts..google.com."));
+}
+
 TEST_F(TransportSecurityStateTest, SimpleMatches) {
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
@@ -123,10 +181,15 @@ TEST_F(TransportSecurityStateTest, MatchesCase2) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
+  // Check dynamic entries
   EXPECT_FALSE(state.ShouldUpgradeToSSL("YAhoo.coM"));
   bool include_subdomains = false;
   state.AddHSTS("yahoo.com", expiry, include_subdomains);
   EXPECT_TRUE(state.ShouldUpgradeToSSL("YAhoo.coM"));
+
+  // Check static entries
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("AccounTs.GooGle.com"));
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("mail.google.COM"));
 }
 
 TEST_F(TransportSecurityStateTest, SubdomainMatches) {

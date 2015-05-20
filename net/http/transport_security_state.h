@@ -193,8 +193,7 @@ class NET_EXPORT TransportSecurityState
   void ClearDynamicData();
 
   // Inserts |state| into |enabled_hosts_| under the key |hashed_host|.
-  // |hashed_host| is already in the internal representation
-  // HashHost(CanonicalizeHost(host)).
+  // |hashed_host| is already in the internal representation.
   // Note: This is only used for serializing/deserializing the
   // TransportSecurityState.
   void AddOrUpdateEnabledHosts(const std::string& hashed_host,
@@ -318,11 +317,6 @@ class NET_EXPORT TransportSecurityState
   //
   // The new state for |host| is persisted using the Delegate (if any).
   void EnableHost(const std::string& host, const DomainState& state);
-
-  // Converts |hostname| from dotted form ("www.google.com") to the form
-  // used in DNS: "\x03www\x06google\x03com", lowercases that, and returns
-  // the result.
-  static std::string CanonicalizeHost(const std::string& hostname);
 
   // The set of hosts that have enabled TransportSecurity. |sts.domain| and
   // |pkp.domain| will always be empty for a DomainState in this map; the domain
