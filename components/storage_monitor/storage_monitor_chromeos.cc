@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -104,9 +105,9 @@ void StorageMonitorCros::Init() {
   CheckExistingMountPoints();
 
   if (!media_transfer_protocol_manager_) {
-    scoped_refptr<base::MessageLoopProxy> loop_proxy;
     media_transfer_protocol_manager_.reset(
-        device::MediaTransferProtocolManager::Initialize(loop_proxy));
+        device::MediaTransferProtocolManager::Initialize(
+                    scoped_refptr<base::SingleThreadTaskRunner>()));
   }
 
   media_transfer_protocol_device_observer_.reset(

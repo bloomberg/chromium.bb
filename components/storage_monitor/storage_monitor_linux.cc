@@ -263,10 +263,9 @@ void StorageMonitorLinux::Init() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   if (!media_transfer_protocol_manager_) {
-    scoped_refptr<base::MessageLoopProxy> loop_proxy =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
     media_transfer_protocol_manager_.reset(
-        device::MediaTransferProtocolManager::Initialize(loop_proxy));
+        device::MediaTransferProtocolManager::Initialize(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   }
 
   media_transfer_protocol_device_observer_.reset(

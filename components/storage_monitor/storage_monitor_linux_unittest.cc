@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
@@ -132,7 +133,7 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
   void UpdateMtab(
       const MtabWatcherLinux::MountPointDeviceMap& new_mtab) override {
     StorageMonitorLinux::UpdateMtab(new_mtab);
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
