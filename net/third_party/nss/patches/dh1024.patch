@@ -1,0 +1,14 @@
+diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
+index 89c98ea..861d434 100644
+--- a/ssl/ssl3con.c
++++ b/ssl/ssl3con.c
+@@ -6946,7 +6946,8 @@ ssl3_HandleServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+     	if (rv != SECSuccess) {
+ 	    goto loser;		/* malformed. */
+ 	}
+-	if (dh_p.len < 512/8) {
++	if (dh_p.len < 1024/8 ||
++	    (dh_p.len == 1024/8 && (dh_p.data[0] & 0x80) == 0)) {
+ 	    errCode = SSL_ERROR_WEAK_SERVER_EPHEMERAL_DH_KEY;
+ 	    goto alert_loser;
+ 	}

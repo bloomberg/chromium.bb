@@ -107,6 +107,9 @@ Patches:
     patches/norenegotiatelock.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=1162521
 
+  * Increase the minimum DH group size to 1024
+    patches/dh1024.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
