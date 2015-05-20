@@ -167,11 +167,13 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         static void move(const T* src, const T* srcEnd, T* dst)
         {
-            memcpy(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
+            if (LIKELY(dst && src))
+                memcpy(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
         }
         static void moveOverlapping(const T* src, const T* srcEnd, T* dst)
         {
-            memmove(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
+            if (LIKELY(dst && src))
+                memmove(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
         }
         static void swap(T* src, T* srcEnd, T* dst)
         {
@@ -201,7 +203,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         static void uninitializedCopy(const T* src, const T* srcEnd, T* dst)
         {
-            memcpy(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
+            if (LIKELY(dst && src))
+                memcpy(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
         }
         template<typename U>
         static void uninitializedCopy(const U* src, const U* srcEnd, T* dst)
