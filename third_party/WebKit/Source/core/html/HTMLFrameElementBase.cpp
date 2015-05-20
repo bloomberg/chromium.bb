@@ -99,11 +99,11 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
 
 void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == srcdocAttr)
+    if (name == srcdocAttr) {
         setLocation("about:srcdoc");
-    else if (name == srcAttr && !fastHasAttribute(srcdocAttr))
+    } else if (name == srcAttr && !fastHasAttribute(srcdocAttr)) {
         setLocation(stripLeadingAndTrailingHTMLSpaces(value));
-    else if (isIdAttributeName(name)) {
+    } else if (name == idAttr) {
         // Important to call through to base for the id attribute so the hasID bit gets set.
         HTMLFrameOwnerElement::parseAttribute(name, value);
         m_frameName = value;

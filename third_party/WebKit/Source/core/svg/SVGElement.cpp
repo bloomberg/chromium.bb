@@ -848,7 +848,7 @@ void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString&
 {
     Element::attributeChanged(name, newValue);
 
-    if (isIdAttributeName(name))
+    if (name == HTMLNames::idAttr)
         rebuildAllIncomingReferences();
 
     // Changes to the style attribute are processed lazily (see Element::getAttribute() and related methods),
@@ -871,7 +871,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    if (isIdAttributeName(attrName)) {
+    if (attrName == HTMLNames::idAttr) {
         LayoutObject* object = layoutObject();
         // Notify resources about id changes, this is important as we cache resources by id in SVGDocumentExtensions
         if (object && object->isSVGResourceContainer())

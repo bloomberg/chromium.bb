@@ -1127,7 +1127,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
     }
 
-    if (isIdAttributeName(name)) {
+    if (name == HTMLNames::idAttr) {
         AtomicString oldId = elementData()->idForStyleResolution();
         AtomicString newId = makeIdForStyleResolution(newValue, document().inQuirksMode());
         if (newId != oldId) {
@@ -1224,7 +1224,7 @@ bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* el
     ASSERT(elementShadow);
     const SelectRuleFeatureSet& featureSet = elementShadow->ensureSelectFeatureSet();
 
-    if (isIdAttributeName(name)) {
+    if (name == HTMLNames::idAttr) {
         AtomicString oldId = elementData()->idForStyleResolution();
         AtomicString newId = makeIdForStyleResolution(newValue, document().inQuirksMode());
         if (newId != oldId) {
@@ -3001,7 +3001,7 @@ inline void Element::updateId(TreeScope& scope, const AtomicString& oldId, const
 
 void Element::willModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    if (isIdAttributeName(name)) {
+    if (name == HTMLNames::idAttr) {
         updateId(oldValue, newValue);
     } else if (name == HTMLNames::nameAttr) {
         updateName(oldValue, newValue);
