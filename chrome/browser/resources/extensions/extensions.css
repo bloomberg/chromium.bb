@@ -60,8 +60,10 @@ html:not(.focus-outline-visible)
 }
 
 #dev-toggle {
-  margin-top: 0;
-  text-align: end;
+  /* Alignment should match the enable checkbox text. This is calculated as
+   * 30px to match the trash icon + 12px to match .extension-list-item-wrapper
+   * padding - 1px of magic. */
+  -webkit-margin-end: 41px;
 }
 
 .extension-code {
