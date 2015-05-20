@@ -26,5 +26,8 @@ executable("mandoline") {
     "//mojo/runner:lib",
   ]
 
-  data_deps = [ "//mandoline/services/core_services/" ]
+  data_deps = [
+    "//components/html_viewer",
+    "//mandoline/services/core_services/",
+  ]
 }
