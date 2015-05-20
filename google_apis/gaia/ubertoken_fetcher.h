@@ -50,6 +50,8 @@ class UbertokenFetcher : public GaiaAuthConsumer,
 
   // Start fetching the token for |account_id|.
   virtual void StartFetchingToken(const std::string& account_id);
+  virtual void StartFetchingTokenWithAccessToken(const std::string& account_id,
+      const std::string& access_token);
 
   // Overriden from GaiaAuthConsumer
   void OnUberAuthTokenSuccess(const std::string& token) override;

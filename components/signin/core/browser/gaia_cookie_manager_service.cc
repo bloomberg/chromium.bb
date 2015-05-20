@@ -307,22 +307,39 @@ void GaiaCookieManagerService::Shutdown() {
   cookie_changed_subscription_.reset();
 }
 
-void GaiaCookieManagerService::AddAccountToCookie(
+
+void GaiaCookieManagerService::AddAccountToCookieInternal(
     const std::string& account_id) {
+  DCHECK(!account_id.empty());
   if (!signin_client_->AreSigninCookiesAllowed()) {
     SignalComplete(account_id,
         GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
     return;
   }
 
-  DCHECK(!account_id.empty());
-  VLOG(1) << "GaiaCookieManagerService::AddAccountToCookie: " << account_id;
   requests_.push_back(GaiaCookieRequest::CreateAddAccountRequest(account_id));
   if (requests_.size() == 1) {
     signin_client_->DelayNetworkCall(
         base::Bind(&GaiaCookieManagerService::StartFetchingUbertoken,
                    base::Unretained(this)));
   }
+}
+
+void GaiaCookieManagerService::AddAccountToCookie(
+    const std::string& account_id) {
+  VLOG(1) << "GaiaCookieManagerService::AddAccountToCookie: " << account_id;
+  access_token_ = std::string();
+  AddAccountToCookieInternal(account_id);
+}
+
+void GaiaCookieManagerService::AddAccountToCookieWithToken(
+    const std::string& account_id,
+    const std::string& access_token) {
+  VLOG(1) << "GaiaCookieManagerService::AddAccountToCookieWithToken: "
+          << account_id;
+  DCHECK(!access_token.empty());
+  access_token_ = access_token;
+  AddAccountToCookieInternal(account_id);
 }
 
 bool GaiaCookieManagerService::ListAccounts(
@@ -590,12 +607,17 @@ void GaiaCookieManagerService::OnListAccountsFailure(
 }
 
 void GaiaCookieManagerService::StartFetchingUbertoken() {
-  VLOG(1) << "GaiaCookieManagerService::StartFetching account_id="
+  VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
           << requests_.front().account_id();
   uber_token_fetcher_.reset(
       new UbertokenFetcher(token_service_, this, source_,
                            signin_client_->GetURLRequestContext()));
-  uber_token_fetcher_->StartFetchingToken(requests_.front().account_id());
+  if (access_token_.empty()) {
+    uber_token_fetcher_->StartFetchingToken(requests_.front().account_id());
+  } else {
+    uber_token_fetcher_->StartFetchingTokenWithAccessToken(
+        requests_.front().account_id(), access_token_);
+  }
 }
 
 void GaiaCookieManagerService::StartFetchingMergeSession() {
@@ -659,6 +681,7 @@ void GaiaCookieManagerService::HandleNextRequest() {
   if (requests_.empty()) {
     VLOG(1) << "GaiaCookieManagerService::HandleNextRequest: no more";
     uber_token_fetcher_.reset();
+    access_token_ = std::string();
   } else {
     switch (requests_.front().request_type()) {
       case GaiaCookieRequestType::ADD_ACCOUNT:

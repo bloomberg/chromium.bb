@@ -43,6 +43,16 @@ void UbertokenFetcher::StartFetchingToken(const std::string& account_id) {
   RequestAccessToken();
 }
 
+void UbertokenFetcher::StartFetchingTokenWithAccessToken(
+    const std::string& account_id, const std::string& access_token) {
+  DCHECK(!account_id.empty());
+  DCHECK(!access_token.empty());
+
+  account_id_ = account_id;
+  access_token_ = access_token;
+  ExchangeTokens();
+}
+
 void UbertokenFetcher::OnUberAuthTokenSuccess(const std::string& token) {
   consumer_->OnUbertokenSuccess(token);
 }

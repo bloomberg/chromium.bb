@@ -160,6 +160,8 @@ class GaiaCookieManagerService : public KeyedService,
   void Shutdown() override;
 
   void AddAccountToCookie(const std::string& account_id);
+  void AddAccountToCookieWithToken(const std::string& account_id,
+                                   const std::string& access_token);
 
   // Returns if the listed accounts are up to date or not (ignore the out
   // parameter if return is false). The parameter will be assigned the current
@@ -214,6 +216,9 @@ class GaiaCookieManagerService : public KeyedService,
   void OnListAccountsSuccess(const std::string& data) override;
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
 
+  // Helper method for AddAccountToCookie* methods.
+  void AddAccountToCookieInternal(const std::string& account_id);
+
   // Starts the proess of fetching the uber token and performing a merge session
   // for the next account.  Virtual so that it can be overriden in tests.
   virtual void StartFetchingUbertoken();
@@ -249,6 +254,9 @@ class GaiaCookieManagerService : public KeyedService,
 
   // The last fetched ubertoken, for use in MergeSession retries.
   std::string uber_token_;
+
+  // The access token that can be used to prime the UberToken fetch.
+  std::string access_token_;
 
   // Subscription to be called whenever the GAIA cookies change.
   scoped_ptr<SigninClient::CookieChangedSubscription>

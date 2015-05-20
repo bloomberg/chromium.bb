@@ -52,10 +52,12 @@ void OAuth2LoginVerifier::VerifyUserCookies(Profile* profile) {
 
 void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(xiyuan,mlerman): Use |access_token_| to cut down one round trip.
-  // See http://crbug.com/483596
-  cookie_manager_service_->AddAccountToCookie(primary_account_id_);
+  if (access_token_.empty()) {
+    cookie_manager_service_->AddAccountToCookie(primary_account_id_);
+  } else {
+    cookie_manager_service_->AddAccountToCookieWithToken(primary_account_id_,
+                                                         access_token_);
+  }
 }
 
 void OAuth2LoginVerifier::OnAddAccountToCookieCompleted(
