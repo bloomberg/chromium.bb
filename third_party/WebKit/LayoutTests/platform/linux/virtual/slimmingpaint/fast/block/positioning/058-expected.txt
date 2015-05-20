@@ -18,6 +18,7 @@ layer at (8,44) size 560x19
   LayoutInline (relative positioned) {SPAN} at (0,0) size 560x19 [bgcolor=#90EE90]
     LayoutText {#text} at (219,0) size 560x19
       text run at (219,0) width 560: "The image (found or not) should be positioned at the top/left corner of this green-shaded text "
+    LayoutText {#text} at (0,0) size 0x0
 layer at (227,44) size 42x42
   LayoutBlockFlow (positioned) {IMG} at (0,0) size 42x42 [border: (1px solid #000000)]
 layer at (228,45) size 40x40 clip at (229,46) size 38x38
