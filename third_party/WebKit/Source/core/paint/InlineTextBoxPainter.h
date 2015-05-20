@@ -13,6 +13,7 @@ struct CompositionUnderline;
 struct PaintInfo;
 
 class Color;
+class ComputedStyle;
 class DocumentMarker;
 class FloatPoint;
 class FloatRect;
@@ -20,7 +21,6 @@ class Font;
 class GraphicsContext;
 class InlineTextBox;
 class LayoutPoint;
-class ComputedStyle;
 class LayoutTextCombine;
 
 class InlineTextBoxPainter {

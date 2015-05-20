@@ -41,6 +41,11 @@ static TextBlobPtr* addToTextBlobCache(InlineTextBox& inlineTextBox)
     return &gTextBlobCache->add(&inlineTextBox, nullptr).storedValue->value;
 }
 
+static bool paintsMarkerHighlights(const LayoutObject& layoutObject)
+{
+    return layoutObject.node() && layoutObject.document().markers().hasMarkers(layoutObject.node());
+}
+
 void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_inlineTextBox.isLineBreak() || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.layoutObject()) || m_inlineTextBox.layoutObject().style()->visibility() != VISIBLE
@@ -71,11 +76,17 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     }
 
+    // Determine whether or not we have composition underlines to draw.
+    bool containsComposition = m_inlineTextBox.layoutObject().node() && m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionNode() == m_inlineTextBox.layoutObject().node();
+    bool useCustomUnderlines = containsComposition && m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionUsesCustomUnderlines();
+
     // The text clip phase already has a DrawingRecorder. Text clips are initiated only in BoxPainter::paintLayerExtended, which is already
     // within a DrawingRecorder.
     OwnPtr<DrawingRecorder> drawingRecorder;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled() && paintInfo.phase != PaintPhaseTextClip) {
         LayoutRect paintRect(m_inlineTextBox.logicalRectToPhysicalRect(logicalVisualOverflow));
+        if (paintInfo.phase != PaintPhaseSelection && (haveSelection || containsComposition || paintsMarkerHighlights(m_inlineTextBox.layoutObject())))
+            paintRect.unite(m_inlineTextBox.localSelectionRect(m_inlineTextBox.start(), m_inlineTextBox.start() + m_inlineTextBox.len()));
         paintRect.moveBy(adjustedPaintOffset);
         drawingRecorder = adoptPtr(new DrawingRecorder(*paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintRect));
         if (drawingRecorder->canUseCachedDrawing())
@@ -123,10 +134,6 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
         }
     }
-
-    // Determine whether or not we have composition underlines to draw.
-    bool containsComposition = m_inlineTextBox.layoutObject().node() && m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionNode() == m_inlineTextBox.layoutObject().node();
-    bool useCustomUnderlines = containsComposition && m_inlineTextBox.layoutObject().frame()->inputMethodController().compositionUsesCustomUnderlines();
 
     // Determine text colors.
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_inlineTextBox.layoutObject(), styleToUse, paintInfo.forceBlackText(), isPrinting);
