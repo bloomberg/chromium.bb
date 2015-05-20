@@ -29,6 +29,8 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/test_compositor_host.h"
@@ -1602,6 +1604,77 @@ TEST_F(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
 
   // Ensure that the opacity animation completed.
   EXPECT_FLOAT_EQ(l1->opacity(), 0.5f);
+}
+
+// Tests that when a LAYER_SOLID_COLOR has its CC layer switched, that
+// opaqueness and color set while not animating, are maintained.
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerSolidColorNotAnimating) {
+  SkColor transparent = SK_ColorTRANSPARENT;
+  scoped_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
+  GetCompositor()->SetRootLayer(root.get());
+  root->SetFillsBoundsOpaquely(false);
+  root->SetColor(transparent);
+
+  EXPECT_FALSE(root->fills_bounds_opaquely());
+  EXPECT_FALSE(
+      root->GetAnimator()->IsAnimatingProperty(LayerAnimationElement::COLOR));
+  EXPECT_EQ(transparent, root->background_color());
+  EXPECT_EQ(transparent, root->GetTargetColor());
+
+  // Changing the underlying layer should not affect targets.
+  root->SwitchCCLayerForTest();
+
+  EXPECT_FALSE(root->fills_bounds_opaquely());
+  EXPECT_FALSE(
+      root->GetAnimator()->IsAnimatingProperty(LayerAnimationElement::COLOR));
+  EXPECT_EQ(transparent, root->background_color());
+  EXPECT_EQ(transparent, root->GetTargetColor());
+}
+
+// Tests that when a LAYER_SOLID_COLOR has its CC layer switched during an
+// animation of its opaquness and color, that both the current values, and the
+// targets are maintained.
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
+  SkColor transparent = SK_ColorTRANSPARENT;
+  scoped_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
+  GetCompositor()->SetRootLayer(root.get());
+  root->SetColor(SK_ColorBLACK);
+
+  EXPECT_TRUE(root->fills_bounds_opaquely());
+  EXPECT_EQ(SK_ColorBLACK, root->GetTargetColor());
+
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> long_duration_animation(
+      new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  {
+    ui::ScopedLayerAnimationSettings animation(root->GetAnimator());
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    root->SetFillsBoundsOpaquely(false);
+    root->SetColor(transparent);
+  }
+
+  EXPECT_TRUE(root->fills_bounds_opaquely());
+  EXPECT_TRUE(
+      root->GetAnimator()->IsAnimatingProperty(LayerAnimationElement::COLOR));
+  EXPECT_EQ(SK_ColorBLACK, root->background_color());
+  EXPECT_EQ(transparent, root->GetTargetColor());
+
+  // Changing the underlying layer should not affect targets.
+  root->SwitchCCLayerForTest();
+
+  EXPECT_TRUE(root->fills_bounds_opaquely());
+  EXPECT_TRUE(
+      root->GetAnimator()->IsAnimatingProperty(LayerAnimationElement::COLOR));
+  EXPECT_EQ(SK_ColorBLACK, root->background_color());
+  EXPECT_EQ(transparent, root->GetTargetColor());
+
+  // End all animations.
+  root->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(root->fills_bounds_opaquely());
+  EXPECT_FALSE(
+      root->GetAnimator()->IsAnimatingProperty(LayerAnimationElement::COLOR));
+  EXPECT_EQ(transparent, root->background_color());
+  EXPECT_EQ(transparent, root->GetTargetColor());
 }
 
 // Tests that the animators in the layer tree is added to the

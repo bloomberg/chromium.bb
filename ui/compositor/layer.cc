@@ -653,7 +653,9 @@ void Layer::UpdateNinePatchLayerBorder(const gfx::Rect& border) {
 void Layer::SetColor(SkColor color) { GetAnimator()->SetColor(color); }
 
 SkColor Layer::GetTargetColor() {
-  return GetAnimator()->GetTargetColor();
+  if (GetAnimator()->IsAnimatingProperty(LayerAnimationElement::COLOR))
+    return GetAnimator()->GetTargetColor();
+  return cc_layer_->background_color();
 }
 
 SkColor Layer::background_color() const {

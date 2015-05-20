@@ -101,6 +101,30 @@ TEST(LayerOwnerTest, RecreateLayerHonorsAnimationTargets) {
   EXPECT_EQ(SK_ColorGREEN, owner.layer()->background_color());
 }
 
+// Tests that when a LAYER_SOLID_COLOR which is not backed by a SolidColorLayer
+// that opaqueness and color targets are maintained when the
+// LayerOwner::RecreateLayers is called.
+TEST(LayerOwnerTest, RecreateLayerSolidColorWithChangedCCLayerHonorsTargets) {
+  SkColor transparent = SK_ColorTRANSPARENT;
+  LayerOwner owner;
+  Layer* layer = new Layer(LAYER_SOLID_COLOR);
+  owner.SetLayer(layer);
+  layer->SetFillsBoundsOpaquely(false);
+  layer->SetColor(transparent);
+  // Changing the backing layer takes LAYER_SOLID_COLOR off of the normal layer
+  // flow, need to ensure that set values are maintained.
+  layer->SwitchCCLayerForTest();
+
+  EXPECT_FALSE(layer->fills_bounds_opaquely());
+  EXPECT_EQ(transparent, layer->background_color());
+  EXPECT_EQ(transparent, layer->GetTargetColor());
+
+  scoped_ptr<Layer> old_layer(owner.RecreateLayer());
+  EXPECT_FALSE(owner.layer()->fills_bounds_opaquely());
+  EXPECT_EQ(transparent, owner.layer()->background_color());
+  EXPECT_EQ(transparent, owner.layer()->GetTargetColor());
+}
+
 TEST(LayerOwnerTest, RecreateRootLayerWithNullCompositor) {
   LayerOwner owner;
   Layer* layer = new Layer;
