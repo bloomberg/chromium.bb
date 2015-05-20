@@ -59,11 +59,9 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGEnumerationBase::cloneForAnimation(co
 
 String SVGEnumerationBase::valueAsString() const
 {
-    StringEntries::const_iterator it = m_entries.begin();
-    StringEntries::const_iterator itEnd = m_entries.end();
-    for (; it != itEnd; ++it) {
-        if (m_value == it->first)
-            return it->second;
+    for (const auto& entry : m_entries) {
+        if (m_value == entry.first)
+            return entry.second;
     }
 
     ASSERT(m_value < maxInternalEnumValue());
@@ -88,13 +86,11 @@ void SVGEnumerationBase::setValue(unsigned short value, ExceptionState& exceptio
 
 void SVGEnumerationBase::setValueAsString(const String& string, ExceptionState& exceptionState)
 {
-    StringEntries::const_iterator it = m_entries.begin();
-    StringEntries::const_iterator itEnd = m_entries.end();
-    for (; it != itEnd; ++it) {
-        if (string == it->second) {
+    for (const auto& entry : m_entries) {
+        if (string == entry.second) {
             // 0 corresponds to _UNKNOWN enumeration values, and should not be settable.
-            ASSERT(it->first);
-            m_value = it->first;
+            ASSERT(entry.first);
+            m_value = entry.first;
             notifyChange();
             return;
         }
