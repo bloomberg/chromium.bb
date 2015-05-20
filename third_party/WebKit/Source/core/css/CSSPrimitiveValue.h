@@ -111,7 +111,6 @@ public:
         CSS_TURN = 107,
         CSS_REMS = 108,
         CSS_CHS = 109,
-        CSS_COUNTER_NAME = 110,
         CSS_SHAPE = 111,
         CSS_QUAD = 112,
         CSS_CALC = 113,

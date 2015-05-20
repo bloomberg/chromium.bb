@@ -41,6 +41,7 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
+#include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/layout/LayoutBlock.h"
@@ -1018,7 +1019,13 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const ComputedStyle&
         if (contentData->isCounter()) {
             const CounterContent* counter = toCounterContentData(contentData)->counter();
             ASSERT(counter);
-            list->append(cssValuePool().createValue(counter->identifier(), CSSPrimitiveValue::CSS_COUNTER_NAME));
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> identifier = cssValuePool().createValue(counter->identifier(), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> separator = cssValuePool().createValue(counter->separator(), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
+            CSSValueID listStyleIdent = CSSValueNone;
+            if (counter->listStyle() != NoneListStyle)
+                listStyleIdent = static_cast<CSSValueID>(CSSValueDisc + counter->listStyle());
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle = cssValuePool().createIdentifierValue(listStyleIdent);
+            list->append(cssValuePool().createValue(Counter::create(identifier.release(), listStyle.release(), separator.release())));
         } else if (contentData->isImage()) {
             const StyleImage* image = toImageContentData(contentData)->image();
             ASSERT(image);

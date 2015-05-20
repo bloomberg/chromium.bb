@@ -394,7 +394,6 @@ void CSSPrimitiveValue::cleanup()
     case CSS_STRING:
     case CSS_URI:
     case CSS_ATTR:
-    case CSS_COUNTER_NAME:
         if (m_value.string)
             m_value.string->deref();
         break;
@@ -912,7 +911,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case CSS_VALUE_ID:
     case CSS_PROPERTY_ID:
     case CSS_ATTR:
-    case CSS_COUNTER_NAME:
     case CSS_COUNTER:
     case CSS_RECT:
     case CSS_QUAD:
@@ -998,9 +996,6 @@ String CSSPrimitiveValue::customCSSText() const
             text = result.toString();
             break;
         }
-        case CSS_COUNTER_NAME:
-            text = "counter(" + String(m_value.string) + ')';
-            break;
         case CSS_COUNTER: {
             StringBuilder result;
             String separator = m_value.counter->separator();
@@ -1015,7 +1010,8 @@ String CSSPrimitiveValue::customCSSText() const
                 result.append(serializeString(separator));
             }
             String listStyle = m_value.counter->listStyle();
-            if (!listStyle.isEmpty()) {
+            bool isDefaultListStyle = m_value.counter->listStyleIdent() == CSSValueDecimal;
+            if (!listStyle.isEmpty() && !isDefaultListStyle) {
                 result.appendLiteral(", ");
                 result.append(listStyle);
             }
@@ -1095,7 +1091,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_STRING:
     case CSS_URI:
     case CSS_ATTR:
-    case CSS_COUNTER_NAME:
         return equal(m_value.string, other.m_value.string);
     case CSS_COUNTER:
         return m_value.counter && other.m_value.counter && m_value.counter->equals(*other.m_value.counter);
