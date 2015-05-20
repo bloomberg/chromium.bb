@@ -162,12 +162,33 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   c_.public_headers().push_back(c_public);
   c_.set_all_headers_public(false);
 
+  // Create another toolchain.
+  Settings other_settings(setup_.build_settings(), "other/");
+  Toolchain other_toolchain(&other_settings,
+                            Label(SourceDir("//toolchain/"), "other"));
+  TestWithScope::SetupToolchain(&other_toolchain);
+  other_settings.set_toolchain_label(other_toolchain.label());
+  other_settings.set_default_toolchain_label(setup_.toolchain()->label());
+
+  // Add a target in the other toolchain with a header in it that is not
+  // connected to any targets in the main toolchain.
+  Target otc(&other_settings, Label(SourceDir("//p/"), "otc",
+             other_toolchain.label().dir(), other_toolchain.label().name()));
+  otc.set_output_type(Target::SOURCE_SET);
+  Err err;
+  EXPECT_TRUE(otc.SetToolchain(&other_toolchain, &err));
+  otc.visibility().SetPublic();
+  targets_.push_back(&otc);
+
+  SourceFile otc_header("//otc_header.h");
+  otc.sources().push_back(otc_header);
+  EXPECT_TRUE(otc.OnResolved(&err));
+
   scoped_refptr<HeaderChecker> checker(
       new HeaderChecker(setup_.build_settings(), targets_));
 
   // A file in target A can't include a header from D because A has no
   // dependency on D.
-  Err err;
   EXPECT_FALSE(checker->CheckInclude(&a_, input_file, d_header, range, &err));
   EXPECT_TRUE(err.has_error());
 
@@ -187,6 +208,12 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   err = Err();
   EXPECT_TRUE(checker->CheckInclude(&a_, input_file, SourceFile("//random.h"),
                                     range, &err));
+  EXPECT_FALSE(err.has_error());
+
+  // A can depend on a file present only in another toolchain even with no
+  // dependency path.
+  err = Err();
+  EXPECT_TRUE(checker->CheckInclude(&a_, input_file, otc_header, range, &err));
   EXPECT_FALSE(err.has_error());
 }
 

@@ -320,6 +320,33 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
   const TargetVector& targets = found->second;
   Chain chain;  // Prevent reallocating in the loop.
 
+  // If the file is unknown in the current toolchain (rather than being private
+  // or in a target not visible to the current target), ignore it. This is a
+  // bit of a hack to account for the fact that the include finder doesn't
+  // understand the preprocessor.
+  //
+  // When not cross-compiling, if a platform specific header is conditionally
+  // included in the build, and preprocessor conditions around #includes of
+  // that match the build conditions, everything will be OK because the file
+  // won't be known to GN even though the #include finder identified the file.
+  //
+  // Cross-compiling breaks this. When compiling Android on Linux, for example,
+  // we might see both Linux and Android definitions of a target and know
+  // about the union of all headers in the build. Since the #include finder
+  // ignores preprocessor, we will find the Linux headers in the Android
+  // build and note that a dependency from the Android target to the Linux
+  // one is missing (these might even be the same target in different
+  // toolchains!).
+  bool present_in_current_toolchain = false;
+  for (const auto& target : targets) {
+    if (from_target->label().ToolchainsEqual(target.target->label())) {
+      present_in_current_toolchain = true;
+      break;
+    }
+  }
+  if (!present_in_current_toolchain)
+    return true;
+
   // For all targets containing this file, we require that at least one be
   // a direct or public dependency of the current target, and that the header
   // is public within the target.
@@ -335,18 +362,6 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     // target.
     const Target* to_target = target.target;
     if (to_target == from_target)
-      return true;
-
-    // Additionally, allow a target to include files from that same target
-    // in other toolchains. This is a bit of a hack to account for the fact that
-    // the include finder doesn't understand the preprocessor.
-    //
-    // If a source file conditionally depends on a platform-specific include in
-    // the same target, and there is a cross-compile such that GN sees
-    // definitions of the target both with and without that include, it would
-    // give an error that the target needs to depend on itself in the other
-    // toolchain (where the platform-specific header is defined as a source).
-    if (TargetLabelsMatchExceptToolchain(to_target, from_target))
       return true;
 
     bool is_permitted_chain = false;
