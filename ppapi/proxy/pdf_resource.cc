@@ -98,13 +98,16 @@ void PDFResource::SearchString(const unsigned short* input_string,
     DCHECK(status == U_ZERO_ERROR);
   }
 
-  *count = static_cast<uint32_t>(pp_results.size());
-  if (*count) {
-    *results = reinterpret_cast<PP_PrivateFindResult*>(malloc(
-        *count * sizeof(PP_PrivateFindResult)));
-    memcpy(*results, &pp_results[0], *count * sizeof(PP_PrivateFindResult));
+  if (pp_results.empty() ||
+      pp_results.size() > std::numeric_limits<uint32_t>::max() ||
+      pp_results.size() > SIZE_MAX / sizeof(PP_PrivateFindResult)) {
+    *count = 0;
+    *results = nullptr;
   } else {
-    *results = NULL;
+    *count = static_cast<uint32_t>(pp_results.size());
+    const size_t result_size = pp_results.size() * sizeof(PP_PrivateFindResult);
+    *results = reinterpret_cast<PP_PrivateFindResult*>(malloc(result_size));
+    memcpy(*results, &pp_results[0], result_size);
   }
 
   usearch_close(searcher);

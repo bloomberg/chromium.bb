@@ -5,12 +5,9 @@
 #ifndef PPAPI_PROXY_FLASH_FONT_FILE_RESOURCE_H_
 #define PPAPI_PROXY_FLASH_FONT_FILE_RESOURCE_H_
 
-#include <map>
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/serialized_structs.h"
@@ -42,15 +39,16 @@ class FlashFontFileResource : public PluginResource,
  private:
   // Sees if we have a cache of the font table and returns a pointer to it.
   // Returns NULL if we don't have it.
-  std::string* GetFontTable(uint32_t table) const;
+  const std::string* GetFontTable(uint32_t table) const;
 
-  std::string* AddFontTable(uint32_t table, const std::string& contents);
+  const std::string* AddFontTable(uint32_t table, const std::string& contents);
 
-  typedef std::map<uint32_t, linked_ptr<std::string> > FontTableMap;
+  using FontTableMap =
+      base::ScopedPtrHashMap<uint32_t, scoped_ptr<std::string>>;
   FontTableMap font_tables_;
 
   SerializedFontDescription description_;
-  PP_PrivateFontCharset charset_;
+  const PP_PrivateFontCharset charset_;
 
   DISALLOW_COPY_AND_ASSIGN(FlashFontFileResource);
 };

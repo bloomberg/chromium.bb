@@ -42,7 +42,7 @@ PP_Bool FlashFontFileResource::GetFontTable(uint32_t table,
         RENDERER, PpapiHostMsg_FlashFontFile_Create(description_, charset_));
   }
 
-  std::string* contents = GetFontTable(table);
+  const std::string* contents = GetFontTable(table);
   if (!contents) {
     std::string out_contents;
     int32_t result = SyncCall<PpapiPluginMsg_FlashFontFile_GetFontTableReply>(
@@ -64,18 +64,17 @@ PP_Bool FlashFontFileResource::GetFontTable(uint32_t table,
   return PP_TRUE;
 }
 
-std::string* FlashFontFileResource::GetFontTable(uint32_t table) const {
+const std::string* FlashFontFileResource::GetFontTable(uint32_t table) const {
   FontTableMap::const_iterator found = font_tables_.find(table);
-  if (found == font_tables_.end())
-    return NULL;
-  return found->second.get();
+  return (found != font_tables_.end()) ? found->second : nullptr;
 }
 
-std::string* FlashFontFileResource::AddFontTable(uint32_t table,
-                                                 const std::string& contents) {
-  linked_ptr<std::string> heap_string(new std::string(contents));
-  font_tables_[table] = heap_string;
-  return heap_string.get();
+const std::string* FlashFontFileResource::AddFontTable(
+    uint32_t table,
+    const std::string& contents) {
+  FontTableMap::const_iterator it =
+      font_tables_.set(table, make_scoped_ptr(new std::string(contents)));
+  return it->second;
 }
 
 }  // namespace proxy
