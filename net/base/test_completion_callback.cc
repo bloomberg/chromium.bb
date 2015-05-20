@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 
 namespace net {
@@ -16,23 +16,27 @@ namespace internal {
 
 void TestCompletionCallbackBaseInternal::DidSetResult() {
   have_result_ = true;
-  if (waiting_for_result_)
-    base::MessageLoop::current()->Quit();
+  if (run_loop_)
+    run_loop_->Quit();
 }
 
 void TestCompletionCallbackBaseInternal::WaitForResult() {
-  DCHECK(!waiting_for_result_);
-  while (!have_result_) {
-    waiting_for_result_ = true;
-    base::MessageLoop::current()->Run();
-    waiting_for_result_ = false;
+  DCHECK(!run_loop_);
+  if (!have_result_) {
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset();
+    DCHECK(have_result_);
+    // A huge number of tests depend on this class running events after the
+    // result is set.
+    // TODO(mmenke):  We really should fix this.
+    base::RunLoop().RunUntilIdle();
   }
   have_result_ = false;  // Auto-reset for next callback.
 }
 
 TestCompletionCallbackBaseInternal::TestCompletionCallbackBaseInternal()
-    : have_result_(false),
-      waiting_for_result_(false) {
+    : have_result_(false) {
 }
 
 TestCompletionCallbackBaseInternal::~TestCompletionCallbackBaseInternal() {
