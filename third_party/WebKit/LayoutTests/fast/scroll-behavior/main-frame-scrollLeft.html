@@ -20,7 +20,7 @@
     }
 
     function jsScroll(testCase) {
-      document.body.scrollLeft = testCase.x;
+      document.scrollingElement.scrollLeft = testCase.x;
     }
 
     const testScrolls = [
@@ -39,7 +39,7 @@
         testCases.push(new ScrollBehaviorTestCase(testScrolls[i]));
       }
 
-      var scrollBehaviorTest = new ScrollBehaviorTest(document.body,
+      var scrollBehaviorTest = new ScrollBehaviorTest(document.scrollingElement,
                                                       document,
                                                       testCases,
                                                       getEndPosition,

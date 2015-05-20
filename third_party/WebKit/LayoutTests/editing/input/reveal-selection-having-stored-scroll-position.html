@@ -21,7 +21,7 @@ function navigate()
         eventSender.keyDown("a");
 
     setTimeout(function () { 
-        var scrollPosition = document.body.scrollTop;
+        var scrollPosition = document.scrollingElement.scrollTop;
         var result = document.getElementById("result");
         if (scrollPosition != 100)
             result.innerHTML = "Success! The scroll position in history was not restored after navigation as input field is revealed on selection."

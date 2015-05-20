@@ -39,10 +39,10 @@
            
            var iframe = document.getElementById('NoScrolliFrame');
            var iframeDocument = iframe.contentDocument;
-           if (iframeDocument.body.scrollLeft == 0)
+           if (iframeDocument.scrollingElement.scrollLeft == 0)
                log("PASSED");
            else
-               log("FAILED : " + iframeDocument.body.scrollLeft + " pixels have been scrolled");
+               log("FAILED : " + iframeDocument.scrollingElement.scrollLeft + " pixels have been scrolled");
            
            if (window.testRunner)
                testRunner.notifyDone();

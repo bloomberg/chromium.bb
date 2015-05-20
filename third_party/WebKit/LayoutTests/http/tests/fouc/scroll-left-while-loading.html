@@ -5,7 +5,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 setTimeout(function(){
-    document.body.scrollLeft;
+    document.scrollingElement.scrollLeft;
     // Check that ignoreLayoutWithPendingStylesheets will return true if we did a
     // forced repaint after the access to scrollLeft. We should not since the delayed
     // stylesheet below is pending.

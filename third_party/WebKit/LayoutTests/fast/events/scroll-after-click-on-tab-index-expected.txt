@@ -4,7 +4,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Scroll position is more than 0
-PASS document.body.scrollTop > 0 is true
+PASS document.scrollingElement.scrollTop > 0 is true
 
 
 

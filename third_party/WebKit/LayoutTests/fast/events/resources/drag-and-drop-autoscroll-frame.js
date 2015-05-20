@@ -15,8 +15,8 @@ window.onload = function() {
     function moveTo(newState, x, y)
     {
         state = newState;
-        lastScrollLeft = document.body.scrollLeft;
-        lastScrollTop = document.body.scrollTop;
+        lastScrollLeft = document.scrollingElement.scrollLeft;
+        lastScrollTop = document.scrollingElement.scrollTop;
         eventSender.mouseMoveTo(x, y);
     }
 
@@ -26,23 +26,23 @@ window.onload = function() {
         debug('state=' + state);
         switch (state) {
         case 'NE':
-            shouldBeTrue('document.body.scrollLeft > 0');
-            shouldBeTrue('!document.body.scrollTop');
+            shouldBeTrue('document.scrollingElement.scrollLeft > 0');
+            shouldBeTrue('!document.scrollingElement.scrollTop');
             moveTo('SE', westX, southY);
             break;
         case 'SE':
-            shouldBeTrue('document.body.scrollLeft > 0');
-            shouldBeTrue('document.body.scrollTop > 0');
+            shouldBeTrue('document.scrollingElement.scrollLeft > 0');
+            shouldBeTrue('document.scrollingElement.scrollTop > 0');
             moveTo('SW', westX, southY);
             break;
         case 'SW':
-            shouldBeTrue('document.body.scrollLeft < lastScrollLeft');
-            shouldBeTrue('document.body.scrollTop > 0');
+            shouldBeTrue('document.scrollingElement.scrollLeft < lastScrollLeft');
+            shouldBeTrue('document.scrollingElement.scrollTop > 0');
             moveTo('NW', westX, northY);
             break;
         case 'NW':
-            shouldBeTrue('document.body.scrollLeft <= lastScrollLeft');
-            shouldBeTrue('document.body.scrollTop < lastScrollTop');
+            shouldBeTrue('document.scrollingElement.scrollLeft <= lastScrollLeft');
+            shouldBeTrue('document.scrollingElement.scrollTop < lastScrollTop');
             eventSender.mouseUp();
             $('container').outerHTML = '';
             if (window.parent !== window)

@@ -7,7 +7,7 @@ PASS document.activeElement.id is 'tab1'
 PASS document.activeElement.id is 'tab2'
 PASS document.activeElement.id is 'tab3'
 PASS document.activeElement.id is 'tab4'
-PASS document.body.clientHeight is document.body.scrollHeight - window.scrollY
+PASS document.body.clientHeight is document.scrollingElement.scrollHeight - window.scrollY
 PASS successfullyParsed is true
 
 TEST COMPLETE

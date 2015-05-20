@@ -29,5 +29,5 @@ html, body, .workspace {
     eventSender.keyDown('\t');
     shouldBe("document.activeElement.id", "'tab4'");
 
-    shouldBe("document.body.clientHeight", "document.body.scrollHeight - window.scrollY");
+    shouldBe("document.body.clientHeight", "document.scrollingElement.scrollHeight - window.scrollY");
 </script>

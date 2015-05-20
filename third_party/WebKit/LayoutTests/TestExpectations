@@ -1313,6 +1313,10 @@ crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
 crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
 
+crbug.com/157855 fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
+crbug.com/157855 virtual/pointerevent/fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
+crbug.com/157855 virtual/slimmingpaint/fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
+
 # Failures that need further investigation.
 crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
 crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]

@@ -27,8 +27,8 @@
 
             function checkOffsets()
             {
-                shouldBe("document.body.scrollTop", "window.expectedScrollTop");
-                shouldBe("document.body.scrollLeft", "window.expectedScrollLeft");
+                shouldBe("document.scrollingElement.scrollTop", "window.expectedScrollTop");
+                shouldBe("document.scrollingElement.scrollLeft", "window.expectedScrollLeft");
                 finishJSTest();
             }
 

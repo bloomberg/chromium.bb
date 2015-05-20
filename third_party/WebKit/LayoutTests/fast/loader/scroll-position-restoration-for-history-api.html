@@ -58,8 +58,8 @@ function handleNavigation() {
 
     debug('verifying ' + key);
     shouldBeEqualToString('history.state.key', '' + key);
-    shouldBe('document.body.scrollLeft', test.expectedScroll[0].toString());
-    shouldBe('document.body.scrollTop', test.expectedScroll[1].toString());
+    shouldBe('document.scrollingElement.scrollLeft', test.expectedScroll[0].toString());
+    shouldBe('document.scrollingElement.scrollTop', test.expectedScroll[1].toString());
 
     if (key !== '#1') {
       window.history.back();

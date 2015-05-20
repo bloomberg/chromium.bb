@@ -67,8 +67,7 @@ var expectedScrollEventsOccurred = '1';
 function firstGestureScroll()
 {
     iframe = touchtarget;
-    iframeBody = iframe.contentDocument.body;
-    iframeDocumentElement = iframe.contentDocument.documentElement;
+    iframeScrollingElement = iframe.contentDocument.scrollingElement;
 
     debug("first gesture");
     eventSender.gestureScrollBegin(10, 72);
@@ -80,7 +79,7 @@ function firstGestureScroll()
     eventSender.gestureScrollEnd(0, 0);
 
     // Make sure the actual iframe got fully scrolled
-    shouldBe('iframeBody.scrollHeight - iframeBody.scrollTop', 'iframe.clientHeight');
+    shouldBe('iframeScrollingElement.scrollHeight - iframeScrollingElement.scrollTop', 'iframe.clientHeight');
 
     // Wait for layout.
     checkScrollOffset();

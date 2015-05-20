@@ -83,7 +83,7 @@ function test() {
 }
 
 function testAutoScroll() {
-    shouldBe('frame.contentDocument.body.scrollTop + frame.clientHeight', 'frame.contentDocument.body.scrollHeight');
+    shouldBe('frame.contentDocument.scrollingElement.scrollTop + frame.clientHeight', 'frame.contentDocument.scrollingElement.scrollHeight');
     finishJSTest();
 }
 

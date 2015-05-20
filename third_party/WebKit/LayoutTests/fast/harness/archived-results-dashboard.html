@@ -235,7 +235,7 @@ function rerun()
     stdioIframe.width = window.innerWidth;
     stdioIframe.height = '100px';
     stdioIframe.onload = function () {
-            stdioIframe.contentWindow.scrollTo(0,stdioIframe.contentWindow.document.body.scrollHeight);
+            stdioIframe.contentWindow.scrollTo(0,stdioIframe.contentWindow.document.scrollingElement.scrollHeight);
     }
     var stdio = document.createElement("a");
     stdio.innerHTML = '<p>stdio<p>';

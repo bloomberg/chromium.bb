@@ -68,7 +68,7 @@ function recordScroll2(e)
 
 function autoscrollTestPart1()
 {
-    if (iframe.contentDocument.body.scrollTop == 0) {
+    if (iframe.contentDocument.scrollingElement.scrollTop == 0) {
         testFailed("Autoscroll should have scrolled the iframe downwards, but did not");
         finishTest();
         return;
@@ -76,7 +76,7 @@ function autoscrollTestPart1()
 
     testPassed("Autoscroll should have scrolled the iframe downwards, and did.");
 
-    middleTermScrollOffset = iframe.contentDocument.body.scrollTop;
+    middleTermScrollOffset = iframe.contentDocument.scrollingElement.scrollTop;
     iframeDocument.addEventListener("scroll", recordScroll2);
 
     // Move mouse to the upper autoscroll border belt.
@@ -86,7 +86,7 @@ function autoscrollTestPart1()
 
 function autoscrollTestPart2()
 {
-    shouldBeTrue("iframe.contentDocument.body.scrollTop < middleTermScrollOffset")
+    shouldBeTrue("iframe.contentDocument.scrollingElement.scrollTop < middleTermScrollOffset")
     finishTest();
 }
 

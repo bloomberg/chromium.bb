@@ -19,30 +19,28 @@
 
         if (window.testRunner) {
             testRunner.dumpAsText();
-            var body = document.body;
-            var documentElement = document.documentElement;
-            checkValue('document.body.scrollHeight', 1000)
-            checkValue('document.body.scrollWidth', 1000);
+            checkValue('document.scrollingElement.scrollHeight', 1000)
+            checkValue('document.scrollingElement.scrollWidth', 1000);
 
             // Scrolling right to 50.
-            body.scrollLeft = 50;
-            checkValue('document.body.scrollLeft', 50);
+            document.scrollingElement.scrollLeft = 50;
+            checkValue('document.scrollingElement.scrollLeft', 50);
 
             // Zooming in.
             eventSender.zoomPageIn();
-            checkValue('document.body.scrollHeight', 1000);
-            checkValue('document.body.scrollWidth', 1000);
-            checkValue('document.body.scrollTop', 0);
-            checkValue('document.body.scrollLeft', 50);
+            checkValue('document.scrollingElement.scrollHeight', 1000);
+            checkValue('document.scrollingElement.scrollWidth', 1000);
+            checkValue('document.scrollingElement.scrollTop', 0);
+            checkValue('document.scrollingElement.scrollLeft', 50);
 
             // Scrolling down to 100.
-            body.scrollTop = 100;
-            checkValue('document.body.scrollTop', 100);
+            document.scrollingElement.scrollTop = 100;
+            checkValue('document.scrollingElement.scrollTop', 100);
 
             // Zooming back out.
             eventSender.zoomPageOut();
-            checkValue('document.body.scrollTop', 100);
-            checkValue('document.body.scrollLeft', 50);
+            checkValue('document.scrollingElement.scrollTop', 100);
+            checkValue('document.scrollingElement.scrollLeft', 50);
         }
     </script>
 </body>

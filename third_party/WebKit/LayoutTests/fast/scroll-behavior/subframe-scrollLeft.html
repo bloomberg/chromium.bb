@@ -20,7 +20,7 @@
 
     function jsScroll(testCase) {
       var subframe = document.getElementById("subframe");
-      subframe.contentDocument.body.scrollLeft = testCase.x;
+      subframe.contentDocument.scrollingElement.scrollLeft = testCase.x;
     }
 
     const testScrolls = [
@@ -40,7 +40,7 @@
       }
 
       var subframe = document.getElementById("subframe");
-      var scrollBehaviorTest = new ScrollBehaviorTest(subframe.contentDocument.body,
+      var scrollBehaviorTest = new ScrollBehaviorTest(subframe.contentDocument.scrollingElement,
                                                       subframe.contentDocument,
                                                       testCases,
                                                       getEndPosition,

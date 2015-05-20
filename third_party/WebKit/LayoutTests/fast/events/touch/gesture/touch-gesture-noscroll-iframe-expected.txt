@@ -8,12 +8,12 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 first gesture
-PASS touchtarget.contentDocument.body.scrollTop is 0
-PASS touchtarget.contentDocument.body.scrollLeft is 0
+PASS touchtarget.contentDocument.scrollingElement.scrollTop is 0
+PASS touchtarget.contentDocument.scrollingElement.scrollLeft is 0
 PASS wheelEventsOccurred is 0
 second gesture
-PASS touchtarget.contentDocument.body.scrollTop is 0
-PASS touchtarget.contentDocument.body.scrollLeft is 0
+PASS touchtarget.contentDocument.scrollingElement.scrollTop is 0
+PASS touchtarget.contentDocument.scrollingElement.scrollLeft is 0
 PASS wheelEventsOccurred is 0
 PASS scrollEventsOccurred is 0
 PASS successfullyParsed is true

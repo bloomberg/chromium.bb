@@ -36,14 +36,14 @@
 
         function autoscrollTestPart1()
         {
-            iframeScrollTopAfterAnchor = iframeDocument.body.scrollTop;
-            if (iframeDocument.body.scrollTop == 0)
+            iframeScrollTopAfterAnchor = iframeDocument.scrollingElement.scrollTop;
+            if (iframeDocument.scrollingElement.scrollTop == 0)
                 log("FAILED: anchor clicking within non-scrollable inner frame failed.");
 
             if (window.eventSender) {
                 var textInIframe = iframeDocument.getElementById('textInFrame');
-                var x = iframe.offsetLeft + textInIframe.offsetLeft - iframeDocument.body.scrollLeft + 7;
-                var y = iframe.offsetTop + textInIframe.offsetTop - iframeDocument.body.scrollTop + 7;
+                var x = iframe.offsetLeft + textInIframe.offsetLeft - iframeDocument.scrollingElement.scrollLeft + 7;
+                var y = iframe.offsetTop + textInIframe.offsetTop - iframeDocument.scrollingElement.scrollTop + 7;
                 eventSender.dragMode = false;
                 eventSender.mouseMoveTo(x, y);
                 eventSender.mouseDown();
@@ -60,7 +60,7 @@
                 eventSender.mouseUp();
 
             log("Document whose HTML or BODY tags have overflow:hidden should not autoscroll.");
-            if (iframeScrollTopAfterAnchor == iframeDocument.body.scrollTop)
+            if (iframeScrollTopAfterAnchor == iframeDocument.scrollingElement.scrollTop)
                 log("PASSED: the autoscroll has not happened.");
             else
                 log("FAILED: the autoscroll has happened.");

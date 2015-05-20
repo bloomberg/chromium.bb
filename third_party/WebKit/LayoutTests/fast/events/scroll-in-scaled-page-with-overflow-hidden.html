@@ -26,13 +26,16 @@
         if (window.eventSender)
             window.eventSender.setPageScaleFactor(2, 0, 0);
 
-        shouldBe("window.document.body.scrollTop", "0");
+        // Note that with ScrollTopLeftInterop enabled, document.scrollingElement is
+        // null because document.body is potentially scrollable (with overflow:hidden
+        // the  box can still be scrolled programmatically).
+        shouldBe("window.scrollY", "0");
 
         if (window.eventSender) {
             eventSender.mouseMoveTo(100, 100);
             eventSender.mouseScrollBy(0, -5);
         }
 
-        shouldBe("window.document.body.scrollTop", "200");
+        shouldBe("window.scrollY", "200");
     })();
 </script>

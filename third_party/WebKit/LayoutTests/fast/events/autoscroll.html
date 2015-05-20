@@ -13,7 +13,7 @@
                 var ta = document.getElementById('ta');
                 if (window.eventSender) {
                     ta.scrollIntoView();
-                    var h = ta.offsetTop - document.body.scrollTop + 10;
+                    var h = ta.offsetTop - document.scrollingElement.scrollTop + 10;
                     eventSender.dragMode = false;
                     eventSender.mouseMoveTo(20, h);
                     eventSender.mouseDown();

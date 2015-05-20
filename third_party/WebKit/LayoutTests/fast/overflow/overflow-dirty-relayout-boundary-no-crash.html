@@ -17,7 +17,7 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-document.body.scrollWidth;
+document.scrollingElement.scrollWidth;
 
 var layoutTarget = document.getElementById("layout-target");
 layoutTarget.style.width = "99px";
@@ -25,5 +25,5 @@ layoutTarget.style.width = "99px";
 var relayoutBoundary = document.getElementById("relayout-boundary");
 relayoutBoundary.style.transform = "translateX(1px)";
 
-document.body.scrollWidth;
+document.scrollingElement.scrollWidth;
 </script>

@@ -1,4 +1,4 @@
-Test that calling scroll methods on the body element does not scroll the viewport in standards mode
+Test that calling scroll methods on the body element does not scroll the viewport in standards mode. Currently expected to fail: crbug.com/157855
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

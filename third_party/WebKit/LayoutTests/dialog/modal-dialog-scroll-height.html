@@ -20,7 +20,7 @@ dialog {
 <script>
 
 document.querySelector('dialog').showModal();
-shouldBe('600', String(document.body.scrollHeight));
+shouldBe('600', String(document.scrollingElement.scrollHeight));
 
 if (window.testRunner)
   testRunner.dumpAsText();

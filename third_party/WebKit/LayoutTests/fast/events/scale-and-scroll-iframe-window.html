@@ -14,8 +14,8 @@
             var frame = document.getElementById('frame');
             frame.contentWindow.scrollTo(100,100);
 
-            shouldBe("frame.contentDocument.body.scrollTop", "100");
-            shouldBe("frame.contentDocument.body.scrollLeft", "100");
+            shouldBe("frame.contentDocument.scrollingElement.scrollTop", "100");
+            shouldBe("frame.contentDocument.scrollingElement.scrollLeft", "100");
             shouldBe("frame.contentWindow.scrollX", "100");
             shouldBe("frame.contentWindow.scrollY", "100");
         }

@@ -11,10 +11,10 @@
 
         window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
         document.execCommand("FindString", false, "target");
-        document.getElementById("result").innerText = document.body.scrollTop === 860 ? "PASS" : "FAIL (scrollTop:" + document.body.scrollTop + ")";
+        document.getElementById("result").innerText = document.scrollingElement.scrollTop === 860 ? "PASS" : "FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
 
         window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
         document.execCommand("FindString", false, "target");
-        document.getElementById("result").innerText += document.body.scrollTop === 860 ? " PASS" : " FAIL (scrollTop:" + document.body.scrollTop + ")";
+        document.getElementById("result").innerText += document.scrollingElement.scrollTop === 860 ? " PASS" : " FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
     </script>
 </body>
