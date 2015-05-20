@@ -164,7 +164,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
    protected:
     MidiPortStateBase();
 
-    ScopedVector<MidiPort>* ports();
+    ScopedVector<MidiPort>* ports() { return &ports_; }
 
    private:
     ScopedVector<MidiPort> ports_;
@@ -224,10 +224,10 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
       Port(const std::string& name, PortDirection direction, bool midi);
       ~Port();
 
-      std::string name() const;
-      PortDirection direction() const;
+      std::string name() const { return name_; }
+      PortDirection direction() const { return direction_; }
       // True if this port is a MIDI port, instead of another kind of ALSA port.
-      bool midi() const;
+      bool midi() const { return midi_; }
 
      private:
       const std::string name_;
@@ -244,8 +244,8 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
       Client(const std::string& name, snd_seq_client_type_t type);
       ~Client();
 
-      std::string name() const;
-      snd_seq_client_type_t type() const;
+      std::string name() const { return name_; }
+      snd_seq_client_type_t type() const { return type_; }
       void AddPort(int addr, scoped_ptr<Port> port);
       void RemovePort(int addr);
       PortMap::const_iterator begin() const;

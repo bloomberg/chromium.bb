@@ -322,8 +322,7 @@ MidiManagerAlsa::MidiPort::MidiPort(const std::string& path,
       connected_(true) {
 }
 
-MidiManagerAlsa::MidiPort::~MidiPort() {
-}
+MidiManagerAlsa::MidiPort::~MidiPort() = default;
 
 // Note: keep synchronized with the MidiPort::Match* methods.
 scoped_ptr<base::Value> MidiManagerAlsa::MidiPort::Value() const {
@@ -440,13 +439,7 @@ bool MidiManagerAlsa::MidiPort::MatchNoCardPass2(const MidiPort& query) const {
          (query.midi_device() == -1);
 }
 
-MidiManagerAlsa::MidiPortStateBase::~MidiPortStateBase() {
-}
-
-ScopedVector<MidiManagerAlsa::MidiPort>*
-MidiManagerAlsa::MidiPortStateBase::ports() {
-  return &ports_;
-}
+MidiManagerAlsa::MidiPortStateBase::~MidiPortStateBase() = default;
 
 MidiManagerAlsa::MidiPortStateBase::iterator
 MidiManagerAlsa::MidiPortStateBase::Find(
@@ -528,8 +521,7 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
   return ports_.end();
 }
 
-MidiManagerAlsa::MidiPortStateBase::MidiPortStateBase() {
-}
+MidiManagerAlsa::MidiPortStateBase::MidiPortStateBase() = default;
 
 void MidiManagerAlsa::TemporaryMidiPortState::Insert(
     scoped_ptr<MidiPort> port) {
@@ -560,8 +552,7 @@ MidiManagerAlsa::AlsaSeqState::AlsaSeqState()
     : clients_deleter_(&clients_), card_client_count_(0) {
 }
 
-MidiManagerAlsa::AlsaSeqState::~AlsaSeqState() {
-}
+MidiManagerAlsa::AlsaSeqState::~AlsaSeqState() = default;
 
 void MidiManagerAlsa::AlsaSeqState::ClientStart(int client_id,
                                                 const std::string& client_name,
@@ -690,37 +681,14 @@ MidiManagerAlsa::AlsaSeqState::Port::Port(
     : name_(name), direction_(direction), midi_(midi) {
 }
 
-MidiManagerAlsa::AlsaSeqState::Port::~Port() {
-}
-
-std::string MidiManagerAlsa::AlsaSeqState::Port::name() const {
-  return name_;
-}
-
-MidiManagerAlsa::AlsaSeqState::PortDirection
-MidiManagerAlsa::AlsaSeqState::Port::direction() const {
-  return direction_;
-}
-
-bool MidiManagerAlsa::AlsaSeqState::Port::midi() const {
-  return midi_;
-}
+MidiManagerAlsa::AlsaSeqState::Port::~Port() = default;
 
 MidiManagerAlsa::AlsaSeqState::Client::Client(const std::string& name,
                                               snd_seq_client_type_t type)
     : name_(name), type_(type), ports_deleter_(&ports_) {
 }
 
-MidiManagerAlsa::AlsaSeqState::Client::~Client() {
-}
-
-std::string MidiManagerAlsa::AlsaSeqState::Client::name() const {
-  return name_;
-}
-
-snd_seq_client_type_t MidiManagerAlsa::AlsaSeqState::Client::type() const {
-  return type_;
-}
+MidiManagerAlsa::AlsaSeqState::Client::~Client() = default;
 
 void MidiManagerAlsa::AlsaSeqState::Client::AddPort(int addr,
                                                     scoped_ptr<Port> port) {
@@ -788,8 +756,7 @@ MidiManagerAlsa::AlsaCard::AlsaCard(udev_device* dev,
       vendor, vendor_id_, vendor_from_database, alsa_name, alsa_longname);
 }
 
-MidiManagerAlsa::AlsaCard::~AlsaCard() {
-}
+MidiManagerAlsa::AlsaCard::~AlsaCard() = default;
 
 // static
 std::string MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
