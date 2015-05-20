@@ -20,7 +20,7 @@ mojo_sdk_source_set("cpp") {
   deps = [
     "../interfaces",
     "//base",
-    "//mojo/application",
+    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/environment:chromium",
   ]

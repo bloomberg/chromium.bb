@@ -5,8 +5,8 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
-#include "mojo/application/application_test_base_chromium.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/common/common_type_converters.h"
 
 using mojo::Array;

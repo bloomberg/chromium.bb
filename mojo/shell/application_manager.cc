@@ -336,7 +336,7 @@ void ApplicationManager::HandleFetchCallback(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableMultiprocess)) {
       // Why can't we use this in single process mode? Because of
-      // base::AtExitManager. If you link in ApplicationRunnerChromium into
+      // base::AtExitManager. If you link in ApplicationRunner into
       // your code, and then we make initialize multiple copies of the
       // application, we end up with multiple AtExitManagers and will check on
       // the second one being created.

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "mandoline/services/core_services/core_services_application_delegate.h"
-#include "mojo/application/application_runner_chromium.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(
+  mojo::ApplicationRunner runner(
       new core_services::CoreServicesApplicationDelegate);
   return runner.Run(shell_handle);
 }

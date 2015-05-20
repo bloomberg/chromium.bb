@@ -6,7 +6,7 @@
 #define MOJO_SERVICES_NETWORK_WEB_SOCKET_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/app_lifetime_helper.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 

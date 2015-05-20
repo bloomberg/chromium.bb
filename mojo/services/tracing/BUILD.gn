@@ -34,7 +34,6 @@ source_set("lib") {
   deps = [
     ":bindings",
     "//base",
-    "//mojo/application",
-    "//mojo/common",
+    "//mojo/application/public/cpp",
   ]
 }

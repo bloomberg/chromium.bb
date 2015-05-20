@@ -108,7 +108,7 @@
         '../media/cast/cast.gyp:generate_barcode_video',
         '../media/cast/cast.gyp:generate_timecode_audio',
         '../mojo/mojo.gyp:mojo',
-        '../mojo/mojo_base.gyp:mojo_application_chromium',
+        '../mojo/mojo_base.gyp:mojo_application_base',
         '../mojo/mojo_base.gyp:mojo_common_unittests',
         '../net/net.gyp:crash_cache',
         '../net/net.gyp:crl_set_dump',

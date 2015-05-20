@@ -9,9 +9,9 @@
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/test_change_tracker.h"
-#include "mojo/application/application_test_base_chromium.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/application_test_base.h"
 
 using mojo::ApplicationConnection;
 using mojo::ApplicationDelegate;

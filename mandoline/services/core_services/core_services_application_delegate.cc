@@ -34,8 +34,8 @@ class ApplicationThread;
 // SetThreadWasQuitProperly() in Run() is already used in the chrome codebase.
 // (By the time we building a base::Thread here, we already have a MessageLoop
 // on our thread, along with a lot of other bookkeeping objects, too. This is
-// why we don't call into ApplicationRunnerChromium; we already have an
-// AtExitManager et all at this point.)
+// why we don't call into ApplicationRunner; we already have an AtExitManager et
+// all at this point.)
 class ApplicationThread : public base::Thread {
  public:
   ApplicationThread(

@@ -5,18 +5,21 @@
 import("//third_party/mojo/src/mojo/public/mojo_sdk.gni")
 
 # GYP version: mojo/mojo_base.gyp:mojo_application_base
-mojo_sdk_source_set("cpp") {
-  restrict_external_deps = false
+source_set("cpp") {
   sources = [
+    "app_lifetime_helper.h",
     "application_connection.h",
     "application_delegate.h",
     "application_impl.h",
+    "application_runner.h",
     "connect.h",
     "interface_factory.h",
     "interface_factory_impl.h",
+    "lib/app_lifetime_helper.cc",
     "lib/application_connection.cc",
     "lib/application_delegate.cc",
     "lib/application_impl.cc",
+    "lib/application_runner.cc",
     "lib/interface_factory_connector.h",
     "lib/service_connector_registry.cc",
     "lib/service_connector_registry.h",
@@ -28,72 +31,50 @@ mojo_sdk_source_set("cpp") {
   ]
 
   deps = [
+    "//base",
     "//mojo/application/public/interfaces",
-  ]
-
-  mojo_sdk_deps = [
-    "mojo/public/cpp/bindings",
-    "mojo/public/cpp/environment",
-    "mojo/public/cpp/system",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/system",
   ]
 }
 
-# GYP version: mojo/mojo_base.gyp:mojo_application_standalone
-mojo_sdk_source_set("standalone") {
+source_set("content_handler") {
   sources = [
-    "lib/application_runner.cc",
+    "content_handler_factory.h",
+    "lib/content_handler_factory.cc",
   ]
-
-  public_deps = [
+  deps = [
     ":cpp",
-  ]
-
-  mojo_sdk_deps = [
-    "mojo/public/cpp/environment:standalone",
-    "mojo/public/cpp/utility",
+    "//base",
+    "//mojo/services/network/public/interfaces",
   ]
 }
 
-mojo_sdk_source_set("test_support") {
+source_set("test_support") {
   testonly = true
-  restrict_external_deps = false
   sources = [
     "application_test_base.h",
     "lib/application_test_base.cc",
-  ]
-
-  deps = [
-    ":cpp",
-    "//mojo/application/public/interfaces",
-    "//testing/gtest",
-  ]
-
-  mojo_sdk_deps = [
-    "mojo/public/cpp/bindings",
-    "mojo/public/cpp/environment",
-    "mojo/public/cpp/system",
-  ]
-}
-
-mojo_sdk_source_set("test_support_standalone") {
-  testonly = true
-  restrict_external_deps = false
-  sources = [
     "lib/application_test_main.cc",
   ]
 
-  public_deps = [
-    ":test_support",
-  ]
-
   deps = [
     ":cpp",
-    "//mojo/application/public/interfaces",
+    "//base",
+    "//base/test:test_support",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//testing/gtest",
   ]
 
-  mojo_sdk_deps = [
-    "mojo/public/cpp/environment:standalone",
-    "mojo/public/cpp/system",
-    "mojo/public/cpp/utility",
-  ]
+  data_deps = []
+  if (is_android) {
+    data_deps += [ "//mojo/android" ]
+  }
+  if (!is_component_build) {
+    data_deps += [ "//mojo/runner" ]
+  }
 }

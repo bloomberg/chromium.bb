@@ -16,10 +16,10 @@
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
-#include "mojo/application/application_test_base_chromium.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "ui/mojo/geometry/geometry_util.h"
 

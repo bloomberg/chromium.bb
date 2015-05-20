@@ -123,13 +123,10 @@ source_set("lib") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//base:base_static",
-    "//mojo/application",
-    "//mojo/application/public/interfaces",
-    "//mojo/common",
+    "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
     "//mojo/util:filename_util",
     "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//mojo/services/network/public/interfaces",
     "//mojo/shell",
     "//mojo/services/tracing:bindings",
@@ -162,7 +159,7 @@ source_set("lib") {
       ":run_android_application_function",
       "//components/gles2",
       "//components/view_manager/native_viewport:lib",
-      "//mojo/application:content_handler",
+      "//mojo/application/public/cpp:content_handler",
     ]
   }
 
@@ -428,19 +425,9 @@ mojo_native_application("apptests") {
 
   deps = [
     "//base",
-    "//mojo/application",
-    "//mojo/application:test_support",
-    "//mojo/common:common",
+    "//mojo/application/public/cpp:test_support",
     "//mojo/runner/test:bindings",
-
-    #"//mojo/services/http_server/public/cpp",
-    #"//mojo/services/http_server/public/interfaces",
     "//mojo/services/network/public/interfaces",
-
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
-    "//third_party/mojo/src/mojo/public/cpp/environment",
-    "//third_party/mojo/src/mojo/public/cpp/system:system",
   ]
-
-  #data_deps = [ "//services/http_server:http_server($default_toolchain)" ]
 }

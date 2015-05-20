@@ -13,7 +13,7 @@
 #include "components/view_manager/native_viewport/onscreen_context_provider.h"
 #include "components/view_manager/native_viewport/platform_viewport.h"
 #include "components/view_manager/public/interfaces/native_viewport.mojom.h"
-#include "mojo/application/app_lifetime_helper.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/gfx/geometry/rect.h"
 

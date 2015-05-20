@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/view_manager/view_manager_app.h"
-#include "mojo/application/application_runner_chromium.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(new view_manager::ViewManagerApp);
+  mojo::ApplicationRunner runner(new view_manager::ViewManagerApp);
   return runner.Run(shell_handle);
 }

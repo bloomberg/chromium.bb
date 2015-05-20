@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_APPLICATION_CONTENT_HANDLER_FACTORY_H_
-#define MOJO_APPLICATION_CONTENT_HANDLER_FACTORY_H_
+#ifndef MOJO_APPLICATION_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_
+#define MOJO_APPLICATION_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -77,4 +77,4 @@ make_handled_factory_holder(A* value) {
 
 }  // namespace mojo
 
-#endif  // MOJO_APPLICATION_CONTENT_HANDLER_FACTORY_H_
+#endif  // MOJO_APPLICATION_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_

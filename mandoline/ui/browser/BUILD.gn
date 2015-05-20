@@ -19,11 +19,7 @@ mojo_native_application("window_manager") {
   deps = [
     ":kiosk_wm_lib",
     "//mandoline/services/navigation/public/interfaces",
-    "//mojo/application",
-    "//mojo/application/public/interfaces",
-    "//mojo/common:common",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/utility",
+    "//mojo/application/public/cpp",
   ]
 }
 
@@ -58,7 +54,6 @@ source_set("kiosk_wm_lib") {
     "//mojo/converters/geometry",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/utility",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
   ]

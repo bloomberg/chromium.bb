@@ -80,14 +80,11 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//mojo/application",
-    "//mojo/common",
-    "//mojo/environment:chromium",
+    "//mojo/application/public/cpp",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//net",
     "//net:http_server",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
 }
@@ -102,7 +99,7 @@ source_set("sources") {
   deps = [
     ":lib",
     "//base",
-    "//mojo/application",
+    "//mojo/application/public/cpp",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
@@ -124,15 +121,12 @@ mojo_native_application("apptests") {
     ":lib",
     ":network",
     "//base",
-    "//mojo/application",
-    "//mojo/application:test_support",
-    "//mojo/common",
+    "//mojo/application/public/cpp:test_support",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//net",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
   ]
 }

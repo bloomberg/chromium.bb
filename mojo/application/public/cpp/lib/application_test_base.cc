@@ -4,6 +4,8 @@
 
 #include "mojo/application/public/cpp/application_test_base.h"
 
+#include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -14,9 +16,6 @@ namespace mojo {
 namespace test {
 
 namespace {
-// Share the application command-line arguments with multiple application tests.
-Array<String> g_args;
-
 // Share the application URL with multiple application tests.
 String g_url;
 
@@ -29,19 +28,10 @@ InterfaceRequest<Application> g_application_request;
 // calls so we can (re-)initialize new ApplicationImpls.
 ShellPtr g_shell;
 
-void InitializeArgs(int argc, std::vector<const char*> argv) {
-  MOJO_CHECK(g_args.is_null());
-  for (const char* arg : argv) {
-    if (arg)
-      g_args.push_back(arg);
-  }
-}
-
-class ShellAndArgumentGrabber : public Application {
+class ShellGrabber : public Application {
  public:
-  ShellAndArgumentGrabber(Array<String>* args,
-                          InterfaceRequest<Application> application_request)
-      : args_(args), binding_(this, application_request.Pass()) {}
+  explicit ShellGrabber(InterfaceRequest<Application> application_request)
+      : binding_(this, application_request.Pass()) {}
 
   void WaitForInitialize() {
     // Initialize is always the first call made on Application.
@@ -50,10 +40,7 @@ class ShellAndArgumentGrabber : public Application {
 
  private:
   // Application implementation.
-  void Initialize(ShellPtr shell,
-                  Array<String> args,
-                  const mojo::String& url) override {
-    *args_ = args.Pass();
+  void Initialize(ShellPtr shell, const mojo::String& url) override {
     g_url = url;
     g_application_request = binding_.Unbind();
     g_shell = shell.Pass();
@@ -68,45 +55,40 @@ class ShellAndArgumentGrabber : public Application {
 
   void RequestQuit() override { MOJO_CHECK(false); }
 
-  Array<String>* args_;
   Binding<Application> binding_;
 };
 
 }  // namespace
-
-const Array<String>& Args() {
-  return g_args;
-}
 
 MojoResult RunAllTests(MojoHandle application_request_handle) {
   {
     // This loop is used for init, and then destroyed before running tests.
     Environment::InstantiateDefaultRunLoop();
 
-    // Grab the shell handle and GTEST commandline arguments.
-    // GTEST command line arguments are supported amid application arguments:
-    // $ mojo_shell mojo:example_apptests
-    //   --args-for='mojo:example_apptests arg1 --gtest_filter=foo arg2'
-    Array<String> args;
-    ShellAndArgumentGrabber grabber(
-        &args, MakeRequest<Application>(MakeScopedHandle(
-                   MessagePipeHandle(application_request_handle))));
+    // Grab the shell handle.
+    ShellGrabber grabber(
+        MakeRequest<Application>(MakeScopedHandle(
+            MessagePipeHandle(application_request_handle))));
     grabber.WaitForInitialize();
     MOJO_CHECK(g_shell);
     MOJO_CHECK(g_application_request.is_pending());
 
-    // InitGoogleTest expects (argc + 1) elements, including a terminating null.
-    // It also removes GTEST arguments from |argv| and updates the |argc| count.
-    MOJO_CHECK(args.size() <
-               static_cast<size_t>(std::numeric_limits<int>::max()));
-    int argc = static_cast<int>(args.size());
-    std::vector<const char*> argv(argc + 1);
-    for (int i = 0; i < argc; ++i)
-      argv[i] = args[i].get().c_str();
-    argv[argc] = nullptr;
+    int argc = 0;
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    const char** argv = new const char* [cmd_line->argv().size()];
+#if defined(OS_WIN)
+    std::vector<std::string> local_strings;
+#endif
+    for (auto& arg : cmd_line->argv()) {
+#if defined(OS_WIN)
+      local_strings.push_back(base::WideToUTF8(arg));
+      argv[argc++] = local_strings.back().c_str();
+#else
+      argv[argc++] = arg.c_str();
+#endif
+    }
 
     testing::InitGoogleTest(&argc, const_cast<char**>(&(argv[0])));
-    InitializeArgs(argc, argv);
 
     Environment::DestroyDefaultRunLoop();
   }
@@ -143,8 +125,8 @@ void ApplicationTestBase::SetUp() {
   application_impl_ = new ApplicationImpl(GetApplicationDelegate(),
                                           g_application_request.Pass());
 
-  // Fake application initialization with the given command line arguments.
-  application_impl_->Initialize(g_shell.Pass(), g_args.Clone(), g_url);
+  // Fake application initialization.
+  application_impl_->Initialize(g_shell.Pass(), g_url);
 }
 
 void ApplicationTestBase::TearDown() {
@@ -160,6 +142,7 @@ void ApplicationTestBase::TearDown() {
 bool ApplicationTestBase::ShouldCreateDefaultRunLoop() {
   return true;
 }
+
 
 }  // namespace test
 }  // namespace mojo

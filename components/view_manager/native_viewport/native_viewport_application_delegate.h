@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "components/gles2/gpu_impl.h"
 #include "components/view_manager/public/interfaces/native_viewport.mojom.h"
-#include "mojo/application/app_lifetime_helper.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/common/tracing_impl.h"

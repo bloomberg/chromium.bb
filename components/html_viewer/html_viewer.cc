@@ -11,10 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/setup.h"
-#include "mojo/application/application_runner_chromium.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
@@ -161,6 +161,6 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 }  // namespace html_viewer
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(new html_viewer::HTMLViewer);
+  mojo::ApplicationRunner runner(new html_viewer::HTMLViewer);
   return runner.Run(shell_handle);
 }

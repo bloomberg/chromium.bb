@@ -54,7 +54,7 @@
       '<(DEPTH)/mojo/mojo_shell.gyp:mojo_shell_lib',
       '<(DEPTH)/mojo/mojo_shell.gyp:mojo_shell_test_bindings',
       '<(DEPTH)/base/base.gyp:base',
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_chromium',
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',

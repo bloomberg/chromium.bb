@@ -64,14 +64,10 @@ source_set("sources") {
     "//components/resource_provider:lib",
     "//components/view_manager:view_manager_lib",
     "//mandoline/ui/browser:kiosk_wm_lib",
-    "//mojo/application",
-    "//mojo/application/public/interfaces",
-    "//mojo/common",
+    "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
-    "//mojo/environment:chromium",
     "//mojo/services/network:lib",
     "//mojo/services/tracing:lib",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
   ]
 
   if (!is_android) {

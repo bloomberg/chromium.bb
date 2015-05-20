@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/application/app_lifetime_helper.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"

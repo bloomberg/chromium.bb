@@ -20,9 +20,7 @@ mojo_native_application("pingable_app") {
 
   deps = [
     ":bindings",
-    "//mojo/application/public/cpp:standalone",
+    "//mojo/application/public/cpp",
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
-    "//third_party/mojo/src/mojo/public/cpp/environment",
-    "//third_party/mojo/src/mojo/public/cpp/system",
   ]
 }

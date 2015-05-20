@@ -7,7 +7,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/application/application_test_base_chromium.h"
+#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/url_loader_impl.h"

@@ -18,9 +18,6 @@ class ApplicationImpl;
 
 namespace test {
 
-// Access the command line arguments passed to the application test.
-const Array<String>& Args();
-
 // Run all application tests. This must be called after the environment is
 // initialized, to support construction of a default run loop.
 MojoResult RunAllTests(MojoHandle application_request_handle);

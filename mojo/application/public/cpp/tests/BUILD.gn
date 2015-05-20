@@ -10,10 +10,8 @@ test("mojo_public_application_unittests") {
   ]
 
   deps = [
-    "//mojo/application/public/cpp:standalone",
+    "//mojo/application/public/cpp",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
-    "//third_party/mojo/src/mojo/public/cpp/environment:standalone",
-    "//third_party/mojo/src/mojo/public/cpp/utility",
   ]
 }

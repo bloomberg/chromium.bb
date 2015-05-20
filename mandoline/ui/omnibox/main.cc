@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "mandoline/ui/omnibox/omnibox_impl.h"
-#include "mojo/application/application_runner_chromium.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(new mandoline::OmniboxImpl);
+  mojo::ApplicationRunner runner(new mandoline::OmniboxImpl);
   return runner.Run(shell_handle);
 }

@@ -35,7 +35,7 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   }
 
   // There cannot be two AtExitManagers at the same time. Remove the one from
-  // LibraryLoader as ApplicationRunnerChromium also uses one.
+  // LibraryLoader as ApplicationRunner also uses one.
   base::android::LibraryLoaderExitHook();
 
   return JNI_VERSION_1_4;

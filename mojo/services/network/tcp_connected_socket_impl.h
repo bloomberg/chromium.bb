@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/application/app_lifetime_helper.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/tcp_connected_socket.mojom.h"
 #include "net/socket/tcp_socket.h"

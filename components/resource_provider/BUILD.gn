@@ -84,7 +84,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/resource_provider/public/interfaces",
-    "//mojo/application",
+    "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/platform_handle",
     "//url",
@@ -127,11 +127,8 @@ mojo_application_package("apptests") {
     "//base/test:test_config",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
-    "//mojo/application",
-    "//mojo/application:test_support",
-    "//mojo/common",
+    "//mojo/application/public/cpp:test_support",
     "//mojo/platform_handle",
-    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
   ]
 
   data_deps = [ ":resource_provider" ]

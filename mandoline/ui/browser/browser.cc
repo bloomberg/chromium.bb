@@ -10,7 +10,7 @@
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/merged_service_provider.h"
-#include "mojo/application/application_runner_chromium.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"

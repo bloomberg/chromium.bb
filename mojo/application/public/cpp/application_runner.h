@@ -5,22 +5,24 @@
 #ifndef MOJO_APPLICATION_PUBLIC_CPP_APPLICATION_RUNNER_H_
 #define MOJO_APPLICATION_PUBLIC_CPP_APPLICATION_RUNNER_H_
 
-#include "mojo/public/cpp/system/core.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 
 class ApplicationDelegate;
 
-// A utility for running an Application. The typical use case is to use
-// when writing your MojoMain:
+// A utility for running a chromium based mojo Application. The typical use
+// case is to use when writing your MojoMain:
 //
-//  MojoResult MojoMain(MojoHandle application_request) {
-//    mojo::ApplicationRunner runner(new MyApplicationDelegate());
-//    return runner.Run(application_request);
+//  MojoResult MojoMain(MojoHandle shell_handle) {
+//    mojo::ApplicationRunner runner(new MyDelegate());
+//    return runner.Run(shell_handle);
 //  }
 //
-// ApplicationRunner takes care of mojo environment initialization and
-// shutdown, and starting a RunLoop from which your application can run and
+// ApplicationRunner takes care of chromium environment initialization and
+// shutdown, and starting a MessageLoop from which your application can run and
 // ultimately Quit().
 class ApplicationRunner {
  public:
@@ -28,13 +30,23 @@ class ApplicationRunner {
   explicit ApplicationRunner(ApplicationDelegate* delegate);
   ~ApplicationRunner();
 
+  static void InitBaseCommandLine();
+
+  void set_message_loop_type(base::MessageLoop::Type type);
+
   // Once the various parameters have been set above, use Run to initialize an
-  // ApplicationImpl wired to the provided delegate, and run a RunLoop until
+  // ApplicationImpl wired to the provided delegate, and run a MessageLoop until
   // the application exits.
-  MojoResult Run(MojoHandle application_request);
+  MojoResult Run(MojoHandle shell_handle);
 
  private:
-  ApplicationDelegate* delegate_;
+  scoped_ptr<ApplicationDelegate> delegate_;
+
+  // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
+  // the underlying message pump).
+  base::MessageLoop::Type message_loop_type_;
+  // Whether Run() has been called.
+  bool has_run_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationRunner);
 };

@@ -13,11 +13,7 @@ mojo_native_application("omnibox") {
   deps = [
     ":lib",
     "//mandoline/services/navigation/public/interfaces",
-    "//mojo/application",
-    "//mojo/application/public/interfaces",
-    "//mojo/common:common",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/utility",
+    "//mojo/application/public/cpp",
   ]
 }
 
@@ -37,7 +33,6 @@ source_set("lib") {
     "//mojo/converters/geometry",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/utility",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
   ]

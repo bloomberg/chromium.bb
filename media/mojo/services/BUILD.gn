@@ -169,7 +169,7 @@ if (!is_component_build) {
 
     deps = [
       ":renderer_service",
-      "//mojo/application",
+      "//mojo/application/public/cpp",
       "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     ]
   }

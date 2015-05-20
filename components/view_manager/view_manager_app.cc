@@ -8,9 +8,9 @@
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/display_manager.h"
 #include "components/view_manager/view_manager_service_impl.h"
-#include "mojo/application/application_runner_chromium.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/common/tracing_impl.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/application/content_handler_factory.h"
+#include "mojo/application/public/cpp/content_handler_factory.h"
 
 #include <set>
 
@@ -10,10 +10,10 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
-#include "mojo/application/application_runner_chromium.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

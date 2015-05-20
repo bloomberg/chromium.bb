@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_APPLICATION_APP_LIFETIME_HELPER_H_
-#define MOJO_APPLICATION_APP_LIFETIME_HELPER_H_
+#ifndef MOJO_APPLICATION_PUBLIC_CPP_APP_LIFETIME_HELPER_H_
+#define MOJO_APPLICATION_PUBLIC_CPP_APP_LIFETIME_HELPER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -73,4 +73,4 @@ class AppLifetimeHelper {
 
 }  // namespace mojo
 
-#endif  // MOJO_APPLICATION_APP_LIFETIME_HELPER_H_
+#endif  // MOJO_APPLICATION_PUBLIC_CPP_APP_LIFETIME_HELPER_H_

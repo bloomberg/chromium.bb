@@ -39,10 +39,6 @@ mojo_native_application("test_app") {
     "//base",
     "//base:i18n",
     "//mojo/application/public/cpp",
-    "//mojo/application/public/cpp:standalone",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/mojo/src/mojo/public/cpp/utility",
   ]
 }
 
@@ -63,9 +59,5 @@ mojo_native_application("test_request_tracker_app") {
     "//base",
     "//base:i18n",
     "//mojo/application/public/cpp",
-    "//mojo/application/public/cpp:standalone",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/mojo/src/mojo/public/cpp/utility",
   ]
 }

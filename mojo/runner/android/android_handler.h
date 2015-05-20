@@ -7,8 +7,8 @@
 
 #include <jni.h>
 
-#include "mojo/application/content_handler_factory.h"
 #include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/content_handler_factory.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 

@@ -174,23 +174,6 @@
       },
     },
     {
-     # GN version: //mojo/application
-     'target_name': 'mojo_application_chromium',
-     'type': 'static_library',
-     'sources': [
-       'application/application_runner_chromium.cc',
-       'application/application_runner_chromium.h',
-      ],
-      'dependencies': [
-        'mojo_application_base',
-        'mojo_common_lib',
-        'mojo_environment_chromium',
-       ],
-      'export_dependent_settings': [
-        'mojo_application_base',
-       ],
-    },
-    {
       'target_name': 'mojo_application_bindings_mojom',
       'type': 'none',
       'variables': {
@@ -207,15 +190,19 @@
       'target_name': 'mojo_application_base',
       'type': 'static_library',
       'sources': [
+        'application/public/cpp/app_lifetime_helper.h',
         'application/public/cpp/application_connection.h',
         'application/public/cpp/application_delegate.h',
         'application/public/cpp/application_impl.h',
+        'application/public/cpp/application_runner.h',
         'application/public/cpp/connect.h',
         'application/public/cpp/interface_factory.h',
         'application/public/cpp/interface_factory_impl.h',
+        'application/public/cpp/lib/app_lifetime_helper.cc',
         'application/public/cpp/lib/application_connection.cc',
         'application/public/cpp/lib/application_delegate.cc',
         'application/public/cpp/lib/application_impl.cc',
+        'application/public/cpp/lib/application_runner.cc',
         'application/public/cpp/lib/interface_factory_connector.h',
         'application/public/cpp/lib/service_connector_registry.cc',
         'application/public/cpp/lib/service_connector_registry.h',
@@ -230,22 +217,6 @@
       ],
       'export_dependent_settings': [
         'mojo_application_bindings',
-      ],
-    },
-    {
-      # GN version: //mojo/application/public/cpp:standalone
-      'target_name': 'mojo_application_standalone',
-      'type': 'static_library',
-      'sources': [
-        'application/public/cpp/lib/application_runner.cc',
-        'application/public/cpp/application_runner.h',
-      ],
-      'dependencies': [
-        'mojo_application_base',
-        '../third_party/mojo/mojo_public.gyp:mojo_environment_standalone',
-      ],
-      'export_dependent_settings': [
-        'mojo_application_base',
       ],
     },
     {
@@ -265,7 +236,7 @@
       'target_name': 'mojo_public_application_unittests',
       'type': 'executable',
       'dependencies': [
-        'mojo_application_standalone',
+        'mojo_application_base',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         '../third_party/mojo/mojo_edk.gyp:mojo_run_all_unittests',
