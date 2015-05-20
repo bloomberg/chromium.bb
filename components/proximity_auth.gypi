@@ -123,10 +123,6 @@
         "proximity_auth/cryptauth/cryptauth_enrollment_utils.h",
         "proximity_auth/cryptauth/secure_message_delegate.cc",
         "proximity_auth/cryptauth/secure_message_delegate.h",
-        "proximity_auth/cryptauth/sync_scheduler.cc",
-        "proximity_auth/cryptauth/sync_scheduler.h",
-        "proximity_auth/cryptauth/sync_scheduler_impl.cc",
-        "proximity_auth/cryptauth/sync_scheduler_impl.h",
       ],
       'export_dependent_settings': [
         'cryptauth_proto',
