@@ -57,7 +57,7 @@ void ReplayingCanvas::updateInRange()
         this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
 }
 
-bool ReplayingCanvas::abortDrawing()
+bool ReplayingCanvas::abort()
 {
     return m_abortDrawing;
 }

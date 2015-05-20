@@ -32,7 +32,7 @@
 #define ReplayingCanvas_h
 
 #include "platform/graphics/InterceptingCanvas.h"
-#include "third_party/skia/include/core/SkDrawPictureCallback.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -44,11 +44,11 @@ public:
     ~CanvasInterceptor();
 };
 
-class ReplayingCanvas : public InterceptingCanvas<ReplayingCanvas>, public SkDrawPictureCallback {
+class ReplayingCanvas : public InterceptingCanvas<ReplayingCanvas>, public SkPicture::AbortCallback {
 public:
     ReplayingCanvas(SkBitmap, unsigned fromStep, unsigned toStep);
 
-    virtual bool abortDrawing() override;
+    virtual bool abort() override;
     virtual SkCanvas::SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
 
 private:
