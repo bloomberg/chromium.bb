@@ -4,10 +4,8 @@
 
 #include "storage/browser/fileapi/native_file_util.h"
 
-#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_mount_option.h"

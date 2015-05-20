@@ -5,8 +5,6 @@
 #include "storage/browser/fileapi/obfuscated_file_util.h"
 
 #include <queue>
-#include <string>
-#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -23,7 +21,6 @@
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/native_file_util.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "storage/browser/fileapi/sandbox_isolated_origin_database.h"

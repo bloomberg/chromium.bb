@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"

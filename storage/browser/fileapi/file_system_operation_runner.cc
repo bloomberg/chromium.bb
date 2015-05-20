@@ -13,7 +13,6 @@
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_writer_delegate.h"
 
 namespace storage {

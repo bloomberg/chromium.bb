@@ -5,15 +5,11 @@
 #include "storage/browser/quota/quota_manager.h"
 
 #include <algorithm>
-#include <deque>
 #include <functional>
-#include <set>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -25,7 +21,6 @@
 #include "base/time/time.h"
 #include "net/base/net_util.h"
 #include "storage/browser/quota/client_usage_tracker.h"
-#include "storage/browser/quota/quota_database.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
 #include "storage/browser/quota/storage_monitor.h"

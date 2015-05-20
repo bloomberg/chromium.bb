@@ -16,7 +16,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "storage/browser/blob/blob_data_builder.h"
-#include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
 
 namespace storage {

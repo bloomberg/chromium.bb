@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"

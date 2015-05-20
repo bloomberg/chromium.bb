@@ -19,7 +19,6 @@
 #include "storage/browser/fileapi/file_system_options.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
-#include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/fileapi/sandbox_quota_observer.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/fileapi/file_system_types.h"

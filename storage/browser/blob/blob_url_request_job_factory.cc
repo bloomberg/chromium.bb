@@ -5,11 +5,9 @@
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"

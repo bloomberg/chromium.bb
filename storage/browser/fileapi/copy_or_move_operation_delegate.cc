@@ -16,7 +16,6 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/fileapi/recursive_operation_delegate.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace storage {

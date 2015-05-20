@@ -17,7 +17,6 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_options.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"

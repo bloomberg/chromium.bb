@@ -4,8 +4,6 @@
 
 #include "storage/browser/fileapi/isolated_context.h"
 
-#include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"

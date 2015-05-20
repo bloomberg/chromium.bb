@@ -17,15 +17,11 @@
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/fileapi/file_writer_delegate.h"
 #include "storage/browser/fileapi/remove_operation_delegate.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "storage/common/quota/quota_types.h"
 
 using storage::ScopedFile;
 

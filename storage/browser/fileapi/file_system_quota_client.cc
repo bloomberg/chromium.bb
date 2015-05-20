@@ -5,10 +5,8 @@
 #include "storage/browser/fileapi/file_system_quota_client.h"
 
 #include <algorithm>
-#include <set>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -18,7 +16,6 @@
 #include "base/task_runner_util.h"
 #include "net/base/net_util.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_quota_util.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "storage/common/fileapi/file_system_util.h"

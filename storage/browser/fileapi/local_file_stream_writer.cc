@@ -4,7 +4,6 @@
 
 #include "storage/browser/fileapi/local_file_stream_writer.h"
 
-#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"

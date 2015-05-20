@@ -10,7 +10,6 @@
 #include "net/base/net_errors.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/quota/quota_manager_proxy.h"

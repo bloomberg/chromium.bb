@@ -4,19 +4,16 @@
 
 #include "storage/browser/quota/quota_database.h"
 
-#include <string>
 #include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/time/time.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "url/gurl.h"
 
 namespace storage {
 namespace {
