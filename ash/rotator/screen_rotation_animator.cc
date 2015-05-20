@@ -12,7 +12,6 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/rotator/screen_rotation_animation.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
@@ -281,19 +280,10 @@ ScreenRotationAnimator::~ScreenRotationAnimator() {
 }
 
 bool ScreenRotationAnimator::CanAnimate() const {
-  // Animations are currently broken on the login screen.
-  // (chrome-os-partners:40118). Disabling the animations on this screen for
-  // M-43
   return Shell::GetInstance()
-             ->display_manager()
-             ->GetDisplayForId(display_id_)
-             .is_valid() &&
-         Shell::GetInstance()
-             ->session_state_delegate()
-             ->IsActiveUserSessionStarted() &&
-         !Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
-         Shell::GetInstance()->session_state_delegate()->GetSessionState() ==
-             SessionStateDelegate::SESSION_STATE_ACTIVE;
+      ->display_manager()
+      ->GetDisplayForId(display_id_)
+      .is_valid();
 }
 
 void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation,
