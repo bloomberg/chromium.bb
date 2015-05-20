@@ -643,7 +643,7 @@ config("chromium_code") {
       "__STDC_FORMAT_MACROS",
     ]
 
-    if (using_sanitizer) {
+    if (!using_sanitizer && (!is_linux || !is_clang || is_official_build)) {
       # _FORTIFY_SOURCE isn't really supported by Clang now, see
       # http://llvm.org/bugs/show_bug.cgi?id=16821.
       # It seems to work fine with Ubuntu 12 headers though, so use it in
