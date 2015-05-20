@@ -68,7 +68,12 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
 base::LazyInstance<HostDiscardableSharedMemoryManager>
     g_discardable_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
 
+#if defined(OS_ANDROID)
+// Limits the number of FDs used to 32, assuming a 4MB allocation size.
+const int64_t kMaxDefaultMemoryLimit = 128 * 1024 * 1024;
+#else
 const int64_t kMaxDefaultMemoryLimit = 512 * 1024 * 1024;
+#endif
 
 const int kEnforceMemoryPolicyDelayMs = 1000;
 
@@ -89,7 +94,11 @@ HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
     : memory_limit_(
           // Allow 25% of physical memory to be used for discardable memory.
           std::min(base::SysInfo::AmountOfPhysicalMemory() / 4,
-                   kMaxDefaultMemoryLimit)),
+                   base::SysInfo::IsLowEndDevice()
+                       ?
+                       // Use 1/8th of discardable memory on low-end devices.
+                       kMaxDefaultMemoryLimit / 8
+                       : kMaxDefaultMemoryLimit)),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
           base::Bind(&HostDiscardableSharedMemoryManager::OnMemoryPressure,

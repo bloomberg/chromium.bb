@@ -22,12 +22,7 @@ namespace content {
 namespace {
 
 // Default allocation size.
-#if defined(OS_ANDROID)
-// Larger allocation size on Android to avoid reaching the FD-limit.
-const size_t kAllocationSize = 32 * 1024 * 1024;
-#else
 const size_t kAllocationSize = 4 * 1024 * 1024;
-#endif
 
 // Global atomic to generate unique discardable shared memory IDs.
 base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
