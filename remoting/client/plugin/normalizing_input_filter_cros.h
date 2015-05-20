@@ -51,6 +51,10 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
   // True if the left Alt key is pressed.
   bool left_alt_is_pressed_;
 
+  // Previous mouse coordinates.
+  int previous_mouse_x_;
+  int previous_mouse_y_;
+
   DISALLOW_COPY_AND_ASSIGN(NormalizingInputFilterCros);
 };
 

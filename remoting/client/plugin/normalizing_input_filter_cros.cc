@@ -98,7 +98,9 @@ NormalizingInputFilterCros::NormalizingInputFilterCros(
     : protocol::InputFilter(input_stub),
       deferred_key_is_rewriting_(false),
       modifying_key_(0),
-      left_alt_is_pressed_(false) {
+      left_alt_is_pressed_(false),
+      previous_mouse_x_(-1),
+      previous_mouse_y_(-1) {
 }
 
 NormalizingInputFilterCros::~NormalizingInputFilterCros() {}
@@ -117,8 +119,21 @@ void NormalizingInputFilterCros::InjectKeyEvent(
 
 void NormalizingInputFilterCros::InjectMouseEvent(
     const protocol::MouseEvent& event) {
-  if (deferred_keydown_event_.has_usb_keycode())
-    SwitchRewritingKeyToModifying();
+  // If there's a rewriting/modifier decision pending, assume that it's
+  // intended to be used as a modifying key for this mouse event and send it.
+  if (deferred_keydown_event_.has_usb_keycode()) {
+    // TODO(jamiewalch): Until crbug.com/489468 is fixed, a spurious mouse move
+    // event is generated in response to certain key combinations, so check that
+    // this is actually an "interesting" event.
+    if (event.has_button() ||
+        event.x() != previous_mouse_x_ ||
+        event.y() != previous_mouse_y_) {
+      SwitchRewritingKeyToModifying();
+    }
+  }
+  previous_mouse_x_ = event.x();
+  previous_mouse_y_ = event.y();
+
   protocol::MouseEvent newEvent = event;
   if (left_alt_is_pressed_ &&
       event.has_button() &&
