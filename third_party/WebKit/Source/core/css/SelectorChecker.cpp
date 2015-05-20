@@ -262,7 +262,7 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
             if (!context.element->isInShadowTree() || !context.previousElement)
                 return SelectorFailsCompletely;
         } else {
-            if ((!context.elementStyle && m_mode == ResolvingStyle) || m_mode == QueryingRules)
+            if ((!context.inRightmostCompound && m_mode == ResolvingStyle) || m_mode == QueryingRules)
                 return SelectorFailsLocally;
 
             PseudoId pseudoId = CSSSelector::pseudoId(context.selector->pseudoType());
@@ -323,7 +323,7 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     // to follow the pseudo elements.
     nextContext.hasScrollbarPseudo = dynamicPseudo != NOPSEUDO && (context.scrollbar || dynamicPseudo == SCROLLBAR_CORNER || dynamicPseudo == RESIZER);
     nextContext.hasSelectionPseudo = dynamicPseudo == SELECTION;
-    if ((context.elementStyle || m_mode == CollectingCSSRules || m_mode == CollectingStyleRules || m_mode == QueryingRules) && dynamicPseudo != NOPSEUDO
+    if ((context.inRightmostCompound || m_mode == CollectingCSSRules || m_mode == CollectingStyleRules || m_mode == QueryingRules) && dynamicPseudo != NOPSEUDO
         && !nextContext.hasSelectionPseudo
         && !(nextContext.hasScrollbarPseudo && nextContext.selector->match() == CSSSelector::PseudoClass))
         return SelectorFailsCompletely;
@@ -374,7 +374,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             return SelectorFailsCompletely;
         }
         nextContext.isSubSelector = false;
-        nextContext.elementStyle = 0;
+        nextContext.inRightmostCompound = false;
 
         if (nextContext.selector->isShadowPseudoElement())
             return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
@@ -393,7 +393,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
                 return matchForShadowDistributed(nextContext, *context.element, result);
 
             nextContext.isSubSelector = false;
-            nextContext.elementStyle = 0;
+            nextContext.inRightmostCompound = false;
 
             if (nextContext.selector->isShadowPseudoElement())
                 return matchForPseudoShadow(nextContext, context.element->parentNode(), result);
@@ -416,7 +416,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         if (!nextContext.element)
             return SelectorFailsAllSiblings;
         nextContext.isSubSelector = false;
-        nextContext.elementStyle = 0;
+        nextContext.inRightmostCompound = false;
         return matchSelector(nextContext, result);
 
     case CSSSelector::IndirectAdjacent:
@@ -430,7 +430,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         }
         nextContext.element = ElementTraversal::previousSibling(*context.element);
         nextContext.isSubSelector = false;
-        nextContext.elementStyle = 0;
+        nextContext.inRightmostCompound = false;
         for (; nextContext.element; nextContext.element = ElementTraversal::previousSibling(*nextContext.element)) {
             Match match = matchSelector(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsAllSiblings || match == SelectorFailsCompletely)
@@ -449,7 +449,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
                 return SelectorFailsCompletely;
             nextContext.element = shadowHost;
             nextContext.isSubSelector = false;
-            nextContext.elementStyle = 0;
+            nextContext.inRightmostCompound = false;
             return matchSelector(nextContext, result);
         }
 
@@ -464,7 +464,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             }
 
             nextContext.isSubSelector = false;
-            nextContext.elementStyle = 0;
+            nextContext.inRightmostCompound = false;
             for (nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*nextContext.element)) {
                 Match match = matchSelector(nextContext, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
@@ -489,7 +489,7 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Selector
     collectDestinationInsertionPoints(element, insertionPoints);
     SelectorCheckingContext nextContext(context);
     nextContext.isSubSelector = false;
-    nextContext.elementStyle = 0;
+    nextContext.inRightmostCompound = false;
     for (const auto& insertionPoint : insertionPoints) {
         nextContext.element = insertionPoint;
         // TODO(esprehn): Why does SharingRules have a special case?
@@ -730,7 +730,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
             }
             if (m_mode == ResolvingStyle) {
                 element.setStyleAffectedByEmpty();
-                if (context.elementStyle)
+                if (context.inRightmostCompound)
                     context.elementStyle->setEmptyState(result);
                 else if (element.computedStyle() && (element.document().styleEngine().usesSiblingRules() || element.computedStyle()->unique()))
                     element.mutableComputedStyle()->setEmptyState(result);
@@ -860,7 +860,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         return element.isLink() && context.visitedMatchType == VisitedMatchEnabled;
     case CSSSelector::PseudoDrag:
         if (m_mode == ResolvingStyle) {
-            if (context.elementStyle)
+            if (context.inRightmostCompound)
                 context.elementStyle->setAffectedByDrag();
             else
                 element.setChildrenOrSiblingsAffectedByDrag();
@@ -868,7 +868,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         return element.layoutObject() && element.layoutObject()->isDragging();
     case CSSSelector::PseudoFocus:
         if (m_mode == ResolvingStyle) {
-            if (context.elementStyle)
+            if (context.inRightmostCompound)
                 context.elementStyle->setAffectedByFocus();
             else
                 element.setChildrenOrSiblingsAffectedByFocus();
@@ -876,7 +876,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         return matchesFocusPseudoClass(element);
     case CSSSelector::PseudoHover:
         if (m_mode == ResolvingStyle) {
-            if (context.elementStyle)
+            if (context.inRightmostCompound)
                 context.elementStyle->setAffectedByHover();
             else
                 element.setChildrenOrSiblingsAffectedByHover();
@@ -888,7 +888,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         return element.hovered();
     case CSSSelector::PseudoActive:
         if (m_mode == ResolvingStyle) {
-            if (context.elementStyle)
+            if (context.inRightmostCompound)
                 context.elementStyle->setAffectedByActive();
             else
                 element.setChildrenOrSiblingsAffectedByActive();
@@ -1099,7 +1099,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, un
             if (selector.pseudoType() == CSSSelector::PseudoHost)
                 break;
 
-            hostContext.elementStyle = 0;
+            hostContext.inRightmostCompound = false;
             nextElement = ComposedTreeTraversal::parentElement(*nextElement);
         } while (nextElement);
     }

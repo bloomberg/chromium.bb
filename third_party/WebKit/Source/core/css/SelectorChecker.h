@@ -59,10 +59,11 @@ public:
             , scope(nullptr)
             , visitedMatchType(visitedMatchType)
             , pseudoId(NOPSEUDO)
-            , elementStyle(0)
+            , elementStyle(nullptr)
             , scrollbar(nullptr)
             , scrollbarPart(NoPart)
             , isSubSelector(false)
+            , inRightmostCompound(true)
             , hasScrollbarPseudo(false)
             , hasSelectionPseudo(false)
             , isUARule(false)
@@ -81,6 +82,7 @@ public:
         RawPtrWillBeMember<LayoutScrollbar> scrollbar;
         ScrollbarPart scrollbarPart;
         bool isSubSelector;
+        bool inRightmostCompound;
         bool hasScrollbarPseudo;
         bool hasSelectionPseudo;
         bool isUARule;
