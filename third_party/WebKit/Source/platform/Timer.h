@@ -27,7 +27,6 @@
 #define Timer_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Noncopyable.h"
@@ -73,7 +72,6 @@ public:
 private:
     virtual void fired() = 0;
 
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     virtual double alignedFireTime(double fireTime) const { return fireTime; }
 
     void checkConsistency() const;
@@ -81,7 +79,6 @@ private:
 
     void setNextFireTime(double);
 
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     bool inHeap() const { return m_heapIndex != -1; }
 
     bool hasValidHeapPosition() const;
@@ -95,7 +92,6 @@ private:
     void heapPop();
     void heapPopMin();
 
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     Vector<TimerBase*>& timerHeap() const { ASSERT(m_cachedThreadGlobalTimerHeap); return *m_cachedThreadGlobalTimerHeap; }
 
     double m_nextFireTime; // 0 if inactive
@@ -158,7 +154,6 @@ private:
     TimerFiredFunction m_function;
 };
 
-NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline bool TimerBase::isActive() const
 {
     ASSERT(m_thread == currentThread());
