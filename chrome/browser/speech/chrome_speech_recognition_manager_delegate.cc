@@ -166,9 +166,9 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
       return;
 
     // Avoid multiple registrations for the same |web_contents|.
-    if (FindWebContents(web_contents) !=  registered_web_contents_.end()) {
+    if (FindWebContents(web_contents) != registered_web_contents_.end())
       return;
-    }
+
     registered_web_contents_.push_back(new WebContentsTracker(
         web_contents, base::Bind(&TabWatcher::OnTabClosed,
                                  // |this| outlives WebContentsTracker.
@@ -195,6 +195,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
                        int render_process_id,
                        int render_view_id)
         : content::WebContentsObserver(web_contents),
+          web_contents_(web_contents),
           finished_callback_(finished_callback),
           render_process_id_(render_process_id),
           render_view_id_(render_view_id) {}
@@ -203,6 +204,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
 
     int render_process_id() const { return render_process_id_; }
     int render_view_id() const { return render_view_id_; }
+    const content::WebContents* GetWebContents() const { return web_contents_; }
 
    private:
     // content::WebContentsObserver overrides.
@@ -218,6 +220,13 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
       // NOTE: We are deleted now.
     }
 
+    // Raw pointer to our WebContents.
+    //
+    // Although we are a WebContentsObserver, calling
+    // WebContents::web_contents() would return NULL once we unregister
+    // ourselves in WebContentsDestroyed() or RenderViewHostChanged(). So we
+    // store a reference to perform cleanup.
+    const content::WebContents* const web_contents_;
     const base::Closure finished_callback_;
     const int render_process_id_;
     const int render_view_id_;
@@ -238,7 +247,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
     for (ScopedVector<WebContentsTracker>::iterator i(
              registered_web_contents_.begin());
          i != registered_web_contents_.end(); ++i) {
-      if ((*i)->web_contents() == web_contents)
+      if ((*i)->GetWebContents() == web_contents)
         return i;
     }
 
