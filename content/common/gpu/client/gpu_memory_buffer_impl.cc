@@ -36,6 +36,7 @@ GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
 }
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
+  DCHECK(!mapped_);
   callback_.Run(destruction_sync_point_);
 }
 
