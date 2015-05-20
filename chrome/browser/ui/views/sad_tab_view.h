@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/sad_tab.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -32,7 +34,8 @@ class LabelButton;
 class SadTabView : public chrome::SadTab,
                    public views::View,
                    public views::LinkListener,
-                   public views::ButtonListener {
+                   public views::ButtonListener,
+                   public views::StyledLabelListener {
  public:
   SadTabView(content::WebContents* web_contents, chrome::SadTabKind kind);
   ~SadTabView() override;
@@ -55,8 +58,12 @@ class SadTabView : public chrome::SadTab,
   void Show() override;
   void Close() override;
 
+  // views::StyledLabelListener methods.
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
+
   views::Label* CreateLabel(const base::string16& text);
-  views::Link* CreateLink(const base::string16& text);
+  views::Link* CreateLink(const base::string16& text, const SkColor& color);
 
   content::WebContents* web_contents_;
   chrome::SadTabKind kind_;
@@ -65,6 +72,8 @@ class SadTabView : public chrome::SadTab,
   views::Link* help_link_;
   views::Link* feedback_link_;
   views::LabelButton* reload_button_;
+  views::Label* title_;
+  views::StyledLabel* help_message_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabView);
 };

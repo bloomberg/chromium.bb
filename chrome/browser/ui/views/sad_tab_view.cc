@@ -22,12 +22,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 using content::OpenURLParams;
@@ -35,12 +38,8 @@ using content::WebContents;
 
 namespace {
 
-const int kPadding = 20;
-const float kMessageSize = 0.65f;
-const SkColor kTextColor = SK_ColorWHITE;
-const SkColor kCrashColor = SkColorSetRGB(35, 48, 64);
-const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
-
+const int kMaxContentWidth = 600;
+const int kMinColumnWidth = 120;
 const char kCategoryTagCrash[] = "Crash";
 
 }  // namespace
@@ -49,10 +48,12 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     : web_contents_(web_contents),
       kind_(kind),
       painted_(false),
-      message_(NULL),
-      help_link_(NULL),
-      feedback_link_(NULL),
-      reload_button_(NULL) {
+      message_(nullptr),
+      help_link_(nullptr),
+      feedback_link_(nullptr),
+      reload_button_(nullptr),
+      title_(nullptr),
+      help_message_(nullptr) {
   DCHECK(web_contents);
 
   // Sometimes the user will never see this tab, so keep track of the total
@@ -85,88 +86,121 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   }
 
   // Set the background color.
-  set_background(views::Background::CreateSolidBackground(
-      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ? kCrashColor : kKillColor));
+  set_background(
+      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
   const int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
-  columns->AddPaddingColumn(1, kPadding);
-  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(1, kPadding);
+  columns->AddPaddingColumn(1, views::kPanelSubVerticalSpacing);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+                     views::GridLayout::USE_PREF, 0, kMinColumnWidth);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING, 0,
+                     views::GridLayout::USE_PREF, 0, kMinColumnWidth);
+  columns->AddPaddingColumn(1, views::kPanelSubVerticalSpacing);
 
   views::ImageView* image = new views::ImageView();
-  image->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ? IDR_SAD_TAB : IDR_KILLED_TAB));
-  layout->StartRowWithPadding(0, column_set_id, 1, kPadding);
-  layout->AddView(image);
+  image->SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_SAD_TAB));
+  layout->AddPaddingRow(1, views::kPanelVerticalSpacing);
+  layout->StartRow(0, column_set_id);
+  layout->AddView(image, 2, 1);
 
-  views::Label* title = CreateLabel(l10n_util::GetStringUTF16(
-      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
-          IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
+  const bool is_crashed_type = kind_ == chrome::SAD_TAB_KIND_CRASHED;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-  layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
-  layout->AddView(title);
+
+  title_ = CreateLabel(l10n_util::GetStringUTF16(
+      is_crashed_type ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
+  title_->SetFontList(rb.GetFontList(ui::ResourceBundle::LargeFont));
+  title_->SetMultiLine(true);
+  title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->StartRowWithPadding(0, column_set_id, 0,
+                              views::kPanelVerticalSpacing);
+  layout->AddView(title_, 2, 1);
+
+  const SkColor text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor);
 
   message_ = CreateLabel(l10n_util::GetStringUTF16(
-      (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
-          IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE));
+      is_crashed_type ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE));
   message_->SetMultiLine(true);
-  layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
-  layout->AddView(message_);
+  message_->SetEnabledColor(text_color);
+  message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  message_->SetLineHeight(views::kPanelSubVerticalSpacing);
+
+  layout->StartRowWithPadding(0, column_set_id, 0, views::kPanelVertMargin);
+  layout->AddView(message_, 2, 1, views::GridLayout::LEADING,
+                  views::GridLayout::LEADING);
 
   if (web_contents_) {
-    layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
-    reload_button_ = new views::LabelButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_SAD_TAB_RELOAD_LABEL));
-    reload_button_->SetStyle(views::Button::STYLE_BUTTON);
-    // Always render the reload button with chrome style borders; never rely on
-    // native styles.
-    reload_button_->SetBorder(scoped_ptr<views::Border>(
-        new views::LabelButtonBorder(reload_button_->style())));
-    layout->AddView(reload_button_);
+    reload_button_ = new views::BlueButton(
+        this, l10n_util::GetStringUTF16(IDS_SAD_TAB_RELOAD_LABEL));
 
-    help_link_ = CreateLink(l10n_util::GetStringUTF16(
-        (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
-            IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE));
-
-    if (kind_ == chrome::SAD_TAB_KIND_CRASHED) {
+    if (is_crashed_type) {
       size_t offset = 0;
       base::string16 help_text(
           l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE,
                                      base::string16(), &offset));
-      views::Label* help_prefix = CreateLabel(help_text.substr(0, offset));
-      views::Label* help_suffix = CreateLabel(help_text.substr(offset));
 
-      const int help_column_set_id = 1;
-      views::ColumnSet* help_columns = layout->AddColumnSet(help_column_set_id);
-      help_columns->AddPaddingColumn(1, kPadding);
-      // Center three middle columns for the help's [prefix][link][suffix].
-      for (size_t column = 0; column < 3; column++)
-        help_columns->AddColumn(views::GridLayout::CENTER,
-            views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-      help_columns->AddPaddingColumn(1, kPadding);
+      base::string16 link_text =
+          l10n_util::GetStringUTF16(IDS_SAD_TAB_HELP_LINK);
 
-      layout->StartRowWithPadding(0, help_column_set_id, 0, kPadding);
-      layout->AddView(help_prefix);
-      layout->AddView(help_link_);
-      layout->AddView(help_suffix);
+      base::string16 help_prefix = help_text.substr(0, offset);
+      base::string16 help_suffix = help_text.substr(offset);
+      base::string16 help_message_string = help_prefix;
+      help_message_string.append(link_text).append(help_suffix);
+
+      help_message_ = new views::StyledLabel(help_message_string, this);
+
+      views::StyledLabel::RangeStyleInfo link_style =
+          views::StyledLabel::RangeStyleInfo::CreateForLink();
+      link_style.font_style = gfx::Font::UNDERLINE;
+      link_style.color = text_color;
+
+      views::StyledLabel::RangeStyleInfo normal_style =
+          views::StyledLabel::RangeStyleInfo();
+      normal_style.color = text_color;
+
+      help_message_->SetDefaultStyle(normal_style);
+      help_message_->SetLineHeight(views::kPanelSubVerticalSpacing);
+
+      help_message_->AddStyleRange(
+          gfx::Range(help_prefix.length(),
+                     help_prefix.length() + link_text.length()),
+          link_style);
+
+      layout->StartRowWithPadding(0, column_set_id, 0, views::kPanelVertMargin);
+      layout->AddView(help_message_, 2, 1, views::GridLayout::LEADING,
+                      views::GridLayout::TRAILING);
+      layout->StartRowWithPadding(0, column_set_id, 0,
+                                  views::kPanelVerticalSpacing);
+      layout->SkipColumns(1);
     } else {
-      layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
-      layout->AddView(help_link_);
-
       feedback_link_ = CreateLink(
-          l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK));
-      layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
-      layout->AddView(feedback_link_);
+          l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK), text_color);
+      feedback_link_->SetLineHeight(views::kPanelSubVerticalSpacing);
+      feedback_link_->SetMultiLine(true);
+      feedback_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+      layout->StartRowWithPadding(0, column_set_id, 0,
+                                  views::kPanelSubVerticalSpacing);
+      layout->AddView(feedback_link_, 2, 1, views::GridLayout::LEADING,
+                      views::GridLayout::LEADING);
+
+      help_link_ =
+          CreateLink(l10n_util::GetStringUTF16(IDS_LEARN_MORE), text_color);
+      layout->StartRowWithPadding(0, column_set_id, 0,
+                                  views::kPanelVerticalSpacing);
+      layout->AddView(help_link_, 1, 1, views::GridLayout::LEADING,
+                      views::GridLayout::CENTER);
     }
+    layout->AddView(reload_button_, 1, 1, views::GridLayout::TRAILING,
+                    views::GridLayout::LEADING);
   }
-  layout->AddPaddingRow(1, kPadding);
+  layout->AddPaddingRow(2, views::kPanelSubVerticalSpacing);
 }
 
 SadTabView::~SadTabView() {}
@@ -188,6 +222,11 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
+void SadTabView::StyledLabelLinkClicked(const gfx::Range& range,
+                                        int event_flags) {
+  LinkClicked(help_link_, event_flags);
+}
+
 void SadTabView::ButtonPressed(views::Button* sender,
                                const ui::Event& event) {
   DCHECK(web_contents_);
@@ -197,7 +236,17 @@ void SadTabView::ButtonPressed(views::Button* sender,
 
 void SadTabView::Layout() {
   // Specify the maximum message width explicitly.
-  message_->SizeToFit(static_cast<int>(width() * kMessageSize));
+  const int max_width =
+      std::min(width() - views::kPanelSubVerticalSpacing * 2, kMaxContentWidth);
+  message_->SizeToFit(max_width);
+  title_->SizeToFit(max_width);
+
+  if (feedback_link_ != nullptr)
+    feedback_link_->SizeToFit(max_width);
+
+  if (help_message_ != nullptr)
+    help_message_->SizeToFit(max_width);
+
   View::Layout();
 }
 
@@ -261,14 +310,14 @@ void SadTabView::Close() {
 views::Label* SadTabView::CreateLabel(const base::string16& text) {
   views::Label* label = new views::Label(text);
   label->SetBackgroundColor(background()->get_color());
-  label->SetEnabledColor(kTextColor);
   return label;
 }
 
-views::Link* SadTabView::CreateLink(const base::string16& text) {
+views::Link* SadTabView::CreateLink(const base::string16& text,
+                                    const SkColor& color) {
   views::Link* link = new views::Link(text);
   link->SetBackgroundColor(background()->get_color());
-  link->SetEnabledColor(kTextColor);
+  link->SetEnabledColor(color);
   link->set_listener(this);
   return link;
 }
