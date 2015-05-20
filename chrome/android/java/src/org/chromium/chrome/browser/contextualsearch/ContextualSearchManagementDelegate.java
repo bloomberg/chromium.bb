@@ -31,11 +31,6 @@ public interface ContextualSearchManagementDelegate {
     void logPromoOutcome();
 
     /**
-     * @return Whether or not the Contextual Search Bar is peeking.
-     */
-    boolean isSearchBarPeeking();
-
-    /**
      * Updates the top controls state for the base tab.  As these values are set at the renderer
      * level, there is potential for this impacting other tabs that might share the same
      * process. See {@link Tab#updateTopControlsState(int current, boolean animate)}

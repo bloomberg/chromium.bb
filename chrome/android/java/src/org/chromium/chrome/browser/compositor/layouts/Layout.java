@@ -19,7 +19,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
@@ -633,23 +632,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
             if (mLayoutTabs[i].showToolbar()) return true;
         }
         return false;
-    }
-
-    /**
-     * Returns whether or not the native Contextual Search layout is showing. Layouts supporting
-     * Contextual Search should override this method and return "true", indicating that
-     * the layout has already been swapped from an Android View to a native cc::Layer.
-     * @return Whether or not the Contextual Search bar is showing.
-     */
-    public boolean isContextualSearchLayoutShowing() {
-        return false;
-    }
-
-    /**
-     * @return The {@link ContextualSearchPanel} or "null" if there is none for this layout.
-     */
-    public ContextualSearchPanel getContextualSearchPanel() {
-        return null;
     }
 
     /**
