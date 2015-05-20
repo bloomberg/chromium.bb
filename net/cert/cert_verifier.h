@@ -25,8 +25,13 @@ class NET_EXPORT CertVerifier {
  public:
   class Request {
    public:
+    Request() {}
+
     // Destruction of the Request cancels it.
     virtual ~Request() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
   enum VerifyFlags {
@@ -99,8 +104,13 @@ class NET_EXPORT CertVerifier {
   // could not be completed synchronously, in which case the result code will
   // be passed to the callback when available.
   //
-  // |*out_req| will be filled with a pointer to the asynchronous request.
-  // Freeing this pointer before the request has completed will cancel it.
+  // On asynchronous completion (when Verify returns ERR_IO_PENDING) |out_req|
+  // will be reset with a pointer to the request. Freeing this pointer before
+  // the request has completed will cancel it.
+  //
+  // If Verify() completes synchronously then |out_req| *may* be reset to
+  // nullptr. However it is not guaranteed that all implementations will reset
+  // it in this case.
   //
   // TODO(rsleevi): Move CRLSet* out of the CertVerifier signature.
   virtual int Verify(X509Certificate* cert,
