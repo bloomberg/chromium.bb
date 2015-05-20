@@ -200,11 +200,6 @@ public:
     unsigned columnCount(ColumnInfo*) const;
     LayoutRect columnRectAt(ColumnInfo*, unsigned) const;
 
-    // The page logical offset is the object's offset from the top of the page in the page progression
-    // direction (so an x-offset in vertical text and a y-offset for horizontal text).
-    LayoutUnit pageLogicalOffset() const { return m_pageLogicalOffset; }
-    void setPageLogicalOffset(LayoutUnit offset) { m_pageLogicalOffset = offset; }
-
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
     LayoutUnit logicalWidthForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size().width() : child.size().height(); }
     LayoutUnit logicalHeightForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size().height() : child.size().width(); }
@@ -455,8 +450,6 @@ public:
 protected:
     LayoutObjectChildList m_children;
     LineBoxList m_lineBoxes; // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
-
-    LayoutUnit m_pageLogicalOffset;
 
     unsigned m_hasMarginBeforeQuirk : 1; // Note these quirk values can't be put in LayoutBlockRareData since they are set too frequently.
     unsigned m_hasMarginAfterQuirk : 1;

@@ -71,6 +71,8 @@ public:
 
     // Set by LayoutBox::updatePreviousBorderBoxSizeIfNeeded().
     LayoutSize m_previousBorderBoxSize;
+
+    LayoutUnit m_pageLogicalOffset;
 };
 
 class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
@@ -453,6 +455,11 @@ public:
     void computeAndSetBlockDirectionMargins(const LayoutBlock* containingBlock);
 
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const;
+
+    // The page logical offset is the object's offset from the top of the page in the page progression
+    // direction (so an x-offset in vertical text and a y-offset for horizontal text).
+    LayoutUnit pageLogicalOffset() const { return m_rareData ? m_rareData->m_pageLogicalOffset : LayoutUnit(); }
+    void setPageLogicalOffset(LayoutUnit);
 
     void positionLineBox(InlineBox*);
     void moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal);

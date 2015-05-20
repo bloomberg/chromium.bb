@@ -4654,6 +4654,13 @@ LayoutUnit LayoutBox::offsetFromLogicalTopOfFirstPage() const
     return containerBlock->offsetFromLogicalTopOfFirstPage() + logicalTop();
 }
 
+void LayoutBox::setPageLogicalOffset(LayoutUnit offset)
+{
+    if (!m_rareData && !offset)
+        return;
+    ensureRareData().m_pageLogicalOffset = offset;
+}
+
 void LayoutBox::savePreviousBorderBoxSizeIfNeeded()
 {
     // If m_rareData is already created, always save.
