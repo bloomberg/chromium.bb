@@ -278,68 +278,6 @@ void SSLSocketDataProvider::SetNextProto(NextProto proto) {
   next_proto = SSLClientSocket::NextProtoToString(proto);
 }
 
-DelayedSocketData::DelayedSocketData(
-    int write_delay, MockRead* reads, size_t reads_count,
-    MockWrite* writes, size_t writes_count)
-    : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
-      write_delay_(write_delay),
-      read_in_progress_(false),
-      weak_factory_(this) {
-  DCHECK_GE(write_delay_, 0);
-}
-
-DelayedSocketData::DelayedSocketData(
-    const MockConnect& connect, int write_delay, MockRead* reads,
-    size_t reads_count, MockWrite* writes, size_t writes_count)
-    : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
-      write_delay_(write_delay),
-      read_in_progress_(false),
-      weak_factory_(this) {
-  DCHECK_GE(write_delay_, 0);
-  set_connect_data(connect);
-}
-
-DelayedSocketData::~DelayedSocketData() {
-}
-
-void DelayedSocketData::ForceNextRead() {
-  DCHECK(read_in_progress_);
-  write_delay_ = 0;
-  CompleteRead();
-}
-
-MockRead DelayedSocketData::OnRead() {
-  MockRead out = MockRead(ASYNC, ERR_IO_PENDING);
-  if (write_delay_ <= 0)
-    out = StaticSocketDataProvider::OnRead();
-  read_in_progress_ = (out.result == ERR_IO_PENDING);
-  return out;
-}
-
-MockWriteResult DelayedSocketData::OnWrite(const std::string& data) {
-  MockWriteResult rv = StaticSocketDataProvider::OnWrite(data);
-  // Now that our write has completed, we can allow reads to continue.
-  if (!--write_delay_ && read_in_progress_)
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&DelayedSocketData::CompleteRead,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(100));
-  return rv;
-}
-
-void DelayedSocketData::Reset() {
-  set_socket(NULL);
-  read_in_progress_ = false;
-  weak_factory_.InvalidateWeakPtrs();
-  StaticSocketDataProvider::Reset();
-}
-
-void DelayedSocketData::CompleteRead() {
-  if (socket() && read_in_progress_)
-    socket()->OnReadComplete(OnRead());
-}
-
 SequencedSocketData::SequencedSocketData(MockRead* reads,
                                          size_t reads_count,
                                          MockWrite* writes,

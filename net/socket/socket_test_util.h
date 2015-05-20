@@ -333,54 +333,6 @@ struct SSLSocketDataProvider {
   int connection_status;
 };
 
-// A DataProvider where the client must write a request before the reads (e.g.
-// the response) will complete.
-class DelayedSocketData : public StaticSocketDataProvider {
- public:
-  // |write_delay| the number of MockWrites to complete before allowing
-  //               a MockRead to complete.
-  // |reads| the list of MockRead completions.
-  // |writes| the list of MockWrite completions.
-  // Note: For stream sockets, the MockRead list must end with a EOF, e.g., a
-  //       MockRead(true, 0, 0);
-  DelayedSocketData(int write_delay,
-                    MockRead* reads,
-                    size_t reads_count,
-                    MockWrite* writes,
-                    size_t writes_count);
-
-  // |connect| the result for the connect phase.
-  // |reads| the list of MockRead completions.
-  // |write_delay| the number of MockWrites to complete before allowing
-  //               a MockRead to complete.
-  // |writes| the list of MockWrite completions.
-  // Note: For stream sockets, the MockRead list must end with a EOF, e.g., a
-  //       MockRead(true, 0, 0);
-  DelayedSocketData(const MockConnect& connect,
-                    int write_delay,
-                    MockRead* reads,
-                    size_t reads_count,
-                    MockWrite* writes,
-                    size_t writes_count);
-  ~DelayedSocketData() override;
-
-  void ForceNextRead();
-
-  // StaticSocketDataProvider:
-  MockRead OnRead() override;
-  MockWriteResult OnWrite(const std::string& data) override;
-  void Reset() override;
-  void CompleteRead() override;
-
- private:
-  int write_delay_;
-  bool read_in_progress_;
-
-  base::WeakPtrFactory<DelayedSocketData> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayedSocketData);
-};
-
 // Uses the sequence_number field in the mock reads and writes to
 // complete the operations in a specified order.
 class SequencedSocketData : public SocketDataProvider {
