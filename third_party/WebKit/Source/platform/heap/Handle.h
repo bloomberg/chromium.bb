@@ -370,43 +370,132 @@ private:
     inline void recordBacktrace() const { }
 #endif
     T* m_raw;
-
-    friend class CrossThreadPersistent<T>;
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
 // different from the construction thread.
 template<typename T>
-class CrossThreadPersistent : public Persistent<T, GlobalPersistents> {
+class CrossThreadPersistent : public PersistentBase<GlobalPersistents, Persistent<T, GlobalPersistents>> {
 public:
-    CrossThreadPersistent(T* raw) : Persistent<T, GlobalPersistents>(raw) { }
+    CrossThreadPersistent() : m_raw(nullptr) { }
+
+    CrossThreadPersistent(std::nullptr_t) : m_raw(nullptr) { }
+
+    CrossThreadPersistent(T* raw) : m_raw(raw)
+    {
+        recordBacktrace();
+    }
+
+    explicit CrossThreadPersistent(T& raw) : m_raw(&raw)
+    {
+        recordBacktrace();
+    }
+
+    CrossThreadPersistent(const CrossThreadPersistent& other) : m_raw(other) { recordBacktrace(); }
+
+    template<typename U>
+    CrossThreadPersistent(const CrossThreadPersistent<U>& other) : m_raw(other) { recordBacktrace(); }
+
+    template<typename U>
+    CrossThreadPersistent(const Member<U>& other) : m_raw(other) { recordBacktrace(); }
+
+    template<typename U>
+    CrossThreadPersistent(const RawPtr<U>& other) : m_raw(other.get()) { recordBacktrace(); }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(U* other)
+    {
+        m_raw = other;
+        recordBacktrace();
+        return *this;
+    }
+
+    CrossThreadPersistent& operator=(std::nullptr_t)
+    {
+        m_raw = nullptr;
+        return *this;
+    }
+
+    void clear() { m_raw = nullptr; }
+
+    virtual ~CrossThreadPersistent()
+    {
+        m_raw = nullptr;
+    }
+
+    template<typename VisitorDispatcher>
+    void trace(VisitorDispatcher visitor)
+    {
+        static_assert(sizeof(T), "T must be fully defined");
+        static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
+#if ENABLE(GC_PROFILING)
+        visitor->setHostInfo(this, m_tracingName.isEmpty() ? "CrossThreadPersistent" : m_tracingName);
+#endif
+        visitor->mark(m_raw);
+    }
+
+    RawPtr<T> release()
+    {
+        RawPtr<T> result = m_raw;
+        m_raw = nullptr;
+        return result;
+    }
+
+    T& operator*() const { return *m_raw; }
+
+    bool operator!() const { return !m_raw; }
+
+    operator T*() const { return m_raw; }
+    operator RawPtr<T>() const { return m_raw; }
+
+    T* operator->() const { return *this; }
 
     CrossThreadPersistent& operator=(const CrossThreadPersistent& other)
     {
-        Persistent<T, GlobalPersistents>::operator=(other);
+        m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
     template<typename U>
-    CrossThreadPersistent& operator=(const Persistent<U, GlobalPersistents>& other)
+    CrossThreadPersistent& operator=(const CrossThreadPersistent<U>& other)
     {
-        Persistent<T, GlobalPersistents>::operator=(other);
+        m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
     template<typename U>
     CrossThreadPersistent& operator=(const Member<U>& other)
     {
-        Persistent<T, GlobalPersistents>::operator=(other);
+        m_raw = other;
+        recordBacktrace();
         return *this;
     }
 
     template<typename U>
     CrossThreadPersistent& operator=(const RawPtr<U>& other)
     {
-        Persistent<T, GlobalPersistents>::operator=(other);
+        m_raw = other;
+        recordBacktrace();
         return *this;
     }
+
+    T* get() const { return m_raw; }
+
+private:
+#if ENABLE(GC_PROFILING)
+    void recordBacktrace()
+    {
+        if (m_raw)
+            m_tracingName = Heap::createBacktraceString();
+    }
+
+    String m_tracingName;
+#else
+    inline void recordBacktrace() const { }
+#endif
+    T* m_raw;
 };
 
 // FIXME: derive affinity based on the collection.
