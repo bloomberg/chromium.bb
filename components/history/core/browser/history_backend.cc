@@ -1603,8 +1603,12 @@ void HistoryBackend::MergeFavicon(
   for (size_t i = 0; i < bitmap_id_sizes.size(); ++i) {
     if (bitmap_id_sizes[i].pixel_size == pixel_size) {
       if (IsFaviconBitmapDataEqual(bitmap_id_sizes[i].bitmap_id, bitmap_data)) {
-        thumbnail_db_->SetFaviconBitmapLastUpdateTime(
-            bitmap_id_sizes[i].bitmap_id, base::Time::Now());
+        // Sync calls MergeFavicon() for all of the favicons that it manages at
+        // startup. Do not update the "last updated" time if the favicon bitmap
+        // data matches that in the database.
+        // TODO: Pass in boolean to MergeFavicon() if any users of
+        // MergeFavicon() want the last_updated time to be updated when the new
+        // bitmap data is identical to the old.
         bitmap_identical = true;
       } else {
         // Expire the favicon bitmap because sync can provide incorrect

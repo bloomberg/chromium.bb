@@ -106,6 +106,12 @@ void SetFavicon(int profile,
                 const gfx::Image& image,
                 FaviconSource source);
 
+// Expires the favicon for |node| in the bookmark model for |profile|.
+void ExpireFavicon(int profile, const bookmarks::BookmarkNode* node);
+
+// Checks whether the favicon at |icon_url| for |profile| is expired;
+void CheckFaviconExpired(int profile, const GURL& icon_url);
+
 // Changes the url of the node |node| in the bookmark model of profile
 // |profile| to |new_url|. Returns a pointer to the node with the changed url.
 const bookmarks::BookmarkNode* SetURL(int profile,

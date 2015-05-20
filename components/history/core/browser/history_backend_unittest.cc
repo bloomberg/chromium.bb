@@ -2324,6 +2324,56 @@ TEST_F(HistoryBackendTest, MergeFaviconShowsUpInGetFaviconsForURLResult) {
   EXPECT_TRUE(BitmapDataEqual('c', result.bitmap_data));
 }
 
+// Tests that calling MergeFavicon() with identical favicon data does not affect
+// the favicon bitmap's "last updated" time. This is important because sync
+// calls MergeFavicon() for all of the favicons that it manages at startup.
+TEST_F(HistoryBackendTest, MergeIdenticalFaviconDoesNotChangeLastUpdatedTime) {
+  GURL page_url("http://www.google.com");
+  GURL icon_url("http://www.google.com/favicon.ico");
+  std::vector<unsigned char> data;
+  data.push_back('a');
+
+  scoped_refptr<base::RefCountedBytes> bitmap_data(
+      new base::RefCountedBytes(data));
+  backend_->MergeFavicon(page_url,
+                         icon_url,
+                         favicon_base::FAVICON,
+                         bitmap_data,
+                         kSmallSize);
+
+  // Find the ID of the add favicon bitmap.
+  std::vector<IconMapping> icon_mappings;
+  ASSERT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(page_url,
+      &icon_mappings));
+  ASSERT_EQ(1u, icon_mappings.size());
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  ASSERT_TRUE(backend_->thumbnail_db_->GetFaviconBitmaps(
+      icon_mappings[0].icon_id, &favicon_bitmaps));
+
+  // Change the last updated time of the just added favicon bitmap.
+  const base::Time kLastUpdateTime =
+      base::Time::Now() - base::TimeDelta::FromDays(314);
+  backend_->thumbnail_db_->SetFaviconBitmapLastUpdateTime(
+      favicon_bitmaps[0].bitmap_id, kLastUpdateTime);
+
+  // Call MergeFavicon() with identical data.
+  backend_->MergeFavicon(page_url,
+                         icon_url,
+                         favicon_base::FAVICON,
+                         bitmap_data,
+                         kSmallSize);
+
+  // Check that the "last updated" time did not change.
+  icon_mappings.clear();
+  ASSERT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(page_url,
+      &icon_mappings));
+  ASSERT_EQ(1u, icon_mappings.size());
+  favicon_bitmaps.clear();
+  ASSERT_TRUE(backend_->thumbnail_db_->GetFaviconBitmaps(
+      icon_mappings[0].icon_id, &favicon_bitmaps));
+  EXPECT_EQ(kLastUpdateTime, favicon_bitmaps[0].last_updated);
+}
+
 // Tests GetFaviconsForURL with icon_types priority,
 TEST_F(HistoryBackendTest, TestGetFaviconsForURLWithIconTypesPriority) {
   GURL page_url("http://www.google.com");

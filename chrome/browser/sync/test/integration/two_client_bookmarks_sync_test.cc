@@ -25,9 +25,11 @@ using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatch;
 using bookmarks_helper::AllModelsMatchVerifier;
+using bookmarks_helper::CheckFaviconExpired;
 using bookmarks_helper::ContainsDuplicateBookmarks;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CreateFavicon;
+using bookmarks_helper::ExpireFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetManagedNode;
 using bookmarks_helper::GetOtherNode;
@@ -227,6 +229,54 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
              bookmarks_helper::FROM_UI);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
+}
+
+// Test that if sync does not modify a favicon bitmap's data that it does not
+// modify the favicon bitmap's "last updated time" either. This is important
+// because the last updated time is used to determine whether a bookmark's
+// favicon should be redownloaded when the web when the bookmark is visited.
+// If sync prevents the "last updated time" from expiring, the favicon is
+// never redownloaded from the web. (http://crbug.com/481414)
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+                       SC_UpdatingTitleDoesNotUpdateFaviconLastUpdatedTime) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  ui::SetSupportedScaleFactors(supported_scale_factors);
+
+  const GURL page_url(kGenericURL);
+  const GURL icon_url("http://www.google.com/favicon.ico");
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  const BookmarkNode* bookmark0 = AddURL(0, kGenericURLTitle, page_url);
+  ASSERT_NE(bookmark0, nullptr);
+  gfx::Image favicon0 = CreateFavicon(SK_ColorBLUE);
+  ASSERT_FALSE(favicon0.IsEmpty());
+  SetFavicon(0, bookmark0, icon_url, favicon0, bookmarks_helper::FROM_UI);
+
+  // Expire the favicon (e.g. as a result of the user "clearing browsing
+  // history from the beginning of time")
+  ExpireFavicon(0, bookmark0);
+  CheckFaviconExpired(0, icon_url);
+
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // Change the bookmark's title for profile 1. Changing the title will cause
+  // the bookmark's favicon data to be synced from profile 1 to profile 0 even
+  // though the favicon data did not change.
+  const std::string kNewTitle = "New Title";
+  ASSERT_NE(kNewTitle, kGenericURLTitle);
+  const BookmarkNode* bookmark1 = GetUniqueNodeByURL(1, page_url);
+  SetTitle(1, bookmark1, kNewTitle);
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // The favicon for profile 0 should still be expired.
+  CheckFaviconExpired(0, icon_url);
 }
 
 // Test Scribe ID - 370560.
