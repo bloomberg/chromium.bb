@@ -20,7 +20,7 @@ if (self.testRunner) {
 
 // Function used to convert the test status code into
 // the corresponding string
-function convertResult(resultStatus){
+function convertResult(resultStatus) {
     if(resultStatus == 0)
         return("PASS");
     else if(resultStatus == 1)
@@ -41,7 +41,7 @@ setup({"output":false});
 /*  Using a callback function, test results will be added to the page in a
 *   manner that allows dumpAsText to produce readable test results
 */
-add_completion_callback(function (tests, harness_status){
+add_completion_callback(function (tests, harness_status) {
 
     // Create element to hold results
     var results = document.createElement("pre");
@@ -49,23 +49,32 @@ add_completion_callback(function (tests, harness_status){
     // Declare result string
     var resultStr = "\n";
 
+    // Sanitizes the given text for display in test results.
+    function sanitize(text) {
+        if (!text) {
+            return "";
+        }
+        // Escape null characters, otherwise diff will think the file is binary.
+        text = text.replace(/\0/g, "\\0");
+        // Escape carriage returns as they break rietveld's difftools.
+        return text.replace(/\r/g, "\\r");
+    }
+
     // Check harness_status.  If it is not 0, tests did not
     // execute correctly, output the error code and message
-    if(harness_status.status != 0){
+    if (harness_status.status != 0) {
         resultStr += "Harness Error. harness_status.status = " +
                      harness_status.status +
                      " , harness_status.message = " +
                      harness_status.message +
                      "\n";
-    }
-    else {
+    } else {
         // Iterate through tests array and build string that contains
         // results for all tests
-        for(var i=0; i<tests.length; i++){
+        for (var i = 0; i < tests.length; i++) {
             resultStr += convertResult(tests[i].status) + " " +
-                        ( (tests[i].name!=null) ? tests[i].name : "" ) + " " +
-                        ( (tests[i].message!=null) ? tests[i].message : "" ) +
-                        "\n";
+                         sanitize(tests[i].name) + " " +
+                         sanitize(tests[i].message) + "\n";
         }
     }
 
