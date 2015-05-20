@@ -142,6 +142,11 @@ public class DataReductionProxySettings {
         return nativeIsDataReductionProxyEnabled(mNativeDataReductionProxySettings);
     }
 
+    /** Returns true if Data Reduction Proxy LoFi is enabled. */
+    public boolean isLoFiEnabled() {
+        return nativeIsLoFiEnabled(mNativeDataReductionProxySettings);
+    }
+
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */
     public boolean isDataReductionProxyManaged() {
         return nativeIsDataReductionProxyManaged(mNativeDataReductionProxySettings);
@@ -211,6 +216,8 @@ public class DataReductionProxySettings {
     private native boolean nativeIsIncludedInAltFieldTrial(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyEnabled(
+            long nativeDataReductionProxySettingsAndroid);
+    private native boolean nativeIsLoFiEnabled(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyManaged(
             long nativeDataReductionProxySettingsAndroid);

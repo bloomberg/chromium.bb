@@ -99,6 +99,9 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Enables or disables the alternative data reduction proxy configuration.
   void SetDataReductionProxyAlternativeEnabled(bool enabled);
 
+  // Returns true if both LoFi and the proxy are enabled.
+  bool IsLoFiEnabled() const;
+
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
   int64 GetDataReductionLastUpdateTime();
@@ -204,9 +207,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // Override of DataReductionProxyService::Observer.
   void OnServiceInitialized() override;
-
-  // Returns true if both LoFi and the proxy are enabled.
-  bool IsLoFiEnabled() const;
 
   // Registers the trial "SyntheticDataReductionProxySetting" with the group
   // "Enabled" or "Disabled". Indicates whether the proxy is turned on or not.

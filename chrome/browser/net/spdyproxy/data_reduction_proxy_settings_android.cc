@@ -49,6 +49,11 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(
   return Settings()->IsDataReductionProxyEnabled();
 }
 
+jboolean DataReductionProxySettingsAndroid::IsLoFiEnabled(
+    JNIEnv* env, jobject obj) {
+  return Settings()->IsLoFiEnabled();
+}
+
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyManaged(
     JNIEnv* env, jobject obj) {
   return Settings()->IsDataReductionProxyManaged();
