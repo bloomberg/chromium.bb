@@ -1,1 +1,4 @@
-document.getElementById("result2").innerHTML += ("ó" == "\u0421") ? "PASS" : "FAIL";
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+document.getElementById("result").textContent = ("ó" == "\u0421") ? "PASS" : "FAIL";

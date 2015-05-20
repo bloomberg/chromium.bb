@@ -1,6 +1,3 @@
-CONSOLE WARNING: Setting 'Document.charset' is deprecated. Please use '<meta charset="UTF-8">' instead.
 Test that external scripts in XHTML documents inherit document charset.
 
-Javascript 1 (original document charset): PASS
-
-Javascript 2 (after document.charset was set): PASS
+PASS
