@@ -880,7 +880,6 @@ interface Document
     method webkitCancelFullScreen
     method webkitExitFullscreen
     setter body
-    setter charset
     setter cookie
     setter designMode
     setter dir

@@ -35,7 +35,6 @@ void HTMLFormControlElementTest::SetUp()
 
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
     m_document->setMimeType("text/html");
-    m_document->setCharset("utf-8");
 }
 
 TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection)

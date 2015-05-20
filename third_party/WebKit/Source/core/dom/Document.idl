@@ -199,7 +199,7 @@ interface Document : Node {
     readonly attribute VisibilityState visibilityState;
 
     // Non-standard APIs
-    [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;
+    [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined] readonly attribute DOMString charset;
     [MeasureAs=DocumentDefaultCharset, TreatReturnedNullStringAs=Undefined] readonly attribute DOMString defaultCharset;
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([Default=Undefined] optional long x, [Default=Undefined] optional long y);
     [DeprecateAs=DocumentGetCSSCanvasContext] RenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);

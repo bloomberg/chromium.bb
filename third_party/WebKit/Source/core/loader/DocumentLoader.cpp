@@ -766,12 +766,6 @@ const AtomicString& DocumentLoader::mimeType() const
     return m_response.mimeType();
 }
 
-void DocumentLoader::setUserChosenEncoding(const String& charset)
-{
-    if (m_writer)
-        m_writer->setUserChosenEncoding(charset);
-}
-
 // This is only called by FrameLoader::replaceDocumentWhileExecutingJavaScriptURL()
 void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit& init, const String& source, Document* ownerDocument)
 {

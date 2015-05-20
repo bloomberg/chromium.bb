@@ -827,9 +827,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case GetMatchedCSSRules:
         return "'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2";
 
-    case DocumentSetCharset:
-        return "Setting 'Document.charset' is deprecated. Please use '<meta charset=\"UTF-8\">' instead.";
-
     case PrefixedImageSmoothingEnabled:
         return replacedBy("CanvasRenderingContext2D.webkitImageSmoothingEnabled", "CanvasRenderingContext2D.imageSmoothingEnabled");
 

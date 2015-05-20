@@ -58,8 +58,6 @@ public:
     // Exposed for DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL.
     void appendReplacingData(const String&);
 
-    void setUserChosenEncoding(const String& charset);
-
     void setDocumentWasLoadedAsPartOfNavigation();
 
 private:

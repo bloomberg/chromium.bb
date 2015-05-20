@@ -76,8 +76,6 @@ namespace blink {
 
         const AtomicString& mimeType() const;
 
-        void setUserChosenEncoding(const String& charset);
-
         const ResourceRequest& originalRequest() const;
 
         const ResourceRequest& request() const;

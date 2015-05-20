@@ -28,7 +28,6 @@ function buildFrameset()
               "</td></tr></table></body></html>";
 
     frames['topRow'].document.open("text/html","replace");
-    frames['topRow'].document.charset=document.charset;
     frames['topRow'].document.write(outHTML);
     frames['topRow'].document.close();
 
@@ -45,7 +44,6 @@ function buildFrameset()
               "</td></tr></table></body></html>";
 
     frames['middleRow'].document.open("text/html","replace");
-    frames['middleRow'].document.charset=document.charset;
     frames['middleRow'].document.write(outHTML);
     frames['middleRow'].document.close();
 
@@ -56,7 +54,6 @@ function buildFrameset()
               "</td></tr></table></body></html>";
 
     frames['bottomRow'].document.open("text/html","replace");
-    frames['bottomRow'].document.charset=document.charset;
     frames['bottomRow'].document.write(outHTML);
     frames['bottomRow'].document.close();
 }

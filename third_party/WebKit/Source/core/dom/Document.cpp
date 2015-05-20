@@ -1131,20 +1131,6 @@ String Document::defaultCharset() const
     return String();
 }
 
-void Document::setCharset(const String& charset)
-{
-    UseCounter::countDeprecation(*this, UseCounter::DocumentSetCharset);
-    if (DocumentLoader* documentLoader = loader())
-        documentLoader->setUserChosenEncoding(charset);
-    WTF::TextEncoding encoding(charset);
-    // In case the encoding didn't exist, we keep the old one (helps some sites specifying invalid encodings).
-    if (!encoding.isValid())
-        return;
-    DocumentEncodingData newEncodingData = m_encodingData;
-    newEncodingData.setEncoding(encoding);
-    setEncodingData(newEncodingData);
-}
-
 void Document::setContentLanguage(const AtomicString& language)
 {
     if (m_contentLanguage == language)

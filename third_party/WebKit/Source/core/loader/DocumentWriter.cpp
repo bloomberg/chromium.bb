@@ -119,13 +119,6 @@ void DocumentWriter::end()
     m_document = nullptr;
 }
 
-void DocumentWriter::setUserChosenEncoding(const String& charset)
-{
-    TextResourceDecoder* decoder = m_parser->decoder();
-    if (decoder)
-        decoder->setEncoding(charset, TextResourceDecoder::UserChosenEncoding);
-}
-
 void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation()
 {
     ASSERT(m_parser && !m_parser->isStopped());

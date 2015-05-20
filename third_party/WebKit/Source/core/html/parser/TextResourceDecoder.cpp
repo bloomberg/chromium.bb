@@ -330,7 +330,7 @@ bool TextResourceDecoder::checkForXMLCharset(const char* data, size_t len, bool&
 
 void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length)
 {
-    if (m_source == UserChosenEncoding || m_source == EncodingFromHTTPHeader || m_source == AutoDetectedEncoding) {
+    if (m_source == EncodingFromHTTPHeader || m_source == AutoDetectedEncoding) {
         m_checkedForMetaCharset = true;
         return;
     }

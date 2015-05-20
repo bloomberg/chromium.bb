@@ -327,8 +327,6 @@ public:
 
     AtomicString encodingName() const;
 
-    void setCharset(const String&);
-
     void setContent(const String&);
 
     String suggestedMIMEType() const;

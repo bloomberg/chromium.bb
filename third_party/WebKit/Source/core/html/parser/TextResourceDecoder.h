@@ -41,7 +41,6 @@ public:
         EncodingFromMetaTag,
         EncodingFromCSSCharset,
         EncodingFromHTTPHeader,
-        UserChosenEncoding,
         EncodingFromParentFrame
     };
 
