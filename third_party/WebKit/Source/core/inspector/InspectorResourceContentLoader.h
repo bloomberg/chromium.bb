@@ -5,6 +5,7 @@
 #ifndef InspectorResourceContentLoader_h
 #define InspectorResourceContentLoader_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourcePtr.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -16,7 +17,7 @@ class LocalFrame;
 class Resource;
 class VoidCallback;
 
-class InspectorResourceContentLoader final : public NoBaseWillBeGarbageCollectedFinalized<InspectorResourceContentLoader> {
+class CORE_EXPORT InspectorResourceContentLoader final : public NoBaseWillBeGarbageCollectedFinalized<InspectorResourceContentLoader> {
     WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorResourceContentLoader);
 public:
