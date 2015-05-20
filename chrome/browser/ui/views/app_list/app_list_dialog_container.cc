@@ -168,8 +168,13 @@ class FullSizeBubbleFrameView : public views::BubbleFrameView {
                          const gfx::Rect& rect) const override {
     // Make sure click events can still reach the close button, even if the
     // ClientView overlaps it.
-    if (IsCloseButtonVisible() && GetCloseButtonBounds().Intersects(rect))
+    // NOTE: |rect| is in the mirrored coordinate space, so we must use the
+    // close button's mirrored bounds to correctly target the close button when
+    // in RTL mode.
+    if (IsCloseButtonVisible() &&
+        GetCloseButtonMirroredBounds().Intersects(rect)) {
       return true;
+    }
     return views::BubbleFrameView::DoesIntersectRect(target, rect);
   }
 

@@ -343,8 +343,8 @@ bool BubbleFrameView::IsCloseButtonVisible() const {
   return close_->visible();
 }
 
-gfx::Rect BubbleFrameView::GetCloseButtonBounds() const {
-  return close_->bounds();
+gfx::Rect BubbleFrameView::GetCloseButtonMirroredBounds() const {
+  return close_->GetMirroredBounds();
 }
 
 void BubbleFrameView::MirrorArrowIfOffScreen(

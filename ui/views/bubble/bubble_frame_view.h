@@ -88,7 +88,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect);
 
   bool IsCloseButtonVisible() const;
-  gfx::Rect GetCloseButtonBounds() const;
+  gfx::Rect GetCloseButtonMirroredBounds() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);
