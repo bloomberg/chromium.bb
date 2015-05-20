@@ -74,7 +74,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   int GetIconID() const override;
-  bool ShouldExpireInternal(const NavigationDetails& details) const override;
+  bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool OKButtonTriggersUACPrompt() const override;
@@ -136,9 +136,9 @@ int DefaultBrowserInfoBarDelegate::GetIconID() const {
   return IDR_PRODUCT_LOGO_32;
 }
 
-bool DefaultBrowserInfoBarDelegate::ShouldExpireInternal(
+bool DefaultBrowserInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return should_expire_;
+  return should_expire_ && ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
 base::string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {

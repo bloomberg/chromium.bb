@@ -56,7 +56,6 @@ SkColor InfoBar::GetBottomColor(InfoBarDelegate::Type infobar_type) {
 void InfoBar::SetOwner(InfoBarManager* owner) {
   DCHECK(!owner_);
   owner_ = owner;
-  delegate_->StoreActiveEntryUniqueID();
   PlatformSpecificSetOwner();
 }
 

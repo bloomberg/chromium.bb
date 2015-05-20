@@ -127,24 +127,12 @@ class InfoBarDelegate {
 
   void set_infobar(InfoBar* infobar) { infobar_ = infobar; }
 
-  // Store the unique id for the active entry, to be used later upon navigation
-  // to determine if this InfoBarDelegate should be expired.
-  void StoreActiveEntryUniqueID();
-
  protected:
   InfoBarDelegate();
 
-  // Returns true if the navigation is to a new URL or a reload occured.
-  virtual bool ShouldExpireInternal(const NavigationDetails& details) const;
-
-  int contents_unique_id() const { return contents_unique_id_; }
   InfoBar* infobar() { return infobar_; }
 
  private:
-  // The unique id of the active NavigationEntry of the WebContents that we were
-  // opened for. Used to help expire on navigations.
-  int contents_unique_id_;
-
   // The InfoBar associated with us.
   InfoBar* infobar_;
 

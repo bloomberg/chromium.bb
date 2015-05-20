@@ -68,8 +68,6 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
  protected:
   ConfirmInfoBarDelegate();
 
-  bool ShouldExpireInternal(const NavigationDetails& details) const override;
-
  private:
   // InfoBarDelegate:
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;

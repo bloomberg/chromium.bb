@@ -41,10 +41,7 @@ bool InfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
 }
 
 bool InfoBarDelegate::ShouldExpire(const NavigationDetails& details) const {
-  if (!details.is_navigation_to_different_page)
-    return false;
-
-  return ShouldExpireInternal(details);
+  return details.is_navigation_to_different_page && !details.did_replace_entry;
 }
 
 void InfoBarDelegate::InfoBarDismissed() {
@@ -99,18 +96,7 @@ InfoBarDelegate::AsTranslateInfoBarDelegate() {
   return nullptr;
 }
 
-void InfoBarDelegate::StoreActiveEntryUniqueID() {
-  contents_unique_id_ = infobar()->owner()->GetActiveEntryID();
-}
-
-InfoBarDelegate::InfoBarDelegate() : contents_unique_id_(0) {
-}
-
-bool InfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  // NOTE: If you change this, be sure to check and adjust the behavior of
-  // anyone who overrides this as necessary!
-  return (contents_unique_id_ != details.entry_id) || details.is_reload;
+InfoBarDelegate::InfoBarDelegate() {
 }
 
 }  // namespace infobars

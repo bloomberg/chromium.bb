@@ -32,7 +32,6 @@ class ProtectedMediaIdentifierInfoBarDelegate : public ConfirmInfoBarDelegate {
   ProtectedMediaIdentifierInfoBarDelegate(PermissionQueueController* controller,
                                           const PermissionRequestID& id,
                                           const GURL& requesting_frame,
-                                          int contents_unique_id,
                                           const std::string& display_languages);
   ~ProtectedMediaIdentifierInfoBarDelegate() override;
 
@@ -44,7 +43,6 @@ class ProtectedMediaIdentifierInfoBarDelegate : public ConfirmInfoBarDelegate {
   Type GetInfoBarType() const override;
   int GetIconID() const override;
   void InfoBarDismissed() override;
-  bool ShouldExpireInternal(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
@@ -55,7 +53,6 @@ class ProtectedMediaIdentifierInfoBarDelegate : public ConfirmInfoBarDelegate {
   PermissionQueueController* controller_;
   const PermissionRequestID id_;
   GURL requesting_frame_;
-  int contents_unique_id_;
   std::string display_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectedMediaIdentifierInfoBarDelegate);

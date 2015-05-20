@@ -60,16 +60,16 @@ int AutofillCCInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_AUTOFILL_CC;
 }
 
-void AutofillCCInfoBarDelegate::InfoBarDismissed() {
-  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
-}
-
-bool AutofillCCInfoBarDelegate::ShouldExpireInternal(
+bool AutofillCCInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
   // The user has submitted a form, causing the page to navigate elsewhere. We
   // don't want the infobar to be expired at this point, because the user won't
   // get a chance to answer the question.
   return false;
+}
+
+void AutofillCCInfoBarDelegate::InfoBarDismissed() {
+  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
 }
 
 base::string16 AutofillCCInfoBarDelegate::GetMessageText() const {

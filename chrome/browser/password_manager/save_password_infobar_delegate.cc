@@ -137,8 +137,7 @@ int SavePasswordInfoBarDelegate::GetIconID() const {
 
 bool SavePasswordInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return !details.is_redirect &&
-         infobars::InfoBarDelegate::ShouldExpire(details);
+  return !details.is_redirect && ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
 void SavePasswordInfoBarDelegate::InfoBarDismissed() {

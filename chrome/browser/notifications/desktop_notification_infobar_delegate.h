@@ -23,7 +23,6 @@ class DesktopNotificationInfoBarDelegate : public PermissionInfobarDelegate {
   DesktopNotificationInfoBarDelegate(PermissionQueueController* controller,
                                      const PermissionRequestID& id,
                                      const GURL& requesting_frame,
-                                     int contents_unique_id,
                                      const std::string& display_languages);
   ~DesktopNotificationInfoBarDelegate() override;
 

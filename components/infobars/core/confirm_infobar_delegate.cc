@@ -53,12 +53,6 @@ ConfirmInfoBarDelegate::ConfirmInfoBarDelegate()
     : InfoBarDelegate() {
 }
 
-bool ConfirmInfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  return !details.did_replace_entry &&
-      InfoBarDelegate::ShouldExpireInternal(details);
-}
-
 bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   ConfirmInfoBarDelegate* confirm_delegate =
       delegate->AsConfirmInfoBarDelegate();

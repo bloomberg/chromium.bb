@@ -51,8 +51,8 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   int GetIconID() const override;
+  bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
-  bool ShouldExpireInternal(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;

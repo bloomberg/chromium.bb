@@ -31,7 +31,6 @@ class MidiPermissionInfoBarDelegate : public PermissionInfobarDelegate {
   MidiPermissionInfoBarDelegate(PermissionQueueController* controller,
                                 const PermissionRequestID& id,
                                 const GURL& requesting_frame,
-                                int contents_unique_id,
                                 const std::string& display_languages,
                                 ContentSettingsType type);
   ~MidiPermissionInfoBarDelegate() override;

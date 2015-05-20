@@ -199,7 +199,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // InfoBarDelegate:
   Type GetInfoBarType() const override;
   int GetIconID() const override;
-  bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
   TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
 

@@ -359,16 +359,6 @@ int TranslateInfoBarDelegate::GetIconID() const {
   return translate_manager_->translate_client()->GetInfobarIconID();
 }
 
-bool TranslateInfoBarDelegate::ShouldExpire(
-    const NavigationDetails& details) const {
-  // Note: we allow closing this infobar even if the main frame navigation
-  // was programmatic and not initiated by the user - crbug.com/70261 .
-  if (!details.is_navigation_to_different_page && !details.is_main_frame)
-    return false;
-
-  return infobars::InfoBarDelegate::ShouldExpireInternal(details);
-}
-
 void TranslateInfoBarDelegate::InfoBarDismissed() {
   if (step_ != translate::TRANSLATE_STEP_BEFORE_TRANSLATE)
     return;

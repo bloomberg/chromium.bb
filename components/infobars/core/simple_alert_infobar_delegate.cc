@@ -36,9 +36,9 @@ int SimpleAlertInfoBarDelegate::GetIconID() const {
   return icon_id_;
 }
 
-bool SimpleAlertInfoBarDelegate::ShouldExpireInternal(
+bool SimpleAlertInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpireInternal(details);
+  return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
 base::string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
