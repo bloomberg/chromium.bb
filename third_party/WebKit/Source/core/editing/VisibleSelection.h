@@ -41,6 +41,7 @@ enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, D
 
 class CORE_EXPORT VisibleSelection {
     DISALLOW_ALLOCATION();
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelection);
 public:
     VisibleSelection();
 
@@ -54,8 +55,6 @@ public:
 
     VisibleSelection(const VisibleSelection&);
     VisibleSelection& operator=(const VisibleSelection&);
-
-    ~VisibleSelection();
 
     static VisibleSelection selectionFromContentsOfNode(Node*);
 

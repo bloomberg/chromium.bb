@@ -133,12 +133,12 @@ VisibleSelection& VisibleSelection::operator=(const VisibleSelection& other)
     return *this;
 }
 
+#if !ENABLE(OILPAN)
 VisibleSelection::~VisibleSelection()
 {
-#if !ENABLE(OILPAN)
     didChange();
-#endif
 }
+#endif
 
 VisibleSelection VisibleSelection::selectionFromContentsOfNode(Node* node)
 {
