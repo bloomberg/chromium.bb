@@ -5419,7 +5419,7 @@ class TraceIfNeededTester : public GarbageCollectedFinalized<TraceIfNeededTester
 public:
     static TraceIfNeededTester<T>* create() { return new TraceIfNeededTester<T>(); }
     static TraceIfNeededTester<T>* create(const T& obj) { return new TraceIfNeededTester<T>(obj); }
-    DEFINE_INLINE_TRACE() { TraceIfNeeded<T>::trace(visitor, &m_obj); }
+    DEFINE_INLINE_TRACE() { TraceIfNeeded<T>::trace(visitor, m_obj); }
     T& obj() { return m_obj; }
     ~TraceIfNeededTester() { }
 private:

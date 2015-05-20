@@ -108,15 +108,15 @@ struct TraceIfEnabled;
 template<typename T>
 struct TraceIfEnabled<T, false>  {
     template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher, T*) { }
+    static void trace(VisitorDispatcher, T&) { }
 };
 
 template<typename T>
 struct TraceIfEnabled<T, true> {
     template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, T* t)
+    static void trace(VisitorDispatcher visitor, T& t)
     {
-        visitor->trace(*t);
+        visitor->trace(t);
     }
 };
 
@@ -131,7 +131,7 @@ struct TraceCollectionIfEnabled<false, WTF::NoWeakHandlingInCollections, strongi
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceCollectionIfEnabled {
     template<typename VisitorDispatcher>
-    static bool trace(VisitorDispatcher visitor, T&t)
+    static bool trace(VisitorDispatcher visitor, T& t)
     {
         return WTF::TraceInCollectionTrait<weakHandlingFlag, strongify, T, Traits>::trace(visitor, t);
     }
@@ -254,8 +254,8 @@ public:
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, std::pair<T, U>* pair)
     {
-        TraceIfEnabled<T, firstNeedsTracing>::trace(visitor, &pair->first);
-        TraceIfEnabled<U, secondNeedsTracing>::trace(visitor, &pair->second);
+        TraceIfEnabled<T, firstNeedsTracing>::trace(visitor, pair->first);
+        TraceIfEnabled<U, secondNeedsTracing>::trace(visitor, pair->second);
     }
 };
 
@@ -400,6 +400,12 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         //   as a valid object.
         static_assert(!ShouldBeTraced<Traits>::value || Traits::canInitializeWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be initialized with memset.");
 
+        // This trace method is instantiated for vectors where
+        // ShouldBeTraced<Traits>::value is false, but the trace method
+        // should not be called. Thus we cannot static-assert
+        // ShouldBeTraced<Traits>::value but should runtime-assert it.
+        ASSERT(ShouldBeTraced<Traits>::value);
+
         T* array = reinterpret_cast<T*>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
         // Use the payload size as recorded by the heap to determine how many
@@ -408,7 +414,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         if (WTF::IsPolymorphic<T>::value) {
             for (size_t i = 0; i < length; ++i) {
                 if (blink::vTableInitialized(&array[i]))
-                    blink::TraceCollectionIfEnabled<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+                    blink::TraceIfEnabled<T, ShouldBeTraced<Traits>::value>::trace(visitor, array[i]);
             }
         } else {
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
@@ -417,7 +423,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
             ANNOTATE_CHANGE_SIZE(array, length, 0, length);
 #endif
             for (size_t i = 0; i < length; ++i)
-                blink::TraceCollectionIfEnabled<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+                blink::TraceIfEnabled<T, ShouldBeTraced<Traits>::value>::trace(visitor, array[i]);
         }
         return false;
     }

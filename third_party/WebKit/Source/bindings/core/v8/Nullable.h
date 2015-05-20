@@ -71,7 +71,7 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        TraceIfNeeded<T>::trace(visitor, &m_value);
+        TraceIfNeeded<T>::trace(visitor, m_value);
     }
 
 private:

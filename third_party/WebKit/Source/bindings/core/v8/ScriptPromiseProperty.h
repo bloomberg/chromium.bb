@@ -156,9 +156,9 @@ template<typename HolderType, typename ResolvedType, typename RejectedType>
 template <typename VisitorDispatcher>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::traceImpl(VisitorDispatcher visitor)
 {
-    TraceIfNeeded<HolderType>::trace(visitor, &m_holder);
-    TraceIfNeeded<ResolvedType>::trace(visitor, &m_resolved);
-    TraceIfNeeded<RejectedType>::trace(visitor, &m_rejected);
+    TraceIfNeeded<HolderType>::trace(visitor, m_holder);
+    TraceIfNeeded<ResolvedType>::trace(visitor, m_resolved);
+    TraceIfNeeded<RejectedType>::trace(visitor, m_rejected);
     ScriptPromisePropertyBase::trace(visitor);
 }
 
