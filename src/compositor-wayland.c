@@ -1395,7 +1395,8 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 
 		if (frame_status(input->output->frame) & FRAME_STATUS_CLOSE) {
 			wayland_output_destroy(&input->output->base);
-			input->output = input->keyboard_focus = NULL;
+			input->output = NULL;
+			input->keyboard_focus = NULL;
 
 			if (wl_list_empty(&input->compositor->base.output_list))
 				wl_display_terminate(input->compositor->base.wl_display);
