@@ -29,6 +29,7 @@
 
 #include "platform/PlatformThreadData.h"
 #include "platform/ThreadTimers.h"
+#include "platform/heap/AddressSanitizer.h"
 #include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"
@@ -77,6 +78,7 @@ inline TimerHeapReference TimerHeapPointer::operator*() const
     return *m_pointer;
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline TimerHeapReference& TimerHeapReference::operator=(TimerBase* timer)
 {
     m_reference = timer;
@@ -86,6 +88,7 @@ inline TimerHeapReference& TimerHeapReference::operator=(TimerBase* timer)
     return *this;
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline TimerHeapReference& TimerHeapReference::operator=(TimerHeapReference b)
 {
     TimerBase* timer = b;
@@ -168,6 +171,7 @@ public:
     bool operator()(const TimerBase*, const TimerBase*) const;
 };
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline bool TimerHeapLessThanFunction::operator()(const TimerBase* a, const TimerBase* b) const
 {
     // The comparisons below are "backwards" because the heap puts the largest
@@ -290,6 +294,7 @@ inline void TimerBase::heapInsert()
     heapDecreaseKey();
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline void TimerBase::heapPop()
 {
     // Temporarily force this timer to have the minimum key so we can pop it.
