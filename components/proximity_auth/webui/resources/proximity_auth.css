@@ -3,21 +3,13 @@
  * found in the LICENSE file.
  */
 
-@font-face {
-  font-family: "Roboto2";
-  font-weight: 400;
-  src: local("Roboto"), local("Roboto2-Regular"),
-      url(chrome://resources/roboto/roboto.woff2) format("woff2"),
-      url(chrome://resources/roboto/roboto.woff) format("woff");
-}
-
 html, body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: "Roboto2", sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 #logs {

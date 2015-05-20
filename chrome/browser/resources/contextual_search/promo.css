@@ -2,15 +2,6 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
-/* TODO: Need to clean up @font-face after we remove font-family from body. */
-@font-face {
-  font-family: 'Roboto2';
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto2-Regular'),
-      url(chrome://resources/roboto/roboto.woff2) format('woff2'),
-      url(chrome://resources/roboto/roboto.woff) format('woff');
-}
-
 /* TODO(pedrosimonetti): Find a better way to fix the problem when the
  * text scaling preference is set to a high value.
  *
@@ -26,7 +17,7 @@
 }
 
 body {
-  font-family: 'Roboto2', sans-serif;
+  font-family: 'Roboto', sans-serif;
   margin: 0;
 }
 
@@ -94,13 +85,13 @@ a.colored-link {
 /* Landscape */
 @media screen and (orientation:landscape) {
   #heading {
-    margin-top: 0;
     /* The heading text and description text should be aligned, therefore
      * the left margin here will be equal to the header image width (156px)
      * plus its right margin (24px). Therefore the total left should be
      * 156px + 24px = 180px.
      */
     margin-left: 180px;
+    margin-top: 0;
     padding-top: 8px;
     text-align: left;
   }
@@ -132,7 +123,7 @@ button {
   background: none;
   border: none;
   display: inline-block;
-  font-family: 'Roboto2', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 14px;
   margin: 6px 0;
   /* We use a slightly different top-bottom padding because Roboto has a

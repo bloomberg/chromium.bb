@@ -18,8 +18,8 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_ANALYTICS_JS" file="js/analytics.js" flattenhtml="true" type="BINDATA" />
       <!-- Roboto Font -->
-      <include name="IDR_WEBUI_ROBOTO_ROBOTO_WOFF"  file="roboto/roboto.woff" type="BINDATA" />
-      <include name="IDR_WEBUI_ROBOTO_ROBOTO_WOFF2" file="roboto/roboto.woff2" type="BINDATA" /> 
+      <include name="IDR_WEBUI_ROBOTO_ROBOTO_REGULAR_LATIN_WOFF2" file="roboto/roboto-regular-latin.woff2" type="BINDATA" />
+      <include name="IDR_WEBUI_ROBOTO_ROBOTO_MEDIUM_LATIN_WOFF2" file="roboto/roboto-medium-latin.woff2" type="BINDATA" />
 
       <!-- Component apps common image resources - 1x -->
       <!-- White button -->
@@ -238,6 +238,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_CSS_OVERLAY"
                  file="css/overlay.css" type="chrome_html"
                  flattenhtml="true" />
+      <structure name="IDR_WEBUI_CSS_ROBOTO"
+                 file="css/roboto.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_SPINNER"
                  file="css/spinner.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_TABLE"
