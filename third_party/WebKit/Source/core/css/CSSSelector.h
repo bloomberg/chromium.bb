@@ -278,7 +278,7 @@ namespace blink {
         void setArgument(const AtomicString&);
         void setSelectorList(PassOwnPtr<CSSSelectorList>);
 
-        bool parseNth() const;
+        void setNth(int a, int b);
         bool matchNth(int count) const;
 
         bool matchesPseudoElement() const;
@@ -330,7 +330,6 @@ namespace blink {
         unsigned m_relation           : 3; // enum Relation
         mutable unsigned m_match      : 4; // enum Match
         mutable unsigned m_pseudoType : 8; // PseudoType
-        mutable unsigned m_parsedNth      : 1; // Used for :nth-*
         unsigned m_isLastInSelectorList   : 1;
         unsigned m_isLastInTagHistory     : 1;
         unsigned m_hasRareData            : 1;
@@ -349,12 +348,9 @@ namespace blink {
             static PassRefPtr<RareData> create(const AtomicString& value) { return adoptRef(new RareData(value)); }
             ~RareData();
 
-            bool parseNth();
             bool matchNth(int count);
             int nthAValue() const { return m_bits.m_nth.m_a; }
-            void setNthAValue(int nthA) { m_bits.m_nth.m_a = nthA; }
             int nthBValue() const { return m_bits.m_nth.m_b; }
-            void setNthBValue(int nthB) { m_bits.m_nth.m_b = nthB; }
 
             AtomicString m_value;
             union {
@@ -475,7 +471,6 @@ inline CSSSelector::CSSSelector()
     : m_relation(SubSelector)
     , m_match(Unknown)
     , m_pseudoType(PseudoNotParsed)
-    , m_parsedNth(false)
     , m_isLastInSelectorList(false)
     , m_isLastInTagHistory(true)
     , m_hasRareData(false)
@@ -489,7 +484,6 @@ inline CSSSelector::CSSSelector(const QualifiedName& tagQName, bool tagIsImplici
     : m_relation(SubSelector)
     , m_match(Tag)
     , m_pseudoType(PseudoNotParsed)
-    , m_parsedNth(false)
     , m_isLastInSelectorList(false)
     , m_isLastInTagHistory(true)
     , m_hasRareData(false)
@@ -505,7 +499,6 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
     : m_relation(o.m_relation)
     , m_match(o.m_match)
     , m_pseudoType(o.m_pseudoType)
-    , m_parsedNth(o.m_parsedNth)
     , m_isLastInSelectorList(o.m_isLastInSelectorList)
     , m_isLastInTagHistory(o.m_isLastInTagHistory)
     , m_hasRareData(o.m_hasRareData)

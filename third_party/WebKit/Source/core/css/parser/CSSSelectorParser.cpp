@@ -341,22 +341,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
         block.consumeWhitespace();
         if (!block.atEnd())
             return nullptr;
-        // FIXME: We shouldn't serialize here and reparse in CSSSelector!
-        // Serialization should be in CSSSelector::selectorText instead.
-        int a = ab.first;
-        int b = ab.second;
-        String string;
-        if (a == 0 && b == 0)
-            string = "0";
-        else if (a == 0)
-            string = String::number(b);
-        else if (b == 0)
-            string = String::format("%dn", a);
-        else if (ab.second < 0)
-            string = String::format("%dn%d", a, b);
-        else
-            string = String::format("%dn+%d", a, b);
-        selector->setArgument(AtomicString(string));
+        selector->setNth(ab.first, ab.second);
         selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
         ASSERT(selector->pseudoType() != CSSSelector::PseudoUnknown);
         return selector.release();

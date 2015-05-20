@@ -277,6 +277,8 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     return NOPSEUDO;
 }
 
+// TODO(timloh): Unify with CSSSelectorParser, which also compares pseudo names as strings
+
 // Could be made smaller and faster by replacing pointer with an
 // offset into a string buffer and making the bit fields smaller but
 // that could not be maintained by hand.
@@ -339,6 +341,11 @@ const static NameToPseudoStruct pseudoTypeWithoutArgumentsMap[] = {
 {"left",                          CSSSelector::PseudoLeftPage},
 {"link",                          CSSSelector::PseudoLink},
 {"no-button",                     CSSSelector::PseudoNoButton},
+// :nth-* actually have arguments
+{"nth-child",                     CSSSelector::PseudoNthChild},
+{"nth-last-child",                CSSSelector::PseudoNthLastChild},
+{"nth-last-of-type",              CSSSelector::PseudoNthLastOfType},
+{"nth-of-type",                   CSSSelector::PseudoNthOfType},
 {"only-child",                    CSSSelector::PseudoOnlyChild},
 {"only-of-type",                  CSSSelector::PseudoOnlyOfType},
 {"optional",                      CSSSelector::PseudoOptional},
@@ -369,10 +376,6 @@ const static NameToPseudoStruct pseudoTypeWithArgumentsMap[] = {
 {"host-context",     CSSSelector::PseudoHostContext},
 {"lang",             CSSSelector::PseudoLang},
 {"not",              CSSSelector::PseudoNot},
-{"nth-child",        CSSSelector::PseudoNthChild},
-{"nth-last-child",   CSSSelector::PseudoNthLastChild},
-{"nth-last-of-type", CSSSelector::PseudoNthLastOfType},
-{"nth-of-type",      CSSSelector::PseudoNthOfType},
 };
 
 class NameToPseudoCompare {
@@ -632,11 +635,30 @@ String CSSSelector::selectorText(const String& rightSide) const
                 str.append(cs->selectorList()->first()->selectorText());
                 str.append(')');
                 break;
-            case PseudoLang:
             case PseudoNthChild:
             case PseudoNthLastChild:
             case PseudoNthOfType:
-            case PseudoNthLastOfType:
+            case PseudoNthLastOfType: {
+                str.append('(');
+
+                // http://dev.w3.org/csswg/css-syntax/#serializing-anb
+                int a = cs->m_data.m_rareData->nthAValue();
+                int b = cs->m_data.m_rareData->nthBValue();
+                if (a == 0 && b == 0)
+                    str.append('0');
+                else if (a == 0)
+                    str.append(String::number(b));
+                else if (b == 0)
+                    str.append(String::format("%dn", a));
+                else if (b < 0)
+                    str.append(String::format("%dn%d", a, b));
+                else
+                    str.append(String::format("%dn+%d", a, b));
+
+                str.append(')');
+                break;
+            }
+            case PseudoLang:
                 str.append('(');
                 str.append(cs->argument());
                 str.append(')');
@@ -899,14 +921,11 @@ unsigned CSSSelector::computeLinkMatchType() const
     return linkMatchType;
 }
 
-bool CSSSelector::parseNth() const
+void CSSSelector::setNth(int a, int b)
 {
-    if (!m_hasRareData)
-        return false;
-    if (m_parsedNth)
-        return true;
-    m_parsedNth = m_data.m_rareData->parseNth();
-    return m_parsedNth;
+    createRareData();
+    m_data.m_rareData->m_bits.m_nth.m_a = a;
+    m_data.m_rareData->m_bits.m_nth.m_b = b;
 }
 
 bool CSSSelector::matchNth(int count) const
@@ -925,53 +944,6 @@ CSSSelector::RareData::RareData(const AtomicString& value)
 
 CSSSelector::RareData::~RareData()
 {
-}
-
-// a helper function for parsing nth-arguments
-bool CSSSelector::RareData::parseNth()
-{
-    String argument = m_argument.lower();
-
-    if (argument.isEmpty())
-        return false;
-
-    int nthA = 0;
-    int nthB = 0;
-    if (argument == "odd") {
-        nthA = 2;
-        nthB = 1;
-    } else if (argument == "even") {
-        nthA = 2;
-        nthB = 0;
-    } else {
-        size_t n = argument.find('n');
-        if (n != kNotFound) {
-            if (argument[0] == '-') {
-                if (n == 1)
-                    nthA = -1; // -n == -1n
-                else
-                    nthA = argument.substring(0, n).toInt();
-            } else if (!n) {
-                nthA = 1; // n == 1n
-            } else {
-                nthA = argument.substring(0, n).toInt();
-            }
-
-            size_t p = argument.find('+', n);
-            if (p != kNotFound) {
-                nthB = argument.substring(p + 1, argument.length() - p - 1).toInt();
-            } else {
-                p = argument.find('-', n);
-                if (p != kNotFound)
-                    nthB = -argument.substring(p + 1, argument.length() - p - 1).toInt();
-            }
-        } else {
-            nthB = argument.toInt();
-        }
-    }
-    setNthAValue(nthA);
-    setNthBValue(nthB);
-    return true;
 }
 
 // a helper function for checking nth-arguments

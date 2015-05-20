@@ -799,8 +799,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         }
         break;
     case CSSSelector::PseudoNthChild:
-        if (!selector.parseNth())
-            break;
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
@@ -808,8 +806,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         }
         break;
     case CSSSelector::PseudoNthOfType:
-        if (!selector.parseNth())
-            break;
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
@@ -817,8 +813,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         }
         break;
     case CSSSelector::PseudoNthLastChild:
-        if (!selector.parseNth())
-            break;
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByBackwardPositionalRules();
@@ -828,8 +822,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         }
         break;
     case CSSSelector::PseudoNthLastOfType:
-        if (!selector.parseNth())
-            break;
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByBackwardPositionalRules();
