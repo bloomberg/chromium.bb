@@ -183,6 +183,10 @@ class DeviceParser(object):
     - [ssh://][username@]hostname[:port].
     - usb://[path].
     - file://path or /absolute_path.
+    - [ssh://]:vm:.
+
+  The last item above is an alias for ssh'ing into a virtual machine on a
+  localhost.  It gets translated into 'localhost:9222'.
 
   Usage:
     parser = argparse.ArgumentParser()
@@ -269,6 +273,12 @@ class DeviceParser(object):
     Raises:
       ValueError: |value| is not a valid device specifier.
     """
+    # ':vm:' is an alias for ssh'ing into a virtual machihne on localhost;
+    # translate it appropriately.
+    if value.strip().lower() == ':vm:':
+      value = 'localhost:9222'
+    elif value.strip().lower() == 'ssh://:vm:':
+      value = 'ssh://localhost:9222'
     parsed = urlparse.urlparse(value)
     if not parsed.scheme:
       # Default to a file scheme for absolute paths, SSH scheme otherwise.
@@ -284,10 +294,20 @@ class DeviceParser(object):
 
     if scheme == DEVICE_SCHEME_SSH:
       hostname = parsed.hostname
+      port = parsed.port
+      if hostname == 'localhost' and not port:
+        # Use of localhost as the actual machine is uncommon enough relative to
+        # the use of KVM that we require users to specify localhost:22 if they
+        # actually want to connect to the localhost.  Otherwise the expectation
+        # is that they intend to access the VM but forget or didn't know to use
+        # port 9222.
+        raise ValueError('To connect to localhost, use ssh://localhost:22 '
+                         'explicitly, or use ssh://localhost:9222 for the local'
+                         ' VM.')
       if not hostname:
         raise ValueError('Hostname is required for device "%s"' % value)
       return Device(scheme=scheme, username=parsed.username, hostname=hostname,
-                    port=parsed.port, raw=value)
+                    port=port, raw=value)
     elif scheme == DEVICE_SCHEME_USB:
       path = parsed.netloc + parsed.path
       # Change path '' to None for consistency.
