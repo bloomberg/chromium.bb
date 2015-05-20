@@ -138,6 +138,7 @@ bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, 
     ASSERT(bitmap.height() == scaledSize.height());
 
     bool result = true;
+    SkAutoLockPixels bitmapLock(bitmap);
     // Check to see if decoder has written directly to the memory provided
     // by Skia. If not make a copy.
     if (bitmap.getPixels() != pixels)
