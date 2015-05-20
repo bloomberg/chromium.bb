@@ -57,17 +57,11 @@ void ContentLayerDelegate::paintContents(
 {
     ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
 
-    static const unsigned char* annotationsEnabled = 0;
-    if (UNLIKELY(!annotationsEnabled))
-        annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
-
     GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
     if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled
         || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
     OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas, disabledMode);
-    if (*annotationsEnabled)
-        context->setAnnotationMode(AnnotateAll);
 
     m_painter->paint(*context, clip);
 }
@@ -77,10 +71,6 @@ void ContentLayerDelegate::paintContents(
     WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-
-    static const unsigned char* annotationsEnabled = 0;
-    if (UNLIKELY(!annotationsEnabled))
-        annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
 
     DisplayItemList* displayItemList = m_painter->displayItemList();
     ASSERT(displayItemList);
@@ -97,8 +87,6 @@ void ContentLayerDelegate::paintContents(
         || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
     GraphicsContext context(displayItemList, disabledMode);
-    if (*annotationsEnabled)
-        context.setAnnotationMode(AnnotateAll);
 
     m_painter->paint(context, clip);
 

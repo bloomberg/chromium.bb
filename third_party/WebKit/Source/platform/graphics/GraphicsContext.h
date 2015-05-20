@@ -35,7 +35,6 @@
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -180,9 +179,6 @@ public:
     bool isAccelerated() const { return m_accelerated; }
     void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
-    AnnotationModeFlags annotationMode() const { return m_annotationMode; }
-    void setAnnotationMode(const AnnotationModeFlags mode) { m_annotationMode = mode; }
-
     SkColorFilter* colorFilter() const;
     void setColorFilter(ColorFilter);
     // ---------- End state management methods -----------------
@@ -318,9 +314,6 @@ public:
 
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
-    void beginAnnotation(const AnnotationList&);
-    void endAnnotation();
-
     // This method can potentially push saves onto the canvas. It returns the initial save count,
     // and should be balanced with a call to context->canvas()->restoreToCount(initialSaveCount).
     WARN_UNUSED_RETURN int preparePaintForDrawRectToRect(
@@ -434,15 +427,12 @@ private:
     // Raw pointer to the current state.
     GraphicsContextState* m_paintState;
 
-    AnnotationModeFlags m_annotationMode;
-
     // Only used when Slimming Paint is off. When it is on, m_pictureRecorder is used instead.
     Vector<OwnPtr<RecordingState>> m_recordingStateStack;
     SkPictureRecorder m_pictureRecorder;
 
 #if ENABLE(ASSERT)
     unsigned m_layerCount;
-    unsigned m_annotationCount;
     bool m_disableDestructionChecks;
     bool m_inDrawingRecorder;
 #endif
