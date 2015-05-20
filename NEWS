@@ -34,6 +34,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Corrections and improvements made to UEB tables thanks to Paul Wood
   - Typeform passage indicators
   - Degree sign
+  - Dash signs
 
 * Noteworthy changes in release 2.6.2 (2015-03-02)
 This release, which was mostly pushed out the door by Bert and Mesar,
