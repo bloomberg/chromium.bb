@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.04",
+  "version": "8.05",
   "entries": [
     {
       "id": 1,
@@ -1351,6 +1351,23 @@ LONG_STRING_CONST(
       "gl_renderer": "Vivante GC1000",
       "features": [
         "disable_multisampled_render_to_texture"
+      ]
+    },
+    {
+      "id": 115,
+      "cr_bugs": [462553],
+      "description": "glGetIntegerv with GL_GPU_DISJOINT_EXT causes GL_INVALID_ENUM error",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.0"
+      },
+      "disabled_extensions": [
+        "GL_EXT_disjoint_timer_query"
       ]
     }
   ]
