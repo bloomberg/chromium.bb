@@ -152,7 +152,8 @@ TilingSetRasterQueueAll::OnePriorityRectIterator::OnePriorityRectIterator(
     PictureLayerTiling::PriorityRectType priority_rect_type)
     : tiling_(tiling),
       tiling_data_(tiling_data),
-      priority_rect_type_(priority_rect_type) {
+      priority_rect_type_(priority_rect_type),
+      pending_visible_rect_(tiling->pending_visible_rect()) {
 }
 
 template <typename TilingIteratorType>
@@ -194,7 +195,7 @@ bool TilingSetRasterQueueAll::OnePriorityRectIterator::IsTileValid(
   // for pending visible rect tiles as tiling iterators do not ignore those
   // tiles.
   if (priority_rect_type_ > PictureLayerTiling::PENDING_VISIBLE_RECT &&
-      tiling_->pending_visible_rect().Intersects(tile->content_rect())) {
+      pending_visible_rect_.Intersects(tile->content_rect())) {
     return false;
   }
   return true;
@@ -232,9 +233,8 @@ TilingSetRasterQueueAll::PendingVisibleTilingIterator::
     : OnePriorityRectIterator(tiling,
                               tiling_data,
                               PictureLayerTiling::PENDING_VISIBLE_RECT) {
-  iterator_ = TilingData::DifferenceIterator(tiling_data_,
-                                             tiling_->pending_visible_rect(),
-                                             tiling_->current_visible_rect());
+  iterator_ = TilingData::DifferenceIterator(
+      tiling_data_, pending_visible_rect_, tiling_->current_visible_rect());
   if (!iterator_)
     return;
   if (!GetFirstTileAndCheckIfValid(&iterator_))
@@ -254,8 +254,7 @@ TilingSetRasterQueueAll::SkewportTilingIterator::SkewportTilingIterator(
     TilingData* tiling_data)
     : OnePriorityRectIterator(tiling,
                               tiling_data,
-                              PictureLayerTiling::SKEWPORT_RECT),
-      pending_visible_rect_(tiling->pending_visible_rect()) {
+                              PictureLayerTiling::SKEWPORT_RECT) {
   if (!tiling_->has_skewport_rect_tiles())
     return;
   iterator_ = TilingData::SpiralDifferenceIterator(
@@ -267,23 +266,12 @@ TilingSetRasterQueueAll::SkewportTilingIterator::SkewportTilingIterator(
     ++(*this);
     return;
   }
-  // TODO(e_hakkinen): This is not needed as GetFirstTileAndCheckIfValid
-  // does the same checking.
-  if (current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
-    ++(*this);
 }
 
 TilingSetRasterQueueAll::SkewportTilingIterator&
     TilingSetRasterQueueAll::SkewportTilingIterator::
     operator++() {
   AdvanceToNextTile(&iterator_);
-  // TODO(e_hakkinen): This is not needed as GetFirstTileAndCheckIfValid called
-  // by AdvanceToNextTile does the same checking.
-  while (!done()) {
-    if (!current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
-      break;
-    AdvanceToNextTile(&iterator_);
-  }
   return *this;
 }
 
@@ -293,8 +281,7 @@ TilingSetRasterQueueAll::SoonBorderTilingIterator::SoonBorderTilingIterator(
     TilingData* tiling_data)
     : OnePriorityRectIterator(tiling,
                               tiling_data,
-                              PictureLayerTiling::SOON_BORDER_RECT),
-      pending_visible_rect_(tiling->pending_visible_rect()) {
+                              PictureLayerTiling::SOON_BORDER_RECT) {
   if (!tiling_->has_soon_border_rect_tiles())
     return;
   iterator_ = TilingData::SpiralDifferenceIterator(
@@ -306,23 +293,12 @@ TilingSetRasterQueueAll::SoonBorderTilingIterator::SoonBorderTilingIterator(
     ++(*this);
     return;
   }
-  // TODO(e_hakkinen): This is not needed as GetFirstTileAndCheckIfValid
-  // does the same checking.
-  if (current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
-    ++(*this);
 }
 
 TilingSetRasterQueueAll::SoonBorderTilingIterator&
     TilingSetRasterQueueAll::SoonBorderTilingIterator::
     operator++() {
   AdvanceToNextTile(&iterator_);
-  // TODO(e_hakkinen): This is not needed as GetFirstTileAndCheckIfValid called
-  // by AdvanceToNextTile does the same checking.
-  while (!done()) {
-    if (!current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
-      break;
-    AdvanceToNextTile(&iterator_);
-  }
   return *this;
 }
 
@@ -332,8 +308,7 @@ TilingSetRasterQueueAll::EventuallyTilingIterator::EventuallyTilingIterator(
     TilingData* tiling_data)
     : OnePriorityRectIterator(tiling,
                               tiling_data,
-                              PictureLayerTiling::EVENTUALLY_RECT),
-      pending_visible_rect_(tiling->pending_visible_rect()) {
+                              PictureLayerTiling::EVENTUALLY_RECT) {
   if (!tiling_->has_eventually_rect_tiles())
     return;
   iterator_ = TilingData::SpiralDifferenceIterator(
@@ -345,23 +320,12 @@ TilingSetRasterQueueAll::EventuallyTilingIterator::EventuallyTilingIterator(
     ++(*this);
     return;
   }
-  // TODO(e_hakkinen): This is not needed as GetFirstTileAndCheckIfValid
-  // does the same checking.
-  if (current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
-    ++(*this);
 }
 
 TilingSetRasterQueueAll::EventuallyTilingIterator&
     TilingSetRasterQueueAll::EventuallyTilingIterator::
     operator++() {
   AdvanceToNextTile(&iterator_);
-  // TODO(e_hakkinen): This is not needed as GetFirstTileAndCheckIfValid called
-  // by AdvanceToNextTile does the same checking.
-  while (!done()) {
-    if (!current_tile_.tile()->content_rect().Intersects(pending_visible_rect_))
-      break;
-    AdvanceToNextTile(&iterator_);
-  }
   return *this;
 }
 

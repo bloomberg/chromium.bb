@@ -55,6 +55,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
     PictureLayerTiling* tiling_;
     TilingData* tiling_data_;
     PictureLayerTiling::PriorityRectType priority_rect_type_;
+    gfx::Rect pending_visible_rect_;
   };
 
   // Iterates over visible rect only, left to right top to bottom order.
@@ -91,7 +92,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
    private:
     TilingData::SpiralDifferenceIterator iterator_;
-    gfx::Rect pending_visible_rect_;
   };
 
   // Iterates over soon border only, spiral around the visible rect.
@@ -105,7 +105,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
    private:
     TilingData::SpiralDifferenceIterator iterator_;
-    gfx::Rect pending_visible_rect_;
   };
 
   // Iterates over eventually rect only, spiral around the soon rect.
@@ -119,7 +118,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
    private:
     TilingData::SpiralDifferenceIterator iterator_;
-    gfx::Rect pending_visible_rect_;
   };
 
   // Iterates over all of the above phases in the following order: visible,
