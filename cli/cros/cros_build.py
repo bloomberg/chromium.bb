@@ -198,3 +198,4 @@ To just build a single package:
             log_level=logging.DEBUG)
       else:
         parallel.RunParallelSteps([self._CheckDependencies, self._Build])
+      logging.notice('Build completed successfully.')
