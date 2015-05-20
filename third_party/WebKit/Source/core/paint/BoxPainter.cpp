@@ -60,7 +60,7 @@ LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
 
     // The document element is specified to paint its background infinitely.
     if (m_layoutBox.isDocumentElement())
-        return scrolledBackgroundRect();
+        return rootBackgroundRect();
 
     // Use the visual overflow rect here, because it will include overflow introduced by the theme.
     LayoutRect bounds = m_layoutBox.visualOverflowRect();
@@ -68,11 +68,13 @@ LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
     return LayoutRect(pixelSnappedIntRect(bounds));
 }
 
-LayoutRect BoxPainter::scrolledBackgroundRect()
+LayoutRect BoxPainter::rootBackgroundRect()
 {
     LayoutView* layoutView = m_layoutBox.view();
     LayoutRect result = layoutView->backgroundRect(&m_layoutBox);
-    if (layoutView->hasOverflowClip())
+    // In root-layer-scrolls mode, root background is painted in coordinates of the
+    // root scrolling contents layer, so don't need scroll offset adjustment.
+    if (layoutView->hasOverflowClip() && !layoutView->frame()->settings()->rootLayerScrolls())
         result.move(-layoutView->scrolledContentOffset());
     return result;
 }
@@ -178,7 +180,7 @@ void BoxPainter::paintRootBoxFillLayers(const PaintInfo& paintInfo)
     const FillLayer& bgLayer = rootBackgroundLayoutObject->style()->backgroundLayers();
     Color bgColor = rootBackgroundLayoutObject->resolveColor(CSSPropertyBackgroundColor);
 
-    paintFillLayers(paintInfo, bgColor, bgLayer, scrolledBackgroundRect(), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundLayoutObject);
+    paintFillLayers(paintInfo, bgColor, bgLayer, rootBackgroundRect(), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundLayoutObject);
 }
 
 void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,

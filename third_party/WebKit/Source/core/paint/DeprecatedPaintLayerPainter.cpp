@@ -19,6 +19,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGClipPainter.h"
 #include "core/paint/ScopeRecorder.h"
+#include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -609,6 +610,8 @@ void DeprecatedPaintLayerPainter::paintChildLayerIntoColumns(GraphicsContext* co
 
 void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const DeprecatedPaintLayerFragment& fragment, GraphicsContext* context, const ClipRect& clipRect, const DeprecatedPaintLayerPaintingInfo& paintingInfo, PaintBehavior paintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags paintFlags, ClipState clipState)
 {
+    ASSERT(m_paintLayer.isSelfPaintingLayer());
+
     OwnPtr<LayerClipRecorder> clipRecorder;
     if (clipState != HasClipped && paintingInfo.clipToDirtyRect && needsToClip(paintingInfo, clipRect)) {
         DisplayItem::Type clipType = DisplayItem::paintPhaseToClipLayerFragmentType(phase);
@@ -628,7 +631,20 @@ void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const
     }
 
     PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForLayoutObject, 0, paintingInfo.rootLayer->layoutObject());
-    m_paintLayer.layoutObject()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation()));
+    OwnPtr<ScrollRecorder> scrollRecorder;
+    LayoutPoint paintOffset = toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation());
+    if (&m_paintLayer != paintingInfo.rootLayer && paintingInfo.rootLayer->layoutObject()->hasOverflowClip()) {
+        // As a sublayer of the root layer, m_paintLayer's painting is not controlled by the ScrollRecorder
+        // created by BlockPainter of the root layer, so we need to issue ScrollRecorder for them separately.
+        // FIXME: This doesn't apply in slimming paint phase 2.
+        IntSize scrollOffset = paintingInfo.rootLayer->layoutBox()->scrolledContentOffset();
+        if (paintingInfo.rootLayer->scrollsOverflow() || !scrollOffset.isZero()) {
+            paintOffset += scrollOffset;
+            paintInfo.rect.move(scrollOffset);
+            scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, *m_paintLayer.layoutObject(), paintInfo.phase, scrollOffset));
+        }
+    }
+    m_paintLayer.layoutObject()->paint(paintInfo, paintOffset);
 }
 
 void DeprecatedPaintLayerPainter::paintBackgroundForFragments(const DeprecatedPaintLayerFragments& layerFragments, GraphicsContext* context,

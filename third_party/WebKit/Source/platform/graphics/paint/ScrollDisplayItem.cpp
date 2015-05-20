@@ -23,6 +23,14 @@ void BeginScrollDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list
     list->appendScrollItem(m_currentOffset, scrollContainerId);
 }
 
+#ifndef NDEBUG
+void BeginScrollDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
+{
+    PairedBeginDisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+    stringBuilder.append(WTF::String::format(", currentOffset: [%d,%d]", m_currentOffset.width(), m_currentOffset.height()));
+}
+#endif
+
 void EndScrollDisplayItem::replay(GraphicsContext& context)
 {
     context.restore();

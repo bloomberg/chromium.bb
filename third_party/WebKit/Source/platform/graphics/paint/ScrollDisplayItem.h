@@ -31,6 +31,10 @@ public:
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
+#ifndef NDEBUG
+    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override final;
+#endif
+
     const IntSize m_currentOffset;
 };
 

@@ -31,7 +31,7 @@
       runAfterLayoutAndPaint(endTest);
     }
 
-    window.addEventListener('load', doTest, false);
+    runAfterLayoutAndPaint(doTest);
 
     if (window.testRunner)
       testRunner.waitUntilDone();

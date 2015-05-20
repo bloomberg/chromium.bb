@@ -161,21 +161,10 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 {
     PaintPhase paintPhase = paintInfo.phase;
 
-    LayoutPoint scrolledOffset = paintOffset;
-    if (!RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled()) {
-        // Adjust our painting position if we're inside a scrolled layer (e.g., an overflow:auto div).
-        // With compositor layerization, a scroll display item is used instead.
-        if (m_layoutBlock.hasOverflowClip())
-            scrolledOffset.move(-m_layoutBlock.scrolledContentOffset());
-    }
-
-    LayoutRect scrolledOffsetBounds;
-    LayoutRect paintBounds;
+    LayoutRect bounds;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        paintBounds = m_layoutBlock.visualOverflowRect();
-        paintBounds.moveBy(paintOffset);
-        scrolledOffsetBounds = m_layoutBlock.visualOverflowRect();
-        scrolledOffsetBounds.moveBy(scrolledOffset);
+        bounds = m_layoutBlock.visualOverflowRect();
+        bounds.moveBy(paintOffset);
     }
 
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
@@ -184,7 +173,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask && m_layoutBlock.style()->visibility() == VISIBLE) {
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, paintPhase, paintBounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, paintPhase, bounds);
         if (!recorder.canUseCachedDrawing())
             m_layoutBlock.paintMask(paintInfo, paintOffset);
         return;
@@ -196,20 +185,23 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     {
+        PaintInfo scrolledPaintInfo(paintInfo);
         OwnPtr<ScrollRecorder> scrollRecorder;
-        if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled()
-            && m_layoutBlock.hasOverflowClip()
-            && m_layoutBlock.layer()->scrollsOverflow()) {
-            scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, m_layoutBlock, paintPhase, m_layoutBlock.scrolledContentOffset()));
+        if (m_layoutBlock.hasOverflowClip()) {
+            IntSize scrollOffset = m_layoutBlock.scrolledContentOffset();
+            if (m_layoutBlock.layer()->scrollsOverflow() || !scrollOffset.isZero()) {
+                scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, m_layoutBlock, paintPhase, scrollOffset));
+                scrolledPaintInfo.rect.move(scrollOffset);
+            }
         }
 
         if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
             && m_layoutBlock.style()->visibility() == VISIBLE
             && m_layoutBlock.hasColumns()
             && !paintInfo.paintRootBackgroundOnly()) {
-            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, scrolledOffsetBounds);
+            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, bounds);
             if (!recorder.canUseCachedDrawing())
-                paintColumnRules(paintInfo, scrolledOffset);
+                paintColumnRules(scrolledPaintInfo, paintOffset);
         }
 
         // We're done. We don't bother painting any children.
@@ -218,21 +210,21 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
         if (paintPhase != PaintPhaseSelfOutline) {
             if (m_layoutBlock.hasColumns())
-                paintColumnContents(paintInfo, scrolledOffset);
+                paintColumnContents(scrolledPaintInfo, paintOffset);
             else
-                paintContents(paintInfo, scrolledOffset);
+                paintContents(scrolledPaintInfo, paintOffset);
         }
 
         // FIXME: Make this work with multi column layouts. For now don't fill gaps.
         bool isPrinting = m_layoutBlock.document().printing();
         if (!isPrinting && !m_layoutBlock.hasColumns())
-            m_layoutBlock.paintSelection(paintInfo, scrolledOffset); // Fill in gaps in selection on lines and between blocks.
+            m_layoutBlock.paintSelection(scrolledPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
 
         if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
             if (m_layoutBlock.hasColumns())
-                paintColumnContents(paintInfo, scrolledOffset, true);
+                paintColumnContents(scrolledPaintInfo, paintOffset, true);
             else
-                m_layoutBlock.paintFloats(paintInfo, scrolledOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
+                m_layoutBlock.paintFloats(scrolledPaintInfo, paintOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
         }
     }
 
@@ -240,7 +232,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
         if (!m_layoutBlock.style()->outlineStyleIsAuto() || !m_layoutBlock.isAnonymousBlockContinuation())
-            ObjectPainter(m_layoutBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutBlock.size()), paintBounds);
+            ObjectPainter(m_layoutBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutBlock.size()), bounds);
     }
 
     if (paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)
@@ -249,7 +241,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground && hasCaret()) {
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, scrolledOffsetBounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
         if (!recorder.canUseCachedDrawing())
             paintCarets(paintInfo, paintOffset);
     }

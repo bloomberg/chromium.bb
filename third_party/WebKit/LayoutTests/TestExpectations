@@ -14,7 +14,7 @@ crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/block [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/borders [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/gradients [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/repaint [ Pass ]
-crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/text [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/scrolling [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/transforms [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/writing-mode [ Pass ]
 
