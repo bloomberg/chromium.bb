@@ -139,12 +139,13 @@ void CastConfigDelegateChromeos::CastToReceiver(
 }
 
 void CastConfigDelegateChromeos::StopCasting() {
-  ExecuteJavaScript("backgroundSetup.stopCastMirroring('user-stop');");
+  ExecuteJavaScript("backgroundSetup.stopMirroring('user-stop')");
 
-  // TODO(jdufault): Remove this after stopCastMirroring is properly exported.
-  // The current beta/release versions of the cast extension do not export
-  // stopCastMirroring, so we will also try to call the minified version.
-  // See crbug.com/489929.
+  // TODO(jdufault): Remove this after the beta/release versions of the
+  // cast extension have been updated so that they properly export the
+  // stopMirroring function. For now, we try to invoke all of the other
+  // names that the function goes by. See crbug.com/489929.
+  ExecuteJavaScript("backgroundSetup.stopCastMirroring('user-stop');");
   ExecuteJavaScript("backgroundSetup.Qu('user-stop');");
 }
 
