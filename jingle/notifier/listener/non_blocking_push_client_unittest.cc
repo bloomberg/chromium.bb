@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "jingle/notifier/listener/fake_push_client_observer.h"
@@ -29,7 +30,7 @@ class NonBlockingPushClientTest : public testing::Test {
   void SetUp() override {
     push_client_.reset(
         new NonBlockingPushClient(
-            base::MessageLoopProxy::current(),
+            base::ThreadTaskRunnerHandle::Get(),
             base::Bind(&NonBlockingPushClientTest::CreateFakePushClient,
                        base::Unretained(this))));
     push_client_->AddObserver(&fake_observer_);

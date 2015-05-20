@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/communicator/login_settings.h"
@@ -82,7 +83,7 @@ class SingleLoginAttemptTest : public ::testing::Test {
       : login_settings_(
           buzz::XmppClientSettings(),
           new net::TestURLRequestContextGetter(
-              base::MessageLoopProxy::current(),
+              base::ThreadTaskRunnerHandle::Get(),
               scoped_ptr<net::TestURLRequestContext>(
                   new MyTestURLRequestContext())),
           ServerList(

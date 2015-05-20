@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 
 namespace notifier {
@@ -63,7 +63,7 @@ class NonBlockingPushClient::Core
 NonBlockingPushClient::Core::Core(
     const scoped_refptr<base::SingleThreadTaskRunner>& delegate_task_runner,
     const base::WeakPtr<NonBlockingPushClient>& parent_push_client)
-    : parent_task_runner_(base::MessageLoopProxy::current()),
+    : parent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       delegate_task_runner_(delegate_task_runner),
       parent_push_client_(parent_push_client) {}
 

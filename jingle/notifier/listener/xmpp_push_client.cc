@@ -5,7 +5,6 @@
 #include "jingle/notifier/listener/xmpp_push_client.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "jingle/notifier/base/notifier_options_util.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "jingle/notifier/listener/send_ping_task.h"
