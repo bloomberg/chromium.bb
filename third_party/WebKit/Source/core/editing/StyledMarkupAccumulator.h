@@ -31,6 +31,7 @@
 
 #include "core/editing/EditingStyle.h"
 #include "core/editing/MarkupAccumulator.h"
+#include "core/editing/TextOffset.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -38,24 +39,6 @@ namespace blink {
 class Document;
 class StylePropertySet;
 class Text;
-
-class TextOffset {
-    STACK_ALLOCATED();
-public:
-    TextOffset();
-    TextOffset(PassRefPtrWillBeRawPtr<Text>, int);
-    TextOffset(const TextOffset&);
-
-    Text* text() const { return m_text.get(); }
-    int offset() const { return m_offset; }
-
-    bool isNull() const;
-    bool isNotNull() const;
-
-private:
-    RefPtrWillBeMember<Text> m_text;
-    int m_offset;
-};
 
 class StyledMarkupAccumulator final {
     WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);

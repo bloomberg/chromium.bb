@@ -1400,6 +1400,8 @@
             'editing/TextCheckingHelper.h',
             'editing/TextInsertionBaseCommand.cpp',
             'editing/TextInsertionBaseCommand.h',
+            'editing/TextOffset.cpp',
+            'editing/TextOffset.h',
             'editing/TypingCommand.cpp',
             'editing/UndoStack.cpp',
             'editing/UndoStack.h',

@@ -50,33 +50,6 @@ const String& styleNodeCloseTag(bool isBlock)
 
 using namespace HTMLNames;
 
-TextOffset::TextOffset()
-    : m_offset(0)
-{
-}
-
-TextOffset::TextOffset(PassRefPtrWillBeRawPtr<Text> text, int offset)
-    : m_text(text)
-    , m_offset(offset)
-{
-}
-
-TextOffset::TextOffset(const TextOffset& other)
-    : m_text(other.m_text)
-    , m_offset(other.m_offset)
-{
-}
-
-bool TextOffset::isNull() const
-{
-    return !m_text;
-}
-
-bool TextOffset::isNotNull() const
-{
-    return m_text;
-}
-
 StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
     : m_accumulator(shouldResolveURLs)
     , m_start(start)
