@@ -129,19 +129,10 @@ public:
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
 
 private:
-    void collectRuleIfMatches(const RuleData&, CascadeOrder, const MatchRequest&, RuleRange&);
-
     template<typename RuleDataListType>
-    void collectMatchingRulesForList(const RuleDataListType* rules, CascadeOrder cascadeOrder, const MatchRequest& matchRequest, RuleRange& ruleRange)
-    {
-        if (!rules)
-            return;
+    void collectMatchingRulesForList(const RuleDataListType*, CascadeOrder, const MatchRequest&, RuleRange&);
 
-        for (const auto& rule : *rules)
-            collectRuleIfMatches(rule, cascadeOrder, matchRequest, ruleRange);
-    }
-
-    bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::MatchResult&);
+    void didMatchRule(const RuleData&, const SelectorChecker::MatchResult&, CascadeOrder, const MatchRequest&, RuleRange&);
 
     CSSRuleList* nestedRuleList(CSSRule*);
     template<class CSSRuleCollection>
@@ -149,7 +140,6 @@ private:
     void appendCSSOMWrapperForRule(CSSStyleSheet*, StyleRule*);
 
     void sortMatchedRules();
-    void addMatchedRule(const RuleData*, unsigned specificity, CascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet);
 
     StaticCSSRuleList* ensureRuleList();
     StyleRuleList* ensureStyleRuleList();

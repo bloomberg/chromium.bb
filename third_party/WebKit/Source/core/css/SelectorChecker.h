@@ -52,8 +52,8 @@ public:
         STACK_ALLOCATED();
     public:
         // Initial selector constructor
-        SelectorCheckingContext(const CSSSelector& selector, Element* element, VisitedMatchType visitedMatchType)
-            : selector(&selector)
+        SelectorCheckingContext(Element* element, VisitedMatchType visitedMatchType)
+            : selector(0)
             , element(element)
             , previousElement(nullptr)
             , scope(nullptr)

@@ -123,8 +123,9 @@ bool HTMLContentElement::validateSelect() const
 bool HTMLContentElement::matchSelector(Element& element) const
 {
     SelectorChecker selectorChecker(SelectorChecker::QueryingRules);
+    SelectorChecker::SelectorCheckingContext context(&element, SelectorChecker::VisitedMatchDisabled);
     for (const CSSSelector* selector = selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
-        SelectorChecker::SelectorCheckingContext context(*selector, &element, SelectorChecker::VisitedMatchDisabled);
+        context.selector = selector;
         if (selectorChecker.match(context))
             return true;
     }

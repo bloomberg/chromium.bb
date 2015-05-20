@@ -229,6 +229,7 @@ static int nthLastOfTypeIndex(Element& element, const QualifiedName& type)
 
 bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult& result) const
 {
+    ASSERT(context.selector);
     return matchSelector(context, result) == SelectorMatches;
 }
 
