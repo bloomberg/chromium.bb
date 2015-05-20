@@ -1217,15 +1217,29 @@ void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
 }
 
 void LayerImpl::DidUpdateScrollOffset(bool is_from_root_delegate) {
+  DCHECK(scroll_offset_);
+
   if (!is_from_root_delegate)
     layer_tree_impl()->DidUpdateScrollOffset(id());
   NoteLayerPropertyChangedForSubtree();
   ScrollbarParametersDidChange(false);
+
+  // TODO(enne): in the future, scrolling should update the scroll tree
+  // directly instead of going through layers.
+  if (transform_tree_index_ != -1) {
+    TransformTree& transform_tree =
+        layer_tree_impl()->property_trees()->transform_tree;
+    TransformNode* node = transform_tree.Node(transform_tree_index_);
+    node->data.scroll_offset = scroll_offset_->Current(IsActive());
+    node->data.needs_local_transform_update = true;
+    transform_tree.set_needs_update(true);
+  }
+
   // Inform the pending twin that a property changed.
   if (layer_tree_impl()->IsActiveTree()) {
     LayerImpl* pending_twin = layer_tree_impl()->FindPendingTreeLayerById(id());
     if (pending_twin)
-      pending_twin->NoteLayerPropertyChangedForSubtree();
+      pending_twin->DidUpdateScrollOffset(is_from_root_delegate);
   }
 }
 
