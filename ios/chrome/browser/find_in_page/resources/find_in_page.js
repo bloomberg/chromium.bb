@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * This file is lifted from the GoogleMobile find tool.
+ * Based heavily on code from the Google iOS app.
  *
  * @fileoverview A find in page tool.  It scans the DOM for elements with the
  * text being search for, and wraps them with a span that highlights them.
- *
- * @author bmcmahan@google.com (Benjamin McMahan)
- *
  */
 
 /**
@@ -867,7 +864,7 @@ __gCrWeb['findInPage'].isVisible = function(elem) {
   // only scroll the window, not any scrollable containers in the DOM itself. So
   // for now this function returns false if the element is scrolled outside the
   // viewable area of its ancestors.
-  // TODO (jonwall): handle scrolling within the DOM.
+  // TODO(justincohen): handle scrolling within the DOM.
   var pageHeight = __gCrWeb['findInPage'].getBodyHeight();
   var pageWidth = __gCrWeb['findInPage'].getBodyWidth();
 
