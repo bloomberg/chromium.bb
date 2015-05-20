@@ -173,7 +173,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   bool IsExtensionDisabled(const std::string& id) const;
 
   // Get/Set the order that the browser actions appear in the toolbar.
-  ExtensionIdList GetToolbarOrder();
+  ExtensionIdList GetToolbarOrder() const;
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
@@ -212,10 +212,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Checks whether |extension_id| is marked as greylisted.
   // TODO(oleg): Replace IsExtensionBlacklisted by this method.
-  BlacklistState GetExtensionBlacklistState(const std::string& extension_id);
+  BlacklistState GetExtensionBlacklistState(
+      const std::string& extension_id) const;
 
   // Populates |out| with the ids of all installed extensions.
-  void GetExtensions(ExtensionIdList* out);
+  void GetExtensions(ExtensionIdList* out) const;
 
   // ExtensionScopedPrefs methods:
   void UpdateExtensionPref(const std::string& id,
@@ -248,7 +249,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   bool HasPrefForExtension(const std::string& extension_id) const override;
 
   // Did the extension ask to escalate its permission during an upgrade?
-  bool DidExtensionEscalatePermissions(const std::string& id);
+  bool DidExtensionEscalatePermissions(const std::string& id) const;
 
   // If |did_escalate| is true, the preferences for |extension| will be set to
   // require the install warning when the user tries to enable.
@@ -262,6 +263,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                         Extension::DisableReason disable_reason) const;
   void AddDisableReason(const std::string& extension_id,
                         Extension::DisableReason disable_reason);
+  void AddDisableReasons(const std::string& extension_id, int disable_reasons);
   void RemoveDisableReason(const std::string& extension_id,
                            Extension::DisableReason disable_reason);
   void ClearDisableReasons(const std::string& extension_id);
@@ -270,7 +272,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // return only the blocked extensions, not the "greylist" extensions.
   // TODO(oleg): Make method names consistent here, in extension service and in
   // blacklist.
-  std::set<std::string> GetBlacklistedExtensions();
+  std::set<std::string> GetBlacklistedExtensions() const;
 
   // Sets whether the extension with |id| is blacklisted.
   void SetExtensionBlacklisted(const std::string& extension_id,
@@ -278,7 +280,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
-  std::string GetVersionString(const std::string& extension_id);
+  std::string GetVersionString(const std::string& extension_id) const;
 
   // Re-writes the extension manifest into the prefs.
   // Called to change the extension's manifest when it's re-localized.
@@ -300,16 +302,17 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   int IncrementAcknowledgePromptCount(const std::string& extension_id);
 
   // Whether the user has acknowledged an external extension.
-  bool IsExternalExtensionAcknowledged(const std::string& extension_id);
+  bool IsExternalExtensionAcknowledged(const std::string& extension_id) const;
   void AcknowledgeExternalExtension(const std::string& extension_id);
 
   // Whether the user has acknowledged a blacklisted extension.
-  bool IsBlacklistedExtensionAcknowledged(const std::string& extension_id);
+  bool IsBlacklistedExtensionAcknowledged(
+      const std::string& extension_id) const;
   void AcknowledgeBlacklistedExtension(const std::string& extension_id);
 
   // Whether the external extension was installed during the first run
   // of this profile.
-  bool IsExternalInstallFirstRun(const std::string& extension_id);
+  bool IsExternalInstallFirstRun(const std::string& extension_id) const;
   void SetExternalInstallFirstRun(const std::string& extension_id);
 
   // Returns true if the extension notification code has already run for the
@@ -334,20 +337,20 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Similar to LastPingDay/SetLastPingDay, but for sending "days since active"
   // ping.
-  base::Time LastActivePingDay(const std::string& extension_id);
+  base::Time LastActivePingDay(const std::string& extension_id) const;
   void SetLastActivePingDay(const std::string& extension_id,
                             const base::Time& time);
 
   // A bit we use for determining if we should send the "days since active"
   // ping. A value of true means the item has been active (launched) since the
   // last update check.
-  bool GetActiveBit(const std::string& extension_id);
+  bool GetActiveBit(const std::string& extension_id) const;
   void SetActiveBit(const std::string& extension_id, bool active);
 
   // Returns the granted permission set for the extension with |extension_id|,
   // and NULL if no preferences were found for |extension_id|.
   // This passes ownership of the returned set to the caller.
-  PermissionSet* GetGrantedPermissions(const std::string& extension_id);
+  PermissionSet* GetGrantedPermissions(const std::string& extension_id) const;
 
   // Adds |permissions| to the granted permissions set for the extension with
   // |extension_id|. The new granted permissions set will be the union of
@@ -362,7 +365,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Gets the active permission set for the specified extension. This may
   // differ from the permissions in the manifest due to the optional
   // permissions API. This passes ownership of the set to the caller.
-  PermissionSet* GetActivePermissions(const std::string& extension_id);
+  PermissionSet* GetActivePermissions(const std::string& extension_id) const;
 
   // Sets the active |permissions| for the extension with |extension_id|.
   void SetActivePermissions(const std::string& extension_id,
@@ -373,13 +376,13 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Returns whether or not this extension is marked as running. This is used to
   // restart apps across browser restarts.
-  bool IsExtensionRunning(const std::string& extension_id);
+  bool IsExtensionRunning(const std::string& extension_id) const;
 
   // Set/Get whether or not the app is active. Used to force a launch of apps
   // that don't handle onRestarted() on a restart. We can only safely do that if
   // the app was active when it was last running.
   void SetIsActive(const std::string& extension_id, bool is_active);
-  bool IsActive(const std::string& extension_id);
+  bool IsActive(const std::string& extension_id) const;
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
@@ -450,7 +453,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.
-  bool WasAppDraggedByUser(const std::string& extension_id);
+  bool WasAppDraggedByUser(const std::string& extension_id) const;
 
   // Sets a flag indicating that the user repositioned the app on the app
   // launcher by drag and dropping it.
@@ -458,7 +461,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Returns true if there is an extension which controls the preference value
   //  for |pref_key| *and* it is specific to incognito mode.
-  bool HasIncognitoPrefValue(const std::string& pref_key);
+  bool HasIncognitoPrefValue(const std::string& pref_key) const;
 
   // Returns the creation flags mask for the extension.
   int GetCreationFlags(const std::string& extension_id) const;
@@ -510,7 +513,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // start of this ExtensionService. Applies only to extensions with isolated
   // storage.
   void SetNeedsStorageGarbageCollection(bool value);
-  bool NeedsStorageGarbageCollection();
+  bool NeedsStorageGarbageCollection() const;
 
   // Used by AppWindowGeometryCache to persist its cache. These methods
   // should not be called directly.
@@ -521,7 +524,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Used for verification of installed extension ids. For the Set method, pass
   // null to remove the preference.
-  const base::DictionaryValue* GetInstallSignature();
+  const base::DictionaryValue* GetInstallSignature() const;
   void SetInstallSignature(const base::DictionaryValue* signature);
 
   // The installation parameter associated with the extension.
@@ -531,7 +534,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // The total number of times we've disabled an extension due to corrupted
   // contents.
-  int GetCorruptedDisableCount();
+  int GetCorruptedDisableCount() const;
   void IncrementCorruptedDisableCount();
 
  private:
@@ -574,7 +577,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   bool ReadPrefAsURLPatternSet(const std::string& extension_id,
                                const std::string& pref_key,
                                URLPatternSet* result,
-                               int valid_schemes);
+                               int valid_schemes) const;
 
   // Converts |new_value| to a list of strings and sets the |pref_key| pref
   // belonging to |extension_id|.
@@ -590,7 +593,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Interprets |pref_key| in |extension_id|'s preferences as an
   // PermissionSet, and passes ownership of the set to the caller.
   PermissionSet* ReadPrefAsPermissionSet(const std::string& extension_id,
-                                         const std::string& pref_key);
+                                         const std::string& pref_key) const;
 
   // Converts the |new_value| to its value and sets the |pref_key| pref
   // belonging to |extension_id|.
@@ -635,7 +638,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   template <class ExtensionIdContainer>
   bool GetUserExtensionPrefIntoContainer(
       const char* pref,
-      ExtensionIdContainer* id_container_out);
+      ExtensionIdContainer* id_container_out) const;
 
   // Writes the list of strings contained in |strings| to |pref| in prefs.
   template <class ExtensionIdContainer>
@@ -644,7 +647,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Helper function to populate |extension_dict| with the values needed
   // by a newly installed extension. Work is broken up between this
-  // function and FinishExtensionInfoPrefs() to accomodate delayed
+  // function and FinishExtensionInfoPrefs() to accommodate delayed
   // installations.
   //
   // |install_flags| are a bitmask of extension::InstallFlags.
@@ -653,7 +656,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                                   Extension::State initial_state,
                                   int install_flags,
                                   const std::string& install_parameter,
-                                  base::DictionaryValue* extension_dict);
+                                  base::DictionaryValue* extension_dict) const;
 
   void InitExtensionControlledPrefs(ExtensionPrefValueMap* value_map);
 

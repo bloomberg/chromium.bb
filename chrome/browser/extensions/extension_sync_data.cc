@@ -55,6 +55,7 @@ void RecordBadSyncData(BadSyncDataReason reason) {
 ExtensionSyncData::ExtensionSyncData()
     : uninstalled_(false),
       enabled_(false),
+      disable_reasons_(Extension::DISABLE_NONE),
       incognito_enabled_(false),
       remote_install_(false),
       all_urls_enabled_(BOOLEAN_UNSET),
@@ -63,12 +64,14 @@ ExtensionSyncData::ExtensionSyncData()
 
 ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      bool enabled,
+                                     int disable_reasons,
                                      bool incognito_enabled,
                                      bool remote_install,
                                      OptionalBoolean all_urls_enabled)
     : id_(extension.id()),
       uninstalled_(false),
       enabled_(enabled),
+      disable_reasons_(disable_reasons),
       incognito_enabled_(incognito_enabled),
       remote_install_(remote_install),
       all_urls_enabled_(all_urls_enabled),
@@ -122,6 +125,7 @@ void ExtensionSyncData::PopulateExtensionSpecifics(
   specifics->set_update_url(update_url_.spec());
   specifics->set_version(version_.GetString());
   specifics->set_enabled(enabled_);
+  specifics->set_disable_reasons(disable_reasons_);
   specifics->set_incognito_enabled(incognito_enabled_);
   specifics->set_remote_install(remote_install_);
   if (all_urls_enabled_ != BOOLEAN_UNSET)
@@ -160,6 +164,7 @@ bool ExtensionSyncData::PopulateFromExtensionSpecifics(
   update_url_ = specifics_update_url;
   version_ = specifics_version;
   enabled_ = specifics.enabled();
+  disable_reasons_ = specifics.disable_reasons();
   incognito_enabled_ = specifics.incognito_enabled();
   if (specifics.has_all_urls_enabled()) {
     all_urls_enabled_ =

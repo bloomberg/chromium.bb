@@ -483,10 +483,12 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     ASSERT_TRUE(app);
 
     // Simulate an install from sync.
+    int disable_reasons = enable_from_sync ? 0 : Extension::DISABLE_USER_ACTION;
     const syncer::StringOrdinal kAppLaunchOrdinal("x");
     const syncer::StringOrdinal kPageOrdinal("y");
     AppSyncData app_sync_data(*app,
                               enable_from_sync,
+                              disable_reasons,
                               false /* incognito enabled */,
                               false /* remote install */,
                               extensions::ExtensionSyncData::BOOLEAN_UNSET,

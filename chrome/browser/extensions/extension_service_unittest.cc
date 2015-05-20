@@ -924,12 +924,17 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
   }
 
   void UninstallExtension(const std::string& id, bool use_helper) {
+    UninstallExtension(id, use_helper, Extension::ENABLED);
+  }
+
+  void UninstallExtension(const std::string& id, bool use_helper,
+                          Extension::State expected_state) {
     // Verify that the extension is installed.
     base::FilePath extension_path = extensions_install_dir().AppendASCII(id);
     EXPECT_TRUE(base::PathExists(extension_path));
     size_t pref_key_count = GetPrefKeyCount();
     EXPECT_GT(pref_key_count, 0u);
-    ValidateIntegerPref(id, "state", Extension::ENABLED);
+    ValidateIntegerPref(id, "state", expected_state);
 
     // Uninstall it.
     if (use_helper) {
@@ -5909,10 +5914,11 @@ TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
   const Extension* extension = service()->GetExtensionById(good0, true);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
-  ExtensionSyncData disable_good_crx(*extension, false, false, false,
-                                     ExtensionSyncData::BOOLEAN_UNSET);
 
   // Then sync data arrives telling us to disable |good0|.
+  ExtensionSyncData disable_good_crx(*extension, false,
+                                     Extension::DISABLE_USER_ACTION, false,
+                                     false, ExtensionSyncData::BOOLEAN_UNSET);
   syncer::SyncDataList sync_data;
   sync_data.push_back(disable_good_crx.GetSyncData());
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -5956,8 +5962,9 @@ TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
 
   // Now sync data comes in that says to disable good0. This should be
   // ignored.
-  ExtensionSyncData disable_good_crx(*extension, false, false, false,
-                                     ExtensionSyncData::BOOLEAN_FALSE);
+  ExtensionSyncData disable_good_crx(*extension, false,
+                                     Extension::DISABLE_USER_ACTION, false,
+                                     false, ExtensionSyncData::BOOLEAN_UNSET);
   syncer::SyncDataList sync_data;
   sync_data.push_back(disable_good_crx.GetSyncData());
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -6512,6 +6519,101 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   }
 
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
+}
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
+  InitializeEmptyExtensionService();
+  InitializeExtensionSyncService();
+  syncer::FakeSyncChangeProcessor processor;
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      scoped_ptr<syncer::SyncChangeProcessor>(
+          new syncer::FakeSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
+  ext_specifics->set_id(good_crx);
+  ext_specifics->set_version(base::Version("1").GetString());
+
+  const base::FilePath path = data_dir().AppendASCII("good.crx");
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  {
+    ext_specifics->set_enabled(true);
+    ext_specifics->set_disable_reasons(0);
+
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
+    syncer::SyncChangeList list(1);
+    list[0] = sync_change;
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    ASSERT_TRUE(service()->pending_extension_manager()->IsIdPending(good_crx));
+    UpdateExtension(good_crx, path, ENABLED);
+    EXPECT_EQ(0, prefs->GetDisableReasons(good_crx));
+    // Permissions should have been granted during installation.
+    scoped_refptr<PermissionSet> permissions(
+        prefs->GetGrantedPermissions(good_crx));
+    EXPECT_FALSE(permissions->IsEmpty());
+    ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
+  }
+  UninstallExtension(good_crx, false);
+  {
+    ext_specifics->set_enabled(false);
+    ext_specifics->set_disable_reasons(Extension::DISABLE_USER_ACTION);
+
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
+    syncer::SyncChangeList list(1);
+    list[0] = sync_change;
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    ASSERT_TRUE(service()->pending_extension_manager()->IsIdPending(good_crx));
+    UpdateExtension(good_crx, path, DISABLED);
+    EXPECT_EQ(Extension::DISABLE_USER_ACTION,
+              prefs->GetDisableReasons(good_crx));
+    // Even if the extension came in disabled, its permissions should have been
+    // granted (the user already approved them on another machine).
+    scoped_refptr<PermissionSet> permissions(
+        prefs->GetGrantedPermissions(good_crx));
+    EXPECT_FALSE(permissions->IsEmpty());
+    ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
+  }
+  UninstallExtension(good_crx, false, Extension::DISABLED);
+  {
+    ext_specifics->set_enabled(false);
+    // Legacy case (<M45): No disable reasons come in from Sync (see
+    // crbug.com/484214). After installation, the reason should be set to
+    // DISABLE_UNKNOWN_FROM_SYNC.
+    ext_specifics->set_disable_reasons(0);
+
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
+    syncer::SyncChangeList list(1);
+    list[0] = sync_change;
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    ASSERT_TRUE(service()->pending_extension_manager()->IsIdPending(good_crx));
+    UpdateExtension(good_crx, path, DISABLED);
+    EXPECT_EQ(Extension::DISABLE_UNKNOWN_FROM_SYNC,
+              prefs->GetDisableReasons(good_crx));
+    scoped_refptr<PermissionSet> permissions(
+        prefs->GetGrantedPermissions(good_crx));
+    EXPECT_FALSE(permissions->IsEmpty());
+    ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
+  }
+  UninstallExtension(good_crx, false, Extension::DISABLED);
 }
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {

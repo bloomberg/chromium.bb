@@ -83,6 +83,7 @@ class SyncExtensionHelper {
     bool Equals(const ExtensionState &other) const;
 
     EnabledState enabled_state;
+    int disable_reasons;
     bool incognito_enabled;
   };
 

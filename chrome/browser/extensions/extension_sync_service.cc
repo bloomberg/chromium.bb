@@ -283,6 +283,7 @@ ExtensionSyncData ExtensionSyncService::GetExtensionSyncData(
   return ExtensionSyncData(
       extension,
       extension_service_->IsExtensionEnabled(extension.id()),
+      extension_prefs_->GetDisableReasons(extension.id()),
       extensions::util::IsIncognitoEnabled(extension.id(), profile_),
       extension_prefs_->HasDisableReason(extension.id(),
                                          Extension::DISABLE_REMOTE_INSTALL),
@@ -293,6 +294,7 @@ AppSyncData ExtensionSyncService::GetAppSyncData(
     const Extension& extension) const {
   return AppSyncData(
       extension, extension_service_->IsExtensionEnabled(extension.id()),
+      extension_prefs_->GetDisableReasons(extension.id()),
       extensions::util::IsIncognitoEnabled(extension.id(), profile_),
       extension_prefs_->HasDisableReason(extension.id(),
                                          Extension::DISABLE_REMOTE_INSTALL),
@@ -516,13 +518,22 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
   if (extension_sync_data.enabled()) {
     extension_service_->EnableExtension(id);
   } else if (!IsPendingEnable(id)) {
+    int disable_reasons = extension_sync_data.disable_reasons();
     if (extension_sync_data.remote_install()) {
-      extension_service_->DisableExtension(id,
-                                           Extension::DISABLE_REMOTE_INSTALL);
-    } else {
-      extension_service_->DisableExtension(
-          id, Extension::DISABLE_UNKNOWN_FROM_SYNC);
+      // In the non-legacy case (>=M45) where disable reasons are synced at all,
+      // DISABLE_REMOTE_INSTALL should be among them already.
+      DCHECK(!disable_reasons ||
+             (disable_reasons & Extension::DISABLE_REMOTE_INSTALL));
+      disable_reasons |= Extension::DISABLE_REMOTE_INSTALL;
     }
+    if (!disable_reasons) {
+      // Legacy case (<M45), from before we synced disable reasons (see
+      // crbug.com/484214).
+      disable_reasons = Extension::DISABLE_UNKNOWN_FROM_SYNC;
+    }
+
+    extension_service_->DisableExtension(
+        id, Extension::DisableReason(disable_reasons));
   }
 
   // We need to cache some version information here because setting the

@@ -36,6 +36,7 @@ class ExtensionSyncData {
   ExtensionSyncData();
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
+                    int disable_reasons,
                     bool incognito_enabled,
                     bool remote_install,
                     OptionalBoolean all_urls_enabled);
@@ -69,13 +70,14 @@ class ExtensionSyncData {
   // |version|).
   bool uninstalled() const { return uninstalled_; }
   bool enabled() const { return enabled_; }
+  int disable_reasons() const { return disable_reasons_; }
   bool incognito_enabled() const { return incognito_enabled_; }
   bool remote_install() const { return remote_install_; }
   OptionalBoolean all_urls_enabled() const { return all_urls_enabled_; }
   bool installed_by_custodian() const { return installed_by_custodian_; }
 
   // Version-dependent properties (i.e., should be used only when the
-  // version of the currenty-installed extension matches |version|).
+  // version of the currently-installed extension matches |version|).
   const Version& version() const { return version_; }
   const GURL& update_url() const { return update_url_; }
   // Used only for debugging.
@@ -88,6 +90,7 @@ class ExtensionSyncData {
   std::string id_;
   bool uninstalled_;
   bool enabled_;
+  int disable_reasons_;
   bool incognito_enabled_;
   bool remote_install_;
   OptionalBoolean all_urls_enabled_;

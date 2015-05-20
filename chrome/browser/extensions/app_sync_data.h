@@ -39,6 +39,7 @@ class AppSyncData {
   AppSyncData();
   AppSyncData(const Extension& extension,
               bool enabled,
+              int disable_reasons,
               bool incognito_enabled,
               bool remote_install,
               ExtensionSyncData::OptionalBoolean all_urls_enabled,

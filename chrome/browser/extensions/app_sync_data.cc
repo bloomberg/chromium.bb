@@ -24,6 +24,7 @@ AppSyncData::AppSyncData() {}
 
 AppSyncData::AppSyncData(const Extension& extension,
                          bool enabled,
+                         int disable_reasons,
                          bool incognito_enabled,
                          bool remote_install,
                          ExtensionSyncData::OptionalBoolean all_urls_enabled,
@@ -32,6 +33,7 @@ AppSyncData::AppSyncData(const Extension& extension,
                          extensions::LaunchType launch_type)
     : extension_sync_data_(extension,
                            enabled,
+                           disable_reasons,
                            incognito_enabled,
                            remote_install,
                            all_urls_enabled),

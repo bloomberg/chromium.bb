@@ -456,10 +456,11 @@ scoped_ptr<base::DictionaryValue> ExtensionSpecificsToValue(
   SET_STR(update_url);
   SET_BOOL(enabled);
   SET_BOOL(incognito_enabled);
+  SET_STR(name);
   SET_BOOL(remote_install);
   SET_BOOL(installed_by_custodian);
   SET_BOOL(all_urls_enabled);
-  SET_STR(name);
+  SET_INT32(disable_reasons);
   return value;
 }
 

@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
@@ -27,17 +28,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
+using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::Manifest;
 
 SyncExtensionHelper::ExtensionState::ExtensionState()
-    : enabled_state(ENABLED), incognito_enabled(false) {}
+    : enabled_state(ENABLED), disable_reasons(0), incognito_enabled(false) {}
 
 SyncExtensionHelper::ExtensionState::~ExtensionState() {}
 
 bool SyncExtensionHelper::ExtensionState::Equals(
     const SyncExtensionHelper::ExtensionState &other) const {
   return ((enabled_state == other.enabled_state) &&
+          (disable_reasons == other.disable_reasons) &&
           (incognito_enabled == other.incognito_enabled));
 }
 
@@ -205,20 +208,21 @@ SyncExtensionHelper::ExtensionStateMap
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    const std::string& id = (*it)->id();
-    extension_state_map[id].enabled_state =
+  for (const scoped_refptr<const Extension>& extension : *extensions) {
+    const std::string& id = extension->id();
+    ExtensionState& extension_state = extension_state_map[id];
+    extension_state.enabled_state =
         extension_service->IsExtensionEnabled(id) ?
         ExtensionState::ENABLED :
         ExtensionState::DISABLED;
-    extension_state_map[id].incognito_enabled =
+    extension_state.disable_reasons =
+        ExtensionPrefs::Get(profile)->GetDisableReasons(id);
+    extension_state.incognito_enabled =
         extensions::util::IsIncognitoEnabled(id, profile);
 
-    DVLOG(2) << "Extension " << (*it)->id() << " in profile "
-             << profile_debug_name << " is "
-             << (extension_service->IsExtensionEnabled(id) ?
-                 "enabled" : "disabled");
+    DVLOG(2) << "Extension " << id << " in profile " << profile_debug_name
+             << " is " << (extension_service->IsExtensionEnabled(id) ?
+                           "enabled" : "disabled");
   }
 
   const extensions::PendingExtensionManager* pending_extension_manager =
@@ -227,12 +231,14 @@ SyncExtensionHelper::ExtensionStateMap
   std::list<std::string> pending_crx_ids;
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
 
-  std::list<std::string>::const_iterator id;
-  for (id = pending_crx_ids.begin(); id != pending_crx_ids.end(); ++id) {
-    extension_state_map[*id].enabled_state = ExtensionState::PENDING;
-    extension_state_map[*id].incognito_enabled =
-        extensions::util::IsIncognitoEnabled(*id, profile);
-    DVLOG(2) << "Extension " << *id << " in profile "
+  for (const std::string& id : pending_crx_ids) {
+    ExtensionState& extension_state = extension_state_map[id];
+    extension_state.enabled_state = ExtensionState::PENDING;
+    extension_state.disable_reasons =
+        ExtensionPrefs::Get(profile)->GetDisableReasons(id);
+    extension_state.incognito_enabled =
+        extensions::util::IsIncognitoEnabled(id, profile);
+    DVLOG(2) << "Extension " << id << " in profile "
              << profile_debug_name << " is pending";
   }
 

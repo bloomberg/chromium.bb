@@ -279,11 +279,12 @@ class ExtensionService
   // nothing.
   virtual void EnableExtension(const std::string& extension_id);
 
-  // Disables the extension.  If the extension is already disabled, or
-  // cannot be disabled, does nothing.
-  virtual void DisableExtension(
-      const std::string& extension_id,
-      extensions::Extension::DisableReason disable_reason);
+  // Disables the extension. If the extension is already disabled, just adds
+  // the |disable_reasons| (a bitmask of Extension::DisableReason - there can
+  // be multiple DisableReasons e.g. when an extension comes in disabled from
+  // Sync). If the extension cannot be disabled (due to policy), does nothing.
+  virtual void DisableExtension(const std::string& extension_id,
+                                int disable_reasons);
 
   // Disable non-default and non-managed extensions with ids not in
   // |except_ids|. Default extensions are those from the Web Store with
