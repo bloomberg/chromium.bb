@@ -235,15 +235,17 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
 
   native = pynacl.platform.PlatformTriple()
   is_cross = host != native
-  if is_cross:
-    if (pynacl.platform.IsLinux64() and
-        fnmatch.fnmatch(host, '*-linux*')):
-      # 64 bit linux can build 32 bit linux binaries while still being a native
-      # build for our purposes. But it's not what config.guess will yield, so
-      # use --build to force it and make sure things build correctly.
-      configure_args.append('--build=' + host)
-    else:
-      configure_args.append('--host=' + host)
+
+  if TripleIsLinux(host) and not TripleIsX8664(host):
+    assert TripleIsLinux(native)
+    # NaCl/Chrome buildbots run 32 bit userspace on a 64 bit kernel. configure
+    # guesses that the host is 64-bit even though we want a 32-bit build. But
+    # it's still "native enough", so force --build rather than --host.
+    # PlatformTriple() returns 32-bit, so this does not appear as a cross build
+    # here.
+    configure_args.append('--build=' + host)
+  elif is_cross:
+    configure_args.append('--host=' + host)
 
   extra_cxx_args = list(extra_cc_args)
 
@@ -670,6 +672,7 @@ def HostTools(host, options):
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
                            'subzero_src'],
+          'inputs': {'test_xfails': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([
@@ -720,6 +723,7 @@ def HostTools(host, options):
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
                            'subzero_src'],
+          'inputs': {'test_xfails': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([

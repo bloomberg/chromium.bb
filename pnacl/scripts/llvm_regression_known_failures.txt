@@ -47,25 +47,8 @@ LLVM::DebugInfo/debuglineinfo.test win
 LLVM::Feature/load_module.ll win
 
 ###
-### x86-32-host only failures
-###
-LLVM::ExecutionEngine/MCJIT/stubs-sm-pic.ll x86_32
-LLVM::ExecutionEngine/MCJIT/remote/test-ptr-reloc-sm-pic.ll x86_32
-LLVM::ExecutionEngine/MCJIT/test-ptr-reloc-sm-pic.ll x86_32
-LLVM::ExecutionEngine/MCJIT/hello-sm-pic.ll x86_32
-LLVM::ExecutionEngine/MCJIT/multi-module-sm-pic-a.ll x86_32
-LLVM::ExecutionEngine/MCJIT/remote/multi-module-sm-pic-a.ll x86_32
-Clang::Modules/compiler_builtins.m x86_32
-LLVM::ExecutionEngine/MCJIT/cross-module-sm-pic-a.ll x86_32
-LLVM::ExecutionEngine/MCJIT/remote/cross-module-sm-pic-a.ll x86_32
-LLVM::ExecutionEngine/MCJIT/eh-lg-pic.ll x86_32
-LLVM::ExecutionEngine/MCJIT/remote/test-global-init-nonzero-sm-pic.ll x86_32
-LLVM::ExecutionEngine/MCJIT/test-global-init-nonzero-sm-pic.ll x86_32
-
-###
 ### Post LLVM 3.5 merge failures.
 ###
 
-# Failure on mac introduced by the update to clang for the host build, now
-# on Linux too; still investigating.
-LLVM::ExecutionEngine/MCJIT/eh-sm-pic.ll
+# Failure on mac introduced by the update to clang for the host build
+LLVM::ExecutionEngine/MCJIT/eh-sm-pic.ll mac
