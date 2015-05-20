@@ -53,14 +53,6 @@ float days_ago_to_recency_score[kDaysToPrecomputeRecencyScoresFor];
 // ScoredHistoryMatch::Init().
 float raw_term_score_to_topicality_score[kMaxRawTermScore];
 
-// The maximum score that can be assigned to non-inlineable matches. This is
-// useful because often we want inlineable matches to come first (even if they
-// don't sometimes score as well as non-inlineable matches) because if a
-// non-inlineable match comes first than all matches will get demoted later in
-// HistoryQuickProvider to non-inlineable scores. Set to -1 to indicate no
-// maximum score.
-int max_assigned_score_for_non_inlineable_matches = -1;
-
 // Whether ScoredHistoryMatch::Init() has been called.
 bool initialized = false;
 
@@ -286,13 +278,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     raw_score = std::max(raw_score, hup_like_score);
   }
 
-  // If this match is not inlineable and there's a cap on the maximum
-  // score that can be given to non-inlineable matches, apply the cap.
-  if (!can_inline && (max_assigned_score_for_non_inlineable_matches != -1)) {
-    raw_score =
-        std::min(raw_score, max_assigned_score_for_non_inlineable_matches);
-  }
-
   // Now that we're done processing this entry, correct the offsets of the
   // matches in |url_matches| so they point to offsets in the original URL
   // spec, not the cleaned-up URL string that we used for matching.
@@ -392,19 +377,6 @@ void ScoredHistoryMatch::Init() {
 
   initialized = true;
 
-  // When doing HUP-like scoring, don't allow a non-inlineable match
-  // to beat the score of good inlineable matches.  This is a problem
-  // because if a non-inlineable match ends up with the highest score
-  // from HistoryQuick provider, all HistoryQuick matches get demoted
-  // to non-inlineable scores (scores less than 1200).  Without
-  // HUP-like-scoring, these results would actually come from the HUP
-  // and not be demoted, thus outscoring the demoted HQP results.
-  // When the HQP provides these, we need to clamp the non-inlineable
-  // results to preserve this behavior.
-  if (kAlsoDoHupLikeScoring) {
-    max_assigned_score_for_non_inlineable_matches =
-        HistoryURLProvider::kScoreForBestInlineableResult - 1;
-  }
   bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
   fix_frequency_bugs_ = OmniboxFieldTrial::HQPFixFrequencyScoringBugs();
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
