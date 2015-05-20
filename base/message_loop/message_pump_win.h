@@ -130,6 +130,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   void WaitForWork();
   void HandleWorkMessage();
   void HandleTimerMessage();
+  void RescheduleTimer();
   bool ProcessNextWindowsMessage();
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
