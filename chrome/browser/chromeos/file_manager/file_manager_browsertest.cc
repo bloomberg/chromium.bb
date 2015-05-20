@@ -1138,7 +1138,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexOpenDialog TabindexOpenDialog
 #endif
-INSTANTIATE_TEST_CASE_P(
+WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_TabindexOpenDialog,
     FileManagerBrowserTest,
     ::testing::Values(
