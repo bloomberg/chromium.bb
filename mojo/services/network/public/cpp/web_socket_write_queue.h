@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
@@ -19,7 +20,7 @@ namespace mojo {
 // See also: WebSocketReadQueue
 class WebSocketWriteQueue {
  public:
-  WebSocketWriteQueue(DataPipeProducerHandle handle);
+  explicit WebSocketWriteQueue(DataPipeProducerHandle handle);
   ~WebSocketWriteQueue();
 
   void Write(const char* data,
@@ -29,14 +30,15 @@ class WebSocketWriteQueue {
  private:
   struct Operation;
 
-  MojoResult TryToWrite();
+  void TryToWrite();
   void Wait();
   void OnHandleReady(MojoResult result);
 
   DataPipeProducerHandle handle_;
   common::HandleWatcher handle_watcher_;
   ScopedVector<Operation> queue_;
-  bool is_waiting_;
+  bool is_busy_;
+  base::WeakPtrFactory<WebSocketWriteQueue> weak_factory_;
 };
 
 }  // namespace mojo

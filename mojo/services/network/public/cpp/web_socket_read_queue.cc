@@ -5,6 +5,7 @@
 #include "network/public/cpp/web_socket_read_queue.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 
 namespace mojo {
 
@@ -14,7 +15,7 @@ struct WebSocketReadQueue::Operation {
 };
 
 WebSocketReadQueue::WebSocketReadQueue(DataPipeConsumerHandle handle)
-    : handle_(handle), is_waiting_(false) {
+    : handle_(handle), is_busy_(false), weak_factory_(this) {
 }
 
 WebSocketReadQueue::~WebSocketReadQueue() {
@@ -27,34 +28,57 @@ void WebSocketReadQueue::Read(uint32_t num_bytes,
   op->callback_ = callback;
   queue_.push_back(op);
 
-  if (!is_waiting_)
-    TryToRead();
+  if (is_busy_)
+    return;
+
+  is_busy_ = true;
+  TryToRead();
 }
 
 void WebSocketReadQueue::TryToRead() {
-  Operation* op = queue_[0];
-  const void* buffer = NULL;
-  uint32_t bytes_read = op->num_bytes_;
-  MojoResult result = BeginReadDataRaw(
-      handle_, &buffer, &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
-  if (result == MOJO_RESULT_SHOULD_WAIT) {
-    EndReadDataRaw(handle_, bytes_read);
-    Wait();
-    return;
-  }
+  DCHECK(is_busy_);
+  DCHECK(!queue_.empty());
+  do {
+    Operation* op = queue_[0];
+    const void* buffer = NULL;
+    uint32_t bytes_read = op->num_bytes_;
+    MojoResult result = BeginReadDataRaw(
+        handle_, &buffer, &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      Wait();
+      return;
+    }
 
-  // Ensure |op| is deleted, whether or not |this| goes away.
-  scoped_ptr<Operation> op_deleter(op);
-  queue_.weak_erase(queue_.begin());
-  if (result != MOJO_RESULT_OK)
-    return;
-  DataPipeConsumerHandle handle = handle_;
-  op->callback_.Run(static_cast<const char*>(buffer));  // may delete |this|
-  EndReadDataRaw(handle, bytes_read);
+    // Ensure |op| is deleted, whether or not |this| goes away.
+    scoped_ptr<Operation> op_deleter(op);
+    queue_.weak_erase(queue_.begin());
+
+    // http://crbug.com/490193 This should run callback as well. May need to
+    // change the callback signature.
+    if (result != MOJO_RESULT_OK)
+      return;
+
+    uint32_t num_bytes = op_deleter->num_bytes_;
+    DCHECK_LE(num_bytes, bytes_read);
+    DataPipeConsumerHandle handle = handle_;
+
+    base::WeakPtr<WebSocketReadQueue> self(weak_factory_.GetWeakPtr());
+
+    // This call may delete |this|. In that case, |self| will be invalidated.
+    // It may re-enter Read() too. Because |is_busy_| is true during the whole
+    // process, TryToRead() won't be re-entered.
+    op->callback_.Run(static_cast<const char*>(buffer));
+
+    EndReadDataRaw(handle, num_bytes);
+
+    if (!self)
+      return;
+  } while (!queue_.empty());
+  is_busy_ = false;
 }
 
 void WebSocketReadQueue::Wait() {
-  is_waiting_ = true;
+  DCHECK(is_busy_);
   handle_watcher_.Start(
       handle_,
       MOJO_HANDLE_SIGNAL_READABLE,
@@ -63,7 +87,7 @@ void WebSocketReadQueue::Wait() {
 }
 
 void WebSocketReadQueue::OnHandleReady(MojoResult result) {
-  is_waiting_ = false;
+  DCHECK(is_busy_);
   TryToRead();
 }
 

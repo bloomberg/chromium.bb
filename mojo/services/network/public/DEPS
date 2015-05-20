@@ -4,7 +4,6 @@ include_rules = [
   "-net",
   "-services",
   "-testing",
-  "!base",
   "!mojo/common",
   "+mojo/services/network/public",
   "+third_party/mojo/src/mojo/public",

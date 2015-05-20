@@ -5,6 +5,7 @@
 #include "network/public/cpp/web_socket_write_queue.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 
 namespace mojo {
 
@@ -19,7 +20,7 @@ struct WebSocketWriteQueue::Operation {
 };
 
 WebSocketWriteQueue::WebSocketWriteQueue(DataPipeProducerHandle handle)
-    : handle_(handle), is_waiting_(false) {
+    : handle_(handle), is_busy_(false), weak_factory_(this) {
 }
 
 WebSocketWriteQueue::~WebSocketWriteQueue() {
@@ -34,41 +35,58 @@ void WebSocketWriteQueue::Write(const char* data,
   op->data_ = data;
   queue_.push_back(op);
 
-  MojoResult result = MOJO_RESULT_SHOULD_WAIT;
-  if (!is_waiting_)
-    result = TryToWrite();
+  if (!is_busy_) {
+    is_busy_ = true;
+    // This call may reset |is_busy_| to false.
+    TryToWrite();
+  }
 
-  // If we have to wait, make a local copy of the data so we know it will
-  // live until we need it.
-  if (result == MOJO_RESULT_SHOULD_WAIT) {
+  if (is_busy_) {
+    // If we have to wait, make a local copy of the data so we know it will
+    // live until we need it.
     op->data_copy_.resize(num_bytes);
     memcpy(&op->data_copy_[0], data, num_bytes);
     op->data_ = &op->data_copy_[0];
   }
 }
 
-MojoResult WebSocketWriteQueue::TryToWrite() {
-  Operation* op = queue_[0];
-  uint32_t bytes_written = op->num_bytes_;
-  MojoResult result = WriteDataRaw(
-      handle_, op->data_, &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-  if (result == MOJO_RESULT_SHOULD_WAIT) {
-    Wait();
-    return result;
-  }
+void WebSocketWriteQueue::TryToWrite() {
+  DCHECK(is_busy_);
+  DCHECK(!queue_.empty());
+  do {
+    Operation* op = queue_[0];
+    uint32_t bytes_written = op->num_bytes_;
+    MojoResult result = WriteDataRaw(
+        handle_, op->data_, &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      Wait();
+      return;
+    }
 
-  // Ensure |op| is deleted, whether or not |this| goes away.
-  scoped_ptr<Operation> op_deleter(op);
-  queue_.weak_erase(queue_.begin());
-  if (result != MOJO_RESULT_OK)
-    return result;
+    // Ensure |op| is deleted, whether or not |this| goes away.
+    scoped_ptr<Operation> op_deleter(op);
+    queue_.weak_erase(queue_.begin());
 
-  op->callback_.Run(op->data_);  // may delete |this|
-  return result;
+    // http://crbug.com/490193 This should run callback as well. May need to
+    // change the callback signature.
+    if (result != MOJO_RESULT_OK)
+      return;
+
+    base::WeakPtr<WebSocketWriteQueue> self(weak_factory_.GetWeakPtr());
+
+    // This call may delete |this|. In that case, |self| will be invalidated.
+    // It may re-enter Write() too. Because |is_busy_| is true during the whole
+    // process, TryToWrite() won't be re-entered.
+    op->callback_.Run(op->data_);
+
+    if (!self)
+      return;
+  } while (!queue_.empty());
+  is_busy_ = false;
 }
 
 void WebSocketWriteQueue::Wait() {
-  is_waiting_ = true;
+  DCHECK(is_busy_);
   handle_watcher_.Start(handle_,
                         MOJO_HANDLE_SIGNAL_WRITABLE,
                         MOJO_DEADLINE_INDEFINITE,
@@ -77,7 +95,7 @@ void WebSocketWriteQueue::Wait() {
 }
 
 void WebSocketWriteQueue::OnHandleReady(MojoResult result) {
-  is_waiting_ = false;
+  DCHECK(is_busy_);
   TryToWrite();
 }
 
