@@ -25,12 +25,6 @@ class WebUIMessageHandler;
 class TestChromeWebUIControllerFactory;
 class WebUITestHandler;
 
-// This macro simplifies the declaration of simple javascript unit tests.
-// Use:
-//   WEB_UI_UNITTEST_F(MyWebUIPageTest, myJavascriptUnittest);
-#define WEB_UI_UNITTEST_F(x, y) \
-  IN_PROC_BROWSER_TEST_F(x, y) { ASSERT_TRUE(RunJavascriptTest(#y)); }
-
 // The runner of WebUI javascript based tests.
 // See chrome/test/data/webui/test_api.js for the javascript side test API's.
 //

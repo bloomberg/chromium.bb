@@ -53,6 +53,7 @@ specific_include_rules = {
     "+chrome/browser/ui/profile_error_dialog.h",
     "+components/bookmarks/browser",
     "+components/keyed_service/content",
+    "+components/pref_registry",
   ],
   # Those files will move to //components/history/content/browser and thus
   # can depend on //content even indirectly.

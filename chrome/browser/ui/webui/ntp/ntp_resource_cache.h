@@ -45,9 +45,6 @@ class NTPResourceCache : public content::NotificationObserver,
   void set_should_show_apps_page(bool should_show_apps_page) {
     should_show_apps_page_ = should_show_apps_page;
   }
-  void set_should_show_most_visited_page(bool should_show_most_visited_page) {
-    should_show_most_visited_page_ = should_show_most_visited_page;
-  }
   void set_should_show_other_devices_menu(bool should_show_other_devices_menu) {
     should_show_other_devices_menu_ = should_show_other_devices_menu;
   }
@@ -103,9 +100,6 @@ class NTPResourceCache : public content::NotificationObserver,
   bool is_swipe_tracking_from_scroll_events_enabled_;
   // Set based on NewTabUI::ShouldShowApps.
   bool should_show_apps_page_;
-  // The next three all default to true and can be manually set, e.g., by the
-  // chrome://apps page.
-  bool should_show_most_visited_page_;
   bool should_show_other_devices_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);

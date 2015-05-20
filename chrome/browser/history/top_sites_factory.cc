@@ -17,6 +17,7 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -113,6 +114,11 @@ scoped_refptr<RefcountedKeyedService> TopSitesFactory::BuildServiceInstanceFor(
   history::PrepopulatedPageList prepopulated_pages;
   InitializePrepopulatedPageList(&prepopulated_pages);
   return BuildTopSites(context, prepopulated_pages);
+}
+
+void TopSitesFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist);
 }
 
 bool TopSitesFactory::ServiceIsNULLWhileTesting() const {

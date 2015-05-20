@@ -68,9 +68,6 @@ void NewTabPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("pageSelected",
       base::Bind(&NewTabPageHandler::HandlePageSelected,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("logTimeToClick",
-      base::Bind(&NewTabPageHandler::HandleLogTimeToClick,
-                 base::Unretained(this)));
 }
 
 void NewTabPageHandler::HandleNotificationPromoClosed(
@@ -143,26 +140,6 @@ void NewTabPageHandler::HandlePageSelected(const base::ListValue* args) {
                             shown_page_type, kHistogramEnumerationMax);
 }
 
-void NewTabPageHandler::HandleLogTimeToClick(const base::ListValue* args) {
-  std::string histogram_name;
-  double duration;
-  if (!args->GetString(0, &histogram_name) || !args->GetDouble(1, &duration)) {
-    NOTREACHED();
-    return;
-  }
-
-  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(duration);
-
-  if (histogram_name == "NewTabPage.TimeToClickMostVisited") {
-    UMA_HISTOGRAM_LONG_TIMES("NewTabPage.TimeToClickMostVisited", delta);
-  } else if (histogram_name == "ExtendedNewTabPage.TimeToClickMostVisited") {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "ExtendedNewTabPage.TimeToClickMostVisited", delta);
-  } else {
-    NOTREACHED();
-  }
-}
-
 // static
 void NewTabPageHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -173,7 +150,6 @@ void NewTabPageHandler::RegisterProfilePrefs(
 // static
 void NewTabPageHandler::GetLocalizedValues(Profile* profile,
                                            base::DictionaryValue* values) {
-  values->SetInteger("most_visited_page_id", MOST_VISITED_PAGE_ID);
   values->SetInteger("apps_page_id", APPS_PAGE_ID);
 
   PrefService* prefs = profile->GetPrefs();

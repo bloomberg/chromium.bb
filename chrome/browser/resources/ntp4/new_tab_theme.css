@@ -90,18 +90,6 @@ body {
   background-color: rgba($23, 0.85);  /* COLOR_NTP_TEXT */
 }
 
-/* Most Visited ***************************************************************/
-
-.most-visited,
-.most-visited > .title {
-  color: $8;  /* COLOR_NTP_TEXT */
-}
-
-.most-visited:focus:not(.filler) .thumbnail-wrapper,
-.most-visited:hover:not(.filler) .thumbnail-wrapper {
-  background-color: $6;  /* COLOR_NTP_HEADER */
-}
-
 .thumbnail-wrapper {
   /* This shows through at the (rounded) thumbnail's corners. */
   background-color: $11;  /* COLOR_NTP_SECTION_BORDER */

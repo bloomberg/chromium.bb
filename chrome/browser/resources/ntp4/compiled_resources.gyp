@@ -33,7 +33,6 @@
           'logging.js',
           'tile_page.js',
           'dot_list.js',
-          'most_visited_page.js',
           'trash.js',
           'page_switcher.js',
           'page_list_view.js',

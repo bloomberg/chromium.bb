@@ -47,6 +47,8 @@ class TopSitesFactory : public RefcountedBrowserContextKeyedServiceFactory {
   // Overridden from BrowserContextKeyedServiceFactory.
   scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
   bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesFactory);
