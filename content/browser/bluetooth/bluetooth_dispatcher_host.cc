@@ -50,11 +50,26 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BluetoothDispatcherHost, message)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_RequestDevice, OnRequestDevice)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ConnectGATT, OnConnectGATT)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_SetBluetoothMockDataSetForTesting,
-                      OnSetBluetoothMockDataSetForTesting)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
+    const std::string& name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (name == "RejectRequestDevice_NotFoundError") {
+    bluetooth_mock_data_set_ = MockData::REJECT;
+    bluetooth_request_device_reject_type_ = BluetoothError::NOT_FOUND;
+  } else if (name == "RejectRequestDevice_SecurityError") {
+    bluetooth_mock_data_set_ = MockData::REJECT;
+    bluetooth_request_device_reject_type_ = BluetoothError::SECURITY;
+  } else if (name == "ResolveRequestDevice_Empty" ||  // TODO(scheib): Remove.
+             name == "Single Empty Device") {
+    bluetooth_mock_data_set_ = MockData::RESOLVE;
+  } else {
+    bluetooth_mock_data_set_ = MockData::NOT_MOCKING;
+  }
 }
 
 BluetoothDispatcherHost::~BluetoothDispatcherHost() {
@@ -133,23 +148,6 @@ void BluetoothDispatcherHost::OnConnectGATT(
   // done after the "allowed devices map" is implemented.
   Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,
                                            device_instance_id));
-}
-
-void BluetoothDispatcherHost::OnSetBluetoothMockDataSetForTesting(
-    const std::string& name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (name == "RejectRequestDevice_NotFoundError") {
-    bluetooth_mock_data_set_ = MockData::REJECT;
-    bluetooth_request_device_reject_type_ = BluetoothError::NOT_FOUND;
-  } else if (name == "RejectRequestDevice_SecurityError") {
-    bluetooth_mock_data_set_ = MockData::REJECT;
-    bluetooth_request_device_reject_type_ = BluetoothError::SECURITY;
-  } else if (name == "ResolveRequestDevice_Empty" ||  // TODO(scheib): Remove.
-             name == "Single Empty Device") {
-    bluetooth_mock_data_set_ = MockData::RESOLVE;
-  } else {
-    bluetooth_mock_data_set_ = MockData::NOT_MOCKING;
-  }
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
