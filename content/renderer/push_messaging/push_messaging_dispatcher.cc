@@ -15,11 +15,19 @@
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 using blink::WebString;
 
 namespace content {
+
+const char kManifestDeprecationWarning[] =
+    "The 'gcm_user_visible_only' manifest key is deprecated and will be "
+    "removed in Chrome 45, around August 2015. Use pushManager.subscribe({"
+    "userVisibleOnly: true}) instead. See https://goo.gl/RHFwWx for more "
+    "details.";
 
 PushMessagingDispatcher::PushMessagingDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
@@ -74,8 +82,17 @@ void PushMessagingDispatcher::DoSubscribe(
     return;
   }
 
-  // TODO(peter): Display a deprecation warning if gcm_user_visible_only is
-  // set to true. See https://crbug.com/471534
+  // Support for the "gcm_user_visible_only" Manifest key has been deprecated
+  // in favor of the userVisibleOnly subscription option, and will be removed
+  // in a future Chrome release. Inform developers of this deprecation.
+  if (manifest.gcm_user_visible_only && !options.userVisibleOnly) {
+    blink::WebConsoleMessage message(
+        blink::WebConsoleMessage::LevelWarning,
+        blink::WebString::fromUTF8(kManifestDeprecationWarning));
+
+    render_frame()->GetWebFrame()->addMessageToConsole(message);
+  }
+
   const bool user_visible = manifest.gcm_user_visible_only ||
                             options.userVisibleOnly;
 
