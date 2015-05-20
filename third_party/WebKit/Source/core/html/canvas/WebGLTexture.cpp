@@ -588,4 +588,76 @@ GLenum WebGLTexture::getValidTypeForInternalFormat(GLenum internalFormat)
     }
 }
 
+GLenum WebGLTexture::getValidFormatForInternalFormat(GLenum internalFormat)
+{
+    switch (internalFormat) {
+    case GL_R8:
+    case GL_R8_SNORM:
+    case GL_R16F:
+    case GL_R32F:
+        return GL_RED;
+    case GL_R8UI:
+    case GL_R8I:
+    case GL_R16UI:
+    case GL_R16I:
+    case GL_R32UI:
+    case GL_R32I:
+        return GL_RED_INTEGER;
+    case GL_RG8:
+    case GL_RG8_SNORM:
+    case GL_RG16F:
+    case GL_RG32F:
+        return GL_RG;
+    case GL_RG8UI:
+    case GL_RG8I:
+    case GL_RG16UI:
+    case GL_RG16I:
+    case GL_RG32UI:
+    case GL_RG32I:
+        return GL_RG_INTEGER;
+    case GL_RGB8:
+    case GL_SRGB8:
+    case GL_RGB565:
+    case GL_RGB8_SNORM:
+    case GL_R11F_G11F_B10F:
+    case GL_RGB9_E5:
+    case GL_RGB16F:
+    case GL_RGB32F:
+        return GL_RGB;
+    case GL_RGB8UI:
+    case GL_RGB8I:
+    case GL_RGB16UI:
+    case GL_RGB16I:
+    case GL_RGB32UI:
+    case GL_RGB32I:
+        return GL_RGB_INTEGER;
+    case GL_RGBA8:
+    case GL_SRGB8_ALPHA8:
+    case GL_RGBA8_SNORM:
+    case GL_RGB5_A1:
+    case GL_RGBA4:
+    case GL_RGB10_A2:
+    case GL_RGBA16F:
+    case GL_RGBA32F:
+        return GL_RGBA;
+    case GL_RGBA8UI:
+    case GL_RGBA8I:
+    case GL_RGB10_A2UI:
+    case GL_RGBA16UI:
+    case GL_RGBA16I:
+    case GL_RGBA32I:
+    case GL_RGBA32UI:
+        return GL_RGBA_INTEGER;
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT24:
+    case GL_DEPTH_COMPONENT32F:
+        return GL_DEPTH_COMPONENT;
+    case GL_DEPTH24_STENCIL8:
+    case GL_DEPTH32F_STENCIL8:
+        return GL_DEPTH_STENCIL;
+    default:
+        return GL_NONE;
+    }
+}
+
 } // namespace blink

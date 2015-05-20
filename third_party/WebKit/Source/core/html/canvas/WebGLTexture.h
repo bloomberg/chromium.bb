@@ -67,6 +67,8 @@ public:
     bool isValid(GLenum target, GLint level) const;
     bool isImmutable() const { return m_immutable; }
 
+    static GLenum getValidFormatForInternalFormat(GLenum);
+
     // Whether width/height is NotPowerOfTwo.
     static bool isNPOT(GLsizei, GLsizei);
 

@@ -820,6 +820,8 @@ protected:
         SourceHTMLVideoElement,
     };
 
+    bool validateInternalFormat(GLenum internalformat, GLenum format);
+
     // Helper function for tex{Sub}Image2D to check if the input format/type/level/target/width/height/border/xoffset/yoffset are valid.
     // Otherwise, it would return quickly without doing other work.
     bool validateTexFunc(const char* functionName, TexImageFunctionType, TexFuncValidationSourceType, GLenum target, GLint level, GLenum internalformat, GLsizei width,
