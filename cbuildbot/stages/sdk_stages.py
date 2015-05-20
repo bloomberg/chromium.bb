@@ -36,6 +36,7 @@ PACKAGE_EXCLUDED_PATHS = (
 
 # Names of various packaged artifacts.
 SDK_TARBALL_NAME = 'built-sdk.tar.xz'
+BOARD_OVERLAY_TARBALL_TEMPLATE = 'built-sdk-overlay-%(board)s.tar.xz'
 
 
 def SdkPerfPath(buildroot):
@@ -62,6 +63,9 @@ def CreateTarball(source_root, tarball_path, exclude_paths=None):
   cros_build_lib.CreateTarball(
       tarball_path, source_root, sudo=True, extra_args=extra_args,
       debug_level=logging.INFO, extra_env=extra_env)
+  # Make sure the regular user has the permission to read.
+  cmd = ['chmod', 'a+r', tarball_path]
+  cros_build_lib.SudoRunCommand(cmd)
 
 
 class SDKBuildToolchainsStage(generic_stages.BuilderStage):
@@ -120,10 +124,6 @@ class SDKPackageStage(generic_stages.BuilderStage):
 
     # Create a package manifest for the tarball.
     self.CreateManifestFromSDK(board_location, manifest_location)
-
-    # Make sure the regular user has the permission to read.
-    cmd = ['chmod', 'a+r', tarball_location]
-    cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
 
     self.SendPerfValues(tarball_location)
 
@@ -191,6 +191,40 @@ class SDKPackageStage(generic_stages.BuilderStage):
     self._SendPerfValues(self._build_root, sdk_tarball,
                          self.ConstructDashboardURL(), self.sdk_version,
                          self._run.bot_id)
+
+
+class SDKPackageBoardToolchainsStage(generic_stages.BuilderStage):
+  """Stage that creates and packages per-board toolchain overlays."""
+
+  def __init__(self, builder_run, version=None, **kwargs):
+    self.sdk_version = version
+    super(SDKPackageBoardToolchainsStage, self).__init__(builder_run, **kwargs)
+
+  def PerformStage(self):
+    overlay_tarball_template = os.path.join(
+        self._build_root, BOARD_OVERLAY_TARBALL_TEMPLATE)
+    chroot_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
+    sdk_dir = os.path.join(chroot_dir, 'build/amd64-host')
+    tmp_dir = os.path.join(chroot_dir, 'tmp')
+    osutils.SafeMakedirs(tmp_dir, mode=0o777, sudo=True)
+
+    for board in self._boards:
+      overlay_tarball_path = overlay_tarball_template % {'board': board}
+      with osutils.TempDir(prefix='toolchain-overlay-%s.' % board,
+                           base_dir=tmp_dir, sudo_rm=True) as overlay_dir:
+        with osutils.TempDir(prefix='amd64-host-%s.' % board,
+                             base_dir=tmp_dir) as merged_dir:
+          with osutils.MountOverlayContext(sdk_dir, overlay_dir, merged_dir):
+            sysroot = merged_dir[len(chroot_dir):]
+            cmd = ['cros_setup_toolchains', '--targets=boards',
+                   '--include-boards=%s' % board,
+                   '--sysroot=%s' % sysroot]
+            commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
+                                    enter_chroot=True, sudo=True,
+                                    extra_env=self._portage_extra_env)
+
+        # Create toolchain overlay tarball.
+        CreateTarball(overlay_dir, overlay_tarball_path)
 
 
 class SDKTestStage(generic_stages.BuilderStage):

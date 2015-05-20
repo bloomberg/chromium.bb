@@ -177,6 +177,68 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.assertEqual(kwargs['revision'], 123456)
 
 
+class SDKPackageBoardToolchainsStageTest(
+    generic_stages_unittest.AbstractStageTestCase):
+  """Tests board toolchain overlay installation and packaging."""
+
+  fake_packages = (('cat1/package', '1'), ('cat1/package', '2'),
+                   ('cat2/package', '3'), ('cat2/package', '4'))
+
+  def setUp(self):
+    # Mock out running of cros_setup_toolchains.
+    self.PatchObject(commands, 'RunBuildScript', wraps=self.FakeRunBuildScript)
+    self._setup_toolchain_cmds = []
+
+    # Prepare a fake chroot.
+    self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
+    osutils.SafeMakedirs(self.fake_chroot)
+    osutils.Touch(os.path.join(self.fake_chroot, 'file'))
+
+  def FakeRunBuildScript(self, build_root, cmd, chromite_cmd=False, **kwargs):
+    if cmd[0] == 'cros_setup_toolchains':
+      self.assertEqual(self.build_root, build_root)
+      self.assertTrue(chromite_cmd)
+      self.assertTrue(kwargs.get('enter_chroot', False))
+      self.assertTrue(kwargs.get('sudo', False))
+
+      # Drop a uniquely named file in the toolchain overlay merged location.
+      sysroot = None
+      board = None
+      for opt in cmd[1:]:
+        if opt.startswith('--sysroot='):
+          sysroot = opt[len('--sysroot='):]
+        elif opt.startswith('--include-boards='):
+          board = opt[len('--include-boards='):]
+
+      self.assertTrue(sysroot)
+      self.assertTrue(board)
+      merged_dir = os.path.join(self.build_root, constants.DEFAULT_CHROOT_DIR,
+                                sysroot.lstrip(os.path.sep))
+      osutils.Touch(os.path.join(merged_dir, board + '.tmp'))
+
+  def ConstructStage(self):
+    return sdk_stages.SDKPackageBoardToolchainsStage(self._run)
+
+  def testTarballCreation(self):
+    """Tests that tarballs are created for all board toolchains."""
+    self._Prepare('chromiumos-sdk')
+    self.RunStage()
+
+    # Check that a tarball was created correctly for all boards.
+    for board in self._boards:
+      overlay_tarball = os.path.join(self.build_root,
+                                     'built-sdk-overlay-%s.tar.xz' % board)
+      output = cros_build_lib.RunCommand(
+          ['tar', '-I', 'xz', '-tvf', overlay_tarball],
+          capture_output=True).output.splitlines()
+      # First line is './', use it as an anchor, count the chars, and strip as
+      # much from all other lines.
+      stripchars = len(output[0]) - 1
+      tar_lines = [x[stripchars:] for x in output[1:]]
+      # Check that the overlay tarball contains the marker file only.
+      self.assertListEqual(['/%s.tmp' % board], tar_lines)
+
+
 class SDKTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests SDK test phase."""
 
