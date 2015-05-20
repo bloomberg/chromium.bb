@@ -45,7 +45,6 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                               unsigned int /* seconds */,
                               unsigned int /* useconds */)> PageFlipCallback;
 
-  DrmDevice(const base::FilePath& device_path);
   DrmDevice(const base::FilePath& device_path, base::File file);
 
   // Open device.

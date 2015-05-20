@@ -268,17 +268,6 @@ class DrmDevice::IOWatcher
   DISALLOW_COPY_AND_ASSIGN(IOWatcher);
 };
 
-DrmDevice::DrmDevice(const base::FilePath& device_path)
-    : device_path_(device_path),
-      file_(device_path,
-            base::File::FLAG_OPEN | base::File::FLAG_READ |
-                base::File::FLAG_WRITE),
-      page_flip_manager_(new PageFlipManager()) {
-  LOG_IF(FATAL, !file_.IsValid())
-      << "Failed to open '" << device_path_.value()
-      << "': " << base::File::ErrorToString(file_.error_details());
-}
-
 DrmDevice::DrmDevice(const base::FilePath& device_path, base::File file)
     : device_path_(device_path),
       file_(file.Pass()),

@@ -8,10 +8,6 @@
 
 namespace ui {
 
-GbmDevice::GbmDevice(const base::FilePath& device_path)
-    : DrmDevice(device_path), device_(nullptr) {
-}
-
 GbmDevice::GbmDevice(const base::FilePath& device_path, base::File file)
     : DrmDevice(device_path, file.Pass()), device_(nullptr) {
 }
