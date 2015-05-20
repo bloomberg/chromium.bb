@@ -79,6 +79,9 @@ bool LayoutSVGResourceFilter::isChildAllowed(LayoutObject* child, const Computed
 
 void LayoutSVGResourceFilter::removeAllClientsFromCache(bool markForInvalidation)
 {
+    // LayoutSVGResourceFilter::removeClientFromCache will be called for
+    // all clients through markAllClientsForInvalidation so no explicit
+    // display item invalidation is needed here.
     disposeFilterMap();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
@@ -87,7 +90,13 @@ void LayoutSVGResourceFilter::removeClientFromCache(LayoutObject* client, bool m
 {
     ASSERT(client);
 
-    m_filter.remove(client);
+    bool filterCached = m_filter.contains(client);
+    if (filterCached)
+        m_filter.remove(client);
+
+    // If the filter has a cached subtree, invalidate the associated display item.
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && markForInvalidation && filterCached)
+        markClientForInvalidation(client, PaintInvalidation);
 
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }

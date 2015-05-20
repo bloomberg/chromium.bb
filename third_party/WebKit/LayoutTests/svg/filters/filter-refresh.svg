@@ -12,7 +12,7 @@ There should be no red squares in the output. -->
 </filter>
 
 <filter id="animated" x="0" y="0">
-  <animate attributeName="x" from="0" to="0" dur="0.05s"/>
+  <set attributeName="x" to="0" />
   <feOffset in="SourceGraphic" dx="0" dy="0" />
 </filter>
 
