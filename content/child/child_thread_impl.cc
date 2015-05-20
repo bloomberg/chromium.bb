@@ -59,6 +59,10 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 
+#if defined(OS_ANDROID)
+#include "base/thread_task_runner_handle.h"
+#endif
+
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
@@ -161,40 +165,57 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 #endif  // OS(POSIX)
 
 #if defined(OS_ANDROID)
-ChildThreadImpl* g_child_thread = NULL;
-bool g_child_thread_initialized = false;
+// A class that allows for triggering a clean shutdown from another
+// thread through draining the main thread's msg loop.
+class QuitClosure {
+ public:
+  QuitClosure();
+  ~QuitClosure();
 
-// A lock protects g_child_thread.
-base::LazyInstance<base::Lock>::Leaky g_lazy_child_thread_lock =
-    LAZY_INSTANCE_INITIALIZER;
+  void BindToMainThread();
+  void PostQuitFromNonMainThread();
 
-// base::ConditionVariable has an explicit constructor that takes
-// a base::Lock pointer as parameter. The base::DefaultLazyInstanceTraits
-// doesn't handle the case. Thus, we need our own class here.
-struct CondVarLazyInstanceTraits {
-  static const bool kRegisterOnExit = false;
-#ifndef NDEBUG
-  static const bool kAllowedToAccessOnNonjoinableThread = true;
-#endif
+ private:
+  static void PostClosure(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::Closure closure);
 
-  static base::ConditionVariable* New(void* instance) {
-    return new (instance) base::ConditionVariable(
-        g_lazy_child_thread_lock.Pointer());
-  }
-  static void Delete(base::ConditionVariable* instance) {
-    instance->~ConditionVariable();
-  }
+  base::Lock lock_;
+  base::ConditionVariable cond_var_;
+  base::Closure closure_;
 };
 
-// A condition variable that synchronize threads initializing and waiting
-// for g_child_thread.
-base::LazyInstance<base::ConditionVariable, CondVarLazyInstanceTraits>
-    g_lazy_child_thread_cv = LAZY_INSTANCE_INITIALIZER;
-
-void QuitMainThreadMessageLoop() {
-  base::MessageLoop::current()->Quit();
+QuitClosure::QuitClosure() : cond_var_(&lock_) {
 }
 
+QuitClosure::~QuitClosure() {
+}
+
+void QuitClosure::PostClosure(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::Closure closure) {
+  task_runner->PostTask(FROM_HERE, closure);
+}
+
+void QuitClosure::BindToMainThread() {
+  base::AutoLock lock(lock_);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+      base::ThreadTaskRunnerHandle::Get());
+  base::Closure quit_closure =
+      base::MessageLoop::current()->QuitWhenIdleClosure();
+  closure_ = base::Bind(&QuitClosure::PostClosure, task_runner, quit_closure);
+  cond_var_.Signal();
+}
+
+void QuitClosure::PostQuitFromNonMainThread() {
+  base::AutoLock lock(lock_);
+  while (closure_.is_null())
+    cond_var_.Wait();
+
+  closure_.Run();
+}
+
+base::LazyInstance<QuitClosure> g_quit_closure = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 }  // namespace
@@ -402,14 +423,7 @@ void ChildThreadImpl::Init(const Options& options) {
       base::TimeDelta::FromSeconds(connection_timeout));
 
 #if defined(OS_ANDROID)
-  {
-    base::AutoLock lock(g_lazy_child_thread_lock.Get());
-    g_child_thread = this;
-    g_child_thread_initialized = true;
-  }
-  // Signalling without locking is fine here because only
-  // one thread can wait on the condition variable.
-  g_lazy_child_thread_cv.Get().Signal();
+  g_quit_closure.Get().BindToMainThread();
 #endif
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
@@ -434,13 +448,6 @@ ChildThreadImpl::~ChildThreadImpl() {
   // ChildDiscardableSharedMemoryManager has to be destroyed while
   // |thread_safe_sender_| is still valid.
   discardable_shared_memory_manager_.reset();
-
-#if defined(OS_ANDROID)
-  {
-    base::AutoLock lock(g_lazy_child_thread_lock.Get());
-    g_child_thread = nullptr;
-  }
-#endif
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
@@ -636,20 +643,7 @@ ChildThreadImpl* ChildThreadImpl::current() {
 void ChildThreadImpl::ShutdownThread() {
   DCHECK(!ChildThreadImpl::current()) <<
       "this method should NOT be called from child thread itself";
-  {
-    base::AutoLock lock(g_lazy_child_thread_lock.Get());
-    while (!g_child_thread_initialized)
-      g_lazy_child_thread_cv.Get().Wait();
-
-    // g_child_thread may already have been destructed while we didn't hold the
-    // lock.
-    if (!g_child_thread)
-      return;
-
-    DCHECK_NE(base::MessageLoop::current(), g_child_thread->message_loop());
-    g_child_thread->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&QuitMainThreadMessageLoop));
-  }
+  g_quit_closure.Get().PostQuitFromNonMainThread();
 }
 #endif
 
