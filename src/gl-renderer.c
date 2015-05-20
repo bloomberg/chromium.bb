@@ -1925,7 +1925,6 @@ match_config_to_visual(EGLDisplay egl_display,
 			return i;
 	}
 
-	weston_log("Unable to find an appropriate EGL config.\n");
 	return -1;
 }
 
@@ -1939,16 +1938,19 @@ egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
 	EGLConfig *configs;
 	int i, config_index = -1;
 
-	if (!eglGetConfigs(gr->egl_display, NULL, 0, &count) || count < 1)
+	if (!eglGetConfigs(gr->egl_display, NULL, 0, &count) || count < 1) {
+		weston_log("No EGL configs to choose from.\n");
 		return -1;
-
+	}
 	configs = calloc(count, sizeof *configs);
 	if (!configs)
 		return -1;
 
 	if (!eglChooseConfig(gr->egl_display, attribs, configs,
-			      count, &matched) || !matched)
+			      count, &matched) || !matched) {
+		weston_log("No EGL configs with appropriate attributes.\n");
 		goto out;
+	}
 
 	if (!visual_id)
 		config_index = 0;
@@ -1967,6 +1969,10 @@ out:
 	if (config_index == -1)
 		return -1;
 
+	if (i > 1)
+		weston_log("Unable to use first choice EGL config with id"
+			   " 0x%x, succeeded with alternate id 0x%x.\n",
+			   visual_id[0], visual_id[i - 1]);
 	return 0;
 }
 
@@ -2356,7 +2362,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	if (egl_choose_config(gr, attribs, visual_id,
 			      n_ids, &gr->egl_config) < 0) {
 		weston_log("failed to choose EGL config\n");
-		goto err_egl;
+		goto err_config;
 	}
 
 	ec->renderer = &gr->base;
@@ -2375,6 +2381,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 
 err_egl:
 	gl_renderer_print_egl_error_state();
+err_config:
 	free(gr);
 	return -1;
 }
