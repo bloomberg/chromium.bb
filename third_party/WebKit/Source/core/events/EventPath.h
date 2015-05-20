@@ -75,8 +75,6 @@ public:
 private:
     EventPath();
 
-    void addNodeEventContext(Node&);
-
     void initialize();
     void calculatePath();
     void calculateAdjustedTargets();
@@ -101,7 +99,7 @@ private:
 
     const NodeEventContext& topNodeEventContext();
 
-    WillBeHeapVector<NodeEventContext, 64> m_nodeEventContexts;
+    WillBeHeapVector<NodeEventContext> m_nodeEventContexts;
     RawPtrWillBeMember<Node> m_node;
     RawPtrWillBeMember<Event> m_event;
     WillBeHeapVector<RefPtrWillBeMember<TreeScopeEventContext>> m_treeScopeEventContexts;

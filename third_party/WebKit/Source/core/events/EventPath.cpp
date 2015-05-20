@@ -88,21 +88,21 @@ void EventPath::initialize()
     calculateTreeScopePrePostOrderNumbers();
 }
 
-void EventPath::addNodeEventContext(Node& node)
-{
-    m_nodeEventContexts.append(NodeEventContext(&node, eventTargetRespectingTargetRules(node)));
-}
-
 void EventPath::calculatePath()
 {
     ASSERT(m_node);
     ASSERT(m_nodeEventContexts.isEmpty());
     m_node->updateDistribution();
 
+    // For performance and memory usage reasons we want to store the
+    // path using as few bytes as possible and with as few allocations
+    // as possible which is why we gather the data on the stack before
+    // storing it in a perfectly sized m_nodeEventContexts Vector.
+    WillBeHeapVector<RawPtrWillBeMember<Node>, 64> nodesInPath;
     Node* current = m_node;
-    addNodeEventContext(*current);
+    nodesInPath.append(current);
     if (!m_node->inDocument())
-        return;
+        current = nullptr;
     while (current) {
         if (m_event && current->keepEventInNode(m_event))
             break;
@@ -114,9 +114,9 @@ void EventPath::calculatePath()
                     ShadowRoot* containingShadowRoot = insertionPoint->containingShadowRoot();
                     ASSERT(containingShadowRoot);
                     if (!containingShadowRoot->isOldest())
-                        addNodeEventContext(*containingShadowRoot->olderShadowRoot());
+                        nodesInPath.append(containingShadowRoot->olderShadowRoot());
                 }
-                addNodeEventContext(*insertionPoint);
+                nodesInPath.append(insertionPoint);
             }
             current = insertionPoints.last();
             continue;
@@ -125,12 +125,17 @@ void EventPath::calculatePath()
             if (m_event && shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
                 break;
             current = current->shadowHost();
-            addNodeEventContext(*current);
+            nodesInPath.append(current);
         } else {
             current = current->parentNode();
             if (current)
-                addNodeEventContext(*current);
+                nodesInPath.append(current);
         }
+    }
+
+    m_nodeEventContexts.reserveCapacity(nodesInPath.size());
+    for (Node* nodeInPath : nodesInPath) {
+        m_nodeEventContexts.append(NodeEventContext(nodeInPath, eventTargetRespectingTargetRules(*nodeInPath)));
     }
 }
 
