@@ -295,6 +295,9 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
 
 OutOfProcessInstance::~OutOfProcessInstance() {
   RemovePerInstanceObject(kPPPPdfInterface, this);
+  // Explicitly reset the PDFEngine during destruction as it may call back into
+  // this object.
+  engine_.reset();
 }
 
 bool OutOfProcessInstance::Init(uint32_t argc,
