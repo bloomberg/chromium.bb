@@ -107,6 +107,16 @@ int GetVisibilityStringId(
   return string_id;
 }
 
+// Returns true if the given |extension| is required to remain installed by
+// policy.
+bool IsExtensionRequiredByPolicy(const Extension* extension,
+                                 Profile* profile) {
+  extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile)->management_policy();
+  return !policy->UserMayModifySettings(extension, nullptr) ||
+         policy->MustRemainInstalled(extension, nullptr);
+}
+
 }  // namespace
 
 ExtensionContextMenuModel::ExtensionContextMenuModel(
@@ -170,11 +180,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     return extension_action_ &&
         extension_action_->HasPopup(SessionTabHelper::IdForTab(web_contents));
   } else if (command_id == UNINSTALL) {
-    // Some extension types can not be uninstalled.
-    extensions::ManagementPolicy* policy =
-        extensions::ExtensionSystem::Get(profile_)->management_policy();
-    return policy->UserMayModifySettings(extension, nullptr) &&
-           !policy->MustRemainInstalled(extension, nullptr);
+    return !IsExtensionRequiredByPolicy(extension, profile_);
   }
   return true;
 }
@@ -306,8 +312,19 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
   if (!is_component_ || extensions::OptionsPageInfo::HasOptionsPage(extension))
     AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
 
-  if (!is_component_)
-    AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
+  if (!is_component_) {
+    bool is_required_by_policy =
+        IsExtensionRequiredByPolicy(extension, profile_);
+    int message_id = is_required_by_policy ?
+        IDS_EXTENSIONS_INSTALLED_BY_ADMIN : IDS_EXTENSIONS_UNINSTALL;
+    AddItem(UNINSTALL, l10n_util::GetStringUTF16(message_id));
+    if (is_required_by_policy) {
+      int uninstall_index = GetIndexOfCommandId(UNINSTALL);
+      SetIcon(uninstall_index,
+              ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                  IDR_CONTROLLED_SETTING_MANDATORY));
+    }
+  }
 
   // Add a toggle visibility (show/hide) if the extension icon is shown on the
   // toolbar.

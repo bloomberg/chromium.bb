@@ -5009,6 +5009,9 @@ Even if you have downloaded files from this website before, the website might ha
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
             Options
           </message>
+          <message name="IDS_EXTENSIONS_INSTALLED_BY_ADMIN" desc="The text indicating that an extension has been installed by the controlling administrator (sentence case).">
+            Installed by your administrator
+          </message>
           <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (sentence case).">
             Disable
           </message>
@@ -5034,6 +5037,9 @@ Even if you have downloaded files from this website before, the website might ha
           </message>
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
             Options
+          </message>
+          <message name="IDS_EXTENSIONS_INSTALLED_BY_ADMIN" desc="The text indicating that an extension has been installed by the controlling administrator (title case).">
+            Installed by Your Administrator
           </message>
           <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (title case).">
             Disable

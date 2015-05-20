@@ -158,7 +158,7 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
   system->management_policy()->UnregisterAllProviders();
 
   // Uninstallation should be, by default, enabled.
-  ASSERT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
 
   TestManagementPolicyProvider policy_provider(
       TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
@@ -166,7 +166,14 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
 
   // If there's a policy provider that requires the extension stay enabled, then
   // uninstallation should be disabled.
-  ASSERT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
+  int uninstall_index =
+      menu->GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL);
+  // There should also be an icon to visually indicate why uninstallation is
+  // forbidden.
+  gfx::Image icon;
+  EXPECT_TRUE(menu->GetIconAt(uninstall_index, &icon));
+  EXPECT_FALSE(icon.IsEmpty());
 
   // Don't leave |policy_provider| dangling.
   system->management_policy()->UnregisterProvider(&policy_provider);
