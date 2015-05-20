@@ -212,7 +212,7 @@ void DownloadNotificationItem::UpdateNotificationData(
   }
 
   if (item_->IsDangerous()) {
-    notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+    notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
     notification_->set_title(GetTitle());
     notification_->set_message(GetWarningText());
 
@@ -306,8 +306,8 @@ void DownloadNotificationItem::UpdateNotificationData(
         (item_->GetState() == content::DownloadItem::INTERRUPTED &&
          previous_download_state_ != content::DownloadItem::INTERRUPTED)) {
       CloseNotificationByNonUser();
-      // Changes the type from PROGRESS to SIMPLE.
-      notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+      // Changes the type from PROGRESS to BASE_FORMAT.
+      notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
       notification_ui_manager()->Add(*notification_, profile_);
     }
   } else {

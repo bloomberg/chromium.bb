@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
                 IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE,
                 download_item()->GetFileNameToReportUser().LossyDisplayName()),
             GetNotification(notification_id())->title());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id())->type());
 
   // Confirms that there is only one notification.
@@ -608,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
                 l10n_util::GetStringUTF16(
                     IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_ERROR)),
             GetNotification(notification_id())->message());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id())->type());
 }
 
@@ -721,9 +721,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
   }
 
   // Confirms the types of download notifications are correct.
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id1)->type());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id2)->type());
 }
 
@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
                 IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE,
                 download_item()->GetFileNameToReportUser().LossyDisplayName()),
             GetNotification(notification_id())->title());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id())->type());
 
   // Opens the message center.
@@ -891,9 +891,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   }
 
   // Confirms the types of download notifications are correct.
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id1)->type());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id2)->type());
 
   chrome::CloseWindow(incognito_browser());
@@ -1044,10 +1044,10 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   }
 
   // Confirms the types of download notifications are correct.
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id1)->type());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id2)->type());
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id3)->type());
 }
