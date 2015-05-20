@@ -267,8 +267,6 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       return;
     }
 
-    // Check that the changed node is a child of the typed_urls folder.
-    DCHECK(typed_url_root.GetId() == sync_node.GetParentId());
     DCHECK(syncer::TYPED_URLS == sync_node.GetModelType());
 
     const sync_pb::TypedUrlSpecifics& typed_url(

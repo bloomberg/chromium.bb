@@ -85,15 +85,6 @@ bool ParentChildIndex::Insert(EntryKernel* entry) {
 // given EntryKernel but does not delete it.
 void ParentChildIndex::Remove(EntryKernel* e) {
   const Id& parent_id = GetParentId(e);
-  // Clear type root ID when removing a type root entry.
-  if (parent_id.IsRoot()) {
-    ModelType model_type = GetModelType(e);
-    // TODO(stanisc): the check is needed to work around some tests.
-    // See TODO above.
-    if (model_type_root_ids_[model_type] == e->ref(ID)) {
-      model_type_root_ids_[model_type] = Id();
-    }
-  }
 
   ParentChildrenMap::iterator parent = parent_children_map_.find(parent_id);
   DCHECK(parent != parent_children_map_.end());
@@ -126,7 +117,7 @@ const OrderedChildSet* ParentChildIndex::GetChildren(const Id& id) const {
 
   ParentChildrenMap::const_iterator parent = parent_children_map_.find(id);
   if (parent == parent_children_map_.end()) {
-    return NULL;
+    return nullptr;
   }
 
   // A successful lookup implies at least some children exist.
