@@ -75,6 +75,7 @@
     },
     'heap': {
       'filepath': 'Source/platform/heap',
+      'filepath': 'Source/wtf/Partition.*',
     },
     'html': {
       'filepath': 'Source/core/html/'
