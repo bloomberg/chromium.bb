@@ -2354,6 +2354,11 @@ void HWNDMessageHandler::PrepareTouchEventList(TOUCHINPUT input[],
 
     ScreenToClient(hwnd(), &point);
 
+    // We set a check to assert that we do not receive any touch events from
+    // user's palm.
+    bool touch_event_from_palm = (input[i].dwFlags & TOUCHEVENTF_PALM) != 0;
+    CHECK(!touch_event_from_palm) << "There are touch events from user's palm";
+
     // TOUCHEVENTF_DOWN cannot be combined with TOUCHEVENTF_MOVE or
     // TOUCHEVENTF_UP, but TOUCHEVENTF_MOVE and TOUCHEVENTF_UP can be combined
     // in one input.
@@ -2389,18 +2394,19 @@ void HWNDMessageHandler::GenerateTouchEvent(DWORD input_dwID,
   }
 
   TouchPoint& touch_point = touch_id_list_[touch_id];
-  int flags = ui::GetModifiersFromKeyState();
-
-  // The dwTime of every input in the WM_TOUCH message doesn't necessarily
-  // relate to the system time at all, so use base::TimeTicks::Now() for
-  // touchevent time.
-  base::TimeDelta now = ui::EventTimeForNow();
 
   // We set a check to assert that we do not have missing touch presses in
   // every message.
   bool has_missing_touch_press = touch_event_type != ui::ET_TOUCH_PRESSED &&
       touch_point.in_touch_list == InTouchList::NotPresent;
   CHECK(!has_missing_touch_press) << "There are missing touch presses";
+
+  int flags = ui::GetModifiersFromKeyState();
+
+  // The dwTime of every input in the WM_TOUCH message doesn't necessarily
+  // relate to the system time at all, so use base::TimeTicks::Now() for
+  // touchevent time.
+  base::TimeDelta now = ui::EventTimeForNow();
 
   ui::TouchEvent event(touch_event_type, point_location, touch_id, now);
   event.set_flags(flags);
