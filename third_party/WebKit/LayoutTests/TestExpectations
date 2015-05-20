@@ -1710,6 +1710,9 @@ crbug.com/454729 svg/animations/dynamic-modify-transform-without-baseval.html [ 
 
 crbug.com/455140 http/tests/loading/bad-scheme-subframe.html [ Pass Failure ]
 
+crbug.com/489046 svg/filters/feMerge.svg [ NeedsManualRebaseline ]
+crbug.com/489046 virtual/slimmingpaint/svg/filters/feMerge.svg [ NeedsManualRebaseline ]
+
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-other-https.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-base-https-other-https.html [ Slow ]
