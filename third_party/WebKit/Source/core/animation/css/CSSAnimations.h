@@ -55,7 +55,7 @@ class CSSAnimations final {
 public:
     CSSAnimations();
 
-    const AtomicString getAnimationNameForInspector(const Animation&);
+    bool isAnimationForInspector(const Animation&);
     bool isTransitionAnimationForInspector(const Animation&) const;
 
     static const StylePropertyShorthand& propertiesForTransitionAll();

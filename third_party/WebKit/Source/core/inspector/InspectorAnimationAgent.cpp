@@ -107,14 +107,6 @@ static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation
     return animationObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleRuleKeyframe(StyleRuleKeyframe* keyframe, TimingFunction& easing)
-{
-    RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
-        .setOffset(keyframe->keyText())
-        .setEasing(easing.toString());
-    return keyframeObject.release();
-}
-
 static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKeyframe(const StringKeyframe* keyframe)
 {
     Decimal decimal = Decimal::fromDouble(keyframe->offset() * 100);
@@ -125,27 +117,6 @@ static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKey
         .setOffset(offset)
         .setEasing(keyframe->easing().toString());
     return keyframeObject.release();
-}
-
-static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRuleKeyframes(const Animation& player, const StyleRuleKeyframes* keyframesRule)
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
-    for (const auto& styleKeyframe : styleKeyframes) {
-        WillBeHeapVector<RefPtrWillBeMember<Keyframe>> normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(toKeyframeEffectModelBase(toKeyframeEffect(player.source())->model())->getFrames());
-        TimingFunction* easing = nullptr;
-        for (const auto& keyframe : normalizedKeyframes) {
-            if (styleKeyframe->keys().contains(keyframe->offset()))
-                easing = &keyframe->easing();
-        }
-        ASSERT(easing);
-        keyframes->addItem(buildObjectForStyleRuleKeyframe(styleKeyframe.get(), *easing));
-    }
-
-    RefPtr<TypeBuilder::Animation::KeyframesRule> keyframesObject = TypeBuilder::Animation::KeyframesRule::create()
-        .setKeyframes(keyframes);
-    keyframesObject->setName(keyframesRule->name());
-    return keyframesObject.release();
 }
 
 static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const KeyframeEffect* animation)
@@ -170,26 +141,18 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimation
 
 PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::buildObjectForAnimationPlayer(Animation& player)
 {
-    // Find type of animation
     const Element* element = toKeyframeEffect(player.source())->target();
-    StyleResolver& styleResolver = element->ownerDocument()->ensureStyleResolver();
     CSSAnimations& cssAnimations = element->elementAnimations()->cssAnimations();
-    const AtomicString animationName = cssAnimations.getAnimationNameForInspector(player);
     RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr;
     AnimationType animationType;
 
-    if (!animationName.isNull()) {
-        // CSS Animations
-        const StyleRuleKeyframes* keyframes = styleResolver.findKeyframesRule(element, animationName);
-        keyframeRule = buildObjectForStyleRuleKeyframes(player, keyframes);
-        animationType = AnimationType::CSSAnimation;
-    } else if (cssAnimations.isTransitionAnimationForInspector(player)) {
+    if (cssAnimations.isTransitionAnimationForInspector(player)) {
         // CSS Transitions
         animationType = AnimationType::CSSTransition;
     } else {
-        // Web Animations
+        // Keyframe based animations
         keyframeRule = buildObjectForAnimationKeyframes(toKeyframeEffect(player.source()));
-        animationType = AnimationType::WebAnimation;
+        animationType = cssAnimations.isAnimationForInspector(player) ? AnimationType::WebAnimation : AnimationType::CSSAnimation;
     }
 
     String id = String::number(player.sequenceNumber());

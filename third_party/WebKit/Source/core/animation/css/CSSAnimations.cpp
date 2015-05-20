@@ -183,13 +183,13 @@ CSSAnimations::CSSAnimations()
 {
 }
 
-const AtomicString CSSAnimations::getAnimationNameForInspector(const Animation& animation)
+bool CSSAnimations::isAnimationForInspector(const Animation& animation)
 {
     for (const auto& it : m_animations) {
         if (it.value->animation->sequenceNumber() == animation.sequenceNumber())
-            return it.key;
+            return true;
     }
-    return nullAtom;
+    return false;
 }
 
 bool CSSAnimations::isTransitionAnimationForInspector(const Animation& animation) const
