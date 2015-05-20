@@ -31,8 +31,9 @@ shouldBe("new CustomEvent('eventType', { detail: detailObject }).detail", "detai
 // Detail is a DOM object
 shouldBe("new CustomEvent('eventType', { detail: document }).detail", "document");
 
-// Detail is undefined.
-shouldBe("new CustomEvent('eventType', { detail: undefined }).detail", "undefined");
+// Detail is undefined. Since the default value of detail is null, it should
+// result in "null".
+shouldBe("new CustomEvent('eventType', { detail: undefined }).detail", "null");
 
 // Detail is null.
 shouldBe("new CustomEvent('eventType', { detail: null }).detail", "null");

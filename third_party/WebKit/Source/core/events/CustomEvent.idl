@@ -26,10 +26,10 @@
 // https://dom.spec.whatwg.org/#interface-customevent
 
 [
-    EventConstructor,
-    Exposed=(Window,Worker)
+    Constructor(DOMString type, optional CustomEventInit eventInitDict),
+    Exposed=(Window,Worker),
 ] interface CustomEvent : Event {
-    [Custom=Getter, InitializedByEventConstructor] readonly attribute any detail;
+    [Custom=Getter] readonly attribute any detail;
 
     // FIXME: initCustomEvent()'s arguments should not be optional.
     [Custom] void initCustomEvent([Default=Undefined] optional DOMString typeArg,

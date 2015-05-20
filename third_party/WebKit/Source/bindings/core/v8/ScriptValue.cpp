@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "platform/JSONValues.h"
 
@@ -59,6 +60,20 @@ v8::Local<v8::Value> ScriptValue::v8ValueUnsafe() const
     if (isEmpty())
         return v8::Local<v8::Value>();
     return m_value->newLocal(isolate());
+}
+
+v8::Local<v8::Value> ScriptValue::v8ValueFor(ScriptState* targetScriptState)
+{
+    if (isEmpty())
+        return v8::Local<v8::Value>();
+    v8::Isolate* isolate = targetScriptState->isolate();
+    if (&m_scriptState->world() == &targetScriptState->world())
+        return m_value->newLocal(isolate);
+
+    ASSERT(isolate->InContext());
+    v8::Local<v8::Value> value = m_value->newLocal(isolate);
+    RefPtr<SerializedScriptValue> serialized = SerializedScriptValueFactory::instance().createAndSwallowExceptions(isolate, value);
+    return serialized->deserialize();
 }
 
 bool ScriptValue::toString(String& result) const

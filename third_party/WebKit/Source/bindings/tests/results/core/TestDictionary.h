@@ -30,6 +30,10 @@ class CORE_EXPORT TestDictionary {
 public:
     TestDictionary();
 
+    bool hasAnyMember() const { return !(m_anyMember.isEmpty() || m_anyMember.isNull() || m_anyMember.isUndefined()); }
+    ScriptValue anyMember() const { return m_anyMember; }
+    void setAnyMember(ScriptValue value) { m_anyMember = value; }
+
     bool hasBooleanMember() const { return !m_booleanMember.isNull(); }
     bool booleanMember() const { return m_booleanMember.get(); }
     void setBooleanMember(bool value) { m_booleanMember = value; }
@@ -148,6 +152,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    ScriptValue m_anyMember;
     Nullable<bool> m_booleanMember;
     Nullable<bool> m_createMember;
     Nullable<double> m_doubleOrNullMember;

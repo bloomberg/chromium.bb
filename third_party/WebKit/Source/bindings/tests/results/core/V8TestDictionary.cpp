@@ -38,6 +38,20 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
     }
     {
+        v8::Local<v8::Value> anyMemberValue;
+        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "anyMember")).ToLocal(&anyMemberValue)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return;
+        }
+        if (anyMemberValue.IsEmpty() || anyMemberValue->IsUndefined()) {
+            // Do nothing.
+        } else {
+            ScriptValue anyMember = ScriptValue(ScriptState::current(isolate), anyMemberValue);
+            impl.setAnyMember(anyMember);
+        }
+    }
+
+    {
         v8::Local<v8::Value> booleanMemberValue;
         if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
             exceptionState.rethrowV8Exception(block.Exception());
@@ -554,6 +568,14 @@ v8::Local<v8::Value> toV8(const TestDictionary& impl, v8::Local<v8::Object> crea
 bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // TODO(bashi): Use ForceSet() instead of Set(). http://crbug.com/476720
+    if (impl.hasAnyMember()) {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "anyMember"), impl.anyMember().v8Value())))
+            return false;
+    } else {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "anyMember"), v8::Null(isolate))))
+            return false;
+    }
+
     if (impl.hasBooleanMember()) {
         if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
             return false;

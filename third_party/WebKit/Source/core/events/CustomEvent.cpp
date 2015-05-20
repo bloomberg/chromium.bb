@@ -37,6 +37,8 @@ CustomEvent::CustomEvent()
 CustomEvent::CustomEvent(const AtomicString& type, const CustomEventInit& initializer)
     : Event(type, initializer)
 {
+    if (initializer.hasDetail())
+        m_detail = initializer.detail();
 }
 
 CustomEvent::~CustomEvent()

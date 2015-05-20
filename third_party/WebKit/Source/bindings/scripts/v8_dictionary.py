@@ -165,7 +165,6 @@ def dictionary_impl_context(dictionary, interfaces_info):
 
 def member_impl_context(member, interfaces_info, header_includes):
     idl_type = unwrap_nullable_if_needed(member.idl_type)
-    is_object = idl_type.name == 'Object'
     cpp_name = v8_utilities.cpp_name(member)
 
     def getter_expression():
@@ -176,7 +175,7 @@ def member_impl_context(member, interfaces_info, header_includes):
     def has_method_expression():
         if idl_type.impl_should_use_nullable_container or idl_type.is_enum or idl_type.is_string_type or idl_type.is_union_type:
             return '!m_%s.isNull()' % cpp_name
-        elif is_object:
+        elif idl_type.name in ['Any', 'Object']:
             return '!(m_{0}.isEmpty() || m_{0}.isNull() || m_{0}.isUndefined())'.format(cpp_name)
         else:
             return 'm_%s' % cpp_name
@@ -198,7 +197,6 @@ def member_impl_context(member, interfaces_info, header_includes):
         'getter_expression': getter_expression(),
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),
-        'is_object': is_object,
         'is_traceable': idl_type.is_traceable,
         'member_cpp_type': member_cpp_type(),
         'null_setter_name': null_setter_name_for_dictionary_member(member),

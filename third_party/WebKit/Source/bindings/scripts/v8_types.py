@@ -938,10 +938,10 @@ def cpp_type_has_null_value(idl_type):
     # - Interface types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
     # - Union types, as thier container classes can represent null value.
-    # - 'Object' type. We use ScriptValue for object type.
+    # - 'Object' and 'any' type. We use ScriptValue for object type.
     return (idl_type.is_string_type or idl_type.is_interface_type or
             idl_type.is_enum or idl_type.is_union_type
-            or idl_type.base_type == 'object'
+            or idl_type.base_type == 'object' or idl_type.base_type == 'any'
             or idl_type.is_callback_function or idl_type.is_callback_interface)
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)

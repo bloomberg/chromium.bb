@@ -31,4 +31,5 @@ dictionary TestDictionary {
     sequence<InternalDictionary> internalDictionarySequenceMember;
     Uint8Array uint8ArrayMember;
     EventTarget eventTargetMember;
+    any anyMember = null;
 };
