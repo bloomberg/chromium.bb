@@ -277,11 +277,6 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
     float opacity = context->getNormalizedAlpha() / 255.f;
 
-    // TODO(fmalita): this recorder is only needed because CompositingRecorder below appears to be
-    // dropping the current color filter on the floor. Find a proper fix and get rid of it.
-    OwnPtr<GraphicsContext> recordingContext = GraphicsContext::deprecatedCreateWithCanvas(nullptr);
-    recordingContext->beginRecording(dstRect);
-
     FrameView* view = frameView();
     view->resize(containerSize());
 
@@ -290,7 +285,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     view->scrollToFragment(m_url);
 
     {
-        DisplayItemListContextRecorder contextRecorder(*recordingContext);
+        DisplayItemListContextRecorder contextRecorder(*context);
         GraphicsContext& paintContext = contextRecorder.context();
 
         ClipRecorder clipRecorder(paintContext, *this, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
@@ -313,8 +308,6 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         view->paint(&paintContext, enclosingIntRect(srcRect));
         ASSERT(!view->needsLayout());
     }
-    RefPtr<const SkPicture> recording = recordingContext->endRecording();
-    context->drawPicture(recording.get());
 
     if (imageObserver())
         imageObserver()->didDraw(this);
