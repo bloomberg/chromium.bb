@@ -1555,14 +1555,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableAccountConsistency)
   },
   {
-    "enable-new-avatar-menu",
-    IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_NAME,
-    IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewAvatarMenu,
-                              switches::kDisableNewAvatarMenu)
-  },
-  {
     "enable-iframe-based-signin",
     IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME,
     IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_DESCRIPTION,

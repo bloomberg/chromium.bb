@@ -6390,7 +6390,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_PASSWORD_FORCE_SAVING_DESCRIPTION" desc="Description of the flag for the password manager's force-saving option.">
         Allow the user to manually enforce password saving instead of relying on password manager's heuristics.
-      </message>      
+      </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_LINK_NAME" desc="Name of the flag to enable showing a link to account central on password settings page">
         Enable remote password management link
       </message>
@@ -14349,12 +14349,6 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
       <message name="IDS_FLAGS_ENABLE_ACCOUNT_CONSISTENCY_DESCRIPTION" desc="Description for the flag to enable the account consistency between browser and cookie jar.">
         When enabled, the browser manages signing in and out of Google accounts.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_NAME" desc="Title for the flag to enable the new avatar menu.">
-        Enable the new avatar menu
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_DESCRIPTION" desc="Description for the flag to enable the new avatar menu.">
-        Enables the new avatar menu. When combined with new-profile-management, it simply shows the new profile management avatar menu. Otherwise it shows a redesigned avatar menu with the same functionality as the old one, plus a tutorial card at the top prompting the user to try out the new profile management UI.
       </message>
 
       <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME" desc="Title for the flag to enable iframe-based sign-in flows.">
