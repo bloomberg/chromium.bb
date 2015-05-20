@@ -1408,7 +1408,7 @@ void Layer::OnOpacityAnimated(float opacity) {
   if (layer_tree_host_) {
     if (OpacityNode* node =
             layer_tree_host_->property_trees()->opacity_tree.Node(
-                opacity_tree_index_)) {
+                opacity_tree_index())) {
       if (node->owner_id == id())
         node->data = opacity;
     }
@@ -1423,7 +1423,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   if (layer_tree_host_) {
     if (TransformNode* node =
             layer_tree_host_->property_trees()->transform_tree.Node(
-                transform_tree_index_)) {
+                transform_tree_index())) {
       if (node->owner_id == id()) {
         node->data.local = transform;
         node->data.needs_local_transform_update = true;
