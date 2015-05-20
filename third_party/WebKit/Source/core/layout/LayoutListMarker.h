@@ -38,7 +38,6 @@ public:
     static LayoutListMarker* createAnonymous(LayoutListItem*);
 
     virtual ~LayoutListMarker();
-    virtual void destroy() override;
 
     const String& text() const { return m_text; }
 
@@ -57,6 +56,9 @@ public:
     void listItemStyleDidChange();
 
     virtual const char* name() const override { return "LayoutListMarker"; }
+
+protected:
+    virtual void willBeDestroyed() override;
 
 private:
     LayoutListMarker(LayoutListItem*);

@@ -1061,11 +1061,11 @@ LayoutListMarker::~LayoutListMarker()
 {
 }
 
-void LayoutListMarker::destroy()
+void LayoutListMarker::willBeDestroyed()
 {
     if (m_image)
         m_image->removeClient(this);
-    LayoutBox::destroy();
+    LayoutBox::willBeDestroyed();
 }
 
 LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item)
