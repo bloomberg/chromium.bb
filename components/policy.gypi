@@ -360,30 +360,11 @@
           ],
           'actions': [
             {
-              'action_name': 'remove_localized_resources',
-              'outputs': [
-                '<(input_resources_dir)/remove_localized_resources.d.stamp'
-              ],
-              'inputs': [
-                'policy/tools/remove_localized_app_restrictions.py',
-              ],
-              'action': [
-                'python',
-                'policy/tools/remove_localized_app_restrictions.py',
-                '<(input_resources_dir)',
-              ],
-            },
-            {
               'action_name': 'create_resources_zip',
               'inputs': [
                 '<(create_zip_script)',
                 '<(input_resources_dir)/xml-v21/app_restrictions.xml',
                 '<(input_resources_dir)/values-v21/restriction_values.xml',
-                # A dummy stamp file to remove localized resources without
-                # clobbering the build.
-                # TODO(475515): Remove after all build bots have run
-                # 'remove_localized_resources' target.
-                '<(input_resources_dir)/remove_localized_resources.d.stamp',
               ],
               'outputs': [
                 '<(resources_zip)'
