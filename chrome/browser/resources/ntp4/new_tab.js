@@ -541,6 +541,7 @@ cr.define('ntp', function() {
     /** @const */ var showLogin = loginHeader || loginSubHeader;
 
     $('login-container').hidden = !showLogin;
+    $('login-container').classList.toggle('signed-in', isUserSignedIn);
     $('card-slider-frame').classList.toggle('showing-login-area', !!showLogin);
 
     if (showLogin) {
