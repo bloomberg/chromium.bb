@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import tempfile
 import unittest
 
 from compile import Checker
@@ -21,31 +22,61 @@ _POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v0_8",
                                 "polymer.externs.js")
 
 
-class CompilerCustomizationTest(unittest.TestCase):
+class CompilerTest(unittest.TestCase):
   _ASSERT_DEFINITION = Processor(_ASSERT_JS).contents
   _CR_DEFINE_DEFINITION = Processor(_CR_JS).contents
   _CR_UI_DECORATE_DEFINITION = Processor(_CR_UI_JS).contents
 
   def setUp(self):
     self._checker = Checker()
+    self._tmp_files = []
 
-  def _runChecker(self, source_code):
+  def tearDown(self):
+    for file in self._tmp_files:
+      if os.path.exists(file):
+        os.remove(file)
+
+  def _runChecker(self, source_code, output_wrapper=None):
     file_path = "/script.js"
     FileCache._cache[file_path] = source_code
-    return self._checker.check(file_path, externs=[_POLYMER_EXTERNS])
+    out_file, out_map = self._createOutFiles()
+
+    found_errors, stderr = self._checker.check(file_path,
+                                               externs=[_POLYMER_EXTERNS],
+                                               out_file=out_file,
+                                               output_wrapper=output_wrapper)
+    return found_errors, stderr, out_file, out_map
 
   def _runCheckerTestExpectError(self, source_code, expected_error):
-    _, stderr = self._runChecker(source_code)
+    _, stderr, out_file, out_map = self._runChecker(source_code)
 
     self.assertTrue(expected_error in stderr,
         msg="Expected chunk: \n%s\n\nOutput:\n%s\n" % (
             expected_error, stderr))
+    self.assertFalse(os.path.exists(out_file))
+    self.assertFalse(os.path.exists(out_map))
 
-  def _runCheckerTestExpectSuccess(self, source_code):
-    found_errors, stderr = self._runChecker(source_code)
+  def _runCheckerTestExpectSuccess(self, source_code, expected_output=None,
+                                   output_wrapper=None):
+    found_errors, stderr, out_file, out_map = self._runChecker(source_code,
+                                                               output_wrapper)
 
     self.assertFalse(found_errors,
         msg="Expected success, but got failure\n\nOutput:\n%s\n" % stderr)
+
+    self.assertTrue(os.path.exists(out_map))
+    self.assertTrue(os.path.exists(out_file))
+    if expected_output:
+      with open(out_file, "r") as file:
+        self.assertEquals(file.read(), expected_output)
+
+  def _createOutFiles(self):
+    out_file = tempfile.NamedTemporaryFile(delete=False)
+    out_map = "%s.map" % out_file.name
+
+    self._tmp_files.append(out_file.name)
+    self._tmp_files.append(out_map)
+    return out_file.name, out_map
 
   def testGetInstance(self):
     self._runCheckerTestExpectError("""
@@ -234,6 +265,60 @@ function f() {
   return a;
 }
 """)
+
+  def testValidScriptCompilation(self):
+    self._runCheckerTestExpectSuccess("""
+var testScript = function() {
+  console.log("hello world")
+};
+""",
+"""'use strict';var testScript=function(){console.log("hello world")};\n""")
+
+  def testOutputWrapper(self):
+    source_code = """
+var testScript = function() {
+  console.log("hello world");
+};
+"""
+    expected_output = ("""(function(){'use strict';var testScript=function()"""
+                       """{console.log("hello world")};})();\n""")
+    output_wrapper="(function(){%output%})();"
+    self._runCheckerTestExpectSuccess(source_code, expected_output,
+                                      output_wrapper=output_wrapper)
+
+  def testCheckMultiple(self):
+    source_file1 = tempfile.NamedTemporaryFile(delete=False)
+    with open(source_file1.name, "w") as f:
+      f.write("""
+goog.provide('testScript');
+
+var testScript = function() {};
+""")
+    self._tmp_files.append(source_file1.name)
+
+    source_file2 = tempfile.NamedTemporaryFile(delete=False)
+    with open(source_file2.name, "w") as f:
+      f.write("""
+goog.require('testScript');
+
+testScript();
+""")
+    self._tmp_files.append(source_file2.name)
+
+    out_file, out_map = self._createOutFiles()
+    sources = [source_file1.name, source_file2.name]
+    externs = [_POLYMER_EXTERNS]
+    found_errors, stderr = self._checker.check_multiple(sources,
+                                                        externs=externs,
+                                                        out_file=out_file)
+    self.assertFalse(found_errors,
+        msg="Expected success, but got failure\n\nOutput:\n%s\n" % stderr)
+
+    expected_output = "'use strict';var testScript=function(){};testScript();\n"
+    self.assertTrue(os.path.exists(out_map))
+    self.assertTrue(os.path.exists(out_file))
+    with open(out_file, "r") as file:
+      self.assertEquals(file.read(), expected_output)
 
 
 if __name__ == "__main__":

@@ -4,9 +4,9 @@
 # found in the LICENSE file.
 
 
-import compiler_customization_test
+import compiler_test
 import processor_test
 
 
-for test_module in [compiler_customization_test, processor_test]:
+for test_module in [compiler_test, processor_test]:
   test_module.unittest.main(test_module)

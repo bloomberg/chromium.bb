@@ -270,6 +270,9 @@ class Checker(object):
     args = ["--js=%s" % s for s in sources]
 
     if out_file:
+      out_dir = os.path.dirname(out_file)
+      if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
       args += ["--js_output_file=%s" % out_file]
       args += ["--create_source_map=%s" % (self._MAP_FILE_FORMAT % out_file)]
 
@@ -418,11 +421,6 @@ if __name__ == "__main__":
                                  'v0_8', 'components-chromium',
                                  'polymer-externs', 'polymer.externs.js')
   externs.add(polymer_externs)
-
-  if opts.out_file:
-    out_dir = os.path.dirname(opts.out_file)
-    if not os.path.exists(out_dir):
-      os.makedirs(out_dir)
 
   checker = Checker(verbose=opts.verbose, strict=opts.strict)
   if opts.single_file:
