@@ -86,8 +86,8 @@ def CreateTmpDir(prefix='cros-rel', tmps=TMPS, minimum_size=0):
       if not minimum_size or GetFreeSpace(entry) > minimum_size:
         return tempfile.mkdtemp(prefix=prefix, dir=entry)
       else:
-        logging.warn('Not enough space in %s to create %s temp dir.',
-                     entry, prefix)
+        logging.warning('Not enough space in %s to create %s temp dir.',
+                        entry, prefix)
 
   raise UnableToCreateTmpDir('Unable to find a suitable %s tmp dir.'
                              '  Considered: %s', prefix, ', '.join(tmps))

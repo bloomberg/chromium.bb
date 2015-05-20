@@ -212,8 +212,8 @@ class Copier(object):
       elif path.optional or (not strict and path.cond):
         logging.debug('%s does not exist and is optional.  Skipping.', src)
       else:
-        logging.warn('%s does not exist and is required.  Skipping anyway.',
-                     src)
+        logging.warning('%s does not exist and is required.  Skipping anyway.',
+                        src)
     elif len(paths) > 1 and path.dest and not path.dest.endswith('/'):
       raise MultipleMatchError(
           'Glob pattern %r has multiple matches, but dest %s '

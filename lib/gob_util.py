@@ -163,7 +163,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
                             body=body)
       response = conn.getresponse()
     except socket.error as ex:
-      logging.warn('%s%s', err_prefix, str(ex))
+      logging.warning('%s%s', err_prefix, str(ex))
       raise
 
     # Normal/good responses.
@@ -184,7 +184,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     # Ones we can retry.
     if response.status >= 500:
       # A status >=500 is assumed to be a possible transient error; retry.
-      logging.warn('%s%s', err_prefix, msg)
+      logging.warning('%s%s', err_prefix, msg)
       raise InternalGOBError(response.status, response.reason)
 
     # Ones we cannot retry.
@@ -203,15 +203,15 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
 
     if response.status >= 400:
       # The 'X-ErrorId' header is set only on >= 400 response code.
-      logging.warn('%s\n%s\nX-ErrorId: %s', err_prefix, msg,
-                   response.getheader('X-ErrorId'))
+      logging.warning('%s\n%s\nX-ErrorId: %s', err_prefix, msg,
+                      response.getheader('X-ErrorId'))
     else:
-      logging.warn('%s\n%s', err_prefix, msg)
+      logging.warning('%s\n%s', err_prefix, msg)
 
     try:
-      logging.warn('conn.sock.getpeername(): %s', conn.sock.getpeername())
+      logging.warning('conn.sock.getpeername(): %s', conn.sock.getpeername())
     except AttributeError:
-      logging.warn('peer name unavailable')
+      logging.warning('peer name unavailable')
     raise GOBError(response.status, response.reason)
 
   return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,

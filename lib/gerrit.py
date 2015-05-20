@@ -393,7 +393,7 @@ class GerritHelper(object):
       # Get our updated SHA1.
       local_sha1 = change.GetLocalSHA1(git_repo, remote_ref.ref)
       if local_sha1 is None:
-        logging.warn('%s is not present in %s', change, git_repo)
+        logging.warning('%s is not present in %s', change, git_repo)
         break
 
       if local_sha1 != uploaded_sha1:
@@ -412,17 +412,17 @@ class GerritHelper(object):
       except cros_build_lib.RunCommandError:
         # TODO(phobbs) this creates a lot of noise when we push individual
         # changes from one branch to another.  Maybe remove this warningo?
-        logging.warn('git push failed for %s; was a change chumped in the '
-                     'middle of the CQ run?',
-                     change, exc_info=True)
+        logging.warning('git push failed for %s; was a change chumped in the '
+                        'middle of the CQ run?',
+                        change, exc_info=True)
 
       # Rebase the branch and try again.
       try:
         git.SyncPushBranch(git_repo, remote_ref.remote, remote_ref.ref)
       except cros_build_lib.RunCommandError:
-        logging.warn('git rebase failed for %s; was a change chumped in the '
-                     'middle of the CQ run?',
-                     change, exc_info=True)
+        logging.warning('git rebase failed for %s; was a change chumped in the '
+                        'middle of the CQ run?',
+                        change, exc_info=True)
         break
 
     return False

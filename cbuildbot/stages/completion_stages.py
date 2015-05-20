@@ -627,8 +627,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     for stage in self._CRITICAL_STAGES:
       missing_configs = all_slaves - configs_per_stage[stage]
       if missing_configs:
-        logging.warn('Config(s) %s did not complete critical stage %s.',
-                     ' '.join(missing_configs), stage)
+        logging.warning('Config(s) %s did not complete critical stage %s.',
+                        ' '.join(missing_configs), stage)
         should_submit = False
 
     return should_submit
@@ -661,8 +661,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
           changes, messages, changes_by_config, failing, inflight, no_stat,
           reason=constants.STRATEGY_CQ_PARTIAL)
     else:
-      logging.warn('Not doing any partial submission, due to critical stage '
-                   'failure(s).')
+      logging.warning('Not doing any partial submission, due to critical stage '
+                      'failure(s).')
       title = 'CQ encountered a critical failure.'
       msg = ('CQ encountered a critical failure, and hence skipped '
              'board-aware submission. See %s' % self.ConstructDashboardURL())

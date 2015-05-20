@@ -168,18 +168,18 @@ def BuildRootGitCleanup(buildroot):
       except cros_build_lib.RunCommandError as e:
         result = e.result
         cros_build_lib.PrintBuildbotStepWarnings()
-        logging.warn('\n%s', result.error)
+        logging.warning('\n%s', result.error)
 
         # If there's no repository corruption, just delete the index.
         corrupted = git.IsGitRepositoryCorrupted(cwd)
         lock.write_lock()
-        logging.warn('Deleting %s because %s failed', cwd, result.cmd)
+        logging.warning('Deleting %s because %s failed', cwd, result.cmd)
         osutils.RmDir(cwd, ignore_missing=True)
         if corrupted:
           # Looks like the object dir is corrupted. Delete the whole repository.
           deleted_objdirs.set()
           for store in (repo_git_store, repo_obj_store):
-            logging.warn('Deleting %s as well', store)
+            logging.warning('Deleting %s as well', store)
             osutils.RmDir(store, ignore_missing=True)
 
       # Delete all branches created by cbuildbot.

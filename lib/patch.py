@@ -1843,7 +1843,7 @@ def FooterForApproval(approval, footers):
 
   # If the tag is unknown, don't return anything at all.
   if approval['type'] not in FOOTER_TAGS_BY_APPROVAL_TYPE:
-    logging.warn('unknown gerrit type %s (%r)', approval['type'], approval)
+    logging.warning('unknown gerrit type %s (%r)', approval['type'], approval)
     return
 
   # We don't care about certain gerrit flags as they aren't approval related.

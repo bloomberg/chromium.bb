@@ -124,8 +124,8 @@ def ParseArgs(argv):
       opts.port = rc[opts.name].get('port', client.DEFAULT_PORT)
     if not opts.board and 'board' in rc[opts.name]:
       opts.board = rc[opts.name]['board']
-      logging.warn('Inferring board %s from %s; make sure this is correct!',
-                   opts.board, opts.servod_rcfile)
+      logging.warning('Inferring board %s from %s; make sure this is correct!',
+                      opts.board, opts.servod_rcfile)
 
   if not opts.servod_server:
     opts.servod_server = client.DEFAULT_HOST
@@ -153,8 +153,8 @@ def FindSymbols(firmware_dir, board, use):
     path = os.path.join(firmware_dir, basename)
 
   if os.path.exists(path):
-    logging.warn('Auto-detected symbol file at %s... make sure that this '
-                 'matches the image on your DUT!', path)
+    logging.warning('Auto-detected symbol file at %s... make sure that this '
+                    'matches the image on your DUT!', path)
     return path
 
   raise ValueError('Could not find %s symbol file!' % basename)

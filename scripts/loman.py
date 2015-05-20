@@ -187,7 +187,7 @@ def main(argv):
       _UpgradeMinilayout(options)
     return 0
   elif upgrade_required:
-    logging.warn(
+    logging.warning(
         "Your repository checkout is using the old minilayout.xml workflow; "
         "auto-upgrading it.")
     cros_build_lib.RunCommand(

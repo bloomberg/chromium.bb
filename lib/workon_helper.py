@@ -360,7 +360,7 @@ class WorkonHelper(object):
       return self._GetCanonicalAtom(autocompleted_package)
 
     if not _IsWorkonEbuild(True, ebuild_path):
-      logging.warn(
+      logging.warning(
           '"%s" is a -9999 ebuild, but does not inherit from cros-workon?',
           ebuild_path)
       return None
@@ -584,7 +584,7 @@ class WorkonHelper(object):
     stopped_atoms = []
     for atom in atoms:
       if not atom in current_atoms:
-        logging.warn('Not working on %s', atom)
+        logging.warning('Not working on %s', atom)
         continue
 
       current_atoms.discard(atom)

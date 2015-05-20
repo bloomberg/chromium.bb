@@ -145,7 +145,7 @@ def IsGitRepositoryCorrupted(cwd):
     RunGit(cwd, cmd)
     return False
   except cros_build_lib.RunCommandError as ex:
-    logging.warn(str(ex))
+    logging.warning(str(ex))
     return True
 
 

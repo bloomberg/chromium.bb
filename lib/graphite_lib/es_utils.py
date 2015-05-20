@@ -392,7 +392,7 @@ class ESMetadata(ESMetadataRO):
       sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
       sock.sendto(message, (self.host, self.udp_port))
     except socket.error as e:
-      logging.warn(e)
+      logging.warning(e)
 
 
   def post(self, type_str, metadata, log_time_recorded=True, **kwargs):

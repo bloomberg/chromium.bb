@@ -1166,11 +1166,11 @@ class _PaygenBuild(object):
       if payload.src_image is None:
         # Create a full update test from NMO, if we are newer.
         if not self._previous_version:
-          logging.warn('No previous build, not testing full update %s from '
-                       'NMO', payload)
+          logging.warning('No previous build, not testing full update %s from '
+                          'NMO', payload)
         elif gspaths.VersionGreater(
             self._previous_version, payload.tgt_image.version):
-          logging.warn(
+          logging.warning(
               'NMO (%s) is newer than target (%s), skipping NMO full '
               'update test.', self._previous_version, payload)
         else:

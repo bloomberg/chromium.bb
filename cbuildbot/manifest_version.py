@@ -681,7 +681,7 @@ class BuildSpecsManager(object):
       """Helper function that iterates through current statuses."""
       status_dict = self.GetSlaveStatusesFromCIDB(master_build_id)
       for builder in set(builders_array) - set(status_dict.keys()):
-        logging.warn('No status found for build config %s.', builder)
+        logging.warning('No status found for build config %s.', builder)
 
       latest_completed = set(
           [b for b, s in status_dict.iteritems() if s in
