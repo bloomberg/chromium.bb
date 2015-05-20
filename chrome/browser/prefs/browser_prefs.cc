@@ -153,6 +153,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/webui/foreign_session_handler.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -510,6 +511,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(USE_ASH)
   ash::RegisterChromeLauncherUserPrefs(registry);
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
 #endif
 }
 

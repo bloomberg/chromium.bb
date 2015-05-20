@@ -158,7 +158,16 @@ OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
 }
 
 void ForeignSessionHandler::RegisterMessages() {
-  Init();
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+                 content::Source<ProfileSyncService>(service));
+  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
+                 content::Source<Profile>(profile));
+
   web_ui()->RegisterMessageCallback("deleteForeignSession",
       base::Bind(&ForeignSessionHandler::HandleDeleteForeignSession,
                  base::Unretained(this)));
@@ -173,24 +182,10 @@ void ForeignSessionHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ForeignSessionHandler::Init() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 content::Source<ProfileSyncService>(service));
-  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
-                 content::Source<Profile>(profile));
-}
-
 void ForeignSessionHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  base::ListValue list_value;
-
   switch (type) {
     case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
       // Tab sync is disabled, so clean up data about collapsed sessions.
@@ -199,13 +194,12 @@ void ForeignSessionHandler::Observe(
       // Fall through.
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:
     case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
-      HandleGetForeignSessions(&list_value);
+      HandleGetForeignSessions(nullptr);
       break;
     default:
       NOTREACHED();
   }
 }
-
 
 bool ForeignSessionHandler::IsTabSyncEnabled() {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -225,7 +219,7 @@ base::string16 ForeignSessionHandler::FormatSessionTime(
 }
 
 void ForeignSessionHandler::HandleGetForeignSessions(
-    const base::ListValue* args) {
+    const base::ListValue* /*args*/) {
   OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
   std::vector<const SyncedSession*> sessions;
 

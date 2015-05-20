@@ -58,9 +58,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   static OpenTabsUIDelegate* GetOpenTabsUIDelegate(content::WebUI* web_ui);
 
  private:
-  // Used to register ForeignSessionHandler for notifications.
-  void Init();
-
   // Determines how ForeignSessionHandler will interact with the new tab page.
   void Observe(int type,
                const content::NotificationSource& source,
