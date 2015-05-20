@@ -170,6 +170,9 @@
         "test": "accessibility_unittests"
       },
       {
+        "test": "angle_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -342,6 +345,9 @@
         "test": "accessibility_unittests"
       },
       {
+        "test": "angle_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -476,6 +482,9 @@
     "gtest_tests": [
       {
         "test": "accessibility_unittests"
+      },
+      {
+        "test": "angle_unittests"
       },
       {
         "test": "app_list_unittests"
@@ -643,6 +652,9 @@
         "test": "accessibility_unittests"
       },
       {
+        "test": "angle_unittests"
+      },
+      {
         "test": "app_list_unittests"
       },
       {
@@ -805,6 +817,9 @@
   "CrWinAsan tester": {
     "gtest_tests": [
       {
+        "test": "angle_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -920,6 +935,9 @@
   "CrWinAsan(dll) tester": {
     "gtest_tests": [
       {
+        "test": "angle_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1034,6 +1052,9 @@
   },
   "CrWinClang tester": {
     "gtest_tests": [
+      {
+        "test": "angle_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -1163,6 +1184,9 @@
   "CrWinClang(dbg) tester": {
     "gtest_tests": [
       {
+        "test": "angle_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1290,6 +1314,9 @@
   },
   "CrWinClang(shared) tester": {
     "gtest_tests": [
+      {
+        "test": "angle_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -1419,6 +1446,9 @@
   "CrWinClang64 tester": {
     "gtest_tests": [
       {
+        "test": "angle_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1546,6 +1576,9 @@
   },
   "CrWinClang64(dbg) tester": {
     "gtest_tests": [
+      {
+        "test": "angle_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -1675,6 +1708,9 @@
   "CrWinClang64(dll) tester": {
     "gtest_tests": [
       {
+        "test": "angle_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1802,6 +1838,9 @@
   },
   "CrWinClangLLD tester": {
     "gtest_tests": [
+      {
+        "test": "angle_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
