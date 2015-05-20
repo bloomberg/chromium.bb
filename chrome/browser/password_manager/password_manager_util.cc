@@ -4,12 +4,12 @@
 
 #include "chrome/browser/password_manager/password_manager_util.h"
 
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "components/sync_driver/sync_service.h"
 
 namespace password_manager_util {
 
 password_manager::PasswordSyncState GetPasswordSyncState(
-    const ProfileSyncService* sync_service) {
+    const sync_driver::SyncService* sync_service) {
   if (sync_service && sync_service->HasSyncSetupCompleted() &&
       sync_service->SyncActive() &&
       sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS)) {

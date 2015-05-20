@@ -310,7 +310,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION },
     { "passwordManagerEnabled",
       password_bubble_experiment::IsSmartLockBrandingEnabled(
-          Profile::FromWebUI(web_ui())) ?
+          ProfileSyncServiceFactory::GetForProfile(
+              Profile::FromWebUI(web_ui()))) ?
       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE :
       IDS_OPTIONS_PASSWORD_MANAGER_ENABLE },
     { "passwordsAndAutofillGroupName",

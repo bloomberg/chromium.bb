@@ -7,6 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -41,10 +43,12 @@ void SavePasswordInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
   SavePasswordInfoBarDelegate* infobar_delegate =
       new SavePasswordInfoBarDelegate(
           form_to_save.Pass(), uma_histogram_suffix, source_type,
-          password_bubble_experiment::IsSmartLockBrandingEnabled(profile));
+          password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service));
 #if defined(OS_ANDROID)
   // For Android in case of smart lock we need different appearance of infobar.
   scoped_ptr<infobars::InfoBar> infobar =

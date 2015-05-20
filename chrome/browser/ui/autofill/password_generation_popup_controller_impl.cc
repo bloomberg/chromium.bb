@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_observer.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_view.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
@@ -91,8 +93,10 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
 
   int link_id = IDS_MANAGE_PASSWORDS_LINK;
   int help_text_id = IDS_PASSWORD_GENERATION_PROMPT;
-  if (password_bubble_experiment::IsSmartLockBrandingEnabled(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service)) {
     help_text_id = IDS_PASSWORD_GENERATION_SMART_LOCK_PROMPT;
     link_id = IDS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS;
   }

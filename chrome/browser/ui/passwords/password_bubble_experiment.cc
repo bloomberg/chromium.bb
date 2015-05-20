@@ -5,9 +5,8 @@
 #include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 
 namespace password_bubble_experiment {
 namespace {
@@ -23,9 +22,7 @@ void RecordBubbleClosed(
   // TODO(vasilii): store the statistics.
 }
 
-bool IsSmartLockBrandingEnabled(Profile* profile) {
-  const ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service) {
   return password_manager_util::GetPasswordSyncState(sync_service) ==
              password_manager::SYNCING_NORMAL_ENCRYPTION &&
          base::FieldTrialList::FindFullName(kBrandingExperimentName) ==

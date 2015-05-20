@@ -13,6 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #if defined(OS_WIN) && defined(USE_ASH)
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
@@ -76,8 +78,10 @@ void PasswordManagerHandler::GetLocalizedValues(
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(GetProfile());
   int title_id =
-      password_bubble_experiment::IsSmartLockBrandingEnabled(GetProfile()) ?
+      password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service) ?
       IDS_PASSWORDS_EXCEPTIONS_SMART_LOCK_WINDOW_TITLE :
       IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE;
   RegisterTitle(localized_strings, "passwordsPage", title_id);

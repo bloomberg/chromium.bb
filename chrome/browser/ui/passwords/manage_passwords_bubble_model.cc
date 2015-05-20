@@ -9,6 +9,8 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -72,6 +74,14 @@ ScopedVector<const autofill::PasswordForm> DeepCopyForms(
   return result.Pass();
 }
 
+// A wrapper around password_bubble_experiment::IsSmartLockBrandingEnabled
+// extracting the sync_service from the profile.
+bool IsSmartLockBrandingEnabled(Profile* profile) {
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  return password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
+}
+
 }  // namespace
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
@@ -121,7 +131,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     base::string16 save_confirmation_link =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
     int confirmation_text_id = IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT;
-    if (password_bubble_experiment::IsSmartLockBrandingEnabled(GetProfile())) {
+    if (IsSmartLockBrandingEnabled(GetProfile())) {
       std::string management_hostname =
           GURL(chrome::kPasswordManagerAccountDashboardURL).host();
       save_confirmation_link = base::UTF8ToUTF16(management_hostname);
@@ -249,7 +259,7 @@ void ManagePasswordsBubbleModel::OnOKClicked() {
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_MANAGE;
-  if (password_bubble_experiment::IsSmartLockBrandingEnabled(GetProfile())) {
+  if (IsSmartLockBrandingEnabled(GetProfile())) {
     ManagePasswordsUIController::FromWebContents(web_contents())
         ->NavigateToExternalPasswordManager();
   } else {
@@ -328,8 +338,7 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   if (never_save_passwords_) {
     title_ = l10n_util::GetStringUTF16(
         IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE);
-  } else if (password_bubble_experiment::IsSmartLockBrandingEnabled(
-      GetProfile())) {
+  } else if (IsSmartLockBrandingEnabled(GetProfile())) {
     // "Google Smart Lock" should be a hyperlink.
     base::string16 brand_link =
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);

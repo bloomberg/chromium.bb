@@ -8,7 +8,11 @@
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
-class Profile;
+class PrefService;
+
+namespace sync_driver {
+class SyncService;
+}
 
 namespace password_bubble_experiment {
 
@@ -20,7 +24,7 @@ void RecordBubbleClosed(
 
 // Returns true if the password manager should be referred to as Smart Lock.
 // This is only true for signed-in users.
-bool IsSmartLockBrandingEnabled(Profile* profile);
+bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service);
 
 }  // namespace password_bubble_experiment
 
