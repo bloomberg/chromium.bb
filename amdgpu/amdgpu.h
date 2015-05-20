@@ -342,6 +342,9 @@ struct amdgpu_cs_ib_info {
 	 *   - Could be 0
 	 */
 	uint32_t       size;
+
+	/** Offset in the IB buffer object (in unit of dwords) */
+	uint32_t	offset_dw;
 };
 
 /**

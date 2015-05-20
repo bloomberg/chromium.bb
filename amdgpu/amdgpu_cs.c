@@ -316,8 +316,17 @@ static void amdgpu_cs_add_pending(amdgpu_context_handle context,
 				  uint32_t ring)
 {
 	struct list_head *head;
+	struct amdgpu_ib *next;
+	struct amdgpu_ib *s;
+
 	pthread_mutex_lock(&context->pendings_mutex);
 	head = &context->pendings[ip][ip_instance][ring];
+	LIST_FOR_EACH_ENTRY_SAFE(next, s, head, list_node)
+		if (next == ib) {
+			pthread_mutex_unlock(&context->pendings_mutex);
+			return;
+		}
+
 	LIST_ADDTAIL(&ib->list_node, head);
 	pthread_mutex_unlock(&context->pendings_mutex);
 	return;
@@ -694,7 +703,8 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		ib = &ibs_request->ibs[i];
 
 		chunk_data[i].ib_data.handle = ib->ib_handle->buf_handle->handle;
-		chunk_data[i].ib_data.va_start = ib->ib_handle->virtual_mc_base_address;
+		chunk_data[i].ib_data.va_start = ib->ib_handle->virtual_mc_base_address
+						+ ib->offset_dw * 4;
 		chunk_data[i].ib_data.ib_bytes = ib->size * 4;
 		chunk_data[i].ib_data.ip_type = ibs_request->ip_type;
 		chunk_data[i].ib_data.ip_instance = ibs_request->ip_instance;
