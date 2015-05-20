@@ -167,11 +167,14 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCall
         propertyNamesLength = propertyNames.size();
     }
 
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
     v8::Local<v8::Array> properties = v8::Array::New(info.GetIsolate(), propertyNamesLength);
     for (unsigned i = 0; i < propertyNamesLength; ++i) {
         String key = propertyNames.at(i);
         ASSERT(!key.isNull());
-        properties->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), key));
+        v8::Local<v8::Integer> index = v8::Integer::New(info.GetIsolate(), i);
+        if (!v8CallBoolean(properties->Set(context, index, v8String(info.GetIsolate(), key))))
+            return;
     }
 
     v8SetReturnValue(info, properties);
