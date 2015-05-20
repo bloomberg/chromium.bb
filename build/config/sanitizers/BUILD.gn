@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Contains the dependencies needed for asan to link into executables and
+# Contains the dependencies needed for sanitizers to link into executables and
 # shared_libraries. Unconditionally depend upon this target as it is empty if
-# |is_asan| is false.
+# |is_asan|, |is_lsan|, |is_tsan| and |is_msan| are false.
 group("deps") {
-  if (is_asan) {
+  if (is_asan || is_lsan || is_tsan || is_msan) {
     public_configs = [ ":sanitizer_options_link_helper" ]
     deps = [
       ":options_sources",
@@ -15,10 +15,19 @@ group("deps") {
 }
 
 config("sanitizer_options_link_helper") {
-  ldflags = [
-    "-Wl,-u_sanitizer_options_link_helper",
-    "-fsanitize=address",
-  ]
+  ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
+  if (is_asan) {
+    ldflags += [ "-fsanitize=address" ]
+  }
+  if (is_lsan) {
+    ldflags += [ "-fsanitize=leak" ]
+  }
+  if (is_tsan) {
+    ldflags += [ "-fsanitize=thread" ]
+  }
+  if (is_msan) {
+    ldflags += [ "-fsanitize=memory" ]
+  }
 }
 
 source_set("options_sources") {
@@ -32,6 +41,10 @@ source_set("options_sources") {
 
   if (is_asan) {
     sources += [ "//build/sanitizers/asan_suppressions.cc" ]
+  }
+
+  if (is_lsan) {
+    sources += [ "//build/sanitizers/lsan_suppressions.cc" ]
   }
 
   if (is_tsan) {

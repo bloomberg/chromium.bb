@@ -4,7 +4,7 @@
 
 # TODO(GYP): Make tcmalloc work on win.
 if (is_android || current_cpu == "mipsel" || is_mac || is_ios || is_asan ||
-    is_win) {
+    is_lsan || is_tsan || is_msan || is_win) {
   _default_allocator = "none"
 } else {
   _default_allocator = "tcmalloc"

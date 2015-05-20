@@ -56,6 +56,11 @@ declare_args() {
     # The patch is preapplied to the internal toolchain and hence all bots.
     msvs_xtree_patched = false
   }
+
+  # Track where uninitialized memory originates from. From fastest to slowest:
+  # 0 - no tracking, 1 - track only the initial allocation site, 2 - track the
+  # chain of stores leading from allocation site to use site.
+  msan_track_origins = 2
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -139,11 +144,38 @@ config("compiler") {
       ]
     }
     if (is_asan) {
-      cflags += [ "-fsanitize=address" ]
+      asan_blacklist_path =
+          rebase_path("//tools/memory/asan/blacklist.txt", root_build_dir)
+      cflags += [
+        "-fsanitize=address",
+        "-fsanitize-blacklist=$asan_blacklist_path",
+      ]
       if (is_mac) {
         cflags += [ "-mllvm -asan-globals=0" ]  # http://crbug.com/352073
         # TODO(GYP): deal with mac_bundles.
       }
+    }
+    if (is_lsan) {
+      cflags += [ "-fsanitize=leak" ]
+    }
+    if (is_tsan) {
+      tsan_blacklist_path =
+          rebase_path("//tools/memory/tsan_v2/ignores.txt", root_build_dir)
+      cflags += [
+        "-fsanitize=thread",
+        "-fsanitize-blacklist=$tsan_blacklist_path",
+      ]
+    }
+    if (is_msan) {
+      msan_blacklist_path =
+          rebase_path("//tools/msan/blacklist.txt", root_build_dir)
+      cflags += [
+        "-fsanitize=memory",
+        "-fsanitize-memory-track-origins=$msan_track_origins",
+        "-fsanitize-blacklist=$msan_blacklist_path",
+      ]
+
+      # TODO(GYP): Support instrumented libraries and custom libc++.
     }
   }
 
