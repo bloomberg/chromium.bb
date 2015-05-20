@@ -33,8 +33,7 @@ class KeyIdlePowerPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     # The page interaction is simply waiting in an idle state.
-    with action_runner.CreateInteraction('IdleWaiting'):
-      action_runner.Wait(20)
+    action_runner.Wait(20)
 
 
 class KeyIdlePowerCasesPageSet(page_set_module.PageSet):

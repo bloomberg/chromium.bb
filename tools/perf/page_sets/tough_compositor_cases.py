@@ -35,8 +35,7 @@ class ToughCompositorWaitPage(ToughCompositorPage):
 
   def RunPageInteractions(self, action_runner):
     # We scroll back and forth a few times to reduce noise in the tests.
-    with action_runner.CreateInteraction('Animation'):
-      action_runner.Wait(8)
+    action_runner.Wait(8)
 
 
 class ToughCompositorCasesPageSet(page_set_module.PageSet):
