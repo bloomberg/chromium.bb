@@ -19,8 +19,10 @@ namespace media {
 typedef MojoCdmPromise<> SimpleMojoCdmPromise;
 typedef MojoCdmPromise<std::string> NewSessionMojoCdmPromise;
 
-MojoCdmService::MojoCdmService(const mojo::String& key_system)
-    : weak_factory_(this) {
+MojoCdmService::MojoCdmService(
+    const mojo::String& key_system,
+    mojo::InterfaceRequest<mojo::ContentDecryptionModule> request)
+    : binding_(this, request.Pass()), weak_factory_(this) {
   base::WeakPtr<MojoCdmService> weak_this = weak_factory_.GetWeakPtr();
 
   if (CanUseAesDecryptor(key_system)) {

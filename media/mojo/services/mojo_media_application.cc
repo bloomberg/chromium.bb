@@ -35,7 +35,8 @@ class MojoMediaApplication
   // mojo::InterfaceFactory<mojo::MediaRenderer> implementation.
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::MediaRenderer> request) override {
-    mojo::BindToRequest(new MojoRendererService(), &request);
+    // The created object is owned by the pipe.
+    new MojoRendererService(request.Pass());
   }
 };
 

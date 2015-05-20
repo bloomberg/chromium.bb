@@ -1521,8 +1521,8 @@ void RenderFrameHostImpl::OnHidePopup() {
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
 static void CreateMediaRendererService(
     mojo::InterfaceRequest<mojo::MediaRenderer> request) {
-  media::MojoRendererService* service = new media::MojoRendererService();
-  mojo::BindToRequest(service, &request);
+  // The created object is owned by the pipe.
+  new media::MojoRendererService(request.Pass());
 }
 #endif
 

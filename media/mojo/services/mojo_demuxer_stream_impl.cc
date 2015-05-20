@@ -13,8 +13,10 @@
 
 namespace media {
 
-MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(media::DemuxerStream* stream)
-    : stream_(stream), weak_factory_(this) {
+MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(
+    media::DemuxerStream* stream,
+    mojo::InterfaceRequest<mojo::DemuxerStream> request)
+    : binding_(this, request.Pass()), stream_(stream), weak_factory_(this) {
 }
 
 MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {

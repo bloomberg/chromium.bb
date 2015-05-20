@@ -16,7 +16,7 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 class ApplicationConnection;
@@ -32,9 +32,10 @@ class VideoRendererSink;
 // A mojo::MediaRenderer implementation that uses media::AudioRenderer to
 // decode and render audio to a sink obtained from the ApplicationConnection.
 class MEDIA_EXPORT MojoRendererService
-    : NON_EXPORTED_BASE(public mojo::InterfaceImpl<mojo::MediaRenderer>) {
+    : NON_EXPORTED_BASE(mojo::MediaRenderer) {
  public:
-  MojoRendererService();
+  explicit MojoRendererService(
+      mojo::InterfaceRequest<mojo::MediaRenderer> request);
   ~MojoRendererService() override;
 
   // mojo::MediaRenderer implementation.
@@ -86,6 +87,8 @@ class MEDIA_EXPORT MojoRendererService
 
   // Callback executed once Flush() completes.
   void OnFlushCompleted(const mojo::Closure& callback);
+
+  mojo::StrongBinding<mojo::MediaRenderer> binding_;
 
   State state_;
 

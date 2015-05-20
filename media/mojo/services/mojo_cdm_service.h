@@ -11,15 +11,15 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
 // A mojo::ContentDecryptionModule implementation backed by a media::MediaKeys.
-class MojoCdmService
-    : public mojo::InterfaceImpl<mojo::ContentDecryptionModule> {
+class MojoCdmService : public mojo::ContentDecryptionModule {
  public:
-  MojoCdmService(const mojo::String& key_system);
+  MojoCdmService(const mojo::String& key_system,
+                 mojo::InterfaceRequest<mojo::ContentDecryptionModule> request);
   ~MojoCdmService() final;
 
   // mojo::ContentDecryptionModule implementation.
@@ -66,6 +66,8 @@ class MojoCdmService
                             MediaKeys::Exception exception,
                             uint32_t system_code,
                             const std::string& error_message);
+
+  mojo::StrongBinding<mojo::ContentDecryptionModule> binding_;
 
   scoped_ptr<MediaKeys> cdm_;
 

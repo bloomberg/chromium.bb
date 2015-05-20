@@ -26,8 +26,10 @@ namespace media {
 // Time interval to update media time.
 const int kTimeUpdateIntervalMs = 50;
 
-MojoRendererService::MojoRendererService()
-    : state_(STATE_UNINITIALIZED),
+MojoRendererService::MojoRendererService(
+    mojo::InterfaceRequest<mojo::MediaRenderer> request)
+    : binding_(this, request.Pass()),
+      state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();

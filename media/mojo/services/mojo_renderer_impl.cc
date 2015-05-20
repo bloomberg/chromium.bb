@@ -61,11 +61,11 @@ void MojoRendererImpl::Initialize(
 
   mojo::DemuxerStreamPtr audio_stream;
   if (audio)
-    mojo::BindToProxy(new MojoDemuxerStreamImpl(audio), &audio_stream);
+    new MojoDemuxerStreamImpl(audio, GetProxy(&audio_stream));
 
   mojo::DemuxerStreamPtr video_stream;
   if (video)
-    mojo::BindToProxy(new MojoDemuxerStreamImpl(video), &video_stream);
+    new MojoDemuxerStreamImpl(video, GetProxy(&video_stream));
 
   mojo::MediaRendererClientPtr client_ptr;
   binding_.Bind(GetProxy(&client_ptr));
