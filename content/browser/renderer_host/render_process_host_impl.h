@@ -43,7 +43,6 @@ class ChannelMojoHost;
 
 namespace content {
 class AudioRendererHost;
-class BluetoothDispatcherHost;
 class BrowserCdmManager;
 class BrowserDemuxerAndroid;
 class GpuMessageFilter;
@@ -271,8 +270,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override;
 
-  BluetoothDispatcherHost* GetBluetoothDispatcherHost();
-
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
@@ -453,8 +450,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   PowerMonitorMessageBroadcaster power_monitor_broadcaster_;
 
   scoped_refptr<AudioRendererHost> audio_renderer_host_;
-
-  scoped_refptr<BluetoothDispatcherHost> bluetooth_dispatcher_host_;
 
 #if defined(OS_ANDROID)
   scoped_refptr<BrowserDemuxerAndroid> browser_demuxer_android_;
