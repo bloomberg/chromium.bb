@@ -200,9 +200,9 @@ class Yandex(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://mail.yandex.com")
-    self.FillUsernameInto("#b-mail-domik-username11")
-    self.FillPasswordInto("#b-mail-domik-password11")
-    self.Click(".b-mail-button__button")
+    self.FillUsernameInto("[name='login']")
+    self.FillPasswordInto("[name='passwd']")
+    self.Submit("[name='passwd']")
 
 
 # Fails due to test framework issue(?).
