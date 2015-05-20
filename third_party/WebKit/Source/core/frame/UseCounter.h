@@ -324,8 +324,6 @@ public:
         PrefixedIDBTransactionConstructor = 370,
         NotificationPermission = 371,
         RangeDetach = 372,
-        HTMLTableElementVspace = 374,
-        HTMLTableElementHspace = 375,
         PrefixedTouchRadiusX = 378,
         PrefixedTouchRadiusY = 379,
         PrefixedTouchRotationAngle = 380,

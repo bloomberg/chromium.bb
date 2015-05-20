@@ -35,7 +35,6 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeListsNodeData.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableRowElement.h"
@@ -309,10 +308,6 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
     } else if (name == cellspacingAttr) {
         if (!value.isEmpty())
             addHTMLLengthToStyle(style, CSSPropertyBorderSpacing, value);
-    } else if (name == vspaceAttr) {
-        UseCounter::countDeprecation(document(), UseCounter::HTMLTableElementVspace);
-    } else if (name == hspaceAttr) {
-        UseCounter::countDeprecation(document(), UseCounter::HTMLTableElementHspace);
     } else if (name == alignAttr) {
         if (!value.isEmpty()) {
             if (equalIgnoringCase(value, "center")) {

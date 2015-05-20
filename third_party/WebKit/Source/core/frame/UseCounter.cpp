@@ -803,12 +803,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case SyncXHRWithCredentials:
         return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
 
-    case HTMLTableElementVspace:
-        return "The 'vspace' attribute on table is deprecated. Please use CSS margin-top and margin-bottom property instead.";
-
-    case HTMLTableElementHspace:
-        return "The 'hspace' attribute on table is deprecated. Please use CSS margin-left and margin-right property instead.";
-
     case PictureSourceSrc:
         return "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.";
 
