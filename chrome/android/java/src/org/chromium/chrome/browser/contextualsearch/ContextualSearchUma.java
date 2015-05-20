@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ContextualSearchUma {
     // An invalid value for the number of taps remaining for the promo.  Must be negative.
-    public static final int PROMO_TAPS_REMAINING_INVALID = -1;
+    private static final int PROMO_TAPS_REMAINING_INVALID = -1;
 
     // Constants to use for the original selection gesture
     private static final boolean LONG_PRESS = false;
@@ -162,6 +162,16 @@ public class ContextualSearchUma {
     private static final int PREFETCHED_FULLY_LOADED = 1;
     private static final int NOT_PREFETCHED = 2;
     private static final int PREFETCH_BOUNDARY = 3;
+
+    // Constants used to log UMA "enum" histograms for HTTP / HTTPS.
+    private static final int PROTOCOL_IS_HTTP = 0;
+    private static final int PROTOCOL_NOT_HTTP = 1;
+    private static final int PROTOCOL_BOUNDARY = 2;
+
+    // Constants used to log UMA "enum" histograms for single / multi-word.
+    private static final int RESOLVED_SINGLE_WORD = 0;
+    private static final int RESOLVED_MULTI_WORD = 1;
+    private static final int RESOLVED_BOUNDARY = 2;
 
 
     /**
@@ -410,21 +420,21 @@ public class ContextualSearchUma {
 
     /**
      * Logs the state of the Contextual Search preference. This function should be called if the
-     * Contextual Search feature is enabled, and will track the different preference settings
+     * Contextual Search feature is active, and will track the different preference settings
      * (disabled, enabled or uninitialized). Calling more than once is fine.
-     * This is deprecated; pass the number of taps remaining to logPreferenceState.
      */
-    @Deprecated
     public static void logPreferenceState() {
-        logPreferenceState(PROMO_TAPS_REMAINING_INVALID);
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPreferenceState",
+                getPreferenceValue(), PREFERENCE_HISTOGRAM_BOUNDARY);
     }
 
     /**
      * Logs the state of the Contextual Search preference. This function should be called if the
-     * Contextual Search feature is enabled, and will track the different preference settings
+     * Contextual Search feature is active, and will track the different preference settings
      * (disabled, enabled or uninitialized). Calling more than once is fine.
      * @param promoTapsRemaining The number of taps remaining, or -1 if not applicable.
      */
+    @Deprecated
     public static void logPreferenceState(int promoTapsRemaining) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPreferenceState",
                 getPreferenceValue(), PREFERENCE_HISTOGRAM_BOUNDARY);
@@ -435,6 +445,90 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs the given number of promo taps remaining.  Should be called only for users that
+     * are still undecided.
+     * @param promoTapsRemaining The number of taps remaining (should not be negative).
+     */
+    public static void logPromoTapsRemaining(int promoTapsRemaining) {
+        if (promoTapsRemaining >= 0) {
+            RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsRemaining",
+                    promoTapsRemaining);
+        }
+    }
+
+    /**
+     * Logs the historic number of times that a Tap gesture triggered the peeking promo
+     * for users that have never opened the panel.  This should be called periodically for
+     * undecided users only.
+     * @param promoTaps The historic number of taps that have caused the peeking bar for the promo,
+     *        for users that have never opened the panel.
+     */
+    public static void logPromoTapsForNeverOpened(int promoTaps) {
+        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsForNeverOpened",
+                promoTaps);
+    }
+
+    /**
+     * Logs the historic number of times that a Tap gesture triggered the peeking promo before
+     * the user ever opened the panel.  This should be called periodically for all users.
+     * @param promoTaps The historic number of taps that have caused the peeking bar for the promo
+     *        before the first open of the panel, for all users that have ever opened the panel.
+     */
+    public static void logPromoTapsBeforeFirstOpen(int promoTaps) {
+        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromosTapsBeforeFirstOpen",
+                promoTaps);
+    }
+
+    /**
+     * Records the total count of times the promo panel has *ever* been opened.  This should only
+     * be called when the user is still undecided.
+     * @param count The total historic count of times the panel has ever been opened for the
+     *        current user.
+     */
+    public static void logPromoOpenCount(int count) {
+        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoOpenCount", count);
+    }
+
+    /**
+     * Logs the number of taps that have been counted since the user last opened the panel, for
+     * undecided users.
+     * @param tapsSinceOpen The number of taps to log.
+     */
+    public static void logTapsSinceOpenForUndecided(int tapsSinceOpen) {
+        RecordHistogram.recordCountHistogram("Search.ContextualSearchTapsSinceOpenUndecided",
+                tapsSinceOpen);
+    }
+
+    /**
+     * Logs the number of taps that have been counted since the user last opened the panel, for
+     * decided users.
+     * @param tapsSinceOpen The number of taps to log.
+     */
+    public static void logTapsSinceOpenForDecided(int tapsSinceOpen) {
+        RecordHistogram.recordCountHistogram("Search.ContextualSearchTapsSinceOpenDecided",
+                tapsSinceOpen);
+    }
+
+    /**
+     * Logs whether the Search Term was single or multiword.
+     * @param isSingleWord Whether the resolved search term is a single word or not.
+     */
+    public static void logSearchTermResolvedWords(boolean isSingleWord) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchResolvedTermWords",
+                isSingleWord ? RESOLVED_SINGLE_WORD : RESOLVED_MULTI_WORD, RESOLVED_BOUNDARY);
+    }
+
+    /**
+     * Logs whether the base page was using the HTTP protocol or not.
+     * @param isHttpBasePage Whether the base page was using the HTTP protocol or not (should
+     *        be false for HTTPS or other URIs).
+     */
+    public static void logBasePageProtocol(boolean isHttpBasePage) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBasePageProtocol",
+                isHttpBasePage ? PROTOCOL_IS_HTTP : PROTOCOL_NOT_HTTP, PROTOCOL_BOUNDARY);
+    }
+
+    /**
      * Logs changes to the Contextual Search preference, aside from those resulting from the first
      * run flow.
      * @param enabled Whether the preference is being enabled or disabled.
@@ -442,16 +536,6 @@ public class ContextualSearchUma {
     public static void logPreferenceChange(boolean enabled) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPreferenceStateChange",
                 enabled ? PREFERENCE_ENABLED : PREFERENCE_DISABLED, PREFERENCE_HISTOGRAM_BOUNDARY);
-    }
-
-    /**
-     * Logs the outcome of a first run flow.
-     * This is deprecated; call logPromoOutcome instead.
-     */
-    @Deprecated
-    public static void logFirstRunFlowOutcome() {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunFlowOutcome",
-                getPreferenceValue(), PREFERENCE_HISTOGRAM_BOUNDARY);
     }
 
     /**
