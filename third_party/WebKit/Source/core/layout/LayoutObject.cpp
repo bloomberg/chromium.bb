@@ -2912,15 +2912,6 @@ bool LayoutObject::willRenderImage(ImageResource*)
     return document().view()->isVisible();
 }
 
-bool LayoutObject::getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy& policy)
-{
-    if (!document().settings())
-        return false;
-
-    policy = document().settings()->imageAnimationPolicy();
-    return true;
-}
-
 int LayoutObject::caretMinOffset() const
 {
     return 0;
