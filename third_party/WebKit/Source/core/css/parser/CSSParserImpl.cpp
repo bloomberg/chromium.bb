@@ -717,8 +717,7 @@ void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSProper
         return; // Parser error
     if (usesRemUnits && m_styleSheet)
         m_styleSheet->parserSetUsesRemUnits(true);
-    bool inViewport = ruleType == StyleRule::Viewport;
-    CSSPropertyParser::parseValue(unresolvedProperty, important, &valueList, m_context, inViewport, m_parsedProperties, ruleType);
+    CSSPropertyParser::parseValue(unresolvedProperty, important, &valueList, m_context, m_parsedProperties, ruleType);
 }
 
 PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenRange range)

@@ -84,12 +84,10 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRe
 }
 
 CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList,
-    const CSSParserContext& context, bool inViewport,
-    WillBeHeapVector<CSSProperty, 256>& parsedProperties,
+    const CSSParserContext& context, WillBeHeapVector<CSSProperty, 256>& parsedProperties,
     StyleRule::Type ruleType)
     : m_valueList(valueList)
     , m_context(context)
-    , m_inViewport(inViewport)
     , m_parsedProperties(parsedProperties)
     , m_ruleType(ruleType)
     , m_inParseShorthand(0)
@@ -99,12 +97,12 @@ CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList,
 }
 
 bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important,
-    CSSParserValueList* valueList, const CSSParserContext& context, bool inViewport,
+    CSSParserValueList* valueList, const CSSParserContext& context,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties, StyleRule::Type ruleType)
 {
     int parsedPropertiesSize = parsedProperties.size();
 
-    CSSPropertyParser parser(valueList, context, inViewport, parsedProperties, ruleType);
+    CSSPropertyParser parser(valueList, context, parsedProperties, ruleType);
     bool parseSuccess = parser.parseValue(unresolvedProperty, important);
 
     // This doesn't count UA style sheets
@@ -419,7 +417,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     if (!value)
         return false;
 
-    if (inViewport()) {
+    if (m_ruleType == StyleRule::Viewport) {
         // Allow @viewport rules from UA stylesheets even if the feature is disabled.
         if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode()))
             return false;

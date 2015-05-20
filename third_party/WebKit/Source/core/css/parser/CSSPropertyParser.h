@@ -71,7 +71,7 @@ public:
     };
 
     static bool parseValue(CSSPropertyID, bool important,
-        CSSParserValueList*, const CSSParserContext&, bool inViewport,
+        CSSParserValueList*, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
     // FIXME: This should probably move to CSSParserFastPaths
@@ -81,7 +81,7 @@ public:
     static bool isSystemColor(int id);
 
 private:
-    CSSPropertyParser(CSSParserValueList*, const CSSParserContext&, bool inViewport,
+    CSSPropertyParser(CSSParserValueList*, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
     bool parseValue(CSSPropertyID, bool important);
@@ -89,7 +89,6 @@ private:
     bool inShorthand() const { return m_inParseShorthand; }
     bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
 
-    bool inViewport() const { return m_inViewport; }
     bool parseViewportProperty(CSSPropertyID propId, bool important);
     bool parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first, CSSPropertyID second, bool important);
     bool parseFontFaceDescriptor(CSSPropertyID);
@@ -366,7 +365,6 @@ private:
     // Inputs:
     CSSParserValueList* m_valueList;
     const CSSParserContext& m_context;
-    const bool m_inViewport;
 
     // Outputs:
     WillBeHeapVector<CSSProperty, 256>& m_parsedProperties;
