@@ -38,6 +38,7 @@ enum RTCSdpType {
 
 [
     GarbageCollected,
+    DependentLifetime,
     Constructor(optional RTCSessionDescriptionInit descriptionInitDict)
 ] interface RTCSessionDescription {
     attribute RTCSdpType? type;

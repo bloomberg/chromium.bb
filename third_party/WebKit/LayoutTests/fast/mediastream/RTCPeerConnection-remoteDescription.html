@@ -8,6 +8,7 @@
 description("Tests RTCPeerConnection remoteDescription.");
 
 var pc = null;
+var observation = null;
 
 function requestFailed2()
 {
@@ -38,8 +39,13 @@ function requestSucceeded1()
 {
     testPassed('requestSucceeded was called.');
 
-    sessionDescription = new RTCSessionDescription({type:"offer", sdp:"local"});
-    shouldNotThrow('pc.setRemoteDescription(sessionDescription, requestSucceeded2, requestFailed2);');
+    shouldBeTrue('pc.remoteDescription === sessionDescription');
+    observation = internals.observeGC(pc.remoteDescription);
+    asyncGC(function() {
+        shouldBeFalse('observation.wasCollected');
+        sessionDescription = new RTCSessionDescription({type:"offer", sdp:"local"});
+        shouldNotThrow('pc.setRemoteDescription(sessionDescription, requestSucceeded2, requestFailed2);');
+    });
 }
 
 pc = new webkitRTCPeerConnection(null, null);

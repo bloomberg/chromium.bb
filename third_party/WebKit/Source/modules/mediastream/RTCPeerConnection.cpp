@@ -241,6 +241,8 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
 
 RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration* configuration, WebMediaConstraints constraints, ExceptionState& exceptionState)
     : ActiveDOMObject(context)
+    , m_pendingLocalDescription(nullptr)
+    , m_pendingRemoteDescription(nullptr)
     , m_signalingState(SignalingStateStable)
     , m_iceGatheringState(ICEGatheringStateNew)
     , m_iceConnectionState(ICEConnectionStateNew)
@@ -275,6 +277,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration
         exceptionState.throwDOMException(NotSupportedError, "Failed to initialize native PeerConnection.");
         return;
     }
+    m_localDescription = RTCSessionDescription::create(m_peerHandler->localDescription());
+    m_remoteDescription = RTCSessionDescription::create(m_peerHandler->remoteDescription());
 }
 
 RTCPeerConnection::~RTCPeerConnection()
@@ -333,17 +337,25 @@ void RTCPeerConnection::setLocalDescription(RTCSessionDescription* sessionDescri
         return;
     }
 
-    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback, RTCVoidRequestImpl::RequestTypeLocal);
     m_peerHandler->setLocalDescription(request, sessionDescription->webSessionDescription());
+    m_pendingLocalDescription = sessionDescription;
 }
 
-RTCSessionDescription* RTCPeerConnection::localDescription(ExceptionState& exceptionState)
+RTCSessionDescription* RTCPeerConnection::localDescription()
 {
+    if (!m_peerHandler)
+        return nullptr;
     WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
     if (webSessionDescription.isNull())
         return nullptr;
 
-    return RTCSessionDescription::create(webSessionDescription);
+    if (!m_localDescription || m_localDescription->webSessionDescription().isNull()
+        || m_localDescription->webSessionDescription() != webSessionDescription) {
+        m_localDescription = RTCSessionDescription::create(webSessionDescription);
+    }
+
+    return m_localDescription;
 }
 
 void RTCPeerConnection::setRemoteDescription(RTCSessionDescription* sessionDescription, VoidCallback* successCallback, RTCErrorCallback* errorCallback, ExceptionState& exceptionState)
@@ -356,17 +368,25 @@ void RTCPeerConnection::setRemoteDescription(RTCSessionDescription* sessionDescr
         return;
     }
 
-    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback, RTCVoidRequestImpl::RequestTypeRemote);
     m_peerHandler->setRemoteDescription(request, sessionDescription->webSessionDescription());
+    m_pendingRemoteDescription = sessionDescription;
 }
 
-RTCSessionDescription* RTCPeerConnection::remoteDescription(ExceptionState& exceptionState)
+RTCSessionDescription* RTCPeerConnection::remoteDescription()
 {
+    if (!m_peerHandler)
+        return nullptr;
     WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
     if (webSessionDescription.isNull())
         return nullptr;
 
-    return RTCSessionDescription::create(webSessionDescription);
+    if (!m_remoteDescription || m_remoteDescription->webSessionDescription().isNull()
+        || m_remoteDescription->webSessionDescription() != webSessionDescription) {
+        m_remoteDescription = RTCSessionDescription::create(webSessionDescription);
+    }
+
+    return m_remoteDescription;
 }
 
 void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
@@ -414,7 +434,7 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, VoidCallb
     ASSERT(successCallback);
     ASSERT(errorCallback);
 
-    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback, RTCVoidRequestImpl::RequestTypeNone);
 
     bool implemented = m_peerHandler->addICECandidate(request, iceCandidate->webCandidate());
     if (!implemented) {
@@ -627,6 +647,15 @@ void RTCPeerConnection::close(ExceptionState& exceptionState)
     closeInternal();
 }
 
+void RTCPeerConnection::requestSucceeded(RTCVoidRequestImpl::RequestType requestType)
+{
+    if (requestType == RTCVoidRequestImpl::RequestTypeLocal) {
+        commitPendingLocalSessionDescription();
+    } else if (requestType == RTCVoidRequestImpl::RequestTypeRemote) {
+        commitPendingRemoteSessionDescription();
+    }
+}
+
 void RTCPeerConnection::negotiationNeeded()
 {
     ASSERT(!m_closed);
@@ -797,6 +826,16 @@ void RTCPeerConnection::closeInternal()
     changeSignalingState(SignalingStateClosed);
 }
 
+void RTCPeerConnection::commitPendingLocalSessionDescription()
+{
+    m_localDescription = m_pendingLocalDescription;
+}
+
+void RTCPeerConnection::commitPendingRemoteSessionDescription()
+{
+    m_remoteDescription = m_pendingRemoteDescription;
+}
+
 void RTCPeerConnection::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     m_scheduledEvents.append(event);
@@ -824,6 +863,10 @@ DEFINE_TRACE(RTCPeerConnection)
     visitor->trace(m_localStreams);
     visitor->trace(m_remoteStreams);
     visitor->trace(m_dataChannels);
+    visitor->trace(m_localDescription);
+    visitor->trace(m_remoteDescription);
+    visitor->trace(m_pendingLocalDescription);
+    visitor->trace(m_pendingRemoteDescription);
 #if ENABLE(OILPAN)
     visitor->trace(m_scheduledEvents);
 #endif

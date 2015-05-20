@@ -35,16 +35,18 @@
     ConstructorCallWith=ExecutionContext,
     NoInterfaceObject,
     RaisesException=Constructor,
+    SetWrapperReferenceTo(RTCSessionDescription localDescription,
+                          RTCSessionDescription remoteDescription)
 ] interface RTCPeerConnection : EventTarget {
     [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
 
     [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 
     [RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
-    [RaisesException=Getter] readonly attribute RTCSessionDescription localDescription;
+    readonly attribute RTCSessionDescription localDescription;
 
     [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
-    [RaisesException=Getter] readonly attribute RTCSessionDescription remoteDescription;
+    readonly attribute RTCSessionDescription remoteDescription;
 
     readonly attribute DOMString signalingState;
 

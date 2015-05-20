@@ -37,18 +37,19 @@
 
 namespace blink {
 
-RTCVoidRequestImpl* RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCErrorCallback* errorCallback)
+RTCVoidRequestImpl* RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCErrorCallback* errorCallback, RequestType type)
 {
-    RTCVoidRequestImpl* request = new RTCVoidRequestImpl(context, requester, successCallback, errorCallback);
+    RTCVoidRequestImpl* request = new RTCVoidRequestImpl(context, requester, successCallback, errorCallback, type);
     request->suspendIfNeeded();
     return request;
 }
 
-RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCErrorCallback* errorCallback)
+RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCErrorCallback* errorCallback, RequestType type)
     : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
     , m_requester(requester)
+    , m_requestType(type)
 {
     ASSERT(m_requester);
 }
@@ -60,6 +61,8 @@ RTCVoidRequestImpl::~RTCVoidRequestImpl()
 void RTCVoidRequestImpl::requestSucceeded()
 {
     bool shouldFireCallback = m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
+    m_requester->requestSucceeded(m_requestType);
+
     if (shouldFireCallback && m_successCallback)
         m_successCallback->handleEvent();
 

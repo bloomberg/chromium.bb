@@ -36,6 +36,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/RTCIceCandidate.h"
+#include "modules/mediastream/RTCVoidRequestImpl.h"
 #include "platform/AsyncMethodRunner.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
@@ -71,10 +72,10 @@ public:
     void createAnswer(RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
 
     void setLocalDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
-    RTCSessionDescription* localDescription(ExceptionState&);
+    RTCSessionDescription* localDescription();
 
     void setRemoteDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
-    RTCSessionDescription* remoteDescription(ExceptionState&);
+    RTCSessionDescription* remoteDescription();
 
     String signalingState() const;
 
@@ -110,6 +111,7 @@ public:
     // We allow getStats after close, but not other calls or callbacks.
     bool shouldFireDefaultCallbacks() { return !m_closed && !m_stopped; }
     bool shouldFireGetStatsCallback() { return !m_stopped; }
+    void requestSucceeded(RTCVoidRequestImpl::RequestType);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(negotiationneeded);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate);
@@ -163,6 +165,14 @@ private:
     void changeIceConnectionState(WebRTCPeerConnectionHandlerClient::ICEConnectionState);
 
     void closeInternal();
+
+    void commitPendingLocalSessionDescription();
+    void commitPendingRemoteSessionDescription();
+
+    Member<RTCSessionDescription> m_localDescription;
+    Member<RTCSessionDescription> m_remoteDescription;
+    Member<RTCSessionDescription> m_pendingLocalDescription;
+    Member<RTCSessionDescription> m_pendingRemoteDescription;
 
     SignalingState m_signalingState;
     ICEGatheringState m_iceGatheringState;
