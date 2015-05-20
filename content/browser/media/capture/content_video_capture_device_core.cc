@@ -182,6 +182,9 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
 
   if (success) {
     if (oracle_.CompleteCapture(frame_number, &timestamp)) {
+      TRACE_EVENT_INSTANT0("gpu.capture", "CaptureSucceeded",
+                           TRACE_EVENT_SCOPE_THREAD);
+
       frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                    params_.requested_format.frame_rate);
       frame->metadata()->SetTimeTicks(
