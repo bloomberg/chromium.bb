@@ -15,6 +15,7 @@ import os
 import re
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import json_lib
 from chromite.lib import osutils
 from chromite.lib import user_db
 
@@ -106,38 +107,6 @@ class SandboxSpecWrapper(object):
     self.sandbox_spec.endpoint_names.append(endpoint_name)
 
 
-def _CheckType(instance, expected_type, description):
-  """Raise an error if |instance| is not of |expected_type|.
-
-  Args:
-    instance: instance of a Python object.
-    expected_type: expected type of |instance|.
-    description: short string describing |instance| used in error reporting.
-  """
-  if not isinstance(instance, expected_type):
-    raise ValueError(
-        'Expected %s to be a %s, but found %s' %
-        (description, expected_type.__name__, instance.__class__.__name__))
-
-
-def _GetValueOfType(a_dict, key, value_type, value_description):
-  """Raise an exception if we cannot get |key| from |a_dict| with |value_type|.
-
-  Args:
-    a_dict: a dictionary.
-    key: string key that should be in the dictionary.
-    value_type: expected type of the value at a_dict[key].
-    value_description: string describing the value used in error reporting.
-  """
-  try:
-    value = a_dict[key]
-  except KeyError:
-    raise ValueError('Missing %s in appc pod manifest (key "%s")' %
-                     (value_description, key))
-  _CheckType(value, value_type, value_description)
-  return value
-
-
 def _GetPortList(desired_protocol, appc_port_list):
   """Get the list of ports opened for |desired_protocol| from |appc_port_list|.
 
@@ -152,20 +121,20 @@ def _GetPortList(desired_protocol, appc_port_list):
   if appc_port_list is None:
     return PortSpec(False, [])
 
-  _CheckType(appc_port_list, list, 'port specification list')
+  json_lib.AssertIsInstance(appc_port_list, list, 'port specification list')
 
   allow_all = False
   port_list = []
   for port_dict in appc_port_list:
-    _CheckType(port_dict, dict, 'port specification')
+    json_lib.AssertIsInstance(port_dict, dict, 'port specification')
 
     # We don't actually use the port name, but it's handy for documentation
     # and standard adherence to enforce its existence.
-    port_name = _GetValueOfType(
+    port_name = json_lib.GetValueOfType(
         port_dict, PORT_SPEC_NAME, unicode, 'port name')
     logging.debug('Validating appc specifcation of "%s"', port_name)
-    port = _GetValueOfType(port_dict, PORT_SPEC_PORT, int, 'port')
-    protocol = _GetValueOfType(
+    port = json_lib.GetValueOfType(port_dict, PORT_SPEC_PORT, int, 'port')
+    protocol = json_lib.GetValueOfType(
         port_dict, PORT_SPEC_PROTOCOL, unicode, 'protocol')
 
     # Validate everything before acting on it.
@@ -223,15 +192,15 @@ class SandboxSpecGenerator(object):
       annotations: list of dicts, each with a name and value field.
     """
     for annotation in annotations:
-      _CheckType(annotation, dict, 'a single annotation')
-      name = _GetValueOfType(annotation, KEY_ANNOTATION_NAME, unicode,
-                             'annotation name')
+      json_lib.AssertIsInstance(annotation, dict, 'a single annotation')
+      name = json_lib.GetValueOfType(
+          annotation, KEY_ANNOTATION_NAME, unicode, 'annotation name')
       if not IsValidAcName(name):
         raise ValueError('Annotation name "%s" contains illegal characters.' %
                          name)
       if name.startswith(ENDPOINT_NAME_ANNOTATION_PREFIX):
-        endpoint_name = _GetValueOfType(annotation, KEY_ANNOTATION_VALUE,
-                                        unicode, 'endpoint name value')
+        endpoint_name = json_lib.GetValueOfType(
+            annotation, KEY_ANNOTATION_VALUE, unicode, 'endpoint name value')
         if not IsValidAcName(name):
           raise ValueError('Endpoint name "%s" contains illegal characters.' %
                            endpoint_name)
@@ -244,9 +213,11 @@ class SandboxSpecGenerator(object):
       wrapper: instance of SandboxSpecWrapper.
       app: dictionary of information taken from the appc pod manifest.
     """
-    sub_app = _GetValueOfType(app, KEY_APP_SUB_APP, dict, 'per app app dict')
-    user = _GetValueOfType(sub_app, KEY_SUB_APP_USER, unicode, 'app dict user')
-    group = _GetValueOfType(
+    sub_app = json_lib.GetValueOfType(
+        app, KEY_APP_SUB_APP, dict, 'per app app dict')
+    user = json_lib.GetValueOfType(
+        sub_app, KEY_SUB_APP_USER, unicode, 'app dict user')
+    group = json_lib.GetValueOfType(
         sub_app, KEY_SUB_APP_GROUP, unicode, 'app dict group')
 
     if not self._user_db.UserExists(user):
@@ -254,12 +225,13 @@ class SandboxSpecGenerator(object):
     if not self._user_db.GroupExists(group):
       raise ValueError('Found invalid groupname "%s"' % group)
 
-    cmd = _GetValueOfType(sub_app, KEY_SUB_APP_EXEC, list, 'app command line')
+    cmd = json_lib.GetValueOfType(
+        sub_app, KEY_SUB_APP_EXEC, list, 'app command line')
     if not cmd:
       raise ValueError('App command line must give the executable to run.')
     self._CheckAbsPathToExecutable(cmd[0])
     for cmd_piece in cmd:
-      _CheckType(cmd_piece, unicode, 'app.exec fragment')
+      json_lib.AssertIsInstance(cmd_piece, unicode, 'app.exec fragment')
 
     port_list = sub_app.get(KEY_SUB_APP_PORTS, None)
     wrapper.AddExecutable(self._user_db.ResolveUsername(user),
@@ -281,20 +253,23 @@ class SandboxSpecGenerator(object):
     wrapper = SandboxSpecWrapper()
     overlay_name = None
 
-    for app in _GetValueOfType(appc_contents, KEY_APPS_LIST, list, 'app list'):
-      _CheckType(app, dict, 'app')
+    app_list = json_lib.GetValueOfType(
+        appc_contents, KEY_APPS_LIST, list, 'app list')
+    for app in app_list:
+      json_lib.AssertIsInstance(app, dict, 'app')
 
       # Aid debugging of problems in specific apps.
-      app_name = _GetValueOfType(app, KEY_APP_NAME, unicode, 'app name')
+      app_name = json_lib.GetValueOfType(
+          app, KEY_APP_NAME, unicode, 'app name')
       if not IsValidAcName(app_name):
         raise ValueError('Application name "%s" contains illegal characters.' %
                          app_name)
       logging.debug('Processing application "%s".', app_name)
 
       # Get the name of the image, check that it's consistent other image names.
-      image = _GetValueOfType(
+      image = json_lib.GetValueOfType(
           app, KEY_APP_IMAGE, dict, 'image specification for app')
-      image_name = _GetValueOfType(
+      image_name = json_lib.GetValueOfType(
           image, KEY_APP_IMAGE_NAME, unicode, 'image name')
       if not IsValidAcName(image_name):
         raise ValueError('Image name "%s" contains illegal characters.' %
@@ -311,10 +286,10 @@ class SandboxSpecGenerator(object):
     if not overlay_name:
       raise ValueError('Overlays must declare at least one app')
 
-    self._FillInEndpointNamesFromAnnotations(
-        wrapper,
-        _GetValueOfType(appc_contents, KEY_ANNOTATIONS_LIST, list,
-                        'list of all annotations'))
+    annotation_list = json_lib.GetValueOfType(
+        appc_contents, KEY_ANNOTATIONS_LIST, list, 'list of all annotations')
+    self._FillInEndpointNamesFromAnnotations(wrapper, annotation_list)
+
     wrapper.SetName(sandbox_spec_name)
     return wrapper.sandbox_spec
 
