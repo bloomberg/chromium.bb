@@ -793,6 +793,7 @@
 
   function onOfferCreated(offer, caller, callee) {
     offer.sdp = maybeForceIsac16K(transformSdp(offer.sdp));
+    console.log('Offer:\n' + offer.sdp);
     caller.setLocalDescription(offer, function() {
       assertEquals('have-local-offer', caller.signalingState);
       receiveOffer(offer.sdp, caller, callee);
@@ -869,6 +870,7 @@
 
   function onAnswerCreated(answer, caller, callee) {
     answer.sdp = maybeForceIsac16K(transformSdp(answer.sdp));
+    console.log('Answer:\n' + answer.sdp);
     callee.setLocalDescription(answer,
                                function () {
                                  assertEquals('stable', callee.signalingState);
