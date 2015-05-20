@@ -68,6 +68,7 @@ const char kRecordAsMuchAsPossible[] = "record-as-much-as-possible";
 const char kTraceToConsole[] = "trace-to-console";
 const char kEnableSampling[] = "enable-sampling";
 const char kEnableSystrace[] = "enable-systrace";
+const char kEnableArgumentFilter[] = "enable-argument-filter";
 
 // Controls the number of trace events we will buffer in-memory
 // before throwing them away.
@@ -695,34 +696,45 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
   }
 }
 
-void TraceEvent::AppendAsJSON(std::string* out) const {
+void TraceEvent::AppendAsJSON(
+    std::string* out,
+    const ArgumentFilterPredicate& argument_filter_predicate) const {
   int64 time_int64 = timestamp_.ToInternalValue();
   int process_id = TraceLog::GetInstance()->process_id();
+  const char* category_group_name =
+      TraceLog::GetCategoryGroupName(category_group_enabled_);
+
   // Category group checked at category creation time.
   DCHECK(!strchr(name_, '"'));
-  StringAppendF(out,
-      "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64 ","
-      "\"ph\":\"%c\",\"cat\":\"%s\",\"name\":\"%s\",\"args\":{",
-      process_id,
-      thread_id_,
-      time_int64,
-      phase_,
-      TraceLog::GetCategoryGroupName(category_group_enabled_),
-      name_);
+  StringAppendF(out, "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
+                     ","
+                     "\"ph\":\"%c\",\"cat\":\"%s\",\"name\":\"%s\",\"args\":{",
+                process_id, thread_id_, time_int64, phase_, category_group_name,
+                name_);
 
   // Output argument names and values, stop at first NULL argument name.
-  for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
-    if (i > 0)
-      *out += ",";
-    *out += "\"";
-    *out += arg_names_[i];
-    *out += "\":";
+  if (arg_names_[0]) {
+    bool allow_args = argument_filter_predicate.is_null() ||
+                      argument_filter_predicate.Run(category_group_name, name_);
 
-    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      convertable_values_[i]->AppendAsTraceFormat(out);
-    else
-      AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
+    if (allow_args) {
+      for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
+        if (i > 0)
+          *out += ",";
+        *out += "\"";
+        *out += arg_names_[i];
+        *out += "\":";
+
+        if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
+          convertable_values_[i]->AppendAsTraceFormat(out);
+        else
+          AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
+      }
+    } else {
+      *out += "\"stripped\":1";
+    }
   }
+
   *out += "}";
 
   if (phase_ == TRACE_EVENT_PHASE_COMPLETE) {
@@ -1003,6 +1015,8 @@ bool TraceOptions::SetFromString(const std::string& options_string) {
       enable_sampling = true;
     } else if (*iter == kEnableSystrace) {
       enable_systrace = true;
+    } else if (*iter == kEnableArgumentFilter) {
+      enable_argument_filter = true;
     } else {
       return false;
     }
@@ -1032,6 +1046,8 @@ std::string TraceOptions::ToString() const {
     ret = ret + "," + kEnableSampling;
   if (enable_systrace)
     ret = ret + "," + kEnableSystrace;
+  if (enable_argument_filter)
+    ret = ret + "," + kEnableArgumentFilter;
   return ret;
 }
 
@@ -1486,10 +1502,20 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
   }
 }
 
+void TraceLog::SetArgumentFilterPredicate(
+    const TraceEvent::ArgumentFilterPredicate& argument_filter_predicate) {
+  AutoLock lock(lock_);
+  DCHECK(!argument_filter_predicate.is_null());
+  DCHECK(argument_filter_predicate_.is_null());
+  argument_filter_predicate_ = argument_filter_predicate;
+}
+
 TraceLog::InternalTraceOptions TraceLog::GetInternalOptionsFromTraceOptions(
     const TraceOptions& options) {
   InternalTraceOptions ret =
       options.enable_sampling ? kInternalEnableSampling : kInternalNone;
+  if (options.enable_argument_filter)
+    ret |= kInternalEnableArgumentFilter;
   switch (options.record_mode) {
     case RECORD_UNTIL_FULL:
       return ret | kInternalRecordUntilFull;
@@ -1513,6 +1539,7 @@ TraceOptions TraceLog::GetCurrentTraceOptions() const {
   TraceOptions ret;
   InternalTraceOptions option = trace_options();
   ret.enable_sampling = (option & kInternalEnableSampling) != 0;
+  ret.enable_argument_filter = (option & kInternalEnableArgumentFilter) != 0;
   if (option & kInternalRecordUntilFull)
     ret.record_mode = RECORD_UNTIL_FULL;
   else if (option & kInternalRecordContinuously)
@@ -1756,8 +1783,8 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb,
 // Usually it runs on a different thread.
 void TraceLog::ConvertTraceEventsToTraceFormat(
     scoped_ptr<TraceBuffer> logged_events,
-    const TraceLog::OutputCallback& flush_output_callback) {
-
+    const OutputCallback& flush_output_callback,
+    const TraceEvent::ArgumentFilterPredicate& argument_filter_predicate) {
   if (flush_output_callback.is_null())
     return;
 
@@ -1776,7 +1803,8 @@ void TraceLog::ConvertTraceEventsToTraceFormat(
       for (size_t j = 0; j < chunk->size(); ++j) {
         if (json_events_str_ptr->size())
           json_events_str_ptr->data().append(",\n");
-        chunk->GetEventAt(j)->AppendAsJSON(&(json_events_str_ptr->data()));
+        chunk->GetEventAt(j)->AppendAsJSON(&(json_events_str_ptr->data()),
+                                           argument_filter_predicate);
       }
     }
     flush_output_callback.Run(json_events_str_ptr, has_more_events);
@@ -1786,6 +1814,7 @@ void TraceLog::ConvertTraceEventsToTraceFormat(
 void TraceLog::FinishFlush(int generation) {
   scoped_ptr<TraceBuffer> previous_logged_events;
   OutputCallback flush_output_callback;
+  TraceEvent::ArgumentFilterPredicate argument_filter_predicate;
 
   if (!CheckGeneration(generation))
     return;
@@ -1800,20 +1829,25 @@ void TraceLog::FinishFlush(int generation) {
     flush_task_runner_ = NULL;
     flush_output_callback = flush_output_callback_;
     flush_output_callback_.Reset();
+
+    if (trace_options() & kInternalEnableArgumentFilter) {
+      CHECK(!argument_filter_predicate_.is_null());
+      argument_filter_predicate = argument_filter_predicate_;
+    }
   }
 
   if (use_worker_thread_ &&
       WorkerPool::PostTask(
-          FROM_HERE,
-          Bind(&TraceLog::ConvertTraceEventsToTraceFormat,
-               Passed(&previous_logged_events),
-               flush_output_callback),
+          FROM_HERE, Bind(&TraceLog::ConvertTraceEventsToTraceFormat,
+                          Passed(&previous_logged_events),
+                          flush_output_callback, argument_filter_predicate),
           true)) {
     return;
   }
 
   ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),
-                                  flush_output_callback);
+                                  flush_output_callback,
+                                  argument_filter_predicate);
 }
 
 // Run in each thread holding a local event buffer.
@@ -1863,6 +1897,7 @@ void TraceLog::OnFlushTimeout(int generation) {
 void TraceLog::FlushButLeaveBufferIntact(
     const TraceLog::OutputCallback& flush_output_callback) {
   scoped_ptr<TraceBuffer> previous_logged_events;
+  TraceEvent::ArgumentFilterPredicate argument_filter_predicate;
   {
     AutoLock lock(lock_);
     AddMetadataEventsWhileLocked();
@@ -1872,10 +1907,16 @@ void TraceLog::FlushButLeaveBufferIntact(
                                   thread_shared_chunk_.Pass());
     }
     previous_logged_events = logged_events_->CloneForIteration().Pass();
+
+    if (trace_options() & kInternalEnableArgumentFilter) {
+      CHECK(!argument_filter_predicate_.is_null());
+      argument_filter_predicate = argument_filter_predicate_;
+    }
   }  // release lock
 
   ConvertTraceEventsToTraceFormat(previous_logged_events.Pass(),
-                                  flush_output_callback);
+                                  flush_output_callback,
+                                  argument_filter_predicate);
 }
 
 void TraceLog::UseNextTraceBuffer() {

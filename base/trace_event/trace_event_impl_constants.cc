@@ -23,6 +23,8 @@ const TraceLog::InternalTraceOptions
     TraceLog::kInternalEchoToConsole = 1 << 3;
 const TraceLog::InternalTraceOptions
     TraceLog::kInternalRecordAsMuchAsPossible = 1 << 4;
+const TraceLog::InternalTraceOptions
+    TraceLog::kInternalEnableArgumentFilter = 1 << 5;
 
 }  // namespace trace_event
 }  // namespace base

@@ -123,7 +123,11 @@ class BASE_EXPORT TraceEvent {
   void UpdateDuration(const TimeTicks& now, const TimeTicks& thread_now);
 
   // Serialize event data to JSON
-  void AppendAsJSON(std::string* out) const;
+  typedef base::Callback<bool(const char* category_group_name,
+                              const char* event_name)> ArgumentFilterPredicate;
+  void AppendAsJSON(
+      std::string* out,
+      const ArgumentFilterPredicate& argument_filter_predicate) const;
   void AppendPrettyPrinted(std::ostringstream* out) const;
 
   static void AppendValueAsJSON(unsigned char type,
@@ -384,12 +388,14 @@ struct BASE_EXPORT TraceOptions {
   TraceOptions()
       : record_mode(RECORD_UNTIL_FULL),
         enable_sampling(false),
-        enable_systrace(false) {}
+        enable_systrace(false),
+        enable_argument_filter(false) {}
 
   explicit TraceOptions(TraceRecordMode record_mode)
       : record_mode(record_mode),
         enable_sampling(false),
-        enable_systrace(false) {}
+        enable_systrace(false),
+        enable_argument_filter(false) {}
 
   // |options_string| is a comma-delimited list of trace options.
   // Possible options are: "record-until-full", "record-continuously",
@@ -420,6 +426,7 @@ struct BASE_EXPORT TraceOptions {
   TraceRecordMode record_mode;
   bool enable_sampling;
   bool enable_systrace;
+  bool enable_argument_filter;
 };
 
 struct BASE_EXPORT TraceLogStatus {
@@ -533,6 +540,8 @@ class BASE_EXPORT TraceLog {
   void SetEventCallbackEnabled(const CategoryFilter& category_filter,
                                EventCallback cb);
   void SetEventCallbackDisabled();
+  void SetArgumentFilterPredicate(
+      const TraceEvent::ArgumentFilterPredicate& argument_filter_predicate);
 
   // Flush all collected events to the given output callback. The callback will
   // be called one or more times either synchronously or asynchronously from
@@ -720,7 +729,8 @@ class BASE_EXPORT TraceLog {
   // Usually it runs on a different thread.
   static void ConvertTraceEventsToTraceFormat(
       scoped_ptr<TraceBuffer> logged_events,
-      const TraceLog::OutputCallback& flush_output_callback);
+      const TraceLog::OutputCallback& flush_output_callback,
+      const TraceEvent::ArgumentFilterPredicate& argument_filter_predicate);
   void FinishFlush(int generation);
   void OnFlushTimeout(int generation);
 
@@ -747,6 +757,7 @@ class BASE_EXPORT TraceLog {
   static const InternalTraceOptions kInternalEchoToConsole;
   static const InternalTraceOptions kInternalEnableSampling;
   static const InternalTraceOptions kInternalRecordAsMuchAsPossible;
+  static const InternalTraceOptions kInternalEnableArgumentFilter;
 
   // This lock protects TraceLog member accesses (except for members protected
   // by thread_info_lock_) from arbitrary threads.
@@ -811,6 +822,7 @@ class BASE_EXPORT TraceLog {
   // Set when asynchronous Flush is in progress.
   OutputCallback flush_output_callback_;
   scoped_refptr<SingleThreadTaskRunner> flush_task_runner_;
+  TraceEvent::ArgumentFilterPredicate argument_filter_predicate_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
 

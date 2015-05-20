@@ -2205,6 +2205,52 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
   EXPECT_EQ(1, int_value);
 }
 
+namespace {
+
+bool IsTraceEventArgsWhitelisted(const char* category_group_name,
+                                 const char* event_name) {
+  if (MatchPattern(category_group_name, "toplevel") &&
+      MatchPattern(event_name, "*")) {
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
+
+TEST_F(TraceEventTestFixture, ArgsWhitelisting) {
+  TraceLog::GetInstance()->SetArgumentFilterPredicate(
+      base::Bind(&IsTraceEventArgsWhitelisted));
+
+  TraceOptions trace_options;
+  trace_options.enable_argument_filter = true;
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORDING_MODE, trace_options);
+
+  TRACE_EVENT1("toplevel", "event1", "int_one", 1);
+  TRACE_EVENT1("whitewashed", "event2", "int_two", 1);
+  EndTraceAndFlush();
+
+  const DictionaryValue* args_dict = NULL;
+  DictionaryValue* dict = NULL;
+  int int_value;
+
+  dict = FindNamePhase("event1", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetInteger("int_one", &int_value));
+  EXPECT_EQ(1, int_value);
+
+  dict = FindNamePhase("event2", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_FALSE(args_dict->GetInteger("int_two", &int_value));
+  EXPECT_TRUE(args_dict->GetInteger("stripped", &int_value));
+}
+
 class TraceEventCallbackTest : public TraceEventTestFixture {
  public:
   void SetUp() override {

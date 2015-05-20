@@ -110,6 +110,8 @@
       'common/spellcheck_result.h',
       'common/switch_utils.cc',
       'common/switch_utils.h',
+      'common/trace_event_args_whitelist.cc',
+      'common/trace_event_args_whitelist.h',
       'common/tts_messages.h',
       'common/tts_utterance_request.cc',
       'common/tts_utterance_request.h',

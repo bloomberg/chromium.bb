@@ -16,6 +16,7 @@
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
@@ -30,6 +31,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/switch_utils.h"
+#include "chrome/common/trace_event_args_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/plugin/chrome_content_plugin_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -437,6 +439,9 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 
   Profiling::ProcessStarted();
+
+  base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+      base::Bind(&IsTraceEventArgsWhitelisted));
 
 #if defined(OS_WIN)
   v8_breakpad_support::SetUp();
