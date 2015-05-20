@@ -15,11 +15,12 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "content/public/browser/web_contents.h"
 
+class Browser;
 @class PermissionBubbleController;
 
 class PermissionBubbleCocoa : public PermissionBubbleView {
  public:
-  explicit PermissionBubbleCocoa(NSWindow* parent_window);
+  explicit PermissionBubbleCocoa(Browser* browser);
   ~PermissionBubbleCocoa() override;
 
   // PermissionBubbleView interface.

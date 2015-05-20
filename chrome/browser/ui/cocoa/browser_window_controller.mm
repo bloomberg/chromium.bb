@@ -1278,7 +1278,8 @@ using content::WebContents;
 
   if (newContents) {
     if (!permissionBubbleCocoa_.get()) {
-      permissionBubbleCocoa_.reset(new PermissionBubbleCocoa([self window]));
+      DCHECK(browser_.get());
+      permissionBubbleCocoa_.reset(new PermissionBubbleCocoa(browser_.get()));
     }
     manager = PermissionBubbleManager::FromWebContents(newContents);
     if (manager)

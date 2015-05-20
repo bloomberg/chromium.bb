@@ -14,8 +14,8 @@
 namespace {
 class MockPermissionBubbleCocoa : public PermissionBubbleCocoa {
  public:
-  MockPermissionBubbleCocoa(NSWindow* parent_window)
-      : PermissionBubbleCocoa(parent_window) {}
+  MockPermissionBubbleCocoa(Browser* browser)
+      : PermissionBubbleCocoa(browser) {}
 
   MOCK_METHOD0(HasLocationBar, bool());
 
@@ -25,7 +25,7 @@ class MockPermissionBubbleCocoa : public PermissionBubbleCocoa {
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
-  PermissionBubbleCocoa bubble(browser()->window()->GetNativeWindow());
+  PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
   EXPECT_TRUE(bubble.HasLocationBar());
@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, FullscreenHasLocationBar) {
-  PermissionBubbleCocoa bubble(browser()->window()->GetNativeWindow());
+  PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
 
@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, FullscreenHasLocationBar) {
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleAppBrowserTest, AppHasNoLocationBar) {
-  PermissionBubbleCocoa bubble(app_browser()->window()->GetNativeWindow());
+  PermissionBubbleCocoa bubble(app_browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
   EXPECT_FALSE(bubble.HasLocationBar());
@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleAppBrowserTest, AppHasNoLocationBar) {
 // Kiosk mode on Mac has a location bar but it shouldn't.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleKioskBrowserTest,
                        DISABLED_KioskHasNoLocationBar) {
-  PermissionBubbleCocoa bubble(browser()->window()->GetNativeWindow());
+  PermissionBubbleCocoa bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
   EXPECT_FALSE(bubble.HasLocationBar());
@@ -70,8 +70,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleKioskBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
                        AnchorPositionWithLocationBar) {
-  testing::NiceMock<MockPermissionBubbleCocoa> bubble(
-      browser()->window()->GetNativeWindow());
+  testing::NiceMock<MockPermissionBubbleCocoa> bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
   ON_CALL(bubble, HasLocationBar()).WillByDefault(testing::Return(true));
@@ -91,8 +90,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
                        AnchorPositionWithoutLocationBar) {
-  testing::NiceMock<MockPermissionBubbleCocoa> bubble(
-      browser()->window()->GetNativeWindow());
+  testing::NiceMock<MockPermissionBubbleCocoa> bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
   ON_CALL(bubble, HasLocationBar()).WillByDefault(testing::Return(false));
@@ -110,8 +108,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
                        AnchorPositionDifferentWithAndWithoutLocationBar) {
-  testing::NiceMock<MockPermissionBubbleCocoa> bubble(
-      browser()->window()->GetNativeWindow());
+  testing::NiceMock<MockPermissionBubbleCocoa> bubble(browser());
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
 

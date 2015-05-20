@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -12,8 +13,12 @@
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/nsview_additions.h"
 
-PermissionBubbleCocoa::PermissionBubbleCocoa(NSWindow* parent_window)
-    : parent_window_(parent_window), delegate_(NULL), bubbleController_(nil) {}
+PermissionBubbleCocoa::PermissionBubbleCocoa(Browser* browser)
+    : parent_window_(nil), delegate_(nullptr), bubbleController_(nil) {
+  // Browser is allowed to be nullptr for testing purposes.
+  if (browser)
+    parent_window_ = browser->window()->GetNativeWindow();
+}
 
 PermissionBubbleCocoa::~PermissionBubbleCocoa() {
   if (delegate_)
