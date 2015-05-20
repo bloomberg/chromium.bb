@@ -2037,6 +2037,69 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.MacAddressBook.AcceptedSuggestionIsFromAddressBook"
+    enum="BooleanFromAddressBook">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This metric is emitted each time the user accepts an Autofill suggestion. It
+    records whether the result is from the Address Book.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.MacAddressBook.AccessTime" units="ms">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time spent accessing the OSX Address Book the first time after
+    Chrome was launched. If this time is larger than ~100ms, this it is likely
+    that the user was shown a blocking, modal dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.MacAddressBook.ContainedMeCard"
+    enum="BooleanContainedMeCard">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    After a Chrome is given access to the Mac Address Book, whether the Address
+    Book contained a Me card.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.MacAddressBook.MeCard.HadAddress"
+    enum="BooleanHadAddress">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    When Chrome is given access to the Me Card of the Address Book, whether the
+    card has an address that contained a street number and either a city or zip
+    code.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.MacAddressBook.MeCard.HadEmail"
+    enum="BooleanHadEmail">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    When Chrome is given access to the Me Card of the Address Book, whether the
+    card has an email.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.MacAddressBook.MeCard.HadName" enum="BooleanHadName">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    When Chrome is given access to the Me Card of the Address Book, whether the
+    card has a name.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.MacAddressBook.MeCard.HadPhoneNumber"
+    enum="BooleanHadPhoneNumber">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    When Chrome is given access to the Me Card of the Address Book, whether the
+    card has a phone number.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.MacAddressBook.NumShowsBeforeSelected">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -48253,6 +48316,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Completed"/>
 </enum>
 
+<enum name="BooleanContainedMeCard" type="int">
+  <int value="0" label="Did not contain me card."/>
+  <int value="1" label="Contained me card."/>
+</enum>
+
 <enum name="BooleanCorrupt" type="int">
   <int value="0" label="Not Corrupt"/>
   <int value="1" label="Corrupt"/>
@@ -48328,14 +48396,39 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Force Disabled"/>
 </enum>
 
+<enum name="BooleanFromAddressBook" type="int">
+  <int value="0" label="Not From Address Book"/>
+  <int value="1" label="From Address Book"/>
+</enum>
+
 <enum name="BooleanGAIAWebViewFlow" type="int">
   <int value="0" label="iframe-based flow"/>
   <int value="1" label="WebView-based flow"/>
 </enum>
 
+<enum name="BooleanHadAddress" type="int">
+  <int value="0" label="Did not have address."/>
+  <int value="1" label="Had address."/>
+</enum>
+
 <enum name="BooleanHadBlankText" type="int">
   <int value="0" label="Did not have blank text"/>
   <int value="1" label="Had blank text"/>
+</enum>
+
+<enum name="BooleanHadEmail" type="int">
+  <int value="0" label="Did not have email."/>
+  <int value="1" label="Had email."/>
+</enum>
+
+<enum name="BooleanHadName" type="int">
+  <int value="0" label="Did not have name."/>
+  <int value="1" label="Had name."/>
+</enum>
+
+<enum name="BooleanHadPhoneNumber" type="int">
+  <int value="0" label="Did not have phone number."/>
+  <int value="1" label="Had phone number."/>
 </enum>
 
 <enum name="BooleanHandshakeConfirmed" type="int">

@@ -18,6 +18,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -76,9 +77,38 @@ void RecordAccessSkipped(bool skipped) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBook.AccessSkipped", skipped);
 }
 
+// Emits a histogram indicating whether the Address Book contained a me-card.
+void EmitAddressBookContainedMeCard(bool containedMeCard) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.MacAddressBook.ContainedMeCard",
+                        containedMeCard);
+}
+
+// Emits a histogram indicating whether the me-card had a name.
+void EmitMeCardHadName(bool hadName) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.MacAddressBook.MeCard.HadName", hadName);
+}
+
+// Emits a histogram indicating whether the me-card had an address.
+void EmitMeCardHadAddress(bool hadAddress) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.MacAddressBook.MeCard.HadAddress",
+                        hadAddress);
+}
+
+// Emits a histogram indicating whether the me-card had an email.
+void EmitMeCardHadEmail(bool hadEmail) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.MacAddressBook.MeCard.HadEmail", hadEmail);
+}
+
+// Emits a histogram indicating whether the me-card had a phone number.
+void EmitMeCardHadPhoneNumber(bool hadPhoneNumber) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.MacAddressBook.MeCard.HadPhoneNumber",
+                        hadPhoneNumber);
+}
+
 ABAddressBook* GetAddressBook(PrefService* pref_service) {
   bool first_access = !HasQueriedMacAddressBook(pref_service);
 
+  base::Time start_time = base::Time::Now();
   // +[ABAddressBook sharedAddressBook] throws an exception internally in
   // circumstances that aren't clear. The exceptions are only observed in crash
   // reports, so it is unknown whether they would be caught by AppKit and nil
@@ -87,6 +117,13 @@ ABAddressBook* GetAddressBook(PrefService* pref_service) {
   ABAddressBook* addressBook = base::mac::RunBlockIgnoringExceptions(
       ^{ return [ABAddressBook sharedAddressBook]; });
   UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailable", addressBook != nil);
+
+  if (!g_accessed_address_book) {
+    // The amount of time that the access takes gives a good indication as to
+    // whether the user was shown a prompt.
+    UMA_HISTOGRAM_TIMES("Autofill.MacAddressBook.AccessTime",
+                        base::Time::Now() - start_time);
+  }
 
   if (first_access) {
     UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailableOnFirstAttempt",
@@ -121,16 +158,16 @@ class AuxiliaryProfilesImpl {
                             bool record_metrics);
 
  private:
-  void GetAddressBookNames(ABPerson* me,
+  bool GetAddressBookNames(ABPerson* me,
                            NSString* addressLabelRaw,
                            AutofillProfile* profile);
-  void GetAddressBookAddress(const std::string& app_locale,
+  bool GetAddressBookAddress(const std::string& app_locale,
                              NSDictionary* address,
                              AutofillProfile* profile);
-  void GetAddressBookEmail(ABPerson* me,
+  bool GetAddressBookEmail(ABPerson* me,
                            NSString* addressLabelRaw,
                            AutofillProfile* profile);
-  void GetAddressBookPhoneNumbers(ABPerson* me,
+  bool GetAddressBookPhoneNumbers(ABPerson* me,
                                   NSString* addressLabelRaw,
                                   AutofillProfile* profile);
 
@@ -169,9 +206,12 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
   ABAddressBook* addressBook = GetAddressBook(pref_service);
 
   ABPerson* me = [addressBook me];
-  if (!me)
+  if (!me) {
+    EmitAddressBookContainedMeCard(false);
     return;
+  }
 
+  EmitAddressBookContainedMeCard(true);
   ABMultiValue* addresses = [me valueForProperty:kABAddressProperty];
 
   // The number of characters at the end of the GUID to reserve for
@@ -182,6 +222,11 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
   const size_t kNumHexDigits = 16;
   const size_t kMaxAddressCount = pow(kNumHexDigits, kNumAddressGUIDChars);
   NSUInteger count = MIN([addresses count], kMaxAddressCount);
+
+  bool hasName = false;
+  bool hasEmail = false;
+  bool hasAddress = false;
+  bool hasPhoneNumber = false;
   for (NSUInteger i = 0; i < count; i++) {
     NSDictionary* address = [addresses valueAtIndex:i];
     NSString* addressLabelRaw = [addresses labelAtIndex:i];
@@ -211,28 +256,34 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
     DCHECK(base::IsValidGUID(profile->guid()));
 
     // Fill in name and company information.
-    GetAddressBookNames(me, addressLabelRaw, profile.get());
+    hasName |= GetAddressBookNames(me, addressLabelRaw, profile.get());
 
     // Fill in address information.
-    GetAddressBookAddress(app_locale, address, profile.get());
+    hasEmail |= GetAddressBookAddress(app_locale, address, profile.get());
 
     // Fill in email information.
-    GetAddressBookEmail(me, addressLabelRaw, profile.get());
+    hasAddress |= GetAddressBookEmail(me, addressLabelRaw, profile.get());
 
     // Fill in phone number information.
-    GetAddressBookPhoneNumbers(me, addressLabelRaw, profile.get());
+    hasPhoneNumber |=
+        GetAddressBookPhoneNumbers(me, addressLabelRaw, profile.get());
 
     profiles_.push_back(profile.release());
   }
+
+  EmitMeCardHadName(hasName);
+  EmitMeCardHadEmail(hasEmail);
+  EmitMeCardHadAddress(hasAddress);
+  EmitMeCardHadPhoneNumber(hasPhoneNumber);
 }
 
 // Name and company information is stored once in the Address Book against
 // multiple addresses.  We replicate that information for each profile.
 // We only propagate the company name to work profiles.
-void AuxiliaryProfilesImpl::GetAddressBookNames(
-    ABPerson* me,
-    NSString* addressLabelRaw,
-    AutofillProfile* profile) {
+// Returns whether |me| contains any name information.
+bool AuxiliaryProfilesImpl::GetAddressBookNames(ABPerson* me,
+                                                NSString* addressLabelRaw,
+                                                AutofillProfile* profile) {
   NSString* firstName = [me valueForProperty:kABFirstNameProperty];
   NSString* middleName = [me valueForProperty:kABMiddleNameProperty];
   NSString* lastName = [me valueForProperty:kABLastNameProperty];
@@ -243,6 +294,9 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
   profile->SetRawInfo(NAME_LAST, base::SysNSStringToUTF16(lastName));
   if ([addressLabelRaw isEqualToString:kABAddressWorkLabel])
     profile->SetRawInfo(COMPANY_NAME, base::SysNSStringToUTF16(companyName));
+
+  return [firstName length] > 0 || [middleName length] > 0 ||
+         [lastName length] > 0;
 }
 
 // Addresss information from the Address Book may span multiple lines.
@@ -250,10 +304,15 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
 // second line we join with commas.
 // For example:  "c/o John Doe\n1122 Other Avenue\nApt #7" translates to
 // line 1: "c/o John Doe", line 2: "1122 Other Avenue, Apt #7".
-void AuxiliaryProfilesImpl::GetAddressBookAddress(const std::string& app_locale,
+// Returns whether |address| contains a complete address.
+bool AuxiliaryProfilesImpl::GetAddressBookAddress(const std::string& app_locale,
                                                   NSDictionary* address,
                                                   AutofillProfile* profile) {
+  bool hasStreetAddress = false;
+  bool hasCityOrZip = false;
   if (NSString* addressField = [address objectForKey:kABAddressStreetKey]) {
+    hasStreetAddress |= [addressField length] > 0;
+
     // If there are newlines in the address, split into two lines.
     if ([addressField rangeOfCharacterFromSet:
             [NSCharacterSet newlineCharacterSet]].location != NSNotFound) {
@@ -278,29 +337,34 @@ void AuxiliaryProfilesImpl::GetAddressBookAddress(const std::string& app_locale,
     }
   }
 
-  if (NSString* city = [address objectForKey:kABAddressCityKey])
+  if (NSString* city = [address objectForKey:kABAddressCityKey]) {
+    hasCityOrZip |= [city length] > 0;
     profile->SetRawInfo(ADDRESS_HOME_CITY, base::SysNSStringToUTF16(city));
+  }
 
   if (NSString* state = [address objectForKey:kABAddressStateKey])
     profile->SetRawInfo(ADDRESS_HOME_STATE, base::SysNSStringToUTF16(state));
 
-  if (NSString* zip = [address objectForKey:kABAddressZIPKey])
+  if (NSString* zip = [address objectForKey:kABAddressZIPKey]) {
+    hasCityOrZip |= [zip length] > 0;
     profile->SetRawInfo(ADDRESS_HOME_ZIP, base::SysNSStringToUTF16(zip));
+  }
 
-  if (NSString* country = [address objectForKey:kABAddressCountryKey]) {
+  if (NSString* country = [address objectForKey:kABAddressCountryKey])
     profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                      base::SysNSStringToUTF16(country),
                      app_locale);
-  }
+
+  return hasStreetAddress && hasCityOrZip;
 }
 
 // Fills in email address matching current address label.  Note that there may
 // be multiple matching email addresses for a given label.  We take the
 // first we find (topmost) as preferred.
-void AuxiliaryProfilesImpl::GetAddressBookEmail(
-    ABPerson* me,
-    NSString* addressLabelRaw,
-    AutofillProfile* profile) {
+// Returns whether |me| contains an email.
+bool AuxiliaryProfilesImpl::GetAddressBookEmail(ABPerson* me,
+                                                NSString* addressLabelRaw,
+                                                AutofillProfile* profile) {
   ABMultiValue* emailAddresses = [me valueForProperty:kABEmailProperty];
   NSString* emailAddress = nil;
   for (NSUInteger j = 0, emailCount = [emailAddresses count];
@@ -312,16 +376,19 @@ void AuxiliaryProfilesImpl::GetAddressBookEmail(
     }
   }
   profile->SetRawInfo(EMAIL_ADDRESS, base::SysNSStringToUTF16(emailAddress));
+  return [emailAddress length] > 0;
 }
 
 // Fills in telephone numbers.  Each of these are special cases.
 // We match two cases: home/tel, work/tel.
 // Note, we traverse in reverse order so that top values in address book
 // take priority.
-void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
+// Returns whether |me| contains a phone number.
+bool AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
     ABPerson* me,
     NSString* addressLabelRaw,
     AutofillProfile* profile) {
+  bool hasPhoneNumber = false;
   ABMultiValue* phoneNumbers = [me valueForProperty:kABPhoneProperty];
   for (NSUInteger k = 0, phoneCount = [phoneNumbers count];
        k < phoneCount; k++) {
@@ -332,18 +399,22 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
       base::string16 homePhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, homePhone);
+      hasPhoneNumber |= !homePhone.empty();
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkLabel]) {
       base::string16 workPhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, workPhone);
+      hasPhoneNumber |= !workPhone.empty();
     } else if ([phoneLabelRaw isEqualToString:kABPhoneMobileLabel] ||
                [phoneLabelRaw isEqualToString:kABPhoneMainLabel]) {
       base::string16 phone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, phone);
+      hasPhoneNumber |= !phone.empty();
     }
   }
+  return hasPhoneNumber;
 }
 
 }  // namespace

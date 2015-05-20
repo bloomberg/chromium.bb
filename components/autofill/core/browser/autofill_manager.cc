@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -622,6 +623,10 @@ void AutofillManager::FillOrPreviewForm(
     const FormData& form,
     const FormFieldData& field,
     int unique_id) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  EmitIsFromAddressBookMetric(unique_id);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
@@ -1578,5 +1583,21 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
 
   return true;
 }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+void AutofillManager::EmitIsFromAddressBookMetric(int unique_id) {
+  size_t variant = 0;
+  const AutofillProfile* profile = nullptr;
+  bool result = GetProfile(unique_id, &profile, &variant);
+  if (!result)
+    return;
+
+  bool is_from_address_book =
+      profile->record_type() == AutofillProfile::AUXILIARY_PROFILE;
+  UMA_HISTOGRAM_BOOLEAN(
+      "Autofill.MacAddressBook.AcceptedSuggestionIsFromAddressBook",
+      is_from_address_book);
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace autofill

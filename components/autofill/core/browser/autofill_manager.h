@@ -363,6 +363,12 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Shared code to determine if |form| should be uploaded.
   bool ShouldUploadForm(const FormStructure& form);
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Emits a UMA metric indicating whether the accepted Autofill suggestion is
+  // from the Mac Address Book.
+  void EmitIsFromAddressBookMetric(int unique_id);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   AutofillDriver* driver_;
