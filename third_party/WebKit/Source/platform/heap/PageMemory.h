@@ -73,16 +73,6 @@ private:
 // virtual address space OOM.
 static NEVER_INLINE void blinkGCOutOfMemory()
 {
-#if OS(WIN)
-    // Crash at a special address (0x9b)
-    // to be easily distinguished on crash reports.
-    // This is because crash stack traces are inaccurate on Windows and
-    // blinkGCOutOfMemory might be not included in the stack traces.
-    reinterpret_cast<void(*)()>(0x9b)();
-#endif
-
-    // On non-Windows environment, IMMEDIATE_CRASH is sufficient
-    // because blinkGCOutOfMemory will appear in crash stack traces.
     IMMEDIATE_CRASH();
 }
 
