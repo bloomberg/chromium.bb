@@ -153,7 +153,7 @@ static void amdgpu_memory_alloc(void)
 	CU_ASSERT_EQUAL(r, 0);
 }
 
-static void amdgpu_command_submission_gfx(void)
+static void amdgpu_command_submission_gfx_separate_ibs(void)
 {
 	amdgpu_context_handle context_handle;
 	struct amdgpu_cs_ib_alloc_result ib_result = {0};
@@ -212,6 +212,70 @@ static void amdgpu_command_submission_gfx(void)
 
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_command_submission_gfx_shared_ib(void)
+{
+	amdgpu_context_handle context_handle;
+	struct amdgpu_cs_ib_alloc_result ib_result = {0};
+	struct amdgpu_cs_request ibs_request = {0};
+	struct amdgpu_cs_ib_info ib_info[2];
+	struct amdgpu_cs_query_fence fence_status = {0};
+	uint32_t *ptr;
+	uint32_t expired;
+	int r;
+
+	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_cs_alloc_ib(context_handle,
+			       amdgpu_cs_ib_size_4K, &ib_result);
+	CU_ASSERT_EQUAL(r, 0);
+
+	memset(ib_info, 0, 2 * sizeof(struct amdgpu_cs_ib_info));
+
+	/* IT_SET_CE_DE_COUNTERS */
+	ptr = ib_result.cpu;
+	ptr[0] = 0xc0008900;
+	ptr[1] = 0;
+	ptr[2] = 0xc0008400;
+	ptr[3] = 1;
+	ib_info[0].ib_handle = ib_result.handle;
+	ib_info[0].size = 4;
+	ib_info[0].flags = AMDGPU_IB_FLAG_CE;
+
+	ptr = (uint32_t *)ib_result.cpu + 4;
+	ptr[0] = 0xc0008600;
+	ptr[1] = 0x00000001;
+	ib_info[1].ib_handle = ib_result.handle;
+	ib_info[1].size = 2;
+	ib_info[1].offset_dw = 4;
+
+	ibs_request.ip_type = AMDGPU_HW_IP_GFX;
+	ibs_request.number_of_ibs = 2;
+	ibs_request.ibs = ib_info;
+
+	r = amdgpu_cs_submit(context_handle, 0,
+			&ibs_request, 1, &fence_status.fence);
+	CU_ASSERT_EQUAL(r, 0);
+
+	fence_status.context = context_handle;
+	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
+	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+
+	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_cs_ctx_free(context_handle);
+	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_command_submission_gfx(void)
+{
+	/* separate IB buffers for multi-IB submission */
+	amdgpu_command_submission_gfx_separate_ibs();
+	/* shared IB buffer for multi-IB submission */
+	amdgpu_command_submission_gfx_shared_ib();
 }
 
 static void amdgpu_command_submission_compute(void)
