@@ -4042,6 +4042,9 @@ TEST(HeapTest, VectorDestructors)
     EXPECT_LE(8, InlinedVectorObject::s_destructorCalls);
 }
 
+// TODO(Oilpan): when Vector.h's contiguous container support no longer disables
+// Vector<>s with inline capacity, enable this test.
+#if !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
 TEST(HeapTest, VectorDestructorsWithVtable)
 {
     clearOutOldGarbage();
@@ -4084,6 +4087,7 @@ TEST(HeapTest, VectorDestructorsWithVtable)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     EXPECT_EQ(9, InlinedVectorObjectWithVtable::s_destructorCalls);
 }
+#endif
 
 template<typename Set>
 void rawPtrInHashHelper()
