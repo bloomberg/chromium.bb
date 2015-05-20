@@ -820,16 +820,10 @@ void DesktopWindowTreeHostWin::HandleFrameChanged() {
 
 void DesktopWindowTreeHostWin::HandleNativeFocus(HWND last_focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->OnFocus();
 }
 
 void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->OnBlur();
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
