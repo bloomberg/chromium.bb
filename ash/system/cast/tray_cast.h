@@ -5,8 +5,10 @@
 #ifndef ASH_SYSTEM_CAST_TRAY_CAST_H_
 #define ASH_SYSTEM_CAST_TRAY_CAST_H_
 
+#include "ash/cast_config_delegate.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "base/memory/weak_ptr.h"
 
 namespace ash {
 namespace tray {
@@ -16,16 +18,12 @@ class CastDetailedView;
 class CastDuplexView;
 }  // namespace tray
 
-class CastConfigDelegate;
-
 class TrayCast : public SystemTrayItem, public ShellObserver {
  public:
   explicit TrayCast(SystemTray* system_tray);
   ~TrayCast() override;
 
  private:
-  bool HasCastExtension();
-
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(user::LoginStatus status) override;
   views::View* CreateDefaultView(user::LoginStatus status) override;
@@ -38,6 +36,14 @@ class TrayCast : public SystemTrayItem, public ShellObserver {
   // Overridden from ShellObserver.
   void OnCastingSessionStartedOrStopped(bool started) override;
 
+  // Returns true if the cast extension was detected.
+  bool HasCastExtension();
+
+  // Callback used to enable/disable the "Select cast device" view depending on
+  // if we have any cast receivers.
+  void TryActivateSelectViewCallback(
+      const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
+
   // This makes sure that the current view displayed in the tray is the correct
   // one, depending on if we are currently casting. If we're casting, then a
   // view with a stop button is displayed; otherwise, a view that links to a
@@ -45,13 +51,14 @@ class TrayCast : public SystemTrayItem, public ShellObserver {
   // casting session.
   void UpdatePrimaryView();
 
-  bool is_casting_ = false;
-
   // Not owned.
   tray::CastTrayView* tray_ = nullptr;
   tray::CastDuplexView* default_ = nullptr;
   tray::CastDetailedView* detailed_ = nullptr;
   CastConfigDelegate* cast_config_delegate_;
+
+  bool is_casting_ = false;
+  base::WeakPtrFactory<TrayCast> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayCast);
 };

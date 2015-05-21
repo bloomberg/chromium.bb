@@ -4,7 +4,6 @@
 
 #include "ash/system/cast/tray_cast.h"
 
-#include "ash/cast_config_delegate.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
@@ -22,7 +21,6 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "base/bind.h"
-#include "base/memory/weak_ptr.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -526,7 +524,8 @@ TrayCast::TrayCast(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       cast_config_delegate_(ash::Shell::GetInstance()
                                 ->system_tray_delegate()
-                                ->GetCastConfigDelegate()) {
+                                ->GetCastConfigDelegate()),
+      weak_ptr_factory_(this) {
   Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -574,6 +573,11 @@ bool TrayCast::HasCastExtension() {
          cast_config_delegate_->HasCastExtension();
 }
 
+void TrayCast::TryActivateSelectViewCallback(
+    const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
+  default_->SetVisible(!receivers_activities.empty());
+}
+
 void TrayCast::UpdatePrimaryView() {
   if (HasCastExtension() == false) {
     if (default_)
@@ -585,10 +589,15 @@ void TrayCast::UpdatePrimaryView() {
     }
   } else {
     if (default_) {
-      if (is_casting_)
+      if (is_casting_) {
         default_->ActivateCastView();
-      else
+      } else {
         default_->ActivateSelectView();
+        // We only want to show the Select view if we have a device to cast to.
+        cast_config_delegate_->GetReceiversAndActivities(
+            base::Bind(&TrayCast::TryActivateSelectViewCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+      }
     }
 
     if (tray_)
