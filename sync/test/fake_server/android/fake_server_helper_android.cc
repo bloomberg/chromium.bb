@@ -19,6 +19,7 @@
 #include "sync/test/fake_server/fake_server.h"
 #include "sync/test/fake_server/fake_server_network_resources.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
+#include "sync/test/fake_server/tombstone_entity.h"
 #include "sync/test/fake_server/unique_client_entity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -144,6 +145,18 @@ FakeServerHelperAndroid::GetBookmarkBarFolderId(
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   return base::android::ConvertUTF8ToJavaString(
       env, fake_server_ptr->GetBookmarkBarFolderId());
+}
+
+void FakeServerHelperAndroid::DeleteEntity(
+    JNIEnv* env,
+    jobject obj,
+    jlong fake_server,
+    jstring id) {
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+  std::string native_id = base::android::ConvertJavaStringToUTF8(env, id);
+  fake_server_ptr->InjectEntity(
+      make_scoped_ptr(fake_server::TombstoneEntity::Create(native_id)));
 }
 
 // static

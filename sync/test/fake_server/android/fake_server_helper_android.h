@@ -62,6 +62,13 @@ class FakeServerHelperAndroid {
       jobject obj,
       jlong fake_server);
 
+  // Deletes an entity on the server. This is the JNI way of injecting a
+  // tombstone.
+  void DeleteEntity(JNIEnv* env,
+                    jobject obj,
+                    jlong fake_server,
+                    jstring id);
+
  private:
   virtual ~FakeServerHelperAndroid();
 };

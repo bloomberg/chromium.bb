@@ -40,6 +40,8 @@ import java.util.concurrent.TimeoutException;
 public class SyncTest extends SyncTestBase {
     private static final String TAG = "SyncTest";
 
+    private static final String BOOKMARKS_TYPE_STRING = "Bookmarks";
+
     /**
      * This is a regression test for http://crbug.com/475299.
      */
@@ -225,12 +227,17 @@ public class SyncTest extends SyncTestBase {
         assertEquals("The wrong URL was found for the typed URL.", url, typedUrl.getString("url"));
     }
 
-    @LargeTest
-    @Feature({"Sync"})
-    public void testDownloadBookmark() throws Exception {
+    /**
+     * This method performs all steps to test that the client successfully downloads a bookmark from
+     * the server. If successful, a single bookmark will exist on the fake Sync server and on the
+     * client. This state can then be used to test deletion or modification of the bookmark.
+     *
+     * @return the downloaded bookmark's server ID
+     */
+    private String runDownloadBookmarkTestScenario() throws Exception {
         setupTestAccountAndSignInToSync(CLIENT_ID);
         assertEquals("No bookmarks should exist on the client by default.",
-                0, SyncTestUtil.getLocalData(mContext, "Bookmarks").size());
+                0, SyncTestUtil.getLocalData(mContext, BOOKMARKS_TYPE_STRING).size());
 
         String title = "Title";
         String url = "http://chromium.org/";
@@ -240,13 +247,44 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
 
         List<Pair<String, JSONObject>> bookmarks = SyncTestUtil.getLocalData(
-                mContext, "Bookmarks");
+                mContext, BOOKMARKS_TYPE_STRING);
         assertEquals("Only the injected bookmark should exist on the client.",
                 1, bookmarks.size());
-        JSONObject bookmark = bookmarks.get(0).second;
+        Pair<String, JSONObject> bookmark = bookmarks.get(0);
+        JSONObject bookmarkJson = bookmark.second;
         assertEquals("The wrong title was found for the bookmark.", title,
-                bookmark.getString("title"));
-        assertEquals("The wrong URL was found for the bookmark.", url, bookmark.getString("url"));
+                bookmarkJson.getString("title"));
+        assertEquals("The wrong URL was found for the bookmark.",
+                url, bookmarkJson.getString("url"));
+
+        return bookmark.first;
+    }
+
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadBookmark() throws Exception {
+        runDownloadBookmarkTestScenario();
+    }
+
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadDeletedBookmark() throws Exception {
+        String id = runDownloadBookmarkTestScenario();
+        mFakeServerHelper.deleteEntity(id);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+
+        boolean bookmarkDeleted = CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return SyncTestUtil.getLocalData(mContext, BOOKMARKS_TYPE_STRING).isEmpty();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
+
+        assertTrue("The lone bookmark should have been deleted.", bookmarkDeleted);
     }
 
     private static ContentViewCore getContentViewCore(ChromeShellActivity activity) {

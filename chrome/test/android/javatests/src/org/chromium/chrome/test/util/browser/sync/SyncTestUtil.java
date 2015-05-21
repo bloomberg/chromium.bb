@@ -405,6 +405,29 @@ public final class SyncTestUtil {
     }
 
     /**
+     * Converts the given ID to the format stored by the server.
+     *
+     * See the SyncableId (C++) class for more information about ID encoding. To paraphrase,
+     * the client prepends "s" or "c" to the server's ID depending on the commit state of the data.
+     * IDs can also be "r" to indicate the root node, but that entity is not supported here.
+     *
+     * @param clientId the ID to be converted
+     * @return the converted ID
+     */
+    private static String convertToServerId(String clientId) {
+        if (clientId == null) {
+            throw new IllegalArgumentException("Client entity ID cannot be null.");
+        } else if (clientId.isEmpty()) {
+            throw new IllegalArgumentException("Client ID cannot be empty.");
+        } else if (!clientId.startsWith("s") && !clientId.startsWith("c")) {
+            throw new IllegalArgumentException(String.format(
+                    "Client ID (%s) must start with c or s.", clientId));
+        }
+
+        return clientId.substring(1);
+    }
+
+    /**
      * Returns the local Sync data present for a single datatype.
      *
      * For each data entity, a Pair is returned. The first piece of data is the entity's server ID.
@@ -440,7 +463,8 @@ public final class SyncTestUtil {
                 // Ignore permanent items (e.g., root datatype folders).
                 continue;
             }
-            localDataForDatatype.add(Pair.create(entity.getString("ID"), extractSpecifics(entity)));
+            String id = convertToServerId(entity.getString("ID"));
+            localDataForDatatype.add(Pair.create(id, extractSpecifics(entity)));
         }
         return localDataForDatatype;
     }

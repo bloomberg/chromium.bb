@@ -161,6 +161,18 @@ public class FakeServerHelper {
     }
 
     /**
+     * Deletes an entity on the fake Sync server.
+     *
+     * In other words, this method injects a tombstone into the fake Sync server.
+     *
+     * @param id the server ID of the entity to delete
+     */
+    public void deleteEntity(String id) {
+        checkFakeServerInitialized("useFakeServer must be called before deleting an entity.");
+        nativeDeleteEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, id);
+    }
+
+    /**
      * Returns the ID of the Bookmark Bar. This value is to be used in conjunction with
      * injectBookmarkEntity.
      *
@@ -195,4 +207,6 @@ public class FakeServerHelper {
             String parentId);
     private native String nativeGetBookmarkBarFolderId(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
+    private native void nativeDeleteEntity(
+            long nativeFakeServerHelperAndroid, long nativeFakeServer, String id);
 }
