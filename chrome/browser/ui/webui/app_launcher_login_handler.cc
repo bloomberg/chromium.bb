@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
+#include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/profile_info_watcher.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -79,52 +79,37 @@ base::string16 CreateElementWithClass(const base::string16& content,
 
 }  // namespace
 
-NTPLoginHandler::NTPLoginHandler() {
-}
+AppLauncherLoginHandler::AppLauncherLoginHandler() {}
 
-NTPLoginHandler::~NTPLoginHandler() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  // The profile_manager might be NULL in testing environments.
-  if (profile_manager)
-    profile_manager->GetProfileInfoCache().RemoveObserver(this);
-}
+AppLauncherLoginHandler::~AppLauncherLoginHandler() {}
 
-void NTPLoginHandler::RegisterMessages() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  // The profile_manager might be NULL in testing environments.
-  if (profile_manager)
-    profile_manager->GetProfileInfoCache().AddObserver(this);
-
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  signin_allowed_pref_.Init(prefs::kSigninAllowed,
-                            pref_service,
-                            base::Bind(&NTPLoginHandler::UpdateLogin,
-                                       base::Unretained(this)));
+void AppLauncherLoginHandler::RegisterMessages() {
+  profile_info_watcher_.reset(new ProfileInfoWatcher(
+      Profile::FromWebUI(web_ui()),
+      base::Bind(&AppLauncherLoginHandler::UpdateLogin,
+                 base::Unretained(this))));
 
   web_ui()->RegisterMessageCallback("initializeSyncLogin",
-      base::Bind(&NTPLoginHandler::HandleInitializeSyncLogin,
+      base::Bind(&AppLauncherLoginHandler::HandleInitializeSyncLogin,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("showSyncLoginUI",
-      base::Bind(&NTPLoginHandler::HandleShowSyncLoginUI,
+      base::Bind(&AppLauncherLoginHandler::HandleShowSyncLoginUI,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("loginMessageSeen",
-      base::Bind(&NTPLoginHandler::HandleLoginMessageSeen,
+      base::Bind(&AppLauncherLoginHandler::HandleLoginMessageSeen,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("showAdvancedLoginUI",
-      base::Bind(&NTPLoginHandler::HandleShowAdvancedLoginUI,
+      base::Bind(&AppLauncherLoginHandler::HandleShowAdvancedLoginUI,
                  base::Unretained(this)));
 }
 
-void NTPLoginHandler::OnProfileAuthInfoChanged(
-    const base::FilePath& profile_path) {
+void AppLauncherLoginHandler::HandleInitializeSyncLogin(
+    const base::ListValue* args) {
   UpdateLogin();
 }
 
-void NTPLoginHandler::HandleInitializeSyncLogin(const base::ListValue* args) {
-  UpdateLogin();
-}
-
-void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
+void AppLauncherLoginHandler::HandleShowSyncLoginUI(
+    const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!signin::ShouldShowPromo(profile))
     return;
@@ -148,7 +133,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
   RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
 }
 
-void NTPLoginHandler::RecordInHistogram(int type) {
+void AppLauncherLoginHandler::RecordInHistogram(int type) {
   // Invalid type to record.
   if (type < NTP_SIGN_IN_PROMO_VIEWED ||
       type > NTP_SIGN_IN_PROMO_CLICKED) {
@@ -159,7 +144,8 @@ void NTPLoginHandler::RecordInHistogram(int type) {
   }
 }
 
-void NTPLoginHandler::HandleLoginMessageSeen(const base::ListValue* args) {
+void AppLauncherLoginHandler::HandleLoginMessageSeen(
+    const base::ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowNTPBubble, false);
   NewTabUI* ntp_ui = NewTabUI::FromWebUIController(web_ui()->GetController());
@@ -168,26 +154,19 @@ void NTPLoginHandler::HandleLoginMessageSeen(const base::ListValue* args) {
     ntp_ui->set_showing_sync_bubble(true);
 }
 
-void NTPLoginHandler::HandleShowAdvancedLoginUI(const base::ListValue* args) {
+void AppLauncherLoginHandler::HandleShowAdvancedLoginUI(
+    const base::ListValue* args) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
     chrome::ShowBrowserSignin(browser, signin_metrics::SOURCE_NTP_LINK);
 }
 
-void NTPLoginHandler::UpdateLogin() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  if (!signin_manager) {
-    // Guests on desktop do not have a signin manager.
-    return;
-  }
-
-  std::string username = signin_manager->GetAuthenticatedUsername();
-
+void AppLauncherLoginHandler::UpdateLogin() {
+  std::string username = profile_info_watcher_->GetAuthenticatedUsername();
   base::string16 header, sub_header;
   std::string icon_url;
+  Profile* profile = Profile::FromWebUI(web_ui());
   if (!username.empty()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -240,7 +219,7 @@ void NTPLoginHandler::UpdateLogin() {
 }
 
 // static
-bool NTPLoginHandler::ShouldShow(Profile* profile) {
+bool AppLauncherLoginHandler::ShouldShow(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // For now we don't care about showing sync status on Chrome OS. The promo
   // UI and the avatar menu don't exist on that platform.
@@ -252,8 +231,8 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
 }
 
 // static
-void NTPLoginHandler::GetLocalizedValues(Profile* profile,
-                                         base::DictionaryValue* values) {
+void AppLauncherLoginHandler::GetLocalizedValues(
+    Profile* profile, base::DictionaryValue* values) {
   PrefService* prefs = profile->GetPrefs();
   bool hide_sync = !prefs->GetBoolean(prefs::kSignInPromoShowNTPBubble);
 

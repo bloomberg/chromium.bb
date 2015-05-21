@@ -75,7 +75,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
-#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
+#include "chrome/browser/ui/webui/history_login_handler.h"
 #endif
 
 using bookmarks::BookmarkModel;
@@ -1029,11 +1029,11 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
   web_ui->AddMessageHandler(new MetricsHandler());
 
-// On mobile we deal with foreign sessions differently.
+  // On mobile we deal with foreign sessions differently.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (chrome::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
-    web_ui->AddMessageHandler(new NTPLoginHandler());
+    web_ui->AddMessageHandler(new HistoryLoginHandler());
   }
 #endif
 
@@ -1041,6 +1041,8 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateHistoryUIHTMLSource(profile));
 }
+
+HistoryUI::~HistoryUI() {}
 
 // static
 base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(

@@ -31,9 +31,9 @@
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -448,7 +448,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString("syncLinkText",
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
   load_time_data.SetBoolean("shouldShowSyncLogin",
-                            NTPLoginHandler::ShouldShow(profile_));
+                            AppLauncherLoginHandler::ShouldShow(profile_));
   load_time_data.SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
@@ -489,7 +489,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 #endif
 
   NewTabPageHandler::GetLocalizedValues(profile_, &load_time_data);
-  NTPLoginHandler::GetLocalizedValues(profile_, &load_time_data);
+  AppLauncherLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
   webui::SetLoadTimeDataDefaults(app_locale, &load_time_data);
 

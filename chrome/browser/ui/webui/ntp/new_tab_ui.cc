@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
-#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
@@ -104,9 +103,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     if (service)
       web_ui->AddMessageHandler(new AppLauncherHandler(service));
   }
-
-  if (NTPLoginHandler::ShouldShow(profile))
-    web_ui->AddMessageHandler(new NTPLoginHandler());
 
 #if defined(ENABLE_THEMES)
   // The theme handler can require some CPU, so do it after hooking up the most

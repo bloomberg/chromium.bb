@@ -535,15 +535,10 @@ function setForeignSessions(sessionList, isTabSyncEnabled) {
 }
 
 /**
- * Called when this element is initialized, and from the new tab page when
- * the user's signed in state changes,
- * @param {string} header The first line of text (unused here).
- * @param {string} subHeader The second line of text (unused here).
- * @param {string} iconURL The url for the login status icon. If this is null
- then the login status icon is hidden (unused here).
+ * Called when initialized or the user's signed in state changes,
  * @param {boolean} isUserSignedIn Is the user currently signed in?
  */
-function updateLogin(header, subHeader, iconURL, isUserSignedIn) {
+function updateSignInState(isUserSignedIn) {
   if (devicesView)
     devicesView.updateSignInState(isUserSignedIn);
 }
@@ -557,15 +552,6 @@ function load() {
   if (!loadTimeData.getBoolean('isInstantExtendedApiEnabled'))
     return;
 
-  // We must use this namespace to reuse the handler code for foreign session
-  // and login. TODO(estade): change the call site in ntp_login_handler.cc so
-  // this hack isn't necessary.
-  cr.define('ntp', function() {
-    return {
-      updateLogin: updateLogin
-    };
-  });
-
   devicesView = new DevicesView();
 
   // Create the context menu that appears when the user right clicks
@@ -577,6 +563,8 @@ function load() {
   };
   $('search-field').addEventListener('search', doSearch);
   $('search-button').addEventListener('click', doSearch);
+
+  chrome.send('otherDevicesInitialized');
 }
 
 // Add handlers to HTML elements.

@@ -2,29 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_APP_LAUNCHER_LOGIN_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_APP_LAUNCHER_LOGIN_HANDLER_H_
 
-#include "base/prefs/pref_member.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
+class ProfileInfoWatcher;
 
-// The NTP login handler currently simply displays the current logged in
+// The login handler currently simply displays the current logged in
 // username at the top of the NTP (and update itself when that changes).
 // In the future it may expand to allow users to login from the NTP.
-class NTPLoginHandler : public content::WebUIMessageHandler,
-                        public ProfileInfoCacheObserver {
+class AppLauncherLoginHandler : public content::WebUIMessageHandler {
  public:
-  NTPLoginHandler();
-  ~NTPLoginHandler() override;
+  AppLauncherLoginHandler();
+  ~AppLauncherLoginHandler() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
-
-  // ProfileInfoCacheObserver implementation:
-  void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
 
   // Returns true if the login handler should be shown in a new tab page
   // for the given |profile|. |profile| must not be NULL.
@@ -66,7 +63,11 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
   // Internal helper method
   void UpdateLogin();
 
-  BooleanPrefMember signin_allowed_pref_;
+  // Watches this web UI's profile for info changes (e.g. authenticated username
+  // changes).
+  scoped_ptr<ProfileInfoWatcher> profile_info_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppLauncherLoginHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_NTP_NTP_LOGIN_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_APP_LAUNCHER_LOGIN_HANDLER_H_
