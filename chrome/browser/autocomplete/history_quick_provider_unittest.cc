@@ -637,7 +637,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
 
   expected_urls.clear();
   expected_urls.push_back("http://popularsitewithroot.com/");
-  // If the user enters a hostname (no path) that he/she has visited
+  // If the user enters a hostname (no path) that they have visited
   // before, we should make sure that all HistoryQuickProvider results
   // have scores less than what HistoryURLProvider will assign the
   // URL-what-you-typed match.
@@ -656,7 +656,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
 
   expected_urls.clear();
   expected_urls.push_back("http://popularsitewithpathonly.com/moo");
-  // If the user enters a hostname of a host that he/she has visited
+  // If the user enters a hostname of a host that they have visited
   // but never visited the root page of, we should make sure that all
   // HistoryQuickProvider results have scores less than what the
   // HistoryURLProvider will assign the URL-what-you-typed match.
@@ -683,7 +683,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   EXPECT_GE(ac_matches_[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
-  // If the user enters a hostname + path that he/she has not visited
+  // If the user enters a hostname + path that they have not visited
   // before (but visited other things on the host), we can allow
   // inline autocompletions.
   RunTest(ASCIIToUTF16("popularsitewithpathonly.com/mo"), false, expected_urls,
@@ -693,7 +693,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   EXPECT_GE(ac_matches_[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
-  // If the user enters a hostname + path that he/she has visited
+  // If the user enters a hostname + path that they have visited
   // before, we should make sure that all HistoryQuickProvider results
   // have scores less than what the HistoryURLProvider will assign
   // the URL-what-you-typed match.

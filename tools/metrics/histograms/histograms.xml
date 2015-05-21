@@ -25808,7 +25808,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Omnibox.NumTypedTerms" units="terms">
   <owner>mpearson@chromium.org</owner>
   <summary>
-    The number of terms in the text the user entered in the omnibox when he/she
+    The number of terms in the text the user entered in the omnibox when they
     used the omnibox to go somewhere.  Terms are defined by splitting on
     whitespace.  All values larger than 6 are recorded in bucket 6.
   </summary>
