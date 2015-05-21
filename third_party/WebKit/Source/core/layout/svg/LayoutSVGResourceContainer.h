@@ -84,6 +84,8 @@ protected:
     void markAllClientLayersForInvalidation();
     void markClientForInvalidation(LayoutObject*, InvalidationMode);
 
+    virtual void willBeDestroyed() override;
+
     bool m_isInLayout;
 
 private:
@@ -91,7 +93,6 @@ private:
     void addClient(LayoutObject*);
     void removeClient(LayoutObject*);
 
-    virtual void willBeDestroyed() override final;
     void registerResource();
 
     AtomicString m_id;

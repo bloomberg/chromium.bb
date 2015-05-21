@@ -76,7 +76,6 @@ public:
     explicit LayoutSVGResourceFilter(SVGFilterElement*);
 
     virtual ~LayoutSVGResourceFilter();
-    virtual void destroy() override;
 
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
@@ -100,6 +99,9 @@ public:
 
     FilterData* getFilterDataForLayoutObject(LayoutObject* object) { return m_filter.get(object); }
     void setFilterDataForLayoutObject(LayoutObject* object, PassOwnPtrWillBeRawPtr<FilterData> filterData) { m_filter.set(object, filterData); }
+
+protected:
+    virtual void willBeDestroyed() override;
 
 private:
     void disposeFilterMap();

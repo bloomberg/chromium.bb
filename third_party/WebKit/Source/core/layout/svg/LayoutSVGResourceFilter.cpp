@@ -66,10 +66,10 @@ void LayoutSVGResourceFilter::disposeFilterMap()
     m_filter.clear();
 }
 
-void LayoutSVGResourceFilter::destroy()
+void LayoutSVGResourceFilter::willBeDestroyed()
 {
     disposeFilterMap();
-    LayoutSVGResourceContainer::destroy();
+    LayoutSVGResourceContainer::willBeDestroyed();
 }
 
 bool LayoutSVGResourceFilter::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
