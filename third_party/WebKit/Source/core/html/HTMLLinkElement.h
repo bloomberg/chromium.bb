@@ -152,7 +152,6 @@ public:
     bool isImport() const { return linkImport(); }
     bool isDisabled() const { return linkStyle() && linkStyle()->isDisabled(); }
     bool isEnabledViaScript() const { return linkStyle() && linkStyle()->isEnabledViaScript(); }
-    void setEnabledIfExitTransitionStyle(bool);
 
     DOMSettableTokenList* sizes() const;
 

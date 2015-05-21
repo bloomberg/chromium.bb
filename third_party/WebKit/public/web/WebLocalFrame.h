@@ -78,12 +78,6 @@ public:
     // cross process.
     virtual void setCommittedFirstRealLoad() = 0;
 
-
-    // Navigation Transitions -------------------------------------------------
-    virtual void addStyleSheetByURL(const WebString& url) = 0;
-    virtual void navigateToSandboxedMarkup(const WebData& markup) = 0;
-
-
     // Orientation Changes ----------------------------------------------------
 
     // Notify the frame that the screen orientation has changed.

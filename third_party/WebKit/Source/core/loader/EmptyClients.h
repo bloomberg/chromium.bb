@@ -185,7 +185,7 @@ public:
     virtual void dispatchDidHandleOnloadEvents() override { }
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() override { }
     virtual void dispatchWillClose() override { }
-    virtual void dispatchDidStartProvisionalLoad(bool isTransitionNavigation, double triggeringEventTime) override { }
+    virtual void dispatchDidStartProvisionalLoad(double triggeringEventTime) override { }
     virtual void dispatchDidReceiveTitle(const String&) override { }
     virtual void dispatchDidChangeIcons(IconType) override { }
     virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override { }
@@ -196,7 +196,7 @@ public:
     virtual void dispatchDidFirstVisuallyNonEmptyLayout() override { }
     virtual void dispatchDidChangeThemeColor() override { };
 
-    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy, bool isTransitionNavigation) override;
+    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) override;
 
     virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
     virtual void dispatchWillSubmitForm(HTMLFormElement*) override;

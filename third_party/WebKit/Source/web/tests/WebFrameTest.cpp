@@ -4858,29 +4858,6 @@ TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection)
     frame->moveCaretSelection(WebPoint(0, 0));
 }
 
-TEST_F(WebFrameTest, NavigateToSandboxedMarkup)
-{
-    FrameTestHelpers::TestWebFrameClient webFrameClient;
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad("about:blank", true, &webFrameClient);
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-
-    frame->document().setIsTransitionDocument(true);
-
-    std::string markup("<div id='foo'></div><script>document.getElementById('foo').setAttribute('dir', 'rtl')</script>");
-    frame->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
-
-    webFrameClient.waitForLoadToComplete();
-
-    WebDocument document = webViewImpl->mainFrame()->document();
-    WebElement transitionElement = document.getElementById("foo");
-    // Check that the markup got navigated to successfully.
-    EXPECT_FALSE(transitionElement.isNull());
-
-    // Check that the inline script was not executed.
-    EXPECT_FALSE(transitionElement.hasAttribute("dir"));
-}
-
 class SpellCheckClient : public WebSpellCheckClient {
 public:
     explicit SpellCheckClient(uint32_t hash = 0) : m_numberOfTimesChecked(0), m_hash(hash) { }
@@ -5899,7 +5876,7 @@ public:
         m_frame = nullptr;
     }
 
-    void didStartProvisionalLoad(WebLocalFrame* frame, bool isTransitionNavigation, double)
+    void didStartProvisionalLoad(WebLocalFrame* frame, double)
     {
         WebDataSource* ds = frame->provisionalDataSource();
         m_replacesCurrentHistoryItem = ds->replacesCurrentHistoryItem();
@@ -7267,71 +7244,6 @@ TEST_F(WebFrameTest, LoaderOriginAccess)
     DocumentThreadableLoader::loadResourceSynchronously(
         *frame->document(), ResourceRequest(resourceUrl), client, options, resourceLoaderOptions);
     EXPECT_FALSE(client.failed());
-}
-
-class NavigationTransitionCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
-public:
-    NavigationTransitionCallbackWebFrameClient()
-        : m_navigationalDataReceivedCount(0)
-        , m_provisionalLoadCount(0)
-        , m_wasLastProvisionalLoadATransition(false) { }
-
-    virtual void addNavigationTransitionData(const WebTransitionElementData& data) override
-    {
-        m_navigationalDataReceivedCount++;
-    }
-
-    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation, double) override
-    {
-        m_provisionalLoadCount++;
-        m_wasLastProvisionalLoadATransition = isTransitionNavigation;
-    }
-
-    unsigned navigationalDataReceivedCount() const { return m_navigationalDataReceivedCount; }
-    unsigned provisionalLoadCount() const { return m_provisionalLoadCount; }
-    bool wasLastProvisionalLoadATransition() const { return m_wasLastProvisionalLoadATransition; }
-
-private:
-    unsigned m_navigationalDataReceivedCount;
-    unsigned m_provisionalLoadCount;
-    bool m_wasLastProvisionalLoadATransition;
-};
-
-TEST_F(WebFrameTest, NavigationTransitionCallbacks)
-{
-    RuntimeEnabledFeatures::setNavigationTransitionsEnabled(true);
-    FrameTestHelpers::WebViewHelper viewHelper;
-    NavigationTransitionCallbackWebFrameClient frameClient;
-    WebLocalFrame* localFrame = viewHelper.initialize(true, &frameClient)->mainFrame()->toWebLocalFrame();
-
-    const char* transitionHTMLString =
-        "<!DOCTYPE html>"
-        "<meta name='transition-elements' content='#foo;*'>"
-        "<div id='foo'>";
-
-    // Initial document load should not be a transition.
-    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("http://internal.test"));
-    EXPECT_EQ(1u, frameClient.provisionalLoadCount());
-    EXPECT_FALSE(frameClient.wasLastProvisionalLoadATransition());
-    EXPECT_EQ(0u, frameClient.navigationalDataReceivedCount());
-
-    // Going from internal.test containing transition elements to about:blank, should be a transition.
-    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("about:blank"));
-    EXPECT_EQ(2u, frameClient.provisionalLoadCount());
-    EXPECT_TRUE(frameClient.wasLastProvisionalLoadATransition());
-    EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
-
-    // Navigating to the URL of the current page shouldn't be a transition.
-    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("about:blank"));
-    EXPECT_EQ(3u, frameClient.provisionalLoadCount());
-    EXPECT_FALSE(frameClient.wasLastProvisionalLoadATransition());
-    EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
-
-    // Neither should a page reload.
-    localFrame->reload();
-    EXPECT_EQ(4u, frameClient.provisionalLoadCount());
-    EXPECT_FALSE(frameClient.wasLastProvisionalLoadATransition());
-    EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
 }
 
 TEST_F(WebFrameTest, DetachRemoteFrame)

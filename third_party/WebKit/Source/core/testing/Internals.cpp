@@ -2239,68 +2239,6 @@ ClientRect* Internals::boundsInViewportSpace(Element* element)
     return ClientRect::create(element->boundsInViewportSpace());
 }
 
-String Internals::serializeNavigationMarkup()
-{
-    Vector<Document::TransitionElementData> elementData;
-    frame()->document()->getTransitionElementData(elementData);
-
-    StringBuilder markup;
-    for (const auto& element : elementData)
-        markup.append(element.markup);
-
-    return markup.toString();
-}
-
-Vector<String> Internals::getTransitionElementIds()
-{
-    Vector<Document::TransitionElementData> elementData;
-    frame()->document()->getTransitionElementData(elementData);
-
-    Vector<String> ids;
-    for (size_t i = 0; i < elementData.size(); ++i) {
-        for (size_t j = 0; j < elementData[i].elements.size(); ++j)
-            ids.append(elementData[i].elements[j].id);
-    }
-
-    return ids;
-}
-
-ClientRectList* Internals::getTransitionElementRects()
-{
-    Vector<Document::TransitionElementData> elementData;
-    frame()->document()->getTransitionElementData(elementData);
-
-    Vector<IntRect> rects;
-    for (size_t i = 0; i < elementData.size(); ++i) {
-        for (size_t j = 0; j < elementData[i].elements.size(); ++j)
-            rects.append(elementData[i].elements[j].rect);
-    }
-    return ClientRectList::create(rects);
-}
-
-void Internals::hideAllTransitionElements()
-{
-    Vector<Document::TransitionElementData> elementData;
-    frame()->document()->getTransitionElementData(elementData);
-
-    for (const auto& element : elementData)
-        frame()->document()->hideTransitionElements(AtomicString(element.selector));
-}
-
-void Internals::showAllTransitionElements()
-{
-    Vector<Document::TransitionElementData> elementData;
-    frame()->document()->getTransitionElementData(elementData);
-
-    for (const auto& element : elementData)
-        frame()->document()->showTransitionElements(AtomicString(element.selector));
-}
-
-void Internals::setExitTransitionStylesheetsEnabled(bool enabled)
-{
-    frame()->document()->styleEngine().setExitTransitionStylesheetsEnabled(enabled);
-}
-
 void Internals::forcePluginPlaceholder(HTMLElement* element, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
 {
     if (!element->isPluginElement()) {

@@ -1192,29 +1192,6 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-bool FrameLoader::validateTransitionNavigationMode()
-{
-    if (m_frame->document()->inQuirksMode()) {
-        m_frame->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Ignoring transition elements due to quirks mode."));
-        return false;
-    }
-
-    // FIXME(oysteine): Also check for width=device-width here, to avoid zoom/scaling issues.
-    return true;
-}
-
-bool FrameLoader::dispatchNavigationTransitionData()
-{
-    Vector<Document::TransitionElementData> elementData;
-    m_frame->document()->getTransitionElementData(elementData);
-    if (elementData.isEmpty() || !validateTransitionNavigationMode())
-        return false;
-
-    for (auto& element : elementData)
-        client()->dispatchAddNavigationTransitionData(element);
-
-    return true;
-}
 
 void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType type, NavigationPolicy navigationPolicy)
 {
@@ -1240,13 +1217,9 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
     m_policyDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirect);
 
-    bool isTransitionNavigation = false;
-    if (RuntimeEnabledFeatures::navigationTransitionsEnabled() && type != FrameLoadTypeReload && type != FrameLoadTypeReloadFromOrigin && type != FrameLoadTypeSame)
-        isTransitionNavigation = dispatchNavigationTransitionData();
-
     // stopAllLoaders can detach the LocalFrame, so protect it.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
+    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationPolicy) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
         return;
@@ -1288,7 +1261,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
         m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
     m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
     double triggeringEventTime = frameLoadRequest.triggeringEvent() ? convertDOMTimeStampToSeconds(frameLoadRequest.triggeringEvent()->timeStamp()) : 0;
-    client()->dispatchDidStartProvisionalLoad(isTransitionNavigation, triggeringEventTime);
+    client()->dispatchDidStartProvisionalLoad(triggeringEventTime);
     ASSERT(m_provisionalDocumentLoader);
     m_provisionalDocumentLoader->startLoadingMainResource();
 }

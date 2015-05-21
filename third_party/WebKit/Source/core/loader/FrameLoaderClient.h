@@ -86,7 +86,7 @@ namespace blink {
         virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
         virtual void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType) { }
         virtual void dispatchWillClose() = 0;
-        virtual void dispatchDidStartProvisionalLoad(bool isTransitionNavigation, double triggeringEventTime) = 0;
+        virtual void dispatchDidStartProvisionalLoad(double triggeringEventTime) = 0;
         virtual void dispatchDidReceiveTitle(const String&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
         virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;
@@ -97,9 +97,8 @@ namespace blink {
         virtual void dispatchDidFirstVisuallyNonEmptyLayout() = 0;
         virtual void dispatchDidChangeThemeColor() = 0;
 
-        virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy, bool isTransitionNavigation) = 0;
+        virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;
 
-        virtual void dispatchAddNavigationTransitionData(const Document::TransitionElementData&) { }
         virtual void dispatchWillRequestResource(FetchRequest*) { }
 
         virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;

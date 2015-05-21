@@ -455,7 +455,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_sawElementsInKnownNamespaces(false)
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
-    , m_isTransitionDocument(false)
     , m_layoutView(0)
 #if !ENABLE(OILPAN)
     , m_weakFactory(this)
@@ -5466,75 +5465,6 @@ Element* Document::activeElement() const
     if (Element* element = adjustedFocusedElement())
         return element;
     return body();
-}
-
-void Document::getTransitionElementData(Vector<TransitionElementData>& elementData)
-{
-    if (!head())
-        return;
-
-    for (HTMLMetaElement* metaElement = Traversal<HTMLMetaElement>::firstChild(*head()); metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
-        if (metaElement->name() != "transition-elements")
-            continue;
-
-        const String& metaElementContents = metaElement->content().string();
-        size_t firstSemicolon = metaElementContents.find(';');
-        if (firstSemicolon == kNotFound)
-            continue;
-
-        TrackExceptionState exceptionState;
-        AtomicString selector(metaElementContents.substring(0, firstSemicolon));
-        RefPtrWillBeRawPtr<StaticElementList> elementList = querySelectorAll(selector, exceptionState);
-        if (!elementList || exceptionState.hadException())
-            continue;
-
-        unsigned nodeListLength = elementList->length();
-        if (!nodeListLength)
-            continue;
-
-        TransitionElementData newElements;
-        StringBuilder markup;
-        for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
-            Element* element = elementList->item(nodeIndex);
-            markup.append(createStyledMarkupForNavigationTransition(element));
-            TransitionElement transitionElement;
-            if (element->hasID())
-                transitionElement.id = element->getIdAttribute().string();
-            else
-                transitionElement.id = "";
-            transitionElement.rect = element->boundsInViewportSpace();
-            newElements.elements.append(transitionElement);
-        }
-
-        newElements.scope = metaElementContents.substring(firstSemicolon + 1).stripWhiteSpace();
-        newElements.selector = selector;
-        newElements.markup = markup.toString();
-        elementData.append(newElements);
-    }
-}
-
-void Document::updateElementOpacity(const AtomicString& cssSelector, double opacity)
-{
-    TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<StaticElementList> elementList = querySelectorAll(cssSelector, exceptionState);
-    if (elementList && !exceptionState.hadException()) {
-        unsigned nodeListLength = elementList->length();
-
-        for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
-            Element* element = elementList->item(nodeIndex);
-            element->setInlineStyleProperty(CSSPropertyOpacity, opacity, CSSPrimitiveValue::CSS_NUMBER);
-        }
-    }
-}
-
-void Document::hideTransitionElements(const AtomicString& cssSelector)
-{
-    updateElementOpacity(cssSelector, 0.0);
-}
-
-void Document::showTransitionElements(const AtomicString& cssSelector)
-{
-    updateElementOpacity(cssSelector, 1.0);
 }
 
 bool Document::hasFocus() const

@@ -180,9 +180,6 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
             if (shouldAnnotate())
                 newInlineStyle->mergeStyleFromRulesForSerialization(&toHTMLElement(element));
 
-            if (&element == m_highestNodeToBeSerialized && m_shouldAnnotate == AnnotateForNavigationTransition)
-                newInlineStyle->addAbsolutePositioningFromElement(element);
-
             if (addDisplayInline)
                 newInlineStyle->forceInline();
 
@@ -253,7 +250,7 @@ bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
 
 bool StyledMarkupAccumulator::shouldAnnotate() const
 {
-    return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition;
+    return m_shouldAnnotate == AnnotateForInterchange;
 }
 
 } // namespace blink

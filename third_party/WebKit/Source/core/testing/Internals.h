@@ -327,12 +327,6 @@ public:
     void setNetworkConnectionInfo(const String&, ExceptionState&);
 
     ClientRect* boundsInViewportSpace(Element*);
-    String serializeNavigationMarkup();
-    Vector<String> getTransitionElementIds();
-    ClientRectList* getTransitionElementRects();
-    void hideAllTransitionElements();
-    void showAllTransitionElements();
-    void setExitTransitionStylesheetsEnabled(bool);
 
     unsigned countHitRegions(CanvasRenderingContext2D*);
 

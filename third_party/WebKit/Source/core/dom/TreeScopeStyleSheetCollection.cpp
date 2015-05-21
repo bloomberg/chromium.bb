@@ -176,17 +176,6 @@ void TreeScopeStyleSheetCollection::clearMediaQueryRuleSetStyleSheets()
     }
 }
 
-void TreeScopeStyleSheetCollection::setExitTransitionStyleshetsEnabled(bool enabled)
-{
-    DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
-    DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
-    for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
-        Node* node = *it;
-        if (isHTMLLinkElement(*node))
-            toHTMLLinkElement(node)->setEnabledIfExitTransitionStyle(enabled);
-    }
-}
-
 static bool styleSheetsUseRemUnits(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& sheets)
 {
     for (unsigned i = 0; i < sheets.size(); ++i) {

@@ -192,8 +192,6 @@ private:
 
     void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 
-    bool validateTransitionNavigationMode();
-    bool dispatchNavigationTransitionData();
 
     void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, HistoryScrollRestorationType = ScrollRestorationAuto, PassRefPtr<SerializedScriptValue> = nullptr);
 

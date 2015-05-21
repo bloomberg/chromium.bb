@@ -28,7 +28,6 @@
       <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../Source/core/css/themeWin.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../Source/core/css/themeWinQuirks.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_SVG_CSS" file="../Source/core/css/svg.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_NAVIGATION_TRANSITIONS_CSS" file="../Source/core/css/navigationTransitions.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_MATHML_CSS" file="../Source/core/css/mathml.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_MEDIA_CONTROLS_CSS" file="../Source/core/css/mediaControls.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../Source/core/css/fullscreen.css" type="BINDATA"/>

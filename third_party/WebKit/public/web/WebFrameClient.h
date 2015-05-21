@@ -95,7 +95,6 @@ struct WebContextMenuData;
 struct WebPluginParams;
 struct WebPopupMenuInfo;
 struct WebRect;
-struct WebTransitionElementData;
 struct WebURLError;
 
 class WebFrameClient {
@@ -212,7 +211,6 @@ public:
         WebNavigationType navigationType;
         WebNavigationPolicy defaultPolicy;
         bool isRedirect;
-        bool isTransitionNavigation;
 
         NavigationPolicyInfo(WebURLRequest& urlRequest)
             : frame(0)
@@ -220,8 +218,7 @@ public:
             , urlRequest(urlRequest)
             , navigationType(WebNavigationTypeOther)
             , defaultPolicy(WebNavigationPolicyIgnore)
-            , isRedirect(false)
-            , isTransitionNavigation(false) { }
+            , isRedirect(false) { }
     };
 
     virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info)
@@ -262,8 +259,7 @@ public:
     virtual void didCreateDataSource(WebLocalFrame*, WebDataSource*) { }
 
     // A new provisional load has been started.
-    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation,
-        double triggeringEventTime) { }
+    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, double triggeringEventTime) { }
 
     // The provisional load was redirected via a HTTP 3xx response.
     virtual void didReceiveServerRedirectForProvisionalLoad(WebLocalFrame*) { }
@@ -330,12 +326,6 @@ public:
     // Called to dispatch a load event for this frame in the FrameOwner of an
     // out-of-process parent frame.
     virtual void dispatchLoad() { }
-
-
-    // Transition navigations -----------------------------------------------
-
-    // Provides serialized markup of transition elements for use in the following navigation.
-    virtual void addNavigationTransitionData(const WebTransitionElementData&) { }
 
     // Web Notifications ---------------------------------------------------
 

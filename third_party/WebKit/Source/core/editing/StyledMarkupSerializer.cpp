@@ -241,12 +241,8 @@ Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pa
 
     Node* highestNodeToBeSerialized = m_markupAccumulator.highestNodeToBeSerialized();
     if (highestNodeToBeSerialized && Strategy::parent(*highestNodeToBeSerialized)) {
-        bool shouldAnnotate = m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition;
+        bool shouldAnnotate = m_shouldAnnotate == AnnotateForInterchange;
         RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), shouldAnnotate);
-        if (m_shouldAnnotate == AnnotateForNavigationTransition) {
-            wrappingStyle->style()->removeProperty(CSSPropertyBackgroundColor);
-            wrappingStyle->style()->removeProperty(CSSPropertyBackgroundImage);
-        }
         m_markupAccumulator.setWrappingStyle(wrappingStyle.release());
     }
     return traverseNodesForSerialization(startNode, pastEnd, EmitString);
@@ -276,7 +272,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             continue;
         }
 
-        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
+        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag)) {
             next = Strategy::nextSkippingChildren(*n);
             // Don't skip over pastEnd.
             if (pastEnd && Strategy::isDescendantOf(*pastEnd, *n))

@@ -86,7 +86,6 @@
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginParams.h"
 #include "public/web/WebPluginPlaceholder.h"
-#include "public/web/WebTransitionElementData.h"
 #include "public/web/WebViewClient.h"
 #include "web/DevToolsEmulator.h"
 #include "web/PluginPlaceholderImpl.h"
@@ -414,10 +413,10 @@ void FrameLoaderClientImpl::dispatchWillClose()
         m_webFrame->client()->willClose(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad(bool isTransitionNavigation, double triggeringEventTime)
+void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad(double triggeringEventTime)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didStartProvisionalLoad(m_webFrame, isTransitionNavigation, triggeringEventTime);
+        m_webFrame->client()->didStartProvisionalLoad(m_webFrame, triggeringEventTime);
 }
 
 void FrameLoaderClientImpl::dispatchDidReceiveTitle(const String& title)
@@ -530,7 +529,7 @@ static bool allowCreatingBackgroundTabs()
     return userPolicy == NavigationPolicyNewBackgroundTab;
 }
 
-NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy, bool isTransitionNavigation)
+NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy)
 {
     if (!m_webFrame->client())
         return NavigationPolicyIgnore;
@@ -547,24 +546,9 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
     navigationInfo.navigationType = ds->navigationType();
     navigationInfo.defaultPolicy = static_cast<WebNavigationPolicy>(policy);
     navigationInfo.isRedirect = ds->isRedirect();
-    navigationInfo.isTransitionNavigation = isTransitionNavigation;
 
     WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(navigationInfo);
     return static_cast<NavigationPolicy>(webPolicy);
-}
-
-void FrameLoaderClientImpl::dispatchAddNavigationTransitionData(const Document::TransitionElementData& data)
-{
-    if (!m_webFrame->client())
-        return;
-
-    WebVector<WebTransitionElement> webElements(data.elements.size());
-    for (size_t i = 0; i < data.elements.size(); ++i) {
-        webElements[i].id = data.elements[i].id;
-        webElements[i].rect = data.elements[i].rect;
-    }
-    WebTransitionElementData webData(data.scope, data.selector, data.markup, webElements);
-    m_webFrame->client()->addNavigationTransitionData(webData);
 }
 
 void FrameLoaderClientImpl::dispatchWillRequestResource(FetchRequest* request)

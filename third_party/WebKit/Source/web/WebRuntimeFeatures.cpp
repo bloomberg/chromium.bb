@@ -173,11 +173,6 @@ void WebRuntimeFeatures::enableNavigatorContentUtils(bool enable)
     RuntimeEnabledFeatures::setNavigatorContentUtilsEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableNavigationTransitions(bool enable)
-{
-    RuntimeEnabledFeatures::setNavigationTransitionsEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableNetworkInformation(bool enable)
 {
     RuntimeEnabledFeatures::setNetworkInformationEnabled(enable);

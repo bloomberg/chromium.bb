@@ -2013,24 +2013,6 @@ void WebLocalFrameImpl::setCommittedFirstRealLoad()
     ensureFrameLoaderHasCommitted(frame()->loader());
 }
 
-void WebLocalFrameImpl::addStyleSheetByURL(const WebString& url)
-{
-    RefPtrWillBeRawPtr<Element> styleElement = frame()->document()->createElement(HTMLNames::linkTag, false);
-
-    styleElement->setAttribute(HTMLNames::typeAttr, "text/css");
-    styleElement->setAttribute(HTMLNames::relAttr, "stylesheet");
-    styleElement->setAttribute(HTMLNames::hrefAttr, url);
-
-    frame()->document()->head()->appendChild(styleElement.release(), IGNORE_EXCEPTION);
-}
-
-void WebLocalFrameImpl::navigateToSandboxedMarkup(const WebData& markup)
-{
-    ASSERT(document().securityOrigin().isUnique());
-    frame()->loader().forceSandboxFlags(SandboxAll);
-    loadHTMLString(markup, document().url(), WebURL(), true);
-}
-
 void WebLocalFrameImpl::sendOrientationChangeEvent()
 {
     if (!frame())

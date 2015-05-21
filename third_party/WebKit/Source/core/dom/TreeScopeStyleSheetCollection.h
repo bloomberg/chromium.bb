@@ -55,7 +55,6 @@ public:
     bool usesRemUnits() const { return m_usesRemUnits; }
 
     void clearMediaQueryRuleSetStyleSheets();
-    void setExitTransitionStyleshetsEnabled(bool);
 
     DECLARE_VIRTUAL_TRACE();
 

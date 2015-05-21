@@ -699,17 +699,6 @@ void mergeWithNextTextNode(Text* textNode, ExceptionState& exceptionState)
         textNext->remove(exceptionState);
 }
 
-String createStyledMarkupForNavigationTransition(Node* node)
-{
-    node->document().updateLayoutIgnorePendingStylesheets();
-
-    StyledMarkupSerializer<EditingStrategy> serializer(ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
-    serializer.serializeNodes(node, NodeTraversal::nextSkippingChildren(*node));
-
-    static const char* documentMarkup = "<!DOCTYPE html><meta name=\"viewport\" content=\"width=device-width, user-scalable=0\">";
-    return documentMarkup + serializer.takeResults();
-}
-
-template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
+template class CORE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 
 }

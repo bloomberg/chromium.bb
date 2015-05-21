@@ -387,24 +387,6 @@ public:
     bool isSrcdocDocument() const { return m_isSrcdocDocument; }
     bool isMobileDocument() const { return m_isMobileDocument; }
 
-    bool isTransitionDocument() const { return m_isTransitionDocument; }
-    void setIsTransitionDocument(bool isTransitionDocument) { m_isTransitionDocument = isTransitionDocument; }
-    void hideTransitionElements(const AtomicString& cssSelector);
-    void showTransitionElements(const AtomicString& cssSelector);
-
-    struct TransitionElement {
-        String id;
-        IntRect rect;
-    };
-
-    struct TransitionElementData {
-        String scope;
-        String selector;
-        String markup;
-        Vector<TransitionElement> elements;
-    };
-    void getTransitionElementData(Vector<TransitionElementData>&);
-
     StyleResolver* styleResolver() const;
     StyleResolver& ensureStyleResolver() const;
 
@@ -1182,8 +1164,6 @@ private:
     using EventFactorySet = HashSet<OwnPtr<EventFactoryBase>>;
     static EventFactorySet& eventFactories();
 
-    void updateElementOpacity(const AtomicString& cssSelector, double opacity);
-
     void setNthIndexCache(NthIndexCache* nthIndexCache) { ASSERT(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
 
     DocumentLifecycle m_lifecycle;
@@ -1348,7 +1328,6 @@ private:
     bool m_sawElementsInKnownNamespaces;
     bool m_isSrcdocDocument;
     bool m_isMobileDocument;
-    bool m_isTransitionDocument;
 
     LayoutView* m_layoutView;
 

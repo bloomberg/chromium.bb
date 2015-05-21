@@ -303,40 +303,6 @@ WebSize WebDocument::maximumScrollOffset() const
     return WebSize();
 }
 
-void WebDocument::setIsTransitionDocument(bool isTransitionDocument)
-{
-    // When isTransitionDocument is true, it ensures the transition UA
-    // stylesheet gets applied. When isTransitionDocument is false, it ensures
-    // the transition UA stylesheet is not applied when reverting the transition.
-    unwrap<Document>()->setIsTransitionDocument(isTransitionDocument);
-}
-
-void WebDocument::beginExitTransition(const WebString& cssSelector, bool exitToNativeApp)
-{
-    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
-    if (!exitToNativeApp)
-        document->hideTransitionElements(cssSelector);
-    document->styleEngine().setExitTransitionStylesheetsEnabled(true);
-}
-
-void WebDocument::revertExitTransition()
-{
-    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
-    document->styleEngine().setExitTransitionStylesheetsEnabled(false);
-}
-
-void WebDocument::hideTransitionElements(const WebString& cssSelector)
-{
-    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
-    document->hideTransitionElements(cssSelector);
-}
-
-void WebDocument::showTransitionElements(const WebString& cssSelector)
-{
-    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
-    document->showTransitionElements(cssSelector);
-}
-
 WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();
