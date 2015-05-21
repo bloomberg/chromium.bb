@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CHROMEOS_MEMORY_PRESSURE_MONITOR_H_
-#define BASE_CHROMEOS_MEMORY_PRESSURE_MONITOR_H_
+#ifndef BASE_MEMORY_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
+#define BASE_MEMORY_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
 
 #include "base/base_export.h"
 #include "base/files/scoped_file.h"
@@ -116,4 +116,4 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
 }  // namespace chromeos
 }  // namespace base
 
-#endif  // BASE_CHROMEOS_MEMORY_PRESSURE_MONITOR_H_
+#endif  // BASE_MEMORY_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_

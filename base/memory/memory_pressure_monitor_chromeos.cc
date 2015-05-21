@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/chromeos/memory_pressure_monitor.h"
+#include "base/memory/memory_pressure_monitor_chromeos.h"
 
 #include <fcntl.h>
 #include <sys/select.h>

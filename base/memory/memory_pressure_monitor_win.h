@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WIN_MEMORY_PRESSURE_MONITOR_H_
-#define BASE_WIN_MEMORY_PRESSURE_MONITOR_H_
+#ifndef BASE_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_
+#define BASE_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_
 
 #include "base/base_export.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -141,4 +141,4 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
 }  // namespace win
 }  // namespace base
 
-#endif  // BASE_WIN_MEMORY_PRESSURE_MONITOR_H_
+#endif  // BASE_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_

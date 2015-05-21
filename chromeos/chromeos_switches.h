@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_CHROMEOS_SWITCHES_H_
 #define CHROMEOS_CHROMEOS_SWITCHES_H_
 
-#include "base/chromeos/memory_pressure_monitor.h"
+#include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {

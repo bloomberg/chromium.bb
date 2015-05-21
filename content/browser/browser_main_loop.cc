@@ -91,7 +91,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/memory_pressure_monitor.h"
+#include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/bootstrap_sandbox_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
@@ -103,7 +103,7 @@
 #include <commctrl.h>
 #include <shellapi.h>
 
-#include "base/win/memory_pressure_monitor.h"
+#include "base/memory/memory_pressure_monitor_win.h"
 #include "content/browser/system_message_window_win.h"
 #include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
@@ -111,7 +111,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/memory_pressure_monitor.h"
+#include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 

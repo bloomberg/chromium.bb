@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/memory_pressure_monitor_chromeos.h"
+
 #include "base/basictypes.h"
-#include "base/chromeos/memory_pressure_monitor.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
