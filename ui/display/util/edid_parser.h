@@ -30,13 +30,15 @@ DISPLAY_UTIL_EXPORT bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
                                               int64_t* product_id_out);
 
 // Parses |edid| as EDID data and stores extracted data into |manufacturer_id|,
-// |human_readable_name|, |active_pixel_out| and |physical_display_size_out|,
-// then returns true. nullptr can be passed for unwanted output parameters.
-// Some devices (especially internal displays) may not have the field for
-// |human_readable_name|, and it will return true in that case.
+// |product_code|, |human_readable_name|, |active_pixel_out| and
+// |physical_display_size_out|, then returns true. nullptr can be passed for
+// unwanted output parameters.  Some devices (especially internal displays) may
+// not have the field for |human_readable_name|, and it will return true in
+// that case.
 DISPLAY_UTIL_EXPORT bool ParseOutputDeviceData(
     const std::vector<uint8_t>& edid,
     uint16_t* manufacturer_id,
+    uint16_t* product_code,
     std::string* human_readable_name,
     gfx::Size* active_pixel_out,
     gfx::Size* physical_display_size_out);

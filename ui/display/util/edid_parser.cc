@@ -29,11 +29,11 @@ int64_t GetID(uint16_t manufacturer_id,
           (static_cast<int64_t>(product_code_hash) << 8) | output_index);
 }
 
-// Returns a 64-bit identifier for this model of display, using
-// |manufacturer_id| and |product_code_hash|.
-int64_t GetProductID(uint16_t manufacturer_id, uint32_t product_code_hash) {
-  return ((static_cast<int64_t>(manufacturer_id) << 32) |
-          (static_cast<int64_t>(product_code_hash)));
+// Returns a 32-bit identifier for this model of display, using
+// |manufacturer_id| and |product_code|.
+uint32_t GetProductID(uint16_t manufacturer_id, uint16_t product_code) {
+  return ((static_cast<uint32_t>(manufacturer_id) << 16) |
+          (static_cast<uint32_t>(product_code)));
 }
 
 }  // namespace
@@ -43,23 +43,27 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
                           int64_t* display_id_out,
                           int64_t* product_id_out) {
   uint16_t manufacturer_id = 0;
+  uint16_t product_code = 0;
   std::string product_name;
 
   // ParseOutputDeviceData fails if it doesn't have product_name.
-  ParseOutputDeviceData(edid, &manufacturer_id, &product_name, nullptr,
-                        nullptr);
+  ParseOutputDeviceData(edid, &manufacturer_id, &product_code, &product_name,
+                        nullptr, nullptr);
 
-  // Generates product specific value from product_name instead of product code.
-  // See crbug.com/240341
-  uint32_t product_code_hash = product_name.empty() ?
-      0 : base::Hash(product_name);
   if (manufacturer_id != 0) {
+    // Generates product specific value from product_name instead of product
+    // code.
+    // See crbug.com/240341
+    uint32_t product_code_hash =
+        product_name.empty() ? 0 : base::Hash(product_name);
     // An ID based on display's index will be assigned later if this call
     // fails.
     *display_id_out = GetID(
         manufacturer_id, product_code_hash, output_index);
+    // product_id is 64-bit signed so it can store -1 as kInvalidProductID and
+    // not match a valid product id which will all be in the lowest 32-bits.
     if (product_id_out)
-      *product_id_out = GetProductID(manufacturer_id, product_code_hash);
+      *product_id_out = GetProductID(manufacturer_id, product_code);
     return true;
   }
   return false;
@@ -67,16 +71,20 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
 
 bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
                            uint16_t* manufacturer_id,
+                           uint16_t* product_code,
                            std::string* human_readable_name,
                            gfx::Size* active_pixel_out,
                            gfx::Size* physical_display_size_out) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the details of EDID data format.  We use the following data:
   //   bytes 8-9: manufacturer EISA ID, in big-endian
+  //   bytes 10-11: manufacturer product code, in little-endian
   //   bytes 54-125: four descriptors (18-bytes each) which may contain
   //     the display name.
   const unsigned int kManufacturerOffset = 8;
   const unsigned int kManufacturerLength = 2;
+  const unsigned int kProductCodeOffset = 10;
+  const unsigned int kProductCodeLength = 2;
   const unsigned int kDescriptorOffset = 54;
   const unsigned int kNumDescriptors = 4;
   const unsigned int kDescriptorLength = 18;
@@ -85,7 +93,7 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
 
   if (manufacturer_id) {
     if (edid.size() < kManufacturerOffset + kManufacturerLength) {
-      LOG(ERROR) << "too short EDID data: manifacturer id";
+      LOG(ERROR) << "too short EDID data: manufacturer id";
       return false;
     }
 
@@ -94,6 +102,16 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
     *manufacturer_id = base::ByteSwap(*manufacturer_id);
 #endif
+  }
+
+  if (product_code) {
+    if (edid.size() < kProductCodeOffset + kProductCodeLength) {
+      LOG(ERROR) << "too short EDID data: manufacturer product code";
+      return false;
+    }
+
+    *product_code =
+        *reinterpret_cast<const uint16_t*>(&edid[kProductCodeOffset]);
   }
 
   if (human_readable_name)

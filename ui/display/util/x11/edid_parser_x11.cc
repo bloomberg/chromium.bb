@@ -86,8 +86,8 @@ bool GetOutputDeviceData(XID output,
   if (!GetEDIDProperty(output, &edid))
     return false;
 
-  return ParseOutputDeviceData(edid, manufacturer_id, human_readable_name,
-                               nullptr, nullptr);
+  return ParseOutputDeviceData(edid, manufacturer_id, nullptr,
+                               human_readable_name, nullptr, nullptr);
 }
 
 }  // namespace

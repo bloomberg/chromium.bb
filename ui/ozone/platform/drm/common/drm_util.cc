@@ -231,7 +231,7 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
                               &params.product_id))
       params.display_id = display_index;
 
-    ParseOutputDeviceData(edid, nullptr, &params.display_name, nullptr,
+    ParseOutputDeviceData(edid, nullptr, nullptr, &params.display_name, nullptr,
                           nullptr);
     ParseOutputOverscanFlag(edid, &params.has_overscan);
   } else {
