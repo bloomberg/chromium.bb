@@ -381,8 +381,10 @@ class HttpServerAppTest : public test::ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:network_service");
     ApplicationConnection* connection =
-        application_impl()->ConnectToApplication("mojo:network_service");
+        application_impl()->ConnectToApplication(request.Pass());
     connection->ConnectToService(&network_service_);
   }
 

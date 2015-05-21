@@ -47,6 +47,10 @@ class Fetcher {
   // redirects. Otherwise, it returns an empty URL.
   virtual GURL GetRedirectURL() const = 0;
 
+  // If the fetch resulted in a redirect, this returns the referer URL to use
+  // with the redirect.
+  virtual GURL GetRedirectReferer() const = 0;
+
   virtual URLResponsePtr AsURLResponse(base::TaskRunner* task_runner,
                                        uint32_t skip) = 0;
 

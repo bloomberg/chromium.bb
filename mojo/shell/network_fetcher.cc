@@ -30,14 +30,14 @@ namespace mojo {
 namespace shell {
 
 NetworkFetcher::NetworkFetcher(bool disable_cache,
-                               const GURL& url,
+                               mojo::URLRequestPtr request,
                                NetworkService* network_service,
                                const FetchCallback& loader_callback)
     : Fetcher(loader_callback),
       disable_cache_(false),
-      url_(url),
+      url_(request->url.To<GURL>()),
       weak_ptr_factory_(this) {
-  StartNetworkRequest(url, network_service);
+  StartNetworkRequest(request.Pass(), network_service);
 }
 
 NetworkFetcher::~NetworkFetcher() {
@@ -57,6 +57,15 @@ GURL NetworkFetcher::GetRedirectURL() const {
   return GURL(response_->redirect_url);
 }
 
+GURL NetworkFetcher::GetRedirectReferer() const {
+  if (!response_)
+    return GURL::EmptyGURL();
+
+  if (response_->redirect_referrer.is_null())
+    return GURL::EmptyGURL();
+
+  return GURL(response_->redirect_referrer);
+}
 URLResponsePtr NetworkFetcher::AsURLResponse(base::TaskRunner* task_runner,
                                              uint32_t skip) {
   if (skip != 0) {
@@ -209,12 +218,10 @@ bool NetworkFetcher::PeekFirstLine(std::string* line) {
                           kPeekTimeout);
 }
 
-void NetworkFetcher::StartNetworkRequest(const GURL& url,
+void NetworkFetcher::StartNetworkRequest(mojo::URLRequestPtr request,
                                          NetworkService* network_service) {
   TRACE_EVENT_ASYNC_BEGIN1("mojo_shell", "NetworkFetcher::NetworkRequest", this,
-                           "url", url.spec());
-  URLRequestPtr request(URLRequest::New());
-  request->url = String::From(url);
+                           "url", request->url.To<std::string>());
   request->auto_follow_redirects = false;
   request->bypass_cache = disable_cache_;
 

@@ -83,8 +83,10 @@ bool EmbedUrl(ViewManagerService* vm, const String& url, Id root_id) {
   bool result = false;
   base::RunLoop run_loop;
   {
-    vm->EmbedUrl(url, root_id, nullptr, nullptr,
-                 base::Bind(&BoolResultCallback, &run_loop, &result));
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From(url);
+    vm->EmbedRequest(request.Pass(), root_id, nullptr, nullptr,
+                     base::Bind(&BoolResultCallback, &run_loop, &result));
   }
   run_loop.Run();
   return result;
@@ -460,8 +462,10 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
   ApplicationDelegate* GetApplicationDelegate() override { return this; }
   void SetUp() override {
     ApplicationTestBase::SetUp();
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:view_manager");
     ApplicationConnection* vm_connection =
-        application_impl()->ConnectToApplication("mojo:view_manager");
+        application_impl()->ConnectToApplication(request.Pass());
     vm_connection->ConnectToService(&vm1_);
     vm_connection->ConnectToService(&view_manager_root_);
     vm_connection->AddService(&client_factory_);

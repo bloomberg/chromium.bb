@@ -43,7 +43,7 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
       mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
       mojo::ConnectionSpecificId creator_id,
       const std::string& creator_url,
-      const std::string& url,
+      mojo::URLRequestPtr request,
       const ViewId& root_id) override;
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,

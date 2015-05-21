@@ -19,7 +19,10 @@ FilesTestBase::~FilesTestBase() {
 
 void FilesTestBase::SetUp() {
   test::ApplicationTestBase::SetUp();
-  application_impl()->ConnectToService("mojo:files", &files_);
+
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:files");
+  application_impl()->ConnectToService(request.Pass(), &files_);
 }
 
 void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {

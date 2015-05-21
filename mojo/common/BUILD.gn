@@ -28,6 +28,8 @@ component("common_base") {
     "message_pump_mojo_handler.h",
     "time_helper.cc",
     "time_helper.h",
+    "user_agent.cc",
+    "user_agent.h",
     "weak_binding_set.h",
     "weak_interface_ptr_set.h",
   ]

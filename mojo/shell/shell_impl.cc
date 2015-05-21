@@ -42,16 +42,17 @@ void ShellImpl::ConnectToClient(const GURL& requested_url,
 }
 
 // Shell implementation:
-void ShellImpl::ConnectToApplication(const String& app_url,
+void ShellImpl::ConnectToApplication(mojo::URLRequestPtr app_request,
                                      InterfaceRequest<ServiceProvider> services,
                                      ServiceProviderPtr exposed_services) {
-  GURL app_gurl(app_url);
+  GURL app_gurl(app_request->url.To<std::string>());
   if (!app_gurl.is_valid()) {
-    LOG(ERROR) << "Error: invalid URL: " << app_url;
+    LOG(ERROR) << "Error: invalid URL: " << app_request;
     return;
   }
-  manager_->ConnectToApplication(app_gurl, identity_.url, services.Pass(),
-                                 exposed_services.Pass(), base::Closure());
+  manager_->ConnectToApplication(app_request.Pass(), identity_.url,
+                                 services.Pass(), exposed_services.Pass(),
+                                 base::Closure());
 }
 
 void ShellImpl::OnConnectionError() {

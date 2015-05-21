@@ -45,6 +45,10 @@ GURL LocalFetcher::GetRedirectURL() const {
   return GURL::EmptyGURL();
 }
 
+GURL LocalFetcher::GetRedirectReferer() const {
+  return GURL::EmptyGURL();
+}
+
 URLResponsePtr LocalFetcher::AsURLResponse(base::TaskRunner* task_runner,
                                            uint32_t skip) {
   URLResponsePtr response(URLResponse::New());

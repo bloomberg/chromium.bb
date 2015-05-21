@@ -18,7 +18,9 @@ TracingImpl::~TracingImpl() {
 }
 
 void TracingImpl::Initialize(ApplicationImpl* app) {
-  ApplicationConnection* connection = app->ConnectToApplication("mojo:tracing");
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:tracing");
+  ApplicationConnection* connection = app->ConnectToApplication(request.Pass());
   connection->AddService(this);
 }
 

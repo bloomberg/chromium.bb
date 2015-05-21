@@ -50,12 +50,13 @@ ApplicationImpl::~ApplicationImpl() {
 }
 
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
-    const String& application_url) {
+    mojo::URLRequestPtr request) {
   MOJO_CHECK(shell_);
   ServiceProviderPtr local_services;
   InterfaceRequest<ServiceProvider> local_request = GetProxy(&local_services);
   ServiceProviderPtr remote_services;
-  shell_->ConnectToApplication(application_url, GetProxy(&remote_services),
+  std::string application_url = request->url.To<std::string>();
+  shell_->ConnectToApplication(request.Pass(), GetProxy(&remote_services),
                                local_services.Pass());
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
       this, application_url, application_url, remote_services.Pass(),

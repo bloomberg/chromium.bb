@@ -13,7 +13,9 @@ class ApplicationImpl;
 class ViewManagerContext::InternalState {
  public:
   explicit InternalState(ApplicationImpl* application_impl) {
-    application_impl->ConnectToService("mojo:window_manager", &wm_);
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:window_manager");
+    application_impl->ConnectToService(request.Pass(), &wm_);
   }
   ~InternalState() {}
 
@@ -32,13 +34,15 @@ ViewManagerContext::~ViewManagerContext() {
 }
 
 void ViewManagerContext::Embed(const String& url) {
-  Embed(url, nullptr, nullptr);
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From(url);
+  Embed(request.Pass(), nullptr, nullptr);
 }
 
-void ViewManagerContext::Embed(const String& url,
+void ViewManagerContext::Embed(mojo::URLRequestPtr request,
                                InterfaceRequest<ServiceProvider> services,
                                ServiceProviderPtr exposed_services) {
-  state_->wm()->Embed(url, services.Pass(), exposed_services.Pass());
+  state_->wm()->Embed(request.Pass(), services.Pass(), exposed_services.Pass());
 }
 
 }  // namespace mojo

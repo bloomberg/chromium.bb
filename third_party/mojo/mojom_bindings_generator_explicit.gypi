@@ -43,6 +43,7 @@
         'stamp_filename': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/<(_target_name).stamp',
         'mojom_import_args%': [
          '-I<(DEPTH)',
+         '-I<(DEPTH)/mojo/services',
          '-I<(DEPTH)/third_party/mojo/src',
          '-I<(mojom_include_path)',
         ],

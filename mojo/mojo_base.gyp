@@ -179,10 +179,17 @@
       'variables': {
         'mojom_files': [
           'application/public/interfaces/application.mojom',
+          'application/public/interfaces/content_handler.mojom',
           'application/public/interfaces/service_provider.mojom',
           'application/public/interfaces/shell.mojom',
         ],
       },
+      'dependencies': [
+        'mojo_services.gyp:network_service_bindings_mojom',
+      ],
+      'export_dependent_settings': [
+        'mojo_services.gyp:network_service_bindings_mojom',
+      ],
       'includes': [ '../third_party/mojo/mojom_bindings_generator_explicit.gypi' ],
     },
     {

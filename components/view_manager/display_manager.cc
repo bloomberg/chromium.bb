@@ -90,7 +90,9 @@ void DefaultDisplayManager::Init(
     ConnectionManager* connection_manager,
     mojo::NativeViewportEventDispatcherPtr event_dispatcher) {
   connection_manager_ = connection_manager;
-  app_impl_->ConnectToService("mojo:native_viewport_service",
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:native_viewport_service");
+  app_impl_->ConnectToService(request.Pass(),
                               &native_viewport_);
   native_viewport_.set_error_handler(this);
   native_viewport_->Create(metrics_.size->Clone(),
@@ -101,7 +103,9 @@ void DefaultDisplayManager::Init(
   mojo::ContextProviderPtr context_provider;
   native_viewport_->GetContextProvider(GetProxy(&context_provider));
   mojo::DisplayFactoryPtr display_factory;
-  app_impl_->ConnectToService("mojo:surfaces_service", &display_factory);
+  mojo::URLRequestPtr request2(mojo::URLRequest::New());
+  request2->url = mojo::String::From("mojo:surfaces_service");
+  app_impl_->ConnectToService(request2.Pass(), &display_factory);
   display_factory->Create(context_provider.Pass(),
                           nullptr,  // returner - we never submit resources.
                           GetProxy(&display_));

@@ -80,10 +80,10 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool AddView(const ViewId& parent_id, const ViewId& child_id);
   std::vector<const ServerView*> GetViewTree(const ViewId& view_id) const;
   bool SetViewVisibility(const ViewId& view_id, bool visible);
-  bool EmbedUrl(const std::string& url,
-                const ViewId& view_id,
-                mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                mojo::ServiceProviderPtr exposed_services);
+  bool EmbedRequest(mojo::URLRequestPtr request,
+                    const ViewId& view_id,
+                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+                    mojo::ServiceProviderPtr exposed_services);
   bool Embed(const ViewId& view_id, mojo::ViewManagerClientPtr client);
 
   // The following methods are invoked after the corresponding change has been
@@ -202,11 +202,11 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
                        const mojo::String& name,
                        mojo::Array<uint8_t> value,
                        const mojo::Callback<void(bool)>& callback) override;
-  void EmbedUrl(const mojo::String& url,
-                mojo::Id transport_view_id,
-                mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                mojo::ServiceProviderPtr exposed_services,
-                const mojo::Callback<void(bool)>& callback) override;
+  void EmbedRequest(mojo::URLRequestPtr request,
+                    mojo::Id transport_view_id,
+                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+                    mojo::ServiceProviderPtr exposed_services,
+                    const mojo::Callback<void(bool)>& callback) override;
   void Embed(mojo::Id transport_view_id,
              mojo::ViewManagerClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;

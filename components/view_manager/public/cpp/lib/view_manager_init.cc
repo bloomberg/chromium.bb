@@ -31,8 +31,10 @@ ViewManagerInit::ViewManagerInit(ApplicationImpl* app,
                                  ViewManagerDelegate* delegate,
                                  ViewManagerRootClient* root_client)
     : app_(app), delegate_(delegate), client_factory_(new ClientFactory(this)) {
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:view_manager");
   ApplicationConnection* connection =
-      app_->ConnectToApplication("mojo:view_manager");
+      app_->ConnectToApplication(request.Pass());
   connection->AddService(client_factory_.get());
   connection->ConnectToService(&service_);
   service_.set_error_handler(this);

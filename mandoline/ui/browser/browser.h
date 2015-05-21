@@ -40,7 +40,7 @@ class Browser : public mojo::ApplicationDelegate,
   Browser();
   ~Browser() override;
 
-  void ReplaceContentWithURL(const mojo::String& url);
+  void ReplaceContentWithRequest(mojo::URLRequestPtr request);
 
   mojo::View* content() { return content_; }
   mojo::View* omnibox() { return omnibox_; }
@@ -68,7 +68,7 @@ class Browser : public mojo::ApplicationDelegate,
   void OpenURL(const mojo::String& url) override;
 
   // Overridden from ViewEmbedder:
-  void Embed(const mojo::String& url,
+  void Embed(mojo::URLRequestPtr request,
              mojo::InterfaceRequest<mojo::ServiceProvider> services,
              mojo::ServiceProviderPtr exposed_services) override;
 
@@ -80,7 +80,7 @@ class Browser : public mojo::ApplicationDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
 
-  void ShowOmnibox(const mojo::String& url,
+  void ShowOmnibox(mojo::URLRequestPtr request,
                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
                    mojo::ServiceProviderPtr exposed_services);
 
@@ -92,7 +92,7 @@ class Browser : public mojo::ApplicationDelegate,
   mojo::View* content_;
   mojo::View* omnibox_;
   std::string default_url_;
-  std::string pending_url_;
+  mojo::URLRequestPtr pending_request_;
 
   mojo::ServiceProviderImpl exposed_services_impl_;
   scoped_ptr<MergedServiceProvider> merged_service_provider_;

@@ -90,8 +90,10 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
 
   if (enable_mojo_media_renderer_) {
     ServiceProviderPtr media_renderer_service_provider;
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:media");
     shell->ConnectToApplication(
-        "mojo:media", GetProxy(&media_renderer_service_provider), nullptr);
+        request.Pass(), GetProxy(&media_renderer_service_provider), nullptr);
     media_renderer_factory.reset(new media::MojoRendererFactory(make_scoped_ptr(
         new RendererServiceProvider(media_renderer_service_provider.Pass()))));
   } else {

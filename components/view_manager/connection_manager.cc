@@ -181,7 +181,7 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
 
 void ConnectionManager::EmbedAtView(
     ConnectionSpecificId creator_id,
-    const std::string& url,
+    mojo::URLRequestPtr request,
     const ViewId& view_id,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
@@ -193,7 +193,8 @@ void ConnectionManager::EmbedAtView(
   mojo::ViewManagerServicePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
-          this, GetProxy(&service_ptr), creator_id, creator_url, url, view_id);
+          this, GetProxy(&service_ptr), creator_id, creator_url, request.Pass(),
+          view_id);
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
                                      service_ptr.Pass(), services.Pass(),

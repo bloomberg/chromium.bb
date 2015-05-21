@@ -62,10 +62,11 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
     mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
     mojo::ConnectionSpecificId creator_id,
     const std::string& creator_url,
-    const std::string& url,
+    mojo::URLRequestPtr request,
     const ViewId& root_id) {
   mojo::ViewManagerClientPtr client;
-  app_impl_->ConnectToService(url, &client);
+  std::string url = request->url.To<std::string>();
+  app_impl_->ConnectToService(request.Pass(), &client);
 
   scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
       connection_manager, creator_id, creator_url, url, root_id));

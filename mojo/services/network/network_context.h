@@ -45,6 +45,9 @@ class NetworkContext {
   static scoped_ptr<net::URLRequestContext> MakeURLRequestContext(
       const base::FilePath& base_path);
 
+  class MojoNetLog;
+  scoped_ptr<class MojoNetLog> net_log_;
+
   scoped_ptr<net::URLRequestContext> url_request_context_;
   // URLLoaderImpls register themselves with the NetworkContext so that they can
   // be cleaned up when the NetworkContext goes away. This is needed as

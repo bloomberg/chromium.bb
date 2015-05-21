@@ -67,8 +67,11 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   // Connect to the URL through the mojo:html_viewer content handler.
   const uint16_t assigned_port = server.host_port_pair().port();
-  ApplicationConnection* connection = application_impl()->ConnectToApplication(
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From(
       base::StringPrintf("http://127.0.0.1:%u/files/test.html", assigned_port));
+  ApplicationConnection* connection = application_impl()->ConnectToApplication(
+      request.Pass());
 
   // Connect to the AxProvider of the HTML document and get the AxTree.
   AxProviderPtr ax_provider;

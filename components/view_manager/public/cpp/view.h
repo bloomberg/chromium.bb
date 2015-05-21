@@ -125,7 +125,7 @@ class View {
 
   // Embedding. See view_manager.mojom for details.
   void Embed(const String& url);
-  void Embed(const String& url,
+  void Embed(mojo::URLRequestPtr request,
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
   void Embed(ViewManagerClientPtr client);

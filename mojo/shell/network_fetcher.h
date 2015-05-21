@@ -22,7 +22,7 @@ namespace shell {
 class NetworkFetcher : public Fetcher {
  public:
   NetworkFetcher(bool disable_cache,
-                 const GURL& url,
+                 mojo::URLRequestPtr request,
                  NetworkService* network_service,
                  const FetchCallback& loader_callback);
 
@@ -34,6 +34,7 @@ class NetworkFetcher : public Fetcher {
 
   const GURL& GetURL() const override;
   GURL GetRedirectURL() const override;
+  GURL GetRedirectReferer() const override;
 
   URLResponsePtr AsURLResponse(base::TaskRunner* task_runner,
                                uint32_t skip) override;
@@ -63,7 +64,8 @@ class NetworkFetcher : public Fetcher {
 
   bool PeekFirstLine(std::string* line) override;
 
-  void StartNetworkRequest(const GURL& url, NetworkService* network_service);
+  void StartNetworkRequest(mojo::URLRequestPtr request,
+                           NetworkService* network_service);
 
   void OnLoadComplete(URLResponsePtr response);
 

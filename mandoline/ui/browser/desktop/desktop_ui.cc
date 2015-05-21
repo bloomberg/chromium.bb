@@ -91,7 +91,9 @@ void DesktopUI::Layout(views::View* host) {
 void DesktopUI::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (!omnibox_.get()) {
     DCHECK(!client_binding_.is_bound());
-    application_impl_->ConnectToService("mojo:omnibox", &omnibox_);
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:omnibox");
+    application_impl_->ConnectToService(request.Pass(), &omnibox_);
     OmniboxClientPtr client;
     client_binding_.Bind(&client);
     omnibox_->SetClient(client.Pass());

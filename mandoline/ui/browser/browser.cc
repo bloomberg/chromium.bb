@@ -46,8 +46,8 @@ Browser::~Browser() {
   delete ui_.release();
 }
 
-void Browser::ReplaceContentWithURL(const mojo::String& url) {
-  Embed(url, nullptr, nullptr);
+void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
+  Embed(request.Pass(), nullptr, nullptr);
 }
 
 void Browser::Initialize(mojo::ApplicationImpl* app) {
@@ -104,10 +104,13 @@ void Browser::OnEmbed(
       mojo::KEYBOARD_CODE_BROWSER_BACK, mojo::EVENT_FLAGS_NONE);
 
   // Now that we're ready, either load a pending url or the default url.
-  if (!pending_url_.empty())
-    Embed(pending_url_, services.Pass(), exposed_services.Pass());
-  else if (!default_url_.empty())
-    Embed(default_url_, services.Pass(), exposed_services.Pass());
+  if (pending_request_) {
+    Embed(pending_request_.Pass(), services.Pass(), exposed_services.Pass());
+  } else if (!default_url_.empty()) {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From(default_url_);
+    Embed(request.Pass(), services.Pass(), exposed_services.Pass());
+  }
 }
 
 void Browser::OnViewManagerDisconnected(
@@ -124,14 +127,17 @@ void Browser::OnAccelerator(mojo::EventPtr event) {
 
 void Browser::OpenURL(const mojo::String& url) {
   omnibox_->SetVisible(false);
-  ReplaceContentWithURL(url);
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From(url);
+  ReplaceContentWithRequest(request.Pass());
 }
 
-void Browser::Embed(const mojo::String& url,
+void Browser::Embed(mojo::URLRequestPtr request,
                     mojo::InterfaceRequest<mojo::ServiceProvider> services,
                     mojo::ServiceProviderPtr exposed_services) {
-  if (url == "mojo:omnibox") {
-    ShowOmnibox(url, services.Pass(), exposed_services.Pass());
+  std::string string_url = request->url.To<std::string>();
+  if (string_url == "mojo:omnibox") {
+    ShowOmnibox(request.Pass(), services.Pass(), exposed_services.Pass());
     return;
   }
 
@@ -139,11 +145,11 @@ void Browser::Embed(const mojo::String& url,
   // embedded into the root view and content_ is created.
   // Just save the last url, we'll embed it when we're ready.
   if (!content_) {
-    pending_url_ = url;
+    pending_request_ = request.Pass();
     return;
   }
 
-  GURL gurl(url.To<base::string16>());
+  GURL gurl(string_url);
   bool changed = current_url_ != gurl;
   current_url_ = gurl;
   if (changed)
@@ -151,10 +157,10 @@ void Browser::Embed(const mojo::String& url,
 
   merged_service_provider_.reset(
       new MergedServiceProvider(exposed_services.Pass(), this));
-  content_->Embed(url, services.Pass(),
+  content_->Embed(request.Pass(), services.Pass(),
                   merged_service_provider_->GetServiceProviderPtr().Pass());
 
-  navigator_host_.RecordNavigation(url);
+  navigator_host_.RecordNavigation(gurl.spec());
 }
 
 void Browser::Create(mojo::ApplicationConnection* connection,
@@ -168,7 +174,7 @@ void Browser::Create(mojo::ApplicationConnection* connection,
 }
 
 void Browser::ShowOmnibox(
-    const mojo::String& url,
+    mojo::URLRequestPtr request,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
   if (!omnibox_) {
@@ -177,7 +183,7 @@ void Browser::ShowOmnibox(
     omnibox_->SetVisible(true);
     omnibox_->SetBounds(root_->bounds());
   }
-  omnibox_->Embed(url, services.Pass(), exposed_services.Pass());
+  omnibox_->Embed(request.Pass(), services.Pass(), exposed_services.Pass());
 }
 
 }  // namespace mandoline

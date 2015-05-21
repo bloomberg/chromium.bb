@@ -15,7 +15,7 @@ mojom("interfaces") {
     "shell.mojom",
   ]
 
-  import_dirs = [ mojo_network_service_root ]
+  import_dirs = [ "//mojo/services" ]
 
   deps = [
     "//mojo/services/network/public/interfaces",

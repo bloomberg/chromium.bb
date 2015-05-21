@@ -69,7 +69,10 @@ mojom("interfaces") {
     "view_embedder.mojom",
   ]
 
+  import_dirs = [ "//mojo/services" ]
+
   deps = [
     "//mojo/application/public/interfaces",
+    "//mojo/services/network/public/interfaces",
   ]
 }

@@ -8,18 +8,68 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
+#include "mojo/common/user_agent.h"
 #include "mojo/services/network/url_loader_impl.h"
+#include "net/log/net_log_util.h"
+#include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
 namespace mojo {
 
+namespace {
+// Logs network information to the specified file.
+const char kLogNetLog[] = "log-net-log";
+}
+
+class NetworkContext::MojoNetLog : public net::NetLog {
+ public:
+  MojoNetLog() {
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(kLogNetLog))
+      return;
+
+    base::FilePath log_path = command_line->GetSwitchValuePath(kLogNetLog);
+    base::ScopedFILE file;
+#if defined(OS_WIN)
+    file.reset(_wfopen(log_path.value().c_str(), L"w"));
+#elif defined(OS_POSIX)
+    file.reset(fopen(log_path.value().c_str(), "w"));
+#endif
+    if (!file) {
+      LOG(ERROR) << "Could not open file " << log_path.value()
+                 << " for net logging";
+    } else {
+      write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
+      write_to_file_observer_->set_capture_mode(
+          net::NetLogCaptureMode::IncludeCookiesAndCredentials());
+      write_to_file_observer_->StartObserving(this, file.Pass(), nullptr,
+                                              nullptr);
+    }
+  }
+
+  ~MojoNetLog() override {
+    if (write_to_file_observer_)
+      write_to_file_observer_->StopObserving(nullptr);
+  }
+
+ private:
+  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoNetLog);
+};
+
 NetworkContext::NetworkContext(
     scoped_ptr<net::URLRequestContext> url_request_context)
-    : url_request_context_(url_request_context.Pass()),
+    : net_log_(new MojoNetLog),
+      url_request_context_(url_request_context.Pass()),
       in_shutdown_(false) {
+  url_request_context_->set_net_log(net_log_.get());
 }
 
 NetworkContext::NetworkContext(const base::FilePath& base_path)
@@ -60,8 +110,7 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
     const base::FilePath& base_path) {
   net::URLRequestContextBuilder builder;
   builder.set_accept_language("en-us,en");
-  // TODO(darin): This is surely the wrong UA string.
-  builder.set_user_agent("Mojo/0.1");
+  builder.set_user_agent(mojo::common::GetUserAgent());
   builder.set_proxy_service(net::ProxyService::CreateDirect());
   builder.set_transport_security_persister_path(base_path);
 
@@ -80,6 +129,7 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
 
   builder.EnableHttpCache(cache_params);
   builder.set_file_enabled(true);
+
   return make_scoped_ptr(builder.Build());
 }
 

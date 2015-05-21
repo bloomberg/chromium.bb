@@ -46,6 +46,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size.h"
 
+using blink::WebString;
 using mojo::AxProvider;
 using mojo::Rect;
 using mojo::ServiceProviderPtr;
@@ -92,18 +93,6 @@ bool CanNavigateLocally(blink::WebFrame* frame,
   // (presumably because we are being called via Navigate()). In that case we
   // can go ahead and navigate locally.
   if (request.extraData())
-    return true;
-
-  // mojo::NavigatorHost doesn't accept POSTs, so for now reuse this instance.
-  // TODO(jam): improve this (and copy logic from RenderFrameImpl's version)
-  // when we have multi-process.
-  if (EqualsASCII(request.httpMethod(), "POST"))
-    return true;
-
-  // Logging into Gmail fails when the referrer isn't sent with a request.
-  // TODO(jam): pass referrer and other HTTP data to NavigatorHost so we can
-  // use a new process in this case.
-  if (!request.httpHeaderField(blink::WebString::fromUTF8("Referer")).isEmpty())
     return true;
 
   // Otherwise we don't know if we're the right app to handle this request. Ask
@@ -234,14 +223,18 @@ void HTMLDocument::initializeLayerTreeView() {
   }
 
   ServiceProviderPtr surfaces_service_provider;
-  shell_->ConnectToApplication("mojo:surfaces_service",
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:surfaces_service");
+  shell_->ConnectToApplication(request.Pass(),
                                GetProxy(&surfaces_service_provider), nullptr);
   mojo::SurfacePtr surface;
   ConnectToService(surfaces_service_provider.get(), &surface);
 
   ServiceProviderPtr gpu_service_provider;
   // TODO(jamesr): Should be mojo:gpu_service
-  shell_->ConnectToApplication("mojo:native_viewport_service",
+  mojo::URLRequestPtr request2(mojo::URLRequest::New());
+  request2->url = mojo::String::From("mojo:native_viewport_service");
+  shell_->ConnectToApplication(request2.Pass(),
                                GetProxy(&gpu_service_provider), nullptr);
   mojo::GpuPtr gpu_service;
   ConnectToService(gpu_service_provider.get(), &gpu_service);
@@ -308,9 +301,10 @@ blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
     return default_policy;
 
   if (navigator_host_.get()) {
+    mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
     navigator_host_->RequestNavigate(
         WebNavigationPolicyToNavigationTarget(default_policy),
-        mojo::URLRequest::From(request).Pass());
+        url_request.Pass());
   }
 
   return blink::WebNavigationPolicyIgnore;

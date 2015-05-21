@@ -272,9 +272,11 @@ bool Context::Init() {
 
   ServiceProviderPtr tracing_service_provider_ptr;
   new TracingServiceProvider(GetProxy(&tracing_service_provider_ptr));
-  application_manager_.ConnectToApplication(
-      GURL("mojo:tracing"), GURL(""), nullptr,
-      tracing_service_provider_ptr.Pass(), base::Closure());
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:tracing");
+  application_manager_.ConnectToApplication(request.Pass(), GURL(""), nullptr,
+                                            tracing_service_provider_ptr.Pass(),
+                                            base::Closure());
 
   return true;
 }
@@ -313,8 +315,10 @@ void Context::Run(const GURL& url) {
   ServiceProviderPtr exposed_services;
 
   app_urls_.insert(url);
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From(url.spec());
   application_manager_.ConnectToApplication(
-      url, GURL(), GetProxy(&services), exposed_services.Pass(),
+      request.Pass(), GURL(), GetProxy(&services), exposed_services.Pass(),
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
 }
 

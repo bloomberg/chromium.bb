@@ -142,15 +142,15 @@ bool ViewManagerServiceImpl::SetViewVisibility(const ViewId& view_id,
   return true;
 }
 
-bool ViewManagerServiceImpl::EmbedUrl(
-    const std::string& url,
+bool ViewManagerServiceImpl::EmbedRequest(
+    mojo::URLRequestPtr request,
     const ViewId& view_id,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services) {
   if (!PrepareForEmbed(view_id))
     return false;
-  connection_manager_->EmbedAtView(id_, url, view_id, services.Pass(),
-                                   exposed_services.Pass());
+  connection_manager_->EmbedAtView(id_, request.Pass(), view_id,
+                                   services.Pass(), exposed_services.Pass());
   return true;
 }
 
@@ -622,15 +622,15 @@ void ViewManagerServiceImpl::SetViewProperty(
   callback.Run(success);
 }
 
-void ViewManagerServiceImpl::EmbedUrl(
-    const String& url,
+void ViewManagerServiceImpl::EmbedRequest(
+    mojo::URLRequestPtr request,
     Id transport_view_id,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
     const Callback<void(bool)>& callback) {
-  callback.Run(EmbedUrl(url.To<std::string>(),
-                        ViewIdFromTransportId(transport_view_id),
-                        services.Pass(), exposed_services.Pass()));
+  callback.Run(EmbedRequest(request.Pass(),
+                            ViewIdFromTransportId(transport_view_id),
+                            services.Pass(), exposed_services.Pass()));
 }
 
 void ViewManagerServiceImpl::Embed(mojo::Id transport_view_id,

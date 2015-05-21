@@ -40,7 +40,7 @@ class ShellImpl : public Shell, public ErrorHandler {
 
  private:
   // Shell implementation:
-  void ConnectToApplication(const String& app_url,
+  void ConnectToApplication(mojo::URLRequestPtr app_request,
                             InterfaceRequest<ServiceProvider> services,
                             ServiceProviderPtr exposed_services) override;
 

@@ -192,16 +192,18 @@ void ViewManagerClientImpl::SetProperty(
 }
 
 void ViewManagerClientImpl::Embed(const String& url, Id view_id) {
-  Embed(url, view_id, nullptr, nullptr);
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From(url);
+  Embed(request.Pass(), view_id, nullptr, nullptr);
 }
 
-void ViewManagerClientImpl::Embed(const String& url,
+void ViewManagerClientImpl::Embed(mojo::URLRequestPtr request,
                                   Id view_id,
                                   InterfaceRequest<ServiceProvider> services,
                                   ServiceProviderPtr exposed_services) {
   DCHECK(service_);
-  service_->EmbedUrl(url, view_id, services.Pass(), exposed_services.Pass(),
-                     ActionCompletedCallback());
+  service_->EmbedRequest(request.Pass(), view_id, services.Pass(),
+                         exposed_services.Pass(), ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::Embed(Id view_id, ViewManagerClientPtr client) {

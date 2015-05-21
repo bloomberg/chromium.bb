@@ -360,6 +360,8 @@ mojom("child_process_bindings") {
   deps = [
     "//mojo/application/public/interfaces",
   ]
+
+  import_dirs = [ "//mojo/services" ]
 }
 
 test("tests") {

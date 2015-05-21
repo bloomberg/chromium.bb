@@ -75,7 +75,7 @@ class ApplicationManager {
   ~ApplicationManager();
 
   // Loads a service if necessary and establishes a new client connection.
-  void ConnectToApplication(const GURL& application_url,
+  void ConnectToApplication(mojo::URLRequestPtr application_url,
                             const GURL& requestor_url,
                             InterfaceRequest<ServiceProvider> services,
                             ServiceProviderPtr exposed_services,
@@ -155,7 +155,7 @@ class ApplicationManager {
   using URLToNativeOptionsMap = std::map<GURL, NativeRunnerFactory::Options>;
 
   void ConnectToApplicationInternal(
-      const GURL& application_url,
+      mojo::URLRequestPtr requested_url,
       const std::string& qualifier,
       const GURL& requestor_url,
       InterfaceRequest<ServiceProvider> services,

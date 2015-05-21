@@ -53,7 +53,9 @@ class HTMLViewerApplication : public mojo::Application {
   void Initialize(ShellPtr shell, const String& url) override {
     ServiceProviderPtr service_provider;
     shell_ = shell.Pass();
-    shell_->ConnectToApplication("mojo:network_service",
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:network_service");
+    shell_->ConnectToApplication(request.Pass(),
                                  GetProxy(&service_provider), nullptr);
     ConnectToService(service_provider.get(), &network_service_);
   }

@@ -25,6 +25,7 @@
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
+#include "mojo/common/user_agent.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -36,11 +37,6 @@ namespace {
 
 // Allows overriding user agent scring.
 const char kUserAgentSwitch[] = "user-agent";
-
-// TODO(darin): Figure out what our UA should really be.
-const char kDefaultUserAgentString[] =
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/42.0.2311.68 Safari/537.36";
 
 class WebWaitableEventImpl : public blink::WebWaitableEvent {
  public:
@@ -72,14 +68,18 @@ BlinkPlatformImpl::BlinkPlatformImpl(
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0) {
   if (app) {
-    app->ConnectToService("mojo:network_service", &network_service_);
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:network_service");
+    app->ConnectToService(request.Pass(), &network_service_);
 
     mojo::CookieStorePtr cookie_store;
     network_service_->GetCookieStore(GetProxy(&cookie_store));
     cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
     mojo::ClipboardPtr clipboard;
-    app->ConnectToService("mojo:clipboard", &clipboard);
+    mojo::URLRequestPtr request2(mojo::URLRequest::New());
+    request2->url = mojo::String::From("mojo:clipboard");
+    app->ConnectToService(request2.Pass(), &clipboard);
     clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
   }
   shared_timer_.SetTaskRunner(main_thread_task_runner_);
@@ -216,7 +216,7 @@ blink::WebString BlinkPlatformImpl::userAgent() {
     return blink::WebString::fromUTF8(
         command_line->GetSwitchValueASCII(kUserAgentSwitch));
   }
-  return blink::WebString::fromUTF8(kDefaultUserAgentString);
+  return blink::WebString::fromUTF8(mojo::common::GetUserAgent());
 }
 
 blink::WebData BlinkPlatformImpl::parseDataURL(

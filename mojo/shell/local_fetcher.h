@@ -23,6 +23,7 @@ class LocalFetcher : public Fetcher {
  private:
   const GURL& GetURL() const override;
   GURL GetRedirectURL() const override;
+  GURL GetRedirectReferer() const override;
 
   URLResponsePtr AsURLResponse(base::TaskRunner* task_runner,
                                uint32_t skip) override;

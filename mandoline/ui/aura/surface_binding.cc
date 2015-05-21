@@ -204,7 +204,9 @@ void SurfaceBinding::PerViewManagerState::Init() {
   DCHECK(!surface_.get());
 
   mojo::ServiceProviderPtr surfaces_service_provider;
-  shell_->ConnectToApplication("mojo:surfaces_service",
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:surfaces_service");
+  shell_->ConnectToApplication(request.Pass(),
                                GetProxy(&surfaces_service_provider),
                                nullptr);
   ConnectToService(surfaces_service_provider.get(), &surface_);
@@ -221,7 +223,9 @@ void SurfaceBinding::PerViewManagerState::Init() {
 
   mojo::ServiceProviderPtr gpu_service_provider;
   // TODO(jamesr): Should be mojo:gpu_service
-  shell_->ConnectToApplication("mojo:native_viewport_service",
+  mojo::URLRequestPtr request2(mojo::URLRequest::New());
+  request2->url = mojo::String::From("mojo:native_viewport_service");
+  shell_->ConnectToApplication(request2.Pass(),
                                GetProxy(&gpu_service_provider),
                                nullptr);
   ConnectToService(gpu_service_provider.get(), &gpu_);

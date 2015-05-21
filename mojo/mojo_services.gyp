@@ -11,6 +11,7 @@
       'mojom_files': [
         'services/network/public/interfaces/cookie_store.mojom',
         'services/network/public/interfaces/http_connection.mojom',
+        'services/network/public/interfaces/http_message.mojom',
         'services/network/public/interfaces/http_server.mojom',
         'services/network/public/interfaces/net_address.mojom',
         'services/network/public/interfaces/network_error.mojom',
@@ -26,23 +27,6 @@
     },
     'includes': [
       '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
-    ],
-  }, {
-    # GN version: //third_party/mojo_services/src/content_handler/public/interfaces
-    'target_name': 'content_handler_bindings_mojom',
-    'type': 'static_library',
-    'variables': {
-      'mojom_files': [
-        '../third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom',
-      ],
-      'mojom_include_path': '<(DEPTH)/mojo/services',
-    },
-    'includes': [
-      '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
-    ],
-    'dependencies': [
-      '<(DEPTH)/mojo/mojo_services.gyp:network_service_bindings_mojom',
-      '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_application_bindings_mojom',
     ],
   }],
 }

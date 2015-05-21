@@ -14,12 +14,16 @@ mojom("interfaces") {
     "view_manager_root.mojom",
   ]
 
-  import_dirs = [ get_path_info("../../../..", "abspath") ]
+  import_dirs = [
+    get_path_info("../../../..", "abspath"),
+    "//mojo/services",
+  ]
 
   deps = [
     "//components/gpu/public/interfaces",
     "//components/surfaces/public/interfaces:surface_id",
     "//mojo/application/public/interfaces",
+    "//mojo/services/network/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]

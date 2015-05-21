@@ -55,7 +55,7 @@ class ViewManagerClientImpl : public ViewManager,
                    const std::vector<uint8_t>& data);
 
   void Embed(const String& url, Id view_id);
-  void Embed(const String& url,
+  void Embed(mojo::URLRequestPtr request,
              Id view_id,
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);

@@ -370,11 +370,11 @@ void View::Embed(const String& url) {
   static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_);
 }
 
-void View::Embed(const String& url,
+void View::Embed(mojo::URLRequestPtr request,
                  InterfaceRequest<ServiceProvider> services,
                  ServiceProviderPtr exposed_services) {
   static_cast<ViewManagerClientImpl*>(manager_)
-      ->Embed(url, id_, services.Pass(), exposed_services.Pass());
+      ->Embed(request.Pass(), id_, services.Pass(), exposed_services.Pass());
 }
 
 void View::Embed(ViewManagerClientPtr client) {

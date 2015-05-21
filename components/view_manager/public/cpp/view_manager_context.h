@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "mojo/application/public/cpp/service_provider_impl.h"
+#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -30,7 +31,7 @@ class ViewManagerContext {
   // app alongside this Embed() call. |exposed_services| provides a means for
   // the embedder to connect to services exposed by the embedded app.
   void Embed(const String& url);
-  void Embed(const String& url,
+  void Embed(mojo::URLRequestPtr request,
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_Services);
 

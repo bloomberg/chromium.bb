@@ -69,14 +69,14 @@ class ApplicationImpl : public Application {
   // or nullptr otherwise. Caller does not take ownership. The pointer remains
   // valid until an error occurs on the connection with the Shell, or until the
   // ApplicationImpl is destroyed, whichever occurs first.
-  ApplicationConnection* ConnectToApplication(const String& application_url);
+  ApplicationConnection* ConnectToApplication(mojo::URLRequestPtr request);
 
-  // Connect to application identified by |application_url| and connect to the
+  // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
-  void ConnectToService(const std::string& application_url,
+  void ConnectToService(mojo::URLRequestPtr request,
                         InterfacePtr<Interface>* ptr) {
-    ConnectToApplication(application_url)->ConnectToService(ptr);
+    ConnectToApplication(request.Pass())->ConnectToService(ptr);
   }
 
   // Application implementation.

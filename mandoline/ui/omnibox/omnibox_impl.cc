@@ -135,8 +135,9 @@ void OmniboxImpl::SetClient(OmniboxClientPtr client) {
 
 void OmniboxImpl::ShowForURL(const mojo::String& url) {
   url_ = url;
-
-  view_embedder_->Embed("mojo:omnibox", nullptr, nullptr);
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:omnibox");
+  view_embedder_->Embed(request.Pass(), nullptr, nullptr);
 }
 
 }  // namespace mandoline
