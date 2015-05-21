@@ -5,12 +5,14 @@
 #include "ui/views/controls/menu/menu_controller.h"
 
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/wm/public/dispatcher_client.h"
 
@@ -153,14 +155,39 @@ class MenuControllerTest : public ViewsTestBase {
     return widget.Pass();
   }
 
-  void RunMenu(views::Widget* owner) {
-    scoped_ptr<TestMenuItemView> menu_item(new TestMenuItemView);
+  const MenuItemView* pending_state_item() const {
+    return controller_->pending_state_.item;
+  }
+
+  void SetPendingStateItem(MenuItemView* item) {
+    controller_->pending_state_.item = item;
+  }
+
+  void IncrementSelection(int delta) {
+    controller_->IncrementSelection(delta);
+  }
+
+  MenuItemView* FindFirstSelectableMenuItem(MenuItemView* parent) {
+    return controller_->FindFirstSelectableMenuItem(parent);
+  }
+
+  MenuItemView* FindNextSelectableMenuItem(MenuItemView* parent,
+                                           int index,
+                                           int delta) {
+    return controller_->FindNextSelectableMenuItem(parent, index, delta);
+  }
+  void SetupMenu(views::Widget* owner, views::MenuItemView* item) {
     ResetMenuController();
     controller_ = new MenuController(NULL, true, NULL);
     controller_->owner_ = owner;
     controller_->showing_ = true;
-    controller_->SetSelection(menu_item.get(),
+    controller_->SetSelection(item,
                               MenuController::SELECTION_UPDATE_IMMEDIATELY);
+  }
+
+  void RunMenu(views::Widget* owner) {
+    scoped_ptr<TestMenuItemView> menu_item(new TestMenuItemView);
+    SetupMenu(owner, menu_item.get());
     controller_->RunMessageLoop(false);
   }
 
@@ -320,5 +347,69 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
       &test_event_handler);
 }
 #endif // defined(USE_X11)
+
+TEST_F(MenuControllerTest, FirstSelectedItem) {
+  scoped_ptr<Widget> owner(CreateOwnerWidget());
+  scoped_ptr<TestMenuItemView> menu_item(new TestMenuItemView);
+  menu_item->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
+  menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
+  // Disabling the item "One" gets it skipped when a menu is first opened.
+  menu_item->GetSubmenu()->GetMenuItemAt(0)->SetEnabled(false);
+
+  SetupMenu(owner.get(), menu_item.get());
+
+  // First selectable item should be item "Two".
+  MenuItemView* first_selectable = FindFirstSelectableMenuItem(menu_item.get());
+  EXPECT_EQ(2, first_selectable->GetCommand());
+
+  // There should be no next or previous selectable item since there is only a
+  // single enabled item in the menu.
+  SetPendingStateItem(first_selectable);
+  EXPECT_EQ(NULL, FindNextSelectableMenuItem(menu_item.get(), 1, 1));
+  EXPECT_EQ(NULL, FindNextSelectableMenuItem(menu_item.get(), 1, -1));
+}
+
+TEST_F(MenuControllerTest, NextSelectedItem) {
+  scoped_ptr<Widget> owner(CreateOwnerWidget());
+  scoped_ptr<TestMenuItemView> menu_item(new TestMenuItemView);
+  menu_item->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
+  menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
+  menu_item->AppendMenuItemWithLabel(3, base::ASCIIToUTF16("Three"));
+  menu_item->AppendMenuItemWithLabel(4, base::ASCIIToUTF16("Four"));
+  // Disabling the item "Three" gets it skipped when using keyboard to navigate.
+  menu_item->GetSubmenu()->GetMenuItemAt(2)->SetEnabled(false);
+
+  SetupMenu(owner.get(), menu_item.get());
+
+  // Fake initial hot selection.
+  SetPendingStateItem(menu_item->GetSubmenu()->GetMenuItemAt(0));
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Move down in the menu.
+  // Select next item.
+  IncrementSelection(1);
+  EXPECT_EQ(2, pending_state_item()->GetCommand());
+
+  // Skip disabled item.
+  IncrementSelection(1);
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  // Wrap around.
+  IncrementSelection(1);
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Move up in the menu.
+  // Wrap around.
+  IncrementSelection(-1);
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  // Skip disabled item.
+  IncrementSelection(-1);
+  EXPECT_EQ(2, pending_state_item()->GetCommand());
+
+  // Select previous item.
+  IncrementSelection(-1);
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+}
 
 }  // namespace views

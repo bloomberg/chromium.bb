@@ -1885,9 +1885,11 @@ void MenuController::IncrementSelection(int delta) {
   if (pending_state_.submenu_open && item->HasSubmenu() &&
       item->GetSubmenu()->IsShowing()) {
     // A menu is selected and open, but none of its children are selected,
-    // select the first menu item.
+    // select the first menu item that is visible and enabled.
     if (item->GetSubmenu()->GetMenuItemCount()) {
-      SetSelection(item->GetSubmenu()->GetMenuItemAt(0), SELECTION_DEFAULT);
+      MenuItemView* to_select = FindFirstSelectableMenuItem(item);
+      if (to_select)
+        SetSelection(to_select, SELECTION_DEFAULT);
       return;
     }
   }
@@ -1934,19 +1936,27 @@ void MenuController::IncrementSelection(int delta) {
   }
 }
 
+MenuItemView* MenuController::FindFirstSelectableMenuItem(
+    MenuItemView* parent) {
+  MenuItemView* child = parent->GetSubmenu()->GetMenuItemAt(0);
+  if (!child->visible() || !child->enabled())
+    child = FindNextSelectableMenuItem(parent, 0, 1);
+  return child;
+}
+
 MenuItemView* MenuController::FindNextSelectableMenuItem(MenuItemView* parent,
                                                          int index,
                                                          int delta) {
   int start_index = index;
   int parent_count = parent->GetSubmenu()->GetMenuItemCount();
   // Loop through the menu items skipping any invisible menus. The loop stops
-  // when we wrap or find a visible child.
+  // when we wrap or find a visible and enabled child.
   do {
     index = (index + delta + parent_count) % parent_count;
     if (index == start_index)
       return NULL;
     MenuItemView* child = parent->GetSubmenu()->GetMenuItemAt(index);
-    if (child->visible())
+    if (child->visible() && child->enabled())
       return child;
   } while (index != start_index);
   return NULL;
@@ -1954,15 +1964,17 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(MenuItemView* parent,
 
 void MenuController::OpenSubmenuChangeSelectionIfCan() {
   MenuItemView* item = pending_state_.item;
-  if (item->HasSubmenu() && item->enabled()) {
-    if (item->GetSubmenu()->GetMenuItemCount() > 0) {
-      SetSelection(item->GetSubmenu()->GetMenuItemAt(0),
-                   SELECTION_UPDATE_IMMEDIATELY);
-    } else {
-      // No menu items, just show the sub-menu.
-      SetSelection(item, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
-    }
+  if (!item->HasSubmenu() || !item->enabled())
+    return;
+  MenuItemView* to_select = NULL;
+  if (item->GetSubmenu()->GetMenuItemCount() > 0)
+    to_select = FindFirstSelectableMenuItem(item);
+  if (to_select) {
+    SetSelection(to_select, SELECTION_UPDATE_IMMEDIATELY);
+    return;
   }
+  // No menu items, just show the sub-menu.
+  SetSelection(item, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 }
 
 void MenuController::CloseSubmenu() {

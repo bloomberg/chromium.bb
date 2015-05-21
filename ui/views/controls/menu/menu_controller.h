@@ -435,9 +435,13 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Selects the next/previous menu item.
   void IncrementSelection(int delta);
 
+  // Returns the first selectable child menu item of |parent|. If there are no
+  // selectable menu items NULL is returned.
+  MenuItemView* FindFirstSelectableMenuItem(MenuItemView* parent);
+
   // Returns the next selectable child menu item of |parent| starting at |index|
-  // and incrementing index by |delta|. If there are no more selected menu items
-  // NULL is returned.
+  // and incrementing index by |delta|. If there are no more selectable menu
+  // items NULL is returned.
   MenuItemView* FindNextSelectableMenuItem(MenuItemView* parent,
                                            int index,
                                            int delta);
