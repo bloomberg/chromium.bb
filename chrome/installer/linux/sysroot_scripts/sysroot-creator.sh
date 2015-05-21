@@ -473,13 +473,16 @@ VerifyPackageListing() {
   local output_file=$2
   local release_file="${BUILD_DIR}/${RELEASE_FILE}"
   local release_file_gpg="${BUILD_DIR}/${RELEASE_FILE_GPG}"
+  local tmp_keyring_file="${BUILD_DIR}/keyring.gpg"
 
   CheckForDebianGPGKeyring
 
   DownloadOrCopy ${RELEASE_LIST} ${release_file}
   DownloadOrCopy ${RELEASE_LIST_GPG} ${release_file_gpg}
   echo "Verifying: ${release_file} with ${release_file_gpg}"
-  gpgv --keyring $KEYRING_FILE ${release_file_gpg} ${release_file}
+  cp "${KEYRING_FILE}" "${tmp_keyring_file}"
+  gpg --primary-keyring "${tmp_keyring_file}" --recv-keys 2B90D010
+  gpgv --keyring "${tmp_keyring_file}" "${release_file_gpg}" "${release_file}"
 
   echo "Verifying: ${output_file}"
   local checksums=$(grep ${file_path} ${release_file} | cut -d " " -f 2)
