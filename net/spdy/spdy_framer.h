@@ -107,30 +107,12 @@ struct NET_EXPORT_PRIVATE SpdyAltSvcScratch {
   ~SpdyAltSvcScratch();
 
   void Reset() {
-    max_age = 0;
-    port = 0;
-    pid_len = 0;
-    host_len = 0;
-    origin_len = 0;
-    pid_buf_len = 0;
-    host_buf_len = 0;
-    origin_buf_len = 0;
-    protocol_id.reset();
-    host.reset();
-    origin.reset();
+    buffer.reset();
+    buffer_length = 0;
   }
 
-  uint32 max_age;
-  uint16 port;
-  uint8 pid_len;
-  uint8 host_len;
-  size_t origin_len;
-  size_t pid_buf_len;
-  size_t host_buf_len;
-  size_t origin_buf_len;
-  scoped_ptr<char[]> protocol_id;
-  scoped_ptr<char[]> host;
-  scoped_ptr<char[]> origin;
+  scoped_ptr<char[]> buffer;
+  size_t buffer_length = 0;
 };
 
 // SpdyFramerVisitorInterface is a set of callbacks for the SpdyFramer.

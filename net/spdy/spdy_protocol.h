@@ -961,6 +961,10 @@ class NET_EXPORT_PRIVATE SpdyContinuationIR
   DISALLOW_COPY_AND_ASSIGN(SpdyContinuationIR);
 };
 
+// TODO(bnc): Add probability.
+// TODO(bnc): Separate (protocol, port, host, max_age, probability) tuple into
+// struct, have a vector of that struct.  A single HTTP/1.1 header field or
+// HTTP/2 or QUIC frame can define multiple such tuples.
 class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
  public:
   explicit SpdyAltSvcIR(SpdyStreamId stream_id);
