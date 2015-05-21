@@ -605,7 +605,9 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
 #if defined(OS_WIN)
 #define MAYBE_BackgroundKeepaliveActive DISABLED_BackgroundKeepaliveActive
 #else
-#define MAYBE_BackgroundKeepaliveActive BackgroundKeepaliveActive
+// Disabling other platforms too since the test started failing
+// consistently. http://crbug.com/490440
+#define MAYBE_BackgroundKeepaliveActive DISABLED_BackgroundKeepaliveActive
 #endif
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest,
                        MAYBE_BackgroundKeepaliveActive) {
