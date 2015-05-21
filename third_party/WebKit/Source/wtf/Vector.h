@@ -1310,6 +1310,18 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     void Vector<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor)
     {
         ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
+        if (!buffer())
+            return;
+        if (this->hasOutOfLineBuffer()) {
+            // This is a performance optimization for a case where the buffer
+            // has been already traced by somewhere. This can happen if
+            // the conservative scanning traced an on-stack (false-positive
+            // or real) pointer to the HeapVector, and then visitor->trace()
+            // traces the HeapVector.
+            if (visitor->isHeapObjectAlive(buffer()))
+                return;
+            Allocator::markNoTracing(visitor, buffer());
+        }
         const T* bufferBegin = buffer();
         const T* bufferEnd = buffer() + size();
         if (ShouldBeTraced<VectorTraits<T>>::value) {
@@ -1317,8 +1329,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 Allocator::template trace<VisitorDispatcher, T, VectorTraits<T>>(visitor, *const_cast<T*>(bufferEntry));
             checkUnusedSlots(buffer() + size(), buffer() + capacity());
         }
-        if (this->hasOutOfLineBuffer())
-            Allocator::markNoTracing(visitor, buffer());
     }
 
 #if !ENABLE(OILPAN)
