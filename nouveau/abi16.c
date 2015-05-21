@@ -195,6 +195,9 @@ abi16_bo_init(struct nouveau_bo *bo, uint32_t alignment,
 	if (bo->flags & NOUVEAU_BO_MAP)
 		info->domain |= NOUVEAU_GEM_DOMAIN_MAPPABLE;
 
+	if (bo->flags & NOUVEAU_BO_COHERENT)
+		info->domain |= NOUVEAU_GEM_DOMAIN_COHERENT;
+
 	if (!(bo->flags & NOUVEAU_BO_CONTIG))
 		info->tile_flags = NOUVEAU_GEM_TILE_NONCONTIG;
 

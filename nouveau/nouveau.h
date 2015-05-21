@@ -127,6 +127,7 @@ union nouveau_bo_config {
 #define NOUVEAU_BO_MAP     0x80000000
 #define NOUVEAU_BO_CONTIG  0x40000000
 #define NOUVEAU_BO_NOSNOOP 0x20000000
+#define NOUVEAU_BO_COHERENT 0x10000000
 
 struct nouveau_bo {
 	struct nouveau_device *device;
