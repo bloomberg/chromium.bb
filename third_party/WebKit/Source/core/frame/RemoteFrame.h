@@ -29,7 +29,7 @@ public:
     bool isRemoteFrame() const override { return true; }
     DOMWindow* domWindow() const override;
     WindowProxy* windowProxy(DOMWrapperWorld&) override;
-    void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
+    void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
     void reload(ReloadPolicy, ClientRedirectPolicy) override;
     void detach() override;
     RemoteSecurityContext* securityContext() const override;

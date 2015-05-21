@@ -53,6 +53,9 @@ class Settings;
 class WindowProxy;
 class WindowProxyManager;
 
+// Status of user gesture.
+enum class UserGestureStatus { Active, None };
+
 class CORE_EXPORT Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
     virtual ~Frame();
@@ -65,7 +68,7 @@ public:
     virtual DOMWindow* domWindow() const = 0;
     virtual WindowProxy* windowProxy(DOMWrapperWorld&) = 0;
 
-    virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) = 0;
+    virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) = 0;
     virtual void reload(ReloadPolicy, ClientRedirectPolicy) = 0;
 
     virtual void detach();

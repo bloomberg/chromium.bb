@@ -1475,7 +1475,7 @@ PassRefPtrWillBeRawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, 
         if (urlString.isEmpty())
             return targetFrame->domWindow();
 
-        targetFrame->navigate(*activeDocument, completedURL, false);
+        targetFrame->navigate(*activeDocument, completedURL, false, UserGestureStatus::None);
         return targetFrame->domWindow();
     }
 

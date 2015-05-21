@@ -86,7 +86,7 @@ namespace blink {
         virtual bool isLocalFrame() const override { return true; }
         virtual DOMWindow* domWindow() const override;
         WindowProxy* windowProxy(DOMWrapperWorld&) override;
-        virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
+        virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
         virtual void reload(ReloadPolicy, ClientRedirectPolicy) override;
         virtual void detach() override;
         virtual void disconnectOwnerElement() override;

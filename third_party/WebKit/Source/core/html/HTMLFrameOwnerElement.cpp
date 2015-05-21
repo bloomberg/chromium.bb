@@ -245,7 +245,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 {
     RefPtrWillBeRawPtr<LocalFrame> parentFrame = document().frame();
     if (contentFrame()) {
-        contentFrame()->navigate(document(), url, lockBackForwardList);
+        contentFrame()->navigate(document(), url, lockBackForwardList, UserGestureStatus::None);
         return true;
     }
 

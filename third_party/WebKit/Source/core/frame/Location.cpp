@@ -270,7 +270,7 @@ void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, Loc
         argv.append(completedURL);
         activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
     }
-    m_frame->navigate(*callingWindow->document(), completedURL, locationPolicy == SetLocation::ReplaceThisFrame);
+    m_frame->navigate(*callingWindow->document(), completedURL, locationPolicy == SetLocation::ReplaceThisFrame, UserGestureStatus::None);
 }
 
 } // namespace blink

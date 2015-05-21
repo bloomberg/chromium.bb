@@ -146,6 +146,10 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     // so we need to ensure the proper referrer is set now.
     frameRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(activeFrame->document()->referrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()));
 
+    // Records HasUserGesture before the value is invalidated inside createWindow(LocalFrame& openerFrame, ...).
+    // This value will be set in ResourceRequest loaded in a new LocalFrame.
+    bool hasUserGesture = UserGestureIndicator::processingUserGesture();
+
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
     Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer);
@@ -155,7 +159,7 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     newFrame->client()->setOpener(&openerFrame);
 
     if (!newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
-        newFrame->navigate(*callingWindow.document(), completedURL, false);
+        newFrame->navigate(*callingWindow.document(), completedURL, false, hasUserGesture ? UserGestureStatus::Active : UserGestureStatus::None);
     return newFrame->domWindow();
 }
 

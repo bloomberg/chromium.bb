@@ -234,7 +234,7 @@ WindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world)
     return m_script->windowProxy(world);
 }
 
-void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
+void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList, UserGestureStatus userGestureStatus)
 {
     // TODO(dcheng): Special case for window.open("about:blank") to ensure it loads synchronously into
     // a new window. This is our historical behavior, and it's consistent with the creation of
@@ -243,10 +243,13 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBa
     // TODO(japhet): This special case is also necessary for behavior asserted by some extensions tests.
     // Using NavigationScheduler::scheduleNavigationChange causes the navigation to be flagged as a
     // client redirect, which is observable via the webNavigation extension api.
-    if (isMainFrame() && !m_loader.stateMachine()->committedFirstRealDocumentLoad())
-        m_loader.load(FrameLoadRequest(&originDocument, url));
-    else
+    if (isMainFrame() && !m_loader.stateMachine()->committedFirstRealDocumentLoad()) {
+        FrameLoadRequest request(&originDocument, url);
+        request.resourceRequest().setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
+        m_loader.load(request);
+    } else {
         m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), lockBackForwardList);
+    }
 }
 
 void LocalFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)
