@@ -340,7 +340,7 @@ deps_os = {
   },
   'ios': {
     'src/ios/third_party/gcdwebserver/src':
-     Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '18889793b75d7ee593d62ac88997caad850acdb6',
+     Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '3d5fd0b8281a7224c057deb2d17709b5bea64836',
 
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
