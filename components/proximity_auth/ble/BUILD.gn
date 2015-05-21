@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 source_set("ble") {
   sources = [
     "bluetooth_low_energy_connection.cc",
@@ -19,5 +21,23 @@ source_set("ble") {
     "//components/proximity_auth",
     "//device/bluetooth",
     "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "bluetooth_low_energy_connection_finder_unittest.cc",
+  ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  deps = [
+    ":ble",
+    "//components/proximity_auth",
+    "//base/test:test_support",
+    "//device/bluetooth:mocks",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

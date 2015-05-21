@@ -428,6 +428,7 @@
       'precache/core/precache_url_table_unittest.cc',
     ],
     'proximity_auth_unittest_sources': [
+      'proximity_auth/ble/bluetooth_low_energy_connection_finder_unittest.cc',
       'proximity_auth/bluetooth_connection_finder_unittest.cc',
       'proximity_auth/bluetooth_connection_unittest.cc',
       'proximity_auth/bluetooth_throttler_impl_unittest.cc',

@@ -67,6 +67,7 @@ source_set("unit_tests") {
 
   deps = [
     ":proximity_auth",
+    "ble:unit_tests",
     "cryptauth:unit_tests",
     "logging:unit_tests",
     "//base/test:test_support",

@@ -48,7 +48,6 @@ class BluetoothLowEnergyConnectionFinder
                                  Connection::Status old_status,
                                  Connection::Status new_status) override;
 
- protected:
   // device::BluetoothAdapter::Observer:
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* device) override;
@@ -56,6 +55,12 @@ class BluetoothLowEnergyConnectionFinder
                      device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
+
+ protected:
+  // Creates a proximity_auth::Connection based on |gatt_connection|. Exposed
+  // for testing.
+  virtual scoped_ptr<Connection> CreateConnection(
+      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
 
  private:
   // Callback to be called when the Bluetooth adapter is initialized.
@@ -99,10 +104,6 @@ class BluetoothLowEnergyConnectionFinder
   // Creates a GATT connection with |remote_device|, |connection_callback_| will
   // be called once the connection is established.
   void CreateGattConnection(device::BluetoothDevice* remote_device);
-
-  // Creates a connection with |remote_device|.
-  scoped_ptr<Connection> CreateConnection(
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
 
   // The uuid of the service it looks for to establish a GattConnection.
   device::BluetoothUUID remote_service_uuid_;
