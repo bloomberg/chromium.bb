@@ -26961,6 +26961,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Platform.BatteryAbsent" enum="BooleanAbsent">
+  <owner>cernekee@chromium.org</owner>
+  <summary>
+    Indicates whether the kernel's ACPI Smart Battery System driver logged an
+    error trying to find the battery on boot.
+  </summary>
+</histogram>
+
 <histogram name="Platform.BootSectorsRead">
   <owner>sonnyrao@chromium.org</owner>
   <summary>
@@ -48322,6 +48330,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="Boolean" type="int">
   <int value="0" label="False"/>
   <int value="1" label="True"/>
+</enum>
+
+<enum name="BooleanAbsent" type="int">
+  <int value="0" label="Not Absent"/>
+  <int value="1" label="Absent"/>
 </enum>
 
 <enum name="BooleanAccepted" type="int">
