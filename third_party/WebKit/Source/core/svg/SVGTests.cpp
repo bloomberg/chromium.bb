@@ -19,12 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGTests.h"
 
 #include "core/SVGNames.h"
-#include "core/dom/DOMImplementation.h"
-#include "core/frame/UseCounter.h"
 #include "core/svg/SVGElement.h"
 #include "platform/Language.h"
 
