@@ -153,6 +153,12 @@ public class LocationBarPhone extends LocationBarLayout {
 
         if (percent > 0f && !hasVisibleViewsAfterUrlBarWhenUnfocused()) {
             mUrlActionsContainer.setVisibility(VISIBLE);
+        } else if (percent == 0f && !mUrlFocusChangeInProgress
+                && !hasVisibleViewsAfterUrlBarWhenUnfocused()) {
+            // If a URL focus change is in progress, then it will handle setting the visibility
+            // correctly after it completes.  If done here, it would cause the URL to jump due
+            // to a badly timed layout call.
+            mUrlActionsContainer.setVisibility(GONE);
         }
 
         mDeleteButton.setAlpha(percent);
