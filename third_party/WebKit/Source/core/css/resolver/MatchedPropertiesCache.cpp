@@ -38,7 +38,6 @@ namespace blink {
 void CachedMatchedProperties::set(const ComputedStyle& style, const ComputedStyle& parentStyle, const MatchResult& matchResult)
 {
     matchedProperties.appendVector(matchResult.matchedProperties);
-    ranges = matchResult.ranges;
 
     // Note that we don't cache the original ComputedStyle instance. It may be further modified.
     // The ComputedStyle in the cache is really just a holder for the substructures and never used as-is.
@@ -80,8 +79,6 @@ const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const
         if (matchResult.matchedProperties[i] != cacheItem->matchedProperties[i])
             return 0;
     }
-    if (cacheItem->ranges != matchResult.ranges)
-        return 0;
     return cacheItem;
 }
 

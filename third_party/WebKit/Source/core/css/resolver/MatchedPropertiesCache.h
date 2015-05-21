@@ -40,7 +40,6 @@ class CachedMatchedProperties final : public NoBaseWillBeGarbageCollectedFinaliz
 
 public:
     WillBeHeapVector<MatchedProperties> matchedProperties;
-    MatchRanges ranges;
     RefPtr<ComputedStyle> computedStyle;
     RefPtr<ComputedStyle> parentComputedStyle;
 
