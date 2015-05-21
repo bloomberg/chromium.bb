@@ -1781,13 +1781,6 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-1x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-1x-both.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 
-crbug.com/477894 [ XP ] virtual/slimmingpaint/fast/block/positioning/052.html [ NeedsRebaseline ]
-crbug.com/477894 [ XP ] virtual/slimmingpaint/fast/block/positioning/058.html [ NeedsRebaseline ]
-crbug.com/477894 [ XP ] virtual/slimmingpaint/fast/block/positioning/abs-inside-inline-rel.html [ NeedsRebaseline ]
-crbug.com/477894 [ XP ] virtual/slimmingpaint/fast/block/positioning/relative-positioned-inline-container.html [ NeedsRebaseline ]
-crbug.com/477894 [ XP ] virtual/slimmingpaint/fast/block/positioning/rtl-static-positioning.html [ NeedsRebaseline ]
-crbug.com/477894 [ XP ] virtual/slimmingpaint/fast/block/positioning/trailing-space-test.html [ NeedsRebaseline ]
-
 crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
 # Minor failure only on Mac 10.6 Debug.

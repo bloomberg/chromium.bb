@@ -12,5 +12,6 @@ layer at (8,8) size 100x24
   LayoutInline (relative positioned) {SPAN} at (0,0) size 100x24
     LayoutText {#text} at (0,0) size 0x0
     LayoutBR {BR} at (0,0) size 0x19
+    LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {DIV} at (0,20) size 100x0 [bgcolor=#FF0000]
     LayoutText {#text} at (0,0) size 0x0
