@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,7 +72,7 @@ TEST(CommandLineTest, CommandLineConstructor) {
   EXPECT_TRUE(cl.HasSwitch("input-translation"));
 
   EXPECT_EQ("Crepe", cl.GetSwitchValueASCII("spaetzle"));
-  EXPECT_EQ("", cl.GetSwitchValueASCII("Foo"));
+  EXPECT_EQ("", cl.GetSwitchValueASCII("foo"));
   EXPECT_EQ("", cl.GetSwitchValueASCII("bar"));
   EXPECT_EQ("", cl.GetSwitchValueASCII("cruller"));
   EXPECT_EQ("--dog=canine --cat=feline", cl.GetSwitchValueASCII(
@@ -134,7 +135,7 @@ TEST(CommandLineTest, CommandLineFromString) {
   EXPECT_TRUE(cl.HasSwitch("quotes"));
 
   EXPECT_EQ("Crepe", cl.GetSwitchValueASCII("spaetzle"));
-  EXPECT_EQ("", cl.GetSwitchValueASCII("Foo"));
+  EXPECT_EQ("", cl.GetSwitchValueASCII("foo"));
   EXPECT_EQ("", cl.GetSwitchValueASCII("bar"));
   EXPECT_EQ("", cl.GetSwitchValueASCII("cruller"));
   EXPECT_EQ("--dog=canine --cat=feline", cl.GetSwitchValueASCII(
@@ -273,6 +274,7 @@ TEST(CommandLineTest, AppendSwitches) {
   cl.AppendSwitchASCII(switch2, value2);
   cl.AppendSwitchASCII(switch3, value3);
   cl.AppendSwitchASCII(switch4, value4);
+  cl.AppendSwitchASCII(switch5, value4);
   cl.AppendSwitchNative(switch5, value5);
 
   EXPECT_TRUE(cl.HasSwitch(switch1));
@@ -291,6 +293,9 @@ TEST(CommandLineTest, AppendSwitches) {
             L"--switch2=value "
             L"--switch3=\"a value with spaces\" "
             L"--switch4=\"\\\"a value with quotes\\\"\" "
+            // Even though the switches are unique, appending can add repeat
+            // switches to argv.
+            L"--quotes=\"\\\"a value with quotes\\\"\" "
             L"--quotes=\"" + kTrickyQuoted + L"\"",
             cl.GetCommandLineString());
 #endif
@@ -377,6 +382,22 @@ TEST(CommandLineTest, Init) {
   EXPECT_FALSE(CommandLine::Init(0, NULL));
   CommandLine* current = CommandLine::ForCurrentProcess();
   EXPECT_EQ(initial, current);
+}
+
+// Test that copies of CommandLine have a valid StringPiece map.
+TEST(CommandLineTest, Copy) {
+  scoped_ptr<CommandLine> initial(new CommandLine(CommandLine::NO_PROGRAM));
+  initial->AppendSwitch("a");
+  initial->AppendSwitch("bbbbbbbbbbbbbbb");
+  initial->AppendSwitch("c");
+  CommandLine copy_constructed(*initial);
+  CommandLine assigned = *initial;
+  CommandLine::SwitchMap switch_map = initial->GetSwitches();
+  initial.reset();
+  for (const auto& pair : switch_map)
+    EXPECT_TRUE(copy_constructed.HasSwitch(pair.first));
+  for (const auto& pair : switch_map)
+    EXPECT_TRUE(assigned.HasSwitch(pair.first));
 }
 
 } // namespace base
