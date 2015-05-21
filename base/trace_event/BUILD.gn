@@ -88,6 +88,7 @@ source_set("trace_event_unittests") {
     "java_heap_dump_provider_android_unittest.cc",
     "memory_allocator_dump_unittest.cc",
     "memory_dump_manager_unittest.cc",
+    "process_memory_dump_unittest.cc",
     "process_memory_maps_dump_provider_unittest.cc",
     "process_memory_totals_dump_provider_unittest.cc",
     "trace_event_argument_unittest.cc",

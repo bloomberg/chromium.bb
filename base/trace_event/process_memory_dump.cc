@@ -35,6 +35,23 @@ MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
   return it == allocator_dumps_.end() ? nullptr : it->second;
 }
 
+void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
+  // We support only merging of MemoryAllocatorDumps. The special process_totals
+  // and mmaps cases are not relevant, let's just prevent clients from doing it.
+  DCHECK(!other->has_process_totals() && !other->has_process_mmaps());
+
+  // Moves the ownership of all MemoryAllocatorDump(s) contained in |other|
+  // into this ProcessMemoryDump.
+  for (MemoryAllocatorDump* mad : other->allocator_dumps_storage_) {
+    // Check that we don't merge duplicates.
+    DCHECK_EQ(0ul, allocator_dumps_.count(mad->absolute_name()));
+    allocator_dumps_storage_.push_back(mad);
+    allocator_dumps_[mad->absolute_name()] = mad;
+  }
+  other->allocator_dumps_storage_.weak_clear();
+  other->allocator_dumps_.clear();
+}
+
 void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
   // Build up the [dumper name] -> [value] dictionary.
   if (has_process_totals_) {

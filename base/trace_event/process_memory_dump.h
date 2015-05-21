@@ -41,6 +41,14 @@ class BASE_EXPORT ProcessMemoryDump {
   // Called at trace generation time to populate the TracedValue.
   void AsValueInto(TracedValue* value) const;
 
+  // Merges all MemoryAllocatorDump(s) contained in |other| inside this
+  // ProcessMemoryDump, transferring their ownership to this instance.
+  // |other| will be an empty ProcessMemoryDump after this method returns.
+  // This is to allow dump providers to pre-populate ProcessMemoryDump instances
+  // and later move their contents into the ProcessMemoryDump passed as argument
+  // of the MemoryDumpProvider::OnMemoryDump(ProcessMemoryDump*) callback.
+  void TakeAllDumpsFrom(ProcessMemoryDump* other);
+
   ProcessMemoryTotals* process_totals() { return &process_totals_; }
   bool has_process_totals() const { return has_process_totals_; }
   void set_has_process_totals() { has_process_totals_ = true; }
