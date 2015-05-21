@@ -73,6 +73,17 @@ void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
       should_store_locally);
 }
 
+void CardUnmaskPromptViewAndroid::OnNewCardLinkClicked(JNIEnv* env,
+                                                       jobject obj) {
+  controller_->NewCardLinkClicked();
+  Java_CardUnmaskBridge_update(env, java_object_.obj(),
+      base::android::ConvertUTF16ToJavaString(
+          env, controller_->GetWindowTitle()).obj(),
+      base::android::ConvertUTF16ToJavaString(
+          env, controller_->GetInstructionsMessage()).obj(),
+      controller_->ShouldRequestExpirationDate());
+}
+
 void CardUnmaskPromptViewAndroid::PromptDismissed(JNIEnv* env, jobject obj) {
   delete this;
 }

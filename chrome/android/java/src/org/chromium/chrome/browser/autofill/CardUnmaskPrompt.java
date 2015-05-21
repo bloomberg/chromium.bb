@@ -46,15 +46,17 @@ public class CardUnmaskPrompt
         implements DialogInterface.OnDismissListener, TextWatcher, OnClickListener {
     private final CardUnmaskPromptDelegate mDelegate;
     private final AlertDialog mDialog;
-    private final boolean mShouldRequestExpirationDate;
+    private boolean mShouldRequestExpirationDate;
     private final int mThisYear;
 
     private final View mMainView;
+    private final TextView mInstructions;
     private final TextView mNoRetryErrorMessage;
     private final EditText mCardUnmaskInput;
     private final EditText mMonthInput;
     private final EditText mYearInput;
     private final View mExpirationContainer;
+    private final TextView mNewCardLink;
     private final TextView mErrorMessage;
     private final CheckBox mStoreLocallyCheckbox;
     private final ImageView mStoreLocallyTooltipIcon;
@@ -75,6 +77,7 @@ public class CardUnmaskPrompt
 
         /**
          * Returns whether |userResponse| represents a valid value.
+         * @param userResponse A CVC entered by the user.
          */
         boolean checkUserInputValidity(String userResponse);
 
@@ -87,6 +90,12 @@ public class CardUnmaskPrompt
          * @param shouldStoreLocally The state of the "Save locally?" checkbox at the time.
          */
         void onUserInput(String cvc, String month, String year, boolean shouldStoreLocally);
+
+        /**
+         * Called when the "New card?" link has been clicked.
+         * The controller will call update() in response.
+         */
+        void onNewCardLinkClicked();
     }
 
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
@@ -96,7 +105,8 @@ public class CardUnmaskPrompt
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
-        ((TextView) v.findViewById(R.id.instructions)).setText(instructions);
+        mInstructions = (TextView) v.findViewById(R.id.instructions);
+        mInstructions.setText(instructions);
 
         mMainView = v;
         mNoRetryErrorMessage = (TextView) v.findViewById(R.id.no_retry_error_message);
@@ -104,6 +114,8 @@ public class CardUnmaskPrompt
         mMonthInput = (EditText) v.findViewById(R.id.expiration_month);
         mYearInput = (EditText) v.findViewById(R.id.expiration_year);
         mExpirationContainer = v.findViewById(R.id.expiration_container);
+        mNewCardLink = (TextView) v.findViewById(R.id.new_card_link);
+        mNewCardLink.setOnClickListener(this);
         mErrorMessage = (TextView) v.findViewById(R.id.error_message);
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
         mStoreLocallyCheckbox.setChecked(canStoreLocally && defaultToStoringLocally);
@@ -131,10 +143,7 @@ public class CardUnmaskPrompt
     public void show() {
         mDialog.show();
 
-        if (mShouldRequestExpirationDate) {
-            mExpirationContainer.setVisibility(View.VISIBLE);
-            mCardUnmaskInput.setEms(3);
-        }
+        showExpirationDateInputsInputs();
 
         // Override the View.OnClickListener so that pressing the positive button doesn't dismiss
         // the dialog.
@@ -157,10 +166,14 @@ public class CardUnmaskPrompt
                 setInitialFocus();
             }
         });
-        if (mShouldRequestExpirationDate) {
-            mMonthInput.addTextChangedListener(this);
-            mYearInput.addTextChangedListener(this);
-        }
+    }
+
+    public void update(String title, String instructions, boolean shouldRequestExpirationDate) {
+        assert mDialog.isShowing();
+        mDialog.setTitle(title);
+        mInstructions.setText(instructions);
+        mShouldRequestExpirationDate = shouldRequestExpirationDate;
+        showExpirationDateInputsInputs();
     }
 
     public void dismiss() {
@@ -183,6 +196,8 @@ public class CardUnmaskPrompt
                 setInputError(errorMessage);
                 setInputsEnabled(true);
                 setInitialFocus();
+
+                if (!mShouldRequestExpirationDate) mNewCardLink.setVisibility(View.VISIBLE);
             } else {
                 setInputError(null);
                 setNoRetryError(errorMessage);
@@ -220,7 +235,26 @@ public class CardUnmaskPrompt
 
     @Override
     public void onClick(View v) {
-        assert v == mStoreLocallyTooltipIcon;
+        if (v == mStoreLocallyTooltipIcon) {
+            onTooltipIconClicked();
+        } else {
+            assert v == mNewCardLink;
+            onNewCardLinkClicked();
+        }
+    }
+
+    private void showExpirationDateInputsInputs() {
+        if (!mShouldRequestExpirationDate || mExpirationContainer.getVisibility() == View.VISIBLE) {
+            return;
+        }
+
+        mExpirationContainer.setVisibility(View.VISIBLE);
+        mCardUnmaskInput.setEms(3);
+        mMonthInput.addTextChangedListener(this);
+        mYearInput.addTextChangedListener(this);
+    }
+
+    private void onTooltipIconClicked() {
         // Don't show the popup if there's already one showing (or one has been dismissed
         // recently). This prevents a tap on the (?) from hiding and then immediately re-showing
         // the popup.
@@ -266,6 +300,15 @@ public class CardUnmaskPrompt
         mStoreLocallyTooltipPopup.showAsDropDown(mStoreLocallyCheckbox,
                 ViewCompat.getPaddingStart(mStoreLocallyCheckbox), 0);
         text.announceForAccessibility(text.getText());
+    }
+
+    private void onNewCardLinkClicked() {
+        mDelegate.onNewCardLinkClicked();
+        assert mShouldRequestExpirationDate;
+        mNewCardLink.setVisibility(View.GONE);
+        mCardUnmaskInput.setText(null);
+        setInputError(null);
+        mMonthInput.requestFocus();
     }
 
     private void setInitialFocus() {
