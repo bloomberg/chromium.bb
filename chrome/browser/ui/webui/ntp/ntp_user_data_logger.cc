@@ -103,6 +103,7 @@ void NTPUserDataLogger::EmitNtpStatistics() {
       has_server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
       SUGGESTIONS_TYPE_COUNT);
   has_server_side_suggestions_ = false;
+  has_client_side_suggestions_ = false;
   UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfTiles", number_of_tiles_);
   number_of_tiles_ = 0;
   UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailTiles",
@@ -134,14 +135,18 @@ void NTPUserDataLogger::EmitNtpStatistics() {
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
   switch (event) {
+    // It is possible that our page gets update with a different set of
+    // suggestions if the NTP is left open enough time.
+    // In either case, we want to flush our stats before recounting again.
     case NTP_SERVER_SIDE_SUGGESTION:
+      if (has_client_side_suggestions_)
+        EmitNtpStatistics();
       has_server_side_suggestions_ = true;
       break;
     case NTP_CLIENT_SIDE_SUGGESTION:
-      // We should never get a mix of server and client side suggestions,
-      // otherwise there could be a race condition depending on the order in
-      // which the iframes call this method.
-      DCHECK(!has_server_side_suggestions_);
+      if (has_server_side_suggestions_)
+        EmitNtpStatistics();
+      has_client_side_suggestions_ = true;
       break;
     case NTP_TILE:
       number_of_tiles_++;
@@ -240,6 +245,7 @@ void NTPUserDataLogger::NavigationEntryCommitted(
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       has_server_side_suggestions_(false),
+      has_client_side_suggestions_(false),
       number_of_tiles_(0),
       number_of_thumbnail_tiles_(0),
       number_of_gray_tiles_(0),

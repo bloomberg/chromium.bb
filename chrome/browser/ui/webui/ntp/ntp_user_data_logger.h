@@ -63,9 +63,11 @@ class NTPUserDataLogger
  private:
   friend class content::WebContentsUserData<NTPUserDataLogger>;
 
-  // True if at least one iframe came from a server-side suggestion. In
-  // practice, either all the iframes are server-side suggestions or none are.
+  // True if at least one iframe came from a server-side suggestion.
   bool has_server_side_suggestions_;
+
+  // True if at least one iframe came from a client-side suggestion.
+  bool has_client_side_suggestions_;
 
   // Total number of tiles rendered, no matter if it's a thumbnail, a gray tile
   // or an external tile.
