@@ -9,22 +9,22 @@
         {
           "comment": "Lowercase letters",
           "input": "a b c d e f g h i j k l m n o p q r s t u v w x y z",
-          "output": "⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓⠀⠊⠀⠚⠀⠅⠀⠇ ⠍⠀⠝⠀⠕⠀⠏ ⠟⠀⠗⠀⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵"
+          "output": "⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵"
         },
         {
           "comment": "Single digits",
           "input": "1 2 3 4 5 6 7 8 9 0",
-          "output": "⠼⠁ ⠼⠃ ⠼⠉ ⠼⠙ ⠼⠑ ⠼⠋ ⠼⠛ ⠼⠓⠀⠼⠊⠀⠼⠚"
+          "output": "⠼⠁ ⠼⠃ ⠼⠉ ⠼⠙ ⠼⠑ ⠼⠋ ⠼⠛ ⠼⠓ ⠼⠊ ⠼⠚"
         },
         {
           "comment": "Punctuation",
           "input": ". , ? ! ; : - …",
-          "output": "⠲ ⠂ ⠢ ⠖ ⠆⠀⠒ ⠤ ⠲⠲⠲"
+          "output": "⠲ ⠂ ⠢ ⠖ ⠆ ⠒ ⠤ ⠲⠲⠲"
         },
         {
           "comment": "Symbols",
           "input": "@ # % ‰ & * = + _ / \\ < > ~",
-          "output": "⠜ ⠐⠼ ⠿ ⠿⠿ ⠯ ⠔ ⠶⠀⠖ ⠸ ⠌ ⠐⠡ ⠐⠪ ⠐⠕ ⠐⠢"
+          "output": "⠜ ⠐⠼ ⠿ ⠿⠿ ⠯ ⠔ ⠶ ⠖ ⠸ ⠌ ⠐⠡ ⠐⠪ ⠐⠕ ⠐⠢"
         },
         {
           "comment": "a accent",
@@ -401,7 +401,7 @@
         },
         {
           "input": "Een typist(e) moet heel precies werken.",
-          "output": "⠨⠑⠑⠝ ⠞⠽⠏⠊⠎⠞⠦⠑⠴⠀⠍⠕⠑⠞ ⠓⠑⠑⠇ ⠏⠗⠑⠉⠊⠑⠎ ⠺⠑⠗⠅⠑⠝⠲"
+          "output": "⠨⠑⠑⠝ ⠞⠽⠏⠊⠎⠞⠦⠑⠴ ⠍⠕⠑⠞ ⠓⠑⠑⠇ ⠏⠗⠑⠉⠊⠑⠎ ⠺⠑⠗⠅⠑⠝⠲"
         },
         {
           "input": "31-07-2010",
