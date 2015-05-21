@@ -124,6 +124,17 @@ int GetCardNumber(udev_device* dev) {
   return number;
 }
 
+std::string GetVendor(udev_device* dev) {
+  // Try to get the vendor string. Sometimes it is encoded.
+  std::string vendor = device::UdevDecodeString(
+      device::UdevDeviceGetPropertyValue(dev, kUdevIdVendorEnc));
+  // Sometimes it is not encoded.
+  if (vendor.empty())
+    vendor =
+        UdevDeviceGetPropertyOrSysattr(dev, kUdevIdVendor, kSysattrVendorName);
+  return vendor;
+}
+
 void SetStringIfNonEmpty(base::DictionaryValue* value,
                          const std::string& path,
                          const std::string& in_value) {
@@ -298,8 +309,38 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
                             base::Unretained(client), data.size()));
 }
 
+MidiManagerAlsa::MidiPort::Id::Id() = default;
+
+MidiManagerAlsa::MidiPort::Id::Id(const std::string& bus,
+                                  const std::string& vendor_id,
+                                  const std::string& model_id,
+                                  const std::string& usb_interface_num,
+                                  const std::string& serial)
+    : bus_(bus),
+      vendor_id_(vendor_id),
+      model_id_(model_id),
+      usb_interface_num_(usb_interface_num),
+      serial_(serial) {
+}
+
+MidiManagerAlsa::MidiPort::Id::Id(const Id&) = default;
+
+MidiManagerAlsa::MidiPort::Id::~Id() = default;
+
+bool MidiManagerAlsa::MidiPort::Id::operator==(const Id& rhs) const {
+  return (bus_ == rhs.bus_) && (vendor_id_ == rhs.vendor_id_) &&
+         (model_id_ == rhs.model_id_) &&
+         (usb_interface_num_ == rhs.usb_interface_num_) &&
+         (serial_ == rhs.serial_);
+}
+
+bool MidiManagerAlsa::MidiPort::Id::empty() const {
+  return bus_.empty() && vendor_id_.empty() && model_id_.empty() &&
+         usb_interface_num_.empty() && serial_.empty();
+}
+
 MidiManagerAlsa::MidiPort::MidiPort(const std::string& path,
-                                    const std::string& id,
+                                    const Id& id,
                                     int client_id,
                                     int port_id,
                                     int midi_device,
@@ -339,12 +380,18 @@ scoped_ptr<base::Value> MidiManagerAlsa::MidiPort::Value() const {
   }
   value->SetString("type", type);
   SetStringIfNonEmpty(value.get(), "path", path_);
-  SetStringIfNonEmpty(value.get(), "id", id_);
   SetStringIfNonEmpty(value.get(), "clientName", client_name_);
   SetStringIfNonEmpty(value.get(), "portName", port_name_);
   value->SetInteger("clientId", client_id_);
   value->SetInteger("portId", port_id_);
   value->SetInteger("midiDevice", midi_device_);
+
+  // Flatten id fields.
+  SetStringIfNonEmpty(value.get(), "bus", id_.bus());
+  SetStringIfNonEmpty(value.get(), "vendorId", id_.vendor_id());
+  SetStringIfNonEmpty(value.get(), "modelId", id_.model_id());
+  SetStringIfNonEmpty(value.get(), "usbInterfaceNum", id_.usb_interface_num());
+  SetStringIfNonEmpty(value.get(), "serial", id_.serial());
 
   return value.Pass();
 }
@@ -621,8 +668,7 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
     std::string manufacturer;
     std::string driver;
     std::string path;
-    std::string id;
-    std::string serial;
+    MidiPort::Id id;
     std::string card_name;
     std::string card_longname;
     int midi_device = -1;
@@ -633,6 +679,11 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
         card_midi_device = 0;
 
       manufacturer = card->manufacturer();
+      path = card->path();
+      id = MidiPort::Id(card->bus(), card->vendor_id(), card->model_id(),
+                        card->usb_interface_num(), card->serial());
+      card_name = card->name();
+      card_longname = card->longname();
       midi_device = card_midi_device;
 
       ++card_midi_device;
@@ -715,45 +766,31 @@ MidiManagerAlsa::AlsaSeqState::Client::end() const {
 }
 
 MidiManagerAlsa::AlsaCard::AlsaCard(udev_device* dev,
-                                    const std::string& alsa_name,
-                                    const std::string& alsa_longname,
-                                    const std::string& alsa_driver,
+                                    const std::string& name,
+                                    const std::string& longname,
+                                    const std::string& driver,
                                     int midi_device_count)
-    : alsa_name_(alsa_name),
-      alsa_longname_(alsa_longname),
-      alsa_driver_(alsa_driver),
-      midi_device_count_(midi_device_count) {
-  // Try to get the vendor string. Sometimes it is encoded.
-  std::string vendor = device::UdevDecodeString(
-      device::UdevDeviceGetPropertyValue(dev, kUdevIdVendorEnc));
-  // Sometimes it is not encoded.
-  if (vendor.empty())
-    vendor =
-        UdevDeviceGetPropertyOrSysattr(dev, kUdevIdVendor, kSysattrVendorName);
-  // Also get the vendor string from the hardware database.
-  std::string vendor_from_database =
-      device::UdevDeviceGetPropertyValue(dev, kUdevIdVendorFromDatabase);
-
-  // Get the device path.
-  path_ = device::UdevDeviceGetPropertyValue(dev, kUdevIdPath);
-  // Get the bus.
-  bus_ = device::UdevDeviceGetPropertyValue(dev, kUdevIdBus);
-
-  // Get the "serial" number. (Often untrustable or missing.)
-  serial_ =
-      UdevDeviceGetPropertyOrSysattr(dev, kUdevIdSerialShort, kSysattrGuid);
-
-  // Get the vendor id, by either property or sysattr.
-  vendor_id_ =
-      UdevDeviceGetPropertyOrSysattr(dev, kUdevIdVendorId, kSysattrVendor);
-  // Get the model id, by either property or sysattr.
-  model_id_ =
-      UdevDeviceGetPropertyOrSysattr(dev, kUdevIdModelId, kSysattrModel);
-  // Get the usb interface number.
-  usb_interface_num_ =
-      device::UdevDeviceGetPropertyValue(dev, kUdevIdUsbInterfaceNum);
-  manufacturer_ = ExtractManufacturerString(
-      vendor, vendor_id_, vendor_from_database, alsa_name, alsa_longname);
+    : name_(name),
+      longname_(longname),
+      driver_(driver),
+      path_(device::UdevDeviceGetPropertyValue(dev, kUdevIdPath)),
+      bus_(device::UdevDeviceGetPropertyValue(dev, kUdevIdBus)),
+      vendor_id_(
+          UdevDeviceGetPropertyOrSysattr(dev, kUdevIdVendorId, kSysattrVendor)),
+      model_id_(
+          UdevDeviceGetPropertyOrSysattr(dev, kUdevIdModelId, kSysattrModel)),
+      usb_interface_num_(
+          device::UdevDeviceGetPropertyValue(dev, kUdevIdUsbInterfaceNum)),
+      serial_(UdevDeviceGetPropertyOrSysattr(dev,
+                                             kUdevIdSerialShort,
+                                             kSysattrGuid)),
+      midi_device_count_(midi_device_count),
+      manufacturer_(ExtractManufacturerString(
+          GetVendor(dev),
+          vendor_id_,
+          device::UdevDeviceGetPropertyValue(dev, kUdevIdVendorFromDatabase),
+          name,
+          longname)) {
 }
 
 MidiManagerAlsa::AlsaCard::~AlsaCard() = default;

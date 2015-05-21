@@ -48,8 +48,40 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
    public:
     enum class Type { kInput, kOutput };
 
+    // The Id class is used to keep the multiple strings separate
+    // but compare them all together for equality purposes.
+    // The individual strings that make up the Id can theoretically contain
+    // arbitrary characters, so unfortunately there is no simple way to
+    // concatenate them into a single string.
+    class Id final {
+     public:
+      Id();
+      Id(const std::string& bus,
+         const std::string& vendor_id,
+         const std::string& model_id,
+         const std::string& usb_interface_num,
+         const std::string& serial);
+      Id(const Id&);
+      ~Id();
+      bool operator==(const Id&) const;
+      bool empty() const;
+
+      std::string bus() const { return bus_; }
+      std::string vendor_id() const { return vendor_id_; }
+      std::string model_id() const { return model_id_; }
+      std::string usb_interface_num() const { return usb_interface_num_; }
+      std::string serial() const { return serial_; }
+
+     private:
+      std::string bus_;
+      std::string vendor_id_;
+      std::string model_id_;
+      std::string usb_interface_num_;
+      std::string serial_;
+    };
+
     MidiPort(const std::string& path,
-             const std::string& id,
+             const Id& id,
              int client_id,
              int port_id,
              int midi_device,
@@ -84,7 +116,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
     // accessors
     std::string path() const { return path_; }
-    std::string id() const { return id_; }
+    Id id() const { return id_; }
     std::string client_name() const { return client_name_; }
     std::string port_name() const { return port_name_; }
     std::string manufacturer() const { return manufacturer_; }
@@ -119,7 +151,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
    private:
     // Immutable properties.
-    const std::string id_;
+    const Id id_;
     const int midi_device_;
 
     const Type type_;
@@ -277,21 +309,22 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   class AlsaCard {
    public:
     AlsaCard(udev_device* dev,
-             const std::string& alsa_name,
-             const std::string& alsa_longname,
-             const std::string& alsa_driver,
+             const std::string& name,
+             const std::string& longname,
+             const std::string& driver,
              int midi_device_count);
     ~AlsaCard();
-    const std::string alsa_name() const { return alsa_name_; }
-    const std::string alsa_longname() const { return alsa_longname_; }
-    const std::string manufacturer() const { return manufacturer_; }
-    const std::string alsa_driver() const { return alsa_driver_; }
+    std::string name() const { return name_; }
+    std::string longname() const { return longname_; }
+    std::string driver() const { return driver_; }
+    std::string path() const { return path_; }
+    std::string bus() const { return bus_; }
+    std::string vendor_id() const { return vendor_id_; }
+    std::string model_id() const { return model_id_; }
+    std::string usb_interface_num() const { return usb_interface_num_; }
+    std::string serial() const { return serial_; }
     int midi_device_count() const { return midi_device_count_; }
-    // Returns hardware path.
-    const std::string path() const;
-    // Returns the id we can use to try to match hardware across different
-    // paths.
-    const std::string id() const;
+    std::string manufacturer() const { return manufacturer_; }
 
    private:
     FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, ExtractManufacturer);
@@ -301,20 +334,20 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
         const std::string& udev_id_vendor,
         const std::string& udev_id_vendor_id,
         const std::string& udev_id_vendor_from_database,
-        const std::string& alsa_name,
-        const std::string& alsa_longname);
+        const std::string& name,
+        const std::string& longname);
 
-    std::string alsa_name_;
-    std::string alsa_longname_;
-    std::string manufacturer_;
-    std::string alsa_driver_;
-    std::string path_;
-    std::string bus_;
-    std::string serial_;
-    std::string vendor_id_;
-    std::string model_id_;
-    std::string usb_interface_num_;
-    int midi_device_count_;
+    const std::string name_;
+    const std::string longname_;
+    const std::string driver_;
+    const std::string path_;
+    const std::string bus_;
+    const std::string vendor_id_;
+    const std::string model_id_;
+    const std::string usb_interface_num_;
+    const std::string serial_;
+    const int midi_device_count_;
+    const std::string manufacturer_;
 
     DISALLOW_COPY_AND_ASSIGN(AlsaCard);
   };

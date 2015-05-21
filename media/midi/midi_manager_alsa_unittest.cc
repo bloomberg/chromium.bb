@@ -17,70 +17,99 @@ class MidiManagerAlsaTest : public ::testing::Test {
 
     // Inputs. port_input_0_ == port_input_1_.
     port_input_0_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 2, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 2, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_1_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 2, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
-    port_input_minimal_.reset(
-        new MidiManagerAlsa::MidiPort("", "", 0, 0, 0, "", "", "", "",
-                                      MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 2, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
+    port_input_minimal_.reset(new MidiManagerAlsa::MidiPort(
+        "", MidiManagerAlsa::MidiPort::Id(), 0, 0, 0, "", "", "", "",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     // Outputs. port_output_0_ == port_output_1_.
     port_output_0_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 2, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kOutput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 2, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kOutput));
     port_output_1_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 2, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kOutput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 2, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kOutput));
 
     // MidiPort fields that differ from port_input_0_ in a single way each time.
     // Used for testing the Match* and Find* methods.
     port_input_0_alt_path_.reset(new MidiManagerAlsa::MidiPort(
-        "path2", "id", 1, 2, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path2", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                               "interface", "serial"),
+        1, 2, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_alt_id_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id2", 1, 2, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial2"),
+        1, 2, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_alt_client_name_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 2, 5, "client_name2", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 2, 5, "client_name2", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_alt_port_name_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 2, 5, "client_name", "port_name2", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 2, 5, "client_name", "port_name2", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_alt_client_id_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 2, 2, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        2, 2, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_alt_port_id_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 3, 5, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 3, 5, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_alt_midi_device_.reset(new MidiManagerAlsa::MidiPort(
-        "path", "id", 1, 2, 6, "client_name", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "path", MidiManagerAlsa::MidiPort::Id("bus", "vendor", "model",
+                                              "interface", "serial"),
+        1, 2, 6, "client_name", "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
 
     // "No card" variants of above. For testing FindDisconnected.
     port_input_0_no_card_.reset(new MidiManagerAlsa::MidiPort(
-        "", "", 1, 2, -1, "client_name", "port_name", "manufacturer", "version",
+        "", MidiManagerAlsa::MidiPort::Id(), 1, 2, -1, "client_name",
+        "port_name", "manufacturer", "version",
         MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_1_no_card_.reset(new MidiManagerAlsa::MidiPort(
-        "", "", 1, 2, -1, "client_name", "port_name", "manufacturer", "version",
+        "", MidiManagerAlsa::MidiPort::Id(), 1, 2, -1, "client_name",
+        "port_name", "manufacturer", "version",
         MidiManagerAlsa::MidiPort::Type::kInput));
     port_output_0_no_card_.reset(new MidiManagerAlsa::MidiPort(
-        "", "", 1, 2, -1, "client_name", "port_name", "manufacturer", "version",
+        "", MidiManagerAlsa::MidiPort::Id(), 1, 2, -1, "client_name",
+        "port_name", "manufacturer", "version",
         MidiManagerAlsa::MidiPort::Type::kOutput));
 
     // No card variants of the alt variants from above. For more testing
     // of Match* and Find*.
     port_input_0_no_card_alt_client_name_.reset(new MidiManagerAlsa::MidiPort(
-        "", "", 1, 2, -1, "client_name2", "port_name", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "", MidiManagerAlsa::MidiPort::Id(), 1, 2, -1, "client_name2",
+        "port_name", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_no_card_alt_port_name_.reset(new MidiManagerAlsa::MidiPort(
-        "", "", 1, 2, -1, "client_name", "port_name2", "manufacturer",
-        "version", MidiManagerAlsa::MidiPort::Type::kInput));
+        "", MidiManagerAlsa::MidiPort::Id(), 1, 2, -1, "client_name",
+        "port_name2", "manufacturer", "version",
+        MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_no_card_alt_client_id_.reset(new MidiManagerAlsa::MidiPort(
-        "", "", 2, 2, -1, "client_name", "port_name", "manufacturer", "version",
+        "", MidiManagerAlsa::MidiPort::Id(), 2, 2, -1, "client_name",
+        "port_name", "manufacturer", "version",
         MidiManagerAlsa::MidiPort::Type::kInput));
     port_input_0_no_card_alt_port_id_.reset(new MidiManagerAlsa::MidiPort(
-        "", "", 1, 3, -1, "client_name", "port_name", "manufacturer", "version",
+        "", MidiManagerAlsa::MidiPort::Id(), 1, 3, -1, "client_name",
+        "port_name", "manufacturer", "version",
         MidiManagerAlsa::MidiPort::Type::kInput));
   }
 
@@ -180,20 +209,22 @@ TEST_F(MidiManagerAlsaTest, ExtractManufacturer) {
 // MidiPort.
 TEST_F(MidiManagerAlsaTest, JSONPortMetadata) {
   EXPECT_EQ(
-      "{\"clientId\":1,\"clientName\":\"client_name\",\"id\":\"id\","
-      "\"midiDevice\":5,\"path\":\"path\",\"portId\":2,\"portName\":\"port_"
-      "name\",\"type\":\"input\"}",
+      "{\"bus\":\"bus\",\"clientId\":1,\"clientName\":\"client_name\","
+      "\"midiDevice\":5,\"modelId\":\"model\",\"path\":\"path\",\"portId\":2,"
+      "\"portName\":\"port_name\",\"serial\":\"serial\",\"type\":\"input\","
+      "\"usbInterfaceNum\":\"interface\",\"vendorId\":\"vendor\"}",
       port_input_0_->JSONValue());
 
-  EXPECT_EQ("03F255B7EE4D9D061597289CB16B45F997DBDB20D8E44429B052019C84E20A4A",
+  EXPECT_EQ("810194DAF713B32FC9BE40EC822E21682635B48C242D09EA95DBA4A184A95877",
             port_input_0_->OpaqueKey());
 
   EXPECT_EQ(
-      "{\"clientId\":1,\"clientName\":\"client_name\",\"id\":\"id\","
-      "\"midiDevice\":5,\"path\":\"path\",\"portId\":2,\"portName\":\"port_"
-      "name\",\"type\":\"output\"}",
+      "{\"bus\":\"bus\",\"clientId\":1,\"clientName\":\"client_name\","
+      "\"midiDevice\":5,\"modelId\":\"model\",\"path\":\"path\",\"portId\":2,"
+      "\"portName\":\"port_name\",\"serial\":\"serial\",\"type\":\"output\","
+      "\"usbInterfaceNum\":\"interface\",\"vendorId\":\"vendor\"}",
       port_output_0_->JSONValue());
-  EXPECT_EQ("3A3380FD64B8C79900C052D64C3F52E9ECD6537D00ECB02B8FA30032C0C03924",
+  EXPECT_EQ("C32552FC772A0CA453A675CED05EFB3BDEF749EB58ED9522475206F111BC01E2",
             port_output_0_->OpaqueKey());
 
   EXPECT_EQ("{\"clientId\":0,\"midiDevice\":0,\"portId\":0,\"type\":\"input\"}",
@@ -605,8 +636,8 @@ TEST_F(MidiManagerAlsaTest, ToMidiPortState) {
   // Verify the last entry.
   EXPECT_TRUE((*alsa_seq_state_0_.ToMidiPortState(alsa_cards_)->begin())
                   ->MatchConnected(MidiManagerAlsa::MidiPort(
-                      "", "", 0, 1, -1, "0", "0:1", "", "",
-                      MidiManagerAlsa::MidiPort::Type::kOutput)));
+                      "", MidiManagerAlsa::MidiPort::Id(), 0, 1, -1, "0", "0:1",
+                      "", "", MidiManagerAlsa::MidiPort::Type::kOutput)));
 }
 
 // Tests card_client_count of AlsaSeqState.
