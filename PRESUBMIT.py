@@ -1497,7 +1497,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForCopyrightedCode(input_api, output_api))
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
-  results.extend(_CheckNoNewUtilLogUsage(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1725,6 +1724,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(
       input_api.canned_checks.CheckGNFormatted(input_api, output_api))
   results.extend(_CheckUmaHistogramChanges(input_api, output_api))
+  results.extend(_CheckNoNewUtilLogUsage(input_api, output_api))
   return results
 
 
