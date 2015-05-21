@@ -796,6 +796,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Reloads extension frame.
      */
     doReload: function() {
+      if (this.isLocal)
+        return;
       this.error_ = 0;
       this.gaiaAuthHost_.reload();
       this.loading = true;

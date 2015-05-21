@@ -185,7 +185,6 @@ class LoginTest : public chromeos::LoginManagerTest {
     std::string message;
     do {
       ASSERT_TRUE(message_queue.WaitForMessage(&message));
-      LOG(ERROR) << message;
     } while (message != "\"switchToPassword\"");
 
     std::string set_password = password_input + ".value = '$Password'";
@@ -334,12 +333,7 @@ IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
       chromeos::kAccountsPrefShowUserNamesOnSignIn, false);
 }
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_GaiaAuthOffline DISABLED_GaiaAuthOffline
-#else
-#define MAYBE_GaiaAuthOffline GaiaAuthOffline
-#endif
-IN_PROC_BROWSER_TEST_F(LoginTest, MAYBE_GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
   PrepareOfflineLogin();
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
