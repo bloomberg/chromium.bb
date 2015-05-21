@@ -25,9 +25,8 @@
 ] interface Element : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
-    // FIXME: localName/tagName should not be nullable.
-    readonly attribute DOMString? localName;
-    readonly attribute DOMString? tagName;
+    readonly attribute DOMString localName;
+    readonly attribute DOMString tagName;
 
     [Reflect, ExposeJSAccessors] attribute DOMString id;
     [Reflect=class] attribute DOMString className;

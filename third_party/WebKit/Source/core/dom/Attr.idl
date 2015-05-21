@@ -24,9 +24,9 @@
 interface Attr : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
-    // FIXME: localName/name/value/nodeValue/textContent should not be nullable.
-    readonly attribute DOMString? localName;
-    readonly attribute DOMString? name;
+    readonly attribute DOMString localName;
+    readonly attribute DOMString name;
+    // FIXME: value/nodeValue/textContent should not be nullable.
     [ImplementedAs=valueForBindings, CustomElementCallbacks] attribute DOMString? value;
     [ImplementedAs=valueForBindings, MeasureAs=AttrNodeValue] attribute DOMString? nodeValue; // legacy alias of .value
     [ImplementedAs=valueForBindings, MeasureAs=AttrTextContent] attribute DOMString? textContent; // legacy alias of .value
