@@ -27,6 +27,14 @@ TEST(InputTest, Equals) {
   EXPECT_FALSE(test_truncated.Equals(test));
 }
 
+TEST(InputTest, StaticArray) {
+  Input input(kInput);
+  EXPECT_EQ(arraysize(kInput), input.Length());
+
+  Input input2(kInput, arraysize(kInput));
+  EXPECT_TRUE(input.Equals(input2));
+}
+
 TEST(ByteReaderTest, NoReadPastEnd) {
   ByteReader reader(Input(nullptr, 0));
   uint8_t data;
