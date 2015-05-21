@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/receiver/video_decoder.h"
-#include "media/cast/sender/sender_encoded_frame.h"
 #include "media/cast/sender/vp8_encoder.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
@@ -85,7 +84,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     PopulateVideoFrame(video_frame.get(), 0);
 
     // Encode |frame| into |encoded_frame->data|.
-    scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
+    scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
     // Test only supports VP8, currently.
     CHECK_EQ(CODEC_VIDEO_VP8, GetParam());
     vp8_encoder_.Encode(video_frame, reference_time, encoded_frame.get());

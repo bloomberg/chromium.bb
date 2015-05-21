@@ -121,10 +121,6 @@ source_set("sender") {
     "sender/fake_software_video_encoder.h",
     "sender/frame_sender.cc",
     "sender/frame_sender.h",
-    "sender/performance_metrics_overlay.cc",
-    "sender/performance_metrics_overlay.h",
-    "sender/sender_encoded_frame.cc",
-    "sender/sender_encoded_frame.h",
     "sender/size_adaptable_video_encoder_base.cc",
     "sender/size_adaptable_video_encoder_base.h",
     "sender/software_video_encoder.h",
@@ -176,12 +172,16 @@ source_set("sender") {
       "sender/h264_vt_encoder.h",
     ]
 
-    libs += [ "CoreVideo.framework" ]
+    libs += [
+      "CoreVideo.framework",
+    ]
   }
 
   if (is_mac) {
     # Required by audio_encoder.cc.
-    libs += [ "AudioToolbox.framework" ]
+    libs += [
+      "AudioToolbox.framework",
+    ]
   }
 }
 

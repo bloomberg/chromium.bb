@@ -43,7 +43,7 @@ void EncodeVideoFrameOnEncoderThread(
       dynamic_config.latest_frame_id_to_reference);
   encoder->UpdateRates(dynamic_config.bit_rate);
 
-  scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
+  scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
   encoder->Encode(video_frame, reference_time, encoded_frame.get());
   environment->PostTask(
       CastEnvironment::MAIN,
