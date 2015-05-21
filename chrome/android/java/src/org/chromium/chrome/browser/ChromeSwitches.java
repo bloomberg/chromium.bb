@@ -78,9 +78,13 @@ public abstract class ChromeSwitches {
             "enable-contextual-search-for-testing";
 
     /**
-     * Enable embedded mode so that embedded activity can be launched.
+     * Enable hosted mode so that hosted activity can be launched.
      */
-    public static final String ENABLE_EMBEDDED_MODE = "enable-embedded-mode";
+    public static final String ENABLE_HOSTED_MODE = "enable-hosted-mode";
+
+    // TODO(ianwen): remove this after rolling.
+    @Deprecated
+    public static final String ENABLE_EMBEDDED_MODE = "enable-hosted-mode";
 
     // How many thumbnails should we allow in the cache (per tab stack)?
     public static final String THUMBNAILS = "thumbnails";

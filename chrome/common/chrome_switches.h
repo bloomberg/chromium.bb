@@ -322,6 +322,7 @@ extern const char kDisableZeroSuggest[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableContextualSearch[];
 extern const char kEnableDomDistillerButtonAnimation[];
+extern const char kEnableHostedMode[];
 extern const char kEnableInstantSearchClicks[];
 extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableZeroSuggestMostVisited[];

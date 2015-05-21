@@ -1169,6 +1169,9 @@ const char kEnableContextualSearch[]        = "enable-contextual-search";
 const char kEnableDomDistillerButtonAnimation[] =
     "enable-dom-distiller-button-animation";
 
+// Enables chrome hosted mode for Android.
+const char kEnableHostedMode[] = "enable-hosted-mode";
+
 // Enables instant search clicks feature.
 const char kEnableInstantSearchClicks[] = "enable-instant-search-clicks";
 

@@ -1755,6 +1755,13 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_ANDROID)
   {
+    "enable-hosted-mode",
+    IDS_FLAGS_ENABLE_HOSTED_MODE_NAME,
+    IDS_FLAGS_ENABLE_HOSTED_MODE_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableHostedMode)
+  },
+  {
     "enable-zero-suggest-experiment",
     IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME,
     IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION,
