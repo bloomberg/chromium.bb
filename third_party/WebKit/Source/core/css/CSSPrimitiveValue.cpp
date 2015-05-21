@@ -32,7 +32,6 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Node.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/Decimal.h"
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontMetrics.h"
 #include "wtf/StdLibExtras.h"
@@ -827,8 +826,13 @@ String CSSPrimitiveValue::getStringValue() const
 
 static String formatNumber(double number, const char* suffix, unsigned suffixLength)
 {
-    Decimal decimal = Decimal::fromDouble(number);
-    String result = decimal.toString();
+#if OS(WIN)
+    unsigned oldFormat = _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
+    String result = String::format("%.6g", number);
+#if OS(WIN)
+    _set_output_format(oldFormat);
+#endif
     result.append(suffix, suffixLength);
     return result;
 }

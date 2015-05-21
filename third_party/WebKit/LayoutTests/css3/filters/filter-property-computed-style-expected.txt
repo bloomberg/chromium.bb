@@ -74,7 +74,7 @@ Degrees float value converts to integer : hue-rotate(10.0deg)
 PASS filterStyle is "hue-rotate(10deg)"
 
 Radians value : hue-rotate(10rad)
-PASS filterStyle is "hue-rotate(572.957795130823deg)"
+PASS filterStyle is "hue-rotate(572.958deg)"
 
 Gradians value : hue-rotate(10grad)
 PASS filterStyle is "hue-rotate(9deg)"

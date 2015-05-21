@@ -18,19 +18,32 @@
             function testSize(width, opt_expectedWidth)
             {
                 var expectedWidth = typeof opt_expectedWidth == 'number' ? opt_expectedWidth : width;
-                
+
                 el.style.width = width + 'px';
 
                 var style = window.getComputedStyle(el, null);
                 var rect = el.getBoundingClientRect();
-                var computedWidth = Number(style.width.replace('px', ''));
-                if (el.offsetWidth == expectedWidth && rect.width == expectedWidth && computedWidth == expectedWidth)
-                    testPassed('element.width = ' + width + 'px, returns offsetWidth, rect.width and computed width as expected.');
+                if (el.offsetWidth == expectedWidth && rect.width == expectedWidth)
+                    testPassed('element.width = ' + width + 'px, returns offsetWidth, rect.width expected.');
                 else
-                    testFailed('element.width = ' + width + 'px, returns offsetWidth ' + el.offsetWidth + ', rect.width ' + rect.width + ' and computed width ' + computedWidth + ', expected ' + expectedWidth + '.');
+                    testFailed('element.width = ' + width + 'px, returns offsetWidth ' + el.offsetWidth + ', rect.width ' + rect.width + ', expected ' + expectedWidth + '.');
             }
-            
-            
+
+            function testComputedWidth(width, opt_expectedWidth)
+            {
+                var expectedWidth = typeof opt_expectedWidth == 'number' ? opt_expectedWidth : width;
+
+                el.style.width = width + 'px';
+
+                var style = window.getComputedStyle(el, null);
+                var computedWidth = Number(style.width.replace('px', ''));
+                if (computedWidth == expectedWidth)
+                    testPassed('element.width = ' + width + 'px, returns computed width as expected.');
+                else
+                    testFailed('element.width = ' + width + 'px, returns computed width ' + computedWidth + ', expected ' + expectedWidth + '.');
+            }
+
+
             function testLeft(left, opt_expectedLeft)
             {
                 var expectedLeft = typeof opt_expectedLeft == 'number' ? opt_expectedLeft : left;
@@ -39,13 +52,26 @@
 
                 var style = window.getComputedStyle(el, null);
                 var rect = el.getBoundingClientRect();
-                var computedLeft = Number(style.left.replace('px', ''));
-                if (el.offsetLeft == expectedLeft && rect.left == expectedLeft && computedLeft == expectedLeft)
-                    testPassed('element.left = ' + left + 'px, returns offsetLeft, rect.left and computed left as expected.');
+                if (el.offsetLeft == expectedLeft && rect.left == expectedLeft)
+                    testPassed('element.left = ' + left + 'px, returns offsetLeft, rect.left as expected.');
                 else
-                    testFailed('element.left = ' + left + 'px, returns offsetLeft ' + el.offsetLeft + ', rect.left ' + rect.left + ' and computed left ' + computedLeft + ', expected ' + expectedLeft + '.');
+                    testFailed('element.left = ' + left + 'px, returns offsetLeft ' + el.offsetLeft + ', rect.left ' + rect.left + ', expected ' + expectedLeft + '.');
             }
-                       
+
+            function testComputedLeft(left, opt_expectedLeft)
+            {
+                var expectedLeft = typeof opt_expectedLeft == 'number' ? opt_expectedLeft : left;
+
+                el.style.left = left + 'px';
+
+                var style = window.getComputedStyle(el, null);
+                var computedLeft = Number(style.left.replace('px', ''));
+                if (computedLeft == expectedLeft)
+                    testPassed('element.left = ' + left + 'px, returns computed left as expected.');
+                else
+                    testFailed('element.left = ' + left + 'px, returns computedLeft, expected ' + expectedLeft + '.');
+            }
+
             var el = document.createElement('div');
             el.className = 'test';
             document.body.appendChild(el);
@@ -81,6 +107,39 @@
             testSize(-10000000000, 0);
             testSize(-100000000000, 0);
 
+            MAX_VALUE = 33554400;
+            MIN_VALUE = -33554400;
+
+            testComputedWidth(0);
+            testComputedWidth(1);
+            testComputedWidth(10);
+            testComputedWidth(100);
+            testComputedWidth(10000);
+            testComputedWidth(100000);
+            testComputedWidth(1000000);
+            testComputedWidth(10000000);
+            testComputedWidth(100000000, MAX_VALUE);
+            testComputedWidth(1000000000, MAX_VALUE);
+            testComputedWidth(10000000000, MAX_VALUE);
+            testComputedWidth(100000000000, MAX_VALUE);
+            testComputedWidth(1000000000000, MAX_VALUE);
+
+            testSize(0, 0);
+            testSize(-1, 0);
+            testSize(-10, 0);
+            testSize(-100, 0);
+            testSize(-10000, 0);
+            testSize(-100000, 0);
+            testSize(-1000000, 0);
+            testSize(-10000000, 0);
+            testSize(-100000000, 0);
+            testSize(-1000000000, 0);
+            testSize(-10000000000, 0);
+            testSize(-100000000000, 0);
+
+            MAX_VALUE = 33554428;
+            MIN_VALUE = -33554430;
+
             // Test setting style.left, negative values are considered valid.
             testLeft(0);
             testLeft(1);
@@ -108,6 +167,36 @@
             testLeft(-10000000000, MIN_VALUE);
             testLeft(-100000000000, MIN_VALUE);
             testLeft(-1000000000000, MIN_VALUE);
+
+            MAX_VALUE = 33554400;
+            MIN_VALUE = -33554400;
+
+            testComputedLeft(0);
+            testComputedLeft(1);
+            testComputedLeft(10);
+            testComputedLeft(100);
+            testComputedLeft(10000);
+            testComputedLeft(100000);
+            testComputedLeft(1000000);
+            testComputedLeft(10000000);
+            testComputedLeft(100000000, MAX_VALUE);
+            testComputedLeft(1000000000, MAX_VALUE);
+            testComputedLeft(10000000000, MAX_VALUE);
+            testComputedLeft(100000000000, MAX_VALUE);
+            testComputedLeft(1000000000000, MAX_VALUE);
+
+            testComputedLeft(-1);
+            testComputedLeft(-10);
+            testComputedLeft(-100);
+            testComputedLeft(-10000);
+            testComputedLeft(-100000);
+            testComputedLeft(-1000000);
+            testComputedLeft(-10000000);
+            testComputedLeft(-100000000, MIN_VALUE);
+            testComputedLeft(-1000000000, MIN_VALUE);
+            testComputedLeft(-10000000000, MIN_VALUE);
+            testComputedLeft(-100000000000, MIN_VALUE);
+            testComputedLeft(-1000000000000, MIN_VALUE);
 
             document.body.removeChild(el);
         </script>

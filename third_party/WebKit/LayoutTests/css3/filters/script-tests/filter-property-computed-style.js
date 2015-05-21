@@ -44,7 +44,7 @@ testComputedFilterRule("Multiple values", "saturate(0.5) saturate(0.25)");
 testComputedFilterRule("Rule combinations", "saturate(0.5) grayscale(0.25)");
 testComputedFilterRule("Degrees value as integer", "hue-rotate(10deg)");
 testComputedFilterRule("Degrees float value converts to integer", "hue-rotate(10.0deg)", "hue-rotate(10deg)");
-testComputedFilterRule("Radians value", "hue-rotate(10rad)", "hue-rotate(572.957795130823deg)");
+testComputedFilterRule("Radians value", "hue-rotate(10rad)", "hue-rotate(572.958deg)");
 testComputedFilterRule("Gradians value", "hue-rotate(10grad)", "hue-rotate(9deg)");
 testComputedFilterRule("Turns value", "hue-rotate(0.5turn)", "hue-rotate(180deg)");
 testComputedFilterRule("Zero value", "hue-rotate(0)", "hue-rotate(0deg)");
