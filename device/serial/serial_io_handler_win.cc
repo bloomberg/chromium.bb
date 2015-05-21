@@ -211,6 +211,7 @@ void SerialIoHandlerWin::WriteImpl() {
                         NULL,
                         &write_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
+    VPLOG(1) << "Write failed";
     QueueWriteCompleted(0, serial::SEND_ERROR_SYSTEM_ERROR);
   }
 }
@@ -301,6 +302,7 @@ void SerialIoHandlerWin::OnIOCompleted(
                            NULL,
                            &read_context_->overlapped);
       if (!ok && GetLastError() != ERROR_IO_PENDING) {
+        VPLOG(1) << "Read failed";
         ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
       }
     }
