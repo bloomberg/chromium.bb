@@ -2452,7 +2452,9 @@ _CONFIG.AddConfig(_release, 'storm-release',
   # Hw Lab can't test storm, yet.
   paygen_skip_testing=True,
   important=True,
-  signer_tests=False
+  signer_tests=False,
+  tests_supported=True,
+  unittests=True,
 )
 
 _CONFIG.AddConfig(_release, 'mipsel-o32-generic-release',
@@ -2513,6 +2515,8 @@ _CONFIG.AddConfig(_release, 'whirlwind-release',
   important=True,
   afdo_use=True,
   dev_installer_prebuilts=True,
+  tests_supported=True,
+  unittests=True,
 )
 
 _CONFIG.AddConfig(_release, 'lakitu-release',

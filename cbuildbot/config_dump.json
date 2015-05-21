@@ -56326,9 +56326,7 @@
         "paygen_skip_testing": true,
         "push_image": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_symbols": true,
         "useflags": [
             "-cros-debug",
@@ -70482,9 +70480,7 @@
         "push_image": true,
         "signer_tests": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_symbols": true,
         "useflags": [
             "-cros-debug",
