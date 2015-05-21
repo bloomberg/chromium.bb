@@ -101,7 +101,7 @@ class SampleForTests {
     }
 
     public void startExample() {
-        // Calls native code and holds a pointer to the C++ class.
+        // Calls C++ Init(...) method and holds a pointer to the C++ class.
         mNativeCPPObject = nativeInit("myParam");
     }
 
