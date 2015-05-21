@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
+#include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
@@ -91,6 +92,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   Profile* profile = GetProfile();
   if (!profile->IsOffTheRecord()) {
     web_ui->AddMessageHandler(new MetricsHandler());
+    web_ui->AddMessageHandler(new MostVisitedHandler());
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
     web_ui->AddMessageHandler(new NewTabPageHandler());
     web_ui->AddMessageHandler(new CoreAppLauncherHandler());
@@ -207,6 +209,7 @@ void NewTabUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   CoreAppLauncherHandler::RegisterProfilePrefs(registry);
   NewTabPageHandler::RegisterProfilePrefs(registry);
+  MostVisitedHandler::RegisterProfilePrefs(registry);
 }
 
 // static

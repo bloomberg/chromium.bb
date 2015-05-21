@@ -86,6 +86,12 @@ cr.define('ntp', function() {
     appsPages: undefined,
 
     /**
+     * The Most Visited page.
+     * @type {!Element|undefined}
+     */
+    mostVisitedPage: undefined,
+
+    /**
      * The 'dots-list' element.
      * @type {!Element|undefined}
      */
@@ -168,13 +174,20 @@ cr.define('ntp', function() {
       this.shownPage = loadTimeData.getInteger('shown_page_type');
       this.shownPageIndex = loadTimeData.getInteger('shown_page_index');
 
-      // TODO(dbeam): remove showApps and everything that says if (apps).
-      assert(loadTimeData.getBoolean('showApps'));
+      if (loadTimeData.getBoolean('showApps')) {
+        // Request data on the apps so we can fill them in.
+        // Note that this is kicked off asynchronously.  'getAppsCallback' will
+        // be invoked at some point after this function returns.
+        chrome.send('getApps');
+      } else {
+        // No apps page.
+        if (this.shownPage == loadTimeData.getInteger('apps_page_id')) {
+          this.setShownPage_(
+              loadTimeData.getInteger('most_visited_page_id'), 0);
+        }
 
-      // Request data on the apps so we can fill them in.
-      // Note that this is kicked off asynchronously.  'getAppsCallback' will
-      // be invoked at some point after this function returns.
-      chrome.send('getApps');
+        document.body.classList.add('bare-minimum');
+      }
 
       document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
 
@@ -244,6 +257,14 @@ cr.define('ntp', function() {
         this.cardSlider.addCardAtIndex(page, refIndex);
       } else {
         this.cardSlider.appendCard(page);
+      }
+
+      // Remember special MostVisitedPage.
+      if (typeof ntp.MostVisitedPage != 'undefined' &&
+          page instanceof ntp.MostVisitedPage) {
+        assert(this.tilePages.length == 1,
+               'MostVisitedPage should be added as first tile page');
+        this.mostVisitedPage = page;
       }
 
       // If we're appending an AppsPage and it's a temporary page, animate it.
@@ -468,10 +489,11 @@ cr.define('ntp', function() {
         $(data.apps[i].id).appData = data.apps[i];
       }
 
-      // Set the App dot names.
+      // Set the App dot names. Skip the first dot (Most Visited).
       var dots = this.dotList.getElementsByClassName('dot');
-      for (var i = 0; i < dots.length; ++i) {
-        dots[i].displayTitle = data.appPageNames[i] || '';
+      var start = this.mostVisitedPage ? 1 : 0;
+      for (var i = start; i < dots.length; ++i) {
+        dots[i].displayTitle = data.appPageNames[i - start] || '';
       }
     },
 
@@ -503,11 +525,20 @@ cr.define('ntp', function() {
                                         this.tilePages.length - 1));
       this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
                                pageNo);
+      if (this.shownPage == loadTimeData.getInteger('most_visited_page_id')) {
+        if (this.mostVisitedPage)
+          this.cardSlider.selectCardByValue(this.mostVisitedPage);
+        else
+          this.shownPage = loadTimeData.getInteger('apps_page_id');
+      }
       if (this.shownPage == loadTimeData.getInteger('apps_page_id') &&
           loadTimeData.getBoolean('showApps')) {
         this.cardSlider.selectCardByValue(
             this.appsPages[Math.min(this.shownPageIndex,
                                     this.appsPages.length - 1)]);
+      } else if (this.mostVisitedPage) {
+        this.shownPage = loadTimeData.getInteger('most_visited_page_id');
+        this.cardSlider.selectCardByValue(this.mostVisitedPage);
       }
     },
 
@@ -634,6 +665,9 @@ cr.define('ntp', function() {
         if (page.classList.contains('apps-page')) {
           this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
                              this.getAppsPageIndex(page));
+        } else if (page.classList.contains('most-visited-page')) {
+          this.setShownPage_(
+              loadTimeData.getInteger('most_visited_page_id'), 0);
         } else {
           console.error('unknown page selected');
         }
