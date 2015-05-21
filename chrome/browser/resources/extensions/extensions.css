@@ -401,7 +401,7 @@ html[dir='rtl'] #extension-settings .trash {
  * remove it from the layout and make space for the controlled indicator.
  * TODO(cschuet): rather than hide always replace it with something meaningful.
  */
-.extension-list-item-wrapper.policy-controlled .trash {
+.extension-list-item-wrapper.controlled .trash {
   display: none;
 }
 

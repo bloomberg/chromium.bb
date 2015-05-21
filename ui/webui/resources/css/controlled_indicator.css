@@ -32,6 +32,14 @@
   background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_SHARED);
 }
 
+.controlled-setting-indicator[controlled-by='child-custodian'] > div {
+  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_CHILD);
+}
+
+.controlled-setting-indicator[controlled-by='supervised-user-custodian'] > div {
+  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_SUPERVISED);
+}
+
 .controlled-setting-indicator:-webkit-any([controlled-by='recommended'],
     [controlled-by='hasRecommendation']) > div {
   background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);

@@ -217,9 +217,27 @@ var HomePage;
 var ExtensionView;
 
 /**
+ * @enum {string}
+ */
+chrome.developerPrivate.ControllerType = {
+  POLICY: 'POLICY',
+  CHILD_CUSTODIAN: 'CHILD_CUSTODIAN',
+  SUPERVISED_USER_CUSTODIAN: 'SUPERVISED_USER_CUSTODIAN',
+};
+
+/**
+ * @typedef {{
+ *   type: !chrome.developerPrivate.ControllerType,
+ *   text: string
+ * }}
+ */
+var ControlledInfo;
+
+/**
  * @typedef {{
  *   actionButtonHidden: boolean,
  *   blacklistText: (string|undefined),
+ *   controlledInfo: (ControlledInfo|undefined),
  *   dependentExtensions: !Array<string>,
  *   description: string,
  *   disableReasons: DisableReasons,
@@ -229,7 +247,6 @@ var ExtensionView;
  *   iconUrl: string,
  *   id: string,
  *   incognitoAccess: AccessModifier,
- *   installedByCustodian: boolean,
  *   installWarnings: !Array<string>,
  *   launchUrl: (string|undefined),
  *   location: !chrome.developerPrivate.Location,
@@ -240,7 +257,6 @@ var ExtensionView;
  *   offlineEnabled: boolean,
  *   optionsPage: (OptionsPage|undefined),
  *   path: (string|undefined),
- *   policyText: (string|undefined),
  *   prettifiedPath: (string|undefined),
  *   runOnAllUrls: AccessModifier,
  *   runtimeErrors: !Array<RuntimeError>,

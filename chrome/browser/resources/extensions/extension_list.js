@@ -639,7 +639,6 @@ cr.define('extensions', function() {
       var trashTemplate = $('template-collection').querySelector('.trash');
       var trash = trashTemplate.cloneNode(true);
       trash.title = loadTimeData.getString('extensionUninstall');
-      trash.hidden = !extension.userMayModify;
       trash.setAttribute('column-type', 'trash');
       trash.addEventListener('click', function(e) {
         trash.classList.add('open');
@@ -702,19 +701,14 @@ cr.define('extensions', function() {
       // Hack to keep the closure compiler happy about |remove|.
       // TODO(hcarmona): Remove this hack when the closure compiler is updated.
       var node = /** @type {Element} */ (row);
-      node.classList.remove('policy-controlled', 'may-not-modify',
-                            'may-not-remove');
+      node.classList.remove('controlled', 'may-not-remove');
       var classes = [];
-      if (!extension.userMayModify) {
-        classes.push('policy-controlled', 'may-not-modify');
-      } else if (extension.dependentExtensions.length > 0) {
-        classes.push('may-not-remove', 'may-not-modify');
-      } else if (extension.mustRemainInstalled) {
+      if (extension.controlledInfo) {
+        classes.push('controlled');
+      } else if (!extension.userMayModify ||
+                 extension.mustRemainInstalled ||
+                 extension.dependentExtensions.length > 0) {
         classes.push('may-not-remove');
-      } else if (extension.disableReasons.suspiciousInstall ||
-                 extension.disableReasons.corruptInstall ||
-                 extension.disableReasons.updateRequired) {
-        classes.push('may-not-modify');
       }
       row.classList.add.apply(row.classList, classes);
 
@@ -850,32 +844,37 @@ cr.define('extensions', function() {
             extension.disableReasons.suspiciousInstall ||
             extension.disableReasons.corruptInstall ||
             extension.disableReasons.updateRequired ||
-            extension.installedByCustodian ||
             extension.dependentExtensions.length > 0;
         item.querySelector('input').disabled = enableCheckboxDisabled;
         item.querySelector('input').checked = isActive;
       });
 
-      // Button for extensions controlled by policy.
+      // Indicator for extensions controlled by policy.
       var controlNode = row.querySelector('.enable-controls');
       var indicator =
           controlNode.querySelector('.controlled-extension-indicator');
-      var needsIndicator = isOK &&
-                           !extension.userMayModify &&
-                           extension.policyText;
-      // TODO(treib): If userMayModify is false, but policyText is empty, that
-      // indicates this extension is controlled by something else than
-      // enterprise policy (such as the profile being supervised). For now, just
-      // don't show the indicator in this case. We should really handle this
-      // better though (ie use a different text and icon).
+      var needsIndicator = isOK && extension.controlledInfo;
 
       if (needsIndicator && !indicator) {
         indicator = new cr.ui.ControlledIndicator();
         indicator.classList.add('controlled-extension-indicator');
-        indicator.setAttribute('controlled-by', 'policy');
-        var textPolicy = extension.policyText || '';
-        indicator.setAttribute('textpolicy', textPolicy);
-        indicator.image.setAttribute('aria-label', textPolicy);
+        var ControllerType = chrome.developerPrivate.ControllerType;
+        var controlledByStr = '';
+        switch (extension.controlledInfo.type) {
+          case ControllerType.POLICY:
+            controlledByStr = 'policy';
+            break;
+          case ControllerType.CHILD_CUSTODIAN:
+            controlledByStr = 'child-custodian';
+            break;
+          case ControllerType.SUPERVISED_USER_CUSTODIAN:
+            controlledByStr = 'supervised-user-custodian';
+            break;
+        }
+        indicator.setAttribute('controlled-by', controlledByStr);
+        var text = extension.controlledInfo.text;
+        indicator.setAttribute('text' + controlledByStr, text);
+        indicator.image.setAttribute('aria-label', text);
         controlNode.appendChild(indicator);
         indicator.querySelector('div').setAttribute('column-type',
                                                     'enterprise');

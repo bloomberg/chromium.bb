@@ -150,9 +150,21 @@ namespace developerPrivate {
     ViewType type;
   };
 
+  enum ControllerType {
+    POLICY,
+    CHILD_CUSTODIAN,
+    SUPERVISED_USER_CUSTODIAN
+  };
+
+  dictionary ControlledInfo {
+    ControllerType type;
+    DOMString text;
+  };
+
   dictionary ExtensionInfo {
     boolean actionButtonHidden;
     DOMString? blacklistText;
+    ControlledInfo? controlledInfo;
     DOMString[] dependentExtensions;
     DOMString description;
     DisableReasons disableReasons;
@@ -162,7 +174,6 @@ namespace developerPrivate {
     DOMString iconUrl;
     DOMString id;
     AccessModifier incognitoAccess;
-    boolean installedByCustodian;
     DOMString[] installWarnings;
     DOMString? launchUrl;
     Location location;
@@ -173,7 +184,6 @@ namespace developerPrivate {
     boolean offlineEnabled;
     OptionsPage? optionsPage;
     DOMString? path;
-    DOMString? policyText;
     DOMString? prettifiedPath;
     AccessModifier runOnAllUrls;
     RuntimeError[] runtimeErrors;

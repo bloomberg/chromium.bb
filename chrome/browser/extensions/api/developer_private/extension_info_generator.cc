@@ -257,6 +257,27 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
         new std::string(l10n_util::GetStringUTF8(blacklist_text)));
   }
 
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+
+  bool is_policy_location = Manifest::IsPolicyLocation(extension.location());
+  if (is_policy_location || util::IsExtensionSupervised(&extension, profile)) {
+    info->controlled_info.reset(new developer::ControlledInfo());
+    if (is_policy_location) {
+      info->controlled_info->type = developer::CONTROLLER_TYPE_POLICY;
+      info->controlled_info->text =
+          l10n_util::GetStringUTF8(IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE);
+    } else if (profile->IsChild()) {
+      info->controlled_info->type = developer::CONTROLLER_TYPE_CHILD_CUSTODIAN;
+      info->controlled_info->text = l10n_util::GetStringUTF8(
+          IDS_EXTENSIONS_INSTALLED_BY_CHILD_CUSTODIAN);
+    } else {
+      info->controlled_info->type =
+          developer::CONTROLLER_TYPE_SUPERVISED_USER_CUSTODIAN;
+      info->controlled_info->text = l10n_util::GetStringUTF8(
+          IDS_EXTENSIONS_INSTALLED_BY_SUPERVISED_USER_CUSTODIAN);
+    }
+  }
+
   // Dependent extensions.
   if (extension.is_shared_module()) {
     scoped_ptr<ExtensionSet> dependent_extensions =
@@ -301,10 +322,6 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->incognito_access.is_enabled = extension.can_be_incognito_enabled();
   info->incognito_access.is_active =
       util::IsIncognitoEnabled(extension.id(), browser_context_);
-
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-  info->installed_by_custodian =
-      util::IsExtensionSupervised(&extension, profile);
 
   // Install warnings (only if unpacked and no error console).
   if (!error_console_enabled &&
@@ -389,11 +406,6 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     info->path.reset(new std::string(extension.path().AsUTF8Unsafe()));
     info->prettified_path.reset(new std::string(
       extensions::path_util::PrettifyPath(extension.path()).AsUTF8Unsafe()));
-  }
-
-  if (Manifest::IsPolicyLocation(extension.location())) {
-    info->policy_text.reset(new std::string(
-        l10n_util::GetStringUTF8(IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE)));
   }
 
   // Runs on all urls.
