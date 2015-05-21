@@ -161,6 +161,23 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             value.setFromNumber(token.numericValue(), token.unitType());
             value.isInt = (token.numericValueType() == IntegerValueType);
             break;
+        case UnicodeRangeToken: {
+            value.unit = CSSParserValue::UnicodeRange;
+            CSSParserValueList* list = new CSSParserValueList;
+            value.valueList = list;
+            value.id = CSSValueInvalid;
+
+            CSSParserValue start;
+            start.setFromNumber(token.unicodeRangeStart());
+            start.isInt = true;
+            list->addValue(start);
+
+            CSSParserValue end;
+            end.setFromNumber(token.unicodeRangeEnd());
+            end.isInt = true;
+            list->addValue(end);
+            break;
+        }
         case HashToken:
             // FIXME: Move this logic to the property parser
             // This check prevents us from allowing #red and similar
@@ -172,7 +189,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             }
             // fallthrough
         case StringToken:
-        case UnicodeRangeToken:
         case UrlToken: {
             value.id = CSSValueInvalid;
             value.isInt = false;
@@ -180,8 +196,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
                 value.unit = CSSParserValue::HexColor;
             else if (token.type() == StringToken)
                 value.unit = CSSPrimitiveValue::CSS_STRING;
-            else if (token.type() == UnicodeRangeToken)
-                value.unit = CSSPrimitiveValue::CSS_UNICODE_RANGE;
             else
                 value.unit = CSSPrimitiveValue::CSS_URI;
             value.string = token.value();

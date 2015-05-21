@@ -107,7 +107,6 @@ public:
         CSS_DPCM = 32,
         CSS_FR = 33,
         CSS_PAIR = 100,
-        CSS_UNICODE_RANGE = 102,
         CSS_TURN = 107,
         CSS_REMS = 108,
         CSS_CHS = 109,

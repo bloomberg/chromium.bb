@@ -95,8 +95,7 @@ static CSSParserToken delim(char c) { return CSSParserToken(DelimiterToken, c); 
 
 static CSSParserToken unicodeRange(UChar32 start, UChar32 end)
 {
-    // We don't test the string value, which is going to be removed soon.
-    return CSSParserToken(UnicodeRangeToken, toParserString(""), start, end);
+    return CSSParserToken(UnicodeRangeToken, start, end);
 }
 
 static CSSParserToken number(NumericValueType type, double value, NumericSign sign)

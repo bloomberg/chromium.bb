@@ -120,6 +120,8 @@ struct CSSParserValue {
         HexColor = 0x100004,
         // Represents a dimension by a list of two values, a CSS_NUMBER and an CSS_IDENT
         DimensionList = 0x100006,
+        // Represents a unicode range by a list of two CSS_NUMBERs
+        UnicodeRange = 0x100007,
     };
     int unit;
 

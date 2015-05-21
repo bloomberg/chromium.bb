@@ -4788,66 +4788,16 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
 
     do {
         CSSParserValue* current = m_valueList->current();
-        if (!current || current->unit != CSSPrimitiveValue::CSS_UNICODE_RANGE)
+        if (!current || current->unit != CSSParserValue::UnicodeRange)
             return nullptr;
 
-        String rangeString = current->string;
-        UChar32 from = 0;
-        UChar32 to = 0;
-        unsigned length = rangeString.length();
-
-        if (length < 3)
+        CSSParserValue* start = current->valueList->valueAt(0);
+        CSSParserValue* end = current->valueList->valueAt(1);
+        ASSERT(start->unit == CSSPrimitiveValue::CSS_NUMBER);
+        ASSERT(end->unit == CSSPrimitiveValue::CSS_NUMBER);
+        if (start->fValue > end->fValue)
             return nullptr;
-
-        unsigned i = 2;
-        while (i < length) {
-            UChar c = rangeString[i];
-            if (c == '-' || c == '?')
-                break;
-            from *= 16;
-            if (c >= '0' && c <= '9')
-                from += c - '0';
-            else if (c >= 'A' && c <= 'F')
-                from += 10 + c - 'A';
-            else if (c >= 'a' && c <= 'f')
-                from += 10 + c - 'a';
-            else
-                return nullptr;
-            i++;
-        }
-
-        if (i == length)
-            to = from;
-        else if (rangeString[i] == '?') {
-            unsigned span = 1;
-            while (i < length && rangeString[i] == '?') {
-                span *= 16;
-                from *= 16;
-                i++;
-            }
-            if (i < length)
-                return nullptr;
-            to = from + span - 1;
-        } else {
-            if (length < i + 2)
-                return nullptr;
-            i++;
-            while (i < length) {
-                UChar c = rangeString[i];
-                to *= 16;
-                if (c >= '0' && c <= '9')
-                    to += c - '0';
-                else if (c >= 'A' && c <= 'F')
-                    to += 10 + c - 'A';
-                else if (c >= 'a' && c <= 'f')
-                    to += 10 + c - 'a';
-                else
-                    return nullptr;
-                i++;
-            }
-        }
-        if (from <= to)
-            values->append(CSSUnicodeRangeValue::create(from, to));
+        values->append(CSSUnicodeRangeValue::create(start->fValue, end->fValue));
         m_valueList->next();
     } while (consumeComma(m_valueList));
 

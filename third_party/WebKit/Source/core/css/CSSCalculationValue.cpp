@@ -127,7 +127,6 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::CSS_RECT:
     case CSSPrimitiveValue::CSS_RGBCOLOR:
     case CSSPrimitiveValue::CSS_PAIR:
-    case CSSPrimitiveValue::CSS_UNICODE_RANGE:
     case CSSPrimitiveValue::CSS_SHAPE:
     case CSSPrimitiveValue::CSS_QUAD:
     case CSSPrimitiveValue::CSS_CALC:

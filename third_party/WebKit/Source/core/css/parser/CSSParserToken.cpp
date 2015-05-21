@@ -46,10 +46,9 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, Num
     ASSERT(type == NumberToken);
 }
 
-CSSParserToken::CSSParserToken(CSSParserTokenType type, CSSParserString string, UChar32 start, UChar32 end)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar32 start, UChar32 end)
     : m_type(UnicodeRangeToken)
     , m_blockType(NotBlock)
-    , m_value(string)
 {
     ASSERT_UNUSED(type, type == UnicodeRangeToken);
     m_unicodeRange.start = start;
@@ -148,7 +147,7 @@ void CSSParserToken::serialize(StringBuilder& builder) const
         builder.appendNumber(numericValue());
         return serializeIdentifier(value(), builder);
     case UnicodeRangeToken:
-        return builder.append(value());
+        return builder.append(String::format("U+%X-%X", unicodeRangeStart(), unicodeRangeEnd()));
     case StringToken:
         return serializeString(value(), builder);
 

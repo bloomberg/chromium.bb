@@ -76,8 +76,7 @@ public:
 
     CSSParserToken(CSSParserTokenType, UChar); // for DelimiterToken
     CSSParserToken(CSSParserTokenType, double, NumericValueType, NumericSign); // for NumberToken
-    // FIXME: We shouldn't need to store a string
-    CSSParserToken(CSSParserTokenType, CSSParserString, UChar32, UChar32); // for UnicodeRangeToken
+    CSSParserToken(CSSParserTokenType, UChar32, UChar32); // for UnicodeRangeToken
 
     CSSParserToken(HashTokenType, CSSParserString);
 

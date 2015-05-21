@@ -468,7 +468,6 @@ void CSSPrimitiveValue::cleanup()
     case CSS_IDENT:
     case CSS_RGBCOLOR:
     case CSS_UNKNOWN:
-    case CSS_UNICODE_RANGE:
     case CSS_PROPERTY_ID:
     case CSS_VALUE_ID:
         break;
@@ -919,7 +918,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case CSS_CALC:
     case CSS_SHAPE:
     case CSS_IDENT:
-    case CSS_UNICODE_RANGE:
     case CSS_CALC_PERCENTAGE_WITH_NUMBER:
     case CSS_CALC_PERCENTAGE_WITH_LENGTH:
         break;

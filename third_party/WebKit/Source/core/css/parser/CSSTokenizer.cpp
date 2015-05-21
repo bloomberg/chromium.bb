@@ -567,8 +567,7 @@ CSSParserToken CSSTokenizer::consumeUnicodeRange()
         } while (lengthRemaining && isASCIIHexDigit(m_input.nextInputChar()));
     }
 
-    String range = String::format("U+%X-%X", start, end);
-    return CSSParserToken(UnicodeRangeToken, registerString(range), start, end);
+    return CSSParserToken(UnicodeRangeToken, start, end);
 }
 
 // http://dev.w3.org/csswg/css-syntax/#non-printable-code-point
