@@ -58,6 +58,7 @@ typedef PSTRING POEM_STRING;
 typedef CONST STRING* PCOEM_STRING;
 
 #define OBJ_CASE_INSENSITIVE 0x00000040L
+#define OBJ_OPENIF           0x00000080L
 
 typedef struct _OBJECT_ATTRIBUTES {
   ULONG Length;
@@ -634,6 +635,11 @@ typedef enum _EVENT_TYPE {
   NotificationEvent,
   SynchronizationEvent
 } EVENT_TYPE, *PEVENT_TYPE;
+
+typedef NTSTATUS (WINAPI* NtCreateDirectoryObjectFunction) (
+    PHANDLE DirectoryHandle,
+    ACCESS_MASK DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes);
 
 typedef NTSTATUS (WINAPI* NtOpenDirectoryObjectFunction) (
     PHANDLE DirectoryHandle,

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container.h"
 #include "sandbox/win/src/filesystem_dispatcher.h"
@@ -31,6 +32,7 @@
 #include "sandbox/win/src/registry_policy.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/sync_dispatcher.h"
 #include "sandbox/win/src/sync_policy.h"
 #include "sandbox/win/src/target_process.h"
@@ -65,6 +67,43 @@ bool IsInheritableHandle(HANDLE handle) {
   // inheritable via PROC_THREAD_ATTRIBUTE_HANDLE_LIST.
   DWORD handle_type = GetFileType(handle);
   return handle_type == FILE_TYPE_DISK || handle_type == FILE_TYPE_PIPE;
+}
+
+HANDLE CreateLowBoxObjectDirectory(PSID lowbox_sid) {
+  DWORD session_id = 0;
+  if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &session_id))
+    return NULL;
+
+  LPWSTR sid_string = NULL;
+  if (!::ConvertSidToStringSid(lowbox_sid, &sid_string))
+    return NULL;
+
+  base::string16 directory_path = base::StringPrintf(
+                   L"\\Sessions\\%d\\AppContainerNamedObjects\\%ls",
+                   session_id, sid_string).c_str();
+  ::LocalFree(sid_string);
+
+  NtCreateDirectoryObjectFunction CreateObjectDirectory = NULL;
+  ResolveNTFunctionPtr("NtCreateDirectoryObject", &CreateObjectDirectory);
+
+  OBJECT_ATTRIBUTES obj_attr;
+  UNICODE_STRING obj_name;
+  sandbox::InitObjectAttribs(directory_path,
+                             OBJ_CASE_INSENSITIVE | OBJ_OPENIF,
+                             NULL,
+                             &obj_attr,
+                             &obj_name,
+                             NULL);
+
+  HANDLE handle = NULL;
+  NTSTATUS status = CreateObjectDirectory(&handle,
+                                          DIRECTORY_ALL_ACCESS,
+                                          &obj_attr);
+
+  if (!NT_SUCCESS(status))
+    return NULL;
+
+  return handle;
 }
 
 }
@@ -559,9 +598,20 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
     OBJECT_ATTRIBUTES obj_attr;
     InitializeObjectAttributes(&obj_attr, NULL, 0, NULL, NULL);
     HANDLE token_lowbox = NULL;
+
+    if (!lowbox_directory_.IsValid())
+      lowbox_directory_.Set(CreateLowBoxObjectDirectory(lowbox_sid_));
+    DCHECK(lowbox_directory_.IsValid());
+
+    // The order of handles isn't important in the CreateLowBoxToken call.
+    // The kernel will maintain a reference to the object directory handle.
+    HANDLE saved_handles[1] = {lowbox_directory_.Get()};
+    DWORD saved_handles_count = lowbox_directory_.IsValid() ? 1 : 0;
+
     NTSTATUS status = CreateLowBoxToken(&token_lowbox, *lockdown,
                                         TOKEN_ALL_ACCESS, &obj_attr,
-                                        lowbox_sid_, 0, NULL, 0, NULL);
+                                        lowbox_sid_, 0, NULL,
+                                        saved_handles_count, saved_handles);
     if (!NT_SUCCESS(status))
       return SBOX_ERROR_GENERIC;
 
