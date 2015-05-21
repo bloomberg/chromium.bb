@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/about_flags.h"
+
 #include <stdint.h>
 #include <utility>
 
@@ -14,13 +16,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/about_flags.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
+
+namespace about_flags {
 
 namespace {
 
@@ -186,19 +189,19 @@ std::set<std::string> GetAllSwitchesForTesting() {
   std::set<std::string> result;
 
   size_t num_experiments = 0;
-  const about_flags::Experiment* experiments =
-      about_flags::testing::GetExperiments(&num_experiments);
+  const Experiment* experiments =
+      testing::GetExperiments(&num_experiments);
 
   for (size_t i = 0; i < num_experiments; ++i) {
-    const about_flags::Experiment& experiment = experiments[i];
-    if (experiment.type == about_flags::Experiment::SINGLE_VALUE) {
+    const Experiment& experiment = experiments[i];
+    if (experiment.type == Experiment::SINGLE_VALUE) {
       result.insert(experiment.command_line_switch);
-    } else if (experiment.type == about_flags::Experiment::MULTI_VALUE) {
+    } else if (experiment.type == Experiment::MULTI_VALUE) {
       for (int j = 0; j < experiment.num_choices; ++j) {
         result.insert(experiment.choices[j].command_line_switch);
       }
     } else {
-      DCHECK_EQ(experiment.type, about_flags::Experiment::ENABLE_DISABLE_VALUE);
+      DCHECK_EQ(experiment.type, Experiment::ENABLE_DISABLE_VALUE);
       result.insert(experiment.command_line_switch);
       result.insert(experiment.disable_command_line_switch);
     }
@@ -207,8 +210,6 @@ std::set<std::string> GetAllSwitchesForTesting() {
 }
 
 }  // anonymous namespace
-
-namespace about_flags {
 
 const Experiment::Choice kMultiChoices[] = {
   { IDS_PRODUCT_NAME, "", "" },
