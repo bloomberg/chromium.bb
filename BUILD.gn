@@ -202,6 +202,15 @@ if (build_ffmpegsumo) {
         "rt",  # for clock_gettime on precise
         "z",
       ]
+      if (is_component_build) {
+        # Export all symbols when building as component.
+        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+        # Fixes warnings PIC relocation when building as component.
+        ldflags += [
+          "-Wl,-Bsymbolic",
+          "-L", rebase_path(target_gen_dir, root_build_dir),
+        ]
+      }
 # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
 #      if (is_openbsd) {
 #       # OpenBSD's gcc (4.2.1) does not support this flag

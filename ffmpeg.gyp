@@ -286,15 +286,27 @@
                 '-fno-tree-vectorize',
               ],
               'link_settings': {
-                'ldflags': [
-                  '-L<(shared_generated_dir)',
-                ],
                 'libraries': [
                   '-lm',
                   '-lrt',
                   '-lz',
                 ],
               },
+              'conditions': [
+                ['component == "shared_library"', {
+                  # Export all symbols when building as component.
+                  'cflags!': [
+                    '-fvisibility=hidden',
+                  ],
+                  # Fixes warnings PIC relocation when building as component.
+                  'link_settings': {
+                    'ldflags': [
+                      '-Wl,-Bsymbolic',
+                      '-L<(shared_generated_dir)',
+                    ],
+                  },
+                }],
+              ],
             }],  # os_posix == 1 and OS != "mac"
             ['OS == "openbsd"', {
               # OpenBSD's gcc (4.2.1) does not support this flag
