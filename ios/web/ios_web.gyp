@@ -29,6 +29,7 @@
         '../../url/url.gyp:url_lib',
       ],
       'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/ui/resources/grit/webui_resources_map.cc',
         'alloc_with_zone_interceptor.h',
         'alloc_with_zone_interceptor.mm',
         'browser_state.cc',
@@ -107,8 +108,8 @@
         'public/navigation_item.h',
         'public/navigation_manager.h',
         'public/referrer.h',
-        'public/referrer_util.h',
         'public/referrer_util.cc',
+        'public/referrer_util.h',
         'public/security_style.h',
         'public/ssl_status.cc',
         'public/ssl_status.h',
@@ -160,6 +161,8 @@
         'web_state/crw_web_view_proxy_impl.h',
         'web_state/crw_web_view_proxy_impl.mm',
         'web_state/crw_web_view_scroll_view_proxy.mm',
+        'web_state/error_translation_util.h',
+        'web_state/error_translation_util.mm',
         'web_state/js/credential_util.h',
         'web_state/js/credential_util.mm',
         'web_state/js/crw_js_early_script_manager.h',
@@ -240,7 +243,6 @@
         'webui/web_ui_ios_data_source_impl.h',
         'webui/web_ui_ios_impl.h',
         'webui/web_ui_ios_impl.mm',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/resources/grit/webui_resources_map.cc',
       ],
       'link_settings': {
         'xcode_settings': {

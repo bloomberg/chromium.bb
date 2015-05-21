@@ -59,6 +59,7 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/web_state/blocked_popup_info.h"
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
+#import "ios/web/web_state/error_translation_util.h"
 #import "ios/web/web_state/js/credential_util.h"
 #import "ios/web/web_state/js/crw_js_early_script_manager.h"
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
@@ -2771,6 +2772,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
+  // Attempt to translate iOS errors into their corresponding net errors.
+  error = web::NetErrorFromError(error);
+
   if ([error code] == NSURLErrorUnsupportedURL)
     return;
   // In cases where a Plug-in handles the load do not take any further action.
