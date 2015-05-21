@@ -868,8 +868,16 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
 // declaration as first child of HEAD element for resolving WebKit bug:
 // http://bugs.webkit.org/show_bug.cgi?id=16621 even the original document
 // does not have META charset declaration.
+// Disabled by battre@ on 2015-05-21, see https://crbug.com/488495.
+#if defined(OS_MACOSX)
+#define MAYBE_SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc \
+  DISABLED_SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc
+#else
+#define MAYBE_SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc \
+  SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc
+#endif
 IN_PROC_BROWSER_TEST_F(DomSerializerTests,
-                       SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc) {
+                       MAYBE_SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_1.htm");
   // Get file URL.
