@@ -16,13 +16,15 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace content {
 
 class CONTENT_EXPORT ServiceRegistryImpl
     : public ServiceRegistry,
-      public NON_EXPORTED_BASE(mojo::ServiceProvider) {
+      public NON_EXPORTED_BASE(mojo::ServiceProvider),
+      public NON_EXPORTED_BASE(mojo::ErrorHandler) {
  public:
   ServiceRegistryImpl();
   ~ServiceRegistryImpl() override;
@@ -44,12 +46,17 @@ class CONTENT_EXPORT ServiceRegistryImpl
   void ConnectToRemoteService(const base::StringPiece& service_name,
                               mojo::ScopedMessagePipeHandle handle) override;
 
+  bool IsBound() const;
+
   base::WeakPtr<ServiceRegistry> GetWeakPtr();
 
  private:
   // mojo::ServiceProvider overrides.
   void ConnectToService(const mojo::String& name,
                         mojo::ScopedMessagePipeHandle client_handle) override;
+
+  // mojo::ErrorHandler overrides.
+  void OnConnectionError() override;
 
   mojo::Binding<mojo::ServiceProvider> binding_;
   mojo::ServiceProviderPtr remote_provider_;

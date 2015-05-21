@@ -10,6 +10,7 @@ namespace content {
 
 ServiceRegistryImpl::ServiceRegistryImpl()
     : binding_(this), weak_factory_(this) {
+  binding_.set_error_handler(this);
 }
 
 ServiceRegistryImpl::~ServiceRegistryImpl() {
@@ -58,6 +59,10 @@ void ServiceRegistryImpl::ConnectToRemoteService(
                                      handle.Pass());
 }
 
+bool ServiceRegistryImpl::IsBound() const {
+  return binding_.is_bound();
+}
+
 base::WeakPtr<ServiceRegistry> ServiceRegistryImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -72,6 +77,10 @@ void ServiceRegistryImpl::ConnectToService(
     return;
 
   it->second.Run(client_handle.Pass());
+}
+
+void ServiceRegistryImpl::OnConnectionError() {
+  binding_.Close();
 }
 
 }  // namespace content
