@@ -40,6 +40,11 @@ class PepperInputHandler {
     send_mouse_move_deltas_ = enable;
   }
 
+  // Enable or disable detection of stuck modifier keys.
+  void set_detect_stuck_modifiers(bool detect) {
+    detect_stuck_modifiers_ = detect;
+  }
+
   // Processes PPAPI events and dispatches them to |input_stub_|.
   bool HandleInputEvent(const pp::InputEvent& event);
 
@@ -75,6 +80,9 @@ class PepperInputHandler {
   float wheel_delta_y_;
   float wheel_ticks_x_;
   float wheel_ticks_y_;
+
+  // Whether or not to check for stuck modifier keys on keyboard input events.
+  bool detect_stuck_modifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperInputHandler);
 };

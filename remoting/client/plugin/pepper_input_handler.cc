@@ -118,11 +118,13 @@ PepperInputHandler::PepperInputHandler(
       wheel_delta_x_(0),
       wheel_delta_y_(0),
       wheel_ticks_x_(0),
-      wheel_ticks_y_(0) {
+      wheel_ticks_y_(0),
+      detect_stuck_modifiers_(false) {
 }
 
 bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
-  ReleaseAllIfModifiersStuck(event);
+  if (detect_stuck_modifiers_)
+    ReleaseAllIfModifiersStuck(event);
 
   switch (event.GetType()) {
     // Touch input cases.

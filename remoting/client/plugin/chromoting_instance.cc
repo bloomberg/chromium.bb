@@ -643,8 +643,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   VLOG(0) << "Connecting to " << host_jid
           << ". Local jid: " << local_jid << ".";
 
-#if defined(OS_NACL)
   std::string key_filter;
+#if defined(OS_NACL)
   if (!data.GetString("keyFilter", &key_filter)) {
     NOTREACHED();
     normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
@@ -661,11 +661,18 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 #elif defined(OS_MACOSX)
   normalizing_input_filter_.reset(new NormalizingInputFilterMac(&key_mapper_));
 #elif defined(OS_CHROMEOS)
+  key_filter = "cros";
   normalizing_input_filter_.reset(new NormalizingInputFilterCros(&key_mapper_));
 #else
   normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
 #endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
+
+  // Enable stuck modifier key detection on platforms other than ChromeOS.
+  // ChromeOS doesn't set modifier flags for "rewritten" keyboard events
+  // such as Alt+Backspace, which causes ReleaseAllIfModifiersStuck to
+  // incorrectly release all keys, so don't enable it on that platform.
+  input_handler_.set_detect_stuck_modifiers(key_filter != "cros");
 
   // PPB_VideoDecoder is not always enabled because it's broken in some versions
   // of Chrome. See crbug.com/447403 .
