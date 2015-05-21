@@ -110,10 +110,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return &validators_;
   }
 
-  const ValueValidator<GLenum>& GetTextureFormatValidator(GLenum format) {
-    return texture_format_validators_[format];
-  }
-
   const std::string& extensions() const {
     return extensions_;
   }
@@ -137,9 +133,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;
-
-  typedef base::hash_map<GLenum, ValueValidator<GLenum> > ValidatorMap;
-  ValidatorMap texture_format_validators_;
 
   ~FeatureInfo();
 

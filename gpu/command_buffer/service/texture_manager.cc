@@ -5,9 +5,11 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 
 #include <algorithm>
+#include <set>
 #include <utility>
 
 #include "base/bits.h"
+#include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_state.h"
@@ -22,8 +24,10 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
 // This should contain everything to uniquely identify a Texture.
-static const char TextureTag[] = "|Texture|";
+const char TextureTag[] = "|Texture|";
 struct TextureSignature {
   GLenum target_;
   GLint level_;
@@ -108,6 +112,158 @@ struct TextureSignature {
     npot_ = npot;
   }
 };
+
+class FormatTypeValidator {
+ public:
+  FormatTypeValidator() {
+    static const FormatType kSupportedFormatTypes[] = {
+        // ES2.
+        { GL_RGB, GL_RGB, GL_UNSIGNED_BYTE },
+        { GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5 },
+        { GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE },
+        { GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4 },
+        { GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1 },
+        { GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE },
+        { GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE },
+        { GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE },
+        // Exposed by GL_OES_texture_float and GL_OES_texture_half_float
+        { GL_RGB, GL_RGB, GL_FLOAT },
+        { GL_RGBA, GL_RGBA, GL_FLOAT },
+        { GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_FLOAT },
+        { GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT },
+        { GL_ALPHA, GL_ALPHA, GL_FLOAT },
+        { GL_RGB, GL_RGB, GL_HALF_FLOAT_OES },
+        { GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES },
+        { GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES },
+        { GL_LUMINANCE, GL_LUMINANCE, GL_HALF_FLOAT_OES },
+        { GL_ALPHA, GL_ALPHA, GL_HALF_FLOAT_OES },
+        // Exposed by GL_ANGLE_depth_texture
+        { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT },
+        { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
+        { GL_DEPTH_STENCIL, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8 },
+        // Exposed by GL_EXT_sRGB
+        { GL_SRGB, GL_SRGB, GL_UNSIGNED_BYTE },
+        { GL_SRGB_ALPHA, GL_SRGB_ALPHA, GL_UNSIGNED_BYTE },
+        // Exposed by GL_EXT_texture_format_BGRA8888
+        { GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE },
+        // Exposed by GL_EXT_texture_rg
+        { GL_RED, GL_RED, GL_UNSIGNED_BYTE },
+        { GL_RG, GL_RG, GL_UNSIGNED_BYTE },
+        { GL_RED, GL_RED, GL_FLOAT },
+        { GL_RG, GL_RG, GL_FLOAT },
+        { GL_RED, GL_RED, GL_HALF_FLOAT_OES },
+        { GL_RG, GL_RG, GL_HALF_FLOAT_OES },
+
+        // ES3.
+        { GL_R8, GL_RED, GL_UNSIGNED_BYTE },
+        { GL_R8_SNORM, GL_RED, GL_BYTE },
+        { GL_R16F, GL_RED, GL_HALF_FLOAT },
+        { GL_R16F, GL_RED, GL_FLOAT },
+        { GL_R32F, GL_RED, GL_FLOAT },
+        { GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE },
+        { GL_R8I, GL_RED_INTEGER, GL_BYTE },
+        { GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT },
+        { GL_R16I, GL_RED_INTEGER, GL_SHORT },
+        { GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT },
+        { GL_R32I, GL_RED_INTEGER, GL_INT },
+        { GL_RG8, GL_RG, GL_UNSIGNED_BYTE },
+        { GL_RG8_SNORM, GL_RG, GL_BYTE },
+        { GL_RG16F, GL_RG, GL_HALF_FLOAT },
+        { GL_RG16F, GL_RG, GL_FLOAT },
+        { GL_RG32F, GL_RG, GL_FLOAT },
+        { GL_RG8UI, GL_RG_INTEGER, GL_UNSIGNED_BYTE },
+        { GL_RG8I, GL_RG_INTEGER, GL_BYTE },
+        { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT },
+        { GL_RG16I, GL_RG_INTEGER, GL_SHORT },
+        { GL_RG32UI, GL_RG_INTEGER, GL_UNSIGNED_INT },
+        { GL_RG32I, GL_RG_INTEGER, GL_INT },
+        { GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
+        { GL_SRGB8, GL_RGB, GL_UNSIGNED_BYTE },
+        { GL_RGB565, GL_RGB, GL_UNSIGNED_BYTE, },
+        { GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5 },
+        { GL_RGB8_SNORM, GL_RGB, GL_BYTE },
+        { GL_R11F_G11F_B10F, GL_RGB, GL_UNSIGNED_INT_10F_11F_11F_REV },
+        { GL_R11F_G11F_B10F, GL_RGB, GL_HALF_FLOAT },
+        { GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT },
+        { GL_RGB9_E5, GL_RGB, GL_UNSIGNED_INT_5_9_9_9_REV },
+        { GL_RGB9_E5, GL_RGB, GL_HALF_FLOAT },
+        { GL_RGB9_E5, GL_RGB, GL_FLOAT },
+        { GL_RGB16F, GL_RGB, GL_HALF_FLOAT },
+        { GL_RGB16F, GL_RGB, GL_FLOAT },
+        { GL_RGB32F, GL_RGB, GL_FLOAT },
+        { GL_RGB8UI, GL_RGB_INTEGER, GL_UNSIGNED_BYTE },
+        { GL_RGB8I, GL_RGB_INTEGER, GL_BYTE },
+        { GL_RGB16UI, GL_RGB_INTEGER, GL_UNSIGNED_SHORT },
+        { GL_RGB16I, GL_RGB_INTEGER, GL_SHORT },
+        { GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT },
+        { GL_RGB32I, GL_RGB_INTEGER, GL_INT },
+        { GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE },
+        { GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE },
+        { GL_RGBA8_SNORM, GL_RGBA, GL_BYTE },
+        { GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_BYTE },
+        { GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1 },
+        { GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV },
+        { GL_RGBA4, GL_RGBA, GL_UNSIGNED_BYTE },
+        { GL_RGBA4, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4 },
+        { GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV },
+        { GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT },
+        { GL_RGBA16F, GL_RGBA, GL_FLOAT },
+        { GL_RGBA32F, GL_RGBA, GL_FLOAT },
+        { GL_RGBA8UI, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE },
+        { GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE },
+        { GL_RGB10_A2UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT_2_10_10_10_REV },
+        { GL_RGBA16UI, GL_RGBA_INTEGER, GL_UNSIGNED_SHORT },
+        { GL_RGBA16I, GL_RGBA_INTEGER, GL_SHORT },
+        { GL_RGBA32I, GL_RGBA_INTEGER, GL_INT },
+        { GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT },
+        { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT },
+        { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
+        { GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
+        { GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT },
+        { GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8 },
+        { GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL,
+          GL_FLOAT_32_UNSIGNED_INT_24_8_REV },
+    };
+
+    for (size_t ii = 0; ii < arraysize(kSupportedFormatTypes); ++ii) {
+      supported_combinations_.insert(kSupportedFormatTypes[ii]);
+    }
+  }
+
+  // This may be accessed from multiple threads.
+  bool IsValid(GLenum internal_format, GLenum format, GLenum type) const {
+    FormatType query = { internal_format, format, type };
+    return supported_combinations_.find(query) != supported_combinations_.end();
+  }
+
+ private:
+  // TODO(zmo): once std::tuple is allowed, switch over to that.
+  struct FormatType {
+    GLenum internal_format;
+    GLenum format;
+    GLenum type;
+  };
+
+  struct FormatTypeCompare {
+    bool operator() (const FormatType& lhs, const FormatType& rhs) const {
+      return (lhs.internal_format < rhs.internal_format ||
+              ((lhs.internal_format == rhs.internal_format) &&
+               (lhs.format < rhs.format)) ||
+              ((lhs.internal_format == rhs.internal_format) &&
+               (lhs.format == rhs.format) &&
+               (lhs.type < rhs.type)));
+    }
+  };
+
+  // This class needs to be thread safe, so once supported_combinations_
+  // are initialized in the constructor, it should never be modified later.
+  std::set<FormatType, FormatTypeCompare> supported_combinations_;
+};
+
+base::LazyInstance<const FormatTypeValidator>::Leaky g_format_type_validator =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace anonymous
 
 TextureManager::DestructionObserver::DestructionObserver() {}
 
@@ -1578,7 +1734,9 @@ void TextureManager::IncFramebufferStateChangeCount() {
 bool TextureManager::ValidateFormatAndTypeCombination(
     ErrorState* error_state, const char* function_name, GLenum format,
     GLenum type) {
-  if (!feature_info_->GetTextureFormatValidator(format).IsValid(type)) {
+  // TODO(zmo): now this is only called by GLES2DecoderImpl::DoCopyTexImage2D
+  // and is incorrect for ES3. Fix this.
+  if (!g_format_type_validator.Get().IsValid(format, format, type)) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, function_name,
         (std::string("invalid type ") +
@@ -1603,12 +1761,10 @@ bool TextureManager::ValidateTextureParameters(
         error_state, function_name, type, "type");
     return false;
   }
-  if (format != internal_format &&
-      !((internal_format == GL_RGBA32F && format == GL_RGBA) ||
-        (internal_format == GL_RGB32F && format == GL_RGB))) {
+  if (!g_format_type_validator.Get().IsValid(internal_format, format, type)) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, function_name,
-        "format != internalformat");
+        "invalid internalformat/format/type combination");
     return false;
   }
   uint32 channels = GLES2Util::GetChannelsForFormat(format);
@@ -1619,8 +1775,12 @@ bool TextureManager::ValidateTextureParameters(
          " for level != 0").c_str());
     return false;
   }
-  return ValidateFormatAndTypeCombination(error_state, function_name,
-      format, type);
+  if (!validators->texture_internal_format.IsValid(internal_format)) {
+    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+        error_state, function_name, internal_format, "internal_format");
+    return false;
+  }
+  return true;
 }
 
 // Gets the texture id for a given target.
@@ -1673,7 +1833,7 @@ TextureRef* TextureManager::GetTextureInfoForTargetUnlessDefault(
 bool TextureManager::ValidateTexImage2D(
     ContextState* state,
     const char* function_name,
-    const DoTextImage2DArguments& args,
+    const DoTexImageArguments& args,
     TextureRef** texture_ref) {
   ErrorState* error_state = state->GetErrorState();
   const Validators* validators = feature_info_->validators();
@@ -1693,7 +1853,8 @@ bool TextureManager::ValidateTexImage2D(
       args.internal_format, args.level)) {
     return false;
   }
-  if (!ValidForTarget(args.target, args.level, args.width, args.height, 1) ||
+  if (!ValidForTarget(args.target, args.level,
+                      args.width, args.height, args.depth) ||
       args.border != 0) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_VALUE, function_name,
@@ -1737,7 +1898,7 @@ void TextureManager::ValidateAndDoTexImage2D(
     DecoderTextureState* texture_state,
     ContextState* state,
     DecoderFramebufferState* framebuffer_state,
-    const DoTextImage2DArguments& args) {
+    const DoTexImageArguments& args) {
   TextureRef* texture_ref;
   if (!ValidateTexImage2D(state, "glTexImage2D", args, &texture_ref)) {
     return;
@@ -1764,7 +1925,7 @@ void TextureManager::DoTexImage2D(
     ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
     TextureRef* texture_ref,
-    const DoTextImage2DArguments& args) {
+    const DoTexImageArguments& args) {
   Texture* texture = texture_ref->texture();
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;

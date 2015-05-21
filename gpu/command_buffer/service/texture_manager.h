@@ -798,12 +798,13 @@ class GPU_EXPORT TextureManager {
     NOTREACHED();
   }
 
-  struct DoTextImage2DArguments {
+  struct DoTexImageArguments {
     GLenum target;
     GLint level;
     GLenum internal_format;
     GLsizei width;
     GLsizei height;
+    GLsizei depth;
     GLint border;
     GLenum format;
     GLenum type;
@@ -814,7 +815,7 @@ class GPU_EXPORT TextureManager {
   bool ValidateTexImage2D(
     ContextState* state,
     const char* function_name,
-    const DoTextImage2DArguments& args,
+    const DoTexImageArguments& args,
     // Pointer to TextureRef filled in if validation successful.
     // Presumes the pointer is valid.
     TextureRef** texture_ref);
@@ -823,7 +824,7 @@ class GPU_EXPORT TextureManager {
     DecoderTextureState* texture_state,
     ContextState* state,
     DecoderFramebufferState* framebuffer_state,
-    const DoTextImage2DArguments& args);
+    const DoTexImageArguments& args);
 
   // TODO(kloveless): Make GetTexture* private once this is no longer called
   // from gles2_cmd_decoder.
@@ -855,7 +856,7 @@ class GPU_EXPORT TextureManager {
     ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
     TextureRef* texture_ref,
-    const DoTextImage2DArguments& args);
+    const DoTexImageArguments& args);
 
   void StartTracking(TextureRef* texture);
   void StopTracking(TextureRef* texture);

@@ -203,40 +203,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine& command_line) {
 
   unsafe_es3_apis_enabled_ =
       command_line.HasSwitch(switches::kEnableUnsafeES3APIs);
-
-  static const GLenum kAlphaTypes[] = {
-      GL_UNSIGNED_BYTE,
-  };
-  static const GLenum kRGBTypes[] = {
-      GL_UNSIGNED_BYTE,
-      GL_UNSIGNED_SHORT_5_6_5,
-  };
-  static const GLenum kRGBATypes[] = {
-      GL_UNSIGNED_BYTE,
-      GL_UNSIGNED_SHORT_4_4_4_4,
-      GL_UNSIGNED_SHORT_5_5_5_1,
-  };
-  static const GLenum kLuminanceTypes[] = {
-      GL_UNSIGNED_BYTE,
-  };
-  static const GLenum kLuminanceAlphaTypes[] = {
-      GL_UNSIGNED_BYTE,
-  };
-  static const FormatInfo kFormatTypes[] = {
-    { GL_ALPHA, kAlphaTypes, arraysize(kAlphaTypes), },
-    { GL_RGB, kRGBTypes, arraysize(kRGBTypes), },
-    { GL_RGBA, kRGBATypes, arraysize(kRGBATypes), },
-    { GL_LUMINANCE, kLuminanceTypes, arraysize(kLuminanceTypes), },
-    { GL_LUMINANCE_ALPHA, kLuminanceAlphaTypes,
-      arraysize(kLuminanceAlphaTypes), } ,
-  };
-  for (size_t ii = 0; ii < arraysize(kFormatTypes); ++ii) {
-    const FormatInfo& info = kFormatTypes[ii];
-    ValueValidator<GLenum>& validator = texture_format_validators_[info.format];
-    for (size_t jj = 0; jj < info.count; ++jj) {
-      validator.AddValue(info.types[jj]);
-    }
-  }
 }
 
 bool FeatureInfo::Initialize() {
@@ -446,8 +412,6 @@ void FeatureInfo::InitializeFeatures() {
   if (enable_depth_texture) {
     AddExtensionString("GL_CHROMIUM_depth_texture");
     AddExtensionString("GL_GOOGLE_depth_texture");
-    texture_format_validators_[GL_DEPTH_COMPONENT].AddValue(GL_UNSIGNED_SHORT);
-    texture_format_validators_[GL_DEPTH_COMPONENT].AddValue(GL_UNSIGNED_INT);
     validators_.texture_internal_format.AddValue(GL_DEPTH_COMPONENT);
     validators_.texture_format.AddValue(GL_DEPTH_COMPONENT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_SHORT);
@@ -461,8 +425,6 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_OES_packed_depth_stencil");
     feature_flags_.packed_depth24_stencil8 = true;
     if (enable_depth_texture) {
-      texture_format_validators_[GL_DEPTH_STENCIL]
-          .AddValue(GL_UNSIGNED_INT_24_8);
       validators_.texture_internal_format.AddValue(GL_DEPTH_STENCIL);
       validators_.texture_format.AddValue(GL_DEPTH_STENCIL);
       validators_.pixel_type.AddValue(GL_UNSIGNED_INT_24_8);
@@ -502,8 +464,6 @@ void FeatureInfo::InitializeFeatures() {
         extensions.Contains("GL_OES_rgb8_rgba8")) &&
       extensions.Contains("GL_EXT_sRGB")) || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_sRGB");
-    texture_format_validators_[GL_SRGB_EXT].AddValue(GL_UNSIGNED_BYTE);
-    texture_format_validators_[GL_SRGB_ALPHA_EXT].AddValue(GL_UNSIGNED_BYTE);
     validators_.texture_internal_format.AddValue(GL_SRGB_EXT);
     validators_.texture_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
     validators_.texture_format.AddValue(GL_SRGB_EXT);
@@ -540,7 +500,6 @@ void FeatureInfo::InitializeFeatures() {
   if (enable_texture_format_bgra8888) {
     feature_flags_.ext_texture_format_bgra8888 = true;
     AddExtensionString("GL_EXT_texture_format_BGRA8888");
-    texture_format_validators_[GL_BGRA_EXT].AddValue(GL_UNSIGNED_BYTE);
     validators_.texture_internal_format.AddValue(GL_BGRA_EXT);
     validators_.texture_format.AddValue(GL_BGRA_EXT);
   }
@@ -615,11 +574,6 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_texture_float) {
-    texture_format_validators_[GL_ALPHA].AddValue(GL_FLOAT);
-    texture_format_validators_[GL_RGB].AddValue(GL_FLOAT);
-    texture_format_validators_[GL_RGBA].AddValue(GL_FLOAT);
-    texture_format_validators_[GL_LUMINANCE].AddValue(GL_FLOAT);
-    texture_format_validators_[GL_LUMINANCE_ALPHA].AddValue(GL_FLOAT);
     validators_.pixel_type.AddValue(GL_FLOAT);
     validators_.read_pixel_type.AddValue(GL_FLOAT);
     AddExtensionString("GL_OES_texture_float");
@@ -629,11 +583,6 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_texture_half_float) {
-    texture_format_validators_[GL_ALPHA].AddValue(GL_HALF_FLOAT_OES);
-    texture_format_validators_[GL_RGB].AddValue(GL_HALF_FLOAT_OES);
-    texture_format_validators_[GL_RGBA].AddValue(GL_HALF_FLOAT_OES);
-    texture_format_validators_[GL_LUMINANCE].AddValue(GL_HALF_FLOAT_OES);
-    texture_format_validators_[GL_LUMINANCE_ALPHA].AddValue(GL_HALF_FLOAT_OES);
     validators_.pixel_type.AddValue(GL_HALF_FLOAT_OES);
     validators_.read_pixel_type.AddValue(GL_HALF_FLOAT_OES);
     AddExtensionString("GL_OES_texture_half_float");
@@ -1083,18 +1032,6 @@ void FeatureInfo::InitializeFeatures() {
     validators_.read_pixel_format.AddValue(GL_RG_EXT);
     validators_.render_buffer_format.AddValue(GL_R8_EXT);
     validators_.render_buffer_format.AddValue(GL_RG8_EXT);
-
-    texture_format_validators_[GL_RED_EXT].AddValue(GL_UNSIGNED_BYTE);
-    texture_format_validators_[GL_RG_EXT].AddValue(GL_UNSIGNED_BYTE);
-
-    if (enable_texture_float) {
-      texture_format_validators_[GL_RED_EXT].AddValue(GL_FLOAT);
-      texture_format_validators_[GL_RG_EXT].AddValue(GL_FLOAT);
-    }
-    if (enable_texture_half_float) {
-      texture_format_validators_[GL_RED_EXT].AddValue(GL_HALF_FLOAT_OES);
-      texture_format_validators_[GL_RG_EXT].AddValue(GL_HALF_FLOAT_OES);
-    }
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 

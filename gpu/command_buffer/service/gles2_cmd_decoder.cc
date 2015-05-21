@@ -963,6 +963,20 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLenum type,
       const void * data);
 
+  // Wrapper for TexSubImage3D.
+  error::Error DoTexSubImage3D(
+      GLenum target,
+      GLint level,
+      GLint xoffset,
+      GLint yoffset,
+      GLint zoffset,
+      GLsizei width,
+      GLsizei height,
+      GLsizei depth,
+      GLenum format,
+      GLenum type,
+      const void * data);
+
   // Extra validation for async tex(Sub)Image2D.
   bool ValidateAsyncTransfer(
       const char* function_name,
@@ -9653,8 +9667,8 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
     return error::kNoError;
   }
 
-  TextureManager::DoTextImage2DArguments args = {
-    target, level, internal_format, width, height, border, format, type,
+  TextureManager::DoTexImageArguments args = {
+    target, level, internal_format, width, height, 1, border, format, type,
     pixels, pixels_size};
   texture_manager()->ValidateAndDoTexImage2D(
       &texture_state_, &state_, &framebuffer_state_, args);
@@ -9667,7 +9681,6 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
 
 error::Error GLES2DecoderImpl::HandleTexImage3D(uint32 immediate_data_size,
                                                 const void* cmd_data) {
-  // TODO(zmo): Unsafe ES3 API.
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
 
@@ -9701,8 +9714,11 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32 immediate_data_size,
     }
   }
 
-  glTexImage3D(target, level, internal_format, width, height, depth, border,
-               format, type, pixels);
+  TextureManager::DoTexImageArguments args = {
+    target, level, internal_format, width, height, depth, border, format, type,
+    pixels, pixels_size};
+  texture_manager()->ValidateAndDoTexImage2D(
+      &texture_state_, &state_, &framebuffer_state_, args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -10220,9 +10236,44 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32 immediate_data_size,
       target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
+error::Error GLES2DecoderImpl::DoTexSubImage3D(
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLint zoffset,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth,
+    GLenum format,
+    GLenum type,
+    const void * data) {
+  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
+      &state_, target);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_ENUM, "glTexSubImage3D", "invalid target");
+  }
+
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexSubImage3D");
+  ScopedTextureUploadTimer timer(&texture_state_);
+  glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
+                  depth, format, type, data);
+  GLenum error = LOCAL_PEEK_GL_ERROR("glTexSubImage3D");
+  if (error == GL_NO_ERROR) {
+    // TODO(zmo): This is not 100% correct because only part of the level
+    // image is cleared.
+    texture_manager()->SetLevelCleared(texture_ref, target, level, true);
+  }
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32 immediate_data_size,
                                                    const void* cmd_data) {
-  // TODO(zmo): Unsafe ES3 API.
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
 
@@ -10248,9 +10299,8 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32 immediate_data_size,
   }
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.pixels_shm_id, c.pixels_shm_offset, data_size);
-  glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
-                  depth, format, type, pixels);
-  return error::kNoError;
+  return DoTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
+                         height, depth, format, type, pixels);
 }
 
 error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
@@ -12777,8 +12827,8 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
     }
   }
 
-  TextureManager::DoTextImage2DArguments args = {
-    target, level, internal_format, width, height, border, format, type,
+  TextureManager::DoTexImageArguments args = {
+    target, level, internal_format, width, height, 1, border, format, type,
     pixels, pixels_size};
   TextureRef* texture_ref;
   // All the normal glTexSubImage2D validation.
