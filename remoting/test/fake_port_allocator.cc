@@ -52,11 +52,6 @@ FakePortAllocatorSession::FakePortAllocatorSession(
                                    relay_hosts,
                                    relay,
                                    std::string()) {
-  set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
-            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
-            cricket::PORTALLOCATOR_ENABLE_IPV6 |
-            cricket::PORTALLOCATOR_DISABLE_STUN |
-            cricket::PORTALLOCATOR_DISABLE_RELAY);
 }
 
 FakePortAllocatorSession::~FakePortAllocatorSession() {
@@ -106,7 +101,13 @@ FakePortAllocator::FakePortAllocator(
                             socket_factory.get(),
                             std::string()),
       network_manager_(network_manager.Pass()),
-      socket_factory_(socket_factory.Pass()) {}
+      socket_factory_(socket_factory.Pass()) {
+  set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
+            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
+            cricket::PORTALLOCATOR_ENABLE_IPV6 |
+            cricket::PORTALLOCATOR_DISABLE_STUN |
+            cricket::PORTALLOCATOR_DISABLE_RELAY);
+}
 
 FakePortAllocator::~FakePortAllocator() {
 }
