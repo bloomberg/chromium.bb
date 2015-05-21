@@ -118,6 +118,14 @@ crbug.com/436881 fast/preloader/script.html [ Pass Failure ]
 crbug.com/436881 fast/preloader/style.html [ Pass Failure ]
 crbug.com/436881 fast/preloader/understands-base-tag.html [ Pass Failure ]
 
+crbug.com/489875 virtual/slimmingpaint/fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/489875 virtual/slimmingpaint/fast/repaint/table-outer-border.html [ NeedsRebaseline ]
+crbug.com/489875 virtual/slimmingpaint/fast/repaint/table-cell-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/489875 fast/table/border-collapsing/border-collapse-change-collapse-to-separate.html [ NeedsRebaseline ]
+crbug.com/489875 virtual/slimmingpaint/fast/table/border-collapsing/border-collapse-change-collapse-to-separate.html [ NeedsRebaseline ]
+crbug.com/489875 fast/table/border-collapsing/border-collapse-change-separate-to-collapse.html [ NeedsRebaseline ]
+crbug.com/489875 virtual/slimmingpaint/fast/table/border-collapsing/border-collapse-change-separate-to-collapse.html [ NeedsRebaseline ]
+
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]

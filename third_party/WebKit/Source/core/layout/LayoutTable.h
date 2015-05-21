@@ -284,6 +284,7 @@ public:
 protected:
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void simplifiedNormalFlowLayout() override;
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
     virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
 
 private:
@@ -331,6 +332,7 @@ private:
 
     OwnPtr<TableLayoutAlgorithm> m_tableLayout;
 
+    // A sorted list of all unique border values that we want to paint.
     CollapsedBorderValues m_collapsedBorders;
     const CollapsedBorderValue* m_currentBorder;
     bool m_collapsedBordersValid : 1;

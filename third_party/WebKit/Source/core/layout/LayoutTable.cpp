@@ -411,8 +411,6 @@ void LayoutTable::simplifiedNormalFlowLayout()
         section->computeOverflowFromCells();
         section->updateLayerTransformAfterLayout();
     }
-
-    recalcCollapsedBordersIfNeeded();
 }
 
 void LayoutTable::layout()
@@ -588,21 +586,24 @@ void LayoutTable::layout()
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
-    recalcCollapsedBordersIfNeeded();
-
     m_columnLogicalWidthChanged = false;
     clearNeedsLayout();
 }
 
 void LayoutTable::invalidateCollapsedBorders()
 {
-    m_collapsedBordersValid = false;
     m_collapsedBorders.clear();
+    if (!collapseBorders())
+        return;
 
-    setNeedsSimplifiedNormalFlowLayout();
+    m_collapsedBordersValid = false;
+    setMayNeedPaintInvalidation();
 }
 
 // Collect all the unique border values that we want to paint in a sorted list.
+// During the collection, each cell saves its recalculated borders into the cache
+// of its containing section, and invalidates itself if any border changes.
+// This method doesn't affect layout.
 void LayoutTable::recalcCollapsedBordersIfNeeded()
 {
     if (m_collapsedBordersValid || !collapseBorders())
@@ -1383,6 +1384,14 @@ const BorderValue& LayoutTable::tableEndBorderAdjoiningCell(const LayoutTableCel
         return style()->borderEnd();
 
     return style()->borderStart();
+}
+
+PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+{
+    // Information of collapsed borders doesn't affect layout and are for painting only.
+    // Do it now instead of during painting to invalidate table cells if needed.
+    recalcCollapsedBordersIfNeeded();
+    return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
 }
 
 void LayoutTable::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
