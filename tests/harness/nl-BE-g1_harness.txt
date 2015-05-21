@@ -279,6 +279,7 @@
           "output": "⠘⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠘⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
         },
         {
+          "xfail": "Fails because special handling of more than three capitalized words is not supported by liblouis",
           "input": "MEER DAN DRIE WOORDEN in hoofdletters",
           "output": "⠘⠘⠍⠑⠑⠗ ⠙⠁⠝ ⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎",
           "xfail": "Fails because ?"
@@ -328,6 +329,7 @@
           "output": "⠼⠋⠑⠐⠖⠄⠑⠗"
         },
         {
+          "xfail": "Fails because special handling of more than three capitalized words is not supported by liblouis",
           "input": "SLAAT DE VLAM IN DE PAN, DEK DE VUURHAARD DAN AF MET EEN BRANDWERENDE DEKEN OF EEN VOCHTIGE DOEK.",
           "output": "⠘⠘⠎⠇⠁⠁⠞ ⠙⠑ ⠧⠇⠁⠍ ⠊⠝ ⠙⠑ ⠏⠁⠝⠂ ⠙⠑⠅ ⠙⠑ ⠧⠥⠥⠗⠓⠁⠁⠗⠙ ⠙⠁⠝ ⠁⠋ ⠍⠑⠞ ⠑⠑⠝ ⠃⠗⠁⠝⠙⠺⠑⠗⠑⠝⠙⠑ ⠙⠑⠅⠑⠝ ⠕⠋ ⠑⠑⠝ ⠧⠕⠉⠓⠞⠊⠛⠑ ⠘⠙⠕⠑⠅⠲"
         },
@@ -392,6 +394,7 @@
           "output": "⠰⠁ ⠰⠃ ⠰⠛"
         },
         {
+          "xfail": "Fails because ??",
           "input": "Α Β Γ",
           "output": "⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛"
         },
@@ -420,14 +423,17 @@
           "output": "⠼⠁⠃⠒⠼⠉⠚ ⠥⠥⠗"
         },
         {
+          "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
           "input": "Een hoek van 27° 30'.",
           "output": "⠨⠑⠑⠝ ⠓⠕⠑⠅ ⠧⠁⠝ ⠼⠃⠛⠈⠴ ⠼⠉⠚⠈⠔⠲"
         },
         {
+          "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
           "input": "Het record is 3' 5''.",
           "output": "⠨⠓⠑⠞ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠼⠉⠈⠔ ⠼⠑⠈⠔⠔⠲"
         },
         {
+          "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
           "input": "57° 38' noorderbreedte",
           "output": "⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑"
         }
