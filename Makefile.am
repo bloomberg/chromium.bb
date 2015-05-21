@@ -85,9 +85,16 @@ protocol/%-server-protocol.h : $(top_srcdir)/protocol/%.xml
 protocol/%-client-protocol.h : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
 
+protocol/%-server-protocol-core.h : $(top_srcdir)/protocol/%.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header -c < $< > $@
+
+protocol/%-client-protocol-core.h : $(top_srcdir)/protocol/%.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header -c < $< > $@
+
 BUILT_SOURCES =					\
 	$(nodist_libwayland_server_la_SOURCES)	\
-	$(nodist_libwayland_client_la_SOURCES)
+	$(nodist_libwayland_client_la_SOURCES)	\
+	$(nodist_headers_test_SOURCES)
 
 CLEANFILES = $(BUILT_SOURCES)
 DISTCLEANFILES = src/wayland-version.h
@@ -132,7 +139,8 @@ TESTS =						\
 	queue-test				\
 	signal-test				\
 	resources-test				\
-	message-test
+	message-test				\
+	headers-test
 
 if ENABLE_CPP_TEST
 TESTS += cpp-compile-test
@@ -188,6 +196,13 @@ resources_test_SOURCES = tests/resources-test.c
 resources_test_LDADD = libtest-runner.la
 message_test_SOURCES = tests/message-test.c
 message_test_LDADD = libtest-runner.la
+headers_test_SOURCES = tests/headers-test.c \
+		       tests/headers-protocol-test.c \
+		       tests/headers-protocol-core-test.c
+headers_test_LDADD = libtest-runner.la
+nodist_headers_test_SOURCES =			\
+	protocol/wayland-server-protocol-core.h	\
+	protocol/wayland-client-protocol-core.h
 
 if ENABLE_CPP_TEST
 cpp_compile_test_SOURCES = tests/cpp-compile-test.cpp
