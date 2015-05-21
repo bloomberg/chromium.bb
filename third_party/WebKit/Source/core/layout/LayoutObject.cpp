@@ -1949,8 +1949,13 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
     // updated by subclasses before we know if we have to invalidate paints (in setStyle()).
 
     if (oldStyle && !areCursorsEqual(oldStyle, style())) {
-        if (LocalFrame* frame = this->frame())
-            frame->page()->deprecatedLocalMainFrame()->eventHandler().scheduleCursorUpdate();
+        if (LocalFrame* frame = this->frame()) {
+            // Cursor update scheduling is done by the local root, which is the main frame if there
+            // are no RemoteFrame ancestors in the frame tree. Use of localFrameRoot() is
+            // discouraged but will change when cursor update scheduling is moved from EventHandler
+            // to PageEventHandler.
+            frame->localFrameRoot()->eventHandler().scheduleCursorUpdate();
+        }
     }
 }
 
