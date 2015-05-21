@@ -454,7 +454,7 @@ public:
     // Used to resolve margins in the containing block's block-flow direction.
     void computeAndSetBlockDirectionMargins(const LayoutBlock* containingBlock);
 
-    virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const;
+    LayoutUnit offsetFromLogicalTopOfFirstPage() const;
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).

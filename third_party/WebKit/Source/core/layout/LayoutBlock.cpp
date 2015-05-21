@@ -3641,19 +3641,6 @@ void LayoutBlock::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeigh
         colInfo->updateMinimumColumnHeight(minHeight);
 }
 
-LayoutUnit LayoutBlock::offsetFromLogicalTopOfFirstPage() const
-{
-    LayoutState* layoutState = view()->layoutState();
-    RELEASE_ASSERT(layoutState);
-    if (!layoutState->isPaginated())
-        return LayoutUnit();
-    // It would be possible to remove the requirement that this block be the one currently being
-    // laid out, but nobody needs that at the moment.
-    ASSERT(layoutState->layoutObject() == this);
-    LayoutSize offsetDelta = layoutState->layoutOffset() - layoutState->pageOffset();
-    return isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width();
-}
-
 LayoutUnit LayoutBlock::collapsedMarginBeforeForChild(const LayoutBox& child) const
 {
     // If the child has the same directionality as we do, then we can just return its

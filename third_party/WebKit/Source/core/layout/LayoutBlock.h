@@ -444,10 +444,6 @@ protected:
 
     virtual bool canCollapseAnonymousBlockChild() const { return true; }
 
-public:
-    virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const override final;
-
-protected:
     LayoutObjectChildList m_children;
     LineBoxList m_lineBoxes; // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 

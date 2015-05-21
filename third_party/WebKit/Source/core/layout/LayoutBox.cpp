@@ -4644,13 +4644,21 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChil
 LayoutUnit LayoutBox::offsetFromLogicalTopOfFirstPage() const
 {
     LayoutState* layoutState = view()->layoutState();
-    if (layoutState && !layoutState->isPaginated())
+    if (!layoutState || !layoutState->isPaginated())
         return LayoutUnit();
 
-    if (!layoutState && !flowThreadContainingBlock())
-        return LayoutUnit();
+    if (layoutState->layoutObject() == this) {
+        LayoutSize offsetDelta = layoutState->layoutOffset() - layoutState->pageOffset();
+        return isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width();
+    }
 
+    // A LayoutBlock always establishes a layout state, and this method is only meant to be called
+    // on the object currently being laid out.
+    ASSERT(!isLayoutBlock());
+
+    // In case this box doesn't establish a layout state, try the containing block.
     LayoutBlock* containerBlock = containingBlock();
+    ASSERT(layoutState->layoutObject() == containerBlock);
     return containerBlock->offsetFromLogicalTopOfFirstPage() + logicalTop();
 }
 
