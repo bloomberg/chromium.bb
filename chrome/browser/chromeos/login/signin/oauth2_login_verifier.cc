@@ -11,16 +11,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-bool IsConnectionOrServiceError(const GoogleServiceAuthError& error) {
-  return error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
-         error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
-         error.state() == GoogleServiceAuthError::REQUEST_CANCELED;
-}
-
-}  // namespace
-
 namespace chromeos {
 
 OAuth2LoginVerifier::OAuth2LoginVerifier(
@@ -74,7 +64,7 @@ void OAuth2LoginVerifier::OnAddAccountToCookieCompleted(
 
   LOG(WARNING) << "Failed MergeSession request,"
                << " error: " << error.state();
-  delegate_->OnSessionMergeFailure(IsConnectionOrServiceError(error));
+  delegate_->OnSessionMergeFailure(error.IsTransientError());
 }
 
 void OAuth2LoginVerifier::OnGaiaAccountsInCookieUpdated(
@@ -88,7 +78,7 @@ void OAuth2LoginVerifier::OnGaiaAccountsInCookieUpdated(
 
   LOG(WARNING) << "Failed to get list of session accounts, "
                << " error: " << error.state();
-  delegate_->OnListAccountsFailure(IsConnectionOrServiceError(error));
+  delegate_->OnListAccountsFailure(error.IsTransientError());
 }
 
 }  // namespace chromeos

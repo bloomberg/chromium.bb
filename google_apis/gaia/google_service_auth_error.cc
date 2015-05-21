@@ -252,9 +252,12 @@ bool GoogleServiceAuthError::IsPersistentError() const {
 
 bool GoogleServiceAuthError::IsTransientError() const {
   switch (state_) {
+  // These are failures that are likely to succeed if tried again.
   case GoogleServiceAuthError::CONNECTION_FAILED:
   case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+  case GoogleServiceAuthError::REQUEST_CANCELED:
     return true;
+  // Everything else will have the same result.
   default:
     return false;
   }

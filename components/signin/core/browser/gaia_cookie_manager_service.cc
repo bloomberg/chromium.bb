@@ -56,12 +56,6 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 
 const int kMaxFetcherRetries = 8;
 
-bool IsTransientError(const GoogleServiceAuthError& error) {
-  return error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
-      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
-      error.state() == GoogleServiceAuthError::REQUEST_CANCELED;
-}
-
 enum GaiaCookieRequestType {
   ADD_ACCOUNT,
   LOG_OUT_ALL_ACCOUNTS,
@@ -187,7 +181,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 void GaiaCookieManagerService::ExternalCcResultFetcher::
     OnGetCheckConnectionInfoError(const GoogleServiceAuthError& error) {
   if (++helper_->fetcher_retries_ < kMaxFetcherRetries &&
-      IsTransientError(error)) {
+      error.IsTransientError()) {
     helper_->fetcher_backoff_.InformOfRequest(false);
     gaia_auth_fetcher_timer_.Start(
         FROM_HERE, helper_->fetcher_backoff_.GetTimeUntilRelease(),
@@ -541,7 +535,7 @@ void GaiaCookieManagerService::OnMergeSessionFailure(
   VLOG(1) << "Failed MergeSession"
           << " account=" << requests_.front().account_id()
           << " error=" << error.ToString();
-  if (++fetcher_retries_ < kMaxFetcherRetries && IsTransientError(error)) {
+  if (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) {
     fetcher_backoff_.InformOfRequest(false);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
@@ -589,7 +583,7 @@ void GaiaCookieManagerService::OnListAccountsFailure(
   VLOG(1) << "ListAccounts failed";
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::LIST_ACCOUNTS);
-  if (++fetcher_retries_ < kMaxFetcherRetries && IsTransientError(error)) {
+  if (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) {
     fetcher_backoff_.InformOfRequest(false);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),

@@ -136,10 +136,7 @@ void PolicyOAuth2TokenFetcher::OnGetTokenFailure(
 void PolicyOAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
                                             const base::Closure& task) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if ((error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
-       error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
-       error.state() == GoogleServiceAuthError::REQUEST_CANCELED) &&
-      retry_count_ < kMaxRequestAttemptCount) {
+  if (error.IsTransientError() && retry_count_ < kMaxRequestAttemptCount) {
     retry_count_++;
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE, task,

@@ -578,9 +578,7 @@ void UserManagerScreenHandler::OnClientLoginFailure(
                                        password_attempt_);
   }
 
-  bool offline = (state == GoogleServiceAuthError::CONNECTION_FAILED ||
-                  state == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
-                  state == GoogleServiceAuthError::REQUEST_CANCELED);
+  bool offline = error.IsTransientError();
   ProfileMetrics::ProfileAuth failure_metric =
       offline ? ProfileMetrics::AUTH_FAILED_OFFLINE :
                 ProfileMetrics::AUTH_FAILED;
