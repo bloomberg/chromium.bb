@@ -57,6 +57,27 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
   EXPECT_EQ(controller.GetVisibleEntry()->GetOriginalRequestURL(), history_url);
 }
 
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDs) {
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_link_to_load_iframe.html"));
+  NavigateToURL(shell(), main_url);
+  ASSERT_EQ(1, controller.GetEntryCount());
+
+  // Use JavaScript to click the link and load the iframe.
+  std::string script = "document.getElementById('link').click()";
+  EXPECT_TRUE(content::ExecuteScript(shell()->web_contents(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_EQ(2, controller.GetEntryCount());
+
+  // Unique IDs should... um... be unique.
+  ASSERT_NE(controller.GetEntryAtIndex(0)->GetUniqueID(),
+            controller.GetEntryAtIndex(1)->GetUniqueID());
+}
+
 // The renderer uses the position in the history list as a clue to whether a
 // navigation is stale. In the case where the entry limit is reached and the
 // history list is pruned, make sure that there is no mismatch that would cause

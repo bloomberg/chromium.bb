@@ -346,8 +346,8 @@ NavigationEntryImpl* NavigationEntryImpl::Clone() const {
   // the same tab.
   copy->frame_tree_.reset(frame_tree_->Clone());
 
-  // Copy all state over, unless cleared in ResetForCommit.
-  copy->unique_id_ = unique_id_;
+  // Copy most state over, unless cleared in ResetForCommit.
+  // Don't copy unique_id_, otherwise it won't be unique.
   copy->bindings_ = bindings_;
   copy->page_type_ = page_type_;
   copy->virtual_url_ = virtual_url_;
