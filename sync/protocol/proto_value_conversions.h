@@ -48,11 +48,11 @@ class GlobalIdDirective;
 class HistoryDeleteDirectiveSpecifics;
 class KeystoreEncryptionFlagsSpecifics;
 class LinkedAppIconInfo;
-class Media;
 class ManagedUserSettingSpecifics;
 class ManagedUserSharedSettingSpecifics;
 class ManagedUserSpecifics;
 class ManagedUserWhitelistSpecifics;
+class Media;
 class NavigationRedirect;
 class NigoriSpecifics;
 class PasswordSpecifics;
@@ -75,6 +75,7 @@ class ThemeSpecifics;
 class TimeRangeDirective;
 class TypedUrlSpecifics;
 class WalletMaskedCreditCard;
+class WalletMetadataSpecifics;
 class WalletPostalAddress;
 class WifiCredentialSpecifics;
 }  // namespace sync_pb
@@ -172,6 +173,10 @@ SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue> AutofillSpecificsToValue(
 SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
 AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);
+
+SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+WalletMetadataSpecificsToValue(
+    const sync_pb::WalletMetadataSpecifics& wallet_metadata_specifics);
 
 SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
 AutofillWalletSpecificsToValue(

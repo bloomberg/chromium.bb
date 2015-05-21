@@ -358,6 +358,16 @@ scoped_ptr<base::DictionaryValue> AutofillProfileSpecificsToValue(
   return value;
 }
 
+scoped_ptr<base::DictionaryValue> WalletMetadataSpecificsToValue(
+    const sync_pb::WalletMetadataSpecifics& proto) {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  SET_ENUM(type, GetWalletMetadataTypeString);
+  SET_STR(id);
+  SET_INT64(use_count);
+  SET_INT64(use_date);
+  return value;
+}
+
 scoped_ptr<base::DictionaryValue> AutofillWalletSpecificsToValue(
     const sync_pb::AutofillWalletSpecifics& proto) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
@@ -730,6 +740,7 @@ scoped_ptr<base::DictionaryValue> EntitySpecificsToValue(
   SET_FIELD(autofill, AutofillSpecificsToValue);
   SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);
   SET_FIELD(autofill_wallet, AutofillWalletSpecificsToValue);
+  SET_FIELD(wallet_metadata, WalletMetadataSpecificsToValue);
   SET_FIELD(bookmark, BookmarkSpecificsToValue);
   SET_FIELD(device_info, DeviceInfoSpecificsToValue);
   SET_FIELD(dictionary, DictionarySpecificsToValue);

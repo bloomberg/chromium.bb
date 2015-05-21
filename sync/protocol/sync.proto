@@ -73,7 +73,7 @@ message EntitySpecifics {
 
   // To add new datatype-specific fields to the protocol, extend
   // EntitySpecifics.  First, pick a non-colliding tag number by
-  // picking a revision number of one of your past commits
+  // picking a Cr-Commit-Position of one of your past commits
   // to src.chromium.org.  Then, in a different protocol buffer
   // definition, define your message type, and add an optional field
   // to the list below using the unique tag value you selected.
@@ -133,6 +133,7 @@ message EntitySpecifics {
   optional AppListSpecifics app_list = 229170;
   optional WifiCredentialSpecifics wifi_credential = 218175;
   optional AutofillWalletSpecifics autofill_wallet = 306270;
+  optional WalletMetadataSpecifics wallet_metadata = 330441;
 }
 
 message SyncEntity {

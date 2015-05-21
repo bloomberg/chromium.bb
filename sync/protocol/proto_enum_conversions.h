@@ -59,6 +59,9 @@ SYNC_EXPORT_PRIVATE const char* GetLaunchTypeString(
 SYNC_EXPORT_PRIVATE const char* GetWalletInfoTypeString(
     sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type);
 
+SYNC_EXPORT_PRIVATE const char* GetWalletMetadataTypeString(
+    sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
+
 SYNC_EXPORT_PRIVATE const char* GetWalletCardStatusString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status);
 

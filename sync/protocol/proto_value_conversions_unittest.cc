@@ -139,6 +139,10 @@ TEST_F(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
   TestSpecificsToValue(AutofillWalletSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, WalletMetadataSpecificsToValue) {
+  TestSpecificsToValue(WalletMetadataSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, BookmarkSpecificsToValue) {
   TestSpecificsToValue(BookmarkSpecificsToValue);
 }

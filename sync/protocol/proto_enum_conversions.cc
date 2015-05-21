@@ -214,6 +214,18 @@ const char* GetWalletInfoTypeString(
   return "";
 }
 
+const char* GetWalletMetadataTypeString(
+    sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::WalletMetadataSpecifics, Type, UNKNOWN, ADDRESS);
+  switch (wallet_metadata_type) {
+    ENUM_CASE(sync_pb::WalletMetadataSpecifics, UNKNOWN);
+    ENUM_CASE(sync_pb::WalletMetadataSpecifics, CARD);
+    ENUM_CASE(sync_pb::WalletMetadataSpecifics, ADDRESS);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* GetWalletCardStatusString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status) {
   switch (wallet_card_status) {

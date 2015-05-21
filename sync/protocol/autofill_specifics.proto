@@ -171,3 +171,42 @@ message AutofillWalletSpecifics {
   // This field exists if and only if the "type" field equals to ADDRESS.
   optional WalletPostalAddress address = 3;
 }
+
+// Wallet card and address usage information that can be synced.
+message WalletMetadataSpecifics {
+  enum Type {
+    UNKNOWN = 0;
+    CARD = 1;
+    ADDRESS = 2;
+  }
+
+  // The type of the Wallet metadata.
+  optional Type type = 1;
+
+  // Unique ID string of the corresponding Wallet data.
+  // For Wallet cards, this value is server generated and opaque to Chrome.
+  // For Wallet addresses, this is a SHA1 hash of the following fields:
+  //
+  // - First name
+  // - Middle name
+  // - Last name
+  // - Company name
+  // - Street address
+  // - Dependent locality
+  // - City
+  // - State
+  // - Zip code
+  // - Sorting code
+  // - Country
+  // - Phone numbers
+  //
+  // Finally, Chrome appends the address language code to the end of the hash.
+  optional string id = 2;
+
+  // The number of times that this Wallet card or address was used.
+  optional int64 use_count = 3;
+
+  // The last use date of this Wallet card or address. Measured in microseconds
+  // since the Windows epoch (1601).
+  optional int64 use_date = 4;
+}
