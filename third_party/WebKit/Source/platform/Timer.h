@@ -61,6 +61,7 @@ public:
 
     double nextFireInterval() const;
     double nextUnalignedFireInterval() const;
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     double repeatInterval() const { return m_repeatInterval; }
 
     void augmentRepeatInterval(double delta) {

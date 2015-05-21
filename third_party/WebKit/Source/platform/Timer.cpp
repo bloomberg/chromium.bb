@@ -127,6 +127,7 @@ public:
     TimerBase* operator->() const { return *m_pointer; }
 
 private:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void checkConsistency(ptrdiff_t offset = 0) const
     {
         ASSERT(m_pointer >= threadGlobalTimerHeap().data());
@@ -237,6 +238,7 @@ double TimerBase::nextFireInterval() const
     return m_nextFireTime - current;
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline void TimerBase::checkHeapIndex() const
 {
     ASSERT(timerHeap() == threadGlobalTimerHeap());
@@ -263,6 +265,7 @@ void TimerBase::heapDecreaseKey()
     checkHeapIndex();
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline void TimerBase::heapDelete()
 {
     ASSERT(m_nextFireTime == 0);
@@ -271,6 +274,7 @@ inline void TimerBase::heapDelete()
     m_heapIndex = -1;
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void TimerBase::heapDeleteMin()
 {
     ASSERT(m_nextFireTime == 0);
@@ -305,6 +309,7 @@ inline void TimerBase::heapPop()
     m_nextFireTime = fireTime;
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void TimerBase::heapPopMin()
 {
     ASSERT(this == timerHeap().first());
@@ -368,6 +373,7 @@ void TimerBase::updateHeapIfNeeded(double oldTime)
     ASSERT(!inHeap() || hasValidHeapPosition());
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void TimerBase::setNextFireTime(double newUnalignedTime)
 {
     ASSERT(m_thread == currentThread());
