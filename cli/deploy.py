@@ -937,14 +937,17 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
   else:
     hostname, username, port = None, None, None
 
-  do_flash = False
   lsb_release = None
   sysroot = None
   try:
-    with remote_access.ChromiumOSDeviceHandler(
-        hostname, port=port, username=username, private_key=ssh_private_key,
-        base_dir=_DEVICE_BASE_DIR, ping=ping) as device_handler:
-      lsb_release = device_handler.lsb_release
+    with cros_build_lib.ContextManagerStack() as stack:
+      # Get a handle to our device pre-flashing.
+      device_handler = stack.Add(
+          remote_access.ChromiumOSDeviceHandler, hostname, port=port,
+          username=username, private_key=ssh_private_key,
+          base_dir=_DEVICE_BASE_DIR, ping=ping)
+      device = device_handler.device
+      lsb_release = device.lsb_release
 
       # We don't check for compatibility correctly in the brick/blueprint case
       # as we don't have enough information to determine whether it is safe or
@@ -962,40 +965,45 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
         packages = packages or brick.MainPackages()
 
       else:
-        board = cros_build_lib.GetBoard(device_board=device_handler.board,
+        board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=board)
-        if not force and board != device_handler.board:
+        if not force and board != device.board:
           raise DeployError('Device (%s) is incompatible with board %s. Use '
                             '--force to deploy anyway.' % (device, board))
 
         sysroot = cros_build_lib.GetSysroot(board=board)
 
       # Check that the target is compatible with the SDK (if any).
+      do_flash = False
       if reflash or not force:
         try:
-          _CheckDeviceVersion(device_handler)
+          _CheckDeviceVersion(device)
         except DeployError as e:
           if not reflash:
             raise
           logging.warning('%s, reflashing' % e)
           do_flash = True
 
-    # Reflash the device with a current Project SDK image.
-    # TODO(garnold) We may want to clobber stateful or wipe temp, or at least
-    # expose them as options.
-    if do_flash:
-      flash.Flash(device, None, project_sdk_image=True, brick_name=brick_name,
-                  ping=ping, force=force)
-      logging.info('Done reflashing Project SDK image')
-
-    with remote_access.ChromiumOSDeviceHandler(
-        hostname, port=port, username=username, private_key=ssh_private_key,
-        base_dir=_DEVICE_BASE_DIR, ping=ping) as device_handler:
-      lsb_release = device_handler.lsb_release
-      # If the device was reflashed check the version again, just to be sure.
+      # Reflash the device with a current Project SDK image.
+      # TODO(garnold) We may want to clobber stateful or wipe temp, or at least
+      # expose them as options.
       if do_flash:
+        flash.Flash(device, None, project_sdk_image=True, brick_name=brick_name,
+                    ping=ping, force=force)
+        logging.info('Done reflashing Project SDK image')
+
+        # Now refresh the handler.
+        # TODO: If ContextManagerStack allows for explicit breakdown of objects
+        # early on, we should do that here with the previous device connection.
+        device_handler = stack.Add(
+            remote_access.ChromiumOSDeviceHandler, hostname, port=port,
+            username=username, private_key=ssh_private_key,
+            base_dir=_DEVICE_BASE_DIR, ping=ping)
+        device = device_handler.device
+        lsb_release = device.lsb_release
+        # Check the version again, just to be sure.
         try:
-          _CheckDeviceVersion(device_handler)
+          _CheckDeviceVersion(device)
         except DeployError as e:
           raise DeployError('%s, reflashing failed' % e)
 
@@ -1006,15 +1014,15 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
         logging.notice('Cleaning outdated binary packages from %s', sysroot)
         portage_util.CleanOutdatedBinaryPackages(sysroot)
 
-      if not device_handler.IsDirWritable(root):
+      if not device.IsDirWritable(root):
         # Only remounts rootfs if the given root is not writable.
-        if not device_handler.MountRootfsReadWrite():
+        if not device.MountRootfsReadWrite():
           raise DeployError('Cannot remount rootfs as read-write. Exiting.')
 
       # Obtain list of packages to upgrade/remove.
       pkg_scanner = _InstallPackageScanner(sysroot)
       pkgs, listed, num_updates = pkg_scanner.Run(
-          device_handler, root, packages, update, deep, deep_rev)
+          device, root, packages, update, deep, deep_rev)
       if emerge:
         action_str = 'emerge'
       else:
@@ -1034,10 +1042,10 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
 
       # Select function (emerge or unmerge) and bind args.
       if emerge:
-        func = functools.partial(_EmergePackages, pkgs, device_handler, strip,
+        func = functools.partial(_EmergePackages, pkgs, device, strip,
                                  sysroot, root, emerge_args)
       else:
-        func = functools.partial(_UnmergePackages, pkgs, device_handler, root)
+        func = functools.partial(_UnmergePackages, pkgs, device, root)
 
       # Call the function with the progress bar or with normal output.
       if command.UseProgressBar():

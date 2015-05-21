@@ -53,6 +53,7 @@ class ChromiumOSDeviceHandlerFake(object):
 
   def __init__(self, *_args, **_kwargs):
     self._agent = self.RemoteAccessFake()
+    self.device = ChromiumOSDeviceFake()
 
   # TODO(dpursell): Mock remote access object in cros_test_lib (brbug.com/986).
   def GetAgent(self):

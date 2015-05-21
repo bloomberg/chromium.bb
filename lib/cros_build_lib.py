@@ -1194,9 +1194,10 @@ def AllowDisabling(enabled, functor, *args, **kwargs):
 class ContextManagerStack(object):
   """Context manager that is designed to safely allow nesting and stacking.
 
-  Python2.7 directly supports a with syntax removing the need for this,
-  although this form avoids indentation hell if there is a lot of context
-  managers.
+  Python2.7 directly supports a with syntax generally removing the need for
+  this, although this form avoids indentation hell if there is a lot of context
+  managers.  It also permits more programmatic control and allowing conditional
+  usage.
 
   For Python2.6, see http://docs.python.org/library/contextlib.html; the short
   version is that there is a race in the available stdlib/language rules under
@@ -1228,6 +1229,8 @@ class ContextManagerStack(object):
 
     Returns:
       The newly created (and __enter__'d) context manager.
+      Note: This is not the same value as the "with" statement -- that returns
+      the value from the __enter__ function while this is the manager itself.
     """
     obj = None
     try:
