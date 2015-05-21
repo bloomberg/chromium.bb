@@ -777,7 +777,7 @@ class RemoteDevice(object):
     Args:
       path: The full path to the file on the device to read.
       max_size: Read the file only if its size is less than |max_size| in bytes.
-        The default is 1,000,000(~1MB).
+        If None, do not check its size and always cat the path.
 
     Returns:
       A string of the file content.
@@ -786,12 +786,14 @@ class RemoteDevice(object):
       CatFileError if failed to read the remote file or the file size is larger
       than |max_size|.
     """
-    try:
-      file_size = self.GetSize(path)
-    except (ValueError, cros_build_lib.RunCommandError) as e:
-      raise CatFileError('Failed to get size of file "%s": %s' % (path, e))
-    if file_size > max_size:
-      raise CatFileError('File "%s" is larger than %d bytes' % (path, max_size))
+    if max_size is not None:
+      try:
+        file_size = self.GetSize(path)
+      except (ValueError, cros_build_lib.RunCommandError) as e:
+        raise CatFileError('Failed to get size of file "%s": %s' % (path, e))
+      if file_size > max_size:
+        raise CatFileError('File "%s" is larger than %d bytes' %
+                           (path, max_size))
 
     result = self.BaseRunCommand(['cat', path], remote_sudo=True,
                                  error_code_ok=True, capture_output=True)
@@ -970,7 +972,7 @@ class ChromiumOSDevice(RemoteDevice):
     """
     if not self._lsb_release:
       try:
-        content = self.CatFile(LSB_RELEASE_PATH)
+        content = self.CatFile(LSB_RELEASE_PATH, max_size=None)
       except CatFileError as e:
         logging.debug(
             'Failed to read "%s" on the device: %s', LSB_RELEASE_PATH, e)
@@ -981,6 +983,7 @@ class ChromiumOSDevice(RemoteDevice):
         except ValueError:
           logging.error('File "%s" on the device is mal-formatted.',
                         LSB_RELEASE_PATH)
+
     return self._lsb_release
 
   @property
