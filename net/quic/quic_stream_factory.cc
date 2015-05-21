@@ -499,10 +499,10 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
   DCHECK(factory_);
-  bool server_and_origin_have_same_host = host_port_pair.host() == origin_host;
-  int rv =
-      factory_->Create(host_port_pair, is_https, privacy_mode,
-                       server_and_origin_have_same_host, method, net_log, this);
+  origin_host_ = origin_host.as_string();
+  privacy_mode_ = privacy_mode;
+  int rv = factory_->Create(host_port_pair, is_https, privacy_mode, origin_host,
+                            method, net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_pair_ = host_port_pair;
     net_log_ = net_log;
@@ -625,13 +625,17 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
                               bool is_https,
                               PrivacyMode privacy_mode,
-                              bool server_and_origin_have_same_host,
+                              base::StringPiece origin_host,
                               base::StringPiece method,
                               const BoundNetLog& net_log,
                               QuicStreamRequest* request) {
   QuicServerId server_id(host_port_pair, is_https, privacy_mode);
-  if (HasActiveSession(server_id)) {
-    request->set_stream(CreateIfSessionExists(server_id, net_log));
+  SessionMap::iterator it = active_sessions_.find(server_id);
+  if (it != active_sessions_.end()) {
+    QuicClientSession* session = it->second;
+    if (!session->CanPool(origin_host.as_string(), privacy_mode))
+      return ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN;
+    request->set_stream(CreateFromSession(session));
     return OK;
   }
 
@@ -666,6 +670,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     }
   }
 
+  bool server_and_origin_have_same_host = host_port_pair.host() == origin_host;
   scoped_ptr<Job> job(new Job(
       this, host_resolver_, host_port_pair, server_and_origin_have_same_host,
       is_https, WasQuicRecentlyBroken(server_id), privacy_mode,
@@ -679,8 +684,12 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     return rv;
   }
   if (rv == OK) {
-    DCHECK(HasActiveSession(server_id));
-    request->set_stream(CreateIfSessionExists(server_id, net_log));
+    it = active_sessions_.find(server_id);
+    DCHECK(it != active_sessions_.end());
+    QuicClientSession* session = it->second;
+    if (!session->CanPool(origin_host.as_string(), privacy_mode))
+      return ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN;
+    request->set_stream(CreateFromSession(session));
   }
   return rv;
 }
@@ -742,9 +751,25 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
       set_require_confirmation(false);
 
     // Create all the streams, but do not notify them yet.
-    for (QuicStreamRequest* request : job_requests_map_[server_id]) {
-      DCHECK(HasActiveSession(server_id));
-      request->set_stream(CreateIfSessionExists(server_id, request->net_log()));
+    SessionMap::iterator session_it = active_sessions_.find(server_id);
+    for (RequestSet::iterator request_it = job_requests_map_[server_id].begin();
+         request_it != job_requests_map_[server_id].end();) {
+      DCHECK(session_it != active_sessions_.end());
+      QuicClientSession* session = session_it->second;
+      QuicStreamRequest* request = *request_it;
+      if (!session->CanPool(request->origin_host(), request->privacy_mode())) {
+        RequestSet::iterator old_request_it = request_it;
+        ++request_it;
+        // Remove request from containers so that OnRequestComplete() is not
+        // called later again on the same request.
+        job_requests_map_[server_id].erase(old_request_it);
+        active_requests_.erase(request);
+        // Notify request of certificate error.
+        request->OnRequestComplete(ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN);
+        continue;
+      }
+      request->set_stream(CreateFromSession(session));
+      ++request_it;
     }
   }
 
@@ -769,20 +794,9 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   job_requests_map_.erase(server_id);
 }
 
-// Returns a newly created QuicHttpStream owned by the caller, if a
-// matching session already exists.  Returns nullptr otherwise.
-scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
-    const QuicServerId& server_id,
-    const BoundNetLog& net_log) {
-  if (!HasActiveSession(server_id)) {
-    DVLOG(1) << "No active session";
-    return scoped_ptr<QuicHttpStream>();
-  }
-
-  QuicClientSession* session = active_sessions_[server_id];
-  DCHECK(session);
-  return scoped_ptr<QuicHttpStream>(
-      new QuicHttpStream(session->GetWeakPtr()));
+scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
+    QuicClientSession* session) {
+  return scoped_ptr<QuicHttpStream>(new QuicHttpStream(session->GetWeakPtr()));
 }
 
 bool QuicStreamFactory::IsQuicDisabled(uint16 port) {

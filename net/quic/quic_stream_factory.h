@@ -69,6 +69,10 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
   void set_stream(scoped_ptr<QuicHttpStream> stream);
 
+  const std::string origin_host() const { return origin_host_; }
+
+  PrivacyMode privacy_mode() const { return privacy_mode_; }
+
   const BoundNetLog& net_log() const{
     return net_log_;
   }
@@ -76,6 +80,8 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
  private:
   QuicStreamFactory* factory_;
   HostPortPair host_port_pair_;
+  std::string origin_host_;
+  PrivacyMode privacy_mode_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
   scoped_ptr<QuicHttpStream> stream_;
@@ -123,7 +129,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int Create(const HostPortPair& host_port_pair,
              bool is_https,
              PrivacyMode privacy_mode,
-             bool server_and_origin_have_same_host,
+             base::StringPiece origin_host,
              base::StringPiece method,
              const BoundNetLog& net_log,
              QuicStreamRequest* request);
@@ -237,10 +243,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                          bool is_post,
                          const BoundNetLog& net_log);
 
-  // Returns a newly created QuicHttpStream owned by the caller, if a
-  // matching session already exists.  Returns NULL otherwise.
-  scoped_ptr<QuicHttpStream> CreateIfSessionExists(const QuicServerId& key,
-                                                   const BoundNetLog& net_log);
+  // Returns a newly created QuicHttpStream owned by the caller.
+  scoped_ptr<QuicHttpStream> CreateFromSession(QuicClientSession*);
 
   bool OnResolution(const QuicServerId& server_id,
                     const AddressList& address_list);

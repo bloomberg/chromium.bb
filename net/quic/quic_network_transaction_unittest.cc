@@ -779,6 +779,88 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
   SendRequestAndExpectHttpResponse("hello world");
 }
 
+class QuicAltSvcCertificateVerificationTest
+    : public QuicNetworkTransactionTest {
+ public:
+  void Run(bool valid) {
+    HostPortPair origin(valid ? "mail.example.org" : "invalid.example.org",
+                        443);
+    HostPortPair alternative("www.example.org", 443);
+    std::string url("https://");
+    url.append(origin.host());
+    url.append(":443");
+    request_.url = GURL(url);
+
+    maker_.set_hostname(origin.host());
+    MockQuicData mock_quic_data;
+    mock_quic_data.AddWrite(
+        ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                      GetRequestHeaders("GET", "https", "/")));
+    mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+        1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+    mock_quic_data.AddRead(
+        ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+    mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+    mock_quic_data.AddRead(SYNCHRONOUS, 0);
+    mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+    scoped_refptr<X509Certificate> cert(
+        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+    ASSERT_TRUE(cert.get());
+    bool common_name_fallback_used;
+    EXPECT_EQ(valid,
+              cert->VerifyNameMatch(origin.host(), &common_name_fallback_used));
+    EXPECT_TRUE(
+        cert->VerifyNameMatch(alternative.host(), &common_name_fallback_used));
+    ProofVerifyDetailsChromium verify_details;
+    verify_details.cert_verify_result.verified_cert = cert;
+    verify_details.cert_verify_result.is_issued_by_known_root = true;
+    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+    crypto_client_stream_factory_.set_handshake_mode(
+        MockCryptoClientStream::CONFIRM_HANDSHAKE);
+
+    // Connection to |origin| fails, so that success of |request| depends on
+    // connection to |alternate| only.
+    MockConnect refused_connect(ASYNC, ERR_CONNECTION_REFUSED);
+    StaticSocketDataProvider refused_data;
+    refused_data.set_connect_data(refused_connect);
+    socket_factory_.AddSocketDataProvider(&refused_data);
+
+    CreateSessionWithNextProtos();
+    AlternativeService alternative_service(QUIC, alternative);
+    session_->http_server_properties()->SetAlternativeService(
+        origin, alternative_service, 1.0);
+    scoped_ptr<HttpNetworkTransaction> trans(
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+    TestCompletionCallback callback;
+    int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+    rv = callback.WaitForResult();
+    if (valid) {
+      EXPECT_EQ(OK, rv);
+      CheckWasQuicResponse(trans);
+      CheckResponsePort(trans, 443);
+      CheckResponseData(trans, "hello!");
+    } else {
+      EXPECT_EQ(ERR_CONNECTION_REFUSED, rv);
+    }
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Version,
+                        QuicAltSvcCertificateVerificationTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(QuicAltSvcCertificateVerificationTest,
+       RequestSucceedsWithValidCertificate) {
+  Run(true);
+}
+
+TEST_P(QuicAltSvcCertificateVerificationTest,
+       RequestFailsWithInvalidCertificate) {
+  Run(false);
+}
+
 TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);

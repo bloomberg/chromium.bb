@@ -555,7 +555,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
     default:
       DCHECK(result != ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN ||
-             IsSpdyAlternate());
+             IsAlternate());
       if (job_status_ != STATUS_BROKEN) {
         DCHECK_EQ(STATUS_RUNNING, job_status_);
         job_status_ = STATUS_FAILED;

@@ -193,11 +193,6 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
   }
 
   DCHECK_EQ(QUIC, alternative_service.protocol);
-  // TODO(bnc):  Make sure that certificate requirements are enforced when using
-  // QUIC, then remove the following two lines.
-  if (alternative_service.host != origin.host())
-    return kNoAlternativeService;
-
   if (!session_->params().enable_quic)
     return kNoAlternativeService;
 

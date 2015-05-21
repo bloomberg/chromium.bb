@@ -239,7 +239,6 @@ class NET_EXPORT HttpServerProperties {
       const HostPortPair& origin) = 0;
 
   // Sets the alternative service for |origin|.
-  // TODO(bnc): alternative_service.host is currently ignored, fix it.
   virtual void SetAlternativeService(
       const HostPortPair& origin,
       const AlternativeService& alternative_service,

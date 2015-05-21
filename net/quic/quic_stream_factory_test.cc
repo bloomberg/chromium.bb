@@ -96,13 +96,10 @@ class QuicStreamFactoryPeer {
     return factory->active_sessions_[server_id];
   }
 
-  static scoped_ptr<QuicHttpStream> CreateIfSessionExists(
+  static scoped_ptr<QuicHttpStream> CreateFromSession(
       QuicStreamFactory* factory,
-      const HostPortPair& host_port_pair,
-      bool is_https,
-      const BoundNetLog& net_log) {
-    QuicServerId server_id(host_port_pair, is_https, PRIVACY_MODE_DISABLED);
-    return factory->CreateIfSessionExists(server_id, net_log);
+      QuicClientSession* session) {
+    return factory->CreateFromSession(session);
   }
 
   static bool IsLiveSession(QuicStreamFactory* factory,
@@ -234,11 +231,16 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         &factory_, GetParam().enable_connection_racing);
   }
 
-  scoped_ptr<QuicHttpStream> CreateIfSessionExists(
-      const HostPortPair& host_port_pair,
-      const BoundNetLog& net_log) {
-    return QuicStreamFactoryPeer::CreateIfSessionExists(
-        &factory_, host_port_pair, false, net_log_);
+  bool HasActiveSession(const HostPortPair& host_port_pair) {
+    return QuicStreamFactoryPeer::HasActiveSession(&factory_, host_port_pair,
+                                                   /*is_https_=*/false);
+  }
+
+  scoped_ptr<QuicHttpStream> CreateFromSession(
+      const HostPortPair& host_port_pair) {
+    QuicClientSession* session = QuicStreamFactoryPeer::GetActiveSession(
+        &factory_, host_port_pair, /*is_https=*/false);
+    return QuicStreamFactoryPeer::CreateFromSession(&factory_, session);
   }
 
   int GetSourcePortForNewSession(const HostPortPair& destination) {
@@ -253,7 +255,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   int GetSourcePortForNewSessionInner(const HostPortPair& destination,
                                       bool goaway_received) {
     // Should only be called if there is no active session for this destination.
-    EXPECT_EQ(nullptr, CreateIfSessionExists(destination, net_log_).get());
+    EXPECT_FALSE(HasActiveSession(destination));
     size_t socket_count = socket_factory_.udp_client_sockets().size();
 
     MockRead reads[] = {
@@ -292,7 +294,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     }
 
     factory_.OnSessionClosed(session);
-    EXPECT_EQ(nullptr, CreateIfSessionExists(destination, net_log_).get());
+    EXPECT_FALSE(HasActiveSession(destination));
     EXPECT_TRUE(socket_data.AllReadDataConsumed());
     EXPECT_TRUE(socket_data.AllWriteDataConsumed());
     return port;
@@ -340,10 +342,6 @@ INSTANTIATE_TEST_CASE_P(Version,
                         QuicStreamFactoryTest,
                         ::testing::ValuesIn(GetTestParams()));
 
-TEST_P(QuicStreamFactoryTest, CreateIfSessionExists) {
-  EXPECT_EQ(nullptr, CreateIfSessionExists(host_port_pair_, net_log_).get());
-}
-
 TEST_P(QuicStreamFactoryTest, Create) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
@@ -363,7 +361,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
   EXPECT_TRUE(stream.get());
 
   // Will reset stream 3.
-  stream = CreateIfSessionExists(host_port_pair_, net_log_);
+  stream = CreateFromSession(host_port_pair_);
   EXPECT_TRUE(stream.get());
 
   // TODO(rtenneti): We should probably have a tests that HTTP and HTTPS result
@@ -747,52 +745,77 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
-  MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
-  };
-  DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
-  DeterministicSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data1);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
-  socket_data1.StopAfter(1);
-  socket_data2.StopAfter(1);
+class QuicAlternativeServiceCertificateValidationPooling
+    : public QuicStreamFactoryTest {
+ public:
+  void Run(bool valid) {
+    MockRead reads[] = {
+        MockRead(ASYNC, OK, 0)  // EOF
+    };
+    DeterministicSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
+    socket_factory_.AddSocketDataProvider(&socket_data1);
+    socket_data1.StopAfter(1);
 
-  HostPortPair server1("www.example.org", 443);
-  HostPortPair server2("mail.google.com", 443);
+    HostPortPair server1("www.example.org", 443);
+    HostPortPair server2("mail.example.org", 443);
 
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+    std::string origin_host(valid ? "mail.example.org" : "invalid.example.org");
+    HostPortPair alternative("www.example.org", 443);
 
-  host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
+    ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+    bool common_name_fallback_used;
+    EXPECT_EQ(valid,
+              verify_details.cert_verify_result.verified_cert->VerifyNameMatch(
+                  origin_host, &common_name_fallback_used));
+    EXPECT_TRUE(
+        verify_details.cert_verify_result.verified_cert->VerifyNameMatch(
+            alternative.host(), &common_name_fallback_used));
+    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  QuicStreamRequest request(&factory_);
-  is_https_ = true;
-  EXPECT_EQ(OK,
-            request.Request(server1, is_https_, privacy_mode_, server1.host(),
-                            "GET", net_log_, callback_.callback()));
-  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
-  EXPECT_TRUE(stream.get());
+    host_resolver_.set_synchronous_mode(true);
+    host_resolver_.rules()->AddIPLiteralRule(alternative.host(), "192.168.0.1",
+                                             "");
 
-  TestCompletionCallback callback;
-  QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(OK,
-            request2.Request(server2, is_https_, privacy_mode_, server2.host(),
-                             "GET", net_log_, callback_.callback()));
-  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
-  EXPECT_TRUE(stream2.get());
+    // Open first stream to alternative.
+    QuicStreamRequest request1(&factory_);
+    is_https_ = true;
+    EXPECT_EQ(OK, request1.Request(alternative, is_https_, privacy_mode_,
+                                   alternative.host(), "GET", net_log_,
+                                   callback_.callback()));
+    scoped_ptr<QuicHttpStream> stream1 = request1.ReleaseStream();
+    EXPECT_TRUE(stream1.get());
 
-  EXPECT_NE(QuicStreamFactoryPeer::GetActiveSession(
-                &factory_, server1, is_https_),
-            QuicStreamFactoryPeer::GetActiveSession(
-                &factory_, server2, is_https_));
+    QuicStreamRequest request2(&factory_);
+    int rv =
+        request2.Request(alternative, is_https_, privacy_mode_, origin_host,
+                         "GET", net_log_, callback_.callback());
+    if (valid) {
+      // Alternative service of origin to |alternative| should pool to session
+      // of |stream1| even if origin is different.  Since only one
+      // SocketDataProvider is set up, the second request succeeding means that
+      // it pooled to the session opened by the first one.
+      EXPECT_EQ(OK, rv);
+      scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+      EXPECT_TRUE(stream2.get());
+    } else {
+      EXPECT_EQ(ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN, rv);
+    }
 
-  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
-  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+    EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+    EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Version,
+                        QuicAlternativeServiceCertificateValidationPooling,
+                        ::testing::ValuesIn(GetTestParams()));
+
+TEST_P(QuicAlternativeServiceCertificateValidationPooling, Valid) {
+  Run(true);
+}
+
+TEST_P(QuicAlternativeServiceCertificateValidationPooling, Invalid) {
+  Run(false);
 }
 
 TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
@@ -990,7 +1013,7 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   EXPECT_EQ(true, QuicStreamFactoryPeer::IsLiveSession(&factory_, session));
   EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(
       &factory_, host_port_pair_, is_https_));
-  EXPECT_EQ(nullptr, CreateIfSessionExists(host_port_pair_, net_log_).get());
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   // Create a new request for the same destination and verify that a
   // new session is created.
@@ -1133,8 +1156,7 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 
-  scoped_ptr<QuicHttpStream> stream(
-      CreateIfSessionExists(host_port_pair_, net_log_));
+  scoped_ptr<QuicHttpStream> stream(CreateFromSession(host_port_pair_));
   EXPECT_TRUE(stream.get());
   stream.reset();
 
@@ -1610,7 +1632,7 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
       QuicStreamFactoryPeer::IsQuicDisabled(&factory_, host_port_pair_.port()));
   EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(
       &factory_, host_port_pair_, is_https_));
-  EXPECT_EQ(nullptr, CreateIfSessionExists(host_port_pair_, net_log_).get());
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   // Test N-in-a-row high packet loss connections.
 
@@ -1646,7 +1668,7 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
       QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server2.port()));
   EXPECT_FALSE(
       QuicStreamFactoryPeer::HasActiveSession(&factory_, server2, is_https_));
-  EXPECT_EQ(nullptr, CreateIfSessionExists(server2, net_log_).get());
+  EXPECT_FALSE(HasActiveSession(server2));
 
   DVLOG(1) << "Create 3rd session which also has packet loss";
 
@@ -1668,7 +1690,7 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server3.port()));
   EXPECT_FALSE(
       QuicStreamFactoryPeer::HasActiveSession(&factory_, server3, is_https_));
-  EXPECT_EQ(nullptr, CreateIfSessionExists(server3, net_log_).get());
+  EXPECT_FALSE(HasActiveSession(server3));
 
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
   EXPECT_TRUE(stream.get());
