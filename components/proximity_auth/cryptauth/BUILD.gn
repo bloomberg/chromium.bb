@@ -21,6 +21,10 @@ source_set("cryptauth") {
     "cryptauth_enrollment_utils.h",
     "secure_message_delegate.cc",
     "secure_message_delegate.h",
+    "sync_scheduler.cc",
+    "sync_scheduler.h",
+    "sync_scheduler_impl.cc",
+    "sync_scheduler_impl.h",
   ]
 
   deps = [
@@ -65,6 +69,7 @@ source_set("unit_tests") {
     "cryptauth_client_impl_unittest.cc",
     "cryptauth_enroller_impl_unittest.cc",
     "fake_secure_message_delegate_unittest.cc",
+    "sync_scheduler_impl_unittest.cc",
   ]
 
   deps = [
