@@ -26,7 +26,6 @@
       'HAVE_SRTP',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
-      'LIBPEERCONNECTION_LIB=1',
       'LOGGING_INSIDE_WEBRTC',
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
@@ -325,9 +324,6 @@
           # GN version: //third_party/libjingle:libjingle_webrtc_common
           'target_name': 'libjingle_webrtc_common',
           'type': 'static_library',
-          'all_dependent_settings': {
-            'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
-          },
           'sources': [
             '<(libjingle_source)/talk/app/webrtc/audiotrack.cc',
             '<(libjingle_source)/talk/app/webrtc/audiotrack.h',
