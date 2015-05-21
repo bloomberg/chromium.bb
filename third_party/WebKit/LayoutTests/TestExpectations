@@ -1917,7 +1917,6 @@ crbug.com/353272 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout C
 crbug.com/353272 virtual/slimmingpaint/svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 
 crbug.com/451606 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
-crbug.com/451606 virtual/slimmingpaint/svg/custom/marker-zero-length-linecaps.svg [ Failure ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/dom/filter-reference-in-shadow-tree.html [ Failure ImageOnlyFailure ]
 crbug.com/451606 virtual/slimmingpaint/svg/repaint/inner-svg-change-viewBox.svg [ Failure Crash ]
 
