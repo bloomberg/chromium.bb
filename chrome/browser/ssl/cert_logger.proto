@@ -25,6 +25,7 @@ message CertLoggerInterstitialInfo {
   // The different reasons that an SSL warning interstitial could be shown to
   // a user.
   enum InterstitialReason {
+    UNKNOWN_INTERSTITIAL_REASON = 0;
     // A standard SSL interstitial
     INTERSTITIAL_SSL = 1;
     // An interstitial alerting the user that they are in a captive portal
@@ -59,6 +60,7 @@ message CertLoggerRequest {
   repeated string pin = 5;
 
   enum CertError {
+    UNKNOWN_CERT_ERROR = 0;
     ERR_CERT_REVOKED = 1;
     ERR_CERT_INVALID = 2;
     ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN = 3;
