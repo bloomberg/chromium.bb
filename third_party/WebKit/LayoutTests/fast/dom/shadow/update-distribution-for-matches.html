@@ -1,0 +1,20 @@
+<!doctype html>
+<script>
+var proto = Object.create(HTMLElement.prototype);
+proto.createdCallback = function() {
+  var root = this.createShadowRoot();
+  document.querySelector('li').matches('::content *');
+};
+var MyList = document.registerElement("my-list", { prototype: proto });
+</script>
+<my-list>
+  <li></li>
+</my-list>
+<div>crbug.com/489911 blink crashy with shadow DOM</div>
+<div>If this test passes, no crash occurs and "PASS" is shown.</div>
+<div id="result"></div>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+result.textContent = "PASS";
+</script>
