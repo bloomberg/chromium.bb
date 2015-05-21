@@ -36,7 +36,7 @@ cvox.Search.webSelectors = {
   SPELL_SUGG_SELECT: '.ssp',
   SPELL_CORRECTION_SELECT: '.sp_cnt',
   KNOW_PANEL_SELECT: '.knop',
-  RESULT_SELECT: 'li.g',
+  RESULT_SELECT: '.g',
   RELATED_SELECT: '#brs'
 };
 
@@ -412,7 +412,7 @@ cvox.Search.init = function() {
   cvox.ChromeVox.tts.stop();
 
   /* Determine the type of search. */
-  var SELECTED_CLASS = 'hdtb_msel';
+  var SELECTED_CLASS = 'hdtb-msel';
   var selected = document.getElementsByClassName(SELECTED_CLASS)[0];
   if (!selected) {
     return;
