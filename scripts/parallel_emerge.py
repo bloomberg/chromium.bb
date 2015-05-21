@@ -222,7 +222,7 @@ class DepGraphGenerator(object):
   """
 
   __slots__ = ["board", "emerge", "package_db", "show_output", "sysroot",
-               "unpack_only"]
+               "unpack_only", "max_retries"]
 
   def __init__(self):
     self.board = None
@@ -231,6 +231,7 @@ class DepGraphGenerator(object):
     self.show_output = False
     self.sysroot = None
     self.unpack_only = False
+    self.max_retries = 1
 
   def ParseParallelEmergeArgs(self, argv):
     """Read the parallel emerge arguments from the command-line.
@@ -260,6 +261,8 @@ class DepGraphGenerator(object):
       elif arg.startswith("--force-remote-binary="):
         force_remote_binary = arg.replace("--force-remote-binary=", "")
         emerge_args.append("--useoldpkg-atoms=%s" % force_remote_binary)
+      elif arg.startswith("--retries="):
+        self.max_retries = int(arg.replace("--retries=", ""))
       elif arg == "--show-output":
         self.show_output = True
       elif arg == "--rebuild":
@@ -1285,7 +1288,8 @@ class ScoredHeap(object):
 class EmergeQueue(object):
   """Class to schedule emerge jobs according to a dependency graph."""
 
-  def __init__(self, deps_map, emerge, package_db, show_output, unpack_only):
+  def __init__(self, deps_map, emerge, package_db, show_output, unpack_only,
+               max_retries):
     # Store the dependency graph.
     self._deps_map = deps_map
     self._state_map = {}
@@ -1301,6 +1305,7 @@ class EmergeQueue(object):
     self._total_jobs = len(install_jobs)
     self._show_output = show_output
     self._unpack_only = unpack_only
+    self._max_retries = max_retries
 
     if "--pretend" in emerge.opts:
       print("Skipping merge because of --pretend mode.")
@@ -1350,7 +1355,7 @@ class EmergeQueue(object):
 
     # Initialize the failed queue to empty.
     self._retry_queue = []
-    self._failed = set()
+    self._failed_count = dict()
 
     # Setup an exit handler so that we print nice messages if we are
     # terminated.
@@ -1500,7 +1505,7 @@ class EmergeQueue(object):
       if unpack_only:
         self._ScheduleUnpack(state)
       else:
-        if state.target not in self._failed:
+        if state.target not in self._failed_count:
           self._Schedule(state)
 
   def _Print(self, line):
@@ -1649,7 +1654,6 @@ class EmergeQueue(object):
     # Print an update, then get going.
     self._Status()
 
-    retried = set()
     while self._deps_map:
       # Check here that we are actually waiting for something.
       if (self._build_queue.empty() and
@@ -1666,12 +1670,13 @@ class EmergeQueue(object):
           self._Retry()
         else:
           # Tell the user why we're exiting.
-          if self._failed:
-            print('Packages failed:\n\t%s' % '\n\t'.join(self._failed))
+          if self._failed_count:
+            print('Packages failed:\n\t%s' %
+                  '\n\t'.join(self._failed_count.iterkeys()))
             status_file = os.environ.get("PARALLEL_EMERGE_STATUS_FILE")
             if status_file:
               failed_pkgs = set(portage.versions.cpv_getkey(x)
-                                for x in self._failed)
+                                for x in self._failed_count.iterkeys())
               with open(status_file, "a") as f:
                 f.write("%s\n" % " ".join(failed_pkgs))
           else:
@@ -1757,31 +1762,26 @@ class EmergeQueue(object):
 
       seconds = time.time() - job.start_timestamp
       details = "%s (in %dm%.1fs)" % (target, seconds / 60, seconds % 60)
-      previously_failed = target in self._failed
 
       # Complain if necessary.
       if job.retcode != 0:
         # Handle job failure.
-        if previously_failed:
-          # If this job has failed previously, give up.
+        failed_count = self._failed_count.get(target, 0)
+        if failed_count >= self._max_retries:
+          # If this job has failed and can't be retried, give up.
           self._Print("Failed %s. Your build has failed." % details)
         else:
           # Queue up this build to try again after a long while.
-          retried.add(target)
           self._retry_queue.append(self._state_map[target])
-          self._failed.add(target)
+          self._failed_count[target] = failed_count + 1
           self._Print("Failed %s, retrying later." % details)
       else:
-        if previously_failed:
-          # Remove target from list of failed packages.
-          self._failed.remove(target)
-
         self._Print("Completed %s" % details)
 
         # Mark as completed and unblock waiting ebuilds.
         self._Finish(target)
 
-        if previously_failed and self._retry_queue:
+        if target in self._failed_count and self._retry_queue:
           # If we have successfully retried a failed package, and there
           # are more failed packages, try the next one. We will only have
           # one retrying package actively running at a time.
@@ -1793,12 +1793,12 @@ class EmergeQueue(object):
       self._Status()
 
     # If packages were retried, output a warning.
-    if retried:
+    if self._failed_count:
       self._Print("")
-      self._Print("WARNING: The following packages failed the first time,")
+      self._Print("WARNING: The following packages failed once or more,")
       self._Print("but succeeded upon retry. This might indicate incorrect")
       self._Print("dependencies.")
-      for pkg in retried:
+      for pkg in self._failed_count.iterkeys():
         self._Print("  %s" % pkg)
       self._Print("@@@STEP_WARNINGS@@@")
       self._Print("")
@@ -1910,7 +1910,7 @@ def real_main(argv):
 
   # Run the queued emerges.
   scheduler = EmergeQueue(deps_graph, emerge, deps.package_db, deps.show_output,
-                          deps.unpack_only)
+                          deps.unpack_only, deps.max_retries)
   try:
     scheduler.Run()
   finally:
