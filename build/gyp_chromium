@@ -227,19 +227,12 @@ if __name__ == '__main__':
                                                'python2*_bin')))[-1]
     env = os.environ.copy()
     env['PATH'] = python_dir + os.pathsep + env.get('PATH', '')
-    p = subprocess.Popen(
-       [os.path.join(python_dir, 'python.exe')] + sys.argv,
-       env=env, shell=False)
-    p.communicate()
-    sys.exit(p.returncode)
+    cmd = [os.path.join(python_dir, 'python.exe')] + sys.argv
+    sys.exit(subprocess.call(cmd, env=env))
 
   # This could give false positives since it doesn't actually do real option
   # parsing.  Oh well.
-  gyp_file_specified = False
-  for arg in args:
-    if arg.endswith('.gyp'):
-      gyp_file_specified = True
-      break
+  gyp_file_specified = any(arg.endswith('.gyp') for arg in args)
 
   gyp_environment.SetEnvironment()
 
