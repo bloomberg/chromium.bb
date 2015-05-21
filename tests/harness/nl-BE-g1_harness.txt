@@ -108,12 +108,10 @@
         },
         {
           "input": "pond £",
-          "ascii-output": "pond p",
           "output": "⠏⠕⠝⠙ ⠏"
         },
         {
           "input": "yen ¥",
-          "ascii-output": "yen y",
           "output": "⠽⠑⠝ ⠽"
         },
         {
@@ -390,19 +388,19 @@
           "output": "⠉⠁⠻⠕⠝"
         },
         {
-          "input": "α β γ"
+          "input": "α β γ",
           "output": "⠰⠁ ⠰⠃ ⠰⠛"
         },
         {
-          "input": "Α Β Γ"
+          "input": "Α Β Γ",
           "output": "⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛"
         },
         {
-          "input": "'s morgens, baby's, Alex' boeken, de jaren '90"
+          "input": "'s morgens, baby's, Alex' boeken, de jaren '90",
           "output": "⠄⠎ ⠍⠕⠗⠛⠑⠝⠎⠂ ⠃⠁⠃⠽⠄⠎⠂ ⠨⠁⠇⠑⠭⠄ ⠃⠕⠑⠅⠑⠝⠂ ⠙⠑ ⠚⠁⠗⠑⠝ ⠄⠼⠊⠚"
         },
         {
-          "input": "Een typist(e) moet heel precies werken."
+          "input": "Een typist(e) moet heel precies werken.",
           "output": "⠨⠑⠑⠝ ⠞⠽⠏⠊⠎⠞⠦⠑⠴⠀⠍⠕⠑⠞ ⠓⠑⠑⠇ ⠏⠗⠑⠉⠊⠑⠎ ⠺⠑⠗⠅⠑⠝⠲"
         },
         {
