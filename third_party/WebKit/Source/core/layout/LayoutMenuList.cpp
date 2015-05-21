@@ -69,12 +69,12 @@ LayoutMenuList::~LayoutMenuList()
     ASSERT(!m_popup);
 }
 
-void LayoutMenuList::destroy()
+void LayoutMenuList::willBeDestroyed()
 {
     if (m_popup)
         m_popup->disconnectClient();
     m_popup = nullptr;
-    LayoutFlexibleBox::destroy();
+    LayoutFlexibleBox::willBeDestroyed();
 }
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point

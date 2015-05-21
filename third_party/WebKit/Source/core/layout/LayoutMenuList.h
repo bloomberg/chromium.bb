@@ -39,7 +39,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox, private Popup
 public:
     explicit LayoutMenuList(Element*);
     virtual ~LayoutMenuList();
-    virtual void destroy() override;
 
     bool popupIsVisible() const { return m_popupIsVisible; }
     void showPopup();
@@ -55,6 +54,9 @@ public:
     virtual PopupMenuStyle itemStyle(unsigned listIndex) const override;
 
     virtual const char* name() const override { return "LayoutMenuList"; }
+
+protected:
+    virtual void willBeDestroyed() override;
 
 private:
     HTMLSelectElement* selectElement() const;
