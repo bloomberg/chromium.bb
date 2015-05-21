@@ -381,6 +381,7 @@ class ChromeProxyVideoValidation(page_test.PageTest):
   def CustomizeBrowserOptionsForSinglePage(self, page, options):
     if page.use_chrome_proxy:
       options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
+      options.AppendExtraBrowserArgs('--data-reduction-proxy-experiment=video')
 
   def DidNavigateToPage(self, page, tab):
     self._currMetrics = metrics.ChromeProxyVideoMetric(tab)
