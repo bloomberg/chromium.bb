@@ -11,6 +11,9 @@
       'type': 'none',
       'dependencies': [
         'chrome/ios_chrome_tests.gyp:*',
+        'crnet/crnet.gyp:*',
+        'crnet/crnet_pack.gyp:*',
+        'crnet/crnet_consumer/crnet_consumer.gyp:*',
         'net/ios_net.gyp:*',
         'net/ios_net_unittests.gyp:*',
         'provider/ios_provider_chrome.gyp:*',

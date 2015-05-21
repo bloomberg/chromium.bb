@@ -1,0 +1,9 @@
+This localization directory contains language strings taken from Chrome. These
+language strings are taken from Chrome's *.xtb files with the key
+IDS_ACCEPT_LANGUAGES.
+
+DO NOT translate strings with a IDS_ACCEPT_LANGUAGES key from these .strings
+files in the translation console.
+
+On top of Chrome's language list, the following languages were added:
+"pt" "ms" "zh"

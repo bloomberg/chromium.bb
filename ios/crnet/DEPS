@@ -1,0 +1,8 @@
+include_rules = [
+  "+components/webp_transcode",
+  "+crypto/nss_util.h",
+  "+ios/crnet",
+  "+ios/net",
+  "+ios/web/public/user_agent.h",
+  "+net"
+]
