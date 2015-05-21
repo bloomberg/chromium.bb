@@ -127,13 +127,13 @@ cr.define('options', function() {
      */
     mirroring_: false,
 
-    /*
+    /**
      * Whether the unified desktop is enable or not.
      * @private
      */
     unifiedDesktopEnabled_: false,
 
-    /*
+    /**
      * Whether the unified desktop option should be present.
      * @private
      */
@@ -965,7 +965,7 @@ cr.define('options', function() {
 
     /**
      * Called when the display arrangement has changed.
-     * @param {options.MultiDisplayMode} multi display mode.
+     * @param {options.MultiDisplayMode} mode multi display mode.
      * @param {Array<options.DisplayInfo>} displays The list of the display
      *     information.
      * @param {options.SecondaryDisplayLayout} layout The layout strategy.
