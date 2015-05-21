@@ -69,6 +69,7 @@ public class ProfileSyncService {
         }
 
         // Returns the result of GetAllNodes as a JSONArray.
+        @VisibleForTesting
         public JSONArray getNodesAsJsonArray() throws JSONException {
             return new JSONArray(mNodesString);
         }
@@ -624,6 +625,7 @@ public class ProfileSyncService {
      * Retrieves a JSON version of local Sync data via the native GetAllNodes method.
      * This method is asynchronous; the result will be sent to the callback.
      */
+    @VisibleForTesting
     public void getAllNodes(GetAllNodesCallback callback) {
         nativeGetAllNodes(mNativeProfileSyncServiceAndroid, callback);
     }
