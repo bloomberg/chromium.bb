@@ -120,7 +120,7 @@ def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     return "".join(display)
 
 class BrailleTest():
-    def __init__(self, harnessName, tables, input, output, typeform=None, outputUniBrl=False, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=[], xfail=False):
+    def __init__(self, harnessName, tables, input, output, typeform=None, outputUniBrl=False, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=[], xfail=False, **kwargs):
         self.harnessName = harnessName
         self.tables = tables
         if outputUniBrl:
