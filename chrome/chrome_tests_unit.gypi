@@ -209,19 +209,6 @@
       'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm',
-      'browser/resources/google_now/background.js',
-      'browser/resources/google_now/background_test_util.js',
-      'browser/resources/google_now/background_unittest.gtestjs',
-      'browser/resources/google_now/cards.js',
-      'browser/resources/google_now/cards_unittest.gtestjs',
-      'browser/resources/google_now/common_test_util.js',
-      'browser/resources/google_now/utility.js',
-      'browser/resources/google_now/utility_test_util.js',
-      'browser/resources/google_now/utility_unittest.gtestjs',
-      'browser/resources/print_preview/data/measurement_system.js',
-      'browser/resources/print_preview/data/measurement_system_unittest.gtestjs',
-      'browser/resources/print_preview/print_preview_utils.js',
-      'browser/resources/print_preview/print_preview_utils_unittest.gtestjs',
       'browser/resources_util_unittest.cc',
       'browser/rlz/rlz_unittest.cc',
       'browser/search/contextual_search_policy_handler_android_unittest.cc',
@@ -565,9 +552,6 @@
       'renderer/instant_restricted_id_cache_unittest.cc',
       'renderer/plugins/plugin_uma_unittest.cc',
       'renderer/prerender/prerender_dispatcher_unittest.cc',
-      'renderer/resources/extensions/notifications_custom_bindings.js',
-      'renderer/resources/extensions/notifications_custom_bindings.gtestjs',
-      'renderer/resources/extensions/notifications_test_util.js',
       'renderer/searchbox/search_bouncer_unittest.cc',
       'renderer/searchbox/searchbox_extension_unittest.cc',
       'renderer/searchbox/searchbox_unittest.cc',
@@ -608,7 +592,6 @@
       '../tools/json_schema_compiler/test/idl_schemas_unittest.cc',
       '../tools/json_schema_compiler/test/objects_unittest.cc',
       '../tools/json_schema_compiler/test/simple_api_unittest.cc',
-      '../ui/webui/resources/js/cr.js',
     ],
     'chrome_unit_tests_spellchecker_sources': [
       'browser/spellchecker/feedback_sender_unittest.cc',
@@ -1111,6 +1094,27 @@
       'browser/media/webrtc_rtp_dump_writer_unittest.cc',
       'renderer/media/chrome_webrtc_log_message_delegate_unittest.cc',
     ],
+    'chrome_unit_tests_js_sources': [
+      'browser/resources/google_now/background.js',
+      'browser/resources/google_now/background_test_util.js',
+      'browser/resources/google_now/cards.js',
+      'browser/resources/google_now/common_test_util.js',
+      'browser/resources/google_now/utility.js',
+      'browser/resources/google_now/utility_test_util.js',
+      'browser/resources/print_preview/data/measurement_system.js',
+      'browser/resources/print_preview/print_preview_utils.js',
+      'renderer/resources/extensions/notifications_custom_bindings.js',
+      'renderer/resources/extensions/notifications_test_util.js',
+      '../ui/webui/resources/js/cr.js',
+    ],
+    'chrome_unit_tests_gtestjs_sources': [
+      'browser/resources/google_now/background_unittest.gtestjs',
+      'browser/resources/google_now/cards_unittest.gtestjs',
+      'browser/resources/google_now/utility_unittest.gtestjs',
+      'browser/resources/print_preview/data/measurement_system_unittest.gtestjs',
+      'browser/resources/print_preview/print_preview_utils_unittest.gtestjs',
+      'renderer/resources/extensions/notifications_custom_bindings.gtestjs',
+    ],
     'chrome_unit_tests_chromeos_sources': [
       'browser/chromeos/accessibility/magnification_manager_unittest.cc',
       'browser/chromeos/attestation/attestation_ca_client_unittest.cc',
@@ -1314,8 +1318,6 @@
       'browser/extensions/updater/local_extension_cache_unittest.cc',
       'browser/metrics/chromeos_metrics_provider_unittest.cc',
       'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
-      'browser/resources/chromeos/braille_ime/braille_ime.js',
-      'browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs',
       # TODO(zturner): Enable this on Windows. See
       # BrowserWithTestWindowTest::SetUp() for a comment explaining why this is
       # broken.
@@ -1329,6 +1331,12 @@
       'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
       'common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc',
       'common/extensions/api/file_system_provider/file_system_provider_handler_unittest.cc',
+    ],
+    'chrome_unit_tests_chromeos_js_sources': [
+      'browser/resources/chromeos/braille_ime/braille_ime.js',
+    ],
+    'chrome_unit_tests_chromeos_gtestjs_sources': [
+      'browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs',
     ],
     'chrome_unit_tests_desktop_linux_sources': [
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',
@@ -2147,7 +2155,11 @@
           ],
         },
       },
-      'sources': [ '<@(chrome_unit_tests_sources)' ],
+      'sources': [
+        '<@(chrome_unit_tests_sources)',
+        '<@(chrome_unit_tests_js_sources)',
+        '<@(chrome_unit_tests_gtestjs_sources)',
+      ],
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
@@ -2374,7 +2386,11 @@
           'sources': [ '<@(chrome_unit_tests_webrtc_sources)' ],
         }],
         ['chromeos==1', {
-          'sources': [ '<@(chrome_unit_tests_chromeos_sources)' ],
+          'sources': [
+            '<@(chrome_unit_tests_chromeos_sources)',
+            '<@(chrome_unit_tests_chromeos_gtestjs_sources)',
+            '<@(chrome_unit_tests_chromeos_js_sources)',
+          ],
           'dependencies': [
             '../ash/ash_resources.gyp:ash_resources',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
