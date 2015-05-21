@@ -24,7 +24,7 @@ function test()
             var currentDocumentId = stylesSidebarPane.node().ownerDocument.id;
             treeElement.startEditing(treeElement.valueElement);
             InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", onNodeRebuilt);
-            WebInspector.targetManager.reloadPage();
+            InspectorTest.reloadPage();
 
             function onNodeRebuilt(node, rebuild)
             {
