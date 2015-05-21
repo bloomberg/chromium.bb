@@ -12,6 +12,7 @@ include_rules = [
   "+components/keyed_service/ios",
   "+components/leveldb_proto",
   "+components/pref_registry",
+  "+components/search_engines",
   "+components/suggestions",
   "+components/sync_driver",
   "+components/translate/core",
