@@ -99,8 +99,9 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferCommon(
   // by factory.
   if (!gpu_memory_buffer_factory_host_->IsGpuMemoryBufferConfigurationSupported(
           format, usage)) {
-    DCHECK(GpuMemoryBufferImplSharedMemory::IsFormatSupported(format));
-    DCHECK_EQ(usage, gfx::GpuMemoryBuffer::MAP);
+    DCHECK(GpuMemoryBufferImplSharedMemory::IsFormatSupported(format))
+        << format;
+    DCHECK(GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) << usage;
     return GpuMemoryBufferImplSharedMemory::Create(
         g_next_gpu_memory_buffer_id.GetNext(), size, format);
   }
@@ -142,8 +143,8 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
           format, usage)) {
     // Early out if we cannot fallback to shared memory buffer.
     if (!GpuMemoryBufferImplSharedMemory::IsFormatSupported(format) ||
-        !GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size, format) ||
-        usage != gfx::GpuMemoryBuffer::MAP) {
+        !GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
+        !GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size, format)) {
       callback.Run(gfx::GpuMemoryBufferHandle());
       return;
     }
