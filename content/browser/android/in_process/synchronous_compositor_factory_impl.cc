@@ -10,6 +10,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
@@ -54,18 +55,10 @@ ContextHolder CreateContextHolder(
   in_process_attribs.lose_context_when_out_of_memory = true;
 
   scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
-      service,
-      NULL /* surface */,
-      is_offscreen,
-      gfx::kNullAcceleratedWidget,
-      gfx::Size(1, 1),
-      NULL /* share_context */,
-      attributes.shareResources,
-      in_process_attribs,
-      gfx::PreferDiscreteGpu,
-      mem_limits,
-      nullptr,
-      nullptr));
+      service, NULL /* surface */, is_offscreen, gfx::kNullAcceleratedWidget,
+      gfx::Size(1, 1), NULL /* share_context */, attributes.shareResources,
+      in_process_attribs, gfx::PreferDiscreteGpu, mem_limits,
+      BrowserGpuMemoryBufferManager::current(), nullptr));
 
   gpu::GLInProcessContext* context_ptr = context.get();
 

@@ -105,7 +105,9 @@ void InProcessContextFactory::CreateOutputSurface(
   bool lose_context_when_out_of_memory = true;
 
   scoped_refptr<InProcessContextProvider> context_provider =
-      InProcessContextProvider::Create(attribs, lose_context_when_out_of_memory,
+      InProcessContextProvider::Create(attribs, &gpu_memory_buffer_manager_,
+                                       &image_factory_,
+                                       lose_context_when_out_of_memory,
                                        compositor->widget(), "UICompositor");
 
   scoped_ptr<cc::OutputSurface> real_output_surface;
@@ -158,6 +160,7 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
 
   bool lose_context_when_out_of_memory = false;
   shared_main_thread_contexts_ = InProcessContextProvider::CreateOffscreen(
+      &gpu_memory_buffer_manager_, &image_factory_,
       lose_context_when_out_of_memory);
   if (shared_main_thread_contexts_.get() &&
       !shared_main_thread_contexts_->BindToCurrentThread())

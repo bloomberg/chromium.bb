@@ -2109,41 +2109,39 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     return;
   }
 
-  if (GetRendererCapabilities().using_image) {
-    unsigned image_target = settings_.use_image_texture_target;
-    DCHECK_IMPLIES(
-        image_target == GL_TEXTURE_RECTANGLE_ARB,
-        context_provider->ContextCapabilities().gpu.texture_rectangle);
-    DCHECK_IMPLIES(
-        image_target == GL_TEXTURE_EXTERNAL_OES,
-        context_provider->ContextCapabilities().gpu.egl_image_external);
+  DCHECK(GetRendererCapabilities().using_image);
+  unsigned image_target = settings_.use_image_texture_target;
+  DCHECK_IMPLIES(image_target == GL_TEXTURE_RECTANGLE_ARB,
+                 context_provider->ContextCapabilities().gpu.texture_rectangle);
+  DCHECK_IMPLIES(
+      image_target == GL_TEXTURE_EXTERNAL_OES,
+      context_provider->ContextCapabilities().gpu.egl_image_external);
 
-    if (settings_.use_zero_copy) {
-      *resource_pool =
-          ResourcePool::Create(resource_provider_.get(), image_target);
+  if (settings_.use_zero_copy) {
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(), image_target);
 
-      *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner, resource_provider_.get());
-      return;
-    }
+    *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
+        task_runner, task_graph_runner, resource_provider_.get());
+    return;
+  }
 
-    if (settings_.use_one_copy) {
-      // Synchronous single-threaded mode depends on tiles being ready to
-      // draw when raster is complete.  Therefore, it must use one of zero
-      // copy, software raster, or GPU raster.
-      DCHECK(!IsSynchronousSingleThreaded());
+  if (settings_.use_one_copy) {
+    // Synchronous single-threaded mode depends on tiles being ready to
+    // draw when raster is complete.  Therefore, it must use one of zero
+    // copy, software raster, or GPU raster.
+    DCHECK(!IsSynchronousSingleThreaded());
 
-      // We need to create a staging resource pool when using copy rasterizer.
-      *staging_resource_pool =
-          ResourcePool::Create(resource_provider_.get(), image_target);
-      *resource_pool =
-          ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
+    // We need to create a staging resource pool when using copy rasterizer.
+    *staging_resource_pool =
+        ResourcePool::Create(resource_provider_.get(), image_target);
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
-      *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner, context_provider,
-          resource_provider_.get(), staging_resource_pool_.get());
-      return;
-    }
+    *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
+        task_runner, task_graph_runner, context_provider,
+        resource_provider_.get(), staging_resource_pool_.get());
+    return;
   }
 
   // Synchronous single-threaded mode depends on tiles being ready to

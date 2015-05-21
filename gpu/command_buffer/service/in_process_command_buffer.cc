@@ -39,6 +39,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
+#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_share_group.h"
 
 #if defined(OS_ANDROID)
@@ -511,7 +512,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                  base::Unretained(this)));
 
   image_factory_ = params.image_factory;
-  params.capabilities->image = params.capabilities->image && image_factory_;
 
   return true;
 }
@@ -760,17 +760,39 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     return;
   }
 
-  // Note: this assumes that client ID is always 0.
-  const int kClientId = 0;
+  switch (handle.type) {
+    case gfx::SHARED_MEMORY_BUFFER: {
+      scoped_refptr<gfx::GLImageSharedMemory> image(
+          new gfx::GLImageSharedMemory(size, internalformat));
+      if (!image->Initialize(handle, format)) {
+        LOG(ERROR) << "Failed to initialize image.";
+        return;
+      }
 
-  DCHECK(image_factory_);
-  scoped_refptr<gfx::GLImage> image =
-      image_factory_->CreateImageForGpuMemoryBuffer(
-          handle, size, format, internalformat, kClientId);
-  if (!image.get())
-    return;
+      image_manager->AddImage(image.get(), id);
+      break;
+    }
+    default: {
+      if (!image_factory_) {
+        LOG(ERROR) << "Image factory missing but required by buffer type.";
+        return;
+      }
 
-  image_manager->AddImage(image.get(), id);
+      // Note: this assumes that client ID is always 0.
+      const int kClientId = 0;
+
+      scoped_refptr<gfx::GLImage> image =
+          image_factory_->CreateImageForGpuMemoryBuffer(
+              handle, size, format, internalformat, kClientId);
+      if (!image.get()) {
+        LOG(ERROR) << "Failed to create image for buffer.";
+        return;
+      }
+
+      image_manager->AddImage(image.get(), id);
+      break;
+    }
+  }
 }
 
 void InProcessCommandBuffer::DestroyImage(int32 id) {

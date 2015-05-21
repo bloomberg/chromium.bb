@@ -40,16 +40,21 @@ base::LazyInstance<GLES2Initializer> g_gles2_initializer =
 // static
 scoped_refptr<InProcessContextProvider> InProcessContextProvider::Create(
     const gpu::gles2::ContextCreationAttribHelper& attribs,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gpu::ImageFactory* image_factory,
     bool lose_context_when_out_of_memory,
     gfx::AcceleratedWidget window,
     const std::string& debug_name) {
   return new InProcessContextProvider(
-      attribs, lose_context_when_out_of_memory, window, debug_name);
+      attribs, gpu_memory_buffer_manager, image_factory,
+      lose_context_when_out_of_memory, window, debug_name);
 }
 
 // static
 scoped_refptr<InProcessContextProvider>
 InProcessContextProvider::CreateOffscreen(
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gpu::ImageFactory* image_factory,
     bool lose_context_when_out_of_memory) {
   gpu::gles2::ContextCreationAttribHelper attribs;
   attribs.alpha_size = 8;
@@ -62,17 +67,22 @@ InProcessContextProvider::CreateOffscreen(
   attribs.sample_buffers = 0;
   attribs.fail_if_major_perf_caveat = false;
   attribs.bind_generates_resource = false;
-  return new InProcessContextProvider(
-      attribs, lose_context_when_out_of_memory, gfx::kNullAcceleratedWidget,
-      "Offscreen");
+  return new InProcessContextProvider(attribs, gpu_memory_buffer_manager,
+                                      image_factory,
+                                      lose_context_when_out_of_memory,
+                                      gfx::kNullAcceleratedWidget, "Offscreen");
 }
 
 InProcessContextProvider::InProcessContextProvider(
     const gpu::gles2::ContextCreationAttribHelper& attribs,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gpu::ImageFactory* image_factory,
     bool lose_context_when_out_of_memory,
     gfx::AcceleratedWidget window,
     const std::string& debug_name)
     : attribs_(attribs),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      image_factory_(image_factory),
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       window_(window),
       debug_name_(debug_name),
@@ -99,7 +109,7 @@ bool InProcessContextProvider::BindToCurrentThread() {
         window_, gfx::Size(1, 1), nullptr, /* share_context */
         true,                              /* share_resources */
         attribs_, gpu_preference, gpu::GLInProcessContextSharedMemoryLimits(),
-        nullptr, nullptr));
+        gpu_memory_buffer_manager_, image_factory_));
 
     if (!context_)
       return false;
