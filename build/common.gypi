@@ -2394,6 +2394,12 @@
       ['cfi_vptr==1 or cfi_derived_cast==1 or cfi_unrelated_cast==1', {
         'use_lto%': 1,
       }],
+
+      ['branding=="Chrome" and buildtype=="Official"', {
+        'enable_hangout_services_extension%': 1,
+      }, {
+        'enable_hangout_services_extension%': 0,
+      }],
     ],
 
     # The path to the ANGLE library.
