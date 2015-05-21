@@ -523,6 +523,9 @@
   <structure name="IDR_POLYMER_08_IRON_ICONS_DEVICE_ICONS_HTML"
              file="../../../third_party/polymer/v0_8/components-chromium/iron-icons/device-icons.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_08_IRON_ICONS_HARDWARE_ICONS_HTML"
+             file="../../../third_party/polymer/v0_8/components-chromium/iron-icons/hardware-icons.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_08_IRON_ICONS_IRON_ICONS_HTML"
              file="../../../third_party/polymer/v0_8/components-chromium/iron-icons/iron-icons.html"
              type="chrome_html" />
