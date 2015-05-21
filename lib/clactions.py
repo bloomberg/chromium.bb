@@ -31,6 +31,8 @@ _PRECQ_STATUS_TO_ACTION = {
 _PRECQ_ACTION_TO_STATUS = dict(
     (v, k) for k, v in _PRECQ_STATUS_TO_ACTION.items())
 
+PRE_CQ_CL_STATUSES = set(_PRECQ_STATUS_TO_ACTION.keys())
+
 assert len(_PRECQ_STATUS_TO_ACTION) == len(_PRECQ_ACTION_TO_STATUS), \
     '_PRECQ_STATUS_TO_ACTION values are not unique.'
 

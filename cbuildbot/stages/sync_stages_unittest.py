@@ -183,6 +183,10 @@ class MockPatch(mock.MagicMock):
     """Return whether this patch is merged or in the middle of being merged."""
     return self.status in ('SUBMITTED', 'MERGED')
 
+  def IsMergeable(self):
+    """Default implementation of IsMergeable, stubbed out by some tests."""
+    return True
+
   def GetDiffStatus(self, _):
     return self.mock_diff_status
 

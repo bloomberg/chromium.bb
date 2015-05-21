@@ -1490,14 +1490,22 @@ class PreCQLauncherStage(SyncStage):
     # Changes that will be passed.
     will_pass = set()
 
+    # Separately count and log the number of mergable and speculative changes in
+    # each of the possible pre-cq statuses (or in status None).
+    POSSIBLE_STATUSES = clactions.PRE_CQ_CL_STATUSES | {None}
     status_counts = {}
-    for status in status_map.values():
-      status_counts[status] = status_counts.get(status, 0) + 1
-    for status, count in status_counts.items():
-      name = '.'.join(['precq', 'status', status if status else 'None'])
-      logging.info('Sending stat (name, status, count): (%s, %s, %s)',
-                   name, status, count)
-      graphite.StatsFactory.GetInstance().Gauge(name).send(status, count)
+    for count_bin in itertools.product((True, False), POSSIBLE_STATUSES):
+      status_counts[count_bin] = 0
+    for c, status in status_map.iteritems():
+      count_bin = (c.IsMergeable(), status)
+      status_counts[count_bin] = status_counts[count_bin] + 1
+    for count_bin, count in sorted(status_counts.items()):
+      subtype = 'mergeable' if count_bin[0] else 'speculative'
+      status = count_bin[1]
+      name = '.'.join(['pre-cq-status', status if status else 'None'])
+      logging.info('Sending stat (name, subtype, count): (%s, %s, %s)',
+                   name, subtype, count)
+      graphite.StatsFactory.GetInstance().Gauge(name).send(subtype, count)
 
     for change in inflight:
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
