@@ -7,12 +7,16 @@ from integration_tests import chrome_proxy_pagesets as pagesets
 from integration_tests import chrome_proxy_measurements as measurements
 from telemetry import benchmark
 from telemetry.core.backends.chrome import android_browser_finder
+from telemetry.core.backends.chrome import cros_browser_finder
+from telemetry.core.backends.chrome import desktop_browser_finder
 
 
 ANDROID_CHROME_BROWSERS = [
   browser for browser in android_browser_finder.CHROME_PACKAGE_NAMES
     if 'webview' not in browser]
 
+DESKTOP_CHROME_BROWSERS = (desktop_browser_finder.FindAllBrowserTypes(None) +
+  cros_browser_finder.FindAllBrowserTypes(None))
 
 class ChromeProxyClientVersion(ChromeProxyBenchmark):
   tag = 'client_version'
@@ -112,6 +116,7 @@ class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.safebrowsing_off.safebrowsing'
 
+
 class ChromeProxyHTTPFallbackProbeURL(ChromeProxyBenchmark):
   tag = 'fallback_probe'
   test = measurements.ChromeProxyHTTPFallbackProbeURL
@@ -161,3 +166,42 @@ class ChromeProxySmoke(ChromeProxyBenchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.smoke.smoke'
+
+
+@benchmark.Enabled(*DESKTOP_CHROME_BROWSERS)
+class ChromeProxyVideoDirect(benchmark.Benchmark):
+  tag = 'video'
+  test = measurements.ChromeProxyVideoValidation
+  page_set = pagesets.VideoDirectPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.video.direct'
+
+
+@benchmark.Enabled(*DESKTOP_CHROME_BROWSERS)
+class ChromeProxyVideoProxied(benchmark.Benchmark):
+  tag = 'video'
+  test = measurements.ChromeProxyVideoValidation
+  page_set = pagesets.VideoProxiedPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.video.proxied'
+
+
+@benchmark.Enabled(*DESKTOP_CHROME_BROWSERS)
+class ChromeProxyVideoCompare(benchmark.Benchmark):
+  """Comparison of direct and proxied video fetches.
+
+  This benchmark runs the ChromeProxyVideoDirect and ChromeProxyVideoProxied
+  benchmarks, then compares their results.
+  """
+
+  tag = 'video'
+  test = measurements.ChromeProxyVideoValidation
+  page_set = pagesets.VideoComparePageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.video.compare'

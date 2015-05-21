@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import time
 
 from common import chrome_proxy_metrics
@@ -526,3 +527,102 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         results.current_page, 'bypass', 'count', bypass_count))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'via', 'count', via_count))
+
+
+PROXIED = 'proxied'
+DIRECT = 'direct'
+
+class ChromeProxyVideoMetric(network_metrics.NetworkMetric):
+  """Metrics for video pages.
+
+  Wraps the video metrics produced by videowrapper.js, such as the video
+  duration and size in pixels. Also checks a few basic HTTP response headers
+  such as Content-Type and Content-Length in the video responses.
+  """
+
+  def __init__(self, tab):
+    super(ChromeProxyVideoMetric, self).__init__()
+    with open(os.path.join(os.path.dirname(__file__), 'videowrapper.js')) as f:
+      js = f.read()
+      tab.ExecuteJavaScript(js)
+
+  def Start(self, page, tab):
+    tab.ExecuteJavaScript('window.__chromeProxyCreateVideoWrappers()')
+    self.videoMetrics = None
+    super(ChromeProxyVideoMetric, self).Start(page, tab)
+
+  def Stop(self, page, tab):
+    tab.WaitForJavaScriptExpression('window.__chromeProxyVideoLoaded', 30)
+    m = tab.EvaluateJavaScript('window.__chromeProxyVideoMetrics')
+
+    # Now wait for the video to stop playing.
+    # Give it 2x the total duration to account for buffering.
+    waitTime = 2 * m['video_duration']
+    tab.WaitForJavaScriptExpression('window.__chromeProxyVideoEnded', waitTime)
+
+    # Load the final metrics.
+    m = tab.EvaluateJavaScript('window.__chromeProxyVideoMetrics')
+    self.videoMetrics = m
+    # Cast this to an integer as it is often approximate (for an unknown reason)
+    m['video_duration'] = int(m['video_duration'])
+    super(ChromeProxyVideoMetric, self).Stop(page, tab)
+
+  def ResponseFromEvent(self, event):
+    return chrome_proxy_metrics.ChromeProxyResponse(event)
+
+  def AddResults(self, tab, results):
+    raise NotImplementedError
+
+  def AddResultsForProxied(self, tab, results):
+    return self._AddResultsShared(PROXIED, tab, results)
+
+  def AddResultsForDirect(self, tab, results):
+    return self._AddResultsShared(DIRECT, tab, results)
+
+  def _AddResultsShared(self, kind, tab, results):
+    def err(s):
+      raise ChromeProxyMetricException, s
+
+    # Should have played the video.
+    if not self.videoMetrics['ready']:
+      err('%s: video not played' % kind)
+
+    # Should have an HTTP response for the video.
+    wantContentType = 'video/webm' if kind == PROXIED else 'video/mp4'
+    found = False
+    for r in self.IterResponses(tab):
+      resp = r.response
+      if kind == DIRECT and r.HasChromeProxyViaHeader():
+        err('%s: page has proxied Via header' % kind)
+      if resp.GetHeader('Content-Type') != wantContentType:
+        continue
+      if found:
+        err('%s: multiple video responses' % kind)
+      found = True
+
+      cl = resp.GetHeader('Content-Length')
+      xocl = resp.GetHeader('X-Original-Content-Length')
+      if cl != None:
+        self.videoMetrics['content_length_header'] = int(cl)
+      if xocl != None:
+        self.videoMetrics['x_original_content_length_header'] = int(xocl)
+
+      # Should have CL always.
+      if cl == None:
+        err('%s: missing ContentLength' % kind)
+      # Proxied: should have CL < XOCL
+      # Direct: should not have XOCL
+      if kind == PROXIED:
+        if xocl == None or int(cl) >= int(xocl):
+          err('%s: bigger response (%s > %s)' % (kind, str(cl), str(xocl)))
+      else:
+        if xocl != None:
+          err('%s: has XOriginalContentLength' % kind)
+
+    if not found:
+      err('%s: missing video response' % kind)
+
+    # Finally, add all the metrics to the results.
+    for (k,v) in self.videoMetrics.iteritems():
+      k = "%s_%s" % (k, kind)
+      results.AddValue(scalar.ScalarValue(results.current_page, k, "", v))

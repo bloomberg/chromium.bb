@@ -12,33 +12,17 @@ from metrics import loading
 from telemetry.core import exceptions
 from telemetry.page import page_test
 
-class ChromeProxyLatency(page_test.PageTest):
-  """Chrome proxy latency measurement."""
-
-  def __init__(self, *args, **kwargs):
-    super(ChromeProxyLatency, self).__init__(*args, **kwargs)
-    self._metrics = metrics.ChromeProxyMetric()
-
-  def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
-
-  def WillNavigateToPage(self, page, tab):
-    tab.ClearCache(force=True)
-
-  def ValidateAndMeasurePage(self, page, tab, results):
-    # Wait for the load event.
-    tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
-    self._metrics.AddResultsForLatency(tab, results)
-
 
 class ChromeProxyDataSaving(page_test.PageTest):
   """Chrome proxy data saving measurement."""
   def __init__(self, *args, **kwargs):
     super(ChromeProxyDataSaving, self).__init__(*args, **kwargs)
     self._metrics = metrics.ChromeProxyMetric()
+    self._enable_proxy = True
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
+    if self._enable_proxy:
+      options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
   def WillNavigateToPage(self, page, tab):
     tab.ClearCache(force=True)
@@ -372,3 +356,92 @@ class ChromeProxySmoke(ChromeProxyValidation):
           self._page.name, page_to_metrics.keys()))
     for add_result in page_to_metrics[self._page.name]:
       add_result(tab, results)
+
+
+PROXIED = metrics.PROXIED
+DIRECT = metrics.DIRECT
+
+class ChromeProxyVideoValidation(page_test.PageTest):
+  """Validation for video pages.
+
+  Measures pages using metrics.ChromeProxyVideoMetric. Pages can be fetched
+  either direct from the origin server or via the proxy. If a page is fetched
+  both ways, then the PROXIED and DIRECT measurements are compared to ensure
+  the same video was loaded in both cases.
+  """
+
+  def __init__(self):
+    super(ChromeProxyVideoValidation, self).__init__(
+        needs_browser_restart_after_each_page=True,
+        clear_cache_before_each_run=True)
+    # The type is _allMetrics[url][PROXIED,DIRECT][metricName] = value,
+    # where (metricName,value) is a metric computed by videowrapper.js.
+    self._allMetrics = {}
+
+  def CustomizeBrowserOptionsForSinglePage(self, page, options):
+    if page.use_chrome_proxy:
+      options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
+
+  def DidNavigateToPage(self, page, tab):
+    self._currMetrics = metrics.ChromeProxyVideoMetric(tab)
+    self._currMetrics.Start(page, tab)
+
+  def ValidateAndMeasurePage(self, page, tab, results):
+    assert self._currMetrics
+    self._currMetrics.Stop(page, tab)
+    if page.url not in self._allMetrics:
+      self._allMetrics[page.url] = {}
+
+    # Verify this page.
+    if page.use_chrome_proxy:
+      self._currMetrics.AddResultsForProxied(tab, results)
+      self._allMetrics[page.url][PROXIED] = self._currMetrics.videoMetrics
+    else:
+      self._currMetrics.AddResultsForDirect(tab, results)
+      self._allMetrics[page.url][DIRECT] = self._currMetrics.videoMetrics
+    self._currMetrics = None
+
+    # Compare proxied and direct results for this url, if they exist.
+    m = self._allMetrics[page.url]
+    if PROXIED in m and DIRECT in m:
+      self._CompareProxiedAndDirectMetrics(page.url, m[PROXIED], m[DIRECT])
+
+  def _CompareProxiedAndDirectMetrics(self, url, pm, dm):
+    """Compare metrics from PROXIED and DIRECT fetches.
+
+    Compares video metrics computed by videowrapper.js for pages that were
+    fetch both PROXIED and DIRECT.
+
+    Args:
+        url: The url for the page being tested.
+        pm: Metrics when loaded by the Flywheel proxy.
+        dm: Metrics when loaded directly from the origin server.
+
+    Raises:
+        ChromeProxyMetricException on failure.
+    """
+    def err(s):
+      raise ChromeProxyMetricException, s
+
+    if not pm['ready']:
+      err('Proxied page did not load video: %s' % page.url)
+    if not dm['ready']:
+      err('Direct page did not load video: %s' % page.url)
+
+    # Compare metrics that should match for PROXIED and DIRECT.
+    for x in ('video_height', 'video_width', 'video_duration',
+              'decoded_frames'):
+      if x not in pm:
+        err('Proxied page has no %s: %s' % (x, page.url))
+      if x not in dm:
+        err('Direct page has no %s: %s' % (x, page.url))
+      if pm[x] != dm[x]:
+        err('Mismatch for %s (proxied=%s direct=%s): %s' %
+            (x, str(pm[x]), str(dm[x]), page.url))
+
+    # Proxied XOCL should match direct CL.
+    pxocl = pm['x_original_content_length_header']
+    dcl = dm['content_length_header']
+    if pxocl != dcl:
+      err('Mismatch for content length (proxied=%s direct=%s): %s' %
+          (str(pxocl), str(dcl), page.url))
