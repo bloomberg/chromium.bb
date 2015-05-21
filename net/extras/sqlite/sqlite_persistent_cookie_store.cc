@@ -45,6 +45,15 @@ namespace {
 // CPU or I/O with these low priority requests immediately after start up.
 const int kLoadDelayMilliseconds = 0;
 
+const char kDeleteAtShutdown[] = "DeleteAtShutdown";
+const char kSessionCookieDeletionStrategy[] = "SessionCookieDeletionStrategy";
+
+bool ShouldDeleteSessionCookiesAtShutdown() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kSessionCookieDeletionStrategy);
+  return group_name == kDeleteAtShutdown;
+}
+
 }  // namespace
 
 namespace net {
@@ -214,6 +223,8 @@ class SQLitePersistentCookieStore::Backend
   void InternalBackgroundClose();
 
   void DeleteSessionCookiesOnStartup();
+
+  void DeleteSessionCookiesOnShutdown();
 
   void BackgroundDeleteAllInList(const std::list<CookieOrigin>& cookies);
 
@@ -1176,6 +1187,10 @@ void SQLitePersistentCookieStore::Backend::Close() {
 
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+
+  if (ShouldDeleteSessionCookiesAtShutdown())
+    DeleteSessionCookiesOnShutdown();
+
   // Commit any pending operations
   Commit();
 
@@ -1243,6 +1258,22 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
   UMA_HISTOGRAM_TIMES("Cookie.Startup.TimeSpentDeletingCookies",
                       base::Time::Now() - start_time);
   UMA_HISTOGRAM_COUNTS("Cookie.Startup.NumberOfCookiesDeleted",
+                       db_->GetLastChangeCount());
+}
+
+void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!db_)
+    return;
+
+  base::Time start_time = base::Time::Now();
+  if (!db_->Execute("DELETE FROM cookies WHERE persistent != 1"))
+    LOG(WARNING) << "Unable to delete session cookies.";
+
+  UMA_HISTOGRAM_TIMES("Cookie.Shutdown.TimeSpentDeletingCookies",
+                      base::Time::Now() - start_time);
+  UMA_HISTOGRAM_COUNTS("Cookie.Shutdown.NumberOfCookiesDeleted",
                        db_->GetLastChangeCount());
 }
 
