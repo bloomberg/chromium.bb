@@ -12,7 +12,7 @@ body {
 }
 #container {
   display: grid;
-  grid: 100px 100px / 150px 150px;
+  grid: 100px 100px / 300px;
   justify-items: end true;
   width: 200px;
   height: 300px;
@@ -22,14 +22,12 @@ body {
   grid-row: 1;
   grid-column: 1;
   background-color: green;
-  border: solid thin blue;
   width: 160px;
 }
 .item2 {
   grid-row: 1;
   grid-column: 2;
   background-color: green;
-  border: solid thin blue;
   width: 50px;
 </style>
 <p style="height: 20px">Tests invalidation on justify-items style change. Passes if there is no red.</p>
