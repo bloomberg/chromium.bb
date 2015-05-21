@@ -9,6 +9,12 @@ import("ffmpeg_generated.gni")
 platform_config_root =
     "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_arch"
 
+# Stub generator script and signatures of all functions used by Chrome.
+generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
+
+# Used by ffmpeg_generate_stubs and ffmpeg_generate_def
+sig_files = [ "chromium/ffmpegsumo.sigs" ]
+
 if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm") {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
@@ -46,7 +52,7 @@ if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
 }
 
 if (build_ffmpegsumo) {
-  static_library("ffmpegsumo") {
+  component("ffmpegsumo") {
     sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
       "$platform_config_root/libavutil/avconfig.h",
@@ -265,6 +271,13 @@ if (build_ffmpegsumo) {
       if (is_component_build) {
         # Required to avoid 4049 and 4217 errors around redundant imports.
         cflags += [ "/FIcompat/msvcrt/snprintf.h", "/FIcompat/msvcrt/strtod.h" ]
+
+        # Windows component build needs the .def file to export ffmpeg symbols.
+        deps += [ ":ffmpeg_generate_def" ]
+        ldflags =
+          [ "/DEF:" +
+            rebase_path("$target_gen_dir/ffmpegsumo.def", root_build_dir) ]
+
       }
 
       # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
@@ -310,6 +323,21 @@ config("ffmpeg_dependent_config") {
     platform_config_root,
     ".",
   ]
+}
+
+if (is_win) {
+  action("ffmpeg_generate_def") {
+    script = generate_stubs_script
+    sources = sig_files
+    outputs = [ "$target_gen_dir/ffmpegsumo.def" ]
+    args = [
+  # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
+      "-i", rebase_path(target_out_dir, root_build_dir),
+      "-o", rebase_path(target_gen_dir, root_build_dir),
+      "-t", "windows_def",
+      "-m", "ffmpegsumo.dll",
+    ] + rebase_path(sources, root_build_dir)
+  }
 }
 
 group("ffmpeg") {
