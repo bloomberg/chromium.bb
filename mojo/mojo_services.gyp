@@ -28,5 +28,10 @@
     'includes': [
       '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
     ],
+    'sources': [
+      # XCode doesn't want to link a target without a source file. So add a
+      # dummy file keep the linker happy.  See http://crbug.com/157073
+      'services/network/xcode_hack.c',
+    ],
   }],
 }
