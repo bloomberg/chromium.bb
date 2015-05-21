@@ -1486,20 +1486,6 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
       proxy_hosts_.erase(instance->GetId());
       delete proxy;
-
-      // When a new render view is created by the renderer, the new WebContents
-      // gets a RenderViewHost in the SiteInstance of its opener WebContents.
-      // If not used in the first navigation, this RVH is swapped out and is not
-      // granted bindings, so we may need to grant them when swapping it in.
-      if (web_ui && !new_render_frame_host->GetProcess()->IsIsolatedGuest()) {
-        int required_bindings = web_ui->GetBindings();
-        RenderViewHost* render_view_host =
-            new_render_frame_host->render_view_host();
-        if ((render_view_host->GetEnabledBindings() & required_bindings) !=
-            required_bindings) {
-          render_view_host->AllowBindings(required_bindings);
-        }
-      }
     }
   } else {
     // Create a new RenderFrameHost if we don't find an existing one.
@@ -1545,6 +1531,21 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     if (success) {
       if (view_routing_id_ptr)
         *view_routing_id_ptr = render_view_host->GetRoutingID();
+    }
+  }
+
+  // When a new RenderView is created by the renderer process, the new
+  // WebContents gets a RenderViewHost in the SiteInstance of its opener
+  // WebContents. If not used in the first navigation, this RVH is swapped out
+  // and is not granted bindings, so we may need to grant them when swapping it
+  // in.
+  if (web_ui && !new_render_frame_host->GetProcess()->IsIsolatedGuest()) {
+    int required_bindings = web_ui->GetBindings();
+    RenderViewHost* render_view_host =
+        new_render_frame_host->render_view_host();
+    if ((render_view_host->GetEnabledBindings() & required_bindings) !=
+            required_bindings) {
+      render_view_host->AllowBindings(required_bindings);
     }
   }
 
