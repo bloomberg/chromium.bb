@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/installer/util/util_constants.h"
 #include "crypto/sha2.h"
 

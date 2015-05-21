@@ -20,10 +20,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/attrition_experiments.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -306,7 +306,6 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment) {
   // The experiment in Feb 2011 used SJxx SKxx SLxx SMxx.
   // The experiment in Mar 2012 used ZAxx ZBxx ZCxx.
   // The experiment in Jan 2013 uses DAxx.
-  using namespace attrition_experiments;
 
   static const struct UserExperimentSpecs {
     const wchar_t* locale;  // Locale to show this experiment for (* for all).

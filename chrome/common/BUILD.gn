@@ -42,6 +42,11 @@ static_library("common") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
+  public_deps = [
+    "//chrome/common:constants",
+    "//chrome/common/net",
+    "//chrome/common/safe_browsing:proto",
+  ]
   deps = [
     ":version",
     "//base:base",
@@ -51,9 +56,6 @@ static_library("common") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/app/theme:theme_resources",
-    "//chrome/common:constants",
-    "//chrome/common/net",
-    "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util",
     "//components/cloud_devices/common",
     "//components/component_updater",
@@ -97,9 +99,7 @@ static_library("common") {
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",
     ]
-    public_deps = [
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
-    ]
+    public_deps += [ "//third_party/mojo/src/mojo/public/cpp/bindings" ]
   }
 
   if (enable_extensions) {
@@ -245,6 +245,14 @@ static_library("common") {
                            ".",
                            "//chrome")
   }
+}
+
+# This target allows other targets to depend on result_codes.h which is a
+# header-only dependency, without bringing in all of content.
+source_set("result_codes") {
+  sources = [
+    "chrome_result_codes.h",
+  ]
 }
 
 import("//chrome/version.gni")

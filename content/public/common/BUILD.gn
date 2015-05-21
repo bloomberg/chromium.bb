@@ -19,6 +19,14 @@ group("common") {
   }
 }
 
+# This target allows other targets to depend on result_codes.h which is a
+# header-only dependency, without bringing in all of content.
+source_set("result_codes") {
+  sources = [
+    "result_codes.h",
+  ]
+}
+
 source_set("common_sources") {
   visibility = [ "//content/*" ]
 

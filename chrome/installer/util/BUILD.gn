@@ -8,8 +8,10 @@ import("//testing/test.gni")
 static_library("util") {
   deps = [
     "//base",
-    "//chrome:resources",
     "//chrome:strings",
+    "//chrome/common:constants",
+    "//chrome/common:result_codes",
+    "//content/public/common:result_codes",
   ]
 
   if (is_win) {
@@ -58,7 +60,6 @@ static_library("util") {
     deps += [
       ":strings",
       "//base/third_party/dynamic_annotations",
-      "//chrome/common:constants",
       "//components/metrics",
       "//courgette:courgette_lib",
       "//crypto",
@@ -261,6 +262,7 @@ if (is_win) {
       "//base:i18n",
       "//base/test:test_support",
       "//chrome:other_version",
+      "//chrome/common",
       "//chrome/installer/test:alternate_version_generator_lib",
       "//content/public/common",
       "//testing/gmock",

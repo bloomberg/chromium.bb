@@ -31,7 +31,6 @@
 #include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
-#include "content/public/common/result_codes.h"
 
 namespace {
 
