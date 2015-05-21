@@ -348,7 +348,8 @@ cr.define('login', function() {
           isNewGaiaScreenWithBackButton ||
           supervisedUserCreationDialogIsActive;
       $('cancel-add-user-button').hidden =
-          ((gaiaIsActive || isPasswordChangedUI) && this.isNewGaiaFlow_) ||
+          ((gaiaIsActive || isPasswordChangedUI || isSamlPasswordConfirm) &&
+              this.isNewGaiaFlow_) ||
           accountPickerIsActive ||
           !this.allowCancel_ ||
           wrongHWIDWarningIsActive ||
