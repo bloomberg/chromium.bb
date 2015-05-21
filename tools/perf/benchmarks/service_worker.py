@@ -8,6 +8,7 @@ import re
 
 from telemetry import benchmark
 from telemetry.core import util
+from telemetry.page import action_runner
 from telemetry.page import page_test
 from telemetry.timeline import async_slice as async_slice_module
 from telemetry.timeline import slice as slice_module
@@ -103,6 +104,13 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
     self._speed_index.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    runner = action_runner.ActionRunner(tab)
+    # timeline_controller requires creation of at least a single interaction
+    # record. service_worker should be refactored to follow the
+    # timeline_based_measurement or it should not re-use timeline_controller
+    # logic for start & stop tracing.
+    with runner.CreateInteraction('_DummyInteraction'):
+      pass
     tab.WaitForDocumentReadyStateToBeComplete(40)
     self._timeline_controller.Stop(tab, results)
 
@@ -152,6 +160,13 @@ class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
     self._timeline_controller.Start(tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    runner = action_runner.ActionRunner(tab)
+    # timeline_controller requires creation of at least a single interaction
+    # record. service_worker should be refactored to follow the
+    # timeline_based_measurement or it should not re-use timeline_controller
+    # logic for start & stop tracing.
+    with runner.CreateInteraction('_DummyInteraction'):
+      pass
     tab.WaitForJavaScriptExpression('window.done', 40)
     self._timeline_controller.Stop(tab, results)
 

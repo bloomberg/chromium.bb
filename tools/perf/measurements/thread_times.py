@@ -17,7 +17,8 @@ class ThreadTimes(page_test.PageTest):
     self._report_silk_details = report_silk_details
 
   def WillNavigateToPage(self, page, tab):
-    self._timeline_controller = timeline_controller.TimelineController()
+    self._timeline_controller = timeline_controller.TimelineController(
+        enable_auto_issuing_record=False)
     if self._report_silk_details:
       # We need the other traces in order to have any details to report.
       self._timeline_controller.trace_categories = None
