@@ -699,6 +699,6 @@ void mergeWithNextTextNode(Text* textNode, ExceptionState& exceptionState)
         textNext->remove(exceptionState);
 }
 
-template class CORE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 
 }
