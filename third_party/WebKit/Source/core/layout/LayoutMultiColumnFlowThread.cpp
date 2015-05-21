@@ -642,6 +642,20 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
     columnSetToRemove->destroy();
 }
 
+void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& newStyle)
+{
+    // If an in-flow descendant goes out-of-flow, we may have to remove a column set.
+    if (newStyle.hasOutOfFlowPosition() && !styleRef().hasOutOfFlowPosition())
+        flowThreadDescendantWillBeRemoved(descendant);
+}
+
+void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& oldStyle)
+{
+    // If an out-of-flow descendant goes in-flow, we may have to insert a column set.
+    if (oldStyle.hasOutOfFlowPosition() && !styleRef().hasOutOfFlowPosition())
+        flowThreadDescendantWasInserted(descendant);
+}
+
 void LayoutMultiColumnFlowThread::computePreferredLogicalWidths()
 {
     LayoutFlowThread::computePreferredLogicalWidths();
