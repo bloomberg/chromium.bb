@@ -10,20 +10,13 @@ of every benchmark would run impractically long.
 """
 
 import os
-import sys
-import time
 import unittest
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
+from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import progress_reporter
-
-from benchmarks import dom_perf
-from benchmarks import rasterize_and_record_micro
-from benchmarks import spaceport
-from benchmarks import speedometer
-from benchmarks import jetstream
 
 
 def SmokeTestGenerator(benchmark):
@@ -63,25 +56,10 @@ def SmokeTestGenerator(benchmark):
     benchmark.ProcessCommandLineArgs(None, options)
     benchmark_module.ProcessCommandLineArgs(None, options)
 
-    current = time.time()
-    try:
-      self.assertEqual(0, SinglePageBenchmark().Run(options),
-                       msg='Failed: %s' % benchmark)
-    finally:
-      print 'Benchmark %s run takes %i seconds' % (
-          benchmark.Name(), time.time() - current)
+    self.assertEqual(0, SinglePageBenchmark().Run(options),
+                     msg='Failed: %s' % benchmark)
 
   return BenchmarkSmokeTest
-
-
-# The list of benchmark modules to be excluded from our smoke tests.
-_BLACK_LIST_TEST_MODULES = {
-    dom_perf,   # Always fails on cq bot.
-    rasterize_and_record_micro,  # Always fails on cq bot.
-    spaceport,  # Takes 451 seconds.
-    speedometer,  # Takes 101 seconds.
-    jetstream,  # Take 206 seconds.
-}
 
 
 def load_tests(loader, standard_tests, pattern):
@@ -90,15 +68,22 @@ def load_tests(loader, standard_tests, pattern):
 
   benchmarks_dir = os.path.dirname(__file__)
   top_level_dir = os.path.dirname(benchmarks_dir)
+  measurements_dir = os.path.join(top_level_dir, 'measurements')
 
+  all_measurements = discover.DiscoverClasses(
+      measurements_dir, top_level_dir, page_test.PageTest).values()
   # Using the default of |index_by_class_name=False| means that if a module
   # has multiple benchmarks, only the last one is returned.
   all_benchmarks = discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
       index_by_class_name=False).values()
   for benchmark in all_benchmarks:
-    if sys.modules[benchmark.__module__] in _BLACK_LIST_TEST_MODULES:
+    if hasattr(benchmark, 'test') and benchmark.test not in all_measurements:
+      # If the benchmark does not have a measurement, then it is not composable.
+      # Ideally we'd like to test these as well, but the non-composable
+      # benchmarks are usually long-running benchmarks.
       continue
+
     # TODO(tonyg): Smoke doesn't work with session_restore yet.
     if (benchmark.Name().startswith('session_restore') or
         benchmark.Name().startswith('skpicture_printer')):
