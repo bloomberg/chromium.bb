@@ -74,8 +74,8 @@
                   '|Source/core/svg/graphics/filters'
     },
     'heap': {
-      'filepath': 'Source/platform/heap',
-      'filepath': 'Source/wtf/Partition.*',
+      'filepath': 'Source/platform/heap' \
+                  '|Source/wtf/Partition.*'
     },
     'html': {
       'filepath': 'Source/core/html/'
