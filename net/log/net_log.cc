@@ -17,7 +17,7 @@ namespace net {
 
 namespace {
 
-// Returns parameters for logging data transferred events. At a minum includes
+// Returns parameters for logging data transferred events. At a minimum includes
 // the number of bytes transferred. If the capture mode allows logging byte
 // contents and |byte_count| > 0, then will include the actual bytes. The
 // bytes are hex-encoded, since base::StringValue only supports UTF-8.
