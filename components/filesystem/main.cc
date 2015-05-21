@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "components/filesystem/file_system_impl.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/public/c/system/main.h"
+
+#if defined(OS_POSIX)
+#include "components/filesystem/posix/file_system_posix.h"
+#endif
 
 namespace filesystem {
 
@@ -30,7 +33,13 @@ class FilesApp : public mojo::ApplicationDelegate,
   // |InterfaceFactory<Files>| implementation:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<FileSystem> request) override {
-    new FileSystemImpl(connection, request.Pass());
+#if defined(OS_POSIX)
+    new FileSystemPosix(connection, request.Pass());
+#elif defined(OS_WIN)
+    new FileSystemWin(connection, request.Pass());
+#else
+#error "Only Posix and Windows are valid file systems right now."
+#endif
   }
 
   DISALLOW_COPY_AND_ASSIGN(FilesApp);

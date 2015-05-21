@@ -5,8 +5,8 @@
 // Shared implementation of things common between |DirectoryImpl| and
 // |FileImpl|.
 
-#ifndef COMPONENTS_FILESYSTEM_SHARED_IMPL_H_
-#define COMPONENTS_FILESYSTEM_SHARED_IMPL_H_
+#ifndef COMPONENTS_FILESYSTEM_POSIX_SHARED_POSIX_H_
+#define COMPONENTS_FILESYSTEM_POSIX_SHARED_POSIX_H_
 
 #include "components/filesystem/public/interfaces/types.mojom.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -28,4 +28,4 @@ void TouchFD(int fd,
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_SHARED_IMPL_H_
+#endif  // COMPONENTS_FILESYSTEM_POSIX_SHARED_POSIX_H_

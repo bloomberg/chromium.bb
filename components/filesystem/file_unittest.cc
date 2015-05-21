@@ -152,7 +152,7 @@ TEST_F(FileImplTest, OpenExclusive) {
     FilePtr file;
     error = ERROR_INTERNAL;
     directory->OpenFile("temp_file", GetProxy(&file),
-                        kOpenFlagWrite | kOpenFlagCreate |kOpenFlagExclusive,
+                        kOpenFlagWrite | kOpenFlagCreate | kOpenFlagExclusive,
                         Capture(&error));
     ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/directory_impl.h"
+#include "components/filesystem/posix/directory_posix.h"
 
 #include <dirent.h>
 #include <errno.h>
@@ -17,8 +17,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
-#include "components/filesystem/file_impl.h"
-#include "components/filesystem/shared_impl.h"
+#include "components/filesystem/posix/file_posix.h"
+#include "components/filesystem/posix/shared_posix.h"
 #include "components/filesystem/util.h"
 
 namespace filesystem {
@@ -33,19 +33,19 @@ using ScopedDIR = scoped_ptr<DIR, DIRDeleter>;
 
 }  // namespace
 
-DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
-                             base::ScopedFD dir_fd,
-                             scoped_ptr<base::ScopedTempDir> temp_dir)
+DirectoryPosix::DirectoryPosix(mojo::InterfaceRequest<Directory> request,
+                               base::ScopedFD dir_fd,
+                               scoped_ptr<base::ScopedTempDir> temp_dir)
     : binding_(this, request.Pass()),
       dir_fd_(dir_fd.Pass()),
       temp_dir_(temp_dir.Pass()) {
   DCHECK(dir_fd_.is_valid());
 }
 
-DirectoryImpl::~DirectoryImpl() {
+DirectoryPosix::~DirectoryPosix() {
 }
 
-void DirectoryImpl::Read(const ReadCallback& callback) {
+void DirectoryPosix::Read(const ReadCallback& callback) {
   static const size_t kMaxReadCount = 1000;
 
   DCHECK(dir_fd_.is_valid());
@@ -109,23 +109,23 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
   callback.Run(ERROR_OK, result.Pass());
 }
 
-void DirectoryImpl::Stat(const StatCallback& callback) {
+void DirectoryPosix::Stat(const StatCallback& callback) {
   DCHECK(dir_fd_.is_valid());
   StatFD(dir_fd_.get(), FILE_TYPE_DIRECTORY, callback);
 }
 
-void DirectoryImpl::Touch(TimespecOrNowPtr atime,
-                          TimespecOrNowPtr mtime,
-                          const TouchCallback& callback) {
+void DirectoryPosix::Touch(TimespecOrNowPtr atime,
+                           TimespecOrNowPtr mtime,
+                           const TouchCallback& callback) {
   DCHECK(dir_fd_.is_valid());
   TouchFD(dir_fd_.get(), atime.Pass(), mtime.Pass(), callback);
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
-void DirectoryImpl::OpenFile(const mojo::String& path,
-                             mojo::InterfaceRequest<File> file,
-                             uint32_t open_flags,
-                             const OpenFileCallback& callback) {
+void DirectoryPosix::OpenFile(const mojo::String& path,
+                              mojo::InterfaceRequest<File> file,
+                              uint32_t open_flags,
+                              const OpenFileCallback& callback) {
   DCHECK(!path.is_null());
   DCHECK(dir_fd_.is_valid());
 
@@ -163,14 +163,14 @@ void DirectoryImpl::OpenFile(const mojo::String& path,
   }
 
   if (file.is_pending())
-    new FileImpl(file.Pass(), file_fd.Pass());
+    new FilePosix(file.Pass(), file_fd.Pass());
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::OpenDirectory(const mojo::String& path,
-                                  mojo::InterfaceRequest<Directory> directory,
-                                  uint32_t open_flags,
-                                  const OpenDirectoryCallback& callback) {
+void DirectoryPosix::OpenDirectory(const mojo::String& path,
+                                   mojo::InterfaceRequest<Directory> directory,
+                                   uint32_t open_flags,
+                                   const OpenDirectoryCallback& callback) {
   DCHECK(!path.is_null());
   DCHECK(dir_fd_.is_valid());
 
@@ -212,13 +212,13 @@ void DirectoryImpl::OpenDirectory(const mojo::String& path,
   }
 
   if (directory.is_pending())
-    new DirectoryImpl(directory.Pass(), new_dir_fd.Pass(), nullptr);
+    new DirectoryPosix(directory.Pass(), new_dir_fd.Pass(), nullptr);
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::Rename(const mojo::String& path,
-                           const mojo::String& new_path,
-                           const RenameCallback& callback) {
+void DirectoryPosix::Rename(const mojo::String& path,
+                            const mojo::String& new_path,
+                            const RenameCallback& callback) {
   DCHECK(!path.is_null());
   DCHECK(!new_path.is_null());
   DCHECK(dir_fd_.is_valid());
@@ -242,9 +242,9 @@ void DirectoryImpl::Rename(const mojo::String& path,
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::Delete(const mojo::String& path,
-                           uint32_t delete_flags,
-                           const DeleteCallback& callback) {
+void DirectoryPosix::Delete(const mojo::String& path,
+                            uint32_t delete_flags,
+                            const DeleteCallback& callback) {
   DCHECK(!path.is_null());
   DCHECK(dir_fd_.is_valid());
 
