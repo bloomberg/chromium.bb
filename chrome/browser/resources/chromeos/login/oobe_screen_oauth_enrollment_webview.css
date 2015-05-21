@@ -186,3 +186,7 @@ html[dir=rtl] #oauth-enroll-back-button {
 #oauth-enroll-skip-button {
   min-width: 0;
 }
+
+#oauth-enroll-attribute-input {
+  padding-top: 24px;
+}
