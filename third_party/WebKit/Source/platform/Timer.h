@@ -143,6 +143,7 @@ public:
         : m_object(o), m_function(f) { }
 
 protected:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     virtual void fired() override
     {
         if (!TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(m_object))

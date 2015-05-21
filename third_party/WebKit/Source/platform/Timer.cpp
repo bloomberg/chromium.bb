@@ -247,6 +247,7 @@ inline void TimerBase::checkHeapIndex() const
     ASSERT(timerHeap()[m_heapIndex] == this);
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline void TimerBase::checkConsistency() const
 {
     // Timers should be in the heap if and only if they have a non-zero next fire time.
