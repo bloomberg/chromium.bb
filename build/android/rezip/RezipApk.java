@@ -323,7 +323,7 @@ class RezipApk {
                     throw new UnsupportedOperationException(
                             "Found more than one library\n"
                             + "Multiple libraries are not supported for APKs that use "
-                            + "'load_library_from_zip_file'.\n"
+                            + "'load_library_from_zip'.\n"
                             + "See crbug/388223.\n"
                             + "Note, check that your build is clean.\n"
                             + "An unclean build can incorrectly incorporate old "

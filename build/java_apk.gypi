@@ -51,7 +51,7 @@
 #    R.java files.
 #  use_chromium_linker - Enable the content dynamic linker that allows sharing the
 #    RELRO section of the native libraries between the different processes.
-#  load_library_from_zip_file - When using the dynamic linker, load the library
+#  load_library_from_zip - When using the dynamic linker, load the library
 #    directly out of the zip file.
 #  use_relocation_packer - Enable relocation packing. Relies on the chromium
 #    linker, so use_chromium_linker must also be enabled.
@@ -189,7 +189,7 @@
     'native_lib_target%': '',
     'native_lib_version_name%': '',
     'use_chromium_linker%' : 0,
-    'load_library_from_zip_file%' : 0,
+    'load_library_from_zip%' : 0,
     'use_relocation_packer%' : 0,
     'enable_chromium_linker_tests%': 0,
     'emma_instrument%': '<(emma_instrument)',
@@ -306,7 +306,7 @@
                   'linker_gcc_preprocess_defines': [],
                 },
               }],
-              ['load_library_from_zip_file == 1', {
+              ['load_library_from_zip == 1', {
                 'variables': {
                   'linker_load_from_zip_file_preprocess_defines': [
                     '--defines', 'ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE',
@@ -542,7 +542,6 @@
             'conditions': [
               ['create_abi_split == 0', {
                 'input_apk_path': '<(unsigned_standalone_apk_path)',
-                'load_library_from_zip': '<(load_library_from_zip_file)',
               }, {
                 'input_apk_path': '<(unsigned_apk_path)',
                 'load_library_from_zip': 0,
@@ -597,7 +596,6 @@
         {
           'action_name': 'finalize_split',
           'variables': {
-            'load_library_from_zip': '<(load_library_from_zip_file)',
             'output_apk_path': '<(final_abi_split_apk_path)',
             'conditions': [
               ['gyp_managed_install == 1', {

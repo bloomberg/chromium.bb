@@ -43,7 +43,7 @@
     '--key-path=<(keystore_path)',
     '--key-name=<(keystore_name)',
     '--key-passwd=<(keystore_password)',
-    '--load-library-from-zip-file=<(load_library_from_zip)',
+    '--load-library-from-zip=<(load_library_from_zip)',
     '--rezip-apk-jar-path=<(rezip_apk_jar_path)',
   ],
 }

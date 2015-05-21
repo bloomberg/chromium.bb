@@ -629,7 +629,7 @@ template("create_apk") {
       _rezip_jar_path = "$root_build_dir/lib.java/rezip_apk.jar"
       inputs += [ _rezip_jar_path ]
       args += [
-        "--load-library-from-zip-file=1",
+        "--load-library-from-zip=1",
         "--rezip-apk-jar-path",
         rebase_path(_rezip_jar_path, root_build_dir),
       ]

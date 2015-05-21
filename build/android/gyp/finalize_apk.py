@@ -79,7 +79,7 @@ def main():
   parser.add_option('--key-passwd', help='Keystore password')
   parser.add_option('--key-name', help='Keystore name')
   parser.add_option('--stamp', help='Path to touch on success.')
-  parser.add_option('--load-library-from-zip-file', type='int',
+  parser.add_option('--load-library-from-zip', type='int',
       help='If non-zero, build the APK such that the library can be loaded ' +
            'directly from the zip file using the crazy linker. The library ' +
            'will be renamed, uncompressed and page aligned.')
@@ -89,7 +89,7 @@ def main():
   with tempfile.NamedTemporaryFile() as signed_apk_path_tmp, \
       tempfile.NamedTemporaryFile() as apk_to_sign_tmp:
 
-    if options.load_library_from_zip_file:
+    if options.load_library_from_zip:
       # We alter the name of the library so that the Android Package Manager
       # does not extract it into a separate file. This must be done before
       # signing, as the filename is part of the signed manifest. At the same
@@ -106,7 +106,7 @@ def main():
     JarSigner(options.key_path, options.key_name, options.key_passwd,
               apk_to_sign, signed_apk_path)
 
-    if options.load_library_from_zip_file:
+    if options.load_library_from_zip:
       # Reorder the contents of the APK. This re-establishes the canonical
       # order which means the library will be back at its page aligned location.
       # This step also aligns uncompressed items to 4 bytes.
