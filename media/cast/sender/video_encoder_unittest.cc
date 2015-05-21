@@ -219,7 +219,7 @@ class VideoEncoderTest
       uint32 expected_last_referenced_frame_id,
       uint32 expected_rtp_timestamp,
       const base::TimeTicks& expected_reference_time,
-      scoped_ptr<EncodedFrame> encoded_frame) {
+      scoped_ptr<SenderEncodedFrame> encoded_frame) {
     EXPECT_TRUE(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
     EXPECT_EQ(expected_frame_id, encoded_frame->frame_id);
@@ -253,6 +253,10 @@ class VideoEncoderTest
       EXPECT_EQ(expected_last_referenced_frame_id,
                 encoded_frame->referenced_frame_id);
       EXPECT_FALSE(encoded_frame->data.empty());
+      ASSERT_TRUE(std::isfinite(encoded_frame->deadline_utilization));
+      EXPECT_LE(0.0, encoded_frame->deadline_utilization);
+      ASSERT_TRUE(std::isfinite(encoded_frame->lossy_utilization));
+      EXPECT_LE(0.0, encoded_frame->lossy_utilization);
     }
 
     ++count_frames_delivered_;

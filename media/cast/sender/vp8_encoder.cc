@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/net/cast_transport_config.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 
 namespace media {
@@ -164,9 +163,14 @@ void Vp8Encoder::ConfigureForNewFrameSize(const gfx::Size& frame_size) {
 
 void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
                         const base::TimeTicks& reference_time,
-                        EncodedFrame* encoded_frame) {
+                        SenderEncodedFrame* encoded_frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(encoded_frame);
+
+  // Note: This is used to compute the |deadline_utilization| and so it uses the
+  // real-world clock instead of the CastEnvironment clock, the latter of which
+  // might be simulated.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Initialize on-demand.  Later, if the video frame size has changed, update
   // the encoder configuration.
@@ -279,8 +283,37 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   DCHECK(!encoded_frame->data.empty())
       << "BUG: Encoder must provide data since lagged encoding is disabled.";
 
+  // Compute deadline utilization as the real-world time elapsed divided by the
+  // frame duration.
+  const base::TimeDelta processing_time = base::TimeTicks::Now() - start_time;
+  encoded_frame->deadline_utilization =
+      processing_time.InSecondsF() / predicted_frame_duration.InSecondsF();
+
+  // Compute lossy utilization.  The VP8 encoder took an estimated guess at what
+  // quantizer value would produce an encoded frame size as close to the target
+  // as possible.  Now that the frame has been encoded and the number of bytes
+  // is known, the perfect quantizer value (i.e., the one that should have been
+  // used) can be determined.  This perfect quantizer is then normalized and
+  // used as the lossy utilization.
+  const double actual_bitrate =
+      encoded_frame->data.size() * 8.0 / predicted_frame_duration.InSecondsF();
+  const double target_bitrate = 1000.0 * config_.rc_target_bitrate;
+  DCHECK_GT(target_bitrate, 0.0);
+  const double bitrate_utilization = actual_bitrate / target_bitrate;
+  int quantizer = -1;
+  CHECK_EQ(vpx_codec_control(&encoder_, VP8E_GET_LAST_QUANTIZER_64, &quantizer),
+           VPX_CODEC_OK);
+  const double perfect_quantizer = bitrate_utilization * std::max(0, quantizer);
+  // Side note: If it was possible for the encoder to encode within the target
+  // number of bytes, the |perfect_quantizer| will be in the range [0.0,63.0].
+  // If it was never possible, the value will be greater than 63.0.
+  encoded_frame->lossy_utilization = perfect_quantizer / 63.0;
+
   DVLOG(2) << "VP8 encoded frame_id " << encoded_frame->frame_id
-           << ", sized:" << encoded_frame->data.size();
+           << ", sized: " << encoded_frame->data.size()
+           << ", deadline_utilization: " << encoded_frame->deadline_utilization
+           << ", lossy_utilization: " << encoded_frame->lossy_utilization
+           << " (quantizer chosen by the encoder was " << quantizer << ')';
 
   if (encoded_frame->dependency == EncodedFrame::KEY) {
     key_frame_requested_ = false;

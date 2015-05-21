@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/sender/sender_encoded_frame.h"
 #include "media/cast/sender/video_frame_factory.h"
 
 namespace media {
@@ -20,7 +21,9 @@ namespace cast {
 // All these functions are called from the main cast thread.
 class VideoEncoder {
  public:
-  typedef base::Callback<void(scoped_ptr<EncodedFrame>)> FrameEncodedCallback;
+  // Callback used to deliver an encoded frame on the Cast MAIN thread.
+  using FrameEncodedCallback =
+      base::Callback<void(scoped_ptr<SenderEncodedFrame>)>;
 
   // Creates a VideoEncoder instance from the given |video_config| and based on
   // the current platform's hardware/library support; or null if no

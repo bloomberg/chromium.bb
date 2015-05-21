@@ -200,7 +200,7 @@ class ExternalVideoEncoder::VEAClientImpl
     } else if (!in_progress_frame_encodes_.empty()) {
       const InProgressFrameEncode& request = in_progress_frame_encodes_.front();
 
-      scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
+      scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
       encoded_frame->dependency = key_frame ? EncodedFrame::KEY :
           EncodedFrame::DEPENDENT;
       encoded_frame->frame_id = next_frame_id_++;
@@ -216,6 +216,8 @@ class ExternalVideoEncoder::VEAClientImpl
       }
       encoded_frame->data.append(
           static_cast<const char*>(output_buffer->memory()), payload_size);
+      // TODO(miu): Compute and populate the |deadline_utilization| and
+      // |lossy_utilization| performance metrics in |encoded_frame|.
 
       cast_environment_->PostTask(
           CastEnvironment::MAIN,

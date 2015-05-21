@@ -7,7 +7,6 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "media/base/video_frame.h"
-#include "media/cast/net/cast_transport_config.h"
 
 #ifndef OFFICIAL_BUILD
 
@@ -30,7 +29,7 @@ void FakeSoftwareVideoEncoder::Initialize() {}
 void FakeSoftwareVideoEncoder::Encode(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& reference_time,
-    EncodedFrame* encoded_frame) {
+    SenderEncodedFrame* encoded_frame) {
   DCHECK(encoded_frame);
 
   if (video_frame->visible_rect().size() != last_frame_size_) {
@@ -60,6 +59,14 @@ void FakeSoftwareVideoEncoder::Encode(
   base::JSONWriter::Write(values, &encoded_frame->data);
   encoded_frame->data.resize(
       std::max<size_t>(encoded_frame->data.size(), frame_size_), ' ');
+
+  if (encoded_frame->dependency == EncodedFrame::KEY) {
+    encoded_frame->deadline_utilization = 1.0;
+    encoded_frame->lossy_utilization = 6.0;
+  } else {
+    encoded_frame->deadline_utilization = 0.8;
+    encoded_frame->lossy_utilization = 0.8;
+  }
 }
 
 void FakeSoftwareVideoEncoder::UpdateRates(uint32 new_bitrate) {

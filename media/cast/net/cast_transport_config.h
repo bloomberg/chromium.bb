@@ -71,7 +71,7 @@ struct EncodedFrame {
   };
 
   EncodedFrame();
-  ~EncodedFrame();
+  virtual ~EncodedFrame();
 
   // Convenience accessors to data as an array of uint8 elements.
   const uint8* bytes() const {

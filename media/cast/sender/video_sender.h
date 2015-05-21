@@ -23,6 +23,7 @@ class VideoFrame;
 namespace cast {
 
 class CastTransportSender;
+struct SenderEncodedFrame;
 class VideoEncoder;
 class VideoFrameFactory;
 
@@ -67,7 +68,7 @@ class VideoSender : public FrameSender,
  private:
   // Called by the |video_encoder_| with the next EncodedFrame to send.
   void OnEncodedVideoFrame(int encoder_bitrate,
-                           scoped_ptr<EncodedFrame> encoded_frame);
+                           scoped_ptr<SenderEncodedFrame> encoded_frame);
 
   // Encodes media::VideoFrame images into EncodedFrames.  Per configuration,
   // this will point to either the internal software-based encoder or a proxy to
@@ -89,6 +90,12 @@ class VideoSender : public FrameSender,
   uint32 last_bitrate_;
 
   PlayoutDelayChangeCB playout_delay_change_cb_;
+
+  // The video encoder's performance metrics as of the last call to
+  // OnEncodedVideoFrame().  See header file comments for SenderEncodedFrame for
+  // an explanation of these values.
+  double last_reported_deadline_utilization_;
+  double last_reported_lossy_utilization_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoSender> weak_factory_;
