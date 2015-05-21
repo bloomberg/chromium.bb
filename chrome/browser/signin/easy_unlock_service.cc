@@ -493,13 +493,24 @@ void EasyUnlockService::AttemptAuth(const std::string& user_id) {
 
 void EasyUnlockService::AttemptAuth(const std::string& user_id,
                                     const AttemptAuthCallback& callback) {
+  const EasyUnlockAuthAttempt::Type auth_attempt_type =
+      GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
+                                : EasyUnlockAuthAttempt::TYPE_SIGNIN;
+  const std::string user_email = GetUserEmail();
+  if (user_email.empty()) {
+    LOG(ERROR) << "Empty user email. Refresh token might go bad.";
+    if (!callback.is_null()) {
+      const bool kFailure = false;
+      callback.Run(auth_attempt_type, kFailure, user_id, std::string(),
+                   std::string());
+    }
+    return;
+  }
+
   CHECK_EQ(GetUserEmail(), user_id);
 
-  auth_attempt_.reset(new EasyUnlockAuthAttempt(
-      app_manager_.get(), user_id,
-      GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
-                                : EasyUnlockAuthAttempt::TYPE_SIGNIN,
-      callback));
+  auth_attempt_.reset(new EasyUnlockAuthAttempt(app_manager_.get(), user_id,
+                                                auth_attempt_type, callback));
   if (!auth_attempt_->Start())
     auth_attempt_.reset();
 }

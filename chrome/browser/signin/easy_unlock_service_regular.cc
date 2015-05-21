@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/constants.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "apps/app_lifetime_monitor_factory.h"
@@ -98,7 +99,8 @@ std::string EasyUnlockServiceRegular::GetUserEmail() const {
   // |profile| has to be a signed-in profile with SigninManager already
   // created. Otherwise, just crash to collect stack.
   DCHECK(signin_manager);
-  return signin_manager->GetAuthenticatedUsername();
+  const std::string user_email = signin_manager->GetAuthenticatedUsername();
+  return user_email.empty() ? user_email : gaia::CanonicalizeEmail(user_email);
 }
 
 void EasyUnlockServiceRegular::LaunchSetup() {
