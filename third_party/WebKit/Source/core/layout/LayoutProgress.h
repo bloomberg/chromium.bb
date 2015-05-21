@@ -32,7 +32,6 @@ class CORE_EXPORT LayoutProgress final : public LayoutBlockFlow {
 public:
     explicit LayoutProgress(HTMLElement*);
     virtual ~LayoutProgress();
-    virtual void destroy() override;
 
     double position() const { return m_position; }
     double animationProgress() const;
@@ -43,6 +42,9 @@ public:
     HTMLProgressElement* progressElement() const;
 
     virtual const char* name() const override { return "LayoutProgress"; }
+
+protected:
+    virtual void willBeDestroyed() override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || LayoutBlockFlow::isOfType(type); }

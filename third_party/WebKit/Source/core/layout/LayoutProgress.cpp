@@ -44,13 +44,13 @@ LayoutProgress::~LayoutProgress()
 {
 }
 
-void LayoutProgress::destroy()
+void LayoutProgress::willBeDestroyed()
 {
     if (m_animating) {
         m_animationTimer.stop();
         m_animating = false;
     }
-    LayoutBlockFlow::destroy();
+    LayoutBlockFlow::willBeDestroyed();
 }
 
 void LayoutProgress::updateFromElement()
