@@ -30,6 +30,8 @@ function GalleryDataModel(metadataModel, opt_watcher) {
   // Start to watch file system entries.
   var watcher = opt_watcher ? opt_watcher : new EntryListWatcher(this);
   watcher.getEntry = function(item) { return item.getEntry(); };
+
+  this.addEventListener('splice', this.onSplice_.bind(this));
 }
 
 /**
@@ -151,4 +153,18 @@ GalleryDataModel.prototype.evictCache = function() {
       }
     }
   }
+};
+
+/**
+ * Handles entry delete.
+ * @param {!Event} event
+ * @private
+ */
+GalleryDataModel.prototype.onSplice_ = function(event) {
+  if (!event.removed || !event.removed.length)
+    return;
+  var removedURLs = event.removed.map(function(item) {
+    return item.getEntry().toURL();
+  });
+  this.metadataModel_.notifyEntriesRemoved(removedURLs);
 };
