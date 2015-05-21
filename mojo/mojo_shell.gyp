@@ -38,7 +38,7 @@
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
-      '<(DEPTH)/mojo/mojo_services.gyp:network_service_bindings_mojom',
+      '<(DEPTH)/mojo/mojo_services.gyp:network_service_bindings_lib',
       '<(DEPTH)/third_party/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/url/url.gyp:url_lib',
     ],

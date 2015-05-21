@@ -4,9 +4,8 @@
 
 {
   'targets': [{
-    # GN version: //mojo/services/network/public/interfaces
     'target_name': 'network_service_bindings_mojom',
-    'type': 'static_library',
+    'type': 'none',
     'variables': {
       'mojom_files': [
         'services/network/public/interfaces/cookie_store.mojom',
@@ -28,10 +27,12 @@
     'includes': [
       '../third_party/mojo/mojom_bindings_generator_explicit.gypi',
     ],
-    'sources': [
-      # XCode doesn't want to link a target without a source file. So add a
-      # dummy file keep the linker happy.  See http://crbug.com/157073
-      'services/network/xcode_hack.c',
+  }, {
+    # GN version: //mojo/services/network/public/interfaces
+    'target_name': 'network_service_bindings_libs',
+    'type': 'static_library',
+    'dependencies': [
+      'network_service_bindings_mojom',
     ],
   }],
 }
