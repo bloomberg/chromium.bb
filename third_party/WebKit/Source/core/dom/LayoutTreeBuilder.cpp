@@ -72,9 +72,7 @@ LayoutObject* LayoutTreeBuilderForElement::nextLayoutObject() const
 
 LayoutObject* LayoutTreeBuilderForElement::parentLayoutObject() const
 {
-    LayoutObject* parentLayoutObject = LayoutTreeBuilder::parentLayoutObject();
-
-    if (parentLayoutObject) {
+    if (m_layoutObjectParent) {
         // FIXME: Guarding this by parentLayoutObject isn't quite right as the spec for
         // top layer only talks about display: none ancestors so putting a <dialog> inside an
         // <optgroup> seems like it should still work even though this check will prevent it.
@@ -82,7 +80,7 @@ LayoutObject* LayoutTreeBuilderForElement::parentLayoutObject() const
             return m_node->document().layoutView();
     }
 
-    return parentLayoutObject;
+    return m_layoutObjectParent;
 }
 
 bool LayoutTreeBuilderForElement::shouldCreateLayoutObject() const
@@ -150,26 +148,25 @@ void LayoutTreeBuilderForElement::createLayoutObject()
 
 void LayoutTreeBuilderForText::createLayoutObject()
 {
-    LayoutObject* parentLayoutObject = this->parentLayoutObject();
-    ComputedStyle& style = parentLayoutObject->mutableStyleRef();
+    ComputedStyle& style = m_layoutObjectParent->mutableStyleRef();
 
-    ASSERT(m_node->textLayoutObjectIsNeeded(style, *parentLayoutObject));
+    ASSERT(m_node->textLayoutObjectIsNeeded(style, *m_layoutObjectParent));
 
     LayoutText* newLayoutObject = m_node->createTextLayoutObject(style);
-    if (!parentLayoutObject->isChildAllowed(newLayoutObject, style)) {
+    if (!m_layoutObjectParent->isChildAllowed(newLayoutObject, style)) {
         newLayoutObject->destroy();
         return;
     }
 
     // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
     // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
-    newLayoutObject->setIsInsideFlowThread(parentLayoutObject->isInsideFlowThread());
+    newLayoutObject->setIsInsideFlowThread(m_layoutObjectParent->isInsideFlowThread());
 
     LayoutObject* nextLayoutObject = this->nextLayoutObject();
     m_node->setLayoutObject(newLayoutObject);
     // Parent takes care of the animations, no need to call setAnimatableStyle.
     newLayoutObject->setStyle(&style);
-    parentLayoutObject->addChild(newLayoutObject, nextLayoutObject);
+    m_layoutObjectParent->addChild(newLayoutObject, nextLayoutObject);
 }
 
 }

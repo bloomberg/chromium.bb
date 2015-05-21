@@ -27,7 +27,6 @@
 #define LayoutTreeBuilder_h
 
 #include "core/dom/Document.h"
-#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
@@ -36,7 +35,6 @@
 
 namespace blink {
 
-class LayoutObject;
 class ComputedStyle;
 
 template <typename NodeType>
@@ -57,8 +55,6 @@ protected:
         // Mainly HTMLTextAreaElement::childrenChanged calls HTMLTextFormControlElement::setSelectionRange
         // which does an updateLayoutIgnorePendingStylesheets.
     }
-
-    LayoutObject* parentLayoutObject() const { return m_layoutObjectParent; }
 
     LayoutObject* nextLayoutObject() const
     {
