@@ -299,24 +299,24 @@ RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
   return iter->second;
 }
 
-void FrameTree::RegisterRenderFrameHost(
-    RenderFrameHostImpl* render_frame_host) {
-  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+void FrameTree::AddRenderViewHostRef(
+    RenderViewHostImpl* render_view_host) {
+  SiteInstance* site_instance = render_view_host->GetSiteInstance();
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   CHECK(iter != render_view_host_map_.end());
+  CHECK(iter->second == render_view_host);
 
   iter->second->increment_ref_count();
 }
 
-void FrameTree::UnregisterRenderFrameHost(
-    RenderFrameHostImpl* render_frame_host) {
-  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+void FrameTree::ReleaseRenderViewHostRef(
+    RenderViewHostImpl* render_view_host) {
+  SiteInstance* site_instance = render_view_host->GetSiteInstance();
   int32 site_instance_id = site_instance->GetId();
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance_id);
-  if (iter != render_view_host_map_.end() &&
-      iter->second == render_frame_host->render_view_host()) {
+  if (iter != render_view_host_map_.end() && iter->second == render_view_host) {
     // Decrement the refcount and shutdown the RenderViewHost if no one else is
     // using it.
     CHECK_GT(iter->second->ref_count(), 0);
@@ -335,16 +335,15 @@ void FrameTree::UnregisterRenderFrameHost(
     for (RenderViewHostMultiMap::iterator multi_iter = result.first;
          multi_iter != result.second;
          ++multi_iter) {
-      if (multi_iter->second != render_frame_host->render_view_host())
+      if (multi_iter->second != render_view_host)
         continue;
       render_view_host_found = true;
-      RenderViewHostImpl* rvh = multi_iter->second;
       // Decrement the refcount and shutdown the RenderViewHost if no one else
       // is using it.
-      CHECK_GT(rvh->ref_count(), 0);
-      rvh->decrement_ref_count();
-      if (rvh->ref_count() == 0) {
-        rvh->Shutdown();
+      CHECK_GT(render_view_host->ref_count(), 0);
+      render_view_host->decrement_ref_count();
+      if (render_view_host->ref_count() == 0) {
+        render_view_host->Shutdown();
         render_view_host_pending_shutdown_map_.erase(multi_iter);
       }
       break;

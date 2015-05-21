@@ -60,6 +60,7 @@ class RenderFrameProxyHost
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
 
   RenderFrameProxyHost(SiteInstance* site_instance,
+                       RenderViewHostImpl* render_view_host,
                        FrameTreeNode* frame_tree_node);
   ~RenderFrameProxyHost() override;
 
@@ -148,6 +149,11 @@ class RenderFrameProxyHost
   // TODO(nasko): This can be removed once we don't have a swapped out state on
   // RenderFrameHosts. See https://crbug.com/357747.
   scoped_ptr<RenderFrameHostImpl> render_frame_host_;
+
+  // The RenderViewHost that this RenderFrameProxyHost is associated with. It is
+  // kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
+  // are associated with it.
+  RenderViewHostImpl* render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

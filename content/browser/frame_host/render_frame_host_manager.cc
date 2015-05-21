@@ -598,7 +598,9 @@ void RenderFrameHostManager::SwapOutOldFrame(
   // (There should not be one yet.)
   CHECK(!GetRenderFrameProxyHost(old_render_frame_host->GetSiteInstance()));
   RenderFrameProxyHost* proxy = new RenderFrameProxyHost(
-      old_render_frame_host->GetSiteInstance(), frame_tree_node_);
+      old_render_frame_host->GetSiteInstance(),
+      old_render_frame_host->render_view_host(),
+      frame_tree_node_);
   CHECK(proxy_hosts_.insert(std::make_pair(old_site_instance_id, proxy)).second)
       << "Inserting a duplicate item.";
 
@@ -641,7 +643,9 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 
     CHECK(!GetRenderFrameProxyHost(site_instance));
     RenderFrameProxyHost* proxy =
-        new RenderFrameProxyHost(site_instance, frame_tree_node_);
+        new RenderFrameProxyHost(site_instance,
+                                 render_frame_host->render_view_host(),
+                                 frame_tree_node_);
     proxy_hosts_[site_instance->GetId()] = proxy;
 
     // Check if the RenderFrameHost is already swapped out, to avoid swapping it
@@ -1501,7 +1505,8 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       new_render_frame_host->GetProcess()->AddPendingView();
     } else {
       proxy = new RenderFrameProxyHost(
-          new_render_frame_host->GetSiteInstance(), frame_tree_node_);
+          new_render_frame_host->GetSiteInstance(),
+          new_render_frame_host->render_view_host(), frame_tree_node_);
       proxy_hosts_[instance->GetId()] = proxy;
       proxy_routing_id = proxy->GetRoutingID();
       proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
@@ -1568,7 +1573,9 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
     return proxy->GetRoutingID();
 
   if (!proxy) {
-    proxy = new RenderFrameProxyHost(instance, frame_tree_node_);
+    proxy = new RenderFrameProxyHost(
+        instance, frame_tree_node_->frame_tree()->GetRenderViewHost(instance),
+        frame_tree_node_);
     proxy_hosts_[instance->GetId()] = proxy;
   }
   proxy->InitRenderFrameProxy();
