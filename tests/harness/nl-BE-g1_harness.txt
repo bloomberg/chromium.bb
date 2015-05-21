@@ -418,6 +418,18 @@
         {
           "input": "12:30 uur",
           "output": "⠼⠁⠃⠒⠼⠉⠚ ⠥⠥⠗"
+        },
+        {
+          "input": "Een hoek van 27° 30'.",
+          "output": "⠨⠑⠑⠝ ⠓⠕⠑⠅ ⠧⠁⠝ ⠼⠃⠛⠈⠴ ⠼⠉⠚⠈⠔⠲"
+        },
+        {
+          "input": "Het record is 3' 5''.",
+          "output": "⠨⠓⠑⠞ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠼⠉⠈⠔ ⠼⠑⠈⠔⠔⠲"
+        },
+        {
+          "input": "57° 38' noorderbreedte",
+          "output": "⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑"
         }
       ]
     }
