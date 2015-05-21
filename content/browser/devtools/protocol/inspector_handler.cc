@@ -4,11 +4,16 @@
 
 #include "content/browser/devtools/protocol/inspector_handler.h"
 
+#include "content/browser/frame_host/render_frame_host_impl.h"
+
 namespace content {
 namespace devtools {
 namespace inspector {
 
-InspectorHandler::InspectorHandler() {
+using Response = DevToolsProtocolClient::Response;
+
+InspectorHandler::InspectorHandler()
+    : host_(nullptr) {
 }
 
 InspectorHandler::~InspectorHandler() {
@@ -18,9 +23,20 @@ void InspectorHandler::SetClient(scoped_ptr<Client> client) {
   client_.swap(client);
 }
 
+void InspectorHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
+  host_ = host;
+}
+
 void InspectorHandler::TargetCrashed() {
   client_->TargetCrashed(TargetCrashedParams::Create());
 }
+
+Response InspectorHandler::Enable() {
+  if (host_ && !host_->IsRenderFrameLive())
+    client_->TargetCrashed(TargetCrashedParams::Create());
+  return Response::FallThrough();
+}
+
 
 }  // namespace inspector
 }  // namespace devtools
