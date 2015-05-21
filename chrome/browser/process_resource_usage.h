@@ -22,13 +22,31 @@
 // about://memory-internals.
 //
 // To create:
-// 1. Obtain a ResourceUsageReporter connection using the child process's
-//    service registry. i.e:
-//    ResourceUsageReporterPtr service;
-//    process->GetServiceRegistry()->ConnectToRemoteService(&service);
-// 2. If needed, the connection can be passed to another thread using
-//    ResourceUsageReporterPtr::PassInterface().
-// 3. Pass the service to the constructor.
+// 1. Create a ResourceUsageReporterPtr and obtain an InterfaceRequest<> using
+//    mojo::GetProxy.
+// 2. Use the child process's service registry to connect to the service using
+//    the InterfaceRequest<>. Note, ServiceRegistry is thread hostile and
+//    must always be accessed from the same thread. However, InterfaceRequest<>
+//    can be passed safely between threads, and therefore a task can be posted
+//    to the ServiceRegistry thread to connect to the remote service.
+// 3. Pass the ResourceUsageReporterPtr to the constructor.
+//
+// Example:
+//   void Foo::ConnectToService(
+//       mojo::InterfaceRequest<ResourceUsageReporter> req) {
+//     content::ServiceRegistry* registry = host_->GetServiceRegistry();
+//     registry->ConnectToRemoteService(req.Pass());
+//   }
+//
+//   ...
+//     ResourceUsageReporterPtr service;
+//     mojo::InterfaceRequest<ResourceUsageReporter> request =
+//         mojo::GetProxy(&service);
+//     content::BrowserThread::PostTask(
+//         content::BrowserThread::IO, FROM_HERE,
+//         base::Bind(&Foo::ConnectToService, this, base::Passed(&request)));
+//     resource_usage_.reset(new ProcessResourceUsage(service.Pass()));
+//   ...
 //
 // Note: ProcessResourceUsage is thread-hostile and must live on a single
 // thread.

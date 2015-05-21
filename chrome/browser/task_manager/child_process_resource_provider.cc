@@ -60,11 +60,8 @@ class ChildProcessResource : public Resource {
   // process would be "Plugin: Flash" when name is "Flash".
   base::string16 GetLocalizedTitle() const;
 
-  static mojo::InterfacePtrInfo<ResourceUsageReporter>
-  GetProcessUsageOnIOThread(int id);
-
-  void OnGetProcessUsageDone(
-      mojo::InterfacePtrInfo<ResourceUsageReporter> info);
+  static void ConnectResourceReporterOnIOThread(
+      int id, mojo::InterfaceRequest<ResourceUsageReporter> req);
 
   int process_type_;
   base::string16 name_;
@@ -88,21 +85,19 @@ class ChildProcessResource : public Resource {
 gfx::ImageSkia* ChildProcessResource::default_icon_ = NULL;
 
 // static
-mojo::InterfacePtrInfo<ResourceUsageReporter>
-ChildProcessResource::GetProcessUsageOnIOThread(int id) {
+void ChildProcessResource::ConnectResourceReporterOnIOThread(
+    int id, mojo::InterfaceRequest<ResourceUsageReporter> req) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::BrowserChildProcessHost* host =
       content::BrowserChildProcessHost::FromID(id);
   if (!host)
-    return mojo::InterfacePtrInfo<ResourceUsageReporter>();
+    return;
 
   content::ServiceRegistry* registry = host->GetServiceRegistry();
   if (!registry)
-    return mojo::InterfacePtrInfo<ResourceUsageReporter>();
+    return;
 
-  ResourceUsageReporterPtr service;
-  registry->ConnectToRemoteService(&service);
-  return service.PassInterface().Pass();
+  registry->ConnectToRemoteService(req.Pass());
 }
 
 ChildProcessResource::ChildProcessResource(int process_type,
@@ -123,25 +118,17 @@ ChildProcessResource::ChildProcessResource(int process_type,
     default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
     // TODO(jabdelmalek): use different icon for web workers.
   }
-  BrowserThread::PostTaskAndReplyWithResult(
+  ResourceUsageReporterPtr service;
+  mojo::InterfaceRequest<ResourceUsageReporter> request =
+      mojo::GetProxy(&service);
+  BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ChildProcessResource::GetProcessUsageOnIOThread,
-                 unique_process_id),
-      base::Bind(&ChildProcessResource::OnGetProcessUsageDone,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&ChildProcessResource::ConnectResourceReporterOnIOThread,
+                 unique_process_id, base::Passed(&request)));
+  resource_usage_.reset(new ProcessResourceUsage(service.Pass()));
 }
 
 ChildProcessResource::~ChildProcessResource() {
-}
-
-void ChildProcessResource::OnGetProcessUsageDone(
-    mojo::InterfacePtrInfo<ResourceUsageReporter> info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (info.is_valid()) {
-    ResourceUsageReporterPtr service;
-    service.Bind(info.Pass());
-    resource_usage_.reset(new ProcessResourceUsage(service.Pass()));
-  }
 }
 
 // Resource methods:
