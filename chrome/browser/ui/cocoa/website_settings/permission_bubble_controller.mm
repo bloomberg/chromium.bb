@@ -248,6 +248,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)windowWillClose:(NSNotification*)notification {
   bridge_->OnBubbleClosing();
   [super windowWillClose:notification];
+
+  if (delegate_)
+    delegate_->Closing();
 }
 
 - (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification {

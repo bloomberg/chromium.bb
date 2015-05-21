@@ -301,6 +301,7 @@ TEST_F(PermissionBubbleControllerTest, EscapeCloses) {
                acceptStates:accept_states_];
 
   EXPECT_TRUE([[controller_ window] isVisible]);
+  EXPECT_CALL(*this, Closing()).Times(1);
   [[controller_ window]
       performKeyEquivalent:cocoa_test_event_utils::KeyEventWithKeyCode(
                                kVK_Escape, '\e', NSKeyDown, 0)];
