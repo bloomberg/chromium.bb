@@ -409,7 +409,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (this.isNewGaiaFlow) {
         $('inner-container').classList.add('new-gaia-flow');
-        $('progress-dots').hidden = true;
         params.chromeType = data.chromeType;
         params.isNewGaiaFlowChromeOS = true;
       }
