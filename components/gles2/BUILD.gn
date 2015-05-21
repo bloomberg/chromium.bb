@@ -15,6 +15,7 @@ source_set("gles2") {
     "command_buffer_driver.h",
     "command_buffer_impl.cc",
     "command_buffer_impl.h",
+    "command_buffer_impl_observer.h",
     "gpu_impl.cc",
     "gpu_impl.h",
     "gpu_state.cc",

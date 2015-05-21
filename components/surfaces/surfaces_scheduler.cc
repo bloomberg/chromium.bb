@@ -37,6 +37,10 @@ void SurfacesScheduler::OnVSyncParametersUpdated(base::TimeTicks timebase,
 void SurfacesScheduler::AddDisplay(cc::Display* display) {
   DCHECK(displays_.find(display) == displays_.end());
   displays_.insert(display);
+
+  // A draw might be necessary (e.g., this display might be getting added on
+  // resumption from the app being in the background as happens on android).
+  SetNeedsDraw();
 }
 
 void SurfacesScheduler::RemoveDisplay(cc::Display* display) {

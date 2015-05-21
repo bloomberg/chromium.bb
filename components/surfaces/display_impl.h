@@ -67,6 +67,7 @@ class DisplayImpl : public mojo::Display,
   mojo::ContextProviderPtr context_provider_;
   mojo::ResourceReturnerPtr returner_;
 
+  gfx::Size last_submitted_frame_size_;
   mojo::FramePtr pending_frame_;
   SubmitFrameCallback pending_callback_;
 
