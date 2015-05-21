@@ -63,6 +63,7 @@ from pylib import constants
 from pylib import forwarder
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+from pylib.device import battery_utils
 from pylib.device import device_errors
 
 
@@ -191,6 +192,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self._tests = tests
     self._flaky_tests = flaky_tests
     self._output_dir = None
+    self._device_battery = battery_utils.BatteryUtils(self.device)
 
   @staticmethod
   def _IsBetter(result):
@@ -261,6 +263,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self._output_dir = tempfile.mkdtemp()
       cmd = cmd + ' --output-dir=%s' % self._output_dir
 
+    logging.info(
+        'temperature: %s (0.1 C)',
+        str(self._device_battery.GetBatteryInfo().get('temperature')))
     logging.info('%s : %s', test_name, cmd)
     start_time = datetime.datetime.now()
 
