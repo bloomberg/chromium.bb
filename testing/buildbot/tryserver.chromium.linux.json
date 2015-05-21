@@ -11,7 +11,13 @@
       "chrome_shell_apk",
       "mandoline:all"
     ],
-    "gtest_tests": []
+    "gtest_tests": [],
+    "scripts": [
+      {
+        "name": "gn_check",
+        "script": "gn_check.py"
+      }
+    ]
   },
   "linux_chromium_gn_chromeos_dbg": {
     "additional_compile_targets": [
@@ -351,6 +357,19 @@
       },
       {
         "test": "wm_unittests"
+      }
+    ],
+    "scripts": [
+      {
+        "name": "gn_check",
+        "script": "gn_check.py"
+      },
+      {
+        "args": [
+          "chrome"
+        ],
+        "name": "gyp_flag_compare",
+        "script": "gyp_flag_compare.py"
       }
     ]
   }

@@ -3,6 +3,12 @@
     "additional_compile_targets": [
       "chrome_shell_apk",
       "mandoline:all"
+    ],
+    "scripts": [
+      {
+        "name": "gn_check",
+        "script": "gn_check.py"
+      }
     ]
   },
   "Android GN (dbg)": {
@@ -363,6 +369,19 @@
       },
       {
         "test": "wm_unittests"
+      }
+    ],
+    "scripts": [
+      {
+        "name": "gn_check",
+        "script": "gn_check.py"
+      },
+      {
+        "args": [
+          "chrome"
+        ],
+        "name": "gyp_flag_compare",
+        "script": "gyp_flag_compare.py"
       }
     ]
   },
