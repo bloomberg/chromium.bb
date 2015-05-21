@@ -7,6 +7,9 @@
 #include "gpu/command_buffer/client/query_tracker.h"
 
 #include <GLES2/gl2ext.h>
+
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -108,7 +111,7 @@ class QueryTrackerTest : public testing::Test {
   }
 
   uint32 GetBucketUsedCount(QuerySyncManager::Bucket* bucket) {
-    return QuerySyncManager::kSyncsPerBucket - bucket->free_queries.size();
+    return bucket->in_use_queries.count();
   }
 
   uint32 GetFlushGeneration() { return helper_->flush_generation(); }
@@ -235,6 +238,58 @@ TEST_F(QueryTrackerTest, Remove) {
   EXPECT_EQ(0u, GetBucketUsedCount(bucket));
 }
 
+TEST_F(QueryTrackerTest, ManyQueries) {
+  const GLuint kId1 = 123;
+  const int32 kToken = 46;
+  const uint32 kResult = 456;
+
+  const size_t kTestSize = 4000;
+  static_assert(kTestSize > QuerySyncManager::kSyncsPerBucket,
+                "We want to use more than one bucket");
+  // Create lots of queries.
+  std::vector<QueryTracker::Query*> queries;
+  for (size_t i = 0; i < kTestSize; i++) {
+    QueryTracker::Query* query =
+        query_tracker_->CreateQuery(kId1 + i, GL_ANY_SAMPLES_PASSED_EXT);
+    ASSERT_TRUE(query != NULL);
+    queries.push_back(query);
+    QuerySyncManager::Bucket* bucket = GetBucket(query);
+    EXPECT_LE(1u, GetBucketUsedCount(bucket));
+  }
+
+  QuerySyncManager::Bucket* query_0_bucket = GetBucket(queries[0]);
+  uint32 expected_use_count = QuerySyncManager::kSyncsPerBucket;
+  EXPECT_EQ(expected_use_count, GetBucketUsedCount(query_0_bucket));
+
+  while (!queries.empty()) {
+    QueryTracker::Query* query = queries.back();
+    queries.pop_back();
+    GLuint query_id = kId1 + queries.size();
+    EXPECT_EQ(query_id, query->id());
+    query->MarkAsActive();
+    query->MarkAsPending(kToken);
+
+    QuerySyncManager::Bucket* bucket = GetBucket(query);
+    uint32 use_count_before_remove = GetBucketUsedCount(bucket);
+    query_tracker_->FreeCompletedQueries();
+    EXPECT_EQ(use_count_before_remove, GetBucketUsedCount(bucket));
+    query_tracker_->RemoveQuery(query_id);
+    // Check we get nothing for a non-existent query.
+    EXPECT_TRUE(query_tracker_->GetQuery(query_id) == NULL);
+
+    // Check that memory was not freed since it was not completed.
+    EXPECT_EQ(use_count_before_remove, GetBucketUsedCount(bucket));
+
+    // Simulate GPU process marking it as available.
+    QuerySync* sync = GetSync(query);
+    sync->process_count = query->submit_count();
+    sync->result = kResult;
+
+    // Check FreeCompletedQueries.
+    query_tracker_->FreeCompletedQueries();
+    EXPECT_EQ(use_count_before_remove - 1, GetBucketUsedCount(bucket));
+  }
+}
 }  // namespace gles2
 }  // namespace gpu
 

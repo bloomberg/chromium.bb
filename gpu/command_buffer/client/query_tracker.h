@@ -7,9 +7,9 @@
 
 #include <GLES2/gl2.h>
 
+#include <bitset>
 #include <deque>
 #include <list>
-#include <vector>
 
 #include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
@@ -28,7 +28,7 @@ class GLES2Implementation;
 // Manages buckets of QuerySync instances in mapped memory.
 class GLES2_IMPL_EXPORT QuerySyncManager {
  public:
-  static const size_t kSyncsPerBucket = 1024;
+  static const size_t kSyncsPerBucket = 256;
 
   struct Bucket {
     Bucket(QuerySync* sync_mem, int32 shm_id, uint32 shm_offset);
@@ -36,7 +36,7 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
     QuerySync* syncs;
     int32 shm_id;
     uint32 base_shm_offset;
-    std::vector<unsigned short> free_queries;
+    std::bitset<kSyncsPerBucket> in_use_queries;
   };
   struct QueryInfo {
     QueryInfo(Bucket* bucket, int32 id, uint32 offset, QuerySync* sync_mem)

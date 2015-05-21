@@ -23,7 +23,7 @@ class CommandBufferHelper;
 class MockCommandBufferBase : public CommandBufferServiceBase {
  public:
   static const int32 kTransferBufferBaseId = 0x123;
-  static const int32 kMaxTransferBuffers = 6;
+  static const int32 kMaxTransferBuffers = 32;
 
   MockCommandBufferBase();
   ~MockCommandBufferBase() override;

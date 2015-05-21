@@ -25,12 +25,7 @@ QuerySyncManager::Bucket::Bucket(QuerySync* sync_mem,
                                  unsigned int shm_offset)
     : syncs(sync_mem),
       shm_id(shm_id),
-      base_shm_offset(shm_offset),
-      free_queries(kSyncsPerBucket) {
-  static_assert(kSyncsPerBucket <= USHRT_MAX,
-                "Can't fit kSyncsPerBucket in unsigned short");
-  for (size_t ii = 0; ii < kSyncsPerBucket; ++ii)
-    free_queries[ii] = ii;
+      base_shm_offset(shm_offset) {
 }
 
 QuerySyncManager::Bucket::~Bucket() = default;
@@ -52,7 +47,9 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
   DCHECK(info);
   Bucket* bucket = nullptr;
   for (Bucket* bucket_candidate : buckets_) {
-    if (!bucket_candidate->free_queries.empty()) {
+    // In C++11 STL this could be replaced with
+    // if (!bucket_candidate->in_use_queries.all()) { ... }
+    if (bucket_candidate->in_use_queries.count() != kSyncsPerBucket) {
       bucket = bucket_candidate;
       break;
     }
@@ -70,27 +67,35 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
     buckets_.push_back(bucket);
   }
 
-  unsigned short index_in_bucket = bucket->free_queries.back();
+  unsigned short index_in_bucket = 0;
+  for (size_t i = 0; i < kSyncsPerBucket; i++) {
+    if (!bucket->in_use_queries[i]) {
+      index_in_bucket = i;
+      break;
+    }
+  }
+
   uint32 shm_offset =
       bucket->base_shm_offset + index_in_bucket * sizeof(QuerySync);
   QuerySync* sync = bucket->syncs + index_in_bucket;
   *info = QueryInfo(bucket, bucket->shm_id, shm_offset, sync);
   info->sync->Reset();
-  bucket->free_queries.pop_back();
+  bucket->in_use_queries[index_in_bucket] = true;
   return true;
 }
 
 void QuerySyncManager::Free(const QuerySyncManager::QueryInfo& info) {
-  DCHECK(info.bucket->free_queries.size() < kSyncsPerBucket);
+  DCHECK_NE(info.bucket->in_use_queries.count(), 0u);
   unsigned short index_in_bucket = info.sync - info.bucket->syncs;
-  info.bucket->free_queries.push_back(index_in_bucket);
+  DCHECK(info.bucket->in_use_queries[index_in_bucket]);
+  info.bucket->in_use_queries[index_in_bucket] = false;
 }
 
 void QuerySyncManager::Shrink() {
   std::deque<Bucket*> new_buckets;
   while (!buckets_.empty()) {
     Bucket* bucket = buckets_.front();
-    if (bucket->free_queries.size() < kSyncsPerBucket) {
+    if (bucket->in_use_queries.any()) {
       new_buckets.push_back(bucket);
     } else {
       mapped_memory_->Free(bucket->syncs);
