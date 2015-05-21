@@ -10132,35 +10132,49 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
     scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
+    SSLSocketDataProvider ssl_socket_data_provider(SYNCHRONOUS, OK);
+
+    std::vector<std::vector<MockRead>> mock_reads(1);
+    std::vector<std::vector<MockWrite>> mock_writes(1);
     for (int round = 0; round < test_config.num_auth_rounds; ++round) {
       const TestRound& read_write_round = test_config.rounds[round];
 
       // Set up expected reads and writes.
-      MockRead reads[2];
-      reads[0] = read_write_round.read;
-      size_t length_reads = 1;
-      if (read_write_round.extra_read) {
-        reads[1] = *read_write_round.extra_read;
-        length_reads = 2;
+      mock_reads.back().push_back(read_write_round.read);
+      mock_writes.back().push_back(read_write_round.write);
+
+      // kProxyChallenge uses Proxy-Connection: close which means that the
+      // socket is closed and a new one will be created for the next request.
+      if (read_write_round.read.data == kProxyChallenge.data &&
+          read_write_round.write.data != kConnect.data) {
+        mock_reads.push_back(std::vector<MockRead>());
+        mock_writes.push_back(std::vector<MockWrite>());
       }
 
-      MockWrite writes[2];
-      writes[0] = read_write_round.write;
-      size_t length_writes = 1;
-      if (read_write_round.extra_write) {
-        writes[1] = *read_write_round.extra_write;
-        length_writes = 2;
+      if (read_write_round.extra_read) {
+        mock_reads.back().push_back(*read_write_round.extra_read);
       }
-      StaticSocketDataProvider data_provider(
-          reads, length_reads, writes, length_writes);
-      session_deps_.socket_factory->AddSocketDataProvider(&data_provider);
+      if (read_write_round.extra_write) {
+        mock_writes.back().push_back(*read_write_round.extra_write);
+      }
 
       // Add an SSL sequence if necessary.
-      SSLSocketDataProvider ssl_socket_data_provider(SYNCHRONOUS, OK);
       if (round >= test_config.first_ssl_round)
         session_deps_.socket_factory->AddSSLSocketDataProvider(
             &ssl_socket_data_provider);
+    }
 
+    ScopedVector<StaticSocketDataProvider> data_providers;
+    for (size_t i = 0; i < mock_reads.size(); ++i) {
+      data_providers.push_back(new StaticSocketDataProvider(
+          vector_as_array(&mock_reads[i]), mock_reads[i].size(),
+          vector_as_array(&mock_writes[i]), mock_writes[i].size()));
+      session_deps_.socket_factory->AddSocketDataProvider(
+          data_providers.back());
+    }
+
+    for (int round = 0; round < test_config.num_auth_rounds; ++round) {
+      const TestRound& read_write_round = test_config.rounds[round];
       // Start or restart the transaction.
       TestCompletionCallback callback;
       int rv;
