@@ -285,6 +285,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/415472
 "deadlock:base::trace_event::TraceLog::GetCategoryGroupEnabled\n"
 
+// http://crbug.com/490856
+"deadlock:content::TracingControllerImpl::SetEnabledOnFileThread\n"
+
 // http://crbug.com/425057
 "deadlock:webrtc::ViEChannelManagerScoped::ViEChannelManagerScoped\n"
 
