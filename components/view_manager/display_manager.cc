@@ -91,7 +91,9 @@ void DefaultDisplayManager::Init(
     mojo::NativeViewportEventDispatcherPtr event_dispatcher) {
   connection_manager_ = connection_manager;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:native_viewport_service");
+  // TODO(beng): should not need to connect to ourselves, should just
+  //             create the appropriate platform window directly.
+  request->url = mojo::String::From("mojo:view_manager");
   app_impl_->ConnectToService(request.Pass(),
                               &native_viewport_);
   native_viewport_.set_error_handler(this);

@@ -6,18 +6,67 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
-mojo_native_application("view_manager") {
-  sources = [
-    "main.cc",
-  ]
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
 
-  deps = [
-    ":view_manager_lib",
-    "//base",
-    "//components/view_manager/public/interfaces",
-    "//mojo/application/public/cpp",
-    "//mojo/converters/geometry",
-  ]
+  group("view_manager") {
+    deps = [
+      ":jni_headers",
+      ":loader",
+      ":view_manager_lib",
+      ":view_manager_java",
+      "native_viewport",
+    ]
+  }
+
+  android_library("view_manager_java") {
+    java_files = [ "native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
+  generate_jni("jni_headers") {
+    sources = [
+      "native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java",
+    ]
+
+    jni_package = "mojo"
+  }
+
+  source_set("loader") {
+    sources = [
+      "android_loader.cc",
+      "android_loader.h",
+    ]
+
+    deps = [
+      "public/interfaces",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+    ]
+  }
+} else {
+  mojo_native_application("view_manager") {
+    sources = [
+      "main.cc",
+    ]
+
+    deps = [
+      ":view_manager_lib",
+      "//base",
+      "//components/view_manager/public/interfaces",
+      "//components/view_manager/native_viewport",
+      "//mojo/application/public/cpp",
+      "//mojo/converters/geometry",
+      "//mojo/environment:chromium",
+      "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+      "//ui/events",
+      "//ui/events/platform",
+      "//ui/gl",
+    ]
+  }
 }
 
 source_set("view_manager_lib") {

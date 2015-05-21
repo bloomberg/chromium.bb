@@ -1,8 +1,7 @@
 include_rules = [
   "+components/gles2",
   "+components/gpu",
-  "+components/view_manager/native_viewport",
-  "+components/view_manager/public",
+  "+components/view_manager",
   "+crypto",
   "+jni",
   "+third_party/mojo_services",

@@ -233,7 +233,7 @@ void HTMLDocument::initializeLayerTreeView() {
   ServiceProviderPtr gpu_service_provider;
   // TODO(jamesr): Should be mojo:gpu_service
   mojo::URLRequestPtr request2(mojo::URLRequest::New());
-  request2->url = mojo::String::From("mojo:native_viewport_service");
+  request2->url = mojo::String::From("mojo:view_manager");
   shell_->ConnectToApplication(request2.Pass(),
                                GetProxy(&gpu_service_provider), nullptr);
   mojo::GpuPtr gpu_service;

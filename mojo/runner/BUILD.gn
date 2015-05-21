@@ -57,7 +57,7 @@ source_set("mojo_runner_lib") {
 
     deps += [
       ":jni_headers",
-      "//components/view_manager/native_viewport:lib",
+      "//components/view_manager",
       "//mojo/shell",
       "//ui/gl",
     ]
@@ -148,8 +148,6 @@ source_set("lib") {
       "android/android_handler_loader.h",
       "android/background_application_loader.cc",
       "android/background_application_loader.h",
-      "android/native_viewport_application_loader.cc",
-      "android/native_viewport_application_loader.h",
       "android/ui_application_loader_android.cc",
       "android/ui_application_loader_android.h",
     ]
@@ -158,7 +156,7 @@ source_set("lib") {
       ":jni_headers",
       ":run_android_application_function",
       "//components/gles2",
-      "//components/view_manager/native_viewport:lib",
+      "//components/view_manager/native_viewport",
       "//mojo/application/public/cpp:content_handler",
     ]
   }
@@ -329,7 +327,7 @@ if (is_android) {
       ":java",
       ":resources",
       "//base:base_java",
-      "//components/view_manager/native_viewport:native_viewport_java",
+      "//components/view_manager:view_manager_java",
       "//third_party/android_tools:google_play_services_default_resources",
     ]
   }
