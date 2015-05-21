@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -172,4 +173,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {
+  // Ensure Profile is alive, because the whole DevTools subsystem
+  // accesses it during shutdown.
+  DCHECK(g_browser_process->profile_manager());
 }
