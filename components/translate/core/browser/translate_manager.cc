@@ -207,7 +207,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   TranslateBrowserMetrics::ReportInitiationStatus(
       TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
 
-  // Prompts the user if he/she wants the page translated.
+  // Prompts the user if they want the page translated.
   translate_client_->ShowTranslateUI(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
                                      language_code,
                                      target_lang,

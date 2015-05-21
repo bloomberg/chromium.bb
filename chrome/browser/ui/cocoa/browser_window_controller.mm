@@ -1796,7 +1796,7 @@ using content::WebContents;
   // ShowBubble. This should be unified.
   if (translateBubbleController_) {
     // When the user reads the advanced setting panel, the bubble should not be
-    // changed because he/she is focusing on the bubble.
+    // changed because they are focusing on the bubble.
     if (translateBubbleController_.webContents == contents &&
         translateBubbleController_.model->GetViewState() ==
         TranslateBubbleModel::VIEW_STATE_ADVANCED) {
