@@ -37,7 +37,7 @@ def main():
                   is_debug=launcher_args.debug,
                   apk_name="Mandoline.apk")
   paths = Paths(config)
-  shell = AndroidShell(paths.mojo_runner, paths.build_dir, paths.adb_path,
+  shell = AndroidShell(paths.apk_path, paths.build_dir, paths.adb_path,
                        launcher_args.target_device,
                        target_package='org.chromium.mandoline')
 

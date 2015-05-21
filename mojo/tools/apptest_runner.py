@@ -12,69 +12,64 @@ import sys
 from mopy import gtest
 from mopy.android import AndroidShell
 from mopy.config import Config
-from mopy.log import InitLogging
 from mopy.paths import Paths
-
-
-_logger = logging.getLogger()
 
 
 def main():
   parser = argparse.ArgumentParser(description="An application test runner.")
-  parser.add_argument("--verbose", help="be verbose (multiple times for more)",
-                      default=0, dest="verbose_count", action="count")
   parser.add_argument("test_list_file", type=file,
                       help="a file listing apptests to run")
   parser.add_argument("build_dir", type=str, help="the build output directory")
+  parser.add_argument("--verbose", default=False, action='store_true')
   args = parser.parse_args()
 
-  InitLogging(args.verbose_count)
-  config = Config(args.build_dir)
+  gtest.set_color()
+  logger = logging.getLogger()
+  logging.basicConfig(stream=sys.stdout, format="%(levelname)s:%(message)s")
+  logger.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+  logger.debug("Initialized logging: level=%s" % logger.level)
 
-  _logger.debug("Test list file: %s", args.test_list_file)
+  logger.debug("Test list file: %s", args.test_list_file)
+  config = Config(args.build_dir)
   execution_globals = {"config": config}
   exec args.test_list_file in execution_globals
   test_list = execution_globals["tests"]
-  _logger.debug("Test list: %s" % test_list)
+  logger.debug("Test list: %s" % test_list)
 
+  shell = None
   extra_args = []
   if config.target_os == Config.OS_ANDROID:
     paths = Paths(config)
-    shell = AndroidShell(paths.mojo_runner, paths.build_dir, paths.adb_path)
+    shell = AndroidShell(paths.apk_path, paths.build_dir, paths.adb_path)
     extra_args.extend(shell.PrepareShellRun('localhost'))
-  else:
-    shell = None
 
-  gtest.set_color()
-
-  exit_code = 0
+  tests = []
+  passed = []
+  failed = []
   for test_dict in test_list:
     test = test_dict["test"]
     test_name = test_dict.get("name", test)
     test_type = test_dict.get("type", "gtest")
-    test_args = test_dict.get("test-args", [])
-    shell_args = test_dict.get("shell-args", []) + extra_args
+    test_args = test_dict.get("args", []) + extra_args
 
-    _logger.info("Will start: %s" % test_name)
-    print "Running %s...." % test_name,
+    print "Running %s...%s" % (test_name, ("\n" if args.verbose else "")),
     sys.stdout.flush()
 
-    if test_type == "gtest":
-      apptest_result = gtest.run_fixtures(config, shell, test_dict,
-                                          test, False,
-                                          test_args, shell_args)
-    elif test_type == "gtest_isolated":
-      apptest_result = gtest.run_fixtures(config, shell, test_dict,
-                                          test, True, test_args, shell_args)
-    else:
-      apptest_result = "Invalid test type in %r" % test_dict
+    tests.append(test_name)
+    assert test_type in ("gtest", "gtest_isolated")
+    isolate = test_type == "gtest_isolated"
+    result = gtest.run_apptest(config, shell, test_args, test, isolate)
+    passed.extend([test_name] if result else [])
+    failed.extend([] if result else [test_name])
+    print "[  PASSED  ]" if result else "[  FAILED  ]",
+    print test_name if args.verbose or not result else ""
 
-    if apptest_result != "Succeeded":
-      exit_code = 1
-    print apptest_result
-    _logger.info("Completed: %s" % test_name)
+  print "[  PASSED  ] %d apptests" % len(passed),
+  print ": %s" % ", ".join(passed) if passed else ""
+  print "[  FAILED  ] %d apptests" % len(failed),
+  print ": %s" % ", ".join(failed) if failed else ""
 
-  return exit_code
+  return 1 if failed else 0
 
 
 if __name__ == '__main__':

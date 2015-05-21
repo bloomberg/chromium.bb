@@ -53,8 +53,6 @@ class UTC_TZINFO(datetime.tzinfo):
 
 UTC = UTC_TZINFO()
 
-_logger = logging.getLogger()
-
 
 class _SilentTCPServer(SocketServer.TCPServer):
   """
@@ -318,20 +316,23 @@ class AndroidShell(object):
     files from the build directory along with port forwarding.
 
     Returns arguments that should be appended to shell argument list."""
-    if 'cannot run as root' in subprocess.check_output(
-        self._CreateADBCommand(['root'])):
-      raise Exception("Unable to run adb as root.")
+    # TODO(msw): Remove logging after devices are found; http://crbug.com/486220
+    logging.getLogger().debug("Path to adb: %s", self.adb_path)
+    logging.getLogger().debug("adb devices: %s",
+        subprocess.check_output(self._CreateADBCommand(['devices'])))
+
+    subprocess.check_call(self._CreateADBCommand(['root']))
     subprocess.check_call(
         self._CreateADBCommand(['install', '-r', self.shell_apk_path, '-i',
                                 self.target_package]))
     atexit.register(self.StopShell)
 
-    extra_shell_args = []
+    extra_args = []
     if origin is 'localhost':
       origin = self._StartHttpServerForDirectory(self.local_dir, 0)
     if origin:
-      extra_shell_args.append("--origin=" + origin)
-    return extra_shell_args
+      extra_args.append("--origin=" + origin)
+    return extra_args
 
   def StartShell(self,
                  arguments,

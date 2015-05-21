@@ -15,10 +15,8 @@
 #     #   * "gtest_isolated": like "gtest", but run with fixture isolation,
 #     #      i.e., each test in a fresh mojo_shell)
 #     "type": "gtest",
-#     # Optional arguments for the apptest.
-#     "test-args": ["--an_arg", "another_arg"],
-#     # Optional arguments for the shell.
-#     "shell-args": ["--some-flag-for-the-shell", "--another-flag"],
+#     # Optional arguments for the shell or test.
+#     "args": ["--some-flag-for-the-shell", "--some-flag-for-the-test"],
 #   }
 #
 # TODO(vtl|msw): Add a way of specifying data dependencies.
@@ -41,15 +39,13 @@ if config.target_os != config.OS_ANDROID:
   tests += [
     {
       "test": "mojo:html_viewer_apptests",
-      "shell-args": ["--is-headless"],
+      "args": ["--is-headless"],
     },
     {
       "test": "mojo:view_manager_apptests",
       "type": "gtest_isolated",
-      "shell-args": [
-        "--use-headless-config",
-        "--url-mappings=mojo:window_manager=mojo:test_window_manager"
-      ]
+      "args": ["--use-headless-config",
+               "--url-mappings=mojo:window_manager=mojo:test_window_manager"]
     },
     {
       "test": "mojo:resource_provider_apptests",
