@@ -76,6 +76,15 @@ void LayoutPart::willBeDestroyed()
 void LayoutPart::destroy()
 {
     willBeDestroyed();
+    // We call clearNode here because LayoutPart is ref counted. This call to destroy
+    // may not actually destroy the layout object. We can keep it around because of
+    // references from the FrameView class. (The actual destruction of the class happens
+    // in postDestroy() which is called from deref()).
+    //
+    // But, we've told the system we've destroyed the layoutObject, which happens when
+    // the DOM node is destroyed. So there is a good change the DOM node this object
+    // points too is invalid, so we have to clear the node so we make sure we don't
+    // access it in the future.
     clearNode();
     deref();
 }

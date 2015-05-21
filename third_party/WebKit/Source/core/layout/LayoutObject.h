@@ -609,7 +609,6 @@ public:
         return isPseudoElement() ? 0 : node();
     }
 
-    // FIXME: Why does LayoutPart need this? crbug.com/422457
     void clearNode() { m_node = nullptr; }
 
     // Returns the styled node that caused the generation of this layoutObject.
