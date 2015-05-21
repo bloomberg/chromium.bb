@@ -218,17 +218,6 @@ private:
     friend class ThreadState;
 };
 
-#if ENABLE(ASSERT)
-    // For global persistent handles we cannot check that the
-    // pointer is in the heap because that would involve
-    // inspecting the heap of running threads.
-#define ASSERT_IS_VALID_PERSISTENT_POINTER(pointer) \
-    bool isGlobalPersistent = WTF::IsSubclass<RootsAccessor, GlobalPersistents>::value; \
-    ASSERT(!pointer || isGlobalPersistent || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->findPageFromAddress(pointer))
-#else
-#define ASSERT_IS_VALID_PERSISTENT_POINTER(pointer)
-#endif
-
 template<typename T>
 class CrossThreadPersistent;
 
@@ -244,10 +233,9 @@ class CrossThreadPersistent;
 // A Persistent is always a GC root from the point of view of
 // the garbage collector.
 //
-// We have to construct and destruct Persistent with default RootsAccessor in
-// the same thread.
-template<typename T, typename RootsAccessor /*= ThreadLocalPersistents<ThreadingTrait<T>::Affinity>*/>
-class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAccessor>> {
+// We have to construct and destruct Persistent in the same thread.
+template<typename T>
+class Persistent : public PersistentBase<ThreadLocalPersistents<ThreadingTrait<T>::Affinity>, Persistent<T>> {
 public:
     Persistent() : m_raw(nullptr) { }
 
@@ -255,20 +243,20 @@ public:
 
     Persistent(T* raw) : m_raw(raw)
     {
-        ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
+        ASSERT(!m_raw || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->findPageFromAddress(m_raw));
         recordBacktrace();
     }
 
     explicit Persistent(T& raw) : m_raw(&raw)
     {
-        ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
+        ASSERT(!m_raw || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->findPageFromAddress(m_raw));
         recordBacktrace();
     }
 
     Persistent(const Persistent& other) : m_raw(other) { recordBacktrace(); }
 
     template<typename U>
-    Persistent(const Persistent<U, RootsAccessor>& other) : m_raw(other) { recordBacktrace(); }
+    Persistent(const Persistent<U>& other) : m_raw(other) { recordBacktrace(); }
 
     template<typename U>
     Persistent(const Member<U>& other) : m_raw(other) { recordBacktrace(); }
@@ -332,7 +320,7 @@ public:
     }
 
     template<typename U>
-    Persistent& operator=(const Persistent<U, RootsAccessor>& other)
+    Persistent& operator=(const Persistent<U>& other)
     {
         m_raw = other;
         recordBacktrace();
@@ -375,7 +363,7 @@ private:
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
 // different from the construction thread.
 template<typename T>
-class CrossThreadPersistent : public PersistentBase<GlobalPersistents, Persistent<T, GlobalPersistents>> {
+class CrossThreadPersistent : public PersistentBase<GlobalPersistents, CrossThreadPersistent<T>> {
 public:
     CrossThreadPersistent() : m_raw(nullptr) { }
 

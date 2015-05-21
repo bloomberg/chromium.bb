@@ -26,7 +26,7 @@ template<typename Table> class HeapHashTableBacking;
 template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
 class InlinedGlobalMarkingVisitor;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
-template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity>> class Persistent;
+template<typename T> class Persistent;
 
 // Template to determine if a class is a GarbageCollectedMixin by checking if it
 // has IsGarbageCollectedMixinMarker

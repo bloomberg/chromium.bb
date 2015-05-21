@@ -504,7 +504,7 @@ protected:
             {
                 Persistent<IntWrapper> wrapper;
 
-                typedef Persistent<IntWrapper, GlobalPersistents> GlobalIntWrapperPersistent;
+                typedef CrossThreadPersistent<IntWrapper> GlobalIntWrapperPersistent;
                 OwnPtr<GlobalIntWrapperPersistent> globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
 
                 for (int i = 0; i < numberOfAllocations; i++) {
