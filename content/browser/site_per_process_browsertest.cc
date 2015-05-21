@@ -1722,13 +1722,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   EXPECT_EQ(SandboxFlags::NONE, root->child_at(0)->effective_sandbox_flags());
 
   // Navigate the first frame to a page on the same site.  The new sandbox
-  // flags should take effect. The new page has a child frame, so use
-  // TestFrameNavigationObserver to wait for it to be loaded.
-  TestFrameNavigationObserver frame_observer(root->child_at(0), 2);
+  // flags should take effect.
   GURL bar_url(
       embedded_test_server()->GetURL("bar.com", "/frame_tree/2-4.html"));
   NavigateFrameToURL(root->child_at(0), bar_url);
-  frame_observer.Wait();
+  // (The new page has a subframe; wait for it to load as well.)
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(bar_url, root->child_at(0)->current_url());
   ASSERT_EQ(1U, root->child_at(0)->child_count());
 
