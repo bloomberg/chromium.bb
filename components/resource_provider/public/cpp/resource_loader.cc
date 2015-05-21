@@ -34,7 +34,7 @@ ResourceLoader::~ResourceLoader() {
 }
 
 bool ResourceLoader::BlockUntilLoaded() {
-  if (did_block_)
+  if (did_block_ || loaded_)
     return loaded_;
 
   did_block_ = true;
