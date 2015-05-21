@@ -143,6 +143,17 @@ class SchemaVersionedMySQLConnection(object):
         self._ssl_args['ssl'] = {}
       self._ssl_args['ssl'][key] = file_path
 
+  def _UpdateConnectArgs(self, db_credentials_dir):
+    """Update all connection args from |db_credentials_dir|."""
+    self._UpdateConnectUrlArgs('host', db_credentials_dir, 'host.txt')
+    self._UpdateConnectUrlArgs('port', db_credentials_dir, 'port.txt')
+    self._UpdateConnectUrlArgs('username', db_credentials_dir, 'user.txt')
+    self._UpdateConnectUrlArgs('password', db_credentials_dir, 'password.txt')
+
+    self._UpdateSslArgs('cert', db_credentials_dir, 'client-cert.pem')
+    self._UpdateSslArgs('key', db_credentials_dir, 'client-key.pem')
+    self._UpdateSslArgs('ca', db_credentials_dir, 'server-ca.pem')
+
   def __init__(self, db_name, db_migrations_dir, db_credentials_dir,
                query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
     """SchemaVersionedMySQLConnection constructor.
@@ -178,14 +189,7 @@ class SchemaVersionedMySQLConnection(object):
     self._connect_url_args = {}
     self._ssl_args = {}
 
-    self._UpdateConnectUrlArgs('host', db_credentials_dir, 'host.txt')
-    self._UpdateConnectUrlArgs('port', db_credentials_dir, 'port.txt')
-    self._UpdateConnectUrlArgs('username', db_credentials_dir, 'user.txt')
-    self._UpdateConnectUrlArgs('password', db_credentials_dir, 'password.txt')
-
-    self._UpdateSslArgs('cert', db_credentials_dir, 'client-cert.pem')
-    self._UpdateSslArgs('key', db_credentials_dir, 'client-key.pem')
-    self._UpdateSslArgs('ca', db_credentials_dir, 'server-ca.pem')
+    self._UpdateConnectArgs(db_credentials_dir)
 
     connect_url = sqlalchemy.engine.url.URL('mysql', **self._connect_url_args)
 
