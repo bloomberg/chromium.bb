@@ -893,7 +893,8 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   item->SetTransitionType(transition);
   item->SetIsOverridingUserAgent(useDesktopUserAgent);
   item->set_is_renderer_initiated(rendererInitiated);
-  return [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()];
+  return [
+      [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()] autorelease];
 }
 
 @end
