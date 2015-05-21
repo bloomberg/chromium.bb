@@ -4,8 +4,13 @@
 
 :host {
   background-color: rgb(219, 222, 224);
+  bottom: 0;
   color: black;
   display: block;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 #mainContainer {
