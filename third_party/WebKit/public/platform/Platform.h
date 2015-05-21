@@ -91,6 +91,7 @@ class WebNotificationManager;
 class WebPermissionClient;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
+class WebProcessMemoryDump;
 class WebPublicSuffixList;
 class WebPushProvider;
 class WebRTCPeerConnectionHandler;
@@ -567,6 +568,9 @@ public:
 
     // Must be called on the thread that called registerMemoryDumpProvider().
     virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) { }
+
+    // Returns a newly allocated WebprocessMemoryDump instance.
+    virtual blink::WebProcessMemoryDump* createProcessMemoryDump() { return nullptr; }
 
     // GPU ----------------------------------------------------------------
     //

@@ -28,6 +28,14 @@ public:
     {
         return nullptr;
     }
+
+    // Merges all WebMemoryAllocatorDump(s) contained in |other| inside this
+    // WebProcessMemoryDump, transferring their ownership to this instance.
+    // |other| will be an empty WebProcessMemoryDump after this method returns
+    // and can be reused as if it was new.
+    virtual void takeAllDumpsFrom(WebProcessMemoryDump* other)
+    {
+    }
 };
 
 } // namespace blink
