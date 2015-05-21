@@ -28,20 +28,48 @@
 #include "amdgpu_internal.h"
 #include "util_math.h"
 
-void amdgpu_vamgr_init(struct amdgpu_device *dev)
+static struct amdgpu_bo_va_mgr vamgr = {{0}};
+
+static void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, struct amdgpu_device *dev)
 {
-	struct amdgpu_bo_va_mgr *vamgr = &dev->vamgr;
+	mgr->va_offset = dev->dev_info.virtual_address_offset;
+	mgr->va_max = dev->dev_info.virtual_address_max;
+	mgr->va_alignment = dev->dev_info.virtual_address_alignment;
 
-	vamgr->va_offset = dev->dev_info.virtual_address_offset;
-	vamgr->va_max = dev->dev_info.virtual_address_max;
-	vamgr->va_alignment = dev->dev_info.virtual_address_alignment;
+	list_inithead(&mgr->va_holes);
+	pthread_mutex_init(&mgr->bo_va_mutex, NULL);
+}
 
-	list_inithead(&vamgr->va_holes);
-	pthread_mutex_init(&vamgr->bo_va_mutex, NULL);
+static void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr)
+{
+	struct amdgpu_bo_va_hole *hole;
+	LIST_FOR_EACH_ENTRY(hole, &mgr->va_holes, list) {
+		list_del(&hole->list);
+		free(hole);
+	}
+	pthread_mutex_destroy(&mgr->bo_va_mutex);
+}
+
+struct amdgpu_bo_va_mgr * amdgpu_vamgr_get_global(struct amdgpu_device *dev)
+{
+	int ref;
+	ref = atomic_inc_return(&vamgr.refcount);
+
+	if (ref == 1)
+		amdgpu_vamgr_init(&vamgr, dev);
+	return &vamgr;
+}
+
+void amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
+				struct amdgpu_bo_va_mgr *src)
+{
+	if (update_references(&(*dst)->refcount, NULL))
+		amdgpu_vamgr_deinit(*dst);
+	*dst = src;
 }
 
 uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
-                               uint64_t size, uint64_t alignment)
+				uint64_t size, uint64_t alignment)
 {
 	struct amdgpu_bo_va_hole *hole, *n;
 	uint64_t offset = 0, waste = 0;
@@ -108,8 +136,8 @@ uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
 	return offset;
 }
 
-void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va,
-                           uint64_t size)
+void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr,
+				uint64_t va, uint64_t size)
 {
 	struct amdgpu_bo_va_hole *hole;
 

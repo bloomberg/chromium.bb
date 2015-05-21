@@ -207,7 +207,7 @@ int amdgpu_device_initialize(int fd,
 	if (r)
 		goto cleanup;
 
-	amdgpu_vamgr_init(dev);
+	dev->vamgr = amdgpu_vamgr_get_global(dev);
 
 	*major_version = dev->major_version;
 	*minor_version = dev->minor_version;
@@ -225,10 +225,10 @@ cleanup:
 
 void amdgpu_device_free_internal(amdgpu_device_handle dev)
 {
+	amdgpu_vamgr_reference(&dev->vamgr, NULL);
 	util_hash_table_destroy(dev->bo_flink_names);
 	util_hash_table_destroy(dev->bo_handles);
 	pthread_mutex_destroy(&dev->bo_table_mutex);
-	pthread_mutex_destroy(&(dev->vamgr.bo_va_mutex));
 	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
 	free(dev);
 }

@@ -71,7 +71,7 @@ void amdgpu_bo_free_internal(amdgpu_bo_handle bo)
 
 	amdgpu_close_kms_handle(bo->dev, bo->handle);
 	pthread_mutex_destroy(&bo->cpu_access_mutex);
-	amdgpu_vamgr_free_va(&bo->dev->vamgr, bo->virtual_mc_base_address, bo->alloc_size);
+	amdgpu_vamgr_free_va(bo->dev->vamgr, bo->virtual_mc_base_address, bo->alloc_size);
 	free(bo);
 }
 
@@ -84,7 +84,7 @@ static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
 
 	memset(&va, 0, sizeof(va));
 
-	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr,
+	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(dev->vamgr,
 					 bo->alloc_size, alignment);
 
 	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS)

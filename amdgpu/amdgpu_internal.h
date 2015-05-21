@@ -49,6 +49,7 @@ struct amdgpu_bo_va_hole {
 };
 
 struct amdgpu_bo_va_mgr {
+	atomic_t refcount;
 	/* the start virtual address */
 	uint64_t va_offset;
 	uint64_t va_max;
@@ -70,9 +71,9 @@ struct amdgpu_device {
 	struct util_hash_table *bo_flink_names;
 	/** This protects all hash tables. */
 	pthread_mutex_t bo_table_mutex;
-	struct amdgpu_bo_va_mgr vamgr;
 	struct drm_amdgpu_info_device dev_info;
 	struct amdgpu_gpu_info info;
+	struct amdgpu_bo_va_mgr *vamgr;
 };
 
 struct amdgpu_bo {
@@ -142,13 +143,15 @@ void amdgpu_device_free_internal(amdgpu_device_handle dev);
 
 void amdgpu_bo_free_internal(amdgpu_bo_handle bo);
 
-void amdgpu_vamgr_init(struct amdgpu_device *dev);
+struct amdgpu_bo_va_mgr* amdgpu_vamgr_get_global(struct amdgpu_device *dev);
+
+void amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst, struct amdgpu_bo_va_mgr *src);
 
 uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
-                               uint64_t size, uint64_t alignment);
+				uint64_t size, uint64_t alignment);
 
-void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va,
-                           uint64_t size);
+void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, 
+				uint64_t size);
 
 int amdgpu_query_gpu_info_init(amdgpu_device_handle dev);
 
