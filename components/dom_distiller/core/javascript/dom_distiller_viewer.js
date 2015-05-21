@@ -204,8 +204,8 @@ var pincher = (function() {
   var shiftY;
 
   // The zooming speed relative to pinching speed.
-  const FONT_SCALE_MULTIPLIER = 0.5;
-  const MIN_SPAN_LENGTH = 20;
+  var FONT_SCALE_MULTIPLIER = 0.5;
+  var MIN_SPAN_LENGTH = 20;
 
   // The font size is guaranteed to be in px.
   var baseSize =
