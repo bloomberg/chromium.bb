@@ -114,9 +114,15 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
   if (mojo_base_url_.SchemeIsFile()) {
     const GURL url_with_directory(
         mojo_base_url_.Resolve(base_url.host() + "/"));
-    const base::FilePath file_path(util::UrlToFilePath(url_with_directory));
-    if (base::DirectoryExists(file_path))
-      return url_with_directory.Resolve(base_url.host() + ".mojo" + query);
+    const base::FilePath dir(util::UrlToFilePath(url_with_directory));
+    if (base::DirectoryExists(dir)) {
+      const std::string mojo_file_name(base_url.host() + ".mojo");
+      const base::FilePath mojo_path =
+          dir.Append(base::FilePath::FromUTF8Unsafe(mojo_file_name));
+      // Only use the directory if the .mojo exists in the directory.
+      if (base::PathExists(mojo_path))
+        return url_with_directory.Resolve(base_url.host() + ".mojo" + query);
+    }
   }
   return mojo_base_url_.Resolve(base_url.host() + ".mojo" + query);
 }

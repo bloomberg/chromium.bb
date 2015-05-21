@@ -19,7 +19,8 @@ namespace runner {
 typedef void (*RunAndroidApplicationFn)(JNIEnv* env,
                                         jobject j_context,
                                         const base::FilePath& app_path,
-                                        jint j_handle);
+                                        jint j_handle,
+                                        bool is_cached_app);
 
 }  // namespace runner
 }  // namespace mojo

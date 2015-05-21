@@ -31,7 +31,8 @@ public class ShellTestBase {
         AssetManager manager = context.getResources().getAssets();
         for (String asset : manager.list("")) {
             if (asset.endsWith(".mojo")) {
-                FileHelper.extractFromAssets(context, asset, outputDirectory, false);
+                FileHelper.extractFromAssets(
+                        context, asset, outputDirectory, FileHelper.FileType.PERMANENT);
             }
         }
 

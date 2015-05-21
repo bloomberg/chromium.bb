@@ -7,7 +7,8 @@ package org.chromium.mojo.shell;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -15,7 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,62 +36,87 @@ class FileHelper {
     private static final String TIMESTAMP_PREFIX = "asset_timestamp-";
 
     /**
+     * Used to indicate the type of destination file that should be created.
+     */
+    public enum FileType {
+        TEMPORARY,
+        PERMANENT,
+    }
+
+    public enum ArchiveType {
+        /**
+         * The archive was created for a content handler (contains the mojo escape sequence).
+         */
+        CONTENT_HANDLER,
+        NORMAL,
+    }
+
+    /**
      * Looks for a timestamp file on disk that indicates the version of the APK that the resource
      * assets were extracted from. Returns null if a timestamp was found and it indicates that the
-     * resources match the current APK. Otherwise returns a String that represents the filename of a
-     * timestamp to create.
+     * resources match the current APK. Otherwise returns the file to create.
      */
-    private static String checkAssetTimestamp(Context context, File outputDir) {
+    private static File findAssetTimestamp(Context context, File outputDir) {
         PackageManager pm = context.getPackageManager();
         PackageInfo pi = null;
 
         try {
             pi = pm.getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
-            return TIMESTAMP_PREFIX;
         }
 
         if (pi == null) {
-            return TIMESTAMP_PREFIX;
+            return new File(outputDir, TIMESTAMP_PREFIX);
         }
 
-        String expectedTimestamp = TIMESTAMP_PREFIX + pi.versionCode + "-" + pi.lastUpdateTime;
+        final File expectedTimestamp =
+                new File(outputDir, TIMESTAMP_PREFIX + pi.versionCode + "-" + pi.lastUpdateTime);
+        return expectedTimestamp.exists() ? null : expectedTimestamp;
+    }
 
-        String[] timestamps = outputDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith(TIMESTAMP_PREFIX);
-            }
-        });
-
-        if (timestamps.length != 1) {
-            // If there's no timestamp, nuke to be safe as we can't tell the age of the files.
-            // If there's multiple timestamps, something's gone wrong so nuke.
-            return expectedTimestamp;
+    /**
+     * Invoke prior to extracting any assets into {@code directory}. If necessary deletes all the
+     * files in the specified directory. The return value must be supplied to {@link
+     *createTimestampIfNecessary}.
+     *
+     * @param directory directory assets will be extracted to
+     * @return non-null if a file with the specified name needs to be created after assets have
+     * been extracted.
+     */
+    public static File prepareDirectoryForAssets(Context context, File directory) {
+        final File timestamp = findAssetTimestamp(context, directory);
+        if (timestamp == null) {
+            return null;
         }
-
-        if (!expectedTimestamp.equals(timestamps[0])) {
-            return expectedTimestamp;
+        for (File child : directory.listFiles()) {
+            deleteRecursively(child);
         }
+        return timestamp;
+    }
 
-        // Timestamp file is already up-to date.
-        return null;
+    /**
+     * Creates a file used as a timestamp. The supplied file comes from {@link
+     *prepareDirectoryForAssets}.
+     *
+     * @param timestamp path of file to create, or null if a file does not need to be created
+     */
+    public static void createTimestampIfNecessary(File timestamp) {
+        if (timestamp == null) {
+            return;
+        }
+        try {
+            timestamp.createNewFile();
+        } catch (IOException e) {
+            // In the worst case we don't write a timestamp, so we'll re-extract the asset next
+            // time.
+            Log.w(TAG, "Failed to write asset timestamp!");
+        }
     }
 
     public static File extractFromAssets(Context context, String assetName, File outputDirectory,
-            boolean useTempFile) throws IOException, FileNotFoundException {
-        String timestampToCreate = null;
-        if (!useTempFile) {
-            timestampToCreate = checkAssetTimestamp(context, outputDirectory);
-            if (timestampToCreate != null) {
-                for (File child : outputDirectory.listFiles()) {
-                    deleteRecursively(child);
-                }
-            }
-        }
-
+            FileType fileType) throws IOException, FileNotFoundException {
         File outputFile;
-        if (useTempFile) {
+        if (fileType == FileType.TEMPORARY) {
             // Make the original filename part of the temp file name.
             // TODO(ppi): do we need to sanitize the suffix?
             String suffix = "-" + assetName;
@@ -111,36 +136,48 @@ class FileHelper {
         } finally {
             inputStream.close();
         }
-
-        if (timestampToCreate != null) {
-            try {
-                new File(outputDirectory, timestampToCreate).createNewFile();
-            } catch (IOException e) {
-                // In the worst case we don't write a timestamp, so we'll re-extract the asset next
-                // time.
-                Log.w(TAG, "Failed to write asset timestamp!");
-            }
-        }
-
         return outputFile;
     }
 
     /**
      * Extracts the file of the given extension from the archive. Throws FileNotFoundException if no
      * matching file is found.
+     *
+     * @return path of extracted file
      */
-    static File extractFromArchive(File archive, String suffixToMatch,
-            File outputDirectory) throws IOException, FileNotFoundException {
-        ZipInputStream zip = new ZipInputStream(new BufferedInputStream(new FileInputStream(
-                archive)));
+    static File extractFromArchive(File archive, String suffixToMatch, File outputDirectory,
+            FileType fileType, ArchiveType archiveType) throws IOException, FileNotFoundException {
+        if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
+            Log.e(TAG, "extractFromArchive unable to create directory "
+                            + outputDirectory.getAbsolutePath());
+            throw new FileNotFoundException();
+        }
+
+        BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(archive));
+        if (archiveType == ArchiveType.CONTENT_HANDLER) {
+            int currentChar;
+            do {
+                currentChar = inputStream.read();
+            } while (currentChar != -1 && currentChar != '\n');
+            if (currentChar == -1) {
+                throw new FileNotFoundException();
+            }
+            inputStream = new BufferedInputStream(inputStream);
+        }
+        ZipInputStream zip = new ZipInputStream(inputStream);
         ZipEntry entry;
         while ((entry = zip.getNextEntry()) != null) {
             if (entry.getName().endsWith(suffixToMatch)) {
+                // TODO(sky): sanitize name.
+                final String name = new File(entry.getName()).getName();
+                File extractedFile;
                 // Make the original filename part of the temp file name.
-                // TODO(ppi): do we need to sanitize the suffix?
-                String suffix = "-" + new File(entry.getName()).getName();
-                File extractedFile = File.createTempFile(TEMP_FILE_PREFIX, suffix,
-                        outputDirectory);
+                if (fileType == FileType.TEMPORARY) {
+                    final String suffix = "-" + name;
+                    extractedFile = File.createTempFile(TEMP_FILE_PREFIX, suffix, outputDirectory);
+                } else {
+                    extractedFile = new File(outputDirectory, name);
+                }
                 writeStreamToFile(zip, extractedFile);
                 zip.close();
                 return extractedFile;

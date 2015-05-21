@@ -159,13 +159,23 @@ TEST_F(URLResolverTest, PreferDirectory) {
   EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo.mojo",
             mapped_url.spec());
 
-  // With a directory |mojo:foo| maps to path/foo/foo.mojo.
+  // With an empty directory |mojo:foo| maps to path/foo.mojo.
   const base::FilePath foo_file_path(
       tmp_dir.path().Append(FILE_PATH_LITERAL("foo")));
   ASSERT_TRUE(base::CreateDirectory(foo_file_path));
   const GURL mapped_url_with_dir = resolver.ResolveMojoURL(GURL("mojo:foo"));
-  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo/foo.mojo",
+  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo.mojo",
             mapped_url_with_dir.spec());
+
+  // When foo.mojo exists in the directory (path/foo/foo.mojo), then it should
+  // be picked up.
+  // With an empty directory |mojo:foo| maps to path/foo/foo.mojo.
+  ASSERT_EQ(1,
+            base::WriteFile(foo_file_path.Append(FILE_PATH_LITERAL("foo.mojo")),
+                            "a", 1));
+  const GURL mapped_url_in_dir = resolver.ResolveMojoURL(GURL("mojo:foo"));
+  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo/foo.mojo",
+            mapped_url_in_dir.spec());
 }
 
 }  // namespace
