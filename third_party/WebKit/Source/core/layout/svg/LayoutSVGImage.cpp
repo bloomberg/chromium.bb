@@ -56,11 +56,11 @@ LayoutSVGImage::~LayoutSVGImage()
 {
 }
 
-void LayoutSVGImage::destroy()
+void LayoutSVGImage::willBeDestroyed()
 {
     ImageQualityController::remove(this);
     m_imageResource->shutdown();
-    LayoutSVGModelObject::destroy();
+    LayoutSVGModelObject::willBeDestroyed();
 }
 
 FloatSize LayoutSVGImage::computeImageViewportSize(ImageResource& cachedImage) const

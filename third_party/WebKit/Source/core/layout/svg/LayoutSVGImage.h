@@ -37,7 +37,6 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
 public:
     explicit LayoutSVGImage(SVGImageElement*);
     virtual ~LayoutSVGImage();
-    virtual void destroy() override;
 
     bool updateImageViewport();
     virtual void setNeedsBoundariesUpdate() override { m_needsBoundariesUpdate = true; }
@@ -52,6 +51,9 @@ public:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || LayoutSVGModelObject::isOfType(type); }
 
     virtual const char* name() const override { return "LayoutSVGImage"; }
+
+protected:
+    virtual void willBeDestroyed() override;
 
 private:
     virtual FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
