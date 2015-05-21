@@ -67,6 +67,10 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
                             int request_id,
                             const std::string& message);
 
+  void OnConnectGATTError(int thread_id,
+                          int request_id,
+                          BluetoothError error_type);
+
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // Tracks device requests sent to browser to match replies with callbacks.

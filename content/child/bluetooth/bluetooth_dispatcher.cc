@@ -101,6 +101,7 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
                       OnRequestDeviceSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceError, OnRequestDeviceError);
   IPC_MESSAGE_HANDLER(BluetoothMsg_ConnectGATTSuccess, OnConnectGATTSuccess);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_ConnectGATTError, OnConnectGATTError);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -143,6 +144,18 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
   pending_requests_.Remove(request_id);
 }
 
+void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
+                                               int request_id,
+                                               BluetoothError error_type) {
+  DCHECK(pending_requests_.Lookup(request_id)) << request_id;
+  pending_requests_.Lookup(request_id)
+      ->onError(new WebBluetoothError(
+          // TODO(ortuno): Return more descriptive error messages.
+          // http://crbug.com/490419
+          WebBluetoothErrorFromBluetoothError(error_type), ""));
+  pending_requests_.Remove(request_id);
+}
+
 void BluetoothDispatcher::OnConnectGATTSuccess(
     int thread_id,
     int request_id,
@@ -154,14 +167,16 @@ void BluetoothDispatcher::OnConnectGATTSuccess(
   pending_connect_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
-                                               int request_id,
-                                               BluetoothError error_type) {
-  DCHECK(pending_requests_.Lookup(request_id)) << request_id;
-  pending_requests_.Lookup(request_id)
+void BluetoothDispatcher::OnConnectGATTError(int thread_id,
+                                             int request_id,
+                                             BluetoothError error_type) {
+  DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
+  pending_connect_requests_.Lookup(request_id)
       ->onError(new WebBluetoothError(
+          // TODO(ortuno): Return more descriptive error messages.
+          // http://crbug.com/490419
           WebBluetoothErrorFromBluetoothError(error_type), ""));
-  pending_requests_.Remove(request_id);
+  pending_connect_requests_.Remove(request_id);
 }
 
 }  // namespace content

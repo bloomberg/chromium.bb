@@ -100,10 +100,27 @@ void BluetoothDispatcherHost::OnConnectGATT(
     int request_id,
     const std::string& device_instance_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(ortuno): Add actual implementation of connectGATT. This needs to be
-  // done after the "allowed devices map" is implemented.
-  Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,
-                                           device_instance_id));
+  // TODO(ortuno): Right now it's pointless to check if the domain has access to
+  // the device, because any domain can connect to any device. But once
+  // permissions are implemented we should check that the domain has access to
+  // the device. https://crbug.com/484745
+  device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
+  if (device == NULL) {
+    // Device could have gone out of range so it's no longer in
+    // BluetoothAdapter. Since we can't create a ATT Bearer without a device we
+    // reject with NetworkError.
+    // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
+    Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
+                                           BluetoothError::NETWORK_ERROR));
+    return;
+  }
+  device->CreateGattConnection(
+      base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                 device_instance_id),
+      base::Bind(&BluetoothDispatcherHost::OnCreateGATTConnectionError,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                 device_instance_id));
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
@@ -170,6 +187,29 @@ void BluetoothDispatcherHost::OnDiscoverySessionStoppedError(int thread_id,
   DLOG(WARNING) << "BluetoothDispatcherHost::OnDiscoverySessionStoppedError";
   Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
                                            BluetoothError::NOT_FOUND));
+}
+
+void BluetoothDispatcherHost::OnGATTConnectionCreated(
+    int thread_id,
+    int request_id,
+    const std::string& device_instance_id,
+    scoped_ptr<device::BluetoothGattConnection> connection) {
+  // TODO(ortuno): Save the BluetoothGattConnection so we can disconnect
+  // from it.
+  Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,
+                                           device_instance_id));
+}
+
+void BluetoothDispatcherHost::OnCreateGATTConnectionError(
+    int thread_id,
+    int request_id,
+    const std::string& device_instance_id,
+    device::BluetoothDevice::ConnectErrorCode error_code) {
+  // There was an error creating the ATT Bearer so we reject with
+  // NetworkError.
+  // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
+  Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
+                                         BluetoothError::NETWORK_ERROR));
 }
 
 }  // namespace content

@@ -10,6 +10,7 @@
 #include "content/common/bluetooth/bluetooth_error.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_gatt_connection.h"
 
 namespace content {
 
@@ -69,6 +70,18 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Callbacks for BluetoothDiscoverySession::Stop.
   void OnDiscoverySessionStopped(int thread_id, int request_id);
   void OnDiscoverySessionStoppedError(int thread_id, int request_id);
+
+  // Callbacks for BluetoothDevice::CreateGattConnection
+  void OnGATTConnectionCreated(
+      int thread_id,
+      int request_id,
+      const std::string& device_instance_id,
+      scoped_ptr<device::BluetoothGattConnection> connection);
+  void OnCreateGATTConnectionError(
+      int thread_id,
+      int request_id,
+      const std::string& device_instance_id,
+      device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Defines how long to scan for.
   int current_scan_time_;

@@ -123,6 +123,12 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
                      int /* request_id */,
                      std::string /* device_instance_id */)
 
+// Informs the renderer that the connection request |request_id| failed.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     content::BluetoothError /* result */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
