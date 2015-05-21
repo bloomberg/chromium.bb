@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 class AutocompleteController;
 class Profile;
@@ -23,19 +24,16 @@ class Profile;
 // AutocompleteController to OnResultChanged() and passes those results to
 // the OmniboxPage.
 class OmniboxUIHandler : public AutocompleteControllerDelegate,
-                         public mojo::InterfaceImpl<OmniboxUIHandlerMojo>,
+                         public OmniboxUIHandlerMojo,
                          public MojoWebUIHandler {
  public:
-  explicit OmniboxUIHandler(Profile* profile);
+  // OmniboxUIHandler is deleted when the supplied pipe is destroyed.
+  OmniboxUIHandler(Profile* profile,
+                   mojo::InterfaceRequest<OmniboxUIHandlerMojo> request);
   ~OmniboxUIHandler() override;
 
   // AutocompleteControllerDelegate overrides:
   void OnResultChanged(bool default_match_changed) override;
-
-  // ErrorHandler overrides:
-  void OnConnectionError() override {
-    // TODO(darin): How should we handle connection error?
-  }
 
   // OmniboxUIHandlerMojo overrides:
   void StartOmniboxQuery(const mojo::String& input_string,
@@ -72,6 +70,8 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
 
   // The Profile* handed to us in our constructor.
   Profile* profile_;
+
+  mojo::StrongBinding<OmniboxUIHandlerMojo> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxUIHandler);
 };

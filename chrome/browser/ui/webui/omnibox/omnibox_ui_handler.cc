@@ -107,8 +107,11 @@ struct TypeConverter<AutocompleteResultsForProviderMojoPtr,
 
 }  // namespace mojo
 
-OmniboxUIHandler::OmniboxUIHandler(Profile* profile)
-    : profile_(profile) {
+OmniboxUIHandler::OmniboxUIHandler(
+    Profile* profile,
+    mojo::InterfaceRequest<OmniboxUIHandlerMojo> request)
+    : profile_(profile),
+      binding_(this, request.Pass()) {
   ResetController();
 }
 

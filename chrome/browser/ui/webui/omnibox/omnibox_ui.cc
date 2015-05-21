@@ -30,7 +30,6 @@ OmniboxUI::~OmniboxUI() {}
 
 void OmniboxUI::BindUIHandler(
     mojo::InterfaceRequest<OmniboxUIHandlerMojo> request) {
-  // BindToRequest takes ownership of the handler.
-  mojo::BindToRequest(new OmniboxUIHandler(Profile::FromWebUI(web_ui())),
-                      &request);
+  // OmniboxUIHandler deletes itself when the pipe is closed.
+  new OmniboxUIHandler(Profile::FromWebUI(web_ui()), request.Pass());
 }
