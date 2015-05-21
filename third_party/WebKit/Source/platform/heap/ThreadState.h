@@ -32,9 +32,9 @@
 #define ThreadState_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/ThreadingTraits.h"
 #include "public/platform/WebThread.h"
+#include "wtf/AddressSanitizer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

@@ -29,7 +29,6 @@
 
 #include "platform/PlatformThreadData.h"
 #include "platform/ThreadTimers.h"
-#include "platform/heap/AddressSanitizer.h"
 #include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"

@@ -31,7 +31,6 @@
 {
   'variables': {
     'platform_heap_files': [
-      'AddressSanitizer.h',
       'CallbackStack.cpp',
       'CallbackStack.h',
       'GCInfo.cpp',

@@ -32,11 +32,11 @@
 #define Heap_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "public/platform/WebThread.h"
+#include "wtf/AddressSanitizer.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/ContainerAnnotations.h"
@@ -75,6 +75,12 @@ const uint8_t orphanedZapValue = 240;
 // A zap value for vtables should be < 4K to ensure it cannot be
 // used for dispatch.
 static const intptr_t zappedVTable = 0xd0d;
+
+#if defined(ADDRESS_SANITIZER)
+const size_t asanMagic = 0xabefeed0;
+const size_t asanDeferMemoryReuseCount = 2;
+const size_t asanDeferMemoryReuseMask = 0x3;
+#endif
 
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define FILL_ZERO_IF_PRODUCTION(address, size) do { } while (false)

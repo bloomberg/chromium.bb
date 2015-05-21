@@ -22,21 +22,11 @@
 #ifndef WTF_LinkedHashSet_h
 #define WTF_LinkedHashSet_h
 
+#include "wtf/AddressSanitizer.h"
 #include "wtf/DefaultAllocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-
-// TODO(sof): See NO_SANITIZE_ADDRESS comment in platform/heap/AddressSanitizer.h
-// on the Windows toolchain special case; that comment also covers why we
-// temporarily need this NO_LAZY_SWEEP_SANITIZE_ADDRESS_WTF annotation.
-// (macro repeatedly defined here so as to avoid introducing an improper
-// wtf/ => platform/ dependency.)
-#if defined(ADDRESS_SANITIZER) && ENABLE(OILPAN) && (!OS(WIN) || COMPILER(CLANG))
-#define NO_LAZY_SWEEP_SANITIZE_ADDRESS_WTF __attribute__((no_sanitize_address))
-#else
-#define NO_LAZY_SWEEP_SANITIZE_ADDRESS_WTF
-#endif
 
 namespace WTF {
 
@@ -64,7 +54,7 @@ class LinkedHashSetNodeBase {
 public:
     LinkedHashSetNodeBase() : m_prev(this), m_next(this) { }
 
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS_WTF
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void unlink()
     {
         if (!m_next)

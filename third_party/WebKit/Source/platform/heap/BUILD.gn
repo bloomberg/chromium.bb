@@ -8,7 +8,6 @@ source_set("heap") {
   visibility = [ "//third_party/WebKit/Source/platform" ]
 
   sources = [
-    "AddressSanitizer.h",
     "CallbackStack.cpp",
     "CallbackStack.h",
     "GCInfo.cpp",

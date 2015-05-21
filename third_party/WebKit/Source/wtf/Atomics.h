@@ -30,6 +30,7 @@
 #ifndef Atomics_h
 #define Atomics_h
 
+#include "wtf/AddressSanitizer.h"
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 
@@ -263,27 +264,18 @@ ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr)
 
 #if defined(ADDRESS_SANITIZER)
 
-// FIXME: See comment on NO_SANITIZE_ADDRESS in platform/heap/AddressSanitizer.h
-#if !OS(WIN) || COMPILER(CLANG)
-#define NO_SANITIZE_ADDRESS_ATOMICS __attribute__((no_sanitize_address))
-#else
-#define NO_SANITIZE_ADDRESS_ATOMICS
-#endif
-
-NO_SANITIZE_ADDRESS_ATOMICS ALWAYS_INLINE void asanUnsafeReleaseStore(volatile unsigned* ptr, unsigned value)
+NO_SANITIZE_ADDRESS ALWAYS_INLINE void asanUnsafeReleaseStore(volatile unsigned* ptr, unsigned value)
 {
     MEMORY_BARRIER();
     *ptr = value;
 }
 
-NO_SANITIZE_ADDRESS_ATOMICS ALWAYS_INLINE unsigned asanUnsafeAcquireLoad(volatile const unsigned* ptr)
+NO_SANITIZE_ADDRESS ALWAYS_INLINE unsigned asanUnsafeAcquireLoad(volatile const unsigned* ptr)
 {
     unsigned value = *ptr;
     MEMORY_BARRIER();
     return value;
 }
-
-#undef NO_SANITIZE_ADDRESS_ATOMICS
 
 #endif // defined(ADDRESS_SANITIZER)
 

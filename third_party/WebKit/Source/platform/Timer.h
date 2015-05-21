@@ -27,9 +27,9 @@
 #define Timer_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/AddressSanitizer.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
