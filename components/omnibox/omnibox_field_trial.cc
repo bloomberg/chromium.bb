@@ -384,6 +384,12 @@ size_t OmniboxFieldTrial::HQPNumTitleWordsToAllow() {
   return num_title_words;
 }
 
+bool OmniboxFieldTrial::HQPAlsoDoHUPLikeScoring() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPAlsoDoHUPLikeScoringRule) == "true";
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -409,6 +415,8 @@ const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
 const char OmniboxFieldTrial::kHQPFixFrequencyScoringBugsRule[] =
     "HQPFixFrequencyScoringBugs";
 const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
+const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
+    "HQPAlsoDoHUPLikeScoring";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

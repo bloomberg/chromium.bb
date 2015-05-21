@@ -300,6 +300,16 @@ class OmniboxFieldTrial {
   static size_t HQPNumTitleWordsToAllow();
 
   // ---------------------------------------------------------
+  // For the HQPAlsoDoHUPLikeScoring experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns whether HistoryQuick provider (HQP) should attempt to score
+  // suggestions also with a HistoryURL-provider-like (HUP-like) mode, and
+  // assign suggestions the max of this score and the normal score.
+  // Returns false if the experiment isn't active.
+  static bool HQPAlsoDoHUPLikeScoring();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -319,6 +329,7 @@ class OmniboxFieldTrial {
   static const char kSuggestPollingDelayMsRule[];
   static const char kHQPFixFrequencyScoringBugsRule[];
   static const char kHQPNumTitleWordsRule[];
+  static const char kHQPAlsoDoHUPLikeScoringRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

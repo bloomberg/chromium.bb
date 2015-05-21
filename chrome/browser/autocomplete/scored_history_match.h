@@ -157,6 +157,10 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
       const std::string& buckets_str,
       std::vector<ScoreMaxRelevance>* hqp_buckets);
 
+  // If true, assign raw scores to be max(whatever it normally would be, a
+  // score that's similar to the score HistoryURL provider would assign).
+  static bool also_do_hup_like_scoring_;
+
   // Untyped visits to bookmarked pages score this, compared to 1 for
   // untyped visits to non-bookmarked pages and 20 for typed visits.
   static int bookmark_value_;

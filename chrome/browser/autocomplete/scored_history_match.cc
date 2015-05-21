@@ -31,11 +31,6 @@ const int kDaysToPrecomputeRecencyScoresFor = 366;
 // capped at the score of the largest bucket.
 const int kMaxRawTermScore = 30;
 
-// If true, assign raw scores to be max(whatever it normally would be, a score
-// that's similar to the score HistoryURL provider would assign). This variable
-// is set in the constructor by examining the field trial state.
-const bool kAlsoDoHupLikeScoring = false;
-
 // Pre-computed information to speed up calculating recency scores.
 // |days_ago_to_recency_score| is a simple array mapping how long ago a page was
 // visited (in days) to the recency score we should assign it.  This allows easy
@@ -114,6 +109,7 @@ void InitDaysAgoToRecencyScoreArray() {
 
 // static
 const size_t ScoredHistoryMatch::kMaxVisitsToScore = 10;
+bool ScoredHistoryMatch::also_do_hup_like_scoring_ = false;
 int ScoredHistoryMatch::bookmark_value_ = 1;
 bool ScoredHistoryMatch::fix_frequency_bugs_ = false;
 bool ScoredHistoryMatch::allow_tld_matches_ = false;
@@ -233,7 +229,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   raw_score = base::saturated_cast<int>(GetFinalRelevancyScore(
       topicality_score, frequency_score, *hqp_relevance_buckets_));
 
-  if (kAlsoDoHupLikeScoring && can_inline) {
+  if (also_do_hup_like_scoring_ && can_inline) {
     // HistoryURL-provider-like scoring gives any match that is
     // capable of being inlined a certain minimum score.  Some of these
     // are given a higher score that lets them be shown in inline.
@@ -376,7 +372,7 @@ void ScoredHistoryMatch::Init() {
     return;
 
   initialized = true;
-
+  also_do_hup_like_scoring_ = OmniboxFieldTrial::HQPAlsoDoHUPLikeScoring();
   bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
   fix_frequency_bugs_ = OmniboxFieldTrial::HQPFixFrequencyScoringBugs();
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
