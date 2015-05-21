@@ -29592,7 +29592,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Collects Flash usage data.</summary>
 </histogram>
 
-<histogram name="Plugin.NPAPIRemovalInfobar.Removed.PluginGroup"
+<histogram name="Plugin.NpapiRemovalInfobar.Removed.PluginGroup"
     enum="PluginGroup">
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -29602,7 +29602,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Plugin.NPAPIRemovalInfobar.RemovedSoon.PluginGroup"
+<histogram name="Plugin.NpapiRemovalInfobar.RemovedSoon.PluginGroup"
     enum="PluginGroup">
   <owner>wfh@chromium.org</owner>
   <summary>
