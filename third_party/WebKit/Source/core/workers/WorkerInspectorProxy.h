@@ -6,12 +6,14 @@
 #define WorkerInspectorProxy_h
 
 #include "core/CoreExport.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class ExecutionContext;
 class KURL;
+class WebTraceLocation;
 class WorkerGlobalScopeProxy;
 class WorkerThread;
 
@@ -45,6 +47,8 @@ public:
 
 private:
     WorkerInspectorProxy();
+
+    void addDebuggerTaskForWorker(const WebTraceLocation&, PassOwnPtr<WebThread::Task>);
 
     WorkerThread* m_workerThread;
     ExecutionContext* m_executionContext;

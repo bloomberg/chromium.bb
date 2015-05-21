@@ -50,7 +50,6 @@ class WorkerMicrotaskRunner;
 class WorkerReportingProxy;
 class WorkerSharedTimer;
 class WorkerThreadStartupData;
-class WorkerThreadTask;
 
 enum WorkerThreadStartMode {
     DontPauseWorkerGlobalScopeOnStart,
@@ -94,7 +93,7 @@ public:
     WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
-    void postDebuggerTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
+    void appendDebuggerTask(PassOwnPtr<WebThread::Task>);
 
     enum WaitMode { WaitForMessage, DontWaitForMessage };
     MessageQueueWaitResult runDebuggerTask(WaitMode = WaitForMessage);
@@ -141,13 +140,12 @@ private:
     void initialize(PassOwnPtr<WorkerThreadStartupData>);
     void shutdown();
     void performIdleWork(double deadlineSeconds);
-    void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
     bool m_started;
     bool m_terminated;
     bool m_shutdown;
-    MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
+    MessageQueue<WebThread::Task> m_debuggerMessageQueue;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;

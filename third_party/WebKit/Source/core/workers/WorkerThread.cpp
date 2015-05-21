@@ -249,24 +249,6 @@ private:
     bool m_isInstrumented;
 };
 
-class RunDebuggerQueueTask final : public ExecutionContextTask {
-public:
-    static PassOwnPtr<RunDebuggerQueueTask> create(WorkerThread* thread)
-    {
-        return adoptPtr(new RunDebuggerQueueTask(thread));
-    }
-    virtual void performTask(ExecutionContext* context) override
-    {
-        ASSERT(context->isWorkerGlobalScope());
-        m_thread->runDebuggerTask(WorkerThread::DontWaitForMessage);
-    }
-
-private:
-    explicit RunDebuggerQueueTask(WorkerThread* thread) : m_thread(thread) { }
-
-    WorkerThread* m_thread;
-};
-
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : m_started(false)
     , m_terminated(false)
@@ -561,10 +543,9 @@ void WorkerThread::terminateV8Execution()
     v8::V8::TerminateExecution(m_isolate);
 }
 
-void WorkerThread::postDebuggerTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
+void WorkerThread::appendDebuggerTask(PassOwnPtr<WebThread::Task> task)
 {
-    m_debuggerMessageQueue.append(WorkerThreadTask::create(*this, task, false));
-    postTask(location, RunDebuggerQueueTask::create(this));
+    m_debuggerMessageQueue.append(task);
 }
 
 MessageQueueWaitResult WorkerThread::runDebuggerTask(WaitMode waitMode)
