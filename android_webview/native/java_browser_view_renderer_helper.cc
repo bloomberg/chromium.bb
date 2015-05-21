@@ -157,8 +157,7 @@ scoped_ptr<SoftwareCanvasHolder> SoftwareCanvasHolder::Create(
   JNIEnv* env = base::android::AttachCurrentThread();
   scoped_ptr<SoftwareCanvasHolder> holder;
   if (!force_auxiliary_bitmap) {
-    scoped_ptr<SoftwareCanvasHolder> holder(
-        new JavaCanvasHolder(env, java_canvas, scroll_correction));
+    holder.reset(new JavaCanvasHolder(env, java_canvas, scroll_correction));
   }
   if (!holder.get() || !holder->GetCanvas()) {
     holder.reset();
