@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebappAuthenticator;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.hosted.HostedActivity;
+import org.chromium.chrome.browser.hosted.HostedIntentDataProvider;
 import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -258,9 +259,9 @@ public class ChromeLauncherActivity extends Activity
         if (getIntent() == null) return false;
 
         boolean enabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_EMBEDDED_MODE);
-        boolean append = IntentUtils.safeGetBooleanExtra(
-                getIntent(), IntentHandler.EXTRA_APPEND_TASK, false);
-        if (!append || !enabled) return false;
+        boolean hosted = getIntent().getBooleanExtra(
+                HostedIntentDataProvider.EXTRA_HOSTED_MODE, false);
+        if (!hosted || !enabled) return false;
 
         String url = IntentHandler.getUrlFromIntent(getIntent());
         if (url == null) return false;

@@ -31,6 +31,12 @@ public class HostedIntentDataProvider {
     private static final String TAG = "HostedIntentDataProvider";
 
     /**
+     * If true, Chrome is launched into the same Task in hosted mode. This is the only must have
+     * extra for using hosted mode.
+     */
+    public static final String EXTRA_HOSTED_MODE = "com.android.chrome.hosted_mode";
+
+    /**
      * Extra used to match the session. Its value is a long returned by
      * {@link IBrowserConnectionService#newSession}.
      */
