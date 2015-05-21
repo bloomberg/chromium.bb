@@ -9,12 +9,9 @@ from __future__ import print_function
 
 import copy
 import mock
-import os
-import stat
 
 from chromite.lib import cros_test_lib
 from chromite.lib import container_spec_generator
-from chromite.lib import osutils
 from chromite.lib import user_db
 
 MOCK_UID = 1000
@@ -77,13 +74,6 @@ class ContainerSpecGeneratorTest(cros_test_lib.MockTempDirTestCase):
     self._generator = container_spec_generator.ContainerSpecGenerator(
         self.tempdir)
 
-  def _SetupSimpleBinary(self):
-    """Set up a binary that file for the simple manifest."""
-    relpath = os.path.relpath(SIMPLE_MANIFEST_EXEC_VALUE[0], '/')
-    simple_binary_path = os.path.join(self.tempdir, relpath)
-    osutils.WriteFile(simple_binary_path, '', makedirs=True)
-    os.chmod(simple_binary_path, stat.S_IXUSR)
-
 
   def testChecksForAtLeastOneExecutable(self):
     """Check that we'll throw up on manifests that don't name an executable."""
@@ -92,7 +82,6 @@ class ContainerSpecGeneratorTest(cros_test_lib.MockTempDirTestCase):
 
   def testParsesSimpleManifest(self):
     """Test that we can correctly parse a simple manifest."""
-    self._SetupSimpleBinary()
     self._generator.GetContainerSpec(SIMPLE_MANIFEST, CONTAINER_NAME)
     self.assertEqual(SIMPLE_MANIFEST_MOCK_WRAPPER_CALLS,
                      self._mock_wrapper.mock_calls)

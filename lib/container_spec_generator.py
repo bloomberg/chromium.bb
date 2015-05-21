@@ -190,23 +190,12 @@ class ContainerSpecGenerator(object):
     self._sysroot = sysroot
     self._user_db = user_db.UserDB(sysroot)
 
-  def _CheckIsValidExecutable(self, path_to_binary):
+  def _CheckAbsPathToExecutable(self, path_to_binary):
     """Raises if there is no exectable at |path_to_binary|."""
     if not os.path.isabs(path_to_binary):
       raise ValueError(
           'Brick executables must be specified by absolute path, not "%s".' %
           path_to_binary)
-
-    # Pod manifests should specify absolute paths, but we'll rewrite these
-    # relative to our build root.
-    rel_path = os.path.relpath(path_to_binary, '/')
-    sysrooted_binary = os.path.join(self._sysroot, rel_path)
-    logging.debug('sysrooted binary is at %s', sysrooted_binary)
-    if not os.path.exists(sysrooted_binary):
-      raise ValueError('No file installed at %s.' % path_to_binary)
-
-    if not os.access(sysrooted_binary, os.X_OK):
-      raise ValueError('File at %s was not executable.' % path_to_binary)
     return True
 
   def _FillInExecutableFromApp(self, wrapper, app):
@@ -229,7 +218,7 @@ class ContainerSpecGenerator(object):
     cmd = _GetValueOfType(sub_app, KEY_SUB_APP_EXEC, list, 'app command line')
     if not cmd:
       raise ValueError('App command line must give the executable to run.')
-    self._CheckIsValidExecutable(cmd[0])
+    self._CheckAbsPathToExecutable(cmd[0])
     for cmd_piece in cmd:
       _CheckType(cmd_piece, unicode, 'app.exec fragment')
 
