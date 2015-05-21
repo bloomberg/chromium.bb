@@ -550,10 +550,15 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     int canvasPixelCount = size.width() * size.height();
 
     if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
+#if 0
+        // TODO(junov): re-enable this code once we solve the problem of recording
+        // GPU-backed images to an SkPicture for cross-context rendering crbug.com/490328
+
         // If the compositor provides GPU acceleration to display list canvases, we
         // prefer that over direct acceleration.
         if (document().viewportDescription().matchesHeuristicsForGpuRasterization())
             return false;
+#endif
         // If the GPU resources would be very expensive, prefer a display list.
         if (canvasPixelCount > ExpensiveCanvasHeuristicParameters::PreferDisplayListOverGpuSizeThreshold)
             return false;
