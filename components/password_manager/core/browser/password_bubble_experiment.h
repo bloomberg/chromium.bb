@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BUBBLE_EXPERIMENT_H_
-#define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BUBBLE_EXPERIMENT_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_BUBBLE_EXPERIMENT_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_BUBBLE_EXPERIMENT_H_
 
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -28,4 +28,4 @@ bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service);
 
 }  // namespace password_bubble_experiment
 
-#endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BUBBLE_EXPERIMENT_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_BUBBLE_EXPERIMENT_H_

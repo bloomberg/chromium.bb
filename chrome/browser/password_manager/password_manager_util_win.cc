@@ -13,7 +13,7 @@
 #include <security.h>
 #undef SECURITY_WIN32
 
-#include "chrome/browser/password_manager/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"

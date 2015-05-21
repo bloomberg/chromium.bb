@@ -18,12 +18,12 @@
 #if defined(OS_WIN) && defined(USE_ASH)
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
-#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/common/experiments.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/password_manager/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 
 namespace password_bubble_experiment {
 namespace {
@@ -14,12 +14,13 @@ namespace {
 const char kBrandingExperimentName[] = "PasswordBranding";
 const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
 
-} // namespace
+}  // namespace
 
 void RecordBubbleClosed(
     PrefService* prefs,
     password_manager::metrics_util::UIDismissalReason reason) {
-  // TODO(vasilii): store the statistics.
+  // TODO(vasilii): store the statistics and consider merging with
+  // password_manager_metrics_util.*.
 }
 
 bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/field_trial.h"
