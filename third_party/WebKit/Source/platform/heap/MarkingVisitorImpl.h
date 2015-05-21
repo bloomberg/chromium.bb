@@ -44,6 +44,10 @@ protected:
 
         if (header->isMarked())
             return;
+
+#if ENABLE(ASSERT)
+        toDerived()->checkMarkingAllowed();
+#endif
         header->mark();
 
 #if ENABLE(GC_PROFILING)

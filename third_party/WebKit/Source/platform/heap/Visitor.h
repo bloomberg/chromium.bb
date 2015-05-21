@@ -203,7 +203,6 @@ public:
             return;
 #if ENABLE(ASSERT)
         TraceTrait<T>::checkGCInfo(t);
-        Derived::fromHelper(this)->checkMarkingAllowed();
 #endif
         TraceTrait<T>::mark(Derived::fromHelper(this), t);
     }
