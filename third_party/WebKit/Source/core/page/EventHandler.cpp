@@ -984,10 +984,15 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
         return true;
     LocalFrame* frame = m_frame;
     FrameView* view = frame->view();
-    if (view && view->scrollableArea()->scroll(direction, granularity)) {
-        setFrameWasScrolledByUser();
-        return true;
+    if (view) {
+        ScrollDirection physicalDirection =
+            toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
+        if (view->scrollableArea()->scroll(physicalDirection, granularity)) {
+            setFrameWasScrolledByUser();
+            return true;
+        }
     }
+
     Frame* parentFrame = frame->tree().parent();
     if (!parentFrame || !parentFrame->isLocalFrame())
         return false;

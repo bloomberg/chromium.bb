@@ -135,6 +135,8 @@
     [TypeChecking=Interface] unsigned long touchEventHandlerCount(Document document);
     [RaisesException, TypeChecking=Interface] LayerRectList touchEventTargetLayerRects(Document document);
 
+    [RaisesException, TypeChecking=Interface] boolean executeCommand(Document document, DOMString name, DOMString value);
+
     DOMString htmlNamespace();
     sequence<DOMString> htmlTags();
     DOMString svgNamespace();

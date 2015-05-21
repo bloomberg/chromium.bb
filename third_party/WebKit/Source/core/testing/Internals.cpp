@@ -1308,6 +1308,18 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
     return nullptr;
 }
 
+bool Internals::executeCommand(Document* document, const String& name, const String& value, ExceptionState& exceptionState)
+{
+    ASSERT(document);
+    if (!document->frame()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
+        return false;
+    }
+
+    LocalFrame* frame = document->frame();
+    return frame->editor().executeCommand(name, value);
+}
+
 AtomicString Internals::htmlNamespace()
 {
     return HTMLNames::xhtmlNamespaceURI;

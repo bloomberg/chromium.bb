@@ -184,6 +184,8 @@ public:
     unsigned touchEventHandlerCount(Document*);
     LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
 
+    bool executeCommand(Document*, const String& name, const String& value, ExceptionState&);
+
     AtomicString htmlNamespace();
     Vector<AtomicString> htmlTags();
     AtomicString svgNamespace();
