@@ -685,6 +685,8 @@
       'browser/search/suggestions/suggestions_service_factory.h',
       'browser/search/suggestions/suggestions_source.cc',
       'browser/search/suggestions/suggestions_source.h',
+      'browser/search/thumbnail_source.cc',
+      'browser/search/thumbnail_source.h',
       'browser/searuch/most_visited_iframe_source.h',
       'browser/shell_integration.cc',
       'browser/shell_integration.h',

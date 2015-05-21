@@ -113,7 +113,6 @@ void NewTabPagePrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kNtpCollapsedRecentlyClosedTabs, false);
   registry->RegisterBooleanPref(prefs::kNtpCollapsedSyncPromo, false);
   registry->RegisterDictionaryPref(prefs::kNtpCollapsedForeignSessions);
-  registry->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist);
 }
 
 // static
