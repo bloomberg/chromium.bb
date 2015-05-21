@@ -24,6 +24,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/referrer.h"
 #include "jni/DownloadController_jni.h"
 #include "net/cookies/cookie_options.h"
@@ -435,6 +436,8 @@ DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
 
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);
+  if (user_agent.empty())
+    user_agent = GetContentClient()->GetUserAgent();
   GURL referer_url(request->referrer());
   if (referer_url.is_valid())
     referer = referer_url.spec();
