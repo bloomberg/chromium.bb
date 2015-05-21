@@ -9,8 +9,7 @@ mojom("interfaces") {
   sources = [
     "directory.mojom",
     "file.mojom",
-    "files.mojom",
+    "file_system.mojom",
     "types.mojom",
   ]
-  #  import_dirs = [ get_path_info("../../../", "abspath") ]
 }

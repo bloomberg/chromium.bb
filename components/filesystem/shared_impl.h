@@ -5,29 +5,27 @@
 // Shared implementation of things common between |DirectoryImpl| and
 // |FileImpl|.
 
-#ifndef SERVICES_FILES_SHARED_IMPL_H_
-#define SERVICES_FILES_SHARED_IMPL_H_
+#ifndef COMPONENTS_FILESYSTEM_SHARED_IMPL_H_
+#define COMPONENTS_FILESYSTEM_SHARED_IMPL_H_
 
 #include "components/filesystem/public/interfaces/types.mojom.h"
 #include "mojo/public/cpp/bindings/callback.h"
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 
 // Stats the given FD (which must be valid), calling |callback| appropriately.
 // The type in the |FileInformation| given to the callback will be assigned from
 // |type|.
-using StatFDCallback = Callback<void(Error, FileInformationPtr)>;
+using StatFDCallback = mojo::Callback<void(Error, FileInformationPtr)>;
 void StatFD(int fd, FileType type, const StatFDCallback& callback);
 
 // Touches the given FD (which must be valid), calling |callback| appropriately.
-using TouchFDCallback = Callback<void(Error)>;
+using TouchFDCallback = mojo::Callback<void(Error)>;
 void TouchFD(int fd,
              TimespecOrNowPtr atime,
              TimespecOrNowPtr mtime,
              const TouchFDCallback& callback);
 
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem
 
-#endif  // SERVICES_FILES_SHARED_IMPL_H_
+#endif  // COMPONENTS_FILESYSTEM_SHARED_IMPL_H_

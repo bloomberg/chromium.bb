@@ -15,10 +15,9 @@
 #include "base/strings/string_util.h"
 #include "mojo/public/cpp/bindings/string.h"
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 
-Error IsPathValid(const String& path) {
+Error IsPathValid(const mojo::String& path) {
   DCHECK(!path.is_null());
   if (!base::IsStringUTF8(path.get()))
     return ERROR_INVALID_ARGUMENT;
@@ -99,5 +98,64 @@ Error TimespecOrNowToStandardTimespec(const TimespecOrNow* in,
   return TimespecToStandardTimespec(in->timespec.get(), out);
 }
 
-}  // namespace files
-}  // namespace mojo
+Error ValidateOpenFlags(uint32_t open_flags, bool is_directory) {
+  // Treat unknown flags as "unimplemented".
+  if ((open_flags &
+       ~(kOpenFlagRead | kOpenFlagWrite | kOpenFlagCreate | kOpenFlagExclusive |
+         kOpenFlagAppend | kOpenFlagTruncate)))
+    return ERROR_UNIMPLEMENTED;
+
+  // At least one of |kOpenFlagRead| or |kOpenFlagWrite| must be set.
+  if (!(open_flags & (kOpenFlagRead | kOpenFlagWrite)))
+    return ERROR_INVALID_ARGUMENT;
+
+  // |kOpenFlagCreate| requires |kOpenFlagWrite|.
+  if ((open_flags & kOpenFlagCreate) && !(open_flags & kOpenFlagWrite))
+    return ERROR_INVALID_ARGUMENT;
+
+  // |kOpenFlagExclusive| requires |kOpenFlagCreate|.
+  if ((open_flags & kOpenFlagExclusive) && !(open_flags & kOpenFlagCreate))
+    return ERROR_INVALID_ARGUMENT;
+
+  if (is_directory) {
+    // Check that file-only flags aren't set.
+    if ((open_flags & (kOpenFlagAppend | kOpenFlagTruncate)))
+      return ERROR_INVALID_ARGUMENT;
+    return ERROR_OK;
+  }
+
+  // File-only flags:
+
+  // |kOpenFlagAppend| requires |kOpenFlagWrite|.
+  if ((open_flags & kOpenFlagAppend) && !(open_flags & kOpenFlagWrite))
+    return ERROR_INVALID_ARGUMENT;
+
+  // |kOpenFlagTruncate| requires |kOpenFlagWrite|.
+  if ((open_flags & kOpenFlagTruncate) && !(open_flags & kOpenFlagWrite))
+    return ERROR_INVALID_ARGUMENT;
+
+  return ERROR_OK;
+}
+
+Error ValidateDeleteFlags(uint32_t delete_flags) {
+  // Treat unknown flags as "unimplemented".
+  if ((delete_flags &
+       ~(kDeleteFlagFileOnly | kDeleteFlagDirectoryOnly |
+         kDeleteFlagRecursive)))
+    return ERROR_UNIMPLEMENTED;
+
+  // Only one of the three currently-defined flags may be set.
+  if ((delete_flags & kDeleteFlagFileOnly) &&
+      (delete_flags & (kDeleteFlagDirectoryOnly | kDeleteFlagRecursive)))
+    return ERROR_INVALID_ARGUMENT;
+  if ((delete_flags & kDeleteFlagDirectoryOnly) &&
+      (delete_flags & (kDeleteFlagFileOnly | kDeleteFlagRecursive)))
+    return ERROR_INVALID_ARGUMENT;
+  if ((delete_flags & kDeleteFlagRecursive) &&
+      (delete_flags & (kDeleteFlagFileOnly | kDeleteFlagDirectoryOnly)))
+    return ERROR_INVALID_ARGUMENT;
+
+  return ERROR_OK;
+}
+
+}  // namespace filesystem

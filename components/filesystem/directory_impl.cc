@@ -21,8 +21,7 @@
 #include "components/filesystem/shared_impl.h"
 #include "components/filesystem/util.h"
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 
 namespace {
 
@@ -32,69 +31,9 @@ struct DIRDeleter {
 };
 using ScopedDIR = scoped_ptr<DIR, DIRDeleter>;
 
-Error ValidateOpenFlags(uint32_t open_flags, bool is_directory) {
-  // Treat unknown flags as "unimplemented".
-  if ((open_flags &
-       ~(kOpenFlagRead | kOpenFlagWrite | kOpenFlagCreate | kOpenFlagExclusive |
-         kOpenFlagAppend | kOpenFlagTruncate)))
-    return ERROR_UNIMPLEMENTED;
-
-  // At least one of |kOpenFlagRead| or |kOpenFlagWrite| must be set.
-  if (!(open_flags & (kOpenFlagRead | kOpenFlagWrite)))
-    return ERROR_INVALID_ARGUMENT;
-
-  // |kOpenFlagCreate| requires |kOpenFlagWrite|.
-  if ((open_flags & kOpenFlagCreate) && !(open_flags & kOpenFlagWrite))
-    return ERROR_INVALID_ARGUMENT;
-
-  // |kOpenFlagExclusive| requires |kOpenFlagCreate|.
-  if ((open_flags & kOpenFlagExclusive) && !(open_flags & kOpenFlagCreate))
-    return ERROR_INVALID_ARGUMENT;
-
-  if (is_directory) {
-    // Check that file-only flags aren't set.
-    if ((open_flags & (kOpenFlagAppend | kOpenFlagTruncate)))
-      return ERROR_INVALID_ARGUMENT;
-    return ERROR_OK;
-  }
-
-  // File-only flags:
-
-  // |kOpenFlagAppend| requires |kOpenFlagWrite|.
-  if ((open_flags & kOpenFlagAppend) && !(open_flags & kOpenFlagWrite))
-    return ERROR_INVALID_ARGUMENT;
-
-  // |kOpenFlagTruncate| requires |kOpenFlagWrite|.
-  if ((open_flags & kOpenFlagTruncate) && !(open_flags & kOpenFlagWrite))
-    return ERROR_INVALID_ARGUMENT;
-
-  return ERROR_OK;
-}
-
-Error ValidateDeleteFlags(uint32_t delete_flags) {
-  // Treat unknown flags as "unimplemented".
-  if ((delete_flags &
-       ~(kDeleteFlagFileOnly | kDeleteFlagDirectoryOnly |
-         kDeleteFlagRecursive)))
-    return ERROR_UNIMPLEMENTED;
-
-  // Only one of the three currently-defined flags may be set.
-  if ((delete_flags & kDeleteFlagFileOnly) &&
-      (delete_flags & (kDeleteFlagDirectoryOnly | kDeleteFlagRecursive)))
-    return ERROR_INVALID_ARGUMENT;
-  if ((delete_flags & kDeleteFlagDirectoryOnly) &&
-      (delete_flags & (kDeleteFlagFileOnly | kDeleteFlagRecursive)))
-    return ERROR_INVALID_ARGUMENT;
-  if ((delete_flags & kDeleteFlagRecursive) &&
-      (delete_flags & (kDeleteFlagFileOnly | kDeleteFlagDirectoryOnly)))
-    return ERROR_INVALID_ARGUMENT;
-
-  return ERROR_OK;
-}
-
 }  // namespace
 
-DirectoryImpl::DirectoryImpl(InterfaceRequest<Directory> request,
+DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                              base::ScopedFD dir_fd,
                              scoped_ptr<base::ScopedTempDir> temp_dir)
     : binding_(this, request.Pass()),
@@ -115,17 +54,17 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
   // |closedir()| will close the FD)), so we need to |dup()| ours.
   base::ScopedFD fd(dup(dir_fd_.get()));
   if (!fd.is_valid()) {
-    callback.Run(ErrnoToError(errno), Array<DirectoryEntryPtr>());
+    callback.Run(ErrnoToError(errno), mojo::Array<DirectoryEntryPtr>());
     return;
   }
 
   ScopedDIR dir(fdopendir(fd.release()));
   if (!dir) {
-    callback.Run(ErrnoToError(errno), Array<DirectoryEntryPtr>());
+    callback.Run(ErrnoToError(errno), mojo::Array<DirectoryEntryPtr>());
     return;
   }
 
-  Array<DirectoryEntryPtr> result(0);
+  mojo::Array<DirectoryEntryPtr> result(0);
 
 // Warning: This is not portable (per POSIX.1 -- |buffer| may not be large
 // enough), but it's fine for Linux.
@@ -137,7 +76,7 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
     struct dirent* entry = nullptr;
     if (int error = readdir_r(dir.get(), &buffer, &entry)) {
       // |error| is effectively an errno (for |readdir_r()|), AFAICT.
-      callback.Run(ErrnoToError(error), Array<DirectoryEntryPtr>());
+      callback.Run(ErrnoToError(error), mojo::Array<DirectoryEntryPtr>());
       return;
     }
 
@@ -163,7 +102,7 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
         e->type = FILE_TYPE_UNKNOWN;
         break;
     }
-    e->name = String(entry->d_name);
+    e->name = mojo::String(entry->d_name);
     result.push_back(e.Pass());
   }
 
@@ -183,8 +122,8 @@ void DirectoryImpl::Touch(TimespecOrNowPtr atime,
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
-void DirectoryImpl::OpenFile(const String& path,
-                             InterfaceRequest<File> file,
+void DirectoryImpl::OpenFile(const mojo::String& path,
+                             mojo::InterfaceRequest<File> file,
                              uint32_t open_flags,
                              const OpenFileCallback& callback) {
   DCHECK(!path.is_null());
@@ -228,8 +167,8 @@ void DirectoryImpl::OpenFile(const String& path,
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::OpenDirectory(const String& path,
-                                  InterfaceRequest<Directory> directory,
+void DirectoryImpl::OpenDirectory(const mojo::String& path,
+                                  mojo::InterfaceRequest<Directory> directory,
                                   uint32_t open_flags,
                                   const OpenDirectoryCallback& callback) {
   DCHECK(!path.is_null());
@@ -277,8 +216,8 @@ void DirectoryImpl::OpenDirectory(const String& path,
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::Rename(const String& path,
-                           const String& new_path,
+void DirectoryImpl::Rename(const mojo::String& path,
+                           const mojo::String& new_path,
                            const RenameCallback& callback) {
   DCHECK(!path.is_null());
   DCHECK(!new_path.is_null());
@@ -303,7 +242,7 @@ void DirectoryImpl::Rename(const String& path,
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::Delete(const String& path,
+void DirectoryImpl::Delete(const mojo::String& path,
                            uint32_t delete_flags,
                            const DeleteCallback& callback) {
   DCHECK(!path.is_null());
@@ -349,5 +288,4 @@ void DirectoryImpl::Delete(const String& path,
   callback.Run(ErrnoToError(errno));
 }
 
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem

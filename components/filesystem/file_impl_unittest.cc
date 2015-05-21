@@ -8,8 +8,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 namespace {
 
 using FileImplTest = FilesTestBase;
@@ -37,8 +36,8 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     bytes_to_write.push_back(static_cast<uint8_t>('o'));
     error = ERROR_INTERNAL;
     uint32_t num_bytes_written = 0;
-    file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-                Capture(&error, &num_bytes_written));
+    file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -66,7 +65,7 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     EXPECT_EQ(ERROR_OK, error);
 
     // Read from it.
-    Array<uint8_t> bytes_read;
+    mojo::Array<uint8_t> bytes_read;
     error = ERROR_INTERNAL;
     file->Read(3, 1, WHENCE_FROM_START, Capture(&error, &bytes_read));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
@@ -104,8 +103,8 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     // Write to it.
     error = ERROR_INTERNAL;
     uint32_t num_bytes_written = 0;
-    file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-                Capture(&error, &num_bytes_written));
+    file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -129,8 +128,8 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     // Try to write in read mode; it should fail.
     error = ERROR_INTERNAL;
     uint32_t num_bytes_written = 0;
-    file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-                Capture(&error, &num_bytes_written));
+    file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_UNKNOWN, error);
     EXPECT_EQ(0u, num_bytes_written);
@@ -200,8 +199,8 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('o'));
     error = ERROR_INTERNAL;
     uint32_t num_bytes_written = 0;
-    file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-                Capture(&error, &num_bytes_written));
+    file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -233,8 +232,8 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('e'));
     error = ERROR_INTERNAL;
     uint32_t num_bytes_written = 0;
-    file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-                Capture(&error, &num_bytes_written));
+    file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -256,7 +255,7 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     EXPECT_EQ(ERROR_OK, error);
 
     // Read from it.
-    Array<uint8_t> bytes_read;
+    mojo::Array<uint8_t> bytes_read;
     error = ERROR_INTERNAL;
     file->Read(12, 0, WHENCE_FROM_START, Capture(&error, &bytes_read));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
@@ -292,8 +291,8 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('o'));
     error = ERROR_INTERNAL;
     uint32_t num_bytes_written = 0;
-    file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-                Capture(&error, &num_bytes_written));
+    file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -325,8 +324,8 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('e'));
     error = ERROR_INTERNAL;
     uint32_t num_bytes_written = 0;
-    file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-                Capture(&error, &num_bytes_written));
+    file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -348,7 +347,7 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     EXPECT_EQ(ERROR_OK, error);
 
     // Read from it.
-    Array<uint8_t> bytes_read;
+    mojo::Array<uint8_t> bytes_read;
     error = ERROR_INTERNAL;
     file->Read(7, 0, WHENCE_FROM_START, Capture(&error, &bytes_read));
     ASSERT_TRUE(file.WaitForIncomingMethodCall());
@@ -458,8 +457,8 @@ TEST_F(FileImplTest, TellSeek) {
   std::vector<uint8_t> bytes_to_write(1000, '!');
   error = ERROR_INTERNAL;
   uint32_t num_bytes_written = 0;
-  file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-              Capture(&error, &num_bytes_written));
+  file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+              WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
   ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -549,8 +548,8 @@ TEST_F(FileImplTest, Dup) {
   bytes_to_write.push_back(static_cast<uint8_t>('o'));
   error = ERROR_INTERNAL;
   uint32_t num_bytes_written = 0;
-  file1->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-               Capture(&error, &num_bytes_written));
+  file1->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+               WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
   ASSERT_TRUE(file1.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -580,7 +579,7 @@ TEST_F(FileImplTest, Dup) {
   more_bytes_to_write.push_back(static_cast<uint8_t>('d'));
   error = ERROR_INTERNAL;
   num_bytes_written = 0;
-  file2->Write(Array<uint8_t>::From(more_bytes_to_write), 0,
+  file2->Write(mojo::Array<uint8_t>::From(more_bytes_to_write), 0,
                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
   ASSERT_TRUE(file2.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
@@ -602,7 +601,7 @@ TEST_F(FileImplTest, Dup) {
   EXPECT_EQ(ERROR_OK, error);
 
   // Read everything using |file2|.
-  Array<uint8_t> bytes_read;
+  mojo::Array<uint8_t> bytes_read;
   error = ERROR_INTERNAL;
   file2->Read(1000, 0, WHENCE_FROM_START, Capture(&error, &bytes_read));
   ASSERT_TRUE(file2.WaitForIncomingMethodCall());
@@ -635,8 +634,8 @@ TEST_F(FileImplTest, Truncate) {
   std::vector<uint8_t> bytes_to_write(kInitialSize, '!');
   error = ERROR_INTERNAL;
   uint32_t num_bytes_written = 0;
-  file->Write(Array<uint8_t>::From(bytes_to_write), 0, WHENCE_FROM_CURRENT,
-              Capture(&error, &num_bytes_written));
+  file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
+              WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
   ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(kInitialSize, num_bytes_written);
@@ -681,13 +680,12 @@ TEST_F(FileImplTest, Ioctl) {
   EXPECT_EQ(ERROR_OK, error);
 
   // Normal files don't support any ioctls.
-  Array<uint32_t> out_values;
-  file->Ioctl(0, Array<uint32_t>(), Capture(&error, &out_values));
+  mojo::Array<uint32_t> out_values;
+  file->Ioctl(0, mojo::Array<uint32_t>(), Capture(&error, &out_values));
   ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_UNAVAILABLE, error);
   EXPECT_TRUE(out_values.is_null());
 }
 
 }  // namespace
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_FILES_UTIL_H_
-#define SERVICES_FILES_UTIL_H_
+#ifndef COMPONENTS_FILESYSTEM_UTIL_H_
+#define COMPONENTS_FILESYSTEM_UTIL_H_
 
 #include "components/filesystem/public/interfaces/types.mojom.h"
 
 namespace mojo {
-
 class String;
+}
 
-namespace files {
+namespace filesystem {
 
 // Validation functions (typically used to check arguments; they return
 // |ERROR_OK| if valid, else the standard/recommended error for the validation
@@ -20,7 +20,7 @@ namespace files {
 // Checks if |path|, which must be non-null, is (looks like) a valid (relative)
 // path. (On failure, returns |ERROR_INVALID_ARGUMENT| if |path| is not UTF-8,
 // or |ERROR_PERMISSION_DENIED| if it is not relative.)
-Error IsPathValid(const String& path);
+Error IsPathValid(const mojo::String& path);
 
 // Checks if |whence| is a valid (known) |Whence| value. (On failure, returns
 // |ERROR_UNIMPLEMENTED|.)
@@ -49,7 +49,14 @@ Error TimespecToStandardTimespec(const Timespec* in, struct timespec* out);
 Error TimespecOrNowToStandardTimespec(const TimespecOrNow* in,
                                       struct timespec* out);
 
-}  // namespace files
-}  // namespace mojo
+// Ensures that |open_flags| is one of the valid combinations listed in
+// types.mojom.
+Error ValidateOpenFlags(uint32_t open_flags, bool is_directory);
 
-#endif  // SERVICES_FILES_UTIL_H_
+// Ensures that |delete_flags| is one of the valid combinations listed in
+// types.mojom.
+Error ValidateDeleteFlags(uint32_t delete_flags);
+
+}  // namespace filesystem
+
+#endif  // COMPONENTS_FILESYSTEM_UTIL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/files_impl.h"
+#include "components/filesystem/file_system_impl.h"
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -18,8 +18,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "components/filesystem/directory_impl.h"
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 
 namespace {
 
@@ -51,18 +50,18 @@ base::ScopedFD OpenMojoDebugDirectory() {
 
 }  // namespace
 
-FilesImpl::FilesImpl(ApplicationConnection* connection,
-                     InterfaceRequest<Files> request)
+FileSystemImpl::FileSystemImpl(mojo::ApplicationConnection* connection,
+                               mojo::InterfaceRequest<FileSystem> request)
     : binding_(this, request.Pass()) {
   // TODO(vtl): record other app's URL
 }
 
-FilesImpl::~FilesImpl() {
+FileSystemImpl::~FileSystemImpl() {
 }
 
-void FilesImpl::OpenFileSystem(const mojo::String& file_system,
-                               InterfaceRequest<Directory> directory,
-                               const OpenFileSystemCallback& callback) {
+void FileSystemImpl::OpenFileSystem(const mojo::String& file_system,
+                                    mojo::InterfaceRequest<Directory> directory,
+                                    const OpenFileSystemCallback& callback) {
   base::ScopedFD dir_fd;
   // Set only if the |DirectoryImpl| will own a temporary directory.
   scoped_ptr<base::ScopedTempDir> temp_dir;
@@ -92,5 +91,4 @@ void FilesImpl::OpenFileSystem(const mojo::String& file_system,
   callback.Run(ERROR_OK);
 }
 
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem

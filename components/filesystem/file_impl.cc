@@ -21,12 +21,11 @@
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
 static_assert(sizeof(size_t) >= sizeof(uint32_t), "size_t too small");
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 
 const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 
-FileImpl::FileImpl(InterfaceRequest<File> request, base::ScopedFD file_fd)
+FileImpl::FileImpl(mojo::InterfaceRequest<File> request, base::ScopedFD file_fd)
     : binding_(this, request.Pass()), file_fd_(file_fd.Pass()) {
   DCHECK(file_fd_.is_valid());
 }
@@ -64,19 +63,19 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
                     Whence whence,
                     const ReadCallback& callback) {
   if (!file_fd_.is_valid()) {
-    callback.Run(ERROR_CLOSED, Array<uint8_t>());
+    callback.Run(ERROR_CLOSED, mojo::Array<uint8_t>());
     return;
   }
   if (num_bytes_to_read > kMaxReadSize) {
-    callback.Run(ERROR_OUT_OF_RANGE, Array<uint8_t>());
+    callback.Run(ERROR_OUT_OF_RANGE, mojo::Array<uint8_t>());
     return;
   }
   if (Error error = IsOffsetValid(offset)) {
-    callback.Run(error, Array<uint8_t>());
+    callback.Run(error, mojo::Array<uint8_t>());
     return;
   }
   if (Error error = IsWhenceValid(whence)) {
-    callback.Run(error, Array<uint8_t>());
+    callback.Run(error, mojo::Array<uint8_t>());
     return;
   }
 
@@ -89,16 +88,16 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
     // position. See TODO in file.mojom.
     if (lseek(file_fd_.get(), static_cast<off_t>(offset),
               WhenceToStandardWhence(whence)) < 0) {
-      callback.Run(ErrnoToError(errno), Array<uint8_t>());
+      callback.Run(ErrnoToError(errno), mojo::Array<uint8_t>());
       return;
     }
   }
 
-  Array<uint8_t> bytes_read(num_bytes_to_read);
+  mojo::Array<uint8_t> bytes_read(num_bytes_to_read);
   ssize_t num_bytes_read = HANDLE_EINTR(
       read(file_fd_.get(), &bytes_read.front(), num_bytes_to_read));
   if (num_bytes_read < 0) {
-    callback.Run(ErrnoToError(errno), Array<uint8_t>());
+    callback.Run(ErrnoToError(errno), mojo::Array<uint8_t>());
     return;
   }
 
@@ -108,7 +107,7 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
-void FileImpl::Write(Array<uint8_t> bytes_to_write,
+void FileImpl::Write(mojo::Array<uint8_t> bytes_to_write,
                      int64_t offset,
                      Whence whence,
                      const WriteCallback& callback) {
@@ -163,7 +162,7 @@ void FileImpl::Write(Array<uint8_t> bytes_to_write,
   callback.Run(ERROR_OK, static_cast<uint32_t>(num_bytes_written));
 }
 
-void FileImpl::ReadToStream(ScopedDataPipeProducerHandle source,
+void FileImpl::ReadToStream(mojo::ScopedDataPipeProducerHandle source,
                             int64_t offset,
                             Whence whence,
                             int64_t num_bytes_to_read,
@@ -186,7 +185,7 @@ void FileImpl::ReadToStream(ScopedDataPipeProducerHandle source,
   callback.Run(ERROR_UNIMPLEMENTED);
 }
 
-void FileImpl::WriteFromStream(ScopedDataPipeConsumerHandle sink,
+void FileImpl::WriteFromStream(mojo::ScopedDataPipeConsumerHandle sink,
                                int64_t offset,
                                Whence whence,
                                const WriteFromStreamCallback& callback) {
@@ -278,7 +277,8 @@ void FileImpl::Touch(TimespecOrNowPtr atime,
   TouchFD(file_fd_.get(), atime.Pass(), mtime.Pass(), callback);
 }
 
-void FileImpl::Dup(InterfaceRequest<File> file, const DupCallback& callback) {
+void FileImpl::Dup(mojo::InterfaceRequest<File> file,
+                   const DupCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -294,7 +294,7 @@ void FileImpl::Dup(InterfaceRequest<File> file, const DupCallback& callback) {
   callback.Run(ERROR_OK);
 }
 
-void FileImpl::Reopen(InterfaceRequest<File> file,
+void FileImpl::Reopen(mojo::InterfaceRequest<File> file,
                       uint32_t open_flags,
                       const ReopenCallback& callback) {
   if (!file_fd_.is_valid()) {
@@ -309,27 +309,26 @@ void FileImpl::Reopen(InterfaceRequest<File> file,
 
 void FileImpl::AsBuffer(const AsBufferCallback& callback) {
   if (!file_fd_.is_valid()) {
-    callback.Run(ERROR_CLOSED, ScopedSharedBufferHandle());
+    callback.Run(ERROR_CLOSED, mojo::ScopedSharedBufferHandle());
     return;
   }
 
   // TODO(vtl): FIXME soon
   NOTIMPLEMENTED();
-  callback.Run(ERROR_UNIMPLEMENTED, ScopedSharedBufferHandle());
+  callback.Run(ERROR_UNIMPLEMENTED, mojo::ScopedSharedBufferHandle());
 }
 
 void FileImpl::Ioctl(uint32_t request,
-                     Array<uint32_t> in_values,
+                     mojo::Array<uint32_t> in_values,
                      const IoctlCallback& callback) {
   if (!file_fd_.is_valid()) {
-    callback.Run(ERROR_CLOSED, Array<uint32_t>());
+    callback.Run(ERROR_CLOSED, mojo::Array<uint32_t>());
     return;
   }
 
   // TODO(vtl): The "correct" error code should be one that can be translated to
   // ENOTTY!
-  callback.Run(ERROR_UNAVAILABLE, Array<uint32_t>());
+  callback.Run(ERROR_UNAVAILABLE, mojo::Array<uint32_t>());
 }
 
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem

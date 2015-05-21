@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_FILES_DIRECTORY_IMPL_H_
-#define SERVICES_FILES_DIRECTORY_IMPL_H_
+#ifndef COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
+#define COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -16,14 +16,13 @@ namespace base {
 class ScopedTempDir;
 }  // namespace base
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 
 class DirectoryImpl : public Directory {
  public:
   // Set |temp_dir| only if there's a temporary directory that should be deleted
   // when this object is destroyed.
-  DirectoryImpl(InterfaceRequest<Directory> request,
+  DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                 base::ScopedFD dir_fd,
                 scoped_ptr<base::ScopedTempDir> temp_dir);
   ~DirectoryImpl() override;
@@ -34,30 +33,29 @@ class DirectoryImpl : public Directory {
   void Touch(TimespecOrNowPtr atime,
              TimespecOrNowPtr mtime,
              const TouchCallback& callback) override;
-  void OpenFile(const String& path,
-                InterfaceRequest<File> file,
+  void OpenFile(const mojo::String& path,
+                mojo::InterfaceRequest<File> file,
                 uint32_t open_flags,
                 const OpenFileCallback& callback) override;
-  void OpenDirectory(const String& path,
-                     InterfaceRequest<Directory> directory,
+  void OpenDirectory(const mojo::String& path,
+                     mojo::InterfaceRequest<Directory> directory,
                      uint32_t open_flags,
                      const OpenDirectoryCallback& callback) override;
-  void Rename(const String& path,
-              const String& new_path,
+  void Rename(const mojo::String& path,
+              const mojo::String& new_path,
               const RenameCallback& callback) override;
-  void Delete(const String& path,
+  void Delete(const mojo::String& path,
               uint32_t delete_flags,
               const DeleteCallback& callback) override;
 
  private:
-  StrongBinding<Directory> binding_;
+  mojo::StrongBinding<Directory> binding_;
   base::ScopedFD dir_fd_;
   scoped_ptr<base::ScopedTempDir> temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryImpl);
 };
 
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem
 
-#endif  // SERVICES_FILES_DIRECTORY_IMPL_H_
+#endif  // COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_

@@ -7,8 +7,7 @@
 
 #include "components/filesystem/files_test_base.h"
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 namespace {
 
 using DirectoryImplTest = FilesTestBase;
@@ -43,7 +42,7 @@ TEST_F(DirectoryImplTest, Read) {
   EXPECT_EQ(ERROR_OK, error);
 
   error = ERROR_INTERNAL;
-  Array<DirectoryEntryPtr> directory_contents;
+  mojo::Array<DirectoryEntryPtr> directory_contents;
   directory->Read(Capture(&error, &directory_contents));
   ASSERT_TRUE(directory.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
@@ -196,5 +195,4 @@ TEST_F(DirectoryImplTest, BasicRenameDelete) {
 // TODO(vtl): Test delete flags.
 
 }  // namespace
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_FILES_FUTIMENS_H_
-#define SERVICES_FILES_FUTIMENS_H_
+#ifndef COMPONENTS_FILESYSTEM_FUTIMENS_H_
+#define COMPONENTS_FILESYSTEM_FUTIMENS_H_
 
 #include <sys/stat.h>
 
@@ -23,4 +23,4 @@ int futimens(int fd, const struct timespec times[2]);
 }  // extern "C"
 #endif
 
-#endif  // SERVICES_FILES_FUTIMENS_H_
+#endif  // COMPONENTS_FILESYSTEM_FUTIMENS_H_

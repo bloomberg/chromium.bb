@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo.files;
+module filesystem;
 
 import "components/filesystem/public/interfaces/directory.mojom";
 import "components/filesystem/public/interfaces/types.mojom";
 
-interface Files {
+interface FileSystem {
   // Opens the root directory for the file system with the given name; null
   // yields the default file system, if any.
   OpenFileSystem(string? file_system, Directory& directory) => (Error error);

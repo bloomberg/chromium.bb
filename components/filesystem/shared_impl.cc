@@ -14,8 +14,7 @@
 #include "components/filesystem/futimens.h"
 #include "components/filesystem/util.h"
 
-namespace mojo {
-namespace files {
+namespace filesystem {
 
 void StatFD(int fd, FileType type, const StatFDCallback& callback) {
   DCHECK_NE(fd, -1);
@@ -77,5 +76,4 @@ void TouchFD(int fd,
   callback.Run(ERROR_OK);
 }
 
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem

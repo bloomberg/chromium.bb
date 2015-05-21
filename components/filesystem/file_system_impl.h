@@ -2,40 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_FILES_FILES_IMPL_H_
-#define SERVICES_FILES_FILES_IMPL_H_
+#ifndef COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_
+#define COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_
 
 #include "base/macros.h"
-#include "components/filesystem/public/interfaces/files.mojom.h"
+#include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
-
 class ApplicationConnection;
+}
 
-namespace files {
+namespace filesystem {
 
-class FilesImpl : public Files {
+class FileSystemImpl : public FileSystem {
  public:
-  FilesImpl(ApplicationConnection* connection, InterfaceRequest<Files> request);
-  ~FilesImpl() override;
+  FileSystemImpl(mojo::ApplicationConnection* connection,
+                 mojo::InterfaceRequest<FileSystem> request);
+  ~FileSystemImpl() override;
 
   // |Files| implementation:
   // We provide a "private" temporary file system as the default. In Debug
   // builds, we also provide access to a common file system named "debug"
   // (stored under ~/MojoDebug).
   void OpenFileSystem(const mojo::String& file_system,
-                      InterfaceRequest<Directory> directory,
+                      mojo::InterfaceRequest<Directory> directory,
                       const OpenFileSystemCallback& callback) override;
 
  private:
-  StrongBinding<Files> binding_;
+  mojo::StrongBinding<FileSystem> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(FilesImpl);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemImpl);
 };
 
-}  // namespace files
-}  // namespace mojo
+}  // namespace filesystem
 
-#endif  // SERVICES_FILES_FILES_IMPL_H_
+#endif  // COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_
