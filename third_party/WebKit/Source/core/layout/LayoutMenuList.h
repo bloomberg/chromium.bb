@@ -126,7 +126,10 @@ private:
     LayoutText* m_buttonText;
     LayoutBlock* m_innerBlock;
 
-    bool m_optionsChanged;
+    bool m_optionsChanged : 1;
+    bool m_isEmpty : 1;
+    bool m_hasUpdatedActiveOption : 1;
+    bool m_popupIsVisible : 1;
     int m_optionsWidth;
 
     int m_lastActiveIndex;
@@ -134,7 +137,6 @@ private:
     RefPtr<ComputedStyle> m_optionStyle;
 
     RefPtrWillBePersistent<PopupMenu> m_popup;
-    bool m_popupIsVisible;
     int m_indexToSelectOnCancel;
 
     // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
