@@ -30,12 +30,14 @@ namespace {
 
 base::TimeTicks GetEarliestEventTime(AudioDirectiveList* list,
                                      base::TimeTicks event_time) {
-  if (!list->GetActiveDirective())
-    return event_time;
+  scoped_ptr<AudioDirective> active_directive = list->GetActiveDirective();
 
-  return event_time.is_null() ?
-      list->GetActiveDirective()->end_time :
-      std::min(list->GetActiveDirective()->end_time, event_time);
+  if (!active_directive)
+    return event_time;
+  if (event_time.is_null())
+    return active_directive->end_time;
+
+  return std::min(active_directive->end_time, event_time);
 }
 
 void ConvertDirectives(const std::vector<AudioDirective>& in_directives,
