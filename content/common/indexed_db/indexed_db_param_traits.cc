@@ -109,24 +109,47 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
 
 void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
   l->append("<IndexedDBKey>(");
-  LogParam(static_cast<int>(p.type()), l);
-  l->append(", ");
-  l->append("[");
-  std::vector<IndexedDBKey>::const_iterator it = p.array().begin();
-  while (it != p.array().end()) {
-    Log(*it, l);
-    ++it;
-    if (it != p.array().end())
-      l->append(", ");
+  switch(p.type()) {
+    case WebIDBKeyTypeArray: {
+      l->append("array=");
+      l->append("[");
+      bool first = true;
+      for (const IndexedDBKey& key : p.array()) {
+        if (!first)
+          l->append(", ");
+        first = false;
+        Log(key, l);
+      }
+      l->append("]");
+      break;
+    }
+    case WebIDBKeyTypeBinary:
+      l->append("binary=");
+      LogParam(p.binary(), l);
+      break;
+    case WebIDBKeyTypeString:
+      l->append("string=");
+      LogParam(p.string(), l);
+      break;
+    case WebIDBKeyTypeDate:
+      l->append("date=");
+      LogParam(p.date(), l);
+      break;
+    case WebIDBKeyTypeNumber:
+      l->append("number=");
+      LogParam(p.number(), l);
+      break;
+    case WebIDBKeyTypeInvalid:
+      l->append("invalid");
+      break;
+    case WebIDBKeyTypeNull:
+      l->append("null");
+      break;
+    case WebIDBKeyTypeMin:
+    default:
+      NOTREACHED();
+      break;
   }
-  l->append("], ");
-  LogParam(p.binary(), l);
-  l->append(", ");
-  LogParam(p.string(), l);
-  l->append(", ");
-  LogParam(p.date(), l);
-  l->append(", ");
-  LogParam(p.number(), l);
   l->append(")");
 }
 
@@ -180,19 +203,31 @@ bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
 
 void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {
   l->append("<IndexedDBKeyPath>(");
-  LogParam(static_cast<int>(p.type()), l);
-  l->append(", ");
-  LogParam(p.string(), l);
-  l->append(", ");
-  l->append("[");
-  std::vector<base::string16>::const_iterator it = p.array().begin();
-  while (it != p.array().end()) {
-    LogParam(*it, l);
-    ++it;
-    if (it != p.array().end())
-      l->append(", ");
+  switch (p.type()) {
+    case WebIDBKeyPathTypeArray: {
+      l->append("array=[");
+      bool first = true;
+      for (const base::string16& entry : p.array()) {
+        if (!first)
+          l->append(", ");
+        first = false;
+        LogParam(entry, l);
+      }
+      l->append("]");
+      break;
+    }
+    case WebIDBKeyPathTypeString:
+      l->append("string=");
+      LogParam(p.string(), l);
+      break;
+    case WebIDBKeyPathTypeNull:
+      l->append("null");
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-  l->append("])");
+  l->append(")");
 }
 
 void ParamTraits<IndexedDBKeyRange>::Write(Message* m, const param_type& p) {
