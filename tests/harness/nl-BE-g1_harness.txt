@@ -330,6 +330,10 @@
           "output": "⠼⠋⠑⠐⠖⠄⠑⠗"
         },
         {
+          "input": "SLAAT DE VLAM IN DE PAN, DEK DE VUURHAARD DAN AF MET EEN BRANDWERENDE DEKEN OF EEN VOCHTIGE DOEK.",
+          "output": "⠘⠘⠎⠇⠁⠁⠞ ⠙⠑ ⠧⠇⠁⠍ ⠊⠝ ⠙⠑ ⠏⠁⠝⠂ ⠙⠑⠅ ⠙⠑ ⠧⠥⠥⠗⠓⠁⠁⠗⠙ ⠙⠁⠝ ⠁⠋ ⠍⠑⠞ ⠑⠑⠝ ⠃⠗⠁⠝⠙⠺⠑⠗⠑⠝⠙⠑ ⠙⠑⠅⠑⠝ ⠕⠋ ⠑⠑⠝ ⠧⠕⠉⠓⠞⠊⠛⠑ ⠘⠙⠕⠑⠅⠲"
+        },
+        {
           "input": "lisa_dirk@yahoo.com",
           "output": "⠇⠊⠎⠁⠸⠙⠊⠗⠅⠜⠽⠁⠓⠕⠕⠲⠉⠕⠍"
         },
@@ -400,6 +404,22 @@
         {
           "input": "Een typist(e) moet heel precies werken."
           "output": "⠨⠑⠑⠝ ⠞⠽⠏⠊⠎⠞⠦⠑⠴⠀⠍⠕⠑⠞ ⠓⠑⠑⠇ ⠏⠗⠑⠉⠊⠑⠎ ⠺⠑⠗⠅⠑⠝⠲"
+        },
+        {
+          "input": "31-07-2010",
+          "output": "⠼⠉⠁⠤⠼⠚⠛⠤⠼⠃⠚⠁⠚"
+        },
+        {
+          "input": "31/07/2010",
+          "output": "⠼⠉⠁⠌⠼⠚⠛⠌⠼⠃⠚⠁⠚"
+        },
+        {
+          "input": "12.30 uur",
+          "output": "⠼⠁⠃⠲⠉⠚ ⠥⠥⠗"
+        },
+        {
+          "input": "12:30 uur",
+          "output": "⠼⠁⠃⠒⠼⠉⠚ ⠥⠥⠗"
         }
       ]
     }
