@@ -24,10 +24,10 @@ test(function(t) { assert_exists(window, "testRunner"); t.done(); },
      "window.testRunner is required for the following tests.");
 
 sequential_promise_test(function(t) {
-  testRunner.setBluetoothMockDataSet('RejectRequestDevice_NotFoundError');
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
   return navigator.bluetooth.requestDevice()
     .then(function() {
-      assert_unreached('Mock was set to reject.');
+      assert_unreached('Expected no devices but one was returned.');
     },
       function(e) {
         assert_equals(e.name, 'NotFoundError');
@@ -35,7 +35,7 @@ sequential_promise_test(function(t) {
 }, 'Reject with NotFoundError.');
 
 sequential_promise_test(function() {
-  testRunner.setBluetoothMockDataSet('Single Empty Device');
+  testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
   return navigator.bluetooth.requestDevice()
     .then(function(device) {
       assert_equals(device.constructor.name, "BluetoothDevice");

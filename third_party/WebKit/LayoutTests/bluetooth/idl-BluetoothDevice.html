@@ -13,7 +13,7 @@ test(function(t) { assert_exists(window, "testRunner"); t.done(); },
      "window.testRunner is required for the following tests.");
 
 async_test(function(t) {
-  testRunner.setBluetoothMockDataSet('Single Empty Device');
+  testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
   navigator.bluetooth.requestDevice()
     .then(
       t.step_func(function(device) {
