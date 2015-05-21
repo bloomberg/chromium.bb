@@ -1,0 +1,235 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.partnercustomizations;
+
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.test.suitebuilder.annotation.MediumTest;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.Checkable;
+import android.widget.EditText;
+
+import com.google.android.apps.chrome.R;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.preferences.HomepagePreferences;
+import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabList;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.widget.ChromeSwitchCompat;
+import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
+import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content.browser.test.util.UiUtils;
+
+import java.util.concurrent.TimeoutException;
+
+/**
+ * Integration test suite for partner homepage.
+ */
+public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizationIntegrationTest {
+    private static final String TEST_URL =
+            TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable(){
+            @Override
+            public void run() {
+                // TODO(newt): Remove this once SharedPreferences is cleared automatically at the
+                // beginning of every test. http://crbug.com/441859
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(
+                        getInstrumentation().getTargetContext());
+                sp.edit().clear().apply();
+            }
+        });
+
+        startMainActivityFromLauncher();
+    }
+
+    /**
+     * Homepage is loaded on startup.
+     */
+    @MediumTest
+    @Feature({"Homepage" })
+    public void testHomepageInitialLoading() {
+        assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
+                Uri.parse(getActivity().getActivityTab().getUrl()));
+    }
+
+    /**
+     * Clicking the homepage button should load homepage in the current tab.
+     */
+    @MediumTest
+    @Feature({"Homepage"})
+    public void testHomepageButtonClick() throws InterruptedException {
+        // Load non-homepage URL.
+        loadUrl(TEST_URL);
+        UiUtils.settleDownUI(getInstrumentation());
+        assertNotSame(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
+                Uri.parse(getActivity().getActivityTab().getUrl()));
+
+        // Click homepage button.
+        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), new Runnable() {
+            @Override
+            public void run() {
+                View homeButton = getActivity().findViewById(R.id.home_button);
+                assertEquals("Homepage button is not shown",
+                        View.VISIBLE, homeButton.getVisibility());
+                singleClickView(homeButton);
+            }
+        });
+        assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
+                Uri.parse(getActivity().getActivityTab().getUrl()));
+    }
+
+    /**
+     * Homepage button visibility should be updated by enabling and disabling homepage in settings.
+     * @throws InterruptedException
+     */
+    @MediumTest
+    @Feature({"Homepage"})
+    public void testHomepageButtonEnableDisable() throws InterruptedException {
+        // Disable homepage.
+        Preferences homepagePreferenceActivity =
+                startPreferences(HomepagePreferences.class.getName());
+        ChromeSwitchCompat homepageSwitch =
+                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.homepage_switch);
+        assertNotNull(homepageSwitch);
+        TouchCommon.singleClickView(homepageSwitch);
+        waitForCheckedState(homepageSwitch, false);
+        homepagePreferenceActivity.finish();
+
+        // Assert no homepage button.
+        assertFalse(HomepageManager.isHomepageEnabled(getActivity()));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals("Homepage button is shown", View.GONE,
+                        getActivity().findViewById(R.id.home_button).getVisibility());
+            }
+        });
+
+        // Enable homepage.
+        homepagePreferenceActivity = startPreferences(HomepagePreferences.class.getName());
+        homepageSwitch =
+                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.homepage_switch);
+        assertNotNull(homepageSwitch);
+        TouchCommon.singleClickView(homepageSwitch);
+        waitForCheckedState(homepageSwitch, true);
+        homepagePreferenceActivity.finish();
+
+        // Assert homepage button.
+        assertTrue(HomepageManager.isHomepageEnabled(getActivity()));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals("Homepage button is shown", View.VISIBLE,
+                        getActivity().findViewById(R.id.home_button).getVisibility());
+            }
+        });
+    }
+
+    private boolean waitForCheckedState(final Checkable view, final boolean isChecked)
+            throws InterruptedException {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return view.isChecked() == isChecked;
+            }
+        });
+    }
+
+    /**
+     * Custom homepage URI should be fixed (e.g., "chrome.com" -> "http://chrome.com/")
+     * on exiting Homepage settings page.
+     */
+    @MediumTest
+    @Feature({"Homepage"})
+    public void testPreferenceCustomUriFixup() throws InterruptedException {
+        // Change homepage custom URI on homepage settings.
+        final Preferences homepagePreferenceActivity =
+                startPreferences(HomepagePreferences.class.getName());
+        CheckBox checkBox =
+                (CheckBox) homepagePreferenceActivity.findViewById(R.id.default_checkbox);
+        assertTrue(checkBox.isChecked());
+        TouchCommon.singleClickView(checkBox);
+        TouchCommon.singleClickView(homepagePreferenceActivity.findViewById(R.id.custom_uri));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ((EditText) homepagePreferenceActivity.findViewById(R.id.custom_uri))
+                        .setText("chrome.com");
+            }
+        });
+        homepagePreferenceActivity.finish();
+
+        UiUtils.settleDownUI(getInstrumentation());
+        assertEquals("http://chrome.com/", HomepageManager.getHomepageUri(getActivity()));
+    }
+
+    /**
+     * Closing the last tab should also close Chrome on Tabbed mode.
+     */
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    @MediumTest
+    @Feature({"Homepage" })
+    public void testLastTabClosed() throws InterruptedException {
+        ChromeTabUtils.closeCurrentTab(getInstrumentation(), (ChromeTabbedActivity) getActivity());
+        assertTrue("Activity was not closed.",
+                getActivity().isFinishing() || getActivity().isDestroyed());
+    }
+
+    /**
+     * Closing all tabs should finalize all tab closures and close Chrome on Tabbed mode.
+     */
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    @MediumTest
+    @Feature({"Homepage" })
+    public void testCloseAllTabs() throws InterruptedException {
+        final CallbackHelper tabClosed = new CallbackHelper();
+        final TabModel tabModel = getActivity().getCurrentTabModel();
+        getActivity().getCurrentTabModel().addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void didCloseTab(Tab tab) {
+                if (tabModel.getCount() == 0) tabClosed.notifyCalled();
+            }
+        });
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getTabModelSelector().closeAllTabs();
+            }
+        });
+
+        try {
+            tabClosed.waitForCallback(0);
+        } catch (TimeoutException e) {
+            fail("Never closed all of the tabs");
+        }
+        assertEquals("Expected no tabs to be present",
+                0, getActivity().getCurrentTabModel().getCount());
+        TabList fullModel = getActivity().getCurrentTabModel().getComprehensiveModel();
+        // By the time TAB_CLOSED event is received, all tab closures should be finalized
+        assertEquals("Expected no tabs to be present in the comprehensive model",
+                0, fullModel.getCount());
+
+        getInstrumentation().waitForIdleSync();
+        assertTrue("Activity was not closed.",
+                getActivity().isFinishing() || getActivity().isDestroyed());
+    }
+}

@@ -1,0 +1,119 @@
+# Keep line number information, useful for stack traces.
+-keepattributes SourceFile,LineNumberTable
+
+# Keep the annotations.
+-keep @interface ***
+
+# Disable obfuscation for the following two packages.
+-keepnames class com.google.android.apps.chrome.**,org.chromium.** {
+  *;
+}
+
+# Keep all the primitive and String constants for for the following two packages.
+-keepclassmembers class com.google.android.apps.chrome.**,org.chromium.** {
+  !private static final % *;
+  !private static final java.lang.String *;
+}
+
+# Keep code annotated with the following annotations.
+-keep class com.google.android.apps.chrome.**,org.chromium.** {
+  @**.AccessedByNative <fields>;
+  @**.CalledByNative <methods>;
+  @**.CalledByNativeUnchecked <methods>;
+  @**.JavascriptInterface <methods>;
+  @**.NativeCall <methods>;
+  @**.UsedByReflection <methods>;
+  @**.VisibleForTesting *;
+  native <methods>;
+}
+
+# Keep all runtime visible annotations
+-keepattributes RuntimeVisibleAnnotations
+
+# Tell proguard to remove those if the return values are unused. Allow to get
+# rid of verbose and debug logs and eventually functions used to build messages.
+-assumenosideeffects class * {
+  @org.chromium.base.annotations.NoSideEffects <methods>;
+}
+-assumenosideeffects class org.chromium.base.Log,
+                           com.google.android.apps.chrome.ILog {
+    public *** d(...);
+    public *** v(...);
+    private *** debug(...);
+    private *** verbose(...);
+}
+
+# TODO(aurimas): figure out why we need to keep these classes.
+-keep class org.chromium.base.test.** {
+  *;
+}
+
+# Keep protobuf code used via reflection
+# TODO(tonyg): Removing these -keeps results in new notes, but nothing seems to
+# break. This exclusion costs almost 100k of dex size so consider replacing it
+# with a -dontnote after more testing.
+-keep class com.google.protobuf.** {
+  *** newBuilder();
+  *** parseFrom(java.io.InputStream);
+}
+
+# Keep the client interfaces for cacheinvalidation as they are used as
+# argument types for some of our code that we're keeping and proguard warns
+# otherwise.
+-keep class com.google.ipc.invalidation.external.client.** {
+  *;
+}
+
+# Keep all enum values and valueOf methods. See
+# http://proguard.sourceforge.net/index.html#manual/examples.html
+# for the reason for this. Also, see http://crbug.com/248037.
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep all Parcelables as they might be marshalled outside Chrome.
+-keepnames class * implements android.os.Parcelable {
+   public static final ** CREATOR;
+}
+
+# SearchView is used in website_preferences_menu.xml and is constructed by
+# Android using reflection.
+-keep class android.support.v7.widget.SearchView {
+  public <init>(...);
+}
+
+# Google Play Services warnings are about its resources.
+-dontwarn com.google.android.gms.R**
+
+# The support library contains references to newer platform versions.
+# Don't warn about those in case this app is linking against an older
+# platform version.  We know about them, and they are safe.
+-dontwarn android.support.**
+
+# Everything below this is kept because they are referenced by the test APK.
+-dontwarn javax.annotation.Nullable
+
+-keep class android.support.v7.mediarouter.R* {
+  *;
+}
+
+-keep class android.support.v7.media.MediaRouteProvider** {
+  *;
+}
+
+-keep class android.support.v4.app.FragmentManager** {
+  *;
+}
+
+-keep class android.support.v4.app.DialogFragment** {
+  *;
+}
+
+-keep class android.support.v7.app.AlertDialog** {
+  *;
+}
+
+-keep class com.google.android.gms.cast.CastMediaControlIntent* {
+  *;
+}

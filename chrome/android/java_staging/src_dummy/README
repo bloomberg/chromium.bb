@@ -1,0 +1,4 @@
+This is dummy file for apk build. Since java_apk build requires 'src' directory,
+we need dummy file under 'src' to keep 'src' directory itself in git repository.
+
+TODO(newt): remove this after the switch to GN. This is only used by GYP.

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<org.chromium.chrome.browser.toolbar.HostedToolbar xmlns:android="http://schemas.android.com/apk/res/android">
+    <org.chromium.chrome.browser.widget.TintedImageButton
+        android:id="@+id/back_button"
+        style="@style/ToolbarButton"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/btn_chevron_left" />
+    <ImageButton android:id="@+id/security_button"
+        style="@style/LocationBarButton"
+        android:layout_width="@dimen/location_bar_icon_width"
+        android:layout_height="match_parent"
+        android:layout_marginStart="48dp"
+        android:scaleType="center"
+        android:layout_gravity="center_vertical"
+        android:alpha="0"
+        android:visibility="gone"
+        android:contentDescription="@string/accessibility_toolbar_btn_security_lock" />
+    <include
+        android:id="@+id/url_container"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        android:layout_gravity="center_vertical"
+        layout="@layout/url_container"
+        />
+    <ImageButton
+        android:id="@+id/action_button"
+        style="@style/ToolbarButton"
+        android:layout_marginEnd="42dp"
+        android:layout_gravity="center_vertical|end"
+        android:visibility="gone"
+        android:contentDescription="@string/accessibility_toolbar_btn_custom" />
+    <org.chromium.chrome.browser.widget.TintedImageButton
+        android:id="@+id/menu_button"
+        style="@style/ToolbarButton"
+        android:layout_gravity="center_vertical|end"
+        android:layout_width="42dp"
+        android:paddingEnd="4dp"
+        android:src="@drawable/btn_menu"
+        android:contentDescription="@string/accessibility_toolbar_btn_menu"
+        android:background="@null" />
+    <org.chromium.chrome.browser.widget.ToolbarProgressBar
+        android:id="@+id/progress"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:progressDrawable="@drawable/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:progress="0" />
+</org.chromium.chrome.browser.toolbar.HostedToolbar>

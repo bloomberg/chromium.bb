@@ -1,0 +1,27 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+{
+  'conditions': [
+    ['OS=="android"', {
+      'variables': {
+        'files': [
+          '<(DEPTH)/chrome/test/data/android/about.html',
+          '<(DEPTH)/chrome/test/data/android/content_view_focus/',
+          '<(DEPTH)/chrome/test/data/android/contextualsearch/',
+          '<(DEPTH)/chrome/test/data/android/find/',
+          '<(DEPTH)/chrome/test/data/android/media/',
+          '<(DEPTH)/chrome/test/data/android/navigate/',
+          '<(DEPTH)/chrome/test/data/android/ok.txt',
+          '<(DEPTH)/chrome/test/data/android/omahaupdateinfobar/',
+          '<(DEPTH)/chrome/test/data/android/prerender/',
+          '<(DEPTH)/chrome/test/data/android/redirect/about.html',
+          '<(DEPTH)/chrome/test/data/android/simple.html',
+          '<(DEPTH)/chrome/test/data/android/tabstest/',
+          '<(DEPTH)/chrome/test/data/google/',
+        ],
+      },
+    }],
+  ],
+}
