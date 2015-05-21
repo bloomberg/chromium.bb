@@ -142,12 +142,6 @@ class EasyUnlockService::BluetoothDetector
     adapter_->AddObserver(this);
     service_->OnBluetoothAdapterPresentChanged();
 
-    // TODO(tengs): At the moment, there is no way for Bluetooth discoverability
-    // to be turned on except through the Easy Unlock setup. If we step on any
-    // toes in the future then we need to revisit this guard.
-    if (adapter_->IsDiscoverable())
-      TurnOffBluetoothDiscoverability();
-
 #if !defined(OS_CHROMEOS)
     // Bluetooth detection causes serious performance degradations on Mac
     // and possibly other platforms as well: http://crbug.com/467316
@@ -157,6 +151,12 @@ class EasyUnlockService::BluetoothDetector
     // TODO(bcwhite,xiyuan): Revisit when non-chromeos platforms are supported.
     adapter_->RemoveObserver(this);
     adapter_ = NULL;
+#else
+    // TODO(tengs): At the moment, there is no way for Bluetooth discoverability
+    // to be turned on except through the Easy Unlock setup. If we step on any
+    // toes in the future then we need to revisit this guard.
+    if (adapter_->IsDiscoverable())
+      TurnOffBluetoothDiscoverability();
 #endif  // !defined(OS_CHROMEOS)
   }
 
