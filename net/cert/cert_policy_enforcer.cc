@@ -185,11 +185,11 @@ struct ComplianceDetails {
   base::Version whitelist_version;
 };
 
-base::Value* NetLogComplianceCheckResultCallback(
+scoped_ptr<base::Value> NetLogComplianceCheckResultCallback(
     X509Certificate* cert,
     ComplianceDetails* details,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("certificate", NetLogX509CertificateCallback(cert, capture_mode));
   dict->SetBoolean("policy_enforcement_required",
                    details->ct_presence_required);
@@ -203,7 +203,7 @@ base::Value* NetLogComplianceCheckResultCallback(
                         details->whitelist_version.GetString());
     }
   }
-  return dict;
+  return dict.Pass();
 }
 
 bool IsCertificateInWhitelist(const X509Certificate& cert,

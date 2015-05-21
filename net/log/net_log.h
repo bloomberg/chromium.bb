@@ -71,7 +71,8 @@ class NET_EXPORT NetLog {
   // associated with an event.  If called, it will be called synchronously,
   // so it need not have owning references.  May be called more than once, or
   // not at all.  May return NULL.
-  typedef base::Callback<base::Value*(NetLogCaptureMode)> ParametersCallback;
+  typedef base::Callback<scoped_ptr<base::Value>(NetLogCaptureMode)>
+      ParametersCallback;
 
   // Identifies the entity that generated this log. The |id| field should
   // uniquely identify the source, and is used by log observers to infer

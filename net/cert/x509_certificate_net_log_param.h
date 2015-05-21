@@ -12,8 +12,9 @@ namespace net {
 class X509Certificate;
 
 // Creates NetLog parameter to describe an X509Certificate.
-base::Value* NetLogX509CertificateCallback(const X509Certificate* certificate,
-                                           NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> NetLogX509CertificateCallback(
+    const X509Certificate* certificate,
+    NetLogCaptureMode capture_mode);
 
 }  // namespace net
 

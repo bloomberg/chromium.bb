@@ -20,15 +20,16 @@ NET_EXPORT_PRIVATE RequestPriority ConvertQuicPriorityToRequestPriority(
       IDLE : static_cast<RequestPriority>(HIGHEST - priority);
 }
 
-base::Value* QuicRequestNetLogCallback(QuicStreamId stream_id,
-                                       const SpdyHeaderBlock* headers,
-                                       QuicPriority priority,
-                                       NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(
-      SpdyHeaderBlockNetLogCallback(headers, capture_mode));
+scoped_ptr<base::Value> QuicRequestNetLogCallback(
+    QuicStreamId stream_id,
+    const SpdyHeaderBlock* headers,
+    QuicPriority priority,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(static_cast<base::DictionaryValue*>(
+      SpdyHeaderBlockNetLogCallback(headers, capture_mode).release()));
   dict->SetInteger("quic_priority", static_cast<int>(priority));
   dict->SetInteger("quic_stream_id", static_cast<int>(stream_id));
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace net

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

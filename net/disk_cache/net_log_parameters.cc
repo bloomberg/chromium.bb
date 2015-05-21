@@ -13,78 +13,78 @@
 
 namespace {
 
-base::Value* NetLogEntryCreationCallback(
+scoped_ptr<base::Value> NetLogEntryCreationCallback(
     const disk_cache::Entry* entry,
     bool created,
     net::NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("key", entry->GetKey());
   dict->SetBoolean("created", created);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogReadWriteDataCallback(
+scoped_ptr<base::Value> NetLogReadWriteDataCallback(
     int index,
     int offset,
     int buf_len,
     bool truncate,
     net::NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("index", index);
   dict->SetInteger("offset", offset);
   dict->SetInteger("buf_len", buf_len);
   if (truncate)
     dict->SetBoolean("truncate", truncate);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogReadWriteCompleteCallback(
+scoped_ptr<base::Value> NetLogReadWriteCompleteCallback(
     int bytes_copied,
     net::NetLogCaptureMode /* capture_mode */) {
   DCHECK_NE(bytes_copied, net::ERR_IO_PENDING);
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   if (bytes_copied < 0) {
     dict->SetInteger("net_error", bytes_copied);
   } else {
     dict->SetInteger("bytes_copied", bytes_copied);
   }
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSparseOperationCallback(
+scoped_ptr<base::Value> NetLogSparseOperationCallback(
     int64 offset,
     int buff_len,
     net::NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   // Values can only be created with at most 32-bit integers.  Using a string
   // instead circumvents that restriction.
   dict->SetString("offset", base::Int64ToString(offset));
   dict->SetInteger("buff_len", buff_len);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSparseReadWriteCallback(
+scoped_ptr<base::Value> NetLogSparseReadWriteCallback(
     const net::NetLog::Source& source,
     int child_len,
     net::NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  source.AddToEventParameters(dict);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  source.AddToEventParameters(dict.get());
   dict->SetInteger("child_len", child_len);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogGetAvailableRangeResultCallback(
+scoped_ptr<base::Value> NetLogGetAvailableRangeResultCallback(
     int64 start,
     int result,
     net::NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   if (result > 0) {
     dict->SetInteger("length", result);
     dict->SetString("start",  base::Int64ToString(start));
   } else {
     dict->SetInteger("net_error", result);
   }
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace

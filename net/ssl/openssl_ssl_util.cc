@@ -152,11 +152,12 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
   }
 }
 
-base::Value* NetLogOpenSSLErrorCallback(int net_error,
-                                        int ssl_error,
-                                        const OpenSSLErrorInfo& error_info,
-                                        NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogOpenSSLErrorCallback(
+    int net_error,
+    int ssl_error,
+    const OpenSSLErrorInfo& error_info,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("ssl_error", ssl_error);
   if (error_info.error_code != 0) {
@@ -167,7 +168,7 @@ base::Value* NetLogOpenSSLErrorCallback(int net_error,
     dict->SetString("file", error_info.file);
   if (error_info.line != 0)
     dict->SetInteger("line", error_info.line);
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace

@@ -20,7 +20,7 @@ class Value;
 namespace net {
 
 // Returns a Value containing NetLog parameters for starting a URLRequest.
-NET_EXPORT base::Value* NetLogURLRequestStartCallback(
+NET_EXPORT scoped_ptr<base::Value> NetLogURLRequestStartCallback(
     const GURL* url,
     const std::string* method,
     int load_flags,

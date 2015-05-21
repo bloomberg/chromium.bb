@@ -26,11 +26,12 @@ namespace net {
 namespace {
 
 // Callback for TYPE_URL_REQUEST_FILTERS_SET net-internals event.
-base::Value* FiltersSetCallback(Filter* filter,
-                                NetLogCaptureMode /* capture_mode */) {
+scoped_ptr<base::Value> FiltersSetCallback(
+    Filter* filter,
+    NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetString("filters", filter->OrderedFilterList());
-  return event_params.release();
+  return event_params.Pass();
 }
 
 std::string ComputeMethodForRedirect(const std::string& method,

@@ -25,6 +25,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/sdch_net_log_params.h"
 #include "net/filter/gzip_filter.h"

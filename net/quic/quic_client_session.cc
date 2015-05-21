@@ -96,18 +96,18 @@ void RecordHandshakeState(HandshakeState state) {
                             NUM_HANDSHAKE_STATES);
 }
 
-base::Value* NetLogQuicClientSessionCallback(
+scoped_ptr<base::Value> NetLogQuicClientSessionCallback(
     const QuicServerId* server_id,
     bool require_confirmation,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host", server_id->host());
   dict->SetInteger("port", server_id->port());
   dict->SetBoolean("is_https", server_id->is_https());
   dict->SetBoolean("privacy_mode",
                    server_id->privacy_mode() == PRIVACY_MODE_ENABLED);
   dict->SetBoolean("require_confirmation", require_confirmation);
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace
@@ -832,7 +832,7 @@ void QuicClientSession::CloseAllObservers(int net_error) {
 
 base::Value* QuicClientSession::GetInfoAsValue(
     const std::set<HostPortPair>& aliases) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenStreams());
   base::ListValue* stream_list = new base::ListValue();
@@ -863,7 +863,7 @@ base::Value* QuicClientSession::GetInfoAsValue(
   }
   dict->Set("aliases", alias_list);
 
-  return dict;
+  return dict.release();
 }
 
 base::WeakPtr<QuicClientSession> QuicClientSession::GetWeakPtr() {

@@ -81,9 +81,10 @@ const unsigned kMaxCacheEntries = 256;
 // The number of seconds to cache entries.
 const unsigned kTTLSecs = 1800;  // 30 minutes.
 
-base::Value* CertVerifyResultCallback(const CertVerifyResult& verify_result,
-                                      NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* results = new base::DictionaryValue();
+scoped_ptr<base::Value> CertVerifyResultCallback(
+    const CertVerifyResult& verify_result,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> results(new base::DictionaryValue());
   results->SetBoolean("has_md5", verify_result.has_md5);
   results->SetBoolean("has_md2", verify_result.has_md2);
   results->SetBoolean("has_md4", verify_result.has_md4);
@@ -98,16 +99,16 @@ base::Value* CertVerifyResultCallback(const CertVerifyResult& verify_result,
                NetLogX509CertificateCallback(verify_result.verified_cert.get(),
                                              capture_mode));
 
-  base::ListValue* hashes = new base::ListValue();
+  scoped_ptr<base::ListValue> hashes(new base::ListValue());
   for (std::vector<HashValue>::const_iterator it =
            verify_result.public_key_hashes.begin();
        it != verify_result.public_key_hashes.end();
        ++it) {
     hashes->AppendString(it->ToString());
   }
-  results->Set("public_key_hashes", hashes);
+  results->Set("public_key_hashes", hashes.Pass());
 
-  return results;
+  return results.Pass();
 }
 
 }  // namespace

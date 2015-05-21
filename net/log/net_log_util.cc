@@ -128,9 +128,9 @@ bool RequestCreatedBefore(const URLRequest* request1,
 
 // Returns a Value representing the state of a pre-existing URLRequest when
 // net-internals was opened.
-base::Value* GetRequestStateAsValue(const net::URLRequest* request,
-                                    NetLogCaptureMode capture_mode) {
-  return request->GetStateAsValue().release();
+scoped_ptr<base::Value> GetRequestStateAsValue(const net::URLRequest* request,
+                                               NetLogCaptureMode capture_mode) {
+  return request->GetStateAsValue();
 }
 
 }  // namespace
@@ -148,60 +148,60 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   // Add a dictionary with information about the relationship between CertStatus
   // flags and their symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     for (size_t i = 0; i < arraysize(kCertStatusFlags); i++)
       dict->SetInteger(kCertStatusFlags[i].name, kCertStatusFlags[i].constant);
 
-    constants_dict->Set("certStatusFlag", dict);
+    constants_dict->Set("certStatusFlag", dict.Pass());
   }
 
   // Add a dictionary with information about the relationship between load flag
   // enums and their symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     for (size_t i = 0; i < arraysize(kLoadFlags); i++)
       dict->SetInteger(kLoadFlags[i].name, kLoadFlags[i].constant);
 
-    constants_dict->Set("loadFlag", dict);
+    constants_dict->Set("loadFlag", dict.Pass());
   }
 
   // Add a dictionary with information about the relationship between load state
   // enums and their symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     for (size_t i = 0; i < arraysize(kLoadStateTable); i++)
       dict->SetInteger(kLoadStateTable[i].name, kLoadStateTable[i].constant);
 
-    constants_dict->Set("loadState", dict);
+    constants_dict->Set("loadState", dict.Pass());
   }
 
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 #define NET_INFO_SOURCE(label, string, value) \
   dict->SetInteger(string, NET_INFO_##label);
 #include "net/base/net_info_source_list.h"
 #undef NET_INFO_SOURCE
-    constants_dict->Set("netInfoSources", dict);
+    constants_dict->Set("netInfoSources", dict.Pass());
   }
 
   // Add information on the relationship between net error codes and their
   // symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     for (size_t i = 0; i < arraysize(kNetErrors); i++)
       dict->SetInteger(ErrorToShortString(kNetErrors[i]), kNetErrors[i]);
 
-    constants_dict->Set("netError", dict);
+    constants_dict->Set("netError", dict.Pass());
   }
 
   // Add information on the relationship between QUIC error codes and their
   // symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     for (QuicErrorCode error = QUIC_NO_ERROR; error < QUIC_LAST_ERROR;
          error = static_cast<QuicErrorCode>(error + 1)) {
@@ -209,13 +209,13 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
                        static_cast<int>(error));
     }
 
-    constants_dict->Set("quicError", dict);
+    constants_dict->Set("quicError", dict.Pass());
   }
 
   // Add information on the relationship between QUIC RST_STREAM error codes
   // and their symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     for (QuicRstStreamErrorCode error = QUIC_STREAM_NO_ERROR;
          error < QUIC_STREAM_LAST_ERROR;
@@ -224,30 +224,30 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
                        static_cast<int>(error));
     }
 
-    constants_dict->Set("quicRstStreamError", dict);
+    constants_dict->Set("quicRstStreamError", dict.Pass());
   }
 
   // Add information on the relationship between SDCH problem codes and their
   // symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     for (size_t i = 0; i < arraysize(kSdchProblems); i++)
       dict->SetInteger(kSdchProblems[i].name, kSdchProblems[i].constant);
 
-    constants_dict->Set("sdchProblemCode", dict);
+    constants_dict->Set("sdchProblemCode", dict.Pass());
   }
 
   // Information about the relationship between event phase enums and their
   // symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     dict->SetInteger("PHASE_BEGIN", NetLog::PHASE_BEGIN);
     dict->SetInteger("PHASE_END", NetLog::PHASE_END);
     dict->SetInteger("PHASE_NONE", NetLog::PHASE_NONE);
 
-    constants_dict->Set("logEventPhase", dict);
+    constants_dict->Set("logEventPhase", dict.Pass());
   }
 
   // Information about the relationship between source type enums and
@@ -262,13 +262,13 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   // Information about the relationship between address family enums and
   // their symbolic names.
   {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
     dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED", ADDRESS_FAMILY_UNSPECIFIED);
     dict->SetInteger("ADDRESS_FAMILY_IPV4", ADDRESS_FAMILY_IPV4);
     dict->SetInteger("ADDRESS_FAMILY_IPV6", ADDRESS_FAMILY_IPV6);
 
-    constants_dict->Set("addressFamily", dict);
+    constants_dict->Set("addressFamily", dict.Pass());
   }
 
   // Information about how the "time ticks" values we have given it relate to
@@ -316,13 +316,14 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   if (info_sources & NET_INFO_PROXY_SETTINGS) {
     ProxyService* proxy_service = context->proxy_service();
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     if (proxy_service->fetched_config().is_valid())
       dict->Set("original", proxy_service->fetched_config().ToValue());
     if (proxy_service->config().is_valid())
       dict->Set("effective", proxy_service->config().ToValue());
 
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS), dict);
+    net_info_dict->Set(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS),
+                       dict.Pass());
   }
 
   if (info_sources & NET_INFO_BAD_PROXIES) {
@@ -336,12 +337,12 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
       const std::string& proxy_uri = it->first;
       const ProxyRetryInfo& retry_info = it->second;
 
-      base::DictionaryValue* dict = new base::DictionaryValue();
+      scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
       dict->SetString("proxy_uri", proxy_uri);
       dict->SetString("bad_until",
                       NetLog::TickCountToString(retry_info.bad_until));
 
-      list->Append(dict);
+      list->Append(dict.Pass());
     }
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_BAD_PROXIES), list);
@@ -352,7 +353,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     DCHECK(host_resolver);
     HostCache* cache = host_resolver->GetHostCache();
     if (cache) {
-      base::DictionaryValue* dict = new base::DictionaryValue();
+      scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
       base::Value* dns_config = host_resolver->GetDnsConfigAsValue();
       if (dns_config)
         dict->Set("dns_config", dns_config);
@@ -397,7 +398,8 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 
       cache_info_dict->Set("entries", entry_list);
       dict->Set("cache", cache_info_dict);
-      net_info_dict->Set(NetInfoSourceToString(NET_INFO_HOST_RESOLVER), dict);
+      net_info_dict->Set(NetInfoSourceToString(NET_INFO_HOST_RESOLVER),
+                         dict.Pass());
     }
   }
 

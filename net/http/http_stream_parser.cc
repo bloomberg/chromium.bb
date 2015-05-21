@@ -74,16 +74,16 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
   return false;
 }
 
-base::Value* NetLogSendRequestBodyCallback(
+scoped_ptr<base::Value> NetLogSendRequestBodyCallback(
     uint64 length,
     bool is_chunked,
     bool did_merge,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("length", static_cast<int>(length));
   dict->SetBoolean("is_chunked", is_chunked);
   dict->SetBoolean("did_merge", did_merge);
-  return dict;
+  return dict.Pass();
 }
 
 // Returns true if |error_code| is an error for which we give the server a

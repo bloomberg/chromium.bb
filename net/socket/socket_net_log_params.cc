@@ -14,36 +14,40 @@ namespace net {
 
 namespace {
 
-base::Value* NetLogSocketErrorCallback(int net_error,
-                                       int os_error,
-                                       NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSocketErrorCallback(
+    int net_error,
+    int os_error,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("os_error", os_error);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogHostPortPairCallback(const HostPortPair* host_and_port,
-                                        NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogHostPortPairCallback(
+    const HostPortPair* host_and_port,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", host_and_port->ToString());
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogIPEndPointCallback(const IPEndPoint* address,
-                                      NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogIPEndPointCallback(
+    const IPEndPoint* address,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("address", address->ToString());
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSourceAddressCallback(const struct sockaddr* net_address,
-                                         socklen_t address_len,
-                                         NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSourceAddressCallback(
+    const struct sockaddr* net_address,
+    socklen_t address_len,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("source_address",
                   NetAddressToStringWithPort(net_address, address_len));
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace

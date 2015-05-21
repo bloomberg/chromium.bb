@@ -59,13 +59,14 @@ const size_t kMaxUniqueResolveDnsPerExec = 20;
 const size_t kMaxAlertsAndErrorsBytes = 2048;
 
 // Returns event parameters for a PAC error message (line number + message).
-base::Value* NetLogErrorCallback(int line_number,
-                                 const base::string16* message,
-                                 NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogErrorCallback(
+    int line_number,
+    const base::string16* message,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("line_number", line_number);
   dict->SetString("message", *message);
-  return dict;
+  return dict.Pass();
 }
 
 // The Job class is responsible for executing GetProxyForURL() and

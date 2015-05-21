@@ -23,6 +23,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
+#include "base/values.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"

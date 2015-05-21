@@ -70,22 +70,23 @@ scoped_ptr<base::ListValue> SpdyHeaderBlockToListValue(
   return headers_list.Pass();
 }
 
-base::Value* NetLogSpdySynStreamSentCallback(const SpdyHeaderBlock* headers,
-                                             bool fin,
-                                             bool unidirectional,
-                                             SpdyPriority spdy_priority,
-                                             SpdyStreamId stream_id,
-                                             NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdySynStreamSentCallback(
+    const SpdyHeaderBlock* headers,
+    bool fin,
+    bool unidirectional,
+    SpdyPriority spdy_priority,
+    SpdyStreamId stream_id,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("priority", static_cast<int>(spdy_priority));
   dict->SetInteger("stream_id", stream_id);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySynStreamReceivedCallback(
+scoped_ptr<base::Value> NetLogSpdySynStreamReceivedCallback(
     const SpdyHeaderBlock* headers,
     bool fin,
     bool unidirectional,
@@ -93,82 +94,85 @@ base::Value* NetLogSpdySynStreamReceivedCallback(
     SpdyStreamId stream_id,
     SpdyStreamId associated_stream,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("priority", static_cast<int>(spdy_priority));
   dict->SetInteger("stream_id", stream_id);
   dict->SetInteger("associated_stream", associated_stream);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySynReplyOrHeadersReceivedCallback(
+scoped_ptr<base::Value> NetLogSpdySynReplyOrHeadersReceivedCallback(
     const SpdyHeaderBlock* headers,
     bool fin,
     SpdyStreamId stream_id,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetInteger("stream_id", stream_id);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySessionCloseCallback(
+scoped_ptr<base::Value> NetLogSpdySessionCloseCallback(
     int net_error,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   dict->SetString("description", *description);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySessionCallback(const HostPortProxyPair* host_pair,
-                                       NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdySessionCallback(
+    const HostPortProxyPair* host_pair,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host", host_pair->first.ToString());
   dict->SetString("proxy", host_pair->second.ToPacString());
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyInitializedCallback(
+scoped_ptr<base::Value> NetLogSpdyInitializedCallback(
     NetLog::Source source,
     const NextProto protocol_version,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   if (source.IsValid()) {
-    source.AddToEventParameters(dict);
+    source.AddToEventParameters(dict.get());
   }
   dict->SetString("protocol",
                   SSLClientSocket::NextProtoToString(protocol_version));
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySettingsCallback(const HostPortPair& host_port_pair,
-                                        bool clear_persisted,
-                                        NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdySettingsCallback(
+    const HostPortPair& host_port_pair,
+    bool clear_persisted,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host", host_port_pair.ToString());
   dict->SetBoolean("clear_persisted", clear_persisted);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySettingCallback(SpdySettingsIds id,
-                                       const SpdyMajorVersion protocol_version,
-                                       SpdySettingsFlags flags,
-                                       uint32 value,
-                                       NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdySettingCallback(
+    SpdySettingsIds id,
+    const SpdyMajorVersion protocol_version,
+    SpdySettingsFlags flags,
+    uint32 value,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("id",
                    SpdyConstants::SerializeSettingId(protocol_version, id));
   dict->SetInteger("flags", flags);
   dict->SetInteger("value", value);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySendSettingsCallback(
+scoped_ptr<base::Value> NetLogSpdySendSettingsCallback(
     const SettingsMap* settings,
     const SpdyMajorVersion protocol_version,
     NetLogCaptureMode /* capture_mode */) {
@@ -186,96 +190,100 @@ base::Value* NetLogSpdySendSettingsCallback(
         value)));
   }
   dict->Set("settings", settings_list.Pass());
-  return dict.release();
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyWindowUpdateFrameCallback(
+scoped_ptr<base::Value> NetLogSpdyWindowUpdateFrameCallback(
     SpdyStreamId stream_id,
     uint32 delta,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("delta", delta);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdySessionWindowUpdateCallback(
+scoped_ptr<base::Value> NetLogSpdySessionWindowUpdateCallback(
     int32 delta,
     int32 window_size,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("delta", delta);
   dict->SetInteger("window_size", window_size);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyDataCallback(SpdyStreamId stream_id,
-                                    int size,
-                                    bool fin,
-                                    NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdyDataCallback(
+    SpdyStreamId stream_id,
+    int size,
+    bool fin,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("size", size);
   dict->SetBoolean("fin", fin);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyRstCallback(SpdyStreamId stream_id,
-                                   int status,
-                                   const std::string* description,
-                                   NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdyRstCallback(
+    SpdyStreamId stream_id,
+    int status,
+    const std::string* description,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("status", status);
   dict->SetString("description", *description);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyPingCallback(SpdyPingId unique_id,
-                                    bool is_ack,
-                                    const char* type,
-                                    NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdyPingCallback(
+    SpdyPingId unique_id,
+    bool is_ack,
+    const char* type,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("unique_id", static_cast<int>(unique_id));
   dict->SetString("type", type);
   dict->SetBoolean("is_ack", is_ack);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyGoAwayCallback(SpdyStreamId last_stream_id,
-                                      int active_streams,
-                                      int unclaimed_streams,
-                                      SpdyGoAwayStatus status,
-                                      NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSpdyGoAwayCallback(
+    SpdyStreamId last_stream_id,
+    int active_streams,
+    int unclaimed_streams,
+    SpdyGoAwayStatus status,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("last_accepted_stream_id",
                    static_cast<int>(last_stream_id));
   dict->SetInteger("active_streams", active_streams);
   dict->SetInteger("unclaimed_streams", unclaimed_streams);
   dict->SetInteger("status", static_cast<int>(status));
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyPushPromiseReceivedCallback(
+scoped_ptr<base::Value> NetLogSpdyPushPromiseReceivedCallback(
     const SpdyHeaderBlock* headers,
     SpdyStreamId stream_id,
     SpdyStreamId promised_stream_id,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetInteger("id", stream_id);
   dict->SetInteger("promised_stream_id", promised_stream_id);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSpdyAdoptedPushStreamCallback(
+scoped_ptr<base::Value> NetLogSpdyAdoptedPushStreamCallback(
     SpdyStreamId stream_id,
     const GURL* url,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", stream_id);
   dict->SetString("url", url->spec());
-  return dict;
+  return dict.Pass();
 }
 
 // Helper function to return the total size of an array of objects

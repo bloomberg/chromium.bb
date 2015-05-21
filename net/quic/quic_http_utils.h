@@ -19,9 +19,8 @@ NET_EXPORT_PRIVATE QuicPriority ConvertRequestPriorityToQuicPriority(
 NET_EXPORT_PRIVATE RequestPriority ConvertQuicPriorityToRequestPriority(
     QuicPriority priority);
 
-// Converts a SpdyHeaderBlock and priority into NetLog event parameters.  Caller
-// takes ownership of returned value.
-NET_EXPORT base::Value* QuicRequestNetLogCallback(
+// Converts a SpdyHeaderBlock and priority into NetLog event parameters.
+NET_EXPORT scoped_ptr<base::Value> QuicRequestNetLogCallback(
     QuicStreamId stream_id,
     const SpdyHeaderBlock* headers,
     QuicPriority priority,

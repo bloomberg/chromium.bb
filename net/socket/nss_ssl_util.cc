@@ -79,14 +79,15 @@ size_t CiphersCopy(const uint16* in, uint16* out) {
   }
 }
 
-base::Value* NetLogSSLErrorCallback(int net_error,
-                                    int ssl_lib_error,
-                                    NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogSSLErrorCallback(
+    int net_error,
+    int ssl_lib_error,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   if (ssl_lib_error)
     dict->SetInteger("ssl_lib_error", ssl_lib_error);
-  return dict;
+  return dict.Pass();
 }
 
 class NSSSSLInitSingleton {
@@ -381,17 +382,17 @@ int MapNSSError(PRErrorCode err) {
 // Returns parameters to attach to the NetLog when we receive an error in
 // response to a call to an NSS function.  Used instead of
 // NetLogSSLErrorCallback with events of type TYPE_SSL_NSS_ERROR.
-base::Value* NetLogSSLFailedNSSFunctionCallback(
+scoped_ptr<base::Value> NetLogSSLFailedNSSFunctionCallback(
     const char* function,
     const char* param,
     int ssl_lib_error,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("function", function);
   if (param[0] != '\0')
     dict->SetString("param", param);
   dict->SetInteger("ssl_lib_error", ssl_lib_error);
-  return dict;
+  return dict.Pass();
 }
 
 void LogFailedNSSFunction(const BoundNetLog& net_log,

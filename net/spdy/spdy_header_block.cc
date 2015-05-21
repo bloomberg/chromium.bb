@@ -9,9 +9,10 @@
 
 namespace net {
 
-base::Value* SpdyHeaderBlockNetLogCallback(const SpdyHeaderBlock* headers,
-                                           NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
+    const SpdyHeaderBlock* headers,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   base::DictionaryValue* headers_dict = new base::DictionaryValue();
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end(); ++it) {
@@ -20,7 +21,7 @@ base::Value* SpdyHeaderBlockNetLogCallback(const SpdyHeaderBlock* headers,
                        capture_mode, it->first, it->second)));
   }
   dict->Set("headers", headers_dict);
-  return dict;
+  return dict.Pass();
 }
 
 bool SpdyHeaderBlockFromNetLogParam(

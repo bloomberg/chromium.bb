@@ -13,24 +13,26 @@ namespace net {
 
 namespace {
 
-base::Value* NetLogUDPDataTranferCallback(int byte_count,
-                                          const char* bytes,
-                                          const IPEndPoint* address,
-                                          NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogUDPDataTranferCallback(
+    int byte_count,
+    const char* bytes,
+    const IPEndPoint* address,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("byte_count", byte_count);
   if (capture_mode.include_socket_bytes())
     dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
   if (address)
     dict->SetString("address", address->ToString());
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogUDPConnectCallback(const IPEndPoint* address,
-                                      NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogUDPConnectCallback(
+    const IPEndPoint* address,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("address", address->ToString());
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace

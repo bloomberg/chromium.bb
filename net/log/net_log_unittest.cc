@@ -36,14 +36,15 @@ int CaptureModeToInt(NetLogCaptureMode capture_mode) {
   return -1;
 }
 
-base::Value* CaptureModeToValue(NetLogCaptureMode capture_mode) {
-  return new base::FundamentalValue(CaptureModeToInt(capture_mode));
+scoped_ptr<base::Value> CaptureModeToValue(NetLogCaptureMode capture_mode) {
+  return make_scoped_ptr(
+      new base::FundamentalValue(CaptureModeToInt(capture_mode)));
 }
 
-base::Value* NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("capture_mode", CaptureModeToValue(capture_mode));
-  return dict;
+  return dict.Pass();
 }
 
 TEST(NetLogTest, Basic) {

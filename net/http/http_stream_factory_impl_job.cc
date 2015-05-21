@@ -45,32 +45,32 @@
 namespace net {
 
 // Returns parameters associated with the start of a HTTP stream job.
-base::Value* NetLogHttpStreamJobCallback(
+scoped_ptr<base::Value> NetLogHttpStreamJobCallback(
     const GURL* original_url,
     const GURL* url,
     const AlternativeService* alternative_service,
     RequestPriority priority,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
   dict->SetString("alternative_service", alternative_service->ToString());
   dict->SetString("priority", RequestPriorityToString(priority));
-  return dict;
+  return dict.Pass();
 }
 
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
 // stream.
-base::Value* NetLogHttpStreamProtoCallback(
+scoped_ptr<base::Value> NetLogHttpStreamProtoCallback(
     const SSLClientSocket::NextProtoStatus status,
     const std::string* proto,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("next_proto_status",
                   SSLClientSocket::NextProtoStatusToString(status));
   dict->SetString("proto", *proto);
-  return dict;
+  return dict.Pass();
 }
 
 HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,

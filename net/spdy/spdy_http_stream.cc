@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 #include "net/base/upload_data_stream.h"

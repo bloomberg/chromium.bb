@@ -412,10 +412,10 @@ base::Value* HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue()
       alternative_service_string.append(" (broken)");
     }
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("host_port_pair", host_port_pair.ToString());
     dict->SetString("alternative_service", alternative_service_string);
-    dict_list->Append(dict);
+    dict_list->Append(dict.Pass());
   }
   return dict_list;
 }

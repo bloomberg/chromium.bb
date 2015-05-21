@@ -436,7 +436,7 @@ base::DictionaryValue* WebSocketTransportClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type,
     bool include_nested_pools) const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("name", name);
   dict->SetString("type", type);
   dict->SetInteger("handed_out_socket_count", handed_out_socket_count_);
@@ -445,7 +445,7 @@ base::DictionaryValue* WebSocketTransportClientSocketPool::GetInfoAsValue(
   dict->SetInteger("max_socket_count", max_sockets_);
   dict->SetInteger("max_sockets_per_group", max_sockets_);
   dict->SetInteger("pool_generation_number", 0);
-  return dict;
+  return dict.release();
 }
 
 TimeDelta WebSocketTransportClientSocketPool::ConnectionTimeout() const {

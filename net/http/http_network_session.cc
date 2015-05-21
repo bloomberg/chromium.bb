@@ -260,7 +260,7 @@ base::Value* HttpNetworkSession::SpdySessionPoolInfoToValue() const {
 }
 
 base::Value* HttpNetworkSession::QuicInfoToValue() const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);
   dict->SetBoolean("quic_enabled_for_proxies", params_.enable_quic_for_proxies);
@@ -277,7 +277,7 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
                   params_.origin_to_force_quic_on.ToString());
   dict->SetDouble("alternative_service_probability_threshold",
                   params_.alternative_service_probability_threshold);
-  return dict;
+  return dict.release();
 }
 
 void HttpNetworkSession::CloseAllConnections() {

@@ -14,8 +14,9 @@ namespace net {
 
 namespace {
 
-base::Value* NetLogAddressListCallback(const AddressList* address_list,
-                                       NetLogCaptureMode capture_mode) {
+scoped_ptr<base::Value> NetLogAddressListCallback(
+    const AddressList* address_list,
+    NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   scoped_ptr<base::ListValue> list(new base::ListValue());
 
@@ -25,7 +26,7 @@ base::Value* NetLogAddressListCallback(const AddressList* address_list,
   }
 
   dict->Set("address_list", list.Pass());
-  return dict.release();
+  return dict.Pass();
 }
 
 }  // namespace

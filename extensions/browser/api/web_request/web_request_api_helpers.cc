@@ -217,10 +217,10 @@ net::NetLog::ParametersCallback CreateNetLogExtensionIdCallback(
 }
 
 // Creates NetLog parameters to indicate that an extension modified a request.
-// Caller takes ownership of returned value.
-base::Value* NetLogModificationCallback(const EventResponseDelta* delta,
-                                        net::NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogModificationCallback(
+    const EventResponseDelta* delta,
+    net::NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("extension_id", delta->extension_id);
 
   base::ListValue* modified_headers = new base::ListValue();
@@ -240,7 +240,7 @@ base::Value* NetLogModificationCallback(const EventResponseDelta* delta,
     deleted_headers->Append(new base::StringValue(*key));
   }
   dict->Set("deleted_headers", deleted_headers);
-  return dict;
+  return dict.Pass();
 }
 
 bool InDecreasingExtensionInstallationTimeOrder(

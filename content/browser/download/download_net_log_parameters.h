@@ -26,73 +26,85 @@ enum DownloadType {
 };
 
 // Returns NetLog parameters when a DownloadItem is activated.
-base::Value* ItemActivatedNetLogCallback(const DownloadItem* download_item,
-                                         DownloadType download_type,
-                                         const std::string* file_name,
-                                         net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemActivatedNetLogCallback(
+    const DownloadItem* download_item,
+    DownloadType download_type,
+    const std::string* file_name,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is checked for danger.
-base::Value* ItemCheckedNetLogCallback(DownloadDangerType danger_type,
-                                       net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemCheckedNetLogCallback(
+    DownloadDangerType danger_type,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is renamed.
-base::Value* ItemRenamedNetLogCallback(const base::FilePath* old_filename,
-                                       const base::FilePath* new_filename,
-                                       net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemRenamedNetLogCallback(
+    const base::FilePath* old_filename,
+    const base::FilePath* new_filename,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is interrupted.
-base::Value* ItemInterruptedNetLogCallback(DownloadInterruptReason reason,
-                                           int64 bytes_so_far,
-                                           const std::string* hash_state,
-                                           net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
+    DownloadInterruptReason reason,
+    int64 bytes_so_far,
+    const std::string* hash_state,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is resumed.
-base::Value* ItemResumingNetLogCallback(bool user_initiated,
-                                        DownloadInterruptReason reason,
-                                        int64 bytes_so_far,
-                                        const std::string* hash_state,
-                                        net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemResumingNetLogCallback(
+    bool user_initiated,
+    DownloadInterruptReason reason,
+    int64 bytes_so_far,
+    const std::string* hash_state,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is completing.
-base::Value* ItemCompletingNetLogCallback(int64 bytes_so_far,
-                                          const std::string* final_hash,
-                                          net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemCompletingNetLogCallback(
+    int64 bytes_so_far,
+    const std::string* final_hash,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is finished.
-base::Value* ItemFinishedNetLogCallback(bool auto_opened,
-                                        net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemFinishedNetLogCallback(
+    bool auto_opened,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is canceled.
-base::Value* ItemCanceledNetLogCallback(int64 bytes_so_far,
-                                        const std::string* hash_state,
-                                        net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> ItemCanceledNetLogCallback(
+    int64 bytes_so_far,
+    const std::string* hash_state,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadFile is opened.
-base::Value* FileOpenedNetLogCallback(const base::FilePath* file_name,
-                                      int64 start_offset,
-                                      net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> FileOpenedNetLogCallback(
+    const base::FilePath* file_name,
+    int64 start_offset,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadFile is opened.
-base::Value* FileStreamDrainedNetLogCallback(
+scoped_ptr<base::Value> FileStreamDrainedNetLogCallback(
     size_t stream_size,
     size_t num_buffers,
     net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadFile is renamed.
-base::Value* FileRenamedNetLogCallback(const base::FilePath* old_filename,
-                                       const base::FilePath* new_filename,
-                                       net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> FileRenamedNetLogCallback(
+    const base::FilePath* old_filename,
+    const base::FilePath* new_filename,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a File has an error.
-base::Value* FileErrorNetLogCallback(const char* operation,
-                                     net::Error net_error,
-                                     net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> FileErrorNetLogCallback(
+    const char* operation,
+    net::Error net_error,
+    net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters for a download interruption.
-base::Value* FileInterruptedNetLogCallback(const char* operation,
-                                           int os_error,
-                                           DownloadInterruptReason reason,
-                                           net::NetLogCaptureMode capture_mode);
+scoped_ptr<base::Value> FileInterruptedNetLogCallback(
+    const char* operation,
+    int os_error,
+    DownloadInterruptReason reason,
+    net::NetLogCaptureMode capture_mode);
 
 }  // namespace content
 

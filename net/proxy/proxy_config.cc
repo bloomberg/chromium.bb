@@ -232,7 +232,7 @@ void ProxyConfig::ClearAutomaticSettings() {
 }
 
 base::DictionaryValue* ProxyConfig::ToValue() const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   // Output the automatic settings.
   if (auto_detect_)
@@ -247,16 +247,18 @@ base::DictionaryValue* ProxyConfig::ToValue() const {
   if (proxy_rules_.type != ProxyRules::TYPE_NO_RULES) {
     switch (proxy_rules_.type) {
       case ProxyRules::TYPE_SINGLE_PROXY:
-        AddProxyListToValue("single_proxy",
-                            proxy_rules_.single_proxies, dict);
+        AddProxyListToValue("single_proxy", proxy_rules_.single_proxies,
+                            dict.get());
         break;
       case ProxyRules::TYPE_PROXY_PER_SCHEME: {
-        base::DictionaryValue* dict2 = new base::DictionaryValue();
-        AddProxyListToValue("http", proxy_rules_.proxies_for_http, dict2);
-        AddProxyListToValue("https", proxy_rules_.proxies_for_https, dict2);
-        AddProxyListToValue("ftp", proxy_rules_.proxies_for_ftp, dict2);
-        AddProxyListToValue("fallback", proxy_rules_.fallback_proxies, dict2);
-        dict->Set("proxy_per_scheme", dict2);
+        scoped_ptr<base::DictionaryValue> dict2(new base::DictionaryValue());
+        AddProxyListToValue("http", proxy_rules_.proxies_for_http, dict2.get());
+        AddProxyListToValue("https", proxy_rules_.proxies_for_https,
+                            dict2.get());
+        AddProxyListToValue("ftp", proxy_rules_.proxies_for_ftp, dict2.get());
+        AddProxyListToValue("fallback", proxy_rules_.fallback_proxies,
+                            dict2.get());
+        dict->Set("proxy_per_scheme", dict2.Pass());
         break;
       }
       default:
@@ -284,7 +286,7 @@ base::DictionaryValue* ProxyConfig::ToValue() const {
   // Output the source.
   dict->SetString("source", ProxyConfigSourceToString(source_));
 
-  return dict;
+  return dict.release();
 }
 
 }  // namespace net

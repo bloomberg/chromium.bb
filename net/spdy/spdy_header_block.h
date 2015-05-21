@@ -17,9 +17,8 @@ namespace net {
 // SYN_STREAM or SYN_REPLY frame.
 typedef std::map<std::string, std::string> SpdyHeaderBlock;
 
-// Converts a SpdyHeaderBlock into NetLog event parameters.  Caller takes
-// ownership of returned value.
-NET_EXPORT base::Value* SpdyHeaderBlockNetLogCallback(
+// Converts a SpdyHeaderBlock into NetLog event parameters.
+NET_EXPORT scoped_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
     const SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode);
 

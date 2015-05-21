@@ -312,12 +312,12 @@ bool IsAllIPv4Loopback(const AddressList& addresses) {
 }
 
 // Creates NetLog parameters when the resolve failed.
-base::Value* NetLogProcTaskFailedCallback(
+scoped_ptr<base::Value> NetLogProcTaskFailedCallback(
     uint32 attempt_number,
     int net_error,
     int os_error,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   if (attempt_number)
     dict->SetInteger("attempt_number", attempt_number);
 
@@ -342,67 +342,73 @@ base::Value* NetLogProcTaskFailedCallback(
 #endif
   }
 
-  return dict;
+  return dict.Pass();
 }
 
 // Creates NetLog parameters when the DnsTask failed.
-base::Value* NetLogDnsTaskFailedCallback(int net_error,
-                                         int dns_error,
-                                         NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogDnsTaskFailedCallback(
+    int net_error,
+    int dns_error,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   if (dns_error)
     dict->SetInteger("dns_error", dns_error);
-  return dict;
+  return dict.Pass();
 };
 
 // Creates NetLog parameters containing the information in a RequestInfo object,
 // along with the associated NetLog::Source.
-base::Value* NetLogRequestInfoCallback(const HostResolver::RequestInfo* info,
-                                       NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogRequestInfoCallback(
+    const HostResolver::RequestInfo* info,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("host", info->host_port_pair().ToString());
   dict->SetInteger("address_family",
                    static_cast<int>(info->address_family()));
   dict->SetBoolean("allow_cached_response", info->allow_cached_response());
   dict->SetBoolean("is_speculative", info->is_speculative());
-  return dict;
+  return dict.Pass();
 }
 
 // Creates NetLog parameters for the creation of a HostResolverImpl::Job.
-base::Value* NetLogJobCreationCallback(const NetLog::Source& source,
-                                       const std::string* host,
-                                       NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  source.AddToEventParameters(dict);
+scoped_ptr<base::Value> NetLogJobCreationCallback(
+    const NetLog::Source& source,
+    const std::string* host,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  source.AddToEventParameters(dict.get());
   dict->SetString("host", *host);
-  return dict;
+  return dict.Pass();
 }
 
 // Creates NetLog parameters for HOST_RESOLVER_IMPL_JOB_ATTACH/DETACH events.
-base::Value* NetLogJobAttachCallback(const NetLog::Source& source,
-                                     RequestPriority priority,
-                                     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  source.AddToEventParameters(dict);
+scoped_ptr<base::Value> NetLogJobAttachCallback(
+    const NetLog::Source& source,
+    RequestPriority priority,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  source.AddToEventParameters(dict.get());
   dict->SetString("priority", RequestPriorityToString(priority));
-  return dict;
+  return dict.Pass();
 }
 
 // Creates NetLog parameters for the DNS_CONFIG_CHANGED event.
-base::Value* NetLogDnsConfigCallback(const DnsConfig* config,
-                                     NetLogCaptureMode /* capture_mode */) {
-  return config->ToValue();
+scoped_ptr<base::Value> NetLogDnsConfigCallback(
+    const DnsConfig* config,
+    NetLogCaptureMode /* capture_mode */) {
+  return make_scoped_ptr(config->ToValue());
 }
 
-base::Value* NetLogIPv6AvailableCallback(bool ipv6_available,
-                                         bool cached,
-                                         NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogIPv6AvailableCallback(
+    bool ipv6_available,
+    bool cached,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("ipv6_available", ipv6_available);
   dict->SetBoolean("cached", cached);
-  return dict;
+  return dict.Pass();
 }
 
 // The logging routines are defined here because some requests are resolved

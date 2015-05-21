@@ -307,22 +307,23 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
 };
 
 // Returns NetLog parameters describing a proxy configuration change.
-base::Value* NetLogProxyConfigChangedCallback(
+scoped_ptr<base::Value> NetLogProxyConfigChangedCallback(
     const ProxyConfig* old_config,
     const ProxyConfig* new_config,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
   if (old_config->is_valid())
     dict->Set("old_config", old_config->ToValue());
   dict->Set("new_config", new_config->ToValue());
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
-                                        NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+scoped_ptr<base::Value> NetLogBadProxyListCallback(
+    const ProxyRetryInfoMap* retry_info,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   base::ListValue* list = new base::ListValue();
 
   for (ProxyRetryInfoMap::const_iterator iter = retry_info->begin();
@@ -330,16 +331,16 @@ base::Value* NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
     list->Append(new base::StringValue(iter->first));
   }
   dict->Set("bad_proxy_list", list);
-  return dict;
+  return dict.Pass();
 }
 
 // Returns NetLog parameters on a successfuly proxy resolution.
-base::Value* NetLogFinishedResolvingProxyCallback(
+scoped_ptr<base::Value> NetLogFinishedResolvingProxyCallback(
     const ProxyInfo* result,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("pac_string", result->ToPacString());
-  return dict;
+  return dict.Pass();
 }
 
 #if defined(OS_CHROMEOS)

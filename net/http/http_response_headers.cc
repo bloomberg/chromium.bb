@@ -1391,9 +1391,9 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
   return true;
 }
 
-base::Value* HttpResponseHeaders::NetLogCallback(
+scoped_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   base::ListValue* headers = new base::ListValue();
   headers->Append(new base::StringValue(GetStatusLine()));
   void* iterator = NULL;
@@ -1410,7 +1410,7 @@ base::Value* HttpResponseHeaders::NetLogCallback(
                              escaped_value.c_str())));
   }
   dict->Set("headers", headers);
-  return dict;
+  return dict.Pass();
 }
 
 // static

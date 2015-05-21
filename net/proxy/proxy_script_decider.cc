@@ -53,10 +53,10 @@ const char kWpadUrl[] = "http://wpad/wpad.dat";
 const int kQuickCheckDelayMs = 1000;
 };
 
-base::Value* ProxyScriptDecider::PacSource::NetLogCallback(
+scoped_ptr<base::Value> ProxyScriptDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,
     NetLogCaptureMode /* capture_mode */) const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   std::string source;
   switch (type) {
     case PacSource::WPAD_DHCP:
@@ -72,7 +72,7 @@ base::Value* ProxyScriptDecider::PacSource::NetLogCallback(
       break;
   }
   dict->SetString("source", source);
-  return dict;
+  return dict.Pass();
 }
 
 ProxyScriptDecider::ProxyScriptDecider(

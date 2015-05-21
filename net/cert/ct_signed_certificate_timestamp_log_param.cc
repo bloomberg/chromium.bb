@@ -125,10 +125,10 @@ scoped_ptr<base::ListValue> SCTListToPrintableValues(
 
 }  // namespace
 
-base::Value* NetLogSignedCertificateTimestampCallback(
+scoped_ptr<base::Value> NetLogSignedCertificateTimestampCallback(
     const ct::CTVerifyResult* ct_result,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->Set("verified_scts",
             SCTListToPrintableValues(ct_result->verified_scts));
@@ -139,21 +139,22 @@ base::Value* NetLogSignedCertificateTimestampCallback(
   dict->Set("unknown_logs_scts",
             SCTListToPrintableValues(ct_result->unknown_logs_scts));
 
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogRawSignedCertificateTimestampCallback(
+scoped_ptr<base::Value> NetLogRawSignedCertificateTimestampCallback(
     const std::string* embedded_scts,
     const std::string* sct_list_from_ocsp,
     const std::string* sct_list_from_tls_extension,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  SetBinaryData("embedded_scts", *embedded_scts, dict);
-  SetBinaryData("scts_from_ocsp_response", *sct_list_from_ocsp, dict);
-  SetBinaryData("scts_from_tls_extension", *sct_list_from_tls_extension, dict);
+  SetBinaryData("embedded_scts", *embedded_scts, dict.get());
+  SetBinaryData("scts_from_ocsp_response", *sct_list_from_ocsp, dict.get());
+  SetBinaryData("scts_from_tls_extension", *sct_list_from_tls_extension,
+                dict.get());
 
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace net

@@ -182,16 +182,16 @@ void RecordNoStoreHeaderHistogram(int load_flags,
   }
 }
 
-base::Value* NetLogAsyncRevalidationInfoCallback(
+scoped_ptr<base::Value> NetLogAsyncRevalidationInfoCallback(
     const NetLog::Source& source,
     const HttpRequestInfo* request,
     NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  source.AddToEventParameters(dict);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  source.AddToEventParameters(dict.get());
 
   dict->SetString("url", request->url.possibly_invalid_spec());
   dict->SetString("method", request->method);
-  return dict;
+  return dict.Pass();
 }
 
 enum ExternallyConditionalizedType {

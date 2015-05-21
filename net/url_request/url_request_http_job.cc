@@ -17,6 +17,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

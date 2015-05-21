@@ -597,7 +597,7 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
 
 base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
     const std::string& name, const std::string& type) const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("name", name);
   dict->SetString("type", type);
   dict->SetInteger("handed_out_socket_count", handed_out_socket_count_);
@@ -608,7 +608,7 @@ base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
   dict->SetInteger("pool_generation_number", pool_generation_number_);
 
   if (group_map_.empty())
-    return dict;
+    return dict.release();
 
   base::DictionaryValue* all_groups_dict = new base::DictionaryValue();
   for (GroupMap::const_iterator it = group_map_.begin();
@@ -652,7 +652,7 @@ base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
     all_groups_dict->SetWithoutPathExpansion(it->first, group_dict);
   }
   dict->Set("groups", all_groups_dict);
-  return dict;
+  return dict.release();
 }
 
 bool ClientSocketPoolBaseHelper::IdleSocket::IsUsable() const {

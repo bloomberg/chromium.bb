@@ -93,30 +93,30 @@ void ProcessAlternateProtocol(
       *session);
 }
 
-base::Value* NetLogSSLVersionFallbackCallback(
+scoped_ptr<base::Value> NetLogSSLVersionFallbackCallback(
     const GURL* url,
     int net_error,
     SSLFailureState ssl_failure_state,
     uint16 version_before,
     uint16 version_after,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("ssl_failure_state", ssl_failure_state);
   dict->SetInteger("version_before", version_before);
   dict->SetInteger("version_after", version_after);
-  return dict;
+  return dict.Pass();
 }
 
-base::Value* NetLogSSLCipherFallbackCallback(
+scoped_ptr<base::Value> NetLogSSLCipherFallbackCallback(
     const GURL* url,
     int net_error,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
-  return dict;
+  return dict.Pass();
 }
 
 }  // namespace

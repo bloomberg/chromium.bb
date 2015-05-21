@@ -10,21 +10,21 @@
 
 namespace net {
 
-base::Value* NetLogURLRequestStartCallback(
+scoped_ptr<base::Value> NetLogURLRequestStartCallback(
     const GURL* url,
     const std::string* method,
     int load_flags,
     RequestPriority priority,
     int64 upload_id,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("url", url->possibly_invalid_spec());
   dict->SetString("method", *method);
   dict->SetInteger("load_flags", load_flags);
   dict->SetString("priority", RequestPriorityToString(priority));
   if (upload_id > -1)
     dict->SetString("upload_id", base::Int64ToString(upload_id));
-  return dict;
+  return dict.Pass();
 }
 
 bool StartEventLoadFlagsFromEventParams(const base::Value* event_params,
