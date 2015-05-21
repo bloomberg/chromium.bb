@@ -1585,6 +1585,7 @@ bool Cluster::AddMetadata(const uint8* data, uint64 length, uint64 track_number,
   frame.set_track_number(track_number);
   frame.set_timestamp(abs_timecode);
   frame.set_duration(duration_timecode);
+  frame.set_is_key(true);  // All metadata blocks are keyframes.
   return DoWriteFrame(&frame);
 }
 
@@ -2380,6 +2381,7 @@ bool Segment::AddMetadata(const uint8* data, uint64 length, uint64 track_number,
   frame.set_track_number(track_number);
   frame.set_timestamp(timestamp_ns);
   frame.set_duration(duration_ns);
+  frame.set_is_key(true);  // All metadata blocks are keyframes.
   return AddGenericFrame(&frame);
 }
 
