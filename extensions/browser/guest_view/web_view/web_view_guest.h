@@ -158,8 +158,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   bool CheckMediaAccessPermission(content::WebContents* source,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
-  void CanDownload(content::RenderViewHost* render_view_host,
-                   const GURL& url,
+  void CanDownload(const GURL& url,
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(

@@ -27,8 +27,7 @@ class AwWebContentsDelegate
                  const gfx::Rect& selection_rect,
                  int active_match_ordinal,
                  bool final_update) override;
-  void CanDownload(content::RenderViewHost* source,
-                   const GURL& url,
+  void CanDownload(const GURL& url,
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback) override;
   void RunFileChooser(content::WebContents* web_contents,

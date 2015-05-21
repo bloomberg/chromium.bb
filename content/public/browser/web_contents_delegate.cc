@@ -72,7 +72,6 @@ bool WebContentsDelegate::TakeFocus(WebContents* source, bool reverse) {
 }
 
 void WebContentsDelegate::CanDownload(
-    RenderViewHost* render_view_host,
     const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {

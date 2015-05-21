@@ -127,7 +127,6 @@ void ChromeWebViewPermissionHelperDelegate::OnPermissionResponse(
 #endif  // defined(ENABLE_PLUGINS)
 
 void ChromeWebViewPermissionHelperDelegate::CanDownload(
-    content::RenderViewHost* render_view_host,
     const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {

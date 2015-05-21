@@ -346,7 +346,6 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
       callback);
 
   originating_contents->GetDelegate()->CanDownload(
-      originating_contents->GetRenderViewHost(),
       url,
       request_method,
       can_download_callback);

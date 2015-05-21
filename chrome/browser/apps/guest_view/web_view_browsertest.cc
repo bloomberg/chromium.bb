@@ -270,12 +270,11 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
         last_download_allowed_(false) {}
   ~MockDownloadWebContentsDelegate() override {}
 
-  void CanDownload(content::RenderViewHost* render_view_host,
-                   const GURL& url,
+  void CanDownload(const GURL& url,
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback) override {
     orig_delegate_->CanDownload(
-        render_view_host, url, request_method,
+        url, request_method,
         base::Bind(&MockDownloadWebContentsDelegate::DownloadDecided,
                    base::Unretained(this)));
   }

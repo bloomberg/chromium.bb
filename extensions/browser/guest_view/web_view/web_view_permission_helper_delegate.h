@@ -21,7 +21,6 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
   ~WebViewPermissionHelperDelegate() override;
 
   virtual void CanDownload(
-      content::RenderViewHost* render_view_host,
       const GURL& url,
       const std::string& request_method,
       const base::Callback<void(bool)>& callback) {}

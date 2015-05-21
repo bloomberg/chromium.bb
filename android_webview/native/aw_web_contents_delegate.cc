@@ -76,7 +76,6 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
 }
 
 void AwWebContentsDelegate::CanDownload(
-    content::RenderViewHost* source,
     const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {

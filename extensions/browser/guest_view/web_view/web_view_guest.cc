@@ -929,14 +929,10 @@ bool WebViewGuest::CheckMediaAccessPermission(content::WebContents* source,
 }
 
 void WebViewGuest::CanDownload(
-    content::RenderViewHost* render_view_host,
     const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
-  web_view_permission_helper_->CanDownload(render_view_host,
-                                           url,
-                                           request_method,
-                                           callback);
+  web_view_permission_helper_->CanDownload(url, request_method, callback);
 }
 
 void WebViewGuest::RequestPointerLockPermission(
