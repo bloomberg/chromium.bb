@@ -75,6 +75,7 @@ load_surface_from_png(const char *fname) {
 	cairo_surface_t *reference_cairo_surface;
 	cairo_status_t status;
 	size_t source_data_size;
+	int bpp;
 	int stride;
 
 	printf("Loading reference image %s\n", fname);
@@ -97,6 +98,15 @@ load_surface_from_png(const char *fname) {
 	reference->height = cairo_image_surface_get_height(reference_cairo_surface);
 	stride = cairo_image_surface_get_stride(reference_cairo_surface);
 	source_data_size = stride * reference->height;
+
+	/* Check that the file's stride matches our assumption */
+	bpp = 4;
+	if (stride != bpp * reference->width) {
+		printf("Mismatched stride for screenshot reference image %s\n", fname);
+		cairo_surface_destroy(reference_cairo_surface);
+		free(reference);
+		return NULL;
+	}
 
 	/* Allocate new buffer for our weston reference, and copy the data from
 	   the cairo surface so we can destroy it */
