@@ -188,6 +188,11 @@ void WebRuntimeFeatures::enablePagePopup(bool enable)
     RuntimeEnabledFeatures::setPagePopupEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePermissionsAPI(bool enable)
+{
+    RuntimeEnabledFeatures::setPermissionsEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableRequestAutocomplete(bool enable)
 {
     RuntimeEnabledFeatures::setRequestAutocompleteEnabled(enable);
