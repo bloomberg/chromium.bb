@@ -60,6 +60,8 @@ def _IsRetryableException(e):
   if isinstance(e, sqlalchemy.exc.OperationalError):
     error_code = e.orig.args[0]
     if error_code in _RETRYABLE_OPERATIONAL_ERROR_CODES:
+      logging.warning('Encountered retryable cidb exception %s, retrying....',
+                      e)
       return True
 
   return False
