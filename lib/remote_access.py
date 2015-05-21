@@ -15,6 +15,7 @@ import string
 import tempfile
 import time
 
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import debug_link
@@ -44,9 +45,6 @@ KNOWN_HOSTS_PATH = os.path.expanduser('~/.ssh/known_hosts')
 
 # Dev/test packages are installed in these paths.
 DEV_BIN_PATHS = '/usr/local/bin:/usr/local/sbin'
-
-# Path to the lsb-release file on the device.
-LSB_RELEASE_PATH = '/etc/lsb-release'
 
 # Brillo device.
 BRILLO_DEBUG_LINK_SERVICE_NAME = '_brdebug._tcp.local'
@@ -966,17 +964,18 @@ class ChromiumOSDevice(RemoteDevice):
     """
     if not self._lsb_release:
       try:
-        content = self.CatFile(LSB_RELEASE_PATH, max_size=None)
+        content = self.CatFile(constants.LSB_RELEASE_PATH, max_size=None)
       except CatFileError as e:
         logging.debug(
-            'Failed to read "%s" on the device: %s', LSB_RELEASE_PATH, e)
+            'Failed to read "%s" on the device: %s',
+            constants.LSB_RELEASE_PATH, e)
       else:
         try:
           self._lsb_release = dict(e.split('=', 1)
                                    for e in reversed(content.splitlines()))
         except ValueError:
           logging.error('File "%s" on the device is mal-formatted.',
-                        LSB_RELEASE_PATH)
+                        constants.LSB_RELEASE_PATH)
 
     return self._lsb_release
 

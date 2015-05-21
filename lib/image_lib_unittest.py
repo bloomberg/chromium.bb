@@ -120,6 +120,31 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
 
 
+class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
+  """Tests the various LSB utilities."""
+
+  def setUp(self):
+    # Patch os.getuid(..) to pretend running as root, so reading/writing the
+    # lsb-release file doesn't require escalated privileges and the test can
+    # clean itself up correctly.
+    self.PatchObject(os, 'getuid', return_value=0)
+
+  def testWriteLsbRelease(self):
+    """Tests writing out the lsb_release file using WriteLsbRelease(..)."""
+    fields = {'x': '1', 'y': '2', 'foo': 'bar'}
+    image_lib.WriteLsbRelease(self.tempdir, fields)
+    lsb_release_file = os.path.join(self.tempdir, 'etc', 'lsb-release')
+    expected_content = 'y=2\nx=1\nfoo=bar\n'
+    self.assertFileContents(lsb_release_file, expected_content)
+
+    # Test that WriteLsbRelease(..) correctly handles an existing file.
+    fields = {'newkey1': 'value1', 'newkey2': 'value2', 'a': '3', 'b': '4'}
+    image_lib.WriteLsbRelease(self.tempdir, fields)
+    expected_content = ('y=2\nx=1\nfoo=bar\nnewkey2=value2\na=3\n'
+                        'newkey1=value1\nb=4\n')
+    self.assertFileContents(lsb_release_file, expected_content)
+
+
 class BuildImageTest(cros_test_lib.MockTestCase):
   """Test the BuildImage function."""
 

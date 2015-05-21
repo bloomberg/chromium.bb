@@ -47,6 +47,9 @@ SDK_BOARD_OVERLAYS_OUTPUT = 'tmp/sdk-board-overlays'
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
 CQ_CONFIG_FILENAME = 'COMMIT-QUEUE.ini'
 
+# Path to the lsb-release file on the device.
+LSB_RELEASE_PATH = '/etc/lsb-release'
+
 HOME_DIRECTORY = os.path.expanduser('~')
 
 # If cbuiltbot is running on a bot, then the cidb access credentials will be

@@ -964,6 +964,12 @@ class TempDirTestCase(TestCase):
       self._tempdir_obj = None
       self.tempdir = None
 
+  def assertFileContents(self, file_path, content):
+    """Assert that the file contains the given content."""
+    self.assertExists(file_path)
+    read_content = osutils.ReadFile(file_path)
+    self.assertEqual(read_content, content)
+
 
 class LocalSqlServerTestCase(TempDirTestCase):
   """A TestCase that launches a local mysqld server in the background.

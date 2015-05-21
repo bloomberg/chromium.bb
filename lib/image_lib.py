@@ -221,6 +221,29 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
       raise
 
 
+def WriteLsbRelease(sysroot, fields):
+  """Writes out the /etc/lsb-release file into the given sysroot.
+
+  Args:
+    sysroot: The sysroot to write the lsb-release file to.
+    fields: A dictionary of all the fields and values to write.
+  """
+  content = '\n'.join('%s=%s' % (k, v) for k, v in fields.items()) + '\n'
+
+  path = os.path.join(sysroot, constants.LSB_RELEASE_PATH.lstrip('/'))
+
+  if os.path.exists(path):
+    # The file has already been pre-populated with some fields.  Since
+    # osutils.WriteFile(..) doesn't support appending with sudo, read in the
+    # content and prepend it to the new content to write.
+    # TODO(stevefung): Remove this appending, once all writing to the
+    #   /etc/lsb-release file has been removed from ebuilds and consolidated
+    #  to the buid tools.
+    content = osutils.ReadFile(path) + content
+
+  osutils.WriteFile(path, content, mode='w', makedirs=True, sudo=True)
+
+
 def BuildImage(board, adjust_part=None, boot_args=None, enable_bootcache=False,
                enable_rootfs_verification=True, output_root=None,
                disk_layout=None, enable_serial=None, kernel_log_level=None,
