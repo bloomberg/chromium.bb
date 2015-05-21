@@ -28,6 +28,13 @@ interface HttpConnectionDelegate {
   // WebSocket should be written to the producer end of the |send_stream|.
   // |web_socket| will be already connected. There is no need to call Connect()
   // on it. But |client| will still receive a DidConnect() notification.
+  //
+  // NOTE: WebSocket server support is not fully implemented. For now the
+  // following are not supported:
+  // - negotiating subprotocol or extension;
+  // - fragmented or non-text messages;
+  // - failure or close notification;
+  // - flow control.
   OnReceivedWebSocketRequest(HttpRequest request)
       => (WebSocket&? web_socket,
           handle<data_pipe_consumer>? send_stream,
