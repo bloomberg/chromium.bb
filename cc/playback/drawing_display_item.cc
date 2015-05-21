@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/picture_debug_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDrawPictureCallback.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
@@ -31,7 +30,7 @@ void DrawingDisplayItem::SetNew(skia::RefPtr<SkPicture> picture) {
 }
 
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
-                                SkDrawPictureCallback* callback) const {
+                                SkPicture::AbortCallback* callback) const {
   // SkPicture always does a wrapping save/restore on the canvas, so it is not
   // necessary here.
   if (callback)

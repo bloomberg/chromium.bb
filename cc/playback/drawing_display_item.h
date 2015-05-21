@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/point_f.h"
 
 class SkCanvas;
-class SkDrawPictureCallback;
 class SkPicture;
 
 namespace cc {
@@ -24,7 +23,8 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
 
   void SetNew(skia::RefPtr<SkPicture> picture);
 
-  void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
+  void Raster(SkCanvas* canvas,
+              SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
   void CloneTo(DrawingDisplayItem* item) const;

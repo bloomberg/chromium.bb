@@ -13,7 +13,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 class SkCanvas;
-class SkDrawPictureCallback;
 
 namespace cc {
 
@@ -24,7 +23,8 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
 
   void SetNew(const gfx::RectF& clip_rect);
 
-  void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
+  void Raster(SkCanvas* canvas,
+              SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -40,7 +40,8 @@ class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
     return make_scoped_ptr(new EndFloatClipDisplayItem());
   }
 
-  void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
+  void Raster(SkCanvas* canvas,
+              SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

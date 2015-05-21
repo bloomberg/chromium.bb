@@ -15,7 +15,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 class SkCanvas;
-class SkDrawPictureCallback;
 
 namespace cc {
 
@@ -29,7 +28,8 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
               SkRect* bounds,
               skia::RefPtr<SkColorFilter> color_filter);
 
-  void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
+  void Raster(SkCanvas* canvas,
+              SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -49,7 +49,8 @@ class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
     return make_scoped_ptr(new EndCompositingDisplayItem());
   }
 
-  void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
+  void Raster(SkCanvas* canvas,
+              SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

@@ -11,7 +11,6 @@
 #include "ui/gfx/transform.h"
 
 class SkCanvas;
-class SkDrawPictureCallback;
 
 namespace cc {
 
@@ -22,7 +21,8 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
 
   void SetNew(const gfx::Transform& transform);
 
-  void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
+  void Raster(SkCanvas* canvas,
+              SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -38,7 +38,8 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
     return make_scoped_ptr(new EndTransformDisplayItem());
   }
 
-  void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
+  void Raster(SkCanvas* canvas,
+              SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

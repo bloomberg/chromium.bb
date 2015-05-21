@@ -351,7 +351,7 @@ bool AnalysisCanvas::GetColorIfSolid(SkColor* color) const {
   return false;
 }
 
-bool AnalysisCanvas::abortDrawing() {
+bool AnalysisCanvas::abort() {
   // Early out as soon as we have more than one draw op.
   // TODO(vmpstr): Investigate if 1 is the correct metric here. We need to
   // balance the amount of time we spend analyzing vs how many tiles would be

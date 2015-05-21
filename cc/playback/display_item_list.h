@@ -20,7 +20,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
-class SkDrawPictureCallback;
 class SkPictureRecorder;
 
 namespace cc {
@@ -32,7 +31,7 @@ class CC_EXPORT DisplayItemList
                                                bool use_cached_picture);
 
   void Raster(SkCanvas* canvas,
-              SkDrawPictureCallback* callback,
+              SkPicture::AbortCallback* callback,
               float contents_scale) const;
 
   template <typename DisplayItemType>

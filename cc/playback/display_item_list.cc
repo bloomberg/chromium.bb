@@ -14,7 +14,6 @@
 #include "cc/debug/traced_value.h"
 #include "cc/playback/largest_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDrawPictureCallback.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/skia_util.h"
@@ -76,7 +75,7 @@ DisplayItemList::~DisplayItemList() {
 }
 
 void DisplayItemList::Raster(SkCanvas* canvas,
-                             SkDrawPictureCallback* callback,
+                             SkPicture::AbortCallback* callback,
                              float contents_scale) const {
   DCHECK(ProcessAppendedItemsCalled());
   if (!use_cached_picture_) {

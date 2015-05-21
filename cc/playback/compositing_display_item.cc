@@ -38,7 +38,7 @@ void CompositingDisplayItem::SetNew(uint8_t alpha,
 }
 
 void CompositingDisplayItem::Raster(SkCanvas* canvas,
-                                    SkDrawPictureCallback* callback) const {
+                                    SkPicture::AbortCallback* callback) const {
   SkPaint paint;
   paint.setXfermodeMode(xfermode_);
   paint.setAlpha(alpha_);
@@ -65,8 +65,9 @@ EndCompositingDisplayItem::EndCompositingDisplayItem() {
 EndCompositingDisplayItem::~EndCompositingDisplayItem() {
 }
 
-void EndCompositingDisplayItem::Raster(SkCanvas* canvas,
-                                       SkDrawPictureCallback* callback) const {
+void EndCompositingDisplayItem::Raster(
+    SkCanvas* canvas,
+    SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }
 

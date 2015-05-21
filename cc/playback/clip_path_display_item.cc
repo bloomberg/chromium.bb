@@ -29,7 +29,7 @@ void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
 }
 
 void ClipPathDisplayItem::Raster(SkCanvas* canvas,
-                                 SkDrawPictureCallback* callback) const {
+                                 SkPicture::AbortCallback* callback) const {
   canvas->save();
   canvas->clipPath(clip_path_, clip_op_, antialias_);
 }
@@ -49,7 +49,7 @@ EndClipPathDisplayItem::~EndClipPathDisplayItem() {
 }
 
 void EndClipPathDisplayItem::Raster(SkCanvas* canvas,
-                                    SkDrawPictureCallback* callback) const {
+                                    SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }
 

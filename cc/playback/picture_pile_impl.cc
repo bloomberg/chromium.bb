@@ -202,7 +202,7 @@ void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
 }
 
 void PicturePileImpl::RasterCommon(SkCanvas* canvas,
-                                   SkDrawPictureCallback* callback,
+                                   SkPicture::AbortCallback* callback,
                                    const gfx::Rect& canvas_rect,
                                    float contents_scale) const {
   DCHECK(contents_scale >= min_contents_scale_);

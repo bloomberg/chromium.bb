@@ -130,7 +130,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   typedef std::map<const Picture*, Region> PictureRegionMap;
 
   // Called when analyzing a tile. We can use AnalysisCanvas as
-  // SkDrawPictureCallback, which allows us to early out from analysis.
+  // SkPicture::AbortCallback, which allows us to early out from analysis.
   void RasterForAnalysis(skia::AnalysisCanvas* canvas,
                          const gfx::Rect& canvas_rect,
                          float contents_scale) const;
@@ -141,7 +141,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
                        PictureRegionMap* result) const;
 
   void RasterCommon(SkCanvas* canvas,
-                    SkDrawPictureCallback* callback,
+                    SkPicture::AbortCallback* callback,
                     const gfx::Rect& canvas_rect,
                     float contents_scale) const;
 

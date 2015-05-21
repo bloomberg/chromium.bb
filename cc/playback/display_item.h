@@ -8,10 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/traced_value.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
-class SkDrawPictureCallback;
 
 namespace cc {
 
@@ -29,7 +29,7 @@ class CC_EXPORT DisplayItem {
   }
 
   virtual void Raster(SkCanvas* canvas,
-                      SkDrawPictureCallback* callback) const = 0;
+                      SkPicture::AbortCallback* callback) const = 0;
   virtual void AsValueInto(base::trace_event::TracedValue* array) const = 0;
 
   bool is_suitable_for_gpu_rasterization() const {

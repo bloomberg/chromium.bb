@@ -26,7 +26,7 @@ void TransformDisplayItem::SetNew(const gfx::Transform& transform) {
 }
 
 void TransformDisplayItem::Raster(SkCanvas* canvas,
-                                  SkDrawPictureCallback* callback) const {
+                                  SkPicture::AbortCallback* callback) const {
   canvas->save();
   if (!transform_.IsIdentity())
     canvas->concat(transform_.matrix());
@@ -47,7 +47,7 @@ EndTransformDisplayItem::~EndTransformDisplayItem() {
 }
 
 void EndTransformDisplayItem::Raster(SkCanvas* canvas,
-                                     SkDrawPictureCallback* callback) const {
+                                     SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }
 

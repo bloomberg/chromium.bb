@@ -358,7 +358,7 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
   EXPECT_FALSE(canvas.GetColorIfSolid(&output_color));
 
   // Verify that we aborted drawing.
-  EXPECT_TRUE(canvas.abortDrawing());
+  EXPECT_TRUE(canvas.abort());
 }
 
 TEST(AnalysisCanvasTest, ClipComplexRegion) {

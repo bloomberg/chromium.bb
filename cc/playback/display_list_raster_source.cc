@@ -107,7 +107,7 @@ void DisplayListRasterSource::PlaybackToCanvas(SkCanvas* canvas,
 }
 
 void DisplayListRasterSource::RasterCommon(SkCanvas* canvas,
-                                           SkDrawPictureCallback* callback,
+                                           SkPicture::AbortCallback* callback,
                                            const gfx::Rect& canvas_rect,
                                            float contents_scale) const {
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
