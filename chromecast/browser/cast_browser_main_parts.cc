@@ -42,6 +42,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_factory.h"
 #include "media/base/browser_cdm_factory.h"
+#include "ui/compositor/compositor_switches.h"
 
 #if defined(OS_ANDROID)
 #include "chromecast/browser/media/cast_media_client_android.h"
@@ -178,6 +179,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #elif defined(ARCH_CPU_ARM_FAMILY) && !defined(DISABLE_DISPLAY)
   // On Linux arm, enable CMA pipeline by default.
   { switches::kEnableCmaMediaPipeline, "" },
+  { switches::kEnableHardwareOverlays, "" },
 #endif
 #endif  // defined(OS_LINUX)
   // Needed to fix a bug where the raster thread doesn't get scheduled for a

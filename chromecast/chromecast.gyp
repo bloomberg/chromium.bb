@@ -47,6 +47,7 @@
         'public/osd_plane.h',
         'public/osd_plane_shlib.h',
         'public/osd_surface.h',
+        'public/video_plane.h',
       ],
     },
     # TODO(gunsch): Remove this fake target once it's either added or no

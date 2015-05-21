@@ -28,6 +28,18 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   const int32* GetEGLSurfaceProperties(const int32* desired_list) override;
+  OverlayCandidatesOzone* GetOverlayCandidates(
+      gfx::AcceleratedWidget w) override;
+  scoped_refptr<NativePixmap> CreateNativePixmap(gfx::AcceleratedWidget w,
+                                                 gfx::Size size,
+                                                 BufferFormat format,
+                                                 BufferUsage usage) override;
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int plane_z_order,
+                            gfx::OverlayTransform plane_transform,
+                            scoped_refptr<NativePixmap> buffer,
+                            const gfx::Rect& display_bounds,
+                            const gfx::RectF& crop_rect) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;

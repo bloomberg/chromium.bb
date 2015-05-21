@@ -128,10 +128,6 @@
         'cma/backend/media_pipeline_device_params.h',
         'cma/backend/video_pipeline_device.cc',
         'cma/backend/video_pipeline_device.h',
-        'cma/backend/video_plane.cc',
-        'cma/backend/video_plane.h',
-        'cma/backend/video_plane_fake.cc',
-        'cma/backend/video_plane_fake.h',
       ],
       'conditions': [
         ['chromecast_branding=="Chrome"', {
@@ -141,7 +137,6 @@
         }, {
           'sources': [
             'cma/backend/media_pipeline_device_fake_factory.cc',
-            'cma/backend/video_plane_fake_factory.cc',
           ],
         }],
       ],
