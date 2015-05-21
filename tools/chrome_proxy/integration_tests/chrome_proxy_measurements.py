@@ -274,6 +274,23 @@ class ChromeProxyExpDirective(ChromeProxyValidation):
   def AddResults(self, tab, results):
     self._metrics.AddResultsForBypass(tab, results, url_pattern='/exptest/')
 
+class ChromeProxyPassThrough(ChromeProxyValidation):
+  """Correctness measurement for Chrome-Proxy pass-through directives.
+
+  This test verifies that "pass-through" in the Chrome-Proxy request header
+  causes a resource to be loaded without Data Reduction Proxy transformations.
+  """
+
+  def __init__(self):
+    super(ChromeProxyPassThrough, self).__init__(
+        restart_after_each_page=True,
+        metrics=metrics.ChromeProxyMetric())
+
+  def CustomizeBrowserOptions(self, options):
+    super(ChromeProxyPassThrough, self).CustomizeBrowserOptions(options)
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForPassThrough(tab, results)
 
 class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
   """Correctness measurement for HTTP proxy fallback to direct."""

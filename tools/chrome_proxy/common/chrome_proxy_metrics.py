@@ -38,6 +38,20 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
       return False
     return True
 
+  def HasResponseHeader(self, key, value):
+    response_header = self.response.GetHeader(key)
+    if not response_header:
+      return False
+    values = [v.strip() for v in response_header.split(',')]
+    return any(v == value for v in values)
+
+  def HasRequestHeader(self, key, value):
+    if key not in self.response.request_headers:
+      return False
+    request_header = self.response.request_headers[key]
+    values = [v.strip() for v in request_header.split(',')]
+    return any(v == value for v in values)
+
   def HasChromeProxyViaHeader(self):
     via_header = self.response.GetHeader('Via')
     if not via_header:
@@ -48,11 +62,7 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
     return any(v[4:] == CHROME_PROXY_VIA_HEADER for v in vias)
 
   def HasExtraViaHeader(self, extra_header):
-    via_header = self.response.GetHeader('Via')
-    if not via_header:
-      return False
-    vias = [v.strip(' ') for v in via_header.split(',')]
-    return any(v == extra_header for v in vias)
+    return self.HasResponseHeader('Via', extra_header)
 
   def IsValidByViaHeader(self):
     return (not self.ShouldHaveChromeProxyViaHeader() or
@@ -79,15 +89,10 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
     return None
 
   def HasChromeProxyLoFiRequest(self):
-    if 'Chrome-Proxy' not in self.response.request_headers:
-      return False
-    chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
-    values = [v.strip() for v in chrome_proxy_request_header.split(',')]
-    return any(v == "q=low" for v in values)
+    return self.HasRequestHeader('Chrome-Proxy', "q=low")
 
   def HasChromeProxyLoFiResponse(self):
-    chrome_proxy_response_header = self.response.GetHeader('Chrome-Proxy')
-    if not chrome_proxy_response_header:
-      return False
-    values = [v.strip() for v in chrome_proxy_response_header.split(',')]
-    return any(v == "q=low" for v in values)
+    return self.HasResponseHeader('Chrome-Proxy', "q=low")
+
+  def HasChromeProxyPassThroughRequest(self):
+    return self.HasRequestHeader('Chrome-Proxy', "pass-through")

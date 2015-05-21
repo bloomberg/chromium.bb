@@ -262,6 +262,52 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         results.current_page, 'lo_fi_response', 'count', lo_fi_response_count))
     super(ChromeProxyMetric, self).AddResults(tab, results)
 
+  def AddResultsForPassThrough(self, tab, results):
+    compressed_count = 0
+    compressed_size = 0
+    pass_through_count = 0
+    pass_through_size = 0
+
+    for resp in self.IterResponses(tab):
+      if 'favicon.ico' in resp.response.url:
+        continue
+      if not resp.HasChromeProxyViaHeader():
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            '%s: Should have Via header (%s) (refer=%s, status=%d)' % (
+                r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
+      if resp.HasChromeProxyPassThroughRequest():
+        pass_through_count += 1
+        pass_through_size = resp.content_length
+      else:
+        compressed_count += 1
+        compressed_size = resp.content_length
+
+    if pass_through_count != 1:
+      raise ChromeProxyMetricException, (
+          'Expected exactly one Chrome-Proxy pass-through request, but %d '
+          'such requests were sent.' % (pass_through_count))
+
+    if compressed_count != 1:
+      raise ChromeProxyMetricException, (
+          'Expected exactly one compressed request, but %d such requests were '
+          'received.' % (compressed_count))
+
+    if compressed_size >= pass_through_size:
+        raise ChromeProxyMetricException, (
+            'Compressed image is %d bytes and pass-through image is %d. '
+            'Expecting compressed image size to be less than pass-through '
+            'image.' % (compressed_size, pass_through_size))
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'compressed', 'count', compressed_count))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'compressed_size', 'bytes', compressed_size))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'pass_through', 'count', pass_through_count))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'pass_through_size', 'bytes', pass_through_size))
+
   def AddResultsForBypass(self, tab, results, url_pattern=""):
     bypass_count = 0
     skipped_count = 0

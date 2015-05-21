@@ -58,6 +58,16 @@ class ChromeProxyExpDirective(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.exp_directive.exp_directive'
 
 
+class ChromeProxyPassThrough(ChromeProxyBenchmark):
+  tag = 'pass_through'
+  test = measurements.ChromeProxyPassThrough
+  page_set = pagesets.PassThroughPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.pass_through.pass_through'
+
+
 class ChromeProxyBypass(ChromeProxyBenchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyBypass
