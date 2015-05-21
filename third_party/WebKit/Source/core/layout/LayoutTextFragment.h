@@ -38,7 +38,6 @@ public:
     LayoutTextFragment(Node*, StringImpl*, int startOffset, int length);
     LayoutTextFragment(Node*, StringImpl*);
     virtual ~LayoutTextFragment();
-    virtual void destroy() override;
 
     virtual bool isTextFragment() const override { return true; }
 
@@ -72,6 +71,9 @@ public:
 
     void setIsRemainingTextLayoutObject(bool isRemainingText) { m_isRemainingTextLayoutObject = isRemainingText; }
     bool isRemainingTextLayoutObject() const { return m_isRemainingTextLayoutObject; }
+
+protected:
+    virtual void willBeDestroyed() override;
 
 private:
     LayoutBlock* blockForAccompanyingFirstLetter() const;

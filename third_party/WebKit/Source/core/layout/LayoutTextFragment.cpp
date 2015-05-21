@@ -57,12 +57,12 @@ LayoutTextFragment::~LayoutTextFragment()
     ASSERT(!m_firstLetterPseudoElement);
 }
 
-void LayoutTextFragment::destroy()
+void LayoutTextFragment::willBeDestroyed()
 {
     if (m_isRemainingTextLayoutObject && m_firstLetterPseudoElement)
         m_firstLetterPseudoElement->setRemainingTextLayoutObject(nullptr);
     m_firstLetterPseudoElement = nullptr;
-    LayoutText::destroy();
+    LayoutText::willBeDestroyed();
 }
 
 PassRefPtr<StringImpl> LayoutTextFragment::completeText() const
