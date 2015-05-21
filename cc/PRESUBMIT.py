@@ -333,3 +333,31 @@ def GetPreferredTryMasters(project, change):
       'linux_blink_rel': set(['defaulttests']),
     },
   }
+
+def PostUploadHook(cl, change, output_api):
+  """git cl upload will call this hook after the issue is created/modified.
+
+  This hook adds extra try bots list to the CL description in order to run
+  Blink tests in addition to CQ try bots.
+  """
+  rietveld_obj = cl.RpcServer()
+  issue = cl.issue
+  description = rietveld_obj.get_description(issue)
+  if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
+    return []
+
+  bots = GetPreferredTryMasters(None, change)
+  bots_string_bits = []
+  for master in bots.keys():
+    bots_string_bits.append("%s:%s" % (master, ','.join(bots[master].keys())))
+
+  results = []
+  new_description = description
+  new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(bots_string_bits)
+  results.append(output_api.PresubmitNotifyResult(
+      'Automatically added Perf trybots to run Blink tests on CQ.'))
+
+  if new_description != description:
+    rietveld_obj.update_description(issue, new_description)
+
+  return results
