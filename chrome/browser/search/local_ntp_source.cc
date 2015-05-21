@@ -97,21 +97,6 @@ bool IsIconNTPEnabled() {
   return StartsWithASCII(group_name, "Enabled", true);
 }
 
-// Returns whether we are in the Fast NTP experiment or not.
-bool IsLocalNTPFastEnabled() {
-  return StartsWithASCII(base::FieldTrialList::FindFullName("LocalNTPFast"),
-                         "Enabled", true);
-}
-
-// Serves a particular resource.
-// Used for bypassing the default resources when we are in an experiment.
-void SendResource(int resource_id,
-                  const content::URLDataSource::GotDataCallback& callback) {
-  scoped_refptr<base::RefCountedStaticMemory> response(
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id));
-  callback.Run(response.get());
-}
-
 // Adds a localized string keyed by resource id to the dictionary.
 void AddString(base::DictionaryValue* dictionary,
                const std::string& key,
@@ -199,15 +184,6 @@ void LocalNtpSource::StartDataRequest(
     std::string config_data_js = GetConfigData(profile_);
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
     return;
-  }
-  if (IsLocalNTPFastEnabled()) {
-    if (stripped_path == "local-ntp.html") {
-      return SendResource(IDR_LOCAL_NTP_FAST_HTML, callback);
-    } else if (stripped_path == "local-ntp.js") {
-      return SendResource(IDR_LOCAL_NTP_FAST_JS, callback);
-    } else if (stripped_path == "local-ntp.css") {
-      return SendResource(IDR_LOCAL_NTP_FAST_CSS, callback);
-    }
   }
   float scale = 1.0f;
   std::string filename;
