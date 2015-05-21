@@ -131,10 +131,6 @@ public:
     // |cancel| to true.
     virtual void willShowInstallBannerPrompt(int requestId, const WebVector<WebString>& platforms, WebAppBannerPromptReply*) = 0;
 
-    // Old version of the above function missing |requestId|.
-    // TODO(benwells): remove this once the above is rolled into chrome.
-    virtual void willShowInstallBannerPrompt(const WebVector<WebString>& platforms, WebAppBannerPromptReply*) = 0;
-
     // Image reload -----------------------------------------------------------
 
     // If the provided node is an image, reload the image bypassing the cache.
