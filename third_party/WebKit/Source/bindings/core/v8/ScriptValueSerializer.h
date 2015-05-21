@@ -576,7 +576,7 @@ private:
     Vector<v8::Local<v8::Value>> m_stack;
     Vector<v8::Local<v8::Value>> m_objectPool;
     Vector<uint32_t> m_openCompositeReferenceStack;
-    RawPtrWillBeMember<MessagePortArray> m_transferredMessagePorts;
+    MessagePortArray* m_transferredMessagePorts;
     ArrayBufferContentsArray* m_arrayBufferContents;
     Vector<v8::Local<v8::Value>> m_arrayBuffers;
     uint32_t m_version;

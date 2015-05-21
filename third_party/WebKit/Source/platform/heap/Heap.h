@@ -820,7 +820,7 @@ public:
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     static BasePage* findPageFromAddress(Address);
-    static BasePage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
+    static BasePage* findPageFromAddress(const void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(const_cast<void*>(pointer))); }
     static bool containedInHeapOrOrphanedPage(void*);
 #endif
 

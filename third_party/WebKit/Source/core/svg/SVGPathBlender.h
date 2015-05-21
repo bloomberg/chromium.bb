@@ -29,23 +29,22 @@ struct PathSegmentData;
 class SVGPathConsumer;
 class SVGPathSource;
 
-class SVGPathBlender : public NoBaseWillBeGarbageCollectedFinalized<SVGPathBlender> {
-    WTF_MAKE_NONCOPYABLE(SVGPathBlender); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathBlender);
+class SVGPathBlender final {
+    WTF_MAKE_NONCOPYABLE(SVGPathBlender);
+    STACK_ALLOCATED();
 public:
     SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer*);
 
     bool addAnimatedPath(unsigned repeatCount);
     bool blendAnimatedPath(float);
 
-    DECLARE_TRACE();
-
 private:
     class BlendState;
     bool blendAnimatedPath(BlendState&);
 
-    RawPtrWillBeMember<SVGPathSource> m_fromSource;
-    RawPtrWillBeMember<SVGPathSource> m_toSource;
-    RawPtrWillBeMember<SVGPathConsumer> m_consumer;
+    SVGPathSource* m_fromSource;
+    SVGPathSource* m_toSource;
+    SVGPathConsumer* m_consumer;
 };
 
 } // namespace blink

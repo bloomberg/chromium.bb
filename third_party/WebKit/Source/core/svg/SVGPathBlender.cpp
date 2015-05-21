@@ -257,13 +257,6 @@ SVGPathBlender::SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSourc
     ASSERT(m_consumer);
 }
 
-DEFINE_TRACE(SVGPathBlender)
-{
-    visitor->trace(m_fromSource);
-    visitor->trace(m_toSource);
-    visitor->trace(m_consumer);
-}
-
 bool SVGPathBlender::addAnimatedPath(unsigned repeatCount)
 {
     BlendState blendState(0, repeatCount);

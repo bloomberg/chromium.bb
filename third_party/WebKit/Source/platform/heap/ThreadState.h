@@ -233,8 +233,8 @@ public:
     // garbage collector.
     using AttachedThreadStateSet = HashSet<ThreadState*>;
     static AttachedThreadStateSet& attachedThreads();
-    void lockThreadAttachMutex();
-    void unlockThreadAttachMutex();
+    static void lockThreadAttachMutex();
+    static void unlockThreadAttachMutex();
 
     // Initialize threading infrastructure. Should be called from the main
     // thread.
@@ -437,7 +437,7 @@ public:
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
     BasePage* findPageFromAddress(Address);
-    BasePage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
+    BasePage* findPageFromAddress(const void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(const_cast<void*>(pointer))); }
 #endif
 
     // List of persistent roots allocated on the given thread.

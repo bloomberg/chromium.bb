@@ -56,13 +56,6 @@ SVGPathSegListBuilder::SVGPathSegListBuilder(SVGPathElement* pathElement, PassRe
     ASSERT(m_pathSegList);
 }
 
-DEFINE_TRACE(SVGPathSegListBuilder)
-{
-    visitor->trace(m_pathElement);
-    visitor->trace(m_pathSegList);
-    SVGPathConsumer::trace(visitor);
-}
-
 void SVGPathSegListBuilder::emitSegment(const PathSegmentData& segment)
 {
     RefPtrWillBeRawPtr<SVGPathSeg> newPathSegment;

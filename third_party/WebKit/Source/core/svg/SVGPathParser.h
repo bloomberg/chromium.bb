@@ -37,8 +37,9 @@ enum PathParsingMode {
 class SVGPathConsumer;
 class SVGPathSource;
 
-class SVGPathParser final : public NoBaseWillBeGarbageCollected<SVGPathParser> {
-    WTF_MAKE_NONCOPYABLE(SVGPathParser); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathParser);
+class SVGPathParser final {
+    WTF_MAKE_NONCOPYABLE(SVGPathParser);
+    STACK_ALLOCATED();
 public:
     SVGPathParser(SVGPathSource* source, SVGPathConsumer* consumer)
         : m_source(source)
@@ -59,15 +60,13 @@ public:
         return parsePath();
     }
 
-    DECLARE_TRACE();
-
 private:
     bool initialCommandIsMoveTo();
     bool parsePath();
     bool parseAndNormalizePath();
 
-    RawPtrWillBeMember<SVGPathSource> m_source;
-    RawPtrWillBeMember<SVGPathConsumer> m_consumer;
+    SVGPathSource* m_source;
+    SVGPathConsumer* m_consumer;
 };
 
 } // namespace blink

@@ -106,7 +106,7 @@ private:
 
     const String& m_parsedText;
     Document* m_document;
-    RawPtrWillBeMember<RuleSourceDataList> m_result;
+    RuleSourceDataList* m_result;
     RuleSourceDataList m_currentRuleDataStack;
     RefPtrWillBeMember<CSSRuleSourceData> m_currentRuleData;
     unsigned m_propertyRangeStart;

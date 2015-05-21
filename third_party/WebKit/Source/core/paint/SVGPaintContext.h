@@ -84,7 +84,7 @@ private:
 
     bool isIsolationInstalled() const;
 
-    RawPtrWillBeMember<LayoutObject> m_object;
+    LayoutObject* m_object;
     PaintInfo m_paintInfo;
     const PaintInfo* m_originalPaintInfo;
     RawPtrWillBeMember<LayoutSVGResourceFilter> m_filter;

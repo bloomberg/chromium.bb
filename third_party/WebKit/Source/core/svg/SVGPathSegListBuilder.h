@@ -36,8 +36,6 @@ class SVGPathSegListBuilder final : public SVGPathConsumer {
 public:
     SVGPathSegListBuilder(SVGPathElement*, PassRefPtrWillBeRawPtr<SVGPathSegList>);
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }

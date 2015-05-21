@@ -100,7 +100,7 @@ static const QualifiedName& frameOwnerURLAttributeName(const HTMLFrameOwnerEleme
 class SerializerMarkupAccumulator final : public MarkupAccumulator {
     STACK_ALLOCATED();
 public:
-    SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node>>*);
+    SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node>>&);
     virtual ~SerializerMarkupAccumulator();
 
 protected:
@@ -112,17 +112,17 @@ protected:
     virtual void appendEndTag(const Element&) override;
 
 private:
-    RawPtrWillBeMember<PageSerializer> m_serializer;
+    PageSerializer* m_serializer;
     RawPtrWillBeMember<const Document> m_document;
 
     // FIXME: |PageSerializer| uses |m_nodes| for collecting nodes in document
     // included into serialized text then extracts image, object, etc. The size
     // of this vector isn't small for large document. It is better to use
     // callback like functionality.
-    RawPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Node>>> const m_nodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node>>& m_nodes;
 };
 
-SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes)
+SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>& nodes)
     : MarkupAccumulator(ResolveAllURLs)
     , m_serializer(serializer)
     , m_document(&document)
@@ -187,8 +187,7 @@ void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, con
 void SerializerMarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
 {
     MarkupAccumulator::appendStartTag(node, namespaces);
-    if (m_nodes)
-        m_nodes->append(&node);
+    m_nodes.append(&node);
 }
 
 void SerializerMarkupAccumulator::appendEndTag(const Element& element)
@@ -234,7 +233,7 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
     }
 
     WillBeHeapVector<RawPtrWillBeMember<Node>> serializedNodes;
-    SerializerMarkupAccumulator accumulator(this, document, &serializedNodes);
+    SerializerMarkupAccumulator accumulator(this, document, serializedNodes);
     String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
     CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));

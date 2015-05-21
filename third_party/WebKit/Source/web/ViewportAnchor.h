@@ -52,7 +52,7 @@ protected:
     }
 
     RawPtrWillBeMember<FrameView> m_rootFrameView;
-    RawPtrWillBeMember<PinchViewport> m_pinchViewport;
+    PinchViewport* m_pinchViewport;
 };
 
 } // namespace blink

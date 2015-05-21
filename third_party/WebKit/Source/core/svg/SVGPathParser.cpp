@@ -31,12 +31,6 @@
 
 namespace blink {
 
-DEFINE_TRACE(SVGPathParser)
-{
-    visitor->trace(m_source);
-    visitor->trace(m_consumer);
-}
-
 bool SVGPathParser::initialCommandIsMoveTo()
 {
     // If the path is empty it is still valid, so return true.
@@ -81,7 +75,7 @@ public:
 private:
     bool decomposeArcToCubic(const FloatPoint& currentPoint, const PathSegmentData&);
 
-    RawPtrWillBeMember<SVGPathConsumer> m_consumer;
+    SVGPathConsumer* m_consumer;
     FloatPoint m_controlPoint;
     FloatPoint m_currentPoint;
     FloatPoint m_subPathPoint;

@@ -1666,12 +1666,20 @@ void Heap::doShutdown()
 #if ENABLE(ASSERT)
 BasePage* Heap::findPageFromAddress(Address address)
 {
-    ASSERT(ThreadState::current()->isInGC());
+    BasePage* result = nullptr;
+    if (!ThreadState::current()->isInGC())
+        ThreadState::lockThreadAttachMutex();
+
     for (ThreadState* state : ThreadState::attachedThreads()) {
-        if (BasePage* page = state->findPageFromAddress(address))
-            return page;
+        if (BasePage* page = state->findPageFromAddress(address)) {
+            result = page;
+            break;
+        }
     }
-    return nullptr;
+
+    if (!ThreadState::current()->isInGC())
+        ThreadState::unlockThreadAttachMutex();
+    return result;
 }
 
 bool Heap::containedInHeapOrOrphanedPage(void* object)

@@ -583,10 +583,19 @@ public:
 
     Member(T* raw) : m_raw(raw)
     {
+        // HashTable can store a special value to Member<> to represent
+        // a deleted entry. The special value is not aligned to the allocation
+        // granularity. The following ASSERT is checking that m_raw is either of:
+        //   - nullptr
+        //   - a special value to represent a deleted entry of a HashTable
+        //   - a valid pointer to the heap
+        ASSERT(!m_raw || reinterpret_cast<intptr_t>(m_raw) % allocationGranularity || Heap::findPageFromAddress(m_raw));
     }
 
     explicit Member(T& raw) : m_raw(&raw)
     {
+        // See the comment above.
+        ASSERT(!m_raw || reinterpret_cast<intptr_t>(m_raw) % allocationGranularity || Heap::findPageFromAddress(m_raw));
     }
 
     template<typename U>

@@ -68,7 +68,7 @@ protected:
     }
 
     RawPtrWillBeMember<NodeType> m_node;
-    RawPtrWillBeMember<LayoutObject> m_layoutObjectParent;
+    LayoutObject* m_layoutObjectParent;
 };
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {

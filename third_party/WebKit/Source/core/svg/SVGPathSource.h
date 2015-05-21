@@ -24,8 +24,9 @@
 
 namespace blink {
 
-class SVGPathSource : public NoBaseWillBeGarbageCollectedFinalized<SVGPathSource> {
-    WTF_MAKE_NONCOPYABLE(SVGPathSource); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathSource);
+class SVGPathSource {
+    WTF_MAKE_NONCOPYABLE(SVGPathSource);
+    STACK_ALLOCATED();
 public:
     SVGPathSource() { }
     virtual ~SVGPathSource() { }
@@ -33,8 +34,6 @@ public:
     virtual bool hasMoreData() const = 0;
     virtual SVGPathSegType peekSegmentType() = 0;
     virtual PathSegmentData parseSegment() = 0;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

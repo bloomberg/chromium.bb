@@ -32,12 +32,12 @@ namespace blink {
 
 struct PathSegmentData;
 
-class SVGPathConsumer : public NoBaseWillBeGarbageCollectedFinalized<SVGPathConsumer> {
-    WTF_MAKE_NONCOPYABLE(SVGPathConsumer); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGPathConsumer);
+class SVGPathConsumer {
+    WTF_MAKE_NONCOPYABLE(SVGPathConsumer);
+    STACK_ALLOCATED();
 public:
     SVGPathConsumer() { }
     virtual ~SVGPathConsumer() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual void incrementPathSegmentCount() = 0;
     virtual bool continueConsuming() = 0;

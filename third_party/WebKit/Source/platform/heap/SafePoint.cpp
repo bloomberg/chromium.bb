@@ -34,7 +34,7 @@ bool SafePointBarrier::parkOthers()
 
     ThreadState* current = ThreadState::current();
     // Lock threadAttachMutex() to prevent threads from attaching.
-    current->lockThreadAttachMutex();
+    ThreadState::lockThreadAttachMutex();
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
 
     MutexLocker locker(m_mutex);
@@ -77,7 +77,7 @@ void SafePointBarrier::resumeOthers(bool barrierLocked)
         m_resume.broadcast();
     }
 
-    ThreadState::current()->unlockThreadAttachMutex();
+    ThreadState::unlockThreadAttachMutex();
     ASSERT(ThreadState::current()->isAtSafePoint());
 }
 
