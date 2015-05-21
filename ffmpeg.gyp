@@ -77,6 +77,10 @@
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
+
+    # Stub generator script and signatures of all functions used by Chrome.
+    'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
+    'sig_files': ['chromium/ffmpegsumo.sigs'],
   },
   'conditions': [
     ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
@@ -145,7 +149,7 @@
       'targets': [
         {
           'target_name': 'ffmpegsumo',
-          'type': 'static_library',
+          'type': '<(component)',
           'sources': [
             '<@(c_sources)',
             '<(platform_config_root)/config.h',
@@ -394,6 +398,30 @@
                       ],
                     },
                   },
+                  'sources': [
+                    '<(shared_generated_dir)/ffmpegsumo.def',
+                  ],
+                  'actions': [
+                    {
+                      'action_name': 'generate_def',
+                      'inputs': [
+                        '<(generate_stubs_script)',
+                        '<@(sig_files)',
+                      ],
+                      'outputs': [
+                        '<(shared_generated_dir)/ffmpegsumo.def',
+                      ],
+                      'action': ['python',
+                                 '<(generate_stubs_script)',
+                                 '-i', '<(INTERMEDIATE_DIR)',
+                                 '-o', '<(shared_generated_dir)',
+                                 '-t', 'windows_def',
+                                 '-m', 'ffmpegsumo.dll',
+                                 '<@(_inputs)',
+                      ],
+                      'message': 'Generating FFmpeg export definitions',
+                    },
+                  ],
                 }],
               ],
             }],
@@ -405,7 +433,7 @@
   'targets': [
     {
       'target_name': 'ffmpeg',
-      'type': 'static_library',
+      'type': 'none',
       'conditions': [
         ['build_ffmpegsumo == 1', {
           'dependencies': [
