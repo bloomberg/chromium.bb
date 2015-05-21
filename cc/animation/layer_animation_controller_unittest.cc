@@ -298,12 +298,13 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
 
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::OPACITY));
 
   int animation_id =
       AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
-  int group_id = controller->GetAnimationById(animation_id)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
@@ -312,21 +313,30 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller_impl->GetAnimationById(animation_id)->run_state());
 
+  events.reset(new AnimationEventsVector);
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_EQ(1u, events->size());
+  EXPECT_EQ(AnimationEvent::STARTED, (*events)[0].type);
+
   // Notify main thread controller that the animation has started.
-  AnimationEvent animation_started_event(AnimationEvent::STARTED, 0, group_id,
-                                         Animation::OPACITY, kInitialTickTime);
-  controller->NotifyAnimationStarted(animation_started_event);
+  controller->NotifyAnimationStarted((*events)[0]);
 
-  // Force animation to complete on impl thread.
-  controller_impl->RemoveAnimation(animation_id);
+  // Complete animation on impl thread.
+  events.reset(new AnimationEventsVector);
+  controller_impl->Animate(kInitialTickTime + TimeDelta::FromSeconds(1));
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_EQ(1u, events->size());
+  EXPECT_EQ(AnimationEvent::FINISHED, (*events)[0].type);
 
-  EXPECT_FALSE(controller_impl->GetAnimationById(animation_id));
+  controller->NotifyAnimationFinished((*events)[0]);
+
+  controller->Animate(kInitialTickTime + TimeDelta::FromSeconds(2));
+  controller->UpdateState(true, nullptr);
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
-
-  // Even though the main thread has a 'new' animation, it should not be pushed
-  // because the animation has already completed on the impl thread.
+  EXPECT_FALSE(controller->GetAnimationById(animation_id));
   EXPECT_FALSE(controller_impl->GetAnimationById(animation_id));
 }
 

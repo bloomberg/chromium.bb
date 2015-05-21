@@ -584,15 +584,6 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
     if (controller_impl->GetAnimationById(animations_[i]->id()))
       continue;
 
-    // If the animation is not running on the impl thread, it does not
-    // necessarily mean that it needs to be copied over and started; it may
-    // have already finished. In this case, the impl thread animation will
-    // have already notified that it has started and the main thread animation
-    // will no longer need
-    // a synchronized start time.
-    if (!animations_[i]->needs_synchronized_start_time())
-      continue;
-
     // Scroll animations always start at the current scroll offset.
     if (animations_[i]->target_property() == Animation::SCROLL_OFFSET) {
       gfx::ScrollOffset current_scroll_offset;
