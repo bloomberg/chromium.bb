@@ -1,10 +1,14 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file should be deprecated in favor of js_compile_checked.gypi or
-# eventually third_party/closure_compiler/compile_js.gypi as iOS JS code
-# becomes error free. See http://crbug.com/487804
+# This file should be identical to js_compile.gypi except it passes jscomp_error
+# flags to the compiler. One should prefer this over js_compile.gypi once the
+# JS code being compiled are error free.
+#
+# This file should be eventually deprecated in favor of
+# third_party/closure_compiler/compile_js.gypi once they have the same set of
+# jscomp_error flags enabled. See http://crbug.com/487804
 {
   'variables': {
     'closure_compiler_path': '<(DEPTH)/third_party/closure_compiler/compiler/compiler.jar',
@@ -28,6 +32,25 @@
             '<(closure_compiler_path)',
             '--compilation_level',
             'SIMPLE_OPTIMIZATIONS',
+            '--jscomp_error=accessControls',
+            '--jscomp_error=ambiguousFunctionDecl',
+            '--jscomp_error=checkStructDictInheritance',
+            # '--jscomp_error=checkTypes',
+            # '--jscomp_error=checkVars',
+            '--jscomp_error=constantProperty',
+            '--jscomp_error=deprecated',
+            '--jscomp_error=externsValidation',
+            '--jscomp_error=globalThis',
+            '--jscomp_error=invalidCasts',
+            # '--jscomp_error=missingProperties',
+            # '--jscomp_error=missingReturn',
+            '--jscomp_error=nonStandardJsDocs',
+            '--jscomp_error=suspiciousCode',
+            '--jscomp_error=undefinedNames',
+            # '--jscomp_error=undefinedVars',
+            '--jscomp_error=unknownDefines',
+            '--jscomp_error=uselessCode',
+            '--jscomp_error=visibility',
             '--js',
             '<(RULE_INPUT_PATH)',
             '--js_output_file',

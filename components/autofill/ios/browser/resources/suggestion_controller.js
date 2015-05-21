@@ -86,7 +86,7 @@ __gCrWeb.suggestion.getPreviousElementInTabOrder =
   // previous reachable element in DOM tree order is returned.
   if (!__gCrWeb.suggestion.isSequentiallyReachable(elementToCompare)) {
     var indexToCompare = elements.indexOf(elementToCompare);
-    if (elementToCompare === 0 || elementToCompare === -1) {
+    if (indexToCompare <= 0) {  // Ignore if first or no element is found.
       return null;
     }
     for (var index = indexToCompare - 1; index >= 0; --index) {
@@ -122,12 +122,13 @@ __gCrWeb.suggestion.getPreviousElementInTabOrder =
  * comparator(element, indexOfElement, anotherElement, anotherIndex) is true.
  *
  * @param {Element} elementToCompare The element to be compared.
- * @param {Array.<Element>} elements Elements to compare; |elements| should be
+ * @param {Array<Element>} elements Elements to compare; |elements| should be
  *     sorted in DOM tree order and it should contain |elementToCompare|.
- * @param {function} comparator A function that returns a boolean, given an
- *     Element |element1|, an integer that represents |element1|'s position in
- *     DOM tree order, an Element |element2| and an integer that represents
- *     |element2|'s position in DOM tree order.
+ * @param {function(Element, number, Element, number):boolean} comparator A
+ *     function that returns a boolean, given an Element |element1|, an integer
+ *     that represents |element1|'s position in DOM tree order, an Element
+ *     |element2| and an integer that represents |element2|'s position in DOM
+ *     tree order.
  * @return {Element} The element that satisfies the conditions given above.
  */
 __gCrWeb.suggestion.getFormElementAfter =
@@ -233,7 +234,7 @@ __gCrWeb.suggestion.isSequentiallyReachable = function(element) {
  *
  * @param {Element} element The element of which the sequential navigation order
  *     information is returned.
- * @return {Number} An adjusted value that reflect |element|'s position in the
+ * @return {number} An adjusted value that reflect |element|'s position in the
  *     sequential navigation.
  */
 __gCrWeb.suggestion.getTabOrder = function(element) {
