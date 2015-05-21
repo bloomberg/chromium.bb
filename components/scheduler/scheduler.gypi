@@ -12,6 +12,8 @@
       'child/cancelable_closure_holder.cc',
       'child/cancelable_closure_holder.h',
       'child/child_scheduler.h',
+      'child/idle_helper.cc',
+      'child/idle_helper.h',
       'child/nestable_single_thread_task_runner.h',
       'child/null_idle_task_runner.cc',
       'child/null_idle_task_runner.h',

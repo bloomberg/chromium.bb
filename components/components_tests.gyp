@@ -462,6 +462,7 @@
       'rappor/sampler_unittest.cc',
     ],
     'scheduler_unittest_sources': [
+      'scheduler/child/idle_helper_unittest.cc',
       'scheduler/child/nestable_task_runner_for_test.cc',
       'scheduler/child/nestable_task_runner_for_test.h',
       'scheduler/child/prioritizing_task_queue_selector_unittest.cc',

@@ -7,6 +7,7 @@
 
 #include "base/atomicops.h"
 #include "base/synchronization/lock.h"
+#include "components/scheduler/child/idle_helper.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/renderer/deadline_task_runner.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
@@ -20,9 +21,8 @@ class ConvertableToTraceFormat;
 
 namespace scheduler {
 
-class SCHEDULER_EXPORT RendererSchedulerImpl
-    : public RendererScheduler,
-      public SchedulerHelper::SchedulerHelperDelegate {
+class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
+                                               public IdleHelper::Delegate {
  public:
   RendererSchedulerImpl(
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner);
@@ -61,11 +61,13 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
 
   // Keep RendererSchedulerImpl::TaskQueueIdToString in sync with this enum.
   enum QueueId {
-    COMPOSITOR_TASK_QUEUE = SchedulerHelper::TASK_QUEUE_COUNT,
+    IDLE_TASK_QUEUE = SchedulerHelper::TASK_QUEUE_COUNT,
+    COMPOSITOR_TASK_QUEUE,
     LOADING_TASK_QUEUE,
     TIMER_TASK_QUEUE,
     // Must be the last entry.
     TASK_QUEUE_COUNT,
+    FIRST_QUEUE_ID = SchedulerHelper::FIRST_QUEUE_ID,
   };
 
   // Keep RendererSchedulerImpl::PolicyToString in sync with this enum.
@@ -73,6 +75,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     NORMAL,
     COMPOSITOR_PRIORITY,
     TOUCHSTART_PRIORITY,
+    // Must be the last entry.
+    POLICY_COUNT,
+    FIRST_POLICY = NORMAL,
   };
 
   // Keep RendererSchedulerImpl::InputStreamStateToString in sync with this
@@ -80,7 +85,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   enum class InputStreamState {
     INACTIVE,
     ACTIVE,
-    ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
+    ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE,
+    // Must be the last entry.
+    INPUT_STREAM_STATE_COUNT,
+    FIRST_INPUT_STREAM_STATE = INACTIVE,
   };
 
   class PollableNeedsUpdateFlag {
@@ -101,7 +109,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };
 
-  // SchedulerHelperDelegate implementation:
+  // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,
       base::TimeDelta* next_long_idle_period_delay_out) override;
@@ -110,6 +118,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void EndIdlePeriod();
 
   // Returns the serialized scheduler state for tracing.
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue(
+      base::TimeTicks optional_now) const;
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
   static const char* TaskQueueIdToString(QueueId queue_id);
@@ -177,6 +187,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void DidProcessInputEvent(base::TimeTicks begin_frame_time);
 
   SchedulerHelper helper_;
+  IdleHelper idle_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -196,7 +207,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
 
   // The incoming_signals_lock_ mutex protects access to all variables in the
   // (contiguous) block below.
-  base::Lock incoming_signals_lock_;
+  mutable base::Lock incoming_signals_lock_;
   base::TimeTicks last_input_receipt_time_on_compositor_;
   base::TimeTicks last_input_process_time_on_main_;
   blink::WebInputEvent::Type last_input_type_;

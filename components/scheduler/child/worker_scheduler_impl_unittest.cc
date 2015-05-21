@@ -184,7 +184,7 @@ class WorkerSchedulerImplTest : public testing::Test {
 
   static base::TimeDelta maximum_idle_period_duration() {
     return base::TimeDelta::FromMilliseconds(
-        SchedulerHelper::kMaximumIdlePeriodMillis);
+        IdleHelper::kMaximumIdlePeriodMillis);
   }
 
  protected:

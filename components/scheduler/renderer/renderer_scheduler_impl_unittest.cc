@@ -252,12 +252,43 @@ class RendererSchedulerImplTest : public testing::Test {
 
   static base::TimeDelta maximum_idle_period_duration() {
     return base::TimeDelta::FromMilliseconds(
-        SchedulerHelper::kMaximumIdlePeriodMillis);
+        IdleHelper::kMaximumIdlePeriodMillis);
   }
 
   static base::TimeDelta end_idle_when_hidden_delay() {
     return base::TimeDelta::FromMilliseconds(
         RendererSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
+  }
+
+  template <typename E>
+  static void CallForEachEnumValue(E first,
+                                   E last,
+                                   const char* (*function)(E)) {
+    for (E val = first; val < last;
+         val = static_cast<E>(static_cast<int>(val) + 1)) {
+      (*function)(val);
+    }
+  }
+
+  static void CheckAllTaskQueueIdToString() {
+    CallForEachEnumValue<RendererSchedulerImpl::QueueId>(
+        RendererSchedulerImpl::FIRST_QUEUE_ID,
+        RendererSchedulerImpl::TASK_QUEUE_COUNT,
+        &RendererSchedulerImpl::TaskQueueIdToString);
+  }
+
+  static void CheckAllPolicyToString() {
+    CallForEachEnumValue<RendererSchedulerImpl::Policy>(
+        RendererSchedulerImpl::Policy::FIRST_POLICY,
+        RendererSchedulerImpl::Policy::POLICY_COUNT,
+        &RendererSchedulerImpl::PolicyToString);
+  }
+
+  static void CheckAllInputStreamStateToString() {
+    CallForEachEnumValue<RendererSchedulerImpl::InputStreamState>(
+        RendererSchedulerImpl::InputStreamState::FIRST_INPUT_STREAM_STATE,
+        RendererSchedulerImpl::InputStreamState::INPUT_STREAM_STATE_COUNT,
+        &RendererSchedulerImpl::InputStreamStateToString);
   }
 
   scoped_refptr<cc::TestNowSource> clock_;
@@ -1415,6 +1446,18 @@ TEST_F(RendererSchedulerImplTest, MultipleSuspendsNeedMultipleResumes) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("T1"), std::string("T2")));
+}
+
+TEST_F(RendererSchedulerImplTest, TaskQueueIdToString) {
+  CheckAllTaskQueueIdToString();
+}
+
+TEST_F(RendererSchedulerImplTest, PolicyToString) {
+  CheckAllTaskQueueIdToString();
+}
+
+TEST_F(RendererSchedulerImplTest, InputStreamStateToString) {
+  CheckAllInputStreamStateToString();
 }
 
 }  // namespace scheduler

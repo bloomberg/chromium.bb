@@ -15,12 +15,16 @@ namespace scheduler {
 WorkerSchedulerImpl::WorkerSchedulerImpl(
     scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
     : helper_(main_task_runner,
-              this,
               "worker.scheduler",
               TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
-              "WorkerSchedulerIdlePeriod",
-              SchedulerHelper::TASK_QUEUE_COUNT,
-              base::TimeDelta::FromMilliseconds(300)) {
+              TASK_QUEUE_COUNT),
+      idle_helper_(&helper_,
+                   this,
+                   IDLE_TASK_QUEUE,
+                   "worker.scheduler",
+                   TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
+                   "WorkerSchedulerIdlePeriod",
+                   base::TimeDelta::FromMilliseconds(300)) {
   initialized_ = false;
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
@@ -33,7 +37,7 @@ WorkerSchedulerImpl::~WorkerSchedulerImpl() {
 
 void WorkerSchedulerImpl::Init() {
   initialized_ = true;
-  helper_.EnableLongIdlePeriod();
+  idle_helper_.EnableLongIdlePeriod();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -45,12 +49,12 @@ WorkerSchedulerImpl::DefaultTaskRunner() {
 scoped_refptr<SingleThreadIdleTaskRunner>
 WorkerSchedulerImpl::IdleTaskRunner() {
   DCHECK(initialized_);
-  return helper_.IdleTaskRunner();
+  return idle_helper_.IdleTaskRunner();
 }
 
 bool WorkerSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
   DCHECK(initialized_);
-  return helper_.CanExceedIdleDeadlineIfRequired();
+  return idle_helper_.CanExceedIdleDeadlineIfRequired();
 }
 
 bool WorkerSchedulerImpl::ShouldYieldForHighPriorityWork() {
@@ -86,7 +90,7 @@ bool WorkerSchedulerImpl::CanEnterLongIdlePeriod(base::TimeTicks,
 
 base::TimeTicks WorkerSchedulerImpl::CurrentIdleTaskDeadlineForTesting() const {
   base::TimeTicks deadline;
-  helper_.CurrentIdleTaskDeadlineCallback(&deadline);
+  idle_helper_.CurrentIdleTaskDeadlineCallback(&deadline);
   return deadline;
 }
 
