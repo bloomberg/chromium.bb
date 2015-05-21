@@ -3,7 +3,7 @@
     "smut"
   ],
   "comments": [
-    "Tests for 32- and 64-bit iOS 8.3 iPhone simulators."
+    "Tests for 32- and 64-bit iOS 8.3 simulators."
   ],
   "xcode version": "6.3",
   "GYP_DEFINES": {
@@ -16,12 +16,12 @@
   "tests": [
     {
       "include": "common_tests.json",
-      "device type": "iPhone 5",
+      "device type": "iPhone 5s",
       "os": "8.3"
     },
     {
       "include": "common_tests.json",
-      "device type": "iPhone 5s",
+      "device type": "iPad Retina",
       "os": "8.3"
     }
   ]
