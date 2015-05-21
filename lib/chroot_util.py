@@ -176,7 +176,8 @@ def InitializeSysroots(blueprint):
   sysroot.UpdateToolchain()
 
 
-def RunUnittests(sysroot, packages, extra_env=None, verbose=False):
+def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
+                 retries=None):
   """Runs the unit tests for |packages|.
 
   Args:
@@ -185,6 +186,8 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False):
     extra_env: Python dictionary containing the extra environment variable to
       pass to the build command.
     verbose: If True, show the output from emerge, even when the tests succeed.
+    retries: Number of time we should retry a failed packages. If None, use
+      parallel_emerge's default.
 
   Raises:
     RunCommandError if the unit tests failed.
@@ -199,6 +202,9 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False):
              '--sysroot=%s' % sysroot, '--nodeps', '--buildpkgonly']
   if verbose:
     command += ['--show-output']
+
+  if retries is not None:
+    command += ['--retries=%s' % retries]
 
   command += list(packages)
 
