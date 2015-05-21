@@ -6,35 +6,20 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 mojo_native_application("filesystem") {
   sources = [
+    "directory_impl.cc",
+    "directory_impl.h",
+    "file_impl.cc",
+    "file_impl.h",
+    "file_system_impl.cc",
+    "file_system_impl.h",
     "futimens.h",
+    "futimens_android.cc",
     "main.cc",
+    "shared_impl.cc",
+    "shared_impl.h",
     "util.cc",
     "util.h",
   ]
-
-  if (is_android) {
-    sources += [ "futimens_android.cc" ]
-  }
-
-  if (is_posix) {
-    sources += [
-      "posix/directory_posix.cc",
-      "posix/directory_posix.h",
-      "posix/file_posix.cc",
-      "posix/file_posix.h",
-      "posix/file_system_posix.cc",
-      "posix/file_system_posix.h",
-      "posix/shared_posix.cc",
-      "posix/shared_posix.h",
-    ]
-  }
-
-  if (is_win) {
-    sources += [
-      "win/file_system_win.cc",
-      "win/file_system_win.h",
-    ]
-  }
 
   deps = [
     "//base",
@@ -53,8 +38,8 @@ mojo_native_application("apptests") {
   testonly = true
 
   sources = [
-    "directory_unittest.cc",
-    "file_unittest.cc",
+    "directory_impl_unittest.cc",
+    "file_impl_unittest.cc",
     "files_test_base.cc",
     "files_test_base.h",
   ]

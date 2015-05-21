@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/posix/file_posix.h"
+#include "components/filesystem/file_impl.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -15,7 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "components/filesystem/posix/shared_posix.h"
+#include "components/filesystem/shared_impl.h"
 #include "components/filesystem/util.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
@@ -25,16 +25,15 @@ namespace filesystem {
 
 const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 
-FilePosix::FilePosix(mojo::InterfaceRequest<File> request,
-                     base::ScopedFD file_fd)
+FileImpl::FileImpl(mojo::InterfaceRequest<File> request, base::ScopedFD file_fd)
     : binding_(this, request.Pass()), file_fd_(file_fd.Pass()) {
   DCHECK(file_fd_.is_valid());
 }
 
-FilePosix::~FilePosix() {
+FileImpl::~FileImpl() {
 }
 
-void FilePosix::Close(const CloseCallback& callback) {
+void FileImpl::Close(const CloseCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -59,10 +58,10 @@ void FilePosix::Close(const CloseCallback& callback) {
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
-void FilePosix::Read(uint32_t num_bytes_to_read,
-                     int64_t offset,
-                     Whence whence,
-                     const ReadCallback& callback) {
+void FileImpl::Read(uint32_t num_bytes_to_read,
+                    int64_t offset,
+                    Whence whence,
+                    const ReadCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED, mojo::Array<uint8_t>());
     return;
@@ -108,10 +107,10 @@ void FilePosix::Read(uint32_t num_bytes_to_read,
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
-void FilePosix::Write(mojo::Array<uint8_t> bytes_to_write,
-                      int64_t offset,
-                      Whence whence,
-                      const WriteCallback& callback) {
+void FileImpl::Write(mojo::Array<uint8_t> bytes_to_write,
+                     int64_t offset,
+                     Whence whence,
+                     const WriteCallback& callback) {
   DCHECK(!bytes_to_write.is_null());
 
   if (!file_fd_.is_valid()) {
@@ -163,11 +162,11 @@ void FilePosix::Write(mojo::Array<uint8_t> bytes_to_write,
   callback.Run(ERROR_OK, static_cast<uint32_t>(num_bytes_written));
 }
 
-void FilePosix::ReadToStream(mojo::ScopedDataPipeProducerHandle source,
-                             int64_t offset,
-                             Whence whence,
-                             int64_t num_bytes_to_read,
-                             const ReadToStreamCallback& callback) {
+void FileImpl::ReadToStream(mojo::ScopedDataPipeProducerHandle source,
+                            int64_t offset,
+                            Whence whence,
+                            int64_t num_bytes_to_read,
+                            const ReadToStreamCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -186,10 +185,10 @@ void FilePosix::ReadToStream(mojo::ScopedDataPipeProducerHandle source,
   callback.Run(ERROR_UNIMPLEMENTED);
 }
 
-void FilePosix::WriteFromStream(mojo::ScopedDataPipeConsumerHandle sink,
-                                int64_t offset,
-                                Whence whence,
-                                const WriteFromStreamCallback& callback) {
+void FileImpl::WriteFromStream(mojo::ScopedDataPipeConsumerHandle sink,
+                               int64_t offset,
+                               Whence whence,
+                               const WriteFromStreamCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -208,13 +207,13 @@ void FilePosix::WriteFromStream(mojo::ScopedDataPipeConsumerHandle sink,
   callback.Run(ERROR_UNIMPLEMENTED);
 }
 
-void FilePosix::Tell(const TellCallback& callback) {
+void FileImpl::Tell(const TellCallback& callback) {
   Seek(0, WHENCE_FROM_CURRENT, callback);
 }
 
-void FilePosix::Seek(int64_t offset,
-                     Whence whence,
-                     const SeekCallback& callback) {
+void FileImpl::Seek(int64_t offset,
+                    Whence whence,
+                    const SeekCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED, 0);
     return;
@@ -238,7 +237,7 @@ void FilePosix::Seek(int64_t offset,
   callback.Run(ERROR_OK, static_cast<int64>(position));
 }
 
-void FilePosix::Stat(const StatCallback& callback) {
+void FileImpl::Stat(const StatCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED, nullptr);
     return;
@@ -246,7 +245,7 @@ void FilePosix::Stat(const StatCallback& callback) {
   StatFD(file_fd_.get(), FILE_TYPE_REGULAR_FILE, callback);
 }
 
-void FilePosix::Truncate(int64_t size, const TruncateCallback& callback) {
+void FileImpl::Truncate(int64_t size, const TruncateCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -268,9 +267,9 @@ void FilePosix::Truncate(int64_t size, const TruncateCallback& callback) {
   callback.Run(ERROR_OK);
 }
 
-void FilePosix::Touch(TimespecOrNowPtr atime,
-                      TimespecOrNowPtr mtime,
-                      const TouchCallback& callback) {
+void FileImpl::Touch(TimespecOrNowPtr atime,
+                     TimespecOrNowPtr mtime,
+                     const TouchCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -278,8 +277,8 @@ void FilePosix::Touch(TimespecOrNowPtr atime,
   TouchFD(file_fd_.get(), atime.Pass(), mtime.Pass(), callback);
 }
 
-void FilePosix::Dup(mojo::InterfaceRequest<File> file,
-                    const DupCallback& callback) {
+void FileImpl::Dup(mojo::InterfaceRequest<File> file,
+                   const DupCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -291,13 +290,13 @@ void FilePosix::Dup(mojo::InterfaceRequest<File> file,
     return;
   }
 
-  new FilePosix(file.Pass(), file_fd.Pass());
+  new FileImpl(file.Pass(), file_fd.Pass());
   callback.Run(ERROR_OK);
 }
 
-void FilePosix::Reopen(mojo::InterfaceRequest<File> file,
-                       uint32_t open_flags,
-                       const ReopenCallback& callback) {
+void FileImpl::Reopen(mojo::InterfaceRequest<File> file,
+                      uint32_t open_flags,
+                      const ReopenCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED);
     return;
@@ -308,7 +307,7 @@ void FilePosix::Reopen(mojo::InterfaceRequest<File> file,
   callback.Run(ERROR_UNIMPLEMENTED);
 }
 
-void FilePosix::AsBuffer(const AsBufferCallback& callback) {
+void FileImpl::AsBuffer(const AsBufferCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED, mojo::ScopedSharedBufferHandle());
     return;
@@ -319,9 +318,9 @@ void FilePosix::AsBuffer(const AsBufferCallback& callback) {
   callback.Run(ERROR_UNIMPLEMENTED, mojo::ScopedSharedBufferHandle());
 }
 
-void FilePosix::Ioctl(uint32_t request,
-                      mojo::Array<uint32_t> in_values,
-                      const IoctlCallback& callback) {
+void FileImpl::Ioctl(uint32_t request,
+                     mojo::Array<uint32_t> in_values,
+                     const IoctlCallback& callback) {
   if (!file_fd_.is_valid()) {
     callback.Run(ERROR_CLOSED, mojo::Array<uint32_t>());
     return;

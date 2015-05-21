@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_POSIX_DIRECTORY_POSIX_H_
-#define COMPONENTS_FILESYSTEM_POSIX_DIRECTORY_POSIX_H_
+#ifndef COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
+#define COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -18,14 +18,14 @@ class ScopedTempDir;
 
 namespace filesystem {
 
-class DirectoryPosix : public Directory {
+class DirectoryImpl : public Directory {
  public:
   // Set |temp_dir| only if there's a temporary directory that should be deleted
   // when this object is destroyed.
-  DirectoryPosix(mojo::InterfaceRequest<Directory> request,
-                 base::ScopedFD dir_fd,
-                 scoped_ptr<base::ScopedTempDir> temp_dir);
-  ~DirectoryPosix() override;
+  DirectoryImpl(mojo::InterfaceRequest<Directory> request,
+                base::ScopedFD dir_fd,
+                scoped_ptr<base::ScopedTempDir> temp_dir);
+  ~DirectoryImpl() override;
 
   // |Directory| implementation:
   void Read(const ReadCallback& callback) override;
@@ -53,9 +53,9 @@ class DirectoryPosix : public Directory {
   base::ScopedFD dir_fd_;
   scoped_ptr<base::ScopedTempDir> temp_dir_;
 
-  DISALLOW_COPY_AND_ASSIGN(DirectoryPosix);
+  DISALLOW_COPY_AND_ASSIGN(DirectoryImpl);
 };
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_POSIX_DIRECTORY_POSIX_H_
+#endif  // COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_

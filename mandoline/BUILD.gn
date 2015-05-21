@@ -11,10 +11,11 @@ group("all") {
   ]
 
   if (!is_component_build) {
-    deps += [
-      "//mandoline/app",
-      "//components/filesystem",
-    ]
+    deps += [ "//mandoline/app" ]
+
+    if (!is_win) {
+      deps += [ "//components/filesystem" ]
+    }
   }
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_POSIX_FILE_SYSTEM_POSIX_H_
-#define COMPONENTS_FILESYSTEM_POSIX_FILE_SYSTEM_POSIX_H_
+#ifndef COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_
+#define COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_
 
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
@@ -16,11 +16,11 @@ class ApplicationConnection;
 
 namespace filesystem {
 
-class FileSystemPosix : public FileSystem {
+class FileSystemImpl : public FileSystem {
  public:
-  FileSystemPosix(mojo::ApplicationConnection* connection,
-                  mojo::InterfaceRequest<FileSystem> request);
-  ~FileSystemPosix() override;
+  FileSystemImpl(mojo::ApplicationConnection* connection,
+                 mojo::InterfaceRequest<FileSystem> request);
+  ~FileSystemImpl() override;
 
   // |Files| implementation:
   // We provide a "private" temporary file system as the default. In Debug
@@ -31,13 +31,11 @@ class FileSystemPosix : public FileSystem {
                       const OpenFileSystemCallback& callback) override;
 
  private:
-  const std::string remote_application_url_;
-
   mojo::StrongBinding<FileSystem> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemPosix);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemImpl);
 };
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_POSIX_FILE_SYSTEM_POSIX_H_
+#endif  // COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_POSIX_FILE_POSIX_H_
-#define COMPONENTS_FILESYSTEM_POSIX_FILE_POSIX_H_
+#ifndef COMPONENTS_FILESYSTEM_FILE_IMPL_H_
+#define COMPONENTS_FILESYSTEM_FILE_IMPL_H_
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -13,11 +13,11 @@
 
 namespace filesystem {
 
-class FilePosix : public File {
+class FileImpl : public File {
  public:
   // TODO(vtl): Will need more for, e.g., |Reopen()|.
-  FilePosix(mojo::InterfaceRequest<File> request, base::ScopedFD file_fd);
-  ~FilePosix() override;
+  FileImpl(mojo::InterfaceRequest<File> request, base::ScopedFD file_fd);
+  ~FileImpl() override;
 
   // |File| implementation:
   void Close(const CloseCallback& callback) override;
@@ -61,9 +61,9 @@ class FilePosix : public File {
   mojo::StrongBinding<File> binding_;
   base::ScopedFD file_fd_;
 
-  DISALLOW_COPY_AND_ASSIGN(FilePosix);
+  DISALLOW_COPY_AND_ASSIGN(FileImpl);
 };
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_POSIX_FILE_POSIX_H_
+#endif  // COMPONENTS_FILESYSTEM_FILE_IMPL_H_
