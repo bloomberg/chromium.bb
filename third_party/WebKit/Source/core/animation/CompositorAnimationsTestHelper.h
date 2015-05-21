@@ -142,7 +142,7 @@ public:
 private:
     class PlatformProxy : public Platform {
     public:
-        PlatformProxy(WebCompositorSupportMock** compositor) : m_oldPlatform(blink::Platform::current()), m_compositor(compositor) { }
+        PlatformProxy(WebCompositorSupportMock** compositor) : m_compositor(compositor) { }
 
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
         const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
@@ -151,13 +151,7 @@ private:
             return &tracingIsDisabled;
         }
 
-        WebThread* currentThread() override
-        {
-            return m_oldPlatform->currentThread();
-        }
-
     private:
-        blink::Platform* m_oldPlatform; // Not owned.
         WebCompositorSupportMock** m_compositor;
         virtual WebCompositorSupport* compositorSupport() override { return *m_compositor; }
     };

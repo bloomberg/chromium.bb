@@ -48,6 +48,7 @@ class WorkerGlobalScope;
 class WorkerInspectorController;
 class WorkerMicrotaskRunner;
 class WorkerReportingProxy;
+class WorkerSharedTimer;
 class WorkerThreadStartupData;
 
 enum WorkerThreadStartMode {
@@ -130,6 +131,7 @@ protected:
     virtual bool doIdleGc(double deadlineSeconds);
 
 private:
+    friend class WorkerSharedTimer;
     friend class WorkerMicrotaskRunner;
 
     void stopInShutdownSequence();

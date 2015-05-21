@@ -6,10 +6,6 @@
 
 #include "platform/scroll/ScrollableArea.h"
 
-#include "platform/TestingPlatformSupport.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
-#include "public/platform/WebThread.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -51,70 +47,7 @@ private:
     IntPoint m_maximumScrollPosition;
 };
 
-class FakeWebThread : public WebThread {
-public:
-    FakeWebThread() { }
-    ~FakeWebThread() override { }
-
-    void postTask(const WebTraceLocation&, Task*) override
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    void postDelayedTask(const WebTraceLocation&, Task*, long long) override
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    bool isCurrentThread() const override
-    {
-        ASSERT_NOT_REACHED();
-        return true;
-    }
-
-    WebScheduler* scheduler() const override
-    {
-        return nullptr;
-    }
-};
-
-// The FakePlatform is needed because ScrollAnimatorMac's constructor creates several timers.
-// We need just enough scaffolding for the Timer constructor to not segfault.
-class FakePlatform : public TestingPlatformSupport {
-public:
-    FakePlatform() : TestingPlatformSupport(TestingPlatformSupport::Config()) { }
-    ~FakePlatform() override { }
-
-    WebThread* currentThread() override
-    {
-        return &m_webThread;
-    }
-
-private:
-    FakeWebThread m_webThread;
-};
-
-class ScrollableAreaTest : public testing::Test {
-public:
-    ScrollableAreaTest() : m_oldPlatform(nullptr) { }
-
-    void SetUp() override
-    {
-        m_oldPlatform = Platform::current();
-        Platform::initialize(&m_fakePlatform);
-    }
-
-    void TearDown() override
-    {
-        Platform::initialize(m_oldPlatform);
-    }
-
-private:
-    FakePlatform m_fakePlatform;
-    Platform* m_oldPlatform; // Not owned.
-};
-
-TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
+TEST(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
 {
     MockScrollableArea scrollableArea(IntPoint(0, 100));
     scrollableArea.notifyScrollPositionChanged(IntPoint(0, 10000));
@@ -122,3 +55,5 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
 }
 
 } // unnamed namespace
+
+

@@ -124,7 +124,7 @@ private:
     // A simple platform that mocks out the clock, for cache freshness testing.
     class ProxyPlatform : public blink::Platform {
     public:
-        ProxyPlatform() : m_oldPlatform(blink::Platform::current()), m_elapsedSeconds(0.) { }
+        ProxyPlatform() : m_elapsedSeconds(0.) { }
 
         void advanceClock(double seconds)
         {
@@ -145,12 +145,6 @@ private:
             return &kAConstUnsignedCharZero;
         }
 
-        WebThread* currentThread() override
-        {
-            return m_oldPlatform->currentThread();
-        }
-
-        blink::Platform* m_oldPlatform; // Not owned.
         double m_elapsedSeconds;
     };
 
