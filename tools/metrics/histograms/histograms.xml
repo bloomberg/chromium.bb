@@ -42625,6 +42625,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SyncPromo.NTPPromo" enum="SyncPromoAction">
+  <owner>dbeam@chromium.org</owner>
+  <summary>
+    Shows actions taken on the &quot;Not signed in? You're misssing out&quot;
+    link on the top right of chrome://apps. Logged once per visit of
+    chrome://apps as well as on each click of the sync promo.
+  </summary>
+</histogram>
+
 <histogram name="Tab.AgeUponRestoreFromColdStart" units="minutes">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -65128,6 +65137,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="KEYSTORE_PASSPHRASE"/>
   <int value="2" label="FROZEN_IMPLICIT_PASSPHRASE"/>
   <int value="3" label="CUSTOM_PASSPHRASE"/>
+</enum>
+
+<enum name="SyncPromoAction" type="int">
+  <int value="0" label="The promo was shown to the user"/>
+  <int value="1" label="The user clicked the promo to sign in"/>
 </enum>
 
 <enum name="SyncSimpleConflictResolutions" type="int">
