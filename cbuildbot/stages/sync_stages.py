@@ -1495,6 +1495,8 @@ class PreCQLauncherStage(SyncStage):
       status_counts[status] = status_counts.get(status, 0) + 1
     for status, count in status_counts.items():
       name = '.'.join(['precq', 'status', status if status else 'None'])
+      logging.debug('Sending stat (name, status, count): (%s, %s, %s)',
+                    name, status, count)
       graphite.StatsFactory.GetInstance().Gauge(name).send(status, count)
 
     for change in inflight:
