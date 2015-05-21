@@ -421,11 +421,6 @@ protected:
             return ensureFallback().monotonicallyIncreasingTime();
         }
 
-        virtual void setSharedTimerFireInterval(double interval) override
-        {
-            ensureFallback().setSharedTimerFireInterval(interval);
-        }
-
         virtual WebThread* currentThread() override { return ensureFallback().currentThread(); }
         virtual WebUnitTestSupport* unitTestSupport() override { return ensureFallback().unitTestSupport(); }
         virtual WebString defaultLocale() override { return ensureFallback().defaultLocale(); }
