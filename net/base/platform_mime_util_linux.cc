@@ -33,13 +33,6 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
 #else
 bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
     const base::FilePath::StringType& ext, std::string* result) const {
-  // TODO(thestig): This is a temporary hack until we can fix this
-  // properly in test shell / webkit.
-  // We have to play dumb and not return application/x-perl here
-  // to make the reload-subframe-object layout test happy.
-  if (ext == "pl")
-    return false;
-
   base::FilePath dummy_path("foo." + ext);
   std::string out = base::nix::GetFileMimeType(dummy_path);
 
