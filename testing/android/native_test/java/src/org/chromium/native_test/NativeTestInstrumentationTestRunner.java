@@ -31,10 +31,6 @@ import java.util.regex.Pattern;
  *  An Instrumentation that runs tests based on NativeTestActivity.
  */
 public class NativeTestInstrumentationTestRunner extends Instrumentation {
-    // TODO(jbudorick): Remove this extra when b/18981674 is fixed.
-    public static final String EXTRA_ONLY_OUTPUT_FAILURES =
-            "org.chromium.native_test.NativeTestInstrumentationTestRunner."
-                    + "OnlyOutputFailures";
 
     private static final String TAG = Log.makeTag("native_test");
 
@@ -46,7 +42,6 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
     private File mStdoutFile;
     private Bundle mLogBundle;
     private ResultsBundleGenerator mBundleGenerator;
-    private boolean mOnlyOutputFailures;
 
     @Override
     public void onCreate(Bundle arguments) {
@@ -63,7 +58,6 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
         }
         mLogBundle = new Bundle();
         mBundleGenerator = new RobotiumBundleGenerator();
-        mOnlyOutputFailures = arguments.containsKey(EXTRA_ONLY_OUTPUT_FAILURES);
         start();
     }
 
@@ -139,26 +133,17 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
             for (String l = r.readLine(); l != null && !l.equals("<<ScopedMainEntryLogger");
                     l = r.readLine()) {
                 Matcher m = RE_TEST_OUTPUT.matcher(l);
-                boolean isFailure = false;
                 if (m.matches()) {
                     if (m.group(1).equals("RUN")) {
                         results.put(m.group(2), ResultsBundleGenerator.TestResult.UNKNOWN);
                     } else if (m.group(1).equals("FAILED")) {
                         results.put(m.group(2), ResultsBundleGenerator.TestResult.FAILED);
-                        isFailure = true;
-                        mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
-                        sendStatus(0, mLogBundle);
                     } else if (m.group(1).equals("OK")) {
                         results.put(m.group(2), ResultsBundleGenerator.TestResult.PASSED);
                     }
                 }
-
-                // TODO(jbudorick): mOnlyOutputFailures is a workaround for b/18981674. Remove it
-                // once that issue is fixed.
-                if (!mOnlyOutputFailures || isFailure) {
-                    mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
-                    sendStatus(0, mLogBundle);
-                }
+                mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
+                sendStatus(0, mLogBundle);
                 Log.i(TAG, l);
             }
         } catch (FileNotFoundException e) {

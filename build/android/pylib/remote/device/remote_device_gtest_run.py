@@ -18,10 +18,6 @@ from pylib.remote.device import remote_device_helper
 
 _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
-# TODO(jbudorick): Remove this extra when b/18981674 is fixed.
-_EXTRA_ONLY_OUTPUT_FAILURES = (
-    'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
-        'OnlyOutputFailures')
 
 
 class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
@@ -61,8 +57,6 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
         env_vars[_EXTRA_COMMAND_LINE_FILE] = os.path.basename(flag_file.name)
         self._test_instance._data_deps.append(
             (os.path.abspath(flag_file.name), None))
-      if self._env.only_output_failures:
-        env_vars[_EXTRA_ONLY_OUTPUT_FAILURES] = None
       self._AmInstrumentTestSetup(
           dummy_app_path, self._test_instance.apk, runner_package,
           environment_variables=env_vars)
