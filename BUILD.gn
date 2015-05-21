@@ -218,6 +218,11 @@ if (build_ffmpegsumo) {
 #      }
     }
     if (is_mac) {
+      if (is_component_build) {
+        # Export all symbols when building as component.
+        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      }
+
       defines += [ "_DARWIN_C_SOURCE" ]
 
 # TODO(ajwong): What does this do in mac? There isn't anything in ffmpeg.gyp that

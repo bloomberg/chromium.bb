@@ -346,6 +346,13 @@
                     ],
                   },
                 }],
+                ['component == "shared_library"', {
+                  'xcode_settings': {
+                    # GCC version of no -fvisiliity=hidden. Ensures that all
+                    # symbols are exported for component builds.
+                    'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+                  },
+                }],
               ],
               'link_settings': {
                 'libraries': [
