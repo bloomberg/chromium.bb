@@ -232,8 +232,6 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
   RenderWidgetCompositorOutputSurfaceTest()
       : render_widget_(make_scoped_refptr(new RenderWidgetOutputSurface)),
         compositor_deps_(make_scoped_ptr(new FakeCompositorDependencies)) {
-    // Required in order to call the synchronous LayerTreeHost::Composite.
-    compositor_deps_->set_use_single_thread_scheduler(false);
     render_widget_compositor_.reset(new RenderWidgetCompositorOutputSurface(
         render_widget_.get(), compositor_deps_.get()));
     render_widget_compositor_->Initialize();

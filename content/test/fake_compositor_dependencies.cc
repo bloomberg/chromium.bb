@@ -10,8 +10,7 @@
 
 namespace content {
 
-FakeCompositorDependencies::FakeCompositorDependencies()
-    : use_single_thread_scheduler_(true) {
+FakeCompositorDependencies::FakeCompositorDependencies() {
 }
 
 FakeCompositorDependencies::~FakeCompositorDependencies() {
@@ -42,19 +41,15 @@ bool FakeCompositorDependencies::IsDistanceFieldTextEnabled() {
 }
 
 bool FakeCompositorDependencies::IsZeroCopyEnabled() {
-  return false;
+  return true;
 }
 
 bool FakeCompositorDependencies::IsOneCopyEnabled() {
-  return true;
+  return false;
 }
 
 bool FakeCompositorDependencies::IsElasticOverscrollEnabled() {
   return false;
-}
-
-bool FakeCompositorDependencies::UseSingleThreadScheduler() {
-  return use_single_thread_scheduler_;
 }
 
 uint32 FakeCompositorDependencies::GetImageTextureTarget() {

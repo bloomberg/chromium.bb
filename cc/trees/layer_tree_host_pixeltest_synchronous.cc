@@ -21,6 +21,7 @@ class LayerTreeHostSynchronousPixelTest : public LayerTreePixelTest {
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
     settings->single_thread_proxy_scheduler = false;
+    settings->use_zero_copy = true;
   }
 
   void BeginTest() override {

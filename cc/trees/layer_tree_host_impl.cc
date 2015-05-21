@@ -2118,7 +2118,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         image_target == GL_TEXTURE_EXTERNAL_OES,
         context_provider->ContextCapabilities().gpu.egl_image_external);
 
-    if (settings_.use_zero_copy || IsSynchronousSingleThreaded()) {
+    if (settings_.use_zero_copy) {
       *resource_pool =
           ResourcePool::Create(resource_provider_.get(), image_target);
 
@@ -2128,6 +2128,11 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     }
 
     if (settings_.use_one_copy) {
+      // Synchronous single-threaded mode depends on tiles being ready to
+      // draw when raster is complete.  Therefore, it must use one of zero
+      // copy, software raster, or GPU raster.
+      DCHECK(!IsSynchronousSingleThreaded());
+
       // We need to create a staging resource pool when using copy rasterizer.
       *staging_resource_pool =
           ResourcePool::Create(resource_provider_.get(), image_target);

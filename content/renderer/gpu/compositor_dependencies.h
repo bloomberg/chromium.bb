@@ -40,8 +40,6 @@ class CompositorDependencies {
   virtual bool IsZeroCopyEnabled() = 0;
   virtual bool IsOneCopyEnabled() = 0;
   virtual bool IsElasticOverscrollEnabled() = 0;
-  // Only valid in single threaded mode.
-  virtual bool UseSingleThreadScheduler() = 0;
   virtual uint32 GetImageTextureTarget() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() = 0;

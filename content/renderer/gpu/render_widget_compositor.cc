@@ -315,8 +315,12 @@ void RenderWidgetCompositor::Initialize() {
       settings.impl_side_painting;
   settings.renderer_settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
-  settings.single_thread_proxy_scheduler =
-      compositor_deps_->UseSingleThreadScheduler();
+  // The means the renderer compositor has 2 possible modes:
+  // - Threaded compositing with a scheduler.
+  // - Single threaded compositing without a scheduler (for layout tests only).
+  // Using the scheduler in layout tests introduces additional composite steps
+  // that create flakiness.
+  settings.single_thread_proxy_scheduler = false;
 
   // These flags should be mirrored by UI versions in ui/compositor/.
   settings.initial_debug_state.show_debug_borders =

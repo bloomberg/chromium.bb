@@ -1427,12 +1427,6 @@ bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
 }
 
-bool RenderThreadImpl::UseSingleThreadScheduler() {
-  // TODO(enne): using the scheduler introduces additional composite steps
-  // that create flakiness.  This should go away eventually.
-  return !layout_test_mode_;
-}
-
 uint32 RenderThreadImpl::GetImageTextureTarget() {
   return use_image_texture_target_;
 }
