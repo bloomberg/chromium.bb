@@ -602,7 +602,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     if (!baseComputedStyle) {
 
         bool needsCollection = false;
-        CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetsForElement(element, needsCollection);
+        CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetsForElement(*element, needsCollection);
         if (needsCollection)
             collectFeatures();
 

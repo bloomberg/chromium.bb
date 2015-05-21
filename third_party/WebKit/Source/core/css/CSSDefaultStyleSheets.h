@@ -35,7 +35,7 @@ class CSSDefaultStyleSheets : public NoBaseWillBeGarbageCollected<CSSDefaultStyl
 public:
     static CSSDefaultStyleSheets& instance();
 
-    void ensureDefaultStyleSheetsForElement(Element*, bool& changedDefaultStyle);
+    void ensureDefaultStyleSheetsForElement(const Element&, bool& changedDefaultStyle);
 
     RuleSet* defaultStyle() { return m_defaultStyle.get(); }
     RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
