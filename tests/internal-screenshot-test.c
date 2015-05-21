@@ -141,12 +141,12 @@ create_screenshot_surface(struct client *client) {
 	screenshot = xzalloc(sizeof *screenshot);
 	if (screenshot == NULL)
 		return NULL;
-	screenshot->wl_buffer = create_shm_buffer(client,							      
-						  client->output->width,					      
-						  client->output->height,					      
-						  &screenshot->data);						      
-	screenshot->height = client->output->height;                                                                  
-	screenshot->width = client->output->width;                                                                    
+	screenshot->wl_buffer = create_shm_buffer(client,
+						  client->output->width,
+						  client->output->height,
+						  &screenshot->data);
+	screenshot->height = client->output->height;
+	screenshot->width = client->output->width;
 
 	return screenshot;
 }
