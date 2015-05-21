@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -25,7 +25,7 @@ namespace content {
 class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
  public:
   explicit MidiMessageFilter(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Each client registers for MIDI access here.
   // If permission is granted, then the client's
@@ -39,9 +39,9 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
                     size_t length,
                     double timestamp);
 
-  // IO message loop associated with this message filter.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
-    return io_message_loop_;
+  // IO task runner associated with this message filter.
+  base::SingleThreadTaskRunner* io_task_runner() const {
+    return io_task_runner_.get();
   }
 
   static blink::WebMIDIAccessorClient::MIDIPortState ToBlinkState(
@@ -67,7 +67,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   // Sends an IPC message using |sender_|.
   void Send(IPC::Message* message);
 
-  // IPC::MessageFilter override. Called on |io_message_loop|.
+  // IPC::MessageFilter override. Called on |io_task_runner|.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnFilterAdded(IPC::Sender* sender) override;
   void OnFilterRemoved() override;
@@ -102,7 +102,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   // sending too much data before knowing how much has already been sent.
   void OnAcknowledgeSentData(size_t bytes_sent);
 
-  // Following methods, Handle*, run on |main_message_loop_|.
+  // Following methods, Handle*, run on |main_task_runner_|.
   void HandleClientAdded(media::midi::MidiResult result);
 
   void HandleAddInputPort(media::midi::MidiPortInfo info);
@@ -116,18 +116,18 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   void HandleAckknowledgeSentData(size_t bytes_sent);
 
-  // IPC sender for Send(); must only be accessed on |io_message_loop_|.
+  // IPC sender for Send(); must only be accessed on |io_task_runner_|.
   IPC::Sender* sender_;
 
-  // Message loop on which IPC calls are driven.
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  // Task runner on which IPC calls are driven.
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // Main thread's message loop.
-  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+  // Main task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   /*
    * Notice: Following members are designed to be accessed only on
-   * |main_message_loop_|.
+   * |main_task_runner_|.
    */
   // Keeps track of all MIDI clients. This should be std::set so that various
   // for-loops work correctly. To change the type, make sure that the new type

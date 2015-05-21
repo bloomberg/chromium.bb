@@ -11,10 +11,11 @@ namespace content {
 
 PepperProxyChannelDelegateImpl::~PepperProxyChannelDelegateImpl() {}
 
-base::MessageLoopProxy* PepperProxyChannelDelegateImpl::GetIPCMessageLoop() {
+base::SingleThreadTaskRunner*
+PepperProxyChannelDelegateImpl::GetIPCTaskRunner() {
   // This is called only in the renderer so we know we have a child process.
   DCHECK(ChildProcess::current()) << "Must be in the renderer.";
-  return ChildProcess::current()->io_message_loop_proxy();
+  return ChildProcess::current()->io_task_runner();
 }
 
 base::WaitableEvent* PepperProxyChannelDelegateImpl::GetShutdownEvent() {

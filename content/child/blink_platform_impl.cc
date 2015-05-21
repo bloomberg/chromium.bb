@@ -11,12 +11,14 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -424,8 +426,12 @@ static int ToMessageID(WebLocalizedString::Name name) {
   return -1;
 }
 
+// TODO(skyostil): Ensure that we always have an active task runner when
+// constructing the platform.
 BlinkPlatformImpl::BlinkPlatformImpl()
-    : main_thread_task_runner_(base::MessageLoopProxy::current()),
+    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::IsSet()
+                                   ? base::ThreadTaskRunnerHandle::Get()
+                                   : nullptr),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
@@ -1365,7 +1371,7 @@ BlinkPlatformImpl::MainTaskRunnerForCurrentThread() {
       main_thread_task_runner_->BelongsToCurrentThread()) {
     return main_thread_task_runner_;
   } else {
-    return base::MessageLoopProxy::current();
+    return base::ThreadTaskRunnerHandle::Get();
   }
 }
 

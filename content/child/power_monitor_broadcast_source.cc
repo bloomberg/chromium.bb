@@ -4,7 +4,9 @@
 
 #include "content/child/power_monitor_broadcast_source.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/power_monitor_messages.h"
 #include "ipc/message_filter.h"
 
@@ -12,12 +14,9 @@ namespace content {
 
 class PowerMessageFilter : public IPC::MessageFilter {
  public:
-  PowerMessageFilter(
-      PowerMonitorBroadcastSource* source,
-      scoped_refptr<base::MessageLoopProxy> message_loop)
-      : source_(source),
-        message_loop_(message_loop) {
-  }
+  PowerMessageFilter(PowerMonitorBroadcastSource* source,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : source_(source), task_runner_(task_runner) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
@@ -40,17 +39,17 @@ class PowerMessageFilter : public IPC::MessageFilter {
   ~PowerMessageFilter() override{};
 
   void OnPowerStateChange(bool on_battery_power) {
-    message_loop_->PostTask(FROM_HERE,
-        base::Bind(&PowerMessageFilter::NotifySourcePowerStateChange, this,
-            on_battery_power));
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PowerMessageFilter::NotifySourcePowerStateChange,
+                              this, on_battery_power));
   }
   void OnSuspend() {
-    message_loop_->PostTask(FROM_HERE,
-        base::Bind(&PowerMessageFilter::NotifySourceSuspend, this));
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PowerMessageFilter::NotifySourceSuspend, this));
   }
   void OnResume() {
-    message_loop_->PostTask(FROM_HERE,
-        base::Bind(&PowerMessageFilter::NotifySourceResume, this));
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PowerMessageFilter::NotifySourceResume, this));
   }
 
   void NotifySourcePowerStateChange(bool on_battery_power) {
@@ -69,15 +68,15 @@ class PowerMessageFilter : public IPC::MessageFilter {
   // source_ should only be accessed on the thread associated with
   // message_loop_.
   PowerMonitorBroadcastSource* source_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMessageFilter);
 };
 
 PowerMonitorBroadcastSource::PowerMonitorBroadcastSource()
     : last_reported_battery_power_state_(false) {
-  message_filter_ = new PowerMessageFilter(this,
-      base::MessageLoopProxy::current());
+  message_filter_ =
+      new PowerMessageFilter(this, base::ThreadTaskRunnerHandle::Get());
 }
 
 PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {

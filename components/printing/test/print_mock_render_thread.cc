@@ -36,7 +36,7 @@ PrintMockRenderThread::PrintMockRenderThread()
 PrintMockRenderThread::~PrintMockRenderThread() {
 }
 
-scoped_refptr<base::MessageLoopProxy>
+scoped_refptr<base::SingleThreadTaskRunner>
 PrintMockRenderThread::GetIOMessageLoopProxy() {
   return io_message_loop_proxy_;
 }

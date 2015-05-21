@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/media/midi_messages.h"
@@ -25,10 +25,10 @@ namespace content {
 
 // TODO(crbug.com/425389): Rewrite this class as a RenderFrameObserver.
 MidiMessageFilter::MidiMessageFilter(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : sender_(nullptr),
-      io_message_loop_(io_message_loop),
-      main_message_loop_(base::MessageLoopProxy::current()),
+      io_task_runner_(io_task_runner),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       session_result_(media::midi::MIDI_NOT_INITIALIZED),
       unacknowledged_bytes_sent_(0u) {
 }
@@ -36,19 +36,20 @@ MidiMessageFilter::MidiMessageFilter(
 MidiMessageFilter::~MidiMessageFilter() {}
 
 void MidiMessageFilter::AddClient(blink::WebMIDIAccessorClient* client) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("midi", "MidiMessageFilter::AddClient");
   clients_waiting_session_queue_.push_back(client);
   if (session_result_ != media::midi::MIDI_NOT_INITIALIZED) {
     HandleClientAdded(session_result_);
   } else if (clients_waiting_session_queue_.size() == 1u) {
-    io_message_loop_->PostTask(FROM_HERE,
+    io_task_runner_->PostTask(
+        FROM_HERE,
         base::Bind(&MidiMessageFilter::StartSessionOnIOThread, this));
   }
 }
 
 void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   clients_.erase(client);
   ClientsQueue::iterator it = std::find(clients_waiting_session_queue_.begin(),
                                         clients_waiting_session_queue_.end(),
@@ -59,8 +60,8 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
     session_result_ = media::midi::MIDI_NOT_INITIALIZED;
     inputs_.clear();
     outputs_.clear();
-    io_message_loop_->PostTask(FROM_HERE,
-        base::Bind(&MidiMessageFilter::EndSessionOnIOThread, this));
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&MidiMessageFilter::EndSessionOnIOThread, this));
   }
 }
 
@@ -68,7 +69,7 @@ void MidiMessageFilter::SendMidiData(uint32 port,
                                      const uint8* data,
                                      size_t length,
                                      double timestamp) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if ((kMaxUnacknowledgedBytesSent - unacknowledged_bytes_sent_) < length) {
     // TODO(toyoshim): buffer up the data to send at a later time.
     // For now we're just dropping these bytes on the floor.
@@ -77,30 +78,31 @@ void MidiMessageFilter::SendMidiData(uint32 port,
 
   unacknowledged_bytes_sent_ += length;
   std::vector<uint8> v(data, data + length);
-  io_message_loop_->PostTask(FROM_HERE, base::Bind(
-        &MidiMessageFilter::SendMidiDataOnIOThread, this, port, v, timestamp));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MidiMessageFilter::SendMidiDataOnIOThread, this,
+                            port, v, timestamp));
 }
 
 void MidiMessageFilter::StartSessionOnIOThread() {
   TRACE_EVENT0("midi", "MidiMessageFilter::StartSessionOnIOThread");
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   Send(new MidiHostMsg_StartSession());
 }
 
 void MidiMessageFilter::SendMidiDataOnIOThread(uint32 port,
                                                const std::vector<uint8>& data,
                                                double timestamp) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   Send(new MidiHostMsg_SendData(port, data, timestamp));
 }
 
 void MidiMessageFilter::EndSessionOnIOThread() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   Send(new MidiHostMsg_EndSession());
 }
 
 void MidiMessageFilter::Send(IPC::Message* message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!sender_) {
     delete message;
   } else {
@@ -109,7 +111,7 @@ void MidiMessageFilter::Send(IPC::Message* message) {
 }
 
 bool MidiMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MidiMessageFilter, message)
     IPC_MESSAGE_HANDLER(MidiMsg_SessionStarted, OnSessionStarted)
@@ -125,86 +127,82 @@ bool MidiMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void MidiMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   sender_ = sender;
 }
 
 void MidiMessageFilter::OnFilterRemoved() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Once removed, a filter will not be used again.  At this time all
   // delegates must be notified so they release their reference.
   OnChannelClosing();
 }
 
 void MidiMessageFilter::OnChannelClosing() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   sender_ = nullptr;
 }
 
 void MidiMessageFilter::OnSessionStarted(media::midi::MidiResult result) {
   TRACE_EVENT0("midi", "MidiMessageFilter::OnSessionStarted");
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Handle on the main JS thread.
-  main_message_loop_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&MidiMessageFilter::HandleClientAdded, this, result));
 }
 
 void MidiMessageFilter::OnAddInputPort(media::midi::MidiPortInfo info) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  main_message_loop_->PostTask(
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&MidiMessageFilter::HandleAddInputPort, this, info));
 }
 
 void MidiMessageFilter::OnAddOutputPort(media::midi::MidiPortInfo info) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  main_message_loop_->PostTask(
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&MidiMessageFilter::HandleAddOutputPort, this, info));
 }
 
 void MidiMessageFilter::OnSetInputPortState(uint32 port,
                                             media::midi::MidiPortState state) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  main_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiMessageFilter::HandleSetInputPortState,
-                 this, port, state));
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MidiMessageFilter::HandleSetInputPortState, this,
+                            port, state));
 }
 
 void MidiMessageFilter::OnSetOutputPortState(uint32 port,
                                              media::midi::MidiPortState state) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  main_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiMessageFilter::HandleSetOutputPortState,
-                 this, port, state));
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MidiMessageFilter::HandleSetOutputPortState, this,
+                            port, state));
 }
 
 void MidiMessageFilter::OnDataReceived(uint32 port,
                                        const std::vector<uint8>& data,
                                        double timestamp) {
   TRACE_EVENT0("midi", "MidiMessageFilter::OnDataReceived");
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Handle on the main JS thread.
-  main_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiMessageFilter::HandleDataReceived, this, port, data,
-                 timestamp));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MidiMessageFilter::HandleDataReceived, this, port,
+                            data, timestamp));
 }
 
 void MidiMessageFilter::OnAcknowledgeSentData(size_t bytes_sent) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  main_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiMessageFilter::HandleAckknowledgeSentData, this,
-                 bytes_sent));
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MidiMessageFilter::HandleAckknowledgeSentData,
+                            this, bytes_sent));
 }
 
 void MidiMessageFilter::HandleClientAdded(media::midi::MidiResult result) {
   TRACE_EVENT0("midi", "MidiMessageFilter::HandleClientAdded");
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   session_result_ = result;
   std::string error;
   std::string message;
@@ -258,7 +256,7 @@ void MidiMessageFilter::HandleClientAdded(media::midi::MidiResult result) {
 }
 
 void MidiMessageFilter::HandleAddInputPort(media::midi::MidiPortInfo info) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   inputs_.push_back(info);
   const base::string16 id = base::UTF8ToUTF16(info.id);
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
@@ -271,7 +269,7 @@ void MidiMessageFilter::HandleAddInputPort(media::midi::MidiPortInfo info) {
 }
 
 void MidiMessageFilter::HandleAddOutputPort(media::midi::MidiPortInfo info) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   outputs_.push_back(info);
   const base::string16 id = base::UTF8ToUTF16(info.id);
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
@@ -287,7 +285,7 @@ void MidiMessageFilter::HandleDataReceived(uint32 port,
                                            const std::vector<uint8>& data,
                                            double timestamp) {
   TRACE_EVENT0("midi", "MidiMessageFilter::HandleDataReceived");
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!data.empty());
 
   for (auto client : clients_)
@@ -295,7 +293,7 @@ void MidiMessageFilter::HandleDataReceived(uint32 port,
 }
 
 void MidiMessageFilter::HandleAckknowledgeSentData(size_t bytes_sent) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_GE(unacknowledged_bytes_sent_, bytes_sent);
   if (unacknowledged_bytes_sent_ >= bytes_sent)
     unacknowledged_bytes_sent_ -= bytes_sent;
@@ -304,7 +302,7 @@ void MidiMessageFilter::HandleAckknowledgeSentData(size_t bytes_sent) {
 void MidiMessageFilter::HandleSetInputPortState(
     uint32 port,
     media::midi::MidiPortState state) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   inputs_[port].state = state;
   for (auto client : clients_)
     client->didSetInputPortState(port, ToBlinkState(state));
@@ -313,7 +311,7 @@ void MidiMessageFilter::HandleSetInputPortState(
 void MidiMessageFilter::HandleSetOutputPortState(
     uint32 port,
     media::midi::MidiPortState state) {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   outputs_[port].state = state;
   for (auto client : clients_)
     client->didSetOutputPortState(port, ToBlinkState(state));

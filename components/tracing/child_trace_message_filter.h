@@ -11,7 +11,7 @@
 #include "ipc/message_filter.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace tracing {
@@ -19,7 +19,8 @@ namespace tracing {
 // This class sends and receives trace messages on child processes.
 class ChildTraceMessageFilter : public IPC::MessageFilter {
  public:
-  explicit ChildTraceMessageFilter(base::MessageLoopProxy* ipc_message_loop);
+  explicit ChildTraceMessageFilter(
+      base::SingleThreadTaskRunner* ipc_task_runner);
 
   // IPC::MessageFilter implementation.
   void OnFilterAdded(IPC::Sender* sender) override;
@@ -30,7 +31,9 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
       const base::trace_event::MemoryDumpRequestArgs& args,
       const base::trace_event::MemoryDumpCallback& callback);
 
-  base::MessageLoopProxy* ipc_message_loop() const { return ipc_message_loop_; }
+  base::SingleThreadTaskRunner* ipc_task_runner() const {
+    return ipc_task_runner_;
+  }
 
  protected:
   ~ChildTraceMessageFilter() override;
@@ -67,7 +70,7 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
   void OnProcessMemoryDumpDone(uint64 dump_guid, bool success);
 
   IPC::Sender* sender_;
-  base::MessageLoopProxy* ipc_message_loop_;
+  base::SingleThreadTaskRunner* ipc_task_runner_;
 
   // guid of the outstanding request (to the Browser's MemoryDumpManager), if
   // any. 0 if there is no request pending.

@@ -78,9 +78,9 @@ IPC::SyncMessageFilter* MockRenderThread::GetSyncMessageFilter() {
   return NULL;
 }
 
-scoped_refptr<base::MessageLoopProxy>
-    MockRenderThread::GetIOMessageLoopProxy() {
-  return scoped_refptr<base::MessageLoopProxy>();
+scoped_refptr<base::SingleThreadTaskRunner>
+MockRenderThread::GetIOMessageLoopProxy() {
+  return scoped_refptr<base::SingleThreadTaskRunner>();
 }
 
 void MockRenderThread::AddRoute(int32 routing_id, IPC::Listener* listener) {

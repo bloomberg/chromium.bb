@@ -15,16 +15,18 @@
 #include "base/debug/leak_annotations.h"
 #include "base/debug/profiler.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/tracked_objects.h"
@@ -292,7 +294,7 @@ ChildThreadImpl::ChildThreadImpl(const Options& options)
 scoped_refptr<base::SequencedTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
   if (IsInBrowserProcess())
     return browser_process_io_runner_;
-  return ChildProcess::current()->io_message_loop_proxy();
+  return ChildProcess::current()->io_task_runner();
 }
 
 void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
@@ -323,9 +325,9 @@ void ChildThreadImpl::Init(const Options& options) {
   // the logger, and the logger does not like being created on the IO thread.
   IPC::Logging::GetInstance();
 #endif
-  channel_ = IPC::SyncChannel::Create(
-      this, ChildProcess::current()->io_message_loop_proxy(),
-      ChildProcess::current()->GetShutDownEvent());
+  channel_ =
+      IPC::SyncChannel::Create(this, ChildProcess::current()->io_task_runner(),
+                               ChildProcess::current()->GetShutDownEvent());
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (!IsInBrowserProcess())
     IPC::Logging::GetInstance()->SetIPCSender(this);
@@ -336,7 +338,7 @@ void ChildThreadImpl::Init(const Options& options) {
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
   thread_safe_sender_ = new ThreadSafeSender(
-      base::MessageLoopProxy::current().get(), sync_message_filter_.get());
+      message_loop_->task_runner(), sync_message_filter_.get());
 
   resource_dispatcher_.reset(new ResourceDispatcher(
       this, message_loop()->task_runner()));
@@ -379,7 +381,7 @@ void ChildThreadImpl::Init(const Options& options) {
     // In single process mode, browser-side tracing will cover the whole
     // process including renderers.
     channel_->AddFilter(new tracing::ChildTraceMessageFilter(
-        ChildProcess::current()->io_message_loop_proxy()));
+        ChildProcess::current()->io_task_runner()));
   }
 
   // In single process mode we may already have a power monitor
@@ -416,10 +418,9 @@ void ChildThreadImpl::Init(const Options& options) {
       connection_timeout = temp;
   }
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ChildThreadImpl::EnsureConnected,
-                 channel_connected_factory_.GetWeakPtr()),
+  message_loop_->task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ChildThreadImpl::EnsureConnected,
+                            channel_connected_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(connection_timeout));
 
 #if defined(OS_ANDROID)
@@ -428,7 +429,7 @@ void ChildThreadImpl::Init(const Options& options) {
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
   trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
-      message_loop_->message_loop_proxy(), ::HeapProfilerWithPseudoStackStart,
+      message_loop_->task_runner(), ::HeapProfilerWithPseudoStackStart,
       ::HeapProfilerStop, ::GetHeapProfile));
 #endif
 

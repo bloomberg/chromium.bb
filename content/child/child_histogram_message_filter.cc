@@ -7,8 +7,9 @@
 #include <ctype.h>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram_delta_serialization.h"
+#include "base/single_thread_task_runner.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "ipc/ipc_sender.h"
@@ -17,7 +18,7 @@ namespace content {
 
 ChildHistogramMessageFilter::ChildHistogramMessageFilter()
     : sender_(NULL),
-      io_message_loop_(ChildProcess::current()->io_message_loop_proxy()) {
+      io_task_runner_(ChildProcess::current()->io_task_runner()) {
 }
 
 ChildHistogramMessageFilter::~ChildHistogramMessageFilter() {
@@ -42,7 +43,7 @@ bool ChildHistogramMessageFilter::OnMessageReceived(
 }
 
 void ChildHistogramMessageFilter::SendHistograms(int sequence_number) {
-  io_message_loop_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ChildHistogramMessageFilter::UploadAllHistograms,
                             this, sequence_number));
 }

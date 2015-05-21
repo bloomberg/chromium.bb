@@ -11,9 +11,11 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "net/base/mime_util.h"
 #include "url/gurl.h"
@@ -163,7 +165,7 @@ bool PluginStream::WriteToPlugin(const char* buf, const int length,
     delivery_data_.resize(previous_size + remaining);
     data_offset_ = data_offset;
     memcpy(&delivery_data_[previous_size], buf + written, remaining);
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&PluginStream::OnDelayDelivery, this));
   }
 

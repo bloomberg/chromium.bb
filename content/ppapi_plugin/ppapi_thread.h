@@ -74,7 +74,7 @@ class PpapiThread : public ChildThreadImpl,
 
   // PluginDispatcher::PluginDelegate implementation.
   std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
-  base::MessageLoopProxy* GetIPCMessageLoop() override;
+  base::SingleThreadTaskRunner* GetIPCTaskRunner() override;
   base::WaitableEvent* GetShutdownEvent() override;
   IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,

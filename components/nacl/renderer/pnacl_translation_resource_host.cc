@@ -11,32 +11,33 @@
 using ppapi::PpapiGlobals;
 
 PnaclTranslationResourceHost::PnaclTranslationResourceHost(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : io_message_loop_(io_message_loop), sender_(NULL) {}
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : io_task_runner_(io_task_runner), sender_(NULL) {
+}
 
 PnaclTranslationResourceHost::~PnaclTranslationResourceHost() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   CleanupCacheRequests();
 }
 
 void PnaclTranslationResourceHost::OnFilterAdded(IPC::Sender* sender) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   sender_ = sender;
 }
 
 void PnaclTranslationResourceHost::OnFilterRemoved() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   sender_ = NULL;
 }
 
 void PnaclTranslationResourceHost::OnChannelClosing() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   sender_ = NULL;
 }
 
 bool PnaclTranslationResourceHost::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PnaclTranslationResourceHost, message)
     IPC_MESSAGE_HANDLER(NaClViewMsg_NexeTempFileReply, OnNexeTempFileReply)
@@ -52,14 +53,10 @@ void PnaclTranslationResourceHost::RequestNexeFd(
     RequestNexeFdCallback callback) {
   DCHECK(PpapiGlobals::Get()->
          GetMainThreadMessageLoop()->BelongsToCurrentThread());
-  io_message_loop_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PnaclTranslationResourceHost::SendRequestNexeFd,
-                 this,
-                 render_view_id,
-                 instance,
-                 cache_info,
-                 callback));
+      base::Bind(&PnaclTranslationResourceHost::SendRequestNexeFd, this,
+                 render_view_id, instance, cache_info, callback));
   return;
 }
 
@@ -68,7 +65,7 @@ void PnaclTranslationResourceHost::SendRequestNexeFd(
     PP_Instance instance,
     const nacl::PnaclCacheInfo& cache_info,
     RequestNexeFdCallback callback) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!sender_ || !sender_->Send(new NaClHostMsg_NexeTempFileRequest(
           render_view_id, instance, cache_info))) {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
@@ -87,19 +84,17 @@ void PnaclTranslationResourceHost::ReportTranslationFinished(
     PP_Bool success) {
   DCHECK(PpapiGlobals::Get()->
          GetMainThreadMessageLoop()->BelongsToCurrentThread());
-  io_message_loop_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PnaclTranslationResourceHost::SendReportTranslationFinished,
-                 this,
-                 instance,
-                 success));
+                 this, instance, success));
   return;
 }
 
 void PnaclTranslationResourceHost::SendReportTranslationFinished(
     PP_Instance instance,
     PP_Bool success) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   // If the sender is closed or we have been detached, we are probably shutting
   // down, so just don't send anything.
   if (!sender_)
@@ -113,7 +108,7 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
     PP_Instance instance,
     bool is_hit,
     IPC::PlatformFileForTransit file) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::File base_file = IPC::PlatformFileForTransitToFile(file);
   CacheRequestInfoMap::iterator it = pending_cache_requests_.find(instance);
   if (!base_file.IsValid()) {
@@ -136,7 +131,7 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
 }
 
 void PnaclTranslationResourceHost::CleanupCacheRequests() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   for (CacheRequestInfoMap::iterator it = pending_cache_requests_.begin();
        it != pending_cache_requests_.end();
        ++it) {

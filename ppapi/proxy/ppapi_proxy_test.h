@@ -133,7 +133,7 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     }
 
     // ProxyChannel::Delegate implementation.
-    base::MessageLoopProxy* GetIPCMessageLoop() override;
+    base::SingleThreadTaskRunner* GetIPCTaskRunner() override;
     base::WaitableEvent* GetShutdownEvent() override;
     IPC::PlatformFileForTransit ShareHandleWithRemote(
         base::PlatformFile handle,
@@ -273,7 +273,7 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
     }
 
     // ProxyChannel::Delegate implementation.
-    base::MessageLoopProxy* GetIPCMessageLoop() override;
+    base::MessageLoopProxy* GetIPCTaskRunner() override;
     base::WaitableEvent* GetShutdownEvent() override;
     IPC::PlatformFileForTransit ShareHandleWithRemote(
         base::PlatformFile handle,

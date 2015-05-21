@@ -5,9 +5,11 @@
 #include "content/child/npapi/plugin_lib.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/common/plugin_list.h"
@@ -289,12 +291,10 @@ void PluginLib::Unload() {
       LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Scheduling delayed unload for plugin "
           << web_plugin_info_.path.value();
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&FreePluginLibraryHelper,
-                     web_plugin_info_.path,
-                     skip_unload_ ? NULL : library_,
-                     entry_points_.np_shutdown));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&FreePluginLibraryHelper, web_plugin_info_.path,
+                                skip_unload_ ? NULL : library_,
+                                entry_points_.np_shutdown));
     } else {
       Shutdown();
       if (!skip_unload_) {

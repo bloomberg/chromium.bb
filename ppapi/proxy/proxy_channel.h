@@ -15,7 +15,7 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class WaitableEvent;
 }
 
@@ -34,8 +34,8 @@ class PPAPI_PROXY_EXPORT ProxyChannel
    public:
     virtual ~Delegate() {}
 
-    // Returns the dedicated message loop for processing IPC requests.
-    virtual base::MessageLoopProxy* GetIPCMessageLoop() = 0;
+    // Returns the task runner for processing IPC requests.
+    virtual base::SingleThreadTaskRunner* GetIPCTaskRunner() = 0;
 
     // Returns the event object that becomes signalled when the main thread's
     // message loop exits.

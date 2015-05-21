@@ -16,6 +16,7 @@ class AudioParameters;
 
 namespace base {
 class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -81,7 +82,7 @@ class PepperPlatformAudioOutput
   scoped_ptr<media::AudioOutputIPC> ipc_;
 
   scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioOutput);
 };

@@ -16,7 +16,7 @@ ChromeMockRenderThread::ChromeMockRenderThread() {
 ChromeMockRenderThread::~ChromeMockRenderThread() {
 }
 
-scoped_refptr<base::MessageLoopProxy>
+scoped_refptr<base::SingleThreadTaskRunner>
 ChromeMockRenderThread::GetIOMessageLoopProxy() {
   return io_message_loop_proxy_;
 }

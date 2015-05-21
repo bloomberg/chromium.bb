@@ -5,7 +5,6 @@
 #include "content/child/webmessageportchannel_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/child/child_thread_impl.h"

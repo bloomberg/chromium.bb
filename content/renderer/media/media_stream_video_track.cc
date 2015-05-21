@@ -34,9 +34,8 @@ class MediaStreamVideoTrack::FrameDeliverer
  public:
   typedef MediaStreamVideoSink* VideoSinkId;
 
-  FrameDeliverer(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
-      bool enabled);
+  FrameDeliverer(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                 bool enabled);
 
   void SetEnabled(bool enabled);
 
@@ -62,7 +61,7 @@ class MediaStreamVideoTrack::FrameDeliverer
                        const VideoCaptureDeliverFrameCB& callback);
   void RemoveCallbackOnIO(
       VideoSinkId id,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   void SetEnabledOnIO(bool enabled);
   // Returns a black frame where the size and time stamp is set to the same as
@@ -73,7 +72,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   // Used to DCHECK that AddCallback and RemoveCallback are called on the main
   // Render Thread.
   base::ThreadChecker main_render_thread_checker_;
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   bool enabled_;
   scoped_refptr<media::VideoFrame> black_frame_;
@@ -86,10 +85,10 @@ class MediaStreamVideoTrack::FrameDeliverer
 };
 
 MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop, bool enabled)
-    : io_message_loop_(io_message_loop),
-      enabled_(enabled) {
-  DCHECK(io_message_loop_.get());
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    bool enabled)
+    : io_task_runner_(io_task_runner), enabled_(enabled) {
+  DCHECK(io_task_runner_.get());
 }
 
 MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
@@ -100,31 +99,29 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
     VideoSinkId id,
     const VideoCaptureDeliverFrameCB& callback) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  io_message_loop_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FrameDeliverer::AddCallbackOnIO,
-                 this, id, callback));
+      base::Bind(&FrameDeliverer::AddCallbackOnIO, this, id, callback));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
     VideoSinkId id,
     const VideoCaptureDeliverFrameCB& callback) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   callbacks_.push_back(std::make_pair(id, callback));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(VideoSinkId id) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&FrameDeliverer::RemoveCallbackOnIO,
-                 this, id, base::MessageLoopProxy::current()));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FrameDeliverer::RemoveCallbackOnIO, this, id,
+                            base::MessageLoopProxy::current()));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
     VideoSinkId id,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
@@ -132,7 +129,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
       scoped_ptr<VideoCaptureDeliverFrameCB> callback;
       callback.reset(new VideoCaptureDeliverFrameCB(it->second));
       callbacks_.erase(it);
-      message_loop->PostTask(
+      task_runner->PostTask(
           FROM_HERE, base::Bind(&ResetCallback, base::Passed(&callback)));
       return;
     }
@@ -141,14 +138,12 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
 
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&FrameDeliverer::SetEnabledOnIO,
-                 this, enabled));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FrameDeliverer::SetEnabledOnIO, this, enabled));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   enabled_ = enabled;
   if (enabled_)
     black_frame_ = NULL;
@@ -157,7 +152,7 @@ void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
 void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
     const base::TimeTicks& estimated_capture_time) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   const scoped_refptr<media::VideoFrame>& video_frame =
       enabled_ ? frame : GetBlackFrame(frame);
   for (const auto& entry : callbacks_)
@@ -167,7 +162,7 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
 scoped_refptr<media::VideoFrame>
 MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
     const scoped_refptr<media::VideoFrame>& reference_frame) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!black_frame_.get() ||
       black_frame_->natural_size() != reference_frame->natural_size())
     black_frame_ =
@@ -213,7 +208,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     bool enabled)
     : MediaStreamTrack(true),
       frame_deliverer_(
-          new MediaStreamVideoTrack::FrameDeliverer(source->io_message_loop(),
+          new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
                                                     enabled)),
       constraints_(constraints),
       source_(source) {

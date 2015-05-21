@@ -4,7 +4,7 @@
 
 #include "content/child/thread_safe_sender.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "content/child/child_thread_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
 
@@ -14,13 +14,13 @@ ThreadSafeSender::~ThreadSafeSender() {
 }
 
 ThreadSafeSender::ThreadSafeSender(
-    const scoped_refptr<base::MessageLoopProxy>& main_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const scoped_refptr<IPC::SyncMessageFilter>& sync_filter)
-    : main_loop_(main_loop), sync_filter_(sync_filter) {
+    : main_task_runner_(main_task_runner), sync_filter_(sync_filter) {
 }
 
 bool ThreadSafeSender::Send(IPC::Message* msg) {
-  if (main_loop_->BelongsToCurrentThread())
+  if (main_task_runner_->BelongsToCurrentThread())
     return ChildThreadImpl::current()->Send(msg);
   return sync_filter_->Send(msg);
 }

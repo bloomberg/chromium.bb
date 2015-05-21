@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/track_observer.h"
@@ -25,7 +24,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
       public webrtc::VideoRendererInterface {
  public:
   RemoteVideoSourceDelegate(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const VideoCaptureDeliverFrameCB& new_frame_callback);
 
  protected:
@@ -44,18 +43,17 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   // Bound to the render thread.
   base::ThreadChecker thread_checker_;
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |frame_callback_| is accessed on the IO thread.
   VideoCaptureDeliverFrameCB frame_callback_;
 };
 
-MediaStreamRemoteVideoSource::
-RemoteVideoSourceDelegate::RemoteVideoSourceDelegate(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
-    const VideoCaptureDeliverFrameCB& new_frame_callback)
-    : io_message_loop_(io_message_loop),
-      frame_callback_(new_frame_callback) {
+MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
+    RemoteVideoSourceDelegate(
+        scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+        const VideoCaptureDeliverFrameCB& new_frame_callback)
+    : io_task_runner_(io_task_runner), frame_callback_(new_frame_callback) {
 }
 
 MediaStreamRemoteVideoSource::
@@ -97,16 +95,15 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
         base::Bind(&base::DeletePointer<cricket::VideoFrame>, frame->Copy()));
   }
 
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread,
-                 this, video_frame));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread,
+                            this, video_frame));
 }
 
 void MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
     const scoped_refptr<media::VideoFrame>& video_frame) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("webrtc", "RemoteVideoSourceDelegate::DoRenderFrameOnIOThread");
   // TODO(hclam): Give the estimated capture time.
   frame_callback_.Run(video_frame, base::TimeTicks());
@@ -143,7 +140,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!delegate_.get());
-  delegate_ = new RemoteVideoSourceDelegate(io_message_loop(), frame_callback);
+  delegate_ = new RemoteVideoSourceDelegate(io_task_runner(), frame_callback);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->AddRenderer(delegate_.get());

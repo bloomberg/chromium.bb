@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/fileapi/webfilewriter_base.h"
 
 namespace content {

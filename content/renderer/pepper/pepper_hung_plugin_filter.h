@@ -84,7 +84,7 @@ class PepperHungPluginFilter
   // We don't actually use the "sync" feature of this filter.
   scoped_refptr<IPC::SyncMessageFilter> filter_;
 
-  scoped_refptr<base::MessageLoopProxy> io_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The time when we start being blocked on a sync message. If there are
   // nested ones, this is the time of the outermost one.

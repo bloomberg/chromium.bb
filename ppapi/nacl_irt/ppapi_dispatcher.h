@@ -52,7 +52,7 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
                   int renderer_ipc_fd);
 
   // PluginDispatcher::PluginDelegate implementation.
-  base::MessageLoopProxy* GetIPCMessageLoop() override;
+  base::SingleThreadTaskRunner* GetIPCTaskRunner() override;
   base::WaitableEvent* GetShutdownEvent() override;
   IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,

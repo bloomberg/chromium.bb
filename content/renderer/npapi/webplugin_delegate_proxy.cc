@@ -321,9 +321,8 @@ bool WebPluginDelegateProxy::Initialize(
       return false;
     }
 
-    channel_host =
-        PluginChannelHost::GetPluginChannelHost(
-            channel_handle, ChildProcess::current()->io_message_loop_proxy());
+    channel_host = PluginChannelHost::GetPluginChannelHost(
+        channel_handle, ChildProcess::current()->io_task_runner());
     if (!channel_host.get()) {
       LOG(ERROR) << "Couldn't get PluginChannelHost";
       continue;

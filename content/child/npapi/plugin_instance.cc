@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_lib.h"
@@ -53,7 +55,7 @@ PluginInstance::PluginInstance(PluginLib* plugin, const std::string& mime_type)
 #endif
       currently_handled_event_(NULL),
 #endif
-      message_loop_(base::MessageLoop::current()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       load_manually_(false),
       in_close_streams_(false),
       next_timer_id_(1),
@@ -68,7 +70,6 @@ PluginInstance::PluginInstance(PluginLib* plugin, const std::string& mime_type)
     transparent_ = false;
 
   memset(&zero_padding_, 0, sizeof(zero_padding_));
-  DCHECK(message_loop_);
 }
 
 PluginInstance::~PluginInstance() {
@@ -438,7 +439,7 @@ void PluginInstance::DidManualLoadFail() {
 
 void PluginInstance::PluginThreadAsyncCall(void (*func)(void*),
                                            void* user_data) {
-  message_loop_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&PluginInstance::OnPluginThreadAsyncCall, this,
                             func, user_data));
 }
@@ -466,7 +467,7 @@ uint32 PluginInstance::ScheduleTimer(uint32 interval,
   timers_[timer_id] = info;
 
   // Schedule the callback.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PluginInstance::OnTimerCall, this, func, npp_, timer_id),
       base::TimeDelta::FromMilliseconds(interval));
@@ -508,7 +509,7 @@ void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32 timer_id),
   // Reschedule repeating timers after invoking the callback so callback is not
   // re-entered if it pumps the message loop.
   if (info.repeat) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PluginInstance::OnTimerCall, this, func, npp_, timer_id),
         base::TimeDelta::FromMilliseconds(info.interval));

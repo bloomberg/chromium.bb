@@ -155,7 +155,7 @@ class CONTENT_EXPORT RenderThreadImpl
   IPC::SyncChannel* GetChannel() override;
   std::string GetLocale() override;
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;
-  scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOMessageLoopProxy() override;
   void AddRoute(int32 routing_id, IPC::Listener* listener) override;
   void RemoveRoute(int32 routing_id) override;
   int GenerateRoutingID() override;

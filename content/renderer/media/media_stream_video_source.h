@@ -63,7 +63,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   static bool IsConstraintSupported(const std::string& name);
 
   // Returns the MessageLoopProxy where video frames will be delivered on.
-  const scoped_refptr<base::MessageLoopProxy>& io_message_loop() const;
+  base::SingleThreadTaskRunner* io_task_runner() const;
 
   // Constraint keys used by a video source.
   // Specified by draft-alvestrand-constraints-resolution-00b

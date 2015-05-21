@@ -901,9 +901,9 @@ IPC::SyncMessageFilter* RenderThreadImpl::GetSyncMessageFilter() {
   return sync_message_filter();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-    RenderThreadImpl::GetIOMessageLoopProxy() {
-  return ChildProcess::current()->io_message_loop_proxy();
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetIOMessageLoopProxy() {
+  return ChildProcess::current()->io_task_runner();
 }
 
 void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
@@ -1623,7 +1623,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 
   // Cache some variables that are needed on the compositor thread for our
   // implementation of GpuChannelHostFactory.
-  io_thread_task_runner_ = ChildProcess::current()->io_message_loop_proxy();
+  io_thread_task_runner_ = ChildProcess::current()->io_task_runner();
 
   gpu_channel_ =
       GpuChannelHost::Create(this,

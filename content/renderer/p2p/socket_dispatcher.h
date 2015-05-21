@@ -35,7 +35,7 @@
 #include "net/base/net_util.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
@@ -52,7 +52,7 @@ class RenderViewImpl;
 class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
                                            public NetworkListManager {
  public:
-  explicit P2PSocketDispatcher(base::MessageLoopProxy* ipc_message_loop);
+  explicit P2PSocketDispatcher(base::SingleThreadTaskRunner* ipc_task_runner);
 
   // NetworkListManager interface:
   void AddNetworkListObserver(
@@ -76,8 +76,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
 
-  // Returns the IO message loop.
-  base::MessageLoopProxy* message_loop();
+  base::SingleThreadTaskRunner* task_runner();
 
   // Called by P2PSocketClient.
   int RegisterClient(P2PSocketClientImpl* client);
@@ -104,7 +103,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
 
   P2PSocketClientImpl* GetClient(int socket_id);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
   IDMap<P2PSocketClientImpl> clients_;
 
   IDMap<P2PAsyncAddressResolver> host_address_requests_;

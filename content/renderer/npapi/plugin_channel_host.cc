@@ -60,15 +60,11 @@ bool* PluginChannelHost::GetRemoveTrackingFlag() {
 // static
 PluginChannelHost* PluginChannelHost::GetPluginChannelHost(
     const IPC::ChannelHandle& channel_handle,
-    base::MessageLoopProxy* ipc_message_loop) {
+    base::SingleThreadTaskRunner* ipc_task_runner) {
   PluginChannelHost* result =
       static_cast<PluginChannelHost*>(NPChannelBase::GetChannel(
-          channel_handle,
-          IPC::Channel::MODE_CLIENT,
-          ClassFactory,
-          ipc_message_loop,
-          true,
-          ChildProcess::current()->GetShutDownEvent()));
+          channel_handle, IPC::Channel::MODE_CLIENT, ClassFactory,
+          ipc_task_runner, true, ChildProcess::current()->GetShutDownEvent()));
   return result;
 }
 
@@ -78,10 +74,10 @@ PluginChannelHost::PluginChannelHost() : expecting_shutdown_(false) {
 PluginChannelHost::~PluginChannelHost() {
 }
 
-bool PluginChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,
+bool PluginChannelHost::Init(base::SingleThreadTaskRunner* ipc_task_runner,
                              bool create_pipe_now,
                              base::WaitableEvent* shutdown_event) {
-  return NPChannelBase::Init(ipc_message_loop, create_pipe_now, shutdown_event);
+  return NPChannelBase::Init(ipc_task_runner, create_pipe_now, shutdown_event);
 }
 
 int PluginChannelHost::GenerateRouteID() {

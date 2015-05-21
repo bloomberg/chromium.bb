@@ -48,7 +48,7 @@ PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
 void PepperPlatformAudioInput::StartCapture() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioInput::StartCaptureOnIOThread, this));
 }
@@ -56,7 +56,7 @@ void PepperPlatformAudioInput::StartCapture() {
 void PepperPlatformAudioInput::StopCapture() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioInput::StopCaptureOnIOThread, this));
 }
@@ -71,7 +71,7 @@ void PepperPlatformAudioInput::ShutDown() {
   // Called on the main thread to stop all audio callbacks. We must only change
   // the client on the main thread, and the delegates from the I/O thread.
   client_ = NULL;
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioInput::ShutDownOnIOThread, this));
 }
@@ -139,11 +139,12 @@ PepperPlatformAudioInput::~PepperPlatformAudioInput() {
 PepperPlatformAudioInput::PepperPlatformAudioInput()
     : client_(NULL),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
-      io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
+      io_task_runner_(ChildProcess::current()->io_task_runner()),
       render_frame_id_(MSG_ROUTING_NONE),
       create_stream_sent_(false),
       pending_open_device_(false),
-      pending_open_device_id_(-1) {}
+      pending_open_device_id_(-1) {
+}
 
 bool PepperPlatformAudioInput::Initialize(
     int render_frame_id,
@@ -189,7 +190,7 @@ bool PepperPlatformAudioInput::Initialize(
 }
 
 void PepperPlatformAudioInput::InitializeOnIOThread(int session_id) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!ipc_)
     return;
@@ -200,14 +201,14 @@ void PepperPlatformAudioInput::InitializeOnIOThread(int session_id) {
 }
 
 void PepperPlatformAudioInput::StartCaptureOnIOThread() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (ipc_)
     ipc_->RecordStream();
 }
 
 void PepperPlatformAudioInput::StopCaptureOnIOThread() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // TODO(yzshen): We cannot re-start capturing if the stream is closed.
   if (ipc_ && create_stream_sent_) {
@@ -217,7 +218,7 @@ void PepperPlatformAudioInput::StopCaptureOnIOThread() {
 }
 
 void PepperPlatformAudioInput::ShutDownOnIOThread() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   StopCaptureOnIOThread();
 
@@ -244,11 +245,9 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
     if (client_) {
       int session_id = device_manager->GetSessionID(
           PP_DEVICETYPE_DEV_AUDIOCAPTURE, label);
-      io_message_loop_proxy_->PostTask(
-          FROM_HERE,
-          base::Bind(&PepperPlatformAudioInput::InitializeOnIOThread,
-                     this,
-                     session_id));
+      io_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&PepperPlatformAudioInput::InitializeOnIOThread,
+                                this, session_id));
     } else {
       // Shutdown has occurred.
       CloseDevice();

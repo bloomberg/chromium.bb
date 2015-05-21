@@ -42,8 +42,9 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
 
 DevToolsAgentFilter::DevToolsAgentFilter()
     : render_thread_loop_(base::MessageLoop::current()),
-      io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
-      current_routing_id_(0) {}
+      io_task_runner_(ChildProcess::current()->io_task_runner()),
+      current_routing_id_(0) {
+}
 
 bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
   // Dispatch debugger commands directly from IO.
@@ -73,18 +74,16 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
 }
 
 void DevToolsAgentFilter::AddEmbeddedWorkerRouteOnMainThread(int32 routing_id) {
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &DevToolsAgentFilter::AddEmbeddedWorkerRoute, this, routing_id));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DevToolsAgentFilter::AddEmbeddedWorkerRoute, this,
+                            routing_id));
 }
 
 void DevToolsAgentFilter::RemoveEmbeddedWorkerRouteOnMainThread(
     int32 routing_id) {
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &DevToolsAgentFilter::RemoveEmbeddedWorkerRoute, this, routing_id));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DevToolsAgentFilter::RemoveEmbeddedWorkerRoute,
+                            this, routing_id));
 }
 
 void DevToolsAgentFilter::AddEmbeddedWorkerRoute(int32 routing_id) {

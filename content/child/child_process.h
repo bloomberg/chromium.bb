@@ -43,8 +43,8 @@ class CONTENT_EXPORT ChildProcess {
   void set_main_thread(ChildThreadImpl* thread);
 
   base::MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
-  base::MessageLoopProxy* io_message_loop_proxy() {
-    return io_thread_.message_loop_proxy().get();
+  base::SingleThreadTaskRunner* io_task_runner() {
+    return io_thread_.task_runner().get();
   }
 
   // A global event object that is signalled when the main thread's message

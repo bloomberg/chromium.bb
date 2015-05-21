@@ -182,9 +182,8 @@ namespace content {
 class PepperMediaStreamVideoTrackHost::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
-  FrameDeliverer(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
-      const VideoCaptureDeliverFrameCB& new_frame_callback);
+  FrameDeliverer(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                 const VideoCaptureDeliverFrameCB& new_frame_callback);
 
   void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
 
@@ -194,17 +193,16 @@ class PepperMediaStreamVideoTrackHost::FrameDeliverer
 
   void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame);
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   VideoCaptureDeliverFrameCB new_frame_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::FrameDeliverer(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const VideoCaptureDeliverFrameCB& new_frame_callback)
-    : io_message_loop_(io_message_loop_proxy),
-      new_frame_callback_(new_frame_callback) {
+    : io_task_runner_(io_task_runner), new_frame_callback_(new_frame_callback) {
 }
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
@@ -212,14 +210,13 @@ PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
 
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&FrameDeliverer::DeliverFrameOnIO, this, frame));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FrameDeliverer::DeliverFrameOnIO, this, frame));
 }
 
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverFrameOnIO(
      const scoped_refptr<media::VideoFrame>& frame) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   // The time when this frame is generated is unknown so give a null value to
   // |estimated_capture_time|.
   new_frame_callback_.Run(frame, base::TimeTicks());
@@ -436,7 +433,7 @@ void PepperMediaStreamVideoTrackHost::StartSourceImpl(
     const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   output_started_ = true;
-  frame_deliverer_ = new FrameDeliverer(io_message_loop(), frame_callback);
+  frame_deliverer_ = new FrameDeliverer(io_task_runner(), frame_callback);
 }
 
 void PepperMediaStreamVideoTrackHost::StopSourceImpl() {

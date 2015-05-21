@@ -16,7 +16,7 @@ class PepperProxyChannelDelegateImpl
   ~PepperProxyChannelDelegateImpl() override;
 
   // ProxyChannel::Delegate implementation.
-  base::MessageLoopProxy* GetIPCMessageLoop() override;
+  base::SingleThreadTaskRunner* GetIPCTaskRunner() override;
   base::WaitableEvent* GetShutdownEvent() override;
   IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,

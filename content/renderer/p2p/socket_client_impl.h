@@ -13,7 +13,7 @@
 #include "net/base/ip_endpoint.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class TimeTicks;
 }  // namespace base
 
@@ -110,7 +110,7 @@ class P2PSocketClientImpl : public P2PSocketClient {
   void Detach();
 
   P2PSocketDispatcher* dispatcher_;
-  scoped_refptr<base::MessageLoopProxy> ipc_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
   scoped_refptr<base::MessageLoopProxy> delegate_message_loop_;
   int socket_id_;
   P2PSocketClientDelegate* delegate_;

@@ -175,8 +175,8 @@ void PpapiThread::OnChannelConnected(int32 peer_pid) {
 #endif
 }
 
-base::MessageLoopProxy* PpapiThread::GetIPCMessageLoop() {
-  return ChildProcess::current()->io_message_loop_proxy();
+base::SingleThreadTaskRunner* PpapiThread::GetIPCTaskRunner() {
+  return ChildProcess::current()->io_task_runner();
 }
 
 base::WaitableEvent* PpapiThread::GetShutdownEvent() {

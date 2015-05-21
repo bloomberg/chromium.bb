@@ -30,7 +30,7 @@ class VideoTrackAdapter
   typedef base::Callback<void(bool mute_state)> OnMutedCallback;
 
   explicit VideoTrackAdapter(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Register |track| to receive video frames in |frame_callback| with
   // a resolution within the boundaries of the arguments.
@@ -52,9 +52,9 @@ class VideoTrackAdapter
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& estimated_capture_time);
 
-  const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {
+  base::SingleThreadTaskRunner* io_task_runner() const {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return io_message_loop_;
+    return io_task_runner_.get();
   }
 
   // Start monitor that frames are delivered to this object. I.E, that
@@ -90,7 +90,7 @@ class VideoTrackAdapter
   // |thread_checker_| is bound to the main render thread.
   base::ThreadChecker thread_checker_;
 
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |renderer_task_runner_| is used to ensure that
   // VideoCaptureDeliverFrameCB is released on the main render thread.

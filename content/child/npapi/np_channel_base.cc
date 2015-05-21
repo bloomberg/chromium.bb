@@ -8,6 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_local.h"
 #include "ipc/ipc_sync_message.h"
@@ -62,9 +63,12 @@ ChannelMap* GetChannelMap() {
 }  // namespace
 
 NPChannelBase* NPChannelBase::GetChannel(
-    const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
-    ChannelFactory factory, base::MessageLoopProxy* ipc_message_loop,
-    bool create_pipe_now, base::WaitableEvent* shutdown_event) {
+    const IPC::ChannelHandle& channel_handle,
+    IPC::Channel::Mode mode,
+    ChannelFactory factory,
+    base::SingleThreadTaskRunner* ipc_task_runner,
+    bool create_pipe_now,
+    base::WaitableEvent* shutdown_event) {
 #if defined(OS_POSIX)
   // On POSIX the channel_handle conveys an FD (socket) which is duped by the
   // kernel during the IPC message exchange (via the SCM_RIGHTS mechanism).
@@ -94,7 +98,7 @@ NPChannelBase* NPChannelBase::GetChannel(
           IPC::Channel::GenerateVerifiedChannelID(channel_key);
     }
     channel->mode_ = mode;
-    if (channel->Init(ipc_message_loop, create_pipe_now, shutdown_event)) {
+    if (channel->Init(ipc_task_runner, create_pipe_now, shutdown_event)) {
       (*GetChannelMap())[channel_key] = channel;
     } else {
       channel = NULL;
@@ -168,7 +172,7 @@ base::WaitableEvent* NPChannelBase::GetModalDialogEvent(int render_view_id) {
   return NULL;
 }
 
-bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
+bool NPChannelBase::Init(base::SingleThreadTaskRunner* ipc_task_runner,
                          bool create_pipe_now,
                          base::WaitableEvent* shutdown_event) {
 #if defined(OS_POSIX)
@@ -178,9 +182,9 @@ bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
     return false;
 #endif
 
-  channel_ = IPC::SyncChannel::Create(
-      channel_handle_, mode_, this, ipc_message_loop, create_pipe_now,
-      shutdown_event);
+  channel_ =
+      IPC::SyncChannel::Create(channel_handle_, mode_, this, ipc_task_runner,
+                               create_pipe_now, shutdown_event);
 
 #if defined(OS_POSIX)
   // Check the validity of fd for bug investigation.  Remove after fixed.

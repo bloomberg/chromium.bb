@@ -5,6 +5,9 @@
 #include "content/child/scoped_child_process_reference.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/child/child_process.h"
 
@@ -23,10 +26,9 @@ ScopedChildProcessReference::~ScopedChildProcessReference() {
 void ScopedChildProcessReference::ReleaseWithDelay(
     const base::TimeDelta& delay) {
   DCHECK(has_reference_);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ChildProcess::ReleaseProcess,
-                 base::Unretained(ChildProcess::current())),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ChildProcess::ReleaseProcess,
+                            base::Unretained(ChildProcess::current())),
       delay);
   has_reference_ = false;
 }

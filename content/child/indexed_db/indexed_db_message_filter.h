@@ -11,10 +11,6 @@
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace content {
 
 class IndexedDBMessageFilter : public WorkerThreadMessageFilter {

@@ -31,7 +31,7 @@ void ChildMemoryDumpManagerDelegateImpl::SetChildTraceMessageFilter(
   // replacing a valid instance with another one (should never happen).
   DCHECK(ctmf_ == nullptr || (ctmf == nullptr && ctmf_task_runner_ != nullptr));
   ctmf_ = ctmf;
-  ctmf_task_runner_ = ctmf ? (ctmf->ipc_message_loop()) : nullptr;
+  ctmf_task_runner_ = ctmf ? (ctmf->ipc_task_runner()) : nullptr;
 }
 
 // Invoked in child processes by the MemoryDumpManager.

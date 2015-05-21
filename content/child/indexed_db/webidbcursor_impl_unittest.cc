@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
@@ -122,7 +123,7 @@ class WebIDBCursorImplTest : public testing::Test {
     null_key_.assignNull();
     sync_message_filter_ = new IPC::SyncMessageFilter(NULL);
     thread_safe_sender_ = new ThreadSafeSender(
-        base::MessageLoopProxy::current(), sync_message_filter_.get());
+        base::ThreadTaskRunnerHandle::Get(), sync_message_filter_.get());
     dispatcher_ =
         make_scoped_ptr(new MockDispatcher(thread_safe_sender_.get()));
   }

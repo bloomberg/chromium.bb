@@ -16,7 +16,7 @@ namespace content {
 P2PAsyncAddressResolver::P2PAsyncAddressResolver(
     P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),
-      ipc_message_loop_(dispatcher->message_loop()),
+      ipc_task_runner_(dispatcher->task_runner()),
       delegate_message_loop_(base::MessageLoopProxy::current()),
       state_(STATE_CREATED),
       request_id_(0),
@@ -35,8 +35,9 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
   DCHECK_EQ(STATE_CREATED, state_);
 
   state_ = STATE_SENT;
-  ipc_message_loop_->PostTask(FROM_HERE, base::Bind(
-      &P2PAsyncAddressResolver::DoSendRequest, this, host_name, done_callback));
+  ipc_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&P2PAsyncAddressResolver::DoSendRequest, this,
+                            host_name, done_callback));
 }
 
 void P2PAsyncAddressResolver::Cancel() {
@@ -44,8 +45,8 @@ void P2PAsyncAddressResolver::Cancel() {
 
   if (state_ != STATE_FINISHED) {
     state_ = STATE_FINISHED;
-    ipc_message_loop_->PostTask(FROM_HERE, base::Bind(
-        &P2PAsyncAddressResolver::DoUnregister, this));
+    ipc_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&P2PAsyncAddressResolver::DoUnregister, this));
   }
   done_callback_.Reset();
 }
@@ -53,7 +54,7 @@ void P2PAsyncAddressResolver::Cancel() {
 void P2PAsyncAddressResolver::DoSendRequest(
     const rtc::SocketAddress& host_name,
     const DoneCallback& done_callback) {
-  DCHECK(ipc_message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   done_callback_ = done_callback;
   request_id_ = dispatcher_->RegisterHostAddressRequest(this);
@@ -63,7 +64,7 @@ void P2PAsyncAddressResolver::DoSendRequest(
 }
 
 void P2PAsyncAddressResolver::DoUnregister() {
-  DCHECK(ipc_message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (registered_) {
     dispatcher_->UnregisterHostAddressRequest(request_id_);
     registered_ = false;
@@ -71,7 +72,7 @@ void P2PAsyncAddressResolver::DoUnregister() {
 }
 
 void P2PAsyncAddressResolver::OnResponse(const net::IPAddressList& addresses) {
-  DCHECK(ipc_message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(registered_);
 
   dispatcher_->UnregisterHostAddressRequest(request_id_);

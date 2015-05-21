@@ -31,7 +31,7 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
           RequestNexeFdCallback;
 
   explicit PnaclTranslationResourceHost(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   void RequestNexeFd(int render_view_id,
                      PP_Instance instance,
                      const nacl::PnaclCacheInfo& cache_info,
@@ -63,7 +63,7 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
                            IPC::PlatformFileForTransit file);
   void CleanupCacheRequests();
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Should be accessed on the io thread.
   IPC::Sender* sender_;

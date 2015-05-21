@@ -5,7 +5,7 @@
 #include "content/renderer/media/audio_message_filter.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -43,9 +43,8 @@ class AudioMessageFilter::AudioOutputIPCImpl
 AudioMessageFilter* AudioMessageFilter::g_filter = NULL;
 
 AudioMessageFilter::AudioMessageFilter(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : sender_(NULL),
-      io_message_loop_(io_message_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : sender_(NULL), io_task_runner_(io_task_runner) {
   DCHECK(!g_filter);
   g_filter = this;
 }
@@ -80,7 +79,7 @@ void AudioMessageFilter::AudioOutputIPCImpl::CreateStream(
     media::AudioOutputIPCDelegate* delegate,
     const media::AudioParameters& params,
     int session_id) {
-  DCHECK(filter_->io_message_loop_->BelongsToCurrentThread());
+  DCHECK(filter_->io_task_runner_->BelongsToCurrentThread());
   DCHECK(delegate);
   DCHECK_EQ(stream_id_, kStreamIDNotSet);
   stream_id_ = filter_->delegates_.Add(delegate);
@@ -99,7 +98,7 @@ void AudioMessageFilter::AudioOutputIPCImpl::PauseStream() {
 }
 
 void AudioMessageFilter::AudioOutputIPCImpl::CloseStream() {
-  DCHECK(filter_->io_message_loop_->BelongsToCurrentThread());
+  DCHECK(filter_->io_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(stream_id_, kStreamIDNotSet);
   filter_->Send(new AudioHostMsg_CloseStream(stream_id_));
   filter_->delegates_.Remove(stream_id_);
@@ -112,7 +111,7 @@ void AudioMessageFilter::AudioOutputIPCImpl::SetVolume(double volume) {
 }
 
 void AudioMessageFilter::Send(IPC::Message* message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!sender_) {
     delete message;
   } else {
@@ -121,7 +120,7 @@ void AudioMessageFilter::Send(IPC::Message* message) {
 }
 
 bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
@@ -132,12 +131,12 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AudioMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   sender_ = sender;
 }
 
 void AudioMessageFilter::OnFilterRemoved() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // Once removed, a filter will not be used again.  At this time all
   // delegates must be notified so they release their reference.
@@ -145,7 +144,7 @@ void AudioMessageFilter::OnFilterRemoved() {
 }
 
 void AudioMessageFilter::OnChannelClosing() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   sender_ = NULL;
 
   DLOG_IF(WARNING, !delegates_.IsEmpty())
@@ -164,7 +163,7 @@ void AudioMessageFilter::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::TransitDescriptor socket_descriptor,
     uint32 length) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   WebRtcLogMessage(base::StringPrintf(
       "AMF::OnStreamCreated. stream_id=%d",
@@ -186,7 +185,7 @@ void AudioMessageFilter::OnStreamCreated(
 
 void AudioMessageFilter::OnStreamStateChanged(
     int stream_id, media::AudioOutputIPCDelegate::State state) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   media::AudioOutputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got OnStreamStateChanged() event for a non-existent or"

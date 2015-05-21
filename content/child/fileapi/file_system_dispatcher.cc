@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/process/process.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/fileapi/file_system_messages.h"

@@ -14,7 +14,7 @@ struct DevToolsMessageData;
 
 namespace base {
 class MessageLoop;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -50,8 +50,7 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   void RemoveEmbeddedWorkerRoute(int32 routing_id);
 
   base::MessageLoop* render_thread_loop_;
-  // Proxy to the IO message loop.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   int current_routing_id_;
 
   std::set<int32> embedded_worker_routes_;

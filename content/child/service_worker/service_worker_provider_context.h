@@ -14,7 +14,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace IPC {
@@ -90,7 +90,7 @@ class ServiceWorkerProviderContext
   void DestructOnMainThread() const;
 
   const int provider_id_;
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // Protects (installing, waiting, active) worker and registration references.

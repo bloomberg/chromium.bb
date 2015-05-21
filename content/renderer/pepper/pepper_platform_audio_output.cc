@@ -40,7 +40,7 @@ PepperPlatformAudioOutput* PepperPlatformAudioOutput::Create(
 
 bool PepperPlatformAudioOutput::StartPlayback() {
   if (ipc_) {
-    io_message_loop_proxy_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&PepperPlatformAudioOutput::StartPlaybackOnIOThread, this));
     return true;
@@ -50,7 +50,7 @@ bool PepperPlatformAudioOutput::StartPlayback() {
 
 bool PepperPlatformAudioOutput::StopPlayback() {
   if (ipc_) {
-    io_message_loop_proxy_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&PepperPlatformAudioOutput::StopPlaybackOnIOThread, this));
     return true;
@@ -62,7 +62,7 @@ void PepperPlatformAudioOutput::ShutDown() {
   // Called on the main thread to stop all audio callbacks. We must only change
   // the client on the main thread, and the delegates from the I/O thread.
   client_ = NULL;
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioOutput::ShutDownOnIOThread, this));
 }
@@ -112,7 +112,7 @@ PepperPlatformAudioOutput::~PepperPlatformAudioOutput() {
 PepperPlatformAudioOutput::PepperPlatformAudioOutput()
     : client_(NULL),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
-      io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()) {
+      io_task_runner_(ChildProcess::current()->io_task_runner()) {
 }
 
 bool PepperPlatformAudioOutput::Initialize(int sample_rate,
@@ -133,35 +133,34 @@ bool PepperPlatformAudioOutput::Initialize(int sample_rate,
                                 ppapi::kBitsPerAudioOutputSample,
                                 frames_per_buffer);
 
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &PepperPlatformAudioOutput::InitializeOnIOThread, this, params));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PepperPlatformAudioOutput::InitializeOnIOThread,
+                            this, params));
   return true;
 }
 
 void PepperPlatformAudioOutput::InitializeOnIOThread(
     const media::AudioParameters& params) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   const int kSessionId = 0;
   if (ipc_)
     ipc_->CreateStream(this, params, kSessionId);
 }
 
 void PepperPlatformAudioOutput::StartPlaybackOnIOThread() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (ipc_)
     ipc_->PlayStream();
 }
 
 void PepperPlatformAudioOutput::StopPlaybackOnIOThread() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (ipc_)
     ipc_->PauseStream();
 }
 
 void PepperPlatformAudioOutput::ShutDownOnIOThread() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // Make sure we don't call shutdown more than once.
   if (!ipc_)

@@ -14,7 +14,7 @@
 
 namespace base {
 class HistogramDeltaSerialization;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace content {
@@ -44,7 +44,7 @@ class ChildHistogramMessageFilter : public IPC::MessageFilter {
 
   IPC::Sender* sender_;
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Prepares histogram deltas for transmission.
   scoped_ptr<base::HistogramDeltaSerialization> histogram_delta_serialization_;

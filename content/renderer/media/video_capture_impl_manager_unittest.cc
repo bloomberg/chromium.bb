@@ -77,14 +77,12 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
   }
 
   void FakeChannelSetup() {
-    scoped_refptr<base::MessageLoopProxy> loop =
-        child_process_->io_message_loop_proxy();
-    if (!loop->BelongsToCurrentThread()) {
-      loop->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &VideoCaptureImplManagerTest::FakeChannelSetup,
-              base::Unretained(this)));
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        child_process_->io_task_runner();
+    if (!task_runner->BelongsToCurrentThread()) {
+      task_runner->PostTask(
+          FROM_HERE, base::Bind(&VideoCaptureImplManagerTest::FakeChannelSetup,
+                                base::Unretained(this)));
       return;
     }
     manager_->video_capture_message_filter()->OnFilterAdded(NULL);

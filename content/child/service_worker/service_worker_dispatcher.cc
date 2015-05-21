@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/child_thread_impl.h"
@@ -636,9 +637,9 @@ void ServiceWorkerDispatcher::OnPostMessage(
   }
 
   blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreatePorts(sent_message_ports,
-                                             new_routing_ids,
-                                             base::MessageLoopProxy::current());
+      WebMessagePortChannelImpl::CreatePorts(
+          sent_message_ports, new_routing_ids,
+          base::ThreadTaskRunnerHandle::Get());
 
   found->second->dispatchMessageEvent(message, ports);
 }

@@ -235,8 +235,8 @@ void PluginProxyTestHarness::CreatePluginGlobals(
   }
 }
 
-base::MessageLoopProxy*
-PluginProxyTestHarness::PluginDelegateMock::GetIPCMessageLoop() {
+base::SingleThreadTaskRunner*
+PluginProxyTestHarness::PluginDelegateMock::GetIPCTaskRunner() {
   return ipc_message_loop_;
 }
 
@@ -470,8 +470,7 @@ void HostProxyTestHarness::CreateHostGlobals() {
   }
 }
 
-base::MessageLoopProxy*
-HostProxyTestHarness::DelegateMock::GetIPCMessageLoop() {
+base::MessageLoopProxy* HostProxyTestHarness::DelegateMock::GetIPCTaskRunner() {
   return ipc_message_loop_;
 }
 

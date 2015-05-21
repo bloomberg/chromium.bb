@@ -65,7 +65,7 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
   // ensures that the filters won't miss any messages received by
   // the channel.
   channel_ =
-      IPC::SyncChannel::Create(this, GetIPCMessageLoop(), GetShutdownEvent());
+      IPC::SyncChannel::Create(this, GetIPCTaskRunner(), GetShutdownEvent());
   scoped_refptr<ppapi::proxy::PluginMessageFilter> plugin_filter(
       new ppapi::proxy::PluginMessageFilter(
           NULL, globals->resource_reply_thread_registrar()));
@@ -77,7 +77,7 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
   channel_->Init(channel_handle, IPC::Channel::MODE_SERVER, true);
 }
 
-base::MessageLoopProxy* PpapiDispatcher::GetIPCMessageLoop() {
+base::SingleThreadTaskRunner* PpapiDispatcher::GetIPCTaskRunner() {
   return message_loop_.get();
 }
 

@@ -77,9 +77,8 @@ void MockMediaStreamVideoSource::StopSourceImpl() {
 void MockMediaStreamVideoSource::DeliverVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(!frame_callback_.is_null());
-  io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(frame_callback_, frame, base::TimeTicks()));
+  io_task_runner()->PostTask(
+      FROM_HERE, base::Bind(frame_callback_, frame, base::TimeTicks()));
 }
 
 }  // namespace content

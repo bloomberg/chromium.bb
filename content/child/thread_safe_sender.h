@@ -11,7 +11,7 @@
 #include "ipc/ipc_sender.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace IPC {
@@ -29,8 +29,9 @@ class CONTENT_EXPORT ThreadSafeSender
   bool Send(IPC::Message* msg) override;
 
  protected:
-  ThreadSafeSender(const scoped_refptr<base::MessageLoopProxy>& main_loop,
-                   const scoped_refptr<IPC::SyncMessageFilter>& sync_filter);
+  ThreadSafeSender(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+      const scoped_refptr<IPC::SyncMessageFilter>& sync_filter);
   ~ThreadSafeSender() override;
 
  private:
@@ -39,7 +40,7 @@ class CONTENT_EXPORT ThreadSafeSender
   friend class WebIDBCursorImplTest;
   friend class base::RefCountedThreadSafe<ThreadSafeSender>;
 
-  scoped_refptr<base::MessageLoopProxy> main_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadSafeSender);

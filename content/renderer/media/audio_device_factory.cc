@@ -27,7 +27,7 @@ scoped_refptr<media::AudioOutputDevice> AudioDeviceFactory::NewOutputDevice(
 
   AudioMessageFilter* const filter = AudioMessageFilter::Get();
   return new media::AudioOutputDevice(
-      filter->CreateAudioOutputIPC(render_frame_id), filter->io_message_loop());
+      filter->CreateAudioOutputIPC(render_frame_id), filter->io_task_runner());
 }
 
 // static
@@ -42,7 +42,7 @@ scoped_refptr<media::AudioInputDevice> AudioDeviceFactory::NewInputDevice(
 
   AudioInputMessageFilter* const filter = AudioInputMessageFilter::Get();
   return new media::AudioInputDevice(
-      filter->CreateAudioInputIPC(render_frame_id), filter->io_message_loop());
+      filter->CreateAudioInputIPC(render_frame_id), filter->io_task_runner());
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

@@ -32,10 +32,11 @@ PepperHungPluginFilter::PepperHungPluginFilter(
       frame_routing_id_(frame_routing_id),
       plugin_child_id_(plugin_child_id),
       filter_(RenderThread::Get()->GetSyncMessageFilter()),
-      io_loop_(ChildProcess::current()->io_message_loop_proxy()),
+      io_task_runner_(ChildProcess::current()->io_task_runner()),
       pending_sync_message_count_(0),
       hung_plugin_showing_(false),
-      timer_task_pending_(false) {}
+      timer_task_pending_(false) {
+}
 
 void PepperHungPluginFilter::BeginBlockOnSyncMessage() {
   base::AutoLock lock(lock_);
@@ -83,9 +84,8 @@ void PepperHungPluginFilter::EnsureTimerScheduled() {
     return;
 
   timer_task_pending_ = true;
-  io_loop_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
+  io_task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
       base::TimeDelta::FromSeconds(kHungThresholdSec));
 }
 
@@ -140,9 +140,8 @@ void PepperHungPluginFilter::OnHangTimer() {
     // would not have scheduled one (we only have one out-standing timer at
     // a time).
     timer_task_pending_ = true;
-    io_loop_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
+    io_task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
         delay);
     return;
   }

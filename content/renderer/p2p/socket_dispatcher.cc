@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/child_process.h"
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/host_address_request.h"
@@ -18,8 +17,8 @@
 namespace content {
 
 P2PSocketDispatcher::P2PSocketDispatcher(
-    base::MessageLoopProxy* ipc_message_loop)
-    : message_loop_(ipc_message_loop),
+    base::SingleThreadTaskRunner* ipc_task_runner)
+    : ipc_task_runner_(ipc_task_runner),
       network_notifications_started_(false),
       network_list_observers_(
           new ObserverListThreadSafe<NetworkListObserver>()),
@@ -47,7 +46,7 @@ void P2PSocketDispatcher::RemoveNetworkListObserver(
 }
 
 void P2PSocketDispatcher::Send(IPC::Message* message) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (!sender_) {
     DLOG(WARNING) << "P2PSocketDispatcher::Send() - Sender closed.";
     delete message;
@@ -85,25 +84,24 @@ void P2PSocketDispatcher::OnChannelClosing() {
   sender_ = NULL;
 }
 
-base::MessageLoopProxy* P2PSocketDispatcher::message_loop() {
-  return message_loop_.get();
+base::SingleThreadTaskRunner* P2PSocketDispatcher::task_runner() {
+  return ipc_task_runner_.get();
 }
 
 int P2PSocketDispatcher::RegisterClient(P2PSocketClientImpl* client) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   return clients_.Add(client);
 }
 
 void P2PSocketDispatcher::UnregisterClient(int id) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   clients_.Remove(id);
 }
 
 void P2PSocketDispatcher::SendP2PMessage(IPC::Message* msg) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&P2PSocketDispatcher::Send,
-                                       this, msg));
+  if (!ipc_task_runner_->BelongsToCurrentThread()) {
+    ipc_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&P2PSocketDispatcher::Send, this, msg));
     return;
   }
   Send(msg);
@@ -111,12 +109,12 @@ void P2PSocketDispatcher::SendP2PMessage(IPC::Message* msg) {
 
 int P2PSocketDispatcher::RegisterHostAddressRequest(
     P2PAsyncAddressResolver* request) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   return host_address_requests_.Add(request);
 }
 
 void P2PSocketDispatcher::UnregisterHostAddressRequest(int id) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   host_address_requests_.Remove(id);
 }
 

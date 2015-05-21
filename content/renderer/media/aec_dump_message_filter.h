@@ -13,7 +13,7 @@
 #include "ipc/message_filter.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -31,8 +31,8 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   };
 
   AecDumpMessageFilter(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
-      const scoped_refptr<base::MessageLoopProxy>& main_message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
 
   // Getter for the one AecDumpMessageFilter object.
   static scoped_refptr<AecDumpMessageFilter> Get();
@@ -43,9 +43,9 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   // Removes a delegate.
   void RemoveDelegate(AecDumpMessageFilter::AecDumpDelegate* delegate);
 
-  // IO message loop associated with this message filter.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
-    return io_message_loop_;
+  // IO task runner associated with this message filter.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
+    return io_task_runner_;
   }
 
  protected:
@@ -63,39 +63,39 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   // Unregisters a consumer of AEC dump in the browser process.
   void UnregisterAecDumpConsumer(int id);
 
-  // IPC::MessageFilter override. Called on |io_message_loop|.
+  // IPC::MessageFilter override. Called on |io_task_runner|.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnFilterAdded(IPC::Sender* sender) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
 
-  // Accessed on |io_message_loop|.
+  // Accessed on |io_task_runner_|.
   void OnEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
   void OnDisableAecDump();
 
-  // Accessed on |main_message_loop_|.
+  // Accessed on |main_task_runner_|.
   void DoEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
   void DoDisableAecDump();
   void DoChannelClosingOnDelegates();
   int GetIdForDelegate(AecDumpMessageFilter::AecDumpDelegate* delegate);
 
-  // Accessed on |io_message_loop_|.
+  // Accessed on |io_task_runner_|.
   IPC::Sender* sender_;
 
   // The delgates for this filter. Must only be accessed on
-  // |main_message_loop_|.
+  // |main_task_runner_|.
   typedef std::map<int, AecDumpMessageFilter::AecDumpDelegate*> DelegateMap;
   DelegateMap delegates_;
 
   // Counter for generating unique IDs to delegates. Accessed on
-  // |main_message_loop_|.
+  // |main_task_runner_|.
   int delegate_id_counter_;
 
-  // Message loop on which IPC calls are driven.
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  // Task runner which IPC calls are executed.
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // Main message loop.
-  const scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+  // Main task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // The singleton instance for this filter.
   static AecDumpMessageFilter* g_filter;

@@ -17,7 +17,7 @@
 #include "media/base/audio_hardware_config.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -29,7 +29,7 @@ namespace content {
 class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
  public:
   explicit AudioMessageFilter(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Getter for the one AudioMessageFilter object.
   static AudioMessageFilter* Get();
@@ -38,12 +38,12 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   // the RenderFrame containing the entity producing the audio.
   //
   // The returned object is not thread-safe, and must be used on
-  // |io_message_loop|.
+  // |io_task_runner|.
   scoped_ptr<media::AudioOutputIPC> CreateAudioOutputIPC(int render_frame_id);
 
-  // IO message loop associated with this message filter.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
-    return io_message_loop_;
+  // IO task runner associated with this message filter.
+  base::SingleThreadTaskRunner* io_task_runner() const {
+    return io_task_runner_.get();
   }
 
  protected:
@@ -60,7 +60,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   // Sends an IPC message using |sender_|.
   void Send(IPC::Message* message);
 
-  // IPC::MessageFilter override. Called on |io_message_loop|.
+  // IPC::MessageFilter override. Called on |io_task_runner_|.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnFilterAdded(IPC::Sender* sender) override;
   void OnFilterRemoved() override;
@@ -76,15 +76,15 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   void OnStreamStateChanged(int stream_id,
                             media::AudioOutputIPCDelegate::State state);
 
-  // IPC sender for Send(); must only be accesed on |io_message_loop_|.
+  // IPC sender for Send(); must only be accesed on |io_task_runner_|.
   IPC::Sender* sender_;
 
   // A map of stream ids to delegates; must only be accessed on
-  // |io_message_loop_|.
+  // |io_task_runner_|.
   IDMap<media::AudioOutputIPCDelegate> delegates_;
 
-  // Message loop on which IPC calls are driven.
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  // Task runner on which IPC calls are executed.
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The singleton instance for this filter.
   static AudioMessageFilter* g_filter;

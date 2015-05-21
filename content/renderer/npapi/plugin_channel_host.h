@@ -23,9 +23,9 @@ class PluginChannelHost : public NPChannelBase {
 #endif
   static PluginChannelHost* GetPluginChannelHost(
       const IPC::ChannelHandle& channel_handle,
-      base::MessageLoopProxy* ipc_message_loop);
+      base::SingleThreadTaskRunner* ipc_task_runner);
 
-  bool Init(base::MessageLoopProxy* ipc_message_loop,
+  bool Init(base::SingleThreadTaskRunner* ipc_task_runner,
             bool create_pipe_now,
             base::WaitableEvent* shutdown_event) override;
 

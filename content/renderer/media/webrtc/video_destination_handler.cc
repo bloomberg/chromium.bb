@@ -29,7 +29,7 @@ class PpFrameWriter::FrameWriterDelegate
     : public base::RefCountedThreadSafe<FrameWriterDelegate> {
  public:
   FrameWriterDelegate(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const VideoCaptureDeliverFrameCB& new_frame_callback);
 
   void DeliverFrame(const scoped_refptr<media::VideoFrame>& frame);
@@ -39,15 +39,14 @@ class PpFrameWriter::FrameWriterDelegate
 
   void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame);
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   VideoCaptureDeliverFrameCB new_frame_callback_;
 };
 
 PpFrameWriter::FrameWriterDelegate::FrameWriterDelegate(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const VideoCaptureDeliverFrameCB& new_frame_callback)
-    : io_message_loop_(io_message_loop_proxy),
-      new_frame_callback_(new_frame_callback) {
+    : io_task_runner_(io_task_runner), new_frame_callback_(new_frame_callback) {
 }
 
 PpFrameWriter::FrameWriterDelegate::~FrameWriterDelegate() {
@@ -55,14 +54,14 @@ PpFrameWriter::FrameWriterDelegate::~FrameWriterDelegate() {
 
 void PpFrameWriter::FrameWriterDelegate::DeliverFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
-  io_message_loop_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FrameWriterDelegate::DeliverFrameOnIO, this, frame));
 }
 
 void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
      const scoped_refptr<media::VideoFrame>& frame) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   // The local time when this frame is generated is unknown so give a null
   // value to |estimated_capture_time|.
   new_frame_callback_.Run(frame, base::TimeTicks());
@@ -96,7 +95,7 @@ void PpFrameWriter::StartSourceImpl(
   DCHECK(CalledOnValidThread());
   DCHECK(!delegate_.get());
   DVLOG(3) << "PpFrameWriter::StartSourceImpl()";
-  delegate_ = new FrameWriterDelegate(io_message_loop(), frame_callback);
+  delegate_ = new FrameWriterDelegate(io_task_runner(), frame_callback);
   OnStartDone(MEDIA_DEVICE_OK);
 }
 
