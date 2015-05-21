@@ -27,6 +27,7 @@
 #include "core/svg/SVGUseElement.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/SVGNames.h"
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -43,6 +44,12 @@
 
 namespace blink {
 
+static SVGUseEventSender& svgUseLoadEventSender()
+{
+    DEFINE_STATIC_LOCAL(SVGUseEventSender, sharedLoadEventSender, (EventTypeNames::load));
+    return sharedLoadEventSender;
+}
+
 inline SVGUseElement::SVGUseElement(Document& document)
     : SVGGraphicsElement(SVGNames::useTag, document)
     , SVGURIReference(this)
@@ -52,7 +59,6 @@ inline SVGUseElement::SVGUseElement(Document& document)
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(SVGLengthMode::Height), ForbidNegativeLengths))
     , m_haveFiredLoadEvent(false)
     , m_needsShadowTreeRecreation(false)
-    , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
     ASSERT(hasCustomStyleCallbacks());
 
@@ -76,6 +82,7 @@ SVGUseElement::~SVGUseElement()
 #if !ENABLE(OILPAN)
     clearResourceReferences();
 #endif
+    svgUseLoadEventSender().cancelEvent(this);
 }
 
 DEFINE_TRACE(SVGUseElement)
@@ -107,8 +114,6 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
     ASSERT(!m_targetElementInstance || !isWellFormedDocument(&document()));
     ASSERT(!hasPendingResources() || !isWellFormedDocument(&document()));
     invalidateShadowTree();
-    if (!isStructurallyExternal())
-        sendSVGLoadEventIfPossibleAsynchronously();
     return InsertionDone;
 }
 
@@ -716,6 +721,13 @@ bool SVGUseElement::selfHasRelativeLengths() const
     return m_targetElementInstance->hasRelativeLengths();
 }
 
+void SVGUseElement::dispatchPendingEvent(SVGUseEventSender* eventSender)
+{
+    ASSERT_UNUSED(eventSender, eventSender == &svgUseLoadEventSender());
+    ASSERT(isStructurallyExternal() && m_haveFiredLoadEvent);
+    dispatchEvent(Event::create(EventTypeNames::load));
+}
+
 void SVGUseElement::notifyFinished(Resource* resource)
 {
     if (!inDocument())
@@ -731,7 +743,7 @@ void SVGUseElement::notifyFinished(Resource* resource)
             return;
         ASSERT(!m_haveFiredLoadEvent);
         m_haveFiredLoadEvent = true;
-        sendSVGLoadEventIfPossibleAsynchronously();
+        svgUseLoadEventSender().dispatchEventSoon(this);
     }
 }
 

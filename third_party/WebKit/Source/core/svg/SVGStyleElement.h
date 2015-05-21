@@ -70,11 +70,8 @@ private:
     virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
     virtual bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
+    virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
     virtual void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
-    virtual Timer<SVGElement>* svgLoadEventTimer() override { return &m_svgLoadEventTimer; }
-    void sendSVGErrorEventAsynchronously();
-
-    Timer<SVGElement> m_svgLoadEventTimer;
 };
 
 } // namespace blink

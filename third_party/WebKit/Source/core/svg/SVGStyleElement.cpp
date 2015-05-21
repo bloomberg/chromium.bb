@@ -39,7 +39,6 @@ static SVGStyleEventSender& styleErrorEventSender()
 inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser)
     : SVGElement(SVGNames::styleTag, document)
     , StyleElement(&document, createdByParser)
-    , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
 }
 
@@ -121,7 +120,7 @@ void SVGStyleElement::finishParsingChildren()
     StyleElement::ProcessingResult result = StyleElement::finishParsingChildren(this);
     SVGElement::finishParsingChildren();
     if (result == StyleElement::ProcessingFatalError)
-        sendSVGErrorEventAsynchronously();
+        notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
 Node::InsertionNotificationRequest SVGStyleElement::insertedInto(ContainerNode* insertionPoint)
@@ -134,7 +133,7 @@ Node::InsertionNotificationRequest SVGStyleElement::insertedInto(ContainerNode* 
 void SVGStyleElement::didNotifySubtreeInsertionsToDocument()
 {
     if (StyleElement::processStyleSheet(document(), this) == StyleElement::ProcessingFatalError)
-        sendSVGErrorEventAsynchronously();
+        notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
 void SVGStyleElement::removedFrom(ContainerNode* insertionPoint)
@@ -147,12 +146,13 @@ void SVGStyleElement::childrenChanged(const ChildrenChange& change)
 {
     SVGElement::childrenChanged(change);
     if (StyleElement::childrenChanged(this) == StyleElement::ProcessingFatalError)
-        sendSVGErrorEventAsynchronously();
+        notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
-void SVGStyleElement::sendSVGErrorEventAsynchronously()
+void SVGStyleElement::notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus errorStatus)
 {
-    styleErrorEventSender().dispatchEventSoon(this);
+    if (errorStatus != NoErrorLoadingSubresource)
+        styleErrorEventSender().dispatchEventSoon(this);
 }
 
 void SVGStyleElement::dispatchPendingEvent(SVGStyleEventSender* eventSender)

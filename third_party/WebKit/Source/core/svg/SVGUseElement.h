@@ -21,9 +21,8 @@
 #ifndef SVGUseElement_h
 #define SVGUseElement_h
 
-#include "core/SVGNames.h"
+#include "core/events/EventSender.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -31,7 +30,7 @@
 
 namespace blink {
 
-class DocumentResource;
+typedef EventSender<SVGUseElement> SVGUseEventSender;
 
 class SVGUseElement final : public SVGGraphicsElement,
                             public SVGURIReference,
@@ -52,6 +51,8 @@ public:
     SVGAnimatedLength* height() const { return m_height.get(); }
 
     virtual void buildPendingResource() override;
+
+    void dispatchPendingEvent(SVGUseEventSender*);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -97,8 +98,6 @@ private:
     TreeScope* referencedScope() const;
     void setDocumentResource(ResourcePtr<DocumentResource>);
 
-    virtual Timer<SVGElement>* svgLoadEventTimer() override { return &m_svgLoadEventTimer; }
-
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;
     RefPtrWillBeMember<SVGAnimatedLength> m_width;
@@ -108,7 +107,6 @@ private:
     bool m_needsShadowTreeRecreation;
     RefPtrWillBeMember<SVGElement> m_targetElementInstance;
     ResourcePtr<DocumentResource> m_resource;
-    Timer<SVGElement> m_svgLoadEventTimer;
 };
 
 } // namespace blink

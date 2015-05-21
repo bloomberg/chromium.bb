@@ -26,7 +26,6 @@
 #include "core/dom/Element.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -100,9 +99,6 @@ public:
 
     void sendSVGLoadEventToSelfAndAncestorChainIfPossible();
     bool sendSVGLoadEventIfPossible();
-    void sendSVGLoadEventIfPossibleAsynchronously();
-    void svgLoadEventTimerFired(Timer<SVGElement>*);
-    virtual Timer<SVGElement>* svgLoadEventTimer();
 
     virtual AffineTransform* animateMotionTransform() { return nullptr; }
 
