@@ -10,4 +10,5 @@
     <string name="title_activity_jank">WebView Jank Tester</string>
     <string name="title_activity_startup_time">WebView Startup Time Tester</string>
     <string name="title_activity_browser">WebView Browser Tester</string>
+    <string name="menu_about">About WebView</string>
 </resources>
