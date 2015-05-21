@@ -574,23 +574,6 @@ crbug.com/398295 [ Debug ] http/tests/w3c/webperf/submission/Intel/user-timing/t
 crbug.com/398295 [ Win Release ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
 crbug.com/398295 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure Pass ]
 
-crbug.com/370462 fast/forms/HTMLOptionElement_label06.html [ NeedsRebaseline ]
-crbug.com/370462 fast/forms/HTMLOptionElement_label07.html [ NeedsRebaseline ]
-crbug.com/370462 fast/forms/form-element-geometry.html [ NeedsRebaseline ]
-crbug.com/370462 fast/forms/menulist-separator-painting.html [ NeedsRebaseline ]
-crbug.com/370462 fast/forms/select-baseline.html [ NeedsRebaseline ]
-crbug.com/370462 fast/forms/select-empty-option-height.html [ NeedsRebaseline ]
-crbug.com/370462 fast/forms/selectlist-minsize.html [ NeedsRebaseline ]
-crbug.com/370462 fast/replaced/three-selects-break.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/forms/HTMLOptionElement_label06.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/forms/HTMLOptionElement_label07.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/forms/form-element-geometry.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/forms/menulist-separator-painting.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/forms/select-baseline.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/forms/select-empty-option-height.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/forms/selectlist-minsize.html [ NeedsRebaseline ]
-crbug.com/370462 virtual/slimmingpaint/fast/replaced/three-selects-break.html [ NeedsRebaseline ]
-
 crbug.com/271243 http/tests/misc/acid3.html [ Pass Failure ]
 
 crbug.com/278497 [ Mac Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
