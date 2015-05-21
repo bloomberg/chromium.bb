@@ -19,6 +19,7 @@
 #include "ui/events/event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
+#include "ui/events/ozone/evdev/event_device_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -36,6 +37,43 @@ static int SetNonBlocking(int fd) {
 
 const char kTestDevicePath[] = "/dev/input/test-device";
 
+const ui::DeviceAbsoluteAxis kWacomIntuos5SPenAbsAxes[] = {
+    {ABS_X, {0, 0, 31496, 4, 0, 200}},
+    {ABS_Y, {0, 0, 19685, 4, 0, 200}},
+    {ABS_Z, {0, -900, 899, 0, 0, 0}},
+    {ABS_RZ, {0, -900, 899, 0, 0, 0}},
+    {ABS_THROTTLE, {0, -1023, 1023, 0, 0, 0}},
+    {ABS_WHEEL, {0, 0, 1023, 0, 0, 0}},
+    {ABS_PRESSURE, {0, 0, 2047, 0, 0, 0}},
+    {ABS_DISTANCE, {0, 0, 63, 0, 0, 0}},
+    {ABS_TILT_X, {0, 0, 127, 0, 0, 0}},
+    {ABS_TILT_Y, {0, 0, 127, 0, 0, 0}},
+    {ABS_MISC, {0, 0, 0, 0, 0, 0}},
+};
+
+const ui::DeviceCapabilities kWacomIntuos5SPen = {
+    /* path */ "/sys/devices/pci0000:00/0000:00:14.0/usb1/"
+               "1-1/1-1:1.0/input/input19/event5",
+    /* name */ "Wacom Intuos5 touch S Pen",
+    /* phys */ "",
+    /* uniq */ "",
+    /* bustype */ "0003",
+    /* vendor */ "056a",
+    /* product */ "0026",
+    /* version */ "0107",
+    /* prop */ "1",
+    /* ev */ "1f",
+    /* key */ "1cdf 1f007f 0 0 0 0",
+    /* rel */ "100",
+    /* abs */ "1000f000167",
+    /* msc */ "1",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kWacomIntuos5SPenAbsAxes,
+    arraysize(kWacomIntuos5SPenAbsAxes),
+};
+
 }  // namespace
 
 namespace ui {
@@ -45,6 +83,7 @@ class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
   MockTabletEventConverterEvdev(int fd,
                                 base::FilePath path,
                                 CursorDelegateEvdev* cursor,
+                                const EventDeviceInfo& devinfo,
                                 DeviceEventDispatcherEvdev* dispatcher);
   ~MockTabletEventConverterEvdev() override {};
 
@@ -97,20 +136,15 @@ MockTabletEventConverterEvdev::MockTabletEventConverterEvdev(
     int fd,
     base::FilePath path,
     CursorDelegateEvdev* cursor,
+    const EventDeviceInfo& devinfo,
     DeviceEventDispatcherEvdev* dispatcher)
     : TabletEventConverterEvdev(fd,
                                 path,
                                 1,
                                 INPUT_DEVICE_UNKNOWN,
                                 cursor,
-                                EventDeviceInfo(),
+                                devinfo,
                                 dispatcher) {
-  // Real values taken from Wacom Intuos 4
-  x_abs_min_ = 0;
-  x_abs_range_ = 65024;
-  y_abs_min_ = 0;
-  y_abs_range_ = 40640;
-
   int fds[2];
 
   if (pipe(fds))
@@ -158,17 +192,21 @@ class TabletEventConverterEvdevTest : public testing::Test {
                    base::Unretained(this)));
     dispatcher_ =
         ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
-    device_.reset(new ui::MockTabletEventConverterEvdev(
-        events_in_, base::FilePath(kTestDevicePath), cursor_.get(),
-        dispatcher_.get()));
   }
 
   void TearDown() override {
     cursor_.reset();
-    device_.reset();
   }
 
-  ui::MockTabletEventConverterEvdev* device() { return device_.get(); }
+  ui::MockTabletEventConverterEvdev* CreateDevice(
+      const ui::DeviceCapabilities& caps) {
+    ui::EventDeviceInfo devinfo;
+    CapabilitiesToDeviceInfo(caps, &devinfo);
+    return new ui::MockTabletEventConverterEvdev(
+        events_in_, base::FilePath(kTestDevicePath), cursor_.get(), devinfo,
+        dispatcher_.get());
+  }
+
   ui::CursorDelegateEvdev* cursor() { return cursor_.get(); }
 
   unsigned size() { return dispatched_events_.size(); }
@@ -189,7 +227,6 @@ class TabletEventConverterEvdevTest : public testing::Test {
   scoped_ptr<ui::DeviceManager> device_manager_;
   scoped_ptr<ui::EventFactoryEvdev> event_factory_;
   scoped_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
-  scoped_ptr<ui::MockTabletEventConverterEvdev> device_;
 
   ScopedVector<ui::Event> dispatched_events_;
 
@@ -201,25 +238,26 @@ class TabletEventConverterEvdevTest : public testing::Test {
 
 #define EPSILON 20
 
-// Uses real data captured from Wacom Intuos 4
+// Uses real data captured from Wacom Intuos 5 Pen
 TEST_F(TabletEventConverterEvdevTest, MoveTopLeft) {
-  ui::MockTabletEventConverterEvdev* dev = device();
+  scoped_ptr<ui::MockTabletEventConverterEvdev> dev =
+      make_scoped_ptr(CreateDevice(kWacomIntuos5SPen));
 
   struct input_event mock_kernel_queue[] = {
-      {{0, 0}, EV_ABS, ABS_Y, 616},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 62},
-      {{0, 0}, EV_ABS, ABS_TILT_X, 50},
-      {{0, 0}, EV_ABS, ABS_TILT_Y, 7},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 63},
+      {{0, 0}, EV_ABS, ABS_X, 477},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 66},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 62},
       {{0, 0}, EV_ABS, ABS_MISC, 1050626},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
-      {{0, 0}, EV_ABS, ABS_Y, 0},
       {{0, 0}, EV_ABS, ABS_DISTANCE, 0},
       {{0, 0}, EV_ABS, ABS_TILT_X, 0},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 0},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
       {{0, 0}, EV_ABS, ABS_MISC, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
   };
 
@@ -234,17 +272,18 @@ TEST_F(TabletEventConverterEvdevTest, MoveTopLeft) {
 }
 
 TEST_F(TabletEventConverterEvdevTest, MoveTopRight) {
-  ui::MockTabletEventConverterEvdev* dev = device();
+  scoped_ptr<ui::MockTabletEventConverterEvdev> dev =
+      make_scoped_ptr(CreateDevice(kWacomIntuos5SPen));
 
   struct input_event mock_kernel_queue[] = {
-      {{0, 0}, EV_ABS, ABS_X, 65024},
-      {{0, 0}, EV_ABS, ABS_Y, 33},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 62},
-      {{0, 0}, EV_ABS, ABS_TILT_X, 109},
-      {{0, 0}, EV_ABS, ABS_TILT_Y, 59},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 63},
+      {{0, 0}, EV_ABS, ABS_X, 31496},
+      {{0, 0}, EV_ABS, ABS_Y, 109},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 66},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 61},
       {{0, 0}, EV_ABS, ABS_MISC, 1050626},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
       {{0, 0}, EV_ABS, ABS_X, 0},
       {{0, 0}, EV_ABS, ABS_DISTANCE, 0},
@@ -252,7 +291,7 @@ TEST_F(TabletEventConverterEvdevTest, MoveTopRight) {
       {{0, 0}, EV_ABS, ABS_TILT_Y, 0},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
       {{0, 0}, EV_ABS, ABS_MISC, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
   };
 
@@ -268,24 +307,26 @@ TEST_F(TabletEventConverterEvdevTest, MoveTopRight) {
 }
 
 TEST_F(TabletEventConverterEvdevTest, MoveBottomLeft) {
-  ui::MockTabletEventConverterEvdev* dev = device();
+  scoped_ptr<ui::MockTabletEventConverterEvdev> dev =
+      make_scoped_ptr(CreateDevice(kWacomIntuos5SPen));
 
   struct input_event mock_kernel_queue[] = {
-      {{0, 0}, EV_ABS, ABS_Y, 40640},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 62},
-      {{0, 0}, EV_ABS, ABS_TILT_X, 95},
-      {{0, 0}, EV_ABS, ABS_TILT_Y, 44},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 63},
+      {{0, 0}, EV_ABS, ABS_Y, 19685},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 64},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 61},
       {{0, 0}, EV_ABS, ABS_MISC, 1050626},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
+      {{0, 0}, EV_ABS, ABS_X, 0},
       {{0, 0}, EV_ABS, ABS_Y, 0},
       {{0, 0}, EV_ABS, ABS_DISTANCE, 0},
       {{0, 0}, EV_ABS, ABS_TILT_X, 0},
       {{0, 0}, EV_ABS, ABS_TILT_Y, 0},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
       {{0, 0}, EV_ABS, ABS_MISC, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
   };
 
@@ -301,17 +342,18 @@ TEST_F(TabletEventConverterEvdevTest, MoveBottomLeft) {
 }
 
 TEST_F(TabletEventConverterEvdevTest, MoveBottomRight) {
-  ui::MockTabletEventConverterEvdev* dev = device();
+  scoped_ptr<ui::MockTabletEventConverterEvdev> dev =
+      make_scoped_ptr(CreateDevice(kWacomIntuos5SPen));
 
   struct input_event mock_kernel_queue[] = {
-      {{0, 0}, EV_ABS, ABS_X, 65024},
-      {{0, 0}, EV_ABS, ABS_Y, 40640},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 62},
-      {{0, 0}, EV_ABS, ABS_TILT_X, 127},
-      {{0, 0}, EV_ABS, ABS_TILT_Y, 89},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 63},
+      {{0, 0}, EV_ABS, ABS_X, 31496},
+      {{0, 0}, EV_ABS, ABS_Y, 19685},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 67},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 63},
       {{0, 0}, EV_ABS, ABS_MISC, 1050626},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
       {{0, 0}, EV_ABS, ABS_X, 0},
       {{0, 0}, EV_ABS, ABS_Y, 0},
@@ -320,7 +362,7 @@ TEST_F(TabletEventConverterEvdevTest, MoveBottomRight) {
       {{0, 0}, EV_ABS, ABS_TILT_Y, 0},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
       {{0, 0}, EV_ABS, ABS_MISC, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
   };
 
@@ -337,31 +379,32 @@ TEST_F(TabletEventConverterEvdevTest, MoveBottomRight) {
 }
 
 TEST_F(TabletEventConverterEvdevTest, Tap) {
-  ui::MockTabletEventConverterEvdev* dev = device();
+  scoped_ptr<ui::MockTabletEventConverterEvdev> dev =
+      make_scoped_ptr(CreateDevice(kWacomIntuos5SPen));
 
   struct input_event mock_kernel_queue[] = {
-      {{0, 0}, EV_ABS, ABS_X, 31628},
-      {{0, 0}, EV_ABS, ABS_Y, 21670},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 62},
-      {{0, 0}, EV_ABS, ABS_TILT_X, 114},
-      {{0, 0}, EV_ABS, ABS_TILT_Y, 85},
+      {{0, 0}, EV_ABS, ABS_X, 15456},
+      {{0, 0}, EV_ABS, ABS_Y, 8605},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 49},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 68},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 64},
       {{0, 0}, EV_ABS, ABS_MISC, 1050626},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
-      {{0, 0}, EV_ABS, ABS_X, 32094},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 17},
-      {{0, 0}, EV_ABS, ABS_PRESSURE, 883},
-      {{0, 0}, EV_ABS, ABS_TILT_Y, 68},
+      {{0, 0}, EV_ABS, ABS_X, 15725},
+      {{0, 0}, EV_ABS, ABS_Y, 8755},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 29},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 992},
       {{0, 0}, EV_KEY, BTN_TOUCH, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
-      {{0, 0}, EV_ABS, ABS_X, 32036},
-      {{0, 0}, EV_ABS, ABS_Y, 21658},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 19},
+      {{0, 0}, EV_ABS, ABS_X, 15922},
+      {{0, 0}, EV_ABS, ABS_Y, 8701},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 32},
       {{0, 0}, EV_ABS, ABS_PRESSURE, 0},
       {{0, 0}, EV_KEY, BTN_TOUCH, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
       {{0, 0}, EV_ABS, ABS_X, 0},
       {{0, 0}, EV_ABS, ABS_Y, 0},
@@ -370,7 +413,7 @@ TEST_F(TabletEventConverterEvdevTest, Tap) {
       {{0, 0}, EV_ABS, ABS_TILT_Y, 0},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
       {{0, 0}, EV_ABS, ABS_MISC, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
   };
 
@@ -388,27 +431,32 @@ TEST_F(TabletEventConverterEvdevTest, Tap) {
 }
 
 TEST_F(TabletEventConverterEvdevTest, StylusButtonPress) {
-  ui::MockTabletEventConverterEvdev* dev = device();
+  scoped_ptr<ui::MockTabletEventConverterEvdev> dev =
+      make_scoped_ptr(CreateDevice(kWacomIntuos5SPen));
 
   struct input_event mock_kernel_queue[] = {
-      {{0, 0}, EV_ABS, ABS_X, 30055},
-      {{0, 0}, EV_ABS, ABS_Y, 18094},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 62},
-      {{0, 0}, EV_ABS, ABS_TILT_X, 99},
-      {{0, 0}, EV_ABS, ABS_TILT_Y, 68},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 63},
+      {{0, 0}, EV_ABS, ABS_X, 18372},
+      {{0, 0}, EV_ABS, ABS_Y, 9880},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 61},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 60},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 63},
       {{0, 0}, EV_ABS, ABS_MISC, 1050626},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
-      {{0, 0}, EV_ABS, ABS_X, 29380},
+      {{0, 0}, EV_ABS, ABS_X, 18294},
+      {{0, 0}, EV_ABS, ABS_Y, 9723},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 20},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 1015},
       {{0, 0}, EV_KEY, BTN_STYLUS2, 1},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
-      {{0, 0}, EV_ABS, ABS_X, 29355},
-      {{0, 0}, EV_ABS, ABS_Y, 20091},
-      {{0, 0}, EV_ABS, ABS_DISTANCE, 34},
+      {{0, 0}, EV_ABS, ABS_X, 18516},
+      {{0, 0}, EV_ABS, ABS_Y, 9723},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 23},
       {{0, 0}, EV_KEY, BTN_STYLUS2, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
       {{0, 0}, EV_ABS, ABS_X, 0},
       {{0, 0}, EV_ABS, ABS_Y, 0},
@@ -417,7 +465,7 @@ TEST_F(TabletEventConverterEvdevTest, StylusButtonPress) {
       {{0, 0}, EV_ABS, ABS_TILT_Y, 0},
       {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
       {{0, 0}, EV_ABS, ABS_MISC, 0},
-      {{0, 0}, EV_MSC, MSC_SERIAL, 159403517},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
       {{0, 0}, EV_SYN, SYN_REPORT, 0},
   };
 
@@ -436,7 +484,8 @@ TEST_F(TabletEventConverterEvdevTest, StylusButtonPress) {
 
 // Should only get an event if BTN_TOOL received
 TEST_F(TabletEventConverterEvdevTest, CheckStylusFiltering) {
-  ui::MockTabletEventConverterEvdev* dev = device();
+  scoped_ptr<ui::MockTabletEventConverterEvdev> dev =
+      make_scoped_ptr(CreateDevice(kWacomIntuos5SPen));
 
   struct input_event mock_kernel_queue[] = {
       {{0, 0}, EV_ABS, ABS_X, 0},

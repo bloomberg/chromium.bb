@@ -31,6 +31,8 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
                           info.product_id()),
       cursor_(cursor),
       dispatcher_(dispatcher),
+      y_abs_location_(0),
+      x_abs_location_(0),
       stylus_(0),
       abs_value_dirty_(false) {
   x_abs_min_ = info.GetAbsMinimum(ABS_X);
