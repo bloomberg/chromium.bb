@@ -946,6 +946,10 @@ public:
     bool documentBeingDestroyed() const;
 
     void destroyAndCleanupAnonymousWrappers();
+
+    // While the destroy() method is virtual, this should only be overriden in very rare circumstances.
+    // You want to override willBeDestroyed() instead unless you explicitly need to stop this object
+    // from being destroyed (for example, LayoutPart overrides destroy() for this purpose).
     virtual void destroy();
 
     // Virtual function helpers for the deprecated Flexible Box Layout (display: -webkit-box).
