@@ -435,9 +435,16 @@ def CleanTargets(targets):
       pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(pkg)
       desired = GetDesiredPackageVersions(target, package)
+      # NOTE: This refers to installed packages (vartree) rather than the
+      # Portage version (porttree and/or bintree) when determining the current
+      # version. While this isn't the most accurate thing to do, it is probably
+      # a good simple compromise, which should have the desired result of
+      # uninstalling everything but the latest installed version. In
+      # particular, using the bintree (--usebinpkg) requires a non-trivial
+      # binhost sync and is probably more complex than useful.
       desired_num = VersionListToNumeric(target, package, desired, True)
       if not set(desired_num).issubset(current):
-        print('Some packages have been held back, skipping clean!')
+        print('Error detecting stable version for %s, skipping clean!' % pkg)
         return
       unmergemap[pkg] = set(current).difference(desired_num)
 
