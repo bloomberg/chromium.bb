@@ -58094,6 +58094,7 @@
         "vm_tests": []
     },
     "strago-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "strago"
         ],

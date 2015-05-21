@@ -3040,6 +3040,7 @@ _waterfall_config_map = {
       'daisy_freon-paladin',
       'nyan_freon-paladin',
       'smaug-paladin',
+      'strago-paladin',
       'tricky-paladin',
       'whirlwind-paladin',
       'x86-alex_freon-paladin',
