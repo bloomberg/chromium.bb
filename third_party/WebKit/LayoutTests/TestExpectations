@@ -132,7 +132,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
-# crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
@@ -409,7 +408,6 @@ crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-2x.html [ Crash Pass ]
 crbug.com/455879 [ Win ] webaudio/pannernode-basic.html [ Crash Pass ]
 crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-4x.html [ Crash Pass ]
 
-crbug.com/489546 [ Linux ] virtual/slimmingpaint/compositing/fixed-body-background-positioned.html [ Pass Failure ]
 crbug.com/489548 fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
 crbug.com/489548 virtual/pointerevent/fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
 crbug.com/489549 http/tests/security/suborigins/suborigin-change-document-domain.html [ Pass Failure ]

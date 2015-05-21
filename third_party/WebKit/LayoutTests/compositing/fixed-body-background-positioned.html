@@ -23,6 +23,7 @@
             opacity: 0;
         }
     </style>
+    <script src="../resources/run-after-layout-and-paint.js"></script>
     <script>
     if (window.testRunner) {
         testRunner.dumpAsTextWithPixelResults();
@@ -33,8 +34,12 @@
     {
         window.scrollTo(0, 200);
 
-        if (window.internals)
-            document.getElementById('layers').innerText = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_ROOT_LAYER);
+        runAfterLayoutAndPaint(function()
+        {
+            if (window.internals) {
+                document.getElementById('layers').innerText = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_ROOT_LAYER);
+            }
+        }, true);
     }
 
     window.addEventListener('load', doTest, false);
