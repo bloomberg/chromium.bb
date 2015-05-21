@@ -539,6 +539,13 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
     creation_flags = pending_extension_info->creation_flags();
     if (pending_extension_info->mark_acknowledged())
       external_install_manager_->AcknowledgeExternalExtension(id);
+
+    // If the extension came in disabled due to a permission increase, then
+    // don't grant it all the permissions. crbug.com/484214
+    if (extensions::ExtensionPrefs::Get(profile_)->HasDisableReason(
+            id, Extension::DISABLE_PERMISSIONS_INCREASE)) {
+      installer->set_grant_permissions(false);
+    }
   } else if (extension) {
     installer->set_install_source(extension->location());
   }
