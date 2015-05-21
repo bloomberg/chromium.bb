@@ -34,7 +34,7 @@ class CardUnmaskDelegate {
 
     // Whether we're providing the alternative "risk advisory data" in risk_data
     // (as opposed to the normal browser fingerprint).
-    bool providing_risk_advisory_data = false;
+    bool providing_risk_advisory_data;
   };
 
   // Called when the user has attempted a verification. Prompt is still
