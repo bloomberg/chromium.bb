@@ -1794,12 +1794,10 @@ void ServiceWorkerStorage::DidDeleteDatabase(
   // Deleting the directory could take a long time and restart could be delayed.
   // We should probably rename the directory and delete it later.
   PostTaskAndReplyWithResult(
-      database_task_manager_->GetTaskRunner(),
-      FROM_HERE,
+      disk_cache_thread_.get(), FROM_HERE,
       base::Bind(&base::DeleteFile, GetDiskCachePath(), true),
       base::Bind(&ServiceWorkerStorage::DidDeleteDiskCache,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void ServiceWorkerStorage::DidDeleteDiskCache(
