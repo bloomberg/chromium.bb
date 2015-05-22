@@ -52,8 +52,8 @@ ClientSocketPoolManager* CreateSocketPoolManager(
 }  // unnamed namespace
 
 // The maximum receive window sizes for HTTP/2 sessions and streams.
-const int32 kSpdySessionMaxRecvWindowSize = 10 * 1024 * 1024;  // 10 MB
-const int32 kSpdyStreamMaxRecvWindowSize = 10 * 1024 * 1024;   // 10 MB
+const int32 kSpdySessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
+const int32 kSpdyStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
 // QUIC's socket receive buffer size.
 // We should adaptively set this buffer size, but for now, we'll use a size
 // that seems large enough to receive data at line rate for most connections,

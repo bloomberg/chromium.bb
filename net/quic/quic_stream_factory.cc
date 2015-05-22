@@ -57,8 +57,9 @@ enum CreateSessionFailure {
 // When a connection is idle for 30 seconds it will be closed.
 const int kIdleConnectionTimeoutSeconds = 30;
 
-// The initial receive window size for both streams and sessions.
-const int32 kInitialReceiveWindowSize = 10 * 1024 * 1024;  // 10MB
+// The maximum receive window sizes for QUIC sessions and streams.
+const int32 kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
+const int32 kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
 
 // Set the maximum number of undecryptable packets the connection will store.
 const int32 kMaxUndecryptablePackets = 100;
@@ -1073,8 +1074,9 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   QuicConfig config = config_;
   config.SetSocketReceiveBufferToSend(socket_receive_buffer_size_);
   config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
-  config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
-  config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);
+  config.SetInitialSessionFlowControlWindowToSend(
+      kQuicSessionMaxRecvWindowSize);
+  config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
   int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
   if (srtt > 0)
     config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
