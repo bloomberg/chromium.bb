@@ -295,7 +295,7 @@ uint64 EbmlElementSize(uint64 type, const uint8* value, uint64 size) {
   return ebml_size;
 }
 
-uint64 EbmlDateElementSize(uint64 type, int64 value) {
+uint64 EbmlDateElementSize(uint64 type) {
   // Size of EBML ID
   uint64 ebml_size = GetUIntSize(type);
 

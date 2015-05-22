@@ -1899,7 +1899,7 @@ bool SegmentInfo::Write(IMkvWriter* writer) {
   if (duration_ > 0.0)
     size += EbmlElementSize(kMkvDuration, static_cast<float>(duration_));
   if (date_utc_ != LLONG_MIN)
-    size += EbmlDateElementSize(kMkvDateUTC, date_utc_);
+    size += EbmlDateElementSize(kMkvDateUTC);
   size += EbmlElementSize(kMkvMuxingApp, muxing_app_);
   size += EbmlElementSize(kMkvWritingApp, writing_app_);
 
