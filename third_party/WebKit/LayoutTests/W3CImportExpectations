@@ -155,7 +155,8 @@ imported/web-platform-tests/workers [ Skip ]
 # crbug.com/490694: Needs to support *.headers.
 imported/web-platform-tests/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]
 
-# crbug.com/490939: Reflection tests are too large.  They cause time out frequently.
+# crbug.com/490939: The following tests are too large.  They cause time out frequently.
+imported/web-platform-tests/html/dom/interfaces.html [ Skip ]
 imported/web-platform-tests/html/dom/reflection-embedded.html [ Skip ]
 imported/web-platform-tests/html/dom/reflection-forms.html [ Skip ]
 imported/web-platform-tests/html/dom/reflection-grouping.html [ Skip ]
