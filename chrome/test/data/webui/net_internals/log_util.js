@@ -99,20 +99,21 @@ WaitForConstantsTask.prototype = {
 };
 
 /**
-  * A Task that creates a log dump in the browser process via NetLogLogger,
-  * waits to receive it via IPC, and and then loads it as a string.
+  * A Task that creates a log dump in the browser process via
+  * WriteToFileNetLogObserver, waits to receive it via IPC, and and then loads
+  * it as a string.
   * @param {integer} truncate The number of bytes to truncate from the end of
   *     the string, if any, to simulate a truncated log due to crash, or
-  *     quitting without properly shutting down a NetLogLogger.
+  *     quitting without properly shutting down a WriteToFileNetLogObserver.
   * @extends {NetInternalsTest.Task}
   */
-function GetNetLogLoggerStringAndLoadLogTask(truncate) {
+function GetNetLogFileContentsAndLoadLogTask(truncate) {
   NetInternalsTest.Task.call(this);
   this.setCompleteAsync(true);
   this.truncate_ = truncate;
 };
 
-GetNetLogLoggerStringAndLoadLogTask.prototype = {
+GetNetLogFileContentsAndLoadLogTask.prototype = {
   __proto__: NetInternalsTest.Task.prototype,
 
   /**
@@ -120,7 +121,7 @@ GetNetLogLoggerStringAndLoadLogTask.prototype = {
    */
   start: function() {
     NetInternalsTest.setCallback(this.onLogReceived_.bind(this));
-    chrome.send('getNetLogLoggerLog');
+    chrome.send('getNetLogFileContents');
   },
 
   /**
@@ -186,9 +187,9 @@ function checkViewsAfterLogLoaded() {
 
 /**
  * Checks the visibility of each view after loading a log dump created by the
- * NetLogLogger.  Also checks that the BrowserBridge is disabled.
+ * WriteToFileNetLogObserver. Also checks that the BrowserBridge is disabled.
  */
-function checkViewsAfterNetLogLoggerLogLoaded() {
+function checkViewsAfterNetLogFileLoaded() {
   expectTrue(g_browser.isDisabled());
   var tabVisibilityState = {
     capture: false,
@@ -244,16 +245,16 @@ TEST_F('NetInternalsTest', 'netInternalsLogUtilExportImport', function() {
 });
 
 /**
- * Exports a log dump by using a NetLogLogger and attempts to load it from a
- * string.  The string is passed to Javascript via an IPC rather than drag and
- * drop.
+ * Exports a log dump by using a WriteToFileNetLogObserver and attempts to load
+ * it from a string.  The string is passed to Javascript via an IPC rather than
+ * drag and drop.
  */
 TEST_F('NetInternalsTest',
-    'netInternalsLogUtilImportNetLogLoggerDump',
+    'netInternalsLogUtilImportNetLogFile',
     function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new GetNetLogLoggerStringAndLoadLogTask(0));
-  taskQueue.addFunctionTask(checkViewsAfterNetLogLoggerLogLoaded);
+  taskQueue.addTask(new GetNetLogFileContentsAndLoadLogTask(0));
+  taskQueue.addFunctionTask(checkViewsAfterNetLogFileLoaded);
   taskQueue.run(true);
 });
 
@@ -262,11 +263,11 @@ TEST_F('NetInternalsTest',
  * creating a log.
  */
 TEST_F('NetInternalsTest',
-    'netInternalsLogUtilImportNetLogLoggerDumpTruncated',
+    'netInternalsLogUtilImportNetLogFileTruncated',
     function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new GetNetLogLoggerStringAndLoadLogTask(20));
-  taskQueue.addFunctionTask(checkViewsAfterNetLogLoggerLogLoaded);
+  taskQueue.addTask(new GetNetLogFileContentsAndLoadLogTask(20));
+  taskQueue.addFunctionTask(checkViewsAfterNetLogFileLoaded);
   taskQueue.run(true);
 });
 

@@ -126,9 +126,9 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
   // Closes an incognito browser created with CreateIncognitoBrowser.
   void CloseIncognitoBrowser(const base::ListValue* list_value);
 
-  // Creates a simple log with a NetLogLogger, and returns it to the
-  // Javascript callback.
-  void GetNetLogLoggerLog(const base::ListValue* list_value);
+  // Creates a simple log using WriteToFileNetLogObserver, and returns it to
+  // the Javascript callback.
+  void GetNetLogFileContents(const base::ListValue* list_value);
 
   // Changes the data reduction proxy mode. A boolean is assumed to exist at
   // index 0 which enables the proxy is set to true.
@@ -170,9 +170,9 @@ void NetInternalsTest::MessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("closeIncognitoBrowser",
       base::Bind(&NetInternalsTest::MessageHandler::CloseIncognitoBrowser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getNetLogLoggerLog",
+  web_ui()->RegisterMessageCallback("getNetLogFileContents",
       base::Bind(
-          &NetInternalsTest::MessageHandler::GetNetLogLoggerLog,
+          &NetInternalsTest::MessageHandler::GetNetLogFileContents,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback("enableDataReductionProxy",
       base::Bind(
@@ -271,7 +271,7 @@ void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(
   incognito_browser_ = NULL;
 }
 
-void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
+void NetInternalsTest::MessageHandler::GetNetLogFileContents(
     const base::ListValue* list_value) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());

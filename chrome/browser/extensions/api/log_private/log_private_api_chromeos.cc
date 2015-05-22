@@ -254,9 +254,8 @@ void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
   }
 }
 
-void LogPrivateAPI::CreateFileForNetLogger(
-    const std::string& owner_extension_id,
-    base::ScopedFILE* file) {
+void LogPrivateAPI::CreateTempNetLogFile(const std::string& owner_extension_id,
+                                         base::ScopedFILE* file) {
   DCHECK(IsRunningOnSequenceThread());
 
   // Create app-specific subdirectory in session logs folder.
@@ -314,7 +313,7 @@ void LogPrivateAPI::MaybeStartNetInternalLogging(
         // on IO thread.
         GetSequencedTaskRunner()->PostTaskAndReply(
             FROM_HERE,
-            base::Bind(&LogPrivateAPI::CreateFileForNetLogger,
+            base::Bind(&LogPrivateAPI::CreateTempNetLogFile,
                        base::Unretained(this),
                        caller_extension_id,
                        file),

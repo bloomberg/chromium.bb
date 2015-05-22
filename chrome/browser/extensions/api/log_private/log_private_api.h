@@ -89,9 +89,9 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
   void PostPendingEntries();
   void AddEntriesOnUI(scoped_ptr<base::ListValue> value);
 
-  // Creates a file for use with a new instance of net::NetLogLogger.
-  void CreateFileForNetLogger(
-      const std::string& owner_extension_id, base::ScopedFILE* file);
+  // Creates a file that will be written to by net::WriteToFileNetLogObserver.
+  void CreateTempNetLogFile(const std::string& owner_extension_id,
+                            base::ScopedFILE* file);
 
   // Starts observing network events with a new |net_logger| instance.
   void StartObservingNetEvents(IOThread* io_thread, base::ScopedFILE* file);
