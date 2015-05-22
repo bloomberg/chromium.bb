@@ -205,6 +205,9 @@ const char kDisableOneCopy[]                = "disable-one-copy";
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
+// Disables the Permissions API.
+const char kDisablePermissionsAPI[]         = "disable-permissions-api";
+
 // Disables compositor-accelerated touch-screen pinch gestures.
 const char kDisablePinch[]                  = "disable-pinch";
 
@@ -239,7 +242,7 @@ const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 
 // Disables the Web Speech API.
-const char kDisableSpeechAPI[]                 = "disable-speech-api";
+const char kDisableSpeechAPI[]              = "disable-speech-api";
 
 // Disables SVG 1.1 DOM.
 const char kDisableSVG1DOM[]                = "disable-svg1dom";
