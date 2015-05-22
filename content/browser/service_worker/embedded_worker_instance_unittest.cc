@@ -160,34 +160,4 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, InstanceDestroyedBeforeStartFinishes) {
-  scoped_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker();
-  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
-
-  const int64 service_worker_version_id = 55L;
-  const GURL pattern("http://example.com/");
-  const GURL url("http://example.com/worker.js");
-
-  ServiceWorkerStatusCode status;
-  base::RunLoop run_loop;
-  // Begin starting the worker.
-  context()->process_manager()->AddProcessReferenceToPattern(
-      pattern, kRenderProcessId);
-  worker->Start(
-      service_worker_version_id,
-      pattern,
-      url,
-      false,
-      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-  // But destroy it before it gets a chance to complete.
-  worker.reset();
-  run_loop.Run();
-  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
-
-  // Verify that we didn't send the message to start the worker.
-  ASSERT_FALSE(
-      ipc_sink()->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID));
-}
-
 }  // namespace content

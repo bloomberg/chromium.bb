@@ -125,8 +125,7 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
 };
 
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
-  if (status_ == STARTING || status_ == RUNNING)
-    Stop();
+  DCHECK(status_ == STOPPING || status_ == STOPPED);
   devtools_proxy_.reset();
   if (context_ && process_id_ != -1)
     context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
@@ -178,10 +177,11 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   DCHECK(status_ == STARTING || status_ == RUNNING) << status_;
   ServiceWorkerStatusCode status =
       registry_->StopWorker(process_id_, embedded_worker_id_);
-  if (status == SERVICE_WORKER_OK) {
-    status_ = STOPPING;
-    FOR_EACH_OBSERVER(Listener, listener_list_, OnStopping());
-  }
+  // StopWorker could fail if we can't talk to the worker, which should
+  // basically means it's being terminated, so unconditionally change
+  // the status to STOPPING.
+  status_ = STOPPING;
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnStopping());
   return status;
 }
 

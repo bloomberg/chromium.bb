@@ -121,6 +121,15 @@ class MessageReceiverFromWorker : public EmbeddedWorkerInstance::Listener {
 
 class ServiceWorkerVersionTest : public testing::Test {
  protected:
+  struct RunningStateListener : public ServiceWorkerVersion::Listener {
+    RunningStateListener() : last_status(ServiceWorkerVersion::STOPPED) {}
+    ~RunningStateListener() override {}
+    void OnRunningStateChanged(ServiceWorkerVersion* version) override {
+      last_status = version->running_status();
+    }
+    ServiceWorkerVersion::RunningStatus last_status;
+  };
+
   ServiceWorkerVersionTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
@@ -471,7 +480,6 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   EXPECT_LT(idle_time, version_->idle_time_);
 }
 
-
 TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(CreateReceiverOnCurrentThread(&status));
@@ -499,6 +507,21 @@ TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+}
+
+TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
+  RunningStateListener listener;
+  version_->AddListener(&listener);
+
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, listener.last_status);
+
+  version_ = nullptr;
+  EXPECT_EQ(ServiceWorkerVersion::STOPPING, listener.last_status);
 }
 
 TEST_F(ServiceWorkerWaitForeverInFetchTest, RequestTimeout) {

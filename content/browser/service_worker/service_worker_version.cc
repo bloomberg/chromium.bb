@@ -439,10 +439,12 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
     RecordStartWorkerResult(SERVICE_WORKER_ERROR_TIMEOUT);
   }
 
-  embedded_worker_->RemoveListener(this);
   if (context_)
     context_->RemoveLiveVersion(version_id_);
-  // EmbeddedWorker's dtor sends StopWorker if it's still running.
+
+  if (running_status() == STARTING || running_status() == RUNNING)
+    embedded_worker_->Stop();
+  embedded_worker_->RemoveListener(this);
 }
 
 void ServiceWorkerVersion::SetStatus(Status status) {
@@ -920,7 +922,8 @@ void ServiceWorkerVersion::SetStartWorkerStatusCode(
 void ServiceWorkerVersion::Doom() {
   DCHECK(!HasControllee());
   SetStatus(REDUNDANT);
-  StopWorkerIfIdle();
+  if (running_status() == STARTING || running_status() == RUNNING)
+    embedded_worker_->Stop();
   if (!context_)
     return;
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;

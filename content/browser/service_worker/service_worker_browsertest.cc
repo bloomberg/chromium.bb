@@ -354,6 +354,10 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
   void TearDownOnIOThread() override {
     if (worker_) {
       worker_->RemoveListener(this);
+      if (worker_->status() == EmbeddedWorkerInstance::STARTING ||
+          worker_->status() == EmbeddedWorkerInstance::RUNNING) {
+        worker_->Stop();
+      }
       worker_.reset();
     }
   }
