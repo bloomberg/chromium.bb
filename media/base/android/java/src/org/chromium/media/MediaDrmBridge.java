@@ -451,10 +451,23 @@ public class MediaDrmBridge {
         if (optionalParameters == null) {
             optionalParameters = new HashMap<String, String>();
         }
-        MediaDrm.KeyRequest request = mMediaDrm.getKeyRequest(
-                sessionId, data, mime, MediaDrm.KEY_TYPE_STREAMING, optionalParameters);
+
+        MediaDrm.KeyRequest request = null;
+
+        try {
+            request = mMediaDrm.getKeyRequest(
+                    sessionId, data, mime, MediaDrm.KEY_TYPE_STREAMING, optionalParameters);
+        } catch (IllegalStateException e) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && e
+                    instanceof android.media.MediaDrm.MediaDrmStateException) {
+                // See b/21307186 for details.
+                Log.e(TAG, "MediaDrmStateException fired during getKeyRequest().", e);
+            }
+        }
+
         String result = (request != null) ? "successed" : "failed";
         Log.d(TAG, "getKeyRequest " + result + "!");
+
         return request;
     }
 
