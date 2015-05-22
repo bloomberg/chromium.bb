@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -30,7 +31,9 @@ class PasswordManagerDriver;
 class PasswordStore;
 struct CredentialInfo;
 
-class CredentialManagerDispatcher : public content::WebContentsObserver {
+class CredentialManagerDispatcher
+    : public content::WebContentsObserver,
+      public CredentialManagerPendingRequestTaskDelegate {
  public:
   CredentialManagerDispatcher(content::WebContents* web_contents,
                               PasswordManagerClient* client);
@@ -67,21 +70,23 @@ class CredentialManagerDispatcher : public content::WebContentsObserver {
   using CredentialCallback =
       base::Callback<void(const autofill::PasswordForm&)>;
 
-  PasswordManagerClient* client() const { return client_; }
+  // CredentialManagerPendingRequestTaskDelegate:
+  bool IsZeroClickAllowed() const override;
+  GURL GetOrigin() const override;
+  void NotifyUserAutoSignin(
+      ScopedVector<autofill::PasswordForm> local_forms) override;
+  void SendCredential(int request_id, const CredentialInfo& info) override;
+  PasswordManagerClient* client() const override;
 
  private:
-  class PendingRequestTask;
   class PendingSignedOutTask;
 
   PasswordStore* GetPasswordStore();
-
-  bool IsZeroClickAllowed() const;
 
   // Returns the driver for the current main frame.
   // Virtual for testing.
   virtual base::WeakPtr<PasswordManagerDriver> GetDriver();
 
-  void SendCredential(int request_id, const CredentialInfo& info);
   void DoneSigningOut();
 
   PasswordManagerClient* client_;
@@ -94,7 +99,7 @@ class CredentialManagerDispatcher : public content::WebContentsObserver {
   // PasswordStore; we push enough data into Pending*Task objects so that
   // they can properly respond to the request once the PasswordStore gives
   // us data.
-  scoped_ptr<PendingRequestTask> pending_request_;
+  scoped_ptr<CredentialManagerPendingRequestTask> pending_request_;
   scoped_ptr<PendingSignedOutTask> pending_sign_out_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);

@@ -46,6 +46,8 @@
         'password_manager/core/browser/affiliation_utils.h',
         'password_manager/core/browser/browser_save_password_progress_logger.cc',
         'password_manager/core/browser/browser_save_password_progress_logger.h',
+        'password_manager/core/browser/credential_manager_pending_request_task.cc',
+        'password_manager/core/browser/credential_manager_pending_request_task.h',
         'password_manager/core/browser/export/csv_writer.cc',
         'password_manager/core/browser/export/csv_writer.h',
         'password_manager/core/browser/facet_manager.cc',
