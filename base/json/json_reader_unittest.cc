@@ -242,7 +242,7 @@ TEST(JSONReaderTest, Reading) {
   EXPECT_FALSE(root.get());
 
   // Basic array
-  root.reset(JSONReader::Read("[true, false, null]"));
+  root.reset(JSONReader::DeprecatedRead("[true, false, null]"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_LIST));
   list = static_cast<ListValue*>(root.get());
@@ -250,49 +250,53 @@ TEST(JSONReaderTest, Reading) {
 
   // Test with trailing comma.  Should be parsed the same as above.
   scoped_ptr<Value> root2;
-  root2.reset(JSONReader::Read("[true, false, null, ]",
-                               JSON_ALLOW_TRAILING_COMMAS));
+  root2.reset(JSONReader::DeprecatedRead("[true, false, null, ]",
+                                         JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_TRUE(root->Equals(root2.get()));
 
   // Empty array
-  root.reset(JSONReader::Read("[]"));
+  root.reset(JSONReader::DeprecatedRead("[]"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_LIST));
   list = static_cast<ListValue*>(root.get());
   EXPECT_EQ(0U, list->GetSize());
 
   // Nested arrays
-  root.reset(JSONReader::Read("[[true], [], [false, [], [null]], null]"));
+  root.reset(
+      JSONReader::DeprecatedRead("[[true], [], [false, [], [null]], null]"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_LIST));
   list = static_cast<ListValue*>(root.get());
   EXPECT_EQ(4U, list->GetSize());
 
   // Lots of trailing commas.
-  root2.reset(JSONReader::Read("[[true], [], [false, [], [null, ]  , ], null,]",
-                               JSON_ALLOW_TRAILING_COMMAS));
+  root2.reset(JSONReader::DeprecatedRead(
+      "[[true], [], [false, [], [null, ]  , ], null,]",
+      JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_TRUE(root->Equals(root2.get()));
 
   // Invalid, missing close brace.
-  root.reset(JSONReader::Read("[[true], [], [false, [], [null]], null"));
+  root.reset(
+      JSONReader::DeprecatedRead("[[true], [], [false, [], [null]], null"));
   EXPECT_FALSE(root.get());
 
   // Invalid, too many commas
-  root.reset(JSONReader::Read("[true,, null]"));
+  root.reset(JSONReader::DeprecatedRead("[true,, null]"));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("[true,, null]", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(
+      JSONReader::DeprecatedRead("[true,, null]", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
 
   // Invalid, no commas
-  root.reset(JSONReader::Read("[true null]"));
+  root.reset(JSONReader::DeprecatedRead("[true null]"));
   EXPECT_FALSE(root.get());
 
   // Invalid, trailing comma
-  root.reset(JSONReader::Read("[true,]"));
+  root.reset(JSONReader::DeprecatedRead("[true,]"));
   EXPECT_FALSE(root.get());
 
   // Valid if we set |allow_trailing_comma| to true.
-  root.reset(JSONReader::Read("[true,]", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(JSONReader::DeprecatedRead("[true,]", JSON_ALLOW_TRAILING_COMMAS));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_LIST));
   list = static_cast<ListValue*>(root.get());
@@ -306,21 +310,24 @@ TEST(JSONReaderTest, Reading) {
 
   // Don't allow empty elements, even if |allow_trailing_comma| is
   // true.
-  root.reset(JSONReader::Read("[,]", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(JSONReader::DeprecatedRead("[,]", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("[true,,]", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(
+      JSONReader::DeprecatedRead("[true,,]", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("[,true,]", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(
+      JSONReader::DeprecatedRead("[,true,]", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("[true,,false]", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(
+      JSONReader::DeprecatedRead("[true,,false]", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
 
   // Test objects
-  root.reset(JSONReader::Read("{}"));
+  root.reset(JSONReader::DeprecatedRead("{}"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
 
-  root.reset(JSONReader::Read(
+  root.reset(JSONReader::DeprecatedRead(
       "{\"number\":9.87654321, \"null\":null , \"\\x53\" : \"str\" }"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
@@ -335,33 +342,35 @@ TEST(JSONReaderTest, Reading) {
   EXPECT_TRUE(dict_val->GetString("S", &str_val));
   EXPECT_EQ("str", str_val);
 
-  root2.reset(JSONReader::Read(
+  root2.reset(JSONReader::DeprecatedRead(
       "{\"number\":9.87654321, \"null\":null , \"\\x53\" : \"str\", }",
       JSON_ALLOW_TRAILING_COMMAS));
   ASSERT_TRUE(root2.get());
   EXPECT_TRUE(root->Equals(root2.get()));
 
   // Test newline equivalence.
-  root2.reset(JSONReader::Read(
+  root2.reset(JSONReader::DeprecatedRead(
       "{\n"
       "  \"number\":9.87654321,\n"
       "  \"null\":null,\n"
       "  \"\\x53\":\"str\",\n"
-      "}\n", JSON_ALLOW_TRAILING_COMMAS));
+      "}\n",
+      JSON_ALLOW_TRAILING_COMMAS));
   ASSERT_TRUE(root2.get());
   EXPECT_TRUE(root->Equals(root2.get()));
 
-  root2.reset(JSONReader::Read(
+  root2.reset(JSONReader::DeprecatedRead(
       "{\r\n"
       "  \"number\":9.87654321,\r\n"
       "  \"null\":null,\r\n"
       "  \"\\x53\":\"str\",\r\n"
-      "}\r\n", JSON_ALLOW_TRAILING_COMMAS));
+      "}\r\n",
+      JSON_ALLOW_TRAILING_COMMAS));
   ASSERT_TRUE(root2.get());
   EXPECT_TRUE(root->Equals(root2.get()));
 
   // Test nesting
-  root.reset(JSONReader::Read(
+  root.reset(JSONReader::DeprecatedRead(
       "{\"inner\":{\"array\":[true]},\"false\":false,\"d\":{}}"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
@@ -377,13 +386,13 @@ TEST(JSONReaderTest, Reading) {
   inner_dict = NULL;
   EXPECT_TRUE(dict_val->GetDictionary("d", &inner_dict));
 
-  root2.reset(JSONReader::Read(
+  root2.reset(JSONReader::DeprecatedRead(
       "{\"inner\": {\"array\":[true] , },\"false\":false,\"d\":{},}",
       JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_TRUE(root->Equals(root2.get()));
 
   // Test keys with periods
-  root.reset(JSONReader::Read(
+  root.reset(JSONReader::DeprecatedRead(
       "{\"a.b\":3,\"c\":2,\"d.e.f\":{\"g.h.i.j\":1}}"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
@@ -401,7 +410,7 @@ TEST(JSONReaderTest, Reading) {
                                                          &integer_value));
   EXPECT_EQ(1, integer_value);
 
-  root.reset(JSONReader::Read("{\"a\":{\"b\":2},\"a.b\":1}"));
+  root.reset(JSONReader::DeprecatedRead("{\"a\":{\"b\":2},\"a.b\":1}"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
   dict_val = static_cast<DictionaryValue*>(root.get());
@@ -411,45 +420,47 @@ TEST(JSONReaderTest, Reading) {
   EXPECT_EQ(1, integer_value);
 
   // Invalid, no closing brace
-  root.reset(JSONReader::Read("{\"a\": true"));
+  root.reset(JSONReader::DeprecatedRead("{\"a\": true"));
   EXPECT_FALSE(root.get());
 
   // Invalid, keys must be quoted
-  root.reset(JSONReader::Read("{foo:true}"));
+  root.reset(JSONReader::DeprecatedRead("{foo:true}"));
   EXPECT_FALSE(root.get());
 
   // Invalid, trailing comma
-  root.reset(JSONReader::Read("{\"a\":true,}"));
+  root.reset(JSONReader::DeprecatedRead("{\"a\":true,}"));
   EXPECT_FALSE(root.get());
 
   // Invalid, too many commas
-  root.reset(JSONReader::Read("{\"a\":true,,\"b\":false}"));
+  root.reset(JSONReader::DeprecatedRead("{\"a\":true,,\"b\":false}"));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("{\"a\":true,,\"b\":false}",
-                              JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(JSONReader::DeprecatedRead("{\"a\":true,,\"b\":false}",
+                                        JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
 
   // Invalid, no separator
-  root.reset(JSONReader::Read("{\"a\" \"b\"}"));
+  root.reset(JSONReader::DeprecatedRead("{\"a\" \"b\"}"));
   EXPECT_FALSE(root.get());
 
   // Invalid, lone comma.
-  root.reset(JSONReader::Read("{,}"));
+  root.reset(JSONReader::DeprecatedRead("{,}"));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("{,}", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(JSONReader::DeprecatedRead("{,}", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("{\"a\":true,,}", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(
+      JSONReader::DeprecatedRead("{\"a\":true,,}", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("{,\"a\":true}", JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(
+      JSONReader::DeprecatedRead("{,\"a\":true}", JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
-  root.reset(JSONReader::Read("{\"a\":true,,\"b\":false}",
-                              JSON_ALLOW_TRAILING_COMMAS));
+  root.reset(JSONReader::DeprecatedRead("{\"a\":true,,\"b\":false}",
+                                        JSON_ALLOW_TRAILING_COMMAS));
   EXPECT_FALSE(root.get());
 
   // Test stack overflow
   std::string evil(1000000, '[');
   evil.append(std::string(1000000, ']'));
-  root.reset(JSONReader::Read(evil));
+  root.reset(JSONReader::DeprecatedRead(evil));
   EXPECT_FALSE(root.get());
 
   // A few thousand adjacent lists is fine.
@@ -459,7 +470,7 @@ TEST(JSONReaderTest, Reading) {
     not_evil.append("[],");
   }
   not_evil.append("[]]");
-  root.reset(JSONReader::Read(not_evil));
+  root.reset(JSONReader::DeprecatedRead(not_evil));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->IsType(Value::TYPE_LIST));
   list = static_cast<ListValue*>(root.get());
@@ -521,20 +532,20 @@ TEST(JSONReaderTest, Reading) {
   }
 
   // Test literal root objects.
-  root.reset(JSONReader::Read("null"));
+  root.reset(JSONReader::DeprecatedRead("null"));
   EXPECT_TRUE(root->IsType(Value::TYPE_NULL));
 
-  root.reset(JSONReader::Read("true"));
+  root.reset(JSONReader::DeprecatedRead("true"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->GetAsBoolean(&bool_value));
   EXPECT_TRUE(bool_value);
 
-  root.reset(JSONReader::Read("10"));
+  root.reset(JSONReader::DeprecatedRead("10"));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->GetAsInteger(&integer_value));
   EXPECT_EQ(10, integer_value);
 
-  root.reset(JSONReader::Read("\"root\""));
+  root.reset(JSONReader::DeprecatedRead("\"root\""));
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(root->GetAsString(&str_val));
   EXPECT_EQ("root", str_val);
@@ -567,7 +578,7 @@ TEST(JSONReaderTest, StringOptimizations) {
   scoped_ptr<Value> list_value_1;
 
   {
-    scoped_ptr<Value> root(JSONReader::Read(
+    scoped_ptr<Value> root = JSONReader::Read(
         "{"
         "  \"test\": {"
         "    \"foo\": true,"
@@ -579,7 +590,8 @@ TEST(JSONReaderTest, StringOptimizations) {
         "    \"a\","
         "    \"b\""
         "  ]"
-        "}", JSON_DETACHABLE_CHILDREN));
+        "}",
+        JSON_DETACHABLE_CHILDREN);
     ASSERT_TRUE(root.get());
 
     DictionaryValue* root_dict = NULL;

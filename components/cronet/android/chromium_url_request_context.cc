@@ -70,7 +70,7 @@ static jlong CreateRequestContextAdapter(JNIEnv* env,
 
   std::string config = ConvertJavaStringToUTF8(env, jconfig);
 
-  scoped_ptr<base::Value> config_value(base::JSONReader::Read(config));
+  scoped_ptr<base::Value> config_value = base::JSONReader::Read(config);
   if (!config_value || !config_value->IsType(base::Value::TYPE_DICTIONARY)) {
     DLOG(ERROR) << "Bad JSON: " << config;
     return 0;

@@ -59,7 +59,7 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
         "    JSON.stringify(peerConnectionDataStore));",
         webrtc_internals_tab);
 
-    base::Value* parsed_json = base::JSONReader::Read(all_stats_json);
+    base::Value* parsed_json = base::JSONReader::DeprecatedRead(all_stats_json);
     base::DictionaryValue* result;
     if (parsed_json && parsed_json->GetAsDictionary(&result))
       return result;

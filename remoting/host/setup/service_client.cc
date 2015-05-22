@@ -145,7 +145,7 @@ void ServiceClient::Core::HandleResponse(const net::URLFetcher* source) {
         {
           std::string data;
           source->GetResponseAsString(&data);
-          scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
+          scoped_ptr<base::Value> message_value = base::JSONReader::Read(data);
           base::DictionaryValue *dict;
           std::string code;
           if (message_value.get() &&

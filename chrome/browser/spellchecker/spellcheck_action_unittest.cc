@@ -89,7 +89,7 @@ TEST(SpellcheckActionTest, SerializeTest) {
     scoped_ptr<base::DictionaryValue> serialized(
         kTestCases[i].action.Serialize());
     scoped_ptr<base::Value> expected(
-        base::JSONReader::Read(kTestCases[i].expected));
+        base::JSONReader::DeprecatedRead(kTestCases[i].expected));
     EXPECT_TRUE(serialized->Equals(expected.get()));
   }
 }

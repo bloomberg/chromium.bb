@@ -67,7 +67,7 @@ scoped_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
   std::string policy_overrides;
   if (from.GetString(key::kRemoteAccessHostDebugOverridePolicies,
                      &policy_overrides)) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(policy_overrides));
+    scoped_ptr<base::Value> value = base::JSONReader::Read(policy_overrides);
     const base::DictionaryValue* override_values;
     if (value && value->GetAsDictionary(&override_values)) {
       to->MergeDictionary(override_values);

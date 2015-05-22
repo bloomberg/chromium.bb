@@ -198,8 +198,9 @@ class ClientCertResolverTest : public testing::Test,
         base::StringPrintf(kTestPolicyTemplate, test_ca_cert_pem_.c_str());
 
     std::string error;
-    scoped_ptr<base::Value> policy_value(base::JSONReader::ReadAndReturnError(
-        policy_json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
+    scoped_ptr<base::Value> policy_value(
+        base::JSONReader::DeprecatedReadAndReturnError(
+            policy_json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
     ASSERT_TRUE(policy_value) << error;
 
     base::ListValue* policy = NULL;

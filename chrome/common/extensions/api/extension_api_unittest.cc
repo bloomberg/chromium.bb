@@ -170,7 +170,7 @@ TEST(ExtensionAPITest, APIFeatures) {
       api_features_path, &api_features_str)) << "api_features.json";
 
   scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
-      base::JSONReader::Read(api_features_str)));
+      base::JSONReader::DeprecatedRead(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
@@ -250,7 +250,7 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
       api_features_path, &api_features_str)) << "api_features.json";
 
   scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
-      base::JSONReader::Read(api_features_str)));
+      base::JSONReader::DeprecatedRead(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {

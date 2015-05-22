@@ -152,7 +152,7 @@ const char BOOKMARKS_TREE_INVALID_PARENTS_JSON[] =
 
 // Builds the base::Values tree from a json string above.
 scoped_ptr<base::ListValue> CreateTree(const char* json) {
-  base::Value* value = base::JSONReader::Read(json);
+  base::Value* value = base::JSONReader::DeprecatedRead(json);
   EXPECT_NE(value, nullptr);
   base::ListValue* list;
   EXPECT_TRUE(value->GetAsList(&list));

@@ -104,7 +104,7 @@ enum DomainCheckErrors {
 // add an "items" attribute to lists that don't declare it.
 std::string PatchSchema(const std::string& schema) {
   base::JSONParserOptions options = base::JSON_PARSE_RFC;
-  scoped_ptr<base::Value> json(base::JSONReader::Read(schema, options));
+  scoped_ptr<base::Value> json = base::JSONReader::Read(schema, options);
   base::DictionaryValue* dict = NULL;
   base::DictionaryValue* properties = NULL;
   if (!json ||

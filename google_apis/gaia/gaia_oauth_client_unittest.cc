@@ -368,7 +368,7 @@ TEST_F(GaiaOAuthClientTest, GetUserInfo) {
   auth.GetUserInfo("access_token", 1, &delegate);
 
   scoped_ptr<base::Value> value(
-      base::JSONReader::Read(kDummyFullUserInfoResult));
+      base::JSONReader::DeprecatedRead(kDummyFullUserInfoResult));
   DCHECK(value);
   ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
   base::DictionaryValue* expected_result;

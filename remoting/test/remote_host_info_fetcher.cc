@@ -101,7 +101,7 @@ void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   scoped_ptr<base::Value> response_value(
-      base::JSONReader::Read(response_string));
+      base::JSONReader::DeprecatedRead(response_string));
   if (!response_value ||
       !response_value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Failed to parse response string to JSON";

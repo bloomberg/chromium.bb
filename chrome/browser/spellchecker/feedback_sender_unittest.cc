@@ -416,8 +416,8 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
                                       std::vector<uint32>());
   std::string actual_data = GetUploadData();
-  scoped_ptr<base::DictionaryValue> actual(
-      static_cast<base::DictionaryValue*>(base::JSONReader::Read(actual_data)));
+  scoped_ptr<base::DictionaryValue> actual(static_cast<base::DictionaryValue*>(
+      base::JSONReader::DeprecatedRead(actual_data)));
   actual->SetString("params.key", "TestDummyKey");
   base::ListValue* suggestions = NULL;
   actual->GetList("params.suggestionInfo", &suggestions);
@@ -443,7 +443,7 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
       "\"suggestions\":[\"Hello\"],"
       "\"timestamp\":\"9001\","
       "\"userActions\":[{\"actionType\":\"NO_ACTION\"}]}]}}";
-  scoped_ptr<base::Value> expected(base::JSONReader::Read(expected_data));
+  scoped_ptr<base::Value> expected = base::JSONReader::Read(expected_data);
   EXPECT_TRUE(expected->Equals(actual.get()))
       << "Expected data: " << expected_data
       << "\nActual data:   " << actual_data;

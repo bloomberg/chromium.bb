@@ -138,7 +138,7 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
     // Valid response.
     case net::HTTP_OK: {
       std::string error_code;
-      scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
+      scoped_ptr<base::Value> message_value = base::JSONReader::Read(data);
       if (message_value.get() &&
           message_value->IsType(base::Value::TYPE_DICTIONARY)) {
         response_dict.reset(

@@ -652,8 +652,9 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "    \"Colors\": \"White\""
       "  }"
       "}";
-  scoped_ptr<base::Value> policy_map_value(base::JSONReader::ReadAndReturnError(
-      kPolicyMapJson, base::JSON_PARSE_RFC, NULL, &error));
+  scoped_ptr<base::Value> policy_map_value(
+      base::JSONReader::DeprecatedReadAndReturnError(
+          kPolicyMapJson, base::JSON_PARSE_RFC, NULL, &error));
   ASSERT_TRUE(policy_map_value) << error;
 
   const base::DictionaryValue* policy_map_dict = NULL;
@@ -711,8 +712,9 @@ TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "    \"Colors\": \"Green\""
       "  }"
       "}";
-  scoped_ptr<base::Value> policy_map_value(base::JSONReader::ReadAndReturnError(
-      kPolicyMapJson, base::JSON_PARSE_RFC, NULL, &error));
+  scoped_ptr<base::Value> policy_map_value(
+      base::JSONReader::DeprecatedReadAndReturnError(
+          kPolicyMapJson, base::JSON_PARSE_RFC, NULL, &error));
   ASSERT_TRUE(policy_map_value) << error;
 
   const base::DictionaryValue* policy_map_dict = NULL;

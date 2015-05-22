@@ -440,7 +440,7 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
   if (!EventRouter::Get(profile_))
     return;
 
-  scoped_ptr<base::Value> result(base::JSONReader::Read(message));
+  scoped_ptr<base::Value> result = base::JSONReader::Read(message);
   if (!result->IsType(base::Value::TYPE_DICTIONARY))
     return;
   base::DictionaryValue* dictionary =

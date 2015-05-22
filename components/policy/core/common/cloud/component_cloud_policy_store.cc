@@ -323,7 +323,7 @@ bool ComponentCloudPolicyStore::ValidateData(
 
 bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
                                             PolicyMap* policy) {
-  scoped_ptr<base::Value> json(base::JSONReader::Read(
+  scoped_ptr<base::Value> json(base::JSONReader::DeprecatedRead(
       data, base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN));
   base::DictionaryValue* dict = NULL;
   if (!json || !json->GetAsDictionary(&dict))

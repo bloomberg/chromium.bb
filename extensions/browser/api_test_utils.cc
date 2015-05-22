@@ -30,15 +30,16 @@ class TestFunctionDispatcherDelegate
   DISALLOW_COPY_AND_ASSIGN(TestFunctionDispatcherDelegate);
 };
 
-base::Value* ParseJSON(const std::string& data) {
+scoped_ptr<base::Value> ParseJSON(const std::string& data) {
   return base::JSONReader::Read(data);
 }
 
-base::ListValue* ParseList(const std::string& data) {
-  base::Value* result = ParseJSON(data);
-  base::ListValue* list = NULL;
-  result->GetAsList(&list);
-  return list;
+scoped_ptr<base::ListValue> ParseList(const std::string& data) {
+  scoped_ptr<base::Value> result = ParseJSON(data);
+  scoped_ptr<base::ListValue> list_result;
+  if (result->GetAsList(nullptr))
+    list_result.reset(static_cast<base::ListValue*>(result.release()));
+  return list_result;
 }
 
 // This helps us be able to wait until an UIThreadExtensionFunction calls
@@ -84,11 +85,12 @@ namespace extensions {
 
 namespace api_test_utils {
 
-base::DictionaryValue* ParseDictionary(const std::string& data) {
-  base::Value* result = ParseJSON(data);
-  base::DictionaryValue* dict = NULL;
-  result->GetAsDictionary(&dict);
-  return dict;
+scoped_ptr<base::DictionaryValue> ParseDictionary(const std::string& data) {
+  scoped_ptr<base::Value> result = ParseJSON(data);
+  scoped_ptr<base::DictionaryValue> dict_result;
+  if (result->GetAsDictionary(nullptr))
+    dict_result.reset(static_cast<base::DictionaryValue*>(result.release()));
+  return dict_result;
 }
 
 bool GetBoolean(const base::DictionaryValue* val, const std::string& key) {
@@ -137,8 +139,8 @@ scoped_refptr<Extension> CreateExtension(
 
 scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
     Manifest::Location location) {
-  scoped_ptr<base::DictionaryValue> test_extension_value(
-      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
+  scoped_ptr<base::DictionaryValue> test_extension_value =
+      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}");
   return CreateExtension(location, test_extension_value.get(), std::string());
 }
 
@@ -226,7 +228,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
                  content::BrowserContext* context,
                  scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags) {
-  scoped_ptr<base::ListValue> parsed_args(ParseList(args));
+  scoped_ptr<base::ListValue> parsed_args = ParseList(args);
   EXPECT_TRUE(parsed_args.get())
       << "Could not parse extension function arguments: " << args;
   return RunFunction(

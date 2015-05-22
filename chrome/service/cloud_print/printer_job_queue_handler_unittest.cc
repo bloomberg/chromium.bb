@@ -55,7 +55,7 @@ class PrinterJobQueueHandlerTest : public ::testing::Test {
   base::DictionaryValue* json_data_;
   void SetUp() override {
     base::JSONReader json_reader;
-    data_ = json_reader.Read(kJobListResponse);
+    data_ = json_reader.DeprecatedRead(kJobListResponse);
     data_->GetAsDictionary(&json_data_);
   }
 

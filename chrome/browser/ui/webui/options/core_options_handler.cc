@@ -587,8 +587,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
         NOTREACHED();
         return;
       }
-      temp_value.reset(
-          base::JSONReader::Read(json_string));
+      temp_value.reset(base::JSONReader::DeprecatedRead(json_string));
       value = temp_value.get();
       if (!value->IsType(base::Value::TYPE_LIST)) {
         NOTREACHED();

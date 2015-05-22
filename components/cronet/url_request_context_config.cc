@@ -42,7 +42,7 @@ URLRequestContextConfig::~URLRequestContextConfig() {
 }
 
 bool URLRequestContextConfig::LoadFromJSON(const std::string& config_string) {
-  scoped_ptr<base::Value> config_value(base::JSONReader::Read(config_string));
+  scoped_ptr<base::Value> config_value = base::JSONReader::Read(config_string);
   if (!config_value || !config_value->IsType(base::Value::TYPE_DICTIONARY)) {
     DLOG(ERROR) << "Bad JSON: " << config_string;
     return false;

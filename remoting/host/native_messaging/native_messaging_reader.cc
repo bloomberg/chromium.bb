@@ -109,7 +109,7 @@ void NativeMessagingReader::Core::ReadMessage() {
       return;
     }
 
-    scoped_ptr<base::Value> message(base::JSONReader::Read(message_json));
+    scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
     if (!message) {
       LOG(ERROR) << "Failed to parse JSON message: " << message;
       NotifyEof();

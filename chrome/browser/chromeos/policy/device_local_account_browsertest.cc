@@ -1724,7 +1724,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
                                                      get_locale_list,
                                                      &json));
-  scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> value_ptr = base::JSONReader::Read(json);
   const base::ListValue* locales = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsList(&locales));
@@ -1783,7 +1783,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
                                                      get_locale_list,
                                                      &json));
-  value_ptr.reset(base::JSONReader::Read(json));
+  value_ptr.reset(base::JSONReader::DeprecatedRead(json));
   locales = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsList(&locales));
@@ -1867,7 +1867,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
           user_id_1_.c_str()),
       &json));
   LOG(ERROR) << json;
-  value_ptr.reset(base::JSONReader::Read(json));
+  value_ptr.reset(base::JSONReader::DeprecatedRead(json));
   const base::DictionaryValue* state = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsDictionary(&state));
@@ -2282,7 +2282,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
       "  observer.observe(screenElement, options);"
       "}",
       &json));
-  scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> value_ptr = base::JSONReader::Read(json);
   const base::DictionaryValue* status = NULL;
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->GetAsDictionary(&status));

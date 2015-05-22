@@ -67,7 +67,7 @@ class PolicyHeaderServiceTest : public testing::Test {
       std::string decoded;
       base::Base64Decode(header, &decoded);
       // Parse the JSON.
-      scoped_ptr<base::Value> value(base::JSONReader::Read(decoded));
+      scoped_ptr<base::Value> value = base::JSONReader::Read(decoded);
       ASSERT_TRUE(value);
       base::DictionaryValue* dict;
       EXPECT_TRUE(value->GetAsDictionary(&dict));

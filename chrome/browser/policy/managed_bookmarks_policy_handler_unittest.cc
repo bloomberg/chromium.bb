@@ -31,10 +31,8 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
 
   PolicyMap policy;
-  policy.Set(key::kManagedBookmarks,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             base::JSONReader::Read(
+  policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::JSONReader::DeprecatedRead(
                  "["
                  "  {"
                  "    \"name\": \"Google\","
@@ -129,10 +127,8 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
 #if defined(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
   PolicyMap policy;
-  policy.Set(key::kManagedBookmarks,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             base::JSONReader::Read(
+  policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::JSONReader::DeprecatedRead(
                  "["
                  "  {"
                  "    \"name\": \"Google\","
@@ -160,10 +156,8 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
 #if defined(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
   PolicyMap policy;
-  policy.Set(key::kManagedBookmarks,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             base::JSONReader::Read(
+  policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::JSONReader::DeprecatedRead(
                  "["
                  "  {"
                  "    \"name\": \"Empty\","

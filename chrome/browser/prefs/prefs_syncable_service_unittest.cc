@@ -164,7 +164,7 @@ class PrefsSyncableServiceTest : public testing::Test {
     syncer::SyncChangeList::const_iterator it = list.begin();
     for (; it != list.end(); ++it) {
       if (syncer::SyncDataLocal(it->sync_data()).GetTag() == name) {
-        return make_scoped_ptr(base::JSONReader::Read(
+        return make_scoped_ptr(base::JSONReader::DeprecatedRead(
             it->sync_data().GetSpecifics().preference().value()));
       }
     }
@@ -217,7 +217,7 @@ TEST_F(PrefsSyncableServiceTest, CreatePrefSyncData) {
       preference());
   EXPECT_EQ(std::string(prefs::kHomePage), specifics.name());
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(specifics.value()));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(specifics.value());
   EXPECT_TRUE(pref->GetValue()->Equals(value.get()));
 }
 

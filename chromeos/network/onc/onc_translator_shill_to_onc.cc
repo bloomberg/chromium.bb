@@ -34,7 +34,7 @@ scoped_ptr<base::Value> ConvertStringToValue(const std::string& str,
   if (type == base::Value::TYPE_STRING) {
     value = new base::StringValue(str);
   } else {
-    value = base::JSONReader::Read(str);
+    value = base::JSONReader::DeprecatedRead(str);
   }
 
   if (value == NULL || value->GetType() != type) {

@@ -42,7 +42,7 @@ const char kEmptyUnencryptedConfiguration[] =
 scoped_ptr<base::DictionaryValue> ReadDictionaryFromJson(
     const std::string& json) {
   std::string error;
-  base::Value* root = base::JSONReader::ReadAndReturnError(
+  base::Value* root = base::JSONReader::DeprecatedReadAndReturnError(
       json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
 
   base::DictionaryValue* dict_ptr = nullptr;

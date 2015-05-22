@@ -434,7 +434,7 @@ void InstallSigner::ParseFetchResponse() {
   // could not be verified to be in the webstore.
 
   base::DictionaryValue* dictionary = NULL;
-  scoped_ptr<base::Value> parsed(base::JSONReader::Read(response));
+  scoped_ptr<base::Value> parsed = base::JSONReader::Read(response);
   bool json_success = parsed.get() && parsed->GetAsDictionary(&dictionary);
   UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ParseJsonSuccess",
                         json_success);

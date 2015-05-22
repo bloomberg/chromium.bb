@@ -216,7 +216,7 @@ void AppRemotingConnectedClientFixture::HandleOnWindowAddedMessage(
   DCHECK_EQ(message.type(), "onWindowAdded");
 
   const base::DictionaryValue* message_data = nullptr;
-  scoped_ptr<base::Value> host_message(base::JSONReader::Read(message.data()));
+  scoped_ptr<base::Value> host_message = base::JSONReader::Read(message.data());
   if (!host_message.get() || !host_message->GetAsDictionary(&message_data)) {
     LOG(ERROR) << "onWindowAdded message received was not valid JSON.";
     if (run_loop_) {

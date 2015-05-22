@@ -188,7 +188,7 @@ bool TransportSecurityPersister::LoadEntries(const std::string& serialized,
 bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                                              bool* dirty,
                                              TransportSecurityState* state) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(serialized));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(serialized);
   base::DictionaryValue* dict_value = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict_value))
     return false;

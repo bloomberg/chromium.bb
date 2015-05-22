@@ -865,7 +865,7 @@ class WalletClientTest : public testing::Test {
 
  private:
   std::string GetData(const std::string& upload_data) {
-    scoped_ptr<base::Value> root(base::JSONReader::Read(upload_data));
+    scoped_ptr<base::Value> root = base::JSONReader::Read(upload_data);
 
     // If this is not a JSON dictionary, return plain text.
     if (!root || !root->IsType(base::Value::TYPE_DICTIONARY))

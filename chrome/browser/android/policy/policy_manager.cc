@@ -158,9 +158,10 @@ base::Value* PolicyManager::ConvertValueToSchema(base::Value* raw_value,
     case base::Value::TYPE_LIST: {
       std::string string_value;
       if (value->GetAsString(&string_value)) {
-        base::Value* decoded_value = base::JSONReader::Read(string_value);
+        scoped_ptr<base::Value> decoded_value =
+            base::JSONReader::Read(string_value);
         if (decoded_value)
-          return decoded_value;
+          return decoded_value.release();
       }
       return value.release();
     }

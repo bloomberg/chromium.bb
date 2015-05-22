@@ -29,7 +29,7 @@ BrowserInfo::BrowserInfo(std::string browser_name,
 }
 
 Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value.get())
     return Status(kUnknownError, "version info not in JSON");
 

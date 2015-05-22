@@ -660,7 +660,7 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
 
     // Parse the message value as JSON.
     const scoped_ptr<const base::Value> value(
-        base::JSONReader::Read(entry.message));
+        base::JSONReader::DeprecatedRead(entry.message));
 
     // If the message is not the expected format, just ignore it.
     const base::DictionaryValue* message_dictionary = NULL;

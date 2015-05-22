@@ -20,7 +20,7 @@ namespace printer {
 std::string NormalizeJson(const std::string& json) {
   std::string result = json;
   base::ReplaceChars(result, "'", "\"", &result);
-  scoped_ptr<base::Value> value(base::JSONReader::Read(result));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(result);
   DCHECK(value);
   base::JSONWriter::Write(*value, &result);
   return result;

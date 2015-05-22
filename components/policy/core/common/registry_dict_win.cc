@@ -115,7 +115,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
     case base::Value::TYPE_DICTIONARY: {
       // Dictionaries may be encoded as JSON strings.
       if (value.GetAsString(&string_value)) {
-        scoped_ptr<base::Value> result(base::JSONReader::Read(string_value));
+        scoped_ptr<base::Value> result = base::JSONReader::Read(string_value);
         if (result && result->IsType(schema.type()))
           return result.Pass();
       }

@@ -527,9 +527,9 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
       "  \"priority\": 300                                               \n"
       "}                                                                 ";
 
-  scoped_ptr<base::Value> value1(base::JSONReader::Read(kRule1));
+  scoped_ptr<base::Value> value1 = base::JSONReader::Read(kRule1);
   ASSERT_TRUE(value1.get());
-  scoped_ptr<base::Value> value2(base::JSONReader::Read(kRule2));
+  scoped_ptr<base::Value> value2 = base::JSONReader::Read(kRule2);
   ASSERT_TRUE(value2.get());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > rules;
@@ -696,7 +696,7 @@ TEST(WebRequestRulesRegistrySimpleTest, StageChecker) {
       "  \"priority\": 200                                                \n"
       "}                                                                  ";
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(kRule));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(kRule);
   ASSERT_TRUE(value);
 
   RulesRegistry::Rule rule;
@@ -730,7 +730,7 @@ TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
       "  \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
       "  \"redirectUrl\": \"http://bar.com\"                         \n"
       "}                                                             ";
-  scoped_ptr<base::Value> action_value(base::JSONReader::Read(kAction));
+  scoped_ptr<base::Value> action_value = base::JSONReader::Read(kAction);
   ASSERT_TRUE(action_value);
 
   WebRequestActionSet::AnyVector actions;
@@ -786,7 +786,7 @@ TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
       "  \"priority\": 200                                               \n"
       "}                                                                 ";
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(kRule));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(kRule);
   ASSERT_TRUE(value.get());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > rules;

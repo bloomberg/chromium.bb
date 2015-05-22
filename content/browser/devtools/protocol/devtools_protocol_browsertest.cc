@@ -85,8 +85,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
  private:
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {
-    scoped_ptr<base::DictionaryValue> root(
-        static_cast<base::DictionaryValue*>(base::JSONReader::Read(message)));
+    scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
+        base::JSONReader::DeprecatedRead(message)));
     base::DictionaryValue* result;
     EXPECT_TRUE(root->GetDictionary("result", &result));
     result_.reset(result->DeepCopy());

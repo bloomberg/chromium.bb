@@ -99,7 +99,7 @@ bool ParseListAccountsData(
   accounts->clear();
 
   // Parse returned data and make sure we have data.
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value)
     return false;
 

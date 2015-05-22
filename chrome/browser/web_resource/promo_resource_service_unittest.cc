@@ -94,7 +94,7 @@ class NotificationPromoTest {
 
     std::string json_with_end_date(
         ReplaceStringPlaceholders(json, replacements, NULL));
-    base::Value* value(base::JSONReader::Read(json_with_end_date));
+    base::Value* value(base::JSONReader::DeprecatedRead(json_with_end_date));
     ASSERT_TRUE(value);
 
     base::DictionaryValue* dict = NULL;

@@ -580,7 +580,7 @@ void WalletClient::OnURLFetchComplete(
 
     // Valid response.
     case net::HTTP_OK: {
-      scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
+      scoped_ptr<base::Value> message_value = base::JSONReader::Read(data);
       if (message_value.get() &&
           message_value->IsType(base::Value::TYPE_DICTIONARY)) {
         response_dict.reset(
@@ -592,7 +592,7 @@ void WalletClient::OnURLFetchComplete(
     // Response contains an error to show the user.
     case net::HTTP_FORBIDDEN:
     case net::HTTP_INTERNAL_SERVER_ERROR: {
-      scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
+      scoped_ptr<base::Value> message_value = base::JSONReader::Read(data);
       if (message_value.get() &&
           message_value->IsType(base::Value::TYPE_DICTIONARY)) {
         response_dict.reset(

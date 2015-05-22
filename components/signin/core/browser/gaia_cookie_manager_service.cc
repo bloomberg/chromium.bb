@@ -146,7 +146,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
     OnGetCheckConnectionInfoSuccess(const std::string& data) {
   helper_->fetcher_backoff_.InformOfRequest(true);
   gaia_auth_fetcher_timer_.Stop();
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
   const base::ListValue* list;
   if (!value || !value->GetAsList(&list)) {
     CleanupTransientState();

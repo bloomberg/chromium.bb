@@ -77,7 +77,7 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  scoped_ptr<base::Value> message_value(base::JSONReader::Read(message));
+  scoped_ptr<base::Value> message_value = base::JSONReader::Read(message);
   if (!message_value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Received a message that's not a dictionary.";
     client_->CloseChannel(std::string());

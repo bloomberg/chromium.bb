@@ -232,7 +232,7 @@ bool DevToolsHttpClient::FetchUrlAndLog(const std::string& url,
 namespace internal {
 
 Status ParseWebViewsInfo(const std::string& data, WebViewsInfo* views_info) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value.get())
     return Status(kUnknownError, "DevTools returned invalid JSON");
   base::ListValue* list;

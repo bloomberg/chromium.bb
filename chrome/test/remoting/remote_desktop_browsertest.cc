@@ -736,8 +736,8 @@ void RemoteDesktopBrowserTest::RunJavaScriptTest(
 
   // Read in the JSON
   base::JSONReader reader;
-  scoped_ptr<base::Value> value;
-  value.reset(reader.Read(result, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> value =
+      reader.Read(result, base::JSON_ALLOW_TRAILING_COMMAS);
 
   // Convert to dictionary
   base::DictionaryValue* dict_value = NULL;
@@ -865,8 +865,8 @@ void RemoteDesktopBrowserTest::SetUserNameAndPassword(
   ASSERT_TRUE(base::ReadFileToString(absolute_path, &accounts_info));
 
   // Get the root dictionary from the input json file contents.
-  scoped_ptr<base::Value> root(
-      base::JSONReader::Read(accounts_info, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> root(base::JSONReader::DeprecatedRead(
+      accounts_info, base::JSON_ALLOW_TRAILING_COMMAS));
 
   const base::DictionaryValue* root_dict = NULL;
   ASSERT_TRUE(root.get() && root->GetAsDictionary(&root_dict));

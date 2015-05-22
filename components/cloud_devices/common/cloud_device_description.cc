@@ -36,7 +36,7 @@ bool CloudDeviceDescription::InitFromDictionary(
 }
 
 bool CloudDeviceDescription::InitFromString(const std::string& json) {
-  scoped_ptr<base::Value> parsed(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> parsed = base::JSONReader::Read(json);
   base::DictionaryValue* description = NULL;
   if (!parsed || !parsed->GetAsDictionary(&description))
     return false;

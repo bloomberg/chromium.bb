@@ -96,7 +96,7 @@ scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "436671 DomainReliabilityConfig::FromJSON"));
-  scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
   base::JSONValueConverter<DomainReliabilityConfig> converter;
   scoped_ptr<DomainReliabilityConfig> config(new DomainReliabilityConfig());
 

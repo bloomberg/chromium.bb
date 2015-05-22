@@ -199,7 +199,7 @@ Status JwkReader::Init(const CryptoData& bytes,
   base::StringPiece json_string(reinterpret_cast<const char*>(bytes.bytes()),
                                 bytes.byte_length());
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(json_string));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(json_string);
   base::DictionaryValue* dict_value = NULL;
 
   if (!value.get() || !value->GetAsDictionary(&dict_value) || !dict_value)

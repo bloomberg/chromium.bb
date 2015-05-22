@@ -66,7 +66,7 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
   if (response_sp.starts_with(kResponsePreamble))
     response_sp.remove_prefix(strlen(kResponsePreamble));
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response_sp));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(response_sp);
   if (!value.get())
     return scoped_ptr<EncodedLogo>();
 

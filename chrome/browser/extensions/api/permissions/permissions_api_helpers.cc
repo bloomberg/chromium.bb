@@ -88,7 +88,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
         std::string permission_arg = it->substr(delimiter + 1);
 
         scoped_ptr<base::Value> permission_json(
-            base::JSONReader::Read(permission_arg));
+            base::JSONReader::DeprecatedRead(permission_arg));
         if (!permission_json.get()) {
           *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
           return NULL;

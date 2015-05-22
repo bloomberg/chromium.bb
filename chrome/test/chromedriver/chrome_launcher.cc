@@ -664,7 +664,8 @@ Status ProcessExtension(const std::string& extension,
   std::string manifest_data;
   if (!base::ReadFileToString(manifest_path, &manifest_data))
     return Status(kUnknownError, "cannot read manifest");
-  scoped_ptr<base::Value> manifest_value(base::JSONReader::Read(manifest_data));
+  scoped_ptr<base::Value> manifest_value =
+      base::JSONReader::Read(manifest_data);
   base::DictionaryValue* manifest;
   if (!manifest_value || !manifest_value->GetAsDictionary(&manifest))
     return Status(kUnknownError, "invalid manifest");
@@ -772,8 +773,9 @@ Status WritePrefsFile(
     const base::FilePath& path) {
   int code;
   std::string error_msg;
-  scoped_ptr<base::Value> template_value(base::JSONReader::ReadAndReturnError(
-          template_string, 0, &code, &error_msg));
+  scoped_ptr<base::Value> template_value(
+      base::JSONReader::DeprecatedReadAndReturnError(template_string, 0, &code,
+                                                     &error_msg));
   base::DictionaryValue* prefs;
   if (!template_value || !template_value->GetAsDictionary(&prefs)) {
     return Status(kUnknownError,

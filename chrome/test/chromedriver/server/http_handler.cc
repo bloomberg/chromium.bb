@@ -643,7 +643,7 @@ void HttpHandler::HandleCommand(
 
   if (request.data.length()) {
     base::DictionaryValue* body_params;
-    scoped_ptr<base::Value> parsed_body(base::JSONReader::Read(request.data));
+    scoped_ptr<base::Value> parsed_body = base::JSONReader::Read(request.data);
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
       scoped_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));

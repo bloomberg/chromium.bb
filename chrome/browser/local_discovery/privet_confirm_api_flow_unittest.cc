@@ -47,14 +47,15 @@ TEST(PrivetConfirmApiFlowTest, Parsing) {
       "123", base::Bind(&MockDelegate::Callback, base::Unretained(&delegate)));
   EXPECT_CALL(delegate, Callback(GCDApiFlow::SUCCESS)).Times(1);
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(kSampleConfirmResponse));
+  scoped_ptr<base::Value> value =
+      base::JSONReader::Read(kSampleConfirmResponse);
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   confirmation.OnGCDAPIFlowComplete(*dictionary);
 
   EXPECT_CALL(delegate, Callback(GCDApiFlow::ERROR_FROM_SERVER)).Times(1);
 
-  value.reset(base::JSONReader::Read(kFailedConfirmResponse));
+  value.reset(base::JSONReader::DeprecatedRead(kFailedConfirmResponse));
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   confirmation.OnGCDAPIFlowComplete(*dictionary);
 }

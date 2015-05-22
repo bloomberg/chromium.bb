@@ -194,7 +194,7 @@ void Client::OnConnectionStatusChanged(Connection* connection,
 void Client::OnMessageReceived(const Connection& connection,
                                const WireMessage& wire_message) {
   std::string json_message = secure_context_->Decode(wire_message.payload());
-  scoped_ptr<base::Value> message_value(base::JSONReader::Read(json_message));
+  scoped_ptr<base::Value> message_value = base::JSONReader::Read(json_message);
   if (!message_value || !message_value->IsType(base::Value::TYPE_DICTIONARY)) {
     VLOG(1) << "[Client] Unable to parse message as JSON: " << json_message
             << ".";

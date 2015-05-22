@@ -66,7 +66,7 @@ TEST(CloudDeviceListTest, Parsing) {
   EXPECT_CALL(delegate, OnDeviceListReady(_)).WillOnce(SaveArg<0>(&devices));
 
   scoped_ptr<base::Value> value(
-      base::JSONReader::Read(kSampleSuccessResponseOAuth));
+      base::JSONReader::DeprecatedRead(kSampleSuccessResponseOAuth));
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   device_list.OnGCDAPIFlowComplete(*dictionary);

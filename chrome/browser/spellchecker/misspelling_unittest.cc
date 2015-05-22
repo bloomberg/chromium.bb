@@ -20,7 +20,7 @@ TEST(MisspellingTest, SerializeTest) {
   misspelling.hash = 9001;
   misspelling.suggestions.push_back(base::ASCIIToUTF16("does it"));
 
-  scoped_ptr<base::Value> expected(base::JSONReader::Read(
+  scoped_ptr<base::Value> expected(base::JSONReader::DeprecatedRead(
       "{\"originalText\": \"How doe sit know\","
       "\"misspelledStart\": 4,"
       "\"misspelledLength\": 7,"

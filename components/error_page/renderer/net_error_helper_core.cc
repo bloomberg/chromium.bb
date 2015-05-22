@@ -262,7 +262,7 @@ base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl,
 scoped_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
     const std::string raw_response) {
   // TODO(mmenke):  Open source related protocol buffers and use them directly.
-  scoped_ptr<base::Value> parsed(base::JSONReader::Read(raw_response));
+  scoped_ptr<base::Value> parsed = base::JSONReader::Read(raw_response);
   scoped_ptr<NavigationCorrectionResponse> response(
       new NavigationCorrectionResponse());
   base::JSONValueConverter<NavigationCorrectionResponse> converter;

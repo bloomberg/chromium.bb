@@ -305,8 +305,8 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    scoped_ptr<base::Value> value(base::JSONReader::Read(pattern_filter_json,
-        base::JSON_ALLOW_TRAILING_COMMAS));
+    scoped_ptr<base::Value> value(base::JSONReader::DeprecatedRead(
+        pattern_filter_json, base::JSON_ALLOW_TRAILING_COMMAS));
     if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
                  " Invalid JSON object: " << pattern_filter_json;

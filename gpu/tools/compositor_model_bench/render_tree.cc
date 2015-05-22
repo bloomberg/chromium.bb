@@ -458,14 +458,11 @@ RenderNode* BuildRenderTreeFromFile(const base::FilePath& path) {
   if (!ReadFileToString(path, &contents))
     return NULL;
 
-  scoped_ptr<base::Value> root;
   int error_code = 0;
   string error_message;
-  root.reset(JSONReader::ReadAndReturnError(contents,
-            base::JSON_ALLOW_TRAILING_COMMAS,
-            &error_code,
-            &error_message));
-  if (!root.get()) {
+  scoped_ptr<base::Value> root = JSONReader::ReadAndReturnError(
+      contents, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_message);
+  if (!root) {
     LOG(ERROR) << "Failed to parse JSON file " << path.LossyDisplayName() <<
         "\n(" << error_message << ")";
     return NULL;

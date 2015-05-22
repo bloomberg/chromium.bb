@@ -231,8 +231,8 @@ class PolicyTestCases {
     int error_code = -1;
     std::string error_string;
     base::DictionaryValue* dict = NULL;
-    scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-        json, base::JSON_PARSE_RFC, &error_code, &error_string));
+    scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+        json, base::JSON_PARSE_RFC, &error_code, &error_string);
     if (!value.get() || !value->GetAsDictionary(&dict)) {
       ADD_FAILURE() << "Error parsing policy_test_cases.json: " << error_string;
       return;
@@ -426,7 +426,7 @@ void VerifyControlledSettingIndicators(Browser* browser,
   // |selector| as JSON.
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript.str(),
                                                      &json));
-  scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> value_ptr = base::JSONReader::Read(json);
   const base::ListValue* indicators = NULL;
   ASSERT_TRUE(value_ptr.get());
   ASSERT_TRUE(value_ptr->GetAsList(&indicators));

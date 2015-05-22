@@ -41,7 +41,7 @@ class MockSyncWebSocket : public SyncWebSocket {
 
   bool Send(const std::string& message) override {
     EXPECT_TRUE(connected_);
-    scoped_ptr<base::Value> value(base::JSONReader::Read(message));
+    scoped_ptr<base::Value> value = base::JSONReader::Read(message);
     base::DictionaryValue* dict = NULL;
     EXPECT_TRUE(value->GetAsDictionary(&dict));
     if (!dict)
@@ -711,7 +711,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
 
   bool Send(const std::string& message) override {
     EXPECT_TRUE(connected_);
-    scoped_ptr<base::Value> value(base::JSONReader::Read(message));
+    scoped_ptr<base::Value> value = base::JSONReader::Read(message);
     base::DictionaryValue* dict = NULL;
     EXPECT_TRUE(value->GetAsDictionary(&dict));
     if (!dict)

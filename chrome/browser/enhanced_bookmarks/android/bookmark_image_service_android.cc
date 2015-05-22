@@ -161,13 +161,12 @@ void BookmarkImageServiceAndroid::RetrieveSalientImageFromContextCallback(
     return;
   }
 
-  scoped_ptr<base::Value> json_data;
   int error_code = 0;
-  std::string errorMessage;
-  json_data.reset(base::JSONReader::ReadAndReturnError(
-      json, base::JSON_PARSE_RFC, &error_code, &errorMessage));
+  std::string error_message;
+  scoped_ptr<base::Value> json_data = base::JSONReader::ReadAndReturnError(
+      json, base::JSON_PARSE_RFC, &error_code, &error_message);
   if (error_code || !json_data) {
-    LOG(WARNING) << "JSON parse error: " << errorMessage.c_str() << json;
+    LOG(WARNING) << "JSON parse error: " << error_message << json;
     return;
   }
 

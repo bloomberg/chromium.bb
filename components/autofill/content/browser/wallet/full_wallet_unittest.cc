@@ -372,7 +372,7 @@ class FullWalletTest : public testing::Test {
   FullWalletTest() {}
  protected:
   void SetUpDictionary(const std::string& json) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
     ASSERT_TRUE(value.get());
     ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
     dict.reset(static_cast<base::DictionaryValue*>(value.release()));

@@ -118,7 +118,7 @@ void FakeLog::AddEntryTimestamped(const base::Time& timestamp,
 
 scoped_ptr<base::DictionaryValue> ParseDictionary(const std::string& json) {
   std::string error;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+  scoped_ptr<base::Value> value(base::JSONReader::DeprecatedReadAndReturnError(
       json, base::JSON_PARSE_RFC, NULL, &error));
   if (value == NULL) {
     SCOPED_TRACE(json.c_str());

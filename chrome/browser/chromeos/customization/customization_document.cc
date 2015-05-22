@@ -222,8 +222,8 @@ bool CustomizationDocument::LoadManifestFromString(
     const std::string& manifest) {
   int error_code = 0;
   std::string error;
-  scoped_ptr<base::Value> root(base::JSONReader::ReadAndReturnError(manifest,
-      base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error));
+  scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+      manifest, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error);
   if (error_code != base::JSONReader::JSON_NO_ERROR)
     LOG(ERROR) << error;
   DCHECK(root.get() != NULL);

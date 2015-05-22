@@ -266,7 +266,7 @@ bool CastExtensionSession::OnExtensionMessage(
     return false;
   }
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(message.data()));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(message.data());
   base::DictionaryValue* client_message;
   if (!(value && value->GetAsDictionary(&client_message))) {
     LOG(ERROR) << "Could not read cast extension message.";

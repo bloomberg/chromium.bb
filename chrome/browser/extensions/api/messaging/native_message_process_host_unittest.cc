@@ -113,7 +113,7 @@ class NativeMessagingTest : public ::testing::Test,
     last_message_ = message;
 
     // Parse the message.
-    base::Value* parsed = base::JSONReader::Read(message);
+    base::Value* parsed = base::JSONReader::DeprecatedRead(message);
     base::DictionaryValue* dict_value;
     if (parsed && parsed->GetAsDictionary(&dict_value)) {
       last_message_parsed_.reset(dict_value);

@@ -177,7 +177,7 @@ namespace internal_cloud_print_helpers {
 // parameters.
 bool GetPageSetupParameters(const std::string& json,
                             PrintMsg_Print_Params& parameters) {
-  scoped_ptr<base::Value> parsed_value(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> parsed_value = base::JSONReader::Read(json);
   DLOG_IF(ERROR, (!parsed_value.get() ||
                   !parsed_value->IsType(base::Value::TYPE_DICTIONARY)))
       << "PageSetup call didn't have expected contents";

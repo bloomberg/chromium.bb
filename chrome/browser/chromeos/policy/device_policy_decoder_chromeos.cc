@@ -55,8 +55,8 @@ scoped_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
     const std::string& json_string,
     const std::string& policy_name) {
   std::string error;
-  base::Value* root(base::JSONReader::ReadAndReturnError(
-      json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
+  scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+      json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
 
   if (!root) {
     LOG(WARNING) << "Invalid JSON string: " << error << ", ignoring.";
@@ -72,8 +72,8 @@ scoped_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
     std::string error_path;
     bool changed = false;
 
-    if (!schema.Normalize(
-            root, SCHEMA_ALLOW_UNKNOWN, &error_path, &error, &changed)) {
+    if (!schema.Normalize(root.get(), SCHEMA_ALLOW_UNKNOWN, &error_path, &error,
+                          &changed)) {
       LOG(WARNING) << "Invalid policy value for " << policy_name << ": "
                    << error << " at " << error_path << ".";
       return scoped_ptr<base::Value>();
@@ -89,7 +89,7 @@ scoped_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
     return scoped_ptr<base::Value>();
   }
 
-  return scoped_ptr<base::Value>(root);
+  return root;
 }
 
 base::Value* DecodeConnectionType(int value) {

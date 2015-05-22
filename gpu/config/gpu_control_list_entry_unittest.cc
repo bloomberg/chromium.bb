@@ -30,10 +30,9 @@ class GpuControlListEntryTest : public testing::Test {
 
   static ScopedEntry GetEntryFromString(
       const std::string& json, bool supports_feature_type_all) {
-    scoped_ptr<base::Value> root;
-    root.reset(base::JSONReader::Read(json));
+    scoped_ptr<base::Value> root = base::JSONReader::Read(json);
     base::DictionaryValue* value = NULL;
-    if (root.get() == NULL || !root->GetAsDictionary(&value))
+    if (!root || !root->GetAsDictionary(&value))
       return NULL;
 
     GpuControlList::FeatureMap feature_map;

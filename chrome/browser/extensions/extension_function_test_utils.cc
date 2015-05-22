@@ -48,7 +48,7 @@ class TestFunctionDispatcherDelegate
 namespace extension_function_test_utils {
 
 base::Value* ParseJSON(const std::string& data) {
-  return base::JSONReader::Read(data);
+  return base::JSONReader::DeprecatedRead(data);
 }
 
 base::ListValue* ParseList(const std::string& data) {

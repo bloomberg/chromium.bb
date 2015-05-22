@@ -707,12 +707,12 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   TestingProfile profile;
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(
+  scoped_ptr<base::Value> value(base::JSONReader::DeprecatedRead(
       "{\"[*.]\\xC4\\x87ira.com,*\":{\"images\":1}}"));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
 
   // Set punycode equivalent, with different setting.
-  scoped_ptr<base::Value> puny_value(base::JSONReader::Read(
+  scoped_ptr<base::Value> puny_value(base::JSONReader::DeprecatedRead(
       "{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}"));
   profile.GetPrefs()->Set(
       prefs::kContentSettingsPatternPairs, *puny_value);

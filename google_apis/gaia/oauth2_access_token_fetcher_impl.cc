@@ -119,7 +119,7 @@ scoped_ptr<base::DictionaryValue> ParseGetAccessTokenResponse(
 
   std::string data;
   source->GetResponseAsString(&data);
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
     value.reset();
 

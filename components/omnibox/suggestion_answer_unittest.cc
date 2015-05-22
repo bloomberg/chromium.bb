@@ -12,7 +12,7 @@
 namespace {
 
 scoped_ptr<SuggestionAnswer> ParseAnswer(const std::string& answer_json) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(answer_json));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(answer_json);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict))
     return nullptr;

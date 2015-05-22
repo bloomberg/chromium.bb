@@ -14,7 +14,7 @@ namespace {
 // Parses the |json| into a DictionaryValue.
 scoped_ptr<base::DictionaryValue> ParseJson(const std::string& json) {
   base::DictionaryValue* as_dictionary;
-  base::JSONReader::Read(json)->GetAsDictionary(&as_dictionary);
+  base::JSONReader::DeprecatedRead(json)->GetAsDictionary(&as_dictionary);
   return make_scoped_ptr(as_dictionary);
 }
 

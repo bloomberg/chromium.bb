@@ -35,8 +35,8 @@ class SafeJsonParserTest : public InProcessBrowserTest {
     message_loop_runner_ = new content::MessageLoopRunner;
 
     std::string error;
-    scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-        json, base::JSON_PARSE_RFC, nullptr, &error));
+    scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+        json, base::JSON_PARSE_RFC, nullptr, &error);
 
     SafeJsonParser::SuccessCallback success_callback;
     SafeJsonParser::ErrorCallback error_callback;

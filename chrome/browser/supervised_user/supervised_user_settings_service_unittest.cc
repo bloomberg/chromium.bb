@@ -108,7 +108,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     }
 
     scoped_ptr<base::Value> value(
-        base::JSONReader::Read(supervised_user_setting.value()));
+        base::JSONReader::DeprecatedRead(supervised_user_setting.value()));
     EXPECT_TRUE(expected_value->Equals(value.get()));
   }
 

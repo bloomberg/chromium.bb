@@ -142,7 +142,7 @@ std::vector<double> CalculateDerivedFeaturesFromJSON(
     return std::vector<double>();
   }
 
-  scoped_ptr<base::Value> json(base::JSONReader::Read(stringified));
+  scoped_ptr<base::Value> json = base::JSONReader::Read(stringified);
   if (!json) {
     return std::vector<double>();
   }

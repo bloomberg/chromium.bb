@@ -82,7 +82,7 @@ bool VideoFrameRecorderHostExtensionSession::OnExtensionMessage(
     return true;
   }
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(message.data()));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(message.data());
   base::DictionaryValue* client_message;
   if (!value || !value->GetAsDictionary(&client_message)) {
     return true;

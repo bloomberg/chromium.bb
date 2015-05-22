@@ -89,7 +89,7 @@ TEST(ProcessExtensions, SingleExtensionWithBgPage) {
   std::string manifest_txt;
   ASSERT_TRUE(base::ReadFileToString(
       temp_ext_path.AppendASCII("manifest.json"), &manifest_txt));
-  scoped_ptr<base::Value> manifest(base::JSONReader::Read(manifest_txt));
+  scoped_ptr<base::Value> manifest = base::JSONReader::Read(manifest_txt);
   ASSERT_TRUE(manifest);
   base::DictionaryValue* manifest_dict = NULL;
   ASSERT_TRUE(manifest->GetAsDictionary(&manifest_dict));
@@ -180,7 +180,7 @@ TEST(PrepareUserDataDir, CustomPrefs) {
           chrome::kPreferencesFilename);
   std::string prefs_str;
   ASSERT_TRUE(base::ReadFileToString(prefs_file, &prefs_str));
-  scoped_ptr<base::Value> prefs_value(base::JSONReader::Read(prefs_str));
+  scoped_ptr<base::Value> prefs_value = base::JSONReader::Read(prefs_str);
   const base::DictionaryValue* prefs_dict = NULL;
   ASSERT_TRUE(prefs_value->GetAsDictionary(&prefs_dict));
   AssertEQ(*prefs_dict, "myPrefsKey", "ok");
@@ -191,7 +191,7 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   std::string local_state_str;
   ASSERT_TRUE(base::ReadFileToString(local_state_file, &local_state_str));
   scoped_ptr<base::Value> local_state_value(
-      base::JSONReader::Read(local_state_str));
+      base::JSONReader::DeprecatedRead(local_state_str));
   const base::DictionaryValue* local_state_dict = NULL;
   ASSERT_TRUE(local_state_value->GetAsDictionary(&local_state_dict));
   AssertEQ(*local_state_dict, "myLocalKey", "ok");

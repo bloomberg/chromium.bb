@@ -45,7 +45,7 @@ class NotificationPromoMobileNtpTest {
             const std::string& promo_action_type,
             const std::string& promo_action_arg0,
             const std::string& promo_action_arg1) {
-    base::Value* value(base::JSONReader::Read(json));
+    base::Value* value(base::JSONReader::DeprecatedRead(json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dict = NULL;
     value->GetAsDictionary(&dict);

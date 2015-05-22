@@ -115,7 +115,7 @@ scoped_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
 // static
 scoped_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
     const std::string& str, int* logo_num_bytes) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(str));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(str);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict))
     return scoped_ptr<LogoMetadata>();

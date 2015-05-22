@@ -248,7 +248,7 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
 
   std::string response_body;
   source->GetResponseAsString(&response_body);
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response_body));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(response_body);
   base::DictionaryValue* dict = NULL;
   if (!value || !value->GetAsDictionary(&dict)) {
     DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);

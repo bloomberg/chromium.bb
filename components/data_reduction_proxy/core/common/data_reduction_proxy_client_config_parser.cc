@@ -95,7 +95,7 @@ base::Time TimestampToTime(const Timestamp& timestamp) {
 }
 
 bool ParseClientConfig(const std::string& config_data, ClientConfig* config) {
-  scoped_ptr<base::Value> parsed_data(base::JSONReader::Read(config_data));
+  scoped_ptr<base::Value> parsed_data = base::JSONReader::Read(config_data);
   if (!parsed_data)
     return false;
 

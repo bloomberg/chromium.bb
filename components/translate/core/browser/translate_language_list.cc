@@ -279,8 +279,8 @@ void TranslateLanguageList::SetSupportedLanguages(
       kLanguageListCallbackNameLength,
       language_list.size() - kLanguageListCallbackNameLength - 1);
 
-  scoped_ptr<base::Value> json_value(
-      base::JSONReader::Read(languages_json, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> json_value(base::JSONReader::DeprecatedRead(
+      languages_json, base::JSON_ALLOW_TRAILING_COMMAS));
 
   if (json_value == NULL || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
     NOTREACHED();

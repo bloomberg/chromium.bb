@@ -89,7 +89,7 @@ TEST_F(AppleEventUtilTest, DISABLED_ValueToAppleEventDescriptor) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(cases[i].json_input));
+    scoped_ptr<base::Value> value = base::JSONReader::Read(cases[i].json_input);
     NSAppleEventDescriptor* descriptor =
         chrome::mac::ValueToAppleEventDescriptor(value.get());
     NSString* descriptor_description = [descriptor description];

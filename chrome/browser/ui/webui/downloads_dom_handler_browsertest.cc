@@ -25,7 +25,7 @@ namespace {
 // corresponding dictionary in |left_list|. Ignores keys in dictionaries in
 // |left_list| that are not in the corresponding dictionary in |right_list|.
 bool ListMatches(base::ListValue* left_list, const std::string& right_json) {
-  scoped_ptr<base::Value> right_value(base::JSONReader::Read(right_json));
+  scoped_ptr<base::Value> right_value = base::JSONReader::Read(right_json);
   base::ListValue* right_list = NULL;
   CHECK(right_value->GetAsList(&right_list));
   for (size_t i = 0; i < left_list->GetSize(); ++i) {

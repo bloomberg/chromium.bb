@@ -24,7 +24,7 @@ Status HeapSnapshotTaker::TakeSnapshot(scoped_ptr<base::Value>* snapshot) {
 
   Status status3(kOk);
   if (status1.IsOk() && status2.IsOk()) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(snapshot_));
+    scoped_ptr<base::Value> value = base::JSONReader::Read(snapshot_);
     if (!value) {
       status3 = Status(kUnknownError, "heap snapshot not in JSON format");
     } else {

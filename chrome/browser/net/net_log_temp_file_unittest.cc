@@ -118,7 +118,7 @@ class NetLogTempFileTest : public ::testing::Test {
     std::string log;
     ASSERT_TRUE(ReadFileToString(net_export_log_, &log));
     base::JSONReader reader;
-    scoped_ptr<base::Value> json(base::JSONReader::Read(log));
+    scoped_ptr<base::Value> json = base::JSONReader::Read(log);
     EXPECT_TRUE(json);
   }
 

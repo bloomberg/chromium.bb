@@ -261,7 +261,7 @@ void PreferencesBrowserTest::VerifyObservedPref(const std::string& json,
                                                 const std::string& controlledBy,
                                                 bool disabled,
                                                 bool uncommitted) {
-  scoped_ptr<base::Value> observed_value_ptr(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> observed_value_ptr = base::JSONReader::Read(json);
   const base::DictionaryValue* observed_dict;
   ASSERT_TRUE(observed_value_ptr.get());
   ASSERT_TRUE(observed_value_ptr->GetAsDictionary(&observed_dict));
@@ -275,7 +275,7 @@ void PreferencesBrowserTest::VerifyObservedPrefs(
     const std::string& controlledBy,
     bool disabled,
     bool uncommitted) {
-  scoped_ptr<base::Value> observed_value_ptr(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> observed_value_ptr = base::JSONReader::Read(json);
   const base::DictionaryValue* observed_dict;
   ASSERT_TRUE(observed_value_ptr.get());
   ASSERT_TRUE(observed_value_ptr->GetAsDictionary(&observed_dict));

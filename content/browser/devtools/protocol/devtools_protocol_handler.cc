@@ -42,7 +42,7 @@ DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 
 scoped_ptr<base::DictionaryValue>
 DevToolsProtocolHandler::ParseCommand(const std::string& message) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(message));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(message);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     client_.SendError(DevToolsProtocolClient::kNoId,
                       Response(kStatusParseError,

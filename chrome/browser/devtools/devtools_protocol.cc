@@ -93,7 +93,7 @@ bool DevToolsProtocol::ParseNotification(
     const std::string& json,
     std::string* method,
     scoped_ptr<base::DictionaryValue>* params) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
@@ -115,7 +115,7 @@ bool DevToolsProtocol::ParseNotification(
 bool DevToolsProtocol::ParseResponse(const std::string& json,
                                      int* command_id,
                                      int* error_code) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 

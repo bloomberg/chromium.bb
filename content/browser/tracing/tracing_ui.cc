@@ -60,7 +60,7 @@ bool GetTracingOptions(const std::string& data64,
     return false;
   }
 
-  scoped_ptr<base::Value> optionsRaw(base::JSONReader::Read(data));
+  scoped_ptr<base::Value> optionsRaw = base::JSONReader::Read(data);
   if (!optionsRaw) {
     LOG(ERROR) << "Options were not valid JSON";
     return false;

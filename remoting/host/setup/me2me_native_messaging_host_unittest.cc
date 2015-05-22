@@ -397,7 +397,7 @@ Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
     return nullptr;
   }
 
-  scoped_ptr<base::Value> message(base::JSONReader::Read(message_json));
+  scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
   if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
     return nullptr;
   }

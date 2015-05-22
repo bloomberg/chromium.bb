@@ -262,7 +262,7 @@ TEST_F(StatisticsRecorderTest, ToJSON) {
 
   // Check for valid JSON.
   scoped_ptr<Value> root;
-  root.reset(JSONReader::Read(json));
+  root.reset(JSONReader::DeprecatedRead(json));
   ASSERT_TRUE(root.get());
 
   DictionaryValue* root_dict = NULL;
@@ -287,7 +287,7 @@ TEST_F(StatisticsRecorderTest, ToJSON) {
   std::string query("TestHistogram2");
   json = StatisticsRecorder::ToJSON(query);
 
-  root.reset(JSONReader::Read(json));
+  root.reset(JSONReader::DeprecatedRead(json));
   ASSERT_TRUE(root.get());
   ASSERT_TRUE(root->GetAsDictionary(&root_dict));
 

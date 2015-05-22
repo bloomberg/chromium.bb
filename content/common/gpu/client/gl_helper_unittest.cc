@@ -112,7 +112,8 @@ class GLHelperTest : public testing::Test {
 
     std::string error_msg;
     scoped_ptr<base::Value> trace_data(
-        base::JSONReader::ReadAndReturnError(json_data, 0, NULL, &error_msg));
+        base::JSONReader::DeprecatedReadAndReturnError(json_data, 0, NULL,
+                                                       &error_msg));
     CHECK(trace_data)
         << "JSON parsing failed (" << error_msg << ") JSON data:" << std::endl
         << json_data;

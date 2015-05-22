@@ -497,7 +497,7 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
 
     if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
       scoped_ptr<base::Value> parsed_value(
-          base::JSONReader::Read(query.ColumnString(4)));
+          base::JSONReader::DeprecatedRead(query.ColumnString(4)));
       if (parsed_value && parsed_value->IsType(base::Value::TYPE_LIST)) {
         action->set_args(make_scoped_ptr(
             static_cast<base::ListValue*>(parsed_value.release())));
@@ -510,7 +510,7 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
 
     if (query.ColumnType(8) != sql::COLUMN_TYPE_NULL) {
       scoped_ptr<base::Value> parsed_value(
-          base::JSONReader::Read(query.ColumnString(8)));
+          base::JSONReader::DeprecatedRead(query.ColumnString(8)));
       if (parsed_value && parsed_value->IsType(base::Value::TYPE_DICTIONARY)) {
         action->set_other(make_scoped_ptr(
             static_cast<base::DictionaryValue*>(parsed_value.release())));

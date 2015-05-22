@@ -111,7 +111,7 @@ void GnubbyAuthHandler::SetGnubbySocketName(
 void GnubbyAuthHandlerPosix::DeliverClientMessage(const std::string& message) {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(message));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(message);
   base::DictionaryValue* client_message;
   if (value && value->GetAsDictionary(&client_message)) {
     std::string type;

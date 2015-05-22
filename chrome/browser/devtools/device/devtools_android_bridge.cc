@@ -157,7 +157,7 @@ void DevToolsAndroidBridge::DiscoveryRequest::ReceivedVersion(
   if (result < 0)
     return;
   // Parse version, append to package name if available,
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(response);
   base::DictionaryValue* dict;
   if (value && value->GetAsDictionary(&dict)) {
     std::string browser_name;
@@ -184,7 +184,7 @@ void DevToolsAndroidBridge::DiscoveryRequest::ReceivedPages(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result < 0)
     return;
-  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(response);
   base::ListValue* list_value;
   if (value && value->GetAsList(&list_value)) {
     for (const auto& page_value : *list_value) {

@@ -582,7 +582,8 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   // Contents of formData.
   const char kFormData[] =
       "{\"A\":[\"test text\"],\"B\":[\"\"],\"C\":[\"test password\"]}";
-  scoped_ptr<const base::Value> form_data(base::JSONReader::Read(kFormData));
+  scoped_ptr<const base::Value> form_data(
+      base::JSONReader::DeprecatedRead(kFormData));
   ASSERT_TRUE(form_data.get() != NULL);
   ASSERT_TRUE(form_data->GetType() == base::Value::TYPE_DICTIONARY);
   // Contents of raw.

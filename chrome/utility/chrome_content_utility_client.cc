@@ -372,11 +372,11 @@ void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
 void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   int error_code;
   std::string error;
-  base::Value* value = base::JSONReader::ReadAndReturnError(
+  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, &error_code, &error);
   if (value) {
     base::ListValue wrapper;
-    wrapper.Append(value);
+    wrapper.Append(value.Pass());
     Send(new ChromeUtilityHostMsg_ParseJSON_Succeeded(wrapper));
   } else {
     Send(new ChromeUtilityHostMsg_ParseJSON_Failed(error));

@@ -131,8 +131,8 @@ base::string16 NetworkStateHelper::GetCurrentNetworkName() const {
 void NetworkStateHelper::CreateNetworkFromOnc(
     const std::string& onc_spec) const {
   std::string error;
-  scoped_ptr<base::Value> root(base::JSONReader::ReadAndReturnError(
-      onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error));
+  scoped_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+      onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
 
   base::DictionaryValue* toplevel_onc = nullptr;
   if (!root || !root->GetAsDictionary(&toplevel_onc)) {

@@ -201,7 +201,7 @@ class FakeGCDApiFlowFactory
         return;
       }
 
-      scoped_ptr<base::Value> response(base::JSONReader::Read(response_str));
+      scoped_ptr<base::Value> response = base::JSONReader::Read(response_str);
       ASSERT_TRUE(response);
 
       base::DictionaryValue* response_dict;

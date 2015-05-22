@@ -219,7 +219,7 @@ class WalletAddressTest : public testing::Test {
   WalletAddressTest() {}
  protected:
   void SetUpDictionary(const std::string& json) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
     DCHECK(value.get());
     DCHECK(value->IsType(base::Value::TYPE_DICTIONARY));
     dict_.reset(static_cast<base::DictionaryValue*>(value.release()));

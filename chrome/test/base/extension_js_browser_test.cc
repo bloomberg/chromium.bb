@@ -51,9 +51,7 @@ bool ExtensionJSBrowserTest::RunJavascriptTestF(bool is_async,
           load_waiter_->extension_id(),
           script);
 
-  base::JSONReader reader;
-  scoped_ptr<base::Value> value_result;
-  value_result.reset(reader.Read(result));
+  scoped_ptr<base::Value> value_result = base::JSONReader::Read(result);
   CHECK_EQ(base::Value::TYPE_DICTIONARY, value_result->GetType());
   base::DictionaryValue* dict_value =
       static_cast<base::DictionaryValue*>(value_result.get());

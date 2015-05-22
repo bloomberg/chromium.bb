@@ -90,7 +90,7 @@ bool SettingsPrivateDelegate::SetPref(const std::string& pref_name,
       if (!value->GetAsString(&json_string))
         return false;
 
-      temp_value.reset(base::JSONReader::Read(json_string));
+      temp_value.reset(base::JSONReader::DeprecatedRead(json_string));
       value = temp_value.get();
       if (!value->IsType(base::Value::TYPE_LIST))
         return false;

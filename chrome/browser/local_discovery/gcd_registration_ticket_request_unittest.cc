@@ -53,14 +53,14 @@ TEST(GCDRegistrationTicketRequestTest, Parsing) {
 
   EXPECT_CALL(delegate, Callback("SampleTicketID", "SampleDeviceID"));
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(kSampleResponse));
+  scoped_ptr<base::Value> value = base::JSONReader::Read(kSampleResponse);
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   request.OnGCDAPIFlowComplete(*dictionary);
 
   EXPECT_CALL(delegate, Callback("", ""));
 
-  value.reset(base::JSONReader::Read(kErrorResponse));
+  value.reset(base::JSONReader::DeprecatedRead(kErrorResponse));
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   request.OnGCDAPIFlowComplete(*dictionary);
 }

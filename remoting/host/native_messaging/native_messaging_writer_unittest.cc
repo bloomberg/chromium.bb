@@ -50,7 +50,7 @@ TEST_F(NativeMessagingWriterTest, GoodMessage) {
   EXPECT_EQ(static_cast<int>(length), read);
 
   // |content| should now contain serialized |message|.
-  scoped_ptr<base::Value> written_message(base::JSONReader::Read(content));
+  scoped_ptr<base::Value> written_message = base::JSONReader::Read(content);
   EXPECT_TRUE(message.Equals(written_message.get()));
 
   // Nothing more should have been written. Close the write-end of the pipe,
@@ -82,7 +82,7 @@ TEST_F(NativeMessagingWriterTest, SecondMessage) {
   }
 
   // |content| should now contain serialized |message2|.
-  scoped_ptr<base::Value> written_message2(base::JSONReader::Read(content));
+  scoped_ptr<base::Value> written_message2 = base::JSONReader::Read(content);
   EXPECT_TRUE(message2.Equals(written_message2.get()));
 }
 
