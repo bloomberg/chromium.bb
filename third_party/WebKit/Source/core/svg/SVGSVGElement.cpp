@@ -315,6 +315,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGFitToViewBox::isKnownAttribute(attrName)) {
         updateRelativeLengthsOrViewBox = true;
+        invalidateRelativeLengthClients();
         if (LayoutObject* object = layoutObject())
             object->setNeedsTransformUpdate();
     }
