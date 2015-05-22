@@ -10,11 +10,21 @@ namespace chromecast {
 namespace media {
 
 DecoderBufferAdapter::DecoderBufferAdapter(
-    const scoped_refptr< ::media::DecoderBuffer>& buffer)
-    : buffer_(buffer) {
+    const scoped_refptr<::media::DecoderBuffer>& buffer)
+    : DecoderBufferAdapter(kPrimary, buffer) {
+}
+
+DecoderBufferAdapter::DecoderBufferAdapter(
+    StreamId stream_id, const scoped_refptr<::media::DecoderBuffer>& buffer)
+    : stream_id_(stream_id),
+      buffer_(buffer) {
 }
 
 DecoderBufferAdapter::~DecoderBufferAdapter() {
+}
+
+StreamId DecoderBufferAdapter::stream_id() const {
+  return stream_id_;
 }
 
 base::TimeDelta DecoderBufferAdapter::timestamp() const {

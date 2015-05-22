@@ -17,6 +17,11 @@ class DecryptConfig;
 namespace chromecast {
 namespace media {
 
+enum StreamId {
+  kPrimary = 0,
+  kSecondary
+};
+
 // DecoderBufferBase exposes only the properties of an audio/video buffer.
 // The way a DecoderBufferBase is created and organized in memory
 // is left as a detail of the implementation of derived classes.
@@ -24,6 +29,10 @@ class DecoderBufferBase
     : public base::RefCountedThreadSafe<DecoderBufferBase> {
  public:
   DecoderBufferBase();
+
+  // Returns the stream id of this decoder buffer belonging to. it's optional
+  // and default value is kPrimary.
+  virtual StreamId stream_id() const = 0;
 
   // Returns the PTS of the frame.
   virtual base::TimeDelta timestamp() const = 0;
