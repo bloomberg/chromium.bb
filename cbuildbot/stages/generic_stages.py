@@ -301,10 +301,10 @@ class BuilderStage(object):
         build config at self._run.config.
 
     Raises:
-      See cbuildbot_config.GetSlavesForMaster for details.
+      See config_lib.Config.GetSlavesForMaster for details.
     """
-    return cbuildbot_config.GetSlavesForMaster(self._run.config,
-                                               self._run.options)
+    all_configs = cbuildbot_config.GetConfig()
+    return all_configs.GetSlavesForMaster(self._run.config, self._run.options)
 
   def _Begin(self):
     """Can be overridden.  Called before a stage is performed."""

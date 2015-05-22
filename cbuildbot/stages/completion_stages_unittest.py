@@ -13,9 +13,9 @@ import sys
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import generate_chromeos_config
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.stages import completion_stages
@@ -129,64 +129,69 @@ class MasterSlaveSyncCompletionStageTest(
         self._run, sync_stage, success=True)
 
   def _GetTestConfig(self):
-    test_config = {}
-    test_config['test1'] = {
-        'manifest_version': True,
-        'build_type': constants.PFQ_TYPE,
-        'overlays': 'public',
-        'important': False,
-        'chrome_rev': None,
-        'branch': False,
-        'internal': False,
-        'master': False,
-    }
-    test_config['test2'] = {
-        'manifest_version': False,
-        'build_type': constants.PFQ_TYPE,
-        'overlays': 'public',
-        'important': True,
-        'chrome_rev': None,
-        'branch': False,
-        'internal': False,
-        'master': False,
-    }
-    test_config['test3'] = {
-        'manifest_version': True,
-        'build_type': constants.PFQ_TYPE,
-        'overlays': 'both',
-        'important': True,
-        'chrome_rev': None,
-        'branch': False,
-        'internal': True,
-        'master': False,
-    }
-    test_config['test4'] = {
-        'manifest_version': True,
-        'build_type': constants.PFQ_TYPE,
-        'overlays': 'both',
-        'important': True,
-        'chrome_rev': None,
-        'branch': True,
-        'internal': True,
-        'master': False,
-    }
-    test_config['test5'] = {
-        'manifest_version': True,
-        'build_type': constants.PFQ_TYPE,
-        'overlays': 'public',
-        'important': True,
-        'chrome_rev': None,
-        'branch': False,
-        'internal': False,
-        'master': False,
-    }
+    test_config = config_lib.Config(defaults={})
+    test_config.AddRawConfig(
+        'test1',
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='public',
+        important=False,
+        chrome_rev=None,
+        branch=False,
+        internal=False,
+        master=False,
+    )
+    test_config.AddRawConfig(
+        'test2',
+        manifest_version=False,
+        build_type=constants.PFQ_TYPE,
+        overlays='public',
+        important=True,
+        chrome_rev=None,
+        branch=False,
+        internal=False,
+        master=False,
+    )
+    test_config.AddRawConfig(
+        'test3',
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='both',
+        important=True,
+        chrome_rev=None,
+        branch=False,
+        internal=True,
+        master=False,
+    )
+    test_config.AddRawConfig(
+        'test4',
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='both',
+        important=True,
+        chrome_rev=None,
+        branch=True,
+        internal=True,
+        master=False,
+    )
+    test_config.AddRawConfig(
+        'test5',
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='public',
+        important=True,
+        chrome_rev=None,
+        branch=False,
+        internal=False,
+        master=False,
+    )
     return test_config
 
   def testGetSlavesForMaster(self):
     """Tests that we get the slaves for a fake unified master configuration."""
     test_config = self._GetTestConfig()
     # Temp solution until we can load test configs.
-    self.PatchObject(generate_chromeos_config, '_CONFIG', test_config)
+    self.PatchObject(cbuildbot_config, 'GetConfig', return_value=test_config)
 
     stage = self.ConstructStage()
     p = stage._GetSlaveConfigs()
@@ -355,7 +360,7 @@ class BaseCommitQueueCompletionStageTest(
 
     # Setup the stage to look at the specified configs.
     all_slaves = list(all_slaves or set(failing + inflight))
-    configs = [cbuildbot_config.BuildConfig(name=x) for x in all_slaves]
+    configs = [config_lib.BuildConfig(name=x) for x in all_slaves]
     self.PatchObject(stage, '_GetSlaveConfigs', return_value=configs)
 
     # Setup builder statuses.

@@ -270,7 +270,7 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     """Make sure every master has a sane list of slaves"""
     for build_name, config in self.all_configs.iteritems():
       if config.master:
-        configs = generate_chromeos_config.GetSlavesForMaster(config)
+        configs = self.all_configs.GetSlavesForMaster(config)
         self.assertEqual(
             len(map(repr, configs)), len(set(map(repr, configs))),
             'Duplicate board in slaves of %s will cause upload prebuilts'
@@ -293,8 +293,7 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     mock_options.remote_trybot = True
     for _, config in self.all_configs.iteritems():
       if config['master']:
-        configs = generate_chromeos_config.GetSlavesForMaster(
-            config, mock_options)
+        configs = self.all_configs.GetSlavesForMaster(config, mock_options)
         self.assertEqual([], configs)
 
   def testFactoryFirmwareValidity(self):
@@ -469,7 +468,7 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     """Test that no two same-board paladin slaves upload prebuilts."""
     for cfg in self.all_configs.values():
       if cfg['build_type'] == constants.PALADIN_TYPE and cfg['master']:
-        slaves = generate_chromeos_config.GetSlavesForMaster(cfg)
+        slaves = self.all_configs.GetSlavesForMaster(cfg)
         prebuilt_slaves = [s for s in slaves if s['prebuilts']]
         # Dictionary from board name to builder name that uploads prebuilt
         prebuilt_slave_boards = {}

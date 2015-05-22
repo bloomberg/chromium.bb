@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import os
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status

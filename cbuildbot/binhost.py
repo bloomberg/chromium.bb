@@ -64,9 +64,11 @@ def GetChromePrebuiltConfigs():
   Returns:
     A dict mapping BoardKey objects to configs.
   """
+  all_configs = cbuildbot_config.GetConfig()
+
   boards = {}
-  master_chromium_pfq = cbuildbot_config.GetConfig()['master-chromium-pfq']
-  for config in cbuildbot_config.GetSlavesForMaster(master_chromium_pfq):
+  master_chromium_pfq = all_configs['master-chromium-pfq']
+  for config in all_configs.GetSlavesForMaster(master_chromium_pfq):
     if config.prebuilts:
       for board in config.boards:
         boards[GetBoardKey(config, board)] = config
