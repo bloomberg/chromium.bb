@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -313,6 +314,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   CheckAccessibleName();
 
   // Unified mode
+  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
   display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
   UpdateDisplay("300x200,400x500");

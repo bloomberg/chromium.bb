@@ -59,6 +59,9 @@ struct ASH_EXPORT DisplayLayout {
   // True if displays are mirrored.
   bool mirrored;
 
+  // True if multi displays should default to unified mode.
+  bool default_unified;
+
   // The id of the display used as a primary display.
   int64 primary_id;
 
