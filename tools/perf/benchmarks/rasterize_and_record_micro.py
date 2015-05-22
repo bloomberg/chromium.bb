@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from measurements import rasterize_and_record_micro
+from telemetry import benchmark
 import page_sets
 
 
-class _RasterizeAndRecordMicro(benchmark.Benchmark):
+class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--start-wait-time', type='float',
@@ -66,7 +67,7 @@ class RasterizeAndRecordMicroTop25WithSlimmingPaint(_RasterizeAndRecordMicro):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.Top25PageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-slimming-paint'])
 
   @classmethod

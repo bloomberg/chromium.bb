@@ -8,6 +8,8 @@ from collections import defaultdict
 import os
 import unittest
 
+from core import perf_benchmark
+
 from telemetry import benchmark as benchmark_module
 from telemetry.core import browser_options
 from telemetry.core import discover
@@ -46,6 +48,20 @@ class TestNoBenchmarkNamesDuplication(unittest.TestCase):
                         'Multiple benchmarks with the same name %s are '
                         'found: %s' % (n, str(names_to_benchmarks[n])))
 
+
+class TestNoOverrideCustomizeBrowserOptions(unittest.TestCase):
+  def runTest(self):
+    all_benchmarks = _GetAllPerfBenchmarks()
+    for benchmark in all_benchmarks:
+      self.assertEquals(True, issubclass(benchmark,
+          perf_benchmark.PerfBenchmark),
+          'Benchmark %s needs to subclass from PerfBenchmark'
+          % benchmark.Name())
+      self.assertEquals(benchmark.CustomizeBrowserOptions,
+          perf_benchmark.PerfBenchmark.CustomizeBrowserOptions,
+          'Benchmark %s should not override CustomizeBrowserOptions'
+          % benchmark.Name())
+
 def _AddBenchmarkOptionsTests(suite):
   # Using |index_by_class_name=True| allows returning multiple benchmarks
   # from a module.
@@ -60,6 +76,7 @@ def _AddBenchmarkOptionsTests(suite):
             _BenchmarkOptionsTestGenerator(benchmark))
     suite.addTest(BenchmarkOptionsTest(benchmark.Name()))
   suite.addTest(TestNoBenchmarkNamesDuplication())
+  suite.addTest(TestNoOverrideCustomizeBrowserOptions())
 
 
 def load_tests(loader, standard_tests, pattern):

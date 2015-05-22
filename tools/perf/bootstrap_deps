@@ -10,6 +10,8 @@
 deps = {
     "src/tools/perf/benchmarks":
         "https://src.chromium.org/chrome/trunk/src/tools/perf/benchmarks",
+    "src/tools/perf/core":
+        "https://src.chromium.org/chrome/trunk/src/tools/perf/core",
     "src/tools/perf/measurements":
         "https://src.chromium.org/chrome/trunk/src/tools/perf/measurements",
     "src/tools/perf/page_sets":
@@ -20,6 +22,8 @@ deps = {
         "https://src.chromium.org/chrome/trunk/src/tools/perf/profile_creators",
     "src/tools/perf/run_benchmark":
         "https://src.chromium.org/chrome/trunk/src/tools/perf/run_benchmark",
+    "src/testing/variations":
+        "https://src.chromium.org/chrome/trunk/src/testing/variations",
 }
 
 # tools/perf depends on Telemetry, so pull in the Telemetry deps, too.

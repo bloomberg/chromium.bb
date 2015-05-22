@@ -4,15 +4,16 @@
 
 import os
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from benchmarks import blink_perf
 from benchmarks import silk_flags
 from measurements import oilpan_gc_times
+from telemetry import benchmark
 import page_sets
 
 
-class OilpanGCTimesBlinkPerfAnimation(benchmark.Benchmark):
+class OilpanGCTimesBlinkPerfAnimation(perf_benchmark.PerfBenchmark):
   tag = 'blink_perf_animation'
   test = oilpan_gc_times.OilpanGCTimesForBlinkPerf
 
@@ -26,7 +27,7 @@ class OilpanGCTimesBlinkPerfAnimation(benchmark.Benchmark):
 
 
 @benchmark.Enabled('content-shell')
-class OilpanGCTimesBlinkPerfStress(benchmark.Benchmark):
+class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
   tag = 'blink_perf_stress'
   test = oilpan_gc_times.OilpanGCTimesForInternals
 
@@ -39,7 +40,7 @@ class OilpanGCTimesBlinkPerfStress(benchmark.Benchmark):
     return blink_perf.CreatePageSetFromPath(path, blink_perf.SKIPPED_FILE)
 
 
-class OilpanGCTimesSmoothnessAnimation(benchmark.Benchmark):
+class OilpanGCTimesSmoothnessAnimation(perf_benchmark.PerfBenchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.ToughAnimationCasesPageSet
 
@@ -49,7 +50,7 @@ class OilpanGCTimesSmoothnessAnimation(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class OilpanGCTimesKeySilkCases(benchmark.Benchmark):
+class OilpanGCTimesKeySilkCases(perf_benchmark.PerfBenchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.KeySilkCasesPageSet
 
@@ -59,11 +60,11 @@ class OilpanGCTimesKeySilkCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class OilpanGCTimesSyncScrollKeyMobileSites(benchmark.Benchmark):
+class OilpanGCTimesSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
   tag = 'sync_scroll'
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
   @classmethod
   def Name(cls):

@@ -5,6 +5,8 @@
 import math
 import os
 
+from core import perf_benchmark
+
 from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry.page import page_set
@@ -94,7 +96,7 @@ class _DromaeoMeasurement(page_test.PageTest):
     for key, value in aggregated.iteritems():
       AddResult(key, math.exp(value['sum'] / value['count']))
 
-class _DromaeoBenchmark(benchmark.Benchmark):
+class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
   """A base class for Dromaeo benchmarks."""
   test = _DromaeoMeasurement
 

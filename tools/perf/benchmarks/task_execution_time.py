@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from measurements import task_execution_time
+from telemetry import benchmark
 import page_sets
 
 
 @benchmark.Enabled('android')
-class TaskExecutionTimeKeyMobileSites(benchmark.Benchmark):
+class TaskExecutionTimeKeyMobileSites(perf_benchmark.PerfBenchmark):
 
   """Measures task execution statistics while scrolling down key mobile sites.
 
@@ -25,7 +26,7 @@ class TaskExecutionTimeKeyMobileSites(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class TaskExecutionTimeToughSchedulingCases(benchmark.Benchmark):
+class TaskExecutionTimeToughSchedulingCases(perf_benchmark.PerfBenchmark):
 
   """Measures task execution statistics while scrolling tough scheduling sites.
 
@@ -41,7 +42,7 @@ class TaskExecutionTimeToughSchedulingCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class TaskExecutionTimePathologicalMobileSites(benchmark.Benchmark):
+class TaskExecutionTimePathologicalMobileSites(perf_benchmark.PerfBenchmark):
 
   """Measures task execution statistics while scrolling pathological sites.
 

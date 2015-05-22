@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from measurements import polymer_load
+from telemetry import benchmark
 import page_sets
 
 
 @benchmark.Enabled('android')
-class PolymerLoadPica(benchmark.Benchmark):
+class PolymerLoadPica(perf_benchmark.PerfBenchmark):
   """Measures time to polymer-ready for Pica (News Reader)."""
   test = polymer_load.PolymerLoadMeasurement
   page_set = page_sets.PicaPageSet
@@ -25,7 +26,7 @@ class PolymerLoadPica(benchmark.Benchmark):
 # See crbug.com/428207.
 #@benchmark.Enabled('android')
 @benchmark.Disabled
-class PolymerLoadTopeka(benchmark.Benchmark):
+class PolymerLoadTopeka(perf_benchmark.PerfBenchmark):
   """Measures time to polymer-ready for Topeka (Quiz App)."""
   test = polymer_load.PolymerLoadMeasurement
   page_set = page_sets.TopekaPageSet

@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from benchmarks import silk_flags
 from measurements import smoothness
+from telemetry import benchmark
 import page_sets
 
 
-class _Repaint(benchmark.Benchmark):
+class _Repaint(perf_benchmark.PerfBenchmark):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--mode', type='string',
@@ -52,7 +53,7 @@ class RepaintGpuRasterizationKeyMobileSites(_Repaint):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   tag = 'gpu_rasterization'
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
   @classmethod

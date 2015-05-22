@@ -6,6 +6,8 @@ import collections
 import page_sets
 import re
 
+from core import perf_benchmark
+
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import action_runner
@@ -188,7 +190,7 @@ class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
         browser_process, 'IOThread', filter_text , results)
 
 
-class ServiceWorkerPerfTest(benchmark.Benchmark):
+class ServiceWorkerPerfTest(perf_benchmark.PerfBenchmark):
   """Performance test on public applications using ServiceWorker"""
   test = _ServiceWorkerMeasurement
   page_set = page_sets.ServiceWorkerPageSet
@@ -201,7 +203,7 @@ class ServiceWorkerPerfTest(benchmark.Benchmark):
 # Disabled due to redness on the tree. crbug.com/442752
 # TODO(horo): Enable after the reference build newer than M39 will be rolled.
 @benchmark.Disabled('reference')
-class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
+class ServiceWorkerMicroBenchmarkPerfTest(perf_benchmark.PerfBenchmark):
   """This test measures the performance of pages using ServiceWorker.
 
   As a page set, two benchamrk pages (many registration, many concurrent

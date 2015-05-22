@@ -5,7 +5,8 @@ import collections
 import json
 import os
 
-from telemetry import benchmark
+from core import perf_benchmark
+
 from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -125,7 +126,7 @@ class _SunspiderMeasurement(page_test.PageTest):
                     'in sunspider'))
 
 
-class Sunspider(benchmark.Benchmark):
+class Sunspider(perf_benchmark.PerfBenchmark):
   """Apple's SunSpider JavaScript benchmark.
 
   http://www.webkit.org/perf/sunspider/sunspider.html

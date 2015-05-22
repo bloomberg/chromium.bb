@@ -18,7 +18,8 @@ engine, CSS style resolution, layout, and other technologies.
 
 import os
 
-from telemetry import benchmark
+from core import perf_benchmark
+
 from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -82,7 +83,7 @@ class SpeedometerMeasurement(page_test.PageTest):
               """ % suite_name), important=False))
     keychain_metric.KeychainMetric().AddResults(tab, results)
 
-class Speedometer(benchmark.Benchmark):
+class Speedometer(perf_benchmark.PerfBenchmark):
   test = SpeedometerMeasurement
 
   @classmethod

@@ -6,6 +6,8 @@
 
 import os
 
+from core import perf_benchmark
+
 from telemetry import benchmark
 from telemetry import page as page_module
 from telemetry.page import page_set
@@ -47,7 +49,7 @@ class _RobohornetProMeasurement(page_test.PageTest):
 # we need to wait until Chrome OS can implement support for more helpful
 # benchmarks.
 @benchmark.Enabled('chromeos')
-class RobohornetPro(benchmark.Benchmark):
+class RobohornetPro(perf_benchmark.PerfBenchmark):
   """Milliseconds to complete the RoboHornetPro demo by Microsoft.
 
   http://ie.microsoft.com/testdrive/performance/robohornetpro/

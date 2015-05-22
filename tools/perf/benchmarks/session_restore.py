@@ -5,15 +5,16 @@
 import os
 import tempfile
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from measurements import session_restore
-import page_sets
 from profile_creators import profile_generator
 from profile_creators import small_profile_extender
+from telemetry import benchmark
+import page_sets
 
 
-class _SessionRestoreTypical25(benchmark.Benchmark):
+class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
   """Base Benchmark class for session restore benchmarks.
 
   A cold start means none of the Chromium files are in the disk cache.

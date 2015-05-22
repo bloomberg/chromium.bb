@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from measurements import page_cycler
+from telemetry import benchmark
 import page_sets
 
 
-class _PageCycler(benchmark.Benchmark):
+class _PageCycler(perf_benchmark.PerfBenchmark):
   options = {'pageset_repeat': 6}
   cold_load_percent = 50  # % of page visits for which a cold load is forced
 
@@ -226,7 +227,7 @@ class PageCyclerOopifTypical25(_PageCycler):
   def Name(cls):
     return 'page_cycler_oopif.typical_25'
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--site-per-process'])
 
   def CreatePageSet(self, options):

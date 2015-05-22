@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from measurements import v8_detached_context_age_in_gc
 from measurements import v8_gc_times
+from telemetry import benchmark
 import page_sets
 
 
 @benchmark.Disabled('win')  # crbug.com/416502
-class V8GarbageCollectionCases(benchmark.Benchmark):
+class V8GarbageCollectionCases(perf_benchmark.PerfBenchmark):
   """Measure V8 GC metrics on the garbage collection cases."""
   test = v8_gc_times.V8GCTimes
   page_set = page_sets.GarbageCollectionCasesPageSet
@@ -22,7 +23,7 @@ class V8GarbageCollectionCases(benchmark.Benchmark):
 # Disabled on Win due to crbug.com/416502.
 # TODO(rmcilroy): reenable on reference when crbug.com/456845 is fixed.
 @benchmark.Disabled('win', 'reference')
-class V8Top25(benchmark.Benchmark):
+class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
@@ -34,7 +35,7 @@ class V8Top25(benchmark.Benchmark):
     return 'v8.top_25_smooth'
 
 @benchmark.Enabled('android')
-class V8KeyMobileSites(benchmark.Benchmark):
+class V8KeyMobileSites(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down key mobile sites.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
@@ -45,7 +46,7 @@ class V8KeyMobileSites(benchmark.Benchmark):
   def Name(cls):
     return 'v8.key_mobile_sites_smooth'
 
-class V8DetachedContextAgeInGC(benchmark.Benchmark):
+class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
   """Measures the number of GCs needed to collect a detached context.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""

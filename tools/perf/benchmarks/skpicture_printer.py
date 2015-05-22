@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from core import perf_benchmark
+
 from telemetry import benchmark
 from telemetry.core import discover
 from telemetry.page import page_set
@@ -21,7 +23,7 @@ def _MatchPageSetName(page_set_name, page_set_base_dir):
 
 
 @benchmark.Disabled
-class SkpicturePrinter(benchmark.Benchmark):
+class SkpicturePrinter(perf_benchmark.PerfBenchmark):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--page-set-name',  action='store', type='string')

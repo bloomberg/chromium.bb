@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from measurements import startup
+from telemetry import benchmark
 import page_sets
 
 
-class _StartupCold(benchmark.Benchmark):
+class _StartupCold(perf_benchmark.PerfBenchmark):
   """Measures cold startup time with a clean profile."""
   options = {'pageset_repeat': 5}
 
@@ -20,7 +21,7 @@ class _StartupCold(benchmark.Benchmark):
     return startup.Startup(cold=True)
 
 
-class _StartupWarm(benchmark.Benchmark):
+class _StartupWarm(perf_benchmark.PerfBenchmark):
   """Measures warm startup time with a clean profile."""
   options = {'pageset_repeat': 20}
 
@@ -71,7 +72,7 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
     super(StartupLargeProfileColdBlankPage, self).__init__(max_failures)
     self.generated_profile_archive = "large_profile.zip"
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     options.browser_startup_timeout = 10 * 60
 
   @classmethod
@@ -91,7 +92,7 @@ class StartupLargeProfileWarmBlankPage(_StartupWarm):
     super(StartupLargeProfileWarmBlankPage, self).__init__(max_failures)
     self.generated_profile_archive = "large_profile.zip"
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     options.browser_startup_timeout = 10 * 60
 
   @classmethod

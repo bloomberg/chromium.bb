@@ -13,7 +13,8 @@ Octane 2.0 consists of 17 tests, four more than Octane v1.
 
 import os
 
-from telemetry import benchmark
+from core import perf_benchmark
+
 from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -130,7 +131,7 @@ class _OctaneMeasurement(page_test.PageTest):
                                        'benchmark collection.'))
 
 
-class Octane(benchmark.Benchmark):
+class Octane(perf_benchmark.PerfBenchmark):
   """Google's Octane JavaScript benchmark.
 
   http://octane-benchmark.googlecode.com/svn/latest/index.html

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from core import perf_benchmark
+
 from telemetry import benchmark
 from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
@@ -35,7 +37,7 @@ class _MSEMeasurement(page_test.PageTest):
 
 @benchmark.Disabled('android',  # See media.android.tough_video_cases below
                     'xp')  # crbug.com/475191
-class Media(benchmark.Benchmark):
+class Media(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
   page_set = page_sets.ToughVideoCasesPageSet
@@ -46,7 +48,7 @@ class Media(benchmark.Benchmark):
 
 
 @benchmark.Disabled('android', 'mac', 'xp')
-class MediaNetworkSimulation(benchmark.Benchmark):
+class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
   """Obtains media metrics under different network simulations."""
   test = media.Media
   page_set = page_sets.MediaCnsCasesPageSet
@@ -58,7 +60,7 @@ class MediaNetworkSimulation(benchmark.Benchmark):
 
 @benchmark.Disabled() # crbug.com/448092
 @benchmark.Disabled('l', 'android-webview') # WebView: crbug.com/419689
-class MediaAndroid(benchmark.Benchmark):
+class MediaAndroid(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
   tag = 'android'
@@ -72,7 +74,7 @@ class MediaAndroid(benchmark.Benchmark):
 
 
 @benchmark.Enabled('chromeos')
-class MediaChromeOS4kOnly(benchmark.Benchmark):
+class MediaChromeOS4kOnly(perf_benchmark.PerfBenchmark):
   """Benchmark for media performance on ChromeOS using only is_4k test content.
   """
   test = media.Media
@@ -90,7 +92,7 @@ class MediaChromeOS4kOnly(benchmark.Benchmark):
 
 
 @benchmark.Enabled('chromeos')
-class MediaChromeOS(benchmark.Benchmark):
+class MediaChromeOS(perf_benchmark.PerfBenchmark):
   """Benchmark for media performance on all ChromeOS platforms.
 
   This benchmark does not run is_4k content, there's a separate benchmark for
@@ -108,7 +110,7 @@ class MediaChromeOS(benchmark.Benchmark):
 
 
 @benchmark.Disabled('android-webview') # crbug.com/419689
-class MediaSourceExtensions(benchmark.Benchmark):
+class MediaSourceExtensions(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key media source extensions functions."""
   test = _MSEMeasurement
   page_set = page_sets.MseCasesPageSet
@@ -117,7 +119,7 @@ class MediaSourceExtensions(benchmark.Benchmark):
   def Name(cls):
     return 'media.mse_cases'
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     # Needed to allow XHR requests to return stream objects.
     options.AppendExtraBrowserArgs(
         ['--enable-experimental-web-platform-features',

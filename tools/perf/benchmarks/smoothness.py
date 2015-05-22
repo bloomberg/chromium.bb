@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import benchmark
+from core import perf_benchmark
 
 from benchmarks import silk_flags
 from benchmarks import webgl_expectations
 from measurements import smoothness
+from telemetry import benchmark
 import page_sets
 
 
-class SmoothnessTop25(benchmark.Benchmark):
+class SmoothnessTop25(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks
@@ -23,7 +24,7 @@ class SmoothnessTop25(benchmark.Benchmark):
     return 'smoothness.top_25_smooth'
 
 
-class SmoothnessToughFiltersCases(benchmark.Benchmark):
+class SmoothnessToughFiltersCases(perf_benchmark.PerfBenchmark):
   """Measures frame rate and a variety of other statistics.
 
   Uses a selection of pages making use of SVG and CSS Filter Effects.
@@ -36,7 +37,7 @@ class SmoothnessToughFiltersCases(benchmark.Benchmark):
     return 'smoothness.tough_filters_cases'
 
 
-class SmoothnessToughPathRenderingCases(benchmark.Benchmark):
+class SmoothnessToughPathRenderingCases(perf_benchmark.PerfBenchmark):
   """Tests a selection of pages with SVG and 2D Canvas paths.
 
   Measures frame rate and a variety of other statistics.  """
@@ -50,7 +51,7 @@ class SmoothnessToughPathRenderingCases(benchmark.Benchmark):
 
 # crbug.com/388877, crbug.com/396127
 @benchmark.Disabled('mac', 'win', 'android')
-class SmoothnessToughCanvasCases(benchmark.Benchmark):
+class SmoothnessToughCanvasCases(perf_benchmark.PerfBenchmark):
   """Measures frame rate and a variety of other statistics.
 
   Uses a selection of pages making use of the 2D Canvas API.
@@ -64,7 +65,7 @@ class SmoothnessToughCanvasCases(benchmark.Benchmark):
 
 
 @benchmark.Disabled('android')  # crbug.com/373812
-class SmoothnessToughWebGLCases(benchmark.Benchmark):
+class SmoothnessToughWebGLCases(perf_benchmark.PerfBenchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughWebglCasesPageSet
 
@@ -78,7 +79,7 @@ class SmoothnessToughWebGLCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessMaps(benchmark.Benchmark):
+class SmoothnessMaps(perf_benchmark.PerfBenchmark):
   page_set = page_sets.MapsPageSet
 
   @classmethod
@@ -91,7 +92,7 @@ class SmoothnessMaps(benchmark.Benchmark):
 
 
 @benchmark.Disabled('android')
-class SmoothnessKeyDesktopMoveCases(benchmark.Benchmark):
+class SmoothnessKeyDesktopMoveCases(perf_benchmark.PerfBenchmark):
   test = smoothness.Smoothness
   page_set = page_sets.KeyDesktopMoveCasesPageSet
 
@@ -101,7 +102,7 @@ class SmoothnessKeyDesktopMoveCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessKeyMobileSites(benchmark.Benchmark):
+class SmoothnessKeyMobileSites(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics while scrolling down the key mobile sites.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks
@@ -115,7 +116,7 @@ class SmoothnessKeyMobileSites(benchmark.Benchmark):
 
 
 @benchmark.Disabled('mac', 'win', 'android')
-class SmoothnessKeyMobileSitesWithSlimmingPaint(benchmark.Benchmark):
+class SmoothnessKeyMobileSitesWithSlimmingPaint(perf_benchmark.PerfBenchmark):
   """Measures smoothness on key mobile sites with --enable-slimming-paint.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks
@@ -123,7 +124,7 @@ class SmoothnessKeyMobileSitesWithSlimmingPaint(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-slimming-paint'])
 
   @classmethod
@@ -131,7 +132,7 @@ class SmoothnessKeyMobileSitesWithSlimmingPaint(benchmark.Benchmark):
     return 'smoothness.key_mobile_sites_with_slimming_paint_smooth'
 
 
-class SmoothnessToughAnimationCases(benchmark.Benchmark):
+class SmoothnessToughAnimationCases(perf_benchmark.PerfBenchmark):
   test = smoothness.SmoothnessWithRestart
   page_set = page_sets.ToughAnimationCasesPageSet
 
@@ -141,7 +142,7 @@ class SmoothnessToughAnimationCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessKeySilkCases(benchmark.Benchmark):
+class SmoothnessKeySilkCases(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for the key silk cases without GPU
   rasterization.
   """
@@ -154,14 +155,14 @@ class SmoothnessKeySilkCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
+class SmoothnessGpuRasterizationTop25(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for the top 25 with GPU rasterization.
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
   page_set = page_sets.Top25SmoothPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
   @classmethod
@@ -170,7 +171,7 @@ class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
+class SmoothnessGpuRasterizationKeyMobileSites(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for the key mobile sites with GPU
   rasterization.
   """
@@ -178,7 +179,7 @@ class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
   @classmethod
@@ -186,7 +187,8 @@ class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
     return 'smoothness.gpu_rasterization.key_mobile_sites_smooth'
 
 
-class SmoothnessGpuRasterizationToughPathRenderingCases(benchmark.Benchmark):
+class SmoothnessGpuRasterizationToughPathRenderingCases(
+    perf_benchmark.PerfBenchmark):
   """Tests a selection of pages with SVG and 2D canvas paths with GPU
   rasterization.
   """
@@ -194,7 +196,7 @@ class SmoothnessGpuRasterizationToughPathRenderingCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughPathRenderingCasesPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
   @classmethod
@@ -202,7 +204,7 @@ class SmoothnessGpuRasterizationToughPathRenderingCases(benchmark.Benchmark):
     return 'smoothness.gpu_rasterization.tough_path_rendering_cases'
 
 
-class SmoothnessGpuRasterizationFiltersCases(benchmark.Benchmark):
+class SmoothnessGpuRasterizationFiltersCases(perf_benchmark.PerfBenchmark):
   """Tests a selection of pages with SVG and CSS filter effects with GPU
   rasterization.
   """
@@ -210,7 +212,7 @@ class SmoothnessGpuRasterizationFiltersCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughFiltersCasesPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
   @classmethod
@@ -219,7 +221,7 @@ class SmoothnessGpuRasterizationFiltersCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
+class SmoothnessSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for the key mobile sites with synchronous
   (main thread) scrolling.
   """
@@ -227,7 +229,7 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
 
   @classmethod
@@ -236,7 +238,7 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessSimpleMobilePages(benchmark.Benchmark):
+class SmoothnessSimpleMobilePages(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for simple mobile sites page set.
   """
   test = smoothness.Smoothness
@@ -248,13 +250,13 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessFlingSimpleMobilePages(benchmark.Benchmark):
+class SmoothnessFlingSimpleMobilePages(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for flinging a simple mobile sites page set.
   """
   test = smoothness.Smoothness
   page_set = page_sets.SimpleMobileSitesFlingPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     # As the fling parameters cannot be analytically determined to not
     # overscroll, disable overscrolling explicitly. Overscroll behavior is
     # orthogonal to fling performance, and its activation is only more noise.
@@ -266,7 +268,7 @@ class SmoothnessFlingSimpleMobilePages(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android', 'chromeos')
-class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
+class SmoothnessToughPinchZoomCases(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases.
   """
@@ -279,7 +281,7 @@ class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android', 'chromeos')
-class SmoothnessToughScrollingWhileZoomedInCases(benchmark.Benchmark):
+class SmoothnessToughScrollingWhileZoomedInCases(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for pinch-zooming then diagonal scrolling"""
   test = smoothness.Smoothness
   page_set = page_sets.ToughScrollingWhileZoomedInCasesPageSet
@@ -290,7 +292,7 @@ class SmoothnessToughScrollingWhileZoomedInCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessPolymer(benchmark.Benchmark):
+class SmoothnessPolymer(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for Polymer cases.
   """
   test = smoothness.Smoothness
@@ -302,14 +304,14 @@ class SmoothnessPolymer(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
+class SmoothnessGpuRasterizationPolymer(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for the Polymer cases with GPU rasterization.
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
   page_set = page_sets.PolymerPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
   @classmethod
@@ -317,7 +319,7 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
     return 'smoothness.gpu_rasterization.polymer'
 
 
-class SmoothnessToughScrollingCases(benchmark.Benchmark):
+class SmoothnessToughScrollingCases(perf_benchmark.PerfBenchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughScrollingCasesPageSet
 
@@ -326,13 +328,13 @@ class SmoothnessToughScrollingCases(benchmark.Benchmark):
     return 'smoothness.tough_scrolling_cases'
 
 
-class SmoothnessImageDecodingCases(benchmark.Benchmark):
+class SmoothnessImageDecodingCases(perf_benchmark.PerfBenchmark):
   """Measures decoding statistics for jpeg images.
   """
   test = smoothness.Smoothness
   page_set = page_sets.ImageDecodingCasesPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
     options.AppendExtraBrowserArgs('--disable-accelerated-jpeg-decoding')
 
@@ -341,14 +343,14 @@ class SmoothnessImageDecodingCases(benchmark.Benchmark):
     return 'smoothness.image_decoding_cases'
 
 
-class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
+class SmoothnessGpuImageDecodingCases(perf_benchmark.PerfBenchmark):
   """Measures decoding statistics for jpeg images with GPU rasterization.
   """
   tag = 'gpu_rasterization_and_decoding'
   test = smoothness.Smoothness
   page_set = page_sets.ImageDecodingCasesPageSet
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
     # TODO(sugoi): Remove the following line once M41 goes stable
     options.AppendExtraBrowserArgs('--enable-accelerated-jpeg-decoding')
@@ -359,7 +361,7 @@ class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessPathologicalMobileSites(benchmark.Benchmark):
+class SmoothnessPathologicalMobileSites(perf_benchmark.PerfBenchmark):
   """Measures task execution statistics while scrolling pathological sites.
   """
   test = smoothness.Smoothness
@@ -371,14 +373,14 @@ class SmoothnessPathologicalMobileSites(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class SmoothnessSyncScrollPathologicalMobileSites(benchmark.Benchmark):
+class SmoothnessSyncScrollPathologicalMobileSites(perf_benchmark.PerfBenchmark):
   """Measures task execution statistics while sync-scrolling pathological sites.
   """
   tag = 'sync_scroll'
   page_set = page_sets.PathologicalMobileSitesPageSet
   test = smoothness.Smoothness
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
 
   @classmethod
@@ -386,7 +388,7 @@ class SmoothnessSyncScrollPathologicalMobileSites(benchmark.Benchmark):
     return 'smoothness.sync_scroll.pathological_mobile_sites'
 
 
-class SmoothnessToughAnimatedImageCases(benchmark.Benchmark):
+class SmoothnessToughAnimatedImageCases(perf_benchmark.PerfBenchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughAnimatedImageCasesPageSet
 

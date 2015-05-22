@@ -22,7 +22,8 @@ Cursors:
 import json
 import os
 
-from telemetry import benchmark
+from core import perf_benchmark
+
 from telemetry.core import util
 from telemetry import page as page_module
 from telemetry.page import page_set
@@ -81,7 +82,7 @@ class _IndexedDbMeasurement(page_test.PageTest):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
     power.PowerMetric.CustomizeBrowserOptions(options)
 
-class IndexedDb(benchmark.Benchmark):
+class IndexedDb(perf_benchmark.PerfBenchmark):
   """Chromium's IndexedDB Performance tests."""
   test = _IndexedDbMeasurement
 

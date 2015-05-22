@@ -8,6 +8,8 @@ Rerforms several common navigation actions on the map (pan, zoom, rotate)"""
 import os
 import re
 
+from core import perf_benchmark
+
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page as page_module
@@ -45,7 +47,7 @@ class MapsPage(page_module.Page):
 
 
 @benchmark.Disabled
-class MapsBenchmark(benchmark.Benchmark):
+class MapsBenchmark(perf_benchmark.PerfBenchmark):
   """Basic Google Maps benchmarks."""
   test = _MapsMeasurement
 
@@ -70,5 +72,5 @@ class MapsNoVsync(MapsBenchmark):
   def Name(cls):
     return 'maps.novsync'
 
-  def CustomizeBrowserOptions(self, options):
+  def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')

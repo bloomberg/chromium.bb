@@ -6,6 +6,8 @@ import json
 import math
 import os
 
+from core import perf_benchmark
+
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry import page as page_module
@@ -78,7 +80,7 @@ class _DomPerfMeasurement(page_test.PageTest):
 
 
 @benchmark.Disabled('android', 'linux')  # http://crbug.com/458540
-class DomPerf(benchmark.Benchmark):
+class DomPerf(perf_benchmark.PerfBenchmark):
   """A suite of JavaScript benchmarks for exercising the browser's DOM.
 
   The final score is computed as the geometric mean of the individual results.

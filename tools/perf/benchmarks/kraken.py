@@ -6,7 +6,8 @@
 
 import os
 
-from telemetry import benchmark
+from core import perf_benchmark
+
 from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -113,7 +114,7 @@ class _KrakenMeasurement(page_test.PageTest):
                     '(http://krakenbenchmark.mozilla.org/)'))
 
 
-class Kraken(benchmark.Benchmark):
+class Kraken(perf_benchmark.PerfBenchmark):
   """Mozilla's Kraken JavaScript benchmark.
 
   http://krakenbenchmark.mozilla.org/
