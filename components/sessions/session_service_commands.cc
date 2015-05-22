@@ -38,6 +38,7 @@ static const SessionCommand::id_type kCommandWindowClosed = 17;
 static const SessionCommand::id_type kCommandSetTabUserAgentOverride = 18;
 static const SessionCommand::id_type kCommandSessionStorageAssociated = 19;
 static const SessionCommand::id_type kCommandSetActiveWindow = 20;
+static const SessionCommand::id_type kCommandLastActiveTime = 21;
 
 namespace {
 
@@ -87,6 +88,11 @@ typedef IDAndIndexPayload TabNavigationPathPrunedFromFrontPayload;
 struct PinnedStatePayload {
   SessionID::id_type tab_id;
   bool pinned_state;
+};
+
+struct LastActiveTimePayload {
+  SessionID::id_type tab_id;
+  int64 last_active_time;
 };
 
 // Persisted versions of ui::WindowShowState that are written to disk and can
@@ -558,6 +564,18 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
         break;
       }
 
+      case kCommandLastActiveTime: {
+        LastActiveTimePayload payload;
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          DVLOG(1) << "Failed reading command " << command->id();
+          return true;
+        }
+        SessionTab* tab = GetTab(payload.tab_id, tabs);
+        tab->last_active_time =
+            base::TimeTicks::FromInternalValue(payload.last_active_time);
+        break;
+      }
+
       default:
         // TODO(skuhne): This might call back into a callback handler to extend
         // the command set for specific implementations.
@@ -700,6 +718,18 @@ scoped_ptr<SessionCommand> CreateSetActiveWindowCommand(
   payload = window_id.id();
   scoped_ptr<SessionCommand> command(
       new SessionCommand(kCommandSetActiveWindow, sizeof(payload)));
+  memcpy(command->contents(), &payload, sizeof(payload));
+  return command;
+}
+
+scoped_ptr<SessionCommand> CreateLastActiveTimeCommand(
+    const SessionID& tab_id,
+    base::TimeTicks last_active_time) {
+  LastActiveTimePayload payload = {0};
+  payload.tab_id = tab_id.id();
+  payload.last_active_time = last_active_time.ToInternalValue();
+  scoped_ptr<SessionCommand> command(
+      new SessionCommand(kCommandLastActiveTime, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }

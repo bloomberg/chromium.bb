@@ -351,9 +351,10 @@ class WebContents : public PageNavigator,
   // change.
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
 
-  // Get the last time that the WebContents was made active (either when it was
-  // created or shown with WasShown()).
+  // Get/Set the last time that the WebContents was made active (either when it
+  // was created or shown with WasShown()).
   virtual base::TimeTicks GetLastActiveTime() const = 0;
+  virtual void SetLastActiveTime(base::TimeTicks last_active_time) = 0;
 
   // Invoked when the WebContents becomes shown/hidden.
   virtual void WasShown() = 0;

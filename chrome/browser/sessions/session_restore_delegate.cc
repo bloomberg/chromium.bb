@@ -57,7 +57,11 @@ bool SessionRestoreDelegate::RestoredTab::operator<(
   // Apps should be loaded before normal tabs.
   if (is_app_ != right.is_app_)
     return is_app_;
-  // TODO(georgesak): Add criterion based on recency.
+  // Restore using MRU. Behind an experiment for now.
+  if (SessionRestore::GetSmartRestoreMode() ==
+      SessionRestore::SMART_RESTORE_MODE_MRU)
+    return contents_->GetLastActiveTime() >
+           right.contents_->GetLastActiveTime();
   return false;
 }
 

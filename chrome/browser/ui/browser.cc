@@ -70,6 +70,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -1071,13 +1072,22 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
     find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect());
   }
 
-  // Update sessions. Don't force creation of sessions. If sessions doesn't
-  // exist, the change will be picked up by sessions when created.
+  // Update sessions (selected tab index and last active time). Don't force
+  // creation of sessions. If sessions doesn't exist, the change will be picked
+  // up by sessions when created.
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
   if (session_service && !tab_strip_model_->closing_all()) {
     session_service->SetSelectedTabInWindow(session_id(),
                                             tab_strip_model_->active_index());
+    if (SessionRestore::GetSmartRestoreMode() ==
+        SessionRestore::SMART_RESTORE_MODE_MRU) {
+      SessionTabHelper* session_tab_helper =
+          SessionTabHelper::FromWebContents(new_contents);
+      session_service->SetLastActiveTime(session_id(),
+                                         session_tab_helper->session_id(),
+                                         base::TimeTicks::Now());
+    }
   }
 
   // This needs to be called after notifying SearchDelegate.

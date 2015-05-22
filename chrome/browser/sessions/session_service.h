@@ -201,6 +201,11 @@ class SessionService : public BaseSessionServiceDelegateImpl,
                             const SessionID& tab_id,
                             const std::string& extension_app_id);
 
+  // Sets the last active time of the tab.
+  void SetLastActiveTime(const SessionID& window_id,
+                         const SessionID& tab_id,
+                         base::TimeTicks last_active_time);
+
   // Callback from GetLastSession.
   // The second parameter is the id of the window that was last active.
   typedef base::Callback<void(ScopedVector<sessions::SessionWindow>,

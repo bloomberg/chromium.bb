@@ -1052,6 +1052,10 @@ base::TimeTicks WebContentsImpl::GetLastActiveTime() const {
   return last_active_time_;
 }
 
+void WebContentsImpl::SetLastActiveTime(base::TimeTicks last_active_time) {
+  last_active_time_ = last_active_time;
+}
+
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
 

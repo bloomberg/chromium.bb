@@ -297,10 +297,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
 
     if (succeeded) {
-      // Start Loading tabs.
       if (SessionRestore::GetSmartRestoreMode() !=
-          SessionRestore::SMART_RESTORE_MODE_OFF)
+          SessionRestore::SMART_RESTORE_MODE_OFF) {
         std::stable_sort(contents_created->begin(), contents_created->end());
+      }
+      // Start Loading tabs.
       SessionRestoreDelegate::RestoreTabs(*contents_created, restore_started_);
     }
 
@@ -507,7 +508,26 @@ class SessionRestoreImpl : public content::NotificationObserver {
                             std::vector<RestoredTab>* created_contents) {
     DVLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
     DCHECK(!window.tabs.empty());
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks highest_time = base::TimeTicks::UnixEpoch();
     if (initial_tab_count == 0) {
+      if (SessionRestore::GetSmartRestoreMode() ==
+          SessionRestore::SMART_RESTORE_MODE_MRU) {
+        // The last active time of a WebContents is initially set to the
+        // creation time of the tab, which is not necessarly the same as the
+        // loading time, so we have to restore the values. Also, since TimeTicks
+        // only make sense in their current session, these values have to be
+        // sanitized first. To do so, we need to first figure out the largest
+        // time. This will then be used to set the last active time of
+        // each tab where the most recent tab will have its time set to |now|
+        // and the rest of the tabs will have theirs set earlier by the same
+        // delta as they originally had.
+        for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
+          const sessions::SessionTab& tab = *(window.tabs[i]);
+          if (tab.last_active_time > highest_time)
+            highest_time = tab.last_active_time;
+        }
+      }
       for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
         const sessions::SessionTab& tab = *(window.tabs[i]);
 
@@ -519,6 +539,13 @@ class SessionRestoreImpl : public content::NotificationObserver {
         // RestoreTab can return nullptr if |tab| doesn't have valid data.
         if (!contents)
           continue;
+
+        // Sanitize the last active time.
+        if (SessionRestore::GetSmartRestoreMode() ==
+            SessionRestore::SMART_RESTORE_MODE_MRU) {
+          base::TimeDelta delta = highest_time - tab.last_active_time;
+          contents->SetLastActiveTime(now - delta);
+        }
 
         RestoredTab restored_tab(contents, is_selected_tab,
                                  tab.extension_app_id.empty(), tab.pinned);
@@ -544,6 +571,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
         WebContents* contents =
             RestoreTab(tab, tab_index_offset + i, browser, false);
         if (contents) {
+          // Sanitize the last active time.
+          if (SessionRestore::GetSmartRestoreMode() ==
+              SessionRestore::SMART_RESTORE_MODE_MRU) {
+            base::TimeDelta delta = highest_time - tab.last_active_time;
+            contents->SetLastActiveTime(now - delta);
+          }
           RestoredTab restored_tab(contents, false,
                                    tab.extension_app_id.empty(), tab.pinned);
           created_contents->push_back(restored_tab);

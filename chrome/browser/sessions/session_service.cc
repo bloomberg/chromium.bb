@@ -487,6 +487,16 @@ void SessionService::SetTabExtensionAppID(
                       tab_id, extension_app_id).Pass());
 }
 
+void SessionService::SetLastActiveTime(const SessionID& window_id,
+                                       const SessionID& tab_id,
+                                       base::TimeTicks last_active_time) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(
+      sessions::CreateLastActiveTimeCommand(tab_id, last_active_time).Pass());
+}
+
 base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
     const SessionCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -725,6 +735,13 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
   if (is_pinned) {
     base_session_service_->AppendRebuildCommand(
         sessions::CreatePinnedStateCommand(session_id, true));
+  }
+
+  if (SessionRestore::GetSmartRestoreMode() ==
+      SessionRestore::SMART_RESTORE_MODE_MRU) {
+    base_session_service_->AppendRebuildCommand(
+        sessions::CreateLastActiveTimeCommand(session_id,
+                                              tab->GetLastActiveTime()));
   }
 
   extensions::TabHelper* extensions_tab_helper =
