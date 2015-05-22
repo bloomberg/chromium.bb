@@ -499,12 +499,18 @@ crbug.com/483436 [ Linux Mac Debug ] virtual/threaded/animations/svg-attribute-i
 
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
 
+crbug.com/490269 fast/transforms/transformed-caret.html [ NeedsRebaseline ]
+crbug.com/490269 svg/W3C-SVG-1.1/paths-data-02-t.svg [ NeedsRebaseline ]
+crbug.com/490269 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
+crbug.com/490269 virtual/slimmingpaint/svg/W3C-SVG-1.1/paths-data-02-t.svg [ NeedsRebaseline ]
+crbug.com/490269 virtual/slimmingpaint/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
+
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
-crbug.com/491013 fast/multicol/border-radius-clipped-layer-second-column.html [ Missing ]
-crbug.com/491013 fast/multicol/multicol-with-child-renderLayer-for-input.html [ Missing ]
+crbug.com/491013 fast/multicol/border-radius-clipped-layer-second-column.html [ NeedsRebaseline ]
+crbug.com/491013 fast/multicol/multicol-with-child-renderLayer-for-input.html [ NeedsRebaseline ]
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 crbug.com/396823 [ Mac ] virtual/slimmingpaint/fast/multicol/multicol-with-child-renderLayer-for-input.html [ Skip ]
 
