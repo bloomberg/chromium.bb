@@ -208,29 +208,38 @@ namespace {
 
 void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* policy)
 {
-    if (!inputEvent || inputEvent->type != WebInputEvent::MouseUp)
+    if (!inputEvent)
         return;
 
-    const WebMouseEvent* mouseEvent = static_cast<const WebMouseEvent*>(inputEvent);
+    unsigned short buttonNumber = 0;
+    if (inputEvent->type == WebInputEvent::MouseUp) {
 
-    unsigned short buttonNumber;
-    switch (mouseEvent->button) {
-    case WebMouseEvent::ButtonLeft:
+        const WebMouseEvent* mouseEvent = static_cast<const WebMouseEvent*>(inputEvent);
+
+        switch (mouseEvent->button) {
+        case WebMouseEvent::ButtonLeft:
+            buttonNumber = 0;
+            break;
+        case WebMouseEvent::ButtonMiddle:
+            buttonNumber = 1;
+            break;
+        case WebMouseEvent::ButtonRight:
+            buttonNumber = 2;
+            break;
+        default:
+            return;
+        }
+    } else if (WebInputEvent::isKeyboardEventType(inputEvent->type) || WebInputEvent::isGestureEventType(inputEvent->type)) {
+        // Keyboard and gesture events can simulate mouse events.
         buttonNumber = 0;
-        break;
-    case WebMouseEvent::ButtonMiddle:
-        buttonNumber = 1;
-        break;
-    case WebMouseEvent::ButtonRight:
-        buttonNumber = 2;
-        break;
-    default:
+    } else {
         return;
     }
-    bool ctrl = mouseEvent->modifiers & WebMouseEvent::ControlKey;
-    bool shift = mouseEvent->modifiers & WebMouseEvent::ShiftKey;
-    bool alt = mouseEvent->modifiers & WebMouseEvent::AltKey;
-    bool meta = mouseEvent->modifiers & WebMouseEvent::MetaKey;
+
+    bool ctrl = inputEvent->modifiers & WebInputEvent::ControlKey;
+    bool shift = inputEvent->modifiers & WebInputEvent::ShiftKey;
+    bool alt = inputEvent->modifiers & WebInputEvent::AltKey;
+    bool meta = inputEvent->modifiers & WebInputEvent::MetaKey;
 
     NavigationPolicy userPolicy = *policy;
     navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta, &userPolicy);
