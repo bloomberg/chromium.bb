@@ -367,7 +367,8 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, T, Traits> {
     }
 };
 
-// Vector backing that needs marking. We don't support weak members in vectors.
+// This trace method is used only for on-stack HeapVectors found in
+// conservative scanning. On-heap HeapVectors are traced by Vector::trace.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapVectorBacking<T, Traits>, void> {
     template<typename VisitorDispatcher>
@@ -419,7 +420,8 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     }
 };
 
-// Almost all hash table backings are visited with this specialization.
+// This trace method is used only for on-stack HeapHashTables found in
+// conservative scanning. On-heap HeapHashTables are traced by HashTable::trace.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Table>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapHashTableBacking<Table>, void> {
     using Value = typename Table::ValueType;
@@ -428,8 +430,12 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher visitor, void* self)
     {
+        static_assert(strongify == WTF::WeakPointersActStrong, "An on-stack HeapHashTable needs to be visited strongly.");
+
         Value* array = reinterpret_cast<Value*>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
+        // Use the payload size as recorded by the heap to determine how many
+        // elements to trace.
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; ++i) {
             if (!HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
