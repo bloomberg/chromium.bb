@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html>
 <body>
-<div id="div">PASS if not crashed.</div>
+<div id="div">Test</div>
+<div>PASS if not crashed.</div>
 <script>
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
 
 window.onload = function () {
     document.execCommand("SelectAll", false);
-
+    // Wait for the <iframe> element to be detached from the Document, then call this method to check that
+    // the selection correctly no longer has the iframe in its bounds.
     window.requestAnimationFrame(function () {
+        window.internals.selectedTextForClipboard();
         div.remove();
+        testRunner.notifyDone();
     });
 };
 

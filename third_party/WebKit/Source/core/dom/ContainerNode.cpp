@@ -427,8 +427,13 @@ void ContainerNode::willRemoveChild(Node& child)
     ChildListMutationScope(*this).willRemoveChild(child);
     child.notifyMutationObserversNodeWillDetach();
     dispatchChildRemovalEvents(child);
-    document().nodeWillBeRemoved(child); // e.g. mutation event listener can create a new range.
     ChildFrameDisconnector(child).disconnect();
+
+    // nodeWillBeRemoved must be run after ChildFrameDisconnector, because ChildFrameDisconnector can run script
+    // which may cause state that is to be invalidated by removing the node.
+    ScriptForbiddenScope scriptForbiddenScope;
+    EventDispatchForbiddenScope assertNoEventDispatch;
+    document().nodeWillBeRemoved(child); // e.g. mutation event listener can create a new range.
 }
 
 void ContainerNode::willRemoveChildren()
