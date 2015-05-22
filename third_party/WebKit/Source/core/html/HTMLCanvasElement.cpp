@@ -330,9 +330,15 @@ void HTMLCanvasElement::doDeferredPaintInvalidation()
         ASSERT(hasImageBuffer());
         FloatRect srcRect(0, 0, size().width(), size().height());
         m_dirtyRect.intersect(srcRect);
-        LayoutBox* ro = layoutBox();
-        if (ro) {
-            m_imageBuffer->finalizeFrame(mapRect(m_dirtyRect, srcRect, ro->contentBoxRect()));
+        LayoutBox* lb = layoutBox();
+        if (lb) {
+            FloatRect mappedDirtyRect = mapRect(m_dirtyRect, srcRect, lb->contentBoxRect());
+            if (m_context->isAccelerated()) {
+                // Accelerated 2D canvases need the dirty rect to be expressed relative to the
+                // content box, as opposed to the layout box.
+                mappedDirtyRect.move(-lb->contentBoxOffset());
+            }
+            m_imageBuffer->finalizeFrame(mappedDirtyRect);
         } else {
             m_imageBuffer->finalizeFrame(m_dirtyRect);
         }
