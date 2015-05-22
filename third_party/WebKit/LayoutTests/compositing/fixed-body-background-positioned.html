@@ -18,10 +18,6 @@
             background-color: rgba(0, 0, 0, 0.5);
             border: 20px solid orange;
         }
-
-        #layers {
-            opacity: 0;
-        }
     </style>
     <script src="../resources/run-after-layout-and-paint.js"></script>
     <script>
@@ -36,9 +32,8 @@
 
         runAfterLayoutAndPaint(function()
         {
-            if (window.internals) {
-                document.getElementById('layers').innerText = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_ROOT_LAYER);
-            }
+            if (window.internals && window.testRunner)
+                testRunner.setCustomTextOutput(internals.layerTreeAsText(document, 1 | internals.LAYER_TREE_INCLUDES_ROOT_LAYER));
         }, true);
     }
 
@@ -46,8 +41,6 @@
     </script>
 </head>
 <body>
-
     <div class="test"></div>
-<pre id="layers"></pre>
 </body>
 </html>
