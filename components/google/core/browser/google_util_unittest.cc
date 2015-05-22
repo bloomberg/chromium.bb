@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
@@ -14,6 +15,16 @@ using google_util::IsGoogleDomainUrl;
 // Helpers --------------------------------------------------------------------
 
 namespace {
+
+const std::string kValidSearchSchemes[] = {
+  "http",
+  "https"
+};
+
+const std::string kValidSearchQueryParams[] = {
+  "q",
+  "as_q"  // Advanced search uses "as_q" instead of "q" as the query param.
+};
 
 // These functions merely provide brevity in the callers.
 
@@ -111,103 +122,109 @@ TEST(GoogleUtilTest, BadHomePages) {
   EXPECT_FALSE(IsHomePage("https://www.google.com/WEBHP"));
 }
 
-TEST(GoogleUtilTest, GoodSearchPagesNonSecure) {
-  // Queries with path "/search" need to have the query parameter in either
-  // the url parameter or the hash fragment.
-  EXPECT_TRUE(IsSearch("http://www.google.com/search?q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/search#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/search?name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/search?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/search?name=bob#age=24&q=thing"));
-  EXPECT_TRUE(IsSearch("http://www.google.co.uk/search?q=something"));
-  // It's actually valid for both to have the query parameter.
-  EXPECT_TRUE(IsSearch("http://www.google.com/search?q=something#q=other"));
+TEST(GoogleUtilTest, GoodSearches) {
+  const std::string patterns[] = {
+    // Queries with path "/search" need to have the query parameter in either
+    // the url parameter or the hash fragment.
+    "%s://www.google.com/search?%s=something",
+    "%s://www.google.com/search#%s=something",
+    "%s://www.google.com/search?name=bob&%s=something",
+    "%s://www.google.com/search?name=bob#%s=something",
+    "%s://www.google.com/search?name=bob#age=24&%s=thng",
+    "%s://www.google.co.uk/search?%s=something",
+    // It's actually valid for both to have the query parameter.
+    "%s://www.google.com/search?%s=something#q=other",
 
-  // Queries with path "/webhp", "/" or "" need to have the query parameter in
-  // the hash fragment.
-  EXPECT_TRUE(IsSearch("http://www.google.com/webhp#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/webhp#name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/webhp?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/webhp?name=bob#age=24&q=thing"));
+    // Queries with path "/webhp", "/" or "" need to have the query parameter in
+    // the hash fragment.
+    "%s://www.google.com/webhp#%s=something",
+    "%s://www.google.com/webhp#name=bob&%s=something",
+    "%s://www.google.com/webhp?name=bob#%s=something",
+    "%s://www.google.com/webhp?name=bob#age=24&%s=thing",
 
-  EXPECT_TRUE(IsSearch("http://www.google.com/#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/#name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com/?name=bob#age=24&q=something"));
+    "%s://www.google.com/#%s=something",
+    "%s://www.google.com/#name=bob&%s=something",
+    "%s://www.google.com/?name=bob#%s=something",
+    "%s://www.google.com/?name=bob#age=24&%s=something",
 
-  EXPECT_TRUE(IsSearch("http://www.google.com#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com#name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("http://www.google.com?name=bob#age=24&q=something"));
-}
+    "%s://www.google.com#%s=something",
+    "%s://www.google.com#name=bob&%s=something",
+    "%s://www.google.com?name=bob#%s=something",
+    "%s://www.google.com?name=bob#age=24&%s=something"
+  };
 
-TEST(GoogleUtilTest, GoodSearchPagesSecure) {
-  // Queries with path "/search" need to have the query parameter in either
-  // the url parameter or the hash fragment.
-  EXPECT_TRUE(IsSearch("https://www.google.com/search?q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/search#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/search?name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/search?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/search?name=bob#age=24&q=q"));
-  EXPECT_TRUE(IsSearch("https://www.google.co.uk/search?q=something"));
-  // It's actually valid for both to have the query parameter.
-  EXPECT_TRUE(IsSearch("https://www.google.com/search?q=something#q=other"));
-
-  // Queries with path "/webhp", "/" or "" need to have the query parameter in
-  // the hash fragment.
-  EXPECT_TRUE(IsSearch("https://www.google.com/webhp#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/webhp#name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/webhp?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/webhp?name=bob#age=24&q=thing"));
-
-  EXPECT_TRUE(IsSearch("https://www.google.com/#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/#name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com/?name=bob#age=24&q=something"));
-
-  EXPECT_TRUE(IsSearch("https://www.google.com#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com#name=bob&q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com?name=bob#q=something"));
-  EXPECT_TRUE(IsSearch("https://www.google.com?name=bob#age=24&q=something"));
+  for (const std::string& pattern : patterns) {
+    for (const std::string& scheme : kValidSearchSchemes) {
+      for (const std::string& query_param : kValidSearchQueryParams) {
+        EXPECT_TRUE(IsSearch(base::StringPrintf(pattern.c_str(),
+                                                scheme.c_str(),
+                                                query_param.c_str())));
+      }
+    }
+  }
 }
 
 TEST(GoogleUtilTest, BadSearches) {
   // A home page URL should not be identified as a search URL.
   EXPECT_FALSE(IsSearch(GoogleURLTracker::kDefaultGoogleHomepage));
-  EXPECT_FALSE(IsSearch("http://google.com"));
-  EXPECT_FALSE(IsSearch("http://www.google.com"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/search"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/search?"));
 
-  // Must be http or https
+  // Must be http or https.
   EXPECT_FALSE(IsSearch("ftp://www.google.com/search?q=something"));
   EXPECT_FALSE(IsSearch("file://does/not/exist/search?q=something"));
   EXPECT_FALSE(IsSearch("bad://www.google.com/search?q=something"));
   EXPECT_FALSE(IsSearch("www.google.com/search?q=something"));
 
-  // Can't have an empty query parameter.
-  EXPECT_FALSE(IsSearch("http://www.google.com/search?q="));
-  EXPECT_FALSE(IsSearch("http://www.google.com/search?name=bob&q="));
-  EXPECT_FALSE(IsSearch("http://www.google.com/webhp#q="));
-  EXPECT_FALSE(IsSearch("http://www.google.com/webhp#name=bob&q="));
-
-  // Home page searches without a hash fragment query parameter are invalid.
-  EXPECT_FALSE(IsSearch("http://www.google.com/webhp?q=something"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/webhp?q=something#no=good"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/webhp?name=bob&q=something"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/?q=something"));
-  EXPECT_FALSE(IsSearch("http://www.google.com?q=something"));
-
-  // Some paths are outright invalid as searches.
-  EXPECT_FALSE(IsSearch("http://www.google.com/notreal?q=something"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/chrome?q=something"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/search/nogood?q=something"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/webhp/nogood#q=something"));
+  // Empty URL is invalid.
   EXPECT_FALSE(IsSearch(std::string()));
 
-  // Case sensitive paths.
-  EXPECT_FALSE(IsSearch("http://www.google.com/SEARCH?q=something"));
-  EXPECT_FALSE(IsSearch("http://www.google.com/WEBHP#q=something"));
+  const std::string patterns[] = {
+    "%s://google.com",
+    "%s://www.google.com",
+    "%s://www.google.com/search",
+    "%s://www.google.com/search?"
+  };
+
+  for (const std::string& pattern : patterns) {
+    for (const std::string& scheme : kValidSearchSchemes) {
+      EXPECT_FALSE(IsSearch(base::StringPrintf(pattern.c_str(),
+                                               scheme.c_str())));
+    }
+  }
+
+  const std::string patterns_q[] = {
+    // Can't have an empty query parameter.
+    "%s://www.google.com/search?%s=",
+    "%s://www.google.com/search?name=bob&%s=",
+    "%s://www.google.com/webhp#%s=",
+    "%s://www.google.com/webhp#name=bob&%s=",
+
+    // Home page searches without a hash fragment query parameter are invalid.
+    "%s://www.google.com/webhp?%s=something",
+    "%s://www.google.com/webhp?%s=something#no=good",
+    "%s://www.google.com/webhp?name=bob&%s=something",
+    "%s://www.google.com/?%s=something",
+    "%s://www.google.com?%s=something",
+
+    // Some paths are outright invalid as searches.
+    "%s://www.google.com/notreal?%s=something",
+    "%s://www.google.com/chrome?%s=something",
+    "%s://www.google.com/search/nogood?%s=something",
+    "%s://www.google.com/webhp/nogood#%s=something",
+
+    // Case sensitive paths.
+    "%s://www.google.com/SEARCH?%s=something",
+    "%s://www.google.com/WEBHP#%s=something"
+  };
+
+  for (const std::string& pattern : patterns_q) {
+    for (const std::string& scheme : kValidSearchSchemes) {
+      for (const std::string& query_param : kValidSearchQueryParams) {
+        EXPECT_FALSE(IsSearch(base::StringPrintf(pattern.c_str(),
+                                                 scheme.c_str(),
+                                                 query_param.c_str())));
+      }
+    }
+  }
 }
 
 TEST(GoogleUtilTest, GoogleDomains) {

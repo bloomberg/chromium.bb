@@ -16,8 +16,8 @@ class GURL;
 // This namespace provides various helpers around handling Google-related URLs.
 namespace google_util {
 
-// True iff |str| contains a "q=" query parameter with a non-empty value.
-// |str| should be a query or a hash fragment, without the ? or # (as
+// True iff |str| contains a "q=" or "as_q=" query parameter with a non-empty
+// value. |str| should be a query or a hash fragment, without the ? or # (as
 // returned by GURL::query() or GURL::ref().
 bool HasGoogleSearchQueryParam(const std::string& str);
 
