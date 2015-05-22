@@ -55,17 +55,10 @@ public class ProfileSyncService {
      */
     public static class GetAllNodesCallback {
         private String mNodesString;
-        private boolean mHasResult = false;
 
         // Invoked when getAllNodes completes.
         public void onResult(String nodesString) {
             mNodesString = nodesString;
-            mHasResult = true;
-        }
-
-        // Whether this callback contains a result.
-        public boolean hasResult() {
-            return mHasResult;
         }
 
         // Returns the result of GetAllNodes as a JSONArray.
