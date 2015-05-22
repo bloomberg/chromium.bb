@@ -162,6 +162,31 @@ public:
     void postNotification(Node*, AXNotification);
     void postNotification(AXObject*, AXNotification);
 
+    //
+    // Aria-owns support.
+    //
+
+    // Returns true if the given object's position in the tree was due to aria-owns.
+    bool isAriaOwned(const AXObject*) const;
+
+    // Returns the parent of the given object due to aria-owns.
+    AXObject* getAriaOwnedParent(const AXObject*) const;
+
+    // Given an object that has an aria-owns attributes, and a vector of ids from the value of
+    // that attribute, updates the internal state to reflect the new set of children owned by
+    // this object, returning the result in |ownedChildren|. The result is validated - illegal,
+    // duplicate, or cyclical references have been removed.
+    //
+    // If one or more ids aren't found, they're added to a lookup table so that if an
+    // element with that id appears later, it can be added when you call updateTreeIfElementIdIsAriaOwned.
+    void updateAriaOwns(const AXObject* owner, const Vector<String>& idVector, Vector<AXObject*>& ownedChildren);
+
+    // Given an element in the DOM tree that was either just added or whose id just changed,
+    // check to see if another object wants to be its parent due to aria-owns. If so, update
+    // the tree by calling childrenChanged() on the potential owner, possibly reparenting
+    // this element.
+    void updateTreeIfElementIdIsAriaOwned(Element*);
+
 protected:
     void postPlatformNotification(AXObject*, AXNotification);
     void textChanged(AXObject*);
@@ -187,6 +212,33 @@ private:
     int m_modificationCount;
 
     HashSet<AXID> m_idsInUse;
+
+    //
+    // Aria-owns
+    //
+
+    // Map from the AXID of the owner to the AXIDs of the children.
+    // This is a validated map, it doesn't contain illegal, duplicate,
+    // or cyclical matches, or references to IDs that don't exist.
+    HashMap<AXID, Vector<AXID>> m_ariaOwnerToChildrenMapping;
+
+    // Map from the AXID of a child to the AXID of the parent that owns it.
+    HashMap<AXID, AXID> m_ariaOwnedChildToOwnerMapping;
+
+    // Map from the AXID of a child to the AXID of its real parent in the tree if
+    // we ignored aria-owns. This is needed in case the owner no longer wants to own it.
+    HashMap<AXID, AXID> m_ariaOwnedChildToRealParentMapping;
+
+    // Map from the AXID of any object with an aria-owns attribute to the set of ids
+    // of its children. This is *unvalidated*, it includes ids that may not currently
+    // exist in the tree.
+    HashMap<AXID, HashSet<String>> m_ariaOwnerToIdsMapping;
+
+    // Map from an ID (the ID attribute of a DOM element) to the set of elements that
+    // want to own that ID. This is *unvalidated*, it includes possible duplicates.
+    // This is used so that when an element with an ID is added to the tree or changes
+    // its ID, we can quickly determine if it affects an aria-owns relationship.
+    HashMap<String, OwnPtr<HashSet<AXID>>> m_idToAriaOwnersMapping;
 
     Timer<AXObjectCacheImpl> m_notificationPostTimer;
     Vector<pair<RefPtr<AXObject>, AXNotification>> m_notificationsToPost;
