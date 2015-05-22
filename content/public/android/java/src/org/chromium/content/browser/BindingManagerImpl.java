@@ -88,7 +88,7 @@ class BindingManagerImpl implements BindingManager {
 
         /**
          * Drops the service bindings. This is used on low-end to drop bindings of the current
-         * service when a new one is created.
+         * service when a new one is used in foreground.
          */
         private void dropBindings() {
             assert mIsLowMemoryDevice;
@@ -198,10 +198,6 @@ class BindingManagerImpl implements BindingManager {
 
     @Override
     public void addNewConnection(int pid, ChildProcessConnection connection) {
-        synchronized (mLastInForegroundLock) {
-            if (mIsLowMemoryDevice && mLastInForeground != null) mLastInForeground.dropBindings();
-        }
-
         // This will reset the previous entry for the pid in the unlikely event of the OS
         // reusing renderer pids.
         synchronized (mManagedConnections) {
@@ -223,6 +219,11 @@ class BindingManagerImpl implements BindingManager {
         }
 
         synchronized (mLastInForegroundLock) {
+            if (inForeground && mIsLowMemoryDevice && mLastInForeground != null
+                    && mLastInForeground != managedConnection) {
+                mLastInForeground.dropBindings();
+            }
+
             managedConnection.setInForeground(inForeground);
             if (inForeground) mLastInForeground = managedConnection;
         }

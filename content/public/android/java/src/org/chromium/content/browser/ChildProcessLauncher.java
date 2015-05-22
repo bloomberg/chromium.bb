@@ -9,12 +9,12 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.os.RemoteException;
-import android.util.Log;
 import android.util.Pair;
 import android.view.Surface;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -580,13 +580,14 @@ public class ChildProcessLauncher {
             String[] commandLine,
             int childProcessId,
             FileDescriptorInfo[] filesToBeMapped,
-            int callbackType,
+            final int callbackType,
             final long clientContext) {
         ChildProcessConnection.ConnectionCallback connectionCallback =
                 new ChildProcessConnection.ConnectionCallback() {
                     @Override
                     public void onConnected(int pid) {
-                        Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext);
+                        Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext
+                                + " callbackType=" + callbackType);
                         if (pid != NULL_PROCESS_HANDLE) {
                             sBindingManager.addNewConnection(pid, connection);
                             sServiceMap.put(pid, connection);

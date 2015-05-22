@@ -27,16 +27,15 @@ package org.chromium.content.browser;
  */
 public interface BindingManager {
     /**
-     * Registers a freshly started child process. On low-memory devices this will also drop the
-     * oom bindings of the last process that was oom-bound. We can do that, because every time a
-     * connection is created on the low-end, it is used in foreground (no prerendering, no
-     * loading of tabs opened in background). This can be called on any thread.
+     * Registers a freshly started child process. This can be called on any thread.
      * @param pid handle of the service process
      */
     void addNewConnection(int pid, ChildProcessConnection connection);
 
     /**
-     * Called when the service visibility changes or is determined for the first time.
+     * Called when the service visibility changes or is determined for the first time. On low-memory
+     * devices this will also drop the oom bindings of the last process that was oom-bound if a new
+     * process is used in foreground.
      * @param pid handle of the service process
      * @param inForeground true iff the service is visibile to the user
      */

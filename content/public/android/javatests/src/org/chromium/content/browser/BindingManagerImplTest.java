@@ -147,7 +147,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
 
     /**
      * Verifies that when running on low-end, the binding manager drops the oom bindings for the
-     * previously bound connection when a new connection is added.
+     * previously bound connection when a new connection is used in foreground.
      */
     @SmallTest
     @Feature({"ProcessManagement"})
@@ -167,7 +167,12 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         MockChildProcessConnection secondConnection = new MockChildProcessConnection(2);
         manager.addNewConnection(secondConnection.getPid(), secondConnection);
 
-        // Verify that the strong binding for the first connection was dropped.
+        // Verify that the strong binding for the first connection wasn't dropped.
+        assertTrue(firstConnection.isStrongBindingBound());
+
+        // Verify that the strong binding for the first connection was dropped when a new connection
+        // got used in foreground.
+        manager.setInForeground(secondConnection.getPid(), true);
         assertFalse(firstConnection.isStrongBindingBound());
     }
 
