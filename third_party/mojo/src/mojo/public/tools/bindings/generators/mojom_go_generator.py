@@ -60,12 +60,8 @@ _kind_infos = {
 _imports = {}
 
 def GetBitSize(kind):
-  if isinstance(kind, (mojom.Union)):
-    return 128
   if isinstance(kind, (mojom.Array, mojom.Map, mojom.Struct, mojom.Interface)):
     return 64
-  if mojom.IsUnionKind(kind):
-    return 2*64
   if isinstance(kind, (mojom.InterfaceRequest)):
     kind = mojom.MSGPIPE
   if isinstance(kind, mojom.Enum):
@@ -82,7 +78,7 @@ def GetGoType(kind, nullable = True):
 # Returns go type corresponding to provided kind. Ignores nullability of
 # top-level kind.
 def GetNonNullableGoType(kind):
-  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+  if mojom.IsStructKind(kind):
     return '%s' % GetFullName(kind)
   if mojom.IsArrayKind(kind):
     if kind.length:
@@ -144,8 +140,7 @@ def GetNameForNestedElement(element):
   return GetFullName(element)
 
 def GetNameForElement(element, exported=True):
-  if (mojom.IsInterfaceKind(element) or mojom.IsStructKind(element)
-      or mojom.IsUnionKind(element)):
+  if (mojom.IsInterfaceKind(element) or mojom.IsStructKind(element)):
     return GetFullName(element, exported)
   if isinstance(element, (mojom.EnumField,
                           mojom.Field,
@@ -233,7 +228,6 @@ def AddImport(module, element):
     name += '_'
   _imports[path] = name
 
-
 class Generator(generator.Generator):
   go_filters = {
     'array': lambda kind: mojom.Array(kind),
@@ -252,7 +246,6 @@ class Generator(generator.Generator):
     'is_nullable': mojom.IsNullableKind,
     'is_pointer': mojom.IsObjectKind,
     'is_struct': mojom.IsStructKind,
-    'is_union': mojom.IsUnionKind,
     'name': GetNameForElement,
     'tab_indent': lambda s, size = 1: ('\n' + '\t' * size).join(s.splitlines())
   }
@@ -264,7 +257,6 @@ class Generator(generator.Generator):
       'interfaces': self.GetInterfaces(),
       'package': GetPackageName(self.module),
       'structs': self.GetStructs(),
-      'unions': self.GetUnions(),
     }
 
   @UseJinja('go_templates/source.tmpl', filters=go_filters)
@@ -306,10 +298,6 @@ class Generator(generator.Generator):
       _imports['mojo/public/go/system'] = 'system'
     if len(all_structs) > 0:
       _imports['sort'] = 'sort'
-
-    for union in self.module.unions:
-      for field in union.fields:
-        AddImport(self.module, field.kind)
 
     for struct in all_structs:
       for field in struct.fields:

@@ -24,16 +24,10 @@ def pub_get(dart_sdk_path, target_directory):
   # simultaneous builds in different repos stomping on each other.
   env = os.environ.copy()
   env["PUB_CACHE"] = os.path.join(os.getcwd(), "dart-pub-cache")
-  try:
-      subprocess.check_output(cmd, shell=False,
-                              stderr=subprocess.STDOUT,
-                              cwd=target_directory,
-                              env=env)
-  except subprocess.CalledProcessError as e:
-    print('Error running pub get in %s' % target_directory)
-    print(e.output)
-    raise e
-
+  subprocess.check_output(cmd, shell=False,
+                          stderr=subprocess.STDOUT,
+                          cwd=target_directory,
+                          env=env)
 
 
 def main(repository_root, dart_sdk_path, dirs_to_ignore):

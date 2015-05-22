@@ -201,10 +201,11 @@ class Encoder {
 
   void encodeInterface(
       core.MojoEventStreamListener interface, int offset, bool nullable) {
+    // Set the version field to 0 for now.
+    encodeUint32(0, offset + kSerializedHandleSize);
+
     if (interface == null) {
       encodeInvalideHandle(offset, nullable);
-      // Set the version field to 0.
-      encodeUint32(0, offset + kSerializedHandleSize);
       return;
     }
     if (interface is Stub) {
@@ -213,8 +214,6 @@ class Encoder {
       interface.bind(pipe.endpoints[0]);
       interface.listen();
       encodeMessagePipeHandle(pipe.endpoints[1], offset, nullable);
-      // Set the version to the version in the stub.
-      encodeUint32(interface.version, offset + kSerializedHandleSize);
     } else if (interface is Proxy) {
       assert(interface.isBound);
       if (!interface.isOpen) {
@@ -223,8 +222,6 @@ class Encoder {
         interface.listen();
       }
       encodeMessagePipeHandle(interface.endpoint, offset, nullable);
-      // Set the version to the current version of the proxy.
-      encodeUint32(interface.version, offset + kSerializedHandleSize);
     } else {
       throw new MojoCodecError(
           'Trying to encode an unknown MojoEventStreamListener');
@@ -597,14 +594,9 @@ class Decoder {
 
   ProxyBase decodeServiceInterface(
       int offset, bool nullable, Function clientFactory) {
+    // Ignore the version field for now.
     var endpoint = decodeMessagePipeHandle(offset, nullable);
-    var version = decodeUint32(offset + kSerializedHandleSize);
-    if (!endpoint.handle.isValid) {
-      return null;
-    }
-    ProxyBase client = clientFactory(endpoint);
-    client.impl._version = version;
-    return client;
+    return endpoint.handle.isValid ? clientFactory(endpoint) : null;
   }
 
   Stub decodeInterfaceRequest(

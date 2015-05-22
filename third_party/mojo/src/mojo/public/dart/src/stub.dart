@@ -125,6 +125,4 @@ abstract class Stub extends core.MojoEventStreamListener {
     var superString = super.toString();
     return "Stub(${superString})";
   }
-
-  int get version;
 }

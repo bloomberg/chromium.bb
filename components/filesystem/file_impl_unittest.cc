@@ -24,7 +24,7 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagCreate, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Write to it.
@@ -38,21 +38,21 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     uint32_t num_bytes_written = 0;
     file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                 WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 
   // Rename it.
   error = ERROR_INTERNAL;
   directory->Rename("my_file", "your_file", Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   {
@@ -61,14 +61,14 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     error = ERROR_INTERNAL;
     directory->OpenFile("your_file", GetProxy(&file), kOpenFlagRead,
                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Read from it.
     mojo::Array<uint8_t> bytes_read;
     error = ERROR_INTERNAL;
     file->Read(3, 1, WHENCE_FROM_START, Capture(&error, &bytes_read));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     ASSERT_EQ(3u, bytes_read.size());
     EXPECT_EQ(static_cast<uint8_t>('e'), bytes_read[0]);
@@ -97,7 +97,7 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagCreate, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Write to it.
@@ -105,14 +105,14 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     uint32_t num_bytes_written = 0;
     file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                 WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 
@@ -122,7 +122,7 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file), kOpenFlagRead,
                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Try to write in read mode; it should fail.
@@ -130,14 +130,14 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     uint32_t num_bytes_written = 0;
     file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                 WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_UNKNOWN, error);
     EXPECT_EQ(0u, num_bytes_written);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 }
@@ -154,13 +154,13 @@ TEST_F(FileImplTest, OpenExclusive) {
     directory->OpenFile("temp_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagCreate |kOpenFlagExclusive,
                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 
@@ -171,7 +171,7 @@ TEST_F(FileImplTest, OpenExclusive) {
     directory->OpenFile("temp_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagCreate | kOpenFlagExclusive,
                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_UNKNOWN, error);
   }
 }
@@ -187,7 +187,7 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagCreate, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Write to it.
@@ -201,14 +201,14 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     uint32_t num_bytes_written = 0;
     file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                 WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 
@@ -218,7 +218,7 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagAppend, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Write to it.
@@ -234,14 +234,14 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     uint32_t num_bytes_written = 0;
     file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                 WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 
@@ -251,14 +251,14 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file), kOpenFlagRead,
                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Read from it.
     mojo::Array<uint8_t> bytes_read;
     error = ERROR_INTERNAL;
     file->Read(12, 0, WHENCE_FROM_START, Capture(&error, &bytes_read));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     ASSERT_EQ(12u, bytes_read.size());
     EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[3]);
@@ -279,7 +279,7 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagCreate, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Write to it.
@@ -293,14 +293,14 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     uint32_t num_bytes_written = 0;
     file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                 WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 
@@ -310,7 +310,7 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file),
                         kOpenFlagWrite | kOpenFlagTruncate, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Write to it.
@@ -326,14 +326,14 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     uint32_t num_bytes_written = 0;
     file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                 WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
 
     // Close it.
     error = ERROR_INTERNAL;
     file->Close(Capture(&error));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
   }
 
@@ -343,14 +343,14 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     error = ERROR_INTERNAL;
     directory->OpenFile("my_file", GetProxy(&file), kOpenFlagRead,
                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
 
     // Read from it.
     mojo::Array<uint8_t> bytes_read;
     error = ERROR_INTERNAL;
     file->Read(7, 0, WHENCE_FROM_START, Capture(&error, &bytes_read));
-    ASSERT_TRUE(file.WaitForIncomingResponse());
+    ASSERT_TRUE(file.WaitForIncomingMethodCall());
     EXPECT_EQ(ERROR_OK, error);
     ASSERT_EQ(7u, bytes_read.size());
     EXPECT_EQ(static_cast<uint8_t>('g'), bytes_read[0]);
@@ -372,14 +372,14 @@ TEST_F(FileImplTest, StatTouch) {
   error = ERROR_INTERNAL;
   directory->OpenFile("my_file", GetProxy(&file),
                       kOpenFlagWrite | kOpenFlagCreate, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Stat it.
   error = ERROR_INTERNAL;
   FileInformationPtr file_info;
   file->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   EXPECT_EQ(FILE_TYPE_REGULAR_FILE, file_info->type);
@@ -398,14 +398,14 @@ TEST_F(FileImplTest, StatTouch) {
   const int64_t kPartyTime1 = 1234567890;  // Party like it's 2009-02-13.
   t->timespec->seconds = kPartyTime1;
   file->Touch(t.Pass(), nullptr, Capture(&error));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Stat again.
   error = ERROR_INTERNAL;
   file_info.reset();
   file->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   ASSERT_FALSE(file_info->atime.is_null());
@@ -420,14 +420,14 @@ TEST_F(FileImplTest, StatTouch) {
   const int64_t kPartyTime2 = 1425059525;  // No time like the present.
   t->timespec->seconds = kPartyTime2;
   file->Touch(nullptr, t.Pass(), Capture(&error));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Stat again.
   error = ERROR_INTERNAL;
   file_info.reset();
   file->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   ASSERT_FALSE(file_info->atime.is_null());
@@ -450,7 +450,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   directory->OpenFile("my_file", GetProxy(&file),
                       kOpenFlagWrite | kOpenFlagCreate, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Write to it.
@@ -459,7 +459,7 @@ TEST_F(FileImplTest, TellSeek) {
   uint32_t num_bytes_written = 0;
   file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
               WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
   const int size = static_cast<int>(num_bytes_written);
@@ -468,7 +468,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   int64_t position = -1;
   file->Tell(Capture(&error, &position));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   // Should be at the end.
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(size, position);
@@ -477,7 +477,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   position = -1;
   file->Seek(-100, WHENCE_FROM_CURRENT, Capture(&error, &position));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(size - 100, position);
 
@@ -485,7 +485,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   position = -1;
   file->Tell(Capture(&error, &position));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(size - 100, position);
 
@@ -493,7 +493,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   position = -1;
   file->Seek(123, WHENCE_FROM_START, Capture(&error, &position));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(123, position);
 
@@ -501,7 +501,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   position = -1;
   file->Tell(Capture(&error, &position));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(123, position);
 
@@ -509,7 +509,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   position = -1;
   file->Seek(-123, WHENCE_FROM_END, Capture(&error, &position));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(size - 123, position);
 
@@ -517,7 +517,7 @@ TEST_F(FileImplTest, TellSeek) {
   error = ERROR_INTERNAL;
   position = -1;
   file->Tell(Capture(&error, &position));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(size - 123, position);
 
@@ -536,7 +536,7 @@ TEST_F(FileImplTest, Dup) {
   directory->OpenFile("my_file", GetProxy(&file1),
                       kOpenFlagRead | kOpenFlagWrite | kOpenFlagCreate,
                       Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Write to it.
@@ -550,7 +550,7 @@ TEST_F(FileImplTest, Dup) {
   uint32_t num_bytes_written = 0;
   file1->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-  ASSERT_TRUE(file1.WaitForIncomingResponse());
+  ASSERT_TRUE(file1.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
   const int end_hello_pos = static_cast<int>(num_bytes_written);
@@ -559,14 +559,14 @@ TEST_F(FileImplTest, Dup) {
   FilePtr file2;
   error = ERROR_INTERNAL;
   file1->Dup(GetProxy(&file2), Capture(&error));
-  ASSERT_TRUE(file1.WaitForIncomingResponse());
+  ASSERT_TRUE(file1.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // |file2| should have the same position.
   error = ERROR_INTERNAL;
   int64_t position = -1;
   file2->Tell(Capture(&error, &position));
-  ASSERT_TRUE(file2.WaitForIncomingResponse());
+  ASSERT_TRUE(file2.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(end_hello_pos, position);
 
@@ -581,7 +581,7 @@ TEST_F(FileImplTest, Dup) {
   num_bytes_written = 0;
   file2->Write(mojo::Array<uint8_t>::From(more_bytes_to_write), 0,
                WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-  ASSERT_TRUE(file2.WaitForIncomingResponse());
+  ASSERT_TRUE(file2.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(more_bytes_to_write.size(), num_bytes_written);
   const int end_world_pos = end_hello_pos + static_cast<int>(num_bytes_written);
@@ -590,21 +590,21 @@ TEST_F(FileImplTest, Dup) {
   error = ERROR_INTERNAL;
   position = -1;
   file1->Tell(Capture(&error, &position));
-  ASSERT_TRUE(file1.WaitForIncomingResponse());
+  ASSERT_TRUE(file1.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(end_world_pos, position);
 
   // Close |file1|.
   error = ERROR_INTERNAL;
   file1->Close(Capture(&error));
-  ASSERT_TRUE(file1.WaitForIncomingResponse());
+  ASSERT_TRUE(file1.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Read everything using |file2|.
   mojo::Array<uint8_t> bytes_read;
   error = ERROR_INTERNAL;
   file2->Read(1000, 0, WHENCE_FROM_START, Capture(&error, &bytes_read));
-  ASSERT_TRUE(file2.WaitForIncomingResponse());
+  ASSERT_TRUE(file2.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_EQ(static_cast<size_t>(end_world_pos), bytes_read.size());
   // Just check the first and last bytes.
@@ -627,7 +627,7 @@ TEST_F(FileImplTest, Truncate) {
   error = ERROR_INTERNAL;
   directory->OpenFile("my_file", GetProxy(&file),
                       kOpenFlagWrite | kOpenFlagCreate, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Write to it.
@@ -636,7 +636,7 @@ TEST_F(FileImplTest, Truncate) {
   uint32_t num_bytes_written = 0;
   file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
               WHENCE_FROM_CURRENT, Capture(&error, &num_bytes_written));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   EXPECT_EQ(kInitialSize, num_bytes_written);
 
@@ -644,7 +644,7 @@ TEST_F(FileImplTest, Truncate) {
   error = ERROR_INTERNAL;
   FileInformationPtr file_info;
   file->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   EXPECT_EQ(kInitialSize, file_info->size);
@@ -652,14 +652,14 @@ TEST_F(FileImplTest, Truncate) {
   // Truncate it.
   error = ERROR_INTERNAL;
   file->Truncate(kTruncatedSize, Capture(&error));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Stat again.
   error = ERROR_INTERNAL;
   file_info.reset();
   file->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   EXPECT_EQ(kTruncatedSize, file_info->size);
@@ -676,13 +676,13 @@ TEST_F(FileImplTest, Ioctl) {
   directory->OpenFile("my_file", GetProxy(&file),
                       kOpenFlagRead | kOpenFlagWrite | kOpenFlagCreate,
                       Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_OK, error);
 
   // Normal files don't support any ioctls.
   mojo::Array<uint32_t> out_values;
   file->Ioctl(0, mojo::Array<uint32_t>(), Capture(&error, &out_values));
-  ASSERT_TRUE(file.WaitForIncomingResponse());
+  ASSERT_TRUE(file.WaitForIncomingMethodCall());
   EXPECT_EQ(ERROR_UNAVAILABLE, error);
   EXPECT_TRUE(out_values.is_null());
 }

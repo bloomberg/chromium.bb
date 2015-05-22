@@ -252,19 +252,10 @@ void MasterConnectionManager::Init(
 
 void MasterConnectionManager::AddSlave(
     embedder::SlaveInfo slave_info,
-    embedder::ScopedPlatformHandle platform_handle,
-    ProcessIdentifier* slave_process_identifier) {
+    embedder::ScopedPlatformHandle platform_handle) {
   // We don't really care if |slave_info| is non-null or not.
   DCHECK(platform_handle.is_valid());
-  DCHECK(slave_process_identifier);
   AssertNotOnPrivateThread();
-
-  {
-    base::AutoLock locker(lock_);
-    CHECK_NE(next_process_identifier_, kMasterProcessIdentifier);
-    *slave_process_identifier = next_process_identifier_;
-    next_process_identifier_++;
-  }
 
   // We have to wait for the task to be executed, in case someone calls
   // |AddSlave()| followed immediately by |Shutdown()|.
@@ -273,30 +264,8 @@ void MasterConnectionManager::AddSlave(
       FROM_HERE,
       base::Bind(&MasterConnectionManager::AddSlaveOnPrivateThread,
                  base::Unretained(this), base::Unretained(slave_info),
-                 base::Passed(&platform_handle), *slave_process_identifier,
-                 base::Unretained(&event)));
+                 base::Passed(&platform_handle), base::Unretained(&event)));
   event.Wait();
-}
-
-bool MasterConnectionManager::AddSlaveAndBootstrap(
-    embedder::SlaveInfo slave_info,
-    embedder::ScopedPlatformHandle platform_handle,
-    const ConnectionIdentifier& connection_id,
-    ProcessIdentifier* slave_process_identifier) {
-  AddSlave(slave_info, platform_handle.Pass(), slave_process_identifier);
-
-  base::AutoLock locker(lock_);
-
-  auto it = pending_connections_.find(connection_id);
-  if (it != pending_connections_.end())
-    return false;
-
-  PendingConnectionInfo* info =
-      new PendingConnectionInfo(kMasterProcessIdentifier);
-  info->state = PendingConnectionInfo::AWAITING_CONNECTS_FROM_BOTH;
-  info->second = *slave_process_identifier;
-  pending_connections_[connection_id] = info;
-  return true;
 }
 
 void MasterConnectionManager::Shutdown() {
@@ -349,7 +318,7 @@ bool MasterConnectionManager::AllowConnectImpl(
         new PendingConnectionInfo(process_identifier);
     // TODO(vtl): Track process identifier -> pending connections also (so these
     // can be removed efficiently if that process disconnects).
-    DVLOG(1) << "New pending connection ID " << connection_id.ToString()
+    DVLOG(1) << "New pending connection ID " << connection_id
              << ": AllowConnect() from first process identifier "
              << process_identifier;
     return true;
@@ -359,7 +328,7 @@ bool MasterConnectionManager::AllowConnectImpl(
   if (info->state == PendingConnectionInfo::AWAITING_SECOND_ALLOW_CONNECT) {
     info->state = PendingConnectionInfo::AWAITING_CONNECTS_FROM_BOTH;
     info->second = process_identifier;
-    DVLOG(1) << "Pending connection ID " << connection_id.ToString()
+    DVLOG(1) << "Pending connection ID " << connection_id
              << ": AllowConnect() from second process identifier "
              << process_identifier;
     return true;
@@ -368,8 +337,8 @@ bool MasterConnectionManager::AllowConnectImpl(
   // Someone's behaving badly, but we don't know who (it might not be the
   // caller).
   LOG(ERROR) << "AllowConnect() from process " << process_identifier
-             << " for connection ID " << connection_id.ToString()
-             << " already in state " << info->state;
+             << " for connection ID " << connection_id << " already in state "
+             << info->state;
   pending_connections_.erase(it);
   delete info;
   return false;
@@ -386,7 +355,7 @@ bool MasterConnectionManager::CancelConnectImpl(
   if (it == pending_connections_.end()) {
     // Not necessarily the caller's fault, and not necessarily an error.
     DVLOG(1) << "CancelConnect() from process " << process_identifier
-             << " for connection ID " << connection_id.ToString()
+             << " for connection ID " << connection_id
              << " which is not (or no longer) pending";
     return true;
   }
@@ -394,7 +363,7 @@ bool MasterConnectionManager::CancelConnectImpl(
   PendingConnectionInfo* info = it->second;
   if (process_identifier != info->first && process_identifier != info->second) {
     LOG(ERROR) << "CancelConnect() from process " << process_identifier
-               << " for connection ID " << connection_id.ToString()
+               << " for connection ID " << connection_id
                << " which is neither connectee";
     return false;
   }
@@ -423,7 +392,7 @@ bool MasterConnectionManager::ConnectImpl(
   if (it == pending_connections_.end()) {
     // Not necessarily the caller's fault.
     LOG(ERROR) << "Connect() from process " << process_identifier
-               << " for connection ID " << connection_id.ToString()
+               << " for connection ID " << connection_id
                << " which is not pending";
     return false;
   }
@@ -440,7 +409,7 @@ bool MasterConnectionManager::ConnectImpl(
       *peer_process_identifier = info->first;
     } else {
       LOG(ERROR) << "Connect() from process " << process_identifier
-                 << " for connection ID " << connection_id.ToString()
+                 << " for connection ID " << connection_id
                  << " which is neither connectee";
       return false;
     }
@@ -455,7 +424,7 @@ bool MasterConnectionManager::ConnectImpl(
       info->remaining_handle = platform_channel_pair.PassClientHandle();
       DCHECK(info->remaining_handle.is_valid());
     }
-    DVLOG(1) << "Connection ID " << connection_id.ToString()
+    DVLOG(1) << "Connection ID " << connection_id
              << ": first Connect() from process identifier "
              << process_identifier;
     return true;
@@ -474,8 +443,8 @@ bool MasterConnectionManager::ConnectImpl(
     // Someone's behaving badly, but we don't know who (it might not be the
     // caller).
     LOG(ERROR) << "Connect() from process " << process_identifier
-               << " for connection ID " << connection_id.ToString()
-               << " in state " << info->state;
+               << " for connection ID " << connection_id << " in state "
+               << info->state;
     pending_connections_.erase(it);
     delete info;
     return false;
@@ -483,7 +452,7 @@ bool MasterConnectionManager::ConnectImpl(
 
   if (process_identifier != remaining_connectee) {
     LOG(ERROR) << "Connect() from process " << process_identifier
-               << " for connection ID " << connection_id.ToString()
+               << " for connection ID " << connection_id
                << " which is not the remaining connectee";
     pending_connections_.erase(it);
     delete info;
@@ -495,7 +464,7 @@ bool MasterConnectionManager::ConnectImpl(
   DCHECK((info->first == info->second) ^ platform_handle->is_valid());
   pending_connections_.erase(it);
   delete info;
-  DVLOG(1) << "Connection ID " << connection_id.ToString()
+  DVLOG(1) << "Connection ID " << connection_id
            << ": second Connect() from process identifier "
            << process_identifier;
   return true;
@@ -525,20 +494,23 @@ void MasterConnectionManager::ShutdownOnPrivateThread() {
 void MasterConnectionManager::AddSlaveOnPrivateThread(
     embedder::SlaveInfo slave_info,
     embedder::ScopedPlatformHandle platform_handle,
-    ProcessIdentifier slave_process_identifier,
     base::WaitableEvent* event) {
   DCHECK(platform_handle.is_valid());
   DCHECK(event);
   AssertOnPrivateThread();
 
-  scoped_ptr<Helper> helper(new Helper(this, slave_process_identifier,
-                                       slave_info, platform_handle.Pass()));
+  CHECK_NE(next_process_identifier_, kMasterProcessIdentifier);
+  ProcessIdentifier process_identifier = next_process_identifier_;
+  next_process_identifier_++;
+
+  scoped_ptr<Helper> helper(
+      new Helper(this, process_identifier, slave_info, platform_handle.Pass()));
   helper->Init();
 
-  DCHECK(helpers_.find(slave_process_identifier) == helpers_.end());
-  helpers_[slave_process_identifier] = helper.release();
+  DCHECK(helpers_.find(process_identifier) == helpers_.end());
+  helpers_[process_identifier] = helper.release();
 
-  DVLOG(1) << "Added slave process identifier " << slave_process_identifier;
+  DVLOG(1) << "Added process identifier " << process_identifier;
   event->Signal();
 }
 

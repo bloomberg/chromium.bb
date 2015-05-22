@@ -115,8 +115,10 @@ class InterfacePtr {
   //
   // This method may only be called after the InterfacePtr has been bound to a
   // message pipe.
-  bool WaitForIncomingResponse() {
-    return internal_state_.WaitForIncomingResponse();
+  //
+  // TODO(jamesr): Rename to WaitForIncomingResponse().
+  bool WaitForIncomingMethodCall() {
+    return internal_state_.WaitForIncomingMethodCall();
   }
 
   // Indicates whether the message pipe has encountered an error. If true,

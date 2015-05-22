@@ -38,7 +38,7 @@ bool ResourceLoader::BlockUntilLoaded() {
     return loaded_;
 
   did_block_ = true;
-  resource_provider_.WaitForIncomingResponse();
+  resource_provider_.WaitForIncomingMethodCall();
   return loaded_;
 }
 

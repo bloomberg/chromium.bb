@@ -4,6 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
+import org.chromium.mojo.bindings.Struct.DataHeader;
 import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.Handle;
 
@@ -33,11 +34,6 @@ public class BindingsHelper {
      * representing the offset from its position to the pointed elemnt.
      */
     public static final int POINTER_SIZE = 8;
-
-    /**
-     * The size, in bytes, of a serialized union.
-     */
-    public static final int UNION_SIZE = 16;
 
     /**
      * The header for a serialized map element.

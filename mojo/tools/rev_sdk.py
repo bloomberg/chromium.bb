@@ -23,7 +23,7 @@ sdk_dirs_to_clone = [
 sdk_dirs_to_not_clone = [
   "mojo/public/cpp/application",
   "mojo/public/interfaces/application",
-  "mojo/public/java/application",
+  "third_party/mojo/src/mojo/public/java/application",
 ]
 
 # Individual files to preserve within the target repository during roll. These
@@ -43,9 +43,8 @@ for sdk_dir in sdk_dirs_to_clone:
   sdk_dir_in_chromium = os.path.join(sdk_prefix_in_chromium, sdk_dir)
   dirs_to_clone[sdk_dir] = sdk_dir_in_chromium
 
-def rev(source_dir, chromium_dir, mojo_revision):
-  src_commit = system(["git", "rev-parse", mojo_revision],
-                      cwd=source_dir).strip()
+def rev(source_dir, chromium_dir):
+  src_commit = system(["git", "show-ref", "HEAD", "-s"], cwd=source_dir).strip()
 
   for input_dir, dest_dir in dirs_to_clone.iteritems():
     if os.path.exists(os.path.join(chromium_dir, dest_dir)):
@@ -90,15 +89,8 @@ def rev(source_dir, chromium_dir, mojo_revision):
 
   commit("Update mojo sdk to rev " + src_commit, cwd=chromium_dir)
 
-if len(sys.argv) < 2:
-  print "usage: rev_sdk.py <mojo source dir> [<mojo revision>]"
+if len(sys.argv) != 2:
+  print "usage: rev_sdk.py <mojo source dir>"
   sys.exit(1)
 
-# Allow override of the roll revision.
-if len(sys.argv) == 3:
-  mojo_revision = sys.argv[2]
-else:
-  mojo_revision = 'origin/HEAD'
-
-rev(sys.argv[1], chromium_root_dir, mojo_revision)
-
+rev(sys.argv[1], chromium_root_dir)

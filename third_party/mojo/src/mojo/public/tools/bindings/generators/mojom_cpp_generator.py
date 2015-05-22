@@ -230,8 +230,6 @@ def GetCppFieldType(kind):
 def GetCppUnionFieldType(kind):
   if mojom.IsAnyHandleKind(kind):
     return "MojoHandle"
-  if mojom.IsInterfaceKind(kind):
-    return "uint64_t"
   if mojom.IsEnumKind(kind):
     return "int32_t"
   if mojom.IsUnionKind(kind):
@@ -242,7 +240,7 @@ def GetCppUnionFieldType(kind):
 def GetUnionGetterReturnType(kind):
   if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
       mojom.IsArrayKind(kind) or mojom.IsMapKind(kind) or
-      mojom.IsAnyHandleKind(kind) or mojom.IsInterfaceKind(kind)):
+      mojom.IsAnyHandleKind(kind)):
     return "%s&" % GetCppWrapperType(kind)
   return GetCppResultWrapperType(kind)
 

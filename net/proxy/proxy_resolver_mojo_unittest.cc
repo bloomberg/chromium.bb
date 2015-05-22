@@ -248,7 +248,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
       binding_.Close();
       break;
     case GetProxyForUrlAction::WAIT_FOR_CLIENT_DISCONNECT:
-      ASSERT_FALSE(client.WaitForIncomingResponse());
+      ASSERT_FALSE(client.WaitForIncomingMethodCall());
       break;
     case GetProxyForUrlAction::SEND_LOAD_STATE_AND_BLOCK:
       client->LoadStateChanged(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
@@ -400,7 +400,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
       // Both |request| and |client| will be closed.
       break;
     case CreateProxyResolverAction::WAIT_FOR_CLIENT_DISCONNECT:
-      ASSERT_FALSE(client.WaitForIncomingResponse());
+      ASSERT_FALSE(client.WaitForIncomingMethodCall());
       break;
   }
   WakeWaiter();
