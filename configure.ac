@@ -108,7 +108,7 @@ then
     have_makeinfo_5=true
   fi
 else
-  AC_MSG_WARN([Missing program 'makeinfo', Documentation will not be built.)])
+  AC_MSG_WARN([Missing program 'makeinfo', Documentation will not be built. Please install you you want documentation or refer to online resources.])
 fi
 AM_CONDITIONAL([HAVE_MAKEINFO_5], [test x$have_makeinfo_5 = xtrue])
 
