@@ -19,34 +19,8 @@ import java.util.Locale;
  * the origin of logs, and enable or disable logging in different parts of the code.
  * </p>
  * <p>
- * Please make use of the formatting capability of the logging methods rather than doing
- * concatenations in the calling code. In the release builds of Chrome, debug and verbose log
- * calls will be stripped out of the binary. Concatenations and method calls however will still
- * remain and be executed. If they can't be avoided, try to generate the logs in a method annotated
- * with {@link NoSideEffects}. Another possibility is to use
- * {@link android.util.Log#isLoggable(String, int)} to guard those calls.
+ * @see usage documentation: <a href="README_logging.md">README_logging.md</a>.
  * </p>
- *
- * Usage:
- * <pre>
- * private static final String TAG = Log.makeTag("Group");
- *
- * private void myMethod(String awesome) {
- *   Log.i(TAG, "My %s message.", awesome);
- *   Log.d(TAG, "My debug message");
- * }
- * </pre>
- *
- * Logcat output:
- * <pre>
- * I/cr.Group (999): My awesome message
- * D/cr.Group (999): [MyClass.java:42] My debug message
- * </pre>
- *
- * Set the log level for a given group:
- * <pre>
- * $ adb shell setprop log.tag.chromium.Group VERBOSE
- * </pre>
  */
 public class Log {
     private static final String BASE_TAG = "cr";
