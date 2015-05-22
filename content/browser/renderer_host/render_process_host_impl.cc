@@ -932,8 +932,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new NavigatorConnectDispatcherHost(
       storage_partition_impl_->GetNavigatorConnectContext(),
       message_port_message_filter_.get()));
-  if (browser_command_line.HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+  if (browser_command_line.HasSwitch(switches::kEnableWebBluetooth)) {
     bluetooth_dispatcher_host_ = new BluetoothDispatcherHost();
     AddFilter(bluetooth_dispatcher_host_.get());
   }
@@ -1286,6 +1285,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableViewport,
     switches::kEnableViewportMeta,
     switches::kEnableVtune,
+    switches::kEnableWebBluetooth,
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebGLImageChromium,
     switches::kExplicitlyAllowedPorts,

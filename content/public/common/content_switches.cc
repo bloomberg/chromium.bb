@@ -344,6 +344,9 @@ const char kEnableExperimentalCanvasFeatures[] =
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";
 
+// Enable Web Bluetooth.
+const char kEnableWebBluetooth[] = "enable-web-bluetooth";
+
 // Enables TRACE for GL calls in the renderer.
 const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
 

@@ -860,6 +860,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)
   },
   {
+    "enable-web-bluetooth",
+    IDS_FLAGS_WEB_BLUETOOTH_NAME,
+    IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableWebBluetooth)
+  },
+  {
     "enable-devtools-experiments",
     IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME,
     IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION,
