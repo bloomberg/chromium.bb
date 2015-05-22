@@ -26,7 +26,7 @@
                              [Default=Undefined] optional boolean cancelable,
                              [Default=Undefined] optional DOMString oldURL,
                              [Default=Undefined] optional DOMString newURL);
-    [InitializedByEventConstructor] readonly attribute DOMString oldURL;
-    [InitializedByEventConstructor] readonly attribute DOMString newURL;
+    readonly attribute DOMString oldURL;
+    readonly attribute DOMString newURL;
 };
 
