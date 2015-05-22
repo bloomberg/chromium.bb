@@ -90,17 +90,11 @@ typedef nacl_abi__off64_t nacl_abi_off64_t;
 #endif
 #endif
 
-
-#if !(defined(__GLIBC__) && defined(NACL_IN_TOOLCHAIN_HEADERS))
-
 #ifndef nacl_abi___blksize_t_defined
 #define nacl_abi___blksize_t_defined
 typedef int32_t nacl_abi___blksize_t;
 typedef nacl_abi___blksize_t nacl_abi_blksize_t;
 #endif
-
-#endif
-
 
 #ifndef nacl_abi___blkcnt_t_defined
 #define nacl_abi___blkcnt_t_defined
