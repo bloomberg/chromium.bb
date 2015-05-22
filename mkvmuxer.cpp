@@ -201,7 +201,7 @@ bool Frame::IsValid() const {
       (additional_ != NULL && additional_length_ == 0)) {
     return false;
   }
-  if (track_number_ < 0 || track_number_ > kMaxTrackNumber) {
+  if (track_number_ == 0 || track_number_ > kMaxTrackNumber) {
     return false;
   }
   return true;
