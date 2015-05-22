@@ -6,22 +6,22 @@ if (window.testRunner)
         src="data:text/html,<script>
             try {
               top.navigator;
-              alert('FAIL');
+              console.log('FAIL');
             } catch(e) {
-              alert(e);
+              console.log(e);
             }
             this.x = 7;
             window.name='navigator';
-            alert(top.navigator === this ? 'PASS' : 'FAIL');
-            alert(top.navigator.x === 7 ? 'PASS' : 'FAIL');
+            console.log(top.navigator === this ? 'PASS' : 'FAIL');
+            console.log(top.navigator.x === 7 ? 'PASS' : 'FAIL');
             </script>"></iframe>
 <iframe sandbox="allow-scripts"
         src="data:text/html,<script>
-            alert(top.navigator !== this ? 'PASS' : 'FAIL');
+            console.log(top.navigator !== this ? 'PASS' : 'FAIL');
             try {
               top.navigator.x;
-              alert('FAIL');
+              console.log('FAIL');
             } catch(e) {
-              alert(e);
+              console.log(e);
             }
             </script>"></iframe>

@@ -14,9 +14,9 @@
         <script>
             try {
                 var s = new SharedWorker('http://127.0.0.1:8080/fast/frames/resources/sandboxed-iframe-workers.js');
-                alert('FAIL: SharedWorker creation should have thrown an exception.');
+                console.log('FAIL: SharedWorker creation should have thrown an exception.');
             } catch (e) {
-                alert('PASS: SharedWorker creation threw \'' + e + '\'.');
+                console.log('PASS: SharedWorker creation threw \'' + e + '\'.');
             }
         </script>
     "></iframe>

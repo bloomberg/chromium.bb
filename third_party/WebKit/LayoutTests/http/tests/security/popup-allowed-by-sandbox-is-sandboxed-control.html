@@ -11,6 +11,6 @@ if (window.testRunner) {
 <iframe sandbox="allow-scripts allow-popups allow-forms"
   src="data:text/html,
        <script>
-       var win = window.open('data:text/html,<form action=javascript:alert(/PASS/) ><input type=submit></form><script>document.forms[0].submit(); if (window.testRunner) testRunner.notifyDone();<\/script>', '_blank');
+       var win = window.open('data:text/html,<form action=javascript:console.log(/PASS/) ><input type=submit></form><script>document.forms[0].submit(); if (window.testRunner) testRunner.notifyDone();<\/script>', '_blank');
        </script>"
   ></iframe>

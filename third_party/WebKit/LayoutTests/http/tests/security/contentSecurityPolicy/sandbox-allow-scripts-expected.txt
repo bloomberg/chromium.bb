@@ -1,2 +1,2 @@
-ALERT: PASS
+CONSOLE MESSAGE: line 8: PASS
 This test passes if it does alert pass.

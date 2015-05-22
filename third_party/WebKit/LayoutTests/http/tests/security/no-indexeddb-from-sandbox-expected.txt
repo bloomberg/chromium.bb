@@ -1,2 +1,2 @@
-ALERT: PASS: indexedDB.open() threw a SECURITY_ERR!
+CONSOLE MESSAGE: line 1: PASS: indexedDB.open() threw a SECURITY_ERR!
 

@@ -37,6 +37,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/FrameRequestCallback.h"
+#include "core/dom/SandboxFlags.h"
 #include "core/editing/Editor.h"
 #include "core/events/DOMWindowEventQueue.h"
 #include "core/events/HashChangeEvent.h"
@@ -788,15 +789,18 @@ void LocalDOMWindow::print()
     if (!host)
         return;
 
+    if (frame()->document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+            return;
+    }
+
     if (frame()->isLoading()) {
         m_shouldPrintWhenFinishedLoading = true;
         return;
     }
     m_shouldPrintWhenFinishedLoading = false;
     host->chrome().print(frame());
-
-    if (frame()->document()->sandboxFlags())
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
 }
 
 void LocalDOMWindow::stop()
@@ -811,14 +815,17 @@ void LocalDOMWindow::alert(const String& message)
     if (!frame())
         return;
 
+    if (frame()->document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+            return;
+    }
+
     frame()->document()->updateLayoutTreeIfNeeded();
 
     FrameHost* host = frame()->host();
     if (!host)
         return;
-
-    if (frame()->document()->sandboxFlags())
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
 
     host->chrome().runJavaScriptAlert(frame(), message);
 }
@@ -828,14 +835,23 @@ bool LocalDOMWindow::confirm(const String& message)
     if (!frame())
         return false;
 
+    if (frame()->document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+            return false;
+    }
+
     frame()->document()->updateLayoutTreeIfNeeded();
 
     FrameHost* host = frame()->host();
     if (!host)
         return false;
 
-    if (frame()->document()->sandboxFlags())
+    if (frame()->document()->isSandboxed(SandboxModals)) {
         UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+            return false;
+    }
 
     return host->chrome().runJavaScriptConfirm(frame(), message);
 }
@@ -845,14 +861,17 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
     if (!frame())
         return String();
 
+    if (frame()->document()->isSandboxed(SandboxModals)) {
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled())
+            return String();
+    }
+
     frame()->document()->updateLayoutTreeIfNeeded();
 
     FrameHost* host = frame()->host();
     if (!host)
         return String();
-
-    if (frame()->document()->sandboxFlags())
-        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
 
     String returnValue;
     if (host->chrome().runJavaScriptPrompt(frame(), message, defaultValue, returnValue))

@@ -7,12 +7,12 @@ if (window.testRunner)
          <script>
              try {
                  indexedDB.open('test');
-                 alert('FAIL: indexedDB.open() should throw a SECURITY_ERR in a sandbox.');
+                 console.log('FAIL: indexedDB.open() should throw a SECURITY_ERR in a sandbox.');
              } catch (e) {
                  if (e.code === DOMException.SECURITY_ERR)
-                     alert('PASS: indexedDB.open() threw a SECURITY_ERR!');
+                     console.log('PASS: indexedDB.open() threw a SECURITY_ERR!');
                  else
-                     alert('FAIL: indexedDB.open() threw a ' + e.name);
+                     console.log('FAIL: indexedDB.open() threw a ' + e.name);
              }
          </script>"
      ></iframe>

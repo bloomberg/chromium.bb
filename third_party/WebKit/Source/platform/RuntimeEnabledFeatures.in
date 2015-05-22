@@ -120,6 +120,7 @@ QuotaPromise status=experimental
 ReducedReferrerGranularity
 RegionBasedColumns status=experimental
 RequestAutocomplete status=test
+SandboxBlocksModals status=experimental
 ScreenOrientation status=stable
 ScriptedSpeech status=stable
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left

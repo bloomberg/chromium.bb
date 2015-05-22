@@ -1,0 +1,10 @@
+ALERT: Yay!
+CONFIRM: Question?
+PROMPT: Question?, default text: 
+This is a testharness.js-based test.
+PASS alert() returns synchronously in a sandboxed page without blocking on user input. 
+PASS print() returns synchronously in a sandboxed page without blocking on user input. 
+PASS confirm() returns 'true' in a sandboxed page (in our test environment). 
+PASS prompt() returns 'null' synchronously in a sandboxed page without blocking on user input. 
+Harness: the test ran to completion.
+

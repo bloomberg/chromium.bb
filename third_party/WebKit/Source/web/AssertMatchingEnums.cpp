@@ -717,6 +717,8 @@ STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::AutomaticFeatures, SandboxAutomatic
 STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::PointerLock, SandboxPointerLock);
 STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::DocumentDomain, SandboxDocumentDomain);
 STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::OrientationLock, SandboxOrientationLock);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts, SandboxPropagatesToAuxiliaryBrowsingContexts);
+STATIC_ASSERT_MATCHING_ENUM(WebSandboxFlags::Modals, SandboxModals);
 
 STATIC_ASSERT_MATCHING_ENUM(FrameLoaderClient::BeforeUnloadHandler, WebFrameClient::BeforeUnloadHandler);
 STATIC_ASSERT_MATCHING_ENUM(FrameLoaderClient::UnloadHandler, WebFrameClient::UnloadHandler);

@@ -25,6 +25,8 @@ enum class WebSandboxFlags : int {
     PointerLock = 1 << 8,
     DocumentDomain = 1 << 9,
     OrientationLock = 1 << 10,
+    PropagatesToAuxiliaryBrowsingContexts = 1 << 11,
+    Modals = 1 << 12,
     All = -1
 };
 
