@@ -41,6 +41,7 @@ case $TEST_FILE in
 		SHELL_PLUGIN=$MODDIR/ivi-shell.so
 
 		WESTON_BUILD_DIR=$abs_builddir \
+		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		$WESTON --backend=$MODDIR/$BACKEND \
 			--config=$abs_builddir/tests/weston-ivi.ini \
 			--shell=$SHELL_PLUGIN \
@@ -52,6 +53,7 @@ case $TEST_FILE in
 		;;
 	*.la|*.so)
 		WESTON_BUILD_DIR=$abs_builddir \
+		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		$WESTON --backend=$MODDIR/$BACKEND \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-${TEST_NAME} \
@@ -64,6 +66,7 @@ case $TEST_FILE in
 		SHELL_PLUGIN=$MODDIR/ivi-shell.so
 
 		WESTON_BUILD_DIR=$abs_builddir \
+		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TEST_FILE $WESTON \
 			--socket=test-${TEST_NAME} \
 			--backend=$MODDIR/$BACKEND \
@@ -76,6 +79,7 @@ case $TEST_FILE in
 		;;
 	*)
 		WESTON_BUILD_DIR=$abs_builddir \
+		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TEST_FILE $WESTON \
 			--socket=test-${TEST_NAME} \
 			--backend=$MODDIR/$BACKEND \
