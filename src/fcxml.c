@@ -2293,7 +2293,7 @@ FcParseInclude (FcConfigParse *parse)
     FcBool	    deprecated = FcFalse;
 #endif
     FcChar8	    *prefix = NULL, *p;
-    FcChar8	    userdir, userconf;
+    FcChar8	    *userdir = NULL, *userconf = NULL;
 
     s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
