@@ -1038,6 +1038,13 @@ class ChromeDriverTest(ChromeDriverBaseTest):
                                 'Server returned error: Not Implemented',
                                 self._driver.TouchPinch, 1, 2, 3.0)
 
+  def testHasTouchScreen(self):
+    self.assertIn('hasTouchScreen', self._driver.capabilities)
+    if _ANDROID_PACKAGE_KEY:
+      self.assertTrue(self._driver.capabilities['hasTouchScreen'])
+    else:
+      self.assertFalse(self._driver.capabilities['hasTouchScreen'])
+
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""
@@ -1329,6 +1336,12 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
         'return div;')
     div.Click()
     self.assertEquals(1, len(driver.FindElements('tag name', 'br')))
+
+  def testHasTouchScreen(self):
+    driver = self.CreateDriver(
+        mobile_emulation = {'deviceName': 'Google Nexus 5'})
+    self.assertIn('hasTouchScreen', driver.capabilities)
+    self.assertTrue(driver.capabilities['hasTouchScreen'])
 
 
 class ChromeDriverLogTest(unittest.TestCase):

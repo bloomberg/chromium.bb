@@ -91,6 +91,9 @@ scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetBoolean("rotatable", false);
   caps->SetBoolean("acceptSslCerts", true);
   caps->SetBoolean("nativeEvents", true);
+  caps->SetBoolean("hasTouchScreen",
+                   chrome->GetOperatingSystemName() == "ANDROID" ||
+                       chrome->IsMobileEmulationEnabled());
   scoped_ptr<base::DictionaryValue> chrome_caps(new base::DictionaryValue());
 
   ChromeDesktopImpl* desktop = NULL;
