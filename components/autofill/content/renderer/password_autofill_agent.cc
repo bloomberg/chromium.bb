@@ -1060,7 +1060,7 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
   }
 
   scoped_ptr<PasswordForm> submitted_form =
-      CreatePasswordForm(form, nullptr, &form_predictions_);
+      CreatePasswordForm(form, &nonscript_modified_values_, &form_predictions_);
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that

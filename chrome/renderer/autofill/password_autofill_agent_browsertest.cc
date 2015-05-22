@@ -1859,4 +1859,21 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithAutofillPredictions) {
   ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
 }
 
+// The user types in a username and a password. Then JavaScript changes password
+// field to readonly state before submit. PasswordAutofillAgent can correctly
+// process readonly password field. This test models behaviour of gmail.com.
+TEST_F(PasswordAutofillAgentTest, ReadonlyPasswordFieldOnSubmit) {
+  SimulateUsernameChange("temp");
+  SimulatePasswordChange("random");
+
+  // Simulate that JavaScript makes password field readonly.
+  SetElementReadOnly(password_element_, true);
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  // Observe that the PasswordAutofillAgent can correctly process submitted
+  // form.
+  ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
+}
+
 }  // namespace autofill

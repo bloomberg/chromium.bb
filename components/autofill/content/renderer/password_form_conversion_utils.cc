@@ -265,9 +265,14 @@ void GetPasswordForm(
     // If the password field is readonly, the page is likely using a virtual
     // keyboard and bypassing the password field value (see
     // http://crbug.com/475488). There is nothing Chrome can do to fill
-    // passwords for now.
+    // passwords for now. Continue processing in case when the password field
+    // was made readonly by JavaScript before submission. We can do this by
+    // checking whether password element was updated not from JavaScript.
     if (input_element->isPasswordField() &&
         (!input_element->isReadOnly() ||
+         (nonscript_modified_values &&
+          nonscript_modified_values->find(*input_element) !=
+              nonscript_modified_values->end()) ||
          HasAutocompleteAttributeValue(*input_element, "current_password") ||
          HasAutocompleteAttributeValue(*input_element, "new-password"))) {
       passwords.push_back(*input_element);
