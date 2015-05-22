@@ -412,19 +412,6 @@ LocalFrame* LocalFrame::localFrameRoot()
     return curFrame;
 }
 
-bool LocalFrame::inScope(TreeScope* scope) const
-{
-    ASSERT(scope);
-    Document* doc = document();
-    if (!doc)
-        return false;
-    // FIXME: This check is broken in for OOPI.
-    HTMLFrameOwnerElement* owner = doc->ownerElement();
-    if (!owner)
-        return false;
-    return owner->treeScope() == scope;
-}
-
 String LocalFrame::layerTreeAsText(LayerTreeFlags flags) const
 {
     TextStream textStream;

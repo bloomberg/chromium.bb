@@ -300,7 +300,7 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     settings->setStrictMixedContentChecking(true);
     settings->setAllowDisplayOfInsecureContent(false);
     settings->setAllowRunningOfInsecureContent(false);
-    m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(this));
+    m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(WebTreeScopeType::Document, this));
     m_webView->setMainFrame(m_mainFrame);
     m_mainFrame->setDevToolsAgentClient(this);
 
