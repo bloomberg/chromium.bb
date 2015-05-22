@@ -228,13 +228,13 @@ I tried to sign up and it seems someone who wants to be a member of my team has 
 =====================================================================================================================================
 
 If everyone in your potential teammate's original team (including
-himself/herself) has accepted the :doc:`Terms and Conditions
+themselves) has accepted the :doc:`Terms and Conditions
 <contest-terms>` of the contest, then unfortunately you will have to
 look for other potential partners. Otherwise, your potential teammate
-can remove himself from the other team. All he/she will need to do is
-to reply to one of the registration emails he/she received (it should
+can remove themselves from the other team. All they will need to do is
+to reply to one of the registration emails they received (it should
 be sent to nacl-security-contest@google.com) and indicate the changes
-to be made. Please note that this will mean that his/her team members
+to be made. Please note that this will mean that their team members
 will receive an email notifying them of the changes in the team's
 composition and asking them to re-accept the :doc:`Terms and
 Conditions <contest-terms>`. All team members of that team will need
@@ -297,7 +297,7 @@ Why are you asking for the top 10 issues only?
 We want to make sure that we use our judges' time wisely. Rather than
 having them review hundreds of similar or small scale bugs, sometimes
 identified with the same automatic process, we are limiting the number
-of issues that each participant can submit in his/her/their summary.
+of issues that each participant can submit in their summary.
 
 My English is not great---will this count against me in the judging process?
 ============================================================================
@@ -342,7 +342,7 @@ may not submit an updated summary once the contest has ended.
 Someone from our team submitted a summary on behalf of our team without consulting with everyone else. How can we ensure that the judges will use the previous summary and not the last one?
 ============================================================================================================================================================================================
 
-If your team member submitted his / her version of the team's summary
+If your team member submitted their version of the team's summary
 before the end date of the contest, and if this is the last summary
 that was submitted from your team, then the Judges will disregard all
 previous versions of your summary and will only review this last
