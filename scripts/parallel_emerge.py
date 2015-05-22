@@ -1851,7 +1851,7 @@ def real_main(argv):
     cmdline_packages = " ".join(emerge.cmdline_packages)
     print("Starting fast-emerge.")
     print(" Building package %s on %s" % (cmdline_packages,
-                                          deps.board or "root"))
+                                          deps.sysroot or "root"))
 
   deps_tree, deps_info = deps.GenDependencyTree()
 
