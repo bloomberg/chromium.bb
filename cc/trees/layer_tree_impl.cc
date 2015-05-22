@@ -1075,9 +1075,9 @@ void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
 
 void LayerTreeImpl::PassSwapPromises(
     ScopedPtrVector<SwapPromise>* new_swap_promise) {
-  // Any left over promises have failed to swap before the next frame.
-  BreakSwapPromises(SwapPromise::SWAP_FAILS);
-  swap_promise_list_.swap(*new_swap_promise);
+  swap_promise_list_.insert_and_take(swap_promise_list_.end(),
+                                     new_swap_promise);
+  new_swap_promise->clear();
 }
 
 void LayerTreeImpl::FinishSwapPromises(CompositorFrameMetadata* metadata) {
