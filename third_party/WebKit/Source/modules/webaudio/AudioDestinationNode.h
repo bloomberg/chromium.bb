@@ -48,7 +48,7 @@ public:
     // It will optionally give us local/live audio input in sourceBus (if it's not 0).
     virtual void render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames) override final;
 
-    size_t currentSampleFrame() const { return m_currentSampleFrame; }
+    size_t currentSampleFrame() const { return acquireLoad(&m_currentSampleFrame); }
     double currentTime() const { return currentSampleFrame() / static_cast<double>(sampleRate()); }
 
     virtual unsigned long maxChannelCount() const { return 0; }

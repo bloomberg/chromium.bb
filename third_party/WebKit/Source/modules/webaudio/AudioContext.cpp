@@ -109,7 +109,6 @@ AudioContext::AudioContext(Document* document)
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_isOfflineContext(false)
     , m_contextState(Suspended)
-    , m_cachedSampleFrame(0)
 {
     m_didInitializeContextGraphMutex = true;
     m_destinationNode = DefaultAudioDestinationNode::create(this);
@@ -130,7 +129,6 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_isOfflineContext(true)
     , m_contextState(Suspended)
-    , m_cachedSampleFrame(0)
 {
     m_didInitializeContextGraphMutex = true;
     // Create a new destination for offline rendering.
@@ -679,22 +677,6 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
     return PeriodicWave::create(sampleRate(), real, imag);
 }
 
-size_t AudioContext::currentSampleFrame() const
-{
-    if (isAudioThread())
-        return m_destinationNode ? m_destinationNode->audioDestinationHandler().currentSampleFrame() : 0;
-
-    return m_cachedSampleFrame;
-}
-
-double AudioContext::currentTime() const
-{
-    if (isAudioThread())
-        return m_destinationNode ? m_destinationNode->audioDestinationHandler().currentTime() : 0;
-
-    return m_cachedSampleFrame / static_cast<double>(sampleRate());
-}
-
 String AudioContext::state() const
 {
     // These strings had better match the strings for AudioContextState in AudioContext.idl.
@@ -879,9 +861,6 @@ void AudioContext::handlePreRenderTasks()
 
         // Check to see if source nodes can be stopped because the end time has passed.
         handleStoppableSourceNodes();
-
-        // Update the cached sample frame value.
-        m_cachedSampleFrame = currentSampleFrame();
 
         unlock();
     }

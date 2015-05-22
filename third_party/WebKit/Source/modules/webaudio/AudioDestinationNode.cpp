@@ -31,6 +31,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
+#include "wtf/Atomics.h"
 
 namespace blink {
 
@@ -90,7 +91,8 @@ void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationB
     context()->handlePostRenderTasks();
 
     // Advance current sample-frame.
-    m_currentSampleFrame += numberOfFrames;
+    size_t newSampleFrame = m_currentSampleFrame + numberOfFrames;
+    releaseStore(&m_currentSampleFrame, newSampleFrame);
 }
 
 // ----------------------------------------------------------------
