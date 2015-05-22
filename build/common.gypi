@@ -933,8 +933,6 @@
         }],
 
         ['OS=="linux" and target_arch=="arm" and chromeos==0', {
-          # Set some defaults for arm/linux chrome builds
-          'use_allocator%': 'none',
           # sysroot needs to be an absolute path otherwise it generates
           # incorrect results when passed to pkg-config
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/chrome/installer/linux/debian_wheezy_arm-sysroot',
