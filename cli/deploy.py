@@ -771,14 +771,18 @@ def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
   pkg_name = os.path.basename(latest_pkg)
   pkg_dirname = os.path.basename(os.path.dirname(latest_pkg))
   pkg_dir = os.path.join(pkgroot, pkg_dirname)
-  device.RunCommand(['mkdir', '-p', pkg_dir], remote_sudo=True)
+  portage_tmpdir = os.path.join(device.work_dir, 'portage-tmp')
+  # Clean out the dirs first if we had a previous emerge on the device so as to
+  # free up space for this emerge.  The last emerge gets implicitly cleaned up
+  # when the device connection deletes its work_dir.
+  device.RunCommand(
+      ['rm', '-rf', pkg_dir, portage_tmpdir, '&&',
+       'mkdir', '-p', pkg_dir, portage_tmpdir], remote_sudo=True)
 
   # This message is read by BrilloDeployOperation.
   logging.notice('Copying %s to device.', pkg_name)
   device.CopyToDevice(latest_pkg, pkg_dir, remote_sudo=True)
 
-  portage_tmpdir = os.path.join(device.work_dir, 'portage-tmp')
-  device.RunCommand(['mkdir', '-p', portage_tmpdir], remote_sudo=True)
   logging.info('Use portage temp dir %s', portage_tmpdir)
 
   # This message is read by BrilloDeployOperation.
@@ -811,10 +815,6 @@ def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
     raise
   else:
     logging.notice('%s has been installed.', pkg_name)
-  finally:
-    # Free up the space for other packages.
-    device.RunCommand(['rm', '-rf', portage_tmpdir, pkg_dir],
-                      error_code_ok=True, remote_sudo=True)
 
 
 def _Unmerge(device, pkg, root):
