@@ -62,8 +62,11 @@ PermissionServiceImpl::PendingSubscription::~PendingSubscription() {
     callback.Run(PERMISSION_STATUS_ASK);
 }
 
-PermissionServiceImpl::PermissionServiceImpl(PermissionServiceContext* context)
+PermissionServiceImpl::PermissionServiceImpl(
+    PermissionServiceContext* context,
+    mojo::InterfaceRequest<PermissionService> request)
     : context_(context),
+      binding_(this, request.Pass()),
       weak_factory_(this) {
 }
 

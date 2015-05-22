@@ -10,6 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/common/permission_service.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace content {
 
@@ -22,7 +24,8 @@ enum class PermissionType;
 // to have some information about the current context. That enables the service
 // to know whether it can show UI and have knowledge of the associated
 // WebContents for example.
-class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
+class PermissionServiceImpl : public PermissionService,
+                              public mojo::ErrorHandler {
  public:
   ~PermissionServiceImpl() override;
 
@@ -34,7 +37,8 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
  protected:
   friend PermissionServiceContext;
 
-  PermissionServiceImpl(PermissionServiceContext* context);
+  PermissionServiceImpl(PermissionServiceContext* context,
+                        mojo::InterfaceRequest<PermissionService> request);
 
  private:
   using PermissionStatusCallback = mojo::Callback<void(PermissionStatus)>;
@@ -80,7 +84,7 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
       PermissionStatus last_known_status,
       const PermissionStatusCallback& callback) override;
 
-  // mojo::InterfaceImpl.
+  // mojo::ErrorHandler
   void OnConnectionError() override;
 
   void OnRequestPermissionResponse(int request_id, PermissionStatus status);
@@ -98,6 +102,7 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
   SubscriptionsMap pending_subscriptions_;
   // context_ owns |this|.
   PermissionServiceContext* context_;
+  mojo::Binding<PermissionService> binding_;
   base::WeakPtrFactory<PermissionServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionServiceImpl);

@@ -31,11 +31,7 @@ PermissionServiceContext::~PermissionServiceContext() {
 
 void PermissionServiceContext::CreateService(
     mojo::InterfaceRequest<PermissionService> request) {
-  PermissionServiceImpl* service =
-      new PermissionServiceImpl(this);
-
-  services_.push_back(service);
-  mojo::WeakBindToRequest(service, &request);
+  services_.push_back(new PermissionServiceImpl(this, request.Pass()));
 }
 
 void PermissionServiceContext::ServiceHadConnectionError(
