@@ -82,7 +82,6 @@ void* WrapDlopen(const char* path, int mode) {
                                               0U /* file_offset */,
                                               Globals::GetSearchPaths(),
                                               false,
-                                              false,
                                               &error);
     if (wrap)
       return wrap;

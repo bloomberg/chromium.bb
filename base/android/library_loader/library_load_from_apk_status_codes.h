@@ -17,11 +17,13 @@ enum LibraryLoadFromApkStatusCodes {
   // The loader was unable to determine whether the functionality is supported.
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_UNKNOWN = 0,
 
-  // The device does not support loading a library directly from the APK file.
-  LIBRARY_LOAD_FROM_APK_STATUS_CODES_NOT_SUPPORTED = 1,
+  // The device does not support loading a library directly from the APK file
+  // (obsolete).
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_NOT_SUPPORTED_OBSOLETE = 1,
 
   // The device supports loading a library directly from the APK file.
-  LIBRARY_LOAD_FROM_APK_STATUS_CODES_SUPPORTED = 2,
+  // (obsolete).
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_SUPPORTED_OBSOLETE = 2,
 
   // The Chromium library was successfully loaded directly from the APK file.
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_SUCCESSFUL = 3,
@@ -31,8 +33,9 @@ enum LibraryLoadFromApkStatusCodes {
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_USED_UNPACK_LIBRARY_FALLBACK = 4,
 
   // The Chromium library was successfully loaded using the no map executable
-  // support fallback.
-  LIBRARY_LOAD_FROM_APK_STATUS_CODES_USED_NO_MAP_EXEC_SUPPORT_FALLBACK = 5,
+  // support fallback (obsolete).
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_USED_NO_MAP_EXEC_SUPPORT_FALLBACK_OBSOLETE
+      = 5,
 
   // End sentinel.
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_MAX = 6,

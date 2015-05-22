@@ -19,7 +19,7 @@ namespace crazy {
 //
 class ElfLoader {
  public:
-  explicit ElfLoader(bool no_map_exec_support_fallback_enabled);
+  ElfLoader();
   ~ElfLoader();
 
   // Try to load a library at a given address. On failure, this will
@@ -72,12 +72,6 @@ class ElfLoader {
                          // memory address.
 
   const ELF::Phdr* loaded_phdr_;  // points to the loaded program header.
-
-  const bool no_map_exec_support_fallback_enabled_;  // Whether the fallback due
-                                                     // to lack of support for
-                                                     // mapping the APK file
-                                                     // with executable
-                                                     // permission is enabled.
 
   // Individual steps used by ::LoadAt()
   bool ReadElfHeader(Error* error);

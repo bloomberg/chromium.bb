@@ -128,13 +128,11 @@ void LibraryList::LoadPreloads() {
     }
 
     Error error;
-    const bool no_map_exec_support_fallback_enabled = false;
     LibraryView* preload = LoadLibrary(lib_name.c_str(),
                                        RTLD_NOW | RTLD_GLOBAL,
                                        0U /* load address */,
                                        0U /* file offset */,
                                        &search_path_list,
-                                       no_map_exec_support_fallback_enabled,
                                        true /* is_dependency_or_preload */,
                                        &error);
     if (!preload) {
@@ -315,7 +313,6 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
                                       uintptr_t load_address,
                                       off_t file_offset,
                                       SearchPathList* search_path_list,
-                                      bool no_map_exec_support_fallback_enabled,
                                       bool is_dependency_or_preload,
                                       Error* error) {
   const char* base_name = GetBaseNamePtr(lib_name);
@@ -399,8 +396,7 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
   }
 
   // Load the library
-  if (!lib->Load(full_path.c_str(), load_address, file_offset,
-                 no_map_exec_support_fallback_enabled, error))
+  if (!lib->Load(full_path.c_str(), load_address, file_offset, error))
     return NULL;
 
   // Load all dependendent libraries.
@@ -414,7 +410,6 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
                                           0U /* load address */,
                                           0U /* file offset */,
                                           search_path_list,
-                                          no_map_exec_support_fallback_enabled,
                                           true /* is_dependency_or_preload */,
                                           &dep_error);
     if (!dependency) {
@@ -530,7 +525,6 @@ LibraryView* LibraryList::LoadLibraryInZipFile(
     int dlopen_flags,
     uintptr_t load_address,
     SearchPathList* search_path_list,
-    bool no_map_exec_support_fallback_enabled,
     bool is_dependency_or_preload,
     Error* error) {
   int offset = FindMappableLibraryInZipFile(zip_file_path, lib_name, error);
@@ -540,8 +534,7 @@ LibraryView* LibraryList::LoadLibraryInZipFile(
 
   return LoadLibrary(
       zip_file_path, dlopen_flags, load_address, offset,
-      search_path_list, no_map_exec_support_fallback_enabled,
-      is_dependency_or_preload, error);
+      search_path_list, is_dependency_or_preload, error);
 }
 
 void LibraryList::AddLibrary(LibraryView* wrap) {

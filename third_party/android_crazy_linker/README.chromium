@@ -52,8 +52,6 @@ Local Modifications:
 
 - Avoid mixing size_t and uint32_t in Leb128Decoder::Dequeue().
 
-- Add fallback library loading when SELinux blocks EXEC permission.
-
 - Re-order application of relocation sections to match the system linker.
 
 - Add method for enabling/disabling the memory fallback (disabled by default).

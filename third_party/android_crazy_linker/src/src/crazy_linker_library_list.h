@@ -69,7 +69,6 @@ class LibraryList {
                            uintptr_t load_address,
                            off_t file_offset,
                            SearchPathList* search_path_list,
-                           bool no_map_exec_support_fallback_enabled,
                            bool is_dependency_or_preload,
                            Error* error);
 
@@ -92,7 +91,6 @@ class LibraryList {
                                     int dlopen_flags,
                                     uintptr_t load_address,
                                     SearchPathList* search_path_list,
-                                    bool no_map_exec_support_fallback_enabled,
                                     bool is_dependency_or_preload,
                                     Error* error);
 
