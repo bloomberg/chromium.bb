@@ -6,27 +6,35 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {
-const CGFloat kDegrees90           = (M_PI / 2);
-const CGFloat kDegrees180          = (M_PI);
-const CGFloat kDegrees270          = (3 * M_PI / 2);
-const CGFloat kDegrees360          = (2 * M_PI);
-const CGFloat kDesignWidth         = 28.0;
-const CGFloat kArcRadius           = 12.5;
-const CGFloat kArcLength           = 58.9;
-const CGFloat kArcStrokeWidth      = 3.0;
-const CGFloat kArcAnimationTime    = 1.333;
-const CGFloat kArcStartAngle       = kDegrees180;
-const CGFloat kArcEndAngle         = (kArcStartAngle + kDegrees270);
-const SkColor kBlue            = SkColorSetRGB(66.0, 133.0, 244.0);  // #4285f4.
+const CGFloat kDegrees90               = (M_PI / 2);
+const CGFloat kDegrees180              = (M_PI);
+const CGFloat kDegrees270              = (3 * M_PI / 2);
+const CGFloat kDegrees360              = (2 * M_PI);
+const CGFloat kDesignWidth             = 28.0;
+const CGFloat kArcRadius               = 12.5;
+const CGFloat kArcDiameter             = kArcRadius * 2.0;
+const CGFloat kArcLength               = 58.9;
+const CGFloat kArcStrokeWidth          = 3.0;
+const CGFloat kArcAnimationTime        = 1.333;
+const CGFloat kArcStartAngle           = kDegrees180;
+const CGFloat kArcEndAngle             = (kArcStartAngle + kDegrees270);
+const CGFloat kRotationTime            = 1.56863;
+const SkColor kBlue                    = SkColorSetRGB(0x42, 0x85, 0xf4);
+NSString* const kSpinnerAnimationName  = @"SpinnerAnimationName";
+NSString* const kRotationAnimationName = @"RotationAnimationName";
 }
 
 @interface SpinnerView () {
   base::scoped_nsobject<CAAnimationGroup> spinnerAnimation_;
+  base::scoped_nsobject<CABasicAnimation> rotationAnimation_;
   CAShapeLayer* shapeLayer_;  // Weak.
+  CAShapeLayer* rotationLayer_;  // Weak.
 }
 @end
 
@@ -43,50 +51,6 @@ const SkColor kBlue            = SkColorSetRGB(66.0, 133.0, 244.0);  // #4285f4.
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
-}
-
-// Overridden to return a custom CALayer for the view (called from
-// setWantsLayer:).
-- (CALayer*)makeBackingLayer {
-  CGRect bounds = [self bounds];
-  // The spinner was designed to be |kDesignWidth| points wide. Compute the
-  // scale factor needed to scale design parameters like |RADIUS| so that the
-  // spinner scales to fit the view's bounds.
-  CGFloat scaleFactor = bounds.size.width / kDesignWidth;
-
-  shapeLayer_ = [CAShapeLayer layer];
-  [shapeLayer_ setBounds:bounds];
-  [shapeLayer_ setLineWidth:kArcStrokeWidth * scaleFactor];
-  [shapeLayer_ setLineCap:kCALineCapRound];
-  [shapeLayer_ setLineDashPattern:@[ @(kArcLength * scaleFactor) ]];
-  [shapeLayer_ setFillColor:NULL];
-  CGColorRef blueColor = gfx::CGColorCreateFromSkColor(kBlue);
-  [shapeLayer_ setStrokeColor:blueColor];
-  CGColorRelease(blueColor);
-
-  // Create the arc that, when stroked, creates the spinner.
-  base::ScopedCFTypeRef<CGMutablePathRef> shapePath(CGPathCreateMutable());
-  CGPathAddArc(shapePath, NULL, bounds.size.width / 2.0,
-               bounds.size.height / 2.0, kArcRadius * scaleFactor,
-               kArcStartAngle, kArcEndAngle, 0);
-  [shapeLayer_ setPath:shapePath];
-
-  // Place |shapeLayer_| in a parent layer so that it's easy to rotate
-  // |shapeLayer_| around the center of the view.
-  CALayer* parentLayer = [CALayer layer];
-  [parentLayer setBounds:bounds];
-  [parentLayer addSublayer:shapeLayer_];
-  [shapeLayer_ setPosition:CGPointMake(bounds.size.width / 2.0,
-                                       bounds.size.height / 2.0)];
-
-  return parentLayer;
-}
-
-// Overridden to start or stop the animation whenever the view is unhidden or
-// hidden.
-- (void)setHidden:(BOOL)flag {
-  [super setHidden:flag];
-  [self updateAnimation:nil];
 }
 
 // Register/unregister for window miniaturization event notifications so that
@@ -107,12 +71,12 @@ const SkColor kBlue            = SkColorSetRGB(66.0, 133.0, 244.0);  // #4285f4.
   if (newWindow) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-     selector:@selector(updateAnimation:)
+           selector:@selector(updateAnimation:)
                name:NSWindowWillMiniaturizeNotification
              object:newWindow];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-     selector:@selector(updateAnimation:)
+           selector:@selector(updateAnimation:)
                name:NSWindowDidDeminiaturizeNotification
              object:newWindow];
   }
@@ -124,16 +88,95 @@ const SkColor kBlue            = SkColorSetRGB(66.0, 133.0, 244.0);  // #4285f4.
   [self updateAnimation:nil];
 }
 
+- (BOOL)isAnimating {
+  return [shapeLayer_ animationForKey:kSpinnerAnimationName] != nil;
+}
+
+// Overridden to return a custom CALayer for the view (called from
+// setWantsLayer:).
+- (CALayer*)makeBackingLayer {
+  CGRect bounds = [self bounds];
+  // The spinner was designed to be |kDesignWidth| points wide. Compute the
+  // scale factor needed to scale design parameters like |RADIUS| so that the
+  // spinner scales to fit the view's bounds.
+  CGFloat scaleFactor = bounds.size.width / kDesignWidth;
+
+  shapeLayer_ = [CAShapeLayer layer];
+  [shapeLayer_ setDelegate:self];
+  [shapeLayer_ setBounds:bounds];
+  // Per the design, the line width does not scale linearly.
+  CGFloat scaledDiameter = kArcDiameter * scaleFactor;
+  CGFloat lineWidth;
+  if (scaledDiameter < kArcDiameter) {
+    lineWidth = kArcStrokeWidth - (kArcDiameter - scaledDiameter) / 16.0;
+  } else {
+    lineWidth = kArcStrokeWidth + (scaledDiameter - kArcDiameter) / 11.0;
+  }
+  [shapeLayer_ setLineWidth:lineWidth];
+  [shapeLayer_ setLineCap:kCALineCapRound];
+  [shapeLayer_ setLineDashPattern:@[ @(kArcLength * scaleFactor) ]];
+  [shapeLayer_ setFillColor:NULL];
+  CGColorRef blueColor = gfx::CGColorCreateFromSkColor(kBlue);
+  [shapeLayer_ setStrokeColor:blueColor];
+  CGColorRelease(blueColor);
+
+  // Create the arc that, when stroked, creates the spinner.
+  base::ScopedCFTypeRef<CGMutablePathRef> shapePath(CGPathCreateMutable());
+  CGPathAddArc(shapePath, NULL, bounds.size.width / 2.0,
+               bounds.size.height / 2.0, kArcRadius * scaleFactor,
+               kArcStartAngle, kArcEndAngle, 0);
+  [shapeLayer_ setPath:shapePath];
+
+  // Place |shapeLayer_| in a layer so that it's easy to rotate the entire
+  // spinner animation.
+  rotationLayer_ = [CALayer layer];
+  [rotationLayer_ setBounds:bounds];
+  [rotationLayer_ addSublayer:shapeLayer_];
+  [shapeLayer_ setPosition:CGPointMake(NSMidX(bounds), NSMidY(bounds))];
+
+  // Place |rotationLayer_| in a parent layer so that it's easy to rotate
+  // |rotationLayer_| around the center of the view.
+  CALayer* parentLayer = [CALayer layer];
+  [parentLayer setBounds:bounds];
+  [parentLayer addSublayer:rotationLayer_];
+  [rotationLayer_ setPosition:CGPointMake(bounds.size.width / 2.0,
+                                          bounds.size.height / 2.0)];
+  return parentLayer;
+}
+
+// Overridden to start or stop the animation whenever the view is unhidden or
+// hidden.
+- (void)setHidden:(BOOL)flag {
+  [super setHidden:flag];
+  [self updateAnimation:nil];
+}
+
+// Make sure the layer's backing store matches the window as the window moves
+// between screens.
+- (BOOL)layer:(CALayer*)layer
+    shouldInheritContentsScale:(CGFloat)newScale
+                    fromWindow:(NSWindow*)window {
+  return YES;
+}
+
 // The spinner animation consists of four cycles that it continuously repeats.
 // Each cycle consists of one complete rotation of the spinner's arc plus a
 // rotation adjustment at the end of each cycle (see rotation animation comment
-// below for the reason for the rotation adjustment and four-cycle length of
-// the full animation). The arc's length also grows and shrinks over the course
-// of each cycle, which the spinner achieves by drawing the arc using a (solid)
-// dashed line pattern and animating the "lineDashPhase" property.
+// below for the reason for the adjustment). The arc's length also grows and
+// shrinks over the course of each cycle, which the spinner achieves by drawing
+// the arc using a (solid) dashed line pattern and animating the "lineDashPhase"
+// property.
 - (void)initializeAnimation {
   CGRect bounds = [self bounds];
   CGFloat scaleFactor = bounds.size.width / kDesignWidth;
+
+  // Make sure |shapeLayer_|'s content scale factor matches the window's
+  // backing depth (e.g. it's 2.0 on Retina Macs). Don't worry about adjusting
+  // any other layers because |shapeLayer_| is the only one displaying content.
+  if (base::mac::IsOSLionOrLater()) {
+    CGFloat backingScaleFactor = [[self window] backingScaleFactor];
+    [shapeLayer_ setContentsScale:backingScaleFactor];
+  }
 
   // Create the first half of the arc animation, where it grows from a short
   // block to its full length.
@@ -181,37 +224,33 @@ const SkColor kBlue            = SkColorSetRGB(66.0, 133.0, 244.0);  // #4285f4.
     secondHalfAnimation.reset([secondHalfAnimation copy]);
   }
 
-  // Create the rotation animation, which rotates the arc 360 degrees on each
-  // cycle. The animation also includes a separate 90 degree rotation in the
-  // opposite direction at the very end of each cycle. Ignoring the 360 degree
-  // rotation, each arc starts as a short block at degree 0 and ends as a short
-  // block at degree 270. Without a 90 degree rotation at the end of each cycle,
-  // the short block would appear to suddenly jump from 270 degrees to 360
-  // degrees. The full animation has to contain four of these -90 degree
+  // Create a step rotation animation, which rotates the arc 90 degrees on each
+  // cycle. Each arc starts as a short block at degree 0 and ends as a short
+  // block at degree -270. Without a 90 degree rotation at the end of each
+  // cycle, the short block would appear to suddenly jump from -270 degrees to
+  // -360 degrees. The full animation has to contain four of these 90 degree
   // adjustments in order for the arc to return to its starting point, at which
   // point the full animation can smoothly repeat.
-  CAKeyframeAnimation* rotationAnimation = [CAKeyframeAnimation animation];
-  [rotationAnimation setTimingFunction:
+  CAKeyframeAnimation* stepRotationAnimation = [CAKeyframeAnimation animation];
+  [stepRotationAnimation setTimingFunction:
       [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
-  [rotationAnimation setKeyPath:@"transform.rotation"];
-  // Use a key frame animation to rotate 360 degrees on each cycle, and then
-  // jump back 90 degrees at the end of each cycle.
-  animationValues = @[ @(0.0), @(-1 * kDegrees360),
-                       @(-1.0 * kDegrees360 + kDegrees90),
-                       @(-2.0 * kDegrees360 + kDegrees90),
-                       @(-2.0 * kDegrees360 + kDegrees180),
-                       @(-3.0 * kDegrees360 + kDegrees180),
-                       @(-3.0 * kDegrees360 + kDegrees270),
-                       @(-4.0 * kDegrees360 + kDegrees270)];
-  [rotationAnimation setValues:animationValues];
+  [stepRotationAnimation setKeyPath:@"transform.rotation"];
+  animationValues = @[ @(0.0), @(0.0),
+                       @(kDegrees90),
+                       @(kDegrees90),
+                       @(kDegrees180),
+                       @(kDegrees180),
+                       @(kDegrees270),
+                       @(kDegrees270)];
+  [stepRotationAnimation setValues:animationValues];
   keyTimes = @[ @(0.0), @(0.25), @(0.25), @(0.5), @(0.5), @(0.75), @(0.75),
-                @(1.0)];
-  [rotationAnimation setKeyTimes:keyTimes];
-  [rotationAnimation setDuration:kArcAnimationTime * 4.0];
-  [rotationAnimation setRemovedOnCompletion:NO];
-  [rotationAnimation setFillMode:kCAFillModeForwards];
-  [rotationAnimation setRepeatCount:HUGE_VALF];
-  [animations addObject:rotationAnimation];
+                @(1.0) ];
+  [stepRotationAnimation setKeyTimes:keyTimes];
+  [stepRotationAnimation setDuration:kArcAnimationTime * 4.0];
+  [stepRotationAnimation setRemovedOnCompletion:NO];
+  [stepRotationAnimation setFillMode:kCAFillModeForwards];
+  [stepRotationAnimation setRepeatCount:HUGE_VALF];
+  [animations addObject:stepRotationAnimation];
 
   // Use an animation group so that the animations are easier to manage, and to
   // give them the best chance of firing synchronously.
@@ -223,6 +262,18 @@ const SkColor kBlue            = SkColorSetRGB(66.0, 133.0, 244.0);  // #4285f4.
   [group setAnimations:animations];
 
   spinnerAnimation_.reset([group retain]);
+
+  // Finally, create an animation that rotates the entire spinner layer.
+  CABasicAnimation* rotationAnimation = [CABasicAnimation animation];
+  rotationAnimation.keyPath = @"transform.rotation";
+  [rotationAnimation setFromValue:@0];
+  [rotationAnimation setToValue:@(-kDegrees360)];
+  [rotationAnimation setDuration:kRotationTime];
+  [rotationAnimation setRemovedOnCompletion:NO];
+  [rotationAnimation setFillMode:kCAFillModeForwards];
+  [rotationAnimation setRepeatCount:HUGE_VALF];
+
+  rotationAnimation_.reset([rotationAnimation retain]);
 }
 
 - (void)updateAnimation:(NSNotification*)notification {
@@ -231,19 +282,19 @@ const SkColor kBlue            = SkColorSetRGB(66.0, 133.0, 244.0);  // #4285f4.
   if ([self window] && ![[self window] isMiniaturized] && ![self isHidden] &&
       ![[notification name] isEqualToString:
            NSWindowWillMiniaturizeNotification]) {
-      if (spinnerAnimation_.get() == nil) {
-        [self initializeAnimation];
-      }
-      // The spinner should never be animating at this point.
-      DCHECK(!isAnimating_);
-      if (!isAnimating_) {
-        [shapeLayer_ addAnimation:spinnerAnimation_.get() forKey:nil];
-        isAnimating_ = true;
-      }
-    } else {
-      [shapeLayer_ removeAllAnimations];
-      isAnimating_ = false;
+    if (spinnerAnimation_.get() == nil) {
+      [self initializeAnimation];
     }
+    if (![self isAnimating]) {
+      [shapeLayer_ addAnimation:spinnerAnimation_.get()
+                         forKey:kSpinnerAnimationName];
+      [rotationLayer_ addAnimation:rotationAnimation_.get()
+                            forKey:kRotationAnimationName];
+    }
+  } else {
+    [shapeLayer_ removeAllAnimations];
+    [rotationLayer_ removeAllAnimations];
+  }
 }
 
 @end

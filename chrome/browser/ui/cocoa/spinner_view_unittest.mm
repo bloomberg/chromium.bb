@@ -6,20 +6,6 @@
 
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
-@interface SpinnerView (ExposedForTesting)
-
-- (BOOL)isAnimating;
-
-@end
-
-@implementation SpinnerView (ExposedForTesting)
-
-- (BOOL)isAnimating {
-  return isAnimating_;
-}
-
-@end
-
 namespace {
 
 class SpinnerViewTest : public ui::CocoaTest {
@@ -45,8 +31,7 @@ TEST_F(SpinnerViewTest, StopAnimationOnMiniaturize) {
   EXPECT_TRUE([view_ isAnimating]);
 }
 
-TEST_F(SpinnerViewTest,
-       StopAnimationOnRemoveFromSuperview) {
+TEST_F(SpinnerViewTest, StopAnimationOnRemoveFromSuperview) {
   EXPECT_TRUE([view_ isAnimating]);
 
   [view_ removeFromSuperview];

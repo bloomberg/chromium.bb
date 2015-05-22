@@ -13,10 +13,10 @@
 // "spinner") for Mac Chrome. To use, create a SpinnerView of the desired size
 // and add to a view hierarchy. SpinnerView uses Core Animation to achieve GPU-
 // accelerated animation and smooth scaling to any size.
-@interface SpinnerView : NSView {
- @private
-  bool isAnimating_;
-}
+@interface SpinnerView : NSView
+
+// Return YES if the spinner is animating.
+- (BOOL)isAnimating;
 
 @end
 
