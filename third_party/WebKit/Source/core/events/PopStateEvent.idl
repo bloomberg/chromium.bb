@@ -24,8 +24,10 @@
  *
  */
 
+// https://html.spec.whatwg.org/multipage/browsers.html#popstateevent
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional PopStateEventInit eventInitDict),
 ] interface PopStateEvent : Event {
-    [InitializedByEventConstructor, Custom=Getter] readonly attribute any state;
+    [Custom=Getter] readonly attribute any state;
 };

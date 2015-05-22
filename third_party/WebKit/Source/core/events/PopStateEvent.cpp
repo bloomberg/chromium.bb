@@ -43,6 +43,8 @@ PopStateEvent::PopStateEvent(const AtomicString& type, const PopStateEventInit& 
     : Event(type, initializer)
     , m_history(nullptr)
 {
+    if (initializer.hasState())
+        m_state = initializer.state();
 }
 
 PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serializedState, History* history)
