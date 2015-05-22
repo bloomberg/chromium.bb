@@ -26,6 +26,7 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "sandbox/linux/system_headers/linux_time.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 #if !defined(OS_ANDROID)
@@ -60,7 +61,13 @@ class RestrictClockIdPolicy : public bpf_dsl::Policy {
 
 void CheckClock(clockid_t clockid) {
   struct timespec ts;
-  ts.tv_sec = ts.tv_nsec = -1;
+  ts.tv_sec = -1;
+  ts.tv_nsec = -1;
+  BPF_ASSERT_EQ(0, clock_getres(clockid, &ts));
+  BPF_ASSERT_EQ(0, ts.tv_sec);
+  BPF_ASSERT_LE(0, ts.tv_nsec);
+  ts.tv_sec = -1;
+  ts.tv_nsec = -1;
   BPF_ASSERT_EQ(0, clock_gettime(clockid, &ts));
   BPF_ASSERT_LE(0, ts.tv_sec);
   BPF_ASSERT_LE(0, ts.tv_nsec);
@@ -70,8 +77,10 @@ BPF_TEST_C(ParameterRestrictions,
            clock_gettime_allowed,
            RestrictClockIdPolicy) {
   CheckClock(CLOCK_MONOTONIC);
+  CheckClock(CLOCK_MONOTONIC_COARSE);
   CheckClock(CLOCK_PROCESS_CPUTIME_ID);
   CheckClock(CLOCK_REALTIME);
+  CheckClock(CLOCK_REALTIME_COARSE);
   CheckClock(CLOCK_THREAD_CPUTIME_ID);
 }
 

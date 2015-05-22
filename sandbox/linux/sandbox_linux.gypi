@@ -297,6 +297,7 @@
         'system_headers/linux_futex.h',
         'system_headers/linux_seccomp.h',
         'system_headers/linux_syscalls.h',
+        'system_headers/linux_time.h',
         'system_headers/linux_ucontext.h',
         'system_headers/mips_linux_syscalls.h',
         'system_headers/mips_linux_ucontext.h',
