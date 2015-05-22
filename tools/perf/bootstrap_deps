@@ -22,6 +22,8 @@ deps = {
         "https://src.chromium.org/chrome/trunk/src/tools/perf/profile_creators",
     "src/tools/perf/run_benchmark":
         "https://src.chromium.org/chrome/trunk/src/tools/perf/run_benchmark",
+    "src/tools/variations":
+        "https://src.chromium.org/chrome/trunk/src/tools/variations",
     "src/testing/variations":
         "https://src.chromium.org/chrome/trunk/src/testing/variations",
 }
