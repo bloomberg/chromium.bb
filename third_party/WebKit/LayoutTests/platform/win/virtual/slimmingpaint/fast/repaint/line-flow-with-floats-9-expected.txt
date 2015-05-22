@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [485, 0, 15, 600],
+        [485, 15, 15, 585],
         [485, 0, 15, 600],
         [485, 0, 15, 600],
         [485, 0, 15, 600],
@@ -28,6 +28,8 @@
         [14, 404, 354, 35],
         [8, 74, 418, 516],
         [8, 74, 418, 498],
+        [0, 0, 500, 600],
+        [0, 0, 485, 600],
         [0, 0, 485, 600],
         [0, 0, 15, 15],
         [0, 0, 15, 15]
@@ -109,6 +111,7 @@
         "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
         "RootInlineBox",
         "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
         "LayoutIFrame IFRAME id='iframe'",
         "InlineTextBox 'here; the great\n'",
         "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
