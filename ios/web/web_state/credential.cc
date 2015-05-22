@@ -6,7 +6,8 @@
 
 namespace web {
 
-Credential::Credential() = default;
+Credential::Credential() : type(CREDENTIAL_TYPE_EMPTY) {
+}
 
 Credential::~Credential() = default;
 
