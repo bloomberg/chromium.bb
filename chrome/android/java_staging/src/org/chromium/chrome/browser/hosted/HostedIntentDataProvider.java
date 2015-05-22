@@ -43,6 +43,11 @@ public class HostedIntentDataProvider {
     public static final String EXTRA_HOSTED_SESSION_ID = "hosted:session_id";
 
     /**
+     * Extra used to keep the caller alive. Its value is an Intent.
+     */
+    public static final String EXTRA_HOSTED_KEEP_ALIVE = "hosted:keep_alive";
+
+    /**
      * Extra that changes the background color for the omnibox. colorRes is an int that specifies a
      * color
      */
@@ -92,6 +97,7 @@ public class HostedIntentDataProvider {
     private static final String BUNDLE_ENTER_ANIMATION_RESOURCE = "android:animEnterRes";
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE = "android:animExitRes";
     private final long mSessionId;
+    private final Intent mKeepAliveServiceIntent;
     private int mToolbarColor;
     private Bitmap mIcon;
     private PendingIntent mActionButtonPendingIntent;
@@ -106,6 +112,7 @@ public class HostedIntentDataProvider {
 
         mSessionId = intent.getLongExtra(EXTRA_HOSTED_SESSION_ID, INVALID_SESSION_ID);
         retrieveToolbarColor(intent, context);
+        mKeepAliveServiceIntent = intent.getParcelableExtra(EXTRA_HOSTED_KEEP_ALIVE);
         Bundle actionButtonBundle = intent.getBundleExtra(EXTRA_HOSTED_ACTION_BUTTON_BUNDLE);
         if (actionButtonBundle != null) {
             mIcon = (Bitmap) actionButtonBundle.getParcelable(KEY_HOSTED_ICON);
@@ -146,6 +153,13 @@ public class HostedIntentDataProvider {
      */
     public long getSessionId() {
         return mSessionId;
+    }
+
+    /**
+     * @return The keep alive service intent specified in the intent, or null.
+     */
+    public Intent getKeepAliveServiceIntent() {
+        return mKeepAliveServiceIntent;
     }
 
     /**

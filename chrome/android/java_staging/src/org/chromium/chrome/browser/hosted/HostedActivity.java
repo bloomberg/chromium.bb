@@ -45,6 +45,21 @@ public class HostedActivity extends CompositorChromeActivity {
     private boolean mShouldOverridePackage;
 
     @Override
+    public void onStart() {
+        super.onStart();
+        ChromeBrowserConnection.getInstance(getApplication())
+                .keepAliveForSessionId(mIntentDataProvider.getSessionId(),
+                        mIntentDataProvider.getKeepAliveServiceIntent());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        ChromeBrowserConnection.getInstance(getApplication())
+                .dontKeepAliveForSessionId(mIntentDataProvider.getSessionId());
+    }
+
+    @Override
     public void preInflationStartup() {
         super.preInflationStartup();
         setTabModelSelector(new SingleTabModelSelector(this, false, true));

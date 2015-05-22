@@ -7,7 +7,11 @@ package org.chromium.chrome.browser.hosted;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -26,6 +30,7 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -46,6 +51,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     private final Object mLock;
     private final SparseArray<IBrowserConnectionCallback> mUidToCallback;
     private final LongSparseArray<Integer> mSessionIdToUid;
+    private final LongSparseArray<ServiceConnection> mSessionIdToServiceConnection;
 
     private ChromeBrowserConnection(Application application) {
         super();
@@ -54,6 +60,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         mLock = new Object();
         mUidToCallback = new SparseArray<IBrowserConnectionCallback>();
         mSessionIdToUid = new LongSparseArray<Integer>();
+        mSessionIdToServiceConnection = new LongSparseArray<ServiceConnection>();
     }
 
     /**
@@ -137,9 +144,12 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     @Override
     public long mayLaunchUrl(
             long sessionId, final String url, Bundle extras, List<Bundle> otherLikelyBundles) {
-        if (!isUidForeground(Binder.getCallingUid())) return RESULT_ERROR;
+        int uid = Binder.getCallingUid();
+        if (!isUidForeground(uid)) return RESULT_ERROR;
         synchronized (mLock) {
-            if (mSessionIdToUid.get(sessionId) == null) return RESULT_ERROR;
+            if (mSessionIdToUid.get(sessionId) == null || mSessionIdToUid.get(sessionId) != uid) {
+                return RESULT_ERROR;
+            }
         }
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
@@ -191,6 +201,69 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
             }
         }
         return true;
+    }
+
+    /**
+     * Keeps the application linked with sessionId alive.
+     *
+     * The application is kept alive (that is, raised to at least the current
+     * process priority level) until {@link dontKeepAliveForSessionId()} is
+     * called.
+     *
+     * @param sessionId Session ID provided in the intent.
+     * @param intent Intent describing the service to bind to.
+     * @return true for success.
+     */
+    boolean keepAliveForSessionId(long sessionId, Intent intent) {
+        // When an application is bound to a service, its priority is raised to
+        // be at least equal to the application's one. This binds to a dummy
+        // service (no calls to this service are made).
+        if (intent == null || intent.getComponent() == null) return false;
+        int uid;
+        synchronized (mLock) {
+            if (mSessionIdToUid.get(sessionId) == null) return false;
+            uid = mSessionIdToUid.get(sessionId);
+        }
+        String packageName = intent.getComponent().getPackageName();
+        PackageManager pm = mApplication.getApplicationContext().getPackageManager();
+        // Only binds to the application associated to this session ID.
+        if (!Arrays.asList(pm.getPackagesForUid(uid)).contains(packageName)) return false;
+
+        Intent serviceIntent = new Intent().setComponent(intent.getComponent());
+        // This ServiceConnection doesn't handle disconnects. This is on
+        // purpose, as it occurs when the remote process has died. Since the
+        // only use of this connection is to keep the application alive,
+        // re-connecting would just re-create the process, but the application
+        // state has been lost at that point, the callbacks invalidated, etc.
+        ServiceConnection connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {}
+            @Override
+            public void onServiceDisconnected(ComponentName name) {}
+        };
+        boolean ok;
+        try {
+            ok = mApplication.getApplicationContext().bindService(
+                    serviceIntent, connection, Context.BIND_AUTO_CREATE);
+        } catch (SecurityException e) {
+            return false;
+        }
+        if (ok) mSessionIdToServiceConnection.put(sessionId, connection);
+        return ok;
+    }
+
+    /**
+     * Lets the lifetime of the process linked to a given sessionId be managed normally.
+     *
+     * Without a matching call to {@link keepAliveForSessionId}, this is a no-op.
+     *
+     * @param sessionId Session ID, as provided to {@link keepAliveForSessionId}.
+     */
+    void dontKeepAliveForSessionId(long sessionId) {
+        ServiceConnection connection = mSessionIdToServiceConnection.get(sessionId);
+        if (connection == null) return;
+        mSessionIdToServiceConnection.remove(sessionId);
+        mApplication.getApplicationContext().unbindService(connection);
     }
 
     /**
