@@ -1,0 +1,8 @@
+{
+  "name": "Platform App Test: <webview> basic postMessage",
+  "version": "1",
+  "permissions": ["webview"],
+  "app": {
+    "background": {"scripts": ["test.js"]}
+  }
+}

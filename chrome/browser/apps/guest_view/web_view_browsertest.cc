@@ -843,6 +843,10 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   content::WebContents* embedder_web_contents_;
 };
 
+// Test suite that containts tests that are meant to run with and without
+// --site-per-process.
+class WebViewCommonTest : public extensions::PlatformAppBrowserTest {};
+
 class WebViewDPITest : public WebViewTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2716,4 +2720,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
       extensions::WebViewGuest::FromWebContents(GetGuestWebContents());
   ASSERT_TRUE(guest->allow_transparency());
   ASSERT_TRUE(guest->allow_scaling());
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewCommonTest, BasicPostMessage) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/post_message/basic"))
+      << message_;
 }
