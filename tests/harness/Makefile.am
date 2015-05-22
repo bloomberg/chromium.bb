@@ -21,7 +21,8 @@ harness_TESTS =					\
 	ta-ta-g1_harness.txt			\
 	chr-us-g1_harness.txt		\
 	nl-BE-g1_harness.txt		\
-	en-us-g2-end-emphasis_harness.txt
+	en-us-g2-end-emphasis_harness.txt		\
+	pl-pl-comp8_harness.txt
 
 EXTRA_DIST = $(harness_TESTS)			\
 	     runHarness.py
