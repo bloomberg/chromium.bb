@@ -37,12 +37,11 @@ class ASH_EXPORT DisplayLayoutStore {
   DisplayLayout ComputeDisplayLayoutForDisplayIdPair(
       const DisplayIdPair& display_pair);
 
-  // Update the multi display state in the display layout for
+  // Update the mirrored flag in the display layout for
   // |display_pair|.  This creates new display layout if no layout is
   // registered for |display_pair|.
-  void UpdateMultiDisplayState(const DisplayIdPair& display_pair,
-                               bool mirrored,
-                               bool default_unified);
+  void UpdateMirrorStatus(const DisplayIdPair& display_pair,
+                          bool mirrored);
 
   // Update the |primary_id| in the display layout for
   // |display_pair|.  This creates new display layout if no layout is

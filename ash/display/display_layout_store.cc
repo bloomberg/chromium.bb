@@ -6,8 +6,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_layout_store.h"
-#include "ash/display/display_manager.h"
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/gfx/display.h"
@@ -69,13 +67,11 @@ DisplayLayout DisplayLayoutStore::ComputeDisplayLayoutForDisplayIdPair(
           pair.first == layout.primary_id) ? layout : layout.Invert();
 }
 
-void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdPair& pair,
-                                                 bool mirrored,
-                                                 bool default_unified) {
+void DisplayLayoutStore::UpdateMirrorStatus(const DisplayIdPair& pair,
+                                            bool mirrored) {
   if (paired_layouts_.find(pair) == paired_layouts_.end())
     CreateDisplayLayout(pair);
   paired_layouts_[pair].mirrored = mirrored;
-  paired_layouts_[pair].default_unified = default_unified;
 }
 
 void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdPair& pair,
@@ -88,9 +84,6 @@ void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdPair& pair,
 DisplayLayout DisplayLayoutStore::CreateDisplayLayout(
     const DisplayIdPair& pair) {
   DisplayLayout layout = default_display_layout_;
-  layout.default_unified =
-      Shell::GetInstance()->display_manager()->default_multi_display_mode() ==
-      DisplayManager::UNIFIED;
   layout.primary_id = pair.first;
   paired_layouts_[pair] = layout;
   return layout;

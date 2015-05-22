@@ -1463,8 +1463,6 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
 TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
@@ -1502,8 +1500,6 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
 TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
@@ -1531,8 +1527,6 @@ TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
 TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 

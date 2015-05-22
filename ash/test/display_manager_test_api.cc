@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
@@ -14,7 +13,6 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -92,14 +90,6 @@ bool DisplayManagerTestApi::TestIfMouseWarpsAt(
            screen->GetDisplayNearestPoint(
                        aura::Env::GetInstance()->last_mouse_location()).id();
   }
-}
-
-// static
-void DisplayManagerTestApi::EnableUnifiedDesktopForTest() {
-#if defined(OS_CHROMEOS)
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableUnifiedDesktop);
-#endif
 }
 
 DisplayManagerTestApi::DisplayManagerTestApi(DisplayManager* display_manager)
