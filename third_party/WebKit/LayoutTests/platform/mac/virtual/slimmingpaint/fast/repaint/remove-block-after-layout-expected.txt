@@ -10,8 +10,6 @@
         [8, 108, 100, 36]
       ],
       "paintInvalidationClients": [
-        "InlineTextBox 'disappear.'",
-        "RootInlineBox",
         "InlineTextBox 'This div should'",
         "InlineTextBox 'disappear.'",
         "LayoutText #text",
