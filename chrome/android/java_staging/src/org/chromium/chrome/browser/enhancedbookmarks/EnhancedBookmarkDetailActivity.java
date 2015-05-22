@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import com.google.android.apps.chrome.R;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlUtilities;
@@ -79,7 +80,6 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
 
     private Animator mCurrentAnimator;
     private int mDominantColor;
-    private boolean mIsEditingMode;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -177,13 +177,13 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
     }
 
     /**
-     * Custom {@link android.app.Activity#finish()} that checks device version. If in Lollipop or
-     * future releases, it enables finish with backward shared element animation.
+     * Hides soft keyboard and finishes Activity.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void dismiss() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) finish();
-        else finishAfterTransition();
+        InputMethodManager imm = (InputMethodManager) getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
+        ApiCompatibilityUtils.finishAfterTransition(EnhancedBookmarkDetailActivity.this);
     }
 
     @Override
@@ -259,13 +259,13 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
         // During animation, do not respond to any clicking events.
         if (mCurrentAnimator != null) return;
         if (v == mCloseButton) {
-            if (mIsEditingMode) leaveEditingMode(false);
-            else dismiss();
+            dismiss();
         } else if (v == mSaveButton) {
-            if (mIsEditingMode) leaveEditingMode(true);
-            else dismiss();
+            if (save()) {
+                dismiss();
+            }
         } else if (v instanceof EditText) {
-            if (!mIsEditingMode) enterEditingMode((EditText) v);
+            scrollToEdit((EditText) v);
         } else if (v == mFolderBox) {
             EnhancedBookmarkFolderSelectActivity.startFolderSelectActivity(this, mBookmarkId);
         } else if (v == mDeleteButton) {
@@ -275,21 +275,18 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
     }
 
     /**
-     * Entering editing mode will trigger scrolling-up animation, as an effort to smoothly place the
-     * focused EditText to be the best editable position to user. After animating, corresponding
-     * EditText will be given a simulated touch event that shows up soft keyboard and allow user to
-     * edit.
+     * Editing a TextView will trigger scrolling-up animation, as an effort to smoothly place the
+     * focused EditText to be the best editable position to user.
      * <p>
-     * To ensure the view can always be scrolled up to enter editing mode, before animation: 1). If
-     * content is shorter than screen height, then we fill the content view by emptyAreaHeight so as
-     * to align the content and scroll view. 2). Calculate the scrolling amount. 3). If the
-     * scrolling amount is larger than the current maximum scrollable amount, increase height of
-     * mBottomSpacer to make the content long enough. 4).trigger scroll-up animation.
+     * To ensure the view can always be scrolled up, before animation:
+     *   1) If content is shorter than screen height, then we fill the content view by
+     *      emptyAreaHeight so as to align the content and scroll view.
+     *   2) Calculate the scrolling amount.
+     *   3) If the scrolling amount is larger than the current maximum scrollable amount, increase
+     *      height of mBottomSpacer to make the content long enough.
+     *   4) trigger scroll-up animation.
      */
-    private void enterEditingMode(final EditText editText) {
-        if (mIsEditingMode) return;
-        mIsEditingMode = true;
-
+    private void scrollToEdit(final EditText editText) {
         if (DeviceFormFactor.isTablet(this)) {
             // On tablet this the size of the dialog is controlled by framework. To avoid any
             // jumpy behavior, we skip the crazy scrolling effect below.
@@ -331,63 +328,42 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
     }
 
     /**
-     * Leaves editing mode and finishes the activity. If shouldSave is set false, all changes will
-     * be reverted.
+     * Saves the edited content.
+     * @return Whether the content was successfully saved.
      */
-    private void leaveEditingMode(boolean shouldSave) {
-        assert mIsEditingMode;
-
+    private boolean save() {
         String newTitle = mTitleEditText.getText().toString().trim();
         String newUrl = mUrlEditText.getText().toString().trim();
-        if (shouldSave) {
-            boolean urlOrTitleInvalid = false;
-            // Fix user input urls, if necessary.
-            newUrl = UrlUtilities.fixupUrl(newUrl);
-            if (newUrl == null) newUrl = "";
-            mUrlEditText.setText(newUrl);
-            if (newUrl.isEmpty()) {
-                mUrlEditText.setError(getString(R.string.bookmark_missing_url));
-                urlOrTitleInvalid = true;
-            }
-            if (newTitle.isEmpty()) {
-                mTitleEditText.setError(getString(R.string.bookmark_missing_title));
-                urlOrTitleInvalid = true;
-            }
-            if (urlOrTitleInvalid) return;
+
+        boolean urlOrTitleInvalid = false;
+        // Fix user input urls, if necessary.
+        newUrl = UrlUtilities.fixupUrl(newUrl);
+        if (newUrl == null) newUrl = "";
+        mUrlEditText.setText(newUrl);
+        if (newUrl.isEmpty()) {
+            mUrlEditText.setError(getString(R.string.bookmark_missing_url));
+            urlOrTitleInvalid = true;
+        }
+        if (newTitle.isEmpty()) {
+            mTitleEditText.setError(getString(R.string.bookmark_missing_title));
+            urlOrTitleInvalid = true;
+        }
+        if (urlOrTitleInvalid) return false;
+
+        BookmarkItem bookmarkItem = mEnhancedBookmarksModel.getBookmarkById(mBookmarkId);
+        String newDescription = mDescriptionEditText.getText().toString().trim();
+        if (!bookmarkItem.getTitle().equals(newTitle)) {
+            mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, newTitle);
+        }
+        if (!bookmarkItem.getUrl().equals(newUrl)
+                && bookmarkItem.getId().getType() != BookmarkType.PARTNER) {
+            mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, newUrl);
+        }
+        if (bookmarkItem.getId().getType() != BookmarkType.PARTNER) {
+            mEnhancedBookmarksModel.setBookmarkDescription(mBookmarkId, newDescription);
         }
 
-        mIsEditingMode = false;
-
-        if (shouldSave) {
-            BookmarkItem bookmarkItem = mEnhancedBookmarksModel.getBookmarkById(mBookmarkId);
-            String newDescription = mDescriptionEditText.getText().toString().trim();
-            if (!bookmarkItem.getTitle().equals(newTitle)) {
-                mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, newTitle);
-            }
-            if (!bookmarkItem.getUrl().equals(newUrl)
-                    && bookmarkItem.getId().getType() != BookmarkType.PARTNER) {
-                mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, newUrl);
-            }
-            if (bookmarkItem.getId().getType() != BookmarkType.PARTNER) {
-                mEnhancedBookmarksModel.setBookmarkDescription(mBookmarkId, newDescription);
-            }
-        } else {
-            // If user discards change, restore textviews to original values.
-            updateViews();
-        }
-
-        mContentLayout.requestFocus();
-        InputMethodManager imm = (InputMethodManager) getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mTitleEditText.getWindowToken(), 0);
-        // Cancel error state of message
-        mUrlEditText.setError(null);
-        mTitleEditText.setError(null);
-        // Reset all EditTexts to be not focosable to postpone showing keyboard
-        for (EditText editText : mEditTexts) editText.setFocusable(false);
-        mCurrentAnimator = null;
-        if (mBottomSpacer.getHeight() != 0) setViewHeight(mBottomSpacer, 0);
-        dismiss();
+        return true;
     }
 
     @Override
