@@ -2388,6 +2388,7 @@ FcParseInclude (FcConfigParse *parse)
         filename = FcConfigFilename(s);
 	if (deprecated == FcTrue &&
 	    filename != NULL &&
+	    userdir != NULL &&
 	    !FcFileIsLink (filename))
 	{
 	    if (FcFileIsDir (filename))
