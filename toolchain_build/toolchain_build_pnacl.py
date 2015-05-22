@@ -311,9 +311,6 @@ def CmakeHostArchFlags(host, options):
   # undefined.
   cmake_flags.append('-DHAVE_SANITIZER_MSAN_INTERFACE_H=FALSE')
   tool_flags = HostArchToolFlags(host, [], options)
-  if options.sanitize:
-    for f in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
-      tool_flags[f].append('-fsanitize=%s' % options.sanitize)
   cmake_flags.extend(['-DCMAKE_C_FLAGS=' + ' '.join(tool_flags['CFLAGS'])])
   cmake_flags.extend(['-DCMAKE_CXX_FLAGS=' + ' '.join(tool_flags['CXXFLAGS'])])
   for linker_type in ['EXE', 'SHARED', 'MODULE']:
@@ -655,13 +652,9 @@ def HostTools(host, options):
       },
   }
 
-  # TODO(kschimpf) Currently, there is a problem with the CMAKE scripts
-  # recognizing that clang 3.5.1 is newer than clang 3.1, when trying
-  # to build LLVM tools using the address sanitizer. The following
-  # flag fixes this problem. Fix the CMAKE scripts and remove this.
-  asan_fix = []
+  asan_flags = []
   if options.sanitize:
-    asan_fix = ['-DLLVM_FORCE_USE_OLD_TOOLCHAIN=TRUE']
+    asan_flags.append('-DLLVM_USE_SANITIZER=%s' % options.sanitize.capitalize())
 
   # TODO(jfb) Windows currently uses MinGW's GCC 4.8.1 which generates warnings
   #           on upstream LLVM code. Turn on -Werror once these are fixed.
@@ -677,7 +670,7 @@ def HostTools(host, options):
           'commands': [
               command.SkipForIncrementalCommand([
                   'cmake', '-G', 'Ninja'] +
-                  CmakeHostArchFlags(host, options) + asan_fix +
+                  CmakeHostArchFlags(host, options) + asan_flags +
                   [
                   '-DBUILD_SHARED_LIBS=ON',
                   '-DCMAKE_BUILD_TYPE=' + ('Debug' if HostIsDebug(options)
