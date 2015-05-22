@@ -397,7 +397,7 @@ const Target* ResolveTargetFromCommandLineString(
     Err(Location(), "Not a target.",
         "The \"" + label.GetUserVisibleName(false) + "\" thing\n"
         "is not a target. Somebody should probably implement this command for "
-        "other\nitem types.");
+        "other\nitem types.").PrintToStdout();
     return nullptr;
   }
 
