@@ -23,6 +23,8 @@ namespace mkvmuxer {
 class MkvWriter;
 class Segment;
 
+const uint64 kMaxTrackNumber = 126;
+
 ///////////////////////////////////////////////////////////////
 // Interface used by the mkvmuxer to write out the Mkv data.
 class IMkvWriter {
@@ -108,6 +110,11 @@ class Frame {
     discard_padding_ = discard_padding;
   }
   int64 discard_padding() const { return discard_padding_; }
+  void set_reference_block_timestamp(int64 reference_block_timestamp);
+  int64 reference_block_timestamp() const { return reference_block_timestamp_; }
+  bool reference_block_timestamp_set() const {
+    return reference_block_timestamp_set_;
+  }
 
  private:
   // Id of the Additional data.
@@ -139,6 +146,12 @@ class Frame {
 
   // Discard padding for the frame.
   int64 discard_padding_;
+
+  // Reference block timestamp.
+  int64 reference_block_timestamp_;
+
+  // Flag indicating if |reference_block_timestamp_| has been set.
+  bool reference_block_timestamp_set_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Frame);
 };
@@ -1311,6 +1324,9 @@ class Segment {
 
   // Last timestamp in nanoseconds added to a cluster.
   uint64 last_timestamp_;
+
+  // Last timestamp in nanoseconds by track number added to a cluster.
+  uint64 last_track_timestamp_[kMaxTrackNumber];
 
   // Maximum time in nanoseconds for a cluster duration. This variable is a
   // guideline and some clusters may have a longer duration. Default is 30
