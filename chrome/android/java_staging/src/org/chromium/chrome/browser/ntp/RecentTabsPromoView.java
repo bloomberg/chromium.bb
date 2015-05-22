@@ -248,7 +248,7 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
         signInPromoView.setListener(new AccountFirstRunView.Listener() {
             @Override
             public void onAccountSelectionConfirmed(String accountName) {
-                mUserActionListener.onAccountSelectionConfirmed();
+                if (mUserActionListener != null) mUserActionListener.onAccountSelectionConfirmed();
 
                 ConfirmAccountChangeFragment.confirmSyncAccount(accountName, mActivity);
             }
@@ -260,7 +260,7 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
 
             @Override
             public void onNewAccount() {
-                mUserActionListener.onNewAccount();
+                if (mUserActionListener != null) mUserActionListener.onNewAccount();
 
                 AccountAdder.getInstance().addAccount(mActivity, AccountAdder.ADD_ACCOUNT_RESULT);
             }
