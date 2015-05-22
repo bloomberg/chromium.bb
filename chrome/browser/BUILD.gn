@@ -630,6 +630,7 @@ source_set("browser") {
       "//components/service_tab_launcher",
       "//components/web_contents_delegate_android",
       "//third_party/android_opengl/etc1",
+      "//third_party/android_tools:cpu_features",
       "//third_party/libaddressinput:util",
     ]
     deps -= [

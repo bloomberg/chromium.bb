@@ -26,6 +26,10 @@
 #include "ui/events/event_switches.h"
 #include "ui/gfx/screen.h"
 
+#if defined(OS_ANDROID) && defined(__arm__)
+#include <cpu-features.h>
+#endif  // defined(OS_ANDROID) && defined(__arm__)
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 
@@ -88,6 +92,14 @@ enum UMATouchEventsState {
   UMA_TOUCH_EVENTS_STATE_COUNT
 };
 
+#if defined(OS_ANDROID) && defined(__arm__)
+enum UMAAndroidArmFpu {
+  UMA_ANDROID_ARM_FPU_VFPV3_D16, // The ARM CPU only supports vfpv3-d16.
+  UMA_ANDROID_ARM_FPU_NEON,      // The Arm CPU supports NEON.
+  UMA_ANDROID_ARM_FPU_COUNT
+};
+#endif  // defined(OS_ANDROID) && defined(__arm__)
+
 void RecordMicroArchitectureStats() {
 #if defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
@@ -95,6 +107,19 @@ void RecordMicroArchitectureStats() {
   UMA_HISTOGRAM_ENUMERATION("Platform.IntelMaxMicroArchitecture", arch,
                             base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
 #endif  // defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_ANDROID) && defined(__arm__)
+  // Detect NEON support.
+  // TODO(fdegans): Remove once non-NEON support has been removed.
+  if (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) {
+    UMA_HISTOGRAM_ENUMERATION("Android.ArmFpu",
+                              UMA_ANDROID_ARM_FPU_NEON,
+                              UMA_ANDROID_ARM_FPU_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Android.ArmFpu",
+                              UMA_ANDROID_ARM_FPU_VFPV3_D16,
+                              UMA_ANDROID_ARM_FPU_COUNT);
+  }
+#endif  // defined(OS_ANDROID) && defined(__arm__)
   UMA_HISTOGRAM_SPARSE_SLOWLY("Platform.LogicalCpuCount",
                               base::SysInfo::NumberOfProcessors());
 }
@@ -112,7 +137,7 @@ void RecordStartupMetricsOnBlockingPool() {
   UMA_HISTOGRAM_ENUMERATION("OSX.BluetoothAvailability",
                             availability,
                             bluetooth_utility::BLUETOOTH_AVAILABILITY_COUNT);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif   // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 void RecordLinuxGlibcVersion() {

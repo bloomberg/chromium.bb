@@ -247,6 +247,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Android.ArmFpu" enum="AndroidArmFpu">
+  <owner>fdegans@chromium.org</owner>
+  <summary>
+    Reports the FPU capabilities of the Android ARM device. This is recorded
+    once per browser session during startup.
+  </summary>
+</histogram>
+
 <histogram name="Android.KernelVersion" enum="AndroidKernelVersion">
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -47481,6 +47489,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Preferences"/>
   <int value="4" label="WebappActivity"/>
   <int value="5" label="FullScreenActivity"/>
+</enum>
+
+<enum name="AndroidArmFpu" type="int">
+  <int value="0" label="No NEON support"/>
+  <int value="1" label="NEON support"/>
 </enum>
 
 <enum name="AndroidEvictionReason" type="int">

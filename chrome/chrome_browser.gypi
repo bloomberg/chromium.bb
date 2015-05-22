@@ -3551,6 +3551,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            '../build/android/ndk.gyp:cpu_features',
             '../components/components.gyp:cdm_browser',
             '../components/components.gyp:data_reduction_proxy_content',
             '../components/components.gyp:enhanced_bookmarks',
