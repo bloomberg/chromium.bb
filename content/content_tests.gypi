@@ -239,6 +239,7 @@
       'browser/shared_worker/worker_browsertest.cc',
       'browser/site_per_process_browsertest.cc',
       'browser/site_per_process_browsertest.h',
+      'browser/tracing/background_tracing_manager_browsertest.cc',
       'browser/tracing/tracing_controller_browsertest.cc',
       'browser/web_contents/opened_by_dom_browsertest.cc',
       'browser/web_contents/touch_editable_impl_aura_browsertest.cc',
