@@ -12,8 +12,6 @@ for Chrome OS build configuration.
 
 from __future__ import print_function
 
-import os
-
 # These symbols are imported to be exported (for now).
 # pylint: disable=unused-import
 # pylint: disable=wildcard-import
@@ -21,6 +19,7 @@ import os
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.config_lib import *
+from chromite.cbuildbot import generate_chromeos_config
 from chromite.lib import factory
 
 from chromite.cbuildbot.generate_chromeos_config import (
@@ -33,10 +32,7 @@ from chromite.cbuildbot.generate_chromeos_config import (
 @factory.CachedFunctionCall
 def GetConfig():
   """Fetch the global cbuildbot config."""
-  # TODO(dgarrett): This constant will become a cbuildbot argument.
-  config_file = os.path.join(constants.CHROMITE_DIR, 'cbuildbot',
-                             'config_dump.json')
-  return CreateConfigFromFile(config_file)
+  return CreateConfigFromFile(generate_chromeos_config.CONFIG_FILE)
 
 
 def GetDefault():

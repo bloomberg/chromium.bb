@@ -7,9 +7,14 @@
 from __future__ import print_function
 
 import copy
+import os
 
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
+
+
+CONFIG_FILE = os.path.join(constants.CHROMITE_DIR, 'cbuildbot',
+                           'config_dump.json')
 
 
 # Enumeration of valid settings; any/all config settings must be in this.
