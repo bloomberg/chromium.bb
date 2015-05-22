@@ -91,6 +91,7 @@ fi
 AM_CONDITIONAL([HAVE_HELP2MAN], [test x$HELP2MAN = xhelp2man])
 
 # Check for makeinfo version >= 5, required for building documentation.
+have_makeinfo_5=false
 AC_PROG_SED
 AC_CHECK_PROG([MAKEINFO_FOUND], [makeinfo], [yes])
 if test x"${MAKEINFO_FOUND}" = xyes
@@ -101,13 +102,15 @@ then
   if test x$MAKEINFO_VERSION = x -o 0$MAKEINFO_VERSION -lt $MAKEINFO_VERSION_REQ
   then
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Program 'makeinfo' version >= $MAKEINFO_VERSION_REQ is required.])
+    AC_MSG_WARN([Program 'makeinfo' version >= $MAKEINFO_VERSION_REQ is required. Documentation will not be built.])
   else
     AC_MSG_RESULT([yes])
+    have_makeinfo_5=true
   fi
 else
-  AC_MSG_ERROR([Missing program 'makeinfo', please install.)])
+  AC_MSG_WARN([Missing program 'makeinfo', Documentation will not be built.)])
 fi
+AM_CONDITIONAL([HAVE_MAKEINFO_5], [test x$have_makeinfo_5 = xtrue])
 
 # Check if we have Python installed
 AM_PATH_PYTHON([2.6],, [:])
