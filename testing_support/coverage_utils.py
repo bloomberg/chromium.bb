@@ -21,7 +21,7 @@ def native_error(msg, version):
   %s""") % (version, msg)
   sys.exit(1)
 
-def covered_main(includes, require_native=None):
+def covered_main(includes, require_native=None, required_percentage=100.0):
   """Equivalent of unittest.main(), except that it gathers coverage data, and
   asserts if the test is not at 100% coverage.
 
@@ -63,8 +63,8 @@ def covered_main(includes, require_native=None):
     retcode = e.code or retcode
 
   COVERAGE.stop()
-  if COVERAGE.report() != 100.0:
-    print 'FATAL: not at 100% coverage.'
+  if COVERAGE.report() < required_percentage:
+    print 'FATAL: not at required %f% coverage.' % required_percentage
     retcode = 2
 
   return retcode
