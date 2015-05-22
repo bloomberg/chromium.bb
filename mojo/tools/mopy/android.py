@@ -13,8 +13,11 @@ import math
 import os
 import os.path
 import random
+import shutil
+import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urlparse
@@ -185,11 +188,13 @@ class AndroidShell(object):
     local_dir: directory where locally build Mojo apps will be served, optional
     adb_path: path to adb, optional if adb is in PATH
     target_device: device to run on, if multiple devices are connected
+    src_root: root of the source tree
   """
   def __init__(
       self, shell_apk_path, local_dir=None, adb_path="adb", target_device=None,
-      target_package=MOJO_SHELL_PACKAGE_NAME):
+      target_package=MOJO_SHELL_PACKAGE_NAME, src_root=None):
     self.shell_apk_path = shell_apk_path
+    self.src_root = src_root
     self.adb_path = adb_path
     self.local_dir = local_dir
     self.target_device = target_device
@@ -310,7 +315,7 @@ class AndroidShell(object):
       result.append(self._StartHttpServerForOriginMapping(value, 0))
     return [MAPPING_PREFIX + ','.join(result)]
 
-  def PrepareShellRun(self, origin=None):
+  def PrepareShellRun(self, origin=None, install=True, gdb=False):
     """ Prepares for StartShell: runs adb as root and installs the apk.  If the
     origin specified is 'localhost', a local http server will be set up to serve
     files from the build directory along with port forwarding.
@@ -322,9 +327,11 @@ class AndroidShell(object):
         subprocess.check_output(self._CreateADBCommand(['devices'])))
 
     subprocess.check_call(self._CreateADBCommand(['root']))
-    subprocess.check_call(
-        self._CreateADBCommand(['install', '-r', self.shell_apk_path, '-i',
-                                self.target_package]))
+    if install:
+      subprocess.check_call(
+          self._CreateADBCommand(['install', '-r', self.shell_apk_path, '-i',
+                                  self.target_package]))
+
     atexit.register(self.StopShell)
 
     extra_args = []
@@ -332,18 +339,81 @@ class AndroidShell(object):
       origin = self._StartHttpServerForDirectory(self.local_dir, 0)
     if origin:
       extra_args.append("--origin=" + origin)
+
+    if gdb:
+      # Remote debugging needs a port forwarded.
+      subprocess.check_call(self._CreateADBCommand(['forward', 'tcp:5039',
+                                                    'tcp:5039']))
+
     return extra_args
+
+  def _GetProcessId(self, process):
+    """Returns the process id of the process on the remote device."""
+    while True:
+      line = process.stdout.readline()
+      pid_command = 'launcher waiting for GDB. pid: '
+      index = line.find(pid_command)
+      if index != -1:
+        return line[index + len(pid_command):].strip()
+    return 0
+
+  def _GetLocalGdbPath(self):
+    """Returns the path to the android gdb."""
+    return os.path.join(self.src_root, "third_party", "android_tools", "ndk",
+                        "toolchains", "arm-linux-androideabi-4.9", "prebuilt",
+                        "linux-x86_64", "bin", "arm-linux-androideabi-gdb")
+
+  def _WaitForProcessIdAndStartGdb(self, process):
+    """Waits until we see the process id from the remote device, starts up
+    gdbserver on the remote device, and gdb on the local device."""
+    # Wait until we see "PID"
+    pid = self._GetProcessId(process)
+    assert pid != 0
+    # No longer need the logcat process.
+    process.kill()
+    # Disable python's processing of SIGINT while running gdb. Otherwise
+    # control-c doesn't work well in gdb.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    gdbserver_process = subprocess.Popen(self._CreateADBCommand(['shell',
+                                                                 'gdbserver',
+                                                                 '--attach',
+                                                                 ':5039',
+                                                                 pid]))
+    atexit.register(_ExitIfNeeded, gdbserver_process)
+
+    temp_dir = tempfile.mkdtemp()
+    atexit.register(shutil.rmtree, temp_dir, True)
+
+    gdbinit_path = os.path.join(temp_dir, 'gdbinit')
+    _CreateGdbInit(temp_dir, gdbinit_path, self.local_dir)
+
+    _CreateSOLinks(temp_dir, self.local_dir)
+
+    # Wait a second for gdb to start up on the device. Without this the local
+    # gdb starts before the remote side has registered the port.
+    # TODO(sky): maybe we should try a couple of times and then give up?
+    time.sleep(1)
+
+    local_gdb_process = subprocess.Popen([self._GetLocalGdbPath(),
+                                          "-x",
+                                          gdbinit_path],
+                                         cwd=temp_dir)
+    atexit.register(_ExitIfNeeded, local_gdb_process)
+    local_gdb_process.wait()
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
   def StartShell(self,
                  arguments,
                  stdout=None,
-                 on_application_stop=None):
+                 on_application_stop=None,
+                 gdb=False):
     """
     Starts the mojo shell, passing it the given arguments.
 
     The |arguments| list must contain the "--origin=" arg from PrepareShellRun.
     If |stdout| is not None, it should be a valid argument for subprocess.Popen.
     """
+
     STDOUT_PIPE = "/data/data/%s/stdout.fifo" % self.target_package
 
     cmd = self._CreateADBCommand([
@@ -354,6 +424,12 @@ class AndroidShell(object):
            '-a', 'android.intent.action.VIEW',
            '-n', '%s/%s.MojoShellActivity' % (self.target_package,
                                               MOJO_SHELL_PACKAGE_NAME)])
+
+    logcat_process = None
+
+    if gdb:
+      arguments += ['--wait-for-debugger']
+      logcat_process = self.ShowLogs(stdout=subprocess.PIPE)
 
     parameters = []
     if stdout or on_application_stop:
@@ -376,7 +452,10 @@ class AndroidShell(object):
       cmd += ['--es', 'encodedParameters', encodedParameters]
 
     with open(os.devnull, 'w') as devnull:
-      subprocess.Popen(cmd, stdout=devnull).wait()
+      cmd_process = subprocess.Popen(cmd, stdout=devnull)
+      if logcat_process:
+        self._WaitForProcessIdAndStartGdb(logcat_process)
+      cmd_process.wait()
 
   def StopShell(self):
     """
@@ -393,7 +472,7 @@ class AndroidShell(object):
     """
     subprocess.check_call(self._CreateADBCommand(['logcat', '-c']))
 
-  def ShowLogs(self):
+  def ShowLogs(self, stdout=sys.stdout):
     """
     Displays the log for the mojo shell.
 
@@ -403,6 +482,58 @@ class AndroidShell(object):
                                'logcat',
                                '-s',
                                ' '.join(LOGCAT_TAGS)]),
-                              stdout=sys.stdout)
+                              stdout=stdout)
     atexit.register(_ExitIfNeeded, logcat)
     return logcat
+
+
+def _CreateGdbInit(tmp_dir, gdb_init_path, build_dir):
+  """
+  Creates the gdbinit file.
+  Args:
+    tmp_dir: the directory where the gdbinit and other files lives.
+    gdb_init_path: path to gdbinit
+    build_dir: path where build files are located.
+  """
+  gdbinit = ('target remote localhost:5039\n'
+             'def reload-symbols\n'
+             '  set solib-search-path %s:%s\n'
+             'end\n'
+             'def info-symbols\n'
+             '  info sharedlibrary\n'
+             'end\n'
+             'reload-symbols\n'
+             'echo \\n\\n'
+             'You are now in gdb and need to type continue (or c) to continue '
+             'execution.\\n'
+             'gdb is in the directory %s\\n'
+             'The following functions have been defined:\\n'
+             'reload-symbols: forces reloading symbols. If after a crash you\\n'
+             'still do not see symbols you likely need to create a link in\\n'
+             'the directory you are in.\\n'
+             'info-symbols: shows status of current shared libraries.\\n'
+             'NOTE: you may need to type reload-symbols again after a '
+             'crash.\\n\\n' % (tmp_dir, build_dir, tmp_dir))
+  with open(gdb_init_path, 'w') as f:
+    f.write(gdbinit)
+
+
+def _CreateSOLinks(dest_dir, build_dir):
+  """
+  Creates links from files (such as mojo files) to the real .so so that gdb can
+  find them.
+  """
+  # The files to create links for. The key is the name as seen on the device,
+  # and the target an array of path elements as to where the .so lives (relative
+  # to the output directory).
+  # TODO(sky): come up with some way to automate this.
+  files_to_link = {
+    'html_viewer.mojo': ['libhtml_viewer', 'html_viewer_library.so'],
+    'libmandoline_runner.so': ['mandoline_runner'],
+  }
+  for android_name, so_path in files_to_link.iteritems():
+    src = os.path.join(build_dir, *so_path)
+    if not os.path.isfile(src):
+      print 'Expected file not found', src
+      sys.exit(-1)
+    os.symlink(src, os.path.join(dest_dir, android_name))

@@ -30,6 +30,11 @@ def main():
   parser.add_argument('--target-cpu', help='CPU architecture to run for.',
                       choices=['x64', 'x86', 'arm'], default='arm')
   parser.add_argument('--target-device', help='Device to run on.')
+  parser.add_argument('--dont-install',
+                      help='Disables installing the apk',
+                      default=False, action='store_true')
+  parser.add_argument('--gdb', help='Run gdb',
+                      default=False, action='store_true')
   launcher_args, args = parser.parse_known_args()
 
   config = Config(target_os=Config.OS_ANDROID,
@@ -39,14 +44,16 @@ def main():
   paths = Paths(config)
   shell = AndroidShell(paths.apk_path, paths.build_dir, paths.adb_path,
                        launcher_args.target_device,
-                       target_package='org.chromium.mandoline')
+                       target_package='org.chromium.mandoline',
+                       src_root=paths.src_root)
 
-  extra_shell_args = shell.PrepareShellRun()
+  extra_shell_args = shell.PrepareShellRun(
+      install=not launcher_args.dont_install, gdb=launcher_args.gdb)
   args.extend(extra_shell_args)
 
   shell.CleanLogs()
   p = shell.ShowLogs()
-  shell.StartShell(args, sys.stdout, p.terminate)
+  shell.StartShell(args, sys.stdout, p.terminate, launcher_args.gdb)
   return 0
 
 
