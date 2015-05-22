@@ -177,7 +177,9 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
   return true;
 }
 
-bool GLImageIOSurface::CopyTexImage(unsigned target) {
+bool GLImageIOSurface::CopyTexSubImage(unsigned target,
+                                       const Point& offset,
+                                       const Rect& rect) {
   return false;
 }
 

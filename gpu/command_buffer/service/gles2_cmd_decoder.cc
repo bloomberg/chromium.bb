@@ -11962,8 +11962,10 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(GLenum target,
       unpack_premultiply_alpha_ ^ unpack_unpremultiply_alpha_;
   if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change) {
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
-    if (image->CopyTexImage(GL_TEXTURE_2D))
+    if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(0, 0),
+                               gfx::Rect(0, 0, source_width, source_height))) {
       return;
+    }
   }
 
   DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
@@ -12099,11 +12101,12 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
   // Try using GLImage::CopyTexSubImage when possible.
   bool unpack_premultiply_alpha_change =
       unpack_premultiply_alpha_ ^ unpack_unpremultiply_alpha_;
-  if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change &&
-      !xoffset && !yoffset) {
+  if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change) {
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
-    if (image->CopyTexImage(GL_TEXTURE_2D))
+    if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(xoffset, yoffset),
+                               gfx::Rect(0, 0, source_width, source_height))) {
       return;
+    }
   }
 
   DoWillUseTexImageIfNeeded(source_texture, source_texture->target());

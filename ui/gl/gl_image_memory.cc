@@ -264,28 +264,39 @@ bool GLImageMemory::BindTexImage(unsigned target) {
   return true;
 }
 
-bool GLImageMemory::CopyTexImage(unsigned target) {
-  TRACE_EVENT0("gpu", "GLImageMemory::CopyTexImage");
+bool GLImageMemory::CopyTexSubImage(unsigned target,
+                                    const Point& offset,
+                                    const Rect& rect) {
+  TRACE_EVENT2("gpu", "GLImageMemory::CopyTexSubImage", "width", rect.width(),
+               "height", rect.height());
 
-  // GL_TEXTURE_EXTERNAL_OES is not a supported CopyTexImage target.
+  // GL_TEXTURE_EXTERNAL_OES is not a supported CopyTexSubImage target.
   if (target == GL_TEXTURE_EXTERNAL_OES)
     return false;
 
+  // Sub width is not supported.
+  if (rect.width() != size_.width())
+    return false;
+
+  // Height must be a multiple of 4 if compressed.
+  if (IsCompressedFormat(format_) && rect.height() % 4)
+    return false;
+
+  size_t stride_in_bytes = 0;
+  bool rv = StrideInBytes(size_.width(), format_, &stride_in_bytes);
+  DCHECK(rv);
   DCHECK(memory_);
+  const unsigned char* data = memory_ + rect.y() * stride_in_bytes;
   if (IsCompressedFormat(format_)) {
     glCompressedTexSubImage2D(target,
                               0,  // level
-                              0,  // x-offset
-                              0,  // y-offset
-                              size_.width(), size_.height(),
-                              DataFormat(format_), SizeInBytes(size_, format_),
-                              memory_);
+                              offset.x(), offset.y(), rect.width(),
+                              rect.height(), DataFormat(format_),
+                              SizeInBytes(rect.size(), format_), data);
   } else {
     glTexSubImage2D(target, 0,  // level
-                    0,          // x
-                    0,          // y
-                    size_.width(), size_.height(), DataFormat(format_),
-                    DataType(format_), memory_);
+                    offset.x(), offset.y(), rect.width(), rect.height(),
+                    DataFormat(format_), DataType(format_), data);
   }
 
   return true;

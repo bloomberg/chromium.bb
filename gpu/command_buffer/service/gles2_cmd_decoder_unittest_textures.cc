@@ -2746,7 +2746,8 @@ class MockGLImage : public gfx::GLImage {
   MOCK_METHOD1(Destroy, void(bool));
   MOCK_METHOD1(BindTexImage, bool(unsigned));
   MOCK_METHOD1(ReleaseTexImage, void(unsigned));
-  MOCK_METHOD1(CopyTexImage, bool(unsigned));
+  MOCK_METHOD3(CopyTexSubImage,
+               bool(unsigned, const gfx::Point&, const gfx::Rect&));
   MOCK_METHOD0(WillUseTexImage, void());
   MOCK_METHOD0(DidUseTexImage, void());
   MOCK_METHOD0(WillModifyTexImage, void());

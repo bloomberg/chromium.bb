@@ -34,7 +34,9 @@ class GLImageSync : public gfx::GLImage {
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
-  bool CopyTexImage(unsigned target) override;
+  bool CopyTexSubImage(unsigned target,
+                       const gfx::Point& offset,
+                       const gfx::Rect& rect) override;
   void WillUseTexImage() override;
   void WillModifyTexImage() override;
   void DidModifyTexImage() override;
@@ -87,7 +89,9 @@ void GLImageSync::ReleaseTexImage(unsigned target) {
   NOTREACHED();
 }
 
-bool GLImageSync::CopyTexImage(unsigned target) {
+bool GLImageSync::CopyTexSubImage(unsigned target,
+                                  const gfx::Point& offset,
+                                  const gfx::Rect& rect) {
   return false;
 }
 

@@ -206,7 +206,9 @@ void StreamTexture::ReleaseTexImage(unsigned target) {
   NOTREACHED();
 }
 
-bool StreamTexture::CopyTexImage(unsigned target) {
+bool StreamTexture::CopyTexSubImage(unsigned target,
+                                    const gfx::Point& offset,
+                                    const gfx::Rect& rect) {
   return false;
 }
 

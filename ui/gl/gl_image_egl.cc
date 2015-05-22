@@ -61,7 +61,9 @@ bool GLImageEGL::BindTexImage(unsigned target) {
   return true;
 }
 
-bool GLImageEGL::CopyTexImage(unsigned target) {
+bool GLImageEGL::CopyTexSubImage(unsigned target,
+                                 const Point& offset,
+                                 const Rect& rect) {
   return false;
 }
 

@@ -189,7 +189,9 @@ void GLImageGLX::ReleaseTexImage(unsigned target) {
   glXReleaseTexImageEXT(gfx::GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
 
-bool GLImageGLX::CopyTexImage(unsigned target) {
+bool GLImageGLX::CopyTexSubImage(unsigned target,
+                                 const Point& offset,
+                                 const Rect& rect) {
   return false;
 }
 

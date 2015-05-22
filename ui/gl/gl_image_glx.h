@@ -24,7 +24,9 @@ class GL_EXPORT GLImageGLX : public GLImage {
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
-  bool CopyTexImage(unsigned target) override;
+  bool CopyTexSubImage(unsigned target,
+                       const Point& offset,
+                       const Rect& rect) override;
   void WillUseTexImage() override {}
   void DidUseTexImage() override {}
   void WillModifyTexImage() override {}

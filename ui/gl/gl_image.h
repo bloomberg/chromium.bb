@@ -6,6 +6,7 @@
 #define UI_GL_GL_IMAGE_H_
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -36,8 +37,10 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Release image from texture currently bound to |target|.
   virtual void ReleaseTexImage(unsigned target) = 0;
 
-  // Copy image to texture currently bound to |target|.
-  virtual bool CopyTexImage(unsigned target) = 0;
+  // Copy |rect| of image to |offset| in texture currently bound to |target|.
+  virtual bool CopyTexSubImage(unsigned target,
+                               const Point& offset,
+                               const Rect& rect) = 0;
 
   // Called before the texture is used for drawing.
   virtual void WillUseTexImage() = 0;

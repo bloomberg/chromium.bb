@@ -78,7 +78,9 @@ bool GLImageSurfaceTexture::BindTexImage(unsigned target) {
   return true;
 }
 
-bool GLImageSurfaceTexture::CopyTexImage(unsigned target) {
+bool GLImageSurfaceTexture::CopyTexSubImage(unsigned target,
+                                            const Point& offset,
+                                            const Rect& rect) {
   return false;
 }
 
